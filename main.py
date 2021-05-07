@@ -1,8 +1,10 @@
-import nice_gui as ui
+from nice_gui import NiceGui
 from icecream import ic
 
-app = ui.app()
+ui = NiceGui()
 
-ui.Label('Hello Nice GUI!')
+ui.label('Hello, Nice GUI!')
 
-ui.Button('BUTTON', on_click=lambda _: ui.Label('Nice!'))
+ui.button('BUTTON', on_click=lambda _: ui.label('Nice!'))
+
+app = ui.app
