@@ -12,6 +12,9 @@ with ui.row() as row:
         right.label("Update itself:")
         right.button('Button 2', on_click=lambda b: setattr(b, 'text', b.text + ' :)'))
 
+with ui.row() as row:
+    row.checkbox('Let''s check...', on_change=lambda: row.label('Check!'))
+
 with ui.plot():
     plt.title('Some plot')
     plt.plot(range(10), [x**2 for x in range(10)])

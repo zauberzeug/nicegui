@@ -17,6 +17,16 @@ class Group:
             b.on('click', handle_exceptions(provide_sender(on_click, b)))
         return b
 
+    def checkbox(self, text=None, on_change=None) -> jp.Input:
+
+        d = jp.Div(a=self.view, classes='flex gap-4')
+        c = jp.Input(a=d, type='checkbox', classes='form-checkbox mt-1 ml-4')
+        if text is not None:
+            jp.Div(text=text, a=d)
+        if on_change is not None:
+            c.on('change', handle_exceptions(provide_sender(on_change, c)))
+        return c
+
     @contextmanager
     def plot(self):
 
