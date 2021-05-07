@@ -12,8 +12,6 @@ time = ui.label('Time: ')
 
 def update_time():
     time.text = f'Time: {datetime.now().strftime("%H:%M:%S")}'
-    ic()
 
 
-ic()
 ui.timer(1, update_time)
