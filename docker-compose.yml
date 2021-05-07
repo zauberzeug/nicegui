@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  nicegui:
+    build:
+      context: ./
+    volumes:
+      - ./:/app
+    ports:
+      - 80:80
