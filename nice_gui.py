@@ -12,7 +12,6 @@ class NiceGui():
             return self.index
 
         jp.justpy(build, start_server=False)
-        self.app = jp.app
 
     def label(self, text):
 
@@ -28,3 +27,11 @@ class NiceGui():
 
         d = jp.Div(text=text, a=self.index, classes='w-48 text-xl m-2 p-1 bg-blue-700 text-white text-center')
         d.on('click', click)
+
+
+nice_gui = NiceGui()
+ui = jp.app
+
+# bind methods to simplify API -- justpy creates an app which must be found by uvicorn via string "module:attribute"
+ui.label = nice_gui.label
+ui.button = nice_gui.button
