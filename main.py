@@ -1,17 +1,15 @@
 from nice_gui import ui
 from datetime import datetime
-from icecream import ic
 
 ui.label('Hello, Nice GUI!')
 
-with ui.column() as c:
-    c.button('BUTTON', on_click=lambda _: c.label('Nice!'))
+with ui.row() as row:
+    row.button('BUTTON', on_click=lambda: row.label('Nice!'))
+    with row.column() as column:
+        column.button('BUTTON2')
+        column.label("LABEL")
 
-time = ui.label('Time: ')
-
-
+time = ui.label('Time:')
 def update_time():
     time.text = f'Time: {datetime.now().strftime("%H:%M:%S")}'
-
-
-ui.timer(1, update_time)
+ui.timer(1.0, update_time)
