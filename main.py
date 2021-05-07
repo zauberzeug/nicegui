@@ -4,4 +4,7 @@ from icecream import ic
 
 ui.label('Hello, Nice GUI!')
 
-ui.button('BUTTON', on_click=lambda _: ui.label('Nice!'))
+with ui.column():
+    ui.button('BUTTON 1', on_click=lambda _: ui.label('Nice!'))
+    ui.button('BUTTON 2', on_click=lambda _: ui.label('GUI!'))
+    
