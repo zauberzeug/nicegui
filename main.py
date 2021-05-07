@@ -5,10 +5,12 @@ from datetime import datetime
 ui.label('Hello, Nice GUI!')
 
 with ui.row() as row:
-    row.button('BUTTON', on_click=lambda: row.label('Nice!'))
-    with row.column() as column:
-        column.button('BUTTON2')
-        column.label("LABEL")
+    with row.column() as left:
+        left.label('Add an element:')
+        left.button('Button 1', on_click=lambda: left.label('Nice!'))
+    with row.column() as right:
+        right.label("Update itself:")
+        right.button('Button 2', on_click=lambda b: setattr(b, 'text', b.text + ' :)'))
 
 with ui.plot():
     plt.title('Some plot')

@@ -14,7 +14,7 @@ class Group:
 
         b = jp.Button(text=text, a=self.view, classes='p-2 w-48 bg-blue-700 text-white text-center')
         if on_click is not None:
-            b.on('click', handle_exceptions(provide_sender(on_click, self)))
+            b.on('click', handle_exceptions(provide_sender(on_click, b)))
         return b
 
     @contextmanager
