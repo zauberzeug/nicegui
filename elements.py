@@ -46,7 +46,6 @@ class Page(Group):
     def __init__(self):
 
         self.view = jp.WebPage(delete_flag=False, body_classes='m-4', title='Nice GUI')
-        jp.justpy(lambda: self.view, start_server=False)
 
 
 class Column(Group):
