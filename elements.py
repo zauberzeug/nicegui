@@ -18,6 +18,12 @@ class Group:
         return b
 
     @contextmanager
+    def plot(self):
+
+        yield
+        jp.Matplotlib(a=self.view)
+
+    @contextmanager
     def column(self):
 
         yield Column(self.view)

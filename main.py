@@ -1,4 +1,5 @@
 from nice_gui import ui
+import matplotlib.pyplot as plt
 from datetime import datetime
 
 ui.label('Hello, Nice GUI!')
@@ -8,6 +9,10 @@ with ui.row() as row:
     with row.column() as column:
         column.button('BUTTON2')
         column.label("LABEL")
+
+with ui.plot():
+    plt.title('Some plot')
+    plt.plot(range(10), [x**2 for x in range(10)])
 
 time = ui.label('Time:')
 def update_time():

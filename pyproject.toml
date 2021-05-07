@@ -9,6 +9,7 @@ license = "MIT"
 python = "^3.9"
 justpy = "0.1.5"
 icecream = "^2.1.0"
+matplotlib = "^3.4.1"
 
 [tool.poetry.dev-dependencies]
 debugpy = "^1.3.0"
