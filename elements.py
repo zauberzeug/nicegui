@@ -12,7 +12,7 @@ class Group:
 
     def button(self, text, on_click=None) -> jp.Button:
 
-        b = jp.Button(text=text, a=self.view, classes='p-2 w-48 bg-blue-700 text-white text-center')
+        b = jp.Button(text=text, a=self.view, classes='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded')
         if on_click is not None:
             b.on('click', handle_exceptions(provide_arguments(on_click)))
         return b
@@ -32,6 +32,11 @@ class Group:
 
         yield
         jp.Matplotlib(a=self.view)
+
+    @contextmanager
+    def card(self):
+
+        yield Card(self)
 
     @contextmanager
     def column(self):
@@ -62,6 +67,14 @@ class Page(Group):
     def __init__(self):
 
         self.view = jp.WebPage(delete_flag=False, body_classes='m-4', title='Nice GUI', favicon='favicon.png')
+
+
+class Card(Group):
+
+    def __init__(self, parent) -> None:
+
+        self.parent = parent
+        self.view = jp.Div(a=parent.view, classes='p-4 flex flex-col gap-4 items-start rounded shadow-lg')
 
 
 class Column(Group):
