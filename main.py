@@ -12,6 +12,10 @@ with ui.row() as row:
         right.label("Update itself:")
         right.button('Button 2', on_click=lambda e: setattr(e.sender, 'text', e.sender.text + ' :)'))
 
+ui.select(['one', 'two', 'three'], 'one', on_change=lambda e: output.label(e.value))
+with ui.row() as output:
+    pass
+
 with ui.card() as card:
 
     with card.plot():

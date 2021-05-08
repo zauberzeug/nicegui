@@ -1,4 +1,5 @@
 import justpy as jp
+from typing import List
 from contextlib import contextmanager
 import asyncio
 import time
@@ -25,7 +26,15 @@ class Group:
             jp.Div(text=text, a=d)
         if on_change is not None:
             c.on('change', handle_exceptions(provide_arguments(on_change, 'checked')))
-        return c
+        return d
+    
+    def select(self, options: List[str], value=None, on_change=None) -> jp.Input:
+
+        s = jp.Select(classes='p-2 border rounded', a=self.view, value=value)
+        if on_change is not None:
+            s.on('change', handle_exceptions(provide_arguments(on_change, 'value')))
+        [ jp.Option(value=option, text=option, a=s) for option in options]
+        return s
 
     @contextmanager
     def plot(self):
