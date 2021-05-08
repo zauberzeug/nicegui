@@ -2,7 +2,7 @@ import justpy as jp
 from contextlib import contextmanager
 import asyncio
 import time
-from utils import handle_exceptions, provide_sender
+from utils import handle_exceptions, provide_arguments
 
 class Group:
 
@@ -14,7 +14,7 @@ class Group:
 
         b = jp.Button(text=text, a=self.view, classes='p-2 w-48 bg-blue-700 text-white text-center')
         if on_click is not None:
-            b.on('click', handle_exceptions(provide_sender(on_click, b)))
+            b.on('click', handle_exceptions(provide_arguments(on_click)))
         return b
 
     def checkbox(self, text=None, on_change=None) -> jp.Input:
@@ -24,7 +24,7 @@ class Group:
         if text is not None:
             jp.Div(text=text, a=d)
         if on_change is not None:
-            c.on('change', handle_exceptions(provide_sender(on_change, c)))
+            c.on('change', handle_exceptions(provide_arguments(on_change, 'checked')))
         return c
 
     @contextmanager

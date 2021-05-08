@@ -10,10 +10,10 @@ with ui.row() as row:
         left.button('Button 1', on_click=lambda: left.label('Nice!'))
     with row.column() as right:
         right.label("Update itself:")
-        right.button('Button 2', on_click=lambda b: setattr(b, 'text', b.text + ' :)'))
+        right.button('Button 2', on_click=lambda e: setattr(e.sender, 'text', e.sender.text + ' :)'))
 
 with ui.row() as row:
-    row.checkbox('Let''s check...', on_change=lambda: row.label('Check!'))
+    row.checkbox('Let''s check...', on_change=lambda e: row.label('Check!' if e.checked else 'Uncheck.'))
 
 with ui.plot():
     plt.title('Some plot')
