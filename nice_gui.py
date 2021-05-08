@@ -4,15 +4,19 @@ from elements import Column, Page
 import icecream
 import traceback
 from contextlib import contextmanager
-
+import sys
 
 icecream.install()
 
 @contextmanager
 def NiceGui():
+    # mod = sys._getframe(2).f_globals["__name__"]
+    # ic(mod)
+    # if "main" == mod:
+    #     return
     page = Page()
-    jp.justpy(lambda: page.view, start_server=False)
     yield Column(page.view)
+    jp.justpy(lambda: page.view, start_server=False)
 
 app = jp.app
 

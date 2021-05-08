@@ -29,12 +29,17 @@ class Group:
 
     def timer(self, inverval, callback):
 
+        view = self.parent_view or self.view
+        # while not isinstance(view, Page) and not None:
+        #     view = self.parent_view
+        ic(view)
         async def loop():
 
             while True:
                 start = time.time()
                 handle_exceptions(callback)()
-                jp.run_task(self.view.update())
+                ic(view)
+                jp.run_task(view.update())
                 dt = time.time() - start
                 await asyncio.sleep(inverval - dt)
 
@@ -47,12 +52,12 @@ class Page(Group):
 
         self.view = jp.WebPage(delete_flag=False, body_classes='m-4', title='Nice GUI')
 
-
 class Column(Group):
 
     def __init__(self, parent_view) -> None:
 
         self.view = jp.Div(a=parent_view, classes='flex flex-col gap-4 items-start')
+        self.parent_view = parent_view
 
 
 class Row(Group):
@@ -60,3 +65,4 @@ class Row(Group):
     def __init__(self, parent_view) -> None:
 
         self.view = jp.Div(a=parent_view, classes='flex flex-row flex-wrap gap-4 items-start')
+        self.parent_view = parent_view
