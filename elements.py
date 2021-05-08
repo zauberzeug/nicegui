@@ -3,6 +3,7 @@ from typing import List
 from contextlib import contextmanager
 import asyncio
 import time
+import uuid
 from utils import handle_exceptions, provide_arguments
 
 class Group:
@@ -35,6 +36,19 @@ class Group:
             s.on('change', handle_exceptions(provide_arguments(on_change, 'value')))
         [ jp.Option(value=option, text=option, a=s) for option in options]
         return s
+    
+    def radio(self, options: List[str], value=None, vertical=False, on_change=None) -> jp.Input:
+
+        flex_direction = 'flex-col' if vertical else 'flex-row'
+        name = str(uuid.uuid4())
+        outer = jp.Div(a=self.view, classes=f'flex gap-2 {flex_direction}')
+        for option in options:
+            inner = jp.Label(classes='inline-block', a=outer)
+            r = jp.Input(type='radio', name=name, value=option, checked=option==value, a=inner, classes='mx-2')
+            r.on('change', handle_exceptions(provide_arguments(on_change, 'value')))
+            jp.Span(a=inner, text=option)
+        
+        return outer
 
     @contextmanager
     def plot(self):

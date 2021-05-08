@@ -13,6 +13,7 @@ with ui.row() as row:
         right.button('Button 2', on_click=lambda e: setattr(e.sender, 'text', e.sender.text + ' :)'))
 
 ui.select(['one', 'two', 'three'], 'one', on_change=lambda e: output.label(e.value))
+ui.radio(['alpha', 'beta', 'gamma'], 'alpha', on_change=lambda e: output.label(e.value), vertical=True)
 with ui.row() as output:
     pass
 
