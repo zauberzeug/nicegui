@@ -2,7 +2,7 @@ import justpy as jp
 from elements import Column, Page
 
 page = Page()
-content = Column(page.view)
+content = Column(page)
 
 jp.justpy(lambda: page.view, start_server=False)
 ui = jp.app

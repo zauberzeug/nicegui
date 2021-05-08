@@ -36,12 +36,12 @@ class Group:
     @contextmanager
     def column(self):
 
-        yield Column(self.view)
+        yield Column(self)
 
     @contextmanager
     def row(self):
 
-        yield Row(self.view)
+        yield Row(self)
 
     def timer(self, inverval, callback):
 
@@ -66,13 +66,15 @@ class Page(Group):
 
 class Column(Group):
 
-    def __init__(self, parent_view) -> None:
+    def __init__(self, parent) -> None:
 
-        self.view = jp.Div(a=parent_view, classes='flex flex-col gap-4 items-start')
+        self.parent = parent
+        self.view = jp.Div(a=parent.view, classes='flex flex-col gap-4 items-start')
 
 
 class Row(Group):
 
-    def __init__(self, parent_view) -> None:
+    def __init__(self, parent) -> None:
 
-        self.view = jp.Div(a=parent_view, classes='flex flex-row flex-wrap gap-4 items-start')
+        self.parent = parent
+        self.view = jp.Div(a=parent.view, classes='flex flex-row flex-wrap gap-4 items-start')
