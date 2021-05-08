@@ -1,14 +1,26 @@
+#!/usr/bin/env python3
 import justpy as jp
-from elements import Column, Page
+from starlette.applications import Starlette
+import uvicorn
+import inspect
 
-page = Page()
-content = Column(page)
+wp = jp.WebPage(delete_flag=False)
+jp.justpy(lambda: wp, start_server=False)
 
-jp.justpy(lambda: page.view, start_server=False)
-ui = jp.app
+class Ui(Starlette):
 
-# bind methods to simplify API -- justpy creates an app which must be found by uvicorn via string "module:attribute"
-for field in dir(content):
-    if field[0] != '_' and callable(attr := getattr(content, field)):
-        setattr(ui, field, attr)
-ui.timer = page.timer
+    def label(self, text):
+
+        jp.Div(text=text, a=wp)
+
+    def run(self):
+
+        # NOTE: prevent reloader to restart uvicorn
+        if inspect.stack()[-2].filename.endswith('spawn.py'):
+            return
+
+        uvicorn.run('nice_gui:ui', host='0.0.0.0', port=80, lifespan='on', reload=True)
+
+# NOTE: instantiate our own ui object with all capabilities of jp.app
+ui = Ui()
+ui.__dict__.update(jp.app.__dict__)
