@@ -1,14 +1,21 @@
+import uvicorn
 import justpy as jp
 from elements import Column, Page
+import icecream
+import traceback
+
+icecream.install()
 
 page = Page()
-content = Column(page.view)
-
+ic()
+ui = Column(page.view)
 jp.justpy(lambda: page.view, start_server=False)
-ui = jp.app
 
-# bind methods to simplify API -- justpy creates an app which must be found by uvicorn via string "module:attribute"
-for field in dir(content):
-    if field[0] != '_' and callable(attr := getattr(content, field)):
-        setattr(ui, field, attr)
-ui.timer = page.timer
+app = jp.app
+
+
+def _run():
+    ic()
+    uvicorn.run("main:app", host='0.0.0.0', port=80, lifespan='on', reload=True)
+
+app.run = _run
