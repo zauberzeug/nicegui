@@ -73,6 +73,13 @@ class Ui(Starlette):
             view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
         return Element(view)
 
+    def switch(self, text, on_change=None):
+
+        view = jp.QToggle(text=text)
+        if on_change is not None:
+            view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
+        return Element(view)
+
     def radio(self, options, value=None, on_change=None):
 
         view = jp.QOptionGroup(value=value, options=[{'label': o, 'value': o} for o in options])
@@ -87,9 +94,9 @@ class Ui(Starlette):
             view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
         return Element(view)
 
-    def switch(self, text, on_change=None):
+    def slider(self, min, max, on_change=None):
 
-        view = jp.QToggle(text=text)
+        view = jp.QSlider(min=min, max=max)
         if on_change is not None:
             view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
         return Element(view)
