@@ -5,6 +5,8 @@ import uvicorn
 import inspect
 import time
 import asyncio
+from contextlib import contextmanager
+from matplotlib import pyplot as plt
 from utils import handle_exceptions, provide_arguments
 import icecream
 
@@ -42,6 +44,14 @@ class Element:
 
         view_stack.pop()
 
+class Plot(Element):
+
+    def update(self, close=True):
+
+        self.view.set_figure(plt.gcf())
+        if close:
+            plt.close()
+
 class Ui(Starlette):
 
     def label(self, text=''):
@@ -55,6 +65,15 @@ class Ui(Starlette):
         if on_click is not None:
             view.on('click', handle_exceptions(provide_arguments(on_click)))
         return Element(view)
+
+    @contextmanager
+    def plot(self, close=True):
+
+        view = jp.Matplotlib()
+        yield Plot(view)
+        view.set_figure(plt.gcf())
+        if close:
+            plt.close()
 
     def row(self):
 
@@ -71,7 +90,13 @@ class Ui(Starlette):
         view = jp.Div(classes='flex flex-col gap-4 items-start p-4 rounded shadow-lg')
         return Element(view)
 
-    def timer(self, inverval, callback):
+    def timer(self, interval, callback, *, once=False):
+
+        async def timeout():
+
+            await asyncio.sleep(interval)
+            handle_exceptions(callback)()
+            jp.run_task(wp.update())
 
         def update(view):
             if view.components:
@@ -87,13 +112,13 @@ class Ui(Starlette):
                 handle_exceptions(callback)()
                 update(view_stack[-1])
                 dt = time.time() - start
-                await asyncio.sleep(inverval - dt)
+                await asyncio.sleep(interval - dt)
 
-        jp.run_task(loop())
+        jp.run_task(timeout() if once else loop())
 
     def run(self):
 
-        # NOTE: prevent reloader to restart uvicorn
+        # NOTE: prevent reloader from restarting uvicorn
         if inspect.stack()[-2].filename.endswith('spawn.py'):
             return
 
