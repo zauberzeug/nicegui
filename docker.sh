@@ -4,20 +4,20 @@ if [ $# -eq 0 ]
 then
     echo "Usage:"
     echo
-    echo "  `basename $0` (b | build)   [<containers>]      Build or rebuild"
-    echo "  `basename $0` (u | up)      [<containers>]      Create and start"
-    echo "  `basename $0` (U | upbuild) [<containers>]      Create and start (force build)"
-    echo "  `basename $0` (d | down)    [<containers>]      Stop and remove"
-    echo "  `basename $0` (s | start)   [<containers>]      Start"
-    echo "  `basename $0` (r | restart) [<containers>]      Restart"
-    echo "  `basename $0` (h | stop)    [<containers>]      Stop (halt)"
-    echo "  `basename $0` ps            [<containers>]      List"
-    echo "  `basename $0` rm            [<containers>]      Remove"
-    echo "  `basename $0` stats                             Show statistics"
+    echo "  `basename $0` (b | build)        Build or rebuild"
+    echo "  `basename $0` (u | up)           Create and start"
+    echo "  `basename $0` (U | upbuild)      Create and start (force build)"
+    echo "  `basename $0` (d | down)         Stop and remove"
+    echo "  `basename $0` (s | start)        Start"
+    echo "  `basename $0` (r | restart)      Restart"
+    echo "  `basename $0` (h | stop)         Stop (halt)"
+    echo "  `basename $0` ps                 List"
+    echo "  `basename $0` rm                 Remove"
+    echo "  `basename $0` stats              Show statistics"
     echo
-    echo "  `basename $0` (l | log)    <container>            Show log tail (last 100 lines)"
-    echo "  `basename $0` (e | exec)   <container> <command>  Execute command"
-    echo "  `basename $0` (a | attach) <container>            Attach to container with shell"
+    echo "  `basename $0` (l | log)                 Show log tail (last 100 lines)"
+    echo "  `basename $0` (e | exec)     <command>  Execute command"
+    echo "  `basename $0` (a | attach)              Attach to container with shell"
     echo
     echo "  `basename $0` prune      Remove all unused containers, networks and images"
     echo "  `basename $0` stopall    Stop all running containers (system-wide!)"
@@ -25,8 +25,6 @@ then
     echo
     echo "Arguments:"
     echo
-    echo "  containers    One or more containers (omit to affect all containers)"
-    echo "  container     Excactly one container to be affected"
     echo "  command       Command to be executed inside a container"
     exit
 fi
@@ -47,16 +45,16 @@ case $cmd in
         docker-compose down -d $cmd_args
         ;;
     s | start)
-        docker-compose start $cmd_args
+        docker-compose start $cmd_args app
         ;;
     r | restart)
-        docker-compose restart $cmd_args
+        docker-compose restart $cmd_args app
         ;;
     h | stop)
-        docker-compose stop $cmd_args
+        docker-compose stop $cmd_args app
         ;;
     rm)
-        docker-compose rm $cmd_args
+        docker-compose rm $cmd_args app
         ;;
     ps)
         docker-compose ps $cmd_args
@@ -65,13 +63,13 @@ case $cmd in
         docker stats $cmd_args
         ;;
     l | log | logs)
-        docker-compose logs -f --tail 100 $cmd_args
+        docker-compose logs -f --tail 100 $cmd_args app
         ;;
     e | exec)
-        docker-compose exec $cmd_args
+        docker-compose exec $cmd_args app
         ;;
     a | attach)
-        docker-compose exec $cmd_args /bin/bash
+        docker-compose exec $cmd_args app /bin/bash
         ;;
     prune)
         docker system prune
