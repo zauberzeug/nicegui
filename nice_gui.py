@@ -51,9 +51,12 @@ class Plot(Element):
 
 class Ui(Starlette):
 
-    def label(self, text=''):
+    def label(self, text='', typography=[]):
 
-        view = jp.Div(text=text)
+        if isinstance(typography, str):
+            typography = [typography]
+        classes = ' '.join('text-' + t for t in typography)
+        view = jp.Div(text=text, classes=classes)
         return Element(view)
 
     def button(self, text, on_click=None):
