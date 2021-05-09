@@ -9,8 +9,8 @@ from contextlib import contextmanager
 from matplotlib import pyplot as plt
 from utils import handle_exceptions, provide_arguments
 
-wp = jp.WebPage(delete_flag=False, title='Nice GUI', favicon='favicon.png')
-main = jp.Div(a=wp, classes='m-4 flex flex-col items-start gap-4')
+wp = jp.QuasarPage(delete_flag=False, title='Nice GUI', favicon='favicon.png')
+main = jp.Div(a=wp, classes='q-ma-md column items-start', style='row-gap: 1em')
 jp.justpy(lambda: wp, start_server=False)
 
 view_stack = [main]
@@ -58,7 +58,7 @@ class Ui(Starlette):
 
     def button(self, text, on_click=None):
 
-        view = jp.Button(text=text, classes='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded')
+        view = jp.QBtn(text=text, color='primary')
         if on_click is not None:
             view.on('click', handle_exceptions(provide_arguments(on_click)))
         return Element(view)
@@ -74,17 +74,17 @@ class Ui(Starlette):
 
     def row(self):
 
-        view = jp.Div(classes='flex flex-row gap-4 items-start')
+        view = jp.QDiv(classes='row items-start', style='column-gap: 1em')
         return Element(view)
 
     def column(self):
 
-        view = jp.Div(classes='flex flex-col gap-4 items-start')
+        view = jp.QDiv(classes='column items-start', style='row-gap: 1em')
         return Element(view)
 
     def card(self):
 
-        view = jp.Div(classes='flex flex-col gap-4 items-start p-4 rounded shadow-lg')
+        view = jp.QCard(classes='q-pa-md column items-start', style='row-gap: 1em')
         return Element(view)
 
     def timer(self, interval, callback, *, once=False):
