@@ -87,6 +87,13 @@ class Ui(Starlette):
             view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
         return Element(view)
 
+    def switch(self, text, on_change=None):
+
+        view = jp.QToggle(text=text)
+        if on_change is not None:
+            view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
+        return Element(view)
+
     @contextmanager
     def plot(self, close=True):
 

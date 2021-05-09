@@ -4,27 +4,23 @@ from datetime import datetime
 from matplotlib import pyplot as plt
 
 with ui.card():
-    ui.label('Rows and columns', 'h5')
+    ui.label('Interactive elements', 'h5')
     with ui.row():
-        ui.label('A')
-        ui.label('B')
         with ui.column():
-            ui.label('C1')
-            ui.label('C2')
-            ui.label('C3')
+            ui.button('Click me!', on_click=lambda: output.set_text('Click'))
+            ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
+            ui.switch('Switch me!', on_change=lambda e: output.set_text('Switched' if e.value else 'Unswitched'))
+        with ui.column():
+            ui.radio(['A', 'B', 'C'], on_change=lambda e: output.set_text(e.value))
+            ui.select(['1', '2', '3'], on_change=lambda e: output.set_text(e.value))
+    with ui.row():
+        ui.label('Output:')
+        output = ui.label()
 
 with ui.card():
     ui.label('Timer', 'h5')
     time = ui.label()
     ui.timer(0.1, lambda: time.set_text(datetime.now().strftime("%X")))
-
-with ui.card():
-    ui.label('Interactive elements', 'h5')
-    ui.button('Click me!', on_click=lambda: output.set_text('Click'))
-    ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
-    ui.radio(['A', 'B', 'C'], on_change=lambda e: output.set_text(e.value))
-    ui.select(['1', '2', '3'], on_change=lambda e: output.set_text(e.value))
-    output = ui.label()
 
 with ui.card():
     ui.label('Matplotlib', 'h5')
