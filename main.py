@@ -23,6 +23,7 @@ with ui.card():
     ui.button('Click me!', on_click=lambda: output.set_text('Click'))
     ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
     ui.radio(['A', 'B', 'C'], on_change=lambda e: output.set_text(e.value))
+    ui.select(['1', '2', '3'], on_change=lambda e: output.set_text(e.value))
     output = ui.label()
 
 with ui.card():

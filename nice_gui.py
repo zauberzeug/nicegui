@@ -80,6 +80,13 @@ class Ui(Starlette):
             view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
         return Element(view)
 
+    def select(self, options, value=None, on_change=None):
+
+        view = jp.QSelect(value=value, options=options)
+        if on_change is not None:
+            view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
+        return Element(view)
+
     @contextmanager
     def plot(self, close=True):
 
