@@ -21,8 +21,14 @@ with ui.row():
     time = ui.label()
     ui.timer(0.1, lambda: time.set_text(datetime.now().strftime("%X")))
 
-with ui.plot():
+with ui.plot(close=False) as plot:
     plt.title('Some plot')
     plt.plot(range(10), [x**2 for x in range(10)])
+
+def update_plot():
+    plt.title('Some plot with a second curve')
+    plt.plot(range(10), [100 - x**2 for x in range(10)])
+    plot.update()
+ui.timer(3.0, update_plot, once=True)
 
 ui.run()

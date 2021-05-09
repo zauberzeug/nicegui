@@ -6,6 +6,7 @@ import inspect
 import time
 import asyncio
 from contextlib import contextmanager
+from matplotlib import pyplot as plt
 from utils import handle_exceptions, provide_arguments
 
 wp = jp.WebPage(delete_flag=False, title='Nice GUI', favicon='favicon.png')
@@ -40,6 +41,14 @@ class Element:
 
         view_stack.pop()
 
+class Plot(Element):
+
+    def update(self, close=True):
+
+        self.view.set_figure(plt.gcf())
+        if close:
+            plt.close()
+
 class Ui(Starlette):
 
     def label(self, text=''):
@@ -55,10 +64,13 @@ class Ui(Starlette):
         return Element(view)
 
     @contextmanager
-    def plot(self):
+    def plot(self, close=True):
 
-        yield
-        jp.Matplotlib(a=view_stack[-1])
+        view = jp.Matplotlib()
+        yield Plot(view)
+        view.set_figure(plt.gcf())
+        if close:
+            plt.close()
 
     def row(self):
 
@@ -75,7 +87,13 @@ class Ui(Starlette):
         view = jp.Div(classes='flex flex-col gap-4 items-start p-4 rounded shadow-lg')
         return Element(view)
 
-    def timer(self, inverval, callback):
+    def timer(self, interval, callback, *, once=False):
+
+        async def timeout():
+
+            await asyncio.sleep(interval)
+            handle_exceptions(callback)()
+            jp.run_task(wp.update())
 
         async def loop():
 
@@ -84,9 +102,9 @@ class Ui(Starlette):
                 handle_exceptions(callback)()
                 jp.run_task(wp.update())
                 dt = time.time() - start
-                await asyncio.sleep(inverval - dt)
+                await asyncio.sleep(interval - dt)
 
-        jp.run_task(loop())
+        jp.run_task(timeout() if once else loop())
 
     def run(self):
 
