@@ -66,6 +66,13 @@ class Ui(Starlette):
             view.on('click', handle_exceptions(provide_arguments(on_click)))
         return Element(view)
 
+    def checkbox(self, text, on_change=None):
+
+        view = jp.QCheckbox(text=text)
+        if on_change is not None:
+            view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
+        return Element(view)
+
     @contextmanager
     def plot(self, close=True):
 
