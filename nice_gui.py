@@ -6,6 +6,9 @@ import inspect
 import time
 import asyncio
 from utils import handle_exceptions, provide_arguments
+import icecream
+
+icecream.install()
 
 wp = jp.WebPage(delete_flag=False, title='Nice GUI', favicon='favicon.png')
 main = jp.Div(a=wp, classes='m-4 flex flex-col items-start gap-4')
@@ -70,12 +73,19 @@ class Ui(Starlette):
 
     def timer(self, inverval, callback):
 
+        def update(view):
+            if view.components:
+                for v in view.components:
+                    update(v)
+
+            jp.run_task(view.update())
+
         async def loop():
 
             while True:
                 start = time.time()
                 handle_exceptions(callback)()
-                jp.run_task(wp.update())
+                update(view_stack[-1])
                 dt = time.time() - start
                 await asyncio.sleep(inverval - dt)
 

@@ -15,9 +15,10 @@ with ui.card():
             ui.label('C2')
             ui.label('C3')
 
-ui.run()
 
 with ui.row():
     ui.label('Time:')
     time = ui.label()
     ui.timer(0.1, lambda: time.set_text(datetime.now().strftime("%X")))
+
+ui.run()
