@@ -73,6 +73,13 @@ class Ui(Starlette):
             view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
         return Element(view)
 
+    def radio(self, options, value=None, on_change=None):
+
+        view = jp.QOptionGroup(value=value, options=[{'label': o, 'value': o} for o in options])
+        if on_change is not None:
+            view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
+        return Element(view)
+
     @contextmanager
     def plot(self, close=True):
 

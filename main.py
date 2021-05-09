@@ -22,6 +22,7 @@ with ui.card():
     ui.label('Interactive elements', 'h5')
     ui.button('Click me!', on_click=lambda: output.set_text('Click'))
     ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
+    ui.radio(['A', 'B', 'C'], on_change=lambda e: output.set_text(e.value))
     output = ui.label()
 
 with ui.card():
