@@ -5,6 +5,7 @@ import uvicorn
 import inspect
 import time
 import asyncio
+from contextlib import contextmanager
 from utils import handle_exceptions, provide_arguments
 
 wp = jp.WebPage(delete_flag=False, title='Nice GUI', favicon='favicon.png')
@@ -53,6 +54,12 @@ class Ui(Starlette):
             view.on('click', handle_exceptions(provide_arguments(on_click)))
         return Element(view)
 
+    @contextmanager
+    def plot(self):
+
+        yield
+        jp.Matplotlib(a=view_stack[-1])
+
     def row(self):
 
         view = jp.Div(classes='flex flex-row gap-4 items-start')
@@ -83,7 +90,7 @@ class Ui(Starlette):
 
     def run(self):
 
-        # NOTE: prevent reloader to restart uvicorn
+        # NOTE: prevent reloader from restarting uvicorn
         if inspect.stack()[-2].filename.endswith('spawn.py'):
             return
 
