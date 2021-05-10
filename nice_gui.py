@@ -65,9 +65,18 @@ class Ui(Starlette):
         view = jp.Div(text=text, classes=classes)
         return Element(view)
 
-    def button(self, text, on_click=None):
+    def icon(self, name):
 
-        view = jp.QBtn(text=text, color='primary')
+        view = jp.QIcon(name=name, classes='q-pt-xs')
+        return Element(view)
+
+    def button(self, text, icon=None, icon_right=None, on_click=None):
+
+        view = jp.QBtn(label=text, color='primary')
+        if icon is not None:
+            view.icon = icon
+        if icon_right is not None:
+            view.icon_right = icon_right
         if on_click is not None:
             view.on('click', handle_exceptions(provide_arguments(on_click)))
         return Element(view)
