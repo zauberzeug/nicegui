@@ -2,6 +2,7 @@
 from nice_gui import ui
 from datetime import datetime
 from matplotlib import pyplot as plt
+import random
 
 with ui.card():
     ui.label('Interactive elements', 'h5')
@@ -32,11 +33,20 @@ with ui.card():
     with ui.plot(close=False) as plot:
         plt.title('Some plot')
         plt.plot(range(10), [x**2 for x in range(10)])
+        x, y, colors, areas, scatter = [], [], [], [], None
 
     def update_plot():
-        plt.title('Some plot with a second curve')
-        plt.plot(range(10), [100 - x**2 for x in range(10)])
-        plot.update()
-    ui.timer(3.0, update_plot, once=True)
+        global x, y, colors, areas, scatter
+        n = 20
+        with plot:
+            plt.title('Some plot with updates')
+            x = [*x, 10 * random.triangular()][-n:]
+            y = [*y, 100 * random.gauss(0.5, 0.25)][-n:]
+            colors = [*colors, random.randint(1, 4)][-n:]
+            areas = [*areas, random.randint(10, 30)**2][-n:]
+            if scatter is not None:
+                scatter.remove()
+            scatter = plt.scatter(x, y, s=areas, c=colors, alpha=0.85)
+    ui.timer(1.0, update_plot)
 
 ui.run()

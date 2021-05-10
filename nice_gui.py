@@ -49,11 +49,18 @@ class Element:
 
 class Plot(Element):
 
-    def update(self, close=True):
+    def __init__(self, view, fig):
+
+        super().__init__(view)
+        self.fig = fig
+
+    def __enter__(self):
+
+        plt.figure(self.fig)
+
+    def __exit__(self, *_):
 
         self.view.set_figure(plt.gcf())
-        if close:
-            plt.close()
 
 class Ui(Starlette):
 
@@ -128,11 +135,12 @@ class Ui(Starlette):
     @contextmanager
     def plot(self, close=True):
 
+        fig = plt.figure()
         view = jp.Matplotlib()
-        yield Plot(view)
-        view.set_figure(plt.gcf())
+        yield Plot(view, fig)
+        view.set_figure(fig)
         if close:
-            plt.close()
+            fig.close()
 
     def row(self):
 
