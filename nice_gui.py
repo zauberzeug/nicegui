@@ -107,6 +107,15 @@ class Ui(Starlette):
             view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
         return Element(view)
 
+    def input(self, placeholder=None, value=None, type='text', on_change=None):
+
+        view = jp.QInput(placeholder=placeholder, type=type)
+        if value is not None:
+            view.value = value
+        if on_change is not None:
+            view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
+        return Element(view)
+
     @contextmanager
     def plot(self, close=True):
 

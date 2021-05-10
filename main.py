@@ -11,6 +11,8 @@ with ui.card():
             ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
             ui.switch('Switch me!', on_change=lambda e: output.set_text('Switched' if e.value else 'Unswitched'))
             ui.slider(0, 100, on_change=lambda e: output.set_text(e.value))
+            ui.input('Text input', on_change=lambda e: output.set_text(e.value))
+            ui.input('Number input', on_change=lambda e: output.set_text(e.value), type='number')
         with ui.column():
             ui.radio(['A', 'B', 'C'], on_change=lambda e: output.set_text(e.value))
             ui.select(['1', '2', '3'], on_change=lambda e: output.set_text(e.value))
