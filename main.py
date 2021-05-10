@@ -48,6 +48,6 @@ with ui.card():
             plt.xlim(min(x), max(x))
             plt.ylim(min(y), max(y))
 
-    ui.timer(0.1, update_plot)
+    ui.timer(1.0, update_plot)
 
 ui.run()
