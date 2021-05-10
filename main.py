@@ -33,20 +33,21 @@ with ui.card():
     ui.label('Matplotlib', 'h5')
     with ui.plot(close=False) as plot:
         plt.title('Some plot')
-        i, x, y, line = 0, [], [], None
+        i, x, y = 0, [], []
+        line, = plt.plot(x, y, 'C0')
+        plt.ion()
 
     def update_plot():
         global i, x, y, line
-        n = 100
         with plot:
-            plt.title('Some plot with updates')
             i += 1
-            x = [*x, i][-n:]
-            y = [*y, np.sin(time.time()) + 0.02 * np.random.randn()][-n:]
-            if line is not None:
-                line.pop().remove()
-                plt.xlim(x[0], x[-1])
-            line = plt.plot(x, y, 'C0-')
+            x = [*x, i][-100:]
+            y = [*y, np.sin(time.time()) + 0.02 * np.random.randn()][-100:]
+            line.set_xdata(x)
+            line.set_ydata(y)
+            plt.xlim(min(x), max(x))
+            plt.ylim(min(y), max(y))
+
     ui.timer(0.1, update_plot)
 
 ui.run()
