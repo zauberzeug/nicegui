@@ -118,17 +118,17 @@ class Ui(Starlette):
 
     def row(self):
 
-        view = jp.QDiv(classes='row items-start', style='column-gap: 1em')
+        view = jp.QDiv(classes='row items-start', style='gap: 1em', delete_flag=False)
         return Element(view)
 
     def column(self):
 
-        view = jp.QDiv(classes='column items-start', style='row-gap: 1em')
+        view = jp.QDiv(classes='column items-start', style='gap: 1em', delete_flag=False)
         return Element(view)
 
     def card(self):
 
-        view = jp.QCard(classes='q-pa-md column items-start', style='row-gap: 1em')
+        view = jp.QCard(classes='column items-start q-pa-md', style='gap: 1em', delete_flag=False)
         return Element(view)
 
     def timer(self, interval, callback, *, once=False):
@@ -147,7 +147,7 @@ class Ui(Starlette):
                 try:
                     start = time.time()
                     handle_exceptions(callback)()
-                    await main.update()
+                    await parent.update()
                     dt = time.time() - start
                     await asyncio.sleep(interval - dt)
                 except:
