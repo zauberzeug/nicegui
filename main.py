@@ -22,8 +22,10 @@ with ui.card():
 
 with ui.card():
     ui.label('Timer', 'h5')
-    time = ui.label()
-    ui.timer(0.1, lambda: time.set_text(datetime.now().strftime("%X")))
+    with ui.row():
+        ui.icon('far fa-clock')
+        time = ui.label()
+        ui.timer(0.1, lambda: time.set_text(datetime.now().strftime("%X")))
 
 with ui.card():
     ui.label('Matplotlib', 'h5')

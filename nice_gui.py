@@ -65,6 +65,11 @@ class Ui(Starlette):
         view = jp.Div(text=text, classes=classes)
         return Element(view)
 
+    def icon(self, name):
+
+        view = jp.QIcon(name=name, classes='q-pt-xs')
+        return Element(view)
+
     def button(self, text, on_click=None):
 
         view = jp.QBtn(text=text, color='primary')
