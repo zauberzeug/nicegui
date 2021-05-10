@@ -13,8 +13,8 @@ import icecream
 
 icecream.install()
 
-wp = jp.WebPage(delete_flag=False, title='Nice GUI', favicon='favicon.png')
-main = jp.Div(a=wp, classes='m-4 flex flex-col items-start gap-4')
+wp = jp.QuasarPage(delete_flag=False, title='Nice GUI', favicon='favicon.png')
+main = jp.Div(a=wp, classes='q-ma-md column items-start', style='row-gap: 1em')
 main.add_page(wp)
 jp.justpy(lambda: wp, start_server=False)
 
@@ -57,16 +57,54 @@ class Plot(Element):
 
 class Ui(Starlette):
 
-    def label(self, text=''):
+    def label(self, text='', typography=[]):
 
-        view = jp.Div(text=text)
+        if isinstance(typography, str):
+            typography = [typography]
+        classes = ' '.join('text-' + t for t in typography)
+        view = jp.Div(text=text, classes=classes)
         return Element(view)
 
     def button(self, text, on_click=None):
 
-        view = jp.Button(text=text, classes='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded')
+        view = jp.QBtn(text=text, color='primary')
         if on_click is not None:
             view.on('click', handle_exceptions(provide_arguments(on_click)))
+        return Element(view)
+
+    def checkbox(self, text, on_change=None):
+
+        view = jp.QCheckbox(text=text)
+        if on_change is not None:
+            view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
+        return Element(view)
+
+    def switch(self, text, on_change=None):
+
+        view = jp.QToggle(text=text)
+        if on_change is not None:
+            view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
+        return Element(view)
+
+    def radio(self, options, value=None, on_change=None):
+
+        view = jp.QOptionGroup(value=value, options=[{'label': o, 'value': o} for o in options])
+        if on_change is not None:
+            view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
+        return Element(view)
+
+    def select(self, options, value=None, on_change=None):
+
+        view = jp.QSelect(value=value, options=options)
+        if on_change is not None:
+            view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
+        return Element(view)
+
+    def slider(self, min, max, on_change=None):
+
+        view = jp.QSlider(min=min, max=max)
+        if on_change is not None:
+            view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
         return Element(view)
 
     @contextmanager
@@ -80,17 +118,17 @@ class Ui(Starlette):
 
     def row(self):
 
-        view = jp.Div(classes='flex flex-row gap-4 items-start')
+        view = jp.QDiv(classes='row items-start', style='column-gap: 1em')
         return Element(view)
 
     def column(self):
 
-        view = jp.Div(classes='flex flex-col gap-4 items-start')
+        view = jp.QDiv(classes='column items-start', style='row-gap: 1em')
         return Element(view)
 
     def card(self):
 
-        view = jp.Div(classes='flex flex-col gap-4 items-start p-4 rounded shadow-lg')
+        view = jp.QCard(classes='q-pa-md column items-start', style='row-gap: 1em')
         return Element(view)
 
     def timer(self, interval, callback, *, once=False):
