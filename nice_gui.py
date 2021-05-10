@@ -165,7 +165,7 @@ class Ui(Starlette):
 
             await asyncio.sleep(interval)
             handle_exceptions(callback)()
-            await main.update()
+            await parent.update()
 
         async def loop():
 
