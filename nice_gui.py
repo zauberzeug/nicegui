@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import traceback
 import justpy as jp
 from starlette.applications import Starlette
 import uvicorn
@@ -14,6 +15,7 @@ icecream.install()
 
 wp = jp.WebPage(delete_flag=False, title='Nice GUI', favicon='favicon.png')
 main = jp.Div(a=wp, classes='m-4 flex flex-col items-start gap-4')
+main.add_page(wp)
 jp.justpy(lambda: wp, start_server=False)
 
 view_stack = [main]
@@ -23,6 +25,7 @@ class Element:
     def __init__(self, view: jp.HTMLBaseComponent):
 
         view_stack[-1].add(view)
+        view.add_page(wp)
         self.view = view
 
     @property
@@ -92,27 +95,26 @@ class Ui(Starlette):
 
     def timer(self, interval, callback, *, once=False):
 
+        parent = view_stack[-1]
+
         async def timeout():
 
             await asyncio.sleep(interval)
             handle_exceptions(callback)()
-            jp.run_task(wp.update())
-
-        def update(view):
-            if view.components:
-                for v in view.components:
-                    update(v)
-
-            jp.run_task(view.update())
+            await main.update()
 
         async def loop():
 
             while True:
-                start = time.time()
-                handle_exceptions(callback)()
-                update(view_stack[-1])
-                dt = time.time() - start
-                await asyncio.sleep(interval - dt)
+                try:
+                    start = time.time()
+                    handle_exceptions(callback)()
+                    await main.update()
+                    dt = time.time() - start
+                    await asyncio.sleep(interval - dt)
+                except:
+                    traceback.print_exc()
+                    await asyncio.sleep(interval)
 
         jp.run_task(timeout() if once else loop())
 
