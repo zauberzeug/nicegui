@@ -101,9 +101,17 @@ class Ui(Starlette):
         view = jp.Div(text=text, classes=classes)
         return Element(view)
 
-    def icon(self, name):
+    def link(self, text='', href='#', typography=[]):
 
-        view = jp.QIcon(name=name, classes='q-pt-xs')
+        if isinstance(typography, str):
+            typography = [typography]
+        classes = ' '.join('text-' + t for t in typography)
+        view = jp.A(text=text, href=href, classes=classes)
+        return Element(view)
+
+    def icon(self, name, size='20px', color='dark'):
+
+        view = jp.QIcon(name=name, classes=f'q-pt-xs text-{color}', size=size)
         return Element(view)
 
     def button(self, text, icon=None, icon_right=None, on_click=None):
