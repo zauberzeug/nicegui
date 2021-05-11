@@ -11,6 +11,8 @@ from matplotlib import pyplot as plt
 from .utils import handle_exceptions, provide_arguments
 
 wp = jp.QuasarPage(delete_flag=False, title='Nice GUI', favicon='favicon.png')
+wp.head_html = '<script>confirm = () => true;</script>'  # HACK: avoid confirmation dialog for reload
+
 main = jp.Div(a=wp, classes='q-ma-md column items-start', style='row-gap: 1em')
 main.add_page(wp)
 jp.justpy(lambda: wp, start_server=False)
