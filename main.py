@@ -3,7 +3,6 @@ from nice_gui import ui
 from datetime import datetime
 from matplotlib import pyplot as plt
 import numpy as np
-import time
 
 with ui.card():
     ui.label('Interactive elements', 'h5')
@@ -33,21 +32,27 @@ with ui.card():
     ui.label('Matplotlib', 'h5')
     with ui.plot(close=False) as plot:
         plt.title('Some plot')
-        i, x, y = 0, [], []
+        x, y = [], []
         line, = plt.plot(x, y, 'C0')
-        plt.ion()
 
     def update_plot():
-        global i, x, y, line
+        global x, y, line
         with plot:
-            i += 1
-            x = [*x, i][-100:]
-            y = [*y, np.sin(time.time()) + 0.02 * np.random.randn()][-100:]
+            x = [*x, datetime.now()][-100:]
+            y = [*y, np.sin(datetime.now().timestamp()) + 0.02 * np.random.randn()][-100:]
             line.set_xdata(x)
             line.set_ydata(y)
             plt.xlim(min(x), max(x))
             plt.ylim(min(y), max(y))
 
     ui.timer(1.0, update_plot)
+
+with ui.card():
+    ui.label('Line Plot', 'h5')
+    lines = ui.line_plot(n=2, limit=20).with_legend(['sin', 'cos'], loc='upper center', ncol=2)
+    ui.timer(1.0, lambda: lines.push([datetime.now()], [
+        [np.sin(datetime.now().timestamp()) + 0.02 * np.random.randn()],
+        [np.cos(datetime.now().timestamp()) + 0.02 * np.random.randn()],
+    ]))
 
 ui.run()

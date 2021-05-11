@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import traceback
 import justpy as jp
+from numpy import isin
 from starlette.applications import Starlette
 import uvicorn
 import inspect
@@ -61,6 +62,34 @@ class Plot(Element):
     def __exit__(self, *_):
 
         self.view.set_figure(plt.gcf())
+
+class LinePlot(Plot):
+
+    def __init__(self, view, fig, n, limit):
+
+        super().__init__(view, fig)
+        self.x = []
+        self.Y = [[] for _ in range(n)]
+        self.lines = [self.fig.gca().plot([], [])[0] for _ in range(n)]
+        self.slice = slice(0 if limit is None else -limit, None)
+
+    def with_legend(self, titles, **kwargs):
+
+        self.fig.gca().legend(titles, **kwargs)
+        self.view.set_figure(self.fig)
+        return self
+
+    def push(self, x, Y):
+
+        self.x = [*self.x, *x][self.slice]
+        for i in range(len(self.lines)):
+            self.Y[i] = [*self.Y[i], *Y[i]][self.slice]
+            self.lines[i].set_xdata(self.x)
+            self.lines[i].set_ydata(self.Y[i])
+        flat_y = [y_i for y in self.Y for y_i in y]
+        self.fig.gca().set_xlim(min(self.x), max(self.x))
+        self.fig.gca().set_ylim(min(flat_y), max(flat_y))
+        self.view.set_figure(self.fig)
 
 class Ui(Starlette):
 
@@ -141,6 +170,12 @@ class Ui(Starlette):
         view.set_figure(fig)
         if close:
             fig.close()
+
+    def line_plot(self, n=1, limit=20):
+
+        fig = plt.figure()
+        view = jp.Matplotlib(fig=fig)
+        return LinePlot(view, fig, n=n, limit=limit)
 
     def row(self):
 
