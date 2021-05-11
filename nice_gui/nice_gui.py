@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import traceback
 import justpy as jp
-from numpy import isin
 from starlette.applications import Starlette
 import uvicorn
 import inspect
@@ -9,10 +8,7 @@ import time
 import asyncio
 from contextlib import contextmanager
 from matplotlib import pyplot as plt
-from utils import handle_exceptions, provide_arguments
-import icecream
-
-icecream.install()
+from .utils import handle_exceptions, provide_arguments
 
 wp = jp.QuasarPage(delete_flag=False, title='Nice GUI', favicon='favicon.png')
 main = jp.Div(a=wp, classes='q-ma-md column items-start', style='row-gap: 1em')
