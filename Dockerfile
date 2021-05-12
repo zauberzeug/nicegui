@@ -13,4 +13,4 @@ WORKDIR /app
 COPY ./pyproject.toml ./poetry.lock* main.py ./
 RUN poetry install --no-root
 
-CMD uvicorn --reload --host 0.0.0.0 --port 80 main:ui
+CMD ./nicegui main.py
