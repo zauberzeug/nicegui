@@ -1,4 +1,4 @@
-# Nice Gui
+# Nice GUI
 
 # Usage
 
