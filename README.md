@@ -13,6 +13,8 @@ Launch it with:
 
     python3 main.py
 
+Note: the script will automatically reload the ui if you modify your code.
+
 ## Full Example
 
 See [main.py](https://github.com/zauberzeug/nice_gui/blob/main/main.py)
