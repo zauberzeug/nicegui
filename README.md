@@ -2,7 +2,7 @@
 
 We like streamlit but find it uses to much magic when it comes to state handling. In search for a nice library to write simple graphical user interfaces we discovered justpy. It's to "low-level-html" for our daily usage but provides a great basis for "Nice GUI".
 
-![Example GUI Elements](/sceenshots/ui-elements.png?raw=true "GUI Elements")
+![Example GUI Elements](/sceenshots/ui-elements.png?raw=true "GUI Elements" | width=400)
 
 ## Usage
 
