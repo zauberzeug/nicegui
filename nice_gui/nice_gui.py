@@ -6,14 +6,12 @@ import uvicorn
 import inspect
 import time
 import asyncio
-import os.path
 from contextlib import contextmanager
 from matplotlib import pyplot as plt
 from .utils import handle_exceptions, provide_arguments
 
 if not inspect.stack()[-2].filename.endswith('spawn.py'):
-    module = os.path.splitext(os.path.basename(inspect.stack()[-1].filename))[0]
-    uvicorn.run(f'{module}:ui', host='0.0.0.0', port=80, lifespan='on', reload=True)
+    uvicorn.run('nice_gui:ui', host='0.0.0.0', port=80, lifespan='on', reload=True)
 
 wp = jp.QuasarPage(delete_flag=False, title='Nice GUI', favicon='favicon.png')
 wp.head_html = '<script>confirm = () => true;</script>'  # HACK: avoid confirmation dialog for reload
