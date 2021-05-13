@@ -3,6 +3,7 @@ import traceback
 import justpy as jp
 from starlette.applications import Starlette
 import uvicorn
+import sys
 import inspect
 import time
 import asyncio
@@ -13,6 +14,7 @@ from .utils import handle_exceptions, provide_arguments
 # start uvicorn with auto-reload; afterwards the auto-reloaded process should not start uvicorn again
 if not inspect.stack()[-2].filename.endswith('spawn.py'):
     uvicorn.run('nice_gui:ui', host='0.0.0.0', port=80, lifespan='on', reload=True)
+    sys.exit()
 
 wp = jp.QuasarPage(delete_flag=False, title='Nice GUI', favicon='favicon.png')
 wp.head_html = '<script>confirm = () => true;</script>'  # HACK: avoid confirmation dialog for reload
