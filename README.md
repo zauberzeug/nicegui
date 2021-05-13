@@ -17,3 +17,7 @@ Launch it with
 Or use with autoreloading by calling
 
    nicegui main.py
+
+# Full Example
+
+See [main.py](https://github.com/zauberzeug/nice_gui/blob/main/main.py)
