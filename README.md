@@ -16,7 +16,7 @@ Launch it with
 
 Or use with autoreloading by calling
 
-   nicegui main.py
+    nicegui main.py
 
 # Full Example
 
