@@ -9,6 +9,7 @@ import asyncio
 from contextlib import contextmanager
 from matplotlib import pyplot as plt
 from .utils import handle_exceptions, provide_arguments
+from multiprocessing import Process
 
 wp = jp.QuasarPage(delete_flag=False, title='Nice GUI', favicon='favicon.png')
 wp.head_html = '<script>confirm = () => true;</script>'  # HACK: avoid confirmation dialog for reload
@@ -90,6 +91,20 @@ class LinePlot(Plot):
         self.view.set_figure(self.fig)
 
 class Ui(Starlette):
+
+    def __init__(self):
+        # NOTE: we enhance our own ui object with all capabilities of jp.app
+        self.__dict__.update(jp.app.__dict__)
+
+        self.tasks = []
+
+        @self.on_event('startup')
+        def startup():
+            [jp.run_task(t) for t in self.tasks]
+
+    def run(self):
+
+        uvicorn.run(self, host='0.0.0.0', port=80, lifespan='on', reload=False)
 
     def label(self, text='', typography=[]):
 
@@ -221,16 +236,4 @@ class Ui(Starlette):
                     traceback.print_exc()
                     await asyncio.sleep(interval)
 
-        jp.run_task(timeout() if once else loop())
-
-    def run(self):
-
-        # NOTE: prevent reloader from restarting uvicorn
-        if inspect.stack()[-2].filename.endswith('spawn.py'):
-            return
-
-        uvicorn.run('nice_gui:ui', host='0.0.0.0', port=80, lifespan='on', reload=True)
-
-# NOTE: instantiate our own ui object with all capabilities of jp.app
-ui = Ui()
-ui.__dict__.update(jp.app.__dict__)
+        self.tasks.append((timeout() if once else loop()))
