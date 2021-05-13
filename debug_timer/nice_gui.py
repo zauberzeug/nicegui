@@ -14,41 +14,50 @@ main = jp.Div(a=wp, text='Hello JustPy!')
 main.add_page(wp)
 jp.justpy(lambda: wp, start_server=False)
 
-def label(text):
+class Ui(Starlette):
 
-    print(pad, __name__, "label()")
+    def __init__(self):
 
-    view = jp.Div(text=text)
-    main.add(view)
-    view.add_page(wp)
+        self.__dict__.update(jp.app.__dict__)
 
-def timer():
+        self.tasks = []
 
-    print(pad, __name__, "timer()")
+        @self.on_event('startup')
+        def startup():
 
-    async def loop():
+            print(pad, __name__, "startup()")
+            [jp.run_task(t) for t in self.tasks]
 
-        while True:
-            print(pad, __name__, "loop()", flush=True)
-            await asyncio.sleep(1.0)
+    def label(self, text):
 
-    try:
-        jp.run_task(loop())
-    except:
-        traceback.print_exc()
+        print(pad, __name__, "label()")
 
-def run():
+        view = jp.Div(text=text)
+        main.add(view)
+        view.add_page(wp)
 
-    print(pad, __name__, "run()")
+    def timer(self):
 
-    if inspect.stack()[-2].filename.endswith('spawn.py'):
-        print(pad, __name__, "RETURN FROM RUN")
-        return
+        print(pad, __name__, "timer()")
 
-    print(pad, "START UVICORN")
-    uvicorn.run('main:ui', host='0.0.0.0', port=80, lifespan='on', reload=True)
+        async def loop():
 
-ui = jp.app
-ui.label = label
-ui.timer = timer
-ui.run = run
+            while True:
+                print(pad, __name__, "loop()", flush=True)
+                await asyncio.sleep(1.0)
+
+        self.tasks.append(loop())
+
+    def run(self):
+
+        print(pad, __name__, "run()")
+
+        if inspect.stack()[-2].filename.endswith('spawn.py'):
+            print(pad, __name__, "RETURN FROM RUN")
+            return
+
+        print(pad, "START UVICORN")
+        uvicorn.run('nice_gui:ui', host='0.0.0.0', port=80, lifespan='on', reload=True)
+
+ui = Ui()
+
