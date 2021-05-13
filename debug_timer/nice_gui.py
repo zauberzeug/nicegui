@@ -8,6 +8,10 @@ import asyncio
 
 pad = '*' * 80
 
+if not inspect.stack()[-2].filename.endswith('spawn.py'):
+    print(pad, "START UVICORN")
+    uvicorn.run('nice_gui:ui', host='0.0.0.0', port=80, lifespan='on', reload=True)
+
 wp = jp.WebPage(delete_flag=False, head_html='<script>confirm = () => true;</script>')
 
 main = jp.Div(a=wp, text='Hello JustPy!')
@@ -47,17 +51,6 @@ class Ui(Starlette):
                 await asyncio.sleep(1.0)
 
         self.tasks.append(loop())
-
-    def run(self):
-
-        print(pad, __name__, "run()")
-
-        if inspect.stack()[-2].filename.endswith('spawn.py'):
-            print(pad, __name__, "RETURN FROM RUN")
-            return
-
-        print(pad, "START UVICORN")
-        uvicorn.run('nice_gui:ui', host='0.0.0.0', port=80, lifespan='on', reload=True)
 
 ui = Ui()
 

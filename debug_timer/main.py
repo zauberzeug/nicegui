@@ -6,6 +6,3 @@ ui.label('hello nice gui!')
 
 print(pad, __name__, "MAIN: create timer")
 ui.timer()
-
-print(pad, __name__, "MAIN: call run")
-ui.run()
