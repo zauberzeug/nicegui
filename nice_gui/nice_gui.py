@@ -11,6 +11,7 @@ from contextlib import contextmanager
 from matplotlib import pyplot as plt
 from .utils import handle_exceptions, provide_arguments
 
+# start uvicorn with auto-reload; afterwards the auto-reloaded process should not start uvicorn again
 if not inspect.stack()[-2].filename.endswith('spawn.py'):
     module = os.path.splitext(os.path.basename(inspect.stack()[-1].filename))[0]
     uvicorn.run(f'{module}:ui', host='0.0.0.0', port=80, lifespan='on', reload=True)
