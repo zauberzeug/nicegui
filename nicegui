@@ -46,9 +46,11 @@ while True:
     print_stdout(process)
     if max_mtime > last_mtime:
         last_mtime = max_mtime
-        print(f'Restarting process {process.pid}.')
+        print(f'Restarting {process}.')
+        new = subprocess.Popen(command, shell=True)
+        time.sleep(0.5)
         for child in psutil.Process(process.pid).children(recursive=True):
             child.kill()
         process.kill()
-        process = subprocess.Popen(command, shell=True)
+        process = new
     time.sleep(wait)
