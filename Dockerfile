@@ -13,4 +13,4 @@ WORKDIR /app
 COPY ./pyproject.toml ./poetry.lock* main.py ./
 RUN poetry install --no-root
 
-CMD ./nicegui main.py
+CMD ./main.py

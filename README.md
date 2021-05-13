@@ -1,23 +1,18 @@
 # Nice GUI
 
-# Usage
+## Usage
 
 Write your nice GUI in a file `main.py`:
 
-    import nice_gui
+    from nice_gui import ui
 
-    ui = nice_gui.Ui()
     ui.label('Hello Nice GUI!')
-    ui.Button('BUTTON', on_click: lambda: print('button was pressed'))
+    ui.button('BUTTON', on_click: lambda: print('button was pressed'))
 
-Launch it with
+Launch it with:
 
     python3 main.py
 
-Or use with autoreloading by calling
-
-    nicegui main.py
-
-# Full Example
+## Full Example
 
 See [main.py](https://github.com/zauberzeug/nice_gui/blob/main/main.py)

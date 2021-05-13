@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
-import nice_gui
+from nice_gui import ui
 from datetime import datetime
 from matplotlib import pyplot as plt
 import numpy as np
-
-ui = nice_gui.Ui()
 
 with ui.row():
     with ui.card():
@@ -63,5 +61,3 @@ with ui.row():
             [np.sin(datetime.now().timestamp()) + 0.02 * np.random.randn()],
             [np.cos(datetime.now().timestamp()) + 0.02 * np.random.randn()],
         ]))
-
-ui.run()

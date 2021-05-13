@@ -1,1 +1,1 @@
-from nice_gui.nice_gui import Ui
+from nice_gui.nice_gui import ui
