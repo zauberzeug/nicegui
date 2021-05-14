@@ -1,14 +1,11 @@
 from typing import Callable
 import justpy as jp
-from .element import Element
-from ..utils import handle_exceptions, provide_arguments
+from .bool_element import BoolElement
 
-class Checkbox(Element):
+class Checkbox(BoolElement):
 
-    def __init__(self, text: str, on_change: Callable = None):
+    def __init__(self, text: str = '', value: bool = False, on_change: Callable = None):
 
-        view = jp.QCheckbox(text=text)
-        if on_change is not None:
-            view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
+        view = jp.QCheckbox(text=text, input=self.handle_change)
 
-        super().__init__(view)
+        super().__init__(view, value=value, on_change=on_change)

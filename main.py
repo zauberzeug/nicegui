@@ -4,10 +4,16 @@ from datetime import datetime
 from matplotlib import pyplot as plt
 import numpy as np
 
-with ui.row(), ui.card():
+with ui.card(), ui.row():
     ui.label('Binding', 'h5')
-    n1 = ui.number(value=0.5, decimals=2)
-    n2 = ui.number(decimals=3).bind('value', n1, 'value')
+    n1 = ui.number(value=0.5, format='%.2f', on_change=lambda e: print(e.value))
+    n2 = ui.number(format='%.3f').bind('value', n1, 'value')
+
+    c1 = ui.checkbox('c1', value=True, on_change=lambda e: print(e.value))
+    s1 = ui.switch('c2', value=True, on_change=lambda e: print(e.value))
+
+    c2 = ui.checkbox('c2', on_change=lambda e: print(e.value))
+    s2 = ui.switch('s2', on_change=lambda e: print(e.value)).bind('value', c2, 'value')
 
 with ui.row():
     with ui.card():
@@ -18,9 +24,9 @@ with ui.row():
                           on_click=lambda: output.set_text('Click'))
                 ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
                 ui.switch('Switch me!', on_change=lambda e: output.set_text('Switched' if e.value else 'Unswitched'))
-                ui.slider(0, 100, on_change=lambda e: output.set_text(e.value))
-                ui.input(label='Text', on_change=lambda e: output.set_text(e.value))
-                ui.number(label='Number', on_change=lambda e: output.set_text(e.value), value=3.1415927, decimals=2)
+                ui.slider(min=0, max=100, value=50, step=0.1, on_change=lambda e: output.set_text(e.value))
+                ui.input(label='Text', value='abc', on_change=lambda e: output.set_text(e.value))
+                ui.number(label='Number', value=3.1415927, format='%.2f', on_change=lambda e: output.set_text(e.value))
             with ui.column():
                 with ui.row():
                     ui.radio(options=['A', 'B', 'C'], value='A', on_change=lambda e: output.set_text(e.value))

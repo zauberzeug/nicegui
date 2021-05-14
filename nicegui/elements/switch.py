@@ -1,15 +1,11 @@
 from typing import Callable
 import justpy as jp
-from .element import Element
-from ..utils import handle_exceptions, provide_arguments
+from .bool_element import BoolElement
 
-class Switch(Element):
+class Switch(BoolElement):
 
-    def __init__(self, text: str = '', on_change: Callable = None):
+    def __init__(self, text: str = '', value: bool = False, on_change: Callable = None):
 
-        view = jp.QToggle(text=text)
+        view = jp.QToggle(text=text, input=self.handle_change)
 
-        if on_change is not None:
-            view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
-
-        super().__init__(view)
+        super().__init__(view, value=value, on_change=on_change)

@@ -23,4 +23,3 @@ def handle_exceptions(func):
         except Exception:
             traceback.print_exc()
     return inner_function
-
