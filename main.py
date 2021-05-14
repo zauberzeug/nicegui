@@ -4,17 +4,6 @@ from datetime import datetime
 from matplotlib import pyplot as plt
 import numpy as np
 
-with ui.card(), ui.row():
-    ui.label('Binding', 'h5')
-    n1 = ui.number(value=0.5, format='%.2f', on_change=lambda e: print(e.value))
-    n2 = ui.number(format='%.3f').bind('value', n1, 'value')
-
-    c1 = ui.checkbox('c1', value=True, on_change=lambda e: print(e.value))
-    s1 = ui.switch('c2', value=True, on_change=lambda e: print(e.value))
-
-    c2 = ui.checkbox('c2', on_change=lambda e: print(e.value))
-    s2 = ui.switch('s2', on_change=lambda e: print(e.value)).bind('value', c2, 'value')
-
 with ui.row():
     with ui.card():
         ui.label('Interactive elements', 'h5')
@@ -79,3 +68,17 @@ with ui.row():
             [np.sin(datetime.now().timestamp()) + 0.02 * np.random.randn()],
             [np.cos(datetime.now().timestamp()) + 0.02 * np.random.randn()],
         ]))
+
+    with ui.card():
+        ui.label('Binding', 'h5')
+        with ui.row():
+            n1 = ui.number(value=1.2345, format='%.2f')
+            n2 = ui.number(format='%.3f').bind('value', n1, 'value')
+        with ui.row():
+            c = ui.checkbox('c1')
+            s = ui.switch('c2').bind('value', c, 'value')
+        with ui.row():
+            model = type('', (), {'value': 1})
+            r1 = ui.radio({1: 'a', 2: 'b', 3: 'c'}).bind('value', model, 'value')
+            r2 = ui.radio({1: 'A', 2: 'B', 3: 'C'}).bind('value', model, 'value')
+            n3 = ui.number().bind('value', model, 'value')
