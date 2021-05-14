@@ -7,6 +7,7 @@ import webbrowser
 from .ui import Ui
 from .timer import Timer
 from .elements.element import Element
+from .binding import Binding
 
 # start uvicorn with auto-reload; afterwards the auto-reloaded process should not start uvicorn again
 if not inspect.stack()[-2].filename.endswith('spawn.py'):
@@ -23,7 +24,8 @@ jp.justpy(lambda: wp, start_server=False)
 
 @jp.app.on_event('startup')
 def startup():
-    [jp.run_task(t) for t in Timer.tasks + Element.bindings]
+    [jp.run_task(t) for t in Timer.tasks]
+    jp.run_task(Binding.loop())
 
 Element.wp = wp
 Element.view_stack = [main]

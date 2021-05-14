@@ -4,6 +4,11 @@ from datetime import datetime
 from matplotlib import pyplot as plt
 import numpy as np
 
+with ui.row(), ui.card():
+    ui.label('Binding', 'h5')
+    n1 = ui.number(value=0.5, decimals=2)
+    n2 = ui.number(decimals=3).bind('value', n1, 'value')
+
 with ui.row():
     with ui.card():
         ui.label('Interactive elements', 'h5')
