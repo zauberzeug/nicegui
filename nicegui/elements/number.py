@@ -16,6 +16,6 @@ class Number(Element):
         if value is not None:
             view.value = value if decimals is None else round(value, decimals)
         if on_change is not None:
-            view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
+            view.on('change', handle_exceptions(provide_arguments(on_change, 'value')))
 
         super().__init__(view)
