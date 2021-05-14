@@ -63,8 +63,8 @@ with ui.row():
 
     with ui.card():
         ui.label('Line Plot', 'h5')
-        lines = ui.line_plot(n=2, limit=20).with_legend(['sin', 'cos'], loc='upper center', ncol=2)
-        ui.timer(1.0, lambda: lines.push([datetime.now()], [
+        lines = ui.line_plot(n=2, limit=200, update_every=5).with_legend(['sin', 'cos'], loc='upper center', ncol=2)
+        ui.timer(0.1, lambda: lines.push([datetime.now()], [
             [np.sin(datetime.now().timestamp()) + 0.02 * np.random.randn()],
             [np.cos(datetime.now().timestamp()) + 0.02 * np.random.randn()],
         ]))
