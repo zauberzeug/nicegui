@@ -79,6 +79,8 @@ with ui.row():
             s = ui.switch('c2').bind('value', c, 'value')
         with ui.row():
             model = type('', (), {'value': 1})
-            r1 = ui.radio({1: 'a', 2: 'b', 3: 'c'}).bind('value', model, 'value')
-            r2 = ui.radio({1: 'A', 2: 'B', 3: 'C'}).bind('value', model, 'value')
-            n3 = ui.number().bind('value', model, 'value')
+            ui.radio({1: 'a', 2: 'b', 3: 'c'}).bind('value', model, 'value')
+            ui.radio({1: 'A', 2: 'B', 3: 'C'}).bind('value', model, 'value')
+            with ui.column():
+                ui.number().bind('value', model, 'value')
+                ui.label().bind('text', model, 'value')

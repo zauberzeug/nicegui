@@ -1,10 +1,10 @@
 import justpy as jp
-from typing import List
+from typing import Union, List
 from .element import Element
 
 class Label(Element):
 
-    def __init__(self, text: str = '', typography: List[str] = []):
+    def __init__(self, text: str = '', typography: Union[str, List[str]] = []):
 
         if isinstance(typography, str):
             typography = [typography]
@@ -14,6 +14,16 @@ class Label(Element):
 
         super().__init__(view)
 
-    def set_text(self, text: str):
+    @property
+    def text(self):
+
+        return self.view.text
+
+    @text.setter
+    def text(self, text: any):
 
         self.view.text = text
+
+    def set_text(self, text: str):
+
+        self.text = text

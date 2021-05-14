@@ -2,7 +2,6 @@ import justpy as jp
 from typing import Any, Callable
 import traceback
 from .element import Element
-from ..binding import Binding
 from ..utils import EventArguments
 
 class ValueElement(Element):
@@ -15,7 +14,6 @@ class ValueElement(Element):
 
         super().__init__(view)
 
-        self.bindings = []
         self.on_change = on_change
         self.value = value
 
@@ -46,9 +44,3 @@ class ValueElement(Element):
         for binding in self.bindings:
             if binding.element_attribute == 'value':
                 binding.update_model()
-
-    def bind(self, attribute, model, model_attribute):
-
-        binding = Binding(self, attribute, model, model_attribute)
-        self.bindings.append(binding)
-        Binding.all_bindings.append(binding)
