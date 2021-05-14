@@ -1,6 +1,7 @@
 # Nice GUI
 
 <img src="sceenshots/ui-elements.png?raw=true" width="300" align="right">
+
 We like [Streamlit](https://streamlit.io/) but find it does to much magic when it comes to state handling. In search for an alernative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/). While to "low-level-html" for our daily usage it provides a great basis for our shot at a "Nice GUI".
 
 
@@ -38,6 +39,7 @@ See [main.py](https://github.com/zauberzeug/nice_gui/blob/main/main.py) for an e
 ## Plots
 
 <img src="sceenshots/live-plot.gif?raw=true" width="400" align="right">
+
 ```python
 lines = ui.line_plot(n=2, limit=20).with_legend(['sin', 'cos'], loc='upper center', ncol=2)
 ui.timer(1.0, lambda: lines.push([datetime.now()], [
