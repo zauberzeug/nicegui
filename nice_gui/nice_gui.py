@@ -3,12 +3,14 @@ import justpy as jp
 import uvicorn
 import sys
 import inspect
+import webbrowser
 from .ui import Ui
 from .timer import Timer
 from .elements.element import Element
 
 # start uvicorn with auto-reload; afterwards the auto-reloaded process should not start uvicorn again
 if not inspect.stack()[-2].filename.endswith('spawn.py'):
+    webbrowser.open('http://localhost/')
     uvicorn.run('nice_gui:app', host='0.0.0.0', port=80, lifespan='on', reload=True)
     sys.exit()
 
