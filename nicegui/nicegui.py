@@ -23,7 +23,7 @@ jp.justpy(lambda: wp, start_server=False)
 
 @jp.app.on_event('startup')
 def startup():
-    [jp.run_task(t) for t in Timer.tasks]
+    [jp.run_task(t) for t in Timer.tasks + Element.bindings]
 
 Element.wp = wp
 Element.view_stack = [main]
