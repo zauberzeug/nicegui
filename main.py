@@ -17,8 +17,14 @@ with ui.row():
                 ui.input(label='Text', on_change=lambda e: output.set_text(e.value))
                 ui.number(label='Number', on_change=lambda e: output.set_text(e.value), value=3.1415927, decimals=2)
             with ui.column():
-                ui.radio(['A', 'B', 'C'], on_change=lambda e: output.set_text(e.value))
-                ui.select(['1', '2', '3'], on_change=lambda e: output.set_text(e.value))
+                with ui.row():
+                    ui.radio(options=['A', 'B', 'C'], value='A', on_change=lambda e: output.set_text(e.value))
+                    ui.radio(options={1: 'A', 2: 'B', 3: 'C'}, value=1, on_change=lambda e: output.set_text(e.value))
+                with ui.row():
+                    ui.select(options=['a', 'b', 'c'], value='a', on_change=lambda e: output.set_text(e.value))
+                    ui.select(options={1: 'a', 2: 'b', 3: 'c'}, value=1, on_change=lambda e: output.set_text(e.value))
+                ui.toggle(['1', '2', '3'], value='1', on_change=lambda e: output.set_text(e.value))
+                ui.toggle({1: 'X', 2: 'Y', 3: 'Z'}, value=1, on_change=lambda e: output.set_text(e.value))
         with ui.row():
             ui.label('Output:')
             output = ui.label()

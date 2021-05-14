@@ -11,6 +11,7 @@ class Ui:
     from .elements.select import Select as select
     from .elements.slider import Slider as slider
     from .elements.switch import Switch as switch
+    from .elements.toggle import Toggle as toggle
 
     from .elements.plot import Plot as plot
     from .elements.line_plot import LinePlot as line_plot

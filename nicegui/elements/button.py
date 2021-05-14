@@ -17,12 +17,16 @@ class Button(Element):
 
         view = jp.QButton(
             label=text,
-            icon=icon,
-            icon_right=icon_right,
             color=color,
             text_color=text_color,
             **{key: True for key in design.split()},
         )
+
+        if icon is not None:
+            view.icon = icon
+
+        if icon_right is not None:
+            icon_right = icon_right
 
         if on_click is not None:
             view.on('click', handle_exceptions(provide_arguments(on_click)))
