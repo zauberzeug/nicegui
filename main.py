@@ -14,7 +14,7 @@ with ui.row():
                 ui.switch('Switch me!', on_change=lambda e: output.set_text('Switched' if e.value else 'Unswitched'))
                 ui.slider(0, 100, on_change=lambda e: output.set_text(e.value))
                 ui.input('Text input', on_change=lambda e: output.set_text(e.value))
-                ui.number('Number input', on_change=lambda e: output.set_text(e.value))
+                ui.number('Number input', on_change=lambda e: output.set_text(e.value), value=3.1415927, decimals=2)
             with ui.column():
                 ui.radio(['A', 'B', 'C'], on_change=lambda e: output.set_text(e.value))
                 ui.select(['1', '2', '3'], on_change=lambda e: output.set_text(e.value))
