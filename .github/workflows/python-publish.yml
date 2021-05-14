@@ -23,8 +23,6 @@ jobs:
           poetry-version: "1.1.6"
       - name: publish
         env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: |
-          poetry build
-          poetry upload
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: poetry publish --build
