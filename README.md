@@ -20,7 +20,7 @@ Write your nice GUI in a file `main.py`:
 from nicegui import ui
 
 ui.label('Hello NiceGUI!')
-ui.button('BUTTON', on_click: lambda: print('button was pressed'))
+ui.button('BUTTON', on_click=lambda: print('button was pressed'))
 ```
 
 Launch it with:
