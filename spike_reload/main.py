@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from nice_gui import ui, pad
+from nicegui import ui, pad
 
 print(pad, __name__, "MAIN: create label")
 ui.label('Hello NiceGUI!')

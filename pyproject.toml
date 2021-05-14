@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "nice_gui"
+name = "nicegui"
 version = "0.1.0"
 description = "High-Level Abstraction Web-GUI Using Just Python"
 authors = ["Zauberzeug GmbH"]

@@ -11,7 +11,7 @@ from .elements.element import Element
 # start uvicorn with auto-reload; afterwards the auto-reloaded process should not start uvicorn again
 if not inspect.stack()[-2].filename.endswith('spawn.py'):
     webbrowser.open('http://localhost/')
-    uvicorn.run('nice_gui:app', host='0.0.0.0', port=80, lifespan='on', reload=True)
+    uvicorn.run('nicegui:app', host='0.0.0.0', port=80, lifespan='on', reload=True)
     sys.exit()
 
 wp = jp.QuasarPage(delete_flag=False, title='NiceGUI', favicon='favicon.png')

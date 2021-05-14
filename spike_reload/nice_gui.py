@@ -10,7 +10,7 @@ pad = '*' * 80
 
 if not inspect.stack()[-2].filename.endswith('spawn.py'):
     print(pad, "START UVICORN")
-    uvicorn.run('nice_gui:ui', host='0.0.0.0', port=80, lifespan='on', reload=True)
+    uvicorn.run('nicegui:ui', host='0.0.0.0', port=80, lifespan='on', reload=True)
 
 wp = jp.WebPage(delete_flag=False, head_html='<script>confirm = () => true;</script>')
 

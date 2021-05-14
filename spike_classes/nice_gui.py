@@ -8,7 +8,7 @@ from timer import Timer
 from elements.element import Element
 
 if not inspect.stack()[-2].filename.endswith('spawn.py'):
-    uvicorn.run('nice_gui:app', host='0.0.0.0', port=80, lifespan='on', reload=True)
+    uvicorn.run('nicegui:app', host='0.0.0.0', port=80, lifespan='on', reload=True)
     sys.exit()
 
 wp = jp.QuasarPage(delete_flag=False, head_html='<script>confirm = () => true;</script>')

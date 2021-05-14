@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from nice_gui import ui
+from nicegui import ui
 from datetime import datetime
 from matplotlib import pyplot as plt
 import numpy as np

@@ -17,7 +17,7 @@ We like [Streamlit](https://streamlit.io/) but find it does to much magic when i
 Write your nice GUI in a file `main.py`:
 
 ```python
-from nice_gui import ui
+from nicegui import ui
 
 ui.label('Hello NiceGUI!')
 ui.button('BUTTON', on_click: lambda: print('button was pressed'))
@@ -33,7 +33,7 @@ Note: The script will automatically reload the GUI if you modify your code.
 
 ## API
 
-See [main.py](https://github.com/zauberzeug/nice_gui/blob/main/main.py) for an example of all API calls you can make with NiceGUI.
+See [main.py](/main.py) for an example of all API calls you can make with NiceGUI.
 
 ## Plots
 
