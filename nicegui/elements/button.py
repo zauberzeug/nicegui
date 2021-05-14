@@ -7,6 +7,7 @@ class Button(Element):
 
     def __init__(self,
                  text: str = '',
+                 *,
                  icon: str = None,
                  icon_right: str = None,
                  color: str = 'primary',
@@ -20,7 +21,7 @@ class Button(Element):
             icon_right=icon_right,
             color=color,
             text_color=text_color,
-            **{key: True for key in design.split()}
+            **{key: True for key in design.split()},
         )
 
         if on_click is not None:

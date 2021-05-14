@@ -6,14 +6,20 @@ from ..utils import handle_exceptions, provide_arguments
 class Input(Element):
 
     def __init__(self,
+                 *,
+                 label: str = None,
                  placeholder: str = None,
-                 value: str = None,
+                 value: str = '',
+                 design: str = '',
                  on_change: Callable = None):
 
-        view = jp.QInput(placeholder=placeholder, type='text')
+        view = jp.QInput(
+            label=label,
+            placeholder=placeholder,
+            value=value,
+            **{key: True for key in design.split()},
+        )
 
-        if value is not None:
-            view.value = value
         if on_change is not None:
             view.on('change', handle_exceptions(provide_arguments(on_change, 'value')))
 
