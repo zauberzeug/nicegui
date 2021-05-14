@@ -6,6 +6,7 @@ class Ui:
     from .elements.input import Input as input
     from .elements.label import Label as label
     from .elements.link import Link as link
+    from .elements.number import Number as number
     from .elements.radio import Radio as radio
     from .elements.select import Select as select
     from .elements.slider import Slider as slider
