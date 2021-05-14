@@ -2,7 +2,7 @@
 from nice_gui import ui, pad
 
 print(pad, __name__, "MAIN: create label")
-ui.label('hello nice gui!')
+ui.label('Hello NiceGUI!')
 
 print(pad, __name__, "MAIN: create timer")
 ui.timer()

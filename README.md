@@ -1,17 +1,16 @@
-# Nice GUI
+# NiceGUI
 
 <img src="sceenshots/ui-elements.png?raw=true" width="300" align="right">
 
-We like [Streamlit](https://streamlit.io/) but find it does to much magic when it comes to state handling. In search for an alernative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/). While to "low-level-html" for our daily usage it provides a great basis for our shot at a "Nice GUI".
-
+We like [Streamlit](https://streamlit.io/) but find it does to much magic when it comes to state handling. In search for an alernative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/). While too "low-level-html" for our daily usage it provides a great basis for our shot at a "NiceGUI".
 
 ## Features
 
-- browser based GUI
+- browser-based GUI
 - implicit reload on code change
-- clean set of gui elements (label, button, checkbox, switch, slider, input, ...)
+- clean set of GUI elements (label, button, checkbox, switch, slider, input, ...)
 - simple grouping with rows, columns and cards
-- buildin timer to refresh data in intervals (even every 10 ms)
+- built-in timer to refresh data in intervals (even every 10 ms)
 
 ## Usage
 
@@ -20,7 +19,7 @@ Write your nice GUI in a file `main.py`:
 ```python
 from nice_gui import ui
 
-ui.label('Hello Nice GUI!')
+ui.label('Hello NiceGUI!')
 ui.button('BUTTON', on_click: lambda: print('button was pressed'))
 ```
 
@@ -30,11 +29,11 @@ Launch it with:
 python3 main.py
 ```
 
-Note: the script will automatically reload the GUI if you modify your code.
+Note: The script will automatically reload the GUI if you modify your code.
 
 ## API
 
-See [main.py](https://github.com/zauberzeug/nice_gui/blob/main/main.py) for an example of all API calls you can make with Nice GUI.
+See [main.py](https://github.com/zauberzeug/nice_gui/blob/main/main.py) for an example of all API calls you can make with NiceGUI.
 
 ## Plots
 
