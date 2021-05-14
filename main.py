@@ -9,7 +9,8 @@ with ui.row():
         ui.label('Interactive elements', 'h5')
         with ui.row():
             with ui.column():
-                ui.button('Click me!', icon='touch_app', on_click=lambda: output.set_text('Click'))
+                ui.button('Click me!', icon='touch_app', design='outline rounded',
+                          on_click=lambda: output.set_text('Click'))
                 ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
                 ui.switch('Switch me!', on_change=lambda e: output.set_text('Switched' if e.value else 'Unswitched'))
                 ui.slider(0, 100, on_change=lambda e: output.set_text(e.value))
