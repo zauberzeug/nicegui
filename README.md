@@ -2,7 +2,7 @@
 
 We like [Streamlit](https://streamlit.io/) but find it does to much magic when it comes to state handling. In search for an alernative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/). While to "low-level-html" for our daily usage it provides a great basis for our shot at a "Nice GUI".
 
-<img src="sceenshots/ui-elements.png?raw=true" width="300" float="right">
+<img src="sceenshots/ui-elements.png?raw=true" width="300" align="right">
 
 ## Features
 
@@ -44,4 +44,4 @@ ui.timer(1.0, lambda: lines.push([datetime.now()], [
     [np.cos(datetime.now().timestamp()) + 0.02 * np.random.randn()],
 ]))
 ```
-<img src="sceenshots/live-plot.gif?raw=true" width="400" float="right">
+<img src="sceenshots/live-plot.gif?raw=true" width="400" align="right">
