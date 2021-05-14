@@ -3,7 +3,7 @@ from typing import Callable, List, Dict, Union
 from .element import Element
 from ..utils import handle_exceptions, provide_arguments
 
-class Radio(Element):
+class Toggle(Element):
 
     def __init__(self, options: Union[List, Dict], value: any = None, on_change: Callable = None):
 
@@ -12,7 +12,7 @@ class Radio(Element):
         else:
             options_ = [{'label': value, 'value': key} for key, value in options.items()]
 
-        view = jp.QOptionGroup(value=value, options=options_)
+        view = jp.QBtnToggle(value=value, options=options_)
 
         if on_change is not None:
             view.on('input', handle_exceptions(provide_arguments(on_change, 'value')))
