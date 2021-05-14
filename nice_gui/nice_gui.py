@@ -28,9 +28,3 @@ Element.view_stack = [main]
 
 app = jp.app
 ui = Ui()
-
-# def line_plot(self, n=1, limit=20):
-
-#     fig = plt.figure()
-#     view = jp.Matplotlib(fig=fig)
-#     return LinePlot(view, fig, n=n, limit=limit)
