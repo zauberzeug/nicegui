@@ -44,9 +44,9 @@ See [main.py](https://github.com/zauberzeug/nicegui/tree/main/main.py) for an ex
 
 ### Design
 
-We use the [Quasar Framework](https://quasar.dev/) and hence have their full design power. Each NiceGUI element provides a `design` property which content is passed [as props the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
+NiceGUI use the [Quasar Framework](https://quasar.dev/) and hence has their full design power. Each NiceGUI element provides a `design` property which content is passed [as props the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
 
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-design.gif" width="100" align="right">
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-design.gif" width="300" align="right">
 
 ```python
 ui.radio(['x', 'y', 'z'], design='inline color=green')
@@ -57,7 +57,7 @@ Have a look at [the Quasar documentation](https://quasar.dev/vue-components/butt
 
 ### Plots
 
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-plot.png" width="200" align="right">
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-plot.png" width="300" align="right">
 To render a simple plot you create a new context and call the neccessary [Matplotlib](https://matplotlib.org/) functions:
 
 ```python
@@ -71,7 +71,7 @@ with ui.plot():
 
 To update a plot in regular intervals, have look at [main.py](https://github.com/zauberzeug/nicegui/tree/main/main.py).
 
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-live-plot.gif" width="200" align="right">
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-live-plot.gif" width="300" align="right">
 
 To simplify live updating line plots even more, NiceGUI provides `ui.line_plot` with useful parameters and a `push` method:
 
