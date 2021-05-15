@@ -51,11 +51,12 @@ with ui.row():
             c = ui.checkbox('c1')
             s = ui.switch('c2').bind('value', c, 'value')
         with ui.row():
-            model = type('', (), {'value': 1})
+            model = type('Model', (), {'value': 1})  # one-liner to define a class
             ui.radio({1: 'a', 2: 'b', 3: 'c'}).bind('value', model, 'value')
             ui.radio({1: 'A', 2: 'B', 3: 'C'}).bind('value', model, 'value')
             with ui.column():
                 ui.number().bind('value', model, 'value')
+                ui.slider(min=1, max=3).bind('value', model, 'value')
                 ui.label().bind('text', model, 'value')
         with ui.row().add_classes('items-center'):
             on = ui.icon('visibility')
