@@ -37,9 +37,9 @@ with ui.row():
                 clock = ui.label()
                 ui.timer(0.1, lambda: clock.set_text(datetime.now().strftime("%X")))
 
-        with ui.card():
+        with ui.card().add_classes('items-center'):
             ui.label('Style', 'h5')
-            ui.icon('fas fa-umbrella-beach', size='88px', color='amber-14')
+            ui.icon('fas fa-umbrella-beach', size='70px').add_classes('text-amber-14').add_style('margin: 9px')
             ui.link('color palette', 'https://quasar.dev/style/color-palette')
 
     with ui.card():
