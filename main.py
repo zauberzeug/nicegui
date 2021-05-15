@@ -9,8 +9,7 @@ with ui.row():
         ui.label('Interactive elements', 'h5')
         with ui.row():
             with ui.column():
-                ui.button('Click me!', icon='touch_app', design='outline rounded',
-                          on_click=lambda: output.set_text('Click'))
+                ui.button('Click me!', on_click=lambda: output.set_text('Click'))
                 ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
                 ui.switch('Switch me!', on_change=lambda e: output.set_text('Switched' if e.value else 'Unswitched'))
                 ui.slider(min=0, max=100, value=50, step=0.1, on_change=lambda e: output.set_text(e.value))
@@ -41,6 +40,7 @@ with ui.row():
             ui.label('Style', 'h5')
             ui.icon('fas fa-umbrella-beach', size='70px').add_classes('text-amber-14').add_style('margin: 9px')
             ui.link('color palette', 'https://quasar.dev/style/color-palette')
+            ui.button(icon='touch_app', design='outline rounded')
 
     with ui.card():
         ui.label('Binding', 'h5')
