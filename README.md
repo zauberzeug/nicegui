@@ -42,7 +42,33 @@ Note: The script will automatically reload the GUI if you modify your code.
 
 See [main.py](https://github.com/zauberzeug/nicegui/tree/main/main.py) for an extensive example what you can do with NiceGUI.
 
-### Design
+### Interactive Elements
+
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-boolean-interaction.gif" width="200" align="right">
+`Button`, `Checkbox` and `Switch` require a name which is displayed as their label and a callback. The callback can have an optional `event` parameter which provides informations like sender and value:
+
+```python
+ui.button('Button', on_click=lambda: result.set_text('Button: pressed'))
+ui.checkbox('Checkbox', on_change=lambda e: result.set_text(f'checkbox: {e.value}'))
+ui.switch('Switch', on_change=lambda e: result.set_text(f'switch: {e.value}'))
+
+result = ui.label('please interact', typography='bold')
+```
+
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-input.gif" width="200" align="right">
+
+Use `ui.input` to receive text and `ui.number` for explicit number input.
+
+```python
+ui.input(label='Text', on_change=lambda e: result.set_text(e.value))
+ui.number(label='Number', format='%.2f', on_change=lambda e: result.set_text(e.value))
+
+result = ui.label('please type', typography='bold')
+```
+
+Pre-fill `ui.input` with the `text` property and `ui.number` with `value`.
+
+### Styling & Design
 
 NiceGUI use the [Quasar Framework](https://quasar.dev/) and hence has their full design power. Each NiceGUI element provides a `design` property which content is passed [as props the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
 
@@ -73,6 +99,10 @@ With an optional third parameter `once=True` the `callback` is once executed aft
 To render a simple plot you create a new context and call the neccessary [Matplotlib](https://matplotlib.org/) functions:
 
 ```python
+from nicegui import ui
+from matplotlib import pyplot as plt
+import numpy as np
+
 with ui.plot():
     x = np.linspace(0.0, 5.0)
     y = np.cos(2 * np.pi * x) * np.exp(-x)
