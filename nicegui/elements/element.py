@@ -14,7 +14,20 @@ class Element:
         view.add_page(self.wp)
         self.view = view
 
+        self.visible = True
+
         self.bindings = []
+
+    @property
+    def visible(self):
+
+        return self.visible_
+
+    @visible.setter
+    def visible(self, visible: bool):
+
+        self.visible_ = visible
+        self.view.set_class('visible' if visible else 'invisible')
 
     def set_classes(self, classes: str):
 
