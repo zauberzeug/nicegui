@@ -34,7 +34,15 @@ Note: The script will automatically reload the GUI if you modify your code.
 
 ## API
 
-See [main.py](/main.py) for an example of all API calls you can make with NiceGUI.
+See [main.py](https://github.com/zauberzeug/nicegui/tree/main/main.py) for an example of all API calls you can make with NiceGUI.
+
+### Styling
+
+We use the [Quasar Framework](https://quasar.dev/) and hence have their full styling power. Each element provides a `design` property which directly correlates to the Quasar designs:
+
+```python
+ui.radio(['x', 'y', 'z'], value='x', design='inline color=green')
+```
 
 ## Plots
 
