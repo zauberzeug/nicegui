@@ -4,11 +4,16 @@ from .value_element import ValueElement
 
 class FloatElement(ValueElement):
 
-    def __init__(self, view: jp.HTMLBaseComponent, *, value: float, format: str = None, on_change: Callable):
+    def __init__(self,
+                 view: jp.HTMLBaseComponent,
+                 design: str,
+                 value: float,
+                 format: str,
+                 on_change: Callable):
 
         self.format = format
 
-        super().__init__(view, value=value, on_change=on_change)
+        super().__init__(view, design, value, on_change)
 
     def set_view_value(self, value: float):
 

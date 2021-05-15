@@ -13,7 +13,7 @@ class Plot(Element):
         view = jp.Matplotlib()
         view.set_figure(self.fig)
 
-        super().__init__(view)
+        super().__init__(view, '')
 
     def __enter__(self):
 

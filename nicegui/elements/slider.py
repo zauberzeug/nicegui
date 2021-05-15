@@ -10,8 +10,9 @@ class Slider(FloatElement):
                  max: float,
                  value: float = None,
                  step: float = 1,
+                 design: str = '',
                  on_change: Callable = None):
 
         view = jp.QSlider(min=min, max=max, step=step, change=self.handle_change)
 
-        super().__init__(view, value=value, on_change=on_change)
+        super().__init__(view, design, value, None, on_change)
