@@ -11,6 +11,7 @@ We like [Streamlit](https://streamlit.io/) but find it does to much magic when i
 - clean set of GUI elements (label, button, checkbox, switch, slider, input, ...)
 - simple grouping with rows, columns and cards
 - built-in timer to refresh data in intervals (even every 10 ms)
+- straight-forward data bindings to write even less code
 
 ## Usage
 
