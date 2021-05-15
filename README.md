@@ -1,6 +1,6 @@
 # NiceGUI
 
-<img src="sceenshots/ui-elements.png?raw=true" width="300" align="right">
+<img src="https://github.com/zauberzeug/nicegui/tree/main/sceenshots/ui-elements.png?raw=true" width="300" align="right">
 
 We like [Streamlit](https://streamlit.io/) but find it does to much magic when it comes to state handling. In search for an alernative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/). While too "low-level-html" for our daily usage it provides a great basis for our shot at a "NiceGUI".
 
@@ -38,7 +38,7 @@ See [main.py](/main.py) for an example of all API calls you can make with NiceGU
 
 ## Plots
 
-<img src="sceenshots/live-plot.gif?raw=true" width="400" align="right">
+<img src="https://github.com/zauberzeug/nicegui/tree/main/sceenshots/live-plot.gif?raw=true" width="400" align="right">
 
 ```python
 lines = ui.line_plot(n=2, limit=20).with_legend(['sin', 'cos'], loc='upper center', ncol=2)
