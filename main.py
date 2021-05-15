@@ -78,13 +78,13 @@ with ui.row():
             global x, y, line
             with plot:
                 x = [*x, datetime.now()][-50:]
-                y = [*y, np.sin(0.1 * datetime.now().timestamp()) + 0.02 * np.random.randn()][-50:]
+                y = [*y, np.sin(0.5 * datetime.now().timestamp()) + 0.02 * np.random.randn()][-50:]
                 line.set_xdata(x)
                 line.set_ydata(y)
                 plt.xlim(min(x), max(x))
                 plt.ylim(min(y), max(y))
 
-        ui.timer(1.0, update_plot)
+        ui.timer(0.5, update_plot)
 
     with ui.card():
         ui.label('Line Plot', 'h5')
