@@ -34,13 +34,13 @@ Note: The script will automatically reload the GUI if you modify your code.
 
 ## API
 
-See [main.py](https://github.com/zauberzeug/nicegui/tree/main/main.py) for an example of all API calls you can make with NiceGUI.
+See [main.py](https://github.com/zauberzeug/nicegui/tree/main/main.py) for an extensive example what you can do with NiceGUI.
 
 ### Design
 
 We use the [Quasar Framework](https://quasar.dev/) and hence have their full design power. Each NiceGUI element provides a `design` property which content is passed [as props the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
 
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-design.png" width="100" align="right">
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-design.gif" width="100" align="right">
 
 ```python
 ui.radio(['x', 'y', 'z'], design='inline color=green')
