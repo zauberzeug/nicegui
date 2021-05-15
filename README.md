@@ -55,6 +55,18 @@ ui.button(icon='touch_app', design='outline round')
 
 Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling "props".
 
+### Timer
+
+One major drive behind the creation of NiceGUI was the necessity to have an simple approach to update the interface
+in regular intervals. For example to show a graph with incomming measurements (see plots below):
+
+```python
+clock = ui.label()
+ui.timer(interval=0.1, callback=lambda: clock.set_text(datetime.now().strftime("%X")))
+```
+
+With an optional third parameter `once=True` the `callback` is once executed after an delay specified by `interval`. Otherwise the `callback` is run repeatedly.
+
 ### Plots
 
 <img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-plot.png" width="300" align="right">
