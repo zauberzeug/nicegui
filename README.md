@@ -44,7 +44,8 @@ See [main.py](https://github.com/zauberzeug/nicegui/tree/main/main.py) for an ex
 
 ### Interactive Elements
 
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-boolean-interaction.gif" width="200" align="right">
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-boolean-interaction.gif" width="100" align="right">
+
 `Button`, `Checkbox` and `Switch` require a name which is displayed as their label and a callback. The callback can have an optional `event` parameter which provides informations like sender and value:
 
 ```python
@@ -72,7 +73,7 @@ Pre-fill `ui.input` with the `text` property and `ui.number` with `value`.
 
 NiceGUI use the [Quasar Framework](https://quasar.dev/) and hence has their full design power. Each NiceGUI element provides a `design` property which content is passed [as props the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
 
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-design.gif" width="300" align="right">
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-design.gif" width="200" align="right">
 
 ```python
 ui.radio(['x', 'y', 'z'], design='inline color=green')
