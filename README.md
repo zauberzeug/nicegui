@@ -1,6 +1,6 @@
 # NiceGUI
 
-<img src="https://github.com/zauberzeug/nicegui/tree/main/sceenshots/ui-elements.png?raw=true" width="300" align="right">
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/ui-elements.png" width="300" align="right">
 
 We like [Streamlit](https://streamlit.io/) but find it does to much magic when it comes to state handling. In search for an alernative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/). While too "low-level-html" for our daily usage it provides a great basis for our shot at a "NiceGUI".
 
@@ -40,7 +40,7 @@ See [main.py](https://github.com/zauberzeug/nicegui/tree/main/main.py) for an ex
 
 We use the [Quasar Framework](https://quasar.dev/) and hence have their full design power. Each NiceGUI element provides a `design` property which content is passed [as props the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
 
-<img src="https://github.com/zauberzeug/nicegui/tree/main/sceenshots/demo-design.png?raw=true" width="100" align="right">
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-design.png" width="100" align="right">
 
 ```python
 ui.radio(['x', 'y', 'z'], design='inline color=green')
@@ -51,7 +51,7 @@ For all styling "props" as Quasar calls them have a look at [their documentation
 
 ## Plots
 
-<img src="https://github.com/zauberzeug/nicegui/tree/main/sceenshots/live-plot.gif?raw=true" width="400" align="right">
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/live-plot.gif" width="400" align="right">
 
 ```python
 lines = ui.line_plot(n=2, limit=20).with_legend(['sin', 'cos'], loc='upper center', ncol=2)
