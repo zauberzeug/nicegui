@@ -52,8 +52,8 @@ with ui.row():
         def update_plot():
             global x, y, line
             with plot:
-                x = [*x, datetime.now()][-100:]
-                y = [*y, np.sin(datetime.now().timestamp()) + 0.02 * np.random.randn()][-100:]
+                x = [*x, datetime.now()][-50:]
+                y = [*y, np.sin(0.1 * datetime.now().timestamp()) + 0.02 * np.random.randn()][-50:]
                 line.set_xdata(x)
                 line.set_ydata(y)
                 plt.xlim(min(x), max(x))
