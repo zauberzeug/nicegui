@@ -84,3 +84,6 @@ with ui.row():
             with ui.column():
                 ui.number().bind('value', model, 'value')
                 ui.label().bind('text', model, 'value')
+        with ui.row().add_classes('items-center'):
+            on = ui.icon('visibility')
+            ui.checkbox('visible').bind('value', on, 'visible')
