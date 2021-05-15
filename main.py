@@ -24,6 +24,7 @@ with ui.row():
                     ui.select(options={1: 'a', 2: 'b', 3: 'c'}, value=1, on_change=lambda e: output.set_text(e.value))
                 ui.toggle(['1', '2', '3'], value='1', on_change=lambda e: output.set_text(e.value))
                 ui.toggle({1: 'X', 2: 'Y', 3: 'Z'}, value=1, on_change=lambda e: output.set_text(e.value))
+        ui.radio(['x', 'y', 'z'], value='x', design='inline color=green', on_change=lambda e: output.set_text(e.value))
         with ui.row():
             ui.label('Output:')
             output = ui.label(' ', 'bold')

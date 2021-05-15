@@ -9,10 +9,15 @@ class Element:
 
     def __init__(self, view: jp.HTMLBaseComponent, design: str):
 
+        for word in design.split():
+            if '=' in word:
+                setattr(view, *word.split('='))
+            else:
+                setattr(view, word, True)
+
         self.parent_view = self.view_stack[-1]
         self.parent_view.add(view)
         view.add_page(self.wp)
-        [setattr(view, key, True) for key in design.split()]
         self.view = view
 
         self.visible = True
