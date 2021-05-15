@@ -16,8 +16,7 @@ class Input(StringElement):
             label=label,
             placeholder=placeholder,
             value=value,
-            **{key: True for key in design.split()},
             change=self.handle_change,
         )
 
-        super().__init__(view, value=value, on_change=on_change)
+        super().__init__(view, design, value, on_change)

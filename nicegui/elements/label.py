@@ -4,7 +4,9 @@ from .element import Element
 
 class Label(Element):
 
-    def __init__(self, text: str = '', typography: Union[str, List[str]] = []):
+    def __init__(self,
+                 text: str = '',
+                 typography: Union[str, List[str]] = []):
 
         if isinstance(typography, str):
             typography = [typography]
@@ -12,7 +14,7 @@ class Label(Element):
 
         view = jp.Div(text=text, classes=classes)
 
-        super().__init__(view)
+        super().__init__(view, '')
 
     @property
     def text(self):

@@ -7,11 +7,12 @@ class Element:
     view_stack = []
     all_bindings = []
 
-    def __init__(self, view: jp.HTMLBaseComponent):
+    def __init__(self, view: jp.HTMLBaseComponent, design: str):
 
         self.parent_view = self.view_stack[-1]
         self.parent_view.add(view)
         view.add_page(self.wp)
+        [setattr(view, key, True) for key in design.split()]
         self.view = view
 
         self.visible = True

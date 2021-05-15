@@ -17,11 +17,10 @@ class Number(FloatElement):
             type='number',
             label=label,
             placeholder=placeholder,
-            **{key: True for key in design.split()},
             change=self.handle_change,
         )
 
-        super().__init__(view, value=value, format=format, on_change=on_change)
+        super().__init__(view, design, value, format, on_change)
 
     def handle_change(self, msg):
 

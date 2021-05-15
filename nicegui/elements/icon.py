@@ -7,4 +7,4 @@ class Icon(Element):
 
         view = jp.QIcon(name=name, classes=f'q-pt-xs text-{color}', size=size)
 
-        super().__init__(view)
+        super().__init__(view, '')

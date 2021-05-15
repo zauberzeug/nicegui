@@ -7,4 +7,4 @@ class Row(Group):
 
         view = jp.QDiv(classes='row items-start', style='gap: 1em', delete_flag=False)
 
-        super().__init__(view)
+        super().__init__(view, '')

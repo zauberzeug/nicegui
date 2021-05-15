@@ -12,4 +12,4 @@ class Link(Element):
         classes = ' '.join('text-' + t for t in typography)
         view = jp.A(text=text, href=href, classes=classes)
 
-        super().__init__(view)
+        super().__init__(view, '')

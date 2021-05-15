@@ -8,11 +8,11 @@ class ValueElement(Element):
 
     def __init__(self,
                  view: jp.HTMLBaseComponent,
-                 *,
+                 design: str,
                  value: Any,
                  on_change: Callable):
 
-        super().__init__(view)
+        super().__init__(view, design)
 
         self.on_change = on_change
         self.value = value

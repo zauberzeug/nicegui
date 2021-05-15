@@ -19,7 +19,6 @@ class Button(Element):
             label=text,
             color=color,
             text_color=text_color,
-            **{key: True for key in design.split()},
         )
 
         if icon is not None:
@@ -31,4 +30,4 @@ class Button(Element):
         if on_click is not None:
             view.on('click', handle_exceptions(provide_arguments(on_click)))
 
-        super().__init__(view)
+        super().__init__(view, design)
