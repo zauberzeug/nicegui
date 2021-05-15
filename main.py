@@ -19,7 +19,7 @@ with ui.row():
             with ui.column():
                 with ui.row():
                     ui.radio(options=['A', 'B', 'C'], value='A', on_change=lambda e: output.set_text(e.value))
-                    ui.radio(options={1: 'A', 2: 'B', 3: 'C'}, value=1, on_change=lambda e: output.set_text(e.value))
+                    ui.radio(options={1: 'o', 2: 'oo', 3: 'ooo'}, value=1, on_change=lambda e: output.set_text(e.value))
                 with ui.row():
                     ui.select(options=['a', 'b', 'c'], value='a', on_change=lambda e: output.set_text(e.value))
                     ui.select(options={1: 'a', 2: 'b', 3: 'c'}, value=1, on_change=lambda e: output.set_text(e.value))
@@ -27,7 +27,7 @@ with ui.row():
                 ui.toggle({1: 'X', 2: 'Y', 3: 'Z'}, value=1, on_change=lambda e: output.set_text(e.value))
         with ui.row():
             ui.label('Output:')
-            output = ui.label()
+            output = ui.label(' ', 'bold')
 
     with ui.column():
         with ui.card():
