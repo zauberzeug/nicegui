@@ -52,7 +52,7 @@ with ui.row():
             c = ui.checkbox('c1')
             s = ui.switch('c2').bind('value', c, 'value')
         with ui.row():
-            model = type('Model', (), {'value': 1})  # one-liner to define a class
+            model = type('Model', (), {'value': 1})  # one-liner to define an object with an attribule "value"
             ui.radio({1: 'a', 2: 'b', 3: 'c'}).bind('value', model, 'value')
             ui.radio({1: 'A', 2: 'B', 3: 'C'}).bind('value', model, 'value')
             with ui.column():
