@@ -37,10 +37,33 @@ with ui.row():
                 clock = ui.label()
                 ui.timer(0.1, lambda: clock.set_text(datetime.now().strftime("%X")))
 
-        with ui.card():
+        with ui.card().add_classes('items-center'):
             ui.label('Style', 'h5')
-            ui.icon('fas fa-umbrella-beach', size='88px', color='amber-14')
+            ui.icon('fas fa-umbrella-beach', size='70px').add_classes('text-amber-14').add_style('margin: 9px')
             ui.link('color palette', 'https://quasar.dev/style/color-palette')
+
+    with ui.card():
+        ui.label('Binding', 'h5')
+        with ui.row():
+            n1 = ui.number(value=1.2345, format='%.2f')
+            n2 = ui.number(format='%.3f').bind('value', n1, 'value')
+        with ui.row():
+            c = ui.checkbox('c1')
+            s = ui.switch('c2').bind('value', c, 'value')
+        with ui.row():
+            model = type('', (), {'value': 1})
+            ui.radio({1: 'a', 2: 'b', 3: 'c'}).bind('value', model, 'value')
+            ui.radio({1: 'A', 2: 'B', 3: 'C'}).bind('value', model, 'value')
+            with ui.column():
+                ui.number().bind('value', model, 'value')
+                ui.label().bind('text', model, 'value')
+        with ui.row().add_classes('items-center'):
+            on = ui.icon('visibility')
+            ui.checkbox('visible').bind('value', on, 'visible')
+        with ui.row():
+            dict_ = {'key': 'binding to a dictionary'}
+            ui.input().bind('value', dict_, 'key')
+            ui.label().bind('text', dict_, 'key').add_style('margin-top: 2em')
 
     with ui.card():
         ui.label('Matplotlib', 'h5')
@@ -68,26 +91,3 @@ with ui.row():
             [np.sin(datetime.now().timestamp()) + 0.02 * np.random.randn()],
             [np.cos(datetime.now().timestamp()) + 0.02 * np.random.randn()],
         ]))
-
-    with ui.card():
-        ui.label('Binding', 'h5')
-        with ui.row():
-            n1 = ui.number(value=1.2345, format='%.2f')
-            n2 = ui.number(format='%.3f').bind('value', n1, 'value')
-        with ui.row():
-            c = ui.checkbox('c1')
-            s = ui.switch('c2').bind('value', c, 'value')
-        with ui.row():
-            model = type('', (), {'value': 1})
-            ui.radio({1: 'a', 2: 'b', 3: 'c'}).bind('value', model, 'value')
-            ui.radio({1: 'A', 2: 'B', 3: 'C'}).bind('value', model, 'value')
-            with ui.column():
-                ui.number().bind('value', model, 'value')
-                ui.label().bind('text', model, 'value')
-        with ui.row().add_classes('items-center'):
-            on = ui.icon('visibility')
-            ui.checkbox('visible').bind('value', on, 'visible')
-        with ui.row():
-            dict_ = {'key': 'binding to a dictionary'}
-            ui.input().bind('value', dict_, 'key')
-            ui.label().bind('text', dict_, 'key').add_style('margin-top: 2em')
