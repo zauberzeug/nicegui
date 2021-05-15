@@ -13,6 +13,12 @@ We like [Streamlit](https://streamlit.io/) but find it does to much magic when i
 - built-in timer to refresh data in intervals (even every 10 ms)
 - straight-forward data bindings to write even less code
 
+## Install
+
+```bash
+python3 -m pip install nicegui
+```
+
 ## Usage
 
 Write your nice GUI in a file `main.py`:
@@ -47,11 +53,27 @@ ui.radio(['x', 'y', 'z'], design='inline color=green')
 ui.button(icon='touch_app', design='outline round')
 ```
 
-For all styling "props" as Quasar calls them have a look at [their documentation](https://quasar.dev/vue-components/button#design).
+Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling "props".
 
-## Plots
+### Plots
 
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/live-plot.gif" width="400" align="right">
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-plot.png" width="200" align="right">
+To render a simple plot you create a new context and call the neccessary [Matplotlib](https://matplotlib.org/) functions:
+
+```python
+with ui.plot():
+    x = np.linspace(0.0, 5.0)
+    y = np.cos(2 * np.pi * x) * np.exp(-x)
+    plt.plot(x, y, '-')
+    plt.xlabel('time (s)')
+    plt.ylabel('Damped oscillation')
+```
+
+To update a plot in regular intervals, have look at [main.py](https://github.com/zauberzeug/nicegui/tree/main/main.py).
+
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-live-plot.gif" width="200" align="right">
+
+To simplify live updating line plots even more, NiceGUI provides `ui.line_plot` with useful parameters and a `push` method:
 
 ```python
 lines = ui.line_plot(n=2, limit=20).with_legend(['sin', 'cos'], loc='upper center', ncol=2)

@@ -6,6 +6,13 @@ from .element import Element
 class Plot(Element):
 
     def __init__(self, close: bool = True):
+        """Create a context to configure a Matplotlib Plot.
+
+        Parameters
+        ----------
+        close : boolean, optional
+            weather the figure should be closed after exiting the context; set to False if you want to update it later
+        """
 
         self.close = close
         self.fig = plt.figure()
@@ -26,4 +33,4 @@ class Plot(Element):
         self.view.set_figure(plt.gcf())
 
         if self.close:
-            self.fig.close()
+            plt.close(self.fig)
