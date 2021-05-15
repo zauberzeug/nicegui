@@ -87,3 +87,7 @@ with ui.row():
         with ui.row().add_classes('items-center'):
             on = ui.icon('visibility')
             ui.checkbox('visible').bind('value', on, 'visible')
+        with ui.row():
+            dict_ = {'key': 'binding to a dictionary'}
+            ui.input().bind('value', dict_, 'key')
+            ui.label().bind('text', dict_, 'key').add_style('margin-top: 2em')

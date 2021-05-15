@@ -54,3 +54,4 @@ class Element:
         binding = Binding(self, attribute, model, model_attribute)
         self.bindings.append(binding)
         Binding.all_bindings.append(binding)
+        return self
