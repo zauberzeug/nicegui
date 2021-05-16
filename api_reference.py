@@ -7,12 +7,6 @@ import inspect
 from executing import Source
 import sys
 
-from pygments import highlight
-from pygments.lexers import PythonLexer
-from pygments.formatters import HtmlFormatter
-
-wp.css = HtmlFormatter().get_style_defs('.codehilite')
-
 @contextmanager
 def example():
     callFrame = inspect.currentframe().f_back.f_back

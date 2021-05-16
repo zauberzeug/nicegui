@@ -4,6 +4,9 @@ import uvicorn
 import sys
 import inspect
 import webbrowser
+from pygments import highlight
+from pygments.lexers import PythonLexer
+from pygments.formatters import HtmlFormatter
 from .ui import Ui
 from .timer import Timer
 from .elements.element import Element
@@ -17,6 +20,7 @@ if not inspect.stack()[-2].filename.endswith('spawn.py'):
 
 wp = jp.QuasarPage(delete_flag=False, title='NiceGUI', favicon='favicon.png')
 wp.head_html = '<script>confirm = () => true;</script>'  # avoid confirmation dialog for reload
+wp.css = HtmlFormatter().get_style_defs('.codehilite')
 
 main = jp.Div(a=wp, classes='q-ma-md column items-start', style='row-gap: 1em')
 main.add_page(wp)
