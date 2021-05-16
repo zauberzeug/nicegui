@@ -1,1 +1,1 @@
-from nicegui.nicegui import app, ui
+from nicegui.nicegui import app, ui, wp
