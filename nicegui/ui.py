@@ -5,6 +5,7 @@ class Ui:
     from .elements.icon import Icon as icon
     from .elements.input import Input as input
     from .elements.label import Label as label
+    from .elements.markdown import Markdown as markdown
     from .elements.link import Link as link
     from .elements.number import Number as number
     from .elements.radio import Radio as radio

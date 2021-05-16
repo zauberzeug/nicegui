@@ -13,4 +13,4 @@ WORKDIR /app
 COPY ./pyproject.toml ./poetry.lock* main.py ./
 RUN poetry install --no-root
 
-CMD python3 -m debugpy --listen 5678 main.py
+CMD python3 -m debugpy --listen 5678 api_reference.py

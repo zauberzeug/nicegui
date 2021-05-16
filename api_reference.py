@@ -11,28 +11,30 @@ from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter
 
-wp.css = HtmlFormatter().get_style_defs('.highlight')
+wp.css = HtmlFormatter().get_style_defs('.codehilite')
 
 @contextmanager
 def example():
     callFrame = inspect.currentframe().f_back.f_back
     begin = callFrame.f_lineno
-    with ui.card():
-        with ui.row():
-            with ui.column():
-                yield
-            callFrame = inspect.currentframe().f_back.f_back
-            end = callFrame.f_lineno
-            code = inspect.getsource(sys.modules[__name__])
-            code = code.splitlines()[begin:end]
-            code = '\n'.join(code)
-            html = highlight(code, PythonLexer(), HtmlFormatter())
-            label = ui.label()
-            label.view.inner_html = html
-            ic(html)
+    with ui.row():
+        with ui.card():
+            yield
+        callFrame = inspect.currentframe().f_back.f_back
+        end = callFrame.f_lineno
+        code = inspect.getsource(sys.modules[__name__])
+        code = code.splitlines()[begin:end]
+        code.insert(0, '```python')
+        code.append('```')
+        code = '\n'.join(code)
+        ui.markdown(code)
 
+def describe(element, headline):
+    doc = element.__init__.__doc__
+    ui.markdown(f'### {headline}\n{doc}')
+
+describe(ui.input, 'Text Input')
 with example():
-
     ui.input(label='Text', on_change=lambda e: result.set_text(e.value))
     ui.number(label='Number', format='%.2f', on_change=lambda e: result.set_text(e.value))
 

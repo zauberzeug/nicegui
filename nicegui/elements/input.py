@@ -11,7 +11,15 @@ class Input(StringElement):
                  value: str = '',
                  design: str = '',
                  on_change: Callable = None):
+        """Text Input Element.
 
+        Parameters
+        ----------
+        label : str
+            displayed name of the text input
+
+
+        """
         view = jp.QInput(
             label=label,
             placeholder=placeholder,
