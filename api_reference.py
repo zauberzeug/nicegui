@@ -6,6 +6,7 @@ from icecream import ic
 import inspect
 from executing import Source
 import sys
+import docutils.core
 
 @contextmanager
 def example():
@@ -25,7 +26,8 @@ def example():
 
 def describe(element, headline):
     doc = element.__init__.__doc__
-    ui.markdown(f'### {headline}\n{doc}')
+    html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
+    ui.html(html)
 
 describe(ui.input, 'Text Input')
 with example():

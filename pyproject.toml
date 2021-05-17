@@ -15,6 +15,7 @@ matplotlib = "^3.4.1"
 typing-extensions = "^3.10.0"
 markdown2 = "^2.4.0"
 Pygments = "^2.9.0"
+docutils = "^0.17.1"
 
 [tool.poetry.dev-dependencies]
 icecream = "^2.1.0"

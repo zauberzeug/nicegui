@@ -13,12 +13,8 @@ class Input(StringElement):
                  on_change: Callable = None):
         """Text Input Element.
 
-        Parameters
-        ----------
-        label : str
-            displayed name of the text input
-
-
+        :param str label: display name for the text input
+        :param str placeholder: text to show if no value is entered
         """
         view = jp.QInput(
             label=label,

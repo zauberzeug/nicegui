@@ -1,28 +1,13 @@
 import markdown2
-import justpy as jp
-from typing import Union, List
-from .element import Element
-from icecream import ic
+from .html import Html
 
-class Markdown(Element):
+class Markdown(Html):
 
-    def __init__(self,
-                 content: str = ''):
+    def __init__(self, content: str = ''):
 
-        view = jp.Div()
-        view.inner_html = markdown2.markdown(content, extras=['fenced-code-blocks'])
-        super().__init__(view, '')
+        super().__init__(content)
 
-    @property
-    def text(self):
+    def set_content(self, content: str):
 
-        return self.view.text
-
-    @text.setter
-    def text(self, text: any):
-
-        self.view.text = text
-
-    def set_text(self, text: str):
-
-        self.text = text
+        html = markdown2.markdown(content, extras=['fenced-code-blocks'])
+        super().set_content(html)

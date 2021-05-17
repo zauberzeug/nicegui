@@ -4,6 +4,7 @@ import uvicorn
 import sys
 import inspect
 import webbrowser
+import docutils.core
 from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter
@@ -19,8 +20,10 @@ if not inspect.stack()[-2].filename.endswith('spawn.py'):
     sys.exit()
 
 wp = jp.QuasarPage(delete_flag=False, title='NiceGUI', favicon='favicon.png')
-wp.head_html = '<script>confirm = () => true;</script>'  # avoid confirmation dialog for reload
 wp.css = HtmlFormatter().get_style_defs('.codehilite')
+wp.head_html = '<script>confirm = () => true;</script>'  # avoid confirmation dialog for reload
+wp.head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
+
 
 main = jp.Div(a=wp, classes='q-ma-md column items-start', style='row-gap: 1em')
 main.add_page(wp)

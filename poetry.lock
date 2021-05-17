@@ -92,6 +92,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "docutils"
+version = "0.17.1"
+description = "Docutils -- Python Documentation Utilities"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+
+[[package]]
 name = "executing"
 version = "0.6.0"
 description = "Get the currently executing AST node of a frame, and other information"
@@ -156,11 +164,11 @@ pygments = ">=2.2.0"
 
 [[package]]
 name = "idna"
-version = "3.1"
+version = "2.10"
 description = "Internationalized Domain Names in Applications (IDNA)"
 category = "main"
 optional = false
-python-versions = ">=3.4"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "itsdangerous"
@@ -378,7 +386,7 @@ python-versions = ">=3.6.1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "52606d24d4be25e5ce4d00e95e26e92de12cca682ab0ee5c68aec8bdaf27ce0d"
+content-hash = "8e85098d955af42062b9f035490c66e0f724f245355248c1a4b62a5e9d3dfe53"
 
 [metadata.files]
 addict = [
@@ -474,6 +482,10 @@ debugpy = [
 demjson = [
     {file = "demjson-2.2.4.tar.gz", hash = "sha256:31de2038a0fdd9c4c11f8bf3b13fe77bc2a128307f965c8d5fb4dc6d6f6beb79"},
 ]
+docutils = [
+    {file = "docutils-0.17.1-py2.py3-none-any.whl", hash = "sha256:cf316c8370a737a022b72b56874f6602acf974a37a9fba42ec2876387549fc61"},
+    {file = "docutils-0.17.1.tar.gz", hash = "sha256:686577d2e4c32380bb50cbb22f575ed742d58168cee37e99117a854bcd88f125"},
+]
 executing = [
     {file = "executing-0.6.0-py2.py3-none-any.whl", hash = "sha256:a2f10f802b4312b92bd256279b43720271b0d9b540a0dbab7be4c28fbc536479"},
     {file = "executing-0.6.0.tar.gz", hash = "sha256:a07046e608c56948a899e1c7dc45327ed84ee67edf245041eb8c6722658c14e3"},
@@ -495,8 +507,8 @@ icecream = [
     {file = "icecream-2.1.0.tar.gz", hash = "sha256:c2e7b74c1c12caa2cfde050f2e636493ee77a9fb4a494b5593418ab359924a24"},
 ]
 idna = [
-    {file = "idna-3.1-py3-none-any.whl", hash = "sha256:5205d03e7bcbb919cc9c19885f9920d622ca52448306f2377daede5cf3faac16"},
-    {file = "idna-3.1.tar.gz", hash = "sha256:c5b02147e01ea9920e6b0a3f1f7bb833612d507592c837a6c49552768f4054e1"},
+    {file = "idna-2.10-py2.py3-none-any.whl", hash = "sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0"},
+    {file = "idna-2.10.tar.gz", hash = "sha256:b307872f855b18632ce0c21c5e45be78c0ea7ae4c15c828c20788b26921eb3f6"},
 ]
 itsdangerous = [
     {file = "itsdangerous-1.1.0-py2.py3-none-any.whl", hash = "sha256:b12271b2047cb23eeb98c8b5622e2e5c5e9abd9784a153e9d8ef9cb4dd09d749"},
