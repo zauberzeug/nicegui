@@ -30,17 +30,17 @@ class Label(Element):
 
         self.text = text
 
-    def bind_text_to(self, target):
+    def bind_text_to(self, target, forward=lambda x: x):
 
-        self.text.bind_to(target, nesting=1)
+        self.text.bind_to(target, forward=forward, nesting=1)
         return self
 
-    def bind_text_from(self, target):
+    def bind_text_from(self, target, forward=lambda x: x, backward=lambda x: x):
 
-        self.text.bind_from(target, nesting=1)
+        self.text.bind_from(target, forward=forward, backward=backward, nesting=1)
         return self
 
-    def bind_text(self, target):
+    def bind_text(self, target, backward=lambda x: x):
 
-        self.text.bind(target, nesting=1)
+        self.text.bind(target, backward=backward, nesting=1)
         return self

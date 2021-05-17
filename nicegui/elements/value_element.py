@@ -34,17 +34,17 @@ class ValueElement(Element):
             except Exception:
                 traceback.print_exc()
 
-    def bind_value_to(self, target):
+    def bind_value_to(self, target, forward=lambda x: x):
 
-        self.value.bind_to(target, nesting=1)
+        self.value.bind_to(target, forward=forward, nesting=1)
         return self
 
-    def bind_value_from(self, target):
+    def bind_value_from(self, target, backward=lambda x: x):
 
-        self.value.bind_from(target, nesting=1)
+        self.value.bind_from(target, backward=backward, nesting=1)
         return self
 
-    def bind_value(self, target):
+    def bind_value(self, target, forward=lambda x: x, backward=lambda x: x):
 
-        self.value.bind(target, nesting=1)
+        self.value.bind(target, forward=forward, backward=backward, nesting=1)
         return self

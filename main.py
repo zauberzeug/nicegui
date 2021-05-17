@@ -51,6 +51,7 @@ with ui.row():
         with ui.row():
             c = ui.checkbox('c1')
             ui.switch('c2').bind_value(c.value)
+            ui.slider(min=0, max=1, value=0.5, step=0.01).bind_value_to(c.value, forward=lambda f: f > 0.5)
         with ui.row():
             model = type('Model', (), {'value': 1})  # one-liner to define an object with an attribute "value"
             ui.radio({1: 'a', 2: 'b', 3: 'c'}).bind_value(model.value)
