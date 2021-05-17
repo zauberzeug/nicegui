@@ -8,6 +8,9 @@ from executing import Source
 import sys
 import docutils.core
 
+# add docutils css to webpage
+wp.head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
+
 @contextmanager
 def example():
     callFrame = inspect.currentframe().f_back.f_back
