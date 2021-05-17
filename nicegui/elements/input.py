@@ -11,7 +11,7 @@ class Input(StringElement):
                  value: str = '',
                  design: str = '',
                  on_change: Callable = None):
-        """Text Input Element.
+        """Text Input Element
 
         :param str label: display name for the text input
         :param str placeholder: text to show if no value is entered

@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from icecream import ic
 import inspect
 from executing import Source
+from nicegui.elements.element import Element
 import sys
 import docutils.core
 
@@ -27,12 +28,17 @@ def example():
         code = '\n'.join(code)
         ui.markdown(code)
 
-def describe(element, headline):
+def describe(element: Element):
     doc = element.__init__.__doc__
     html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
+    html = html.replace('<p>', '<h3>', 1)
+    html = html.replace('</p>', '</h3>', 1)
     ui.html(html)
 
-describe(ui.input, 'Text Input')
+with open('README.md', 'r') as file:
+    ui.markdown(file.read())
+
+describe(ui.input)
 with example():
     ui.input(label='Text', on_change=lambda e: result.set_text(e.value))
     ui.number(label='Number', format='%.2f', on_change=lambda e: result.set_text(e.value))
