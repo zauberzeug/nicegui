@@ -47,25 +47,21 @@ with ui.row():
         ui.label('Binding', 'h5')
         with ui.row():
             n1 = ui.number(value=1.2345, format='%.2f')
-            n2 = ui.number(format='%.3f').bind('value', n1, 'value')
+            n2 = ui.number(format='%.3f').bind_value(n1.value)
         with ui.row():
             c = ui.checkbox('c1')
-            s = ui.switch('c2').bind('value', c, 'value')
+            ui.switch('c2').bind_value(c.value)
         with ui.row():
             model = type('Model', (), {'value': 1})  # one-liner to define an object with an attribute "value"
-            ui.radio({1: 'a', 2: 'b', 3: 'c'}).bind('value', model, 'value')
-            ui.radio({1: 'A', 2: 'B', 3: 'C'}).bind('value', model, 'value')
+            ui.radio({1: 'a', 2: 'b', 3: 'c'}).bind_value(model.value)
+            ui.radio({1: 'A', 2: 'B', 3: 'C'}).bind_value(model.value)
             with ui.column():
-                ui.number().bind('value', model, 'value')
-                ui.slider(min=1, max=3).bind('value', model, 'value')
-                ui.label().bind('text', model, 'value')
+                ui.number().bind_value(model.value)
+                ui.slider(min=1, max=3).bind_value(model.value)
+                ui.label().bind_text(model.value)
         with ui.row().add_classes('items-center'):
             on = ui.icon('visibility')
-            ui.checkbox('visible').bind('value', on, 'visible')
-        with ui.row():
-            dict_ = {'key': 'binding to a dictionary'}
-            ui.input().bind('value', dict_, 'key')
-            ui.label().bind('text', dict_, 'key').add_style('margin-top: 2em')
+            ui.checkbox('visible', value=True).bind_value_to(on.visible)
 
     with ui.card():
         ui.label('Matplotlib', 'h5')

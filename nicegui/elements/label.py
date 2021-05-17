@@ -29,3 +29,18 @@ class Label(Element):
     def set_text(self, text: str):
 
         self.text = text
+
+    def bind_text_to(self, target):
+
+        self.text.bind_to(target, nesting=1)
+        return self
+
+    def bind_text_from(self, target):
+
+        self.text.bind_from(target, nesting=1)
+        return self
+
+    def bind_text(self, target):
+
+        self.text.bind(target, nesting=1)
+        return self
