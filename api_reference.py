@@ -40,7 +40,5 @@ with open('README.md', 'r') as file:
 
 describe(ui.input)
 with example():
-    ui.input(label='Text', on_change=lambda e: result.set_text(e.value))
-    ui.number(label='Number', format='%.2f', on_change=lambda e: result.set_text(e.value))
-
-    result = ui.label('result', typography='bold')
+    ui.input(label='Text', placeholder='a placeholder', on_change=lambda e: result.set_text('you typed: ' + e.value))
+    result = ui.label('', typography='bold')
