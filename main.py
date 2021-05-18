@@ -2,9 +2,7 @@
 #!/usr/bin/env python3
 from nicegui import ui, wp
 from contextlib import contextmanager
-from icecream import ic
 import inspect
-from executing import Source
 from nicegui.elements.element import Element
 import sys
 import docutils.core
@@ -17,32 +15,56 @@ def example(element: Element):
 
     callFrame = inspect.currentframe().f_back.f_back
     begin = callFrame.f_lineno
-    with ui.row():
+    with ui.row(classes='flex w-screen'):
 
         doc = element.__init__.__doc__
-        html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
-        html = html.replace('<p>', '<h3>', 1)
-        html = html.replace('</p>', '</h3>', 1)
-        ui.html(html)
+        if doc:
+            html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
+            html = html.replace('<p>', '<h3 class="text-2xl mb-3">', 1)
+            html = html.replace('</p>', '</h3>', 1)
+            ui.html(html, classes='w-4/12 pr-12')
+        else:
+            ui.label(element.__name__, 'h5')
 
-        with ui.card(classes='mt-12'):
+        with ui.card(classes='mt-12 w-1/12'):
             yield
         callFrame = inspect.currentframe().f_back.f_back
         end = callFrame.f_lineno
         code = inspect.getsource(sys.modules[__name__])
         code = code.splitlines()[begin:end]
+        code = [l[4:] for l in code]
         code.insert(0, '```python')
+        code.insert(1, 'from nicegui import ui')
         code.append('```')
         code = '\n'.join(code)
-        ui.markdown(code, classes='mt-12')
+        ui.markdown(code, classes='mt-12 w-6/12 overflow-auto')
+
 
 with open('README.md', 'r') as file:
     ui.markdown(file.read())
 
+with example(ui.timer):
+    from datetime import datetime
+
+    clock = ui.label()
+    ui.timer(interval=0.1, callback=lambda: clock.set_text(datetime.now().strftime("%X")))
+
+with example(ui.button):
+
+    def button_increment():
+        global button_count
+        button_count += 1
+        button_result.set_text(f'pressed: {button_count}')
+
+    button_count = 0
+    ui.button('Button', on_click=button_increment)
+    button_result = ui.label('pressed: 0')
+
 with example(ui.input):
+
     ui.input(
         label='Text',
-        placeholder='some placeholder',
+        placeholder='press ENTER to apply',
         on_change=lambda e: result.set_text('you typed: ' + e.value)
     )
-    result = ui.label('', typography='bold')
+    result = ui.label('')

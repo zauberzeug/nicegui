@@ -44,37 +44,6 @@ python3 main.py
 
 Note: The script will automatically reload the GUI if you modify your code.
 
-## API
-
-See [main.py](https://github.com/zauberzeug/nicegui/tree/main/main.py) for an extensive example what you can do with NiceGUI.
-
-### Interactive Elements
-
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-boolean-interaction.gif" width="100" align="right">
-
-`Button`, `Checkbox` and `Switch` require a name which is displayed as their label and a callback. The callback can have an optional `event` parameter which provides informations like sender and value:
-
-```python
-ui.button('Button', on_click=lambda: result.set_text('Button: pressed'))
-ui.checkbox('Checkbox', on_change=lambda e: result.set_text(f'checkbox: {e.value}'))
-ui.switch('Switch', on_change=lambda e: result.set_text(f'switch: {e.value}'))
-
-result = ui.label('please interact', typography='bold')
-```
-
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-input.gif" width="200" align="right">
-
-Use `ui.input` to receive text and `ui.number` for explicit number input.
-
-```python
-ui.input(label='Text', on_change=lambda e: result.set_text(e.value))
-ui.number(label='Number', format='%.2f', on_change=lambda e: result.set_text(e.value))
-
-result = ui.label('please type', typography='bold')
-```
-
-Pre-fill `ui.input` with the `text` property and `ui.number` with `value`.
-
 ### Styling & Design
 
 NiceGUI use the [Quasar Framework](https://quasar.dev/) and hence has their full design power. Each NiceGUI element provides a `design` property which content is passed [as props the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
@@ -88,17 +57,9 @@ ui.button(icon='touch_app', design='outline round')
 
 Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling "props".
 
-### Timer
+## API
 
-One major drive behind the creation of NiceGUI was the necessity to have an simple approach to update the interface
-in regular intervals. For example to show a graph with incomming measurements (see plots below):
-
-```python
-clock = ui.label()
-ui.timer(interval=0.1, callback=lambda: clock.set_text(datetime.now().strftime("%X")))
-```
-
-With an optional third parameter `once=True` the `callback` is once executed after an delay specified by `interval`. Otherwise the `callback` is run repeatedly.
+API Reference is hosted at [https://nicegui.io](https://nicegui.io). Also have a look at [examples.py](https://github.com/zauberzeug/nicegui/tree/main/examples.py) for an extensive demonstration what you can do with NiceGUI.
 
 ### Plots
 
