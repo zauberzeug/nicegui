@@ -1,10 +1,13 @@
 import justpy as jp
 from typing import Any, Callable
 import traceback
+from binding import BindableProperty
 from .element import Element
 from ..utils import EventArguments
 
 class ValueElement(Element):
+
+    value = BindableProperty()
 
     def __init__(self,
                  view: jp.HTMLBaseComponent,
@@ -16,17 +19,7 @@ class ValueElement(Element):
 
         self.on_change = on_change
         self.value = value
-
-    @property
-    def value(self):
-
-        return self.value_
-
-    @value.setter
-    def value(self, value: any):
-
-        self.value_ = value
-        self.set_view_value(value)
+        self.value.bind_to(self.view.value)
 
     def handle_change(self, msg):
 
@@ -41,6 +34,17 @@ class ValueElement(Element):
             except Exception:
                 traceback.print_exc()
 
-        for binding in self.bindings:
-            if binding.element_attribute == 'value':
-                binding.update_model()
+    def bind_value_to(self, target, forward=lambda x: x):
+
+        self.value.bind_to(target, forward=forward, nesting=1)
+        return self
+
+    def bind_value_from(self, target, backward=lambda x: x):
+
+        self.value.bind_from(target, backward=backward, nesting=1)
+        return self
+
+    def bind_value(self, target, forward=lambda x: x, backward=lambda x: x):
+
+        self.value.bind(target, forward=forward, backward=backward, nesting=1)
+        return self

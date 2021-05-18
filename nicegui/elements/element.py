@@ -1,11 +1,12 @@
 import justpy as jp
-from ..binding import Binding
+from binding.binding import BindableProperty
 
 class Element:
 
     wp: None
     view_stack = []
-    all_bindings = []
+
+    visible = BindableProperty
 
     def __init__(self, view: jp.HTMLBaseComponent, design: str):
 
@@ -21,8 +22,6 @@ class Element:
         self.view = view
 
         self.visible = True
-
-        self.bindings = []
 
     @property
     def visible(self):
@@ -53,11 +52,4 @@ class Element:
     def add_style(self, style: str):
 
         self.view.style += ' ' + style
-        return self
-
-    def bind(self, attribute, model, model_attribute):
-
-        binding = Binding(self, attribute, model, model_attribute)
-        self.bindings.append(binding)
-        Binding.all_bindings.append(binding)
         return self
