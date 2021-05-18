@@ -33,7 +33,7 @@ class Element:
     def visible(self, visible: bool):
 
         self.visible_ = visible
-        self.view.set_class('visible' if visible else 'invisible')
+        (self.view.remove_class if self.visible_ else self.view.set_class)('hidden')
 
     def bind_visibility_to(self, target, forward=lambda x: x):
 
