@@ -2,14 +2,20 @@
 
 <img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/ui-elements.png" width="300" align="right">
 
-We like [Streamlit](https://streamlit.io/) but find it does to much magic when it comes to state handling. In search for an alernative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/). While too "low-level-html" for our daily usage it provides a great basis for our shot at a "NiceGUI".
+We like [Streamlit](https://streamlit.io/) but find it does to much magic when it comes to state handling. In search for an alernative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/). While too "low-level-html" for our daily usage it provides a great basis for "NiceGUI".
+
+## Purpose
+
+NiceGUI is intended to be used for small scripts and user interfaces with a very limited user base. Custom "Smart-Home Control" solutions or "Robotics" for example. It's also helpful for development like tweaking/configuring a machine learning training or tuning motor controllers.
 
 ## Features
 
 - browser-based GUI
+- shared state between multiple browser windows
 - implicit reload on code change
 - clean set of GUI elements (label, button, checkbox, switch, slider, input, ...)
 - simple grouping with rows, columns and cards
+- genral-purpose html and markdown elements
 - built-in timer to refresh data in intervals (even every 10 ms)
 - straight-forward data bindings to write even less code
 

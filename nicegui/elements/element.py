@@ -8,7 +8,7 @@ class Element:
 
     visible = BindableProperty
 
-    def __init__(self, view: jp.HTMLBaseComponent, design: str):
+    def __init__(self, view: jp.HTMLBaseComponent, design: str = '', classes: str = ''):
 
         for word in design.split():
             if '=' in word:
@@ -20,6 +20,7 @@ class Element:
         self.parent_view.add(view)
         view.add_page(self.wp)
         self.view = view
+        self.view.classes += ' ' + classes
 
         self.visible = True
 

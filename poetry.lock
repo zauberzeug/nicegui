@@ -41,6 +41,17 @@ pycodestyle = ">=2.7.0"
 toml = "*"
 
 [[package]]
+name = "binding"
+version = "0.1.1"
+description = "Bindable properties for Python"
+category = "main"
+optional = false
+python-versions = ">=3.7,<4.0"
+
+[package.dependencies]
+forbiddenfruit = ">=0.1.4,<0.2.0"
+
+[[package]]
 name = "certifi"
 version = "2020.12.5"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -104,6 +115,14 @@ name = "executing"
 version = "0.6.0"
 description = "Get the currently executing AST node of a frame, and other information"
 category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "forbiddenfruit"
+version = "0.1.4"
+description = "Patch python built-in objects"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -386,7 +405,7 @@ python-versions = ">=3.6.1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "8e85098d955af42062b9f035490c66e0f724f245355248c1a4b62a5e9d3dfe53"
+content-hash = "70b47d9f805353e2b1db9ac1544837ede044b67c5eb1fa7b2004385f002b8c55"
 
 [metadata.files]
 addict = [
@@ -404,6 +423,10 @@ asttokens = [
 autopep8 = [
     {file = "autopep8-1.5.7-py2.py3-none-any.whl", hash = "sha256:aa213493c30dcdac99537249ee65b24af0b2c29f2e83cd8b3f68760441ed0db9"},
     {file = "autopep8-1.5.7.tar.gz", hash = "sha256:276ced7e9e3cb22e5d7c14748384a5cf5d9002257c0ed50c0e075b68011bb6d0"},
+]
+binding = [
+    {file = "binding-0.1.1-py3-none-any.whl", hash = "sha256:67802ebea17c4b2b459aed93fe0b1997eb1af1648ac8e7be8493110038ddd61c"},
+    {file = "binding-0.1.1.tar.gz", hash = "sha256:ce8be3a96620b6371424eee5f0ec08978357425acda42268a3e287adc8ac745e"},
 ]
 certifi = [
     {file = "certifi-2020.12.5-py2.py3-none-any.whl", hash = "sha256:719a74fb9e33b9bd44cc7f3a8d94bc35e4049deebe19ba7d8e108280cfd59830"},
@@ -489,6 +512,9 @@ docutils = [
 executing = [
     {file = "executing-0.6.0-py2.py3-none-any.whl", hash = "sha256:a2f10f802b4312b92bd256279b43720271b0d9b540a0dbab7be4c28fbc536479"},
     {file = "executing-0.6.0.tar.gz", hash = "sha256:a07046e608c56948a899e1c7dc45327ed84ee67edf245041eb8c6722658c14e3"},
+]
+forbiddenfruit = [
+    {file = "forbiddenfruit-0.1.4.tar.gz", hash = "sha256:e3f7e66561a29ae129aac139a85d610dbf3dd896128187ed5454b6421f624253"},
 ]
 h11 = [
     {file = "h11-0.12.0-py3-none-any.whl", hash = "sha256:36a3cb8c0a032f56e2da7084577878a035d3b61d104230d4bd49c0c6b555a9c6"},

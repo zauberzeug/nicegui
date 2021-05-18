@@ -3,10 +3,10 @@ from .element import Element
 
 class Html(Element):
 
-    def __init__(self, content: str = ''):
+    def __init__(self, content: str = '', design='', classes: str = ''):
 
-        view = jp.Div()
-        super().__init__(view, '')
+        view = jp.QDiv()
+        super().__init__(view, design=design, classes=classes)
         self.content = content
 
     @property

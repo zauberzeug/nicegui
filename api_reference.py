@@ -13,11 +13,19 @@ import docutils.core
 wp.head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
 
 @contextmanager
-def example():
+def example(element: Element):
+
     callFrame = inspect.currentframe().f_back.f_back
     begin = callFrame.f_lineno
     with ui.row():
-        with ui.card():
+
+        doc = element.__init__.__doc__
+        html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
+        html = html.replace('<p>', '<h3>', 1)
+        html = html.replace('</p>', '</h3>', 1)
+        ui.html(html)
+
+        with ui.card(classes='mt-12'):
             yield
         callFrame = inspect.currentframe().f_back.f_back
         end = callFrame.f_lineno
@@ -26,21 +34,15 @@ def example():
         code.insert(0, '```python')
         code.append('```')
         code = '\n'.join(code)
-        ui.markdown(code)
-
-def describe(element: Element):
-    doc = element.__init__.__doc__
-    html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
-    html = html.replace('<p>', '<h3>', 1)
-    html = html.replace('</p>', '</h3>', 1)
-    ui.html(html)
+        ui.markdown(code, classes='mt-12')
 
 with open('README.md', 'r') as file:
     ui.markdown(file.read())
 
-describe(ui.input)
-with example():
-    ui.input(label='Text', on_change=lambda e: result.set_text(e.value))
-    ui.number(label='Number', format='%.2f', on_change=lambda e: result.set_text(e.value))
-
-    result = ui.label('result', typography='bold')
+with example(ui.input):
+    ui.input(
+        label='Text',
+        placeholder='some placeholder',
+        on_change=lambda e: result.set_text('you typed: ' + e.value)
+    )
+    result = ui.label('', typography='bold')
