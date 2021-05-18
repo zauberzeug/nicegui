@@ -1,6 +1,7 @@
 import asyncio
 import time
 import traceback
+from binding import BindableProperty
 from .elements.element import Element
 from .utils import handle_exceptions
 
@@ -8,9 +9,12 @@ class Timer:
 
     tasks = []
 
+    active = BindableProperty
+
     def __init__(self, interval, callback, *, once=False):
 
         parent = Element.view_stack[-1]
+        self.active = True
 
         async def timeout():
 
@@ -23,8 +27,9 @@ class Timer:
             while True:
                 try:
                     start = time.time()
-                    handle_exceptions(callback)()
-                    await parent.update()
+                    if self.active:
+                        handle_exceptions(callback)()
+                        await parent.update()
                     dt = time.time() - start
                     await asyncio.sleep(interval - dt)
                 except:

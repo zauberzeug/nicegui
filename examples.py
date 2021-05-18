@@ -35,7 +35,8 @@ with ui.row():
             with ui.row():
                 ui.icon('far fa-clock')
                 clock = ui.label()
-                ui.timer(0.1, lambda: clock.set_text(datetime.now().strftime("%X")))
+                t = ui.timer(0.1, lambda: clock.set_text(datetime.now().strftime("%X")))
+            ui.checkbox('active').bind_value(t.active)
 
         with ui.card().add_classes('items-center'):
             ui.label('Style', 'h5')
