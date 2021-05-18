@@ -11,7 +11,3 @@ class BoolElement(ValueElement):
                  on_change: Callable):
 
         super().__init__(view, design, value, on_change)
-
-    def set_view_value(self, value: bool):
-
-        self.view.value = value
