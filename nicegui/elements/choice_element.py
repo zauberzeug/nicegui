@@ -17,10 +17,3 @@ class ChoiceElement(ValueElement):
             view.options = [{'label': value, 'value': key} for key, value in options.items()]
 
         super().__init__(view, design, value, on_change)
-
-    def set_view_value(self, value: any):
-
-        try:
-            self.view.value = value['value']
-        except TypeError:
-            self.view.value = value

@@ -19,7 +19,11 @@ class ValueElement(Element):
 
         self.on_change = on_change
         self.value = value
-        self.value.bind_to(self.view.value)
+        self.value.bind_to(self.view.value, forward=self.value_to_view)
+
+    def value_to_view(self, value):
+
+        return value
 
     def handle_change(self, msg):
 

@@ -11,7 +11,3 @@ class StringElement(ValueElement):
                  on_change: Callable):
 
         super().__init__(view, design, value, on_change)
-
-    def set_view_value(self, value: str):
-
-        self.view.value = value

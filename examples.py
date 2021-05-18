@@ -35,7 +35,8 @@ with ui.row():
             with ui.row():
                 ui.icon('far fa-clock')
                 clock = ui.label()
-                ui.timer(0.1, lambda: clock.set_text(datetime.now().strftime("%X")))
+                t = ui.timer(0.1, lambda: clock.set_text(datetime.now().strftime("%X")))
+            ui.checkbox('active').bind_value(t.active)
 
         with ui.card().add_classes('items-center'):
             ui.label('Style', 'h5')
@@ -61,8 +62,8 @@ with ui.row():
                 ui.slider(min=1, max=3).bind_value(model.value)
                 ui.label().bind_text(model.value)
         with ui.row().add_classes('items-center'):
-            on = ui.icon('visibility')
-            ui.checkbox('visible', value=True).bind_value_to(on.visible)
+            v = ui.checkbox('visible', value=True)
+            ui.icon('visibility').bind_visibility_from(v.value)
 
     with ui.card():
         ui.label('Matplotlib', 'h5')

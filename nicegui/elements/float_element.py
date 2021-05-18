@@ -15,11 +15,11 @@ class FloatElement(ValueElement):
 
         super().__init__(view, design, value, on_change)
 
-    def set_view_value(self, value: float):
+    def value_to_view(self, value: float):
 
         if value is None:
-            self.view.value = None
+            return None
         elif self.format is None:
-            self.view.value = str(value)
+            return str(value)
         else:
-            self.view.value = self.format % float(value)
+            return self.format % float(value)
