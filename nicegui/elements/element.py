@@ -34,6 +34,21 @@ class Element:
         self.visible_ = visible
         self.view.set_class('visible' if visible else 'invisible')
 
+    def bind_visibility_to(self, target, forward=lambda x: x):
+
+        self.visible.bind_to(target, forward=forward, nesting=1)
+        return self
+
+    def bind_visibility_from(self, target, backward=lambda x: x):
+
+        self.visible.bind_from(target, backward=backward, nesting=1)
+        return self
+
+    def bind_visibility(self, target, forward=lambda x: x, backward=lambda x: x):
+
+        self.visible.bind(target, forward=forward, backward=backward, nesting=1)
+        return self
+
     def set_classes(self, classes: str):
 
         self.view.classes = classes
