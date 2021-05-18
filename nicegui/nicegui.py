@@ -18,6 +18,7 @@ if not inspect.stack()[-2].filename.endswith('spawn.py'):
     sys.exit()
 
 wp = jp.QuasarPage(delete_flag=False, title='NiceGUI', favicon='favicon.png')
+wp.tailwind = True  # use Tailwind classes instead of Quasars
 wp.css = HtmlFormatter().get_style_defs('.codehilite')
 wp.css += ''.join([f'h{i} {{ font-size: {80*(5-i)}%; line-height: normal; margin-block-end: {0.1*(5-1)}em }}' for i in range(1, 5)])
 wp.head_html = '<script>confirm = () => true;</script>'  # avoid confirmation dialog for reload
