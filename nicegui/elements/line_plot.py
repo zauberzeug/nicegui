@@ -3,7 +3,7 @@ from .plot import Plot
 
 class LinePlot(Plot):
 
-    def __init__(self, n: int = 1, limit: int = 100, update_every=1, close: bool = True, **kwargs):
+    def __init__(self, n: int = 1, limit: int = 100, close: bool = True, **kwargs):
         """Plot
 
         Create a context to configure a simple line plot. 
@@ -21,7 +21,6 @@ class LinePlot(Plot):
         self.Y = [[] for _ in range(n)]
         self.lines = [self.fig.gca().plot([], [])[0] for _ in range(n)]
         self.slice = slice(0 if limit is None else -limit, None)
-        self.update_every = update_every
         self.push_counter = 0
 
     def with_legend(self, titles: List[str], **kwargs):
@@ -37,9 +36,6 @@ class LinePlot(Plot):
         self.x = [*self.x, *x][self.slice]
         for i in range(len(self.lines)):
             self.Y[i] = [*self.Y[i], *Y[i]][self.slice]
-
-        if self.push_counter % self.update_every != 0:
-            return
 
         for i in range(len(self.lines)):
             self.lines[i].set_xdata(self.x)
