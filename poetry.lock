@@ -42,13 +42,14 @@ toml = "*"
 
 [[package]]
 name = "binding"
-version = "0.1.1"
+version = "0.1.3"
 description = "Bindable properties for Python"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
+executing = ">=0.6.0,<0.7.0"
 forbiddenfruit = ">=0.1.4,<0.2.0"
 
 [[package]]
@@ -114,7 +115,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 name = "executing"
 version = "0.6.0"
 description = "Get the currently executing AST node of a frame, and other information"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -405,7 +406,7 @@ python-versions = ">=3.6.1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "70b47d9f805353e2b1db9ac1544837ede044b67c5eb1fa7b2004385f002b8c55"
+content-hash = "3aec8222d13e67f3559289ecb9030e6080a3e37ad0e07e5b57465954c5d879b8"
 
 [metadata.files]
 addict = [
@@ -425,8 +426,8 @@ autopep8 = [
     {file = "autopep8-1.5.7.tar.gz", hash = "sha256:276ced7e9e3cb22e5d7c14748384a5cf5d9002257c0ed50c0e075b68011bb6d0"},
 ]
 binding = [
-    {file = "binding-0.1.1-py3-none-any.whl", hash = "sha256:67802ebea17c4b2b459aed93fe0b1997eb1af1648ac8e7be8493110038ddd61c"},
-    {file = "binding-0.1.1.tar.gz", hash = "sha256:ce8be3a96620b6371424eee5f0ec08978357425acda42268a3e287adc8ac745e"},
+    {file = "binding-0.1.3-py3-none-any.whl", hash = "sha256:f1ae310b7b8a9d0026c223fef4264fa48edcdf52d3bfd6ab75c88e80cd8a6313"},
+    {file = "binding-0.1.3.tar.gz", hash = "sha256:83977c86f2ed6dda95885289be27a3dc2f943112eb02295cf0cd2c6d443d888c"},
 ]
 certifi = [
     {file = "certifi-2020.12.5-py2.py3-none-any.whl", hash = "sha256:719a74fb9e33b9bd44cc7f3a8d94bc35e4049deebe19ba7d8e108280cfd59830"},
