@@ -47,19 +47,3 @@ Note: The script will automatically reload the GUI if you modify your code.
 ## API
 
 API Reference is hosted at [https://nicegui.io](https://nicegui.io). Also have a look at [examples.py](https://github.com/zauberzeug/nicegui/tree/main/examples.py) for an extensive demonstration what you can do with NiceGUI.
-
-### Plots
-
-To update a plot in regular intervals, have look at [main.py](https://github.com/zauberzeug/nicegui/tree/main/main.py).
-
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-live-plot.gif" width="300" align="right">
-
-To simplify live updating line plots even more, NiceGUI provides `ui.line_plot` with useful parameters and a `push` method:
-
-```python
-lines = ui.line_plot(n=2, limit=20).with_legend(['sin', 'cos'], loc='upper center', ncol=2)
-ui.timer(0.1, lambda: lines.push([datetime.now()], [
-    [np.sin(datetime.now().timestamp()) + 0.02 * np.random.randn()],
-    [np.cos(datetime.now().timestamp()) + 0.02 * np.random.randn()],
-]))
-```

@@ -95,9 +95,17 @@ with example(ui.plot):
     from matplotlib import pyplot as plt
     import numpy as np
 
-    with ui.plot(figsize=(2.5, 1.6)):
+    with ui.plot(figsize=(2.5, 1.8)):
         x = np.linspace(0.0, 5.0)
         y = np.cos(2 * np.pi * x) * np.exp(-x)
         plt.plot(x, y, '-')
         plt.xlabel('time (s)')
         plt.ylabel('Damped oscillation')
+
+with example(ui.line_plot):
+    lines = ui.line_plot(n=2, limit=20, figsize=(2.5, 1.8)).with_legend(['sin', 'cos'], loc='upper center', ncol=2)
+    line_updates = ui.timer(0.1, lambda: lines.push([datetime.now()], [
+        [np.sin(datetime.now().timestamp()) + 0.02 * np.random.randn()],
+        [np.cos(datetime.now().timestamp()) + 0.02 * np.random.randn()],
+    ]), active=False)
+    ui.checkbox('active').bind_value(line_updates.active)

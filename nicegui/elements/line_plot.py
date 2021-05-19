@@ -3,9 +3,19 @@ from .plot import Plot
 
 class LinePlot(Plot):
 
-    def __init__(self, n: int = 1, limit: int = 100, update_every=1, close: bool = True):
+    def __init__(self, n: int = 1, limit: int = 100, update_every=1, close: bool = True, **kwargs):
+        """Plot
 
-        super().__init__(close)
+        Create a context to configure a simple line plot. 
+        The  `push` method simplifies live updating.
+
+        :param n: number of data points to begin with
+        :param limit: maximum number of datapoints (new ones will push out the oldest)
+        :param close: weather the figure should be closed after exiting the context; set to False if you want to update it later, default is True
+        :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_
+        """
+
+        super().__init__(close, **kwargs)
 
         self.x = []
         self.Y = [[] for _ in range(n)]

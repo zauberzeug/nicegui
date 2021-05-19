@@ -11,18 +11,19 @@ class Timer:
 
     active = BindableProperty
 
-    def __init__(self, interval, callback, *, once=False):
+    def __init__(self, interval, callback, *, active=True, once=False):
         """Timer
 
         One major drive behind the creation of NiceGUI was the necessity to have an simple approach to update the interface in regular intervals. For example to show a graph with incomming measurements.
 
         :param interval: the interval in which the timer is been called
         :param callback: function to execute when interval elapses
+        :param active: weather timer should run or be paused
         :param once: weather the callback is only executed once after an delay specified by `interval`; default is False
         """
 
         parent = Element.view_stack[-1]
-        self.active = True
+        self.active = active
 
         async def timeout():
 
