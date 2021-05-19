@@ -27,8 +27,8 @@ class Markdown(Html):
             '<a': '<a class="underline text-blue-600 hover:text-blue-800 visited:text-purple-600"',
             '<ul': '<ul class="list-disc ml-6"',
             '<p>': '<p class="mb-2">',
-            '<div\ class="codehilite">': '<div class=" codehilite mb-2 p-2">',
+            '<div\ class="codehilite">': '<div class=" codehilite mb-2 p-2" style="overflow: scroll">',
+            '<code': '<code style="background-color: #f8f8f8"',
         }
-        p = dict((re.escape(k), v) for k, v in rep.items())
         pattern = re.compile("|".join(rep.keys()))
         return pattern.sub(lambda m: rep[re.escape(m.group(0))], html)
