@@ -90,3 +90,14 @@ with example(ui.input):
         on_change=lambda e: result.set_text('you typed: ' + e.value)
     )
     result = ui.label('')
+
+with example(ui.plot):
+    from matplotlib import pyplot as plt
+    import numpy as np
+
+    with ui.plot(figsize=(2.5, 1.6)):
+        x = np.linspace(0.0, 5.0)
+        y = np.cos(2 * np.pi * x) * np.exp(-x)
+        plt.plot(x, y, '-')
+        plt.xlabel('time (s)')
+        plt.ylabel('Damped oscillation')

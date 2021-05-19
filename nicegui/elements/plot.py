@@ -5,17 +5,16 @@ from .element import Element
 
 class Plot(Element):
 
-    def __init__(self, close: bool = True):
-        """Create a context to configure a Matplotlib Plot.
+    def __init__(self, close: bool = True, **kwargs):
+        """Plot
 
-        Parameters
-        ----------
-        close : boolean, optional
-            weather the figure should be closed after exiting the context; set to False if you want to update it later
+        Create a context to configure a `Matplotlib <https://matplotlib.org/>`_ plot
+
+        :param close: weather the figure should be closed after exiting the context; set to False if you want to update it later, default is True
         """
 
         self.close = close
-        self.fig = plt.figure()
+        self.fig = plt.figure(**kwargs)
 
         view = jp.Matplotlib()
         view.set_figure(self.fig)

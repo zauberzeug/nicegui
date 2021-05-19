@@ -50,22 +50,6 @@ API Reference is hosted at [https://nicegui.io](https://nicegui.io). Also have a
 
 ### Plots
 
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-plot.png" width="300" align="right">
-To render a simple plot you create a new context and call the neccessary [Matplotlib](https://matplotlib.org/) functions:
-
-```python
-from nicegui import ui
-from matplotlib import pyplot as plt
-import numpy as np
-
-with ui.plot():
-    x = np.linspace(0.0, 5.0)
-    y = np.cos(2 * np.pi * x) * np.exp(-x)
-    plt.plot(x, y, '-')
-    plt.xlabel('time (s)')
-    plt.ylabel('Damped oscillation')
-```
-
 To update a plot in regular intervals, have look at [main.py](https://github.com/zauberzeug/nicegui/tree/main/main.py).
 
 <img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-live-plot.gif" width="300" align="right">
