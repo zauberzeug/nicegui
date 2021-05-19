@@ -13,6 +13,7 @@ class Button(Element):
                  color: str = 'primary',
                  text_color: str = None,
                  design: str = '',
+                 classes: str = '',
                  on_click: Callable = None):
         """Button Element
 
@@ -36,4 +37,4 @@ class Button(Element):
         if on_click is not None:
             view.on('click', handle_exceptions(provide_arguments(on_click)))
 
-        super().__init__(view, design)
+        super().__init__(view, design=design, classes=classes)

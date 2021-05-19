@@ -6,6 +6,7 @@ import inspect
 from nicegui.elements.markdown import Markdown
 from nicegui.elements.element import Element
 import sys
+from typing import Union
 import docutils.core
 import icecream
 icecream.install()
@@ -14,21 +15,24 @@ icecream.install()
 wp.head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
 
 @contextmanager
-def example(element: Element):
+def example(content: Union[Element, str]):
 
     callFrame = inspect.currentframe().f_back.f_back
     begin = callFrame.f_lineno
     with ui.row(classes='flex w-full'):
 
-        doc = element.__init__.__doc__
-        if doc:
-            html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
-            html = html.replace('<p>', '<h3>', 1)
-            html = html.replace('</p>', '</h3>', 1)
-            html = Markdown.apply_tailwind(html)
-            ui.html(html, classes='mr-8 w-4/12')
+        if isinstance(content, str):
+            ui.markdown(content, classes='mr-8 w-4/12')
         else:
-            ui.label(element.__name__, 'h5')
+            doc = content.__init__.__doc__
+            if doc:
+                html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
+                html = html.replace('<p>', '<h3>', 1)
+                html = html.replace('</p>', '</h3>', 1)
+                html = Markdown.apply_tailwind(html)
+                ui.html(html, classes='mr-8 w-4/12')
+            else:
+                ui.label(content.__name__, 'h5')
 
         with ui.card(classes='mt-12 w-2/12'):
             yield
@@ -46,6 +50,19 @@ def example(element: Element):
 
 with open('README.md', 'r') as file:
     ui.markdown(file.read())
+
+
+design = '''### Styling & Design
+
+NiceGUI use the [Quasar Framework](https://quasar.dev/) and hence has their full design power. Each NiceGUI element provides a `design` property which content is passed [as props the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
+Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling "props".
+
+You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` property.
+'''
+with (example(design)):
+    ui.radio(['x', 'y', 'z'], design='inline color=green')
+    ui.button(icon='touch_app', design='outline round', classes='shadow-lg ml-14')
+
 
 with example(ui.timer):
     from datetime import datetime

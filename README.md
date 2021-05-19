@@ -44,19 +44,6 @@ python3 main.py
 
 Note: The script will automatically reload the GUI if you modify your code.
 
-### Styling & Design
-
-NiceGUI use the [Quasar Framework](https://quasar.dev/) and hence has their full design power. Each NiceGUI element provides a `design` property which content is passed [as props the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
-
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/demo-design.gif" width="200" align="right">
-
-```python
-ui.radio(['x', 'y', 'z'], design='inline color=green')
-ui.button(icon='touch_app', design='outline round')
-```
-
-Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling "props".
-
 ## API
 
 API Reference is hosted at [https://nicegui.io](https://nicegui.io). Also have a look at [examples.py](https://github.com/zauberzeug/nicegui/tree/main/examples.py) for an extensive demonstration what you can do with NiceGUI.
