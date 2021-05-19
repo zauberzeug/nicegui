@@ -3,9 +3,12 @@
 from nicegui import ui, wp
 from contextlib import contextmanager
 import inspect
+from nicegui.elements.markdown import Markdown
 from nicegui.elements.element import Element
 import sys
 import docutils.core
+import icecream
+icecream.install()
 
 # add docutils css to webpage
 wp.head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
@@ -22,6 +25,7 @@ def example(element: Element):
             html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
             html = html.replace('<p>', '<h3>', 1)
             html = html.replace('</p>', '</h3>', 1)
+            html = Markdown.apply_tailwind(html)
             ui.html(html, classes='mr-8 w-4/12')
         else:
             ui.label(element.__name__, 'h5')
