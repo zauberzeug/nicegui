@@ -18,7 +18,7 @@ python-versions = "*"
 name = "asttokens"
 version = "2.0.5"
 description = "Annotate AST trees with source code positions"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -406,7 +406,7 @@ python-versions = ">=3.6.1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "3aec8222d13e67f3559289ecb9030e6080a3e37ad0e07e5b57465954c5d879b8"
+content-hash = "b6e24a9775e6f54f14bde32ca2928b474be82ab112ff68d28e11ed73c2ebecd2"
 
 [metadata.files]
 addict = [
