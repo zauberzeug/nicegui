@@ -88,6 +88,13 @@ with example(ui.button):
     ui.button('Button', on_click=button_increment)
     button_result = ui.label('pressed: 0')
 
+with example(ui.checkbox):
+
+    ui.checkbox('check me', on_change=lambda e: checkbox_state.set_text(e.value))
+    with ui.row():
+        ui.label('the checkbox is:')
+        checkbox_state = ui.label('False')
+
 with example(ui.input):
 
     ui.input(
