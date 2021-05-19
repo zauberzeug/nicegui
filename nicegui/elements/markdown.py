@@ -5,6 +5,12 @@ import re
 class Markdown(Html):
 
     def __init__(self, content: str = '', classes: str = ''):
+        """Markdown Element
+
+        Renders markdown onto the page.
+
+        :param content: the markdown to be displayed
+        """
 
         super().__init__(content, classes=classes)
 

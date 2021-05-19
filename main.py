@@ -69,6 +69,14 @@ with example(ui.timer):
     t = ui.timer(interval=0.1, callback=lambda: clock.set_text(datetime.now().strftime("%X")))
     ui.checkbox('active').bind_value(t.active)
 
+with example(ui.label):
+
+    ui.label('some label')
+
+with example(ui.markdown):
+
+    ui.markdown('### Headline\nWith hyperlink to [GitHub](https://github.com/zauberzeug/nicegui).')
+
 with example(ui.button):
 
     def button_increment():

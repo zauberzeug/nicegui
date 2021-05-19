@@ -7,6 +7,12 @@ class Label(Element):
     def __init__(self,
                  text: str = '',
                  typography: Union[str, List[str]] = []):
+        """Label Element
+
+        Displays some text.
+
+        :param text: the content of the label
+        """
 
         if isinstance(typography, str):
             typography = [typography]
