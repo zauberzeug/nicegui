@@ -7,7 +7,7 @@ class LinePlot(Plot):
         """Plot
 
         Create a context to configure a simple line plot. 
-        The  `push` method simplifies live updating.
+        The  `push` method provides live updating when utilized in combination with ui.timer.
 
         :param n: number of data points to begin with
         :param limit: maximum number of datapoints (new ones will push out the oldest)
