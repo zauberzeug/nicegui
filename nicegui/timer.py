@@ -18,8 +18,8 @@ class Timer:
 
         :param interval: the interval in which the timer is been called
         :param callback: function to execute when interval elapses
-        :param active: weather timer should run or be paused
-        :param once: weather the callback is only executed once after an delay specified by `interval`; default is False
+        :param active: whether timer should run or be paused
+        :param once: whether the callback is only executed once after an delay specified by `interval`; default is False
         """
 
         parent = Element.view_stack[-1]
