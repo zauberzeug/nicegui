@@ -8,8 +8,6 @@ from nicegui.elements.element import Element
 import sys
 from typing import Union
 import docutils.core
-import icecream
-icecream.install()
 
 # add docutils css to webpage
 wp.head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
