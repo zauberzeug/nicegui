@@ -9,8 +9,8 @@ class ChoiceElement(ValueElement):
                  value: Any,
                  options: Union[List, Dict],
                  on_change: Callable,
-                 design: str = '',
-                 classes: str = '',
+                 design: str,
+                 classes: str,
                  ):
 
         if isinstance(options, list):
