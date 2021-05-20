@@ -8,6 +8,7 @@ from nicegui.elements.element import Element
 import sys
 from typing import Union
 import docutils.core
+import re
 
 # add docutils css to webpage
 wp.head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
@@ -45,10 +46,32 @@ def example(content: Union[Element, str]):
         code = '\n'.join(code)
         ui.markdown(code, classes='mt-12 w-5/12 overflow-auto')
 
+with ui.row(classes='flex w-full'):
+    with open('README.md', 'r') as file:
+        content = file.read()
+        content = re.sub(r'(?m)^\<img.*\n?', '', content)
+        ui.markdown(content, classes='w-6/12')
 
-with open('README.md', 'r') as file:
-    ui.markdown(file.read())
+    with ui.card(classes='w-4/12 mx-auto mt-24'):
+        with ui.row(classes='s-x-16'):
+            with ui.column():
+                ui.button('Click me!', on_click=lambda: output.set_text('Click'))
+                ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
+                ui.switch('Switch me!', on_change=lambda e: output.set_text('Switched' if e.value else 'Unswitched'))
+                ui.input(label='Text', value='abc', on_change=lambda e: output.set_text(e.value))
+                ui.number(label='Number', value=3.1415927, format='%.2f', on_change=lambda e: output.set_text(e.value))
 
+            with ui.column():
+                ui.slider(min=0, max=100, value=50, step=0.1, on_change=lambda e: output.set_text(e.value))
+                ui.radio(options=['A', 'B', 'C'], value='A', design='inline',
+                         on_change=lambda e: output.set_text(e.value))
+                ui.toggle(['1', '2', '3'], value='1', classes='mx-auto', on_change=lambda e: output.set_text(e.value))
+                ui.select(options={1: 'One', 2: 'Two', 3: 'Three'}, value=1, classes='mx-auto',
+                          on_change=lambda e: output.set_text(e.value))
+
+            with ui.column():
+                ui.label('Output:')
+                output = ui.label(' ', 'bold')
 
 design = '''### Styling & Design
 
@@ -130,7 +153,7 @@ with example(ui.toggle):
 with example(ui.select):
     with ui.row():
         select = ui.select(options=[1, 2, 3], value=1, design='inline')
-        ui.select(options={1: 'A', 2: 'B', 3: 'C'}, value=1, design='inline').bind_value(select.value)
+        ui.select(options={1: 'One', 2: 'Two', 3: 'Three'}, value=1, design='inline').bind_value(select.value)
 
 with example(ui.plot):
     from matplotlib import pyplot as plt

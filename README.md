@@ -6,11 +6,11 @@ We like [Streamlit](https://streamlit.io/) but find it does to much magic when i
 
 ## Purpose
 
-NiceGUI is intended to be used for small scripts and user interfaces with a very limited user base. Custom "Smart-Home Control" solutions or "Robotics" for example. It's also helpful for development like tweaking/configuring a machine learning training or tuning motor controllers.
+NiceGUI is intended to be used for small scripts and single-page user interfaces with a very limited user base. Like smart home solutions, micro web apps or robotics projects. It's also helpful for development, when tweaking/configuring a machine learning training or tuning motor controllers.
 
 ## Features
 
-- browser-based GUI
+- browser-based Graphical User Interface
 - shared state between multiple browser windows
 - implicit reload on code change
 - clean set of GUI elements (label, button, checkbox, switch, slider, input, ...)
@@ -42,8 +42,8 @@ Launch it with:
 python3 main.py
 ```
 
-Note: The script will automatically reload the GUI if you modify your code.
+The GUI is now avaliable thorugh http://localhost/ in your browser. Note: The script will automatically reload the page if you modify the code.
 
 ## API
 
-The API reference is hosted at [https://nicegui.io](https://nicegui.io). Also have a look at [examples.py](https://github.com/zauberzeug/nicegui/tree/main/examples.py) for an extensive demonstration of what you can do with NiceGUI.
+The API reference is hosted at [https://nicegui.io](https://nicegui.io) and is [implemented with NiceGUI itself](https://github.com/zauberzeug/nicegui/blob/main/main.py). You should also have a look at [examples.py](https://github.com/zauberzeug/nicegui/tree/main/examples.py) for an extensive demonstration of what you can do with NiceGUI.
