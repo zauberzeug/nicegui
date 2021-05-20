@@ -81,9 +81,9 @@ Have a look at [the Quasar documentation](https://quasar.dev/vue-components/butt
 You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` property.
 '''
 with (example(design)):
+
     ui.radio(['x', 'y', 'z'], design='inline color=green')
     ui.button(icon='touch_app', design='outline round', classes='shadow-lg ml-14')
-
 
 with example(ui.timer):
     from datetime import datetime
@@ -93,15 +93,19 @@ with example(ui.timer):
     ui.checkbox('active').bind_value(t.active)
 
 with example(ui.label):
+
     ui.label('some label')
 
 with example(ui.markdown):
+
     ui.markdown('### Headline\nWith hyperlink to [GitHub](https://github.com/zauberzeug/nicegui).')
 
 with example(ui.html):
+
     ui.html('<p>demo paragraph in <strong>html</strong></p>')
 
 with example(ui.button):
+
     def button_increment():
         global button_count
         button_count += 1
@@ -112,22 +116,26 @@ with example(ui.button):
     button_result = ui.label('pressed: 0')
 
 with example(ui.checkbox):
+
     ui.checkbox('check me', on_change=lambda e: checkbox_state.set_text(e.value))
     with ui.row():
         ui.label('the checkbox is:')
         checkbox_state = ui.label('False')
 
 with example(ui.switch):
-    ui.switch('switch me', on_change=lambda e: checkbox_state.set_text("ON" if e.value else'OFF'))
+
+    ui.switch('switch me', on_change=lambda e: switch_state.set_text("ON" if e.value else'OFF'))
     with ui.row():
         ui.label('the switch is:')
-        checkbox_state = ui.label('OFF')
+        switch_state = ui.label('OFF')
 
 with example(ui.slider):
+
     slider = ui.slider(min=0, max=100, value=50, design='label')
     ui.label().bind_text_from(slider.value)
 
 with example(ui.input):
+
     ui.input(
         label='Text',
         placeholder='press ENTER to apply',
@@ -137,20 +145,24 @@ with example(ui.input):
     result = ui.label('')
 
 with example(ui.number):
+
     number_input = ui.number(label='Number', value=3.1415927, format='%.2f')
     with ui.row():
         ui.label('underlying value: ')
         ui.label().bind_text_from(number_input.value)
 
 with example(ui.radio):
+
     radio = ui.radio(options=[1, 2, 3], value=1, design='inline')
     ui.radio(options={1: 'A', 2: 'B', 3: 'C'}, value=1, design='inline').bind_value(radio.value)
 
 with example(ui.toggle):
+
     toggle = ui.toggle(options=[1, 2, 3], value=1)
     ui.toggle(options={1: 'A', 2: 'B', 3: 'C'}, value=1).bind_value(toggle.value)
 
 with example(ui.select):
+
     with ui.row():
         select = ui.select(options=[1, 2, 3], value=1, design='inline')
         ui.select(options={1: 'One', 2: 'Two', 3: 'Three'}, value=1, design='inline').bind_value(select.value)
@@ -167,6 +179,7 @@ with example(ui.plot):
         plt.ylabel('Damped oscillation')
 
 with example(ui.line_plot):
+
     lines = ui.line_plot(n=2, limit=20, figsize=(2.5, 1.8)).with_legend(['sin', 'cos'], loc='upper center', ncol=2)
     line_updates = ui.timer(0.1, lambda: lines.push([datetime.now()], [
         [np.sin(datetime.now().timestamp()) + 0.02 * np.random.randn()],
