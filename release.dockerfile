@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 
-RUN python -m pip install 'nicegui>=0.2.3'
+RUN python -m pip install 'nicegui>=0.2.4'
 
 WORKDIR /app
 
