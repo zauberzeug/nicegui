@@ -123,6 +123,10 @@ with example(ui.radio):
     radio = ui.radio(options=[1, 2, 3], value=1, design='inline')
     ui.radio(options={1: 'A', 2: 'B', 3: 'C'}, value=1, design='inline').bind_value(radio.value)
 
+with example(ui.toggle):
+    toggle = ui.toggle(options=[1, 2, 3], value=1)
+    ui.toggle(options={1: 'A', 2: 'B', 3: 'C'}, value=1).bind_value(toggle.value)
+
 with example(ui.select):
     with ui.row():
         select = ui.select(options=[1, 2, 3], value=1, design='inline')
