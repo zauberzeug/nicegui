@@ -30,3 +30,9 @@ class Select(ChoiceElement):
             return matches[0]['label']
         else:
             return value
+
+    def handle_change(self, msg):
+
+        msg['label'] = msg['value']['label']
+        msg['value'] = msg['value']['value']
+        return super().handle_change(msg)

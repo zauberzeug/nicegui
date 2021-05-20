@@ -36,7 +36,7 @@ class ValueElement(Element):
                 try:
                     self.on_change()
                 except TypeError:
-                    self.on_change(EventArguments(self, value=self.value))
+                    self.on_change(EventArguments(self, **msg))
             except Exception:
                 traceback.print_exc()
 
