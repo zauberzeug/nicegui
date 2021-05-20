@@ -118,10 +118,10 @@ with example(ui.checkbox):
         checkbox_state = ui.label('False')
 
 with example(ui.switch):
-    ui.switch('switch me', on_change=lambda e: checkbox_state.set_text("ON" if e.value else'OFF'))
+    ui.switch('switch me', on_change=lambda e: switch_state.set_text("ON" if e.value else'OFF'))
     with ui.row():
         ui.label('the switch is:')
-        checkbox_state = ui.label('OFF')
+        switch_state = ui.label('OFF')
 
 with example(ui.slider):
     slider = ui.slider(min=0, max=100, value=50, design='label')
