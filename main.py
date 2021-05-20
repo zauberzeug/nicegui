@@ -52,8 +52,8 @@ with ui.row(classes='flex w-full'):
         content = re.sub(r'(?m)^\<img.*\n?', '', content)
         ui.markdown(content, classes='w-6/12')
 
-    with ui.card(classes='w-4/12 mx-auto mt-24'):
-        with ui.row(classes='s-x-16'):
+    with ui.card(classes='mx-auto mt-24'):
+        with ui.row():
             with ui.column():
                 ui.button('Click me!', on_click=lambda: output.set_text('Click'))
                 ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
@@ -69,7 +69,7 @@ with ui.row(classes='flex w-full'):
                 ui.select(options={1: 'One', 2: 'Two', 3: 'Three'}, value=1, classes='mx-auto',
                           on_change=lambda e: output.set_text(e.value))
 
-            with ui.column():
+            with ui.column().add_classes('w-24'):
                 ui.label('Output:')
                 output = ui.label(' ', 'bold')
 
