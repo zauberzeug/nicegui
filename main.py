@@ -78,12 +78,35 @@ design = '''### Styling & Design
 NiceGUI use the [Quasar Framework](https://quasar.dev/) and hence has their full design power. Each NiceGUI element provides a `design` property which content is passed [as props the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
 Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling "props".
 
-You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` property.
+You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` property or `add_classes` method.
 '''
 with (example(design)):
 
     ui.radio(['x', 'y', 'z'], design='inline color=green')
     ui.button(icon='touch_app', design='outline round', classes='shadow-lg ml-14')
+
+design = '''### Bindings
+
+With help of the [binding](https://pypi.org/project/binding/) package NiceGUI is able to directly bind UI elements to models (dict, class, ...).
+
+Eeach element provides methods `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property. 
+To define a one-way binding use the `_from` and `_to` variants of these methods. 
+Just pass a property of the model as parameter to these methods to create the binding.
+'''
+with (example(design)):
+
+    class Demo:
+
+        def __init__(self):
+            self.number = 1
+
+    demo = Demo()
+    v = ui.checkbox('visible', value=True)
+    with ui.column().bind_visibility_from(v.value):
+        ui.slider(min=1, max=3).bind_value(demo.number)
+        ui.toggle({1: 'a', 2: 'b', 3: 'c'}).bind_value(demo.number)
+        ui.number().bind_value(demo.number)
+
 
 with example(ui.timer):
     from datetime import datetime
