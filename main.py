@@ -113,6 +113,21 @@ with example(ui.input):
     )
     result = ui.label('')
 
+with example(ui.number):
+    number_input = ui.number(label='Number', value=3.1415927, format='%.2f')
+    with ui.row():
+        ui.label('underlying value: ')
+        ui.label().bind_text_from(number_input.value)
+
+with example(ui.radio):
+    radio = ui.radio(options=[1, 2, 3], value=1, design='inline')
+    ui.radio(options={1: 'A', 2: 'B', 3: 'C'}, value=1, design='inline').bind_value(radio.value)
+
+with example(ui.select):
+    with ui.row():
+        select = ui.select(options=[1, 2, 3], value=1, design='inline')
+        ui.select(options={1: 'A', 2: 'B', 3: 'C'}, value=1, design='inline').bind_value(select.value)
+
 with example(ui.plot):
     from matplotlib import pyplot as plt
     import numpy as np

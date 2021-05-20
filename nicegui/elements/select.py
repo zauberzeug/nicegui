@@ -9,8 +9,15 @@ class Select(ChoiceElement):
                  value: any = None,
                  on_change: Callable = None,
                  design: str = '',
-                 classes: str=''
+                 classes: str = ''
                  ):
+        """Dropdown Selection Element
+
+        :param options: a list or dict specifying the options
+        :param value: the inital value
+        :param on_change: callback when selection changes
+        :param design: Quasar props to alter the appearance (see `their reference <https://quasar.dev/vue-components/select>`_)
+        """
 
         view = jp.QSelect(options=options, input=self.handle_change)
 

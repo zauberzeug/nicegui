@@ -11,6 +11,13 @@ class Radio(ChoiceElement):
                  design: str = '',
                  classes: str = ''
                  ):
+        """Radio Selection Element
+
+        :param options: a list or dict specifying the options
+        :param value: the inital value
+        :param on_change: callback when selection changes
+        :param design: Quasar props to alter the appearance (see `their reference <https://quasar.dev/vue-components/radio>`_)
+        """
 
         view = jp.QOptionGroup(options=options, input=self.handle_change)
 
