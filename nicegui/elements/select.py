@@ -7,12 +7,14 @@ class Select(ChoiceElement):
     def __init__(self,
                  options: Union[List, Dict],
                  value: any = None,
+                 on_change: Callable = None,
                  design: str = '',
-                 on_change: Callable = None):
+                 classes: str=''
+                 ):
 
         view = jp.QSelect(options=options, input=self.handle_change)
 
-        super().__init__(view, design, value, options, on_change)
+        super().__init__(view, value, options, on_change, design=design, classes=classes)
 
     def value_to_view(self, value: any):
 

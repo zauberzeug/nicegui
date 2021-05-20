@@ -11,11 +11,13 @@ class ValueElement(Element):
 
     def __init__(self,
                  view: jp.HTMLBaseComponent,
-                 design: str,
                  value: Any,
-                 on_change: Callable):
+                 on_change: Callable,
+                 design: str,
+                 classes: str,
+                 ):
 
-        super().__init__(view, design)
+        super().__init__(view, design=design, classes=classes)
 
         self.on_change = on_change
         self.value = value

@@ -70,15 +70,15 @@ with example(ui.timer):
     ui.checkbox('active').bind_value(t.active)
 
 with example(ui.label):
-
     ui.label('some label')
 
 with example(ui.markdown):
-
     ui.markdown('### Headline\nWith hyperlink to [GitHub](https://github.com/zauberzeug/nicegui).')
 
-with example(ui.button):
+with example(ui.html):
+    ui.html('<p>demo paragraph in <strong>html</strong></p>')
 
+with example(ui.button):
     def button_increment():
         global button_count
         button_count += 1
@@ -89,18 +89,27 @@ with example(ui.button):
     button_result = ui.label('pressed: 0')
 
 with example(ui.checkbox):
-
     ui.checkbox('check me', on_change=lambda e: checkbox_state.set_text(e.value))
     with ui.row():
         ui.label('the checkbox is:')
         checkbox_state = ui.label('False')
 
-with example(ui.input):
+with example(ui.switch):
+    ui.switch('switch me', on_change=lambda e: checkbox_state.set_text("ON" if e.value else'OFF'))
+    with ui.row():
+        ui.label('the switch is:')
+        checkbox_state = ui.label('OFF')
 
+with example(ui.slider):
+    slider = ui.slider(min=0, max=100, value=50, design='label')
+    ui.label().bind_text_from(slider.value)
+
+with example(ui.input):
     ui.input(
         label='Text',
         placeholder='press ENTER to apply',
-        on_change=lambda e: result.set_text('you typed: ' + e.value)
+        on_change=lambda e: result.set_text('you typed: ' + e.value),
+        classes='w-full',
     )
     result = ui.label('')
 

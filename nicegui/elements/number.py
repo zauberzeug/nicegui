@@ -10,8 +10,10 @@ class Number(FloatElement):
                  placeholder: str = None,
                  value: float = None,
                  format: str = None,
+                 on_change: Callable = None,
                  design: str = '',
-                 on_change: Callable = None):
+                 classes: str='',
+                 ):
 
         view = jp.QInput(
             type='number',
@@ -20,7 +22,7 @@ class Number(FloatElement):
             change=self.handle_change,
         )
 
-        super().__init__(view, design, value, format, on_change)
+        super().__init__(view, value, format, on_change, design=design, classes=classes)
 
     def handle_change(self, msg):
 

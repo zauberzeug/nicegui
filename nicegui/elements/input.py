@@ -10,6 +10,7 @@ class Input(StringElement):
                  placeholder: str = None,
                  value: str = '',
                  design: str = '',
+                 classes: str = '',
                  on_change: Callable = None):
         """Text Input Element
 
@@ -26,4 +27,4 @@ class Input(StringElement):
             change=self.handle_change,
         )
 
-        super().__init__(view, design, value, on_change)
+        super().__init__(view, value, on_change, design=design, classes=classes)

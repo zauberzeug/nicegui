@@ -7,8 +7,10 @@ class Checkbox(BoolElement):
     def __init__(self,
                  text: str = '',
                  value: bool = False,
+                 on_change: Callable = None,
                  design: str = '',
-                 on_change: Callable = None):
+                 classes: str = '',
+                 ):
         """Checkbox Element
 
         :param text: the label to display beside the checkbox
@@ -18,4 +20,4 @@ class Checkbox(BoolElement):
         """
         view = jp.QCheckbox(text=text, input=self.handle_change)
 
-        super().__init__(view, design, value, on_change)
+        super().__init__(view, value, on_change, design=design, classes=classes)

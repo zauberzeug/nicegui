@@ -4,10 +4,9 @@ from .plot import Plot
 class LinePlot(Plot):
 
     def __init__(self, n: int = 1, limit: int = 100, update_every=1, close: bool = True, **kwargs):
-        """Plot
+        """Plot Element
 
-        Create a context to configure a simple line plot. 
-        The  `push` method provides live updating when utilized in combination with ui.timer.
+        Create a line plot. The  `push` method provides live updating when utilized in combination with ui.timer.
 
         :param n: number of data points to begin with
         :param limit: maximum number of datapoints (new ones will push out the oldest)
