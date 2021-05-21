@@ -29,7 +29,7 @@ jobs:
         run: poetry publish --build
       - name: verify
         shell: bash
-        run: for i in {1..100}; do; python -m pip install 'nicegui==${{ steps.get_version.outputs.VERSION }}' && break || sleep 2; done
+        run: for i in {1..100}; do python -m pip install 'nicegui==${{ steps.get_version.outputs.VERSION }}' && break || sleep 2; done
 
   docker:
     runs-on: ubuntu-latest
