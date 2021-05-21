@@ -44,6 +44,16 @@ python3 main.py
 
 The GUI is now avaliable through http://localhost/ in your browser. Note: The script will automatically reload the page when you modify the code.
 
+## Docker
+
+Use the [multi-arch docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) for pain free installation:
+
+```bash
+docker run --rm -p 8888:80 -v $(pwd)/my_script.py:/app/main.py -it zauberzeug/nicegui:latest
+```
+
+This will start the server at http://localhost:8888 with code from `my_script.py` within the current directory. Code modification trigger an automatic reload.
+
 ## API
 
 The API reference is hosted at [https://nicegui.io](https://nicegui.io) and is [implemented with NiceGUI itself](https://github.com/zauberzeug/nicegui/blob/main/main.py). You should also have a look at [examples.py](https://github.com/zauberzeug/nicegui/tree/main/examples.py) for an extensive demonstration of what you can do with NiceGUI.
