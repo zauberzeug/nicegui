@@ -80,6 +80,6 @@ jobs:
         with:
           context: .
           file: ./release.dockerfile
-          platforms: linux/amd64,linux/arm64,linux/arm32v5,linux/arm32v6,linux/arm32v7,linux/ppc64le
+          platforms: linux/amd64,linux/arm64,linux/arm,linux/ppc64le
           push: true
           tags: ${{ steps.prep.outputs.tags }}
