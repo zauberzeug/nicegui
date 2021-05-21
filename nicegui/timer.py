@@ -14,12 +14,12 @@ class Timer:
     def __init__(self, interval, callback, *, active=True, once=False):
         """Timer
 
-        One major drive behind the creation of NiceGUI was the necessity to have an simple approach to update the interface in regular intervals. For example to show a graph with incomming measurements.
+        One major drive behind the creation of NiceGUI was the necessity to have a simple approach to update the interface in regular intervals, for example to show a graph with incomming measurements.
 
-        :param interval: the interval in which the timer is been called
+        :param interval: the interval in which the timer is called
         :param callback: function to execute when interval elapses
-        :param active: whether timer should run or be paused
-        :param once: whether the callback is only executed once after an delay specified by `interval`; default is False
+        :param active: whether the callback should be executed or not
+        :param once: whether the callback is only executed once after a delay specified by `interval`; default is `False`
         """
 
         parent = Element.view_stack[-1]

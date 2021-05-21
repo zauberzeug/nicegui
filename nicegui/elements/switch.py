@@ -13,8 +13,8 @@ class Switch(BoolElement):
                  ):
         """Switch Element
 
-        :param text: the label of the button
-        :param value: set to True if initally it should be active; default is False
+        :param text: the label to display next to the switch
+        :param value: set to `True` if initally it should be active; default is `False`
         :param design: Quasar props to alter the appearance (see `their reference <https://quasar.dev/vue-components/switch>`_)
         :param on_click: callback which is invoked when state is changed by the user
         """

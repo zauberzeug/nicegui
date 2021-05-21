@@ -16,11 +16,11 @@ class Number(FloatElement):
                  ):
         """Number Input Element
 
-        :param label: display name for the input
+        :param label: displayed name for the number input
         :param placeholder: text to show if no value is entered
         :param value: the inital value of the field
-        :param format: a string like '%.2f' to format the entered number before displaying
-        :param on_change: callback when the input is confirmed via leaving the focus
+        :param format: a string like '%.2f' to format the displayed value
+        :param on_change: callback to execute when the input is confirmed by leaving the focus
         :param design: Quasar props to alter the appearance (see `their reference <https://quasar.dev/vue-components/input>`_)
         """
 

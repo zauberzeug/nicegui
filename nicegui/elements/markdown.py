@@ -9,7 +9,7 @@ class Markdown(Html):
 
         Renders markdown onto the page.
 
-        :param content: the markdown to be displayed
+        :param content: the markdown content to be displayed
         """
 
         super().__init__(content, classes=classes)

@@ -14,11 +14,11 @@ class Input(StringElement):
                  on_change: Callable = None):
         """Text Input Element
 
-        :param label: display name for the text input
+        :param label: displayed label for the text input
         :param placeholder: text to show if no value is entered
-        :param value: the current value of the field
+        :param value: the current value of the text input
         :param design: Quasar props to alter the appearance (see `their reference <https://quasar.dev/vue-components/input>`_)
-        :param on_change: callback when the input is confirmed via leaving the focus
+        :param on_change: callback to execute when the input is confirmed by leaving the focus
         """
         view = jp.QInput(
             label=label,

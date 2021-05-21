@@ -4,14 +4,14 @@ from .plot import Plot
 class LinePlot(Plot):
 
     def __init__(self, n: int = 1, limit: int = 100, update_every=1, close: bool = True, **kwargs):
-        """Plot Element
+        """Line Plot
 
-        Create a line plot. The  `push` method provides live updating when utilized in combination with ui.timer.
+        Create a line plot. The `push` method provides live updating when utilized in combination with `ui.timer`.
 
-        :param n: number of data points to begin with
-        :param limit: maximum number of datapoints (new ones will push out the oldest)
+        :param n: number of lines
+        :param limit: maximum number of datapoints per line (new points will displace the oldest)
         :param update_every: update plot only after pushing new data multiple times to save CPU and bandwidth
-        :param close: whether the figure should be closed after exiting the context; set to False if you want to update it later, default is True
+        :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later, default is `True`
         :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_
         """
 
