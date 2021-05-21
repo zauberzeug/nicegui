@@ -28,6 +28,7 @@ jobs:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
         run: poetry publish --build
       - name: verify
+        shell: bash
         run: for i in {1..100}; do; python -m pip install 'nicegui==${{ steps.get_version.outputs.VERSION }}' && break || sleep 2; done
 
   docker:
