@@ -13,9 +13,9 @@ class Radio(ChoiceElement):
                  ):
         """Radio Selection Element
 
-        :param options: a list or dict specifying the options
+        :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
         :param value: the inital value
-        :param on_change: callback when selection changes
+        :param on_change: callback to execute when selection changes
         :param design: Quasar props to alter the appearance (see `their reference <https://quasar.dev/vue-components/radio>`_)
         """
 

@@ -75,8 +75,8 @@ with ui.row(classes='flex w-full'):
 
 design = '''### Styling & Design
 
-NiceGUI use the [Quasar Framework](https://quasar.dev/) and hence has their full design power. Each NiceGUI element provides a `design` property which content is passed [as props the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
-Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling "props".
+NiceGUI uses the [Quasar Framework](https://quasar.dev/) and hence has its full design power. Each NiceGUI element provides a `design` property whose content is passed [as "props" to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
+Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
 
 You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` property or `add_classes` method.
 '''
@@ -85,15 +85,16 @@ with (example(design)):
     ui.radio(['x', 'y', 'z'], design='inline color=green')
     ui.button(icon='touch_app', design='outline round', classes='shadow-lg ml-14')
 
-design = '''### Bindings
+binding = '''### Bindings
 
-With help of the [binding](https://pypi.org/project/binding/) package NiceGUI is able to directly bind UI elements to models (dict, class, ...).
+With help of the [binding](https://pypi.org/project/binding/) package NiceGUI is able to directly bind UI elements to models.
+Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes.
 
-Eeach element provides methods `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property. 
-To define a one-way binding use the `_from` and `_to` variants of these methods. 
+Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property.
+To define a one-way binding use the `_from` and `_to` variants of these methods.
 Just pass a property of the model as parameter to these methods to create the binding.
 '''
-with (example(design)):
+with (example(binding)):
 
     class Demo:
 

@@ -13,8 +13,8 @@ class Checkbox(BoolElement):
                  ):
         """Checkbox Element
 
-        :param text: the label to display beside the checkbox
-        :param value: set to True if initally it should be checked; default is False
+        :param text: the label to display next to the checkbox
+        :param value: set to `True` if it should be checked initally; default is `False`
         :param design: Quasar props to alter the appearance (see `their reference <https://quasar.dev/vue-components/checkbox>`_)
         :param on_change: callback to execute when value changes
         """

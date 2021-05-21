@@ -4,11 +4,11 @@ from .element import Element
 class Html(Element):
 
     def __init__(self, content: str = '', design='', classes: str = ''):
-        """Html Element
+        """HTML Element
 
-        Renders arbitrary html onto the page. `Tailwind <https://tailwindcss.com/>`_ can be used for styling.
+        Renders arbitrary HTML onto the page. `Tailwind <https://tailwindcss.com/>`_ can be used for styling.
 
-        :param content: the html code to be displayed
+        :param content: the HTML code to be displayed
         """
 
         view = jp.QDiv()

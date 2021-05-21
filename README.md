@@ -2,7 +2,7 @@
 
 <img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/ui-elements.png" width="300" align="right">
 
-We like [Streamlit](https://streamlit.io/) but find it does to much magic when it comes to state handling. In search for an alernative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/). While too "low-level-html" for our daily usage it provides a great basis for "NiceGUI".
+We like [Streamlit](https://streamlit.io/) but find it does too much magic when it comes to state handling. In search for an alernative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/). While too "low-level HTML" for our daily usage it provides a great basis for "NiceGUI".
 
 ## Purpose
 
@@ -10,14 +10,14 @@ NiceGUI is intended to be used for small scripts and single-page user interfaces
 
 ## Features
 
-- browser-based Graphical User Interface
+- browser-based graphical user interface
 - shared state between multiple browser windows
 - implicit reload on code change
 - clean set of GUI elements (label, button, checkbox, switch, slider, input, ...)
 - simple grouping with rows, columns and cards
-- genral-purpose html and markdown elements
+- general-purpose HTML and markdown elements
 - built-in timer to refresh data in intervals (even every 10 ms)
-- straight-forward data bindings to write even less code
+- straight-forward data binding to write even less code
 
 ## Install
 
@@ -42,7 +42,7 @@ Launch it with:
 python3 main.py
 ```
 
-The GUI is now avaliable thorugh http://localhost/ in your browser. Note: The script will automatically reload the page if you modify the code.
+The GUI is now avaliable through http://localhost/ in your browser. Note: The script will automatically reload the page when you modify the code.
 
 ## API
 
