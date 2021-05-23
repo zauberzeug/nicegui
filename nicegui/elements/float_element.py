@@ -6,16 +6,15 @@ class FloatElement(ValueElement):
 
     def __init__(self,
                  view: jp.HTMLBaseComponent,
+                 *,
                  value: float,
-                 format: str,
+                 format: str = None,
                  on_change: Callable,
-                 design: str,
-                 classes=str,
                  ):
 
         self.format = format
 
-        super().__init__(view, value, on_change, design=design, classes=classes)
+        super().__init__(view, value=value, on_change=on_change)
 
     def value_to_view(self, value: float):
 

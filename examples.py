@@ -6,7 +6,7 @@ import numpy as np
 
 with ui.row():
     with ui.card():
-        ui.label('Interactive elements', 'h5')
+        ui.label('Interactive elements').classes('text-h5')
         with ui.row():
             with ui.column():
                 ui.button('Click me!', on_click=lambda: output.set_text('Click'))
@@ -24,28 +24,28 @@ with ui.row():
                     ui.select(options={1: 'a', 2: 'b', 3: 'c'}, value=1, on_change=lambda e: output.set_text(e.value))
                 ui.toggle(['1', '2', '3'], value='1', on_change=lambda e: output.set_text(e.value))
                 ui.toggle({1: 'X', 2: 'Y', 3: 'Z'}, value=1, on_change=lambda e: output.set_text(e.value))
-        ui.radio(['x', 'y', 'z'], value='x', design='inline color=green', on_change=lambda e: output.set_text(e.value))
+        ui.radio(['x', 'y', 'z'], value='x', on_change=lambda e: output.set_text(e.value)).props('inline color=green')
         with ui.row():
             ui.label('Output:')
-            output = ui.label(' ', 'bold')
+            output = ui.label('').classes('text-bold')
 
     with ui.column():
         with ui.card():
-            ui.label('Timer', 'h5')
+            ui.label('Timer').classes('text-h5')
             with ui.row():
                 ui.icon('far fa-clock')
                 clock = ui.label()
                 t = ui.timer(0.1, lambda: clock.set_text(datetime.now().strftime("%X")))
             ui.checkbox('active').bind_value(t.active)
 
-        with ui.card().add_classes('items-center'):
-            ui.label('Style', 'h5')
-            ui.icon('fas fa-umbrella-beach', size='70px').add_classes('text-amber-14').add_style('margin: 9px')
+        with ui.card().classes('items-center'):
+            ui.label('Style').classes('text-h5')
+            ui.icon('fas fa-umbrella-beach').props('size=70px').classes('text-amber-14').style('margin: 9px')
             ui.link('color palette', 'https://quasar.dev/style/color-palette')
-            ui.button(icon='touch_app', design='outline round')
+            ui.button().props('icon=touch_app outline round')
 
     with ui.card():
-        ui.label('Binding', 'h5')
+        ui.label('Binding').classes('text-h5')
         with ui.row():
             n1 = ui.number(value=1.2345, format='%.2f')
             n2 = ui.number(format='%.3f').bind_value(n1.value)
@@ -61,12 +61,12 @@ with ui.row():
                 ui.number().bind_value(model.value)
                 ui.slider(min=1, max=3).bind_value(model.value)
                 ui.label().bind_text(model.value)
-        with ui.row().add_classes('items-center'):
+        with ui.row().classes('items-center'):
             v = ui.checkbox('visible', value=True)
             ui.icon('visibility').bind_visibility_from(v.value)
 
     with ui.card():
-        ui.label('Matplotlib', 'h5')
+        ui.label('Matplotlib').classes('text-h5')
         with ui.plot(close=False) as plot:
             plt.title('Some plot')
             x, y = [], []
@@ -85,7 +85,7 @@ with ui.row():
         ui.timer(0.5, update_plot)
 
     with ui.card():
-        ui.label('Line Plot', 'h5')
+        ui.label('Line Plot').classes('text-h5')
         lines = ui.line_plot(n=2, limit=200, update_every=5).with_legend(['sin', 'cos'], loc='upper center', ncol=2)
         ui.timer(0.1, lambda: lines.push([datetime.now()], [
             [np.sin(datetime.now().timestamp()) + 0.02 * np.random.randn()],

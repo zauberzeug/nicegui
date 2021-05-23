@@ -5,14 +5,12 @@ from .float_element import FloatElement
 class Number(FloatElement):
 
     def __init__(self,
-                 *,
                  label: str = None,
+                 *,
                  placeholder: str = None,
                  value: float = None,
                  format: str = None,
                  on_change: Callable = None,
-                 design: str = '',
-                 classes: str = '',
                  ):
         """Number Input Element
 
@@ -21,7 +19,6 @@ class Number(FloatElement):
         :param value: the inital value of the field
         :param format: a string like '%.2f' to format the displayed value
         :param on_change: callback to execute when the input is confirmed by leaving the focus
-        :param design: Quasar props to alter the appearance (see `their reference <https://quasar.dev/vue-components/input>`_)
         """
 
         view = jp.QInput(
@@ -31,7 +28,7 @@ class Number(FloatElement):
             change=self.handle_change,
         )
 
-        super().__init__(view, value, format, on_change, design=design, classes=classes)
+        super().__init__(view, value=value, format=format, on_change=on_change)
 
     def handle_change(self, msg):
 

@@ -8,19 +8,14 @@ class Element:
 
     visible = BindableProperty
 
-    def __init__(self, view: jp.HTMLBaseComponent, design: str = '', classes: str = ''):
-
-        for word in design.split():
-            if '=' in word:
-                setattr(view, *word.split('='))
-            else:
-                setattr(view, word, True)
+    def __init__(self,
+                 view: jp.HTMLBaseComponent,
+                 ):
 
         self.parent_view = self.view_stack[-1]
         self.parent_view.add(view)
         view.add_page(self.wp)
         self.view = view
-        self.view.classes += ' ' + classes
 
         self.visible = True
 
@@ -50,22 +45,35 @@ class Element:
         self.visible.bind(target, forward=forward, backward=backward, nesting=1)
         return self
 
-    def set_classes(self, classes: str):
+    def classes(self, add: str = '', *, remove: str = '', replace: str = ''):
 
-        self.view.classes = classes
+        class_list = [] if replace else self.view.classes.split()
+        class_list = [c for c in class_list if c not in remove]
+        class_list += add.split()
+        class_list += replace.split()
+        self.view.classes = ' '.join(class_list)
+
         return self
 
-    def add_classes(self, classes: str):
+    def style(self, add: str = '', *, remove: str = '', replace: str = ''):
 
-        self.view.classes += ' ' + classes
+        style_list = [] if replace else self.view.style.split()
+        style_list = [c for c in style_list if c not in remove.split()]
+        style_list += add.split()
+        style_list += replace.split()
+        self.view.style = ' '.join(style_list)
+
         return self
 
-    def set_style(self, style: str):
+    def props(self, add: str = '', *, remove: str = '', replace: str = ''):
 
-        self.view.style = style
-        return self
+        for prop in remove.split() + replace.split():
+            setattr(self.view, prop.split('=')[0], None)
 
-    def add_style(self, style: str):
+        for prop in add.split() + replace.split():
+            if '=' in prop:
+                setattr(self.view, *prop.split('='))
+            else:
+                setattr(self.view, prop, True)
 
-        self.view.style += ' ' + style
         return self

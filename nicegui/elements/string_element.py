@@ -6,10 +6,9 @@ class StringElement(ValueElement):
 
     def __init__(self,
                  view: jp.HTMLBaseComponent,
+                 *,
                  value: float,
                  on_change: Callable,
-                 design: str,
-                 classes: str,
                  ):
 
-        super().__init__(view, value, on_change, design, classes)
+        super().__init__(view, value=value, on_change=on_change)
