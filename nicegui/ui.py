@@ -2,6 +2,7 @@ class Ui:
 
     from .elements.button import Button as button
     from .elements.checkbox import Checkbox as checkbox
+    from .elements.custom import Custom as custom
     from .elements.icon import Icon as icon
     from .elements.input import Input as input
     from .elements.label import Label as label
