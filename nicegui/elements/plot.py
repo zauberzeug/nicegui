@@ -5,7 +5,11 @@ from .element import Element
 
 class Plot(Element):
 
-    def __init__(self, close: bool = True, **kwargs):
+    def __init__(self,
+                 *,
+                 close: bool = True,
+                 **kwargs,
+                 ):
         """Plot Context
 
         Create a context to configure a `Matplotlib <https://matplotlib.org/>`_ plot.
@@ -20,7 +24,7 @@ class Plot(Element):
         view = jp.Matplotlib()
         view.set_figure(self.fig)
 
-        super().__init__(view, '')
+        super().__init__(view)
 
     def __enter__(self):
 

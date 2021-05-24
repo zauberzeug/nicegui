@@ -3,7 +3,9 @@ from .element import Element
 
 class Html(Element):
 
-    def __init__(self, content: str = '', design='', classes: str = ''):
+    def __init__(self,
+                 content: str = '',
+                 ):
         """HTML Element
 
         Renders arbitrary HTML onto the page. `Tailwind <https://tailwindcss.com/>`_ can be used for styling.
@@ -12,7 +14,7 @@ class Html(Element):
         """
 
         view = jp.QDiv()
-        super().__init__(view, design=design, classes=classes)
+        super().__init__(view)
         self.content = content
 
     @property

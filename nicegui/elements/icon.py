@@ -3,8 +3,10 @@ from .element import Element
 
 class Icon(Element):
 
-    def __init__(self, name: str, size: str = '20px'):
+    def __init__(self,
+                 name: str,
+                 ):
 
-        view = jp.QIcon(name=name, classes=f'q-pt-xs', size=size)
+        view = jp.QIcon(name=name, classes=f'q-pt-xs', size='20px')
 
-        super().__init__(view, '')
+        super().__init__(view)

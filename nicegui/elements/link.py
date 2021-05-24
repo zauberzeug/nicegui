@@ -1,15 +1,13 @@
 import justpy as jp
-from typing import List
 from .element import Element
 
 class Link(Element):
 
-    def __init__(self, text: str = '', href: str = '#', typography: List[str] = []):
+    def __init__(self,
+                 text: str = '',
+                 href: str = '#',
+                 ):
 
-        if isinstance(typography, str):
-            typography = [typography]
+        view = jp.A(text=text, href=href)
 
-        classes = ' '.join('text-' + t for t in typography)
-        view = jp.A(text=text, href=href, classes=classes)
-
-        super().__init__(view, '')
+        super().__init__(view)

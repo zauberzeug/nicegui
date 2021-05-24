@@ -3,7 +3,14 @@ from .plot import Plot
 
 class LinePlot(Plot):
 
-    def __init__(self, n: int = 1, limit: int = 100, update_every=1, close: bool = True, **kwargs):
+    def __init__(self,
+                 *,
+                 n: int = 1,
+                 limit: int = 100,
+                 update_every=1,
+                 close: bool = True,
+                 **kwargs,
+                 ):
         """Line Plot
 
         Create a line plot. The `push` method provides live updating when utilized in combination with `ui.timer`.
@@ -15,7 +22,7 @@ class LinePlot(Plot):
         :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_
         """
 
-        super().__init__(close, **kwargs)
+        super().__init__(close=close, **kwargs)
 
         self.x = []
         self.Y = [[] for _ in range(n)]

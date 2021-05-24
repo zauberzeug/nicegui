@@ -18,10 +18,10 @@ def example(content: Union[Element, str]):
 
     callFrame = inspect.currentframe().f_back.f_back
     begin = callFrame.f_lineno
-    with ui.row(classes='flex w-full'):
+    with ui.row().classes('flex w-full'):
 
         if isinstance(content, str):
-            ui.markdown(content, classes='mr-8 w-4/12')
+            ui.markdown(content).classes('mr-8 w-4/12')
         else:
             doc = content.__init__.__doc__
             if doc:
@@ -29,11 +29,11 @@ def example(content: Union[Element, str]):
                 html = html.replace('<p>', '<h3>', 1)
                 html = html.replace('</p>', '</h3>', 1)
                 html = Markdown.apply_tailwind(html)
-                ui.html(html, classes='mr-8 w-4/12')
+                ui.html(html).classes('mr-8 w-4/12')
             else:
-                ui.label(content.__name__, 'h5')
+                ui.label(content.__name__).classes('text-h5')
 
-        with ui.card(classes='mt-12 w-2/12'):
+        with ui.card().classes('mt-12 w-2/12'):
             yield
         callFrame = inspect.currentframe().f_back.f_back
         end = callFrame.f_lineno
@@ -44,46 +44,46 @@ def example(content: Union[Element, str]):
         code.insert(1, 'from nicegui import ui')
         code.append('```')
         code = '\n'.join(code)
-        ui.markdown(code, classes='mt-12 w-5/12 overflow-auto')
+        ui.markdown(code).classes('mt-12 w-5/12 overflow-auto')
 
-with ui.row(classes='flex w-full'):
+with ui.row().classes('flex w-full'):
     with open('README.md', 'r') as file:
         content = file.read()
         content = re.sub(r'(?m)^\<img.*\n?', '', content)
-        ui.markdown(content, classes='w-6/12')
+        ui.markdown(content).classes('w-6/12')
 
-    with ui.card(classes='mx-auto mt-24'):
+    with ui.card().classes('mx-auto mt-24'):
         with ui.row():
             with ui.column():
                 ui.button('Click me!', on_click=lambda: output.set_text('Click'))
                 ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
                 ui.switch('Switch me!', on_change=lambda e: output.set_text('Switched' if e.value else 'Unswitched'))
-                ui.input(label='Text', value='abc', on_change=lambda e: output.set_text(e.value))
-                ui.number(label='Number', value=3.1415927, format='%.2f', on_change=lambda e: output.set_text(e.value))
+                ui.input('Text', value='abc', on_change=lambda e: output.set_text(e.value))
+                ui.number('Number', value=3.1415927, format='%.2f', on_change=lambda e: output.set_text(e.value))
 
             with ui.column():
                 ui.slider(min=0, max=100, value=50, step=0.1, on_change=lambda e: output.set_text(e.value))
-                ui.radio(options=['A', 'B', 'C'], value='A', design='inline',
-                         on_change=lambda e: output.set_text(e.value))
-                ui.toggle(['1', '2', '3'], value='1', classes='mx-auto', on_change=lambda e: output.set_text(e.value))
-                ui.select(options={1: 'One', 2: 'Two', 3: 'Three'}, value=1, classes='mx-auto',
-                          on_change=lambda e: output.set_text(e.value))
+                ui.radio(['A', 'B', 'C'], value='A', on_change=lambda e: output.set_text(e.value)).props('inline')
+                ui.toggle(['1', '2', '3'], value='1', on_change=lambda e: output.set_text(e.value)).classes('mx-auto')
+                ui.select({1: 'One', 2: 'Two', 3: 'Three'}, value=1,
+                          on_change=lambda e: output.set_text(e.value)).classes('mx-auto')
 
-            with ui.column().add_classes('w-24'):
+            with ui.column().classes('w-24'):
                 ui.label('Output:')
-                output = ui.label(' ', 'bold')
+                output = ui.label('').classes('text-bold')
 
 design = '''### Styling & Design
 
-NiceGUI uses the [Quasar Framework](https://quasar.dev/) and hence has its full design power. Each NiceGUI element provides a `design` property whose content is passed [as "props" to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
+NiceGUI uses the [Quasar Framework](https://quasar.dev/) and hence has its full design power.
+Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
 Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
 
-You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` property or `add_classes` method.
+You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method.
 '''
 with (example(design)):
 
-    ui.radio(['x', 'y', 'z'], design='inline color=green')
-    ui.button(icon='touch_app', design='outline round', classes='shadow-lg ml-14')
+    ui.radio(['x', 'y', 'z']).props('inline color=green')
+    ui.button().props('icon=touch_app outline round').classes('shadow-lg ml-14')
 
 binding = '''### Bindings
 
@@ -155,7 +155,7 @@ with example(ui.switch):
 
 with example(ui.slider):
 
-    slider = ui.slider(min=0, max=100, value=50, design='label')
+    slider = ui.slider(min=0, max=100, value=50).props('label')
     ui.label().bind_text_from(slider.value)
 
 with example(ui.input):
@@ -164,8 +164,7 @@ with example(ui.input):
         label='Text',
         placeholder='press ENTER to apply',
         on_change=lambda e: result.set_text('you typed: ' + e.value),
-        classes='w-full',
-    )
+    ).classes('w-full')
     result = ui.label('')
 
 with example(ui.number):
@@ -177,19 +176,19 @@ with example(ui.number):
 
 with example(ui.radio):
 
-    radio = ui.radio(options=[1, 2, 3], value=1, design='inline')
-    ui.radio(options={1: 'A', 2: 'B', 3: 'C'}, value=1, design='inline').bind_value(radio.value)
+    radio = ui.radio([1, 2, 3], value=1).props('inline')
+    ui.radio({1: 'A', 2: 'B', 3: 'C'}, value=1).props('inline').bind_value(radio.value)
 
 with example(ui.toggle):
 
-    toggle = ui.toggle(options=[1, 2, 3], value=1)
-    ui.toggle(options={1: 'A', 2: 'B', 3: 'C'}, value=1).bind_value(toggle.value)
+    toggle = ui.toggle([1, 2, 3], value=1)
+    ui.toggle({1: 'A', 2: 'B', 3: 'C'}, value=1).bind_value(toggle.value)
 
 with example(ui.select):
 
     with ui.row():
-        select = ui.select(options=[1, 2, 3], value=1, design='inline')
-        ui.select(options={1: 'One', 2: 'Two', 3: 'Three'}, value=1, design='inline').bind_value(select.value)
+        select = ui.select([1, 2, 3], value=1).props('inline')
+        ui.select({1: 'One', 2: 'Two', 3: 'Three'}, value=1).props('inline').bind_value(select.value)
 
 with example(ui.plot):
     from matplotlib import pyplot as plt
