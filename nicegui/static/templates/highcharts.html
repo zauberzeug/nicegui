@@ -1,0 +1,68 @@
+<style>
+    {#needed for exporting menu#}
+    hr {
+        display: block;
+        margin-before: 0.5em;
+        margin-after: 0.5em;
+        margin-start: auto;
+        margin-end: auto;
+        overflow: hidden;
+        border-style: inset;
+        border-width: 1px;
+    }
+</style>
+{% if not options.no_internet %}
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/modules/variable-pie.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/histogram-bellcurve.js"></script>
+    <script src="https://code.highcharts.com/modules/streamgraph.js"></script>
+    {#    <script src="https://code.highcharts.com/stock/modules/series-label.js"></script>#}
+    <script src="https://code.highcharts.com/modules/annotations.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src=https://code.highcharts.com/modules/offline-exporting.js></script>
+    <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/data.js"></script>
+    <script src="https://code.highcharts.com/modules/dumbbell.js"></script>
+    <script src="https://code.highcharts.com/modules/lollipop.js"></script>
+    <script src="https://code.highcharts.com/modules/sankey.js"></script>
+    <script src="https://code.highcharts.com/modules/dependency-wheel.js"></script>
+    <script src="https://code.highcharts.com/modules/item-series.js"></script>
+    <script src="https://code.highcharts.com/modules/organization.js"></script>
+    <script src="https://code.highcharts.com/modules/timeline.js"></script>
+    <script src="https://code.highcharts.com/modules/heatmap.js"></script>
+    <script src="https://code.highcharts.com/modules/tilemap.js"></script>
+    <script src="https://code.highcharts.com/modules/drilldown.js"></script>
+    <script src="https://code.highcharts.com/modules/coloraxis.js"></script>
+    <script src="https://code.highcharts.com/highcharts-3d.js"></script>
+    <script src="https://code.highcharts.com/modules/cylinder.js"></script>
+    <script src="https://code.highcharts.com/modules/funnel3d.js"></script>
+    <script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
+    <script src="https://code.highcharts.com/modules/venn.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://code.highcharts.com/modules/treemap.js"></script>
+    <script src="https://code.highcharts.com/modules/xrange.js"></script>
+
+    <script src="http://code.highcharts.com/maps/modules/map.js"></script>
+
+    {#Must be last#}
+    <script src="https://code.highcharts.com/stock/modules/boost.js"></script>
+{% else %}
+    <script src="/templates/local/highcharts.js"></script>
+{% endif %}
+
+
+<script>
+    Highcharts.setOptions({
+        lang: {
+            thousandsSep: ','
+        }
+    });
+    {% if page_options.highcharts_theme %}
+        {% set theme_file = 'highcharts/' + page_options.highcharts_theme + '.js' %}
+        {% include theme_file %}
+    {% endif %}
+
+
+</script>
+

@@ -1,0 +1,302 @@
+{% for file_name in options.component_file_list %}
+    <script src={{ url_for(options.static_name, path=file_name) }}></script>
+{% endfor %}
+
+<script>
+
+    {% if page_options.redirect %}
+        location.href = '{{ page_options.redirect }}';
+    {%endif %}
+
+    var websocket_ready = false;
+
+    {% include 'js/event_handler.js' %}
+    {% include 'js/html_component.js' %}
+    {% include 'js/quasar_component.js' %}
+    {% include 'js/chartjp.js' %}
+    {% include 'js/aggrid.js' %}
+    {% include 'js/editorjp.js' %}
+
+    {% if page_options.title is not none %}
+        document.title = '{{ page_options.title }}';
+    {%endif %}
+
+    {% if page_options.display_url is not none %}
+        window.history.pushState("", "", '{{ page_options.display_url }}');
+    {%endif %}
+
+    var page_id = {{ page_id | safe }};
+    var websocket_id = '';
+    var use_websockets = JSON.parse('{{ use_websockets }}');
+    var justpyComponents = {{ justpy_dict | safe }};
+    var crosshairs = [];
+    var comp_dict = {};  // Hold components for running methods
+
+    {% for event in page_options.events %}
+        document.addEventListener('{{ event }}', function (evt) {
+            const e = {
+                'event_type': '{{ event }}',
+                'visibility': document.visibilityState,
+                'page_id': page_id,
+                'websocket_id': websocket_id
+            };
+            send_to_server(e, 'page_event', false);
+        });
+    {% endfor %}
+
+    if (use_websockets) {
+        console.log(location.protocol + ' Domain: ' + document.domain);
+        if (location.protocol === 'https:') {
+            var protocol_string = 'wss://'
+        } else {
+            protocol_string = 'ws://'
+        }
+        if (location.port) {
+            var socket = new WebSocket(protocol_string + document.domain + ':' + location.port);
+        } else {
+            var socket = new WebSocket(protocol_string + document.domain);
+        }
+
+        socket.addEventListener('open', function (event) {
+            console.log('Webocket opened');
+            socket.send(JSON.stringify({'type': 'connect', 'page_id': page_id}));
+        });
+
+        socket.addEventListener('error', function (event) {
+            console.log('Websocket closed');
+            let ok_to_reload = confirm('Page needs to be reloaded, click OK to reload');
+            if (ok_to_reload) window.location.reload()
+        });
+
+        var web_socket_closed = false;
+        socket.addEventListener('close', function (event) {
+            console.log('Websocket closed');
+            web_socket_closed = true;
+            let ok_to_reload = confirm('Page needs to be reloaded, click OK to reload');
+            if (ok_to_reload) window.location.reload()
+        });
+
+        socket.addEventListener('message', function (event) {
+            msg = JSON.parse(event.data);
+            {% if page_options.debug %}
+                console.log('Message received from server ', msg);
+                console.log(event);
+            {% endif %}
+
+            let e = {};
+            switch (msg.type) {
+                case 'page_update':
+                    if (msg.page_options.redirect) {
+                        location.href = msg.page_options.redirect;
+                        break;
+                    }
+                    if (msg.page_options.open) {
+                        window.open(msg.page_options.open, '_blank');
+                    }
+                    if (msg.page_options.display_url !== null)
+                        window.history.pushState("", "", msg.page_options.display_url);
+                    document.title = msg.page_options.title;
+                    if (msg.page_options.favicon) {
+                        var link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+                        link.type = 'image/x-icon';
+                        link.rel = 'shortcut icon';
+                        if (msg.page_options.favicon.startsWith('http')) {
+                            link.href = msg.page_options.favicon;
+                        } else {
+                            link.href = '{{ url_for(options.static_name, path='/') }}' + msg.page_options.favicon;
+                        }
+                        document.getElementsByTagName('head')[0].appendChild(link);
+                    }
+
+                    app1.justpyComponents = msg.data;
+
+                    break;
+                case 'page_mode_update':
+                    Quasar.Dark.set(msg.dark);
+                    break;
+                case 'websocket_update':
+                    websocket_id = msg.data;
+                    websocket_ready = true;
+
+                {% if 'page_ready' in page_options.events %}
+                    e = {
+                        'event_type': 'page_ready',
+                        'visibility': document.visibilityState,
+                        'page_id': page_id,
+                        'websocket_id': websocket_id
+                    };
+                    send_to_server(e, 'page_event', false);
+                {% endif %}
+                    break;
+                case 'component_update':
+                    // update just specific component on the page
+                    comp_replace(msg.data, app1.justpyComponents);
+                    break;
+                case 'run_javascript':
+                    // let js_result = eval(msg.data);
+                    let js_result;
+
+                function eval_success() {
+                    e = {
+                        'event_type': 'result_ready',
+                        'visibility': document.visibilityState,
+                        'page_id': page_id,
+                        'websocket_id': websocket_id,
+                        'request_id': msg.request_id,
+                        'result': js_result //JSON.stringify(js_result)
+                    };
+                    {% if 'result_ready' in page_options.events %}
+                        if (msg.send) send_to_server(e, 'page_event', false);
+                    {% endif %}
+                }
+
+                    const jsPromise = (new Promise(function () {
+                        js_result = eval(msg.data);
+                    })).then(eval_success());
+
+                    break;
+                case 'run_method':
+                    // await websocket.send_json({'type': 'run_method', 'data': command, 'id': self.id})
+                    eval('comp_dict[' + msg.id + '].' + msg.data);
+                    break;
+                case 'draw_crosshair':
+                    // Remove previous crosshairs
+                    for (let i = 0; i < crosshairs.length; i++) {
+                        crosshairs[i].destroy();
+                    }
+                    crosshairs = [];
+                    for (let i = 0; i < msg.data.length; i++) {
+                        const m = msg.data[i];
+                        const chart_index = document.getElementById(m.id.toString()).getAttribute('data-highcharts-chart');
+                        const chart = Highcharts.charts[chart_index];
+                        const point = chart.series[m.series].data[m.point];
+                        draw_crosshair(chart, chart.series[m.series], point);
+                    }
+                    break;
+                case 'select_point':
+                    for (let i = 0; i < msg.data.length; i++) {
+                        const m = msg.data[i];
+                        const chart_index = document.getElementById(m.id.toString()).getAttribute('data-highcharts-chart');
+                        const chart = Highcharts.charts[chart_index];
+                        chart.series[m.series].data[m.point].select();
+                    }
+                    break;
+                case 'chart_update':
+                    const chart = cached_graph_def['chart' + msg.id];
+                    chart.update(msg.data);
+                    break;
+                case 'tooltip_update':
+                    // https://github.com/highcharts/highcharts/issues/6824
+                    var chart_on = cached_graph_def['chart' + msg.id];
+
+                    if (chart_on.options.tooltip.split) {
+                        chart_on.tooltip.tt.attr({
+                            text: msg.data[0]
+                        });
+
+                        var j = 1;
+                        for (let i = 0; i < chart_on.tooltip.chart.series.length; i++) {
+                            if (chart_on.tooltip.chart.series[i].visible &&
+                                (chart_on.tooltip.chart.series[i].tt != null)) {
+                                chart_on.tooltip.chart.series[i].tt.attr({
+                                    text: msg.data[j++]
+                                });
+
+                            }
+                        }
+
+                    } else {
+                        chart_on.tooltip.label.attr({
+                            text: msg.data
+                        });
+                    }
+                    break;
+                default: {
+
+                }
+            }
+        });
+    }
+    // No websockets
+    else {
+        window.addEventListener('beforeunload', function (event) {
+            e = {
+                'event_type': 'beforeunload',
+                'page_id': page_id,
+            };
+            send_to_server(e);
+        });
+    }
+
+
+    function draw_crosshair(chart, series, point) {
+
+        var
+            r = chart.renderer,
+            left = chart.plotLeft,
+            top = chart.plotTop,
+            width = chart.plotWidth,
+            height = chart.plotHeight,
+            x = point.plotX,
+            y = point.plotY;
+
+        var crosshair = r.path(['M', left, top + y, 'L', left + width, top + y, 'M', left + x, top, 'L', left + x, top + height])
+            .attr({
+                'stroke-width': 1,
+                stroke: '#D3D3D3'
+            })
+            .add();
+        crosshairs.push(crosshair);
+    }
+
+    function comp_replace(comp, comp_list) {
+        var m_id = comp['id'];
+        for (let i = 0; i < comp_list.length; i++) {
+            if (comp_list[i]['id'] == m_id) {
+                var spliced = comp_list.splice(i, 1, comp);
+            } else {
+                if (comp_list[i]['object_props']) {
+                    comp_replace(comp, comp_list[i]['object_props']);
+                }
+            }
+        }
+    }
+
+    {% if page_options.reload_interval %}
+        setInterval(function () {
+            $.ajax({
+                type: "POST",
+                url: "/zzz_justpy_ajax",
+                data: JSON.stringify({
+                    'type': 'event',
+                    'event_data': {'event_type': 'page_update', 'page_id': {{ page_id | safe }}}
+                }),
+                success: function (msg) {
+                    if (msg) app1.justpyComponents = msg.data;
+                },
+                dataType: 'json'
+            });
+        }, 1000 * {{ page_options.reload_interval }});
+    {% endif %}
+
+    var app1 = new Vue({
+        el: '#components',
+        data: {
+            justpyComponents: justpyComponents
+        },
+        render: function (h) {
+            var comps = [];
+            for (var i = 0; i < this.justpyComponents.length; i++) {
+                if (this.justpyComponents[i].show) {
+                    comps.push(h(this.justpyComponents[i].vue_type, {
+                        props: {
+                            jp_props: this.justpyComponents[i]
+                        }
+                    }))
+                }
+            }
+            return h('div', {}, comps);
+        }
+    });
+
+</script>
