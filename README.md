@@ -2,7 +2,7 @@
 
 <img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/ui-elements.png" width="300" align="right">
 
-We like [Streamlit](https://streamlit.io/) but find it does too much magic when it comes to state handling.
+We like [Streamlit](https://streamlit.io/) but find it does [too much magic when it comes to state handling](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651).
 In search for an alernative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/).
 While too "low-level HTML" for our daily usage it provides a great basis for "NiceGUI".
 
