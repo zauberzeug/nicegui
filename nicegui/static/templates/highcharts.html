@@ -48,7 +48,7 @@
     {#Must be last#}
     <script src="https://code.highcharts.com/stock/modules/boost.js"></script>
 {% else %}
-    <script src="/templates/local/highcharts.js"></script>
+    <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/highcharts.js"></script>
 {% endif %}
 
 

@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-
     {% include 'favicon.html' %}
 
         {% if options.tailwind %}
@@ -11,10 +10,10 @@
                 <link rel="stylesheet" href="https://unpkg.com/@tailwindcss/typography@^0.1.2/dist/typography.min.css">
                 <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.4.6/dist/utilities.min.css">
             {% else %}
-                <link href="/templates/local/tailwind/base.css" rel="stylesheet">
-                <link href="/templates/local/tailwind/components.css" rel="stylesheet">
-                <link href="/templates/local/tailwind/typography.css" rel="stylesheet">
-                <link href="/templates/local/tailwind/utilities.css" rel="stylesheet">
+                <link href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/tailwind/base.css" rel="stylesheet">
+                <link href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/tailwind/components.css" rel="stylesheet">
+                <link href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/tailwind/typography.css" rel="stylesheet">
+                <link href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/tailwind/utilities.css" rel="stylesheet">
             {% endif %}
             <style>
                 {% include 'css/form.css' %}
@@ -34,12 +33,12 @@
             <link href="https://cdn.jsdelivr.net/npm/quasar@^1.0.3/dist/quasar.min.css" rel="stylesheet" type="text/css">
         {% endif %}
     {% else %}
-        <link rel="stylesheet" href="/templates/local/robotofont/robotofont.css"/>
-        <link rel="stylesheet" href="/templates/local/ionicons/ionicons.css"/>
-        <link rel="stylesheet" href="/templates/local/materialdesignicons/iconfont/material-icons.css"/>
-        <link rel="stylesheet" href="/templates/local/fontawesome/css/all.min.css"/>
-        <link rel="stylesheet" href="/templates/local/animate.css"/>
-        <link rel="stylesheet" href="/templates/local/quasar.css"/>
+        <link rel="stylesheet" href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/robotofont/robotofont.css"/>
+        <link rel="stylesheet" href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/ionicons/ionicons.css"/>
+        <link rel="stylesheet" href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/materialdesignicons/iconfont/material-icons.css"/>
+        <link rel="stylesheet" href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/fontawesome/css/all.min.css"/>
+        <link rel="stylesheet" href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/animate.css"/>
+        <link rel="stylesheet" href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/quasar.css"/>
     {% endif %}
 
     <style>
@@ -56,7 +55,7 @@
         {% if not options.no_internet %}
             <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script>
         {% else %}
-            <script src="/templates/local/ag-grid-community.js"></script>
+            <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/ag-grid-community.js"></script>
         {% endif %}
     {% endif %}
 
@@ -64,7 +63,7 @@
         {% if not options.no_internet %}
             <script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.js"></script>
         {% else %}
-            <script src="/templates/local/ag-grid-enterprise.js"></script>
+            <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/ag-grid-enterprise.js"></script>
         {% endif %}
     {% endif %}
 
@@ -87,9 +86,9 @@
         {% endif %}
 
     {% else %}
-        <script src="/templates/local/jquery.js"></script>
-        <script src="/templates/local/vue.js"></script>
-        <script src="/templates/local/quasar.js"></script>
+        <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/jquery.js"></script>
+        <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/vue.js"></script>
+        <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/quasar.js"></script>
     {% endif %}
 
     <div id="components">

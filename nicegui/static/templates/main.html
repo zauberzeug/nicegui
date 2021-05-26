@@ -51,10 +51,11 @@
         } else {
             protocol_string = 'ws://'
         }
+        path_prefix = '{{ request.headers.get('X-Forwarded-Prefix','') }}'
         if (location.port) {
-            var socket = new WebSocket(protocol_string + document.domain + ':' + location.port);
+            var socket = new WebSocket(protocol_string + document.domain + ':' + location.port + path_prefix );
         } else {
-            var socket = new WebSocket(protocol_string + document.domain);
+            var socket = new WebSocket(protocol_string + document.domain + path_prefix);
         }
 
         socket.addEventListener('open', function (event) {
