@@ -4,7 +4,28 @@ services:
     build:
       context: ./
       dockerfile: development.dockerfile
-    volumes:
-      - ./:/app
     ports:
       - 80:80
+    volumes:
+      - ./:/app
+    labels:
+      - traefik.http.routers.app.rule=PathPrefix(`/app`)
+      - traefik.http.services.app.loadbalancer.server.port=80
+      - traefik.http.middlewares.app-prefix.stripprefix.prefixes=/app
+      - traefik.http.middlewares.app-prefix.stripprefix.forceSlash=false # see https://doc.traefik.io/traefik/middlewares/stripprefix/#forceslash
+      - traefik.http.routers.app.middlewares=app-prefix
+
+  # setup a proxy to test hosting on a sub-path; here localhost:8080/app
+  proxy:
+    image: traefik:v2.3
+    command:
+      - --providers.docker
+      - --api.insecure=true
+      - --accesslog # http access log
+      - --log #Traefik log, for configurations and errors
+      - --api # Enable the Dashboard and API
+    ports:
+      - "8080:80"
+    volumes:
+      # Traefik must be able to listen for Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
