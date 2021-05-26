@@ -7,15 +7,9 @@
 
         {% if options.tailwind %}
             {% if not options.no_internet %}
-                <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.4.6/dist/base.min.css">
-                <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.4.6/dist/components.min.css">
-                <link rel="stylesheet" href="https://unpkg.com/@tailwindcss/typography@^0.1.2/dist/typography.min.css">
-                <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.4.6/dist/utilities.min.css">
+                <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css">
             {% else %}
-                <link href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/tailwind/base.css" rel="stylesheet">
-                <link href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/tailwind/components.css" rel="stylesheet">
-                <link href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/tailwind/typography.css" rel="stylesheet">
-                <link href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/tailwind/utilities.css" rel="stylesheet">
+                <link href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/tailwind/tailwind.min.css" rel="stylesheet">
             {% endif %}
             <style>
                 {% include 'css/form.css' %}
