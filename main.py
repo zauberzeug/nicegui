@@ -77,8 +77,9 @@ design = '''### Styling & Design
 NiceGUI uses the [Quasar Framework](https://quasar.dev/) and hence has its full design power.
 Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
 Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
+You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method. 
 
-You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method.
+If you really need to apply css you can use the `styles` method. Here the delimer is `;` instad of a blank space.
 '''
 with (example(design)):
 
