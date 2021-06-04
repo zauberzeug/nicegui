@@ -57,11 +57,11 @@ class Element:
 
     def style(self, add: str = '', *, remove: str = '', replace: str = ''):
 
-        style_list = [] if replace else self.view.style.split()
-        style_list = [c for c in style_list if c not in remove.split()]
-        style_list += add.split()
-        style_list += replace.split()
-        self.view.style = ' '.join(style_list)
+        style_list = [] if replace else self.view.style.split(';')
+        style_list = [c for c in style_list if c not in remove.split(';')]
+        style_list += add.split(';')
+        style_list += replace.split(';')
+        self.view.style = ';'.join(style_list)
 
         return self
 
