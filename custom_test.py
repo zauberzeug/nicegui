@@ -7,3 +7,5 @@ with ui.card():
 ui.button('Add 100', on_click=lambda: custom.add(100))
 
 label = ui.label()
+
+ui.joystick(on_move=lambda e: print("move", e.vector))
