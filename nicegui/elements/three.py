@@ -9,7 +9,7 @@ class ThreeView(jp.JustpyBaseComponent):
 
         self.pages = {}
         self.classes = ''
-        self.options = jp.Dict()
+        self.options = jp.Dict(camera_z=4)
 
         self.on_click = on_click
 
@@ -43,3 +43,7 @@ class Three(Element):
     def __init__(self, *, on_click):
 
         super().__init__(ThreeView(on_click))
+
+    def move_camera(self, z):
+
+        self.view.options.camera_z = z

@@ -1,3 +1,5 @@
+var camera;
+
 Vue.component("three", {
   template: `<canvas v-bind:id="jp_props.id"></div>`,
   mounted() {
@@ -6,8 +8,8 @@ Vue.component("three", {
     const width = 400;
     const height = 300;
 
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    camera.position.z = 4;
+    camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+    camera.position.z = this.$props.jp_props.options.camera_z;
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -28,6 +30,9 @@ Vue.component("three", {
       renderer.render(scene, camera);
     };
     render();
+  },
+  updated() {
+    camera.position.z = this.$props.jp_props.options.camera_z;
   },
   props: {
     jp_props: Object,

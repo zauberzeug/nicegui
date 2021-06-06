@@ -10,4 +10,5 @@ label = ui.label()
 
 ui.joystick(on_move=lambda e: print("move", e.vector))
 
-ui.three(on_click=lambda e: print("click", e))
+three = ui.three(on_click=lambda e: print("click", e))
+ui.slider(min=0, max=10, on_change=lambda e: three.move_camera(e.value))
