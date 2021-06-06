@@ -30,6 +30,24 @@ Vue.component("three", {
       renderer.render(scene, camera);
     };
     render();
+
+    const raycaster = new THREE.Raycaster();
+    document.getElementById(this.$props.jp_props.id).onclick = (mouseEvent) => {
+      let x = (mouseEvent.offsetX / renderer.domElement.width) * 2 - 1;
+      let y = -(mouseEvent.offsetY / renderer.domElement.height) * 2 + 1;
+      raycaster.setFromCamera({ x: x, y: y }, camera);
+      const objects = raycaster.intersectObjects(scene.children, true);
+      console.log(objects);
+      const event = {
+        event_type: "onClick",
+        vue_type: this.$props.jp_props.vue_type,
+        id: this.$props.jp_props.id,
+        page_id: page_id,
+        websocket_id: websocket_id,
+        objects: objects,
+      };
+      send_to_server(event, "event");
+    };
   },
   updated() {
     camera.position.z = this.$props.jp_props.options.camera_z;

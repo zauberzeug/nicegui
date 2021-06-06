@@ -36,7 +36,7 @@ class ThreeView(jp.JustpyBaseComponent):
 
     def handle_click(self, msg):
 
-        self.on_click(msg.data)
+        self.on_click(msg.objects)
 
 class Three(Element):
 
