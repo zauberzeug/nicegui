@@ -21,10 +21,17 @@ if not inspect.stack()[-2].filename.endswith('spawn.py'):
     uvicorn.run('nicegui:app', host='0.0.0.0', port=80, lifespan='on', reload=True)
     sys.exit()
 
+@jp.SetRoute('/file')
+def get_file(request):
+    wp = jp.WebPage()
+    with open(request.query_params.get('path')) as f:
+        wp.html = f.read()
+    return wp
+
 wp = jp.QuasarPage(delete_flag=False, title='NiceGUI', favicon='favicon.png')
 wp.tailwind = True  # use Tailwind classes instead of Quasars
 wp.css = HtmlFormatter().get_style_defs('.codehilite')
-wp.head_html = '<script>confirm = () => true;</script>'  # avoid confirmation dialog for reload
+wp.head_html += '<script>confirm = () => true;</script>\n'  # avoid confirmation dialog for reload
 
 main = jp.Div(a=wp, classes='q-ma-md column items-start', style='row-gap: 1em')
 main.add_page(wp)

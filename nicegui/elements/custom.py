@@ -1,4 +1,5 @@
 import justpy as jp
+import os.path
 from .element import Element
 
 class CustomView(jp.JustpyBaseComponent):
@@ -17,9 +18,11 @@ class CustomView(jp.JustpyBaseComponent):
         self.allowed_events = ['onAdd']
         self.initialize(temp=False, onAdd=self.onAdd)
 
-    def add_to_page(self, wp: jp.WebPage):
+    def add_page(self, wp: jp.WebPage):
 
-        wp.add_component(self)
+        jp.component_file_list += ['file?path=' + os.path.realpath(__file__).replace('.py', '.js')]
+
+        super().add_page(wp)
 
     def react(self, _):
 

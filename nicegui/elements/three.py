@@ -1,4 +1,5 @@
 import justpy as jp
+import os.path
 from .element import Element
 
 class ThreeView(jp.JustpyBaseComponent):
@@ -19,8 +20,14 @@ class ThreeView(jp.JustpyBaseComponent):
 
     def add_page(self, wp: jp.WebPage):
 
-        wp.head_html += '<script src="https://cdn.jsdelivr.net/npm/three@0.129.0/build/three.min.js"></script>'
-        wp.head_html += '<script src="https://cdn.jsdelivr.net/npm/three@0.129.0/examples/js/controls/OrbitControls.js"></script>'
+        marker = '<!--' + self.__module__ + '-->\n'
+        if marker not in wp.head_html:
+            wp.head_html += marker
+            wp.head_html += '<script src="https://cdn.jsdelivr.net/npm/three@0.129.0/build/three.min.js"></script>\n'
+            wp.head_html += '<script src="https://cdn.jsdelivr.net/npm/three@0.129.0/examples/js/controls/OrbitControls.js"></script>\n'
+
+        jp.component_file_list += ['file?path=' + os.path.realpath(__file__).replace('.py', '.js')]
+
         super().add_page(wp)
 
     def react(self, _):

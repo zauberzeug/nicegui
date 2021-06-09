@@ -1,4 +1,5 @@
 import justpy as jp
+import os.path
 from .element import Element
 
 class JoystickView(jp.JustpyBaseComponent):
@@ -19,7 +20,13 @@ class JoystickView(jp.JustpyBaseComponent):
 
     def add_page(self, wp: jp.WebPage):
 
-        wp.head_html += '<script src="https://cdn.jsdelivr.net/npm/nipplejs@0.9.0/dist/nipplejs.min.js"></script>'
+        marker = '<!--' + self.__module__ + '-->\n'
+        if marker not in wp.head_html:
+            wp.head_html += marker
+            wp.head_html += '<script src="https://cdn.jsdelivr.net/npm/nipplejs@0.9.0/dist/nipplejs.min.js"></script>\n'
+
+        jp.component_file_list += ['file?path=' + os.path.realpath(__file__).replace('.py', '.js')]
+
         super().add_page(wp)
 
     def react(self, _):

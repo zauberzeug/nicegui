@@ -1,5 +1,5 @@
 {% for file_name in options.component_file_list %}
-    <script src={{ url_for(options.static_name, path=file_name) }}></script>
+    <script src="{{ file_name }}"></script>
 {% endfor %}
 
 <script>
