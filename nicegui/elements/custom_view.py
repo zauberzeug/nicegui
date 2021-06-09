@@ -1,10 +1,15 @@
 import justpy as jp
+import os.path
 
 class CustomView(jp.JustpyBaseComponent):
 
     vue_dependencies = []
 
-    def __init__(self, **options):
+    def __init__(self, vue_type, filename, dependencies=[], **options):
+
+        self.vue_type = vue_type
+        self.vue_filepath = os.path.realpath(filename).replace('.py', '.js')
+        self.vue_dependencies = dependencies
 
         self.pages = {}
         self.classes = ''
