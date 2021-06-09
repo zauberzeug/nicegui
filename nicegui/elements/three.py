@@ -17,9 +17,11 @@ class ThreeView(jp.JustpyBaseComponent):
         self.allowed_events = ['onClick']
         self.initialize(temp=False, onClick=self.handle_click)
 
-    def add_to_page(self, wp: jp.WebPage):
+    def add_page(self, wp: jp.WebPage):
 
-        wp.add_component(self)
+        wp.head_html += '<script src="https://cdn.jsdelivr.net/npm/three@0.129.0/build/three.min.js"></script>'
+        wp.head_html += '<script src="https://cdn.jsdelivr.net/npm/three@0.129.0/examples/js/controls/OrbitControls.js"></script>'
+        super().add_page(wp)
 
     def react(self, _):
 

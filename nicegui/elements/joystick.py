@@ -17,9 +17,10 @@ class JoystickView(jp.JustpyBaseComponent):
         self.allowed_events = ['onMove']
         self.initialize(temp=False, onMove=self.handle_move)
 
-    def add_to_page(self, wp: jp.WebPage):
+    def add_page(self, wp: jp.WebPage):
 
-        wp.add_component(self)
+        wp.head_html += '<script src="https://cdn.jsdelivr.net/npm/nipplejs@0.9.0/dist/nipplejs.min.js"></script>'
+        super().add_page(wp)
 
     def react(self, _):
 
