@@ -1,7 +1,7 @@
-Vue.component("custom", {
+Vue.component("custom_example", {
   template: `
   <button v-bind:id="jp_props.id">
-    <strong>Custom component</strong><br/>
+    <strong>Custom example component</strong><br/>
     Value = {{jp_props.options.value}}<br/>
     Click to add 1!
     </button>`,
