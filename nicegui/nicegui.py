@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from typing import Awaitable, Callable
 import justpy as jp
 import uvicorn
 import sys
@@ -46,6 +47,8 @@ async def binding_loop():
 @jp.app.on_event('startup')
 def startup():
     [jp.run_task(t) for t in Timer.tasks]
+    [t() for t in Ui.startup_tasks if isinstance(t, Callable)]
+    [jp.run_task(t) for t in Ui.startup_tasks if isinstance(t, Awaitable)]
     jp.run_task(binding_loop())
 
 Element.wp = wp

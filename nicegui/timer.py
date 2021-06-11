@@ -1,6 +1,7 @@
 import asyncio
 import time
 import traceback
+from typing import Awaitable
 from binding import BindableProperty
 from .elements.element import Element
 from .utils import handle_exceptions
@@ -11,7 +12,7 @@ class Timer:
 
     active = BindableProperty
 
-    def __init__(self, interval, callback, *, active=True, once=False):
+    def __init__(self, interval: float, callback: Awaitable, *, active: bool = True, once: bool = False):
         """Timer
 
         One major drive behind the creation of NiceGUI was the necessity to have a simple approach to update the interface in regular intervals, for example to show a graph with incomming measurements.

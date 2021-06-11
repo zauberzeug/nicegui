@@ -1,3 +1,6 @@
+from typing import Awaitable, Callable, List, Union
+
+
 class Ui:
 
     from .elements.button import Button as button
@@ -25,3 +28,9 @@ class Ui:
     from .elements.card import Card as card
 
     from .timer import Timer as timer
+
+    startup_tasks: List[Union[Callable, Awaitable]] = []
+
+    def on_startup(self, task: Union[Callable, Awaitable]):
+
+        self.startup_tasks.append(task)
