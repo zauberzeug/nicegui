@@ -5,7 +5,7 @@ Vue.component("joystick", {
   mounted() {
     const joystick = nipplejs.create({
       zone: document.getElementById(this.$props.jp_props.id),
-      color: "CornflowerBlue",
+      ...this.$props.jp_props.options,
     });
     joystick.on("move", (_, data) => {
       delete data.instance;

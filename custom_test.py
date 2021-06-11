@@ -8,7 +8,7 @@ ui.button('Add 100', on_click=lambda: example.add(100))
 
 label = ui.label()
 
-ui.joystick(on_move=lambda e: print("move", e.vector))
+ui.joystick(on_move=lambda e: print("move", e.vector), color='blue', size=50)
 
 three = ui.three(on_click=lambda e: print("click", e))
 ui.slider(min=0, max=10, on_change=lambda e: three.move_camera(e.value))
