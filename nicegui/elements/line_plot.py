@@ -7,7 +7,7 @@ class LinePlot(Plot):
                  *,
                  n: int = 1,
                  limit: int = 100,
-                 update_every=1,
+                 update_every: int = 1,
                  close: bool = True,
                  **kwargs,
                  ):

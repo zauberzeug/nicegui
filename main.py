@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 from nicegui import ui, wp
 from contextlib import contextmanager
@@ -210,3 +209,12 @@ with example(ui.line_plot):
         [np.cos(datetime.now().timestamp()) + 0.02 * np.random.randn()],
     ]), active=False)
     ui.checkbox('active').bind_value(line_updates.active)
+
+with example(ui.joystick):
+
+    ui.joystick(
+        color='blue',
+        size=50,
+        on_move=lambda msg: coordinates.set_text(f'{msg.data.vector.x:.3f}, {msg.data.vector.y:.3f}'),
+        on_end=lambda _: coordinates.set_text('0, 0'))
+    coordinates = ui.label('0, 0')

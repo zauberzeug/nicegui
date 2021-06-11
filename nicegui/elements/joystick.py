@@ -1,3 +1,4 @@
+from typing import Callable, Dict
 from .custom_view import CustomView
 from .element import Element
 
@@ -35,6 +36,21 @@ class JoystickView(CustomView):
 
 class Joystick(Element):
 
-    def __init__(self, *, on_start=None, on_move=None, on_end=None, **options):
+    def __init__(self,
+                 *,
+                 on_start: Callable = None,
+                 on_move: Callable = None,
+                 on_end: Callable = None,
+                 **options: Dict,
+                 ):
+        """Joystick
+
+        Create a joystick using nipple.js.
+
+        :param on_start: callback for when the user toches the joystick
+        :param on_move: callback for when the user moves the joystick
+        :param on_end: callback for when the user releases the joystick
+        :param options: arguments like `color` which should be passed to `nipple.js <https://github.com/yoannmoinet/nipplejs#options>`_
+        """
 
         super().__init__(JoystickView(on_start, on_move, on_end, **options))
