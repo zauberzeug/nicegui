@@ -7,6 +7,16 @@ Vue.component("joystick", {
       zone: document.getElementById(this.$props.jp_props.id),
       ...this.$props.jp_props.options,
     });
+    joystick.on("start", () => {
+      const event = {
+        event_type: "onStart",
+        vue_type: this.$props.jp_props.vue_type,
+        id: this.$props.jp_props.id,
+        page_id: page_id,
+        websocket_id: websocket_id,
+      };
+      send_to_server(event, "event");
+    });
     joystick.on("move", (_, data) => {
       delete data.instance;
       const event = {
@@ -16,6 +26,16 @@ Vue.component("joystick", {
         page_id: page_id,
         websocket_id: websocket_id,
         data: data,
+      };
+      send_to_server(event, "event");
+    });
+    joystick.on("end", () => {
+      const event = {
+        event_type: "onEnd",
+        vue_type: this.$props.jp_props.vue_type,
+        id: this.$props.jp_props.id,
+        page_id: page_id,
+        websocket_id: websocket_id,
       };
       send_to_server(event, "event");
     });
