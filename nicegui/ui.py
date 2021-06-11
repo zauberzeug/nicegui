@@ -15,7 +15,6 @@ class Ui:
     from .elements.select import Select as select
     from .elements.slider import Slider as slider
     from .elements.switch import Switch as switch
-    from .elements.three import Three as three
     from .elements.toggle import Toggle as toggle
 
     from .elements.plot import Plot as plot
