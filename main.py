@@ -8,6 +8,7 @@ import sys
 from typing import Union
 import docutils.core
 import re
+import asyncio
 
 # add docutils css to webpage
 wp.head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
@@ -107,6 +108,24 @@ with (example(binding)):
         ui.slider(min=1, max=3).bind_value(demo.number)
         ui.toggle({1: 'a', 2: 'b', 3: 'c'}).bind_value(demo.number)
         ui.number().bind_value(demo.number)
+
+lifecycle = '''### Lifecycle
+
+You can run a coroutine on startup as a parallel task by passing it to `ui.on_startup`.
+'''
+with (example(lifecycle)):
+
+    count_label = ui.label('count: 0')
+    count = 0
+
+    async def update_count():
+        global count
+        while True:
+            count_label.text = f'count: {count}'
+            count += 1
+            await asyncio.sleep(1)
+
+    ui.on_startup(update_count())
 
 
 with example(ui.timer):
