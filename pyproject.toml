@@ -2,7 +2,7 @@
 name = "nicegui"
 version = "0.1.0"
 description = "High-Level Abstraction Web-GUI Using Just Python"
-authors = ["Zauberzeug GmbH"]
+authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/zauberzeug/nicegui"
