@@ -111,7 +111,9 @@ with (example(binding)):
 
 lifecycle = '''### Lifecycle
 
-You can run a coroutine on startup as a parallel task by passing it to `ui.on_startup`.
+You can run a function or coroutine on startup as a parallel task by passing it to `ui.on_startup`.
+If NiceGui is shut down or restarted the tasks will be automatically canceled (for example when you make a code change).
+You can also execude cleanup code with `ui.on_shutdown`.
 '''
 with (example(lifecycle)):
 

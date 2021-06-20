@@ -44,12 +44,26 @@ async def binding_loop():
         binding.update()
         await asyncio.sleep(0.1)
 
+def create_task(coro):
+    loop = asyncio.get_event_loop()
+    return loop.create_task(coro)
+
+tasks = []
+
 @jp.app.on_event('startup')
 def startup():
-    [jp.run_task(t) for t in Timer.tasks]
+    global tasks
+    tasks += [create_task(t) for t in Timer.tasks]
+    tasks += [create_task(t) for t in Ui.startup_tasks if isinstance(t, Awaitable)]
     [t() for t in Ui.startup_tasks if isinstance(t, Callable)]
-    [jp.run_task(t) for t in Ui.startup_tasks if isinstance(t, Awaitable)]
     jp.run_task(binding_loop())
+
+@ jp.app.on_event('shutdown')
+def shutdown():
+    [create_task(t) for t in Ui.shutdown_tasks if isinstance(t, Awaitable)]
+    [t() for t in Ui.shutdown_tasks if isinstance(t, Callable)]
+    # # also abort all running startup tasks
+    [t.cancel() for t in tasks]
 
 Element.wp = wp
 Element.view_stack = [main]
