@@ -10,7 +10,7 @@ class Image(Element):
 
         Displays an image.
 
-        :param source: the source of the image (can be an url or byte array)
+        :param source: the source of the image; can be an url or a base64 string
         """
 
         view = jp.Img(src=source)
