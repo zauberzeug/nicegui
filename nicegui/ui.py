@@ -10,6 +10,7 @@ class Ui:
     from .elements.input import Input as input
     from .elements.joystick import Joystick as joystick
     from .elements.label import Label as label
+    from .elements.image import Image as image
     from .elements.html import Html as html
     from .elements.markdown import Markdown as markdown
     from .elements.link import Link as link

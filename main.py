@@ -141,6 +141,9 @@ with example(ui.label):
 
     ui.label('some label')
 
+with example(ui.image):
+    ui.image('http://placeimg.com/640/360/tech')
+
 with example(ui.markdown):
 
     ui.markdown('### Headline\nWith hyperlink to [GitHub](https://github.com/zauberzeug/nicegui).')
