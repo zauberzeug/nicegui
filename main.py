@@ -109,26 +109,6 @@ with (example(binding)):
         ui.toggle({1: 'a', 2: 'b', 3: 'c'}).bind_value(demo.number)
         ui.number().bind_value(demo.number)
 
-lifecycle = '''### Lifecycle
-
-You can run a function or coroutine on startup as a parallel task by passing it to `ui.on_startup`.
-If NiceGui is shut down or restarted the tasks will be automatically canceled (for example when you make a code change).
-You can also execude cleanup code with `ui.on_shutdown`.
-'''
-with (example(lifecycle)):
-
-    count_label = ui.label('count: 0')
-    count = 0
-
-    async def update_count():
-        global count
-        while True:
-            count_label.text = f'count: {count}'
-            count += 1
-            await asyncio.sleep(1)
-
-    ui.on_startup(update_count())
-
 
 with example(ui.timer):
     from datetime import datetime
@@ -275,3 +255,23 @@ with example(ui.joystick):
         on_move=lambda msg: coordinates.set_text(f'{msg.data.vector.x:.3f}, {msg.data.vector.y:.3f}'),
         on_end=lambda _: coordinates.set_text('0, 0'))
     coordinates = ui.label('0, 0')
+
+lifecycle = '''### Lifecycle
+
+You can run a function or coroutine on startup as a parallel task by passing it to `ui.on_startup`.
+If NiceGui is shut down or restarted the tasks will be automatically canceled (for example when you make a code change).
+You can also execude cleanup code with `ui.on_shutdown`.
+'''
+with (example(lifecycle)):
+
+    count_label = ui.label('count: 0')
+    count = 0
+
+    async def update_count():
+        global count
+        while True:
+            count_label.text = f'count: {count}'
+            count += 1
+            await asyncio.sleep(1)
+
+    ui.on_startup(update_count())
