@@ -154,7 +154,7 @@ with example(ui.svg):
             <circle cx="61" cy="82" r="12"/>
             <circle cx="127" cy="82" r="12"/>
         </g>
-        <path d="m136.81 116.53c.69 26.17-64.11 42-81.52-.73" style="fill:none; stroke: black; stroke-width: 3;"/>
+        <path d="m136.81 116.53c.69 36.17-74.11 42-81.52-.73" style="fill:none; stroke: black; stroke-width: 5;"/>
         </svg>'''
     ui.svg(svg_content)
 
