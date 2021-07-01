@@ -18,11 +18,11 @@ class Image(Element):
         super().__init__(view)
 
     @property
-    def src(self):
+    def source(self):
 
         return self.view.src
 
-    @src.setter
+    @source.setter
     def source(self, source: any):
 
         self.view.src = source

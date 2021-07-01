@@ -11,6 +11,7 @@ class Ui:
     from .elements.joystick import Joystick as joystick
     from .elements.label import Label as label
     from .elements.image import Image as image
+    from .elements.svg import Svg as svg
     from .elements.html import Html as html
     from .elements.markdown import Markdown as markdown
     from .elements.link import Link as link
