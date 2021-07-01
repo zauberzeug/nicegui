@@ -158,6 +158,25 @@ with example(ui.svg):
         </svg>'''
     ui.svg(svg_content)
 
+overlay = '''### Captions and Overlays
+
+By nesting elements inside a `ui.image` you can create augmentations.
+
+Use [Quasar classes](https://quasar.dev/vue-components/img) for positioning and styling captions.
+To overlay an svg, make the `viewBox` exactly the size of the image and provide `100%` width/height to match the actual rendered size.
+'''
+with example(overlay):
+    with ui.image('http://placeimg.com/640/360/nature'):
+        ui.label('nice').classes('absolute-bottom text-subtitle2 text-center')
+
+    with ui.image('https://cdn.pixabay.com/photo/2020/07/13/12/56/mute-swan-5400675__340.jpg'):
+        svg_content = '''
+            <svg viewBox="0 0 510 340" width="100%"  height="100%" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="200" cy="200" fill="none" r="100" stroke="red" stroke-width="10"/>
+            </svg>
+            '''
+        ui.svg(svg_content).style('background:transparent;')
+
 with example(ui.markdown):
 
     ui.markdown('### Headline\nWith hyperlink to [GitHub](https://github.com/zauberzeug/nicegui).')
