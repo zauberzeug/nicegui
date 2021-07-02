@@ -162,10 +162,9 @@ with example(overlay):
 
     with ui.image('https://cdn.pixabay.com/photo/2020/07/13/12/56/mute-swan-5400675__340.jpg'):
         svg_content = '''
-            <svg viewBox="0 0 510 340" width="100%"  height="100%" xmlns="http://www.w3.org/2000/svg">
+            <svg viewBox="0 0 510 340" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <circle cx="200" cy="200" r="100" fill="none" stroke="red" stroke-width="10" />
-            </svg>
-            '''
+            </svg>'''
         ui.svg(svg_content).style('background:transparent')
 
 with example(ui.markdown):
