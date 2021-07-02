@@ -19,7 +19,7 @@ def provide_arguments(func, *keys):
 def handle_exceptions(func):
     def inner_function(*args, **kwargs):
         try:
-            func(*args, **kwargs)
+            return func(*args, **kwargs)
         except Exception:
             traceback.print_exc()
     return inner_function

@@ -17,9 +17,11 @@ class Timer:
         """Timer
 
         One major drive behind the creation of NiceGUI was the necessity to have a simple approach to update the interface in regular intervals, for example to show a graph with incomming measurements.
+        A timer will execute a callback repeatedly with a given interval.
+        The parent view container will be updated automatically, as long as the callback does not return `False`.
 
         :param interval: the interval in which the timer is called
-        :param callback: function to execute when interval elapses
+        :param callback: function to execute when interval elapses (can return `False` to prevent view update)
         :param active: whether the callback should be executed or not
         :param once: whether the callback is only executed once after a delay specified by `interval`; default is `False`
         """
@@ -39,8 +41,9 @@ class Timer:
                 try:
                     start = time.time()
                     if self.active:
-                        handle_exceptions(callback)()
-                        await parent.update()
+                        needs_update = handle_exceptions(callback)()
+                        if needs_update != False:
+                            await parent.update()
                     dt = time.time() - start
                     await asyncio.sleep(interval - dt)
                 except CancelledError:
