@@ -14,7 +14,7 @@ class Svg(Element):
         :param content: the svg definition
         """
 
-        view = jp.Div()
+        view = jp.Div(style="padding:0")
         super().__init__(view)
         self.content = content
 
