@@ -26,6 +26,7 @@ class Svg(Element):
     @content.setter
     def content(self, content: any):
 
+        self.view.components = []
         jp.parse_html(content, a=self.view)
 
     def set_content(self, content: str):
