@@ -11,9 +11,9 @@ class EventArguments:
 def provide_arguments(func, *keys):
     def inner_function(sender, event):
         try:
-            func()
+            return func()
         except TypeError:
-            func(EventArguments(sender, **{key: event[key] for key in keys}))
+            return func(EventArguments(sender, **{key: event[key] for key in keys}))
     return inner_function
 
 def handle_exceptions(func):
