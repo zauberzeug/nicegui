@@ -6,6 +6,7 @@ import sys
 import os
 import inspect
 import webbrowser
+import threading
 from pygments.formatters import HtmlFormatter
 import binding
 import asyncio
@@ -16,11 +17,16 @@ from .elements.element import Element
 os.environ["STATIC_DIRECTORY"] = os.path.dirname(os.path.realpath(__file__)) + '/static'
 os.environ["TEMPLATES_DIRECTORY"] = os.environ["STATIC_DIRECTORY"] + '/templates'
 
-# start uvicorn with auto-reload; afterwards the auto-reloaded process should not start uvicorn again
-if not inspect.stack()[-2].filename.endswith('spawn.py'):
-    webbrowser.open('http://localhost/')
-    uvicorn.run('nicegui:app', host='0.0.0.0', port=80, lifespan='on', reload=True)
-    sys.exit()
+host = os.getenv('HOST', '0.0.0.0')
+port = int(os.getenv('PORT', '80'))
+if os.getenv('RELOAD', 'true').lower() in ('true', 't', 'y', 'yes', '1'):
+    if not inspect.stack()[-2].filename.endswith('spawn.py'):
+        webbrowser.open(f'http://{host}:{port}/')
+        uvicorn.run('nicegui:app', host=host, port=port, lifespan='on', reload=True)
+        sys.exit()
+else:
+    t = threading.Thread(target=lambda: uvicorn.run(jp.app, host=host, port=port, lifespan='on'))
+    t.start()
 
 @jp.SetRoute('/file')
 def get_file(request):
@@ -58,7 +64,7 @@ def startup():
     [t() for t in Ui.startup_tasks if isinstance(t, Callable)]
     jp.run_task(binding_loop())
 
-@ jp.app.on_event('shutdown')
+@jp.app.on_event('shutdown')
 def shutdown():
     [create_task(t) for t in Ui.shutdown_tasks if isinstance(t, Awaitable)]
     [t() for t in Ui.shutdown_tasks if isinstance(t, Callable)]
