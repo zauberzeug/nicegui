@@ -3,6 +3,8 @@ from typing import Awaitable, Callable, List, Union
 
 class Ui:
 
+    from .run import run, config  # NOTE: before justpy
+
     from .elements.button import Button as button
     from .elements.checkbox import Checkbox as checkbox
     from .elements.custom_example import CustomExample as custom_example

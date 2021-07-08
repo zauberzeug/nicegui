@@ -1,38 +1,16 @@
 #!/usr/bin/env python3
 from typing import Awaitable, Callable
-import os 
-host = os.getenv('HOST', '0.0.0.0')
-port = int(os.getenv('PORT', '80'))
-os.environ['HOST'] = host
-os.environ['PORT']= str(port)
-import justpy as jp
-import uvicorn
-import sys
-import inspect
-import webbrowser
-from pygments.formatters import HtmlFormatter
-import binding
 import asyncio
-from .ui import Ui
-from .timer import Timer
+import binding
+from pygments.formatters import HtmlFormatter
+import os
+from .ui import Ui  # NOTE: before justpy
+import justpy as jp
 from .elements.element import Element
-import atexit
-
+from .timer import Timer
 
 os.environ["STATIC_DIRECTORY"] = os.path.dirname(os.path.realpath(__file__)) + '/static'
 os.environ["TEMPLATES_DIRECTORY"] = os.environ["STATIC_DIRECTORY"] + '/templates'
-
-if os.getenv('RELOAD', 'true').lower() in ('true', 't', 'y', 'yes', '1'):
-    if not inspect.stack()[-2].filename.endswith('spawn.py'):
-        webbrowser.open(f'http://{host}:{port}/')
-        uvicorn.run('nicegui:app', host=host, port=port, lifespan='on', reload=True)
-        sys.exit()
-else:
-    def start_web():
-        webbrowser.open(f'http://{host}:{port}/')
-        uvicorn.run(jp.app, host=host, port=port, lifespan='on')
-       
-    atexit.register(start_web)
 
 @jp.SetRoute('/file')
 def get_file(request):
@@ -41,7 +19,7 @@ def get_file(request):
         wp.html = f.read()
     return wp
 
-wp = jp.QuasarPage(delete_flag=False, title='NiceGUI', favicon='favicon.png')
+wp = jp.QuasarPage(delete_flag=False, title=Ui.config.title, favicon=Ui.config.favicon)
 wp.tailwind = True  # use Tailwind classes instead of Quasars
 wp.css = HtmlFormatter().get_style_defs('.codehilite')
 wp.head_html += '<script>confirm = () => true;</script>\n'  # avoid confirmation dialog for reload
@@ -64,9 +42,8 @@ tasks = []
 
 @jp.app.on_event('startup')
 def startup():
-    global tasks
-    tasks += [create_task(t) for t in Timer.tasks]
-    tasks += [create_task(t) for t in Ui.startup_tasks if isinstance(t, Awaitable)]
+    tasks.extend(create_task(t) for t in Timer.tasks)
+    tasks.extend(create_task(t) for t in Ui.startup_tasks if isinstance(t, Awaitable))
     [t() for t in Ui.startup_tasks if isinstance(t, Callable)]
     jp.run_task(binding_loop())
 
@@ -74,7 +51,6 @@ def startup():
 def shutdown():
     [create_task(t) for t in Ui.shutdown_tasks if isinstance(t, Awaitable)]
     [t() for t in Ui.shutdown_tasks if isinstance(t, Callable)]
-    # # also abort all running startup tasks
     [t.cancel() for t in tasks]
 
 Element.wp = wp
