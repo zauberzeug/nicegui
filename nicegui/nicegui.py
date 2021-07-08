@@ -3,14 +3,10 @@ from typing import Awaitable, Callable
 import asyncio
 import binding
 from pygments.formatters import HtmlFormatter
-import os
 from .ui import Ui  # NOTE: before justpy
 import justpy as jp
 from .elements.element import Element
 from .timer import Timer
-
-os.environ["STATIC_DIRECTORY"] = os.path.dirname(os.path.realpath(__file__)) + '/static'
-os.environ["TEMPLATES_DIRECTORY"] = os.environ["STATIC_DIRECTORY"] + '/templates'
 
 @jp.SetRoute('/file')
 def get_file(request):
