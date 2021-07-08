@@ -8,6 +8,8 @@ services:
       - 80:80
     volumes:
       - ./:/app
+    environment:
+      - RELOAD=false
     labels:
       - traefik.http.routers.app.rule=PathPrefix(`/app`)
       - traefik.http.services.app.loadbalancer.server.port=80

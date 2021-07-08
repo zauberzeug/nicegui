@@ -1,32 +1,38 @@
 #!/usr/bin/env python3
 from typing import Awaitable, Callable
+import os 
+host = os.getenv('HOST', '0.0.0.0')
+port = int(os.getenv('PORT', '80'))
+os.environ['HOST'] = host
+os.environ['PORT']= str(port)
 import justpy as jp
 import uvicorn
 import sys
-import os
 import inspect
 import webbrowser
-import threading
 from pygments.formatters import HtmlFormatter
 import binding
 import asyncio
 from .ui import Ui
 from .timer import Timer
 from .elements.element import Element
+import atexit
+
 
 os.environ["STATIC_DIRECTORY"] = os.path.dirname(os.path.realpath(__file__)) + '/static'
 os.environ["TEMPLATES_DIRECTORY"] = os.environ["STATIC_DIRECTORY"] + '/templates'
 
-host = os.getenv('HOST', '0.0.0.0')
-port = int(os.getenv('PORT', '80'))
 if os.getenv('RELOAD', 'true').lower() in ('true', 't', 'y', 'yes', '1'):
     if not inspect.stack()[-2].filename.endswith('spawn.py'):
         webbrowser.open(f'http://{host}:{port}/')
         uvicorn.run('nicegui:app', host=host, port=port, lifespan='on', reload=True)
         sys.exit()
 else:
-    t = threading.Thread(target=lambda: uvicorn.run(jp.app, host=host, port=port, lifespan='on'))
-    t.start()
+    def start_web():
+        webbrowser.open(f'http://{host}:{port}/')
+        uvicorn.run(jp.app, host=host, port=port, lifespan='on')
+       
+    atexit.register(start_web)
 
 @jp.SetRoute('/file')
 def get_file(request):
