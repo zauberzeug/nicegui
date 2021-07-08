@@ -91,3 +91,5 @@ with ui.row():
             [np.sin(datetime.now().timestamp()) + 0.02 * np.random.randn()],
             [np.cos(datetime.now().timestamp()) + 0.02 * np.random.randn()],
         ]))
+
+ui.run()

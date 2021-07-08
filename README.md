@@ -38,6 +38,8 @@ from nicegui import ui
 
 ui.label('Hello NiceGUI!')
 ui.button('BUTTON', on_click=lambda: print('button was pressed', flush=True))
+
+ui.run()
 ```
 
 Launch it with:
@@ -48,6 +50,17 @@ python3 main.py
 
 The GUI is now avaliable through http://localhost/ in your browser.
 Note: The script will automatically reload the page when you modify the code.
+
+## Configuration
+
+You can call `ui.run()` with optional arguments for some high-level configuration:
+
+- `host` (default: `'0.0.0.0'`)
+- `port` (default: `80`)
+- `title` (default: `'NiceGUI'`)
+- `favicon` (default: `'favicon.png'`)
+- `reload`: automatically reload the ui on file changes (default: `True`)
+- `show`: automatically open the ui in a browser tab (default: `True`)
 
 ## Docker
 

@@ -42,6 +42,8 @@ def example(content: Union[Element, str]):
         code = [l[4:] for l in code]
         code.insert(0, '```python')
         code.insert(1, 'from nicegui import ui')
+        code.append('')
+        code.append('ui.run()')
         code.append('```')
         code = '\n'.join(code)
         ui.markdown(code).classes('mt-12 w-5/12 overflow-auto')
@@ -288,3 +290,5 @@ with example(lifecycle):
             await asyncio.sleep(1)
 
     ui.on_startup(counter())
+
+ui.run()
