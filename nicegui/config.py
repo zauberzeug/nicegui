@@ -14,8 +14,9 @@ class Config(BaseModel):
     show: bool = True
 
 
+endings = ('<string>', 'spawn.py', 'runpy.py', 'debugpy/server/cli.py', 'debugpy/__main__.py')
 for f in reversed(inspect.stack()):
-    if os.path.basename(f.filename) not in ('<string>', 'spawn.py', 'runpy.py'):
+    if not any(f.filename.endswith(ending) for ending in endings):
         filepath = f.filename
         break
 else:
