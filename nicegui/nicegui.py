@@ -3,17 +3,12 @@ from typing import Awaitable, Callable
 import asyncio
 import binding
 from pygments.formatters import HtmlFormatter
+from starlette.routing import Route
+from starlette.responses import FileResponse
 from .ui import Ui  # NOTE: before justpy
 import justpy as jp
 from .elements.element import Element
 from .timer import Timer
-
-@jp.SetRoute('/file')
-def get_file(request):
-    wp = jp.WebPage()
-    with open(request.query_params.get('path')) as f:
-        wp.html = f.read()
-    return wp
 
 wp = jp.QuasarPage(delete_flag=False, title=Ui.config.title, favicon=Ui.config.favicon)
 wp.tailwind = True  # use Tailwind classes instead of Quasars
@@ -53,4 +48,6 @@ Element.wp = wp
 Element.view_stack = [main]
 
 app = jp.app
+app.routes.insert(0, Route('/file', lambda r: FileResponse(r.query_params['path'])))
+
 ui = Ui()
