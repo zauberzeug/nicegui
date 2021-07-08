@@ -1,6 +1,3 @@
-from typing import Awaitable, Callable, List, Union
-
-
 class Ui:
 
     from .run import run, config  # NOTE: before justpy
@@ -33,14 +30,4 @@ class Ui:
 
     from .timer import Timer as timer
 
-    startup_tasks: List[Union[Callable, Awaitable]] = []
-
-    def on_startup(self, task: Union[Callable, Awaitable]):
-
-        self.startup_tasks.append(task)
-
-    shutdown_tasks: List[Union[Callable, Awaitable]] = []
-
-    def on_shutdown(self, task: Union[Callable, Awaitable]):
-
-        self.shutdown_tasks.append(task)
+    from .lifecycle import startup_tasks, on_startup, shutdown_tasks, on_shutdown
