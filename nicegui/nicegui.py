@@ -3,8 +3,6 @@ from typing import Awaitable, Callable
 import asyncio
 import binding
 from pygments.formatters import HtmlFormatter
-from starlette.routing import Route
-from starlette.responses import FileResponse
 from .ui import Ui  # NOTE: before justpy
 import justpy as jp
 from .elements.element import Element
@@ -48,6 +46,4 @@ Element.wp = wp
 Element.view_stack = [main]
 
 app = jp.app
-app.routes.insert(0, Route('/file', lambda r: FileResponse(r.query_params['path'])))
-
 ui = Ui()

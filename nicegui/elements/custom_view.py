@@ -1,5 +1,7 @@
 import justpy as jp
 import os.path
+from starlette.routing import Route
+from starlette.responses import FileResponse
 
 class CustomView(jp.JustpyBaseComponent):
 
@@ -28,7 +30,9 @@ class CustomView(jp.JustpyBaseComponent):
                 wp.head_html += f'<script src="{dependency}"></script>\n'
 
         if self.vue_filepath not in jp.component_file_list:
-            jp.component_file_list += ['file?path=' + self.vue_filepath]
+            filename = os.path.basename(self.vue_filepath)
+            jp.app.routes.insert(0, Route(f'/{filename}', lambda _: FileResponse(self.vue_filepath)))
+            jp.component_file_list += [filename]
 
         super().add_page(wp)
 
