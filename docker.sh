@@ -9,7 +9,6 @@ then
     echo "  `basename $0` (U | upbuild)      Create and start (force build)"
     echo "  `basename $0` (d | down)         Stop and remove"
     echo "  `basename $0` (s | start)        Start"
-    echo "  `basename $0` (run)              Run"
     echo "  `basename $0` (r | restart)      Restart"
     echo "  `basename $0` (h | stop)         Stop (halt)"
     echo "  `basename $0` ps                 List"
@@ -50,9 +49,6 @@ case $cmd in
         ;;
     r | restart)
         docker-compose restart $cmd_args app
-        ;;
-    run)
-        docker-compose run $cmd_args app
         ;;
     h | stop)
         docker-compose stop $cmd_args app
