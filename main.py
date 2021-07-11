@@ -239,6 +239,11 @@ with example(ui.select):
         select = ui.select([1, 2, 3], value=1).props('inline')
         ui.select({1: 'One', 2: 'Two', 3: 'Three'}, value=1).props('inline').bind_value(select.value)
 
+with example(ui.upload):
+
+    ui.upload(on_upload=lambda files: content.set_text(files))
+    content = ui.label()
+
 with example(ui.plot):
     from matplotlib import pyplot as plt
     import numpy as np
