@@ -15,7 +15,8 @@ class CustomExampleView(CustomView):
 
         self.options.value += msg.number
         if self.on_change is not None:
-            self.on_change(self.options.value)
+            return self.on_change(self.options.value)
+        return False
 
 class CustomExample(Element):
 
