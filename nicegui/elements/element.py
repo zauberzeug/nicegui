@@ -35,12 +35,18 @@ class Element:
         self.visible.bind_to(target, forward=forward, nesting=1)
         return self
 
-    def bind_visibility_from(self, target, backward=lambda x: x):
+    def bind_visibility_from(self, target, backward=lambda x: x, *, value=None):
+
+        if value is not None:
+            def backward(x): return x == value
 
         self.visible.bind_from(target, backward=backward, nesting=1)
         return self
 
-    def bind_visibility(self, target, forward=lambda x: x, backward=lambda x: x):
+    def bind_visibility(self, target, forward=lambda x: x, backward=None, *, value=None):
+
+        if value is not None:
+            def backward(x): return x == value
 
         self.visible.bind(target, forward=forward, backward=backward, nesting=1)
         return self
