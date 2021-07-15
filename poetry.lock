@@ -74,7 +74,7 @@ toml = "*"
 
 [[package]]
 name = "binding"
-version = "0.3"
+version = "0.3.1"
 description = "Bindable properties for Python"
 category = "main"
 optional = false
@@ -499,7 +499,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "23ccfbd4558c0cb6cd784db4872bd6739b5ab4aa73a3007c83dc29d256d22c1f"
+content-hash = "3f319702e5864a13b39f01f8811fc513e8fbd550b21fc35af5bd46d0f3b36f67"
 
 [metadata.files]
 addict = [
@@ -527,8 +527,8 @@ autopep8 = [
     {file = "autopep8-1.5.7.tar.gz", hash = "sha256:276ced7e9e3cb22e5d7c14748384a5cf5d9002257c0ed50c0e075b68011bb6d0"},
 ]
 binding = [
-    {file = "binding-0.3-py3-none-any.whl", hash = "sha256:94d4cdbcaa39bda0ca9c3d415596cb8256db80babdfd7ba2a2e429cdd95f64ad"},
-    {file = "binding-0.3.tar.gz", hash = "sha256:403432c6bf5ed8988c535652e4990aa9aae253ac5c2bf86a1f2ea2d30196cac9"},
+    {file = "binding-0.3.1-py3-none-any.whl", hash = "sha256:1bd36c3c1abb388fb15bd6967d340a7025e23b54b622ca9a6e43d4c1caf14b55"},
+    {file = "binding-0.3.1.tar.gz", hash = "sha256:66bc5c465369ccc35c0d587865f1c9a9a8abc41cfa275f4adc748ae42dcc0d7f"},
 ]
 certifi = [
     {file = "certifi-2021.5.30-py2.py3-none-any.whl", hash = "sha256:50b1e4f8446b06f41be7dd6338db18e0990601dce795c2b1686458aa7e8fa7d8"},
