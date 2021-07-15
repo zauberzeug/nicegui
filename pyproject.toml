@@ -16,7 +16,7 @@ typing-extensions = "^3.10.0"
 markdown2 = "^2.4.0"
 Pygments = "^2.9.0"
 docutils = "^0.17.1"
-binding = "^0.1.3"
+binding = "^0.3"
 asttokens = "^2.0.5"
 uvicorn = {extras = ["watchgodreloader"], version = "^0.14.0"}
 watchgod = "^0.7"
