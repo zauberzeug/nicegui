@@ -16,5 +16,5 @@ def run(self, *, host='0.0.0.0', port=80, title='NiceGUI', favicon='favicon.png'
 
     if reload == False:  # NOTE: in case reload == True we already started uvicorn above
         if show:
-            webbrowser.open(f'http://{host}:{port}/')
+            webbrowser.open(f'http://{host if host != "0.0.0.0" else "127.0.0.1"}:{port}/')
         uvicorn.run(jp.app, host=host, port=port, lifespan='on')
