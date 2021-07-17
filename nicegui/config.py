@@ -14,9 +14,15 @@ class Config(BaseModel):
     show: bool = True
 
 
-endings = ('<string>', 'spawn.py', 'runpy.py', 'debugpy/server/cli.py', 'debugpy/__main__.py')
+excluded_endings = (
+    '<string>',
+    'spawn.py',
+    'runpy.py',
+    os.path.join('debugpy', 'server', 'cli.py'),
+    os.path.join('debugpy', '__main__.py'),
+)
 for f in reversed(inspect.stack()):
-    if not any(f.filename.endswith(ending) for ending in endings):
+    if not any(f.filename.endswith(ending) for ending in excluded_endings):
         filepath = f.filename
         break
 else:
@@ -42,5 +48,5 @@ else:
 
 os.environ['HOST'] = config.host
 os.environ['PORT'] = str(config.port)
-os.environ["STATIC_DIRECTORY"] = os.path.dirname(os.path.realpath(__file__)) + '/static'
-os.environ["TEMPLATES_DIRECTORY"] = os.environ["STATIC_DIRECTORY"] + '/templates'
+os.environ["STATIC_DIRECTORY"] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
+os.environ["TEMPLATES_DIRECTORY"] = os.path.join(os.environ["STATIC_DIRECTORY"], 'templates')
