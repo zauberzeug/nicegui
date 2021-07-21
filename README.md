@@ -58,7 +58,7 @@ You can call `ui.run()` with optional arguments for some high-level configuratio
 - `host` (default: `'0.0.0.0'`)
 - `port` (default: `80`)
 - `title` (default: `'NiceGUI'`)
-- `favicon` (default: `'favicon.png'`)
+- `favicon` (default: `'favicon.ico'`)
 - `reload`: automatically reload the ui on file changes (default: `True`)
 - `show`: automatically open the ui in a browser tab (default: `True`)
 

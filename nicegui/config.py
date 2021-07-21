@@ -9,7 +9,7 @@ class Config(BaseModel):
     host: str = '0.0.0.0'
     port: int = 80
     title: str = 'NiceGUI'
-    favicon: str = 'favicon.png'
+    favicon: str = 'favicon.ico'
     reload: bool = True
     show: bool = True
 
