@@ -36,7 +36,7 @@ for node in ast.parse(source).body:
         func = node.value.func
         if func.value.id == 'ui' and func.attr == 'run':
             args = {
-                keyword.arg: keyword.value.value
+                keyword.arg: keyword.value.n if isinstance(keyword.value, ast.Num) else keyword.value.value
                 for keyword in node.value.keywords
             }
             config = Config(**args)
