@@ -32,7 +32,8 @@ class CustomView(jp.JustpyBaseComponent):
                 else:
                     wp.head_html += f'<script src="lib/{dependency}"></script>\n'
                     filepath = f'{os.path.dirname(self.vue_filepath)}/lib/{dependency}'
-                    jp.app.routes.insert(0, Route(f'/lib/{dependency}', lambda _: FileResponse(filepath)))
+                    route = Route(f'/lib/{dependency}', lambda _, filepath=filepath: FileResponse(filepath))
+                    jp.app.routes.insert(0, route)
 
         if self.vue_filepath not in jp.component_file_list:
             filename = os.path.basename(self.vue_filepath)
