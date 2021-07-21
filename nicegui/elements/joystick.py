@@ -6,9 +6,7 @@ class JoystickView(CustomView):
 
     def __init__(self, on_start, on_move, on_end, **options):
 
-        super().__init__('joystick', __file__, [
-            'https://cdn.jsdelivr.net/npm/nipplejs@0.9.0/dist/nipplejs.min.js',
-        ], **options)
+        super().__init__('joystick', __file__, ['static/lib/nipplejs.min.js'], **options)
 
         self.on_start = on_start
         self.on_move = on_move
