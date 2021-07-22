@@ -2,7 +2,6 @@ import asyncio
 import time
 import traceback
 from typing import Awaitable
-from asyncio.exceptions import CancelledError
 from binding import BindableProperty
 from .elements.element import Element
 from .utils import handle_exceptions
@@ -46,8 +45,8 @@ class Timer:
                             await parent.update()
                     dt = time.time() - start
                     await asyncio.sleep(interval - dt)
-                except CancelledError:
-                    pass
+                # except CancelledError: # only works for python >= 3.8
+                #     pass
                 except:
                     traceback.print_exc()
                     await asyncio.sleep(interval)
