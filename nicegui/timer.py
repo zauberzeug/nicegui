@@ -45,8 +45,8 @@ class Timer:
                             await parent.update()
                     dt = time.time() - start
                     await asyncio.sleep(interval - dt)
-                # except CancelledError: # only works for python >= 3.8
-                #     pass
+                except asyncio.CancelledError:
+                    pass
                 except:
                     traceback.print_exc()
                     await asyncio.sleep(interval)
