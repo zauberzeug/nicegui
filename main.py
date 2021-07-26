@@ -273,6 +273,15 @@ with example(ui.joystick):
         on_end=lambda _: coordinates.set_text('0, 0'))
     coordinates = ui.label('0, 0')
 
+with example(ui.dialog):
+
+    with ui.dialog() as dialog:
+        with ui.card():
+            ui.label('Hello world!')
+            ui.button('Close', on_click=dialog.close)
+
+    ui.button('Open dialog', on_click=dialog.open)
+
 lifecycle = '''### Lifecycle
 
 You can run a function or coroutine on startup as a parallel task by passing it to `ui.on_startup`.

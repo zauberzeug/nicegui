@@ -5,6 +5,7 @@ class Ui:
     from .elements.button import Button as button
     from .elements.checkbox import Checkbox as checkbox
     from .elements.custom_example import CustomExample as custom_example
+    from .elements.dialog import Dialog as dialog
     from .elements.icon import Icon as icon
     from .elements.image import Image as image
     from .elements.input import Input as input
