@@ -1,5 +1,4 @@
 import justpy as jp
-from .element import Element
 from .group import Group
 
 class Image(Group):

@@ -6,18 +6,18 @@ class Ui:
     from .elements.checkbox import Checkbox as checkbox
     from .elements.custom_example import CustomExample as custom_example
     from .elements.icon import Icon as icon
+    from .elements.image import Image as image
     from .elements.input import Input as input
     from .elements.joystick import Joystick as joystick
-    from .elements.label import Label as label
-    from .elements.image import Image as image
-    from .elements.svg import Svg as svg
     from .elements.html import Html as html
-    from .elements.markdown import Markdown as markdown
+    from .elements.label import Label as label
     from .elements.link import Link as link
+    from .elements.markdown import Markdown as markdown
     from .elements.number import Number as number
     from .elements.radio import Radio as radio
     from .elements.select import Select as select
     from .elements.slider import Slider as slider
+    from .elements.svg import Svg as svg
     from .elements.switch import Switch as switch
     from .elements.toggle import Toggle as toggle
     from .elements.upload import Upload as upload

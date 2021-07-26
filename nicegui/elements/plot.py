@@ -1,4 +1,3 @@
-from nicegui.elements.element import Element
 import justpy as jp
 import matplotlib.pyplot as plt
 from .element import Element

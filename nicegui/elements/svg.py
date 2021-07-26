@@ -1,5 +1,4 @@
 import justpy as jp
-from urllib.parse import urlparse
 from .element import Element
 
 class Svg(Element):
