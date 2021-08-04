@@ -1,3 +1,4 @@
+import asyncio
 import traceback
 
 class EventArguments:
@@ -22,4 +23,12 @@ def handle_exceptions(func):
             return func(*args, **kwargs)
         except Exception:
             traceback.print_exc()
+    return inner_function
+
+def handle_awaitable(func):
+    async def inner_function(*args, **kwargs):
+        if asyncio.iscoroutinefunction(func):
+            return await func(*args, **kwargs)
+        else:
+            return func(*args, **kwargs)
     return inner_function
