@@ -12,6 +12,7 @@ class Config(BaseModel):
     favicon: str = 'favicon.ico'
     reload: bool = True
     show: bool = True
+    interactive: bool = False
 
 
 excluded_endings = (
@@ -28,26 +29,30 @@ for f in reversed(inspect.stack()):
 else:
     raise Exception("Could not find main script in stacktrace")
 
-with open(filepath) as f:
-    source = f.read()
-
-for node in ast.parse(source).body:
-    try:
-        func = node.value.func
-        if func.value.id == 'ui' and func.attr == 'run':
-            args = {
-                keyword.arg:
-                    keyword.value.n if isinstance(keyword.value, ast.Num) else
-                    keyword.value.s if isinstance(keyword.value, ast.Str) else
-                    keyword.value.value
-                for keyword in node.value.keywords
-            }
-            config = Config(**args)
-            break
-    except AttributeError:
-        continue
+try:
+    with open(filepath) as f:
+        source = f.read()
+except FileNotFoundError:
+    print('Could not main script. Starting with interactive mode.', flush=True)
+    config = Config(interactive=True)
 else:
-    raise Exception('Could not find ui.run() command')
+    for node in ast.parse(source).body:
+        try:
+            func = node.value.func
+            if func.value.id == 'ui' and func.attr == 'run':
+                args = {
+                    keyword.arg:
+                        keyword.value.n if isinstance(keyword.value, ast.Num) else
+                        keyword.value.s if isinstance(keyword.value, ast.Str) else
+                        keyword.value.value
+                    for keyword in node.value.keywords
+                }
+                config = Config(**args)
+                break
+        except AttributeError:
+            continue
+    else:
+        raise Exception('Could not find ui.run() command')
 
 os.environ['HOST'] = config.host
 os.environ['PORT'] = str(config.port)
