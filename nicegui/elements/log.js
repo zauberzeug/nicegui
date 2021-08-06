@@ -7,7 +7,7 @@ Vue.component("log", {
   },
   methods: {
     push(line) {
-      const decoded = decodeURI(line);
+      const decoded = decodeURIComponent(line);
       const textarea = document.getElementById(this.$props.jp_props.id);
       textarea.innerHTML += (num_lines ? "\n" : "") + decoded;
       textarea.scrollTop = textarea.scrollHeight;

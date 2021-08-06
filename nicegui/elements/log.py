@@ -22,7 +22,7 @@ class Log(Element):
 
         super().__init__(LogView(max_lines=max_lines))
 
-        self.classes('border whitespace-pre font-mono').style('opacity: 1 !important')
+        self.classes('border whitespace-pre font-mono').style('opacity: 1 !important; cursor: text !important')
 
     async def push_async(self, line: str):
 

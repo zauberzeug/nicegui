@@ -267,7 +267,7 @@ with example(ui.line_plot):
 with example(ui.log):
     from datetime import datetime
 
-    log = ui.log().classes('h-16')
+    log = ui.log(max_lines=10).classes('h-16')
     ui.button('Log time', on_click=lambda: log.push(datetime.now().strftime("%X.%f")[:-5]))
 
 with example(ui.joystick):
