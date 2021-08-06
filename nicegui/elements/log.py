@@ -12,14 +12,22 @@ class LogView(CustomView):
 class Log(Element):
 
     def __init__(self):
+        """Log view
+
+        Create a log view that allows to add new lines without re-transmitting the whole history to the client.
+        """
 
         super().__init__(LogView())
 
         self.classes('border whitespace-pre font-mono')
 
-    async def push(self, line: str):
+    async def push_async(self, line: str):
 
         await asyncio.gather(*[
             self.view.run_method(f'push("{line}")', socket)
             for socket in WebPage.sockets[Element.wp.page_id].values()
         ])
+
+    def push(self, line: str):
+
+        asyncio.get_event_loop().create_task(self.push_async(line))
