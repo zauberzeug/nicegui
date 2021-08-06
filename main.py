@@ -81,9 +81,9 @@ Each NiceGUI element provides a `props` method whose content is passed [to the Q
 Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
 You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method. 
 
-If you really need to apply css you can use the `styles` method. Here the delimer is `;` instad of a blank space.
+If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
 '''
-with (example(design)):
+with example(design):
 
     ui.radio(['x', 'y', 'z']).props('inline color=green')
     ui.button().props('icon=touch_app outline round').classes('shadow-lg ml-14')
@@ -97,7 +97,7 @@ Each element provides methods like `bind_value` and `bind_visibility` to create 
 To define a one-way binding use the `_from` and `_to` variants of these methods.
 Just pass a property of the model as parameter to these methods to create the binding.
 '''
-with (example(binding)):
+with example(binding):
 
     class Demo:
 
