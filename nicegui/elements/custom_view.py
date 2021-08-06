@@ -17,9 +17,7 @@ class CustomView(jp.JustpyBaseComponent):
         self.classes = ''
         self.options = jp.Dict(**options)
 
-        super().__init__()
-
-        self.initialize(temp=False)
+        super().__init__(temp=False)
 
     def add_page(self, wp: jp.WebPage):
 

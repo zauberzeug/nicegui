@@ -13,6 +13,7 @@ class Ui:
     from .elements.html import Html as html
     from .elements.label import Label as label
     from .elements.link import Link as link
+    from .elements.log import Log as log
     from .elements.markdown import Markdown as markdown
     from .elements.number import Number as number
     from .elements.radio import Radio as radio
