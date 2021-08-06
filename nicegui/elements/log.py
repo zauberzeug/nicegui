@@ -15,6 +15,8 @@ class Log(Element):
 
         super().__init__(LogView())
 
+        self.classes('border whitespace-pre font-mono')
+
     async def push(self, line: str):
 
         await asyncio.gather(*[

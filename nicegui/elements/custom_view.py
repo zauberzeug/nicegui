@@ -15,6 +15,7 @@ class CustomView(jp.JustpyBaseComponent):
 
         self.pages = {}
         self.classes = ''
+        self.style = ''
         self.options = jp.Dict(**options)
 
         super().__init__(temp=False)
@@ -50,5 +51,7 @@ class CustomView(jp.JustpyBaseComponent):
             'vue_type': self.vue_type,
             'id': self.id,
             'show': True,
+            'classes': self.classes,
+            'style': self.style,
             'options': self.options,
         }

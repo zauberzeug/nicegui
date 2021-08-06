@@ -1,17 +1,15 @@
-var lines = [];
-
 Vue.component("log", {
-  template: `<div v-bind:id="jp_props.id">Hello!</div>`,
+  template: `<textarea v-bind:id="jp_props.id" :class="jp_props.classes" :style="jp_props.style"></textarea>`,
   mounted() {
     comp_dict[this.$props.jp_props.id] = this;
   },
   methods: {
     push(line) {
-      lines.push(line);
-      document.getElementById(this.$props.jp_props.id).innerText = lines;
+      const textarea = document.getElementById(this.$props.jp_props.id);
+      textarea.innerHTML += (textarea.innerHTML ? "\n" : "") + line;
+      textarea.scrollTop = textarea.scrollHeight;
     },
   },
-  updated() {},
   props: {
     jp_props: Object,
   },
