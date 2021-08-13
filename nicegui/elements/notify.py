@@ -14,7 +14,7 @@ class Notify(Element):
 
         :param message: the content of the notification
         :param position: possible position: 'top-left', 'top-right', 'bottom-left','bottom-right, 'top', 'bottom', 'left', 'right', 'center'
-        :param close_button:
+        :param close_button: label of the button to dismiss the notification
         """
 
         view = jp.QNotify(message=message, position=position)
