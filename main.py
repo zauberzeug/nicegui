@@ -294,9 +294,9 @@ with example(ui.menu):
         with ui.card():
             ui.label('Menu item 1')
             ui.label('Menu item 2')
-            ui.button('Close', on_click=menu.close).props('icon=close text-color=black color=white')
+            ui.button('Close', on_click=menu.close).props('icon=close text-color=black color=white flat')
 
-    ui.button('Basic menu', on_click=menu.open)
+    ui.button('Basic menu', on_click=menu.open).props('color=secondary')
 
 lifecycle = '''### Lifecycle
 
