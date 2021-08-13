@@ -15,6 +15,7 @@ class Ui:
     from .elements.link import Link as link
     from .elements.log import Log as log
     from .elements.markdown import Markdown as markdown
+    from .elements.menu import Menu as menu
     from .elements.number import Number as number
     from .elements.radio import Radio as radio
     from .elements.select import Select as select
