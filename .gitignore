@@ -2,3 +2,4 @@ __pycache__/
 *.egg-info/
 .*.swp
 dist
+/test.py

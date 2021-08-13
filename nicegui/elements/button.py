@@ -9,17 +9,22 @@ class Button(Element):
                  text: str = '',
                  *,
                  on_click: Callable = None,
+                 after: Callable = None,
                  ):
         """Button Element
 
         :param text: the label of the button
         :param on_click: callback which is invoked when button is pressed
+        :param after: callback to be executed aftern button is pressed, e.g. to clean up before the next page update
         """
 
         view = jp.QButton(label=text, color='primary')
 
         if on_click is not None:
             view.on('click', handle_exceptions(provide_arguments(on_click)))
+
+        if after is not None:
+            view.on('after', handle_exceptions(provide_arguments(after)))
 
         super().__init__(view)
 

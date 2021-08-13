@@ -288,6 +288,11 @@ with example(ui.dialog):
 
     ui.button('Open dialog', on_click=dialog.open)
 
+with example(ui.notify):
+
+    notification = ui.notify(message='Notification')
+    ui.button('Get notification', on_click=lambda: notification.notify(True), after=lambda: notification.notify(False))
+
 lifecycle = '''### Lifecycle
 
 You can run a function or coroutine on startup as a parallel task by passing it to `ui.on_startup`.
