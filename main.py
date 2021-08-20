@@ -300,7 +300,7 @@ with example(ui.menu):
 
 with example(ui.notify):
 
-    notification = ui.notify(message='Notification')
+    notification = ui.notify(message='Notification', close_button='Close')
     ui.button('Get notification', on_click=lambda: notification.notify(True), after=lambda: notification.notify(False))
 
 lifecycle = '''### Lifecycle
