@@ -287,6 +287,16 @@ with example(ui.dialog):
             ui.button('Close', on_click=dialog.close)
 
     ui.button('Open dialog', on_click=dialog.open)
+    
+with example(ui.menu):
+
+    with ui.menu() as menu:
+        with ui.card():
+            ui.label('Menu item 1')
+            ui.label('Menu item 2')
+            ui.button('Close', on_click=menu.close).props('icon=close text-color=black color=white flat')
+
+    ui.button('Basic menu', on_click=menu.open).props('color=secondary')
 
 lifecycle = '''### Lifecycle
 
