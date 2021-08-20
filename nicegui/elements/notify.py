@@ -1,5 +1,7 @@
 import justpy as jp
 from .element import Element
+import asyncio
+
 
 class Notify(Element):
 
@@ -23,6 +25,12 @@ class Notify(Element):
             view.closeBtn = close_button
 
         super().__init__(view)
+        self.notify()
 
-    def notify(self, state: bool):
-        self.view.notify = state
+    async def notify_async(self):
+        self.view.notify = True
+        await self.wp.update()
+        self.view.notify = False
+
+    def notify(self):
+        asyncio.get_event_loop().create_task(self.notify_async())
