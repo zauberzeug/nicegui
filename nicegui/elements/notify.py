@@ -25,12 +25,9 @@ class Notify(Element):
             view.closeBtn = close_button
 
         super().__init__(view)
-        self.notify()
+        asyncio.get_event_loop().create_task(self.notify_async())
 
     async def notify_async(self):
         self.view.notify = True
         await self.wp.update()
         self.view.notify = False
-
-    def notify(self):
-        asyncio.get_event_loop().create_task(self.notify_async())
