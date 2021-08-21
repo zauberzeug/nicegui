@@ -287,7 +287,7 @@ with example(ui.dialog):
             ui.button('Close', on_click=dialog.close)
 
     ui.button('Open dialog', on_click=dialog.open)
-    
+
 with example(ui.menu):
 
     with ui.menu() as menu:
@@ -300,7 +300,7 @@ with example(ui.menu):
 
 with example(ui.notify):
 
-    ui.button('Get notification', on_click=lambda: ui.notify(message='Notification', close_button='Close'))
+    ui.button('show notification', on_click=lambda: ui.notify(message='Some message', close_button='OK'))
 
 lifecycle = '''### Lifecycle
 
