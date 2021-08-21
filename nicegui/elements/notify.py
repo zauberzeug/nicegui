@@ -29,5 +29,5 @@ class Notify(Element):
 
     async def notify_async(self):
         self.view.notify = True
-        await self.wp.update()
+        await self.parent_view.update()
         self.view.notify = False
