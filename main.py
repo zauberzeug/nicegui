@@ -287,7 +287,7 @@ with example(ui.dialog):
             ui.button('Close', on_click=dialog.close)
 
     ui.button('Open dialog', on_click=dialog.open)
-    
+
 with example(ui.menu):
 
     with ui.menu() as menu:
@@ -297,6 +297,10 @@ with example(ui.menu):
             ui.button('Close', on_click=menu.close).props('icon=close text-color=black color=white flat')
 
     ui.button('Basic menu', on_click=menu.open).props('color=secondary')
+
+with example(ui.notify):
+
+    ui.button('show notification', on_click=lambda: ui.notify(message='Some message', close_button='OK'))
 
 lifecycle = '''### Lifecycle
 
