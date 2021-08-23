@@ -296,11 +296,11 @@ with example(ui.menu):
             ui.label('Menu item 2')
             ui.button('Close', on_click=menu.close).props('icon=close text-color=black color=white flat')
 
-    ui.button('Basic menu', on_click=menu.open).props('color=secondary')
+    ui.button('Open menu', on_click=menu.open).props('color=secondary')
 
 with example(ui.notify):
 
-    ui.button('show notification', on_click=lambda: ui.notify(message='Some message', close_button='OK'))
+    ui.button('Show notification', on_click=lambda: ui.notify('Some message', close_button='OK'))
 
 lifecycle = '''### Lifecycle
 
