@@ -152,3 +152,22 @@ class Cylinder(Object3D):
                  height_segments: int = 1,
                  ):
         super().__init__('cylinder', top_radius, bottom_radius, height, radial_segments, height_segments)
+
+class Extrusion(Object3D):
+
+    def __init__(self,
+                 outline: list[tuple[float, float]],
+                 height: float,
+                 ):
+        super().__init__('extrusion', outline, height)
+
+class Curve(Object3D):
+
+    def __init__(self,
+                 start: tuple[float, float, float],
+                 control1: tuple[float, float, float],
+                 control2: tuple[float, float, float],
+                 end: tuple[float, float, float],
+                 num_points: int = 20,
+                 ):
+        super().__init__('curve', start, control1, control2, end, num_points)

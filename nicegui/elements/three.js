@@ -96,11 +96,32 @@ Vue.component("three", {
       let mesh;
       if (type == "group") {
         mesh = new THREE.Group();
+      } else if (type == "curve") {
+        const curve = new THREE.CubicBezierCurve3(
+          new THREE.Vector3(...args[0]),
+          new THREE.Vector3(...args[1]),
+          new THREE.Vector3(...args[2]),
+          new THREE.Vector3(...args[3])
+        );
+        const points = curve.getPoints(args[4] - 1);
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({ transparent: true });
+        mesh = new THREE.Line(geometry, material);
       } else {
         let geometry;
         if (type == "box") geometry = new THREE.BoxGeometry(...args);
         if (type == "sphere") geometry = new THREE.SphereGeometry(...args);
         if (type == "cylinder") geometry = new THREE.CylinderGeometry(...args);
+        if (type == "extrusion") {
+          const shape = new THREE.Shape();
+          const outline = args[0];
+          const height = args[1];
+          shape.autoClose = true;
+          shape.moveTo(outline[0][0], outline[0][1]);
+          outline.slice(1).forEach((p) => shape.lineTo(p[0], p[1]));
+          const settings = { depth: height, bevelEnabled: false };
+          geometry = new THREE.ExtrudeGeometry(shape, settings);
+        }
         const material = new THREE.MeshPhongMaterial({ transparent: true });
         if (geometry) mesh = new THREE.Mesh(geometry, material);
       }
