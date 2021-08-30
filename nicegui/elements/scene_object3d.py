@@ -4,7 +4,7 @@ import uuid
 import numpy as np
 from justpy.htmlcomponents import WebPage
 from .element import Element
-from .three_stack import object_stack
+from .scene_stack import object_stack
 
 class Object3D:
 

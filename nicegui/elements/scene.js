@@ -7,7 +7,7 @@ var objects = new Map();
 const False = false;
 const True = true;
 
-Vue.component("three", {
+Vue.component("scene", {
   template: `<canvas v-bind:id="jp_props.id"></div>`,
 
   mounted() {

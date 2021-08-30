@@ -19,11 +19,11 @@ class Ui:
     from .elements.notify import Notify as notify
     from .elements.number import Number as number
     from .elements.radio import Radio as radio
+    from .elements.scene import Scene as scene
     from .elements.select import Select as select
     from .elements.slider import Slider as slider
     from .elements.svg import Svg as svg
     from .elements.switch import Switch as switch
-    from .elements.three import Three as three
     from .elements.toggle import Toggle as toggle
     from .elements.upload import Upload as upload
 
