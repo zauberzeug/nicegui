@@ -93,6 +93,10 @@ class Object3D:
     def _rotate_command(self):
         return f'rotate("{self.id}", {self.R})'
 
+    @property
+    def _delete_command(self):
+        return f'delete("{self.id}")'
+
     def material(self, color: str = '#ffffff', opacity: float = 1.0):
         self.color = color
         self.opacity = opacity
@@ -113,6 +117,10 @@ class Object3D:
         self.R = (Rz @ Ry @ Rx).tolist()
         self.view.run_command(self._rotate_command)
         return self
+
+    def delete(self):
+        self.view.objects = [obj for obj in self.view.objects if obj != self]
+        self.view.run_command(self._delete_command)
 
 class Scene(Object3D):
 

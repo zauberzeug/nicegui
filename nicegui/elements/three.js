@@ -147,6 +147,10 @@ Vue.component("three", {
       );
       objects.get(object_id).rotation.setFromRotationMatrix(R4.transpose());
     },
+    delete(object_id) {
+      objects.get(object_id).removeFromParent();
+      objects.delete(object_id);
+    },
   },
 
   props: {
