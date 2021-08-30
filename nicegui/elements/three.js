@@ -118,6 +118,14 @@ Vue.component("three", {
     move(object_id, x, y, z) {
       objects.get(object_id).position.set(x, y, z);
     },
+    rotate(object_id, R) {
+      const R4 = new THREE.Matrix4().makeBasis(
+        new THREE.Vector3(...R[0]),
+        new THREE.Vector3(...R[1]),
+        new THREE.Vector3(...R[2])
+      );
+      objects.get(object_id).rotation.setFromRotationMatrix(R4.transpose());
+    },
   },
 
   props: {

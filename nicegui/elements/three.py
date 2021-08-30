@@ -3,6 +3,7 @@ import asyncio
 from typing import Callable
 import uuid
 from justpy.htmlcomponents import WebPage
+import numpy as np
 from .element import Element
 from .custom_view import CustomView
 
@@ -27,6 +28,7 @@ class ThreeView(CustomView):
             self.run_command(object._create_command, msg.websocket)
             self.run_command(object._material_command, msg.websocket)
             self.run_command(object._move_command, msg.websocket)
+            self.run_command(object._rotate_command, msg.websocket)
 
     def handle_click(self, msg):
         if self.on_click is not None:
@@ -56,13 +58,14 @@ class Object3D:
         self.view = Three.view
         self.type = type
         self.id = 'scene' if type == 'scene' else str(uuid.uuid4())
+        self.parent = Object3D.group_stack[-1] if Object3D.group_stack else None
         self.args = args
         self.color = '#ffffff'
         self.opacity = 1.0
         self.x = 0
         self.y = 0
         self.z = 0
-        self.parent = Object3D.group_stack[-1] if Object3D.group_stack else None
+        self.R = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
         self.view.run_command(self._create_command)
         self.view.objects.append(self)
 
@@ -86,6 +89,10 @@ class Object3D:
     def _move_command(self):
         return f'move("{self.id}", {self.x}, {self.y}, {self.z})'
 
+    @property
+    def _rotate_command(self):
+        return f'rotate("{self.id}", {self.R})'
+
     def material(self, color: str = '#ffffff', opacity: float = 1.0):
         self.color = color
         self.opacity = opacity
@@ -97,6 +104,14 @@ class Object3D:
         self.y = y
         self.z = z
         self.view.run_command(self._move_command)
+        return self
+
+    def rotate(self, omega: float, phi: float, kappa: float):
+        Rx = np.array([[1, 0, 0], [0, np.cos(omega), -np.sin(omega)], [0, np.sin(omega), np.cos(omega)]])
+        Ry = np.array([[np.cos(phi), 0, np.sin(phi)], [0, 1, 0], [-np.sin(phi), 0, np.cos(phi)]])
+        Rz = np.array([[np.cos(kappa), -np.sin(kappa), 0], [np.sin(kappa), np.cos(kappa), 0], [0, 0, 1]])
+        self.R = (Rz @ Ry @ Rx).tolist()
+        self.view.run_command(self._rotate_command)
         return self
 
 class Scene(Object3D):
