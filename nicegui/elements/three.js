@@ -182,23 +182,19 @@ Vue.component("three", {
           const settings = { depth: height, bevelEnabled: false };
           geometry = new THREE.ExtrudeGeometry(shape, settings);
         }
-        if (geometry) {
-          let material;
-          if (wireframe) {
-            mesh = new THREE.LineSegments(
-              new THREE.EdgesGeometry(geometry),
-              new THREE.LineBasicMaterial({ transparent: true })
-            );
-          } else {
-            material = new THREE.MeshPhongMaterial({ transparent: true });
-            mesh = new THREE.Mesh(geometry, material);
-          }
+        let material;
+        if (wireframe) {
+          mesh = new THREE.LineSegments(
+            new THREE.EdgesGeometry(geometry),
+            new THREE.LineBasicMaterial({ transparent: true })
+          );
+        } else {
+          material = new THREE.MeshPhongMaterial({ transparent: true });
+          mesh = new THREE.Mesh(geometry, material);
         }
       }
-      if (mesh) {
-        objects.set(id, mesh);
-        objects.get(parent_id).add(objects.get(id));
-      }
+      objects.set(id, mesh);
+      objects.get(parent_id).add(objects.get(id));
     },
     material(object_id, color, opacity) {
       const material = objects.get(object_id).material;
