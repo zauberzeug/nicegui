@@ -4,6 +4,9 @@ var orbitControls;
 var loader = new THREE.TextureLoader();
 var objects = new Map();
 
+const False = false;
+const True = true;
+
 Vue.component("three", {
   template: `<canvas v-bind:id="jp_props.id"></div>`,
 
@@ -165,6 +168,7 @@ Vue.component("three", {
         mesh = new THREE.Mesh(geometry, material);
       } else {
         let geometry;
+        const wireframe = args.pop();
         if (type == "box") geometry = new THREE.BoxGeometry(...args);
         if (type == "sphere") geometry = new THREE.SphereGeometry(...args);
         if (type == "cylinder") geometry = new THREE.CylinderGeometry(...args);
@@ -178,8 +182,18 @@ Vue.component("three", {
           const settings = { depth: height, bevelEnabled: false };
           geometry = new THREE.ExtrudeGeometry(shape, settings);
         }
-        const material = new THREE.MeshPhongMaterial({ transparent: true });
-        if (geometry) mesh = new THREE.Mesh(geometry, material);
+        if (geometry) {
+          let material;
+          if (wireframe) {
+            mesh = new THREE.LineSegments(
+              new THREE.EdgesGeometry(geometry),
+              new THREE.LineBasicMaterial({ transparent: true })
+            );
+          } else {
+            material = new THREE.MeshPhongMaterial({ transparent: true });
+            mesh = new THREE.Mesh(geometry, material);
+          }
+        }
       }
       if (mesh) {
         objects.set(id, mesh);
