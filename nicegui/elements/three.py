@@ -98,24 +98,28 @@ class Object3D:
         return f'delete("{self.id}")'
 
     def material(self, color: str = '#ffffff', opacity: float = 1.0):
-        self.color = color
-        self.opacity = opacity
-        self.view.run_command(self._material_command)
+        if self.color != color or self.opacity != opacity:
+            self.color = color
+            self.opacity = opacity
+            self.view.run_command(self._material_command)
         return self
 
     def move(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> Object3D:
-        self.x = x
-        self.y = y
-        self.z = z
-        self.view.run_command(self._move_command)
+        if self.x != x or self.y != y or self.z != z:
+            self.x = x
+            self.y = y
+            self.z = z
+            self.view.run_command(self._move_command)
         return self
 
     def rotate(self, omega: float, phi: float, kappa: float):
         Rx = np.array([[1, 0, 0], [0, np.cos(omega), -np.sin(omega)], [0, np.sin(omega), np.cos(omega)]])
         Ry = np.array([[np.cos(phi), 0, np.sin(phi)], [0, 1, 0], [-np.sin(phi), 0, np.cos(phi)]])
         Rz = np.array([[np.cos(kappa), -np.sin(kappa), 0], [np.sin(kappa), np.cos(kappa), 0], [0, 0, 1]])
-        self.R = (Rz @ Ry @ Rx).tolist()
-        self.view.run_command(self._rotate_command)
+        R = (Rz @ Ry @ Rx).tolist()
+        if self.R != R:
+            self.R = R
+            self.view.run_command(self._rotate_command)
         return self
 
     def delete(self):
