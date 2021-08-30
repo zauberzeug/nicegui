@@ -23,6 +23,7 @@ class Ui:
     from .elements.slider import Slider as slider
     from .elements.svg import Svg as svg
     from .elements.switch import Switch as switch
+    from .elements.three import Three as three
     from .elements.toggle import Toggle as toggle
     from .elements.upload import Upload as upload
 
