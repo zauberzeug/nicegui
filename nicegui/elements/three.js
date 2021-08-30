@@ -1,6 +1,7 @@
 var scene;
 var camera;
 var orbitControls;
+var loader = new THREE.TextureLoader();
 var objects = new Map();
 
 Vue.component("three", {
@@ -107,6 +108,55 @@ Vue.component("three", {
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
         const material = new THREE.LineBasicMaterial({ transparent: true });
         mesh = new THREE.Line(geometry, material);
+      } else if (type == "texture") {
+        const url = args[0];
+        const coords = args[1];
+        const geometry = new THREE.BufferGeometry();
+        const nI = coords[0].length;
+        const nJ = coords.length;
+        const vertices = [];
+        const indices = [];
+        const uvs = [];
+        for (let j = 0; j < nJ; ++j) {
+          for (let i = 0; i < nI; ++i) {
+            const XYZ = coords[j][i] || [0, 0, 0];
+            vertices.push(...XYZ);
+            uvs.push(i / (nI - 1), j / (nJ - 1));
+          }
+        }
+        for (let j = 0; j < nJ - 1; ++j) {
+          for (let i = 0; i < nI - 1; ++i) {
+            if (
+              coords[j][i] &&
+              coords[j][i + 1] &&
+              coords[j + 1][i] &&
+              coords[j + 1][i + 1]
+            ) {
+              const idx00 = i + j * nI;
+              const idx10 = i + j * nI + 1;
+              const idx01 = i + j * nI + nI;
+              const idx11 = i + j * nI + 1 + nI;
+              indices.push(idx00, idx10, idx01);
+              indices.push(idx10, idx11, idx01);
+            }
+          }
+        }
+        geometry.setIndex(new THREE.Uint32BufferAttribute(indices, 1));
+        geometry.setAttribute(
+          "position",
+          new THREE.Float32BufferAttribute(vertices, 3)
+        );
+        geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+        geometry.computeVertexNormals();
+        geometry.computeFaceNormals();
+        const texture = loader.load(url);
+        texture.flipY = false;
+        texture.minFilter = THREE.LinearFilter;
+        const material = new THREE.MeshLambertMaterial({
+          map: texture,
+          side: THREE.DoubleSide,
+        });
+        mesh = new THREE.Mesh(geometry, material);
       } else {
         let geometry;
         if (type == "box") geometry = new THREE.BoxGeometry(...args);

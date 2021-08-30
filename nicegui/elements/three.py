@@ -179,3 +179,11 @@ class Curve(Object3D):
                  num_points: int = 20,
                  ):
         super().__init__('curve', start, control1, control2, end, num_points)
+
+class Texture(Object3D):
+
+    def __init__(self,
+                 url: str,
+                 coordinates: list[list[tuple[float, float, float]]],
+                 ):
+        super().__init__('texture', url, coordinates)
