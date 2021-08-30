@@ -97,6 +97,12 @@ Vue.component("three", {
       let mesh;
       if (type == "group") {
         mesh = new THREE.Group();
+      } else if (type == "line") {
+        const start = new THREE.Vector3(...args[0]);
+        const end = new THREE.Vector3(...args[1]);
+        const geometry = new THREE.BufferGeometry().setFromPoints([start, end]);
+        const material = new THREE.LineBasicMaterial({ transparent: true });
+        mesh = new THREE.Line(geometry, material);
       } else if (type == "curve") {
         const curve = new THREE.CubicBezierCurve3(
           new THREE.Vector3(...args[0]),

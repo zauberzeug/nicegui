@@ -169,6 +169,14 @@ class Extrusion(Object3D):
                  ):
         super().__init__('extrusion', outline, height)
 
+class Line(Object3D):
+
+    def __init__(self,
+                 start: tuple[float, float, float],
+                 end: tuple[float, float, float],
+                 ):
+        super().__init__('line', start, end)
+
 class Curve(Object3D):
 
     def __init__(self,
