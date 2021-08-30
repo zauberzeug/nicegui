@@ -27,8 +27,6 @@ class ThreeView(CustomView):
             self.run_command(object._create_command, msg.websocket)
             self.run_command(object._material_command, msg.websocket)
             self.run_command(object._move_command, msg.websocket)
-            if object.parent is not None:
-                self.run_command(object._add_command, msg.websocket)
 
     def handle_click(self, msg):
         if self.on_click is not None:
@@ -52,7 +50,7 @@ class Three(Element):
 
 class Object3D:
 
-    objects: Object3D = []
+    group_stack: list[Object3D] = []
 
     def __init__(self, type: str, *args):
         self.view = Three.view
@@ -64,21 +62,25 @@ class Object3D:
         self.x = 0
         self.y = 0
         self.z = 0
-        self.parent = None
+        self.parent = Object3D.group_stack[-1] if Object3D.group_stack else None
         self.view.run_command(self._create_command)
         self.view.objects.append(self)
 
+    def __enter__(self):
+        Object3D.group_stack.append(self)
+        return self
+
+    def __exit__(self, *_):
+        Object3D.group_stack.pop()
+
     @property
     def _create_command(self):
-        return f'create({str([self.type, self.id, *self.args])[1:-1]})'
+        parent_id = f'"{self.parent.id}"' if self.parent else 'null'
+        return f'create("{self.type}", "{self.id}", {parent_id}, {str(self.args)[1:-1]})'
 
     @property
     def _material_command(self):
         return f'material("{self.id}", "{self.color}", "{self.opacity}")'
-
-    @property
-    def _add_command(self):
-        return f'add_to("{self.id}", "{self.parent.id}")'
 
     @property
     def _move_command(self):
@@ -88,11 +90,6 @@ class Object3D:
         self.color = color
         self.opacity = opacity
         self.view.run_command(self._material_command)
-        return self
-
-    def add_to(self, parent: Object3D) -> Object3D:
-        self.parent = parent
-        self.view.run_command(self._add_command)
         return self
 
     def move(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> Object3D:

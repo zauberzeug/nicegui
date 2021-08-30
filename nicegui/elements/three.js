@@ -92,7 +92,7 @@ Vue.component("three", {
   updated() {},
 
   methods: {
-    create(type, id, ...args) {
+    create(type, id, parent_id, ...args) {
       let mesh;
       if (type == "group") {
         mesh = new THREE.Group();
@@ -104,16 +104,16 @@ Vue.component("three", {
         const material = new THREE.MeshPhongMaterial({ transparent: true });
         if (geometry) mesh = new THREE.Mesh(geometry, material);
       }
-      if (mesh) objects.set(id, mesh);
+      if (mesh) {
+        objects.set(id, mesh);
+        objects.get(parent_id).add(objects.get(id));
+      }
     },
     material(object_id, color, opacity) {
       const material = objects.get(object_id).material;
       if (!material) return;
       material.color.set(color);
       material.opacity = opacity;
-    },
-    add_to(object_id, parent_id) {
-      objects.get(parent_id).add(objects.get(object_id));
     },
     move(object_id, x, y, z) {
       objects.get(object_id).position.set(x, y, z);
