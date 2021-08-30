@@ -4,14 +4,15 @@ import uuid
 import numpy as np
 from justpy.htmlcomponents import WebPage
 from .element import Element
-from .scene_stack import object_stack
 
 class Object3D:
+
+    stack: list[Object3D] = []
 
     def __init__(self, type: str, *args):
         self.type = type
         self.id = str(uuid.uuid4())
-        self.parent = object_stack[-1]
+        self.parent = self.stack[-1]
         self.view = self.parent.view
         self.args = args
         self.color = '#ffffff'
@@ -35,11 +36,11 @@ class Object3D:
         self.run_command(self._rotate_command, socket)
 
     def __enter__(self):
-        object_stack.append(self)
+        self.stack.append(self)
         return self
 
     def __exit__(self, *_):
-        object_stack.pop()
+        self.stack.pop()
 
     @property
     def _create_command(self):

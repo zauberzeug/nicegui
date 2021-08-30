@@ -1,1 +1,0 @@
-object_stack: list = []

@@ -1,7 +1,7 @@
 from typing import Callable
 from .element import Element
 from .custom_view import CustomView
-from .scene_stack import object_stack
+from .scene_object3d import Object3D
 
 class SceneView(CustomView):
 
@@ -39,8 +39,8 @@ class Scene(Element):
     def __enter__(self):
         self.view_stack.append(self.view)
         scene = self.view.objects[0] if self.view.objects else SceneObject(self.view)
-        object_stack.clear()
-        object_stack.append(scene)
+        Object3D.stack.clear()
+        Object3D.stack.append(scene)
         return self
 
     def __exit__(self, *_):
