@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "nicegui"
 version = "0.1.0"
-description = "High-Level Abstraction Web-GUI Using Just Python"
+description = "Web User Interface with Buttons, Dialogs, Markdown, 3D Scences and Plots"
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
 readme = "README.md"
