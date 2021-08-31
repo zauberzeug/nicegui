@@ -17,11 +17,13 @@ It's also helpful for development, when tweaking/configuring a machine learning 
 - browser-based graphical user interface
 - shared state between multiple browser windows
 - implicit reload on code change
-- clean set of GUI elements (label, button, checkbox, switch, slider, input, ...)
-- simple grouping with rows, columns and cards
+- standard GUI elements like label, button, checkbox, switch, slider, input, file upload, ...
+- simple grouping with rows, columns, cards and dialogs
 - general-purpose HTML and markdown elements
+- powerful elements to plot graphs, render 3D scences and get steering events via virtual joysticks
 - built-in timer to refresh data in intervals (even every 10 ms)
 - straight-forward data binding to write even less code
+- notifications, dialogs and menus to provide state of the art user interaction
 
 ## Installation
 
