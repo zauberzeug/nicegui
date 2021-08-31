@@ -81,7 +81,8 @@ Vue.component("scene", {
 
     comp_dict[this.$props.jp_props.id] = this;
 
-    setTimeout(() => {
+    const sendConnectEvent = () => {
+      if (websocket_id === "") return;
       const event = {
         event_type: "onConnect",
         vue_type: this.$props.jp_props.vue_type,
@@ -90,7 +91,9 @@ Vue.component("scene", {
         websocket_id: websocket_id,
       };
       send_to_server(event, "event");
-    }, 100);
+      clearInterval(connectInterval);
+    };
+    connectInterval = setInterval(sendConnectEvent, 10);
   },
 
   updated() {},
