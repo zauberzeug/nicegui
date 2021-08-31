@@ -36,7 +36,7 @@ except FileNotFoundError:
     print('Could not main script. Starting with interactive mode.', flush=True)
     config = Config(interactive=True)
 else:
-    for node in ast.parse(source).body:
+    for node in ast.walk(ast.parse(source)):
         try:
             func = node.value.func
             if func.value.id == 'ui' and func.attr == 'run':
