@@ -34,6 +34,17 @@ class Scene(Element):
     from .scene_objects import Texture as texture
 
     def __init__(self, width: int = 400, height: int = 300, on_click: Callable = None):
+        """3D Scene
+
+        Display a 3d scene using `three.js <https://threejs.org/>`_.
+        Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes.
+        Objects can be translated, rotated and displayed with different color, opacity or as wireframes.
+        They can also be grouped to apply joint movements.
+
+        :param width: width of the canvas
+        :param height: height of the canvas
+        :param on_click: callback to execute when a 3d object is clicked
+        """
         super().__init__(SceneView(width=width, height=height, on_click=on_click))
 
     def __enter__(self):

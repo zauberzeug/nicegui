@@ -270,6 +270,25 @@ with example(ui.log):
     log = ui.log(max_lines=10).classes('h-16')
     ui.button('Log time', on_click=lambda: log.push(datetime.now().strftime("%X.%f")[:-5]))
 
+with example(ui.scene):
+
+    with ui.scene(width=200, height=200) as scene:
+        scene.sphere().material('#4488ff')
+        scene.cylinder(1, 0.5, 2, 20).material('#ff8800', opacity=0.5).move(-2, 1)
+        scene.extrusion([[0, 0], [1, 0], [1, 1], [0, 1]], 0.1).material('#ff8888').move(-2, -2)
+
+        with scene.group().move(z=2):
+            box1 = scene.box().move(x=2)
+            scene.box().move(y=2).rotate(0.25, 0.5, 0.75)
+            scene.box(wireframe=True).material('#888888').move(x=2, y=2)
+
+        scene.line([-4, 0, 0], [-4, 2, 0]).material('#ff0000')
+        scene.curve([-4, -2, 0], [-4, -1, 0], [-3, -1, 0], [-3, 0, 0]).material('#008800')
+
+        scene.texture("https://avatars.githubusercontent.com/u/2843826",
+                      [[[0, 3, 0], [3, 3, 0]],
+                       [[0, 0, 0], [3, 0, 0]]]).move(1, -2)
+
 with example(ui.joystick):
 
     ui.joystick(
