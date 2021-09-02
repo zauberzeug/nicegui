@@ -1,4 +1,5 @@
 from typing import Callable
+import traceback
 from .element import Element
 from .custom_view import CustomView
 from .scene_object3d import Object3D
@@ -14,15 +15,21 @@ class SceneView(CustomView):
         self.objects = {}
 
     def handle_connect(self, msg):
-        for object in self.objects.values():
-            object.send_to(msg.websocket)
+        try:
+            for object in self.objects.values():
+                object.send_to(msg.websocket)
+        except:
+            traceback.print_exc()
 
     def handle_click(self, msg):
-        for hit in msg.hits:
-            hit.object = self.objects.get(hit.object_id)
-        if self.on_click is not None:
-            return self.on_click(msg)
-        return False
+        try:
+            for hit in msg.hits:
+                hit.object = self.objects.get(hit.object_id)
+            if self.on_click is not None:
+                return self.on_click(msg)
+            return False
+        except:
+            traceback.print_exc()
 
 class Scene(Element):
 
