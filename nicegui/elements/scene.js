@@ -39,7 +39,7 @@ Vue.component("scene", {
       new THREE.MeshPhongMaterial({ color: "#eee" })
     );
     ground.translateZ(-0.01);
-    ground.name = "ground";
+    ground.object_id = "ground";
     scene.add(ground);
 
     const grid = new THREE.GridHelper(100, 100);
@@ -67,10 +67,13 @@ Vue.component("scene", {
         id: this.$props.jp_props.id,
         page_id: page_id,
         websocket_id: websocket_id,
-        objects: raycaster
+        hits: raycaster
           .intersectObjects(scene.children, true)
-          .filter((o) => o.object.name)
-          .map((o) => ({ name: o.object.name, point: o.point })),
+          .filter((o) => o.object.object_id)
+          .map((o) => ({
+            object_id: o.object.object_id,
+            point: o.point,
+          })),
         click_type: mouseEvent.type,
         shift_key: mouseEvent.shiftKey,
       };
@@ -196,6 +199,7 @@ Vue.component("scene", {
           mesh = new THREE.Mesh(geometry, material);
         }
       }
+      mesh.object_id = id;
       objects.set(id, mesh);
       objects.get(parent_id).add(objects.get(id));
     },

@@ -11,13 +11,15 @@ class SceneView(CustomView):
         self.on_click = on_click
         self.allowed_events = ['onConnect', 'onClick']
         self.initialize(temp=False, onConnect=self.handle_connect, onClick=self.handle_click)
-        self.objects = []
+        self.objects = {}
 
     def handle_connect(self, msg):
-        for object in self.objects:
+        for object in self.objects.values():
             object.send_to(msg.websocket)
 
     def handle_click(self, msg):
+        for hit in msg.hits:
+            hit.object = self.objects.get(hit.object_id)
         if self.on_click is not None:
             return self.on_click(msg)
         return False
@@ -49,7 +51,7 @@ class Scene(Element):
 
     def __enter__(self):
         self.view_stack.append(self.view)
-        scene = self.view.objects[0] if self.view.objects else SceneObject(self.view)
+        scene = self.view.objects.get('scene', SceneObject(self.view))
         Object3D.stack.clear()
         Object3D.stack.append(scene)
         return self

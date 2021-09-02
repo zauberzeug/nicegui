@@ -12,6 +12,7 @@ class Object3D:
     def __init__(self, type: str, *args):
         self.type = type
         self.id = str(uuid.uuid4())
+        self.name = None
         self.parent = self.stack[-1]
         self.view = self.parent.view
         self.args = args
@@ -22,7 +23,11 @@ class Object3D:
         self.z = 0
         self.R = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
         self.run_command(self._create_command)
-        self.view.objects.append(self)
+        self.view.objects[self.id] = self
+
+    def with_name(self, name: str) -> Object3D:
+        self.name = name
+        return self
 
     def run_command(self, command: str, socket=None):
         sockets = [socket] if socket else WebPage.sockets.get(Element.wp.page_id, {}).values()
@@ -88,5 +93,5 @@ class Object3D:
         return self
 
     def delete(self):
-        self.view.objects = [obj for obj in self.view.objects if obj != self]
+        del self.view.objects[self.id]
         self.run_command(self._delete_command)
