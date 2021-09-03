@@ -11,6 +11,11 @@ from .timer import Timer
 wp = jp.QuasarPage(delete_flag=False, title=Ui.config.title, favicon=Ui.config.favicon)
 wp.tailwind = True  # use Tailwind classes instead of Quasars
 wp.css = HtmlFormatter().get_style_defs('.codehilite')
+wp.head_html += '''
+    <script>
+        confirm = () => { setTimeout(location.reload.bind(location), 100); return false; };
+    </script>
+'''  # avoid confirmation dialog for reload
 
 main = jp.Div(a=wp, classes='q-ma-md column items-start', style='row-gap: 1em')
 main.add_page(wp)
