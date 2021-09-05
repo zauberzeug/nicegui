@@ -83,3 +83,15 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.prep.outputs.tags }}
+
+      # Uploading the README.md is not a core feature of docker/build-push-action yet
+      - name: Update README
+        uses: christian-korneck/update-container-description-action@v1
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
+        with:
+          destination_container_repo: ${DOCKER_IMAGE}
+          provider: dockerhub
+          short_description: "Web Based User Interface für Python with Buttons, Dialogs, Markdown, 3D Scences and Plots"
+          readme_file: "./README.md"
