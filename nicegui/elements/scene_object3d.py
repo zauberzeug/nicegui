@@ -1,5 +1,6 @@
 from __future__ import annotations
 import asyncio
+from typing import Optional
 import uuid
 import numpy as np
 from justpy.htmlcomponents import WebPage
@@ -22,6 +23,9 @@ class Object3D:
         self.y = 0
         self.z = 0
         self.R = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        self.sx = 1
+        self.sy = 1
+        self.sz = 1
         self.run_command(self._create_command)
         self.view.objects[self.id] = self
 
@@ -39,6 +43,7 @@ class Object3D:
         self.run_command(self._material_command, socket)
         self.run_command(self._move_command, socket)
         self.run_command(self._rotate_command, socket)
+        self.run_command(self._scale_command, socket)
 
     def __enter__(self):
         self.stack.append(self)
@@ -62,6 +67,10 @@ class Object3D:
     @property
     def _rotate_command(self):
         return f'rotate("{self.id}", {self.R})'
+
+    @property
+    def _scale_command(self):
+        return f'scale("{self.id}", {self.sx}, {self.sy}, {self.sz})'
 
     @property
     def _delete_command(self):
@@ -90,6 +99,18 @@ class Object3D:
         if self.R != R:
             self.R = R
             self.run_command(self._rotate_command)
+        return self
+
+    def scale(self, sx: float = 1.0, sy: Optional[float] = None, sz: Optional[float] = None):
+        if sy is None:
+            sy = sx
+        if sz is None:
+            sz = sx
+        if self.sx != sx or self.sy != sy or self.sz != sz:
+            self.sx = sx
+            self.sy = sy
+            self.sz = sz
+            self.run_command(self._scale_command)
         return self
 
     def delete(self):

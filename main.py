@@ -275,7 +275,7 @@ with example(ui.scene):
     with ui.scene(width=200, height=200) as scene:
         scene.sphere().material('#4488ff')
         scene.cylinder(1, 0.5, 2, 20).material('#ff8800', opacity=0.5).move(-2, 1)
-        scene.extrusion([[0, 0], [1, 0], [1, 1], [0, 1]], 0.1).material('#ff8888').move(-2, -2)
+        scene.extrusion([[0, 0], [0, 1], [1, 0.5]], 0.1).material('#ff8888').move(-2, -2)
 
         with scene.group().move(z=2):
             box1 = scene.box().move(x=2)
@@ -285,9 +285,11 @@ with example(ui.scene):
         scene.line([-4, 0, 0], [-4, 2, 0]).material('#ff0000')
         scene.curve([-4, -2, 0], [-4, -1, 0], [-3, -1, 0], [-3, 0, 0]).material('#008800')
 
-        scene.texture("https://avatars.githubusercontent.com/u/2843826",
-                      [[[0, 3, 0], [3, 3, 0]],
-                       [[0, 0, 0], [3, 0, 0]]]).move(1, -2)
+        logo = "https://avatars.githubusercontent.com/u/2843826"
+        scene.texture(logo, [[[0, 3, 0], [3, 3, 0]], [[0, 0, 0], [3, 0, 0]]]).move(1, -2)
+
+        teapot = 'https://upload.wikimedia.org/wikipedia/commons/9/93/Utah_teapot_(solid).stl'
+        scene.stl(teapot).scale(0.2).move(-3, 4)
 
 with example(ui.joystick):
 

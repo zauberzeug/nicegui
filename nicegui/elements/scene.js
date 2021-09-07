@@ -191,7 +191,7 @@ Vue.component("scene", {
         }
         if (type == "stl") {
           const url = args[0];
-          geometry = new THREE.BoxGeometry();
+          geometry = new THREE.BufferGeometry();
           stl_loader.load(url, (geometry) => (mesh.geometry = geometry));
         }
         let material;
@@ -217,6 +217,9 @@ Vue.component("scene", {
     },
     move(object_id, x, y, z) {
       objects.get(object_id).position.set(x, y, z);
+    },
+    scale(object_id, sx, sy, sz) {
+      objects.get(object_id).scale.set(sx, sy, sz);
     },
     rotate(object_id, R) {
       const R4 = new THREE.Matrix4().makeBasis(
