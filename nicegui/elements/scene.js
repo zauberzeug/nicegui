@@ -1,7 +1,8 @@
 var scene;
 var camera;
 var orbitControls;
-var loader = new THREE.TextureLoader();
+var texture_loader = new THREE.TextureLoader();
+var stl_loader = new THREE.STLLoader();
 var objects = new Map();
 
 const False = false;
@@ -164,7 +165,7 @@ Vue.component("scene", {
         geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
         geometry.computeVertexNormals();
         geometry.computeFaceNormals();
-        const texture = loader.load(url);
+        const texture = texture_loader.load(url);
         texture.flipY = false;
         texture.minFilter = THREE.LinearFilter;
         const material = new THREE.MeshLambertMaterial({
@@ -187,6 +188,11 @@ Vue.component("scene", {
           outline.slice(1).forEach((p) => shape.lineTo(p[0], p[1]));
           const settings = { depth: height, bevelEnabled: false };
           geometry = new THREE.ExtrudeGeometry(shape, settings);
+        }
+        if (type == "stl") {
+          const url = args[0];
+          geometry = new THREE.BoxGeometry();
+          stl_loader.load(url, (geometry) => (mesh.geometry = geometry));
         }
         let material;
         if (wireframe) {

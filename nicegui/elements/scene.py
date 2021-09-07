@@ -7,7 +7,7 @@ from .scene_object3d import Object3D
 class SceneView(CustomView):
 
     def __init__(self, *, width: int, height: int, on_click: Callable):
-        dependencies = ['three.min.js', 'OrbitControls.js']
+        dependencies = ['three.min.js', 'OrbitControls.js', 'STLLoader.js']
         super().__init__('scene', __file__, dependencies, width=width, height=height)
         self.on_click = on_click
         self.allowed_events = ['onConnect', 'onClick']
@@ -38,6 +38,7 @@ class Scene(Element):
     from .scene_objects import Sphere as sphere
     from .scene_objects import Cylinder as cylinder
     from .scene_objects import Extrusion as extrusion
+    from .scene_objects import Stl as stl
     from .scene_objects import Line as line
     from .scene_objects import Curve as curve
     from .scene_objects import Texture as texture

@@ -51,6 +51,14 @@ class Extrusion(Object3D):
                  ):
         super().__init__('extrusion', outline, height, wireframe)
 
+class Stl(Object3D):
+
+    def __init__(self,
+                 url: str,
+                 wireframe: bool = False,
+                 ):
+        super().__init__('stl', url, wireframe)
+
 class Line(Object3D):
 
     def __init__(self,
