@@ -5,6 +5,7 @@ var texture_loader = new THREE.TextureLoader();
 var stl_loader = new THREE.STLLoader();
 var objects = new Map();
 
+const None = null;
 const False = false;
 const True = true;
 

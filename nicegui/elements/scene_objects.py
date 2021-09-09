@@ -1,3 +1,4 @@
+from typing import Optional
 from .scene_object3d import Object3D
 
 class Scene(Object3D):
@@ -82,6 +83,6 @@ class Texture(Object3D):
 
     def __init__(self,
                  url: str,
-                 coordinates: list[list[tuple[float, float, float]]],
+                 coordinates: list[list[Optional[tuple[float]]]],
                  ):
         super().__init__('texture', url, coordinates)
