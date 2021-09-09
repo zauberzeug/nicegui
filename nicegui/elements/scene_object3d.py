@@ -95,7 +95,9 @@ class Object3D:
         Rx = np.array([[1, 0, 0], [0, np.cos(omega), -np.sin(omega)], [0, np.sin(omega), np.cos(omega)]])
         Ry = np.array([[np.cos(phi), 0, np.sin(phi)], [0, 1, 0], [-np.sin(phi), 0, np.cos(phi)]])
         Rz = np.array([[np.cos(kappa), -np.sin(kappa), 0], [np.sin(kappa), np.cos(kappa), 0], [0, 0, 1]])
-        R = (Rz @ Ry @ Rx).tolist()
+        return self.rotate_R((Rz @ Ry @ Rx).tolist())
+
+    def rotate_R(self, R: list[list[float]]):
         if self.R != R:
             self.R = R
             self.run_command(self._rotate_command)
