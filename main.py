@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from nicegui import ui, wp
+from nicegui import ui, initial_page
 from contextlib import contextmanager
 import inspect
 from nicegui.elements.markdown import Markdown
@@ -11,7 +11,7 @@ import re
 import asyncio
 
 # add docutils css to webpage
-wp.head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
+initial_page.head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
 
 @contextmanager
 def example(content: Union[Element, str]):
@@ -345,5 +345,13 @@ with example(lifecycle):
             await asyncio.sleep(1)
 
     ui.on_startup(counter())
+
+with example(ui.page):
+
+    with ui.page('/other_page') as other:
+        ui.label('Welcome on the other side')
+        ui.link('GO TO MAIN PAGE', '/').classes('text-decoration: underline text-blue')
+
+    ui.link('Visit other page', '/other_page').classes('text-decoration: underline text-blue')
 
 ui.run()

@@ -34,7 +34,7 @@ class Object3D:
         return self
 
     def run_command(self, command: str, socket=None):
-        sockets = [socket] if socket else WebPage.sockets.get(Element.wp.page_id, {}).values()
+        sockets = [socket] if socket else WebPage.sockets.get(Element.wp_stack[-1].page_id, {}).values()
         for socket in sockets:
             asyncio.get_event_loop().create_task(self.view.run_method(command, socket))
 

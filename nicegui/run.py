@@ -13,11 +13,9 @@ if not config.interactive and config.reload and not inspect.stack()[-2].filename
     uvicorn.run('nicegui:app', host=config.host, port=config.port, lifespan='on', reload=True)
     sys.exit()
 
-def run(self, *, host='0.0.0.0', port=80, title='NiceGUI', favicon='favicon.ico', reload=True, show=True):
+def run(self, *, host='0.0.0.0', port=80, reload=True, show=True):
 
     if config.interactive or reload == False:  # NOTE: if reload == True we already started uvicorn above
         if show:
             webbrowser.open(f'http://{host if host != "0.0.0.0" else "127.0.0.1"}:{port}/')
-        Element.wp.title = title
-        Element.wp.favicon = favicon
         uvicorn.run(jp.app, host=host, port=port, lifespan='on')

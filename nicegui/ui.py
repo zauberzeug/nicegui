@@ -18,6 +18,7 @@ class Ui:
     from .elements.menu import Menu as menu
     from .elements.notify import Notify as notify
     from .elements.number import Number as number
+    from .elements.page import Page as page
     from .elements.radio import Radio as radio
     from .elements.scene import Scene as scene
     from .elements.select import Select as select

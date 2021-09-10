@@ -3,7 +3,7 @@ from binding.binding import BindableProperty
 
 class Element:
 
-    wp: None
+    wp_stack = []
     view_stack = []
 
     visible = BindableProperty
@@ -14,7 +14,7 @@ class Element:
 
         self.parent_view = self.view_stack[-1]
         self.parent_view.add(view)
-        view.add_page(self.wp)
+        view.add_page(self.wp_stack[-1])
         self.view = view
 
         self.visible = True

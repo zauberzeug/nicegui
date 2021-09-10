@@ -2,25 +2,11 @@
 from typing import Awaitable, Callable
 import asyncio
 import binding
-from pygments.formatters import HtmlFormatter
+
 from .ui import Ui  # NOTE: before justpy
 import justpy as jp
-from .elements.element import Element
 from .timer import Timer
 
-wp = jp.QuasarPage(delete_flag=False, title=Ui.config.title, favicon=Ui.config.favicon)
-wp.tailwind = True  # use Tailwind classes instead of Quasars
-wp.css = HtmlFormatter().get_style_defs('.codehilite')
-wp.head_html += '''
-    <script>
-        confirm = () => { setTimeout(location.reload.bind(location), 100); return false; };
-    </script>
-'''  # avoid confirmation dialog for reload
-
-main = jp.Div(a=wp, classes='q-ma-md column items-start', style='row-gap: 1em')
-main.add_page(wp)
-
-jp.justpy(lambda: wp, start_server=False)
 
 async def binding_loop():
     while True:
@@ -46,8 +32,11 @@ def shutdown():
     [t() for t in Ui.shutdown_tasks if isinstance(t, Callable)]
     [t.cancel() for t in tasks]
 
-Element.wp = wp
-Element.view_stack = [main]
 
 app = jp.app
 ui = Ui()
+
+initial_page = ui.page('/', ui.config.title, ui.config.favicon)
+initial_page.__enter__()
+jp.justpy(lambda: initial_page, start_server=False)
+
