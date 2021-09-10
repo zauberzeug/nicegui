@@ -18,8 +18,8 @@ class Page(jp.QuasarPage):
         super().__init__()
 
         self.delete_flag = False
-        self.title = title if title is not None else self.default_title
-        self.favicon = favicon if favicon is not None else self.default_favicon
+        self.title = title or self.default_title
+        self.favicon = favicon or self.default_favicon
 
         self.tailwind = True  # use Tailwind classes instead of Quasars
         self.css = HtmlFormatter().get_style_defs('.codehilite')
