@@ -2,15 +2,10 @@
 
 <img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/ui-elements.png" width="300" align="right">
 
-We like [Streamlit](https://streamlit.io/) but find it does [too much magic when it comes to state handling](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651).
-In search for an alernative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/).
-While too "low-level HTML" for our daily usage it provides a great basis for "NiceGUI".
+NiceGUI is a simple to use, python based UI framework which renderes to the web browser. You can create buttons, dialogs, markdown, 3D scences, plots and much more.
 
-## Purpose
-
-NiceGUI is intended to be used for small scripts and single-page user interfaces with a very limited user base.
-Like smart home solutions, micro web apps or robotics projects.
-It's also helpful for development, when tweaking/configuring a machine learning training or tuning motor controllers.
+It was designed to be used for micro web apps, dashboards, robotics projects, smart home solutions and similar use cases.
+It's also helpful for development. For example when tweaking/configuring a machine learning algorithm or tuning motor controllers.
 
 ## Features
 
@@ -75,6 +70,12 @@ docker run --rm -p 8888:80 -v $(pwd)/my_script.py:/app/main.py -it zauberzeug/ni
 
 This will start the server at http://localhost:8888 with code from `my_script.py` within the current directory.
 Code modification triggers an automatic reload.
+
+## Why?
+
+We like [Streamlit](https://streamlit.io/) but find it does [too much magic when it comes to state handling](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651).
+In search for an alernative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/).
+While too "low-level HTML" for our daily usage it provides a great basis for "NiceGUI".
 
 ## API
 
