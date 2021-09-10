@@ -4,7 +4,6 @@ from typing import Optional
 import uuid
 import numpy as np
 from justpy.htmlcomponents import WebPage
-from .element import Element
 
 class Object3D:
 
@@ -16,6 +15,7 @@ class Object3D:
         self.name = None
         self.parent = self.stack[-1]
         self.view = self.parent.view
+        self.page = self.parent.page
         self.args = args
         self.color = '#ffffff'
         self.opacity = 1.0
@@ -34,7 +34,7 @@ class Object3D:
         return self
 
     def run_command(self, command: str, socket=None):
-        sockets = [socket] if socket else WebPage.sockets.get(Element.wp_stack[-1].page_id, {}).values()
+        sockets = [socket] if socket else WebPage.sockets.get(self.page.page_id, {}).values()
         for socket in sockets:
             asyncio.get_event_loop().create_task(self.view.run_method(command, socket))
 

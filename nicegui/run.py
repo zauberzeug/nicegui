@@ -2,7 +2,6 @@ import inspect
 import sys
 import webbrowser
 import uvicorn
-from .elements.element import Element
 from .config import config  # NOTE: before justpy
 import justpy as jp
 
@@ -13,7 +12,7 @@ if not config.interactive and config.reload and not inspect.stack()[-2].filename
     uvicorn.run('nicegui:app', host=config.host, port=config.port, lifespan='on', reload=True)
     sys.exit()
 
-def run(self, *, host='0.0.0.0', port=80, reload=True, show=True):
+def run(self, *, host='0.0.0.0', port=80, title='NiceGUI', favicon='favicon.ico', reload=True, show=True):
 
     if config.interactive or reload == False:  # NOTE: if reload == True we already started uvicorn above
         if show:

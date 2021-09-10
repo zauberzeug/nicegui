@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from nicegui import ui, initial_page
+from nicegui import ui
 from contextlib import contextmanager
 import inspect
 from nicegui.elements.markdown import Markdown
@@ -11,7 +11,7 @@ import re
 import asyncio
 
 # add docutils css to webpage
-initial_page.head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
+Element.wp_stack[0].head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
 
 @contextmanager
 def example(content: Union[Element, str]):

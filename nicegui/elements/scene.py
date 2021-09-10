@@ -2,6 +2,7 @@ from typing import Callable
 import traceback
 from .element import Element
 from .custom_view import CustomView
+from .page import Page
 from .scene_object3d import Object3D
 
 class SceneView(CustomView):
@@ -59,7 +60,7 @@ class Scene(Element):
 
     def __enter__(self):
         self.view_stack.append(self.view)
-        scene = self.view.objects.get('scene', SceneObject(self.view))
+        scene = self.view.objects.get('scene', SceneObject(self.view, self.page))
         Object3D.stack.clear()
         Object3D.stack.append(scene)
         return self
@@ -69,6 +70,7 @@ class Scene(Element):
 
 class SceneObject:
 
-    def __init__(self, view: SceneView):
+    def __init__(self, view: SceneView, page: Page):
         self.id = 'scene'
         self.view = view
+        self.page = page

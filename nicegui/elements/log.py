@@ -28,7 +28,7 @@ class Log(Element):
 
         await asyncio.gather(*[
             self.view.run_method(f'push("{urllib.parse.quote(line)}")', socket)
-            for socket in WebPage.sockets[Element.wp_stack[-1].page_id].values()
+            for socket in WebPage.sockets[self.page.page_id].values()
         ])
 
     def push(self, line: str):

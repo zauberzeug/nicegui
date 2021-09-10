@@ -1,23 +1,25 @@
 import justpy as jp
-
-from .element import Element
+from typing import Optional
 from pygments.formatters import HtmlFormatter
-
+from .element import Element
 
 class Page(jp.QuasarPage):
 
-    def __init__(self, route: str = '', title: str = 'NiceGUI', favicon: str = 'favicon.ico', **kwargs):
+    default_title: str
+    default_favicon: str
+
+    def __init__(self, route: str, title: Optional[str] = None, favicon: Optional[str] = None):
         """Page
 
         Creates a new page at the given path.
 
         :param route: the route of the new page. All paths must start with '/', otherwise an error occurs.
         """
-        super().__init__(**kwargs)
+        super().__init__()
 
         self.delete_flag = False
-        self.title = title
-        self.favicon = favicon
+        self.title = title if title is not None else self.default_title
+        self.favicon = favicon if favicon is not None else self.default_favicon
 
         self.tailwind = True  # use Tailwind classes instead of Quasars
         self.css = HtmlFormatter().get_style_defs('.codehilite')

@@ -36,7 +36,8 @@ def shutdown():
 app = jp.app
 ui = Ui()
 
-initial_page = ui.page('/', ui.config.title, ui.config.favicon)
-initial_page.__enter__()
-jp.justpy(lambda: initial_page, start_server=False)
-
+ui.page.default_title = ui.config.title
+ui.page.default_favicon = ui.config.favicon
+page = ui.page('/')
+page.__enter__()
+jp.justpy(lambda: page, start_server=False)

@@ -1,2 +1,2 @@
-from nicegui.nicegui import app, ui, initial_page
+from nicegui.nicegui import app, ui
 from nicegui import elements

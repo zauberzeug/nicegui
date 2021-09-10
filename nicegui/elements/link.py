@@ -8,6 +8,6 @@ class Link(Element):
                  href: str = '#',
                  ):
 
-        view = jp.A(text=text, href=href)
+        view = jp.A(text=text, href=href, classes='underline text-blue')
 
         super().__init__(view)

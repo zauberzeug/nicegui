@@ -14,8 +14,9 @@ class Element:
 
         self.parent_view = self.view_stack[-1]
         self.parent_view.add(view)
-        view.add_page(self.wp_stack[-1])
         self.view = view
+        self.page = self.wp_stack[-1]
+        self.view.add_page(self.page)
 
         self.visible = True
 
