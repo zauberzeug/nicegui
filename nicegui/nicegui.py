@@ -34,7 +34,7 @@ def shutdown():
 
 
 app = jp.app
-ui = Ui()
+ui = Ui(app)
 
 ui.page.default_title = ui.config.title
 ui.page.default_favicon = ui.config.favicon

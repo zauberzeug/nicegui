@@ -38,3 +38,10 @@ class Ui:
     from .timer import Timer as timer
 
     from .lifecycle import startup_tasks, on_startup, shutdown_tasks, on_shutdown
+
+    def __init__(self, app) -> None:
+        self.app = app
+        
+
+    def add_route(self, route):
+        self.app.routes.insert(0, route)
