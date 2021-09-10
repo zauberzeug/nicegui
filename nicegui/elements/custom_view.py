@@ -22,16 +22,14 @@ class CustomView(jp.JustpyBaseComponent):
 
     def add_page(self, wp: jp.WebPage):
 
-        marker = '<!--' + self.__module__ + '-->\n'
-        if marker not in wp.head_html:
-            wp.head_html += marker
-            for dependency in self.vue_dependencies:
-                if dependency.startswith('http://') or dependency.startswith('https://'):
-                    wp.head_html += f'<script src="{dependency}"></script>\n'
-                else:
-                    wp.head_html += f'<script src="lib/{dependency}"></script>\n'
-                    filepath = f'{os.path.dirname(self.vue_filepath)}/lib/{dependency}'
-                    route = Route(f'/lib/{dependency}', lambda _, filepath=filepath: FileResponse(filepath))
+        for dependency in self.vue_dependencies:
+            is_remote = dependency.startswith('http://') or dependency.startswith('https://')
+            src = dependency if is_remote else f'lib/{dependency}'
+            if src not in jp.component_file_list:
+                jp.component_file_list += [src]
+                if not is_remote:
+                    filepath = f'{os.path.dirname(self.vue_filepath)}/{src}'
+                    route = Route(f'/{src}', lambda _, filepath=filepath: FileResponse(filepath))
                     jp.app.routes.insert(0, route)
 
         if self.vue_filepath not in jp.component_file_list:
