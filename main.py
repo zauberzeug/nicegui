@@ -349,9 +349,9 @@ with example(lifecycle):
 with example(ui.page):
 
     with ui.page('/other_page') as other:
-        ui.label('Welcome on the other side')
-        ui.link('GO TO MAIN PAGE', '/').classes('text-decoration: underline text-blue')
+        ui.label('Welcome to the other side')
+        ui.link('Back to main page', '/')
 
-    ui.link('Visit other page', '/other_page').classes('text-decoration: underline text-blue')
+    ui.link('Visit other page', '/other_page')
 
 ui.run()
