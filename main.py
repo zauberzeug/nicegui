@@ -2,16 +2,17 @@
 from nicegui import ui
 from contextlib import contextmanager
 import inspect
-from nicegui.elements.markdown import Markdown
-from nicegui.elements.element import Element
 import sys
 from typing import Union
 import docutils.core
 import re
 import asyncio
+from nicegui.elements.markdown import Markdown
+from nicegui.elements.element import Element
+from nicegui.globals import page_stack
 
 # add docutils css to webpage
-Element.wp_stack[0].head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
+page_stack[0].head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
 
 @contextmanager
 def example(content: Union[Element, str]):

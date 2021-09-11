@@ -6,6 +6,7 @@ import binding
 from .ui import Ui  # NOTE: before justpy
 import justpy as jp
 from .timer import Timer
+from . import globals
 
 
 async def binding_loop():
@@ -33,11 +34,9 @@ def shutdown():
     [t.cancel() for t in tasks]
 
 
-app = jp.app
-ui = Ui(app)
+app = globals.app = jp.app
+ui = Ui()
 
-ui.page.default_title = ui.config.title
-ui.page.default_favicon = ui.config.favicon
 page = ui.page('/')
 page.__enter__()
 jp.justpy(lambda: page, start_server=False)

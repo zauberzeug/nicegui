@@ -3,7 +3,7 @@ import time
 import traceback
 from typing import Awaitable, Callable, Union
 from binding import BindableProperty
-from .elements.element import Element
+from .globals import view_stack
 from .utils import handle_exceptions, handle_awaitable
 
 class Timer:
@@ -25,7 +25,7 @@ class Timer:
         :param once: whether the callback is only executed once after a delay specified by `interval`; default is `False`
         """
 
-        parent = Element.view_stack[-1]
+        parent = view_stack[-1]
         self.active = active
 
         async def timeout():

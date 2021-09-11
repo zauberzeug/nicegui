@@ -1,6 +1,7 @@
 class Ui:
 
-    from .run import run, config  # NOTE: before justpy
+    from .config import config  # NOTE: before run
+    from .run import run  # NOTE: before justpy
 
     from .elements.button import Button as button
     from .elements.checkbox import Checkbox as checkbox
@@ -39,9 +40,4 @@ class Ui:
 
     from .lifecycle import startup_tasks, on_startup, shutdown_tasks, on_shutdown
 
-    def __init__(self, app) -> None:
-        self.app = app
-        
-
-    def add_route(self, route):
-        self.app.routes.insert(0, route)
+    from .routes import add_route

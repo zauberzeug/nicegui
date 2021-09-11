@@ -1,12 +1,9 @@
 import justpy as jp
 from typing import Optional
 from pygments.formatters import HtmlFormatter
-from .element import Element
+from ..globals import config, page_stack, view_stack
 
 class Page(jp.QuasarPage):
-
-    default_title: str
-    default_favicon: str
 
     def __init__(self, route: str, title: Optional[str] = None, favicon: Optional[str] = None):
         """Page
@@ -18,8 +15,8 @@ class Page(jp.QuasarPage):
         super().__init__()
 
         self.delete_flag = False
-        self.title = title or self.default_title
-        self.favicon = favicon or self.default_favicon
+        self.title = title or config.title
+        self.favicon = favicon or config.favicon
 
         self.tailwind = True  # use Tailwind classes instead of Quasars
         self.css = HtmlFormatter().get_style_defs('.codehilite')
@@ -35,10 +32,10 @@ class Page(jp.QuasarPage):
         jp.Route(route, lambda: self)
 
     def __enter__(self):
-        Element.wp_stack.append(self)
-        Element.view_stack.append(self.view)
+        page_stack.append(self)
+        view_stack.append(self.view)
         return self
 
     def __exit__(self, *_):
-        Element.wp_stack.pop()
-        Element.view_stack.pop()
+        page_stack.pop()
+        view_stack.pop()

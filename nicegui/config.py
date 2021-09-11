@@ -2,6 +2,7 @@ from pydantic import BaseModel
 import inspect
 import ast
 import os
+from . import globals
 
 class Config(BaseModel):
 
@@ -58,3 +59,5 @@ os.environ['HOST'] = config.host
 os.environ['PORT'] = str(config.port)
 os.environ["STATIC_DIRECTORY"] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
 os.environ["TEMPLATES_DIRECTORY"] = os.path.join(os.environ["STATIC_DIRECTORY"], 'templates')
+
+globals.config = config

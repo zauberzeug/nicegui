@@ -1,10 +1,8 @@
 import justpy as jp
 from binding.binding import BindableProperty
+from ..globals import view_stack, page_stack
 
 class Element:
-
-    wp_stack = []
-    view_stack = []
 
     visible = BindableProperty
 
@@ -12,10 +10,10 @@ class Element:
                  view: jp.HTMLBaseComponent,
                  ):
 
-        self.parent_view = self.view_stack[-1]
+        self.parent_view = view_stack[-1]
         self.parent_view.add(view)
         self.view = view
-        self.page = self.wp_stack[-1]
+        self.page = page_stack[-1]
         self.view.add_page(self.page)
 
         self.visible = True
