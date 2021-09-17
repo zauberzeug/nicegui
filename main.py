@@ -311,11 +311,11 @@ with example(ui.dialog):
 
 with example(ui.menu):
 
+    choice = ui.label('Try the menu.')
     with ui.menu() as menu:
-        with ui.card():
-            ui.label('Menu item 1')
-            ui.label('Menu item 2')
-            ui.button('Close', on_click=menu.close).props('icon=close text-color=black color=white flat')
+        ui.menu_item('Menu item 1', lambda: choice.set_text('Selected item 1.'))
+        ui.menu_item('Menu item 2', lambda: choice.set_text('Selected item 2.'))
+        ui.menu_item('Close', on_click=menu.close)
 
     ui.button('Open menu', on_click=menu.open).props('color=secondary')
 

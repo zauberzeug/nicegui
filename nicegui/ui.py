@@ -16,6 +16,7 @@ class Ui:
     from .elements.log import Log as log
     from .elements.markdown import Markdown as markdown
     from .elements.menu import Menu as menu
+    from .elements.menu_item import MenuItem as menu_item
     from .elements.notify import Notify as notify
     from .elements.number import Number as number
     from .elements.page import Page as page
