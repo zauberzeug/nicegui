@@ -41,7 +41,22 @@ class Ui:
 
     def __init__(self, app) -> None:
         self.app = app
-        
+
+    def get(self, path: str):
+        """
+        Use as a decorator for a function like @ui.get('/another/route/{id}').
+        :param path: String that starts with a '/'.
+        :return:
+        """
+        def decorator(func):
+            from starlette.routing import Route
+            self.add_route(Route(path, func))
+            return func
+        return decorator
 
     def add_route(self, route):
+        """
+        :param route: A starlette Route including a path and a function to be called.
+        :return:
+        """
         self.app.routes.insert(0, route)

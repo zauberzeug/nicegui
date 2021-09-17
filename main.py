@@ -354,4 +354,35 @@ with example(ui.page):
 
     ui.link('Visit other page', '/other_page')
 
+add_route = """###Route
+
+Add a new route by calling `ui.add_route` with a starlette route including a path and a function to be called. 
+Routed paths must start with a '/'.
+"""
+with example(add_route):
+    import starlette
+
+    ui.add_route(
+        starlette.routing.Route(
+            '/new/route',
+            lambda request: starlette.responses.PlainTextResponse('Response')
+        )
+    )
+
+    ui.link('Try the new route!', '/new/route')
+
+get_decorator = """###Get decorator
+Syntactic sugar to add routes. Decorating a function with the @ui.get makes it available at the specified endpoint, 
+e.g. /another/route/1
+"""
+with example(get_decorator):
+    import starlette
+
+    @ui.get('/another/route/{id}')
+    def produce_plain_response(request):
+        path_param_id = request.path_params['id']
+        return starlette.responses.PlainTextResponse(f'Response {path_param_id}')
+
+    ui.link('Try yet another route!', '/another/route/1')
+
 ui.run()
