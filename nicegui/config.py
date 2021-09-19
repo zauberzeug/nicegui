@@ -12,6 +12,7 @@ class Config(BaseModel):
     reload: bool = True
     show: bool = True
     interactive: bool = False
+    uvicron_logging_level = 'warning'
 
 
 excluded_endings = (

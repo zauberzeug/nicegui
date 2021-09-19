@@ -8,11 +8,12 @@ import justpy as jp
 if not config.interactive and config.reload and not inspect.stack()[-2].filename.endswith('spawn.py'):
     if config.show:
         webbrowser.open(f'http://{config.host}:{config.port}/')
-    uvicorn.run('nicegui:app', host=config.host, port=config.port, lifespan='on', reload=True)
+    uvicorn.run('nicegui:app', host=config.host, port=config.port, lifespan='on',
+                reload=True, log_level=config.uvicron_logging_level)
     sys.exit()
 
 def run(self, *, host='0.0.0.0', port=80, title='NiceGUI', favicon='favicon.ico', reload=True, show=True):
     if config.interactive or reload == False:  # NOTE: if reload == True we already started uvicorn above
         if show:
             webbrowser.open(f'http://{host if host != "0.0.0.0" else "127.0.0.1"}:{port}/')
-        uvicorn.run(jp.app, host=host, port=port, lifespan='on')
+        uvicorn.run(jp.app, host=host, port=port, log_level=config.uvicron_logging_level, lifespan='on')
