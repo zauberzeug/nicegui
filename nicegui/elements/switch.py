@@ -3,7 +3,6 @@ import justpy as jp
 from .bool_element import BoolElement
 
 class Switch(BoolElement):
-
     def __init__(self,
                  text: str = '',
                  *,

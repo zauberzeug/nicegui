@@ -3,7 +3,6 @@ from typing import Callable, List, Dict, Union
 from .choice_element import ChoiceElement
 
 class Toggle(ChoiceElement):
-
     def __init__(self,
                  options: Union[List, Dict],
                  *,

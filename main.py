@@ -15,11 +15,9 @@ Element.wp_stack[0].head_html += docutils.core.publish_parts('', writer_name='ht
 
 @contextmanager
 def example(content: Union[Element, str]):
-
     callFrame = inspect.currentframe().f_back.f_back
     begin = callFrame.f_lineno
     with ui.row().classes('flex w-full'):
-
         if isinstance(content, str):
             ui.markdown(content).classes('mr-8 w-4/12')
         else:
@@ -84,7 +82,6 @@ You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the
 If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
 '''
 with example(design):
-
     ui.radio(['x', 'y', 'z']).props('inline color=green')
     ui.button().props('icon=touch_app outline round').classes('shadow-lg ml-14')
 
@@ -98,9 +95,7 @@ To define a one-way binding use the `_from` and `_to` variants of these methods.
 Just pass a property of the model as parameter to these methods to create the binding.
 '''
 with example(binding):
-
     class Demo:
-
         def __init__(self):
             self.number = 1
 
@@ -130,17 +125,14 @@ with example(ui.timer):
         ui.timer(interval=0.1, callback=lazy_update)
 
 with example(ui.label):
-
     ui.label('some label')
 
 with example(ui.image):
-
     ui.image('http://placeimg.com/640/360/tech')
     base64 = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QCMRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAIAAIdpAAQAAAABAAAAWgAAAAAAAABIAAAAAQAAAEgAAAABAAOgAQADAAAAAQABAACgAgAEAAAAAQAAACKgAwAEAAAAAQAAACMAAAAA/8IAEQgAIwAiAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAMCBAEFAAYHCAkKC//EAMMQAAEDAwIEAwQGBAcGBAgGcwECAAMRBBIhBTETIhAGQVEyFGFxIweBIJFCFaFSM7EkYjAWwXLRQ5I0ggjhU0AlYxc18JNzolBEsoPxJlQ2ZJR0wmDShKMYcOInRTdls1V1pJXDhfLTRnaA40dWZrQJChkaKCkqODk6SElKV1hZWmdoaWp3eHl6hoeIiYqQlpeYmZqgpaanqKmqsLW2t7i5usDExcbHyMnK0NTV1tfY2drg5OXm5+jp6vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAQIAAwQFBgcICQoL/8QAwxEAAgIBAwMDAgMFAgUCBASHAQACEQMQEiEEIDFBEwUwIjJRFEAGMyNhQhVxUjSBUCSRoUOxFgdiNVPw0SVgwUThcvEXgmM2cCZFVJInotIICQoYGRooKSo3ODk6RkdISUpVVldYWVpkZWZnaGlqc3R1dnd4eXqAg4SFhoeIiYqQk5SVlpeYmZqgo6SlpqeoqaqwsrO0tba3uLm6wMLDxMXGx8jJytDT1NXW19jZ2uDi4+Tl5ufo6ery8/T19vf4+fr/2wBDAAwMDAwMDBUMDBUeFRUVHikeHh4eKTQpKSkpKTQ+NDQ0NDQ0Pj4+Pj4+Pj5LS0tLS0tXV1dXV2JiYmJiYmJiYmL/2wBDAQ8QEBkXGSsXFytnRjlGZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2f/2gAMAwEAAhEDEQAAAeqBgCIareozvbaK3avBqa52teT6He3z0TqCUZa22r//2gAIAQEAAQUCaVVKTjGnLFqSqqlGuciX+87YgM8ScWhAx5KWUJUdJClKadMye6O//9oACAEDEQE/AUxI86A0ynfb/9oACAECEQE/ASaYZBLxpKNinFh2dv8A/9oACAEBAAY/AmUniHVXxfVx7ZIP9x0GlOJdfa+BeVentkSWR66jsI1HUfF+f4l1UykiqR/CypAorg6n/hvuH5nv/8QAMxABAAMAAgICAgIDAQEAAAILAREAITFBUWFxgZGhscHw0RDh8SAwQFBgcICQoLDA0OD/2gAIAQEAAT8hrchP08Nlp8V+7MHK/wCcEXw8q94vkT4K5DD0fpsJBFkwYvy/8cJBuuX7l82UhL9HmlzVKCOfi+3/ADe6Z2jgePxcMYN/xxYQtAu8UCj/ALXDvn/sBxRB/g3/AL//2gAMAwEAAhEDEQAAEE5gPHEUEAP/xAAzEQEBAQADAAECBQUBAQABAQkBABEhMRBBUWEgcfCRgaGx0cHh8TBAUGBwgJCgsMDQ4P/aAAgBAxEBPxAN4PZaNJuOW/g//9oACAECEQE/EAGt2fwmfzBp3X8P/9oACAEBAAE/ELGubg74j5M+RuAgxMrE4g5c4qAjQh1Oh9GL3/xggJDuHs5H2fY1rQIGDISTZ3KuGYzkk8dSkh4Ah8TJ8c0SsIco+yPRD76/486QSwOdnIpjvmvjAQ8pEx4ixlVcDldAdtawTzP5CSqs1wAPeJDMz0nwvHVlRSYTI1ic6b58RUC4kuSTXmFOJuxknJgsgDQMkjQgj/gCBHee6QjzflUA4/5//9k='
     ui.image(base64).style('width:30px')
 
 with example(ui.svg):
-
     svg_content = '''
         <svg viewBox="0 0 200 200" width="100" height="100" xmlns="http://www.w3.org/2000/svg">
         <circle cx="100" cy="100" r="78" fill="yellow" stroke="black" stroke-width="3" />
@@ -158,7 +150,6 @@ Use [Quasar classes](https://quasar.dev/vue-components/img) for positioning and 
 To overlay an svg, make the `viewBox` exactly the size of the image and provide `100%` width/height to match the actual rendered size.
 '''
 with example(overlay):
-
     with ui.image('http://placeimg.com/640/360/nature'):
         ui.label('nice').classes('absolute-bottom text-subtitle2 text-center')
 
@@ -170,15 +161,12 @@ with example(overlay):
         ui.svg(svg_content).style('background:transparent')
 
 with example(ui.markdown):
-
     ui.markdown('### Headline\nWith hyperlink to [GitHub](https://github.com/zauberzeug/nicegui).')
 
 with example(ui.html):
-
     ui.html('<p>demo paragraph in <strong>html</strong></p>')
 
 with example(ui.button):
-
     def button_increment():
         global button_count
         button_count += 1
@@ -189,26 +177,22 @@ with example(ui.button):
     button_result = ui.label('pressed: 0')
 
 with example(ui.checkbox):
-
     ui.checkbox('check me', on_change=lambda e: checkbox_state.set_text(e.value))
     with ui.row():
         ui.label('the checkbox is:')
         checkbox_state = ui.label('False')
 
 with example(ui.switch):
-
     ui.switch('switch me', on_change=lambda e: switch_state.set_text("ON" if e.value else'OFF'))
     with ui.row():
         ui.label('the switch is:')
         switch_state = ui.label('OFF')
 
 with example(ui.slider):
-
     slider = ui.slider(min=0, max=100, value=50).props('label')
     ui.label().bind_text_from(slider.value)
 
 with example(ui.input):
-
     ui.input(
         label='Text',
         placeholder='press ENTER to apply',
@@ -217,30 +201,25 @@ with example(ui.input):
     result = ui.label('')
 
 with example(ui.number):
-
     number_input = ui.number(label='Number', value=3.1415927, format='%.2f')
     with ui.row():
         ui.label('underlying value: ')
         ui.label().bind_text_from(number_input.value)
 
 with example(ui.radio):
-
     radio = ui.radio([1, 2, 3], value=1).props('inline')
     ui.radio({1: 'A', 2: 'B', 3: 'C'}, value=1).props('inline').bind_value(radio.value)
 
 with example(ui.toggle):
-
     toggle = ui.toggle([1, 2, 3], value=1)
     ui.toggle({1: 'A', 2: 'B', 3: 'C'}, value=1).bind_value(toggle.value)
 
 with example(ui.select):
-
     with ui.row():
         select = ui.select([1, 2, 3], value=1).props('inline')
         ui.select({1: 'One', 2: 'Two', 3: 'Three'}, value=1).props('inline').bind_value(select.value)
 
 with example(ui.upload):
-
     ui.upload(on_upload=lambda files: content.set_text(files))
     content = ui.label()
 
@@ -256,7 +235,6 @@ with example(ui.plot):
         plt.ylabel('Damped oscillation')
 
 with example(ui.line_plot):
-
     lines = ui.line_plot(n=2, limit=20, figsize=(2.5, 1.8)).with_legend(['sin', 'cos'], loc='upper center', ncol=2)
     line_updates = ui.timer(0.1, lambda: lines.push([datetime.now()], [
         [np.sin(datetime.now().timestamp()) + 0.02 * np.random.randn()],
@@ -271,7 +249,6 @@ with example(ui.log):
     ui.button('Log time', on_click=lambda: log.push(datetime.now().strftime("%X.%f")[:-5]))
 
 with example(ui.scene):
-
     with ui.scene(width=200, height=200) as scene:
         scene.sphere().material('#4488ff')
         scene.cylinder(1, 0.5, 2, 20).material('#ff8800', opacity=0.5).move(-2, 1)
@@ -292,7 +269,6 @@ with example(ui.scene):
         scene.stl(teapot).scale(0.2).move(-3, 4)
 
 with example(ui.joystick):
-
     ui.joystick(
         color='blue',
         size=50,
@@ -301,7 +277,6 @@ with example(ui.joystick):
     coordinates = ui.label('0, 0')
 
 with example(ui.dialog):
-
     with ui.dialog() as dialog:
         with ui.card():
             ui.label('Hello world!')
@@ -310,7 +285,6 @@ with example(ui.dialog):
     ui.button('Open dialog', on_click=dialog.open)
 
 with example(ui.menu):
-
     choice = ui.label('Try the menu.')
     with ui.menu() as menu:
         ui.menu_item('Menu item 1', lambda: choice.set_text('Selected item 1.'))
@@ -320,7 +294,6 @@ with example(ui.menu):
     ui.button('Open menu', on_click=menu.open).props('color=secondary')
 
 with example(ui.notify):
-
     ui.button('Show notification', on_click=lambda: ui.notify('Some message', close_button='OK'))
 
 lifecycle = '''### Lifecycle
@@ -330,7 +303,6 @@ If NiceGUI is shut down or restarted, the tasks will be automatically canceled (
 You can also execute cleanup code with `ui.on_shutdown`.
 '''
 with example(lifecycle):
-
     with ui.row() as row:
         ui.label('count:')
         count_label = ui.label('0')
@@ -347,7 +319,6 @@ with example(lifecycle):
     ui.on_startup(counter())
 
 with example(ui.page):
-
     with ui.page('/other_page') as other:
         ui.label('Welcome to the other side')
         ui.link('Back to main page', '/')

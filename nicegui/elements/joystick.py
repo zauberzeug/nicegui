@@ -3,9 +3,7 @@ from .custom_view import CustomView
 from .element import Element
 
 class JoystickView(CustomView):
-
     def __init__(self, on_start, on_move, on_end, **options):
-
         super().__init__('joystick', __file__, ['nipplejs.min.js'], **options)
 
         self.on_start = on_start
@@ -18,25 +16,21 @@ class JoystickView(CustomView):
                         onEnd=self.handle_end)
 
     def handle_start(self, msg):
-
         if self.on_start is not None:
             return self.on_start(msg)
         return False
 
     def handle_move(self, msg):
-
         if self.on_move is not None:
             return self.on_move(msg)
         return False
 
     def handle_end(self, msg):
-
         if self.on_end is not None:
             return self.on_end(msg)
         return False
 
 class Joystick(Element):
-
     def __init__(self,
                  *,
                  on_start: Callable = None,

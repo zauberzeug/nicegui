@@ -4,7 +4,6 @@ import ast
 import os
 
 class Config(BaseModel):
-
     # NOTE: should be in sync with ui.run arguments
     host: str = '0.0.0.0'
     port: int = 80

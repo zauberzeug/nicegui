@@ -6,7 +6,6 @@ import numpy as np
 from justpy.htmlcomponents import WebPage
 
 class Object3D:
-
     stack: list[Object3D] = []
 
     def __init__(self, type: str, *args):

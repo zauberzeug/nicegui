@@ -3,7 +3,6 @@ from typing import Callable
 from .float_element import FloatElement
 
 class Number(FloatElement):
-
     def __init__(self,
                  label: str = None,
                  *,
@@ -31,7 +30,6 @@ class Number(FloatElement):
         super().__init__(view, value=value, format=format, on_change=on_change)
 
     def handle_change(self, msg):
-
         msg['value'] = float(msg['value'])
 
         return super().handle_change(msg)

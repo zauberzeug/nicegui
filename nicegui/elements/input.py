@@ -3,7 +3,6 @@ from typing import Callable
 from .string_element import StringElement
 
 class Input(StringElement):
-
     def __init__(self,
                  label: str = None,
                  *,

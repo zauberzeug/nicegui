@@ -1,5 +1,4 @@
 class Ui:
-
     from .run import run, config  # NOTE: before justpy
 
     from .elements.button import Button as button

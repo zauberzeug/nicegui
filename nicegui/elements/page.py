@@ -4,7 +4,6 @@ from pygments.formatters import HtmlFormatter
 from .element import Element
 
 class Page(jp.QuasarPage):
-
     default_title: str
     default_favicon: str
 

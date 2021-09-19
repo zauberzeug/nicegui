@@ -3,7 +3,6 @@ from typing import Callable, List, Dict, Union
 from .choice_element import ChoiceElement
 
 class Select(ChoiceElement):
-
     def __init__(self,
                  options: Union[List, Dict],
                  *,
@@ -22,7 +21,6 @@ class Select(ChoiceElement):
         super().__init__(view, options, value=value, on_change=on_change)
 
     def value_to_view(self, value: any):
-
         matches = [o for o in self.view.options if o['value'] == value]
         if any(matches):
             return matches[0]['label']
@@ -30,7 +28,6 @@ class Select(ChoiceElement):
             return value
 
     def handle_change(self, msg):
-
         msg['label'] = msg['value']['label']
         msg['value'] = msg['value']['value']
         return super().handle_change(msg)

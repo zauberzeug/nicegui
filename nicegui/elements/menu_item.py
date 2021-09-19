@@ -7,7 +7,6 @@ from ..utils import handle_exceptions, provide_arguments
 
 
 class MenuItem(Element):
-
     def __init__(self,
                  text: str = '',
                  on_click: Callable = None

@@ -5,7 +5,6 @@ from .element import Element
 from ..utils import handle_exceptions
 
 class Upload(Element):
-
     def __init__(self,
                  *,
                  multiple: bool = False,
@@ -25,7 +24,6 @@ class Upload(Element):
         super().__init__(view)
 
     def submit(self, _, msg):
-
         for form_data in msg.form_data:
             if form_data.type == 'file':
                 self.on_upload([base64.b64decode(f.file_content) for f in form_data.files])

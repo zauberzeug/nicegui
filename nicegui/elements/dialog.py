@@ -2,7 +2,6 @@ import justpy as jp
 from .group import Group
 
 class Dialog(Group):
-
     def __init__(self,
                  *,
                  value: bool = False
@@ -23,9 +22,7 @@ class Dialog(Group):
         super().__init__(view)
 
     def open(self):
-
         self.view.value = True
 
     def close(self):
-
         self.view.value = False

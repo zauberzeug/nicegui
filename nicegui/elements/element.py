@@ -2,7 +2,6 @@ import justpy as jp
 from binding.binding import BindableProperty
 
 class Element:
-
     wp_stack = []
     view_stack = []
 
@@ -11,7 +10,6 @@ class Element:
     def __init__(self,
                  view: jp.HTMLBaseComponent,
                  ):
-
         self.parent_view = self.view_stack[-1]
         self.parent_view.add(view)
         self.view = view
@@ -22,22 +20,18 @@ class Element:
 
     @property
     def visible(self):
-
         return self.visible_
 
     @visible.setter
     def visible(self, visible: bool):
-
         self.visible_ = visible
         (self.view.remove_class if self.visible_ else self.view.set_class)('hidden')
 
     def bind_visibility_to(self, target, forward=lambda x: x):
-
         self.visible.bind_to(target, forward=forward, nesting=1)
         return self
 
     def bind_visibility_from(self, target, backward=lambda x: x, *, value=None):
-
         if value is not None:
             def backward(x): return x == value
 
@@ -45,7 +39,6 @@ class Element:
         return self
 
     def bind_visibility(self, target, forward=lambda x: x, backward=None, *, value=None):
-
         if value is not None:
             def backward(x): return x == value
 
@@ -53,7 +46,6 @@ class Element:
         return self
 
     def classes(self, add: str = '', *, remove: str = '', replace: str = ''):
-
         class_list = [] if replace else self.view.classes.split()
         class_list = [c for c in class_list if c not in remove]
         class_list += add.split()
@@ -63,7 +55,6 @@ class Element:
         return self
 
     def style(self, add: str = '', *, remove: str = '', replace: str = ''):
-
         style_list = [] if replace else self.view.style.split(';')
         style_list = [c for c in style_list if c not in remove.split(';')]
         style_list += add.split(';')
@@ -73,7 +64,6 @@ class Element:
         return self
 
     def props(self, add: str = '', *, remove: str = '', replace: str = ''):
-
         for prop in remove.split() + replace.split():
             setattr(self.view, prop.split('=')[0], None)
 

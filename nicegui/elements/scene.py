@@ -6,7 +6,6 @@ from .page import Page
 from .scene_object3d import Object3D
 
 class SceneView(CustomView):
-
     def __init__(self, *, width: int, height: int, on_click: Callable):
         dependencies = ['three.min.js', 'OrbitControls.js', 'STLLoader.js']
         super().__init__('scene', __file__, dependencies, width=width, height=height)
@@ -33,7 +32,6 @@ class SceneView(CustomView):
             traceback.print_exc()
 
 class Scene(Element):
-
     from .scene_objects import Group as group
     from .scene_objects import Box as box
     from .scene_objects import Sphere as sphere
@@ -69,7 +67,6 @@ class Scene(Element):
         self.view_stack.pop()
 
 class SceneObject:
-
     def __init__(self, view: SceneView, page: Page):
         self.id = 'scene'
         self.view = view

@@ -4,7 +4,6 @@ import asyncio
 
 
 class Notify(Element):
-
     def __init__(self,
                  message: str,
                  *,
@@ -26,7 +25,6 @@ class Notify(Element):
         asyncio.get_event_loop().create_task(self.notify_async())
 
     async def notify_async(self):
-
         self.view.notify = True
         await self.parent_view.update()
         self.view.notify = False

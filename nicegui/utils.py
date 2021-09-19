@@ -2,9 +2,7 @@ import asyncio
 import traceback
 
 class EventArguments:
-
     def __init__(self, sender, **kwargs):
-
         self.sender = sender
         for key, value in kwargs.items():
             setattr(self, key, value)
