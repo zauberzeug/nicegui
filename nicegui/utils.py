@@ -4,10 +4,10 @@ import traceback
 class EventArguments:
 
     def __init__(self, sender, **kwargs):
-
         self.sender = sender
         for key, value in kwargs.items():
             setattr(self, key, value)
+
 
 def provide_arguments(func, *keys):
     def inner_function(sender, event):
@@ -17,6 +17,7 @@ def provide_arguments(func, *keys):
             return func(EventArguments(sender, **{key: event[key] for key in keys}))
     return inner_function
 
+
 def handle_exceptions(func):
     def inner_function(*args, **kwargs):
         try:
@@ -24,6 +25,7 @@ def handle_exceptions(func):
         except Exception:
             traceback.print_exc()
     return inner_function
+
 
 def handle_awaitable(func):
     async def inner_function(*args, **kwargs):

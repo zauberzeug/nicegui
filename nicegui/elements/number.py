@@ -20,7 +20,6 @@ class Number(FloatElement):
         :param format: a string like '%.2f' to format the displayed value
         :param on_change: callback to execute when the input is confirmed by leaving the focus
         """
-
         view = jp.QInput(
             type='number',
             label=label,
@@ -31,7 +30,6 @@ class Number(FloatElement):
         super().__init__(view, value=value, format=format, on_change=on_change)
 
     def handle_change(self, msg):
-
         msg['value'] = float(msg['value'])
 
         return super().handle_change(msg)

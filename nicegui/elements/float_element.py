@@ -11,13 +11,11 @@ class FloatElement(ValueElement):
                  format: str = None,
                  on_change: Callable,
                  ):
-
         self.format = format
 
         super().__init__(view, value=value, on_change=on_change)
 
     def value_to_view(self, value: float):
-
         if value is None:
             return None
         elif self.format is None:

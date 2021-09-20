@@ -10,7 +10,6 @@ class ChoiceElement(ValueElement):
                  *,
                  value: Any,
                  on_change: Callable):
-
         if isinstance(options, list):
             view.options = [{'label': option, 'value': option} for option in options]
         else:

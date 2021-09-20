@@ -16,7 +16,6 @@ class Plot(Element):
         :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later, default is `True`
         :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_
         """
-
         self.close = close
         self.fig = plt.figure(**kwargs)
 
@@ -26,13 +25,11 @@ class Plot(Element):
         super().__init__(view)
 
     def __enter__(self):
-
         plt.figure(self.fig)
 
         return self
 
     def __exit__(self, *_):
-
         self.view.set_figure(plt.gcf())
 
         if self.close:

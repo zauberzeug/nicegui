@@ -34,7 +34,6 @@ class SceneView(CustomView):
             traceback.print_exc()
 
 class Scene(Element):
-
     from .scene_objects import Group as group
     from .scene_objects import Box as box
     from .scene_objects import Sphere as sphere

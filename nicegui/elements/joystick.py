@@ -5,7 +5,6 @@ from .element import Element
 class JoystickView(CustomView):
 
     def __init__(self, on_start, on_move, on_end, **options):
-
         super().__init__('joystick', __file__, ['nipplejs.min.js'], **options)
 
         self.on_start = on_start
@@ -18,19 +17,16 @@ class JoystickView(CustomView):
                         onEnd=self.handle_end)
 
     def handle_start(self, msg):
-
         if self.on_start is not None:
             return self.on_start(msg)
         return False
 
     def handle_move(self, msg):
-
         if self.on_move is not None:
             return self.on_move(msg)
         return False
 
     def handle_end(self, msg):
-
         if self.on_end is not None:
             return self.on_end(msg)
         return False
@@ -53,5 +49,4 @@ class Joystick(Element):
         :param on_end: callback for when the user releases the joystick
         :param options: arguments like `color` which should be passed to the `underlying nipple.js library <https://github.com/yoannmoinet/nipplejs#options>`_
         """
-
         super().__init__(JoystickView(on_start, on_move, on_end, **options))

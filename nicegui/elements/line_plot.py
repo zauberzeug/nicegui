@@ -21,7 +21,6 @@ class LinePlot(Plot):
         :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later, default is `True`
         :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_
         """
-
         super().__init__(close=close, **kwargs)
 
         self.x = []
@@ -32,13 +31,11 @@ class LinePlot(Plot):
         self.push_counter = 0
 
     def with_legend(self, titles: List[str], **kwargs):
-
         self.fig.gca().legend(titles, **kwargs)
         self.view.set_figure(self.fig)
         return self
 
     def push(self, x: List[float], Y: List[List[float]]):
-
         self.push_counter += 1
 
         self.x = [*self.x, *x][self.slice]

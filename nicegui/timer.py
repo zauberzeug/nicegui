@@ -7,7 +7,6 @@ from .globals import view_stack
 from .utils import handle_exceptions, handle_awaitable
 
 class Timer:
-
     tasks = []
 
     active = BindableProperty
@@ -29,13 +28,11 @@ class Timer:
         self.active = active
 
         async def timeout():
-
             await asyncio.sleep(interval)
             await handle_exceptions(handle_awaitable(callback))()
             await parent.update()
 
         async def loop():
-
             while True:
                 try:
                     start = time.time()

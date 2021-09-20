@@ -4,11 +4,9 @@ from starlette.routing import Route
 from starlette.responses import FileResponse
 
 class CustomView(jp.JustpyBaseComponent):
-
     vue_dependencies = []
 
     def __init__(self, vue_type, filepath, dependencies=[], **options):
-
         self.vue_type = vue_type
         self.vue_filepath = os.path.realpath(filepath).replace('.py', '.js')
         self.vue_dependencies = dependencies
@@ -21,7 +19,6 @@ class CustomView(jp.JustpyBaseComponent):
         super().__init__(temp=False)
 
     def add_page(self, wp: jp.WebPage):
-
         for dependency in self.vue_dependencies:
             is_remote = dependency.startswith('http://') or dependency.startswith('https://')
             src = dependency if is_remote else f'lib/{dependency}'
@@ -40,11 +37,9 @@ class CustomView(jp.JustpyBaseComponent):
         super().add_page(wp)
 
     def react(self, _):
-
         pass
 
     def convert_object_to_dict(self):
-
         return {
             'vue_type': self.vue_type,
             'id': self.id,

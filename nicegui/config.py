@@ -5,7 +5,6 @@ import os
 from . import globals
 
 class Config(BaseModel):
-
     # NOTE: should be in sync with ui.run arguments
     host: str = '0.0.0.0'
     port: int = 80
@@ -13,6 +12,7 @@ class Config(BaseModel):
     favicon: str = 'favicon.ico'
     reload: bool = True
     show: bool = True
+    uvicorn_logging_level = 'warning'
     interactive: bool = False
 
 

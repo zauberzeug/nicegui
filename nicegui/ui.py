@@ -1,5 +1,4 @@
 class Ui:
-
     from .config import config  # NOTE: before run
     from .run import run  # NOTE: before justpy
 
@@ -17,6 +16,7 @@ class Ui:
     from .elements.log import Log as log
     from .elements.markdown import Markdown as markdown
     from .elements.menu import Menu as menu
+    from .elements.menu_item import MenuItem as menu_item
     from .elements.notify import Notify as notify
     from .elements.number import Number as number
     from .elements.page import Page as page
@@ -35,9 +35,10 @@ class Ui:
     from .elements.row import Row as row
     from .elements.column import Column as column
     from .elements.card import Card as card
+    from .elements.card import CardSection as card_section
 
     from .timer import Timer as timer
 
     from .lifecycle import startup_tasks, on_startup, shutdown_tasks, on_shutdown
 
-    from .routes import add_route
+    from .routes import add_route, get

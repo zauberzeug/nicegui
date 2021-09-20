@@ -13,11 +13,9 @@ class Markdown(Html):
 
         :param content: the markdown content to be displayed
         """
-
         super().__init__(content)
 
     def set_content(self, content: str):
-
         html = markdown2.markdown(content, extras=['fenced-code-blocks'])
         # we need explicit markdown styling because tailwind css removes all default styles
         html = Markdown.apply_tailwind(html)
@@ -25,7 +23,6 @@ class Markdown(Html):
 
     @staticmethod
     def apply_tailwind(html: str):
-
         rep = {
             '<h1': '<h1 class="text-5xl mb-4 mt-6"',
             '<h2': '<h2 class="text-4xl mb-3 mt-5"',
