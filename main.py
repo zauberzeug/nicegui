@@ -267,6 +267,18 @@ with example(ui.card):
         with ui.card_section():
             ui.label('Lorem ipsum dolor sit amet, consectetur adipiscing elit, ...')
 
+with example(ui.column):
+    with ui.column():
+        ui.label('label 1')
+        ui.label('label 2')
+        ui.label('label 3')
+
+with example(ui.row):
+    with ui.row():
+        ui.label('label 1')
+        ui.label('label 2')
+        ui.label('label 3')
+
 binding = '''### Bindings
 
 With help of the [binding](https://pypi.org/project/binding/) package NiceGUI is able to directly bind UI elements to models.
