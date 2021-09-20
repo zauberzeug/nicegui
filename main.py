@@ -3,7 +3,7 @@ from nicegui import ui
 from contextlib import contextmanager
 import inspect
 from nicegui.elements.markdown import Markdown
-from nicegui.elements.element import Element
+from nicegui.elements.element import Design, Element
 import sys
 from typing import Union
 import docutils.core
@@ -32,7 +32,8 @@ def example(content: Union[Element, str]):
                 ui.label(content.__name__).classes('text-h5')
 
         with ui.card().classes('mt-12 w-2/12'):
-            yield
+            with ui.column():
+                yield
         callFrame = inspect.currentframe().f_back.f_back
         end = callFrame.f_lineno
         code = inspect.getsource(sys.modules[__name__])
@@ -72,59 +73,6 @@ with ui.row().classes('flex w-full'):
                 ui.label('Output:')
                 output = ui.label('').classes('text-bold')
 
-design = '''### Styling & Design
-
-NiceGUI uses the [Quasar Framework](https://quasar.dev/) and hence has its full design power.
-Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
-Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
-You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method. 
-
-If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
-
-All three functions also provide `remove` and `replace` parameters in case the predefined look is not wanted in a particular styling.
-'''
-with example(design):
-    ui.radio(['x', 'y', 'z'], value='x').props('inline color=green')
-    ui.button().props('icon=touch_app outline round').classes('shadow-lg ml-14')
-
-binding = '''### Bindings
-
-With help of the [binding](https://pypi.org/project/binding/) package NiceGUI is able to directly bind UI elements to models.
-Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes.
-
-Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property.
-To define a one-way binding use the `_from` and `_to` variants of these methods.
-Just pass a property of the model as parameter to these methods to create the binding.
-'''
-with example(binding):
-    class Demo:
-        def __init__(self):
-            self.number = 1
-
-    demo = Demo()
-    v = ui.checkbox('visible', value=True)
-    with ui.column().bind_visibility_from(v.value):
-        ui.slider(min=1, max=3).bind_value(demo.number)
-        ui.toggle({1: 'a', 2: 'b', 3: 'c'}).bind_value(demo.number)
-        ui.number().bind_value(demo.number)
-
-
-with example(ui.timer):
-    from datetime import datetime
-
-    with ui.row().classes('items-center'):
-        clock = ui.label()
-        t = ui.timer(interval=0.1, callback=lambda: clock.set_text(datetime.now().strftime("%X.%f")[:-5]))
-        ui.checkbox('active').bind_value(t.active)
-
-    with ui.row():
-        def lazy_update():
-            new_text = datetime.now().strftime('%X.%f')[:-5]
-            if lazy_clock.text[:8] == new_text[:8]:
-                return False
-            lazy_clock.text = new_text
-        lazy_clock = ui.label()
-        ui.timer(interval=0.1, callback=lazy_update)
 
 with example(ui.label):
     ui.label('some label')
@@ -297,6 +245,66 @@ with example(ui.menu):
 
 with example(ui.notify):
     ui.button('Show notification', on_click=lambda: ui.notify('Some message', close_button='OK'))
+
+design = '''### Styling
+
+NiceGUI uses the [Quasar Framework](https://quasar.dev/) and hence has its full design power.
+Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
+Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
+You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method. 
+
+If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
+
+All three functions also provide `remove` and `replace` parameters in case the predefined look is not wanted in a particular styling.
+'''
+with example(design):
+    ui.radio(['x', 'y', 'z'], value='x').props('inline color=green')
+    ui.button().props('icon=touch_app outline round').classes('shadow-lg ml-14')
+
+with example(ui.card):
+    with ui.card(design=Design.plain):
+        ui.image('http://placeimg.com/640/360/nature')
+        with ui.card_section():
+            ui.label('Lorem ipsum dolor sit amet, consectetur adipiscing elit, ...')
+
+binding = '''### Bindings
+
+With help of the [binding](https://pypi.org/project/binding/) package NiceGUI is able to directly bind UI elements to models.
+Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes.
+
+Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property.
+To define a one-way binding use the `_from` and `_to` variants of these methods.
+Just pass a property of the model as parameter to these methods to create the binding.
+'''
+with example(binding):
+    class Demo:
+        def __init__(self):
+            self.number = 1
+
+    demo = Demo()
+    v = ui.checkbox('visible', value=True)
+    with ui.column().bind_visibility_from(v.value):
+        ui.slider(min=1, max=3).bind_value(demo.number)
+        ui.toggle({1: 'a', 2: 'b', 3: 'c'}).bind_value(demo.number)
+        ui.number().bind_value(demo.number)
+
+
+with example(ui.timer):
+    from datetime import datetime
+
+    with ui.row().classes('items-center'):
+        clock = ui.label()
+        t = ui.timer(interval=0.1, callback=lambda: clock.set_text(datetime.now().strftime("%X.%f")[:-5]))
+        ui.checkbox('active').bind_value(t.active)
+
+    with ui.row():
+        def lazy_update():
+            new_text = datetime.now().strftime('%X.%f')[:-5]
+            if lazy_clock.text[:8] == new_text[:8]:
+                return False
+            lazy_clock.text = new_text
+        lazy_clock = ui.label()
+        ui.timer(interval=0.1, callback=lazy_update)
 
 lifecycle = '''### Lifecycle
 
