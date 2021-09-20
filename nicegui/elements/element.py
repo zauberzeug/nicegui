@@ -1,3 +1,4 @@
+from enum import Enum
 import justpy as jp
 from binding.binding import BindableProperty
 
@@ -74,3 +75,7 @@ class Element:
                 setattr(self.view, prop, True)
 
         return self
+
+class Design(Enum):
+    default = 1
+    plain = 2
