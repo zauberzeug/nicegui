@@ -47,6 +47,10 @@ class Element:
         return self
 
     def classes(self, add: str = '', *, remove: str = '', replace: str = ''):
+        '''`html classes to modify the look of the element.
+        Every class in the 'remove' parameter will be removed from the element. Classes are seperated with a blank space.
+        This can be helpful if the predefined classes by NiceGUI are not wanted in a particular styling.
+        '''
         class_list = [] if replace else self.view.classes.split()
         class_list = [c for c in class_list if c not in remove]
         class_list += add.split()
@@ -56,6 +60,10 @@ class Element:
         return self
 
     def style(self, add: str = '', *, remove: str = '', replace: str = ''):
+        '''`CSS style sheet definitions to modify the look of the element.
+        Every style in the 'remove' parameter will be removed from the element. Styles are seperated with a semicolon.
+        This can be helpful if the predefined style sheet definitions by NiceGUI are not wanted in a particular styling.
+        '''
         style_list = [] if replace else self.view.style.split(';')
         style_list = [c for c in style_list if c not in remove.split(';')]
         style_list += add.split(';')
@@ -65,6 +73,11 @@ class Element:
         return self
 
     def props(self, add: str = '', *, remove: str = '', replace: str = ''):
+        '''`Quasar props <https://quasar.dev/vue-components/button#design>`_ to modify the look of the element.
+        Boolean pops will automatically activated if they appear in the list of the 'add' property. Props are seperated with a blank space.
+        Every prop passed to the 'remove' parameter will be removed from the element. 
+        This can be helpful if the predefined props by NiceGUI are not wanted in a particular styling.
+        '''
         for prop in remove.split() + replace.split():
             setattr(self.view, prop.split('=')[0], None)
 
