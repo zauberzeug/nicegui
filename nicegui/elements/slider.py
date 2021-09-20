@@ -3,6 +3,7 @@ import justpy as jp
 from .float_element import FloatElement
 
 class Slider(FloatElement):
+
     def __init__(self,
                  *,
                  min: float,

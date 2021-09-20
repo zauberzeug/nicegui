@@ -2,6 +2,7 @@ from typing import List
 from .plot import Plot
 
 class LinePlot(Plot):
+
     def __init__(self,
                  *,
                  n: int = 1,
@@ -20,7 +21,6 @@ class LinePlot(Plot):
         :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later, default is `True`
         :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_
         """
-
         super().__init__(close=close, **kwargs)
 
         self.x = []

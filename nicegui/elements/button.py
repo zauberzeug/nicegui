@@ -4,6 +4,7 @@ from .element import Element
 from ..utils import handle_exceptions, provide_arguments
 
 class Button(Element):
+
     def __init__(self,
                  text: str = '',
                  *,

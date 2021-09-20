@@ -3,6 +3,7 @@ from typing import Callable
 from .float_element import FloatElement
 
 class Number(FloatElement):
+
     def __init__(self,
                  label: str = None,
                  *,
@@ -19,7 +20,6 @@ class Number(FloatElement):
         :param format: a string like '%.2f' to format the displayed value
         :param on_change: callback to execute when the input is confirmed by leaving the focus
         """
-
         view = jp.QInput(
             type='number',
             label=label,

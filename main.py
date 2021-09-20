@@ -292,6 +292,7 @@ Just pass a property of the model as parameter to these methods to create the bi
 '''
 with example(binding):
     class Demo:
+
         def __init__(self):
             self.number = 1
 

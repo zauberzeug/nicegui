@@ -2,6 +2,7 @@ from .custom_view import CustomView
 from .element import Element
 
 class CustomExampleView(CustomView):
+
     def __init__(self, on_change):
         super().__init__('custom_example', __file__, value=0)
 
@@ -16,6 +17,7 @@ class CustomExampleView(CustomView):
         return False
 
 class CustomExample(Element):
+
     def __init__(self, *, on_change=None):
         super().__init__(CustomExampleView(on_change))
 

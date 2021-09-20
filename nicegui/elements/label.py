@@ -2,6 +2,7 @@ import justpy as jp
 from .element import Element
 
 class Label(Element):
+
     def __init__(self,
                  text: str = '',
                  ):
@@ -11,7 +12,6 @@ class Label(Element):
 
         :param text: the content of the label
         """
-
         view = jp.Div(text=text)
 
         super().__init__(view)

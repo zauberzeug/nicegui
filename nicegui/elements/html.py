@@ -2,6 +2,7 @@ import justpy as jp
 from .element import Element
 
 class Html(Element):
+
     def __init__(self,
                  content: str = '',
                  ):
@@ -11,7 +12,6 @@ class Html(Element):
 
         :param content: the HTML code to be displayed
         """
-
         view = jp.QDiv()
         super().__init__(view)
         self.content = content

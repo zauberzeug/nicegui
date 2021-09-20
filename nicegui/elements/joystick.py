@@ -3,6 +3,7 @@ from .custom_view import CustomView
 from .element import Element
 
 class JoystickView(CustomView):
+
     def __init__(self, on_start, on_move, on_end, **options):
         super().__init__('joystick', __file__, ['nipplejs.min.js'], **options)
 
@@ -31,6 +32,7 @@ class JoystickView(CustomView):
         return False
 
 class Joystick(Element):
+
     def __init__(self,
                  *,
                  on_start: Callable = None,
@@ -47,5 +49,4 @@ class Joystick(Element):
         :param on_end: callback for when the user releases the joystick
         :param options: arguments like `color` which should be passed to the `underlying nipple.js library <https://github.com/yoannmoinet/nipplejs#options>`_
         """
-
         super().__init__(JoystickView(on_start, on_move, on_end, **options))

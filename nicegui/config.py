@@ -11,8 +11,8 @@ class Config(BaseModel):
     favicon: str = 'favicon.ico'
     reload: bool = True
     show: bool = True
+    uvicorn_logging_level = 'warning'
     interactive: bool = False
-    uvicron_logging_level = 'warning'
 
 
 excluded_endings = (

@@ -3,6 +3,7 @@ import justpy as jp
 from .bool_element import BoolElement
 
 class Checkbox(BoolElement):
+
     def __init__(self,
                  text: str = '',
                  *,

@@ -3,6 +3,7 @@ from .html import Html
 import re
 
 class Markdown(Html):
+
     def __init__(self,
                  content: str = '',
                  ):
@@ -12,7 +13,6 @@ class Markdown(Html):
 
         :param content: the markdown content to be displayed
         """
-
         super().__init__(content)
 
     def set_content(self, content: str):

@@ -3,6 +3,7 @@ from typing import Any, Union, List, Dict, Callable
 from .value_element import ValueElement
 
 class ChoiceElement(ValueElement):
+
     def __init__(self,
                  view: jp.HTMLBaseComponent,
                  options: Union[List, Dict],

@@ -3,6 +3,7 @@ from typing import Callable
 from .value_element import ValueElement
 
 class StringElement(ValueElement):
+
     def __init__(self,
                  view: jp.HTMLBaseComponent,
                  *,

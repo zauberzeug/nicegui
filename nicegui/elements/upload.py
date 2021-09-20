@@ -5,6 +5,7 @@ from .element import Element
 from ..utils import handle_exceptions
 
 class Upload(Element):
+
     def __init__(self,
                  *,
                  multiple: bool = False,

@@ -2,6 +2,7 @@ import justpy as jp
 from .element import Element
 
 class Icon(Element):
+
     def __init__(self,
                  name: str,
                  ):

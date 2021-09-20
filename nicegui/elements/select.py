@@ -3,6 +3,7 @@ from typing import Callable, List, Dict, Union
 from .choice_element import ChoiceElement
 
 class Select(ChoiceElement):
+
     def __init__(self,
                  options: Union[List, Dict],
                  *,
@@ -15,7 +16,6 @@ class Select(ChoiceElement):
         :param value: the inital value
         :param on_change: callback to execute when selection changes
         """
-
         view = jp.QSelect(options=options, input=self.handle_change)
 
         super().__init__(view, options, value=value, on_change=on_change)

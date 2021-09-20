@@ -1,5 +1,5 @@
-from enum import Enum
 import justpy as jp
+from enum import Enum
 from binding.binding import BindableProperty
 
 class Element:
@@ -47,8 +47,9 @@ class Element:
         return self
 
     def classes(self, add: str = '', *, remove: str = '', replace: str = ''):
-        '''`html classes to modify the look of the element.
-        Every class in the 'remove' parameter will be removed from the element. Classes are seperated with a blank space.
+        '''HTML classes to modify the look of the element.
+        Every class in the `remove` parameter will be removed from the element.
+        Classes are seperated with a blank space.
         This can be helpful if the predefined classes by NiceGUI are not wanted in a particular styling.
         '''
         class_list = [] if replace else self.view.classes.split()
@@ -60,8 +61,9 @@ class Element:
         return self
 
     def style(self, add: str = '', *, remove: str = '', replace: str = ''):
-        '''`CSS style sheet definitions to modify the look of the element.
-        Every style in the 'remove' parameter will be removed from the element. Styles are seperated with a semicolon.
+        '''CSS style sheet definitions to modify the look of the element.
+        Every style in the `remove` parameter will be removed from the element.
+        Styles are seperated with a semicolon.
         This can be helpful if the predefined style sheet definitions by NiceGUI are not wanted in a particular styling.
         '''
         style_list = [] if replace else self.view.style.split(';')
@@ -73,9 +75,10 @@ class Element:
         return self
 
     def props(self, add: str = '', *, remove: str = '', replace: str = ''):
-        '''`Quasar props <https://quasar.dev/vue-components/button#design>`_ to modify the look of the element.
-        Boolean pops will automatically activated if they appear in the list of the 'add' property. Props are seperated with a blank space.
-        Every prop passed to the 'remove' parameter will be removed from the element. 
+        '''Quasar props https://quasar.dev/vue-components/button#design to modify the look of the element.
+        Boolean props will automatically activated if they appear in the list of the `add` property.
+        Props are seperated with a blank space.
+        Every prop passed to the `remove` parameter will be removed from the element.
         This can be helpful if the predefined props by NiceGUI are not wanted in a particular styling.
         '''
         for prop in remove.split() + replace.split():

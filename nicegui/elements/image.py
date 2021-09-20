@@ -2,6 +2,7 @@ import justpy as jp
 from .group import Group
 
 class Image(Group):
+
     def __init__(self,
                  source: str = '',
                  ):
@@ -11,7 +12,6 @@ class Image(Group):
 
         :param source: the source of the image; can be an url or a base64 string
         """
-
         view = jp.QImg(src=source)
 
         super().__init__(view)

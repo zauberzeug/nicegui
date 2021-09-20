@@ -5,10 +5,12 @@ from .custom_view import CustomView
 from .element import Element
 
 class LogView(CustomView):
+
     def __init__(self, max_lines: int):
         super().__init__('log', __file__, max_lines=max_lines)
 
 class Log(Element):
+
     def __init__(self, max_lines: int = None):
         """Log view
 
@@ -16,7 +18,6 @@ class Log(Element):
 
         :param max_lines: maximum number of lines before dropping oldest ones (default: None)
         """
-
         super().__init__(LogView(max_lines=max_lines))
 
         self.classes('border whitespace-pre font-mono').style('opacity: 1 !important; cursor: text !important')

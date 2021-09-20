@@ -59,6 +59,7 @@ You can call `ui.run()` with optional arguments for some high-level configuratio
 - `favicon` (default: `'favicon.ico'`)
 - `reload`: automatically reload the ui on file changes (default: `True`)
 - `show`: automatically open the ui in a browser tab (default: `True`)
+- `uvicorn_logging_level`: logging level for uvicorn server (default: `'warning'`)
 - `interactive`: used internally when run in interactive Python shell (default: `False`)
 
 ## Docker
