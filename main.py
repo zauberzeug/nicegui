@@ -80,9 +80,11 @@ Have a look at [the Quasar documentation](https://quasar.dev/vue-components/butt
 You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method. 
 
 If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
+
+All three functions also provide `remove` and `replace` parameters in case the predefined look is not wanted in a particular styling.
 '''
 with example(design):
-    ui.radio(['x', 'y', 'z']).props('inline color=green')
+    ui.radio(['x', 'y', 'z'], value='x').props('inline color=green')
     ui.button().props('icon=touch_app outline round').classes('shadow-lg ml-14')
 
 binding = '''### Bindings
