@@ -41,6 +41,8 @@ def example(content: Union[Element, str]):
         code = [l[4:] for l in code]
         code.insert(0, '```python')
         code.insert(1, 'from nicegui import ui')
+        if code[2].split()[0] not in ['from', 'import']:
+            code.insert(2, '')
         code.append('')
         code.append('ui.run()')
         code.append('```')
