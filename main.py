@@ -128,6 +128,14 @@ with example(ui.button):
     ui.button('Button', on_click=button_increment)
     button_result = ui.label('pressed: 0')
 
+with example(ui.button):
+    async def async_button_increment():
+        ui.notify('Asynchronous task started', close_button='OK')
+        await asyncio.sleep(5)
+        ui.notify('Asynchronous task finished', close_button='OK')
+
+    ui.button('Start asynchronous task', on_click=async_button_increment)
+
 with example(ui.checkbox):
     ui.checkbox('check me', on_change=lambda e: checkbox_state.set_text(e.value))
     with ui.row():

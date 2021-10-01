@@ -1,14 +1,17 @@
-from typing import Callable
+import asyncio
+from typing import Awaitable, Callable, Union
+
 import justpy as jp
+
 from .element import Element
-from ..utils import handle_exceptions, provide_arguments
+from ..utils import handle_exceptions, provide_arguments, EventArguments
 
 class Button(Element):
 
     def __init__(self,
                  text: str = '',
                  *,
-                 on_click: Callable = None,
+                 on_click: Union[Callable, Awaitable] = None,
                  ):
         """Button Element
 
@@ -19,7 +22,24 @@ class Button(Element):
         view = jp.QButton(label=text, color='primary')
 
         if on_click is not None:
-            view.on('click', handle_exceptions(provide_arguments(on_click)))
+            if asyncio.iscoroutinefunction(on_click):
+
+                def async_provide_arguments(func, *keys):
+                    def inner_function(sender, event):
+                        async def execute_function():
+                            try:
+                                await func()
+                            except TypeError:
+                                await func(EventArguments(sender, **{key: event[key] for key in keys}))
+
+                            await self.parent_view.update()
+
+                        asyncio.get_event_loop().create_task(execute_function())
+                    return inner_function
+
+                view.on('click', handle_exceptions(async_provide_arguments(on_click)))
+            else:
+                view.on('click', handle_exceptions(provide_arguments(on_click)))
 
         super().__init__(view)
 
