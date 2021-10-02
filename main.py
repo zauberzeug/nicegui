@@ -129,6 +129,17 @@ with example(ui.button):
     ui.button('Button', on_click=button_increment)
     button_result = ui.label('pressed: 0')
 
+async_button = '''### Button with asynchronous action
+The button element does also support asynchronous action.
+'''
+with example(async_button):
+    async def async_task():
+        ui.notify('Asynchronous task started')
+        await asyncio.sleep(5)
+        ui.notify('Asynchronous task finished')
+
+    ui.button('Start asynchronous task', on_click=async_task)
+
 with example(ui.checkbox):
     ui.checkbox('check me', on_change=lambda e: checkbox_state.set_text(e.value))
     with ui.row():
@@ -242,6 +253,7 @@ with example(ui.menu):
     with ui.menu() as menu:
         ui.menu_item('Menu item 1', lambda: choice.set_text('Selected item 1.'))
         ui.menu_item('Menu item 2', lambda: choice.set_text('Selected item 2.'))
+        ui.menu_separator()
         ui.menu_item('Close', on_click=menu.close)
 
     ui.button('Open menu', on_click=menu.open).props('color=secondary')

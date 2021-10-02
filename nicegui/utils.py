@@ -34,3 +34,18 @@ def handle_awaitable(func):
         else:
             return func(*args, **kwargs)
     return inner_function
+
+
+def async_provide_arguments(func, update_function, *keys):
+    def inner_function(sender, event):
+        async def execute_function():
+            try:
+                await func()
+            except TypeError:
+                await func(EventArguments(sender, **{key: event[key] for key in keys}))
+
+            await update_function()
+
+        asyncio.get_event_loop().create_task(execute_function())
+
+    return inner_function
