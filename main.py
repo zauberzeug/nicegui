@@ -154,7 +154,7 @@ with example(ui.switch):
 
 with example(ui.slider):
     slider = ui.slider(min=0, max=100, value=50).props('label')
-    ui.label().bind_text_from(slider.value)
+    ui.label().bind_text_from(slider, 'value')
 
 with example(ui.input):
     ui.input(
@@ -168,20 +168,20 @@ with example(ui.number):
     number_input = ui.number(label='Number', value=3.1415927, format='%.2f')
     with ui.row():
         ui.label('underlying value: ')
-        ui.label().bind_text_from(number_input.value)
+        ui.label().bind_text_from(number_input, 'value')
 
 with example(ui.radio):
     radio = ui.radio([1, 2, 3], value=1).props('inline')
-    ui.radio({1: 'A', 2: 'B', 3: 'C'}, value=1).props('inline').bind_value(radio.value)
+    ui.radio({1: 'A', 2: 'B', 3: 'C'}, value=1).props('inline').bind_value(radio, 'value')
 
 with example(ui.toggle):
     toggle = ui.toggle([1, 2, 3], value=1)
-    ui.toggle({1: 'A', 2: 'B', 3: 'C'}, value=1).bind_value(toggle.value)
+    ui.toggle({1: 'A', 2: 'B', 3: 'C'}, value=1).bind_value(toggle, 'value')
 
 with example(ui.select):
     with ui.row():
         select = ui.select([1, 2, 3], value=1).props('inline')
-        ui.select({1: 'One', 2: 'Two', 3: 'Three'}, value=1).props('inline').bind_value(select.value)
+        ui.select({1: 'One', 2: 'Two', 3: 'Three'}, value=1).props('inline').bind_value(select, 'value')
 
 with example(ui.upload):
     ui.upload(on_upload=lambda files: content.set_text(files))
@@ -204,7 +204,7 @@ with example(ui.line_plot):
         [np.sin(datetime.now().timestamp()) + 0.02 * np.random.randn()],
         [np.cos(datetime.now().timestamp()) + 0.02 * np.random.randn()],
     ]), active=False)
-    ui.checkbox('active').bind_value(line_updates.active)
+    ui.checkbox('active').bind_value(line_updates, 'active')
 
 with example(ui.log):
     from datetime import datetime
@@ -305,16 +305,15 @@ Just pass a property of the model as parameter to these methods to create the bi
 '''
 with example(binding):
     class Demo:
-
         def __init__(self):
             self.number = 1
 
     demo = Demo()
     v = ui.checkbox('visible', value=True)
-    with ui.column().bind_visibility_from(v.value):
-        ui.slider(min=1, max=3).bind_value(demo.number)
-        ui.toggle({1: 'a', 2: 'b', 3: 'c'}).bind_value(demo.number)
-        ui.number().bind_value(demo.number)
+    with ui.column().bind_visibility_from(v, 'value'):
+        ui.slider(min=1, max=3).bind_value(demo, 'number')
+        ui.toggle({1: 'a', 2: 'b', 3: 'c'}).bind_value(demo, 'number')
+        ui.number().bind_value(demo, 'number')
 
 
 with example(ui.timer):
@@ -323,7 +322,7 @@ with example(ui.timer):
     with ui.row().classes('items-center'):
         clock = ui.label()
         t = ui.timer(interval=0.1, callback=lambda: clock.set_text(datetime.now().strftime("%X.%f")[:-5]))
-        ui.checkbox('active').bind_value(t.active)
+        ui.checkbox('active').bind_value(t, 'active')
 
     with ui.row():
         def lazy_update():
@@ -371,12 +370,9 @@ Routed paths must start with a `'/'`.
 with example(add_route):
     import starlette
 
-    ui.add_route(
-        starlette.routing.Route(
-            '/new/route',
-            lambda request: starlette.responses.PlainTextResponse('Response')
-        )
-    )
+    ui.add_route(starlette.routing.Route(
+        '/new/route', lambda _: starlette.responses.PlainTextResponse('Response')
+    ))
 
     ui.link('Try the new route!', '/new/route')
 

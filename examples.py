@@ -36,7 +36,7 @@ with ui.row():
                 ui.icon('far fa-clock')
                 clock = ui.label()
                 t = ui.timer(0.1, lambda: clock.set_text(datetime.now().strftime("%X")))
-            ui.checkbox('active').bind_value(t.active)
+            ui.checkbox('active').bind_value(t, 'active')
 
         with ui.card().classes('items-center'):
             ui.label('Style').classes('text-h5')
@@ -48,22 +48,22 @@ with ui.row():
         ui.label('Binding').classes('text-h5')
         with ui.row():
             n1 = ui.number(value=1.2345, format='%.2f')
-            n2 = ui.number(format='%.3f').bind_value(n1.value)
+            n2 = ui.number(format='%.3f').bind_value(n1, 'value')
         with ui.row():
             c = ui.checkbox('c1')
-            ui.switch('c2').bind_value(c.value)
-            ui.slider(min=0, max=1, value=0.5, step=0.01).bind_value_to(c.value, forward=lambda f: f > 0.5)
+            ui.switch('c2').bind_value(c, 'value')
+            ui.slider(min=0, max=1, value=0.5, step=0.01).bind_value_to(c, 'value', forward=lambda f: f > 0.5)
         with ui.row():
             model = type('Model', (), {'value': 1})  # one-liner to define an object with an attribute "value"
-            ui.radio({1: 'a', 2: 'b', 3: 'c'}).bind_value(model.value)
-            ui.radio({1: 'A', 2: 'B', 3: 'C'}).bind_value(model.value)
+            ui.radio({1: 'a', 2: 'b', 3: 'c'}).bind_value(model, 'value')
+            ui.radio({1: 'A', 2: 'B', 3: 'C'}).bind_value(model, 'value')
             with ui.column():
-                ui.number().bind_value(model.value)
-                ui.slider(min=1, max=3).bind_value(model.value)
-                ui.label().bind_text(model.value)
+                ui.number().bind_value(model, 'value')
+                ui.slider(min=1, max=3).bind_value(model, 'value')
+                ui.label().bind_text(model, 'value')
         with ui.row().classes('items-center'):
             v = ui.checkbox('visible', value=True)
-            ui.icon('visibility').bind_visibility_from(v.value)
+            ui.icon('visibility').bind_visibility_from(v, 'value')
 
     with ui.card():
         ui.label('Matplotlib').classes('text-h5')

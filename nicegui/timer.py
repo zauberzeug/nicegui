@@ -2,7 +2,7 @@ import asyncio
 import time
 import traceback
 from typing import Awaitable, Callable, Union
-from binding import BindableProperty
+from .binding import BindableProperty
 from .globals import view_stack
 from .utils import handle_exceptions, handle_awaitable
 
