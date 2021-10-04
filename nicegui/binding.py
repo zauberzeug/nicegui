@@ -49,17 +49,12 @@ def bind_from(self_obj, self_name, other_obj, other_name, backward):
 class BindableProperty:
 
     def __set_name__(self, _, name):
-
         self.name = name
 
     def __get__(self, owner, _=None):
-
         return getattr(owner, '_' + self.name)
 
     def __set__(self, owner, value):
-
         setattr(owner, '_' + self.name, value)
-
         bindable_properties.add((id(owner), self.name))
-
         propagate(owner, self.name)
