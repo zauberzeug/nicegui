@@ -33,7 +33,7 @@ def example(content: Union[Element, str]):
                 ui.label(content.__name__).classes('text-h5')
 
         with ui.card().classes('mt-12 w-2/12'):
-            with ui.column():
+            with ui.column().classes('flex w-full'):
                 yield
         callFrame = inspect.currentframe().f_back.f_back
         end = callFrame.f_lineno
@@ -394,4 +394,4 @@ with example(get_decorator):
 
     ui.link('Try yet another route!', '/another/route/1')
 
-ui.run()
+ui.run(port=8080)
