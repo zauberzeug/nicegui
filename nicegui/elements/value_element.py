@@ -1,9 +1,9 @@
 import justpy as jp
 from typing import Any, Callable
 import traceback
-from binding import BindableProperty
-from .element import Element
+from ..binding import bind_from, bind_to, BindableProperty
 from ..utils import EventArguments
+from .element import Element
 
 class ValueElement(Element):
     value = BindableProperty()
@@ -18,7 +18,7 @@ class ValueElement(Element):
 
         self.on_change = on_change
         self.value = value
-        self.value.bind_to(self.view.value, forward=self.value_to_view)
+        self.bind_value_to(self.view, 'value', forward=self.value_to_view)
 
     def value_to_view(self, value):
         return value
@@ -35,14 +35,15 @@ class ValueElement(Element):
             except Exception:
                 traceback.print_exc()
 
-    def bind_value_to(self, target, forward=lambda x: x):
-        self.value.bind_to(target, forward=forward, nesting=1)
+    def bind_value_to(self, target_object, target_name, *, forward=lambda x: x):
+        bind_to(self, 'value', target_object, target_name, forward=forward)
         return self
 
-    def bind_value_from(self, target, backward=lambda x: x):
-        self.value.bind_from(target, backward=backward, nesting=1)
+    def bind_value_from(self, target_object, target_name, *, backward=lambda x: x):
+        bind_from(self, 'value', target_object, target_name, backward=backward)
         return self
 
-    def bind_value(self, target, forward=lambda x: x, backward=lambda x: x):
-        self.value.bind(target, forward=forward, backward=backward, nesting=1)
+    def bind_value(self, target_object, target_name, *, forward=lambda x: x, backward=lambda x: x):
+        bind_from(self, 'value', target_object, target_name, backward=backward)
+        bind_to(self, 'value', target_object, target_name, forward=forward)
         return self

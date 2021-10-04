@@ -1,18 +1,13 @@
 #!/usr/bin/env python3
 from typing import Awaitable, Callable
 import asyncio
-import binding
 
 from .ui import Ui  # NOTE: before justpy
 import justpy as jp
 from .timer import Timer
 from . import globals
+from . import binding
 
-
-async def binding_loop():
-    while True:
-        binding.update()
-        await asyncio.sleep(0.1)
 
 def create_task(coro):
     loop = asyncio.get_event_loop()
@@ -25,7 +20,7 @@ def startup():
     tasks.extend(create_task(t) for t in Timer.tasks)
     tasks.extend(create_task(t) for t in Ui.startup_tasks if isinstance(t, Awaitable))
     [t() for t in Ui.startup_tasks if isinstance(t, Callable)]
-    jp.run_task(binding_loop())
+    jp.run_task(binding.loop())
 
 @jp.app.on_event('shutdown')
 def shutdown():

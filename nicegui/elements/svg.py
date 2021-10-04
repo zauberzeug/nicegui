@@ -1,4 +1,5 @@
 import justpy as jp
+
 from .element import Element
 
 class Svg(Element):
@@ -27,15 +28,3 @@ class Svg(Element):
 
     def set_content(self, content: str):
         self.content = content
-
-    def bind_content_to(self, target, forward=lambda x: x):
-        self.content.bind_to(target, forward=forward, nesting=1)
-        return self
-
-    def bind_content_from(self, target, backward=lambda x: x):
-        self.content.bind_from(target, backward=backward, nesting=1)
-        return self
-
-    def bind_content(self, target, forward=lambda x: x, backward=lambda x: x):
-        self.content.bind(target, forward=forward, backward=backward, nesting=1)
-        return self

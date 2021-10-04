@@ -1,6 +1,6 @@
 import justpy as jp
 from enum import Enum
-from binding.binding import BindableProperty
+from ..binding import bind_from, bind_to, BindableProperty
 from ..globals import view_stack, page_stack
 
 class Element:
@@ -26,22 +26,23 @@ class Element:
         self.visible_ = visible
         (self.view.remove_class if self.visible_ else self.view.set_class)('hidden')
 
-    def bind_visibility_to(self, target, forward=lambda x: x):
-        self.visible.bind_to(target, forward=forward, nesting=1)
+    def bind_visibility_to(self, target_object, target_name, forward=lambda x: x):
+        bind_to(self, 'visible', target_object, target_name, forward=forward)
         return self
 
-    def bind_visibility_from(self, target, backward=lambda x: x, *, value=None):
+    def bind_visibility_from(self, target_object, target_name, backward=lambda x: x, *, value=None):
         if value is not None:
             def backward(x): return x == value
 
-        self.visible.bind_from(target, backward=backward, nesting=1)
+        bind_from(self, 'visible', target_object, target_name, backward=backward)
         return self
 
-    def bind_visibility(self, target, forward=lambda x: x, backward=None, *, value=None):
+    def bind_visibility(self, target_object, target_name, forward=lambda x: x, backward=None, *, value=None):
         if value is not None:
             def backward(x): return x == value
 
-        self.visible.bind(target, forward=forward, backward=backward, nesting=1)
+        bind_from(self, 'visible', target_object, target_name, backward=backward)
+        bind_to(self, 'visible', target_object, target_name, forward=forward)
         return self
 
     def classes(self, add: str = '', *, remove: str = '', replace: str = ''):
