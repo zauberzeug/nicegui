@@ -8,7 +8,7 @@ import docutils.core
 import re
 import asyncio
 from nicegui.elements.markdown import Markdown
-from nicegui.elements.element import Design, Element
+from nicegui.elements.element import Element
 from nicegui.globals import page_stack
 
 # add docutils css to webpage
@@ -277,7 +277,7 @@ with example(design):
     ui.button().props('icon=touch_app outline round').classes('shadow-lg ml-14')
 
 with example(ui.card):
-    with ui.card(design=Design.plain):
+    with ui.card().tight():
         ui.image('http://placeimg.com/640/360/nature')
         with ui.card_section():
             ui.label('Lorem ipsum dolor sit amet, consectetur adipiscing elit, ...')

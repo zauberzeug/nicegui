@@ -1,22 +1,12 @@
 import justpy as jp
-from .element import Design
 from .group import Group
 
 class Column(Group):
 
-    def __init__(self, design: Design = Design.default):
+    def __init__(self):
         '''Row Element
 
         Provides a container which arranges its child in a row.
-
-        :param design: `Design.plain` does not apply any stylings.
-            If ommitted, `Design.default` configures padding and spacing.
         '''
-        if design == design.default:
-            view = jp.QDiv(classes='column items-start', style='gap: 1em', delete_flag=False)
-        elif design == design.plain:
-            view = jp.QDiv(classes='column', delete_flag=False)
-        else:
-            raise Exception(f'unsupported design: {design}')
-
+        view = jp.QDiv(classes='column items-start', style='gap: 1em', delete_flag=False)
         super().__init__(view)

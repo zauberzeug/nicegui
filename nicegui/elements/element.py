@@ -45,52 +45,48 @@ class Element:
         bind_to(self, 'visible', target_object, target_name, forward=forward)
         return self
 
-    def classes(self, add: str = '', *, remove: str = '', replace: str = ''):
+    def classes(self, add: str = None, *, remove: str = None, replace: str = None):
         '''HTML classes to modify the look of the element.
         Every class in the `remove` parameter will be removed from the element.
         Classes are seperated with a blank space.
         This can be helpful if the predefined classes by NiceGUI are not wanted in a particular styling.
         '''
-        class_list = [] if replace else self.view.classes.split()
-        class_list = [c for c in class_list if c not in remove]
-        class_list += add.split()
-        class_list += replace.split()
+        class_list = [] if replace is not None else self.view.classes.split()
+        class_list = [c for c in class_list if c not in (remove or '')]
+        class_list += (add or '').split()
+        class_list += (replace or '').split()
         self.view.classes = ' '.join(class_list)
 
         return self
 
-    def style(self, add: str = '', *, remove: str = '', replace: str = ''):
+    def style(self, add: str = None, *, remove: str = None, replace: str = None):
         '''CSS style sheet definitions to modify the look of the element.
         Every style in the `remove` parameter will be removed from the element.
         Styles are seperated with a semicolon.
         This can be helpful if the predefined style sheet definitions by NiceGUI are not wanted in a particular styling.
         '''
-        style_list = [] if replace else self.view.style.split(';')
-        style_list = [c for c in style_list if c not in remove.split(';')]
-        style_list += add.split(';')
-        style_list += replace.split(';')
+        style_list = [] if replace is not None else self.view.style.split(';')
+        style_list = [c for c in style_list if c not in (remove or '').split(';')]
+        style_list += (add or '').split(';')
+        style_list += (replace or '').split(';')
         self.view.style = ';'.join(style_list)
 
         return self
 
-    def props(self, add: str = '', *, remove: str = '', replace: str = ''):
+    def props(self, add: str = None, *, remove: str = None, replace: str = None):
         '''Quasar props https://quasar.dev/vue-components/button#design to modify the look of the element.
         Boolean props will automatically activated if they appear in the list of the `add` property.
         Props are seperated with a blank space.
         Every prop passed to the `remove` parameter will be removed from the element.
         This can be helpful if the predefined props by NiceGUI are not wanted in a particular styling.
         '''
-        for prop in remove.split() + replace.split():
+        for prop in (remove or '').split() + (replace or '').split():
             setattr(self.view, prop.split('=')[0], None)
 
-        for prop in add.split() + replace.split():
+        for prop in (add or '').split() + (replace or '').split():
             if '=' in prop:
                 setattr(self.view, *prop.split('='))
             else:
                 setattr(self.view, prop, True)
 
         return self
-
-class Design(Enum):
-    default = 1
-    plain = 2
