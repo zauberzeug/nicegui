@@ -59,7 +59,7 @@
         }
 
         socket.addEventListener('open', function (event) {
-            console.log('Webocket opened');
+            console.log('Websocket opened');
             socket.send(JSON.stringify({'type': 'connect', 'page_id': page_id}));
         });
 

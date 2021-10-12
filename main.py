@@ -390,4 +390,8 @@ with example(get_decorator):
 
     ui.link('Try yet another route!', '/another/route/1')
 
+with example(ui.hotkey):
+    ui.hotkey(key='f', on_keydown=lambda: ui.notify('F key was pressed.'))
+    ui.label('Hover over this square and press the F key.')
+
 ui.run(port=8080)
