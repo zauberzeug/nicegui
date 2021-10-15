@@ -362,7 +362,7 @@ with example(ui.page):
 
     ui.link('Visit other page', '/other_page')
 
-add_route = """###Route
+add_route = """### Route
 
 Add a new route by calling `ui.add_route` with a starlette route including a path and a function to be called. 
 Routed paths must start with a `'/'`.
@@ -376,7 +376,8 @@ with example(add_route):
 
     ui.link('Try the new route!', '/new/route')
 
-get_decorator = """###Get decorator
+get_decorator = """### Get decorator
+
 Syntactic sugar to add routes.
 Decorating a function with the `@ui.get` makes it available at the specified endpoint, e.g. `'/another/route/1'`.
 """
@@ -391,7 +392,7 @@ with example(get_decorator):
     ui.link('Try yet another route!', '/another/route/1')
 
 with example(ui.hotkey):
-    ui.hotkey(keys=['f', 'g', ], on_keydown=lambda: ui.notify('F+G keys were pressed.'))
-    ui.label('Hover over this square and press and release the keys F+G .')
+    ui.hotkey(keys=['f', 'g'], on_keydown=lambda: ui.notify('Keys F and G were pressed.'))
+    ui.label('Hover over this square and press and release the keys F and G.')
 
 ui.run(port=8080)
