@@ -17,11 +17,12 @@ class HotkeyView(CustomView):
 class Hotkey(Element):
 
     def __init__(self, handle_keys: Callable = None):
-        """Hotkeys
-
-        Adds a hotkey action to an element.
-
-        :param keys: list of characters that the action should be associated with, e.g. ['f', 'g']
-        :param on_keydown: callback to be executed when the specified keys are pressed while the parent is hovered
         """
+        Hotkeys
+
+        Adds global keyboard event tracking.
+
+        :param handle_keys: callback to be executed when keyboard events occur.
+        """
+
         super().__init__(HotkeyView(handle_keys=handle_keys))
