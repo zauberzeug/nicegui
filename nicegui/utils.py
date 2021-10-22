@@ -1,12 +1,82 @@
 import asyncio
 import traceback
 
+
 class EventArguments:
 
     def __init__(self, sender, **kwargs):
         self.sender = sender
         for key, value in kwargs.items():
             setattr(self, key, value)
+
+        if hasattr(self, 'key_data'):
+            self.action = KeyboardAction(self.key_data)
+            self.key = KeyboardKey(self.key_data)
+            self.modifiers = KeyboardModifiers(self.key_data)
+
+
+class KeyboardAction:
+
+    def __init__(self, key_data):
+        self.key_data = key_data
+
+    @property
+    def keydown(self):
+        return hasattr(self.key_data, 'action') and self.key_data.action == 'keydown'
+
+    @property
+    def keyup(self):
+        return hasattr(self.key_data, 'action') and self.key_data.action == 'keyup'
+
+    @property
+    def keypress(self):
+        return hasattr(self.key_data, 'action') and self.key_data.action == 'keypress'
+
+
+class KeyboardKey:
+    def __init__(self, key_data):
+        self.key = getattr(key_data, 'key', False)
+        self.repeat = getattr(key_data, 'repeat', False)
+
+    def __eq__(self, other):
+        return self.key == other
+
+    @property
+    def left(self):
+        return self.key and self.key == 'ArrowLeft'
+
+    @property
+    def right(self):
+        return self.key and self.key == 'ArrowRight'
+
+    @property
+    def up(self):
+        return self.key and self.key == 'ArrowUp'
+
+    @property
+    def down(self):
+        return self.key and self.key == 'ArrowDown'
+
+
+class KeyboardModifiers:
+    def __init__(self, key_data):
+        self.key_data = key_data
+
+    @property
+    def altkey(self):
+        return getattr(self.key_data, 'shiftKey', False)
+
+    @property
+    def ctrlkey(self):
+        return getattr(self.key_data, 'ctrlKey', False)
+
+    @property
+    def shiftkey(self):
+        return getattr(self.key_data, 'shiftKey', False)
+
+    @property
+    def metakey(self):
+        return getattr(self.key_data, 'metaKey', False)
 
 
 def provide_arguments(func, *keys):

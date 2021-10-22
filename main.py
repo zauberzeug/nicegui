@@ -392,7 +392,23 @@ with example(get_decorator):
     ui.link('Try yet another route!', '/another/route/1')
 
 with example(ui.hotkey):
-    ui.hotkey(keys=['f', 'g'], on_keydown=lambda: ui.notify('Keys F and G were pressed.'))
-    ui.label('Hover over this square and press and release the keys F and G.')
+    def handle_keys(e):
+        if e.key == 'f' and not e.key.repeat:
+            if e.action.keyup:
+                ui.notify('f was just released')
+            elif e.action.keydown:
+                ui.notify('f was just pressed')
+        if e.modifiers.shiftkey and e.action.keydown:
+            if e.key.left:
+                ui.notify('going left')
+            elif e.key.right:
+                ui.notify('going right')
+            elif e.key.up:
+                ui.notify('going up')
+            elif e.key.down:
+                ui.notify('going down')
+
+    hotkeys = ui.hotkey(handle_keys)
+    ui.label('Key events can be caught globally by using the hotkey element.')
 
 ui.run(port=8080)

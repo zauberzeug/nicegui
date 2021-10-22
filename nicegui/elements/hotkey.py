@@ -7,17 +7,16 @@ from ..utils import handle_exceptions, provide_arguments
 
 class HotkeyView(CustomView):
 
-    def __init__(self, keys: list[str], on_keydown: Callable):
-        super().__init__('hotkey', __file__, keys=keys)
-        self.on_keydown = on_keydown
-        self.allowed_events = ['onKeydown']
+    def __init__(self, handle_keys: Callable):
+        super().__init__('hotkey', __file__, activeJSEvents=['keydown', 'keyup', 'keypress'])
+        self.allowed_events = ['keyboardEvent']
         self.style = 'display: none'
-        self.initialize(temp=False, onKeydown=handle_exceptions(provide_arguments(on_keydown)))
+        self.initialize(temp=False, on_keyboardEvent=handle_exceptions(provide_arguments(handle_keys, 'key_data', 'event_type')))
 
 
 class Hotkey(Element):
 
-    def __init__(self, keys: list[str], on_keydown: Callable = None):
+    def __init__(self, handle_keys: Callable = None):
         """Hotkeys
 
         Adds a hotkey action to an element.
@@ -25,4 +24,4 @@ class Hotkey(Element):
         :param keys: list of characters that the action should be associated with, e.g. ['f', 'g']
         :param on_keydown: callback to be executed when the specified keys are pressed while the parent is hovered
         """
-        super().__init__(HotkeyView(keys=keys, on_keydown=on_keydown))
+        super().__init__(HotkeyView(handle_keys=handle_keys))
