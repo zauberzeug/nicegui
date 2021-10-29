@@ -18,28 +18,39 @@ class EventArguments:
 class KeyboardAction:
 
     def __init__(self, key_data):
-        self.key_data = key_data
+        self.action = getattr(key_data, 'action', False)
 
     @property
     def keydown(self):
-        return hasattr(self.key_data, 'action') and self.key_data.action == 'keydown'
+        return self.action and self.action == 'keydown'
 
     @property
     def keyup(self):
-        return hasattr(self.key_data, 'action') and self.key_data.action == 'keyup'
+        return self.action and self.action == 'keyup'
 
     @property
     def keypress(self):
-        return hasattr(self.key_data, 'action') and self.key_data.action == 'keypress'
+        return self.action and self.action == 'keypress'
 
 
 class KeyboardKey:
     def __init__(self, key_data):
         self.key = getattr(key_data, 'key', False)
+        self.keycode = getattr(key_data, 'code', '')
         self.repeat = getattr(key_data, 'repeat', False)
 
     def __eq__(self, other):
         return self.key == other
+
+    def __repr__(self):
+        return str(self.key)
+
+    def __int__(self):
+        return int(self.key)
+
+    @property
+    def code(self):
+        return self.keycode
 
     @property
     def left(self):
@@ -56,6 +67,22 @@ class KeyboardKey:
     @property
     def down(self):
         return self.key and self.key == 'ArrowDown'
+
+    @property
+    def shift(self):
+        return self.key and self.key == 'Shift'
+
+    @property
+    def is_cursorkey(self):
+        return self.key and (self.left or self.right or self.up or self.down)
+
+    # Number key codes
+    number_key_codes = {f'Digit{number}': number for number in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]}
+
+    @property
+    def numberkey(self):
+        """Returns number of a key as a string based on the key code, meaning ignoring modifiers."""
+        return self.number_key_codes.get(self.keycode)
 
 
 class KeyboardModifiers:
@@ -85,6 +112,7 @@ def provide_arguments(func, *keys):
             return func()
         except TypeError:
             return func(EventArguments(sender, **{key: event[key] for key in keys}))
+
     return inner_function
 
 
@@ -94,6 +122,7 @@ def handle_exceptions(func):
             return func(*args, **kwargs)
         except Exception:
             traceback.print_exc()
+
     return inner_function
 
 
@@ -103,6 +132,7 @@ def handle_awaitable(func):
             return await func(*args, **kwargs)
         else:
             return func(*args, **kwargs)
+
     return inner_function
 
 
