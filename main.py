@@ -410,5 +410,6 @@ with example(ui.keyboard):
 
     keyboard = ui.keyboard(handle_keys)
     ui.label('Key events can be caught globally by using the keyboard element.')
+    ui.checkbox('Track key events').bind_value_to(keyboard.view, 'active')
 
 ui.run(port=8080)
