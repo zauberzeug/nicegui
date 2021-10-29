@@ -36,7 +36,7 @@ class Ui:
     from .elements.row import Row as row
     from .elements.column import Column as column
     from .elements.card import Card as card
-    from .elements.hotkey import Hotkey as hotkey
+    from .elements.keyboard import Keyboard as keyboard
     from .elements.card import CardSection as card_section
 
     from .timer import Timer as timer

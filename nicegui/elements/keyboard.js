@@ -1,4 +1,4 @@
-Vue.component('hotkey', {
+Vue.component('keyboard', {
 	template: `<span v-bind:id="jp_props.id" :class="jp_props.classes" :style="jp_props.style"></span>`,
 	methods: {
 		add_event_listeners() {

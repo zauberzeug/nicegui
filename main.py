@@ -391,7 +391,7 @@ with example(get_decorator):
 
     ui.link('Try yet another route!', '/another/route/1')
 
-with example(ui.hotkey):
+with example(ui.keyboard):
     def handle_keys(e):
         if e.key == 'f' and not e.key.repeat:
             if e.action.keyup:
@@ -408,7 +408,7 @@ with example(ui.hotkey):
             elif e.key.down:
                 ui.notify('going down')
 
-    hotkeys = ui.hotkey(handle_keys)
-    ui.label('Key events can be caught globally by using the hotkey element.')
+    keyboard = ui.keyboard(handle_keys)
+    ui.label('Key events can be caught globally by using the keyboard element.')
 
 ui.run(port=8080)
