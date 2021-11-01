@@ -11,7 +11,8 @@ async def loop():
     while True:
         visited = set()
         invalidated_views = []
-        for link in active_links[:]:
+        to_delete = []
+        for link in active_links:
             (source_obj, source_name, target_obj, target_name, transform) = link
             value = transform(getattr(source_obj, source_name))
             if getattr(target_obj, target_name) != value:
@@ -21,7 +22,11 @@ async def loop():
                     invalidated_views.append(target_obj.view)
             # remove links if the justpy element has been deleted
             if getattr(target_obj, 'delete_flag', False) or getattr(source_obj, 'delete_flag', False):
-                active_links.remove(link)
+                to_delete.append(active_links)
+
+        for link in to_delete:
+            active_links.remove(link)
+
         for view in invalidated_views:
             await view.update()
         await asyncio.sleep(0.1)
