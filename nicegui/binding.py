@@ -11,13 +11,17 @@ async def loop():
     while True:
         visited = set()
         invalidated_views = []
-        for source_obj, source_name, target_obj, target_name, transform in active_links:
+        for link in active_links[:]:
+            (source_obj, source_name, target_obj, target_name, transform) = link
             value = transform(getattr(source_obj, source_name))
             if getattr(target_obj, target_name) != value:
                 setattr(target_obj, target_name, value)
                 propagate(target_obj, target_name, visited)
                 if hasattr(target_obj, 'view') and isinstance(target_obj.view, HTMLBaseComponent):
                     invalidated_views.append(target_obj.view)
+            # remove links if the justpy element has been deleted
+            if getattr(target_obj, 'delete_flag', False) or getattr(source_obj, 'delete_flag', False):
+                active_links.remove(link)
         for view in invalidated_views:
             await view.update()
         await asyncio.sleep(0.1)

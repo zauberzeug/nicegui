@@ -20,6 +20,13 @@
     "version": "0.2.0",
     "configurations": [
       {
+        "name": "current file",
+        "type": "python",
+        "request": "launch",
+        "program": "${file}",
+        "console": "integratedTerminal"
+      },
+      {
         "name": "Dockerized NiceGUI",
         "type": "python",
         "request": "attach",
