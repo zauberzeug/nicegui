@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 from typing import Callable, Optional
+
+from ..binding import bind_to
 from ..utils import handle_exceptions, provide_arguments
 from .custom_view import CustomView
 from .element import Element
@@ -52,6 +54,8 @@ class Keyboard(Element):
         :param active: boolean flag indicating whether the callback should be executed or not
         """
         super().__init__(KeyboardView(handle_keys=handle_keys, active=active))
+        self.active = active
+        bind_to(self, 'active', self.view, 'active', lambda x: x)
 
 class KeyboardAction(BaseModel):
     keypress: bool
