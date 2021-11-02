@@ -393,19 +393,19 @@ with example(get_decorator):
 
 with example(ui.keyboard):
     def handle_keys(e):
-        if e.key == 'f' and not e.key.repeat:
+        if e.key == 'f' and not e.action.repeat:
             if e.action.keyup:
                 ui.notify('f was just released')
             elif e.action.keydown:
                 ui.notify('f was just pressed')
-        if e.modifiers.shiftkey and e.action.keydown:
-            if e.key.left:
+        if e.modifiers.shift and e.action.keydown:
+            if e.key.arrow_left:
                 ui.notify('going left')
-            elif e.key.right:
+            elif e.key.arrow_right:
                 ui.notify('going right')
-            elif e.key.up:
+            elif e.key.arrow_up:
                 ui.notify('going up')
-            elif e.key.down:
+            elif e.key.arrow_down:
                 ui.notify('going down')
 
     keyboard = ui.keyboard(handle_keys)
