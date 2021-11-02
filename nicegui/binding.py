@@ -22,7 +22,7 @@ async def loop():
                     invalidated_views.append(target_obj.view)
             # remove links if the justpy element has been deleted
             if getattr(target_obj, 'delete_flag', False) or getattr(source_obj, 'delete_flag', False):
-                to_delete.append(active_links)
+                to_delete.append(link)
 
         for link in to_delete:
             active_links.remove(link)
