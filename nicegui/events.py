@@ -50,7 +50,7 @@ class KeyboardKey(BaseModel):
     @property
     def number(self) -> Optional[int]:
         """Integer value of a number key."""
-        return int(self.name) if self.code.startswith('Digit') else None
+        return int(self.code.removeprefix('Digit')) if self.code.startswith('Digit') else None
 
     @property
     def backspace(self) -> bool:
