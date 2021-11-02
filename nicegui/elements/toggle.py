@@ -1,14 +1,14 @@
 import justpy as jp
-from typing import Callable, List, Dict, Union
+from typing import Awaitable, Callable, Optional, Union
 from .choice_element import ChoiceElement
 
 class Toggle(ChoiceElement):
 
     def __init__(self,
-                 options: Union[List, Dict],
+                 options: Union[list, dict],
                  *,
                  value: any = None,
-                 on_change: Callable = None,
+                 on_change: Optional[Union[Callable, Awaitable]] = None,
                  ):
         """Toggle Element
 

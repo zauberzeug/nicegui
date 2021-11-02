@@ -1,5 +1,5 @@
 import justpy as jp
-from typing import Callable
+from typing import Awaitable, Callable, Optional, Union
 from .value_element import ValueElement
 
 class FloatElement(ValueElement):
@@ -9,7 +9,7 @@ class FloatElement(ValueElement):
                  *,
                  value: float,
                  format: str = None,
-                 on_change: Callable,
+                 on_change: Optional[Union[Callable, Awaitable]],
                  ):
         self.format = format
 

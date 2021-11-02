@@ -1,5 +1,5 @@
 import justpy as jp
-from typing import Callable
+from typing import Awaitable, Callable, Optional, Union
 from .float_element import FloatElement
 
 class Number(FloatElement):
@@ -10,7 +10,7 @@ class Number(FloatElement):
                  placeholder: str = None,
                  value: float = None,
                  format: str = None,
-                 on_change: Callable = None,
+                 on_change: Optional[Union[Callable, Awaitable]] = None,
                  ):
         """Number Input Element
 

@@ -1,5 +1,5 @@
 import justpy as jp
-from typing import Callable
+from typing import Awaitable, Callable, Optional, Union
 from .value_element import ValueElement
 
 class StringElement(ValueElement):
@@ -8,6 +8,6 @@ class StringElement(ValueElement):
                  view: jp.HTMLBaseComponent,
                  *,
                  value: float,
-                 on_change: Callable,
+                 on_change: Optional[Union[Callable, Awaitable]],
                  ):
         super().__init__(view, value=value, on_change=on_change)

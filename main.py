@@ -9,6 +9,7 @@ import re
 import asyncio
 from nicegui.elements.markdown import Markdown
 from nicegui.elements.element import Element
+from nicegui.events import ClickEventArguments, KeyEventArguments
 from nicegui.globals import page_stack
 
 # add docutils css to webpage
@@ -392,7 +393,7 @@ with example(get_decorator):
     ui.link('Try yet another route!', '/another/route/1')
 
 with example(ui.keyboard):
-    def handle_keys(e):
+    def handle_key(e: KeyEventArguments):
         if e.key == 'f' and not e.action.repeat:
             if e.action.keyup:
                 ui.notify('f was just released')
@@ -408,7 +409,7 @@ with example(ui.keyboard):
             elif e.key.arrow_down:
                 ui.notify('going down')
 
-    keyboard = ui.keyboard(handle_keys)
+    keyboard = ui.keyboard(on_key=handle_key)
     ui.label('Key events can be caught globally by using the keyboard element.')
     ui.checkbox('Track key events').bind_value_to(keyboard, 'active')
 

@@ -2,9 +2,9 @@ import asyncio
 import time
 import traceback
 from typing import Awaitable, Callable, Union
+
 from .binding import BindableProperty
 from .globals import view_stack
-from .utils import handle_exceptions, handle_awaitable
 
 class Timer:
     tasks = []
@@ -27,9 +27,18 @@ class Timer:
         parent = view_stack[-1]
         self.active = active
 
+        async def do_callback():
+            try:
+                if asyncio.iscoroutinefunction(callback):
+                    return await callback()
+                else:
+                    return callback()
+            except Exception:
+                traceback.print_exc()
+
         async def timeout():
             await asyncio.sleep(interval)
-            await handle_exceptions(handle_awaitable(callback))()
+            await do_callback()
             await parent.update()
 
         async def loop():
@@ -37,7 +46,7 @@ class Timer:
                 try:
                     start = time.time()
                     if self.active:
-                        needs_update = await handle_exceptions(handle_awaitable(callback))()
+                        needs_update = await do_callback()
                         if needs_update != False:
                             await parent.update()
                     dt = time.time() - start

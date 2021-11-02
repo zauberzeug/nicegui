@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Awaitable, Callable, Optional, Union
 import justpy as jp
 from .bool_element import BoolElement
 
@@ -8,7 +8,7 @@ class Switch(BoolElement):
                  text: str = '',
                  *,
                  value: bool = False,
-                 on_change: Callable = None,
+                 on_change: Optional[Union[Callable, Awaitable]] = None,
                  ):
         """Switch Element
 

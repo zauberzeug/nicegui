@@ -1,22 +1,24 @@
+import traceback
 import justpy as jp
-from typing import Callable
+from typing import Awaitable, Callable, Optional, Union
 import base64
+
+from ..events import UploadEventArguments, handle_event
 from .element import Element
-from ..utils import handle_exceptions
 
 class Upload(Element):
 
     def __init__(self,
                  *,
                  multiple: bool = False,
-                 on_upload: Callable = None,
+                 on_upload: Optional[Union[Callable, Awaitable]] = None,
                  ):
         """File Upload Element
 
         :param multiple: allow uploading multiple files at once (default: False)
         :param on_upload: callback to execute when a file is uploaded (list of bytearrays)
         """
-        self.on_upload = handle_exceptions(on_upload)
+        self.upload_handler = on_upload
         view = jp.Form(enctype='multipart/form-data', classes='flex gap-4 items-center',
                        submit=lambda s, m: self.submit(s, m))
         jp.Input(type='file', multiple=multiple, a=view)
@@ -25,6 +27,10 @@ class Upload(Element):
         super().__init__(view)
 
     def submit(self, _, msg):
-        for form_data in msg.form_data:
-            if form_data.type == 'file':
-                self.on_upload([base64.b64decode(f.file_content) for f in form_data.files])
+        try:
+            for form_data in msg.form_data:
+                if form_data.type == 'file':
+                    files = [base64.b64decode(f.file_content) for f in form_data.files]
+                    handle_event(self.upload_handler, UploadEventArguments(sender=self, files=files))
+        except Exception:
+            traceback.print_exc()

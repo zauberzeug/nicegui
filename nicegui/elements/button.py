@@ -1,9 +1,8 @@
-import asyncio
-from typing import Awaitable, Callable, Union
+from typing import Awaitable, Callable, Optional, Union
 import justpy as jp
 
 from ..binding import bind_from, bind_to, BindableProperty
-from ..utils import handle_exceptions, provide_arguments, async_provide_arguments
+from ..events import ClickEventArguments, handle_event
 from .element import Element
 
 class Button(Element):
@@ -12,7 +11,7 @@ class Button(Element):
     def __init__(self,
                  text: str = '',
                  *,
-                 on_click: Union[Callable, Awaitable] = None,
+                 on_click: Optional[Union[Callable, Awaitable]] = None,
                  ):
         """Button Element
 
@@ -26,11 +25,7 @@ class Button(Element):
         self.text = text
         self.bind_text_to(self.view, 'label')
 
-        if on_click is not None:
-            if asyncio.iscoroutinefunction(on_click):
-                view.on('click', handle_exceptions(async_provide_arguments(func=on_click, update_function=view.update)))
-            else:
-                view.on('click', handle_exceptions(provide_arguments(on_click)))
+        view.on('click', lambda *_: handle_event(on_click, ClickEventArguments(sender=self), update_view=True))
 
     def set_text(self, text: str):
         self.text = text

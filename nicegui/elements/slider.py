@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Awaitable, Callable, Optional, Union
 import justpy as jp
 from .float_element import FloatElement
 
@@ -10,7 +10,7 @@ class Slider(FloatElement):
                  max: float,
                  step: float = 1,
                  value: float = None,
-                 on_change: Callable = None,
+                 on_change: Optional[Union[Callable, Awaitable]] = None,
                  ):
         """Slider Element
 

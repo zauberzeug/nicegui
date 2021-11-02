@@ -1,8 +1,8 @@
 import justpy as jp
-from typing import Any, Callable
-import traceback
+from typing import Any, Awaitable, Callable, Optional, Union
+
+from ..events import ValueChangeEventArguments, handle_event
 from ..binding import bind_from, bind_to, BindableProperty
-from ..utils import EventArguments
 from .element import Element
 
 class ValueElement(Element):
@@ -12,11 +12,11 @@ class ValueElement(Element):
                  view: jp.HTMLBaseComponent,
                  *,
                  value: Any,
-                 on_change: Callable,
+                 on_change: Optional[Union[Callable, Awaitable]],
                  ):
         super().__init__(view)
 
-        self.on_change = on_change
+        self.change_handler = on_change
         self.value = value
         self.bind_value_to(self.view, 'value', forward=self.value_to_view)
 
@@ -25,15 +25,7 @@ class ValueElement(Element):
 
     def handle_change(self, msg):
         self.value = msg['value']
-
-        if self.on_change is not None:
-            try:
-                try:
-                    self.on_change()
-                except TypeError:
-                    self.on_change(EventArguments(self, **msg))
-            except Exception:
-                traceback.print_exc()
+        handle_event(self.change_handler, ValueChangeEventArguments(sender=self, value=self.value))
 
     def bind_value_to(self, target_object, target_name, *, forward=lambda x: x):
         bind_to(self, 'value', target_object, target_name, forward=forward)
