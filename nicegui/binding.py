@@ -2,6 +2,8 @@
 import asyncio
 from collections import defaultdict
 from justpy.htmlcomponents import HTMLBaseComponent
+import time
+import logging
 
 bindings = defaultdict(list)
 bindable_properties = set()
@@ -23,9 +25,7 @@ async def loop():
             # remove links if the justpy element has been deleted
             if getattr(target_obj, 'delete_flag', False) or getattr(source_obj, 'delete_flag', False):
                 to_delete.append(link)
-
-        for link in to_delete:
-            active_links.remove(link)
+        active_links = [l for l in active_links if l not in to_delete]
 
         for view in invalidated_views:
             await view.update()
