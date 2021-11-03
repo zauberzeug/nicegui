@@ -10,6 +10,7 @@ bindable_properties = set()
 active_links = []
 
 async def loop():
+    global active_links
     while True:
         visited = set()
         invalidated_views = []
