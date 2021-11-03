@@ -2,7 +2,7 @@ import asyncio
 from inspect import signature
 from pydantic import BaseModel
 import traceback
-from typing import Any, Awaitable, Callable, Optional, Union
+from typing import Any, Awaitable, Callable, List, Optional, Union
 
 from .elements.element import Element
 
@@ -15,7 +15,7 @@ class ClickEventArguments(EventArguments):
     pass
 
 class UploadEventArguments(EventArguments):
-    files: list[bytes]
+    files: List[bytes]
 
 class ValueChangeEventArguments(EventArguments):
     value: Any
