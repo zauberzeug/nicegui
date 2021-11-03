@@ -9,7 +9,7 @@ import re
 import asyncio
 from nicegui.elements.markdown import Markdown
 from nicegui.elements.element import Element
-from nicegui.events import ClickEventArguments, KeyEventArguments
+from nicegui.events import KeyEventArguments
 from nicegui.globals import page_stack
 
 # add docutils css to webpage
