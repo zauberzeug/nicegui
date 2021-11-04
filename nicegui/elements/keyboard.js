@@ -3,6 +3,11 @@ Vue.component("keyboard", {
   mounted() {
     for (const event of this.$props.jp_props.options.activeJSEvents) {
       document.addEventListener(event, (evt) => {
+        // https://stackoverflow.com/a/36469636/3419103
+        const ignored = ["input", "select", "button", "textarea"];
+        const focus = document.activeElement;
+        if (focus && ignored.includes(focus.tagName.toLowerCase())) return;
+
         const e = {
           event_type: "keyboardEvent",
           id: this.$props.jp_props.id,
