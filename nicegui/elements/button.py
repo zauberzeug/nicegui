@@ -6,7 +6,7 @@ from ..events import ClickEventArguments, handle_event
 from .element import Element
 
 class Button(Element):
-    text = BindableProperty
+    text = BindableProperty()
 
     def __init__(self,
                  text: str = '',

@@ -4,7 +4,7 @@ from ..binding import bind_from, bind_to, BindableProperty
 from .element import Element
 
 class Label(Element):
-    text = BindableProperty
+    text = BindableProperty()
 
     def __init__(self,
                  text: str = '',

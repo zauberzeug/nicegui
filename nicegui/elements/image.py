@@ -4,7 +4,7 @@ from ..binding import bind_from, bind_to, BindableProperty
 from .group import Group
 
 class Image(Group):
-    source = BindableProperty
+    source = BindableProperty()
 
     def __init__(self,
                  source: str = '',

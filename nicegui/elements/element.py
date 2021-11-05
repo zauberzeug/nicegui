@@ -3,7 +3,7 @@ from ..binding import bind_from, bind_to, BindableProperty
 from ..globals import view_stack, page_stack
 
 class Element:
-    visible = BindableProperty
+    visible = BindableProperty()
 
     def __init__(self,
                  view: jp.HTMLBaseComponent,

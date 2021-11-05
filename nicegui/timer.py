@@ -9,7 +9,7 @@ from .globals import view_stack
 class Timer:
     tasks = []
 
-    active = BindableProperty
+    active = BindableProperty()
 
     def __init__(self, interval: float, callback: Union[Callable, Awaitable], *, active: bool = True, once: bool = False):
         """Timer
