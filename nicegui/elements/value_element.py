@@ -25,7 +25,7 @@ class ValueElement(Element):
 
     def handle_change(self, msg):
         self.value = msg['value']
-        handle_event(self.change_handler, ValueChangeEventArguments(sender=self, value=self.value))
+        handle_event(self.change_handler, ValueChangeEventArguments(sender=self, value=self.value), update_view=True)
 
     def bind_value_to(self, target_object, target_name, *, forward=lambda x: x):
         bind_to(self, 'value', target_object, target_name, forward=forward)
