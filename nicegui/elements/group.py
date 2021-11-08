@@ -20,6 +20,11 @@ class Group(Element):
         def collect_components(view: jp.HTMLBaseComponent) -> list[jp.HTMLBaseComponent]:
             return view.components + [view for child in view.components for view in collect_components(child)]
         components = collect_components(self.view)
-        obsolete_links = [link for link in active_links if link[0] in components or link[2] in components]
+        obsolete_links = [
+            link
+            for link in active_links
+            if isinstance(link[0], jp.HTMLBaseComponent) and link[0] in components or
+            isinstance(link[2], jp.HTMLBaseComponent) and link[2] in components
+        ]
         active_links[:] = [l for l in active_links if l not in obsolete_links]
         self.view.delete_components()
