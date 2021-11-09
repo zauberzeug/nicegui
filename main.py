@@ -295,6 +295,21 @@ with example(ui.row):
         ui.label('label 2')
         ui.label('label 3')
 
+clear = '''### Clear Containers
+
+To remove all elements from a row, column or card container, use the `clear()` method.
+'''
+with example(clear):
+    container = ui.row()
+
+    def add_face():
+        with container:
+            ui.icon('face')
+    add_face()
+
+    ui.button('Add', on_click=add_face)
+    ui.button('Clear', on_click=container.clear)
+
 binding = '''### Bindings
 
 With help of the [binding](https://pypi.org/project/binding/) package NiceGUI is able to directly bind UI elements to models.

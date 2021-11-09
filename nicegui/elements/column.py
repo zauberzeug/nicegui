@@ -4,7 +4,7 @@ from .group import Group
 class Column(Group):
 
     def __init__(self):
-        '''Row Element
+        '''Column Element
 
         Provides a container which arranges its child in a row.
         '''
