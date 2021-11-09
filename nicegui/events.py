@@ -206,7 +206,7 @@ def handle_event(handler: Optional[Union[Callable, Awaitable]], arguments: Event
             if asyncio.iscoroutinefunction(handler):
                 await call
             if update_view:
-                await arguments.sender.page.update()
+                await arguments.sender.parent_view.update()
         except Exception:
             traceback.print_exc()
     asyncio.get_event_loop().create_task(async_handler())
