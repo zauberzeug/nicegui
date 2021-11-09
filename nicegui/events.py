@@ -196,17 +196,18 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
-def handle_event(handler: Optional[Union[Callable, Awaitable]], arguments: EventArguments, *, update_view: bool = False):
-    async def async_handler():
+def handle_event(handler: Optional[Union[Callable, Awaitable]], arguments: EventArguments):
+    try:
         if handler is None:
             return
-        try:
-            no_arguments = not signature(handler).parameters
-            call = handler() if no_arguments else handler(arguments)
-            if asyncio.iscoroutinefunction(handler):
-                await call
-            if update_view:
-                await arguments.sender.parent_view.update()
-        except Exception:
-            traceback.print_exc()
-    asyncio.get_event_loop().create_task(async_handler())
+        no_arguments = not signature(handler).parameters
+        call = handler() if no_arguments else handler(arguments)
+        if asyncio.iscoroutinefunction(handler):
+            async def async_handler():
+                try:
+                    await call
+                except Exception:
+                    traceback.print_exc()
+            asyncio.get_event_loop().create_task(async_handler())
+    except Exception:
+        traceback.print_exc()

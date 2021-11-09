@@ -20,6 +20,6 @@ class MenuItem(Element):
         """
         view = jp.QItem(text=text, clickable=True)
 
-        view.on('click', lambda *_: handle_event(on_click, ClickEventArguments(sender=self), update_view=True))
+        view.on('click', lambda *_: handle_event(on_click, ClickEventArguments(sender=self)))
 
         super().__init__(view)
