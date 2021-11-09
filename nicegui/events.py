@@ -201,13 +201,16 @@ def handle_event(handler: Optional[Union[Callable, Awaitable]], arguments: Event
         if handler is None:
             return
         no_arguments = not signature(handler).parameters
-        call = handler() if no_arguments else handler(arguments)
+        result = handler() if no_arguments else handler(arguments)
         if asyncio.iscoroutinefunction(handler):
             async def async_handler():
                 try:
-                    await call
+                    await result
                 except Exception:
                     traceback.print_exc()
             asyncio.get_event_loop().create_task(async_handler())
+            return False
+        else:
+            return result
     except Exception:
         traceback.print_exc()
