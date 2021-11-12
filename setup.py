@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='NiceGUI',
-    version='0.1',
+    version='1.0',
     author='Zauberzeug',
     author_email='info@zauberzeug.com',
     url='https://github.com/zauberzeug/nicegui/',
