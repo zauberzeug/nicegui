@@ -9,16 +9,15 @@ from . import globals
 from . import binding
 
 
-def create_task(coro):
+def create_task(coro) -> asyncio.tasks.Task:
     loop = asyncio.get_event_loop()
     return loop.create_task(coro)
 
-tasks = []
-
 @jp.app.on_event('startup')
 def startup():
-    tasks.extend(create_task(t) for t in Timer.tasks)
-    tasks.extend(create_task(t) for t in Ui.startup_tasks if isinstance(t, Awaitable))
+    globals.tasks.extend(create_task(t) for t in Timer.prepared_coroutines)
+    Timer.prepared_coroutines.clear()
+    globals.tasks.extend(create_task(t) for t in Ui.startup_tasks if isinstance(t, Awaitable))
     [t() for t in Ui.startup_tasks if isinstance(t, Callable)]
     jp.run_task(binding.loop())
 
@@ -26,7 +25,7 @@ def startup():
 def shutdown():
     [create_task(t) for t in Ui.shutdown_tasks if isinstance(t, Awaitable)]
     [t() for t in Ui.shutdown_tasks if isinstance(t, Callable)]
-    [t.cancel() for t in tasks]
+    [t.cancel() for t in globals.tasks]
 
 
 app = globals.app = jp.app

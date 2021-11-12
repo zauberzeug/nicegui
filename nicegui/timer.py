@@ -4,10 +4,10 @@ import traceback
 from typing import Awaitable, Callable, Union
 
 from .binding import BindableProperty
-from .globals import view_stack
+from .globals import tasks, view_stack
 
 class Timer:
-    tasks = []
+    prepared_coroutines = []
 
     active = BindableProperty()
 
@@ -57,4 +57,9 @@ class Timer:
                     traceback.print_exc()
                     await asyncio.sleep(interval)
 
-        self.tasks.append(timeout() if once else loop())
+        coroutine = timeout() if once else loop()
+        event_loop = asyncio.get_event_loop()
+        if not event_loop.is_running():
+            self.prepared_coroutines.append(coroutine)
+        else:
+            tasks.append(event_loop.create_task(coroutine))
