@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from collections import namedtuple
 from typing import Awaitable, Callable
 import asyncio
 
@@ -9,15 +10,15 @@ from . import globals
 from . import binding
 
 
-def create_task(coro) -> asyncio.tasks.Task:
+def create_task(coro, name: str) -> asyncio.tasks.Task:
     loop = asyncio.get_event_loop()
-    return loop.create_task(coro)
+    return loop.create_task(coro, name=name)
 
 @jp.app.on_event('startup')
 def startup():
-    globals.tasks.extend(create_task(t) for t in Timer.prepared_coroutines)
+    globals.tasks.extend(create_task(t.coro, name=t.name) for t in Timer.prepared_coroutines)
     Timer.prepared_coroutines.clear()
-    globals.tasks.extend(create_task(t) for t in Ui.startup_tasks if isinstance(t, Awaitable))
+    globals.tasks.extend(create_task(t, name='startup task') for t in Ui.startup_tasks if isinstance(t, Awaitable))
     [t() for t in Ui.startup_tasks if isinstance(t, Callable)]
     jp.run_task(binding.loop())
 

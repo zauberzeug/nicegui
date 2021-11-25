@@ -1,13 +1,15 @@
 import asyncio
 import time
 import traceback
-from typing import Awaitable, Callable, Union
+from typing import Awaitable, Callable, List, Union
 
 from .binding import BindableProperty
 from .globals import tasks, view_stack
+from collections import namedtuple
 
+NamedCoroutine = namedtuple('NamedCoroutine', ['name', 'coro'])
 class Timer:
-    prepared_coroutines = []
+    prepared_coroutines: List[NamedCoroutine] = []
 
     active = BindableProperty()
 
@@ -60,6 +62,6 @@ class Timer:
         coroutine = timeout() if once else loop()
         event_loop = asyncio.get_event_loop()
         if not event_loop.is_running():
-            self.prepared_coroutines.append(coroutine)
+            self.prepared_coroutines.append(NamedCoroutine(str(callback), coroutine))
         else:
-            tasks.append(event_loop.create_task(coroutine))
+            tasks.append(event_loop.create_task(coroutine, name=str(callback)))
