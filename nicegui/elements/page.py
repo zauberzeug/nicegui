@@ -5,7 +5,7 @@ from ..globals import config, page_stack, view_stack
 
 class Page(jp.QuasarPage):
 
-    def __init__(self, route: str, title: Optional[str] = None, favicon: Optional[str] = None):
+    def __init__(self, route: str, title: Optional[str] = None, favicon: Optional[str] = None, classes:str ='q-ma-md column items-start', css:str =HtmlFormatter().get_style_defs('.codehilite')):
         """Page
 
         Creates a new page at the given path.
@@ -19,14 +19,14 @@ class Page(jp.QuasarPage):
         self.favicon = favicon or config.favicon
 
         self.tailwind = True  # use Tailwind classes instead of Quasars
-        self.css = HtmlFormatter().get_style_defs('.codehilite')
+        self.css = css
         self.head_html += '''
             <script>
                 confirm = () => { setTimeout(location.reload.bind(location), 100); return false; };
             </script>
         '''  # avoid confirmation dialog for reload
 
-        self.view = jp.Div(a=self, classes='q-ma-md column items-start', style='row-gap: 1em')
+        self.view = jp.Div(a=self, classes=classes, style='row-gap: 1em')
         self.view.add_page(self)
 
         jp.Route(route, lambda: self)
