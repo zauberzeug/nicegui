@@ -23,7 +23,7 @@ def startup():
 
 @jp.app.on_event('shutdown')
 def shutdown():
-    [create_task(t) for t in Ui.shutdown_tasks if isinstance(t, Awaitable)]
+    [create_task(t, name='shutdown task') for t in Ui.shutdown_tasks if isinstance(t, Awaitable)]
     [t() for t in Ui.shutdown_tasks if isinstance(t, Callable)]
     [t.cancel() for t in globals.tasks]
 
