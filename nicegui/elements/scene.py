@@ -5,6 +5,7 @@ from .custom_view import CustomView
 from .page import Page
 from .scene_object3d import Object3D
 from ..globals import view_stack
+from ..events import handle_event
 
 class SceneView(CustomView):
 
@@ -27,8 +28,7 @@ class SceneView(CustomView):
         try:
             for hit in msg.hits:
                 hit.object = self.objects.get(hit.object_id)
-            if self.on_click is not None:
-                return self.on_click(msg)
+            handle_event(self.on_click, msg)
             return False
         except:
             traceback.print_exc()
