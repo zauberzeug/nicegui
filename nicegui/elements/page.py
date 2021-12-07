@@ -5,7 +5,9 @@ from ..globals import config, page_stack, view_stack
 
 class Page(jp.QuasarPage):
 
-    def __init__(self, route: str, title: Optional[str] = None, favicon: Optional[str] = None, classes:str ='q-ma-md column items-start', css:str =HtmlFormatter().get_style_defs('.codehilite')):
+    def __init__(self, route: str, title: Optional[str] = None, favicon: Optional[str] = None,
+                 classes: str = 'q-ma-md column items-start',
+                 css: str = HtmlFormatter().get_style_defs('.codehilite')):
         """Page
 
         Creates a new page at the given path.
