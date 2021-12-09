@@ -4,6 +4,20 @@ Vue.component("log", {
   template: `<textarea v-bind:id="jp_props.id" :class="jp_props.classes" :style="jp_props.style" disabled></textarea>`,
   mounted() {
     comp_dict[this.$props.jp_props.id] = this;
+
+    const sendConnectEvent = () => {
+      if (websocket_id === "") return;
+      const event = {
+        event_type: "onConnect",
+        vue_type: this.$props.jp_props.vue_type,
+        id: this.$props.jp_props.id,
+        page_id: page_id,
+        websocket_id: websocket_id,
+      };
+      send_to_server(event, "event");
+      clearInterval(connectInterval);
+    };
+    connectInterval = setInterval(sendConnectEvent, 10);
   },
   methods: {
     push(line) {
