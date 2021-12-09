@@ -23,6 +23,8 @@ class Log(Element):
         self.classes('border whitespace-pre font-mono').style('opacity: 1 !important; cursor: text !important')
 
     async def push_async(self, line: str):
+        if self.page.page_id not in WebPage.sockets:
+            return
         await asyncio.gather(*[
             self.view.run_method(f'push("{urllib.parse.quote(line)}")', socket)
             for socket in WebPage.sockets[self.page.page_id].values()
