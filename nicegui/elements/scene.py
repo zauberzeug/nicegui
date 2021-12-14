@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Awaitable, Callable, Optional, Union
 import traceback
 from .element import Element
 from .custom_view import CustomView
@@ -9,7 +9,7 @@ from ..events import handle_event
 
 class SceneView(CustomView):
 
-    def __init__(self, *, width: int, height: int, on_click: Optional[Callable]):
+    def __init__(self, *, width: int, height: int, on_click: Union[Callable, Awaitable]):
         dependencies = ['three.min.js', 'OrbitControls.js', 'STLLoader.js']
         super().__init__('scene', __file__, dependencies, width=width, height=height)
         self.on_click = on_click
@@ -44,7 +44,7 @@ class Scene(Element):
     from .scene_objects import Curve as curve
     from .scene_objects import Texture as texture
 
-    def __init__(self, width: int = 400, height: int = 300, on_click: Optional[Callable] = None):
+    def __init__(self, width: int = 400, height: int = 300, on_click: Optional[Union[Callable, Awaitable]] = None):
         """3D Scene
 
         Display a 3d scene using `three.js <https://threejs.org/>`_.
