@@ -24,7 +24,9 @@ class Group(Element):
             link
             for link in active_links
             if isinstance(link[0], jp.HTMLBaseComponent) and link[0] in components or
-            isinstance(link[2], jp.HTMLBaseComponent) and link[2] in components
+            isinstance(link[2], jp.HTMLBaseComponent) and link[2] in components or
+            isinstance(link[0], Element) and link[0].view in components or
+            isinstance(link[2], Element) and link[2].view in components
         ]
         active_links[:] = [l for l in active_links if l not in obsolete_links]
         self.view.delete_components()
