@@ -4,7 +4,7 @@ from collections import defaultdict
 from justpy.htmlcomponents import HTMLBaseComponent
 
 bindings = defaultdict(list)
-bindable_properties = set()
+bindable_properties = dict()
 active_links = []
 
 async def loop():
@@ -57,5 +57,5 @@ class BindableProperty:
 
     def __set__(self, owner, value):
         setattr(owner, '_' + self.name, value)
-        bindable_properties.add((id(owner), self.name))
+        bindable_properties[(id(owner), self.name)] = owner
         propagate(owner, self.name)

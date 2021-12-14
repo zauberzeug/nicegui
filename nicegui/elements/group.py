@@ -1,7 +1,7 @@
 from __future__ import annotations
 import justpy as jp
 from ..globals import view_stack
-from ..binding import active_links
+from ..binding import active_links, bindings, bindable_properties
 from .element import Element
 
 class Group(Element):
@@ -20,13 +20,35 @@ class Group(Element):
         def collect_components(view: jp.HTMLBaseComponent) -> list[jp.HTMLBaseComponent]:
             return view.components + [view for child in view.components for view in collect_components(child)]
         components = collect_components(self.view)
-        obsolete_links = [
-            link
-            for link in active_links
-            if isinstance(link[0], jp.HTMLBaseComponent) and link[0] in components or
-            isinstance(link[2], jp.HTMLBaseComponent) and link[2] in components or
-            isinstance(link[0], Element) and link[0].view in components or
-            isinstance(link[2], Element) and link[2].view in components
+
+        active_links[:] = [
+            (source_obj, source_name, target_obj, target_name, transform)
+            for source_obj, source_name, target_obj, target_name, transform in active_links
+            if not (
+                isinstance(source_obj, jp.HTMLBaseComponent) and source_obj in components or
+                isinstance(target_obj, jp.HTMLBaseComponent) and target_obj in components or
+                isinstance(source_obj, Element) and source_obj.view in components or
+                isinstance(target_obj, Element) and target_obj.view in components
+            )
         ]
-        active_links[:] = [l for l in active_links if l not in obsolete_links]
+
+        for key, binding_list in list(bindings.items()):
+            binding_list[:] = [
+                (source_obj, target_obj, target_name, transform)
+                for source_obj, target_obj, target_name, transform in binding_list
+                if not (
+                    isinstance(source_obj, jp.HTMLBaseComponent) and source_obj in components or
+                    isinstance(target_obj, jp.HTMLBaseComponent) and target_obj in components or
+                    isinstance(source_obj, Element) and source_obj.view in components or
+                    isinstance(target_obj, Element) and target_obj.view in components
+                )
+            ]
+            if not binding_list:
+                del bindings[key]
+
+        for (obj_id, name), obj in list(bindable_properties.items()):
+            if isinstance(obj, jp.HTMLBaseComponent) and obj in components or \
+               isinstance(obj, Element) and obj.view in components:
+                del bindable_properties[(obj_id, name)]
+
         self.view.delete_components()
