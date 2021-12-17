@@ -1,5 +1,6 @@
 from typing import Awaitable, Callable, Optional, Union
 import traceback
+import websockets
 from .element import Element
 from .custom_view import CustomView
 from .page import Page
@@ -32,6 +33,13 @@ class SceneView(CustomView):
             return False
         except:
             traceback.print_exc()
+
+    async def run_method(self, command, websocket):
+        try:
+            await websocket.send_json({'type': 'run_method', 'data': command, 'id': self.id})
+        except (websockets.exceptions.ConnectionClosedOK, RuntimeError):
+            pass
+        return True
 
 class Scene(Element):
     from .scene_objects import Group as group
