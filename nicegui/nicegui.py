@@ -18,15 +18,20 @@ def startup():
     globals.tasks.extend(create_task(t.coro, name=t.name) for t in Timer.prepared_coroutines)
     Timer.prepared_coroutines.clear()
     globals.tasks.extend(create_task(t, name='startup task') for t in Ui.startup_tasks if isinstance(t, Awaitable))
-    [t() for t in Ui.startup_tasks if isinstance(t, Callable)]
+    [safe_invoke(t) for t in Ui.startup_tasks if isinstance(t, Callable)]
     jp.run_task(binding.loop())
 
 @jp.app.on_event('shutdown')
 def shutdown():
     [create_task(t, name='shutdown task') for t in Ui.shutdown_tasks if isinstance(t, Awaitable)]
-    [t() for t in Ui.shutdown_tasks if isinstance(t, Callable)]
+    [safe_invoke(t) for t in Ui.shutdown_tasks if isinstance(t, Callable)]
     [t.cancel() for t in globals.tasks]
 
+def safe_invoke(func: Callable):
+    try:
+        func()
+    except:
+        globals.log.exception(f'could not invoke {func}')
 
 app = globals.app = jp.app
 ui = Ui()
