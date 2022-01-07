@@ -408,6 +408,8 @@ with example(get_decorator):
     ui.link('Try yet another route!', '/another/route/1')
 
 with example(ui.keyboard):
+    from nicegui.events import KeyEventArguments
+
     def handle_key(e: KeyEventArguments):
         if e.key == 'f' and not e.action.repeat:
             if e.action.keyup:

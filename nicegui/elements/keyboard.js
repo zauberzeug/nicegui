@@ -1,7 +1,7 @@
 Vue.component("keyboard", {
   template: `<span v-bind:id="jp_props.id" :class="jp_props.classes" :style="jp_props.style"></span>`,
   mounted() {
-    for (const event of this.$props.jp_props.options.activeJSEvents) {
+    for (const event of this.$props.jp_props.options.active_js_events) {
       document.addEventListener(event, (evt) => {
         // https://stackoverflow.com/a/36469636/3419103
         const ignored = ["input", "select", "button", "textarea"];
@@ -15,6 +15,7 @@ Vue.component("keyboard", {
           websocket_id: websocket_id,
         };
         if (evt instanceof KeyboardEvent) {
+          if (evt.repeat && !this.$props.jp_props.options.repeating) return;
           // https://developer.mozilla.org/en-US/docs/Web/Events/keydown   keyup, keypress
           e["key_data"] = {
             action: event,
