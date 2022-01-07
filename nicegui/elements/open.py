@@ -6,19 +6,23 @@ class OpenView(CustomView):
 
     def __init__(self):
         super().__init__('open', __file__)
-        self.initialize()
 
 class Open(Element):
 
-    def __init__(self, path: str, event_arguments=None):
+    def __init__(self):
+        """
+        Open Element
+
+        Adds a global element to programmatically trigger redirects for a specific client.
+        """
         super().__init__(OpenView())
-        if event_arguments:
-            self.push(path, event_arguments)
+        self.view.initialize()
 
-    async def push_async(self, line: str, event_arguments):
+    async def redirect_async(self, path: str, event_arguments):
         websocket = event_arguments.event.get('websocket')
-        await self.view.run_method(f'redirect("{line}")', websocket)
-        print('button was pressed. origin ' + str(websocket), flush=True)
+        await self.view.run_method(f'redirect("{path}")', websocket)
 
-    def push(self, line: str, e):
-        asyncio.get_event_loop().create_task(self.push_async(line, e))
+    def redirect(self, path: str = None, event_arguments=None):
+        asyncio.get_event_loop().create_task(self.redirect_async(path, event_arguments))
+
+    __call__ = redirect

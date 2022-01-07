@@ -38,4 +38,7 @@ ui = Ui()
 
 page = ui.page('/')
 page.__enter__()
+
+ui.open = ui.open()
+
 jp.justpy(lambda: page, start_server=False)

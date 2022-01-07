@@ -430,4 +430,11 @@ with example(ui.keyboard):
     ui.label('Key events can be caught globally by using the keyboard element.')
     ui.checkbox('Track key events').bind_value_to(keyboard, 'active')
 
+with example(ui.open):
+    with ui.page('/yet_another_page') as other:
+        ui.label('Welcome to yet another page')
+        ui.link('Back to main page', '/')
+
+    ui.button('BUTTON', on_click=lambda e: ui.open('/yet_another_page', e))
+
 ui.run(port=8080)
