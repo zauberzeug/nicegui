@@ -31,6 +31,7 @@ class Upload(Element):
             for form_data in msg.form_data:
                 if form_data.type == 'file':
                     files = [base64.b64decode(f.file_content) for f in form_data.files]
-                    handle_event(self.upload_handler, UploadEventArguments(sender=self, files=files))
+                    arguments = UploadEventArguments(sender=self, files=files)
+                    handle_event(self.upload_handler, arguments, update=self.parent_view)
         except Exception:
             traceback.print_exc()

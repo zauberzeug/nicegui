@@ -1,5 +1,6 @@
 import asyncio
 from inspect import signature
+from justpy.htmlcomponents import HTMLBaseComponent
 from pydantic import BaseModel
 import traceback
 from typing import Any, Awaitable, Callable, List, Optional, Union
@@ -196,7 +197,10 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
-def handle_event(handler: Optional[Union[Callable, Awaitable]], arguments: EventArguments):
+def handle_event(handler: Optional[Union[Callable, Awaitable]],
+                 arguments: EventArguments,
+                 *,
+                 update: Optional[HTMLBaseComponent] = None):
     try:
         if handler is None:
             return
@@ -206,6 +210,8 @@ def handle_event(handler: Optional[Union[Callable, Awaitable]], arguments: Event
             async def async_handler():
                 try:
                     await result
+                    if update is not None:
+                        await update.update()
                 except Exception:
                     traceback.print_exc()
             asyncio.get_event_loop().create_task(async_handler())

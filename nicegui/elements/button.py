@@ -25,7 +25,7 @@ class Button(Element):
         self.text = text
         self.bind_text_to(self.view, 'label')
 
-        view.on('click', lambda *_: handle_event(on_click, ClickEventArguments(sender=self)))
+        view.on('click', lambda *_: handle_event(on_click, ClickEventArguments(sender=self), update=self.parent_view))
 
     def set_text(self, text: str):
         self.text = text

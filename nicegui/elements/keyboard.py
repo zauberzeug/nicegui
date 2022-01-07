@@ -55,6 +55,7 @@ class Keyboard(Element):
                 code=msg.key_data.code,
                 location=msg.key_data.location,
             )
-            handle_event(self.key_handler, KeyEventArguments(sender=self, action=action, modifiers=modifiers, key=key))
+            arguments = KeyEventArguments(sender=self, action=action, modifiers=modifiers, key=key)
+            handle_event(self.key_handler, arguments, update=self.parent_view)
         except Exception:
             traceback.print_exc()
