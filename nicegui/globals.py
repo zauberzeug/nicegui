@@ -1,7 +1,7 @@
 from __future__ import annotations
 import asyncio
 import logging
-from typing import TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
     from starlette.applications import Starlette
     import justpy as jp
@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 app: 'Starlette'
 config: 'Config'
-page_stack: list['Page'] = []
-view_stack: list['jp.HTMLBaseComponent'] = []
-tasks: list[asyncio.tasks.Task] = []
+page_stack: List['Page'] = []
+view_stack: List['jp.HTMLBaseComponent'] = []
+tasks: List[asyncio.tasks.Task] = []
 log: logging.Logger = logging.getLogger('nicegui')

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Deque
 import asyncio
 import traceback
 import urllib
@@ -9,7 +10,7 @@ from .element import Element
 
 class LogView(CustomView):
 
-    def __init__(self, lines: deque[str], max_lines: int):
+    def __init__(self, lines: Deque[str], max_lines: int):
         super().__init__('log', __file__, max_lines=max_lines)
         self.lines = lines
         self.allowed_events = ['onConnect']

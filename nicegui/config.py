@@ -34,7 +34,7 @@ try:
     with open(filepath) as f:
         source = f.read()
 except FileNotFoundError:
-    print('Could not main script. Starting with interactive mode.', flush=True)
+    print('Could not find main script. Starting with interactive mode.', flush=True)
     config = Config(interactive=True)
 else:
     for node in ast.walk(ast.parse(source)):

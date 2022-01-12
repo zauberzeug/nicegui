@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable, Dict, Optional
 from .custom_view import CustomView
 from .element import Element
 
@@ -43,7 +43,7 @@ class Joystick(Element):
                  on_start: Optional[Callable] = None,
                  on_move: Optional[Callable] = None,
                  on_end: Optional[Callable] = None,
-                 **options: dict,
+                 **options: Dict,
                  ):
         """Joystick
 

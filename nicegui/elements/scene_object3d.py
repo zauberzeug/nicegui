@@ -1,12 +1,12 @@
 from __future__ import annotations
 import asyncio
-from typing import Optional
+from typing import List, Optional
 import uuid
 import numpy as np
 from justpy.htmlcomponents import WebPage
 
 class Object3D:
-    stack: list[Object3D] = []
+    stack: List[Object3D] = []
 
     def __init__(self, type: str, *args):
         self.type = type
@@ -96,7 +96,7 @@ class Object3D:
         Rz = np.array([[np.cos(kappa), -np.sin(kappa), 0], [np.sin(kappa), np.cos(kappa), 0], [0, 0, 1]])
         return self.rotate_R((Rz @ Ry @ Rx).tolist())
 
-    def rotate_R(self, R: list[list[float]]):
+    def rotate_R(self, R: List[List[float]]):
         if self.R != R:
             self.R = R
             self.run_command(self._rotate_command)
