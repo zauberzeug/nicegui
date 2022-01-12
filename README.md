@@ -2,8 +2,8 @@
 
 <img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/ui-elements.png" width="300" align="right">
 
-NiceGUI is an easy to use, Python-based UI framework, which renderes to the web browser.
-You can create buttons, dialogs, markdown, 3D scences, plots and much more.
+NiceGUI is an easy to use, Python-based UI framework, which renderers to the web browser.
+You can create buttons, dialogs, markdown, 3D scenes, plots and much more.
 
 It was designed to be used for micro web apps, dashboards, robotics projects, smart home solutions and similar use cases.
 It is also helpful for development, for example when tweaking/configuring a machine learning algorithm or tuning motor controllers.
@@ -16,7 +16,7 @@ It is also helpful for development, for example when tweaking/configuring a mach
 - standard GUI elements like label, button, checkbox, switch, slider, input, file upload, ...
 - simple grouping with rows, columns, cards and dialogs
 - general-purpose HTML and markdown elements
-- powerful elements to plot graphs, render 3D scences and get steering events via virtual joysticks
+- powerful elements to plot graphs, render 3D scenes and get steering events via virtual joysticks
 - built-in timer to refresh data in intervals (even every 10 ms)
 - straight-forward data binding to write even less code
 - notifications, dialogs and menus to provide state of the art user interaction
@@ -46,8 +46,10 @@ Launch it with:
 python3 main.py
 ```
 
-The GUI is now avaliable through http://localhost/ in your browser.
+The GUI is now available through http://localhost/ in your browser.
 Note: The script will automatically reload the page when you modify the code.
+
+Full documentation can be found at [https://nicegui.io](https://nicegui.io)
 
 ## Configuration
 
@@ -76,10 +78,10 @@ Code modification triggers an automatic reload.
 ## Why?
 
 We like [Streamlit](https://streamlit.io/) but find it does [too much magic when it comes to state handling](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651).
-In search for an alernative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/).
+In search for an alternative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/).
 While too "low-level HTML" for our daily usage it provides a great basis for "NiceGUI".
 
 ## API
 
 The API reference is hosted at [https://nicegui.io](https://nicegui.io) and is [implemented with NiceGUI itself](https://github.com/zauberzeug/nicegui/blob/main/main.py).
-You should also have a look at [examples.py](https://github.com/zauberzeug/nicegui/tree/main/examples.py) for an extensive demonstration of what you can do with NiceGUI.
+You may also have a look at [examples.py](https://github.com/zauberzeug/nicegui/tree/main/examples.py) for more demonstrations of what you can do with NiceGUI.
