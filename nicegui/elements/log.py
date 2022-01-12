@@ -1,3 +1,4 @@
+from __future__ import annotations
 import asyncio
 import traceback
 import urllib
