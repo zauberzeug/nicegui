@@ -14,7 +14,7 @@ if not globals.config.interactive and globals.config.reload and not inspect.stac
 
 def run(self, *,
         host: str = '0.0.0.0',
-        port: int = 80,
+        port: int = 8080,
         title: str = 'NiceGUI',
         favicon: str = 'favicon.ico',
         reload: bool = True,

@@ -46,7 +46,7 @@ Launch it with:
 python3 main.py
 ```
 
-The GUI is now available through http://localhost/ in your browser.
+The GUI is now available through http://localhost:8080/ in your browser.
 Note: The script will automatically reload the page when you modify the code.
 
 Full documentation can be found at [https://nicegui.io](https://nicegui.io).
