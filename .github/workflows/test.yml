@@ -25,7 +25,7 @@ jobs:
           pip3 install setuptools==57.4.0 # to fix https://github.com/elimintz/justpy/issues/301
           poetry config virtualenvs.create false --local
           poetry install
-      - name: starting
+      - name: test startup
         run: ./test_startup.sh
 
   slack:
