@@ -56,7 +56,7 @@ Full documentation can be found at [https://nicegui.io](https://nicegui.io).
 You can call `ui.run()` with optional arguments for some high-level configuration:
 
 - `host` (default: `'0.0.0.0'`)
-- `port` (default: `80`)
+- `port` (default: `8080`)
 - `title` (default: `'NiceGUI'`)
 - `favicon` (default: `'favicon.ico'`)
 - `reload`: automatically reload the ui on file changes (default: `True`)
@@ -69,7 +69,7 @@ You can call `ui.run()` with optional arguments for some high-level configuratio
 Use the [multi-arch docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) for pain-free installation:
 
 ```bash
-docker run --rm -p 8888:80 -v $(pwd)/my_script.py:/app/main.py -it zauberzeug/nicegui:latest
+docker run --rm -p 8888:8080 -v $(pwd)/my_script.py:/app/main.py -it zauberzeug/nicegui:latest
 ```
 
 This will start the server at http://localhost:8888 with code from `my_script.py` within the current directory.
