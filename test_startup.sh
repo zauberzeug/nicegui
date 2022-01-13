@@ -27,9 +27,7 @@ check() {
 }
 
 exitcode=0
-pushd ../
 check main.py || exitcode=1
 check examples.py || exitcode=1
-popd
 echo exit $exitcode
 test $exitcode -eq 0
