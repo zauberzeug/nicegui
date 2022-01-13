@@ -5,7 +5,7 @@ from typing import Any, Awaitable, Optional, Tuple, TypeVar
 import asyncio
 import functools
 import logging
-
+import sys
 
 T = TypeVar('T')
 
@@ -28,7 +28,10 @@ def create_task(
     message_args = ()
     if loop is None:
         loop = asyncio.get_running_loop()
-    task = loop.create_task(coroutine, name=name)
+    if sys.version_info[1] < 8:
+        task = loop.create_task(coroutine)  # name parameter is only supported from 3.8 onward
+    else:
+        task = loop.create_task(coroutine, name=name)
     task.add_done_callback(
         functools.partial(_handle_task_result, logger=logger, message=message, message_args=message_args)
     )
