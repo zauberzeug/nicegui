@@ -27,8 +27,8 @@ check() {
     fi
 }
 
-exitcode=0
-check main.py || exitcode=1
-check examples.py || exitcode=1
-echo exit $exitcode
-test $exitcode -eq 0
+success=0
+check main.py || success=1
+check examples.py || success=1
+echo exit $success
+test $success -eq 0
