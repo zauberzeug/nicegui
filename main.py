@@ -39,7 +39,10 @@ def example(content: Union[Element, str]):
         callFrame = inspect.currentframe().f_back.f_back
         end = callFrame.f_lineno
         code = inspect.getsource(sys.modules[__name__])
-        code = code.splitlines()[begin:end]
+        lines = code.splitlines()
+        while lines[end]:
+            end += 1
+        code = lines[begin:end]
         code = [l[4:] for l in code]
         code.insert(0, '```python')
         code.insert(1, 'from nicegui import ui')
