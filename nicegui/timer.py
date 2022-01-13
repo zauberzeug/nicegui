@@ -6,6 +6,7 @@ from collections import namedtuple
 
 from .binding import BindableProperty
 from .globals import tasks, view_stack
+from .task_logger import create_task
 
 NamedCoroutine = namedtuple('NamedCoroutine', ['name', 'coro'])
 
@@ -65,4 +66,4 @@ class Timer:
         if not event_loop.is_running():
             self.prepared_coroutines.append(NamedCoroutine(str(callback), coroutine))
         else:
-            tasks.append(event_loop.create_task(coroutine, name=str(callback)))
+            tasks.append(create_task(coroutine, name=str(callback)))

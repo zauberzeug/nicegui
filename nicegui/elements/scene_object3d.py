@@ -4,6 +4,7 @@ from typing import List, Optional
 import uuid
 import numpy as np
 from justpy.htmlcomponents import WebPage
+from ..task_logger import create_task
 
 class Object3D:
     stack: List[Object3D] = []
@@ -35,7 +36,7 @@ class Object3D:
     def run_command(self, command: str, socket=None):
         sockets = [socket] if socket else WebPage.sockets.get(self.page.page_id, {}).values()
         for socket in sockets:
-            asyncio.get_event_loop().create_task(self.view.run_method(command, socket))
+            create_task(self.view.run_method(command, socket), name=command)
 
     def send_to(self, socket):
         self.run_command(self._create_command, socket)

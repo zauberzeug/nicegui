@@ -13,7 +13,7 @@ async def loop():
         invalidated_views = []
         for link in active_links:
             (source_obj, source_name, target_obj, target_name, transform) = link
-            value = transform(getattr(source_obj, source_name))
+            value = transform(get_raw_value(source_obj, source_name))
             if getattr(target_obj, target_name) != value:
                 setattr(target_obj, target_name, value)
                 propagate(target_obj, target_name, visited)
@@ -30,7 +30,7 @@ def propagate(source_obj, source_name, visited=None):
     for _, target_obj, target_name, transform in bindings[(id(source_obj), source_name)]:
         if (id(target_obj), target_name) in visited:
             continue
-        target_value = transform(getattr(source_obj, source_name))
+        target_value = transform(get_raw_value(source_obj, source_name))
         if getattr(target_obj, target_name) != target_value:
             setattr(target_obj, target_name, target_value)
             propagate(target_obj, target_name, visited)
@@ -46,6 +46,9 @@ def bind_from(self_obj, self_name, other_obj, other_name, backward):
     if (id(other_obj), other_name) not in bindable_properties:
         active_links.append((other_obj, other_name, self_obj, self_name, backward))
     propagate(other_obj, other_name)
+
+def get_raw_value(source_obj, source_name):
+    return source_obj[source_name] if type(source_obj) is dict else getattr(source_obj, source_name)
 
 class BindableProperty:
 
