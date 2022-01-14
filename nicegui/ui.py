@@ -20,6 +20,7 @@ class Ui:
     from .elements.menu_separator import MenuSeparator as menu_separator
     from .elements.notify import Notify as notify
     from .elements.number import Number as number
+    from .elements.open import open, open_async
     from .elements.page import Page as page
     from .elements.radio import Radio as radio
     from .elements.scene import Scene as scene

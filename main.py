@@ -3,11 +3,10 @@ from nicegui import ui
 from contextlib import contextmanager
 import inspect
 import sys
-from typing import Union
+from typing import Callable, Union
 import docutils.core
 import re
 import asyncio
-from nicegui.elements.element import Element
 from nicegui.elements.html import Html
 from nicegui.elements.markdown import Markdown
 from nicegui.events import KeyEventArguments
@@ -17,7 +16,7 @@ from nicegui.globals import page_stack
 page_stack[0].head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
 
 @contextmanager
-def example(content: Union[Element, str]):
+def example(content: Union[Callable, type, str]):
     callFrame = inspect.currentframe().f_back.f_back
     begin = callFrame.f_lineno
 
@@ -27,7 +26,7 @@ def example(content: Union[Element, str]):
         if not match:
             return
 
-        headline_id = re.sub('[^(a-z)(A-Z)(0-9)._-]', '', match.groups()[0].strip())
+        headline_id = re.sub('[^(a-z)(A-Z)(0-9)-]', '_', match.groups()[0].strip())
         if not headline_id:
             return
 
@@ -41,7 +40,8 @@ def example(content: Union[Element, str]):
         if isinstance(content, str):
             add_html_anchor(ui.markdown(content).classes('mr-8 w-4/12'))
         else:
-            html = docutils.core.publish_parts(content.__init__.__doc__, writer_name='html')['html_body']
+            doc = content.__doc__ or content.__init__.__doc__
+            html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
             html = html.replace('<p>', '<h3>', 1)
             html = html.replace('</p>', '</h3>', 1)
             html = Markdown.apply_tailwind(html)
@@ -284,7 +284,7 @@ design = '''### Styling
 NiceGUI uses the [Quasar Framework](https://quasar.dev/) and hence has its full design power.
 Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
 Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
-You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method. 
+You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method.
 
 If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
 
@@ -397,7 +397,7 @@ with example(ui.page):
 
 add_route = """### Route
 
-Add a new route by calling `ui.add_route` with a starlette route including a path and a function to be called. 
+Add a new route by calling `ui.add_route` with a starlette route including a path and a function to be called.
 Routed paths must start with a `'/'`.
 """
 with example(add_route):
@@ -446,5 +446,12 @@ with example(ui.keyboard):
     keyboard = ui.keyboard(on_key=handle_key)
     ui.label('Key events can be caught globally by using the keyboard element.')
     ui.checkbox('Track key events').bind_value_to(keyboard, 'active')
+
+with example(ui.open):
+    with ui.page('/yet_another_page') as other:
+        ui.label('Welcome to yet another page')
+        ui.button('RETURN', on_click=lambda e: ui.open('/', e.socket))
+
+    ui.button('REDIRECT', on_click=lambda e: ui.open('/yet_another_page', e.socket))
 
 ui.run(port=8080)

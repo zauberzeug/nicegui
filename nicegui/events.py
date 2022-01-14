@@ -4,6 +4,7 @@ from justpy.htmlcomponents import HTMLBaseComponent
 from pydantic import BaseModel
 import traceback
 from typing import Any, Awaitable, Callable, List, Optional, Union
+from starlette.websockets import WebSocket
 
 from .elements.element import Element
 from .task_logger import create_task
@@ -12,6 +13,7 @@ class EventArguments(BaseModel):
     class Config:
         arbitrary_types_allowed = True
     sender: Element
+    socket: Optional[WebSocket]
 
 class ClickEventArguments(EventArguments):
     pass
