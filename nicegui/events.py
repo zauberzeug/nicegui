@@ -1,9 +1,10 @@
 import asyncio
 from inspect import signature
+from justpy.htmlcomponents import HTMLBaseComponent
 from pydantic import BaseModel
 import traceback
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
-
+from typing import Any, Awaitable, Callable, List, Optional, Union
+from starlette.websockets import WebSocket
 from .elements.element import Element
 from .task_logger import create_task
 
@@ -11,7 +12,7 @@ class EventArguments(BaseModel):
     class Config:
         arbitrary_types_allowed = True
     sender: Element
-    event: Dict
+    socket: WebSocket
 
 class ClickEventArguments(EventArguments):
     pass
@@ -198,7 +199,10 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
-def handle_event(handler: Optional[Union[Callable, Awaitable]], arguments: EventArguments):
+def handle_event(handler: Optional[Union[Callable, Awaitable]],
+                 arguments: EventArguments,
+                 *,
+                 update: Optional[HTMLBaseComponent] = None):
     try:
         if handler is None:
             return
@@ -208,6 +212,8 @@ def handle_event(handler: Optional[Union[Callable, Awaitable]], arguments: Event
             async def async_handler():
                 try:
                     await result
+                    if update is not None:
+                        await update.update()
                 except Exception:
                     traceback.print_exc()
             create_task(async_handler(), name=str(handler))

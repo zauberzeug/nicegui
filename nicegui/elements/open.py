@@ -1,28 +1,20 @@
 import asyncio
-from .element import Element
-from .custom_view import CustomView
+from starlette.websockets import WebSocket
 
-class OpenView(CustomView):
 
-    def __init__(self):
-        super().__init__('open', __file__)
+class Open:
 
-class Open(Element):
-
-    def __init__(self):
+    def __init__(self, path: str, socket: WebSocket):
         """
-        Open Element
+        Open
 
-        Adds a global element to programmatically trigger redirects for a specific client.
+        Can be used to programmatically trigger redirects for a specific client.
         """
-        super().__init__(OpenView())
-        self.view.initialize()
+        asyncio.get_event_loop().create_task(self.redirect_async(path, socket))
 
-    async def redirect_async(self, path: str, event_arguments):
-        websocket = event_arguments.event.get('websocket')
-        await self.view.run_method(f'redirect("{path}")', websocket)
-
-    def redirect(self, path: str = None, event_arguments=None):
-        asyncio.get_event_loop().create_task(self.redirect_async(path, event_arguments))
-
-    __call__ = redirect
+    @staticmethod
+    async def redirect_async(path: str, socket: WebSocket):
+        # Depends on the 'page_update' in the main.html.
+        await socket.send_json({'type': 'page_update', 'page_options': {'redirect': path}})
+        # So the page itself does not update, return True not None
+        return True
