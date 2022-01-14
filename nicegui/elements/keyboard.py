@@ -1,5 +1,5 @@
 import traceback
-from typing import Awaitable, Callable, Optional, Union
+from typing import Awaitable, Callable, Dict, Optional, Union
 
 from ..events import KeyEventArguments, KeyboardAction, KeyboardKey, KeyboardModifiers, handle_event
 from .custom_view import CustomView
@@ -35,7 +35,7 @@ class Keyboard(Element):
         self.active = active
         self.key_handler = on_key
 
-    def handle_key(self, msg: dict):
+    def handle_key(self, msg: Dict):
         if not self.active:
             return
 

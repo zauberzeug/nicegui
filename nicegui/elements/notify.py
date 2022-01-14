@@ -1,6 +1,6 @@
 import justpy as jp
 from .element import Element
-import asyncio
+from ..task_logger import create_task
 
 
 class Notify(Element):
@@ -22,7 +22,7 @@ class Notify(Element):
         view = jp.QNotify(message=message, position=position, closeBtn=close_button)
 
         super().__init__(view)
-        asyncio.get_event_loop().create_task(self.notify_async())
+        create_task(self.notify_async(), name='notify_async')
 
     async def notify_async(self):
         self.view.notify = True

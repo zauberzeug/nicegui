@@ -1,11 +1,11 @@
 import justpy as jp
-from typing import Awaitable, Callable, Optional, Union
+from typing import Awaitable, Callable, Dict, List, Optional, Union
 from .choice_element import ChoiceElement
 
 class Select(ChoiceElement):
 
     def __init__(self,
-                 options: Union[list, dict],
+                 options: Union[List, Dict],
                  *,
                  value: any = None,
                  on_change: Optional[Union[Callable, Awaitable]] = None,

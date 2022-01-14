@@ -5,6 +5,7 @@ import traceback
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from .elements.element import Element
+from .task_logger import create_task
 
 class EventArguments(BaseModel):
     class Config:
@@ -209,7 +210,7 @@ def handle_event(handler: Optional[Union[Callable, Awaitable]], arguments: Event
                     await result
                 except Exception:
                     traceback.print_exc()
-            asyncio.get_event_loop().create_task(async_handler())
+            create_task(async_handler(), name=str(handler))
             return False
         else:
             return result

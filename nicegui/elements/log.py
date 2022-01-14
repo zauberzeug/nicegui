@@ -1,3 +1,5 @@
+from __future__ import annotations
+from typing import Deque
 import asyncio
 import traceback
 import urllib
@@ -5,10 +7,11 @@ from collections import deque
 from justpy.htmlcomponents import WebPage
 from .custom_view import CustomView
 from .element import Element
+from ..task_logger import create_task
 
 class LogView(CustomView):
 
-    def __init__(self, lines: deque[str], max_lines: int):
+    def __init__(self, lines: Deque[str], max_lines: int):
         super().__init__('log', __file__, max_lines=max_lines)
         self.lines = lines
         self.allowed_events = ['onConnect']
@@ -19,7 +22,7 @@ class LogView(CustomView):
             if self.lines:
                 content = '\n'.join(self.lines)
                 command = f'push("{urllib.parse.quote(content)}")'
-                asyncio.get_event_loop().create_task(self.run_method(command, msg.websocket))
+                create_task(self.run_method(command, msg.websocket), name=str(command))
         except:
             traceback.print_exc()
 
@@ -44,4 +47,4 @@ class Log(Element):
         ])
 
     def push(self, line: str):
-        asyncio.get_event_loop().create_task(self.push_async(line))
+        create_task(self.push_async(line), name=f'log.push line {line}')

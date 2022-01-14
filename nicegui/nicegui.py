@@ -7,11 +7,8 @@ import justpy as jp
 from .timer import Timer
 from . import globals
 from . import binding
+from .task_logger import create_task
 
-
-def create_task(coro, name: str) -> asyncio.tasks.Task:
-    loop = asyncio.get_event_loop()
-    return loop.create_task(coro, name=name)
 
 @jp.app.on_event('startup')
 def startup():

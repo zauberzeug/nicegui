@@ -1,0 +1,50 @@
+name: Run Tests
+
+on: [push]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        python: [3.7, 3.8, 3.9]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v2
+      - name: set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - name: set up Poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: "1.1.6"
+      - name: install dependencies
+        run: |
+          pip3 install setuptools==57.4.0 # to fix https://github.com/elimintz/justpy/issues/301
+          poetry config virtualenvs.create false --local
+          poetry install
+      - name: test startup
+        run: ./test_startup.sh
+
+  slack:
+    needs:
+      - test
+    if: always() # also execute when test fails
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine if we need to notify
+        uses: Jimdo/should-i-notify-action@main
+        id: should_notify
+        with:
+          needs_context: ${{ toJson(needs) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Slack workflow notification
+        if: steps.should_notify.outputs.should_send_message == 'yes'
+        uses: Gamesight/slack-workflow-status@master
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          slack_webhook_url: ${{ secrets.SLACK_ROBOTICS_CI_WEBHOOK }}
+          channel: "robotik-ci"
+          name: "NiceGUI"
