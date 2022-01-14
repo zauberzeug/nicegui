@@ -12,7 +12,7 @@ class EventArguments(BaseModel):
     class Config:
         arbitrary_types_allowed = True
     sender: Element
-    socket: WebSocket
+    socket: Optional[WebSocket]
 
 class ClickEventArguments(EventArguments):
     pass
