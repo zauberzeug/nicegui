@@ -3,7 +3,7 @@ from nicegui import ui
 from contextlib import contextmanager
 import inspect
 import sys
-from typing import Union
+from typing import Callable, Union
 import docutils.core
 import re
 import asyncio
@@ -16,14 +16,17 @@ from nicegui.globals import page_stack
 page_stack[0].head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
 
 @contextmanager
-def example(content: Union[Element, str]):
+def example(content: Union[Callable, Element, str]):
     callFrame = inspect.currentframe().f_back.f_back
     begin = callFrame.f_lineno
     with ui.row().classes('flex w-full'):
         if isinstance(content, str):
             ui.markdown(content).classes('mr-8 w-4/12')
         else:
-            doc = content.__init__.__doc__
+            if isinstance(content, Element):
+                doc = content.__init__.__doc__
+            if isinstance(content, Callable):
+                doc = content.__doc__
             if doc:
                 html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
                 html = html.replace('<p>', '<h3>', 1)
@@ -270,7 +273,7 @@ design = '''### Styling
 NiceGUI uses the [Quasar Framework](https://quasar.dev/) and hence has its full design power.
 Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
 Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
-You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method. 
+You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method.
 
 If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
 
@@ -383,7 +386,7 @@ with example(ui.page):
 
 add_route = """### Route
 
-Add a new route by calling `ui.add_route` with a starlette route including a path and a function to be called. 
+Add a new route by calling `ui.add_route` with a starlette route including a path and a function to be called.
 Routed paths must start with a `'/'`.
 """
 with example(add_route):
