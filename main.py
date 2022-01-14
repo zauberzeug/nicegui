@@ -7,8 +7,9 @@ from typing import Union
 import docutils.core
 import re
 import asyncio
-from nicegui.elements.markdown import Markdown
 from nicegui.elements.element import Element
+from nicegui.elements.html import Html
+from nicegui.elements.markdown import Markdown
 from nicegui.events import KeyEventArguments
 from nicegui.globals import page_stack
 
@@ -19,25 +20,32 @@ page_stack[0].head_html += docutils.core.publish_parts('', writer_name='html')['
 def example(content: Union[Element, str]):
     callFrame = inspect.currentframe().f_back.f_back
     begin = callFrame.f_lineno
-    def generateIdFromHeadline(html):
+
+    def add_html_anchor(element: Html):
+        html = element.content
         match = re.search(r'<h3.*?>(.*?)</h3>', html)
-        return re.sub('[^(a-z)(A-Z)(0-9)._-]', '', match.groups()[0].strip()) if match else ''
+        if not match:
+            return
+
+        headline_id = re.sub('[^(a-z)(A-Z)(0-9)._-]', '', match.groups()[0].strip())
+        if not headline_id:
+            return
+
+        icon = '<span class="material-icons">link</span>'
+        anchor = f'<a href="#{headline_id}" class="text-gray-300 hover:text-black">{icon}</a>'
+        html = html.replace('<h3', f'<h3 id="{headline_id}"', 1)
+        html = html.replace('</h3>', f' {anchor}</h3>', 1)
+        element.view.inner_html = html
+
     with ui.row().classes('flex w-full'):
         if isinstance(content, str):
-            ui.markdown(content).classes('mr-8 w-4/12')
+            add_html_anchor(ui.markdown(content).classes('mr-8 w-4/12'))
         else:
-            doc = content.__init__.__doc__
-            if doc:
-                html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
-                html = html.replace('<p>', '<h3>', 1)
-                html = html.replace('</p>', '</h3>', 1)
-                headline_id = generateIdFromHeadline(html)
-                if headline_id:
-                    html = html.replace('<h3>', f'<h3 id="{headline_id}">', 1)
-                html = Markdown.apply_tailwind(html)
-                ui.html(html).classes('mr-8 w-4/12')
-            else:
-                ui.label(content.__name__).classes('text-h5')
+            html = docutils.core.publish_parts(content.__init__.__doc__, writer_name='html')['html_body']
+            html = html.replace('<p>', '<h3>', 1)
+            html = html.replace('</p>', '</h3>', 1)
+            html = Markdown.apply_tailwind(html)
+            add_html_anchor(ui.html(html).classes('mr-8 w-4/12'))
 
         with ui.card().classes('mt-12 w-2/12'):
             with ui.column().classes('flex w-full'):

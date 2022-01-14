@@ -17,8 +17,8 @@ class Html(Element):
         self.content = content
 
     @property
-    def content(self):
-        return self.content.inner_html
+    def content(self) -> str:
+        return self.view.inner_html
 
     @content.setter
     def content(self, content: any):
