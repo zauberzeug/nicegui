@@ -9,6 +9,9 @@ class Open:
         Open
 
         Can be used to programmatically trigger redirects for a specific client.
+
+        :param path: string that is a relative url path or an absolute url
+        :param socket: WebSocket defining the target client
         """
         asyncio.get_event_loop().create_task(self.redirect_async(path, socket))
 

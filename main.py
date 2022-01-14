@@ -436,8 +436,8 @@ with example(ui.keyboard):
 with example(ui.open):
     with ui.page('/yet_another_page') as other:
         ui.label('Welcome to yet another page')
-        ui.button('BUTTON', on_click=lambda e: ui.open('/', e.socket))
+        ui.button('RETURN', on_click=lambda e: ui.open('/', e.socket))
 
-    ui.button('BUTTON', on_click=lambda e: ui.open('/yet_another_page', e.socket))
+    ui.button('REDIRECT', on_click=lambda e: ui.open('/yet_another_page', e.socket))
 
 ui.run(port=8080)
