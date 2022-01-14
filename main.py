@@ -33,7 +33,7 @@ def example(content: Union[Element, str]):
                 html = html.replace('</p>', '</h3>', 1)
                 headline_id = generateIdFromHeadline(html)
                 if headline_id:
-                    html = html.replace('<h3>', f'<h3 id="{id}">', 1)
+                    html = html.replace('<h3>', f'<h3 id="{headline_id}">', 1)
                 html = Markdown.apply_tailwind(html)
                 ui.html(html).classes('mr-8 w-4/12')
             else:
