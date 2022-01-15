@@ -14,7 +14,7 @@ class Config(BaseModel):
     show: bool = True
     uvicorn_logging_level = 'warning'
     interactive: bool = False
-    main_page_classes = 'q-ma-md column items-start'
+    main_page_classes = 'q-ma-md column items-start q-gutter-md'
 
 
 excluded_endings = (
