@@ -26,7 +26,7 @@ def example(content: Union[Callable, type, str]):
         if not match:
             return
 
-        headline_id = re.sub('[^(a-z)(A-Z)(0-9)-]', '_', match.groups()[0].strip())
+        headline_id = re.sub('[^(a-z)(A-Z)(0-9)-]', '_', match.groups()[0].strip()).lower()
         if not headline_id:
             return
 
