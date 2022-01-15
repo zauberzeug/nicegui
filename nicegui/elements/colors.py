@@ -1,5 +1,3 @@
-from operator import neg
-from turtle import pos
 from .custom_view import CustomView
 from .element import Element
 
