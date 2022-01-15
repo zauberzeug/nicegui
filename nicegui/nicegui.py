@@ -33,6 +33,6 @@ def safe_invoke(func: Callable):
 app = globals.app = jp.app
 ui = Ui()
 
-page = ui.page('/')
+page = ui.page('/', classes=globals.config.main_page_classes)
 page.__enter__()
 jp.justpy(lambda: page, start_server=False)
