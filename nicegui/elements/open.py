@@ -11,7 +11,7 @@ def open(self, path: str, socket: WebSocket):
     :param path: string that is a relative url path or an absolute url
     :param socket: WebSocket defining the target client
     """
-    create_task(open_async(path, socket))
+    create_task(open_async(self, path, socket))
 
-async def open_async(path: str, socket: WebSocket):
+async def open_async(self, path: str, socket: WebSocket):
     await socket.send_json({'type': 'page_update', 'page_options': {'redirect': path}})
