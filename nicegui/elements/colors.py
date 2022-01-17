@@ -1,10 +1,12 @@
 from .custom_view import CustomView
 from .element import Element
 
+CustomView.use(__file__)
+
 class ColorsView(CustomView):
 
     def __init__(self, primary, secondary, accent, positive, negative, info, warning):
-        super().__init__('colors', __file__,
+        super().__init__('colors',
                          primary=primary,
                          secondary=secondary,
                          accent=accent,

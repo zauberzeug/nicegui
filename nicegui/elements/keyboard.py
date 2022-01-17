@@ -5,10 +5,12 @@ from ..events import KeyEventArguments, KeyboardAction, KeyboardKey, KeyboardMod
 from .custom_view import CustomView
 from .element import Element
 
+CustomView.use(__file__)
+
 class KeyboardView(CustomView):
 
     def __init__(self, on_key: Callable, repeating: bool):
-        super().__init__('keyboard', __file__, active_js_events=['keydown', 'keyup', 'keypress'], repeating=repeating)
+        super().__init__('keyboard', active_js_events=['keydown', 'keyup', 'keypress'], repeating=repeating)
         self.allowed_events = ['keyboardEvent']
         self.style = 'display: none'
         self.initialize(temp=False, on_keyboardEvent=on_key)

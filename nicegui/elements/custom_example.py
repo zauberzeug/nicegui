@@ -1,10 +1,12 @@
 from .custom_view import CustomView
 from .element import Element
 
+CustomView.use(__file__)
+
 class CustomExampleView(CustomView):
 
     def __init__(self, on_change):
-        super().__init__('custom_example', __file__, value=0)
+        super().__init__('custom_example', value=0)
 
         self.on_change = on_change
         self.allowed_events = ['onAdd']

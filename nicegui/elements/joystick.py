@@ -2,6 +2,8 @@ from typing import Callable, Dict, Optional
 from .custom_view import CustomView
 from .element import Element
 
+CustomView.use(__file__, ['nipplejs.min.js'])
+
 class JoystickView(CustomView):
 
     def __init__(self,
@@ -10,7 +12,7 @@ class JoystickView(CustomView):
                  on_end: Optional[Callable],
                  **options,
                  ):
-        super().__init__('joystick', __file__, ['nipplejs.min.js'], **options)
+        super().__init__('joystick', **options)
 
         self.on_start = on_start
         self.on_move = on_move

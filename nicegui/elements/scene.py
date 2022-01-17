@@ -8,11 +8,12 @@ from .scene_object3d import Object3D
 from ..globals import view_stack
 from ..events import handle_event
 
+CustomView.use(__file__, ['three.min.js', 'OrbitControls.js', 'STLLoader.js'])
+
 class SceneView(CustomView):
 
     def __init__(self, *, width: int, height: int, on_click: Union[Callable, Awaitable]):
-        dependencies = ['three.min.js', 'OrbitControls.js', 'STLLoader.js']
-        super().__init__('scene', __file__, dependencies, width=width, height=height)
+        super().__init__('scene', width=width, height=height)
         self.on_click = on_click
         self.allowed_events = ['onConnect', 'onClick']
         self.initialize(temp=False, onConnect=self.handle_connect, onClick=self.handle_click)

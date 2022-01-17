@@ -9,10 +9,12 @@ from .custom_view import CustomView
 from .element import Element
 from ..task_logger import create_task
 
+CustomView.use(__file__)
+
 class LogView(CustomView):
 
     def __init__(self, lines: Deque[str], max_lines: int):
-        super().__init__('log', __file__, max_lines=max_lines)
+        super().__init__('log', max_lines=max_lines)
         self.lines = lines
         self.allowed_events = ['onConnect']
         self.initialize(onConnect=self.handle_connect)
