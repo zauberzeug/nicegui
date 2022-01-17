@@ -281,7 +281,7 @@ with example(ui.notify):
 
 design = '''### Styling
 
-NiceGUI uses the [Quasar Framework](https://quasar.dev/) and hence has its full design power.
+NiceGUI uses the [Quasar Framework](https://quasar.dev/) version 1.0 and hence has its full design power.
 Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
 Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
 You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method.
@@ -293,6 +293,11 @@ All three functions also provide `remove` and `replace` parameters in case the p
 with example(design):
     ui.radio(['x', 'y', 'z'], value='x').props('inline color=green')
     ui.button().props('icon=touch_app outline round').classes('shadow-lg ml-14')
+
+with example(ui.colors):
+    ui.button('Gray', on_click=lambda: ui.colors(primary='#555'))
+    ui.button('Default', on_click=lambda: ui.colors())
+    ui.colors()
 
 with example(ui.card):
     with ui.card().tight():
