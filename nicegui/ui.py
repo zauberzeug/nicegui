@@ -4,6 +4,7 @@ class Ui:
 
     from .elements.button import Button as button
     from .elements.checkbox import Checkbox as checkbox
+    from .elements.colors import Colors as colors
     from .elements.custom_example import CustomExample as custom_example
     from .elements.dialog import Dialog as dialog
     from .elements.icon import Icon as icon
@@ -30,7 +31,6 @@ class Ui:
     from .elements.switch import Switch as switch
     from .elements.toggle import Toggle as toggle
     from .elements.upload import Upload as upload
-    from .elements.colors import Colors as colors
 
     from .elements.plot import Plot as plot
     from .elements.line_plot import LinePlot as line_plot

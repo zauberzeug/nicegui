@@ -12,9 +12,9 @@ class Config(BaseModel):
     favicon: str = 'favicon.ico'
     reload: bool = True
     show: bool = True
-    uvicorn_logging_level = 'warning'
+    uvicorn_logging_level: str = 'warning'
     interactive: bool = False
-    main_page_classes = 'q-ma-md column items-start'
+    main_page_classes: str = 'q-ma-md column items-start'
 
 
 excluded_endings = (
