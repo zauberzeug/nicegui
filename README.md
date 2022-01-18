@@ -63,6 +63,7 @@ You can call `ui.run()` with optional arguments for some high-level configuratio
 - `show`: automatically open the ui in a browser tab (default: `True`)
 - `uvicorn_logging_level`: logging level for uvicorn server (default: `'warning'`)
 - `interactive`: used internally when run in interactive Python shell (default: `False`)
+- `main_page_classes`: configure Quasar classes of main page (default: `q-ma-md column items-start`)
 
 ## Docker
 
