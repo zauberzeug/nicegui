@@ -6,7 +6,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python: [3.7, 3.8, 3.9]
+        python: [3.7, 3.8, 3.9, 3.10]
       fail-fast: false
     runs-on: ubuntu-latest
     timeout-minutes: 10
