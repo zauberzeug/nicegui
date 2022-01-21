@@ -2,6 +2,7 @@
 from typing import Awaitable, Callable
 import asyncio
 
+from .monkeypatch import monkeypatch
 from .ui import Ui  # NOTE: before justpy
 import justpy as jp
 from .timer import Timer
@@ -33,6 +34,7 @@ def safe_invoke(func: Callable):
 app = globals.app = jp.app
 ui = Ui()
 
+monkeypatch()
 page = ui.page('/', classes=globals.config.main_page_classes)
 page.__enter__()
 jp.justpy(lambda: page, start_server=False)
