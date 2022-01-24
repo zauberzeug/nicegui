@@ -335,7 +335,7 @@ with example(clear):
 
 binding = '''### Bindings
 
-With help of the [binding](https://pypi.org/project/binding/) package NiceGUI is able to directly bind UI elements to models.
+NiceGUI is able to directly bind UI elements to models.
 Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes.
 
 Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property.
