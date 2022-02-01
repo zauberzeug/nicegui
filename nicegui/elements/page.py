@@ -7,7 +7,8 @@ class Page(jp.QuasarPage):
 
     def __init__(self, route: str, title: Optional[str] = None, favicon: Optional[str] = None,
                  classes: str = 'q-ma-md column items-start',
-                 css: str = HtmlFormatter().get_style_defs('.codehilite')):
+                 css: str = HtmlFormatter().get_style_defs('.codehilite'),
+                 dark: Optional[str] = False):
         """Page
 
         Creates a new page at the given path.
@@ -20,6 +21,8 @@ class Page(jp.QuasarPage):
         self.title = title or config.title
         self.favicon = favicon or config.favicon
 
+        # Dark support: For quasar.html we have to deliver a true boolean for "False", else we can deliver a string "True" or "auto"
+        self.dark = False if (dark or config.dark) == "False" else (dark or config.dark)
         self.tailwind = True  # use Tailwind classes instead of Quasars
         self.css = css
         self.head_html += '''

@@ -10,6 +10,7 @@ class Config(BaseModel):
     port: int = 8080
     title: str = 'NiceGUI'
     favicon: str = 'favicon.ico'
+    dark: str = False 
     reload: bool = True
     show: bool = True
     uvicorn_logging_level: str = 'warning'
