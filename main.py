@@ -131,6 +131,10 @@ with example(overlay):
             </svg>'''
         ui.svg(svg_content).style('background:transparent')
 
+with example(ui.clicky_image):
+    ui.clicky_image('http://placeimg.com/640/360/geometry',
+                    on_click=lambda e: ui.notify(f'{e.image_x:.1f}, {e.image_y:.1f}'))
+
 with example(ui.markdown):
     ui.markdown('### Headline\nWith hyperlink to [GitHub](https://github.com/zauberzeug/nicegui).')
 
@@ -432,7 +436,7 @@ Decorating a function with the `@ui.get` makes it available at the specified end
 with example(get_decorator):
     import starlette
 
-    @ui.get('/another/route/{id}')
+    @ ui.get('/another/route/{id}')
     def produce_plain_response(request):
         path_param_id = request.path_params['id']
         return starlette.responses.PlainTextResponse(f'Response {path_param_id}')
