@@ -7,17 +7,17 @@ from .element import Element
 
 CustomView.use(__file__)
 
-class ClickyImageView(CustomView):
+class AnnotationToolView(CustomView):
 
     def __init__(self, source: str, on_click: Callable):
-        super().__init__('clicky_image', source=source)
+        super().__init__('annotation_tool', source=source)
         self.allowed_events = ['onClick']
         self.initialize(onClick=on_click)
 
-class ClickyImage(Element):
+class AnnotationTool(Element):
 
     def __init__(self, source: str, on_click: Callable):
-        """Clicky Image
+        """Annotation Tool
 
         Create a special image that handles mouse clicks and yields image coordinates.
 
@@ -25,7 +25,7 @@ class ClickyImage(Element):
         :param on_click: callback for when the user clicks on the image (yields `image_x` and `image_y`)
         """
         self.click_handler = on_click
-        super().__init__(ClickyImageView(source, self.handle_click))
+        super().__init__(AnnotationToolView(source, self.handle_click))
 
     def handle_click(self, msg):
         try:

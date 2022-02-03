@@ -1,4 +1,4 @@
-Vue.component("clicky_image", {
+Vue.component("annotation_tool", {
   template: `<img v-bind:id="jp_props.id" :src="jp_props.options.source"></div>`,
   mounted() {
     console.log(this.$props.jp_props);

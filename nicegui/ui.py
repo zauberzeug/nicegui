@@ -2,9 +2,9 @@ class Ui:
     from .config import config  # NOTE: before run
     from .run import run  # NOTE: before justpy
 
+    from .elements.annotation_tool import AnnotationTool as annotation_tool
     from .elements.button import Button as button
     from .elements.checkbox import Checkbox as checkbox
-    from .elements.clicky_image import ClickyImage as clicky_image
     from .elements.colors import Colors as colors
     from .elements.custom_example import CustomExample as custom_example
     from .elements.dialog import Dialog as dialog
