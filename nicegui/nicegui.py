@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from typing import Awaitable, Callable
-import asyncio
 
 from .ui import Ui  # NOTE: before justpy
 import justpy as jp

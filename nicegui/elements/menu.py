@@ -11,7 +11,7 @@ class Menu(Group):
 
         Creates a menu.
 
-        :param value: whether the menu is already opened (default: False)
+        :param value: whether the menu is already opened (default: `False`)
         """
         view = jp.QMenu(value=value)
 

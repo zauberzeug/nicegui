@@ -13,7 +13,7 @@ class Switch(BoolElement):
         """Switch Element
 
         :param text: the label to display next to the switch
-        :param value: set to `True` if initally it should be active; default is `False`
+        :param value: whether it should be active initally (default: `False`)
         :param on_click: callback which is invoked when state is changed by the user
         """
         view = jp.QToggle(text=text, input=self.handle_change)
