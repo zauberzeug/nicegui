@@ -19,11 +19,11 @@ class AnnotationTool(Element):
     def __init__(self, source: str, on_mouse: Callable, *, events: list[str] = ['click'], cross: bool = False):
         """Annotation Tool
 
-        Create a special image that handles mouse clicks and yields image coordinates.
+        Create an image with an SVG overlay that handles mouse events and yields image coordinates.
 
         :param source: the source of the image; can be an url or a base64 string
         :param on_mouse: callback for mouse events (yields `type`, `image_x` and `image_y`)
-        :param events: list of JavaScript events to subscribe to
+        :param events: list of JavaScript events to subscribe to (default: `['click']`)
         :param cross: whether to show crosshairs (default: `False`)
         """
         self.mouse_handler = on_mouse
