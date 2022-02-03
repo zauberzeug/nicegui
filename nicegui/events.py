@@ -18,7 +18,8 @@ class EventArguments(BaseModel):
 class ClickEventArguments(EventArguments):
     pass
 
-class ImageClickEventArguments(ClickEventArguments):
+class MouseEventArguments(EventArguments):
+    type: str
     image_x: float
     image_y: float
 
