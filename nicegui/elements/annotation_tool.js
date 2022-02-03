@@ -1,7 +1,22 @@
 Vue.component("annotation_tool", {
-  template: `<img v-bind:id="jp_props.id" :src="jp_props.options.source"></div>`,
+  template: `
+    <div :id="jp_props.id" style="position:relative;display:inline-block">
+      <img style="max-width:100%">
+      <svg style="position:absolute;top:0;left:0;pointer-events:none" v-html="jp_props.options.svg_content"></svg>
+    </div>
+  `,
   mounted() {
-    const image = document.getElementById(this.$props.jp_props.id);
+    const image = document.getElementById(this.$props.jp_props.id).firstChild;
+    const svg = document.getElementById(this.$props.jp_props.id).lastChild;
+    image.ondragstart = () => false;
+    if (this.$props.jp_props.options.cross) {
+      image.style.cursor = "none";
+    }
+    image.onload = (e) => {
+      const viewBox = `0 0 ${image.naturalWidth} ${image.naturalHeight}`;
+      svg.setAttribute("viewBox", viewBox);
+    };
+    image.src = this.$props.jp_props.options.source;
     for (const type of this.$props.jp_props.options.events) {
       image.addEventListener(type, (e) => {
         const event = {

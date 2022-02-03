@@ -9,14 +9,14 @@ CustomView.use(__file__)
 
 class AnnotationToolView(CustomView):
 
-    def __init__(self, source: str, on_mouse: Callable, events: list[str]):
-        super().__init__('annotation_tool', source=source, events=events)
+    def __init__(self, source: str, on_mouse: Callable, events: list[str], cross: bool):
+        super().__init__('annotation_tool', source=source, events=events, cross=cross, svg_content='')
         self.allowed_events = ['onMouse']
         self.initialize(onMouse=on_mouse)
 
 class AnnotationTool(Element):
 
-    def __init__(self, source: str, on_mouse: Callable, events: list[str] = ['click']):
+    def __init__(self, source: str, on_mouse: Callable, *, events: list[str] = ['click'], cross: bool = False):
         """Annotation Tool
 
         Create a special image that handles mouse clicks and yields image coordinates.
@@ -24,9 +24,10 @@ class AnnotationTool(Element):
         :param source: the source of the image; can be an url or a base64 string
         :param on_mouse: callback for mouse events (yields `type`, `image_x` and `image_y`)
         :param events: list of JavaScript events to subscribe to
+        :param cross: whether to show crosshairs (default: `False`)
         """
         self.mouse_handler = on_mouse
-        super().__init__(AnnotationToolView(source, self.handle_mouse, events))
+        super().__init__(AnnotationToolView(source, self.handle_mouse, events, cross))
 
     def handle_mouse(self, msg):
         try:
@@ -40,3 +41,11 @@ class AnnotationTool(Element):
             handle_event(self.mouse_handler, arguments)
         except:
             traceback.print_exc()
+
+    @property
+    def svg_content(self) -> str:
+        return self.view.options.svg_content
+
+    @svg_content.setter
+    def svg_content(self, content: str):
+        self.view.options.svg_content = content
