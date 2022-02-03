@@ -15,7 +15,7 @@ class Upload(Element):
                  ):
         """File Upload Element
 
-        :param multiple: allow uploading multiple files at once (default: False)
+        :param multiple: allow uploading multiple files at once (default: `False`)
         :param on_upload: callback to execute when a file is uploaded (list of bytearrays)
         """
         self.upload_handler = on_upload

@@ -11,7 +11,7 @@ class Dialog(Group):
 
         Creates a modal dialog.
 
-        :param value: whether the dialog is already opened (default: False)
+        :param value: whether the dialog is already opened (default: `False`)
         """
         view = jp.QDialog(
             value=value,

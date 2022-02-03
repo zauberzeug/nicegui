@@ -30,8 +30,8 @@ class Keyboard(Element):
         Adds global keyboard event tracking.
 
         :param handle_keys: callback to be executed when keyboard events occur.
-        :param active: boolean flag indicating whether the callback should be executed or not (default: True)
-        :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: True)
+        :param active: boolean flag indicating whether the callback should be executed or not (default: `True`)
+        :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: `True`)
         """
         super().__init__(KeyboardView(on_key=self.handle_key, repeating=repeating))
         self.active = active

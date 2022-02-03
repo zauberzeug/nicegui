@@ -25,7 +25,7 @@ class Timer:
         :param interval: the interval in which the timer is called
         :param callback: function or coroutine to execute when interval elapses (can return `False` to prevent view update)
         :param active: whether the callback should be executed or not
-        :param once: whether the callback is only executed once after a delay specified by `interval`; default is `False`
+        :param once: whether the callback is only executed once after a delay specified by `interval` (default: `False`)
         """
 
         parent = view_stack[-1]

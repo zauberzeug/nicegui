@@ -19,7 +19,7 @@ class MenuItem(Element):
 
         :param text: label of the menu item
         :param on_click: callback to be executed when selecting the menu item
-        :param auto_close: whether the menu should be closed after a click event (default: True)
+        :param auto_close: whether the menu should be closed after a click event (default: `True`)
         """
         view = jp.QItem(text=text, clickable=True)
 
