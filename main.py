@@ -444,7 +444,7 @@ Decorating a function with the `@ui.get` makes it available at the specified end
 with example(get_decorator):
     import starlette
 
-    @ ui.get('/another/route/{id}')
+    @ui.get('/another/route/{id}')
     def produce_plain_response(request):
         path_param_id = request.path_params['id']
         return starlette.responses.PlainTextResponse(f'Response {path_param_id}')
