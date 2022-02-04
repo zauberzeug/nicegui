@@ -1,0 +1,51 @@
+{% if options.highcharts %}
+    {% include 'highcharts.html' %}
+{% endif %}
+
+{% if options.aggrid %}
+    {% if not options.no_internet %}
+        <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script>
+    {% else %}
+        <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/ag-grid-community.js"></script>
+    {% endif %}
+{% endif %}
+
+{% if options.aggrid_enterprise %}
+    {% if not options.no_internet %}
+        <script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.js"></script>
+    {% else %}
+        <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/ag-grid-enterprise.js"></script>
+    {% endif %}
+{% endif %}
+
+{% if options.deckgl %}
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.13.0/mapbox-gl.js"></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css' rel='stylesheet'/>
+    <script src='https://cdn.jsdelivr.net/npm/@deck.gl/jupyter-widget@~8.4.*/dist/index.js'></script>
+{% endif %}
+
+{% if options.katex %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css"
+          integrity="sha384-Um5gpz1odJg5Z4HAmzPtgZKdTBHZdw8S29IecapCSB31ligYPhHQZMIlWLYQGVoc"
+          crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js"
+            integrity="sha384-YNHdsYkH6gMx9y3mRkmcJ2mFUjTd0qNQQvY9VYZgQd7DcN7env35GzlmFaZ23JGp"
+            crossorigin="anonymous"></script>
+{% endif %}
+
+{% if options.vega %}
+ <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+{% endif %}
+
+{% if options.plotly %}
+ <script src="https://cdn.plot.ly/plotly-2.1.0.min.js"></script>
+{% endif %}
+
+{% if options.bokeh %}
+ <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.3.2.min.js"></script>
+ <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.3.2.min.js"></script>
+ <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.3.2.min.js"></script>
+ <script src="https://cdn.bokeh.org/bokeh/release/bokeh-api-2.3.2.min.js"></script>
+{% endif %}
