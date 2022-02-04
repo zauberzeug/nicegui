@@ -11,6 +11,7 @@ from nicegui.elements.html import Html
 from nicegui.elements.markdown import Markdown
 from nicegui.events import KeyEventArguments
 from nicegui.globals import page_stack
+from random import random
 
 # add docutils css to webpage
 page_stack[0].head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
@@ -94,7 +95,6 @@ with ui.row().classes('flex w-full'):
                 ui.label('Output:')
                 output = ui.label('').classes('text-bold')
 
-
 with example(ui.label):
     ui.label('some label')
 
@@ -177,7 +177,7 @@ with example(ui.checkbox):
         checkbox_state = ui.label('False')
 
 with example(ui.switch):
-    ui.switch('switch me', on_change=lambda e: switch_state.set_text("ON" if e.value else'OFF'))
+    ui.switch('switch me', on_change=lambda e: switch_state.set_text("ON" if e.value else "OFF"))
     with ui.row():
         ui.label('the switch is:')
         switch_state = ui.label('OFF')
@@ -261,6 +261,25 @@ with example(ui.scene):
 
         teapot = 'https://upload.wikimedia.org/wikipedia/commons/9/93/Utah_teapot_(solid).stl'
         scene.stl(teapot).scale(0.2).move(-3, 4)
+
+with example(ui.chart):
+    options = {
+        'title': {'text': ''},
+        'chart': {'type': 'bar'},
+        'xAxis': {'categories': ['A', 'B']},
+        'series': [
+            {'name': 'Alpha', 'data': [0.1, 0.2]},
+            {'name': 'Beta', 'data': [0.4, 0.3]}
+        ],
+    }
+
+    def regenerate_chart(chart):
+        chart.view.options.series[1] = {
+            'name': 'Beta', 'data': [random() for _ in range(2)]
+        }
+
+    chart = ui.chart(options).style('width: 200px;height: 200px')
+    ui.button('Generate values', on_click=lambda: regenerate_chart(chart))
 
 with example(ui.joystick):
     ui.joystick(
@@ -413,14 +432,12 @@ with example(ui.page):
 
     ui.link('Visit other page', '/other_page')
 
-
 with example(ui.open):
     with ui.page('/yet_another_page') as other:
         ui.label('Welcome to yet another page')
         ui.button('RETURN', on_click=lambda e: ui.open('/', e.socket))
 
     ui.button('REDIRECT', on_click=lambda e: ui.open('/yet_another_page', e.socket))
-
 
 add_route = """### Route
 
