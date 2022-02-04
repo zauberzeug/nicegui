@@ -4,6 +4,7 @@ class Ui:
 
     from .elements.annotation_tool import AnnotationTool as annotation_tool
     from .elements.button import Button as button
+    from .elements.chart import Chart as chart
     from .elements.checkbox import Checkbox as checkbox
     from .elements.colors import Colors as colors
     from .elements.custom_example import CustomExample as custom_example
