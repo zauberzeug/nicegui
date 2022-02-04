@@ -177,7 +177,7 @@ with example(ui.checkbox):
         checkbox_state = ui.label('False')
 
 with example(ui.switch):
-    ui.switch('switch me', on_change=lambda e: switch_state.set_text("ON" if e.value else'OFF'))
+    ui.switch('switch me', on_change=lambda e: switch_state.set_text('ON' if e.value else'OFF'))
     with ui.row():
         ui.label('the switch is:')
         switch_state = ui.label('OFF')
@@ -261,6 +261,24 @@ with example(ui.scene):
 
         teapot = 'https://upload.wikimedia.org/wikipedia/commons/9/93/Utah_teapot_(solid).stl'
         scene.stl(teapot).scale(0.2).move(-3, 4)
+
+with example(ui.chart):
+    from numpy.random import random
+
+    def update():
+        chart.view.options.series[0].data[:] = random(2)
+
+    options = {
+        'title': False,
+        'chart': {'type': 'bar'},
+        'xAxis': {'categories': ['A', 'B']},
+        'series': [
+            {'name': 'Alpha', 'data': [0.1, 0.2]},
+            {'name': 'Beta', 'data': [0.3, 0.4]},
+        ],
+    }
+    chart = ui.chart(options).classes('max-w-full h-64')
+    ui.button('Update', on_click=update)
 
 with example(ui.joystick):
     ui.joystick(
