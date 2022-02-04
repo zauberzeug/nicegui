@@ -263,7 +263,10 @@ with example(ui.scene):
         scene.stl(teapot).scale(0.2).move(-3, 4)
 
 with example(ui.chart):
-    from random import random
+    from numpy.random import random
+
+    def update():
+        chart.view.options.series[0].data[:] = random(2)
 
     options = {
         'title': False,
@@ -271,17 +274,11 @@ with example(ui.chart):
         'xAxis': {'categories': ['A', 'B']},
         'series': [
             {'name': 'Alpha', 'data': [0.1, 0.2]},
-            {'name': 'Beta', 'data': [0.4, 0.3]},
+            {'name': 'Beta', 'data': [0.3, 0.4]},
         ],
     }
-
-    def regenerate(chart):
-        chart.view.options.series[1] = {
-            'name': 'Beta', 'data': [random() for _ in range(2)]
-        }
-
-    chart = ui.chart(options).style('width: 200px;height: 200px')
-    ui.button('Generate values', on_click=lambda: regenerate(chart))
+    chart = ui.chart(options).classes('max-w-full h-64')
+    ui.button('Update', on_click=update)
 
 with example(ui.joystick):
     ui.joystick(
