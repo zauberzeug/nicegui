@@ -18,6 +18,11 @@ class EventArguments(BaseModel):
 class ClickEventArguments(EventArguments):
     pass
 
+class MouseEventArguments(EventArguments):
+    type: str
+    image_x: float
+    image_y: float
+
 class UploadEventArguments(EventArguments):
     files: List[bytes]
 

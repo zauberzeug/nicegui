@@ -18,7 +18,7 @@ class LinePlot(Plot):
         :param n: number of lines
         :param limit: maximum number of datapoints per line (new points will displace the oldest)
         :param update_every: update plot only after pushing new data multiple times to save CPU and bandwidth
-        :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later, default is `True`
+        :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later (default: `True`)
         :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_
         """
         super().__init__(close=close, **kwargs)

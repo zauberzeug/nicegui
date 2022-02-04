@@ -17,7 +17,7 @@ class Notify(Element):
 
         :param message: content of the notification
         :param position: position on the screen ("top-left", "top-right", "bottom-left","bottom-right, "top", "bottom", "left", "right" or "center", default: "bottom")
-        :param close_button: optional label of a button to dismiss the notification (default: None)
+        :param close_button: optional label of a button to dismiss the notification (default: `None`)
         """
         view = jp.QNotify(message=message, position=position, closeBtn=close_button)
 

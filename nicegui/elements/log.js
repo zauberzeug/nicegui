@@ -17,7 +17,7 @@ Vue.component("log", {
       send_to_server(event, "event");
       clearInterval(connectInterval);
     };
-    connectInterval = setInterval(sendConnectEvent, 100);
+    const connectInterval = setInterval(sendConnectEvent, 100);
   },
   methods: {
     push(line) {

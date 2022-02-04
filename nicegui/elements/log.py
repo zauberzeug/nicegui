@@ -35,7 +35,7 @@ class Log(Element):
 
         Create a log view that allows to add new lines without re-transmitting the whole history to the client.
 
-        :param max_lines: maximum number of lines before dropping oldest ones (default: None)
+        :param max_lines: maximum number of lines before dropping oldest ones (default: `None`)
         """
         self.lines = deque(maxlen=max_lines)
         super().__init__(LogView(lines=self.lines, max_lines=max_lines))
