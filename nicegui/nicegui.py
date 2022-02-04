@@ -2,16 +2,19 @@
 from typing import Awaitable, Callable
 import asyncio
 
+
 from .ui import Ui  # NOTE: before justpy
 import justpy as jp
 from .timer import Timer
 from . import globals
 from . import binding
 from .task_logger import create_task
+import re
 
 
 @jp.app.on_event('startup')
 def startup():
+    jp.templates.TemplateResponse = proxyPathAwareTemplateResponse
     globals.tasks.extend(create_task(t.coro, name=t.name) for t in Timer.prepared_coroutines)
     Timer.prepared_coroutines.clear()
     globals.tasks.extend(create_task(t, name='startup task') for t in Ui.startup_tasks if isinstance(t, Awaitable))
@@ -23,6 +26,16 @@ def shutdown():
     [create_task(t, name='shutdown task') for t in Ui.shutdown_tasks if isinstance(t, Awaitable)]
     [safe_invoke(t) for t in Ui.shutdown_tasks if isinstance(t, Callable)]
     [t.cancel() for t in globals.tasks]
+
+templateResponse = jp.templates.TemplateResponse
+def proxyPathAwareTemplateResponse(*args):
+    response = templateResponse(*args)
+    body = response.body.decode()
+    body = body.replace('/templates', '/wasserbauer/4/templates')
+    body = body.replace('/static', '/wasserbauer/4/static')
+    body = re.sub('src=.*/wasserbauer/4/static/(.*\.js)', '\g<1>', body)
+    response.body = body.encode(response.charset)
+    return response
 
 def safe_invoke(func: Callable):
     try:

@@ -59,6 +59,6 @@ else:
 os.environ['HOST'] = config.host
 os.environ['PORT'] = str(config.port)
 os.environ["STATIC_DIRECTORY"] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
-os.environ["TEMPLATES_DIRECTORY"] = os.path.join(os.environ["STATIC_DIRECTORY"], 'templates')
+#os.environ["TEMPLATES_DIRECTORY"] = os.path.join(os.environ["STATIC_DIRECTORY"], 'templates')
 
 globals.config = config
