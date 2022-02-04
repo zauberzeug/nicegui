@@ -5,24 +5,31 @@ from ..globals import config, page_stack, view_stack
 
 class Page(jp.QuasarPage):
 
-    def __init__(self, route: str, title: Optional[str] = None, favicon: Optional[str] = None,
+    def __init__(self,
+                 route: str,
+                 title: Optional[str] = None,
+                 favicon: Optional[str] = None,
+                 dark: Optional[bool] = ...,
                  classes: str = 'q-ma-md column items-start',
                  css: str = HtmlFormatter().get_style_defs('.codehilite'),
-                 dark: Optional[str] = False):
+                 ):
         """Page
 
         Creates a new page at the given path.
 
-        :param route: the route of the new page. All paths must start with '/', otherwise an error occurs.
+        :param route: route of the new page (path must start with '/')
+        :param title: optional page title
+        :param favicon: optional favicon
+        :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
+        :param classes: tailwind classes for the container div (default: `'q-ma-md column items-start'`)
+        :param css: CSS definitions
         """
         super().__init__()
 
         self.delete_flag = False
         self.title = title or config.title
         self.favicon = favicon or config.favicon
-
-        # Dark support: For quasar.html we have to deliver a true boolean for "False", else we can deliver a string "True" or "auto"
-        self.dark = False if (dark or config.dark) == "False" else (dark or config.dark)
+        self.dark = dark if dark is not ... else config.dark
         self.tailwind = True  # use Tailwind classes instead of Quasars
         self.css = css
         self.head_html += '''

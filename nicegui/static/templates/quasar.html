@@ -100,8 +100,8 @@
         console.log('Quasar Version ' + Quasar.version);
         {% if page_options.dark %}
             Quasar.Dark.set(true);
-	{% endif %}
-        {% if page_options.dark == "auto" %}
+        {% endif %}
+        {% if page_options.dark == None %}
             Quasar.Dark.set("auto");
         {% endif %}
     </script>

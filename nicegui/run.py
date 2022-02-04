@@ -1,3 +1,4 @@
+from typing import Optional
 import inspect
 import sys
 import webbrowser
@@ -17,11 +18,11 @@ def run(self, *,
         port: int = 8080,
         title: str = 'NiceGUI',
         favicon: str = 'favicon.ico',
+        dark: Optional[bool] = False,
         reload: bool = True,
         show: bool = True,
         uvicorn_logging_level: str = 'warning',
         main_page_classes: str = 'q-ma-md column items-start',
-        dark: str = False,
         ):
 
     if globals.config.interactive or reload == False:  # NOTE: if reload == True we already started uvicorn above

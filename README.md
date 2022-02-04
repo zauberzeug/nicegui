@@ -59,12 +59,12 @@ You can call `ui.run()` with optional arguments for some high-level configuratio
 - `port` (default: `8080`)
 - `title` (default: `'NiceGUI'`)
 - `favicon` (default: `'favicon.ico'`)
+- `dark`: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
 - `reload`: automatically reload the ui on file changes (default: `True`)
 - `show`: automatically open the ui in a browser tab (default: `True`)
 - `uvicorn_logging_level`: logging level for uvicorn server (default: `'warning'`)
-- `interactive`: used internally when run in interactive Python shell (default: `False`)
 - `main_page_classes`: configure Quasar classes of main page (default: `q-ma-md column items-start`)
-- `dark`: Quasar dark mode support (values: `True`, `False` and `"auto"`) (default: `False`)
+- `interactive`: used internally when run in interactive Python shell (default: `False`)
 
 ## Docker
 

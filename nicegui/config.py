@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 import inspect
 import ast
 import os
@@ -10,12 +11,12 @@ class Config(BaseModel):
     port: int = 8080
     title: str = 'NiceGUI'
     favicon: str = 'favicon.ico'
-    dark: str = False 
+    dark: Optional[bool] = False
     reload: bool = True
     show: bool = True
     uvicorn_logging_level: str = 'warning'
-    interactive: bool = False
     main_page_classes: str = 'q-ma-md column items-start'
+    interactive: bool = False
 
 
 excluded_endings = (
