@@ -273,13 +273,13 @@ with example(ui.chart):
         ],
     }
 
-    def regenerate_chart(chart):
+    def regenerate(chart):
         chart.view.options.series[1] = {
             'name': 'Beta', 'data': [random() for _ in range(2)]
         }
 
     chart = ui.chart(options).style('width: 200px;height: 200px')
-    ui.button('Generate values', on_click=lambda: regenerate_chart(chart))
+    ui.button('Generate values', on_click=lambda: regenerate(chart))
 
 with example(ui.joystick):
     ui.joystick(
