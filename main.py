@@ -11,7 +11,6 @@ from nicegui.elements.html import Html
 from nicegui.elements.markdown import Markdown
 from nicegui.events import KeyEventArguments
 from nicegui.globals import page_stack
-from random import random
 
 # add docutils css to webpage
 page_stack[0].head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
@@ -95,6 +94,7 @@ with ui.row().classes('flex w-full'):
                 ui.label('Output:')
                 output = ui.label('').classes('text-bold')
 
+
 with example(ui.label):
     ui.label('some label')
 
@@ -177,7 +177,7 @@ with example(ui.checkbox):
         checkbox_state = ui.label('False')
 
 with example(ui.switch):
-    ui.switch('switch me', on_change=lambda e: switch_state.set_text("ON" if e.value else "OFF"))
+    ui.switch('switch me', on_change=lambda e: switch_state.set_text('ON' if e.value else'OFF'))
     with ui.row():
         ui.label('the switch is:')
         switch_state = ui.label('OFF')
@@ -263,8 +263,10 @@ with example(ui.scene):
         scene.stl(teapot).scale(0.2).move(-3, 4)
 
 with example(ui.chart):
+    from random import random
+
     options = {
-        'title': {'text': ''},
+        'title': False,
         'chart': {'type': 'bar'},
         'xAxis': {'categories': ['A', 'B']},
         'series': [
@@ -432,12 +434,14 @@ with example(ui.page):
 
     ui.link('Visit other page', '/other_page')
 
+
 with example(ui.open):
     with ui.page('/yet_another_page') as other:
         ui.label('Welcome to yet another page')
         ui.button('RETURN', on_click=lambda e: ui.open('/', e.socket))
 
     ui.button('REDIRECT', on_click=lambda e: ui.open('/yet_another_page', e.socket))
+
 
 add_route = """### Route
 
