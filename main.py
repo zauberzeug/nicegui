@@ -271,7 +271,7 @@ with example(ui.chart):
         'xAxis': {'categories': ['A', 'B']},
         'series': [
             {'name': 'Alpha', 'data': [0.1, 0.2]},
-            {'name': 'Beta', 'data': [0.4, 0.3]}
+            {'name': 'Beta', 'data': [0.4, 0.3]},
         ],
     }
 

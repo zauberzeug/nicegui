@@ -12,7 +12,5 @@ class Chart(Element):
         :param options: dictionary of highchart options
         """
         view = jp.HighCharts(classes='m-2 p-2 border', style='width: 600px')
-        self.options = jp.Dict(**options)
-        print(str(self.options))
-        view.options = self.options
+        view.options = self.options = jp.Dict(**options)
         super().__init__(view)
