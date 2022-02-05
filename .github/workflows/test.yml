@@ -22,7 +22,6 @@ jobs:
           poetry-version: "1.1.6"
       - name: install dependencies
         run: |
-          pip3 install setuptools==57.4.0 # to fix https://github.com/elimintz/justpy/issues/301
           poetry config virtualenvs.create false --local
           poetry install
       - name: test startup
