@@ -28,6 +28,6 @@ class Colors(Element):
                  warning='#f2c037'):
         """Color Theming
 
-        Sets the main colors (primary, secondary, accent, ...) used by [Quasar](https://quasar.dev/).
+        Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/>`_.
         """
         super().__init__(ColorsView(primary, secondary, accent, positive, negative, info, warning))
