@@ -16,10 +16,17 @@ It is also helpful for development, for example when tweaking/configuring a mach
 - standard GUI elements like label, button, checkbox, switch, slider, input, file upload, ...
 - simple grouping with rows, columns, cards and dialogs
 - general-purpose HTML and markdown elements
-- powerful elements to plot graphs, render 3D scenes and get steering events via virtual joysticks
+- powerful high-level elements to
+  - plot graphs and charts,
+  - render 3D scenes,
+  - get steering events via virtual joysticks
+  - annotate images
 - built-in timer to refresh data in intervals (even every 10 ms)
 - straight-forward data binding to write even less code
 - notifications, dialogs and menus to provide state of the art user interaction
+- ability to add custom routes and data responses
+- capture keyboard input for global shortcuts etc
+- customize look by defining primary, secondary and accent colors
 
 ## Installation
 
