@@ -13,6 +13,7 @@ class CustomView(jp.JustpyBaseComponent):
         self.classes = ''
         self.style = ''
         self.options = jp.Dict(**options)
+        self.components = []
 
         super().__init__(temp=False)
 
