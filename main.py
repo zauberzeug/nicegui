@@ -266,9 +266,9 @@ with example(ui.chart):
     from numpy.random import random
 
     def update():
-        chart.view.options.series[0].data[:] = random(2)
+        chart.options.series[0].data[:] = random(2)
 
-    options = {
+    chart = ui.chart({
         'title': False,
         'chart': {'type': 'bar'},
         'xAxis': {'categories': ['A', 'B']},
@@ -276,8 +276,7 @@ with example(ui.chart):
             {'name': 'Alpha', 'data': [0.1, 0.2]},
             {'name': 'Beta', 'data': [0.3, 0.4]},
         ],
-    }
-    chart = ui.chart(options).classes('max-w-full h-64')
+    }).classes('max-w-full h-64')
     ui.button('Update', on_click=update)
 
 with example(ui.joystick):
