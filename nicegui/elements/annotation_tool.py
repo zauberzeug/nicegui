@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Callable
+from typing import Callable, Optional
 import traceback
 from ..events import MouseEventArguments, handle_event
 from .custom_view import CustomView
@@ -16,7 +16,7 @@ class AnnotationToolView(CustomView):
 
 class AnnotationTool(Element):
 
-    def __init__(self, source: str, on_mouse: Callable, *, events: list[str] = ['click'], cross: bool = False):
+    def __init__(self, source: str, *, on_mouse: Optional[Callable] = None, events: list[str] = ['click'], cross: bool = False):
         """Annotation Tool
 
         Create an image with an SVG overlay that handles mouse events and yields image coordinates.
@@ -30,6 +30,8 @@ class AnnotationTool(Element):
         super().__init__(AnnotationToolView(source, self.handle_mouse, events, cross))
 
     def handle_mouse(self, msg):
+        if self.mouse_handler is None:
+            return
         try:
             arguments = MouseEventArguments(
                 sender=self,
