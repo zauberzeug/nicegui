@@ -41,6 +41,7 @@ class Page(jp.QuasarPage):
         self.view = jp.Div(a=self, classes=classes, style='row-gap: 1em')
         self.view.add_page(self)
 
+        self.route = route
         jp.Route(route, lambda: self)
 
     def __enter__(self):
