@@ -443,6 +443,29 @@ with example(ui.open):
 
     ui.button('REDIRECT', on_click=lambda e: ui.open('/yet_another_page', e.socket))
 
+sessions = """### Sessions
+
+ui.page provides an optional on_connect parameter to register a callback.
+It is invoked for each new connection to the page.
+
+The optional request parameter provides insights about the clients url parameters etc (see [the JustPy docs](https://justpy.io/tutorial/request_object/) for more details).
+It also enables you to identify sessions over [longer time spans by configuring cookies](https://justpy.io/tutorial/sessions/).
+"""
+
+with example(sessions):
+    from datetime import datetime
+
+    session_ids = []
+    creation = datetime.now().strftime('%H:%M, %d %B %Y')
+
+    def connection(request):
+        session_ids.append(request.session_id)
+        visits.set_text(f'{len(set(session_ids))} unique views ({len(session_ids)} over all) since {creation}')
+
+    with ui.page('/session_demo', on_connect=connection) as session_demo:
+        visits = ui.label()
+
+    ui.link('Visit session demo', session_demo)
 
 add_route = """### Route
 

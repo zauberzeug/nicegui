@@ -1,7 +1,9 @@
+import inspect
 import justpy as jp
-from typing import Optional
+from typing import Callable, Optional
 from pygments.formatters import HtmlFormatter
 from ..globals import config, page_stack, view_stack
+from starlette.requests import Request
 
 class Page(jp.QuasarPage):
 
@@ -12,6 +14,7 @@ class Page(jp.QuasarPage):
                  dark: Optional[bool] = ...,
                  classes: str = 'q-ma-md column items-start',
                  css: str = HtmlFormatter().get_style_defs('.codehilite'),
+                 on_connect: Optional[Callable] = None,
                  ):
         """Page
 
@@ -32,6 +35,7 @@ class Page(jp.QuasarPage):
         self.dark = dark if dark is not ... else config.dark
         self.tailwind = True  # use Tailwind classes instead of Quasars
         self.css = css
+        self.on_connect = on_connect
         self.head_html += '''
             <script>
                 confirm = () => { setTimeout(location.reload.bind(location), 100); return false; };
@@ -42,7 +46,18 @@ class Page(jp.QuasarPage):
         self.view.add_page(self)
 
         self.route = route
-        jp.Route(route, lambda: self)
+        jp.Route(route, self.access)
+
+    def access(self, request: Request):
+        if self.on_connect:
+            argcount = len(inspect.getargspec(self.on_connect)[0])
+            if argcount == 1:
+                self.on_connect(request)
+            elif argcount == 0:
+                self.on_connect()
+            else:
+                raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {argcount})')
+        return self
 
     def __enter__(self):
         page_stack.append(self)
