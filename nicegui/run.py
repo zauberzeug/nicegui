@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Awaitable, Callable, Optional, Union
 import inspect
 import sys
 import webbrowser
@@ -21,6 +21,7 @@ def run(self, *,
         dark: Optional[bool] = False,
         reload: bool = True,
         show: bool = True,
+        on_connect: Optional[Union[Callable, Awaitable]] = None,
         uvicorn_logging_level: str = 'warning',
         main_page_classes: str = 'q-ma-md column items-start',
         ):

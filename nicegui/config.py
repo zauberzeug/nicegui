@@ -1,11 +1,12 @@
-from pydantic import BaseModel
-from typing import Optional
+from dataclasses import dataclass
+from typing import Awaitable, Callable, Optional, Union
 import inspect
 import ast
 import os
 from . import globals
 
-class Config(BaseModel):
+@dataclass
+class Config():
     # NOTE: should be in sync with ui.run arguments
     host: str = '0.0.0.0'
     port: int = 8080
@@ -14,6 +15,7 @@ class Config(BaseModel):
     dark: Optional[bool] = False
     reload: bool = True
     show: bool = True
+    on_connect: Optional[Union[Callable, Awaitable]] = None
     uvicorn_logging_level: str = 'warning'
     main_page_classes: str = 'q-ma-md column items-start'
     interactive: bool = False

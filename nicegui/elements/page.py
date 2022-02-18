@@ -1,6 +1,8 @@
+import inspect
 import justpy as jp
-from typing import Optional
+from typing import Awaitable, Callable, Optional, Union
 from pygments.formatters import HtmlFormatter
+from starlette.requests import Request
 from ..globals import config, page_stack, view_stack
 
 class Page(jp.QuasarPage):
@@ -12,6 +14,7 @@ class Page(jp.QuasarPage):
                  dark: Optional[bool] = ...,
                  classes: str = 'q-ma-md column items-start',
                  css: str = HtmlFormatter().get_style_defs('.codehilite'),
+                 on_connect: Optional[Union[Awaitable, Callable]] = None,
                  ):
         """Page
 
@@ -23,6 +26,7 @@ class Page(jp.QuasarPage):
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
         :param classes: tailwind classes for the container div (default: `'q-ma-md column items-start'`)
         :param css: CSS definitions
+        :param on_connect: optional function or coroutine which is called for each new client connection
         """
         super().__init__()
 
@@ -32,6 +36,7 @@ class Page(jp.QuasarPage):
         self.dark = dark if dark is not ... else config.dark
         self.tailwind = True  # use Tailwind classes instead of Quasars
         self.css = css
+        self.on_connect = on_connect or config.on_connect
         self.head_html += '''
             <script>
                 confirm = () => { setTimeout(location.reload.bind(location), 100); return false; };
@@ -42,7 +47,19 @@ class Page(jp.QuasarPage):
         self.view.add_page(self)
 
         self.route = route
-        jp.Route(route, lambda: self)
+        jp.Route(route, self._route_function)
+
+    async def _route_function(self, request: Request):
+        if self.on_connect:
+            arg_count = len(inspect.signature(self.on_connect).parameters)
+            is_coro = inspect.iscoroutinefunction(self.on_connect)
+            if arg_count == 1:
+                await self.on_connect(request) if is_coro else self.on_connect(request)
+            elif arg_count == 0:
+                await self.on_connect() if is_coro else self.on_connect()
+            else:
+                raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
+        return self
 
     def __enter__(self):
         page_stack.append(self)

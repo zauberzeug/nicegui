@@ -9,7 +9,6 @@ import re
 import asyncio
 from nicegui.elements.html import Html
 from nicegui.elements.markdown import Markdown
-from nicegui.events import KeyEventArguments
 from nicegui.globals import page_stack
 
 # add docutils css to webpage
@@ -443,6 +442,30 @@ with example(ui.open):
 
     ui.button('REDIRECT', on_click=lambda e: ui.open('/yet_another_page', e.socket))
 
+sessions = """### Sessions
+
+`ui.page` provides an optional `on_connect` argument to register a callback.
+It is invoked for each new connection to the page.
+
+The optional `request` argument provides insights about the clients url parameters etc. (see [the JustPy docs](https://justpy.io/tutorial/request_object/) for more details).
+It also enables you to identify sessions over [longer time spans by configuring cookies](https://justpy.io/tutorial/sessions/).
+"""
+with example(sessions):
+    from collections import Counter
+    from datetime import datetime
+    from starlette.requests import Request
+
+    id_counter = Counter()
+    creation = datetime.now().strftime('%H:%M, %d %B %Y')
+
+    def handle_connection(request: Request):
+        id_counter[request.session_id] += 1
+        visits.set_text(f'{len(id_counter)} unique views ({sum(id_counter.values())} overall) since {creation}')
+
+    with ui.page('/session_demo', on_connect=handle_connection) as page:
+        visits = ui.label()
+
+    ui.link('Visit session demo', page)
 
 add_route = """### Route
 
