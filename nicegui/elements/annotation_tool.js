@@ -1,6 +1,6 @@
 Vue.component("annotation_tool", {
   template: `
-    <div :id="jp_props.id" style="position:relative;display:inline-block">
+    <div :id="jp_props.id" style="position:relative;display:inline-block" :style="jp_props.style" :class="jp_props.classes">
       <img style="max-width:100%">
       <svg style="position:absolute;top:0;left:0;pointer-events:none">
         <g style="display:none">

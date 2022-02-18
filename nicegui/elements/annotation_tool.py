@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Callable, Optional
+from typing import Any, Callable, Dict, Optional
 import traceback
 from ..events import MouseEventArguments, handle_event
 from .custom_view import CustomView
@@ -29,7 +29,7 @@ class AnnotationTool(Element):
         self.mouse_handler = on_mouse
         super().__init__(AnnotationToolView(source, self.handle_mouse, events, cross))
 
-    def handle_mouse(self, msg):
+    def handle_mouse(self, msg: Dict[str, Any]):
         if self.mouse_handler is None:
             return
         try:
