@@ -69,7 +69,7 @@ You can call `ui.run()` with optional arguments for some high-level configuratio
 - `dark`: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
 - `reload`: automatically reload the ui on file changes (default: `True`)
 - `show`: automatically open the ui in a browser tab (default: `True`)
-- `on_connect`: default function or coroutine which is called for each new client connection; the optional request parameter provides session infos
+- `on_connect`: default function or coroutine which is called for each new client connection; the optional `request` argument provides session infos
 - `uvicorn_logging_level`: logging level for uvicorn server (default: `'warning'`)
 - `main_page_classes`: configure Quasar classes of main page (default: `q-ma-md column items-start`)
 - `interactive`: used internally when run in interactive Python shell (default: `False`)

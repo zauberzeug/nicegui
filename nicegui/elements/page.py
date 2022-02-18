@@ -1,9 +1,9 @@
 import inspect
 import justpy as jp
-from typing import Callable, Optional
+from typing import Awaitable, Callable, Optional, Union
 from pygments.formatters import HtmlFormatter
-from ..globals import config, page_stack, view_stack
 from starlette.requests import Request
+from ..globals import config, page_stack, view_stack
 
 class Page(jp.QuasarPage):
 
@@ -14,7 +14,7 @@ class Page(jp.QuasarPage):
                  dark: Optional[bool] = ...,
                  classes: str = 'q-ma-md column items-start',
                  css: str = HtmlFormatter().get_style_defs('.codehilite'),
-                 on_connect: Optional[Callable] = None,
+                 on_connect: Optional[Union[Awaitable, Callable]] = None,
                  ):
         """Page
 
@@ -26,6 +26,7 @@ class Page(jp.QuasarPage):
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
         :param classes: tailwind classes for the container div (default: `'q-ma-md column items-start'`)
         :param css: CSS definitions
+        :param on_connect: optional function or coroutine which is called for each new client connection
         """
         super().__init__()
 
@@ -46,23 +47,18 @@ class Page(jp.QuasarPage):
         self.view.add_page(self)
 
         self.route = route
-        jp.Route(route, self.access)
+        jp.Route(route, self._route_function)
 
-    async def access(self, request: Request):
+    async def _route_function(self, request: Request):
         if self.on_connect:
-            argcount = len(inspect.getargspec(self.on_connect)[0])
-            if argcount == 1:
-                if inspect.iscoroutinefunction(self.on_connect):
-                    await self.on_connect(request)
-                else:
-                    self.on_connect(request)
-            elif argcount == 0:
-                if inspect.iscoroutinefunction(self.on_connect):
-                    await self.on_connect()
-                else:
-                    self.on_connect()
+            arg_count = len(inspect.signature(self.on_connect).parameters)
+            is_coro = inspect.iscoroutinefunction(self.on_connect)
+            if arg_count == 1:
+                await self.on_connect(request) if is_coro else self.on_connect(request)
+            elif arg_count == 0:
+                await self.on_connect() if is_coro else self.on_connect()
             else:
-                raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {argcount})')
+                raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         return self
 
     def __enter__(self):
