@@ -35,7 +35,7 @@ class Page(jp.QuasarPage):
         self.dark = dark if dark is not ... else config.dark
         self.tailwind = True  # use Tailwind classes instead of Quasars
         self.css = css
-        self.on_connect = on_connect
+        self.on_connect = on_connect or config.on_connect
         self.head_html += '''
             <script>
                 confirm = () => { setTimeout(location.reload.bind(location), 100); return false; };
@@ -48,13 +48,19 @@ class Page(jp.QuasarPage):
         self.route = route
         jp.Route(route, self.access)
 
-    def access(self, request: Request):
+    async def access(self, request: Request):
         if self.on_connect:
             argcount = len(inspect.getargspec(self.on_connect)[0])
             if argcount == 1:
-                self.on_connect(request)
+                if inspect.iscoroutinefunction(self.on_connect):
+                    await self.on_connect(request)
+                else:
+                    self.on_connect(request)
             elif argcount == 0:
-                self.on_connect()
+                if inspect.iscoroutinefunction(self.on_connect):
+                    await self.on_connect()
+                else:
+                    self.on_connect()
             else:
                 raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {argcount})')
         return self
