@@ -101,7 +101,7 @@ You may also have a look at [examples.py](https://github.com/zauberzeug/nicegui/
 
 NiceGUI is based on [JustPy](https://justpy.io/) which is based on the ASGI framework [Starlette](https://www.starlette.io/) and the ASGI webserver [Uvicorn](https://www.uvicorn.org/).
 
-# Deployment
+## Deployment
 
 To deploy your NiceGUI app, you will need to execute your `main.py` (or which ever file contains your `app.run(...)`) on your server infrastructure.
 You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server or use our [pre-build docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies and provides a much much cleaner deployment.
