@@ -76,7 +76,7 @@ You can call `ui.run()` with optional arguments for some high-level configuratio
 
 ## Docker
 
-You can use our [multi-arch docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) for pain-free installation:
+You can use our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) for pain-free installation:
 
 ```bash
 docker run --rm -p 8888:8080 -v $(pwd):/app/ -it zauberzeug/nicegui:latest
@@ -103,12 +103,12 @@ NiceGUI is based on [JustPy](https://justpy.io/) which is based on the ASGI fram
 
 ## Deployment
 
-To deploy your NiceGUI app, you will need to execute your `main.py` (or which ever file contains your `app.run(...)`) on your server infrastructure.
-You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server or use our [pre-build docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies and provides a much much cleaner deployment.
-For example you can use this docker run command to start the script `main.py` in the current directory on port 80:
+To deploy your NiceGUI app, you will need to execute your `main.py` (or whichever file contains your `app.run(...)`) on your server infrastructure.
+You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server or use our [pre-built Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies and provides a much much cleaner deployment.
+For example you can use this `docker run` command to start the script `main.py` in the current directory on port 80:
 
 ```bash
-docker run -p 80:8080 -v $(pwd)/:/app/  -d --restart always zauberzeug/nicegui:latest
+docker run -p 80:8080 -v $(pwd)/:/app/ -d --restart always zauberzeug/nicegui:latest
 ```
 
 The example assumes `main.py` uses the port 8080 in the `ui.run` command (which is the default).
@@ -125,4 +125,4 @@ nicegui:
     - ./:/app/
 ```
 
-While it's possible to provide SSL certificates directly through NiceGUI (using [JustPy config](https://justpy.io/reference/configuration/)) we suggest to use an reverse proxy like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/).
+While it is possible to provide SSL certificates directly through NiceGUI (using [JustPy config](https://justpy.io/reference/configuration/)) we suggest to use a reverse proxy like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/).
