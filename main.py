@@ -494,7 +494,7 @@ with example(get_decorator):
 
     @ui.get('/another/route/{id}')
     def produce_plain_response(id: str, request: requests.Request):
-        return responses.PlainTextResponse(f'{request.client.host} asked for {id=}')
+        return responses.PlainTextResponse(f'{request.client.host} asked for id={id}')
 
     ui.link('Try yet another route!', '/another/route/42')
 
