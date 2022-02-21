@@ -83,7 +83,7 @@ docker run --rm -p 8888:8080 -v $(pwd):/app/ -it zauberzeug/nicegui:latest
 ```
 
 This will start the server at http://localhost:8888 with the code from your current directory.
-The file containing your `app.run(port=8080, ...)` command must be named `main.py`.
+The file containing your `ui.run(port=8080, ...)` command must be named `main.py`.
 Code modification triggers an automatic reload.
 
 ## Why?
@@ -103,7 +103,7 @@ NiceGUI is based on [JustPy](https://justpy.io/) which is based on the ASGI fram
 
 ## Deployment
 
-To deploy your NiceGUI app, you will need to execute your `main.py` (or which ever file contains your `app.run(...)`) on your server infrastructure.
+To deploy your NiceGUI app, you will need to execute your `main.py` (or which ever file contains your `ui.run(...)`) on your server infrastructure.
 You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server or use our [pre-build docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies and provides a much much cleaner deployment.
 For example you can use this docker run command to start the script `main.py` in the current directory on port 80:
 
