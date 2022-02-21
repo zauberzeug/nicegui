@@ -22,7 +22,17 @@ def get(self, path: str):
         @wraps(func)
         def decorated(request: requests.Request):
             args = {name: converter.convert(request.path_params.get(name)) for name, converter in converters.items()}
-            if 'request' in inspect.signature(func).parameters and 'request' not in args:
+            parameters = inspect.signature(func).parameters
+            for key in parameters:
+                if parameters[key].annotation.__name__ == 'bool':
+                    args[key] = bool(args[key])
+                if parameters[key].annotation.__name__ == 'int':
+                    args[key] = int(args[key])
+                elif parameters[key].annotation.__name__ == 'float':
+                    args[key] = float(args[key])
+                elif parameters[key].annotation.__name__ == 'complex':
+                    args[key] = complex(args[key])
+            if 'request' in parameters and 'request' not in args:
                 args['request'] = request
             return func(**args)
         self.add_route(routing.Route(path, decorated))

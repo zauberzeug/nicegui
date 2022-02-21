@@ -487,6 +487,7 @@ Syntactic sugar to add routes.
 Decorating a function with the `@ui.get` makes it available at the specified endpoint, e.g. `'/another/route/<id>'`.
 
 Path parameters can be passed to the request handler like with [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/).
+If type-annotated, they are automatically converted to `bool`, `int`, `float` and `complex` values.
 An optional `request` argument gives access to the complete request object.
 """
 with example(get_decorator):
