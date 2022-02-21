@@ -22,7 +22,7 @@ def get(self, path: str):
         @wraps(func)
         def decorated(request: requests.Request):
             args = {name: converter.convert(request.path_params.get(name)) for name, converter in converters.items()}
-            if 'request' in inspect.signature(func).parameters:
+            if 'request' in inspect.signature(func).parameters and 'request' not in args:
                 args['request'] = request
             return func(**args)
         self.add_route(routing.Route(path, decorated))
