@@ -1,4 +1,6 @@
-from starlette.routing import Route
+from functools import wraps
+import inspect
+from starlette import routing, requests
 from . import globals
 
 def add_route(self, route):
@@ -14,7 +16,15 @@ def get(self, path: str):
     :param path: string that starts with a '/'
     :return:
     """
+    *_, converters = routing.compile_path(path)
+
     def decorator(func):
-        self.add_route(Route(path, func))
-        return func
+        @wraps(func)
+        def decorated(request: requests.Request):
+            args = {name: converter.convert(request.path_params.get(name)) for name, converter in converters.items()}
+            if 'request' in inspect.signature(func).parameters:
+                args['request'] = request
+            return func(**args)
+        self.add_route(routing.Route(path, decorated))
+        return decorated
     return decorator

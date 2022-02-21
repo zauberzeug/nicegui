@@ -484,17 +484,19 @@ with example(add_route):
 get_decorator = """### Get decorator
 
 Syntactic sugar to add routes.
-Decorating a function with the `@ui.get` makes it available at the specified endpoint, e.g. `'/another/route/1'`.
+Decorating a function with the `@ui.get` makes it available at the specified endpoint, e.g. `'/another/route/<id>'`.
+
+Path parameters can be passed to the request handler like with [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/).
+An optional `request` argument gives access to the complete request object.
 """
 with example(get_decorator):
-    import starlette
+    from starlette import requests, responses
 
     @ui.get('/another/route/{id}')
-    def produce_plain_response(request):
-        path_param_id = request.path_params['id']
-        return starlette.responses.PlainTextResponse(f'Response {path_param_id}')
+    def produce_plain_response(id: str, request: requests.Request):
+        return responses.PlainTextResponse(f'{request.client.host} asked for {id=}')
 
-    ui.link('Try yet another route!', '/another/route/1')
+    ui.link('Try yet another route!', '/another/route/42')
 
 with example(ui.keyboard):
     from nicegui.events import KeyEventArguments
