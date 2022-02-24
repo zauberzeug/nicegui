@@ -134,11 +134,11 @@ with example(ui.annotation_tool):
     from nicegui.events import MouseEventArguments
 
     def mouse_handler(e: MouseEventArguments):
-        color = 'green' if e.type == 'mousedown' else 'red'
+        color = 'green' if e.type == 'mousedown' else 'orange'
         at.svg_content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="10" fill="{color}"/>'
         ui.notify(f'{e.type} at ({e.image_x:.1f}, {e.image_y:.1f})')
 
-    at = ui.annotation_tool('http://placeimg.com/640/360/geometry',
+    at = ui.annotation_tool('http://placeimg.com/640/360/arch',
                             on_mouse=mouse_handler,
                             events=['mousedown', 'mouseup'], cross=True)
 
