@@ -17,10 +17,10 @@ markdown2 = "^2.4.0"
 Pygments = "^2.9.0"
 docutils = "^0.17.1"
 asttokens = "^2.0.5"
-uvicorn = {extras = ["watchgodreloader"], version = "^0.14.0"}
+uvicorn = "0.17.5"
 watchgod = "^0.7"
 pydantic = "^1.8.2"
-websockets = "^9.1"
+websockets = "10.2"
 
 [tool.poetry.dev-dependencies]
 icecream = "^2.1.0"

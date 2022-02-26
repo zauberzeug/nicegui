@@ -5,7 +5,7 @@ services:
       context: ./
       dockerfile: development.dockerfile
     ports:
-      - 80:80
+      - 80:8080
     volumes:
       - ./:/app
     labels:
@@ -25,7 +25,7 @@ services:
       - --log #Traefik log, for configurations and errors
       - --api # Enable the Dashboard and API
     ports:
-      - "8080:80"
+      - "8888:80"
     volumes:
       # Traefik must be able to listen for Docker events
       - /var/run/docker.sock:/var/run/docker.sock
