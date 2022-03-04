@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import List, Optional
+from justpy import WebPage
 from .scene_object3d import Object3D
 
 class Scene(Object3D):
@@ -87,3 +88,8 @@ class Texture(Object3D):
                  coordinates: List[List[Optional[List[float]]]],
                  ):
         super().__init__('texture', url, coordinates)
+
+    async def set_url(self, url: str):
+        self.args[0] = url
+        for socket in WebPage.sockets.get(self.page.page_id, {}).values():
+            await self.view.run_method(f'set_texture_url("{self.id}", "{url}")', socket)

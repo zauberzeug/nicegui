@@ -234,6 +234,16 @@ Vue.component("scene", {
       objects.get(object_id).removeFromParent();
       objects.delete(object_id);
     },
+    set_texture_url(object_id, url) {
+      const texture = texture_loader.load(url);
+      texture.flipY = false;
+      texture.minFilter = THREE.LinearFilter;
+      const material = new THREE.MeshLambertMaterial({
+        map: texture,
+        side: THREE.DoubleSide,
+      });
+      objects.get(object_id).material = material;
+    },
   },
 
   props: {

@@ -15,7 +15,7 @@ class Object3D:
         self.parent = self.stack[-1]
         self.view = self.parent.view
         self.page = self.parent.page
-        self.args = args
+        self.args = list(args)
         self.color = '#ffffff'
         self.opacity = 1.0
         self.x = 0
