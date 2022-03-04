@@ -235,14 +235,20 @@ Vue.component("scene", {
       objects.delete(object_id);
     },
     set_texture_url(object_id, url) {
-      const texture = texture_loader.load(url);
-      texture.flipY = false;
-      texture.minFilter = THREE.LinearFilter;
-      const material = new THREE.MeshLambertMaterial({
-        map: texture,
-        side: THREE.DoubleSide,
-      });
-      objects.get(object_id).material = material;
+      const obj = objects.get(object_id);
+      if (obj.busy) return;
+      obj.busy = true;
+      const on_success = (texture) => {
+        texture.flipY = false;
+        texture.minFilter = THREE.LinearFilter;
+        obj.material = new THREE.MeshLambertMaterial({
+          map: texture,
+          side: THREE.DoubleSide,
+        });
+        obj.busy = false;
+      };
+      const on_error = () => (obj.busy = false);
+      texture_loader.load(url, on_success, undefined, on_error);
     },
   },
 
