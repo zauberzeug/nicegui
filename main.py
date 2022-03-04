@@ -130,17 +130,17 @@ with example(overlay):
             </svg>'''
         ui.svg(svg_content).style('background:transparent')
 
-with example(ui.annotation_tool):
+with example(ui.interactive_image):
     from nicegui.events import MouseEventArguments
 
     def mouse_handler(e: MouseEventArguments):
         color = 'green' if e.type == 'mousedown' else 'orange'
-        at.svg_content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="10" fill="{color}"/>'
+        ii.svg_content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="10" fill="{color}"/>'
         ui.notify(f'{e.type} at ({e.image_x:.1f}, {e.image_y:.1f})')
 
-    at = ui.annotation_tool('http://placeimg.com/640/360/arch',
-                            on_mouse=mouse_handler,
-                            events=['mousedown', 'mouseup'], cross=True)
+    ii = ui.interactive_image('http://placeimg.com/640/360/arch',
+                              on_mouse=mouse_handler,
+                              events=['mousedown', 'mouseup'], cross=True)
 
 with example(ui.markdown):
     ui.markdown('### Headline\nWith hyperlink to [GitHub](https://github.com/zauberzeug/nicegui).')

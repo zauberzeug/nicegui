@@ -8,17 +8,17 @@ from .element import Element
 
 CustomView.use(__file__)
 
-class AnnotationToolView(CustomView):
+class InteractiveImageView(CustomView):
 
     def __init__(self, source: str, on_mouse: Callable, events: list[str], cross: bool):
-        super().__init__('annotation_tool', source=source, events=events, cross=cross, svg_content='')
+        super().__init__('interactive_image', source=source, events=events, cross=cross, svg_content='')
         self.allowed_events = ['onMouse']
         self.initialize(onMouse=on_mouse)
 
-class AnnotationTool(Element):
+class InteractiveImage(Element):
 
     def __init__(self, source: str, *, on_mouse: Optional[Callable] = None, events: list[str] = ['click'], cross: bool = False):
-        """Annotation Tool
+        """Interactive Image
 
         Create an image with an SVG overlay that handles mouse events and yields image coordinates.
 
@@ -28,7 +28,7 @@ class AnnotationTool(Element):
         :param cross: whether to show crosshairs (default: `False`)
         """
         self.mouse_handler = on_mouse
-        super().__init__(AnnotationToolView(source, self.handle_mouse, events, cross))
+        super().__init__(InteractiveImageView(source, self.handle_mouse, events, cross))
 
     def handle_mouse(self, msg: Dict[str, Any]):
         if self.mouse_handler is None:

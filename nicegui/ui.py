@@ -2,7 +2,6 @@ class Ui:
     from .config import config  # NOTE: before run
     from .run import run  # NOTE: before justpy
 
-    from .elements.annotation_tool import AnnotationTool as annotation_tool
     from .elements.button import Button as button
     from .elements.chart import Chart as chart
     from .elements.checkbox import Checkbox as checkbox
@@ -12,6 +11,7 @@ class Ui:
     from .elements.icon import Icon as icon
     from .elements.image import Image as image
     from .elements.input import Input as input
+    from .elements.interactive_image import InteractiveImage as interactive_image
     from .elements.joystick import Joystick as joystick
     from .elements.html import Html as html
     from .elements.label import Label as label

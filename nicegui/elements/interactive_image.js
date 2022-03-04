@@ -1,4 +1,4 @@
-Vue.component("annotation_tool", {
+Vue.component("interactive_image", {
   template: `
     <div :id="jp_props.id" style="position:relative;display:inline-block" :style="jp_props.style" :class="jp_props.classes">
       <img style="max-width:100%">
