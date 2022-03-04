@@ -3,9 +3,7 @@ name: Publish Release
 on:
   release:
     types: [created, edited]
-  push:
-    tags:
-      - v**
+
 jobs:
   pypi:
     runs-on: ubuntu-latest
