@@ -8,7 +8,7 @@ def open(self, path: str, socket: WebSocket):
 
     Can be used to programmatically trigger redirects for a specific client.
 
-    :param path: string that is a relative url path or an absolute url
+    :param path: string that is a relative URL path or an absolute URL
     :param socket: WebSocket defining the target client
     """
     create_task(open_async(self, path, socket))
