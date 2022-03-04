@@ -17,6 +17,7 @@ Vue.component("annotation_tool", {
     const handle_completion = () => {
       if (this.waiting_source) {
         image.src = this.waiting_source;
+        this.waiting_source = undefined;
       } else {
         this.loading = false;
       }
