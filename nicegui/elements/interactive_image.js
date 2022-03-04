@@ -13,29 +13,29 @@ Vue.component("interactive_image", {
   `,
   mounted() {
     comp_dict[this.$props.jp_props.id] = this;
-    const image = document.getElementById(this.$props.jp_props.id).firstChild;
+    this.image = document.getElementById(this.$props.jp_props.id).firstChild;
     const handle_completion = () => {
       if (this.waiting_source) {
-        image.src = this.waiting_source;
+        this.image.src = this.waiting_source;
         this.waiting_source = undefined;
       } else {
         this.loading = false;
       }
     };
-    image.addEventListener("load", handle_completion);
-    image.addEventListener("error", handle_completion);
+    this.image.addEventListener("load", handle_completion);
+    this.image.addEventListener("error", handle_completion);
     const svg = document.getElementById(this.$props.jp_props.id).lastChild;
     const cross = svg.firstChild;
-    image.ondragstart = () => false;
+    this.image.ondragstart = () => false;
     if (this.$props.jp_props.options.cross) {
-      image.style.cursor = "none";
-      image.addEventListener("mouseenter", (e) => {
+      this.image.style.cursor = "none";
+      this.image.addEventListener("mouseenter", (e) => {
         cross.style.display = "block";
       });
-      image.addEventListener("mouseleave", (e) => {
+      this.image.addEventListener("mouseleave", (e) => {
         cross.style.display = "none";
       });
-      image.addEventListener("mousemove", (e) => {
+      this.image.addEventListener("mousemove", (e) => {
         const x = (e.offsetX * e.target.naturalWidth) / e.target.clientWidth;
         const y = (e.offsetY * e.target.naturalHeight) / e.target.clientHeight;
         cross.firstChild.setAttribute("x1", x);
@@ -44,13 +44,13 @@ Vue.component("interactive_image", {
         cross.lastChild.setAttribute("y2", y);
       });
     }
-    image.onload = (e) => {
-      const viewBox = `0 0 ${image.naturalWidth} ${image.naturalHeight}`;
+    this.image.onload = (e) => {
+      const viewBox = `0 0 ${this.image.naturalWidth} ${this.image.naturalHeight}`;
       svg.setAttribute("viewBox", viewBox);
     };
-    image.src = this.$props.jp_props.options.source;
+    this.image.src = this.$props.jp_props.options.source;
     for (const type of this.$props.jp_props.options.events) {
-      image.addEventListener(type, (e) => {
+      this.image.addEventListener(type, (e) => {
         const event = {
           event_type: "onMouse",
           mouse_event_type: type,
@@ -64,6 +64,20 @@ Vue.component("interactive_image", {
         send_to_server(event, "event");
       });
     }
+
+    const sendConnectEvent = () => {
+      if (websocket_id === "") return;
+      const event = {
+        event_type: "onConnect",
+        vue_type: this.$props.jp_props.vue_type,
+        id: this.$props.jp_props.id,
+        page_id: page_id,
+        websocket_id: websocket_id,
+      };
+      send_to_server(event, "event");
+      clearInterval(connectInterval);
+    };
+    const connectInterval = setInterval(sendConnectEvent, 100);
   },
   methods: {
     set_source(source) {
@@ -72,8 +86,7 @@ Vue.component("interactive_image", {
         return;
       }
       this.loading = true;
-      image = document.getElementById(this.$props.jp_props.id).firstChild;
-      image.src = source;
+      this.image.src = source;
     },
   },
   props: {
