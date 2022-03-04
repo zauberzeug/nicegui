@@ -1,4 +1,5 @@
 from __future__ import annotations
+from justpy import WebPage
 from typing import Any, Callable, Dict, Optional
 import traceback
 from ..events import MouseEventArguments, handle_event
@@ -43,6 +44,11 @@ class AnnotationTool(Element):
             handle_event(self.mouse_handler, arguments)
         except:
             traceback.print_exc()
+
+    async def set_source(self, source: str):
+        self.view.options.source = source
+        for socket in WebPage.sockets.get(self.page.page_id, {}).values():
+            await self.view.run_method(f'set_source("{source}")', socket)
 
     @property
     def svg_content(self) -> str:

@@ -12,6 +12,7 @@ Vue.component("annotation_tool", {
     </div>
   `,
   mounted() {
+    comp_dict[this.$props.jp_props.id] = this;
     const image = document.getElementById(this.$props.jp_props.id).firstChild;
     const svg = document.getElementById(this.$props.jp_props.id).lastChild;
     const cross = svg.firstChild;
@@ -53,6 +54,11 @@ Vue.component("annotation_tool", {
         send_to_server(event, "event");
       });
     }
+  },
+  methods: {
+    set_source(source) {
+      document.getElementById(this.$props.jp_props.id).firstChild.src = source;
+    },
   },
   props: {
     jp_props: Object,
