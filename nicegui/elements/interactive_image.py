@@ -1,4 +1,5 @@
 from __future__ import annotations
+from justpy import WebPage
 from typing import Any, Callable, Dict, Optional
 import traceback
 from ..events import MouseEventArguments, handle_event
@@ -16,7 +17,12 @@ class InteractiveImageView(CustomView):
         self.sockets = []
 
     def on_connect(self, msg):
+        self.prune_sockets()
         self.sockets.append(msg.websocket)
+
+    def prune_sockets(self):
+        page_sockets = [s for page_id in self.pages for s in WebPage.sockets.get(page_id, {}).values()]
+        self.sockets = [s for s in self.sockets if s in page_sockets]
 
 class InteractiveImage(Element):
 
@@ -50,6 +56,7 @@ class InteractiveImage(Element):
 
     async def set_source(self, source: str):
         self.view.options.source = source
+        self.view.prune_sockets()
         for socket in self.view.sockets:
             await self.view.run_method(f'set_source("{source}")', socket)
 
