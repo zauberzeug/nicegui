@@ -93,3 +93,8 @@ class Texture(Object3D):
         self.args[0] = url
         for socket in WebPage.sockets.get(self.page.page_id, {}).values():
             await self.view.run_method(f'set_texture_url("{self.id}", "{url}")', socket)
+
+    async def set_coordinates(self, coordinates: List[List[Optional[List[float]]]]):
+        self.args[1] = coordinates
+        for socket in WebPage.sockets.get(self.page.page_id, {}).values():
+            await self.view.run_method(f'set_texture_coordinates("{self.id}", {coordinates})', socket)

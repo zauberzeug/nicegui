@@ -9,6 +9,57 @@ const None = null;
 const False = false;
 const True = true;
 
+function texture_geometry(coords) {
+  const geometry = new THREE.BufferGeometry();
+  const nI = coords[0].length;
+  const nJ = coords.length;
+  const vertices = [];
+  const indices = [];
+  const uvs = [];
+  for (let j = 0; j < nJ; ++j) {
+    for (let i = 0; i < nI; ++i) {
+      const XYZ = coords[j][i] || [0, 0, 0];
+      vertices.push(...XYZ);
+      uvs.push(i / (nI - 1), j / (nJ - 1));
+    }
+  }
+  for (let j = 0; j < nJ - 1; ++j) {
+    for (let i = 0; i < nI - 1; ++i) {
+      if (
+        coords[j][i] &&
+        coords[j][i + 1] &&
+        coords[j + 1][i] &&
+        coords[j + 1][i + 1]
+      ) {
+        const idx00 = i + j * nI;
+        const idx10 = i + j * nI + 1;
+        const idx01 = i + j * nI + nI;
+        const idx11 = i + j * nI + 1 + nI;
+        indices.push(idx00, idx10, idx01);
+        indices.push(idx10, idx11, idx01);
+      }
+    }
+  }
+  geometry.setIndex(new THREE.Uint32BufferAttribute(indices, 1));
+  geometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(vertices, 3)
+  );
+  geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+  geometry.computeVertexNormals();
+  geometry.computeFaceNormals();
+  return geometry;
+}
+
+function texture_material(texture) {
+  texture.flipY = false;
+  texture.minFilter = THREE.LinearFilter;
+  return new THREE.MeshLambertMaterial({
+    map: texture,
+    side: THREE.DoubleSide,
+  });
+}
+
 Vue.component("scene", {
   template: `<canvas v-bind:id="jp_props.id"></div>`,
 
@@ -128,51 +179,8 @@ Vue.component("scene", {
       } else if (type == "texture") {
         const url = args[0];
         const coords = args[1];
-        const geometry = new THREE.BufferGeometry();
-        const nI = coords[0].length;
-        const nJ = coords.length;
-        const vertices = [];
-        const indices = [];
-        const uvs = [];
-        for (let j = 0; j < nJ; ++j) {
-          for (let i = 0; i < nI; ++i) {
-            const XYZ = coords[j][i] || [0, 0, 0];
-            vertices.push(...XYZ);
-            uvs.push(i / (nI - 1), j / (nJ - 1));
-          }
-        }
-        for (let j = 0; j < nJ - 1; ++j) {
-          for (let i = 0; i < nI - 1; ++i) {
-            if (
-              coords[j][i] &&
-              coords[j][i + 1] &&
-              coords[j + 1][i] &&
-              coords[j + 1][i + 1]
-            ) {
-              const idx00 = i + j * nI;
-              const idx10 = i + j * nI + 1;
-              const idx01 = i + j * nI + nI;
-              const idx11 = i + j * nI + 1 + nI;
-              indices.push(idx00, idx10, idx01);
-              indices.push(idx10, idx11, idx01);
-            }
-          }
-        }
-        geometry.setIndex(new THREE.Uint32BufferAttribute(indices, 1));
-        geometry.setAttribute(
-          "position",
-          new THREE.Float32BufferAttribute(vertices, 3)
-        );
-        geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
-        geometry.computeVertexNormals();
-        geometry.computeFaceNormals();
-        const texture = texture_loader.load(url);
-        texture.flipY = false;
-        texture.minFilter = THREE.LinearFilter;
-        const material = new THREE.MeshLambertMaterial({
-          map: texture,
-          side: THREE.DoubleSide,
-        });
+        const geometry = texture_geometry(coords);
+        const material = texture_material(texture_loader.load(url));
         mesh = new THREE.Mesh(geometry, material);
       } else {
         let geometry;
@@ -239,16 +247,14 @@ Vue.component("scene", {
       if (obj.busy) return;
       obj.busy = true;
       const on_success = (texture) => {
-        texture.flipY = false;
-        texture.minFilter = THREE.LinearFilter;
-        obj.material = new THREE.MeshLambertMaterial({
-          map: texture,
-          side: THREE.DoubleSide,
-        });
+        obj.material = texture_material(texture);
         obj.busy = false;
       };
       const on_error = () => (obj.busy = false);
       texture_loader.load(url, on_success, undefined, on_error);
+    },
+    set_texture_coordinates(object_id, coords) {
+      objects.get(object_id).geometry = texture_geometry(coords);
     },
   },
 
