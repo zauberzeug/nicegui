@@ -14,6 +14,15 @@ Vue.component("annotation_tool", {
   mounted() {
     comp_dict[this.$props.jp_props.id] = this;
     const image = document.getElementById(this.$props.jp_props.id).firstChild;
+    const handle_completion = () => {
+      if (this.waiting_source) {
+        image.src = this.waiting_source;
+      } else {
+        this.loading = false;
+      }
+    };
+    image.addEventListener("load", handle_completion);
+    image.addEventListener("error", handle_completion);
     const svg = document.getElementById(this.$props.jp_props.id).lastChild;
     const cross = svg.firstChild;
     image.ondragstart = () => false;
@@ -57,7 +66,13 @@ Vue.component("annotation_tool", {
   },
   methods: {
     set_source(source) {
-      document.getElementById(this.$props.jp_props.id).firstChild.src = source;
+      if (this.loading) {
+        this.waiting_source = source;
+        return;
+      }
+      this.loading = true;
+      image = document.getElementById(this.$props.jp_props.id).firstChild;
+      image.src = source;
     },
   },
   props: {
