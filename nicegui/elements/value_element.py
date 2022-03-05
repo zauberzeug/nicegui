@@ -19,6 +19,8 @@ class ValueElement(Element):
         self.change_handler = on_change
         self.value = value
         self.bind_value_to(self.view, 'value', forward=self.value_to_view)
+        if value:
+            self.handle_change({'value': value})
 
     def value_to_view(self, value):
         return value
