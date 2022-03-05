@@ -56,7 +56,7 @@ class Timer:
                     dt = time.time() - start
                     await asyncio.sleep(interval - dt)
                 except asyncio.CancelledError:
-                    pass
+                    return
                 except:
                     traceback.print_exc()
                     await asyncio.sleep(interval)
