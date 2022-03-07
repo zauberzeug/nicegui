@@ -10,7 +10,7 @@ active_links = []
 async def loop():
     while True:
         visited = set()
-        invalidated_views = []
+        invalidated_elements = []
         for link in active_links:
             (source_obj, source_name, target_obj, target_name, transform) = link
             value = transform(getattr(source_obj, source_name))
@@ -18,9 +18,9 @@ async def loop():
                 setattr(target_obj, target_name, value)
                 propagate(target_obj, target_name, visited)
                 if hasattr(target_obj, 'view') and isinstance(target_obj.view, HTMLBaseComponent):
-                    invalidated_views.append(target_obj.view)
-        for view in invalidated_views:
-            await view.update()
+                    invalidated_elements.append(target_obj)
+        for element in invalidated_elements:
+            await element.view.update()
         await asyncio.sleep(0.1)
 
 def propagate(source_obj, source_name, visited=None):
