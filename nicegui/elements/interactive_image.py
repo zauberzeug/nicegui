@@ -1,6 +1,6 @@
 from __future__ import annotations
 from justpy import WebPage
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 import traceback
 from ..events import MouseEventArguments, handle_event
 from .custom_view import CustomView
@@ -10,7 +10,7 @@ CustomView.use(__file__)
 
 class InteractiveImageView(CustomView):
 
-    def __init__(self, source: str, on_mouse: Callable, events: list[str], cross: bool):
+    def __init__(self, source: str, on_mouse: Callable, events: List[str], cross: bool):
         super().__init__('interactive_image', source=source, events=events, cross=cross, svg_content='')
         self.allowed_events = ['onMouse', 'onConnect']
         self.initialize(onMouse=on_mouse, onConnect=self.on_connect)
@@ -26,7 +26,7 @@ class InteractiveImageView(CustomView):
 
 class InteractiveImage(Element):
 
-    def __init__(self, source: str, *, on_mouse: Optional[Callable] = None, events: list[str] = ['click'], cross: bool = False):
+    def __init__(self, source: str, *, on_mouse: Optional[Callable] = None, events: List[str] = ['click'], cross: bool = False):
         """Interactive Image
 
         Create an image with an SVG overlay that handles mouse events and yields image coordinates.
