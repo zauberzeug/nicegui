@@ -17,6 +17,7 @@ class Dialog(Group):
             value=value,
             classes='row items-start bg-red-400',
             style='gap: 1em',
+            temp=False,
         )
 
         super().__init__(view)

@@ -12,7 +12,7 @@ class Html(Element):
 
         :param content: the HTML code to be displayed
         """
-        view = jp.QDiv()
+        view = jp.QDiv(temp=False)
         super().__init__(view)
         self.content = content
 

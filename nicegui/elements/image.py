@@ -15,7 +15,7 @@ class Image(Group):
 
         :param source: the source of the image; can be an URL or a base64 string
         """
-        view = jp.QImg(src=source)
+        view = jp.QImg(src=source, temp=False)
         super().__init__(view)
 
         self.source = source

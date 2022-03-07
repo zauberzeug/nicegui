@@ -43,7 +43,7 @@ class Page(jp.QuasarPage):
             </script>
         '''  # avoid confirmation dialog for reload
 
-        self.view = jp.Div(a=self, classes=classes, style='row-gap: 1em')
+        self.view = jp.Div(a=self, classes=classes, style='row-gap: 1em', temp=False)
         self.view.add_page(self)
 
         self.route = route

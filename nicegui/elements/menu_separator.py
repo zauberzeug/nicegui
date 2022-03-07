@@ -10,5 +10,5 @@ class MenuSeparator(Element):
 
         A separator for menus.
         """
-        view = jp.QSeparator()
+        view = jp.QSeparator(temp=False)
         super().__init__(view)

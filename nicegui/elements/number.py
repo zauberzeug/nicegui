@@ -25,6 +25,7 @@ class Number(FloatElement):
             label=label,
             placeholder=placeholder,
             change=self.handle_change,
+            temp=False,
         )
 
         super().__init__(view, value=value, format=format, on_change=on_change)

@@ -19,7 +19,7 @@ class Button(Element):
         :param on_click: callback which is invoked when button is pressed
         """
 
-        view = jp.QButton(label=text, color='primary')
+        view = jp.QButton(label=text, color='primary', temp=False)
         super().__init__(view)
 
         self.text = text

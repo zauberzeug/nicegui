@@ -19,10 +19,14 @@ class Upload(Element):
         :param on_upload: callback to execute when a file is uploaded (list of bytearrays)
         """
         self.upload_handler = on_upload
-        view = jp.Form(enctype='multipart/form-data', classes='flex gap-4 items-center',
-                       submit=lambda s, m: self.submit(s, m))
-        jp.Input(type='file', multiple=multiple, a=view)
-        jp.QButton(type='submit', text='Upload', color='primary', a=view)
+        view = jp.Form(
+            enctype='multipart/form-data',
+            classes='flex gap-4 items-center',
+            submit=lambda sender, msg: self.submit(sender, msg),
+            temp=False,
+        )
+        jp.Input(type='file', multiple=multiple, a=view, temp=False)
+        jp.QBtn(type='submit', text='Upload', color='primary', a=view, temp=False)
 
         super().__init__(view)
 
