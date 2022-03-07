@@ -6,7 +6,10 @@ from ..binding import bind_from, bind_to, BindableProperty
 from .element import Element
 
 class ValueElement(Element):
-    value = BindableProperty()
+    value = BindableProperty(
+        on_change=lambda sender, value: handle_event(sender.change_handler,
+                                                     ValueChangeEventArguments(sender=sender, value=value),
+                                                     update=sender.parent_view))
 
     def __init__(self,
                  view: jp.HTMLBaseComponent,
@@ -25,8 +28,6 @@ class ValueElement(Element):
 
     def handle_change(self, msg):
         self.value = msg['value']
-        arguments = ValueChangeEventArguments(sender=self, value=self.value)
-        handle_event(self.change_handler, arguments, update=self.parent_view)
 
     def bind_value_to(self, target_object, target_name, *, forward=lambda x: x):
         bind_to(self, 'value', target_object, target_name, forward=forward)

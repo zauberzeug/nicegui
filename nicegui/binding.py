@@ -2,7 +2,7 @@
 import asyncio
 from collections import defaultdict
 from justpy.htmlcomponents import HTMLBaseComponent
-from typing import Any, Callable, Set, Tuple
+from typing import Any, Callable, Optional, Set, Tuple
 from .task_logger import create_task
 
 bindings = defaultdict(list)
@@ -65,6 +65,9 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, ba
 
 class BindableProperty:
 
+    def __init__(self, on_change: Optional[Callable] = None):
+        self.on_change = on_change
+
     def __set_name__(self, _, name: str):
         self.name = name
 
@@ -72,6 +75,9 @@ class BindableProperty:
         return getattr(owner, '_' + self.name)
 
     def __set__(self, owner: Any, value: Any):
+        value_changed = getattr(owner, '_' + self.name, value) != value
         setattr(owner, '_' + self.name, value)
         bindable_properties[(id(owner), self.name)] = owner
         update_views(propagate(owner, self.name))
+        if value_changed and self.on_change is not None:
+            self.on_change(owner, value)
