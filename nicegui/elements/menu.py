@@ -13,7 +13,7 @@ class Menu(Group):
 
         :param value: whether the menu is already opened (default: `False`)
         """
-        view = jp.QMenu(value=value)
+        view = jp.QMenu(value=value, temp=False)
 
         super().__init__(view)
 

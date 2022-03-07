@@ -16,6 +16,6 @@ class Switch(BoolElement):
         :param value: whether it should be active initally (default: `False`)
         :param on_click: callback which is invoked when state is changed by the user
         """
-        view = jp.QToggle(text=text, input=self.handle_change)
+        view = jp.QToggle(text=text, input=self.handle_change, temp=False)
 
         super().__init__(view, value=value, on_change=on_change)

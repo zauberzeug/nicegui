@@ -11,6 +11,6 @@ class Chart(Element):
 
         :param options: dictionary of highcharts options
         """
-        view = jp.HighCharts()
+        view = jp.HighCharts(temp=False)
         view.options = self.options = jp.Dict(**options)
         super().__init__(view)

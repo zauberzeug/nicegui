@@ -17,6 +17,6 @@ class Link(Element):
         :param target: link target (either a string or a page object)
         """
         href = target if isinstance(target, str) else target.route
-        view = jp.A(text=text, href=href, classes='underline text-blue')
+        view = jp.A(text=text, href=href, classes='underline text-blue', temp=False)
 
         super().__init__(view)

@@ -16,7 +16,7 @@ class Select(ChoiceElement):
         :param value: the inital value
         :param on_change: callback to execute when selection changes
         """
-        view = jp.QSelect(options=options, input=self.handle_change)
+        view = jp.QSelect(options=options, input=self.handle_change, temp=False)
 
         super().__init__(view, options, value=value, on_change=on_change)
 
