@@ -3,7 +3,8 @@ from ..binding import bind_from, bind_to, BindableProperty
 from ..globals import view_stack, page_stack
 
 class Element:
-    visible = BindableProperty()
+    visible = BindableProperty(
+        on_change=lambda sender, visible: (sender.view.remove_class if visible else sender.view.set_class)('hidden'))
 
     def __init__(self,
                  view: jp.HTMLBaseComponent,
@@ -15,15 +16,6 @@ class Element:
         self.view.add_page(self.page)
 
         self.visible = True
-
-    @property
-    def visible(self):
-        return self.visible_
-
-    @visible.setter
-    def visible(self, visible: bool):
-        self.visible_ = visible
-        (self.view.remove_class if self.visible_ else self.view.set_class)('hidden')
 
     def bind_visibility_to(self, target_object, target_name, forward=lambda x: x):
         bind_to(self, 'visible', target_object, target_name, forward=forward)
