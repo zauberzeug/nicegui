@@ -17,26 +17,16 @@ class ValueElement(Element):
         super().__init__(view)
 
         self.change_handler = on_change
-        self.value_ = value
+        self.value = value
         self.bind_value_to(self.view, 'value', forward=self.value_to_view)
-
-    @property
-    def value(self):
-        return self.value_
-
-    @value.setter
-    def value(self, value: Any):
-        change = self.value_ != value
-        self.value_ = value
-        if change:
-            arguments = ValueChangeEventArguments(sender=self, value=self.value)
-            handle_event(self.change_handler, arguments, update=self.parent_view)
 
     def value_to_view(self, value):
         return value
 
     def handle_change(self, msg):
         self.value = msg['value']
+        arguments = ValueChangeEventArguments(sender=self, value=self.value)
+        handle_event(self.change_handler, arguments, update=self.parent_view)
 
     def bind_value_to(self, target_object, target_name, *, forward=lambda x: x):
         bind_to(self, 'value', target_object, target_name, forward=forward)
