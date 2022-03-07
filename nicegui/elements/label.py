@@ -15,7 +15,7 @@ class Label(Element):
 
         :param text: the content of the label
         """
-        view = jp.Div(text=text)
+        view = jp.Div(text=text, temp=False)
         super().__init__(view)
 
         self.text = text

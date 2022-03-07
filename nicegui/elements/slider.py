@@ -20,6 +20,6 @@ class Slider(FloatElement):
         :param value: inital value to set position of the slider
         :param on_change: callback which is invoked when the user releases the slider
         """
-        view = jp.QSlider(min=min, max=max, step=step, change=self.handle_change)
+        view = jp.QSlider(min=min, max=max, step=step, change=self.handle_change, temp=False)
 
         super().__init__(view, value=value, on_change=on_change)

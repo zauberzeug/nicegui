@@ -23,6 +23,7 @@ class Input(StringElement):
             placeholder=placeholder,
             value=value,
             change=self.handle_change,
+            temp=False,
         )
 
         super().__init__(view, value=value, on_change=on_change)

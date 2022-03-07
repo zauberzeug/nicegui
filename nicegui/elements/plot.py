@@ -19,7 +19,7 @@ class Plot(Element):
         self.close = close
         self.fig = plt.figure(**kwargs)
 
-        view = jp.Matplotlib()
+        view = jp.Matplotlib(temp=False)
         view.set_figure(self.fig)
 
         super().__init__(view)

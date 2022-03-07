@@ -8,5 +8,5 @@ class Column(Group):
 
         Provides a container which arranges its child in a row.
         '''
-        view = jp.QDiv(classes='column items-start', style='gap: 1em', delete_flag=False)
+        view = jp.QDiv(classes='column items-start', style='gap: 1em', delete_flag=False, temp=False)
         super().__init__(view)
