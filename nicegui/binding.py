@@ -2,7 +2,7 @@
 import asyncio
 from collections import defaultdict
 from justpy.htmlcomponents import HTMLBaseComponent
-from typing import Any, Callable, List, Optional, Set, Tuple
+from typing import Any, Callable, Optional, Set, Tuple
 from .task_logger import create_task
 
 bindings = defaultdict(list)
@@ -22,11 +22,11 @@ async def loop():
         update_views(visited_views)
         await asyncio.sleep(0.1)
 
-async def update_views_async(views: List[HTMLBaseComponent]):
+async def update_views_async(views: Set[HTMLBaseComponent]):
     for view in views:
         await view.update()
 
-def update_views(views: List[HTMLBaseComponent]):
+def update_views(views: Set[HTMLBaseComponent]):
     if asyncio._get_running_loop() is None:
         return  # NOTE: no need to update view if event loop is not running, yet
     create_task(update_views_async(views))
@@ -34,7 +34,7 @@ def update_views(views: List[HTMLBaseComponent]):
 def propagate(source_obj,
               source_name,
               visited: Set[Tuple[int, str]] = None,
-              visited_views: Set[HTMLBaseComponent] = None) -> List[HTMLBaseComponent]:
+              visited_views: Set[HTMLBaseComponent] = None) -> Set[HTMLBaseComponent]:
     if visited is None:
         visited = set()
     if visited_views is None:
