@@ -39,7 +39,7 @@ try:
     with open(filepath) as f:
         source = f.read()
 except FileNotFoundError:
-    print('Could not find main script. Starting with interactive mode.', flush=True)
+    print('Could not find main script. Starting interactive mode without auto-reload.', flush=True)
     config = Config(interactive=True)
 else:
     for node in ast.walk(ast.parse(source)):
@@ -58,7 +58,8 @@ else:
         except AttributeError:
             continue
     else:
-        raise Exception('Could not find ui.run() command')
+        print('Could not find and pre-evaluate ui.run(). Starting interactive mode without auto-reload.', flush=True)
+        config = Config(interactive=True)
 
 os.environ['HOST'] = config.host
 os.environ['PORT'] = str(config.port)
