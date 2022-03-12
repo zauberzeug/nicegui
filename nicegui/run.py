@@ -24,6 +24,7 @@ def run(self, *,
         on_connect: Optional[Union[Callable, Awaitable]] = None,
         uvicorn_logging_level: str = 'warning',
         main_page_classes: str = 'q-ma-md column items-start',
+        binding_refresh_interval=0.1,
         ):
 
     if globals.config.interactive or reload == False:  # NOTE: if reload == True we already started uvicorn above
