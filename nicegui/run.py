@@ -3,6 +3,7 @@ import inspect
 import sys
 import webbrowser
 import uvicorn
+import os
 from . import globals
 
 if not globals.config.interactive and globals.config.reload and not inspect.stack()[-2].filename.endswith('spawn.py'):
@@ -14,8 +15,8 @@ if not globals.config.interactive and globals.config.reload and not inspect.stac
     sys.exit()
 
 def run(self, *,
-        host: str = '0.0.0.0',
-        port: int = 8080,
+        host: str = os.environ.get('HOST', '0.0.0.0'),
+        port: int = int(os.environ.get('PORT', '8080')),
         title: str = 'NiceGUI',
         favicon: str = 'favicon.ico',
         dark: Optional[bool] = False,

@@ -74,6 +74,8 @@ You can call `ui.run()` with optional arguments for some high-level configuratio
 - `main_page_classes`: configure Quasar classes of main page (default: `q-ma-md column items-start`)
 - `interactive`: used internally when run in interactive Python shell (default: `False`)
 
+The environment variables `HOST` and `PORT` can also be used to configure NiceGUI.
+
 ## Docker
 
 You can use our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) for pain-free installation:

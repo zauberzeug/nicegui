@@ -8,8 +8,8 @@ from . import globals
 @dataclass
 class Config():
     # NOTE: should be in sync with ui.run arguments
-    host: str = '0.0.0.0'
-    port: int = 8080
+    host: str = os.environ.get('HOST', '0.0.0.0')
+    port: int = int(os.environ.get('PORT', '8080'))
     title: str = 'NiceGUI'
     favicon: str = 'favicon.ico'
     dark: Optional[bool] = False
