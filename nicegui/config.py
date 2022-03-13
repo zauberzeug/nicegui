@@ -18,8 +18,8 @@ class Config():
     on_connect: Optional[Union[Callable, Awaitable]] = None
     uvicorn_logging_level: str = 'warning'
     main_page_classes: str = 'q-ma-md column items-start'
-    interactive: bool = False
     binding_refresh_interval: float = 0.1
+    interactive: bool = False
 
 
 excluded_endings = (
