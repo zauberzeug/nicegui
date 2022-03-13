@@ -61,6 +61,12 @@ else:
         print('Could not find and pre-evaluate ui.run(). Starting interactive mode without auto-reload.', flush=True)
         config = Config(interactive=True)
 
+if os.environ.get('PYTHONHOME') == '/app/.heroku/python' and os.environ.get('WEB_CONCURRENCY') != '1':
+    print('***', flush=True)
+    print('NiceGUI seems to be running on Heroku.', flush=True)
+    print('Make sure to set WEB_CONCURRENCY=1 in your app > Settings > Config Vars.', flush=True)
+    print('***', flush=True)
+
 os.environ['HOST'] = config.host
 os.environ['PORT'] = str(config.port)
 os.environ["STATIC_DIRECTORY"] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
