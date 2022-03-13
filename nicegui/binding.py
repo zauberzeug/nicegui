@@ -4,6 +4,7 @@ from collections import defaultdict
 from justpy.htmlcomponents import HTMLBaseComponent
 from typing import Any, Callable, Optional, Set, Tuple
 from .task_logger import create_task
+from .globals import config
 
 bindings = defaultdict(list)
 bindable_properties = dict()
@@ -20,7 +21,7 @@ async def loop():
                 setattr(target_obj, target_name, value)
                 propagate(target_obj, target_name, visited, visited_views)
         update_views(visited_views)
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(config.binding_refresh_interval)
 
 async def update_views_async(views: Set[HTMLBaseComponent]):
     for view in views:

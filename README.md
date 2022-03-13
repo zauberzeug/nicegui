@@ -72,6 +72,7 @@ You can call `ui.run()` with optional arguments for some high-level configuratio
 - `on_connect`: default function or coroutine which is called for each new client connection; the optional `request` argument provides session infos
 - `uvicorn_logging_level`: logging level for uvicorn server (default: `'warning'`)
 - `main_page_classes`: configure Quasar classes of main page (default: `q-ma-md column items-start`)
+- `binding_refresh_interval`: time between binding updates (default: `0.1` seconds, bigger is more cpu friendly)
 - `interactive`: used internally when run in interactive Python shell (default: `False`)
 
 The environment variables `HOST` and `PORT` can also be used to configure NiceGUI.
