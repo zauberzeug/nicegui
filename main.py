@@ -46,26 +46,28 @@ def example(content: Union[Callable, type, str]):
             html = Markdown.apply_tailwind(html)
             add_html_anchor(ui.html(html).classes('mr-8 w-4/12'))
 
-        with ui.card().classes('mt-12 w-2/12'):
-            with ui.column().classes('flex w-full'):
-                yield
-        callFrame = inspect.currentframe().f_back.f_back
-        end = callFrame.f_lineno
-        code = inspect.getsource(sys.modules[__name__])
-        lines = code.splitlines()
-        while lines[end]:
-            end += 1
-        code = lines[begin:end]
-        code = [l[4:] for l in code]
-        code.insert(0, '```python')
-        code.insert(1, 'from nicegui import ui')
-        if code[2].split()[0] not in ['from', 'import']:
-            code.insert(2, '')
-        code.append('')
-        code.append('ui.run()')
-        code.append('```')
-        code = '\n'.join(code)
-        ui.markdown(code).classes('mt-12 w-5/12 overflow-auto')
+        try:
+            with ui.card().classes('mt-12 w-2/12'):
+                with ui.column().classes('flex w-full'):
+                    yield
+        finally:
+            callFrame = inspect.currentframe().f_back.f_back
+            end = callFrame.f_lineno
+            code = inspect.getsource(sys.modules[__name__])
+            lines = code.splitlines()
+            while lines[end]:
+                end += 1
+            code = lines[begin:end]
+            code = [l[4:] for l in code]
+            code.insert(0, '```python')
+            code.insert(1, 'from nicegui import ui')
+            if code[2].split()[0] not in ['from', 'import']:
+                code.insert(2, '')
+            code.append('')
+            code.append('ui.run()')
+            code.append('```')
+            code = '\n'.join(code)
+            ui.markdown(code).classes('mt-12 w-5/12 overflow-auto')
 
 with ui.row().classes('flex w-full'):
     with open('README.md', 'r') as file:
