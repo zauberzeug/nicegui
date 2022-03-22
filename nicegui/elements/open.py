@@ -19,6 +19,6 @@ def open(self, target: Union[Page, str], socket: Optional[WebSocket] = None):
 
 async def open_async(self, target: Union[Page, str], socket: Optional[WebSocket]):
     path = target if isinstance(target, str) else target.route
-    sockets = [s for socket_dict in WebPage.sockets.values() for s in socket_dict.values()]
+    sockets = [socket] if socket else [s for socket_dict in WebPage.sockets.values() for s in socket_dict.values()]
     for socket in sockets:
         await socket.send_json({'type': 'page_update', 'page_options': {'redirect': path}})
