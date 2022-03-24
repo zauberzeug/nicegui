@@ -1,6 +1,7 @@
 var scene;
 var look_at;
 var camera;
+var camera_tween;
 var orbitControls;
 var texture_loader = new THREE.TextureLoader();
 var stl_loader = new THREE.STLLoader();
@@ -108,6 +109,7 @@ Vue.component("scene", {
 
     const render = function () {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
+      TWEEN.update();
       renderer.render(scene, camera);
     };
     render();
@@ -259,19 +261,50 @@ Vue.component("scene", {
     set_texture_coordinates(object_id, coords) {
       objects.get(object_id).geometry = texture_geometry(coords);
     },
-    move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z) {
-      x = x === null ? camera.position.x : x;
-      y = y === null ? camera.position.y : y;
-      z = z === null ? camera.position.z : z;
-      camera.position.set(x, y, z);
-      up_x = up_x === null ? camera.up.x : up_x;
-      up_y = up_y === null ? camera.up.y : up_y;
-      up_z = up_z === null ? camera.up.z : up_z;
-      camera.up.set(up_x, up_y, up_z); // NOTE: before calling lookAt
-      look_at_x = look_at_x === null ? look_at.x : look_at_x;
-      look_at_y = look_at_y === null ? look_at.y : look_at_y;
-      look_at_z = look_at_z === null ? look_at.z : look_at_z;
-      camera.lookAt(look_at_x, look_at_y, look_at_z);
+    move_camera(
+      x,
+      y,
+      z,
+      look_at_x,
+      look_at_y,
+      look_at_z,
+      up_x,
+      up_y,
+      up_z,
+      duration
+    ) {
+      if (camera_tween) camera_tween.stop();
+      camera_tween = new TWEEN.Tween([
+        camera.position.x,
+        camera.position.y,
+        camera.position.z,
+        camera.up.x,
+        camera.up.y,
+        camera.up.z,
+        look_at_x,
+        look_at_y,
+        look_at_z,
+      ])
+        .to(
+          [
+            x === null ? camera.position.x : x,
+            y === null ? camera.position.y : y,
+            z === null ? camera.position.z : z,
+            up_x === null ? camera.up.x : up_x,
+            up_y === null ? camera.up.y : up_y,
+            up_z === null ? camera.up.z : up_z,
+            look_at_x === null ? look_at.x : look_at_x,
+            look_at_y === null ? look_at.y : look_at_y,
+            look_at_z === null ? look_at.z : look_at_z,
+          ],
+          duration * 1000
+        )
+        .onUpdate((p) => {
+          camera.position.set(p[0], p[1], p[2]);
+          camera.up.set(p[3], p[4], p[5]); // NOTE: before calling lookAt
+          camera.lookAt(p[6], p[7], p[8]);
+        })
+        .start();
     },
   },
 

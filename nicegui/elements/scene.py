@@ -10,7 +10,7 @@ from ..globals import view_stack
 from ..events import handle_event
 from ..task_logger import create_task
 
-CustomView.use(__file__, ['three.min.js', 'OrbitControls.js', 'STLLoader.js'])
+CustomView.use(__file__, ['three.min.js', 'OrbitControls.js', 'STLLoader.js', 'tween.umd.min.js'])
 
 class SceneView(CustomView):
 
@@ -88,9 +88,10 @@ class Scene(Element):
                     look_at_z: Optional[float] = None,
                     up_x: Optional[float] = None,
                     up_y: Optional[float] = None,
-                    up_z: Optional[float] = None):
+                    up_z: Optional[float] = None,
+                    duration: float = 0.5):
         for socket in WebPage.sockets.get(self.page.page_id, {}).values():
-            command = f'move_camera({x}, {y}, {z}, {look_at_x}, {look_at_y}, {look_at_z}, {up_x}, {up_y}, {up_z})'
+            command = f'move_camera({x}, {y}, {z}, {look_at_x}, {look_at_y}, {look_at_z}, {up_x}, {up_y}, {up_z}, {duration})'
             create_task(self.view.run_method(command, socket))
 
 class SceneObject:
