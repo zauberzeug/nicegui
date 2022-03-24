@@ -259,11 +259,15 @@ Vue.component("scene", {
     set_texture_coordinates(object_id, coords) {
       objects.get(object_id).geometry = texture_geometry(coords);
     },
-    move_camera(x, y, z, look_at_x, look_at_y, look_at_z) {
+    move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z) {
       x = x === null ? camera.position.x : x;
       y = y === null ? camera.position.y : y;
       z = z === null ? camera.position.z : z;
       camera.position.set(x, y, z);
+      up_x = up_x === null ? camera.up.x : up_x;
+      up_y = up_y === null ? camera.up.y : up_y;
+      up_z = up_z === null ? camera.up.z : up_z;
+      camera.up.set(up_x, up_y, up_z); // NOTE: before calling lookAt
       look_at_x = look_at_x === null ? look_at.x : look_at_x;
       look_at_y = look_at_y === null ? look_at.y : look_at_y;
       look_at_z = look_at_z === null ? look_at.z : look_at_z;
