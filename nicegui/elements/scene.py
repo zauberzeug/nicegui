@@ -1,3 +1,4 @@
+from justpy import WebPage
 from typing import Awaitable, Callable, Optional, Union
 import traceback
 import websockets
@@ -7,6 +8,7 @@ from .page import Page
 from .scene_object3d import Object3D
 from ..globals import view_stack
 from ..events import handle_event
+from ..task_logger import create_task
 
 CustomView.use(__file__, ['three.min.js', 'OrbitControls.js', 'STLLoader.js'])
 
@@ -76,6 +78,20 @@ class Scene(Element):
 
     def __exit__(self, *_):
         view_stack.pop()
+
+    def move_camera(self,
+                    x: Optional[float] = None,
+                    y: Optional[float] = None,
+                    z: Optional[float] = None,
+                    look_at_x: Optional[float] = None,
+                    look_at_y: Optional[float] = None,
+                    look_at_z: Optional[float] = None,
+                    up_x: Optional[float] = None,
+                    up_y: Optional[float] = None,
+                    up_z: Optional[float] = None):
+        for socket in WebPage.sockets.get(self.page.page_id, {}).values():
+            command = f'move_camera({x}, {y}, {z}, {look_at_x}, {look_at_y}, {look_at_z}, {up_x}, {up_y}, {up_z})'
+            create_task(self.view.run_method(command, socket))
 
 class SceneObject:
 

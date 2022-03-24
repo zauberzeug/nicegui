@@ -1,4 +1,5 @@
 var scene;
+var look_at;
 var camera;
 var orbitControls;
 var texture_loader = new THREE.TextureLoader();
@@ -70,7 +71,9 @@ Vue.component("scene", {
     const width = this.$props.jp_props.options.width;
     const height = this.$props.jp_props.options.height;
 
+    look_at = new THREE.Vector3(0, 0, 0);
     camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+    camera.lookAt(look_at);
     camera.up = new THREE.Vector3(0, 0, 1);
     camera.position.set(0, -3, 5);
 
@@ -255,6 +258,16 @@ Vue.component("scene", {
     },
     set_texture_coordinates(object_id, coords) {
       objects.get(object_id).geometry = texture_geometry(coords);
+    },
+    move_camera(x, y, z, look_at_x, look_at_y, look_at_z) {
+      x = x === null ? camera.position.x : x;
+      y = y === null ? camera.position.y : y;
+      z = z === null ? camera.position.z : z;
+      camera.position.set(x, y, z);
+      look_at_x = look_at_x === null ? look_at.x : look_at_x;
+      look_at_y = look_at_y === null ? look_at.y : look_at_y;
+      look_at_z = look_at_z === null ? look_at.z : look_at_z;
+      camera.lookAt(look_at_x, look_at_y, look_at_z);
     },
   },
 
