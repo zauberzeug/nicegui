@@ -51,8 +51,7 @@ else:
                     keyword.arg:
                         keyword.value.n if isinstance(keyword.value, ast.Num) else
                         keyword.value.s if isinstance(keyword.value, ast.Str) else
-                        keyword.value.value if hasattr(keyword.value, 'value') else
-                        None
+                        keyword.value.value
                     for keyword in node.value.keywords
                 }
                 config = Config(**args)
