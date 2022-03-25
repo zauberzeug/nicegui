@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from justpy import WebPage
 from typing import Awaitable, Callable, Optional, Union
 import traceback
@@ -12,6 +13,24 @@ from ..task_logger import create_task
 
 CustomView.use(__file__, ['three.min.js', 'OrbitControls.js', 'STLLoader.js', 'tween.umd.min.js'])
 
+@dataclass
+class SceneCamera:
+    x: float = 0
+    y: float = -3
+    z: float = 5
+    look_at_x: float = 0
+    look_at_y: float = 0
+    look_at_z: float = 0
+    up_x: float = 0
+    up_y: float = 0
+    up_z: float = 1
+
+    def create_move_command(self, duration: float = 0) -> str:
+        return 'move_camera(' \
+            f'{self.x}, {self.y}, {self.z}, ' \
+            f'{self.look_at_x}, {self.look_at_y}, {self.look_at_z}, ' \
+            f'{self.up_x}, {self.up_y}, {self.up_z}, {duration})'
+
 class SceneView(CustomView):
 
     def __init__(self, *, width: int, height: int, on_click: Union[Callable, Awaitable]):
@@ -20,11 +39,13 @@ class SceneView(CustomView):
         self.allowed_events = ['onConnect', 'onClick']
         self.initialize(temp=False, onConnect=self.handle_connect, onClick=self.handle_click)
         self.objects = {}
+        self.camera: SceneCamera = SceneCamera()
 
     def handle_connect(self, msg):
         try:
             for object in self.objects.values():
                 object.send_to(msg.websocket)
+            create_task(self.run_method(self.camera.create_move_command(), msg.websocket))
         except:
             traceback.print_exc()
 
@@ -90,9 +111,18 @@ class Scene(Element):
                     up_y: Optional[float] = None,
                     up_z: Optional[float] = None,
                     duration: float = 0.5):
+        camera: SceneCamera = self.view.camera
+        camera.x = camera.x if x is None else x
+        camera.y = camera.y if y is None else y
+        camera.z = camera.z if z is None else z
+        camera.look_at_x = camera.look_at_x if look_at_x is None else look_at_x
+        camera.look_at_y = camera.look_at_y if look_at_y is None else look_at_y
+        camera.look_at_z = camera.look_at_z if look_at_z is None else look_at_z
+        camera.up_x = camera.up_x if up_x is None else up_x
+        camera.up_y = camera.up_y if up_y is None else up_y
+        camera.up_z = camera.up_z if up_z is None else up_z
         for socket in WebPage.sockets.get(self.page.page_id, {}).values():
-            command = f'move_camera({x}, {y}, {z}, {look_at_x}, {look_at_y}, {look_at_z}, {up_x}, {up_y}, {up_z}, {duration})'
-            create_task(self.view.run_method(command, socket))
+            create_task(self.view.run_method(camera.create_move_command(duration), socket))
 
 class SceneObject:
 
