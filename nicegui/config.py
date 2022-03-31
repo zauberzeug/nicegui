@@ -17,6 +17,9 @@ class Config():
     show: bool = True
     on_connect: Optional[Union[Callable, Awaitable]] = None
     uvicorn_logging_level: str = 'warning'
+    uvicorn_reload_dirs: str = '.'
+    uvicorn_reload_includes: str = '*'
+    uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*'
     main_page_classes: str = 'q-ma-md column items-start'
     binding_refresh_interval: float = 0.1
     interactive: bool = False

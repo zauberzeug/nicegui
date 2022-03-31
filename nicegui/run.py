@@ -1,3 +1,4 @@
+from distutils.command.config import config
 from typing import Awaitable, Callable, Optional, Union
 import inspect
 import sys
@@ -11,6 +12,9 @@ if not globals.config.interactive and globals.config.reload and not inspect.stac
     if globals.config.show:
         webbrowser.open(f'http://{globals.config.host}:{globals.config.port}/')
     uvicorn.run('nicegui:app', host=globals.config.host, port=globals.config.port, lifespan='on', reload=True,
+                reload_includes=globals.config.uvicorn_reload_includes,
+                reload_excludes=globals.config.uvicorn_reload_excludes,
+                reload_dirs=globals.config.uvicorn_reload_dirs,
                 log_level=globals.config.uvicorn_logging_level)
     sys.exit()
 
@@ -24,6 +28,9 @@ def run(self, *,
         show: bool = True,
         on_connect: Optional[Union[Callable, Awaitable]] = None,
         uvicorn_logging_level: str = 'warning',
+        uvicorn_reload_dirs: str = '.',
+        uvicorn_reload_includes: str = '*',
+        uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
         main_page_classes: str = 'q-ma-md column items-start',
         binding_refresh_interval: float = 0.1,
         ):
