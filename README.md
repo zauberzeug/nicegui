@@ -71,9 +71,9 @@ You can call `ui.run()` with optional arguments for some high-level configuratio
 - `show`: automatically open the ui in a browser tab (default: `True`)
 - `on_connect`: default function or coroutine which is called for each new client connection; the optional `request` argument provides session infos
 - `uvicorn_logging_level`: logging level for uvicorn server (default: `'warning'`)
-- `uvicorn_reload_dirs`: string with comma separated list for directories to be monitored (default is current working dir only)
-- `uvicorn_reload_includes`: string with comma separated list of glob-patterns which trigger reload on modification (default is all files; can be changed to `'.py'` or `'.py, .yaml'` for example)
-- `uvicorn_reload_excludes`: string with comma separated list of glob-patterns which should be ignored for reload (default is `'.*, .py[cod], .sw.*, ~*'`)
+- `uvicorn_reload_dirs`: string with comma-separated list for directories to be monitored (default is current working directory only)
+- `uvicorn_reload_includes`: string with comma-separated list of glob-patterns which trigger reload on modification (default is all files; can be changed to `'.py'` or `'.py, .yaml'` for example)
+- `uvicorn_reload_excludes`: string with comma-separated list of glob-patterns which should be ignored for reload (default is `'.*, .py[cod], .sw.*, ~*'`)
 - `main_page_classes`: configure Quasar classes of main page (default: `'q-ma-md column items-start'`)
 - `binding_refresh_interval`: time between binding updates (default: `0.1` seconds, bigger is more cpu friendly)
 - `interactive`: used internally when run in interactive Python shell (default: `False`)
