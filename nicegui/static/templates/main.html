@@ -86,8 +86,7 @@
 
         socket.addEventListener('error', function (event) {
             console.log('Websocket closed');
-            let ok_to_reload = confirm('Page needs to be reloaded, click OK to reload');
-            if (ok_to_reload) window.location.reload();
+            window.location.reload();
             // setTimeout(function(){ window.location.reload(); }, 3000);
         });
 
@@ -95,8 +94,7 @@
         socket.addEventListener('close', function (event) {
             console.log('Websocket closed');
             web_socket_closed = true;
-            let ok_to_reload = confirm('Page needs to be reloaded, click OK to reload');
-            if (ok_to_reload) window.location.reload()
+            window.location.reload()
         });
 
         socket.addEventListener('message', function (event) {

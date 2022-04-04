@@ -37,11 +37,6 @@ class Page(jp.QuasarPage):
         self.tailwind = True  # use Tailwind classes instead of Quasars
         self.css = css
         self.on_connect = on_connect or config.on_connect
-        self.head_html += '''
-            <script>
-                confirm = () => { setTimeout(location.reload.bind(location), 100); return false; };
-            </script>
-        '''  # avoid confirmation dialog for reload
 
         self.view = jp.Div(a=self, classes=classes, style='row-gap: 1em', temp=False)
         self.view.add_page(self)
