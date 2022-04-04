@@ -1,7 +1,7 @@
 Vue.component("interactive_image", {
   template: `
-    <div :id="jp_props.id" style="position:relative;" :style="jp_props.style" :class="jp_props.classes">
-      <img style="max-width:100%">
+    <div :id="jp_props.id" style="position:relative" :style="jp_props.style" :class="jp_props.classes">
+      <img style="width:100%; height:100%">
       <svg style="position:absolute;top:0;left:0;pointer-events:none">
         <g style="display:none">
           <line x1="100" y1="0" x2="100" y2="100%" stroke="black" />
