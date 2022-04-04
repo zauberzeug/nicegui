@@ -12,6 +12,7 @@ function eventHandler(props, event, form_data, aux) {
         console.log('-------------------------');
     }
     if (!websocket_ready && use_websockets) {
+        setTimeout(function(){ eventHandler(props, event, form_data, aux); }, 100);
         return;
     }
     let event_type = event.type;

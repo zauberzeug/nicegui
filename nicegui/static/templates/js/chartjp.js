@@ -9,9 +9,25 @@ Vue.component('chart', {
     template:
         `<div v-bind:id="jp_props.id" :class="jp_props.classes"  :style="jp_props.style" ></div>`,
     methods: {
+        evaluate_formatters(def) {
+            if (Array.isArray(def)) {
+                for (const element of def) {
+                    this.evaluate_formatters(element);
+                }
+            } else if (typeof def == "object") {
+                for (const [key, value] of Object.entries(def)) {
+                    if (key.toLowerCase().includes('formatter')) {
+                        eval('def[key] = ' + def[value]);
+                    }
+                    this.evaluate_formatters(value);
+                }
+            }
+        },
         graph_change() {
             cached_graph_def[this.$props.jp_props.id] = JSON.stringify(this.$props.jp_props.def);
             var container = this.$props.jp_props.id.toString();
+            // Evaluate all properties that include 'formatter'
+            this.evaluate_formatters(this.$props.jp_props.def);
             if (this.$props.jp_props.stock) {
                 var c = Highcharts.stockChart(container, this.$props.jp_props.def);
             } else {
@@ -271,6 +287,41 @@ Vue.component('chart', {
                         point_index: e.point.index,
                         series_name: e.point.series.name,
                         series_index: e.point.series.index,
+                        page_id: page_id,
+                        websocket_id: websocket_id
+                    };
+                    send_to_server(p, 'event');
+                }
+            }
+
+            if (this.$props.jp_props.events.indexOf('zoom_x') >= 0) {
+                update_dict.xAxis = {
+                    events: {}
+                };
+                update_dict.xAxis.events.setExtremes = function (e) {
+                    var p = {
+                        event_type: 'zoom_x',
+                        id: id,
+                        type: e.type,
+                        min: e.min,
+                        max: e.max,
+                        page_id: page_id,
+                        websocket_id: websocket_id
+                    };
+                    send_to_server(p, 'event');
+                }
+            }
+            if (this.$props.jp_props.events.indexOf('zoom_y') >= 0) {
+                update_dict.yAxis = {
+                    events: {}
+                };
+                update_dict.yAxis.events.setExtremes = function (e) {
+                    var p = {
+                        event_type: 'zoom_y',
+                        id: id,
+                        type: e.type,
+                        min: e.min,
+                        max: e.max,
                         page_id: page_id,
                         websocket_id: websocket_id
                     };
