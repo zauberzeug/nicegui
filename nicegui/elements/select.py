@@ -1,5 +1,5 @@
 import justpy as jp
-from typing import Awaitable, Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Union
 from .choice_element import ChoiceElement
 
 class Select(ChoiceElement):
@@ -8,7 +8,7 @@ class Select(ChoiceElement):
                  options: Union[List, Dict],
                  *,
                  value: any = None,
-                 on_change: Optional[Union[Callable, Awaitable]] = None,
+                 on_change: Optional[Callable] = None,
                  ):
         """Dropdown Selection Element
 

@@ -1,6 +1,6 @@
 import traceback
 import justpy as jp
-from typing import Awaitable, Callable, Optional, Union
+from typing import Callable, Optional
 import base64
 
 from ..events import UploadEventArguments, handle_event
@@ -11,7 +11,7 @@ class Upload(Element):
     def __init__(self,
                  *,
                  multiple: bool = False,
-                 on_upload: Optional[Union[Callable, Awaitable]] = None,
+                 on_upload: Optional[Callable] = None,
                  ):
         """File Upload Element
 

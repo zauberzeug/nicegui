@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from justpy import WebPage
-from typing import Awaitable, Callable, Optional, Union
+from typing import Callable, Optional
 import traceback
 import websockets
 from .element import Element
@@ -33,7 +33,7 @@ class SceneCamera:
 
 class SceneView(CustomView):
 
-    def __init__(self, *, width: int, height: int, on_click: Union[Callable, Awaitable]):
+    def __init__(self, *, width: int, height: int, on_click: Optional[Callable]):
         super().__init__('scene', width=width, height=height)
         self.on_click = on_click
         self.allowed_events = ['onConnect', 'onClick']
@@ -76,7 +76,7 @@ class Scene(Element):
     from .scene_objects import Curve as curve
     from .scene_objects import Texture as texture
 
-    def __init__(self, width: int = 400, height: int = 300, on_click: Optional[Union[Callable, Awaitable]] = None):
+    def __init__(self, width: int = 400, height: int = 300, on_click: Optional[Callable] = None):
         """3D Scene
 
         Display a 3d scene using `three.js <https://threejs.org/>`_.

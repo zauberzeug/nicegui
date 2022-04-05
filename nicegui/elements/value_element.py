@@ -1,5 +1,5 @@
 import justpy as jp
-from typing import Any, Awaitable, Callable, Optional, Union
+from typing import Any, Callable, Optional
 
 from ..events import ValueChangeEventArguments, handle_event
 from ..binding import bind_from, bind_to, BindableProperty
@@ -15,7 +15,7 @@ class ValueElement(Element):
                  view: jp.HTMLBaseComponent,
                  *,
                  value: Any,
-                 on_change: Optional[Union[Callable, Awaitable]],
+                 on_change: Optional[Callable],
                  ):
         super().__init__(view)
 

@@ -1,5 +1,5 @@
 import traceback
-from typing import Awaitable, Callable, Dict, Optional, Union
+from typing import Callable, Dict, Optional
 
 from ..events import KeyEventArguments, KeyboardAction, KeyboardKey, KeyboardModifiers, handle_event
 from .custom_view import CustomView
@@ -20,7 +20,7 @@ class Keyboard(Element):
 
     def __init__(self,
                  *,
-                 on_key: Optional[Union[Callable, Awaitable]] = None,
+                 on_key: Optional[Callable] = None,
                  active: bool = True,
                  repeating: bool = True,
                  ):
@@ -29,7 +29,7 @@ class Keyboard(Element):
 
         Adds global keyboard event tracking.
 
-        :param handle_keys: callback to be executed when keyboard events occur.
+        :param on_key: callback to be executed when keyboard events occur.
         :param active: boolean flag indicating whether the callback should be executed or not (default: `True`)
         :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: `True`)
         """

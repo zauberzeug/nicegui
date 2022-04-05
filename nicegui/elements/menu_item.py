@@ -1,4 +1,4 @@
-from typing import Awaitable, Callable, Optional, Union
+from typing import Callable, Optional
 import justpy as jp
 
 from ..events import ClickEventArguments, handle_event
@@ -9,7 +9,7 @@ class MenuItem(Element):
 
     def __init__(self,
                  text: str = '',
-                 on_click: Optional[Union[Callable, Awaitable]] = None,
+                 on_click: Optional[Callable] = None,
                  *,
                  auto_close: bool = True,
                  ):

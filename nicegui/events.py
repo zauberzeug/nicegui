@@ -3,7 +3,7 @@ from inspect import signature
 from justpy.htmlcomponents import HTMLBaseComponent
 from pydantic import BaseModel
 import traceback
-from typing import Any, Awaitable, Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional
 from starlette.websockets import WebSocket
 
 from .elements.element import Element
@@ -205,10 +205,7 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
-def handle_event(handler: Optional[Union[Callable, Awaitable]],
-                 arguments: EventArguments,
-                 *,
-                 update: Optional[HTMLBaseComponent] = None):
+def handle_event(handler: Optional[Callable], arguments: EventArguments, *, update: Optional[HTMLBaseComponent] = None):
     try:
         if handler is None:
             return

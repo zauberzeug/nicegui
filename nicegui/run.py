@@ -1,4 +1,4 @@
-from typing import Awaitable, Callable, Optional, Union
+from typing import Callable, Optional
 import inspect
 import sys
 import webbrowser
@@ -31,7 +31,7 @@ def run(self, *,
         dark: Optional[bool] = False,
         reload: bool = True,
         show: bool = True,
-        on_connect: Optional[Union[Callable, Awaitable]] = None,
+        on_connect: Optional[Callable] = None,
         uvicorn_logging_level: str = 'warning',
         uvicorn_reload_dirs: str = '.',
         uvicorn_reload_includes: str = '*',

@@ -1,6 +1,6 @@
 import inspect
 import justpy as jp
-from typing import Awaitable, Callable, Optional, Union
+from typing import Callable, Optional
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
 from ..globals import config, page_stack, view_stack
@@ -14,7 +14,7 @@ class Page(jp.QuasarPage):
                  dark: Optional[bool] = ...,
                  classes: str = 'q-ma-md column items-start',
                  css: str = HtmlFormatter().get_style_defs('.codehilite'),
-                 on_connect: Optional[Union[Awaitable, Callable]] = None,
+                 on_connect: Optional[Callable] = None,
                  ):
         """Page
 

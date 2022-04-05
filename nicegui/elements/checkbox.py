@@ -1,4 +1,4 @@
-from typing import Awaitable, Callable, Optional, Union
+from typing import Callable, Optional
 import justpy as jp
 from .bool_element import BoolElement
 
@@ -8,7 +8,7 @@ class Checkbox(BoolElement):
                  text: str = '',
                  *,
                  value: bool = False,
-                 on_change: Optional[Union[Callable, Awaitable]] = None,
+                 on_change: Optional[Callable] = None,
                  ):
         """Checkbox Element
 

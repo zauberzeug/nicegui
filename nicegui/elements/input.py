@@ -1,5 +1,5 @@
 import justpy as jp
-from typing import Awaitable, Callable, Optional, Union
+from typing import Callable, Optional
 from .string_element import StringElement
 
 class Input(StringElement):
@@ -9,7 +9,7 @@ class Input(StringElement):
                  *,
                  placeholder: str = None,
                  value: str = '',
-                 on_change: Optional[Union[Callable, Awaitable]] = None,
+                 on_change: Optional[Callable] = None,
                  ):
         """Text Input Element
 

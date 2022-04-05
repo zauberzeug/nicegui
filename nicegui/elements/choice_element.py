@@ -1,5 +1,5 @@
 import justpy as jp
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 from .value_element import ValueElement
 
 class ChoiceElement(ValueElement):
@@ -9,7 +9,7 @@ class ChoiceElement(ValueElement):
                  options: Union[List, Dict],
                  *,
                  value: Any,
-                 on_change: Optional[Union[Callable, Awaitable]] = None,
+                 on_change: Optional[Callable] = None,
                  ):
         if isinstance(options, List):
             view.options = [{'label': option, 'value': option} for option in options]
