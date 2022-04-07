@@ -1,15 +1,13 @@
+from typing import Any, Callable, Dict, List, Optional, Union
+
 import justpy as jp
-from typing import Callable, Dict, List, Optional, Union
+
 from .choice_element import ChoiceElement
+
 
 class Select(ChoiceElement):
 
-    def __init__(self,
-                 options: Union[List, Dict],
-                 *,
-                 value: any = None,
-                 on_change: Optional[Callable] = None,
-                 ):
+    def __init__(self, options: Union[List, Dict], *, value: Any = None, on_change: Optional[Callable] = None):
         """Dropdown Selection Element
 
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
@@ -20,7 +18,7 @@ class Select(ChoiceElement):
 
         super().__init__(view, options, value=value, on_change=on_change)
 
-    def value_to_view(self, value: any):
+    def value_to_view(self, value: Any):
         matches = [o for o in self.view.options if o['value'] == value]
         if any(matches):
             return matches[0]['label']

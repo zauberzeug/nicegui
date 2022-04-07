@@ -1,14 +1,13 @@
 import justpy as jp
 
-from ..binding import bind_from, bind_to, BindableProperty
+from ..binding import BindableProperty, bind_from, bind_to
 from .group import Group
+
 
 class Image(Group):
     source = BindableProperty()
 
-    def __init__(self,
-                 source: str = '',
-                 ):
+    def __init__(self, source: str = ''):
         """Image Element
 
         Displays an image.

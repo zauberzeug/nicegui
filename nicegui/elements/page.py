@@ -1,9 +1,12 @@
 import inspect
-import justpy as jp
 from typing import Callable, Optional
+
+import justpy as jp
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
+
 from ..globals import config, page_stack, view_stack
+
 
 class Page(jp.QuasarPage):
 

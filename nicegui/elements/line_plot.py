@@ -1,16 +1,11 @@
 from typing import List
+
 from .plot import Plot
+
 
 class LinePlot(Plot):
 
-    def __init__(self,
-                 *,
-                 n: int = 1,
-                 limit: int = 100,
-                 update_every: int = 1,
-                 close: bool = True,
-                 **kwargs,
-                 ):
+    def __init__(self, *, n: int = 1, limit: int = 100, update_every: int = 1, close: bool = True, **kwargs):
         """Line Plot
 
         Create a line plot. The `push` method provides live updating when utilized in combination with `ui.timer`.

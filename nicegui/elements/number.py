@@ -1,17 +1,15 @@
-import justpy as jp
 from typing import Callable, Optional
+
+import justpy as jp
+
 from .float_element import FloatElement
+
 
 class Number(FloatElement):
 
-    def __init__(self,
-                 label: str = None,
-                 *,
-                 placeholder: str = None,
-                 value: float = None,
-                 format: str = None,
-                 on_change: Optional[Callable] = None,
-                 ):
+    def __init__(
+            self, label: str = None, *,
+            placeholder: str = None, value: float = None, format: str = None, on_change: Optional[Callable] = None):
         """Number Input Element
 
         :param label: displayed name for the number input

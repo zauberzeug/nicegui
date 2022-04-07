@@ -1,9 +1,13 @@
 from __future__ import annotations
-from typing import List, Optional
+
 import uuid
+from typing import List, Optional
+
 import numpy as np
 from justpy.htmlcomponents import WebPage
+
 from ..task_logger import create_task
+
 
 class Object3D:
     stack: List[Object3D] = []

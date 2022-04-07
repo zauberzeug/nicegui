@@ -1,18 +1,16 @@
 from typing import Callable, Optional
+
 import justpy as jp
 
-from ..binding import bind_from, bind_to, BindableProperty
+from ..binding import BindableProperty, bind_from, bind_to
 from ..events import ClickEventArguments, handle_event
 from .element import Element
+
 
 class Button(Element):
     text = BindableProperty()
 
-    def __init__(self,
-                 text: str = '',
-                 *,
-                 on_click: Optional[Callable] = None,
-                 ):
+    def __init__(self, text: str = '', *, on_click: Optional[Callable] = None):
         """Button Element
 
         :param text: the label of the button

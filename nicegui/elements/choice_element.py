@@ -1,16 +1,14 @@
-import justpy as jp
 from typing import Any, Callable, Dict, List, Optional, Union
+
+import justpy as jp
+
 from .value_element import ValueElement
+
 
 class ChoiceElement(ValueElement):
 
-    def __init__(self,
-                 view: jp.HTMLBaseComponent,
-                 options: Union[List, Dict],
-                 *,
-                 value: Any,
-                 on_change: Optional[Callable] = None,
-                 ):
+    def __init__(self, view: jp.HTMLBaseComponent, options: Union[List, Dict], *,
+                 value: Any, on_change: Optional[Callable] = None):
         if isinstance(options, List):
             view.options = [{'label': option, 'value': option} for option in options]
         else:

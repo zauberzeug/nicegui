@@ -1,9 +1,11 @@
+import ast
+import inspect
+import os
 from dataclasses import dataclass
 from typing import Callable, Optional
-import inspect
-import ast
-import os
+
 from . import globals
+
 
 @dataclass
 class Config():

@@ -1,8 +1,9 @@
 from typing import Optional, Union
+
 from justpy import WebPage
+from nicegui.elements.page import Page
 from starlette.websockets import WebSocket
 
-from nicegui.elements.page import Page
 from ..task_logger import create_task
 
 
@@ -16,6 +17,7 @@ def open(self, target: Union[Page, str], socket: Optional[WebSocket] = None):
     :param socket: optional WebSocket defining the target client
     """
     create_task(open_async(self, target, socket), name='open_async')
+
 
 async def open_async(self, target: Union[Page, str], socket: Optional[WebSocket]):
     path = target if isinstance(target, str) else target.route

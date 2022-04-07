@@ -1,12 +1,13 @@
-import markdown2
-from .html import Html
 import re
+
+import markdown2
+
+from .html import Html
+
 
 class Markdown(Html):
 
-    def __init__(self,
-                 content: str = '',
-                 ):
+    def __init__(self, content: str = ''):
         """Markdown Element
 
         Renders markdown onto the page.

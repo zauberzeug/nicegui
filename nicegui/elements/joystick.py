@@ -1,8 +1,10 @@
-from typing import Callable, Dict, Optional
+from typing import Any, Callable, Optional
+
 from .custom_view import CustomView
 from .element import Element
 
 CustomView.use(__file__, ['nipplejs.min.js'])
+
 
 class JoystickView(CustomView):
 
@@ -10,8 +12,7 @@ class JoystickView(CustomView):
                  on_start: Optional[Callable],
                  on_move: Optional[Callable],
                  on_end: Optional[Callable],
-                 **options,
-                 ):
+                 **options: Any):
         super().__init__('joystick', **options)
 
         self.on_start = on_start
@@ -38,15 +39,14 @@ class JoystickView(CustomView):
             return self.on_end(msg)
         return False
 
+
 class Joystick(Element):
 
-    def __init__(self,
-                 *,
+    def __init__(self, *,
                  on_start: Optional[Callable] = None,
                  on_move: Optional[Callable] = None,
                  on_end: Optional[Callable] = None,
-                 **options: Dict,
-                 ):
+                 **options: Any):
         """Joystick
 
         Create a joystick based on `nipple.js <https://yoannmoi.net/nipplejs/>`_.

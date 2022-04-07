@@ -1,5 +1,7 @@
 import justpy as jp
+
 from .group import Group
+
 
 class Row(Group):
 

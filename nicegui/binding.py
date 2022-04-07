@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 import asyncio
 from collections import defaultdict
-from justpy.htmlcomponents import HTMLBaseComponent
 from typing import Any, Callable, Optional, Set, Tuple
-from .task_logger import create_task
+
+from justpy.htmlcomponents import HTMLBaseComponent
+
 from .globals import config
+from .task_logger import create_task
 
 bindings = defaultdict(list)
 bindable_properties = dict()
 active_links = []
+
 
 async def loop():
     while True:
@@ -23,14 +26,17 @@ async def loop():
         update_views(visited_views)
         await asyncio.sleep(config.binding_refresh_interval)
 
+
 async def update_views_async(views: Set[HTMLBaseComponent]):
     for view in views:
         await view.update()
+
 
 def update_views(views: Set[HTMLBaseComponent]):
     if asyncio._get_running_loop() is None:
         return  # NOTE: no need to update view if event loop is not running, yet
     create_task(update_views_async(views), name='update_views_async')
+
 
 def propagate(source_obj,
               source_name,
@@ -52,17 +58,20 @@ def propagate(source_obj,
             propagate(target_obj, target_name, visited, visited_views)
     return visited_views
 
+
 def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forward: Callable):
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
         active_links.append((self_obj, self_name, other_obj, other_name, forward))
     update_views(propagate(self_obj, self_name))
 
+
 def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, backward: Callable):
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
         active_links.append((other_obj, other_name, self_obj, self_name, backward))
     update_views(propagate(other_obj, other_name))
+
 
 class BindableProperty:
 

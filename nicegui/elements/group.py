@@ -1,9 +1,13 @@
 from __future__ import annotations
+
 from typing import List
+
 import justpy as jp
+
+from ..binding import active_links, bindable_properties, bindings
 from ..globals import view_stack
-from ..binding import active_links, bindings, bindable_properties
 from .element import Element
+
 
 class Group(Element):
 

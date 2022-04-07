@@ -1,12 +1,13 @@
+from typing import Any
+
 import justpy as jp
 
 from .element import Element
 
+
 class Svg(Element):
 
-    def __init__(self,
-                 content: str = '',
-                 ):
+    def __init__(self, content: str = ''):
         """Svg Element
 
         Displays an svg.
@@ -22,7 +23,7 @@ class Svg(Element):
         return self.view.inner_html()
 
     @content.setter
-    def content(self, content: any):
+    def content(self, content: Any):
         self.view.components = []
         jp.parse_html(content, a=self.view)
 

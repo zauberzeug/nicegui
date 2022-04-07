@@ -1,14 +1,12 @@
 import justpy as jp
 import matplotlib.pyplot as plt
+
 from .element import Element
+
 
 class Plot(Element):
 
-    def __init__(self,
-                 *,
-                 close: bool = True,
-                 **kwargs,
-                 ):
+    def __init__(self, *, close: bool = True, **kwargs):
         """Plot Context
 
         Create a context to configure a `Matplotlib <https://matplotlib.org/>`_ plot.

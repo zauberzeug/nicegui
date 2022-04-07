@@ -1,18 +1,16 @@
-import traceback
-import justpy as jp
-from typing import Callable, Optional
 import base64
+import traceback
+from typing import Callable, Optional
+
+import justpy as jp
 
 from ..events import UploadEventArguments, handle_event
 from .element import Element
 
+
 class Upload(Element):
 
-    def __init__(self,
-                 *,
-                 multiple: bool = False,
-                 on_upload: Optional[Callable] = None,
-                 ):
+    def __init__(self, *, multiple: bool = False, on_upload: Optional[Callable] = None):
         """File Upload Element
 
         :param multiple: allow uploading multiple files at once (default: `False`)

@@ -1,11 +1,10 @@
 '''original copied from https://quantlane.com/blog/ensure-asyncio-task-exceptions-get-logged/'''
 
-from typing import Any, Awaitable, Optional, Tuple, TypeVar
-
 import asyncio
 import functools
 import logging
 import sys
+from typing import Any, Awaitable, Optional, Tuple, TypeVar
 
 T = TypeVar('T')
 

@@ -1,14 +1,14 @@
 from typing import Union
+
 import justpy as jp
+
 from .element import Element
 from .page import Page
 
+
 class Link(Element):
 
-    def __init__(self,
-                 text: str = '',
-                 target: Union[Page, str] = '#',
-                 ):
+    def __init__(self, text: str = '', target: Union[Page, str] = '#'):
         """Link
 
         Create a link.

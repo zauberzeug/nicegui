@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
-from nicegui import ui
-from contextlib import contextmanager
-import inspect
-import sys
-from typing import Callable, Union
-import docutils.core
-import re
 import asyncio
+import inspect
+import re
+import sys
+from contextlib import contextmanager
+from typing import Callable, Union
+
+import docutils.core
+
+from nicegui import ui
 from nicegui.elements.html import Html
 from nicegui.elements.markdown import Markdown
 from nicegui.globals import page_stack
 
 # add docutils css to webpage
 page_stack[0].head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
+
 
 @contextmanager
 def example(content: Union[Callable, type, str]):
@@ -68,6 +71,7 @@ def example(content: Union[Callable, type, str]):
             code.append('```')
             code = '\n'.join(code)
             ui.markdown(code).classes('mt-12 w-5/12 overflow-auto')
+
 
 with ui.row().classes('flex w-full'):
     with open('README.md', 'r') as file:
@@ -219,8 +223,8 @@ with example(ui.upload):
     content = ui.label()
 
 with example(ui.plot):
-    from matplotlib import pyplot as plt
     import numpy as np
+    from matplotlib import pyplot as plt
 
     with ui.plot(figsize=(2.5, 1.8)):
         x = np.linspace(0.0, 5.0)
@@ -455,6 +459,7 @@ It also enables you to identify sessions over [longer time spans by configuring 
 with example(sessions):
     from collections import Counter
     from datetime import datetime
+
     from starlette.requests import Request
 
     id_counter = Counter()

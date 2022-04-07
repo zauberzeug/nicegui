@@ -1,14 +1,15 @@
 import asyncio
 import time
 import traceback
-from typing import Callable, List
 from collections import namedtuple
+from typing import Callable, List
 
 from .binding import BindableProperty
 from .globals import tasks, view_stack
 from .task_logger import create_task
 
 NamedCoroutine = namedtuple('NamedCoroutine', ['name', 'coro'])
+
 
 class Timer:
     prepared_coroutines: List[NamedCoroutine] = []

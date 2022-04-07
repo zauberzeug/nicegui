@@ -1,12 +1,11 @@
 import justpy as jp
+
 from .group import Group
+
 
 class Dialog(Group):
 
-    def __init__(self,
-                 *,
-                 value: bool = False
-                 ):
+    def __init__(self, *, value: bool = False):
         """Dialog
 
         Creates a modal dialog.

@@ -1,5 +1,7 @@
 import justpy as jp
+
 from .group import Group
+
 
 class Card(Group):
 
@@ -10,6 +12,7 @@ class Card(Group):
         """
         view = jp.QCard(classes='column items-start q-pa-md', style='gap: 1em', delete_flag=False, temp=False)
         super().__init__(view)
+
 
 class CardSection(Group):
 

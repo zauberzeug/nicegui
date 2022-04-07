@@ -1,14 +1,14 @@
 import justpy as jp
-from ..binding import bind_from, bind_to, BindableProperty
-from ..globals import view_stack, page_stack
+
+from ..binding import BindableProperty, bind_from, bind_to
+from ..globals import page_stack, view_stack
+
 
 class Element:
     visible = BindableProperty(
         on_change=lambda sender, visible: (sender.view.remove_class if visible else sender.view.set_class)('hidden'))
 
-    def __init__(self,
-                 view: jp.HTMLBaseComponent,
-                 ):
+    def __init__(self, view: jp.HTMLBaseComponent):
         self.parent_view = view_stack[-1]
         self.parent_view.add(view)
         self.view = view

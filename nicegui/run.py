@@ -1,9 +1,11 @@
-from typing import Callable, Optional
 import inspect
+import os
 import sys
 import webbrowser
+from typing import Callable, Optional
+
 import uvicorn
-import os
+
 from . import globals
 
 if not globals.config.interactive and globals.config.reload and not inspect.stack()[-2].filename.endswith('spawn.py'):
@@ -22,6 +24,7 @@ if not globals.config.interactive and globals.config.reload and not inspect.stac
         log_level=globals.config.uvicorn_logging_level,
     )
     sys.exit()
+
 
 def run(self, *,
         host: str = os.environ.get('HOST', '0.0.0.0'),

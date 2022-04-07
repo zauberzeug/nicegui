@@ -1,9 +1,11 @@
-import justpy as jp
 from typing import Any, Callable, Optional
 
+import justpy as jp
+
+from ..binding import BindableProperty, bind_from, bind_to
 from ..events import ValueChangeEventArguments, handle_event
-from ..binding import bind_from, bind_to, BindableProperty
 from .element import Element
+
 
 class ValueElement(Element):
     value = BindableProperty(
@@ -11,12 +13,7 @@ class ValueElement(Element):
                                                      ValueChangeEventArguments(sender=sender, value=value),
                                                      update=sender.parent_view))
 
-    def __init__(self,
-                 view: jp.HTMLBaseComponent,
-                 *,
-                 value: Any,
-                 on_change: Optional[Callable],
-                 ):
+    def __init__(self, view: jp.HTMLBaseComponent, *, value: Any, on_change: Optional[Callable]):
         super().__init__(view)
 
         self.change_handler = on_change

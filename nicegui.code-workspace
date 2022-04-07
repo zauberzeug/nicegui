@@ -36,8 +36,5 @@
         }
       }
     ]
-  },
-  "files.associations": {
-    "*.html": "jinja-html"
   }
 }

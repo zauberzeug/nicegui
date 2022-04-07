@@ -1,12 +1,16 @@
 from __future__ import annotations
-from justpy import WebPage
-from typing import Any, Callable, Dict, List, Optional
+
 import traceback
+from typing import Any, Callable, Dict, List, Optional
+
+from justpy import WebPage
+
 from ..events import MouseEventArguments, handle_event
 from .custom_view import CustomView
 from .element import Element
 
 CustomView.use(__file__)
+
 
 class InteractiveImageView(CustomView):
 
@@ -24,9 +28,11 @@ class InteractiveImageView(CustomView):
         page_sockets = [s for page_id in self.pages for s in WebPage.sockets.get(page_id, {}).values()]
         self.sockets = [s for s in self.sockets if s in page_sockets]
 
+
 class InteractiveImage(Element):
 
-    def __init__(self, source: str, *, on_mouse: Optional[Callable] = None, events: List[str] = ['click'], cross: bool = False):
+    def __init__(self, source: str, *,
+                 on_mouse: Optional[Callable] = None, events: List[str] = ['click'], cross: bool = False):
         """Interactive Image
 
         Create an image with an SVG overlay that handles mouse events and yields image coordinates.

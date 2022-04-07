@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-from nicegui import ui
 from datetime import datetime
-from matplotlib import pyplot as plt
+
 import numpy as np
+from matplotlib import pyplot as plt
+
+from nicegui import ui
 
 with ui.row():
     with ui.card():

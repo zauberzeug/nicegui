@@ -1,15 +1,19 @@
 from __future__ import annotations
-from typing import Deque
+
 import asyncio
 import traceback
 import urllib
 from collections import deque
+from typing import Deque
+
 from justpy.htmlcomponents import WebPage
+
+from ..task_logger import create_task
 from .custom_view import CustomView
 from .element import Element
-from ..task_logger import create_task
 
 CustomView.use(__file__)
+
 
 class LogView(CustomView):
 
@@ -27,6 +31,7 @@ class LogView(CustomView):
                 create_task(self.run_method(command, msg.websocket), name=str(command))
         except:
             traceback.print_exc()
+
 
 class Log(Element):
 

@@ -1,20 +1,26 @@
+# isort:skip_file
 class Ui:
     from .config import config  # NOTE: before run
     from .run import run  # NOTE: before justpy
 
     from .elements.button import Button as button
+    from .elements.card import Card as card
+    from .elements.card import CardSection as card_section
     from .elements.chart import Chart as chart
     from .elements.checkbox import Checkbox as checkbox
     from .elements.colors import Colors as colors
+    from .elements.column import Column as column
     from .elements.custom_example import CustomExample as custom_example
     from .elements.dialog import Dialog as dialog
+    from .elements.html import Html as html
     from .elements.icon import Icon as icon
     from .elements.image import Image as image
     from .elements.input import Input as input
     from .elements.interactive_image import InteractiveImage as interactive_image
     from .elements.joystick import Joystick as joystick
-    from .elements.html import Html as html
+    from .elements.keyboard import Keyboard as keyboard
     from .elements.label import Label as label
+    from .elements.line_plot import LinePlot as line_plot
     from .elements.link import Link as link
     from .elements.log import Log as log
     from .elements.markdown import Markdown as markdown
@@ -25,7 +31,9 @@ class Ui:
     from .elements.number import Number as number
     from .elements.open import open, open_async
     from .elements.page import Page as page
+    from .elements.plot import Plot as plot
     from .elements.radio import Radio as radio
+    from .elements.row import Row as row
     from .elements.scene import Scene as scene
     from .elements.select import Select as select
     from .elements.slider import Slider as slider
@@ -33,18 +41,6 @@ class Ui:
     from .elements.switch import Switch as switch
     from .elements.toggle import Toggle as toggle
     from .elements.upload import Upload as upload
-
-    from .elements.plot import Plot as plot
-    from .elements.line_plot import LinePlot as line_plot
-
-    from .elements.row import Row as row
-    from .elements.column import Column as column
-    from .elements.card import Card as card
-    from .elements.keyboard import Keyboard as keyboard
-    from .elements.card import CardSection as card_section
-
-    from .timer import Timer as timer
-
-    from .lifecycle import startup_tasks, on_startup, shutdown_tasks, on_shutdown
-
+    from .lifecycle import on_shutdown, on_startup, shutdown_tasks, startup_tasks
     from .routes import add_route, get
+    from .timer import Timer as timer

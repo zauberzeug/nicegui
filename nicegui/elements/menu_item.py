@@ -1,4 +1,5 @@
 from typing import Callable, Optional
+
 import justpy as jp
 
 from ..events import ClickEventArguments, handle_event
@@ -7,12 +8,7 @@ from .element import Element
 
 class MenuItem(Element):
 
-    def __init__(self,
-                 text: str = '',
-                 on_click: Optional[Callable] = None,
-                 *,
-                 auto_close: bool = True,
-                 ):
+    def __init__(self, text: str = '', on_click: Optional[Callable] = None, *, auto_close: bool = True):
         """Menu Item Element
 
         A menu item to be added to a menu.

@@ -1,17 +1,18 @@
 from typing import Callable, Optional
+
 import justpy as jp
+
 from .float_element import FloatElement
+
 
 class Slider(FloatElement):
 
-    def __init__(self,
-                 *,
+    def __init__(self, *,
                  min: float,
                  max: float,
                  step: float = 1,
                  value: float = None,
-                 on_change: Optional[Callable] = None,
-                 ):
+                 on_change: Optional[Callable] = None):
         """Slider Element
 
         :param min: lower bound of the slider

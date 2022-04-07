@@ -1,17 +1,23 @@
 from __future__ import annotations
+
 from typing import List, Optional
+
 from justpy import WebPage
+
 from .scene_object3d import Object3D
+
 
 class Scene(Object3D):
 
     def __init__(self, view):
         super().__init__('scene', view)
 
+
 class Group(Object3D):
 
     def __init__(self):
         super().__init__('group')
+
 
 class Box(Object3D):
 
@@ -23,6 +29,7 @@ class Box(Object3D):
                  ):
         super().__init__('box', width, height, depth, wireframe)
 
+
 class Sphere(Object3D):
 
     def __init__(self,
@@ -32,6 +39,7 @@ class Sphere(Object3D):
                  wireframe: bool = False,
                  ):
         super().__init__('sphere', radius, width_segments, height_segments, wireframe)
+
 
 class Cylinder(Object3D):
 
@@ -45,6 +53,7 @@ class Cylinder(Object3D):
                  ):
         super().__init__('cylinder', top_radius, bottom_radius, height, radial_segments, height_segments, wireframe)
 
+
 class Extrusion(Object3D):
 
     def __init__(self,
@@ -54,6 +63,7 @@ class Extrusion(Object3D):
                  ):
         super().__init__('extrusion', outline, height, wireframe)
 
+
 class Stl(Object3D):
 
     def __init__(self,
@@ -62,6 +72,7 @@ class Stl(Object3D):
                  ):
         super().__init__('stl', url, wireframe)
 
+
 class Line(Object3D):
 
     def __init__(self,
@@ -69,6 +80,7 @@ class Line(Object3D):
                  end: List[float, float, float],
                  ):
         super().__init__('line', start, end)
+
 
 class Curve(Object3D):
 
@@ -80,6 +92,7 @@ class Curve(Object3D):
                  num_points: int = 20,
                  ):
         super().__init__('curve', start, control1, control2, end, num_points)
+
 
 class Texture(Object3D):
 

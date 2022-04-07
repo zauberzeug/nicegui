@@ -1,16 +1,14 @@
-import justpy as jp
 from typing import Callable, Optional
+
+import justpy as jp
+
 from .string_element import StringElement
+
 
 class Input(StringElement):
 
-    def __init__(self,
-                 label: str = None,
-                 *,
-                 placeholder: str = None,
-                 value: str = '',
-                 on_change: Optional[Callable] = None,
-                 ):
+    def __init__(self, label: str = None, *,
+                 placeholder: str = None, value: str = '', on_change: Optional[Callable] = None):
         """Text Input Element
 
         :param label: displayed label for the text input

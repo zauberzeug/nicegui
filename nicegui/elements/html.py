@@ -1,11 +1,13 @@
+from typing import Any
+
 import justpy as jp
+
 from .element import Element
+
 
 class Html(Element):
 
-    def __init__(self,
-                 content: str = '',
-                 ):
+    def __init__(self, content: str = ''):
         """HTML Element
 
         Renders arbitrary HTML onto the page. `Tailwind <https://tailwindcss.com/>`_ can be used for styling.
@@ -21,7 +23,7 @@ class Html(Element):
         return self.view.inner_html
 
     @content.setter
-    def content(self, content: any):
+    def content(self, content: Any):
         self.set_content(content)
 
     def set_content(self, content: str):

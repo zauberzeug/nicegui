@@ -1,5 +1,7 @@
-import justpy as jp
 from typing import Dict
+
+import justpy as jp
+
 from .element import Element
 
 

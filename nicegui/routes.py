@@ -1,7 +1,10 @@
-from functools import wraps
 import inspect
-from starlette import routing, requests
+from functools import wraps
+
+from starlette import requests, routing
+
 from . import globals
+
 
 def add_route(self, route):
     """
@@ -9,6 +12,7 @@ def add_route(self, route):
     :return:
     """
     globals.app.routes.insert(0, route)
+
 
 def get(self, path: str):
     """

@@ -1,10 +1,13 @@
 from __future__ import annotations
+
 import asyncio
 import logging
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING, List
+
 if TYPE_CHECKING:
-    from starlette.applications import Starlette
     import justpy as jp
+    from starlette.applications import Starlette
+
     from .config import Config
     from .elements.page import Page
 

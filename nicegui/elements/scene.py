@@ -1,17 +1,20 @@
-from dataclasses import dataclass
-from justpy import WebPage
-from typing import Callable, Optional
 import traceback
+from dataclasses import dataclass
+from typing import Callable, Optional
+
 import websockets
-from .element import Element
+from justpy import WebPage
+
+from ..events import handle_event
+from ..globals import view_stack
+from ..task_logger import create_task
 from .custom_view import CustomView
+from .element import Element
 from .page import Page
 from .scene_object3d import Object3D
-from ..globals import view_stack
-from ..events import handle_event
-from ..task_logger import create_task
 
 CustomView.use(__file__, ['three.min.js', 'OrbitControls.js', 'STLLoader.js', 'tween.umd.min.js'])
+
 
 @dataclass
 class SceneCamera:
@@ -30,6 +33,7 @@ class SceneCamera:
             f'{self.x}, {self.y}, {self.z}, ' \
             f'{self.look_at_x}, {self.look_at_y}, {self.look_at_z}, ' \
             f'{self.up_x}, {self.up_y}, {self.up_z}, {duration})'
+
 
 class SceneView(CustomView):
 
@@ -65,15 +69,16 @@ class SceneView(CustomView):
             pass
         return True
 
+
 class Scene(Element):
-    from .scene_objects import Group as group
     from .scene_objects import Box as box
-    from .scene_objects import Sphere as sphere
+    from .scene_objects import Curve as curve
     from .scene_objects import Cylinder as cylinder
     from .scene_objects import Extrusion as extrusion
-    from .scene_objects import Stl as stl
+    from .scene_objects import Group as group
     from .scene_objects import Line as line
-    from .scene_objects import Curve as curve
+    from .scene_objects import Sphere as sphere
+    from .scene_objects import Stl as stl
     from .scene_objects import Texture as texture
 
     def __init__(self, width: int = 400, height: int = 300, on_click: Optional[Callable] = None):
@@ -123,6 +128,7 @@ class Scene(Element):
         camera.up_z = camera.up_z if up_z is None else up_z
         for socket in WebPage.sockets.get(self.page.page_id, {}).values():
             create_task(self.view.run_method(camera.create_move_command(duration), socket), 'move camera')
+
 
 class SceneObject:
 

@@ -1,11 +1,12 @@
 import traceback
 from typing import Callable, Dict, Optional
 
-from ..events import KeyEventArguments, KeyboardAction, KeyboardKey, KeyboardModifiers, handle_event
+from ..events import KeyboardAction, KeyboardKey, KeyboardModifiers, KeyEventArguments, handle_event
 from .custom_view import CustomView
 from .element import Element
 
 CustomView.use(__file__)
+
 
 class KeyboardView(CustomView):
 
@@ -18,12 +19,7 @@ class KeyboardView(CustomView):
 
 class Keyboard(Element):
 
-    def __init__(self,
-                 *,
-                 on_key: Optional[Callable] = None,
-                 active: bool = True,
-                 repeating: bool = True,
-                 ):
+    def __init__(self, *, on_key: Optional[Callable] = None, active: bool = True, repeating: bool = True):
         """
         Keyboard
 

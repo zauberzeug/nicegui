@@ -3,6 +3,7 @@ from .element import Element
 
 CustomView.use(__file__)
 
+
 class ColorsView(CustomView):
 
     def __init__(self, primary, secondary, accent, positive, negative, info, warning):
@@ -15,6 +16,7 @@ class ColorsView(CustomView):
                          info=info,
                          warning=warning)
         self.initialize(temp=False)
+
 
 class Colors(Element):
 

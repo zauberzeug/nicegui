@@ -1,16 +1,12 @@
 import justpy as jp
-from .element import Element
+
 from ..task_logger import create_task
+from .element import Element
 
 
 class Notify(Element):
 
-    def __init__(self,
-                 message: str,
-                 *,
-                 position: str = 'bottom',
-                 close_button: str = None,
-                 ):
+    def __init__(self, message: str, *, position: str = 'bottom', close_button: str = None):
         """Notification
 
         Displays a notification on the screen.

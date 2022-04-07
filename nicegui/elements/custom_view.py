@@ -1,8 +1,10 @@
-import justpy as jp
 import os.path
 from typing import List
-from starlette.routing import Route
+
+import justpy as jp
 from starlette.responses import FileResponse
+from starlette.routing import Route
+
 
 class CustomView(jp.JustpyBaseComponent):
 

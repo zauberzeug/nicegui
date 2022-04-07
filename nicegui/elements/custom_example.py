@@ -3,6 +3,7 @@ from .element import Element
 
 CustomView.use(__file__)
 
+
 class CustomExampleView(CustomView):
 
     def __init__(self, on_change):
@@ -17,6 +18,7 @@ class CustomExampleView(CustomView):
         if self.on_change is not None:
             return self.on_change(self.options.value)
         return False
+
 
 class CustomExample(Element):
 

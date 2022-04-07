@@ -1,14 +1,13 @@
 import justpy as jp
 
-from ..binding import bind_from, bind_to, BindableProperty
+from ..binding import BindableProperty, bind_from, bind_to
 from .element import Element
+
 
 class Label(Element):
     text = BindableProperty()
 
-    def __init__(self,
-                 text: str = '',
-                 ):
+    def __init__(self, text: str = ''):
         """Label Element
 
         Displays some text.

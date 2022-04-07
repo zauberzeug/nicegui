@@ -1,13 +1,15 @@
 import asyncio
+import traceback
 from inspect import signature
+from typing import Any, Callable, List, Optional
+
 from justpy.htmlcomponents import HTMLBaseComponent
 from pydantic import BaseModel
-import traceback
-from typing import Any, Callable, List, Optional
 from starlette.websockets import WebSocket
 
 from .elements.element import Element
 from .task_logger import create_task
+
 
 class EventArguments(BaseModel):
     class Config:
@@ -15,19 +17,24 @@ class EventArguments(BaseModel):
     sender: Element
     socket: Optional[WebSocket]
 
+
 class ClickEventArguments(EventArguments):
     pass
+
 
 class MouseEventArguments(EventArguments):
     type: str
     image_x: float
     image_y: float
 
+
 class UploadEventArguments(EventArguments):
     files: List[bytes]
 
+
 class ValueChangeEventArguments(EventArguments):
     value: Any
+
 
 class KeyboardAction(BaseModel):
     keypress: bool
@@ -35,11 +42,13 @@ class KeyboardAction(BaseModel):
     keyup: bool
     repeat: bool
 
+
 class KeyboardModifiers(BaseModel):
     alt: bool
     ctrl: bool
     meta: bool
     shift: bool
+
 
 class KeyboardKey(BaseModel):
     name: str
@@ -196,6 +205,7 @@ class KeyboardKey(BaseModel):
     @property
     def f12(self) -> bool:
         return self.name == 'F12'
+
 
 class KeyEventArguments(EventArguments):
     class Config:
