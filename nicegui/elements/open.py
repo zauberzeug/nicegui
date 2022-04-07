@@ -15,7 +15,7 @@ def open(self, target: Union[Page, str], socket: Optional[WebSocket] = None):
     :param target: page or string that is a relative URL path or an absolute URL
     :param socket: optional WebSocket defining the target client
     """
-    create_task(open_async(self, target, socket))
+    create_task(open_async(self, target, socket), name='open_async')
 
 async def open_async(self, target: Union[Page, str], socket: Optional[WebSocket]):
     path = target if isinstance(target, str) else target.route

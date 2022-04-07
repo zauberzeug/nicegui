@@ -45,7 +45,7 @@ class SceneView(CustomView):
         try:
             for object in self.objects.values():
                 object.send_to(msg.websocket)
-            create_task(self.run_method(self.camera.create_move_command(), msg.websocket))
+            create_task(self.run_method(self.camera.create_move_command(), msg.websocket), name='move camera (connect)')
         except:
             traceback.print_exc()
 
@@ -122,7 +122,7 @@ class Scene(Element):
         camera.up_y = camera.up_y if up_y is None else up_y
         camera.up_z = camera.up_z if up_z is None else up_z
         for socket in WebPage.sockets.get(self.page.page_id, {}).values():
-            create_task(self.view.run_method(camera.create_move_command(duration), socket))
+            create_task(self.view.run_method(camera.create_move_command(duration), socket), 'move camera')
 
 class SceneObject:
 
