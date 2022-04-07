@@ -253,6 +253,9 @@ Vue.component('html_component', {
     mounted() {
         const el = this.$refs['r' + this.$props.jp_props.id];
         const props = this.$props.jp_props;
+         if (Boolean(props.attrs.srcdoc)) {
+             this.$props.jp_props.attrs.srcdoc = decodeURIComponent(this.$props.jp_props.attrs.srcdoc);
+         }
 
         if (props.animation) this.animateFunction();
         if (props.id && props.transition && props.transition.load) this.transitionLoadFunction();
@@ -296,6 +299,9 @@ Vue.component('html_component', {
     updated() {
         const el = this.$refs['r' + this.$props.jp_props.id];
         const props = this.$props.jp_props;
+        if (Boolean(props.attrs.srcdoc)) {
+             this.$props.jp_props.attrs.srcdoc = decodeURIComponent(this.$props.jp_props.attrs.srcdoc);
+         }
 
         if (props.animation) this.animateFunction();
         if (this.$props.jp_props.id && props.transition) this.transitionFunction();

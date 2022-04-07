@@ -73,7 +73,7 @@ Vue.component('editorjp', {
 
     },
     updated() {
-        if (this.$props.jp_props.input_type) {    //this.$props.jp_props.input_type
+        if (this.$props.jp_props.input_type) {
             if (this.$props.cached_value != this.$props.jp_props.value) {
                 var cursor_position = this.$props.simplemde.codemirror.getCursor();
                 this.$props.simplemde.value(this.$props.jp_props.value);

@@ -15,6 +15,12 @@
     {% include 'js/quasar_component.js' %}
     {% include 'js/chartjp.js' %}
     {% include 'js/aggrid.js' %}
+    {% include 'js/iframejp.js' %}
+    {% include 'js/deckgl.js' %}
+    {% include 'js/altairjp.js' %}
+    {% include 'js/plotlyjp.js' %}
+    {% include 'js/bokehjp.js' %}
+    {% include 'js/katexjp.js' %}
     {% include 'js/editorjp.js' %}
 
     {% if page_options.title is not none %}
@@ -34,12 +40,27 @@
 
     {% for event in page_options.events %}
         document.addEventListener('{{ event }}', function (evt) {
+            console.log(evt);
             const e = {
                 'event_type': '{{ event }}',
                 'visibility': document.visibilityState,
                 'page_id': page_id,
                 'websocket_id': websocket_id
             };
+            if (evt instanceof KeyboardEvent) {
+        // https://developer.mozilla.org/en-US/docs/Web/Events/keydown   keyup, keypress
+        e['key_data'] = {
+            altKey: evt.altKey,
+            ctrlKey: evt.ctrlKey,
+            shiftKey: evt.shiftKey,
+            metaKey: evt.metaKey,
+            code: evt.code,
+            key: evt.key,
+            location: evt.location,
+            repeat: evt.repeat,
+            locale: evt.locale
+        }
+    }
             send_to_server(e, 'page_event', false);
         });
     {% endfor %}
@@ -53,28 +74,27 @@
         }
         path_prefix = '{{ request.headers.get('X-Forwarded-Prefix','') }}'
         if (location.port) {
-            var socket = new WebSocket(protocol_string + document.domain + ':' + location.port + path_prefix );
+            var socket = new WebSocket(protocol_string + document.domain + ':' + location.port + path_prefix);
         } else {
             var socket = new WebSocket(protocol_string + document.domain + path_prefix);
         }
 
         socket.addEventListener('open', function (event) {
-            console.log('Websocket opened');
+            console.log('Webocket opened');
             socket.send(JSON.stringify({'type': 'connect', 'page_id': page_id}));
         });
 
         socket.addEventListener('error', function (event) {
             console.log('Websocket closed');
-            let ok_to_reload = confirm('Page needs to be reloaded, click OK to reload');
-            if (ok_to_reload) window.location.reload()
+            window.location.reload();
+            // setTimeout(function(){ window.location.reload(); }, 3000);
         });
 
         var web_socket_closed = false;
         socket.addEventListener('close', function (event) {
             console.log('Websocket closed');
             web_socket_closed = true;
-            let ok_to_reload = confirm('Page needs to be reloaded, click OK to reload');
-            if (ok_to_reload) window.location.reload()
+            window.location.reload()
         });
 
         socket.addEventListener('message', function (event) {

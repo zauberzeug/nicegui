@@ -25,7 +25,7 @@ Vue.component('quasar_component', {
                     if (typeof this.jp_props.attrs[evaluated_prop] == 'string') {
                         this.jp_props.attrs[evaluated_prop] = eval(this.jp_props.attrs[evaluated_prop])
                     } else {
-                        for (let j = 0; i < this.jp_props.attrs[evaluated_prop].length; i++) {
+                        for (let j = 0; i < this.jp_props.attrs[evaluated_prop].length; j++) {
                             this.jp_props.attrs[evaluated_prop][j] = eval(this.jp_props.attrs[evaluated_prop][j]);
                         }
                     }
@@ -112,6 +112,16 @@ Vue.component('quasar_component', {
                 case 'cancel':
                     fn = this.cancelEvent;
                     break;
+
+                    // For QResizeObserver
+                case 'resize':
+                fn = this.resizeEvent;
+                break;
+
+                 // For QSelect
+                case 'filter':
+                fn = this.filterEvent;
+                break;
 
                 default:
                     fn = this.defaultEvent;
@@ -224,6 +234,12 @@ Vue.component('quasar_component', {
         loadEvent: (function (index, done) {
             storage_dict['r' + this.$props.jp_props.id] = done;
             this.eventFunction(index, 'load');
+        }),
+        resizeEvent: (function (event) {
+            this.eventFunction(event, 'resize');
+        }),
+        filterEvent: (function (event) {
+            this.eventFunction(event, 'filter');
         }),
         submitEvent: (function (event) {
             var form_elements_list = [];

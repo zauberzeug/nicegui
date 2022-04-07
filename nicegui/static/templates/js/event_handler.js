@@ -12,6 +12,7 @@ function eventHandler(props, event, form_data, aux) {
         console.log('-------------------------');
     }
     if (!websocket_ready && use_websockets) {
+        setTimeout(function(){ eventHandler(props, event, form_data, aux); }, 100);
         return;
     }
     let event_type = event.type;
@@ -132,8 +133,7 @@ function send_to_server(e, event_type, debug_flag) {
     }
     if (use_websockets) {
         if (web_socket_closed) {
-            let ok_to_reload = confirm('Page needs to be reloaded, click OK to reload');
-            if (ok_to_reload) window.location.reload();
+            window.location.reload();
             return;
         }
         if (websocket_ready) {

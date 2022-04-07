@@ -6,6 +6,20 @@ Vue.component('grid', {
     template:
         `<div  v-bind:id="jp_props.id" :class="jp_props.classes"  :style="jp_props.style"  ></div>`,
     methods: {
+        evaluate_formatters(def) {
+            if (Array.isArray(def)) {
+                for (const element of def) {
+                    this.evaluate_formatters(element);
+                }
+            } else if (typeof def == "object") {
+                for (const [key, value] of Object.entries(def)) {
+                    if (key.toLowerCase().includes('formatter')) {
+                        eval('def[key] = ' + def[key]);
+                    }
+                    this.evaluate_formatters(value);
+                }
+            }
+        },
         grid_change() {
             var j = JSON.stringify(this.$props.jp_props.def);
             var grid_def = JSON.parse(j);  // Deep copy the grid definition
@@ -18,6 +32,7 @@ Vue.component('grid', {
             cached_grid_def[this.$props.jp_props.id] = j;
             grid_def.onGridReady = grid_ready;
             grid_def.popupParent = document.querySelector('body');
+            this.evaluate_formatters(grid_def);
             for (const field of this.$props.jp_props.evaluate) {
                 eval('grid_def[field] = ' + grid_def[field]);
             }

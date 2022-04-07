@@ -7,10 +7,10 @@
 
         {% if options.tailwind %}
             {% if not options.no_internet %}
-                <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.4.6/dist/base.min.css">
-                <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.4.6/dist/components.min.css">
-                <link rel="stylesheet" href="https://unpkg.com/@tailwindcss/typography@^0.1.2/dist/typography.min.css">
-                <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^1.4.6/dist/utilities.min.css">
+                <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^2.0/dist/base.min.css">
+                <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^2.0/dist/components.min.css">
+                <link rel="stylesheet" href="https://unpkg.com/@tailwindcss/typography@0.4.x/dist/typography.min.css">
+                <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^2.0/dist/utilities.min.css">
             {% else %}
                 <link href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/tailwind/base.css" rel="stylesheet">
                 <link href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/tailwind/components.css" rel="stylesheet">
@@ -47,25 +47,8 @@
             {% endif %}
         {% endif %}
 
-        {% if options.highcharts %}
-            {% include 'highcharts.html' %}
-        {% endif %}
+        {% include 'optional_packages.html' %}
 
-        {% if options.aggrid %}
-            {% if not options.no_internet %}
-                <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script>
-            {% else %}
-                <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/ag-grid-community.js"></script>
-            {% endif %}
-        {% endif %}
-
-        {% if options.aggrid_enterprise %}
-            {% if not options.no_internet %}
-                <script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.js"></script>
-            {% else %}
-                <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/ag-grid-enterprise.js"></script>
-            {% endif %}
-        {% endif %}
     </head>
 
 
