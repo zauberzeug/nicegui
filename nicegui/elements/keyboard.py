@@ -33,9 +33,9 @@ class Keyboard(Element):
         self.active = active
         self.key_handler = on_key
 
-    def handle_key(self, msg: Dict):
+    def handle_key(self, msg: Dict) -> Optional[bool]:
         if not self.active:
-            return
+            return False
 
         try:
             action = KeyboardAction(
@@ -56,6 +56,6 @@ class Keyboard(Element):
                 location=msg.key_data.location,
             )
             arguments = KeyEventArguments(sender=self, action=action, modifiers=modifiers, key=key)
-            handle_event(self.key_handler, arguments, update=self.parent_view)
+            return handle_event(self.key_handler, arguments, update=self.parent_view)
         except Exception:
             traceback.print_exc()

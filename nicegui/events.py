@@ -215,10 +215,11 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
-def handle_event(handler: Optional[Callable], arguments: EventArguments, *, update: Optional[HTMLBaseComponent] = None):
+def handle_event(handler: Optional[Callable], arguments: EventArguments, *,
+                 update: Optional[HTMLBaseComponent] = None) -> Optional[bool]:
     try:
         if handler is None:
-            return
+            return False
         no_arguments = not signature(handler).parameters
         result = handler() if no_arguments else handler(arguments)
         if asyncio.iscoroutinefunction(handler):
@@ -232,6 +233,6 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments, *, upda
             create_task(async_handler(), name=str(handler))
             return False
         else:
-            return result
+            return False if result == False else None
     except Exception:
         traceback.print_exc()

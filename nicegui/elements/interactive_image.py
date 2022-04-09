@@ -45,9 +45,9 @@ class InteractiveImage(Element):
         self.mouse_handler = on_mouse
         super().__init__(InteractiveImageView(source, self.handle_mouse, events, cross))
 
-    def handle_mouse(self, msg: Dict[str, Any]):
+    def handle_mouse(self, msg: Dict[str, Any]) -> Optional[bool]:
         if self.mouse_handler is None:
-            return
+            return False
         try:
             arguments = MouseEventArguments(
                 sender=self,
@@ -56,7 +56,7 @@ class InteractiveImage(Element):
                 image_x=msg.get('image_x'),
                 image_y=msg.get('image_y'),
             )
-            handle_event(self.mouse_handler, arguments)
+            return handle_event(self.mouse_handler, arguments)
         except:
             traceback.print_exc()
 

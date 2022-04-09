@@ -28,12 +28,15 @@ class Upload(Element):
 
         super().__init__(view)
 
-    def submit(self, _, msg):
+    def submit(self, _, msg) -> Optional[bool]:
         try:
+            page_update = False
             for form_data in msg.form_data:
                 if form_data.type == 'file':
                     files = [base64.b64decode(f.file_content) for f in form_data.files]
                     arguments = UploadEventArguments(sender=self, files=files)
-                    handle_event(self.upload_handler, arguments, update=self.parent_view)
+                    if handle_event(self.upload_handler, arguments, update=self.parent_view) is None:
+                        page_update = None
+            return page_update
         except Exception:
             traceback.print_exc()

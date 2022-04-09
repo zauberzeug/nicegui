@@ -53,12 +53,11 @@ class SceneView(CustomView):
         except:
             traceback.print_exc()
 
-    def handle_click(self, msg):
+    def handle_click(self, msg) -> Optional[bool]:
         try:
             for hit in msg.hits:
                 hit.object = self.objects.get(hit.object_id)
-            handle_event(self.on_click, msg, update=self)
-            return False
+            return handle_event(self.on_click, msg, update=self)
         except:
             traceback.print_exc()
 
