@@ -19,7 +19,7 @@ def open(self, target: Union[Page, str], socket: Optional[WebSocket] = None):
     create_task(open_async(self, target, socket), name='open_async')
 
 
-async def open_async(self, target: Union[Page, str], socket: Optional[WebSocket]):
+async def open_async(self, target: Union[Page, str], socket: Optional[WebSocket] = None):
     path = target if isinstance(target, str) else target.route
     sockets = [socket] if socket else [s for socket_dict in WebPage.sockets.values() for s in socket_dict.values()]
     for socket in sockets:
