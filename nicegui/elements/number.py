@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable, Dict, Optional
 
 import justpy as jp
 
@@ -28,7 +28,7 @@ class Number(FloatElement):
 
         super().__init__(view, value=value, format=format, on_change=on_change)
 
-    def handle_change(self, msg):
+    def handle_change(self, msg: Dict):
         msg['value'] = float(msg['value'])
 
         return super().handle_change(msg)

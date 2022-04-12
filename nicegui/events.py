@@ -22,6 +22,10 @@ class ClickEventArguments(EventArguments):
     pass
 
 
+class ColorPickEventArguments(EventArguments):
+    color: str
+
+
 class MouseEventArguments(EventArguments):
     type: str
     image_x: float

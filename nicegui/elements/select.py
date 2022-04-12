@@ -25,7 +25,7 @@ class Select(ChoiceElement):
         else:
             return value
 
-    def handle_change(self, msg):
+    def handle_change(self, msg: Dict):
         msg['label'] = msg['value']['label']
         msg['value'] = msg['value']['value']
         return super().handle_change(msg)
