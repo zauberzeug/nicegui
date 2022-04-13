@@ -12,6 +12,7 @@ class Ui:
     from .elements.column import Column as column
     from .elements.custom_example import CustomExample as custom_example
     from .elements.dialog import Dialog as dialog
+    from .elements.expansion import Expansion as expansion
     from .elements.html import Html as html
     from .elements.icon import Icon as icon
     from .elements.image import Image as image
