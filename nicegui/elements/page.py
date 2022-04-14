@@ -6,6 +6,7 @@ from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
 
 from ..globals import config, page_stack, view_stack
+from ..helpers import is_coroutine
 
 
 class Page(jp.QuasarPage):
@@ -50,7 +51,7 @@ class Page(jp.QuasarPage):
     async def _route_function(self, request: Request):
         if self.on_connect:
             arg_count = len(inspect.signature(self.on_connect).parameters)
-            is_coro = inspect.iscoroutinefunction(self.on_connect)
+            is_coro = is_coroutine(self.on_connect)
             if arg_count == 1:
                 await self.on_connect(request) if is_coro else self.on_connect(request)
             elif arg_count == 0:

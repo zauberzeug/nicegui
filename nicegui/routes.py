@@ -4,6 +4,7 @@ from functools import wraps
 from starlette import requests, routing
 
 from . import globals
+from .helpers import is_coroutine
 
 
 def add_route(self, route):
@@ -38,7 +39,7 @@ def get(self, path: str):
                     args[key] = complex(args[key])
             if 'request' in parameters and 'request' not in args:
                 args['request'] = request
-            return await func(**args) if inspect.iscoroutinefunction(func) else func(**args)
+            return await func(**args) if is_coroutine(func) else func(**args)
         self.add_route(routing.Route(path, decorated))
         return decorated
     return decorator

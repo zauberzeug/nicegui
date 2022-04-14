@@ -1,4 +1,3 @@
-import asyncio
 import traceback
 from inspect import signature
 from typing import Any, Callable, List, Optional
@@ -8,6 +7,7 @@ from pydantic import BaseModel
 from starlette.websockets import WebSocket
 
 from .elements.element import Element
+from .helpers import is_coroutine
 from .task_logger import create_task
 
 
@@ -222,7 +222,7 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments, *,
             return False
         no_arguments = not signature(handler).parameters
         result = handler() if no_arguments else handler(arguments)
-        if asyncio.iscoroutinefunction(handler):
+        if is_coroutine(handler):
             async def async_handler():
                 try:
                     await result
