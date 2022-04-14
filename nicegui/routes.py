@@ -24,7 +24,7 @@ def get(self, path: str):
 
     def decorator(func):
         @wraps(func)
-        def decorated(request: requests.Request):
+        async def decorated(request: requests.Request):
             args = {name: converter.convert(request.path_params.get(name)) for name, converter in converters.items()}
             parameters = inspect.signature(func).parameters
             for key in parameters:
@@ -38,7 +38,7 @@ def get(self, path: str):
                     args[key] = complex(args[key])
             if 'request' in parameters and 'request' not in args:
                 args['request'] = request
-            return func(**args)
+            return await func(**args) if inspect.iscoroutinefunction(func) else func(**args)
         self.add_route(routing.Route(path, decorated))
         return decorated
     return decorator
