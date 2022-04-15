@@ -8,7 +8,7 @@ from ..task_logger import create_task
 def _handle_visibility_change(sender, visible: bool) -> None:
     (sender.view.remove_class if visible else sender.view.set_class)('hidden')
     try:
-        create_task(sender.view.update())
+        create_task(sender.view.update(), name='update view after visibility changed')
     except RuntimeError:
         pass  # NOTE: event loop might not be running yet
 
