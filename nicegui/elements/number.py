@@ -23,6 +23,7 @@ class Number(FloatElement):
             label=label,
             placeholder=placeholder,
             change=self.handle_change,
+            disable_input_event=True,
             temp=False,
         )
 

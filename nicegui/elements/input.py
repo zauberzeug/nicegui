@@ -21,6 +21,7 @@ class Input(StringElement):
             placeholder=placeholder,
             value=value,
             change=self.handle_change,
+            disable_input_event=True,
             temp=False,
         )
 
