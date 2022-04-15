@@ -2,11 +2,19 @@ import justpy as jp
 
 from ..binding import BindableProperty, bind_from, bind_to
 from ..globals import page_stack, view_stack
+from ..task_logger import create_task
+
+
+def _handle_visibility_change(sender, visible: bool) -> None:
+    (sender.view.remove_class if visible else sender.view.set_class)('hidden')
+    try:
+        create_task(sender.view.update())
+    except RuntimeError:
+        pass  # NOTE: event loop might not be running yet
 
 
 class Element:
-    visible = BindableProperty(
-        on_change=lambda sender, visible: (sender.view.remove_class if visible else sender.view.set_class)('hidden'))
+    visible = BindableProperty(on_change=_handle_visibility_change)
 
     def __init__(self, view: jp.HTMLBaseComponent):
         self.parent_view = view_stack[-1]
