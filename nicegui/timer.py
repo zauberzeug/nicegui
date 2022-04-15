@@ -6,6 +6,7 @@ from typing import Callable, List
 
 from .binding import BindableProperty
 from .globals import tasks, view_stack
+from .helpers import is_coroutine
 from .task_logger import create_task
 
 NamedCoroutine = namedtuple('NamedCoroutine', ['name', 'coro'])
@@ -34,7 +35,7 @@ class Timer:
 
         async def do_callback():
             try:
-                if asyncio.iscoroutinefunction(callback):
+                if is_coroutine(callback):
                     return await callback()
                 else:
                     return callback()

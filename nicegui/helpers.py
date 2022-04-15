@@ -1,5 +1,8 @@
+import asyncio
+import functools
 import inspect
 import time
+from typing import Any
 
 
 def measure(*, reset: bool = False, ms: bool = False):
@@ -12,3 +15,9 @@ def measure(*, reset: bool = False, ms: bool = False):
     if reset:
         print('------------', flush=True)
     t = time.time()
+
+
+def is_coroutine(object: Any) -> bool:
+    while isinstance(object, functools.partial):
+        object = object.func
+    return asyncio.iscoroutinefunction(object)
