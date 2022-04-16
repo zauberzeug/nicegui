@@ -293,12 +293,29 @@ with example(ui.joystick):
     coordinates = ui.label('0, 0')
 
 with example(ui.dialog):
-    with ui.dialog() as dialog:
-        with ui.card():
-            ui.label('Hello world!')
-            ui.button('Close', on_click=dialog.close)
+    with ui.dialog() as dialog, ui.card():
+        ui.label('Hello world!')
+        ui.button('Close', on_click=dialog.close)
 
-    ui.button('Open dialog', on_click=dialog.open)
+    ui.button('Open a dialog', on_click=dialog.open)
+
+async_dialog = '''### Awaitable dialog
+Dialogs can be awaited.
+Use the `submit` method to close the dialog and return a result.
+Canceling the dialog by clicking in the background or pressing the escape key yields `None`.
+'''
+with example(async_dialog):
+    with ui.dialog() as dialog, ui.card():
+        ui.label('Are you sure?')
+        with ui.row():
+            ui.button('Yes', on_click=lambda: dialog.submit('Yes'))
+            ui.button('No', on_click=lambda: dialog.submit('No'))
+
+    async def show():
+        result = await dialog
+        await ui.notify(f'You chose {result}')
+
+    ui.button('Await a dialog', on_click=show)
 
 with example(ui.menu):
     choice = ui.label('Try the menu.')
