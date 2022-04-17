@@ -166,6 +166,8 @@ with example(ui.button):
 
 async_button = '''### Button with asynchronous action
 The button element does also support asynchronous action.
+
+Note: You can also pass a `functools.partial` into the `on_click` property to wrap async functions with parameters.
 '''
 with example(async_button):
     async def async_task():
