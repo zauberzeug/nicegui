@@ -175,7 +175,7 @@ with example(async_button):
         await asyncio.sleep(5)
         ui.notify('Asynchronous task finished')
 
-    ui.button('Start asynchronous task', on_click=async_task)
+    ui.button('start async task', on_click=async_task)
 
 with example(ui.checkbox):
     ui.checkbox('check me', on_change=lambda e: checkbox_state.set_text(e.value))
