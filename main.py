@@ -321,6 +321,15 @@ with example(async_dialog):
 
     ui.button('Await a dialog', on_click=show)
 
+
+tooltip = '''### Tooltips
+Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
+'''
+with example(tooltip):
+    with ui.row():
+        ui.button().props('icon=thumb_up').tooltip('I like this')
+        ui.label('tooltips').classes('q-mt-sm').tooltip('tooltips are shown on mouse over')
+
 with example(ui.menu):
     choice = ui.label('Try the menu.')
     with ui.menu() as menu:
