@@ -341,6 +341,10 @@ with example(ui.menu):
 
     ui.button('Open menu', on_click=menu.open).props('color=secondary')
 
+with example(ui.expansion):
+    with ui.expansion('Expand!', icon='work').classes('w-full'):
+        ui.label('inside the expansion')
+
 with example(ui.notify):
     ui.button('Show notification', on_click=lambda: ui.notify('Some message', close_button='OK'))
 
