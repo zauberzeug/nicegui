@@ -54,19 +54,21 @@ def example(content: Union[Callable, type, str]):
                 with ui.column().classes('flex w-full'):
                     yield
         finally:
-            callFrame = inspect.currentframe().f_back.f_back
-            end = callFrame.f_lineno
-            code = inspect.getsource(sys.modules[__name__])
+            code = inspect.getsource(callFrame)
+            end = begin + 1
             lines = code.splitlines()
-            while lines[end]:
+            while True:
                 end += 1
+                if end >= len(lines):
+                    break
+                if inspect.indentsize(lines[end]) < inspect.indentsize(lines[begin]) and lines[end]:
+                    break
             code = lines[begin:end]
             code = [l[4:] for l in code]
             code.insert(0, '```python')
             code.insert(1, 'from nicegui import ui')
             if code[2].split()[0] not in ['from', 'import']:
                 code.insert(2, '')
-            code.append('')
             code.append('ui.run()')
             code.append('```')
             code = '\n'.join(code)
