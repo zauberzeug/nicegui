@@ -108,6 +108,7 @@ with ui.row().classes('flex w-full'):
                 ui.label('Output:')
                 output = ui.label('').classes('text-bold')
 
+ui.markdown('## API Documentation and Examples')
 
 with example(ui.label):
     ui.label('some label')
