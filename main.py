@@ -16,7 +16,7 @@ from nicegui.globals import page_stack
 page_stack[0].head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
 
 # avoid display:block for PyPI/Docker/GitHub badges
-page_stack[0].head_html += '<style>p a img {display: inline}</style>'
+page_stack[0].head_html += '<style>p a img {display: inline; vertical-align: baseline}</style>'
 
 
 @contextmanager
@@ -87,7 +87,6 @@ with ui.row().classes('flex w-full'):
     with open('README.md', 'r') as file:
         content = file.read()
         content = re.sub(r'(?m)^\<img.*\n?', '', content)
-        content = '<style>img { display: inline; vertical-align: baseline }</style>' + content
         ui.markdown(content).classes('w-6/12')
 
     with ui.card().classes('mx-auto mt-24'):
