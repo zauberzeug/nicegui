@@ -23,6 +23,7 @@ class Object3D:
         self.color = '#ffffff'
         self.opacity = 1.0
         self.side_: str = 'front'
+        self.visible_: bool = True
         self.x = 0
         self.y = 0
         self.z = 0
@@ -48,6 +49,7 @@ class Object3D:
         self.run_command(self._move_command, socket)
         self.run_command(self._rotate_command, socket)
         self.run_command(self._scale_command, socket)
+        self.run_command(self._visible_command, socket)
 
     def __enter__(self):
         self.stack.append(self)
@@ -75,6 +77,10 @@ class Object3D:
     @property
     def _scale_command(self):
         return f'scale("{self.id}", {self.sx}, {self.sy}, {self.sz})'
+
+    @property
+    def _visible_command(self):
+        return f'visible("{self.id}", {self.visible_})'
 
     @property
     def _delete_command(self):
@@ -118,6 +124,12 @@ class Object3D:
             self.sy = sy
             self.sz = sz
             self.run_command(self._scale_command)
+        return self
+
+    def visible(self, value: bool = True):
+        if self.visible_ != value:
+            self.visible_ = value
+            self.run_command(self._visible_command)
         return self
 
     def delete(self):

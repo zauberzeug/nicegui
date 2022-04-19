@@ -257,6 +257,9 @@ Vue.component("scene", {
       );
       objects.get(object_id).rotation.setFromRotationMatrix(R4.transpose());
     },
+    visible(object_id, value) {
+      objects.get(object_id).visible = value;
+    },
     delete(object_id) {
       objects.get(object_id).removeFromParent();
       objects.delete(object_id);
