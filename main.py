@@ -85,6 +85,7 @@ with ui.row().classes('flex w-full'):
     with open('README.md', 'r') as file:
         content = file.read()
         content = re.sub(r'(?m)^\<img.*\n?', '', content)
+        content = '<style>img { display: inline; vertical-align: baseline }</style>' + content
         ui.markdown(content).classes('w-6/12')
 
     with ui.card().classes('mx-auto mt-24'):
