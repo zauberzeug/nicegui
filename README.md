@@ -1,12 +1,17 @@
-# NiceGUI
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/ui-elements.png" width="300" align=right>
 
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/ui-elements.png" width="300" align="right">
+# NiceGUI
 
 NiceGUI is an easy-to-use, Python-based UI framework, which renders to the web browser.
 You can create buttons, dialogs, markdown, 3D scenes, plots and much more.
 
-It was designed to be used for micro web apps, dashboards, robotics projects, smart home solutions and similar use cases.
-It is also helpful for development, for example when tweaking/configuring a machine learning algorithm or tuning motor controllers.
+It's great for micro web apps, dashboards, robotics projects, smart home solutions and similar use cases.
+You can also use it in development, for example when tweaking/configuring a machine learning algorithm or tuning motor controllers.
+
+[![GitHub issues](https://img.shields.io/github/issues/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/issues)
+[![GitHub forks](https://img.shields.io/github/forks/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/network)
+[![GitHub stars](https://img.shields.io/github/stars/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/stargazers)
+[![GitHub license](https://img.shields.io/github/license/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/blob/main/LICENSE)
 
 ## Features
 
