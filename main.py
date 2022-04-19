@@ -2,7 +2,6 @@
 import asyncio
 import inspect
 import re
-import sys
 from contextlib import contextmanager
 from typing import Callable, Union
 
@@ -15,6 +14,9 @@ from nicegui.globals import page_stack
 
 # add docutils css to webpage
 page_stack[0].head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
+
+# avoid display:block for PyPI/Docker/GitHub badges
+page_stack[0].head_html += '<style>p a img {display: inline}</style>'
 
 
 @contextmanager
@@ -329,7 +331,6 @@ with example(async_dialog):
 
     ui.button('Await a dialog', on_click=show)
 
-
 tooltip = '''### Tooltips
 Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
 '''
@@ -430,7 +431,6 @@ with example(binding):
         ui.toggle({1: 'a', 2: 'b', 3: 'c'}).bind_value(demo, 'number')
         ui.number().bind_value(demo, 'number')
 
-
 with example(ui.timer):
     from datetime import datetime
 
@@ -481,7 +481,6 @@ with example(ui.page):
 
     ui.link('Visit other page', '/other_page')
     ui.link('Visit dark page', '/dark_page')
-
 
 with example(ui.open):
     with ui.page('/yet_another_page') as other:

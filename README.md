@@ -1,12 +1,14 @@
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/ui-elements.png" width="300" align=right>
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/ui-elements.png" width="300" align="right">
 
 # NiceGUI
 
 NiceGUI is an easy-to-use, Python-based UI framework, which renders to the web browser.
 You can create buttons, dialogs, markdown, 3D scenes, plots and much more.
 
-It's great for micro web apps, dashboards, robotics projects, smart home solutions and similar use cases.
+It is great for micro web apps, dashboards, robotics projects, smart home solutions and similar use cases.
 You can also use it in development, for example when tweaking/configuring a machine learning algorithm or tuning motor controllers.
+
+NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Docker image](https://hub.docker.com/r/zauberzeug/nicegui) and on [GitHub](https://github.com/zauberzeug/nicegui).
 
 [![PyPI version](https://badge.fury.io/py/nicegui.svg)](https://pypi.org/project/nicegui/)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/nicegui)](https://pypi.org/project/nicegui/)
@@ -69,7 +71,7 @@ Full documentation can be found at [https://nicegui.io](https://nicegui.io).
 
 ## Configuration
 
-You can call `ui.run()` with optional arguments for some high-level configuration:
+You can call `ui.run()` with optional arguments:
 
 - `host` (default: `'0.0.0.0'`)
 - `port` (default: `8080`)
