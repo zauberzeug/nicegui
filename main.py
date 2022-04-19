@@ -15,6 +15,9 @@ from nicegui.globals import page_stack
 # add docutils css to webpage
 page_stack[0].head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
 
+# avoid display:block for PyPI/Docker/GitHub badges
+page_stack[0].head_html += '<style>p a img {display: inline}</style>'
+
 
 @contextmanager
 def example(content: Union[Callable, type, str]):
