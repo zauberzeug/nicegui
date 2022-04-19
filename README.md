@@ -69,7 +69,7 @@ Full documentation can be found at [https://nicegui.io](https://nicegui.io).
 
 ## Configuration
 
-You can call `ui.run()` with optional arguments for some high-level configuration:
+You can call `ui.run()` with optional arguments:
 
 - `host` (default: `'0.0.0.0'`)
 - `port` (default: `8080`)
