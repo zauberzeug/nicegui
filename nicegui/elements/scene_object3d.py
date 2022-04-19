@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import List, Literal, Optional
+from typing import List, Optional
 
 import numpy as np
 from justpy.htmlcomponents import WebPage
@@ -22,7 +22,7 @@ class Object3D:
         self.args = list(args)
         self.color = '#ffffff'
         self.opacity = 1.0
-        self.side_: Literal['front', 'back', 'both'] = 'front'
+        self.side_: str = 'front'
         self.x = 0
         self.y = 0
         self.z = 0
@@ -80,7 +80,7 @@ class Object3D:
     def _delete_command(self):
         return f'delete("{self.id}")'
 
-    def material(self, color: str = '#ffffff', opacity: float = 1.0, side: Literal['front', 'back', 'both'] = 'front'):
+    def material(self, color: str = '#ffffff', opacity: float = 1.0, side: str = 'front'):
         if self.color != color or self.opacity != opacity or self.side_ != side:
             self.color = color
             self.opacity = opacity
