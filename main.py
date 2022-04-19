@@ -75,6 +75,12 @@ def example(content: Union[Callable, type, str]):
             ui.markdown(code).classes('mt-12 w-5/12 overflow-auto')
 
 
+ui.html(
+    '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css" />'
+    '<style>.github-fork-ribbon:before { background-color: #999; }</style>'
+    '<a class="github-fork-ribbon" href="https://github.com/zauberzeug/nicegui" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>'
+)
+
 with ui.row().classes('flex w-full'):
     with open('README.md', 'r') as file:
         content = file.read()
