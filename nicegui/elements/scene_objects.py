@@ -143,3 +143,16 @@ class Texture(Object3D):
         self.args[1] = coordinates
         for socket in WebPage.sockets.get(self.page.page_id, {}).values():
             await self.view.run_method(f'set_texture_coordinates("{self.id}", {coordinates})', socket)
+
+
+class SpotLight(Object3D):
+
+    def __init__(self,
+                 color: str = '#ffffff',
+                 intensity: float = 1.0,
+                 distance: float = 0.0,
+                 angle: float = np.pi / 3,
+                 penumbra: float = 0.0,
+                 decay: float = 1.0,
+                 ):
+        super().__init__('spot_light', color, intensity, distance, angle, penumbra, decay)
