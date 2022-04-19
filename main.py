@@ -16,7 +16,7 @@ from nicegui.globals import page_stack
 page_stack[0].head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
 
 # avoid display:block for PyPI/Docker/GitHub badges
-page_stack[0].head_html += '<style>p a img {display: inline}</style>'
+page_stack[0].head_html += '<style>p a img {display: inline; vertical-align: baseline}</style>'
 
 
 @contextmanager
@@ -108,6 +108,8 @@ with ui.row().classes('flex w-full'):
             with ui.column().classes('w-24'):
                 ui.label('Output:')
                 output = ui.label('').classes('text-bold')
+
+ui.markdown('## API Documentation and Examples')
 
 with example(ui.label):
     ui.label('some label')
