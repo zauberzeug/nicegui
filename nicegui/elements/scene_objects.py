@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
+import numpy as np
 from justpy import WebPage
 
 from .scene_object3d import Object3D
@@ -52,6 +53,37 @@ class Cylinder(Object3D):
                  wireframe: bool = False,
                  ):
         super().__init__('cylinder', top_radius, bottom_radius, height, radial_segments, height_segments, wireframe)
+
+
+class Ring(Object3D):
+
+    def __init__(self,
+                 inner_radius: float = 0.5,
+                 outer_radius: float = 1.0,
+                 theta_segments: int = 8,
+                 phi_segments: int = 1,
+                 theta_start: float = 0,
+                 theta_length: float = 2 * np.pi,
+                 wireframe: bool = False,
+                 ):
+        super().__init__('ring',
+                         inner_radius, outer_radius, theta_segments, phi_segments, theta_start, theta_length, wireframe)
+
+
+class QuadraticBezierTube(Object3D):
+
+    def __init__(self,
+                 start: List(float, float, float),
+                 mid: List(float, float, float),
+                 end: List(float, float, float),
+                 tubular_segments: int = 64,
+                 radius: float = 1.0,
+                 radial_segments: int = 8,
+                 closed: bool = False,
+                 wireframe: bool = False,
+                 ):
+        super().__init__('quadratic_bezier_tube',
+                         start, mid, end, tubular_segments, radius, radial_segments, closed, wireframe)
 
 
 class Extrusion(Object3D):

@@ -76,6 +76,8 @@ class Scene(Element):
     from .scene_objects import Extrusion as extrusion
     from .scene_objects import Group as group
     from .scene_objects import Line as line
+    from .scene_objects import QuadraticBezierTube as quadratic_bezier_tube
+    from .scene_objects import Ring as ring
     from .scene_objects import Sphere as sphere
     from .scene_objects import Stl as stl
     from .scene_objects import Texture as texture

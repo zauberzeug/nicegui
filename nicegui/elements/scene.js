@@ -193,6 +193,15 @@ Vue.component("scene", {
         if (type == "box") geometry = new THREE.BoxGeometry(...args);
         if (type == "sphere") geometry = new THREE.SphereGeometry(...args);
         if (type == "cylinder") geometry = new THREE.CylinderGeometry(...args);
+        if (type == "ring") geometry = new THREE.RingGeometry(...args);
+        if (type == "quadratic_bezier_tube") {
+          const curve = new THREE.QuadraticBezierCurve3(
+            new THREE.Vector3(...args[0]),
+            new THREE.Vector3(...args[1]),
+            new THREE.Vector3(...args[2])
+          );
+          geometry = new THREE.TubeGeometry(curve, ...args.slice(3));
+        }
         if (type == "extrusion") {
           const shape = new THREE.Shape();
           const outline = args[0];
