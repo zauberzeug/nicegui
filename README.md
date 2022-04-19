@@ -1,12 +1,21 @@
-# NiceGUI
+<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/ui-elements.png" width="300" align=right>
 
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/ui-elements.png" width="300" align="right">
+# NiceGUI
 
 NiceGUI is an easy-to-use, Python-based UI framework, which renders to the web browser.
 You can create buttons, dialogs, markdown, 3D scenes, plots and much more.
 
-It was designed to be used for micro web apps, dashboards, robotics projects, smart home solutions and similar use cases.
-It is also helpful for development, for example when tweaking/configuring a machine learning algorithm or tuning motor controllers.
+It's great for micro web apps, dashboards, robotics projects, smart home solutions and similar use cases.
+You can also use it in development, for example when tweaking/configuring a machine learning algorithm or tuning motor controllers.
+
+[![PyPI version](https://badge.fury.io/py/nicegui.svg)](https://pypi.org/project/nicegui/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/nicegui)](https://pypi.org/project/nicegui/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/zauberzeug/nicegui)](https://hub.docker.com/r/zauberzeug/nicegui)<br />
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/graphs/commit-activity)
+[![GitHub issues](https://img.shields.io/github/issues/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/issues)
+[![GitHub forks](https://img.shields.io/github/forks/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/network)
+[![GitHub stars](https://img.shields.io/github/stars/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/stargazers)
+[![GitHub license](https://img.shields.io/github/license/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/blob/main/LICENSE)
 
 ## Features
 
@@ -42,7 +51,7 @@ Write your nice GUI in a file `main.py`:
 from nicegui import ui
 
 ui.label('Hello NiceGUI!')
-ui.button('BUTTON', on_click=lambda: print('button was pressed', flush=True))
+ui.button('BUTTON', on_click=lambda: ui.notify('button was pressed'))
 
 ui.run()
 ```
@@ -110,7 +119,7 @@ NiceGUI is based on [JustPy](https://justpy.io/) which is based on the ASGI fram
 ## Deployment
 
 To deploy your NiceGUI app, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your server infrastructure.
-You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server or use our [pre-built Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies and provides a much much cleaner deployment.
+You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server or use our [pre-built Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
 For example you can use this `docker run` command to start the script `main.py` in the current directory on port 80:
 
 ```bash
@@ -118,7 +127,7 @@ docker run -p 80:8080 -v $(pwd)/:/app/ -d --restart always zauberzeug/nicegui:la
 ```
 
 The example assumes `main.py` uses the port 8080 in the `ui.run` command (which is the default).
-The `--restart always` makes sure the container is restarted on crash of the app or reboot of the server.
+The `--restart always` makes sure the container is restarted if the app crashes or the server reboots.
 Of course this can also be written in a docker compose file:
 
 ```yaml
