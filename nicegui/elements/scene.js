@@ -232,11 +232,14 @@ Vue.component("scene", {
       objects.set(id, mesh);
       objects.get(parent_id).add(objects.get(id));
     },
-    material(object_id, color, opacity) {
+    material(object_id, color, opacity, side) {
       const material = objects.get(object_id).material;
       if (!material) return;
       material.color.set(color);
       material.opacity = opacity;
+      if (side == "front") material.side = THREE.FrontSide;
+      else if (side == "back") material.side = THREE.BackSide;
+      else material.side = THREE.DoubleSide;
     },
     move(object_id, x, y, z) {
       objects.get(object_id).position.set(x, y, z);
