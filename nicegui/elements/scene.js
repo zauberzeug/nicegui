@@ -188,7 +188,13 @@ Vue.component("scene", {
         const material = texture_material(texture_loader.load(url));
         mesh = new THREE.Mesh(geometry, material);
       } else if (type == "spot_light") {
-        mesh = new THREE.SpotLight(...args);
+        mesh = new THREE.Group();
+        const light = new THREE.SpotLight(...args);
+        light.position.set(0, 0, 0);
+        light.target = new THREE.Object3D();
+        light.target.position.set(1, 0, 0);
+        mesh.add(light);
+        mesh.add(light.target);
       } else {
         let geometry;
         const wireframe = args.pop();
