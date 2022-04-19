@@ -47,7 +47,7 @@ Write your nice GUI in a file `main.py`:
 from nicegui import ui
 
 ui.label('Hello NiceGUI!')
-ui.button('BUTTON', on_click=lambda: print('button was pressed', flush=True))
+ui.button('BUTTON', on_click=lambda: ui.notify('button was pressed'))
 
 ui.run()
 ```
@@ -115,7 +115,7 @@ NiceGUI is based on [JustPy](https://justpy.io/) which is based on the ASGI fram
 ## Deployment
 
 To deploy your NiceGUI app, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your server infrastructure.
-You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server or use our [pre-built Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies and provides a much much cleaner deployment.
+You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server or use our [pre-built Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
 For example you can use this `docker run` command to start the script `main.py` in the current directory on port 80:
 
 ```bash
@@ -123,7 +123,7 @@ docker run -p 80:8080 -v $(pwd)/:/app/ -d --restart always zauberzeug/nicegui:la
 ```
 
 The example assumes `main.py` uses the port 8080 in the `ui.run` command (which is the default).
-The `--restart always` makes sure the container is restarted on crash of the app or reboot of the server.
+The `--restart always` makes sure the container is restarted if the app crashes or the server reboots.
 Of course this can also be written in a docker compose file:
 
 ```yaml
