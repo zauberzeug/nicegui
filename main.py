@@ -2,7 +2,6 @@
 import asyncio
 import inspect
 import re
-import sys
 from contextlib import contextmanager
 from typing import Callable, Union
 
@@ -106,7 +105,6 @@ with ui.row().classes('flex w-full'):
             with ui.column().classes('w-24'):
                 ui.label('Output:')
                 output = ui.label('').classes('text-bold')
-
 
 with example(ui.label):
     ui.label('some label')
@@ -327,7 +325,6 @@ with example(async_dialog):
 
     ui.button('Await a dialog', on_click=show)
 
-
 tooltip = '''### Tooltips
 Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
 '''
@@ -428,7 +425,6 @@ with example(binding):
         ui.toggle({1: 'a', 2: 'b', 3: 'c'}).bind_value(demo, 'number')
         ui.number().bind_value(demo, 'number')
 
-
 with example(ui.timer):
     from datetime import datetime
 
@@ -479,7 +475,6 @@ with example(ui.page):
 
     ui.link('Visit other page', '/other_page')
     ui.link('Visit dark page', '/dark_page')
-
 
 with example(ui.open):
     with ui.page('/yet_another_page') as other:
