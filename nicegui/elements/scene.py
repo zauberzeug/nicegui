@@ -129,7 +129,7 @@ class Scene(Element):
         camera.up_y = camera.up_y if up_y is None else up_y
         camera.up_z = camera.up_z if up_z is None else up_z
         for socket in WebPage.sockets.get(self.page.page_id, {}).values():
-            create_task(self.view.run_method(camera.create_move_command(duration), socket), 'move camera')
+            create_task(self.view.run_method(camera.create_move_command(duration), socket), name='move camera')
 
 
 class SceneObject:
