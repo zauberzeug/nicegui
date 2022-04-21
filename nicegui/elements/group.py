@@ -23,8 +23,8 @@ class Group(Element):
 
     def clear(self):
         def collect_components(view: jp.HTMLBaseComponent) -> List[jp.HTMLBaseComponent]:
-            children = getattr(view, 'components', [])
-            return children + [view for child in children for view in collect_components(child)]
+            return getattr(view, 'components', []) + \
+                [view for child in getattr(view, 'components', []) for view in collect_components(child)]
         components = collect_components(self.view)
 
         active_links[:] = [
