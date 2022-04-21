@@ -297,6 +297,29 @@ with example(ui.chart):
     }).classes('max-w-full h-64')
     ui.button('Update', on_click=update)
 
+with example(ui.table):
+    def update():
+        table.options.rowData[0].age += 1
+
+    table = ui.table({
+        'defaultColDef': {
+            'filter': True,
+            'sortable': True,
+            'resizable': True,
+            'headerClass': 'font-bold',
+        },
+        'columnDefs': [
+            {'headerName': 'Name', 'field': 'name'},
+            {'headerName': 'Age', 'field': 'age'},
+        ],
+        'rowData': [
+            {'name': 'Alice', 'age': 18},
+            {'name': 'Bob', 'age': 21},
+            {'name': 'Carol', 'age': 42},
+        ],
+    }).classes('max-h-40')
+    ui.button('Update', on_click=update)
+
 with example(ui.joystick):
     ui.joystick(
         color='blue',

@@ -40,6 +40,7 @@ class Ui:
     from .elements.slider import Slider as slider
     from .elements.svg import Svg as svg
     from .elements.switch import Switch as switch
+    from .elements.table import Table as table
     from .elements.toggle import Toggle as toggle
     from .elements.upload import Upload as upload
     from .lifecycle import on_shutdown, on_startup, shutdown_tasks, startup_tasks
