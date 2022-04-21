@@ -90,7 +90,7 @@ class Element:
 
         return self
 
-    def tooltip(self, text: str, *, props: str = '') -> None:
+    def tooltip(self, text: str, *, props: str = ''):
         tooltip = jp.QTooltip(text=text, temp=False)
         for prop in props.split():
             if '=' in prop:
@@ -99,3 +99,4 @@ class Element:
                 setattr(tooltip, prop, True)
         tooltip.add_page(self.page)
         self.view.add(tooltip)
+        return self
