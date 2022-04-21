@@ -302,12 +302,6 @@ with example(ui.table):
         table.options.rowData[0].age += 1
 
     table = ui.table({
-        'defaultColDef': {
-            'filter': True,
-            'sortable': True,
-            'resizable': True,
-            'headerClass': 'font-bold',
-        },
         'columnDefs': [
             {'headerName': 'Name', 'field': 'name'},
             {'headerName': 'Age', 'field': 'age'},
