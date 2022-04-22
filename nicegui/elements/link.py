@@ -2,11 +2,11 @@ from typing import Union
 
 import justpy as jp
 
-from .element import Element
+from .group import Group
 from .page import Page
 
 
-class Link(Element):
+class Link(Group):
 
     def __init__(self, text: str = '', target: Union[Page, str] = '#'):
         """Link
