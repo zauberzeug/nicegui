@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+import asyncio
+
 import justpy as jp
 
 from ..binding import BindableProperty, bind_from, bind_to
@@ -5,12 +9,13 @@ from ..globals import page_stack, view_stack
 from ..task_logger import create_task
 
 
-def _handle_visibility_change(sender, visible: bool) -> None:
+def _handle_visibility_change(sender: Element, visible: bool) -> None:
     (sender.view.remove_class if visible else sender.view.set_class)('hidden')
     try:
+        asyncio.get_running_loop()  # NOTe only run the update if we already have an event loop
         create_task(sender.view.update(), name='update view after visibility changed')
     except RuntimeError:
-        pass  # NOTE: event loop might not be running yet
+        pass
 
 
 class Element:
