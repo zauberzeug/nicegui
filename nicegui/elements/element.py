@@ -12,10 +12,10 @@ from ..task_logger import create_task
 def _handle_visibility_change(sender: Element, visible: bool) -> None:
     (sender.view.remove_class if visible else sender.view.set_class)('hidden')
     try:
-        asyncio.get_running_loop()  # NOTe only run the update if we already have an event loop
-        create_task(sender.view.update(), name='update view after visibility changed')
+        asyncio.get_running_loop()  # NOTE: make sure we already have an event loop
     except RuntimeError:
-        pass
+        return
+    create_task(sender.view.update(), name='update view after visibility changed')
 
 
 class Element:
