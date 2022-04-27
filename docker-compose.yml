@@ -10,7 +10,7 @@ services:
       - ./:/app
     labels:
       - traefik.http.routers.app.rule=PathPrefix(`/app`)
-      - traefik.http.services.app.loadbalancer.server.port=80
+      - traefik.http.services.app.loadbalancer.server.port=8080
       - traefik.http.middlewares.app-prefix.stripprefix.prefixes=/app
       - traefik.http.middlewares.app-prefix.stripprefix.forceSlash=false # see https://doc.traefik.io/traefik/middlewares/stripprefix/#forceslash
       - traefik.http.routers.app.middlewares=app-prefix
