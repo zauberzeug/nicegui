@@ -6,7 +6,7 @@
     {% if not options.no_internet %}
         <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script>
     {% else %}
-        <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/ag-grid-community.js"></script>
+        <script src="templates/local/ag-grid-community.js"></script>
     {% endif %}
 {% endif %}
 
@@ -14,7 +14,7 @@
     {% if not options.no_internet %}
         <script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.js"></script>
     {% else %}
-        <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/ag-grid-enterprise.js"></script>
+        <script src="templates/local/ag-grid-enterprise.js"></script>
     {% endif %}
 {% endif %}
 

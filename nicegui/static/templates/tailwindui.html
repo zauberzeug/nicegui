@@ -3,6 +3,8 @@
     <!DOCTYPE html>
     <html>
     <head>
+        <base href="http://{{request.headers.get('host')}}{{ request.headers.get('X-Forwarded-Prefix','') }}/"/>
+
         {% include 'favicon.html' %}
 
         {% if options.tailwind %}
@@ -10,8 +12,8 @@
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tailwindcss/ui@latest/dist/tailwind-ui.min.css">
                 <link rel="stylesheet" href="https://unpkg.com/@tailwindcss/typography@/dist/typography.min.css">
             {% else %}
-                <link href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/tailwindui.css" rel="stylesheet">
-                <link href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/tailwind/typography.css" rel="stylesheet">
+                <link href="templates/local/tailwindui.css" rel="stylesheet">
+                <link href="templates/local/tailwind/typography.css" rel="stylesheet">
 
             {% endif %}
             <style>
@@ -24,8 +26,8 @@
             <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.9.0/css/all.css"/>
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css"/>
         {% else %}
-            <link rel="stylesheet" href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/fontawesome/css/all.min.css"/>
-            <link rel="stylesheet" href="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/animate.css"/>
+            <link rel="stylesheet" href="templates/local/fontawesome/css/all.min.css"/>
+            <link rel="stylesheet" href="templates/local/animate.css"/>
         {% endif %}
 
         <style>
@@ -39,8 +41,8 @@
                 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js"></script>
             {% else %}
-                <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/jquery.js"></script>
-                <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/vue.js"></script>
+                <script src="templates/local/jquery.js"></script>
+                <script src="templates/local/vue.js"></script>
             {% endif %}
         {% endif %}
 
@@ -52,7 +54,7 @@
             {% if not options.no_internet %}
                 <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script>
             {% else %}
-                <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/ag-grid-community.js"></script>
+                <script src="templates/local/ag-grid-community.js"></script>
             {% endif %}
         {% endif %}
 
@@ -60,7 +62,7 @@
             {% if not options.no_internet %}
                 <script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.js"></script>
             {% else %}
-                <script src="{{ request.headers.get('X-Forwarded-Prefix','') }}/templates/local/ag-grid-enterprise.js"></script>
+                <script src="templates/local/ag-grid-enterprise.js"></script>
             {% endif %}
         {% endif %}
     </head>
