@@ -489,14 +489,14 @@ with example(lifecycle):
 with example(ui.page):
     with ui.page('/other_page'):
         ui.label('Welcome to the other side')
-        ui.link('Back to main page', '/')
+        ui.link('Back to main page', '')
 
     with ui.page('/dark_page', dark=True):
         ui.label('Welcome to the dark side')
-        ui.link('Back to main page', '/')
+        ui.link('Back to main page', '')
 
-    ui.link('Visit other page', '/other_page')
-    ui.link('Visit dark page', '/dark_page')
+    ui.link('Visit other page', 'other_page')
+    ui.link('Visit dark page', 'dark_page')
 
 with example(ui.open):
     with ui.page('/yet_another_page') as other:
@@ -543,7 +543,7 @@ with example(add_route):
         '/new/route', lambda _: starlette.responses.PlainTextResponse('Response')
     ))
 
-    ui.link('Try the new route!', '/new/route')
+    ui.link('Try the new route!', 'new/route')
 
 get_decorator = """### Get decorator
 
@@ -561,7 +561,7 @@ with example(get_decorator):
     def produce_plain_response(id: str, request: requests.Request):
         return responses.PlainTextResponse(f'{request.client.host} asked for id={id}')
 
-    ui.link('Try yet another route!', '/another/route/42')
+    ui.link('Try yet another route!', 'another/route/42')
 
 with example(ui.keyboard):
     from nicegui.events import KeyEventArguments
