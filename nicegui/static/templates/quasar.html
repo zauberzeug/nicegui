@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <base href="http://{{request.headers.get('host')}}"/>
-
+    <base href="http://{{request.headers.get('host') + request.headers.get('X-Forwarded-Prefix','') }}/"/>
+    
     {% include 'favicon.html' %}
 
     {% if options.tailwind %}
