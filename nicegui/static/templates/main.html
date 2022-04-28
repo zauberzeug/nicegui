@@ -124,7 +124,7 @@
                         if (msg.page_options.favicon.startsWith('http')) {
                             link.href = msg.page_options.favicon;
                         } else {
-                            link.href = '{{ url_for(options.static_name, path='/') }}' + msg.page_options.favicon;
+                            link.href = '{{ options.static_name + '/' }}' + msg.page_options.favicon;
                         }
                         document.getElementsByTagName('head')[0].appendChild(link);
                     }

@@ -17,7 +17,7 @@
     {% if page_options.favicon.startswith('http') %}
         <link rel="shortcut icon" href={{ page_options.favicon }}>
     {% else %}
-        <link rel="shortcut icon" href={{ request.headers.get('X-Forwarded-Prefix','') + options.static_name + '/' + page_options.favicon }}>
+        <link rel="shortcut icon" href={{ options.static_name + '/' + page_options.favicon }}>
     {% endif %}
 {% else %}
     <link rel="shortcut icon" href='https://elimintz.github.io/favicon.png'>

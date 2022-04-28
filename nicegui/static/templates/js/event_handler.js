@@ -164,7 +164,7 @@ function send_to_server(e, event_type, debug_flag) {
                     var link = document.querySelector("link[rel*='icon']") || document.createElement('link');
                     link.type = 'image/x-icon';
                     link.rel = 'shortcut icon';
-                    link.href = '{{ url_for(options.static_name, path=' / ') }}' + msg.page_options.favicon;
+                    link.href = '{{ options.static_name + '/' }}' + msg.page_options.favicon;
                     document.getElementsByTagName('head')[0].appendChild(link);
                 }
                 if (msg) app1.justpyComponents = msg.data;
