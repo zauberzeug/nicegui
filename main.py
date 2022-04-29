@@ -486,6 +486,9 @@ with example(lifecycle):
 
     ui.on_startup(counter())
 
+with example(ui.link):
+    ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
+
 with example(ui.page):
     with ui.page('/other_page'):
         ui.label('Welcome to the other side')
@@ -501,9 +504,9 @@ with example(ui.page):
 with example(ui.open):
     with ui.page('/yet_another_page') as other:
         ui.label('Welcome to yet another page')
-        ui.button('RETURN', on_click=lambda e: ui.open('/', e.socket))
+        ui.button('RETURN', on_click=lambda e: ui.open('#open', e.socket))
 
-    ui.button('REDIRECT', on_click=lambda e: ui.open('/yet_another_page', e.socket))
+    ui.button('REDIRECT', on_click=lambda e: ui.open(other, e.socket))
 
 sessions = """### Sessions
 
