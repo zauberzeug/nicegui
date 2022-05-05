@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, Optional
 
 import justpy as jp
 
@@ -23,7 +23,7 @@ class ValueElement(Element):
     def value_to_view(self, value):
         return value
 
-    def handle_change(self, msg):
+    def handle_change(self, msg: Dict):
         self.value = msg['value']
 
     def bind_value_to(self, target_object, target_name, *, forward=lambda x: x):
