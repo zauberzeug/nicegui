@@ -205,6 +205,15 @@ with example(ui.number):
         ui.label('underlying value: ')
         ui.label().bind_text_from(number_input, 'value')
 
+with example(ui.color_input):
+    color_label = ui.label('Change my color!')
+    ui.color_input(label='Color', value='#000000',
+                   on_change=lambda e: color_label.style(f'color:{e.value}'))
+
+with example(ui.color_picker):
+    picker = ui.color_picker(on_pick=lambda e: button.style(f'background-color:{e.color}!important'))
+    button = ui.button(on_click=picker.open).props('icon=colorize')
+
 with example(ui.radio):
     radio = ui.radio([1, 2, 3], value=1).props('inline')
     ui.radio({1: 'A', 2: 'B', 3: 'C'}, value=1).props('inline').bind_value(radio, 'value')
