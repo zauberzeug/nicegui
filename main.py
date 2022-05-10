@@ -269,6 +269,12 @@ with example(ui.log):
     log = ui.log(max_lines=10).classes('h-16')
     ui.button('Log time', on_click=lambda: log.push(datetime.now().strftime("%X.%f")[:-5]))
 
+with example(ui.tree):
+    ui.tree([
+        {'id': 'number', 'children': [{'id': '1'}, {'id': '2'}]},
+        {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
+    ], label_key='id', on_select=lambda e: ui.notify(e.value))
+
 with example(ui.scene):
     with ui.scene(width=200, height=200) as scene:
         scene.sphere().material('#4488ff')
