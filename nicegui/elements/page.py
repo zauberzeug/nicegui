@@ -1,4 +1,7 @@
+import asyncio
 import inspect
+import time
+import uuid
 from typing import Callable, Optional
 
 import justpy as jp
@@ -42,6 +45,9 @@ class Page(jp.QuasarPage):
         self.css = css
         self.on_connect = on_connect or config.on_connect
 
+        self.waiting_javascript_commands: dict[str, str] = {}
+        self.on('result_ready', self.handle_javascript_result)
+
         self.view = jp.Div(a=self, classes=classes, style='row-gap: 1em', temp=False)
         self.view.add_page(self)
 
@@ -68,3 +74,16 @@ class Page(jp.QuasarPage):
     def __exit__(self, *_):
         page_stack.pop()
         view_stack.pop()
+
+    async def await_javascript(self, code: str, check_interval: float = 0.01, timeout: float = 1.0) -> str:
+        start_time = time.time()
+        request_id = str(uuid.uuid4())
+        await self.run_javascript(code, request_id=request_id)
+        while request_id not in self.waiting_javascript_commands:
+            if time.time() > start_time + timeout:
+                raise TimeoutError('JavaScript did not respond in time')
+            await asyncio.sleep(check_interval)
+        return self.waiting_javascript_commands.pop(request_id)
+
+    def handle_javascript_result(self, msg):
+        self.waiting_javascript_commands[msg.request_id] = msg.result
