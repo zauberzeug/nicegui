@@ -304,9 +304,9 @@ Vue.component("scene", {
         camera.up.x,
         camera.up.y,
         camera.up.z,
-        look_at_x,
-        look_at_y,
-        look_at_z,
+        look_at.x,
+        look_at.y,
+        look_at.z,
       ])
         .to(
           [
@@ -325,6 +325,7 @@ Vue.component("scene", {
         .onUpdate((p) => {
           camera.position.set(p[0], p[1], p[2]);
           camera.up.set(p[3], p[4], p[5]); // NOTE: before calling lookAt
+          look_at.set(p[6], p[7], p[8]);
           camera.lookAt(p[6], p[7], p[8]);
         })
         .start();
