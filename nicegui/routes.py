@@ -2,17 +2,27 @@ import inspect
 from functools import wraps
 
 from starlette import requests, routing
+from starlette.routing import BaseRoute, Mount
+from starlette.staticfiles import StaticFiles
 
 from . import globals
 from .helpers import is_coroutine
 
 
-def add_route(self, route):
+def add_route(self, route: BaseRoute) -> None:
     """
     :param route: starlette route including a path and a function to be called
     :return:
     """
     globals.app.routes.insert(0, route)
+
+
+def add_static_files(self, path: str, directory: str) -> None:
+    """
+    :param path: string that starts with a '/'
+    :param directory: folder with static files to serve under the given path
+    """
+    add_route(None, Mount(path, app=StaticFiles(directory=directory)))
 
 
 def get(self, path: str):

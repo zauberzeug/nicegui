@@ -47,5 +47,5 @@ class Ui:
     from .elements.tree import Tree as tree
     from .elements.upload import Upload as upload
     from .lifecycle import on_shutdown, on_startup, shutdown_tasks, startup_tasks
-    from .routes import add_route, get
+    from .routes import add_route, add_static_files, get
     from .timer import Timer as timer
