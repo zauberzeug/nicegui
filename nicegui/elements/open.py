@@ -13,6 +13,9 @@ def open(self, target: Union[Page, str], socket: Optional[WebSocket] = None):
 
     Can be used to programmatically trigger redirects for a specific client.
 
+    Note that *all* clients (i.e. browsers) connected to the page will open the target URL *unless* a socket is specified.
+    User events like button clicks provide such a socket.
+
     :param target: page or string that is a an absolute URL or relative path from base URL
     :param socket: optional WebSocket defining the target client
     """
