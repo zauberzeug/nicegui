@@ -21,6 +21,7 @@ uvicorn = "0.17.6"
 watchgod = "^0.7"
 pydantic = "^1.8.2"
 websockets = "10.2"
+httpx = "^0.23.0"
 
 [tool.poetry.dev-dependencies]
 icecream = "^2.1.0"
