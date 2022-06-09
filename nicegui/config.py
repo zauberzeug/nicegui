@@ -33,6 +33,8 @@ excluded_endings = (
     'runpy.py',
     os.path.join('debugpy', 'server', 'cli.py'),
     os.path.join('debugpy', '__main__.py'),
+    'pydevd.py',
+    '_pydev_execfile.py',
 )
 for f in reversed(inspect.stack()):
     if not any(f.filename.endswith(ending) for ending in excluded_endings):

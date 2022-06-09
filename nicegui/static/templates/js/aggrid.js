@@ -11,7 +11,7 @@ Vue.component('grid', {
                 for (const element of def) {
                     this.evaluate_formatters(element);
                 }
-            } else if (typeof def == "object") {
+            } else if (typeof def == "object" && def !== null) {
                 for (const [key, value] of Object.entries(def)) {
                     if (key.toLowerCase().includes('formatter')) {
                         eval('def[key] = ' + def[key]);

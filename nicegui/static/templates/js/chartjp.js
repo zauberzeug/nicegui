@@ -14,7 +14,7 @@ Vue.component('chart', {
                 for (const element of def) {
                     this.evaluate_formatters(element);
                 }
-            } else if (typeof def == "object") {
+            } else if (typeof def == "object" && typeof def == "object") {
                 for (const [key, value] of Object.entries(def)) {
                     if (key.toLowerCase().includes('formatter')) {
                         eval('def[key] = ' + def[value]);
