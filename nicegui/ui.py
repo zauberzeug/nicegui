@@ -6,7 +6,8 @@ class Ui:
     from .config import config  # NOTE: before run
     from .run import run  # NOTE: before justpy
 
-    _excludes = [word.strip().lower().removesuffix('.js') for word in config.exclude.split(',')]
+    _excludes = [word.strip().lower() for word in config.exclude.split(',')]
+    _excludes = [e[:-3] if e.endswith('.js') else e for e in _excludes]  # NOTE: for python <3.9 without removesuffix
     os.environ['HIGHCHARTS'] = str('highcharts' not in _excludes)
     os.environ['AGGRID'] = str('aggrid' not in _excludes)
 
