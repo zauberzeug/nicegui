@@ -87,6 +87,17 @@ You can call `ui.run()` with optional arguments:
 - `uvicorn_reload_excludes`: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
 - `main_page_classes`: configure Quasar classes of main page (default: `'q-ma-md column items-start'`)
 - `binding_refresh_interval`: time between binding updates (default: `0.1` seconds, bigger is more cpu friendly)
+- `exclude`: comma-separated string to exclude libraries (with corresponding elements) to save bandwidth and/or startup time:
+  - "aggrid" (`ui.table`)
+  - "colors" (`ui.colors`)
+  - "custom_example" (`ui.custom_example`)
+  - "highcharts" (`ui.chart`)
+  - "interactive_image" (`ui.interactive_image`)
+  - "keyboard" (`ui.keyboard`)
+  - "log" (`ui.log`)
+  - "matplotlib" (`ui.plot` and `ui.line_plot`)
+  - "nipple" (`ui.joystick`)
+  - "three" (`ui.scene`)
 - `interactive`: used internally when run in interactive Python shell (default: `False`)
 
 The environment variables `HOST` and `PORT` can also be used to configure NiceGUI.

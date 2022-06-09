@@ -24,6 +24,7 @@ class Config():
     uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*'
     main_page_classes: str = 'q-ma-md column items-start'
     binding_refresh_interval: float = 0.1
+    exclude: str = ''
     interactive: bool = False
 
 
