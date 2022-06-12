@@ -85,5 +85,6 @@ class Page(jp.QuasarPage):
             await asyncio.sleep(check_interval)
         return self.waiting_javascript_commands.pop(request_id)
 
-    def handle_javascript_result(self, msg):
+    def handle_javascript_result(self, msg) -> bool:
         self.waiting_javascript_commands[msg.request_id] = msg.result
+        return False
