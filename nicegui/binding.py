@@ -85,8 +85,7 @@ class BindableProperty:
         return getattr(owner, '_' + self.name)
 
     def __set__(self, owner: Any, value: Any):
-        value_changed = getattr(owner, '_' + self.name, value) != value
-        if not value_changed:
+        if hasattr(owner, '_' + self.name) and getattr(owner, '_' + self.name) == value:
             return
         setattr(owner, '_' + self.name, value)
         bindable_properties[(id(owner), self.name)] = owner
