@@ -86,8 +86,10 @@ class BindableProperty:
 
     def __set__(self, owner: Any, value: Any):
         value_changed = getattr(owner, '_' + self.name, value) != value
+        if not value_changed:
+            return
         setattr(owner, '_' + self.name, value)
         bindable_properties[(id(owner), self.name)] = owner
         update_views(propagate(owner, self.name))
-        if value_changed and self.on_change is not None:
+        if self.on_change is not None:
             self.on_change(owner, value)
