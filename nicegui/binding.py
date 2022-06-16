@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import asyncio
+import logging
+import time
 from collections import defaultdict
 from typing import Any, Callable, Optional, Set, Tuple
 
@@ -17,13 +19,19 @@ async def loop():
     while True:
         visited: Set[Tuple[int, str]] = set()
         visited_views: Set[HTMLBaseComponent] = set()
+        t = time.time()
         for link in active_links:
             (source_obj, source_name, target_obj, target_name, transform) = link
             value = transform(getattr(source_obj, source_name))
             if getattr(target_obj, target_name) != value:
                 setattr(target_obj, target_name, value)
                 propagate(target_obj, target_name, visited, visited_views)
+        if time.time() - t > 0.01:
+            logging.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f}')
+        t = time.time()
         update_views(visited_views)
+        if time.time() - t > 0.01:
+            logging.warning(f'binding update for {len(visited_views)} visited views took {time.time() - t:.3f}')
         await asyncio.sleep(config.binding_refresh_interval)
 
 
