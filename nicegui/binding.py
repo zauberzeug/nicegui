@@ -27,11 +27,11 @@ async def loop():
                 setattr(target_obj, target_name, value)
                 propagate(target_obj, target_name, visited, visited_views)
         if time.time() - t > 0.01:
-            logging.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f}')
+            logging.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
         t = time.time()
         update_views(visited_views)
         if time.time() - t > 0.01:
-            logging.warning(f'binding update for {len(visited_views)} visited views took {time.time() - t:.3f}')
+            logging.warning(f'binding update for {len(visited_views)} visited views took {time.time() - t:.3f} s')
         await asyncio.sleep(config.binding_refresh_interval)
 
 
