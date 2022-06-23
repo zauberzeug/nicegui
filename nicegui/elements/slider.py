@@ -18,7 +18,7 @@ class Slider(FloatElement):
         :param min: lower bound of the slider
         :param max: upper bound of the slider
         :param step: step size
-        :param value: inital value to set position of the slider
+        :param value: initial value to set position of the slider
         :param on_change: callback which is invoked when the user releases the slider
         """
         view = jp.QSlider(min=min, max=max, step=step, change=self.handle_change, temp=False)

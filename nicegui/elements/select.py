@@ -12,7 +12,7 @@ class Select(ChoiceElement):
         """Dropdown Selection Element
 
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
-        :param value: the inital value
+        :param value: the initial value
         :param on_change: callback to execute when selection changes
         """
         view = jp.QSelect(options=options, label=label, input=self.handle_change, temp=False)

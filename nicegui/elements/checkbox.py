@@ -11,7 +11,7 @@ class Checkbox(BoolElement):
         """Checkbox Element
 
         :param text: the label to display next to the checkbox
-        :param value: whether it should be checked initally (default: `False`)
+        :param value: whether it should be checked initially (default: `False`)
         :param on_change: callback to execute when value changes
         """
         view = jp.QCheckbox(text=text, input=self.handle_change, temp=False)

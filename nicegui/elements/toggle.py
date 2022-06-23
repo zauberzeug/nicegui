@@ -11,7 +11,7 @@ class Toggle(ChoiceElement):
         """Toggle Element
 
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
-        :param value: the inital value
+        :param value: the initial value
         :param on_change: callback to execute when selection changes
         """
         view = jp.QBtnToggle(input=self.handle_change, temp=False)

@@ -14,7 +14,7 @@ class Number(FloatElement):
 
         :param label: displayed name for the number input
         :param placeholder: text to show if no value is entered
-        :param value: the inital value of the field
+        :param value: the initial value of the field
         :param format: a string like '%.2f' to format the displayed value
         :param on_change: callback to execute when the input is confirmed by leaving the focus
         """
