@@ -4,6 +4,7 @@ import justpy as jp
 
 from ..binding import BindableProperty, bind_from, bind_to
 from ..events import ValueChangeEventArguments, handle_event
+from ..task_logger import create_task
 from .element import Element
 
 
@@ -25,6 +26,8 @@ class ValueElement(Element):
 
     def handle_change(self, msg: Dict):
         self.value = msg['value']
+        create_task(self.view.update())
+        return False
 
     def bind_value_to(self, target_object, target_name, *, forward=lambda x: x):
         bind_to(self, 'value', target_object, target_name, forward=forward)
