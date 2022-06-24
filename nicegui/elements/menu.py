@@ -1,5 +1,6 @@
 import justpy as jp
 
+from ..task_logger import create_task
 from .group import Group
 
 
@@ -13,6 +14,7 @@ class Menu(Group):
         :param value: whether the menu is already opened (default: `False`)
         """
         view = jp.QMenu(value=value, temp=False)
+        view.on('input', lambda *_: create_task(view.update()) or False)
 
         super().__init__(view)
 

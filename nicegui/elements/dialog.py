@@ -3,6 +3,7 @@ from typing import Any, Optional
 
 import justpy as jp
 
+from ..task_logger import create_task
 from .group import Group
 
 
@@ -24,9 +25,11 @@ class Dialog(Group):
 
     def open(self) -> None:
         self.view.value = True
+        create_task(self.view.update())
 
     def close(self) -> None:
         self.view.value = False
+        create_task(self.view.update())
 
     def __await__(self):
         self._submitted = asyncio.Event()

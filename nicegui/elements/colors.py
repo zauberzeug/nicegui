@@ -1,3 +1,6 @@
+import asyncio
+
+from ..task_logger import create_task
 from .custom_view import CustomView
 from .element import Element
 
@@ -33,3 +36,6 @@ class Colors(Element):
         Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/>`_.
         """
         super().__init__(ColorsView(primary, secondary, accent, positive, negative, info, warning))
+
+        if asyncio.get_event_loop().is_running():
+            create_task(self.page.update())

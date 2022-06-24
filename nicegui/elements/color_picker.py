@@ -3,6 +3,7 @@ from typing import Callable, Dict
 import justpy as jp
 from nicegui.events import ColorPickEventArguments, handle_event
 
+from ..task_logger import create_task
 from .element import Element
 
 
@@ -23,7 +24,11 @@ class ColorPicker(Element):
         def handle_pick(sender, msg: Dict):
             return handle_event(on_pick, ColorPickEventArguments(sender=self, color=msg.value), update=self.parent_view)
         view.name_dict['color_input'].on('change', handle_pick)
+        view.name_dict['color_input'].disable_input_event = True
         view.name_dict['popup'].value = value
+        view.name_dict['popup'].on('input', lambda *_: create_task(view.update()) or False)
+        view.name_dict['popup'].on('show', lambda *_: create_task(view.update()) or False)
+        view.name_dict['popup'].on('hide', lambda *_: create_task(view.update()) or False)
 
         super().__init__(view)
 

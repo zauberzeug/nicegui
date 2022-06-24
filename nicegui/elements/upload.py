@@ -23,7 +23,7 @@ class Upload(Element):
             submit=lambda sender, msg: self.submit(sender, msg),
             temp=False,
         )
-        jp.Input(type='file', multiple=multiple, a=view, temp=False)
+        jp.Input(type='file', multiple=multiple, change=lambda *_: False, a=view, temp=False)
         jp.QBtn(type='submit', text='Upload', color='primary', a=view, temp=False)
 
         super().__init__(view)
@@ -35,7 +35,7 @@ class Upload(Element):
                 if form_data.type == 'file':
                     files = [base64.b64decode(f.file_content) for f in form_data.files]
                     arguments = UploadEventArguments(sender=self, files=files)
-                    if handle_event(self.upload_handler, arguments, update=self.parent_view) is None:
+                    if handle_event(self.upload_handler, arguments, update=self.parent_view):
                         page_update = None
             return page_update
         except Exception:

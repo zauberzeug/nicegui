@@ -235,8 +235,6 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments, *,
                 except Exception:
                     traceback.print_exc()
             create_task(async_handler(), name=str(handler))
-            return False
-        else:
-            return False if result == False else None
+        return False
     except Exception:
         traceback.print_exc()

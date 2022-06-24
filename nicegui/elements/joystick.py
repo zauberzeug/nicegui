@@ -26,17 +26,17 @@ class JoystickView(CustomView):
 
     def handle_start(self, msg):
         if self.on_start is not None:
-            return self.on_start(msg)
+            return self.on_start(msg) or False
         return False
 
     def handle_move(self, msg):
         if self.on_move is not None:
-            return self.on_move(msg)
+            return self.on_move(msg) or False
         return False
 
     def handle_end(self, msg):
         if self.on_end is not None:
-            return self.on_end(msg)
+            return self.on_end(msg) or False
         return False
 
 

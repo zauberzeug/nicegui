@@ -3,6 +3,7 @@ from typing import Callable, Optional
 import justpy as jp
 
 from ..events import ClickEventArguments, handle_event
+from ..task_logger import create_task
 from .element import Element
 
 
@@ -25,6 +26,7 @@ class MenuItem(Element):
             if auto_close:
                 assert isinstance(self.parent_view, jp.QMenu)
                 self.parent_view.value = False
+                create_task(self.parent_view.update())
             return result
 
         view.on('click', handle_click)
