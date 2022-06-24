@@ -9,6 +9,16 @@ from . import binding, globals
 from .task_logger import create_task
 from .timer import Timer
 
+jp.app.router.on_startup.clear()  # NOTE: remove JustPy's original startup function
+
+
+@jp.app.on_event('startup')
+async def patched_justpy_startup():
+    jp.WebPage.loop = jp.asyncio.get_event_loop()
+    jp.JustPy.loop = jp.WebPage.loop
+    jp.JustPy.STATIC_DIRECTORY = jp.os.environ["STATIC_DIRECTORY"]
+    print(f'NiceGUI ready to go on {"https" if jp.SSL_KEYFILE else "http"}://{jp.HOST}:{jp.PORT}')
+
 
 @jp.app.on_event('startup')
 def startup():
