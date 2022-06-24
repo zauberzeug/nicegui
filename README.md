@@ -80,7 +80,6 @@ You can call `ui.run()` with optional arguments:
 - `dark`: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
 - `reload`: automatically reload the ui on file changes (default: `True`)
 - `show`: automatically open the ui in a browser tab (default: `True`)
-- `on_connect`: default function or coroutine which is called for each new client connection; the optional `request` argument provides session infos
 - `uvicorn_logging_level`: logging level for uvicorn server (default: `'warning'`)
 - `uvicorn_reload_dirs`: string with comma-separated list for directories to be monitored (default is current working directory only)
 - `uvicorn_reload_includes`: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`)

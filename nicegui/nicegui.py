@@ -13,15 +13,16 @@ from .timer import Timer
 def startup():
     globals.tasks.extend(create_task(t.coro, name=t.name) for t in Timer.prepared_coroutines)
     Timer.prepared_coroutines.clear()
-    globals.tasks.extend(create_task(t, name='startup task') for t in Ui.startup_tasks if isinstance(t, Awaitable))
-    [safe_invoke(t) for t in Ui.startup_tasks if isinstance(t, Callable)]
+    globals.tasks.extend(create_task(t, name='startup task')
+                         for t in globals.startup_handlers if isinstance(t, Awaitable))
+    [safe_invoke(t) for t in globals.startup_handlers if isinstance(t, Callable)]
     jp.run_task(binding.loop())
 
 
 @jp.app.on_event('shutdown')
 def shutdown():
-    [create_task(t, name='shutdown task') for t in Ui.shutdown_tasks if isinstance(t, Awaitable)]
-    [safe_invoke(t) for t in Ui.shutdown_tasks if isinstance(t, Callable)]
+    [create_task(t, name='shutdown task') for t in globals.shutdown_handlers if isinstance(t, Awaitable)]
+    [safe_invoke(t) for t in globals.shutdown_handlers if isinstance(t, Callable)]
     [t.cancel() for t in globals.tasks]
 
 

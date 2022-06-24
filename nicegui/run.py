@@ -2,7 +2,7 @@ import inspect
 import os
 import sys
 import webbrowser
-from typing import Callable, Optional
+from typing import Optional
 
 import uvicorn
 
@@ -34,7 +34,6 @@ def run(self, *,
         dark: Optional[bool] = False,
         reload: bool = True,
         show: bool = True,
-        on_connect: Optional[Callable] = None,
         uvicorn_logging_level: str = 'warning',
         uvicorn_reload_dirs: str = '.',
         uvicorn_reload_includes: str = '*.py',

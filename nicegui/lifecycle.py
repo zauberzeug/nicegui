@@ -1,14 +1,15 @@
-from typing import Awaitable, Callable, List, Union
+from typing import Awaitable, Callable, Union
 
-startup_tasks: List[Union[Callable, Awaitable]] = []
-
-
-def on_startup(self, task: Union[Callable, Awaitable]):
-    self.startup_tasks.append(task)
+from .globals import connect_handlers, shutdown_handlers, startup_handlers
 
 
-shutdown_tasks: List[Union[Callable, Awaitable]] = []
+def on_connect(self, handler: Union[Callable, Awaitable]):
+    connect_handlers.append(handler)
 
 
-def on_shutdown(self, task: Union[Callable, Awaitable]):
-    self.shutdown_tasks.append(task)
+def on_startup(self, handler: Union[Callable, Awaitable]):
+    startup_handlers.append(handler)
+
+
+def on_shutdown(self, handler: Union[Callable, Awaitable]):
+    shutdown_handlers.append(handler)
