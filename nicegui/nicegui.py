@@ -2,8 +2,13 @@
 # isort:skip_file
 from typing import Awaitable, Callable
 
-from .ui import Ui  # NOTE: before justpy
-import justpy as jp
+if True:  # NOTE: prevent formatter from mixing up these lines
+    import builtins
+    print_backup = builtins.print
+    builtins.print = lambda *_, **__: None
+    from .ui import Ui  # NOTE: before justpy
+    import justpy as jp
+    builtins.print = print_backup
 
 from . import binding, globals
 from .task_logger import create_task
