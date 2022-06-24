@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # isort:skip_file
 from typing import Awaitable, Callable
 
