@@ -42,6 +42,9 @@ def run(self, *,
         binding_refresh_interval: float = 0.1,
         exclude: str = '',
         ):
+    if globals.config.interactive:
+        print('Error: Unexpected ui.run() in interactive mode.', flush=True)
+        sys.exit()
 
     if globals.config.interactive or reload == False:  # NOTE: if reload == True we already started uvicorn above
         if show:
