@@ -133,7 +133,7 @@ function send_to_server(e, event_type, debug_flag) {
     }
     if (use_websockets) {
         if (web_socket_closed) {
-            window.location.reload();
+            setTimeout(function(){ window.location.reload(); }, 100);
             return;
         }
         if (websocket_ready) {
