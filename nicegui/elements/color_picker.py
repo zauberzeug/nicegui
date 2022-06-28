@@ -21,7 +21,8 @@ class ColorPicker(Element):
             ''')
 
         def handle_pick(sender, msg: Dict):
-            return handle_event(on_pick, ColorPickEventArguments(sender=self, color=msg.value), update=self.parent_view)
+            arguments = ColorPickEventArguments(sender=self, socket=msg.websocket, color=msg.value)
+            return handle_event(on_pick, arguments, update=self.parent_view)
         view.name_dict['color_input'].on('change', handle_pick)
         view.name_dict['popup'].value = value
 
