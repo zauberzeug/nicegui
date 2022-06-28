@@ -62,6 +62,6 @@ class Keyboard(Element):
                 modifiers=modifiers,
                 key=key
             )
-            return handle_event(self.key_handler, arguments, update=self.parent_view)
+            return handle_event(self.key_handler, arguments)
         except Exception:
             traceback.print_exc()

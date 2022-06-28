@@ -27,7 +27,7 @@ class Tree(Element):
 
         def process_event(view, event) -> Optional[bool]:
             arguments = ValueChangeEventArguments(sender=self, socket=event.get('websocket'), value=event.get('value'))
-            return handle_event(on_select, arguments, update=self.parent_view)
+            return handle_event(on_select, arguments)
 
         view.on('update:selected', process_event)
         view.on('update:expanded', lambda *_: create_task(view.update()))

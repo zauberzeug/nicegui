@@ -11,8 +11,7 @@ from .element import Element
 class ValueElement(Element):
     value = BindableProperty(
         on_change=lambda sender, value: handle_event(sender.change_handler,
-                                                     ValueChangeEventArguments(sender=sender, value=value),
-                                                     update=sender.parent_view))
+                                                     ValueChangeEventArguments(sender=sender, value=value)))
 
     def __init__(self, view: jp.HTMLBaseComponent, *, value: Any, on_change: Optional[Callable]):
         super().__init__(view)

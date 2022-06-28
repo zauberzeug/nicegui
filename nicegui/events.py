@@ -2,7 +2,6 @@ import traceback
 from inspect import signature
 from typing import Any, Callable, List, Optional
 
-from justpy.htmlcomponents import HTMLBaseComponent
 from pydantic import BaseModel
 from starlette.websockets import WebSocket
 
@@ -219,22 +218,14 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
-def handle_event(handler: Optional[Callable], arguments: EventArguments, *,
-                 update: Optional[HTMLBaseComponent] = None) -> Optional[bool]:
+def handle_event(handler: Optional[Callable], arguments: EventArguments) -> Optional[bool]:
     try:
         if handler is None:
             return False
         no_arguments = not signature(handler).parameters
         result = handler() if no_arguments else handler(arguments)
         if is_coroutine(handler):
-            async def async_handler():
-                try:
-                    await result
-                    if update is not None:
-                        await update.update()
-                except Exception:
-                    traceback.print_exc()
-            create_task(async_handler(), name=str(handler))
+            create_task(result, name=str(handler))
         return False
     except Exception:
         traceback.print_exc()

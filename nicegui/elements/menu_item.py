@@ -22,7 +22,7 @@ class MenuItem(Element):
 
         def handle_click(view, event) -> Optional[bool]:
             socket = event.get('websocket')
-            result = handle_event(on_click, ClickEventArguments(sender=self, socket=socket), update=self.parent_view)
+            result = handle_event(on_click, ClickEventArguments(sender=self, socket=socket))
             if auto_close:
                 assert isinstance(self.parent_view, jp.QMenu)
                 self.parent_view.value = False

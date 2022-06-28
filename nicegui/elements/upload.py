@@ -35,7 +35,7 @@ class Upload(Element):
                 if form_data.type == 'file':
                     files = [base64.b64decode(f.file_content) for f in form_data.files]
                     arguments = UploadEventArguments(sender=self, files=files)
-                    if handle_event(self.upload_handler, arguments, update=self.parent_view):
+                    if handle_event(self.upload_handler, arguments):
                         page_update = None
             return page_update
         except Exception:
