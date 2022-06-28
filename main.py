@@ -221,10 +221,10 @@ with example(ui.number):
 with example(ui.color_input):
     color_label = ui.label('Change my color!')
     ui.color_input(label='Color', value='#000000',
-                   on_change=lambda e: color_label.style(f'color:{e.value}'))
+                   on_change=lambda e: ui.update(color_label.style(f'color:{e.value}')))
 
 with example(ui.color_picker):
-    picker = ui.color_picker(on_pick=lambda e: button.style(f'background-color:{e.color}!important'))
+    picker = ui.color_picker(on_pick=lambda e: ui.update(button.style(f'background-color:{e.color}!important')))
     button = ui.button(on_click=picker.open).props('icon=colorize')
 
 with example(ui.radio):
@@ -300,6 +300,7 @@ with example(ui.chart):
 
     def update():
         chart.options.series[0].data[:] = random(2)
+        ui.update(chart)
 
     chart = ui.chart({
         'title': False,
@@ -315,6 +316,7 @@ with example(ui.chart):
 with example(ui.table):
     def update():
         table.options.rowData[0].age += 1
+        ui.update(table)
 
     table = ui.table({
         'columnDefs': [
@@ -436,6 +438,7 @@ with example(clear):
     def add_face():
         with container:
             ui.icon('face')
+        ui.update(container)
     add_face()
 
     ui.button('Add', on_click=add_face)

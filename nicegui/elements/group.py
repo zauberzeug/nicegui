@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import List
 
 import justpy as jp
+from nicegui.task_logger import create_task
 
 from ..binding import active_links, bindable_properties, bindings
 from ..globals import view_stack
@@ -58,3 +59,4 @@ class Group(Element):
                 del bindable_properties[(obj_id, name)]
 
         self.view.delete_components()
+        create_task(self.view.update())
