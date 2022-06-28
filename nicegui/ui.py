@@ -43,6 +43,7 @@ class Ui:
     from .elements.table import Table as table
     from .elements.toggle import Toggle as toggle
     from .elements.tree import Tree as tree
+    from .elements.update import update
     from .elements.upload import Upload as upload
     from .lifecycle import on_shutdown, on_startup, shutdown_tasks, startup_tasks
     from .routes import add_route, add_static_files, get
