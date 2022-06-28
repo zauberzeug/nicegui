@@ -13,13 +13,14 @@ class Menu(Group):
 
         :param value: whether the menu is already opened (default: `False`)
         """
-        view = jp.QMenu(value=value, temp=False)
-        view.on('input', lambda *_: create_task(view.update()) or False)
+        view = jp.QMenu(value=value, temp=False, no_parent_event=True)
 
         super().__init__(view)
 
     def open(self):
         self.view.value = True
+        create_task(self.view.update())
 
     def close(self):
         self.view.value = False
+        create_task(self.view.update())

@@ -16,10 +16,9 @@ class ColorPicker(Element):
         :param value: whether the menu is already opened (default: `False`)
         """
         view = jp.parse_html('''
-            <q-popup-proxy transition-show="scale" transition-hide="scale" name="popup">
+            <q-popup-proxy transition-show="scale" transition-hide="scale" name="popup" no-parent-event>
                 <q-color name="color_input"/>
-            </q-popup-proxy>
-            ''')
+            </q-popup-proxy>''')
 
         def handle_pick(sender, msg: Dict):
             return handle_event(on_pick, ColorPickEventArguments(sender=self, color=msg.value))
@@ -34,6 +33,8 @@ class ColorPicker(Element):
 
     def open(self):
         self.view.name_dict['popup'].value = True
+        create_task(self.view.update())
 
     def close(self):
         self.view.name_dict['popup'].value = False
+        create_task(self.view.update())
