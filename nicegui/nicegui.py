@@ -28,7 +28,9 @@ def shutdown():
 
 def safe_invoke(func: Callable):
     try:
-        func()
+        result = func()
+        if isinstance(result, Awaitable):
+            create_task(result)
     except:
         globals.log.exception(f'could not invoke {func}')
 
