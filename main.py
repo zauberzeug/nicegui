@@ -360,7 +360,7 @@ with example(async_dialog):
 
     async def show():
         result = await dialog
-        await ui.notify(f'You chose {result}')
+        ui.notify(f'You chose {result}')
 
     ui.button('Await a dialog', on_click=show)
 

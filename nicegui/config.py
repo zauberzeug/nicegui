@@ -2,7 +2,7 @@ import ast
 import inspect
 import os
 from dataclasses import dataclass
-from typing import Callable, Optional
+from typing import Optional
 
 from . import globals
 
@@ -17,7 +17,6 @@ class Config():
     dark: Optional[bool] = False
     reload: bool = True
     show: bool = True
-    on_connect: Optional[Callable] = None
     uvicorn_logging_level: str = 'warning'
     uvicorn_reload_dirs: str = '.'
     uvicorn_reload_includes: str = '*.py'

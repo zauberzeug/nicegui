@@ -24,8 +24,7 @@ class Button(Element):
         self.bind_text_to(self.view, 'label')
 
         def process_event(view, event) -> Optional[bool]:
-            socket = event.get('websocket')
-            return handle_event(on_click, ClickEventArguments(sender=self, socket=socket))
+            return handle_event(on_click, ClickEventArguments(sender=self, socket=event.get('websocket')))
 
         view.on('click', process_event)
 

@@ -1,8 +1,8 @@
 import traceback
+from dataclasses import dataclass
 from inspect import signature
 from typing import Any, Callable, List, Optional
 
-from pydantic import BaseModel
 from starlette.websockets import WebSocket
 
 from .elements.element import Element
@@ -10,50 +10,57 @@ from .helpers import is_coroutine
 from .task_logger import create_task
 
 
-class EventArguments(BaseModel):
-    class Config:
-        arbitrary_types_allowed = True
+@dataclass
+class EventArguments:
     sender: Element
     socket: Optional[WebSocket]
 
 
+@dataclass
 class ClickEventArguments(EventArguments):
     pass
 
 
+@dataclass
 class ColorPickEventArguments(EventArguments):
     color: str
 
 
+@dataclass
 class MouseEventArguments(EventArguments):
     type: str
     image_x: float
     image_y: float
 
 
+@dataclass
 class UploadEventArguments(EventArguments):
     files: List[bytes]
 
 
+@dataclass
 class ValueChangeEventArguments(EventArguments):
     value: Any
 
 
-class KeyboardAction(BaseModel):
+@dataclass
+class KeyboardAction:
     keypress: bool
     keydown: bool
     keyup: bool
     repeat: bool
 
 
-class KeyboardModifiers(BaseModel):
+@dataclass
+class KeyboardModifiers:
     alt: bool
     ctrl: bool
     meta: bool
     shift: bool
 
 
-class KeyboardKey(BaseModel):
+@dataclass
+class KeyboardKey:
     name: str
     code: str
     location: int
@@ -210,9 +217,8 @@ class KeyboardKey(BaseModel):
         return self.name == 'F12'
 
 
+@dataclass
 class KeyEventArguments(EventArguments):
-    class Config:
-        arbitrary_types_allowed = True
     action: KeyboardAction
     key: KeyboardKey
     modifiers: KeyboardModifiers

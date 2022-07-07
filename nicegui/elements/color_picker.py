@@ -21,7 +21,7 @@ class ColorPicker(Element):
             </q-popup-proxy>''')
 
         def handle_pick(sender, msg: Dict):
-            return handle_event(on_pick, ColorPickEventArguments(sender=self, color=msg.value))
+            return handle_event(on_pick, ColorPickEventArguments(sender=self, socket=msg.websocket, color=msg.value))
         view.name_dict['color_input'].on('change', handle_pick)
         view.name_dict['color_input'].disable_input_event = True
         view.name_dict['popup'].value = value

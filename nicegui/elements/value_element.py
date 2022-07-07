@@ -9,9 +9,8 @@ from .element import Element
 
 
 class ValueElement(Element):
-    value = BindableProperty(
-        on_change=lambda sender, value: handle_event(sender.change_handler,
-                                                     ValueChangeEventArguments(sender=sender, value=value)))
+    value = BindableProperty(on_change=lambda sender, value: handle_event(
+        sender.change_handler, ValueChangeEventArguments(sender=sender, socket=None, value=value)))
 
     def __init__(self, view: jp.HTMLBaseComponent, *, value: Any, on_change: Optional[Callable]):
         super().__init__(view)

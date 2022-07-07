@@ -8,7 +8,7 @@ import justpy as jp
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
 
-from ..globals import config, page_stack, view_stack
+from ..globals import config, connect_handlers, page_stack, view_stack
 from ..helpers import is_coroutine
 
 
@@ -43,7 +43,7 @@ class Page(jp.QuasarPage):
         self.dark = dark if dark is not ... else config.dark
         self.tailwind = True  # use Tailwind classes instead of Quasars
         self.css = css
-        self.on_connect = on_connect or config.on_connect
+        self.on_connect = on_connect
 
         self.waiting_javascript_commands: dict[str, str] = {}
         self.on('result_ready', self.handle_javascript_result)
@@ -55,13 +55,13 @@ class Page(jp.QuasarPage):
         jp.Route(route, self._route_function)
 
     async def _route_function(self, request: Request):
-        if self.on_connect:
-            arg_count = len(inspect.signature(self.on_connect).parameters)
-            is_coro = is_coroutine(self.on_connect)
+        for connect_handler in connect_handlers + ([self.on_connect] if self.on_connect else []):
+            arg_count = len(inspect.signature(connect_handler).parameters)
+            is_coro = is_coroutine(connect_handler)
             if arg_count == 1:
-                await self.on_connect(request) if is_coro else self.on_connect(request)
+                await connect_handler(request) if is_coro else connect_handler(request)
             elif arg_count == 0:
-                await self.on_connect() if is_coro else self.on_connect()
+                await connect_handler() if is_coro else connect_handler()
             else:
                 raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         return self

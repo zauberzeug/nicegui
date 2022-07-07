@@ -21,8 +21,7 @@ class MenuItem(Element):
         view = jp.QItem(text=text, clickable=True, temp=False)
 
         def handle_click(view, event) -> Optional[bool]:
-            socket = event.get('websocket')
-            result = handle_event(on_click, ClickEventArguments(sender=self, socket=socket))
+            result = handle_event(on_click, ClickEventArguments(sender=self, socket=event.get('websocket')))
             if auto_close:
                 assert isinstance(self.parent_view, jp.QMenu)
                 self.parent_view.value = False
