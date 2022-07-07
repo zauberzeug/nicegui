@@ -481,25 +481,27 @@ with example(ui.timer):
 
 lifecycle = '''### Lifecycle
 
-You can run a function or coroutine on startup as a parallel task by passing it to `ui.on_startup`.
-If NiceGUI is shut down or restarted, the tasks will be automatically canceled (for example when you make a code change).
-You can also execute cleanup code with `ui.on_shutdown`.
+You can run a function or coroutine as a parallel task by passing it to one of the following register methods:
+
+- `ui.on_startup`: Called when NiceGUI is started or restarted.
+- `ui.on_shutdown`: Called when NiceGUI is shut down or restarted.
+- `ui.on_connect`: Called when a client connects to NiceGUI. (Optional argument: Starlette request)
+
+When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
 '''
 with example(lifecycle):
-    with ui.row() as row:
-        ui.label('count:')
-        count_label = ui.label('0')
-        count = 0
+    import asyncio
+    import time
 
-    async def counter():
-        global count
+    l = ui.label()
+
+    async def run_clock():
         while True:
-            count_label.text = str(count)
-            count += 1
-            await row.view.update()
+            l.text = f'unix time: {time.time():.1f}'
             await asyncio.sleep(1)
 
-    ui.on_startup(counter())
+    ui.on_startup(run_clock)
+    ui.on_connect(lambda: l.set_text('new connection'))
 
 with example(ui.link):
     ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
