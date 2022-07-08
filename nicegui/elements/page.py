@@ -92,3 +92,7 @@ class Page(jp.QuasarPage):
 
 def add_head_html(self, html: str) -> None:
     page_stack[-1].head_html += html
+
+
+def add_body_html(self, html: str) -> None:
+    page_stack[-1].body_html += html
