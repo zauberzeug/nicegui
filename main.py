@@ -502,6 +502,27 @@ with example(lifecycle):
 
     ui.on_startup(counter())
 
+updates = '''### UI Updates
+
+NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed.
+In other cases, you can explicitly call `element.update()` or `ui.update(*elements)` to update.
+The example code shows both methods for a `ui.table`, where it is difficult to automatically detect changes in the `options` dictionary.
+'''
+with example(updates):
+    from random import randint
+
+    def add():
+        numbers.options.rowData.append({'numbers': randint(0, 100)})
+        numbers.update()
+
+    def clear():
+        numbers.options.rowData.clear()
+        ui.update(numbers)
+
+    numbers = ui.table({'columnDefs': [{'field': 'numbers'}], 'rowData': []}).classes('max-h-40')
+    ui.button('Add', on_click=add)
+    ui.button('Clear', on_click=clear)
+
 with example(ui.link):
     ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
 
