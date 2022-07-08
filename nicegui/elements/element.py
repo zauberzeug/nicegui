@@ -15,7 +15,7 @@ def _handle_visibility_change(sender: Element, visible: bool) -> None:
         asyncio.get_running_loop()  # NOTE: make sure we already have an event loop
     except RuntimeError:
         return
-    create_task(sender.view.update(), name='update view after visibility changed')
+    sender.update()
 
 
 class Element:
@@ -52,7 +52,7 @@ class Element:
     def classes(self, add: str = None, *, remove: str = None, replace: str = None):
         '''HTML classes to modify the look of the element.
         Every class in the `remove` parameter will be removed from the element.
-        Classes are seperated with a blank space.
+        Classes are separated with a blank space.
         This can be helpful if the predefined classes by NiceGUI are not wanted in a particular styling.
         '''
         class_list = [] if replace is not None else self.view.classes.split()
@@ -61,12 +61,13 @@ class Element:
         class_list += (replace or '').split()
         self.view.classes = ' '.join(class_list)
 
+        self.update()
         return self
 
     def style(self, add: str = None, *, remove: str = None, replace: str = None):
         '''CSS style sheet definitions to modify the look of the element.
         Every style in the `remove` parameter will be removed from the element.
-        Styles are seperated with a semicolon.
+        Styles are separated with a semicolon.
         This can be helpful if the predefined style sheet definitions by NiceGUI are not wanted in a particular styling.
         '''
         style_list = [] if replace is not None else self.view.style.split(';')
@@ -75,12 +76,13 @@ class Element:
         style_list += (replace or '').split(';')
         self.view.style = ';'.join(style_list)
 
+        self.update()
         return self
 
     def props(self, add: str = None, *, remove: str = None, replace: str = None):
         '''Quasar props https://quasar.dev/vue-components/button#design to modify the look of the element.
         Boolean props will automatically activated if they appear in the list of the `add` property.
-        Props are seperated with a blank space.
+        Props are separated with a blank space.
         Every prop passed to the `remove` parameter will be removed from the element.
         This can be helpful if the predefined props by NiceGUI are not wanted in a particular styling.
         '''
@@ -93,6 +95,7 @@ class Element:
             else:
                 setattr(self.view, prop, True)
 
+        self.update()
         return self
 
     def tooltip(self, text: str, *, props: str = ''):
@@ -104,4 +107,9 @@ class Element:
                 setattr(tooltip, prop, True)
         tooltip.add_page(self.page)
         self.view.add(tooltip)
+        self.update()
         return self
+
+    def update(self) -> None:
+        if asyncio.get_event_loop().is_running():
+            create_task(self.view.update())

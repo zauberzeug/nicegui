@@ -1,6 +1,5 @@
 import justpy as jp
 
-from ..task_logger import create_task
 from .group import Group
 
 
@@ -19,8 +18,8 @@ class Menu(Group):
 
     def open(self):
         self.view.value = True
-        create_task(self.view.update())
+        self.update()
 
     def close(self):
         self.view.value = False
-        create_task(self.view.update())
+        self.update()

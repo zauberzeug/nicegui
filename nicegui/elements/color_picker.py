@@ -25,16 +25,16 @@ class ColorPicker(Element):
         view.name_dict['color_input'].on('change', handle_pick)
         view.name_dict['color_input'].disable_input_event = True
         view.name_dict['popup'].value = value
-        view.name_dict['popup'].on('input', lambda *_: create_task(view.update()) or False)
-        view.name_dict['popup'].on('show', lambda *_: create_task(view.update()) or False)
-        view.name_dict['popup'].on('hide', lambda *_: create_task(view.update()) or False)
+        view.name_dict['popup'].on('input', lambda *_: self.update() or False)
+        view.name_dict['popup'].on('show', lambda *_: self.update() or False)
+        view.name_dict['popup'].on('hide', lambda *_: self.update() or False)
 
         super().__init__(view)
 
     def open(self):
         self.view.name_dict['popup'].value = True
-        create_task(self.view.update())
+        self.update()
 
     def close(self):
         self.view.name_dict['popup'].value = False
-        create_task(self.view.update())
+        self.update()

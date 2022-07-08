@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import List
 
 import justpy as jp
-from nicegui.task_logger import create_task
 
 from ..binding import active_links, bindable_properties, bindings
 from ..globals import view_stack
@@ -18,6 +17,8 @@ class Group(Element):
 
     def __exit__(self, *_):
         view_stack.pop()
+        if len(view_stack) <= 1:
+            self.update()  # NOTE: update when we are back on top of the stack (only the first page is in view stack)
 
     def tight(self) -> Group:
         return self.classes(replace='').style(replace='')
@@ -59,4 +60,4 @@ class Group(Element):
                 del bindable_properties[(obj_id, name)]
 
         self.view.delete_components()
-        create_task(self.view.update())
+        self.update()

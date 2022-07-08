@@ -2,7 +2,6 @@ from typing import Callable, Optional
 
 import justpy as jp
 
-from ..task_logger import create_task
 from .string_element import StringElement
 
 
@@ -36,16 +35,16 @@ class ColorInput(StringElement):
         self._icon_button.on('click', lambda *_: self.open() or False)
         self._icon_button.name_dict['color_input'].on('change', self.handle_change)
         self._icon_button.name_dict['color_input'].disable_input_event = True
-        self._icon_button.name_dict['popup'].on('input', lambda *_: create_task(view.update()) or False)
-        self._icon_button.name_dict['popup'].on('show', lambda *_: create_task(view.update()) or False)
-        self._icon_button.name_dict['popup'].on('hide', lambda *_: create_task(view.update()) or False)
+        self._icon_button.name_dict['popup'].on('input', lambda *_: self.update() or False)
+        self._icon_button.name_dict['popup'].on('show', lambda *_: self.update() or False)
+        self._icon_button.name_dict['popup'].on('hide', lambda *_: self.update() or False)
 
         super().__init__(view, value=value, on_change=on_change)
 
     def open(self):
         self._icon_button.name_dict['popup'].value = True
-        create_task(self.view.update())
+        self.update()
 
     def close(self):
         self.view.name_dict['popup'].value = False
-        create_task(self.view.update())
+        self.update()

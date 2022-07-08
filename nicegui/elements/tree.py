@@ -2,7 +2,6 @@ from typing import Callable, Optional
 
 import justpy as jp
 from nicegui.events import ValueChangeEventArguments, handle_event
-from nicegui.task_logger import create_task
 
 from .element import Element
 
@@ -30,5 +29,5 @@ class Tree(Element):
             return handle_event(on_select, arguments)
 
         view.on('update:selected', process_event)
-        view.on('update:expanded', lambda *_: create_task(view.update()))
-        view.on('update:ticked', lambda *_: create_task(view.update()))
+        view.on('update:expanded', lambda *_: self.update())
+        view.on('update:ticked', lambda *_: self.update())
