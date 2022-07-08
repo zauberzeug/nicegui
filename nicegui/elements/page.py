@@ -88,3 +88,11 @@ class Page(jp.QuasarPage):
     def handle_javascript_result(self, msg) -> bool:
         self.waiting_javascript_commands[msg.request_id] = msg.result
         return False
+
+
+def add_head_html(self, html: str) -> None:
+    page_stack[-1].head_html += html
+
+
+def add_body_html(self, html: str) -> None:
+    page_stack[-1].body_html += html
