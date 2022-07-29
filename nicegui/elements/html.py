@@ -23,8 +23,10 @@ class Html(Element):
         return self.view.inner_html
 
     @content.setter
-    def content(self, content: Any):
+    def content(self, content: str) -> None:
         self.set_content(content)
 
-    def set_content(self, content: str):
+    def set_content(self, content: str) -> None:
+        if '</script>' in content:
+            raise ValueError('HTML elements must not contain <script> tags. Use ui.add_body_html() instead.')
         self.view.inner_html = content
