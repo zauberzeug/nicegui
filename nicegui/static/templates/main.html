@@ -86,14 +86,17 @@
 
         socket.addEventListener('error', function (event) {
             console.log('Websocket closed');
-            setTimeout(function(){ window.location.reload(); }, 100);
+            window.location.reload();
         });
+
+        var unloading = False;
+        window.onbeforeunload = function () { unloading = True; }
 
         var web_socket_closed = false;
         socket.addEventListener('close', function (event) {
             console.log('Websocket closed');
             web_socket_closed = true;
-            setTimeout(function(){ window.location.reload(); }, 100);
+            if (!unloading) window.location.reload();
         });
 
         socket.addEventListener('message', function (event) {
