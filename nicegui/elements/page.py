@@ -8,7 +8,7 @@ import justpy as jp
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
 
-from ..globals import config, connect_handlers, page_stack, view_stack
+from ..globals import config, connect_handlers, disconnect_handlers, page_stack, view_stack
 from ..helpers import is_coroutine
 
 
@@ -17,11 +17,13 @@ class Page(jp.QuasarPage):
     def __init__(self,
                  route: str,
                  title: Optional[str] = None,
+                 *,
                  favicon: Optional[str] = None,
                  dark: Optional[bool] = ...,
                  classes: str = 'q-ma-md column items-start',
                  css: str = HtmlFormatter().get_style_defs('.codehilite'),
                  on_connect: Optional[Callable] = None,
+                 on_disconnect: Optional[Callable] = None,
                  ):
         """Page
 
@@ -34,6 +36,7 @@ class Page(jp.QuasarPage):
         :param classes: tailwind classes for the container div (default: `'q-ma-md column items-start'`)
         :param css: CSS definitions
         :param on_connect: optional function or coroutine which is called for each new client connection
+        :param on_disconnect: optional function or coroutine which is called when a client disconnects
         """
         super().__init__()
 
@@ -43,7 +46,8 @@ class Page(jp.QuasarPage):
         self.dark = dark if dark is not ... else config.dark
         self.tailwind = True  # use Tailwind classes instead of Quasars
         self.css = css
-        self.on_connect = on_connect
+        self.connect_handler = on_connect
+        self.disconnect_handler = on_disconnect
 
         self.waiting_javascript_commands: dict[str, str] = {}
         self.on('result_ready', self.handle_javascript_result)
@@ -55,7 +59,7 @@ class Page(jp.QuasarPage):
         jp.Route(route, self._route_function)
 
     async def _route_function(self, request: Request):
-        for connect_handler in connect_handlers + ([self.on_connect] if self.on_connect else []):
+        for connect_handler in connect_handlers + ([self.connect_handler] if self.connect_handler else []):
             arg_count = len(inspect.signature(connect_handler).parameters)
             is_coro = is_coroutine(connect_handler)
             if arg_count == 1:
@@ -65,6 +69,11 @@ class Page(jp.QuasarPage):
             else:
                 raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         return self
+
+    async def on_disconnect(self, websocket=None) -> None:
+        for disconnect_handler in ([self.disconnect_handler] if self.disconnect_handler else []) + disconnect_handlers:
+            await disconnect_handler() if is_coroutine(disconnect_handler) else disconnect_handler()
+        await super().on_disconnect(websocket)
 
     def __enter__(self):
         page_stack.append(self)

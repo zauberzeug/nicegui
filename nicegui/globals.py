@@ -18,5 +18,6 @@ view_stack: List['jp.HTMLBaseComponent'] = []
 tasks: List[asyncio.tasks.Task] = []
 log: logging.Logger = logging.getLogger('nicegui')
 connect_handlers: List[Union[Callable, Awaitable]] = []
+disconnect_handlers: List[Union[Callable, Awaitable]] = []
 startup_handlers: List[Union[Callable, Awaitable]] = []
 shutdown_handlers: List[Union[Callable, Awaitable]] = []
