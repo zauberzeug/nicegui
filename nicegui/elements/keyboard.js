@@ -16,7 +16,6 @@ Vue.component("keyboard", {
         };
         if (evt instanceof KeyboardEvent) {
           if (evt.repeat && !this.$props.jp_props.options.repeating) return;
-          // https://developer.mozilla.org/en-US/docs/Web/Events/keydown   keyup, keypress
           e["key_data"] = {
             action: event,
             altKey: evt.altKey,

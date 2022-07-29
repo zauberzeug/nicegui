@@ -11,7 +11,7 @@ CustomView.use(__file__)
 class KeyboardView(CustomView):
 
     def __init__(self, on_key: Callable, repeating: bool):
-        super().__init__('keyboard', active_js_events=['keydown', 'keyup', 'keypress'], repeating=repeating)
+        super().__init__('keyboard', active_js_events=['keydown', 'keyup'], repeating=repeating)
         self.allowed_events = ['keyboardEvent']
         self.style = 'display: none'
         self.initialize(temp=False, on_keyboardEvent=on_key)
@@ -39,7 +39,6 @@ class Keyboard(Element):
 
         try:
             action = KeyboardAction(
-                keypress=msg.key_data.action == 'keypress',
                 keydown=msg.key_data.action == 'keydown',
                 keyup=msg.key_data.action == 'keyup',
                 repeat=msg.key_data.repeat,

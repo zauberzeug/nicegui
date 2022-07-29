@@ -45,7 +45,6 @@ class ValueChangeEventArguments(EventArguments):
 
 @dataclass
 class KeyboardAction:
-    keypress: bool
     keydown: bool
     keyup: bool
     repeat: bool
