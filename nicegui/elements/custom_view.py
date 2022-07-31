@@ -34,7 +34,7 @@ class CustomView(jp.JustpyBaseComponent):
 
     @staticmethod
     def use(py_filepath: str, dependencies: List[str] = []):
-        vue_filepath = os.path.realpath(py_filepath).replace('.py', '.js')
+        vue_filepath = os.path.splitext(os.path.realpath(py_filepath))[0] + '.js'
 
         for dependency in dependencies:
             is_remote = dependency.startswith('http://') or dependency.startswith('https://')
