@@ -8,9 +8,6 @@ from typing import Callable, Union
 import docutils.core
 
 from nicegui import ui
-from nicegui.elements.html import Html
-from nicegui.elements.markdown import Markdown
-from nicegui.globals import page_stack
 
 # add docutils css to webpage
 ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
@@ -24,7 +21,7 @@ def example(content: Union[Callable, type, str]):
     callFrame = inspect.currentframe().f_back.f_back
     begin = callFrame.f_lineno
 
-    def add_html_anchor(element: Html):
+    def add_html_anchor(element: ui.html):
         html = element.content
         match = re.search(r'<h3.*?>(.*?)</h3>', html)
         if not match:
@@ -48,7 +45,7 @@ def example(content: Union[Callable, type, str]):
             html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
             html = html.replace('<p>', '<h3>', 1)
             html = html.replace('</p>', '</h3>', 1)
-            html = Markdown.apply_tailwind(html)
+            html = ui.markdown.apply_tailwind(html)
             add_html_anchor(ui.html(html).classes('mr-8 w-4/12'))
 
         try:
