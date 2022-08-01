@@ -13,10 +13,10 @@ from nicegui.elements.markdown import Markdown
 from nicegui.globals import page_stack
 
 # add docutils css to webpage
-page_stack[0].head_html += docutils.core.publish_parts('', writer_name='html')['stylesheet']
+ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
 
 # avoid display:block for PyPI/Docker/GitHub badges
-page_stack[0].head_html += '<style>p a img {display: inline; vertical-align: baseline}</style>'
+ui.add_head_html('<style>p a img {display: inline; vertical-align: baseline}</style>')
 
 
 @contextmanager
