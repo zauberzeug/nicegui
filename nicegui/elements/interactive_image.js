@@ -79,6 +79,9 @@ Vue.component("interactive_image", {
     };
     const connectInterval = setInterval(sendConnectEvent, 100);
   },
+  updated() {
+    this.image.src = this.$props.jp_props.options.source;
+  },
   methods: {
     set_source(source) {
       if (this.loading) {
