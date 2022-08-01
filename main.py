@@ -238,7 +238,7 @@ with example(ui.select):
         ui.select({1: 'One', 2: 'Two', 3: 'Three'}, value=1).props('inline').bind_value(select, 'value')
 
 with example(ui.upload):
-    ui.upload(on_upload=lambda files: content.set_text(files))
+    ui.upload(on_upload=lambda e: content.set_text(e.files))
     content = ui.label()
 
 with example(ui.plot):

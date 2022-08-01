@@ -10,11 +10,15 @@ from .element import Element
 
 class Upload(Element):
 
-    def __init__(self, *, multiple: bool = False, on_upload: Optional[Callable] = None):
+    def __init__(self, *,
+                 multiple: bool = False,
+                 on_upload: Optional[Callable] = None,
+                 upload_button_text: str = 'Upload') -> None:
         """File Upload Element
 
         :param multiple: allow uploading multiple files at once (default: `False`)
         :param on_upload: callback to execute when a file is uploaded (list of bytearrays)
+        :param upload_button_text: text for the upload button
         """
         self.upload_handler = on_upload
         view = jp.Form(
@@ -24,7 +28,7 @@ class Upload(Element):
             temp=False,
         )
         jp.Input(type='file', multiple=multiple, change=lambda *_: False, a=view, temp=False)
-        jp.QBtn(type='submit', text='Upload', color='primary', a=view, temp=False)
+        jp.QBtn(type='submit', text=upload_button_text, color='primary', a=view, temp=False)
 
         super().__init__(view)
 
