@@ -1,3 +1,4 @@
+import asyncio
 import traceback
 from dataclasses import dataclass
 from inspect import signature
@@ -7,6 +8,7 @@ from starlette.websockets import WebSocket
 
 from .elements.element import Element
 from .helpers import is_coroutine
+from .lifecycle import on_startup
 from .task_logger import create_task
 
 
@@ -230,7 +232,10 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments) -> Opti
         no_arguments = not signature(handler).parameters
         result = handler() if no_arguments else handler(arguments)
         if is_coroutine(handler):
-            create_task(result, name=str(handler))
+            if asyncio.get_event_loop().is_running():
+                create_task(result, name=str(handler))
+            else:
+                on_startup(None, result)
         return False
     except Exception:
         traceback.print_exc()
