@@ -49,4 +49,5 @@ class Dialog(Group):
         self._result = None
         if self._submitted is not None:
             self._submitted.set()
+        self.update()
         return False
