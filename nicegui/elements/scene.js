@@ -59,6 +59,7 @@ Vue.component("scene", {
     <div v-bind:id="jp_props.id" style="position:relative">
       <canvas style="position:relative"></canvas>
       <div style="position:absolute;pointer-events:none;top:0"></div>
+      <div style="position:absolute;pointer-events:none;top:0"></div>
     </div>`,
 
   mounted() {
@@ -92,6 +93,11 @@ Vue.component("scene", {
     });
     text_renderer.setSize(width, height);
 
+    const text3d_renderer = new THREE.CSS3DRenderer({
+      element: document.getElementById(this.$props.jp_props.id).children[2],
+    });
+    text3d_renderer.setSize(width, height);
+
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: "#eee" }));
     ground.translateZ(-0.01);
     ground.object_id = "ground";
@@ -110,6 +116,7 @@ Vue.component("scene", {
       TWEEN.update();
       renderer.render(scene, camera);
       text_renderer.render(scene, camera);
+      text3d_renderer.render(scene, camera);
     };
     render();
 
@@ -185,6 +192,11 @@ Vue.component("scene", {
         div.textContent = args[0];
         div.style.cssText = args[1];
         mesh = new THREE.CSS2DObject(div);
+      } else if (type == "text3d") {
+        const div = document.createElement("div");
+        div.textContent = args[0];
+        div.style.cssText = "userSelect:none;" + args[1];
+        mesh = new THREE.CSS3DObject(div);
       } else if (type == "texture") {
         const url = args[0];
         const coords = args[1];

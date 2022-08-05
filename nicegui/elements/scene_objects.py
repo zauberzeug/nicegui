@@ -135,6 +135,15 @@ class Text(Object3D):
         super().__init__('text', text, style)
 
 
+class Text3d(Object3D):
+
+    def __init__(self,
+                 text: str,
+                 style: str = '',
+                 ):
+        super().__init__('text3d', text, style)
+
+
 class Texture(Object3D):
 
     def __init__(self,

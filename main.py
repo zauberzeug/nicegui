@@ -292,7 +292,8 @@ with example(ui.scene):
         teapot = 'https://upload.wikimedia.org/wikipedia/commons/9/93/Utah_teapot_(solid).stl'
         scene.stl(teapot).scale(0.2).move(-3, 4)
 
-        scene.text('3D', 'background-color: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(z=2)
+        scene.text('2D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(z=2)
+        scene.text3d('3D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(y=-2).scale(.05)
 
 with example(ui.chart):
     from numpy.random import random

@@ -13,7 +13,14 @@ from .element import Element
 from .page import Page
 from .scene_object3d import Object3D
 
-CustomView.use(__file__, ['three.min.js', 'CSS2DRenderer.js', 'OrbitControls.js', 'STLLoader.js', 'tween.umd.min.js'])
+CustomView.use(__file__, [
+    'three.min.js',
+    'CSS2DRenderer.js',
+    'CSS3DRenderer.js',
+    'OrbitControls.js',
+    'STLLoader.js',
+    'tween.umd.min.js',
+])
 
 
 @dataclass
@@ -82,6 +89,7 @@ class Scene(Element):
     from .scene_objects import SpotLight as spot_light
     from .scene_objects import Stl as stl
     from .scene_objects import Text as text
+    from .scene_objects import Text3d as text3d
     from .scene_objects import Texture as texture
 
     def __init__(self, width: int = 400, height: int = 300, on_click: Optional[Callable] = None):
