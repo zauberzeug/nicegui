@@ -54,3 +54,4 @@ class LinePlot(Plot):
         self.fig.gca().set_xlim(min_x - pad_x, max_x + pad_x)
         self.fig.gca().set_ylim(min_y - pad_y, max_y + pad_y)
         self.view.set_figure(self.fig)
+        self.update()
