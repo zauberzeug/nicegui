@@ -27,12 +27,7 @@ function texture_geometry(coords) {
   }
   for (let j = 0; j < nJ - 1; ++j) {
     for (let i = 0; i < nI - 1; ++i) {
-      if (
-        coords[j][i] &&
-        coords[j][i + 1] &&
-        coords[j + 1][i] &&
-        coords[j + 1][i + 1]
-      ) {
+      if (coords[j][i] && coords[j][i + 1] && coords[j + 1][i] && coords[j + 1][i + 1]) {
         const idx00 = i + j * nI;
         const idx10 = i + j * nI + 1;
         const idx01 = i + j * nI + nI;
@@ -43,10 +38,7 @@ function texture_geometry(coords) {
     }
   }
   geometry.setIndex(new THREE.Uint32BufferAttribute(indices, 1));
-  geometry.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute(vertices, 3)
-  );
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
   geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geometry.computeVertexNormals();
   geometry.computeFaceNormals();
@@ -63,7 +55,11 @@ function texture_material(texture) {
 }
 
 Vue.component("scene", {
-  template: `<canvas v-bind:id="jp_props.id"></div>`,
+  template: `
+    <div v-bind:id="jp_props.id" style="position:relative">
+      <canvas style="position:relative"></canvas>
+      <div style="position:absolute;pointer-events:none;top:0"></div>
+    </div>`,
 
   mounted() {
     scene = new THREE.Scene();
@@ -86,15 +82,17 @@ Vue.component("scene", {
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
-      canvas: document.getElementById(this.$props.jp_props.id),
+      canvas: document.getElementById(this.$props.jp_props.id).children[0],
     });
     renderer.setClearColor("#eee");
     renderer.setSize(width, height);
 
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(100, 100),
-      new THREE.MeshPhongMaterial({ color: "#eee" })
-    );
+    const text_renderer = new THREE.CSS2DRenderer({
+      element: document.getElementById(this.$props.jp_props.id).children[1],
+    });
+    text_renderer.setSize(width, height);
+
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: "#eee" }));
     ground.translateZ(-0.01);
     ground.object_id = "ground";
     scene.add(ground);
@@ -111,6 +109,7 @@ Vue.component("scene", {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
       TWEEN.update();
       renderer.render(scene, camera);
+      text_renderer.render(scene, camera);
     };
     render();
 
@@ -181,6 +180,11 @@ Vue.component("scene", {
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
         const material = new THREE.LineBasicMaterial({ transparent: true });
         mesh = new THREE.Line(geometry, material);
+      } else if (type == "text") {
+        const div = document.createElement("div");
+        div.textContent = args[0];
+        div.style.cssText = args[1];
+        mesh = new THREE.CSS2DObject(div);
       } else if (type == "texture") {
         const url = args[0];
         const coords = args[1];
@@ -284,18 +288,7 @@ Vue.component("scene", {
     set_texture_coordinates(object_id, coords) {
       objects.get(object_id).geometry = texture_geometry(coords);
     },
-    move_camera(
-      x,
-      y,
-      z,
-      look_at_x,
-      look_at_y,
-      look_at_z,
-      up_x,
-      up_y,
-      up_z,
-      duration
-    ) {
+    move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (camera_tween) camera_tween.stop();
       camera_tween = new TWEEN.Tween([
         camera.position.x,

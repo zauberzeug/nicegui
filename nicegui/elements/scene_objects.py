@@ -126,6 +126,15 @@ class Curve(Object3D):
         super().__init__('curve', start, control1, control2, end, num_points)
 
 
+class Text(Object3D):
+
+    def __init__(self,
+                 text: str,
+                 style: str = '',
+                 ):
+        super().__init__('text', text, style)
+
+
 class Texture(Object3D):
 
     def __init__(self,
