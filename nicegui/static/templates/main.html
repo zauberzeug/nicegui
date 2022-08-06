@@ -89,8 +89,8 @@
             window.location.reload();
         });
 
-        var unloading = False;
-        window.onbeforeunload = function () { unloading = True; }
+        var unloading = false;
+        window.onbeforeunload = function () { unloading = true; }
 
         var web_socket_closed = false;
         socket.addEventListener('close', function (event) {
