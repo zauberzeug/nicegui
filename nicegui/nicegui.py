@@ -4,7 +4,7 @@ from typing import Awaitable, Callable
 if True:  # NOTE: prevent formatter from mixing up these lines
     import builtins
     print_backup = builtins.print
-    builtins.print = lambda *_, **__: None
+    builtins.print = lambda *args, **kwargs: kwargs.get('flush') and print_backup(*args, **kwargs)
     from .ui import Ui  # NOTE: before justpy
     import justpy as jp
     builtins.print = print_backup
