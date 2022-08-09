@@ -32,8 +32,8 @@ function texture_geometry(coords) {
         const idx10 = i + j * nI + 1;
         const idx01 = i + j * nI + nI;
         const idx11 = i + j * nI + 1 + nI;
-        indices.push(idx00, idx10, idx01);
-        indices.push(idx10, idx11, idx01);
+        indices.push(idx10, idx00, idx01);
+        indices.push(idx11, idx10, idx01);
       }
     }
   }
