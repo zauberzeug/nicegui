@@ -18,9 +18,11 @@ class Notify(Element):
         view = jp.QNotify(message=message, position=position, closeBtn=close_button, temp=False)
 
         super().__init__(view)
+        self.visible = False
         create_task(self.notify_async(), name='notify_async')
 
     async def notify_async(self):
         self.view.notify = True
         await self.parent_view.update()
         self.view.notify = False
+        self.parent_view.remove_component(self.view)
