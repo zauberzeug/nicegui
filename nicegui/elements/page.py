@@ -5,6 +5,7 @@ import uuid
 from typing import Callable, Optional
 
 import justpy as jp
+from addict import Dict
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
 
@@ -23,6 +24,7 @@ class Page(jp.QuasarPage):
                  classes: str = 'q-ma-md column items-start',
                  css: str = HtmlFormatter().get_style_defs('.codehilite'),
                  on_connect: Optional[Callable] = None,
+                 on_page_ready: Optional[Callable] = None,
                  on_disconnect: Optional[Callable] = None,
                  ):
         """Page
@@ -47,10 +49,12 @@ class Page(jp.QuasarPage):
         self.tailwind = True  # use Tailwind classes instead of Quasars
         self.css = css
         self.connect_handler = on_connect
+        self.page_ready_handler = on_page_ready
         self.disconnect_handler = on_disconnect
 
         self.waiting_javascript_commands: dict[str, str] = {}
         self.on('result_ready', self.handle_javascript_result)
+        self.on('page_ready', self.handle_page_ready)
 
         self.view = jp.Div(a=self, classes=classes, style='row-gap: 1em', temp=False)
         self.view.add_page(self)
@@ -69,6 +73,18 @@ class Page(jp.QuasarPage):
             else:
                 raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         return self
+
+    async def handle_page_ready(self, msg: Dict) -> bool:
+        if self.page_ready_handler:
+            arg_count = len(inspect.signature(self.page_ready_handler).parameters)
+            is_coro = is_coroutine(self.page_ready_handler)
+            if arg_count == 1:
+                await self.page_ready_handler(msg.socket) if is_coro else self.page_ready_handler(msg.socket)
+            elif arg_count == 0:
+                await self.page_ready_handler() if is_coro else self.page_ready_handler()
+            else:
+                raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
+        return False
 
     async def on_disconnect(self, websocket=None) -> None:
         for disconnect_handler in ([self.disconnect_handler] if self.disconnect_handler else []) + disconnect_handlers:
