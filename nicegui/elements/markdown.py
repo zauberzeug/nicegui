@@ -21,6 +21,7 @@ class Markdown(Html):
         # we need explicit markdown styling because tailwind css removes all default styles
         html = Markdown.apply_tailwind(html)
         super().set_content(html)
+        self.update()
 
     @staticmethod
     def apply_tailwind(html: str):
