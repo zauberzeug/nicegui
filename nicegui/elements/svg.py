@@ -19,13 +19,14 @@ class Svg(Element):
         self.content = content
 
     @property
-    def content(self):
+    def content(self) -> str:
         return self.view.inner_html()
 
     @content.setter
-    def content(self, content: Any):
+    def content(self, content: str) -> None:
+        self.set_content(content)
+
+    def set_content(self, content: str) -> None:
         self.view.components = []
         jp.parse_html(content, a=self.view)
-
-    def set_content(self, content: str):
-        self.content = content
+        self.update()

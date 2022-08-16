@@ -32,3 +32,4 @@ class Html(Element):
         if '</script>' in content:
             raise ValueError('HTML elements must not contain <script> tags. Use ui.add_body_html() instead.')
         self.view.inner_html = content
+        self.update()
