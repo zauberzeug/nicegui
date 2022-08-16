@@ -119,10 +119,10 @@ with example(ui.image):
 with example(ui.svg):
     svg_content = '''
         <svg viewBox="0 0 200 200" width="100" height="100" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="100" cy="100" r="78" fill="yellow" stroke="black" stroke-width="3" />
-        <circle cx="61" cy="82" r="12" />
-        <circle cx="127" cy="82" r="12" />
-        <path d="m136.81 116.53c.69 36.17-74.11 42-81.52-.73" style="fill:none; stroke: black; stroke-width: 5;" />
+        <circle cx="100" cy="100" r="78" fill="#ffde34" stroke="black" stroke-width="3" />
+        <circle cx="80" cy="85" r="8" />
+        <circle cx="120" cy="85" r="8" />
+        <path d="m60,120 C75,150 125,150 140,120" style="fill:none; stroke:black; stroke-width:8; stroke-linecap:round" />
         </svg>'''
     ui.svg(svg_content)
 
