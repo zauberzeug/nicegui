@@ -30,6 +30,10 @@ class Element:
 
         self.visible = True
 
+        if len(view_stack) == 1 and asyncio.get_event_loop().is_running():
+            # NOTE: This is the main page. There won't be any context exit and thus no UI update. So let's do that here.
+            create_task(self.parent_view.update())
+
     def bind_visibility_to(self, target_object, target_name, forward=lambda x: x):
         bind_to(self, 'visible', target_object, target_name, forward=forward)
         return self
