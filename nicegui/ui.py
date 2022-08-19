@@ -38,7 +38,6 @@ class Ui:
     from .elements.row import Row as row
     from .elements.select import Select as select
     from .elements.slider import Slider as slider
-    from .elements.svg import Svg as svg
     from .elements.switch import Switch as switch
     from .elements.table import Table as table
     from .elements.toggle import Toggle as toggle
