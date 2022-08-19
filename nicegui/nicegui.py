@@ -1,4 +1,5 @@
 # isort:skip_file
+from starlette.websockets import WebSocket
 from typing import Awaitable, Callable
 
 if True:  # NOTE: prevent formatter from mixing up these lines
@@ -53,6 +54,11 @@ def safe_invoke(func: Callable):
 app = globals.app = jp.app
 ui = Ui()
 
-page = ui.page('/', classes=globals.config.main_page_classes)
+
+def handle_page_ready(socket: WebSocket):
+    create_task(page.update(socket))
+
+
+page = ui.page('/', classes=globals.config.main_page_classes, on_page_ready=handle_page_ready)
 page.__enter__()
 jp.justpy(lambda: page, start_server=False)
