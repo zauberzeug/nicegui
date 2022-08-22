@@ -73,6 +73,9 @@ Full documentation can be found at [https://nicegui.io](https://nicegui.io).
 
 You can call `ui.run()` with optional arguments:
 
+<!-- prettier-ignore-start -->
+<!-- NOTE: to keep explicit underscores `\_` -->
+
 - `host` (default: `'0.0.0.0'`)
 - `port` (default: `8080`)
 - `title` (default: `'NiceGUI'`)
@@ -89,15 +92,17 @@ You can call `ui.run()` with optional arguments:
 - `exclude`: comma-separated string to exclude libraries (with corresponding elements) to save bandwidth and/or startup time:
   - "aggrid" (`ui.table`)
   - "colors" (`ui.colors`)
-  - "custom_example" (`ui.custom_example`)
+  - "custom\_example" (`ui.custom_example`)
   - "highcharts" (`ui.chart`)
-  - "interactive_image" (`ui.interactive_image`)
+  - "interactive\_image" (`ui.interactive_image`)
   - "keyboard" (`ui.keyboard`)
   - "log" (`ui.log`)
   - "matplotlib" (`ui.plot` and `ui.line_plot`)
   - "nipple" (`ui.joystick`)
   - "three" (`ui.scene`)
 - `interactive`: used internally when run in interactive Python shell (default: `False`)
+
+<!-- prettier-ignore-end -->
 
 The environment variables `HOST` and `PORT` can also be used to configure NiceGUI.
 
