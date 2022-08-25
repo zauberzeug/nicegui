@@ -38,6 +38,7 @@ class Page(jp.QuasarPage):
         :param classes: tailwind classes for the container div (default: `'q-ma-md column items-start'`)
         :param css: CSS definitions
         :param on_connect: optional function or coroutine which is called for each new client connection
+        :param on_page_ready: optional function or coroutine which is called when the websocket is connected
         :param on_disconnect: optional function or coroutine which is called when a client disconnects
         """
         super().__init__()
@@ -79,7 +80,7 @@ class Page(jp.QuasarPage):
             arg_count = len(inspect.signature(self.page_ready_handler).parameters)
             is_coro = is_coroutine(self.page_ready_handler)
             if arg_count == 1:
-                await self.page_ready_handler(msg.socket) if is_coro else self.page_ready_handler(msg.socket)
+                await self.page_ready_handler(msg.websocket) if is_coro else self.page_ready_handler(msg.websocket)
             elif arg_count == 0:
                 await self.page_ready_handler() if is_coro else self.page_ready_handler()
             else:
