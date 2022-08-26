@@ -8,7 +8,7 @@ from .choice_element import ChoiceElement
 class Radio(ChoiceElement):
 
     def __init__(self, options: Union[List, Dict], *, value: Any = None, on_change: Optional[Callable] = None):
-        """Radio Selection Element
+        """Radio Selection
 
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
         :param value: the initial value

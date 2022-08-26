@@ -8,7 +8,7 @@ class Label(Element):
     text = BindableProperty()
 
     def __init__(self, text: str = ''):
-        """Label Element
+        """Label
 
         Displays some text.
 

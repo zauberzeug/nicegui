@@ -11,7 +11,7 @@ class Button(Element):
     text = BindableProperty()
 
     def __init__(self, text: str = '', *, on_click: Optional[Callable] = None):
-        """Button Element
+        """Button
 
         :param text: the label of the button
         :param on_click: callback which is invoked when button is pressed

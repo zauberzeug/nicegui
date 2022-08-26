@@ -9,7 +9,7 @@ class Input(StringElement):
 
     def __init__(self, label: str = None, *,
                  placeholder: str = None, value: str = '', on_change: Optional[Callable] = None):
-        """Text Input Element
+        """Text Input
 
         :param label: displayed label for the text input
         :param placeholder: text to show if no value is entered

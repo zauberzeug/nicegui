@@ -14,7 +14,7 @@ class Upload(Element):
                  multiple: bool = False,
                  on_upload: Optional[Callable] = None,
                  upload_button_text: str = 'Upload') -> None:
-        """File Upload Element
+        """File Upload
 
         :param multiple: allow uploading multiple files at once (default: `False`)
         :param on_upload: callback to execute when a file is uploaded (list of bytearrays)

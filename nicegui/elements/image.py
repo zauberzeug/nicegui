@@ -8,7 +8,7 @@ class Image(Group):
     source = BindableProperty()
 
     def __init__(self, source: str = ''):
-        """Image Element
+        """Image
 
         Displays an image.
 

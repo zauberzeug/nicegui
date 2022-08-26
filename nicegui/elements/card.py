@@ -6,7 +6,7 @@ from .group import Group
 class Card(Group):
 
     def __init__(self):
-        """Card Element
+        """Card
 
         Provides a container with a dropped shadow.
         """

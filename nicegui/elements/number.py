@@ -10,7 +10,7 @@ class Number(FloatElement):
     def __init__(
             self, label: str = None, *,
             placeholder: str = None, value: float = None, format: str = None, on_change: Optional[Callable] = None):
-        """Number Input Element
+        """Number Input
 
         :param label: displayed name for the number input
         :param placeholder: text to show if no value is entered

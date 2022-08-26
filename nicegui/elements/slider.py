@@ -13,7 +13,7 @@ class Slider(FloatElement):
                  step: float = 1,
                  value: float = None,
                  on_change: Optional[Callable] = None):
-        """Slider Element
+        """Slider
 
         :param min: lower bound of the slider
         :param max: upper bound of the slider

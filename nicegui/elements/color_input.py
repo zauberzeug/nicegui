@@ -9,7 +9,7 @@ class ColorInput(StringElement):
 
     def __init__(self, label: str = None, *,
                  placeholder: str = None, value: str = '', on_change: Optional[Callable] = None):
-        """Color Input Element
+        """Color Input
 
         :param label: displayed label for the color input
         :param placeholder: text to show if no color is selected

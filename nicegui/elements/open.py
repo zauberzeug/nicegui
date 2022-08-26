@@ -8,8 +8,7 @@ from ..task_logger import create_task
 
 
 def open(self, target: Union[Page, str], socket: Optional[WebSocket] = None):
-    """
-    Open
+    """Open
 
     Can be used to programmatically trigger redirects for a specific client.
 

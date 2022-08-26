@@ -8,7 +8,7 @@ from .bool_element import BoolElement
 class Switch(BoolElement):
 
     def __init__(self, text: str = '', *, value: bool = False, on_change: Optional[Callable] = None):
-        """Switch Element
+        """Switch
 
         :param text: the label to display next to the switch
         :param value: whether it should be active initially (default: `False`)

@@ -9,7 +9,7 @@ class Select(ChoiceElement):
 
     def __init__(self, options: Union[List, Dict], *,
                  label: Optional[str] = None, value: Any = None, on_change: Optional[Callable] = None):
-        """Dropdown Selection Element
+        """Dropdown Selection
 
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
         :param value: the initial value

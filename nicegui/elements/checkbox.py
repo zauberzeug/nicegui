@@ -8,7 +8,7 @@ from .bool_element import BoolElement
 class Checkbox(BoolElement):
 
     def __init__(self, text: str = '', *, value: bool = False, on_change: Optional[Callable] = None):
-        """Checkbox Element
+        """Checkbox
 
         :param text: the label to display next to the checkbox
         :param value: whether it should be checked initially (default: `False`)

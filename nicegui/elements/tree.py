@@ -12,7 +12,7 @@ class Tree(Element):
                  label_key: str = 'label',
                  children_key: str = 'children',
                  on_select: Optional[Callable] = None):
-        """Tree Element
+        """Tree
 
         :param nodes: hierarchical list of node objects
         :param node_key: property name of each node object that holds its unique id (default: "id")

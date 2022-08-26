@@ -10,7 +10,7 @@ from .element import Element
 class MenuItem(Element):
 
     def __init__(self, text: str = '', on_click: Optional[Callable] = None, *, auto_close: bool = True):
-        """Menu Item Element
+        """Menu Item
 
         A menu item to be added to a menu.
 
