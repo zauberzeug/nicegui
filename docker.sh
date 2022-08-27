@@ -45,16 +45,16 @@ case $cmd in
         docker-compose down -d $cmd_args
         ;;
     s | start)
-        docker-compose start $cmd_args app
+        docker-compose start $cmd_args
         ;;
     r | restart)
-        docker-compose restart $cmd_args app
+        docker-compose restart $cmd_args
         ;;
     h | stop)
-        docker-compose stop $cmd_args app
+        docker-compose stop $cmd_args
         ;;
     rm)
-        docker-compose rm $cmd_args app
+        docker-compose rm $cmd_args
         ;;
     ps)
         docker-compose ps $cmd_args
