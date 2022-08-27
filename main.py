@@ -164,7 +164,7 @@ with example(ui.input):
 
 with example(ui.number):
     ui.number(label='Number', value=3.1415927, format='%.2f',
-              on_change=lambda e: number_result.set_text('you entered: ' + e.value))
+              on_change=lambda e: number_result.set_text(f'you entered: {e.value}'))
     number_result = ui.label()
 
 with example(ui.color_input):
@@ -229,8 +229,8 @@ with example(ui.interactive_image):
     from nicegui.events import MouseEventArguments
 
     def mouse_handler(e: MouseEventArguments):
-        color = 'green' if e.type == 'mousedown' else 'orange'
-        ii.svg_content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="10" fill="{color}"/>'
+        color = 'SkyBlue' if e.type == 'mousedown' else 'SteelBlue'
+        ii.svg_content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="20" fill="{color}"/>'
         ui.notify(f'{e.type} at ({e.image_x:.1f}, {e.image_y:.1f})')
 
     src = 'https://cdn.stocksnap.io/img-thumbs/960w/corn-cob_YSZZZEC59W.jpg'

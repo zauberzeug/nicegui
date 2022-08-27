@@ -25,7 +25,8 @@ class Element:
         self.parent_view = view_stack[-1]
         self.parent_view.add(view)
         self.view = view
-        self.page = page_stack[-1]
+        assert len(self.parent_view.pages) == 1
+        self.page = list(self.parent_view.pages.values())[0]
         self.view.add_page(self.page)
 
         self.visible = True
