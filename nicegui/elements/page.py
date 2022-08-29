@@ -89,7 +89,14 @@ class Page(jp.QuasarPage):
 
     async def on_disconnect(self, websocket=None) -> None:
         for disconnect_handler in ([self.disconnect_handler] if self.disconnect_handler else []) + disconnect_handlers:
-            await disconnect_handler() if is_coroutine(disconnect_handler) else disconnect_handler()
+            arg_count = len(inspect.signature(disconnect_handler).parameters)
+            is_coro = is_coroutine(disconnect_handler)
+            if arg_count == 1:
+                await disconnect_handler(websocket) if is_coro else disconnect_handler(websocket)
+            elif arg_count == 0:
+                await disconnect_handler() if is_coro else disconnect_handler()
+            else:
+                raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         await super().on_disconnect(websocket)
 
     def __enter__(self):

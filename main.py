@@ -461,7 +461,7 @@ You can run a function or coroutine as a parallel task by passing it to one of t
 - `ui.on_shutdown`: Called when NiceGUI is shut down or restarted.
 - `ui.on_connect`: Called when a client connects to NiceGUI. (Optional argument: Starlette request)
 - `ui.on_page_ready`: Called when the page is ready and the websocket is connected. (Optional argument: socket)
-- `ui.on_disconnect`: Called when a client disconnects from NiceGUI.
+- `ui.on_disconnect`: Called when a client disconnects from NiceGUI. (Optional argument: socket)
 
 When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
 '''
