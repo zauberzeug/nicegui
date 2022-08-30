@@ -1,0 +1,4 @@
+.pytest_cache/
+.vscode/
+.github/
+tests/
