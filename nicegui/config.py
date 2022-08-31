@@ -24,7 +24,6 @@ class Config():
     main_page_classes: str = 'q-ma-md column items-start'
     binding_refresh_interval: float = 0.1
     exclude: str = ''
-    interactive: bool = False
 
 
 excluded_endings = (
@@ -41,14 +40,13 @@ for f in reversed(inspect.stack()):
         filepath = f.filename
         break
 else:
-    raise Exception("Could not find main script in stacktrace")
+    raise Exception('Could not find main script in stacktrace')
 
 try:
     with open(filepath) as f:
         source = f.read()
 except FileNotFoundError:
-    print('Could not find main script. Starting interactive mode without auto-reload.', flush=True)
-    config = Config(interactive=True)
+    config = Config(reload=False)
 else:
     for node in ast.walk(ast.parse(source)):
         try:
@@ -66,12 +64,11 @@ else:
         except AttributeError:
             continue
     else:
-        print('Could not find and pre-evaluate ui.run(). Starting interactive mode without auto-reload.', flush=True)
-        config = Config(interactive=True)
+        config = Config(reload=False)
 
 os.environ['HOST'] = config.host
 os.environ['PORT'] = str(config.port)
-os.environ["STATIC_DIRECTORY"] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
-os.environ["TEMPLATES_DIRECTORY"] = os.path.join(os.environ["STATIC_DIRECTORY"], 'templates')
+os.environ['STATIC_DIRECTORY'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
+os.environ['TEMPLATES_DIRECTORY'] = os.path.join(os.environ['STATIC_DIRECTORY'], 'templates')
 
 globals.config = config

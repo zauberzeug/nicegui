@@ -1,4 +1,5 @@
 import inspect
+import logging
 import os
 import sys
 import webbrowser
@@ -8,21 +9,27 @@ import uvicorn
 
 from . import globals
 
-if not globals.config.interactive and globals.config.reload and not inspect.stack()[-2].filename.endswith('spawn.py'):
 
+def _start() -> None:
     if globals.config.show:
-        webbrowser.open(f'http://{globals.config.host}:{globals.config.port}/')
+        host = globals.config.host if globals.config.host != '0.0.0.0' else '127.0.0.1'
+        webbrowser.open(f'http://{host}:{globals.config.port}/')
+
     uvicorn.run(
-        'nicegui:app',
+        'nicegui:app' if globals.config.reload else globals.app,
         host=globals.config.host,
         port=globals.config.port,
         lifespan='on',
-        reload=True,
-        reload_includes=globals.config.uvicorn_reload_includes,
-        reload_excludes=globals.config.uvicorn_reload_excludes,
-        reload_dirs=globals.config.uvicorn_reload_dirs,
+        reload=globals.config.reload,
+        reload_includes=globals.config.uvicorn_reload_includes if globals.config.reload else None,
+        reload_excludes=globals.config.uvicorn_reload_excludes if globals.config.reload else None,
+        reload_dirs=globals.config.uvicorn_reload_dirs if globals.config.reload else None,
         log_level=globals.config.uvicorn_logging_level,
     )
+
+
+if globals.config.reload and not inspect.stack()[-2].filename.endswith('spawn.py'):
+    _start()
     sys.exit()
 
 
@@ -42,11 +49,34 @@ def run(self, *,
         binding_refresh_interval: float = 0.1,
         exclude: str = '',
         ):
-    if globals.config.interactive:
-        print('Error: Unexpected ui.run() in interactive mode.', flush=True)
-        sys.exit()
+    if inspect.stack()[-2].filename.endswith('spawn.py'):
+        return  # server is reloading
 
-    if globals.config.interactive or reload == False:  # NOTE: if reload == True we already started uvicorn above
-        if show:
-            webbrowser.open(f'http://{host if host != "0.0.0.0" else "127.0.0.1"}:{port}/')
-        uvicorn.run(globals.app, host=host, port=port, lifespan='on', log_level=uvicorn_logging_level)
+    if globals.config.reload == True:
+        return  # server has already started after pre-evaluating ui.run()
+
+    if reload == True:
+        logging.warning('Failed to pre-evaluate ui.run(). Main script will run again.')
+
+    globals.config.host = host
+    globals.config.port = port
+    globals.config.title = title
+    globals.config.favicon = favicon
+    globals.config.dark = dark
+    globals.config.reload = reload
+    globals.config.show = show
+    globals.config.uvicorn_logging_level = uvicorn_logging_level
+    globals.config.uvicorn_reload_dirs = uvicorn_reload_dirs
+    globals.config.uvicorn_reload_includes = uvicorn_reload_includes
+    globals.config.uvicorn_reload_excludes = uvicorn_reload_excludes
+    globals.config.main_page_classes = main_page_classes
+    globals.config.binding_refresh_interval = binding_refresh_interval
+    globals.config.exclude = exclude
+
+    main_page = globals.page_stack[-1]
+    main_page.title = globals.config.title
+    main_page.favicon = globals.config.favicon
+    main_page.dark = globals.config.dark
+    main_page.view.classes = globals.config.main_page_classes
+
+    _start()

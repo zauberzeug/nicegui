@@ -100,7 +100,6 @@ You can call `ui.run()` with optional arguments:
   - "matplotlib" (`ui.plot` and `ui.line_plot`)
   - "nipple" (`ui.joystick`)
   - "three" (`ui.scene`)
-- `interactive`: used internally when run in interactive Python shell (default: `False`)
 
 <!-- prettier-ignore-end -->
 
