@@ -76,7 +76,8 @@ def run(self, *,
         return  # server is reloading
 
     if not globals.pre_evaluation_succeeded:
-        logging.warning('Failed to pre-evaluate ui.run().')
+        if exclude or reload:
+            logging.warning('Failed to pre-evaluate ui.run().')
         if exclude:
             logging.warning('The `exclude` argument will be ignored.')
         if reload:
