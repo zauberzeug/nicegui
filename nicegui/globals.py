@@ -21,3 +21,4 @@ connect_handlers: List[Union[Callable, Awaitable]] = []
 disconnect_handlers: List[Union[Callable, Awaitable]] = []
 startup_handlers: List[Union[Callable, Awaitable]] = []
 shutdown_handlers: List[Union[Callable, Awaitable]] = []
+pre_evaluation_succeeded: bool = False

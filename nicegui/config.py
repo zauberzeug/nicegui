@@ -46,7 +46,7 @@ try:
     with open(filepath) as f:
         source = f.read()
 except FileNotFoundError:
-    config = Config(reload=False)
+    config = Config()
 else:
     for node in ast.walk(ast.parse(source)):
         try:
@@ -60,11 +60,12 @@ else:
                     for keyword in node.value.keywords
                 }
                 config = Config(**args)
+                globals.pre_evaluation_succeeded = True
                 break
         except AttributeError:
             continue
     else:
-        config = Config(reload=False)
+        config = Config()
 
 os.environ['HOST'] = config.host
 os.environ['PORT'] = str(config.port)

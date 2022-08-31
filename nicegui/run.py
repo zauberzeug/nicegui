@@ -8,28 +8,28 @@ from typing import Optional
 import uvicorn
 
 from . import globals
+from .config import Config
 
 
-def _start() -> None:
-    if globals.config.show:
-        host = globals.config.host if globals.config.host != '0.0.0.0' else '127.0.0.1'
-        webbrowser.open(f'http://{host}:{globals.config.port}/')
+def _start_server(config: Config) -> None:
+    if config.show:
+        webbrowser.open(f'http://{config.host if config.host != "0.0.0.0" else "127.0.0.1"}:{config.port}/')
 
     uvicorn.run(
-        'nicegui:app' if globals.config.reload else globals.app,
-        host=globals.config.host,
-        port=globals.config.port,
+        'nicegui:app' if config.reload else globals.app,
+        host=config.host,
+        port=config.port,
         lifespan='on',
-        reload=globals.config.reload,
-        reload_includes=globals.config.uvicorn_reload_includes if globals.config.reload else None,
-        reload_excludes=globals.config.uvicorn_reload_excludes if globals.config.reload else None,
-        reload_dirs=globals.config.uvicorn_reload_dirs if globals.config.reload else None,
-        log_level=globals.config.uvicorn_logging_level,
+        reload=config.reload,
+        reload_includes=config.uvicorn_reload_includes if config.reload else None,
+        reload_excludes=config.uvicorn_reload_excludes if config.reload else None,
+        reload_dirs=config.uvicorn_reload_dirs if config.reload else None,
+        log_level=config.uvicorn_logging_level,
     )
 
 
-if globals.config.reload and not inspect.stack()[-2].filename.endswith('spawn.py'):
-    _start()
+if globals.pre_evaluation_succeeded and globals.config.reload and not inspect.stack()[-2].filename.endswith('spawn.py'):
+    _start_server(globals.config)
     sys.exit()
 
 
@@ -49,14 +49,8 @@ def run(self, *,
         binding_refresh_interval: float = 0.1,
         exclude: str = '',
         ):
-    if inspect.stack()[-2].filename.endswith('spawn.py'):
-        return  # server is reloading
-
-    if globals.config.reload == True:
+    if globals.pre_evaluation_succeeded and globals.config.reload == True:
         return  # server has already started after pre-evaluating ui.run()
-
-    if reload == True:
-        logging.warning('Failed to pre-evaluate ui.run(). Main script will run again.')
 
     globals.config.host = host
     globals.config.port = port
@@ -71,7 +65,6 @@ def run(self, *,
     globals.config.uvicorn_reload_excludes = uvicorn_reload_excludes
     globals.config.main_page_classes = main_page_classes
     globals.config.binding_refresh_interval = binding_refresh_interval
-    globals.config.exclude = exclude
 
     main_page = globals.page_stack[-1]
     main_page.title = globals.config.title
@@ -79,4 +72,14 @@ def run(self, *,
     main_page.dark = globals.config.dark
     main_page.view.classes = globals.config.main_page_classes
 
-    _start()
+    if inspect.stack()[-2].filename.endswith('spawn.py'):
+        return  # server is reloading
+
+    if not globals.pre_evaluation_succeeded:
+        logging.warning('Failed to pre-evaluate ui.run().')
+        if exclude:
+            logging.warning('The `exclude` argument will be ignored.')
+        if reload:
+            logging.warning('Reloading main script...')
+
+    _start_server(globals.config)
