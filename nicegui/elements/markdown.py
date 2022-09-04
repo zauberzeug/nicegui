@@ -1,4 +1,5 @@
 import re
+from typing import List
 
 import markdown2
 
@@ -7,17 +8,19 @@ from .html import Html
 
 class Markdown(Html):
 
-    def __init__(self, content: str = ''):
+    def __init__(self, content: str = '', *, extras: List[str] = ['fenced-code-blocks', 'tables']):
         """Markdown Element
 
         Renders markdown onto the page.
 
         :param content: the markdown content to be displayed
+        :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)
         """
+        self.extras = extras
         super().__init__(content)
 
     def set_content(self, content: str):
-        html = markdown2.markdown(content, extras=['fenced-code-blocks'])
+        html = markdown2.markdown(content, extras=self.extras)
         # we need explicit markdown styling because tailwind css removes all default styles
         html = Markdown.apply_tailwind(html)
         super().set_content(html)
