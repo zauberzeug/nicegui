@@ -7,6 +7,7 @@ from typing import Callable, Union
 
 import docutils.core
 
+import traffic_tracking
 from nicegui import ui
 
 # add docutils css to webpage
@@ -86,25 +87,31 @@ with ui.row().classes('flex w-full'):
         content = re.sub(r'(?m)^\<img.*\n?', '', content)
         ui.markdown(content).classes('w-6/12')
 
-    with ui.card().classes('mx-auto mt-24'):
-        with ui.row():
-            with ui.column():
-                ui.button('Click me!', on_click=lambda: output.set_text('Click'))
-                ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
-                ui.switch('Switch me!', on_change=lambda e: output.set_text('Switched' if e.value else 'Unswitched'))
-                ui.input('Text', value='abc', on_change=lambda e: output.set_text(e.value))
-                ui.number('Number', value=3.1415927, format='%.2f', on_change=lambda e: output.set_text(e.value))
+    with ui.row().classes('w-5/12 flex-center'):
+        width = 450
 
-            with ui.column():
-                ui.slider(min=0, max=100, value=50, step=0.1, on_change=lambda e: output.set_text(e.value))
-                ui.radio(['A', 'B', 'C'], value='A', on_change=lambda e: output.set_text(e.value)).props('inline')
-                ui.toggle(['1', '2', '3'], value='1', on_change=lambda e: output.set_text(e.value)).classes('mx-auto')
-                ui.select({1: 'One', 2: 'Two', 3: 'Three'}, value=1,
-                          on_change=lambda e: output.set_text(e.value)).classes('mx-auto')
+        with ui.card():
+            with ui.row().style(f'width:{width}px'):
+                with ui.column():
+                    ui.button('Click me!', on_click=lambda: output.set_text('Click'))
+                    ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
+                    ui.switch('Switch me!', on_change=lambda e: output.set_text(
+                        'Switched' if e.value else 'Unswitched'))
+                    ui.input('Text', value='abc', on_change=lambda e: output.set_text(e.value))
+                    ui.number('Number', value=3.1415927, format='%.2f', on_change=lambda e: output.set_text(e.value))
 
-            with ui.column().classes('w-24'):
-                ui.label('Output:')
-                output = ui.label('').classes('text-bold')
+                with ui.column():
+                    ui.slider(min=0, max=100, value=50, step=0.1, on_change=lambda e: output.set_text(e.value))
+                    ui.radio(['A', 'B', 'C'], value='A', on_change=lambda e: output.set_text(e.value)).props('inline')
+                    ui.toggle(['1', '2', '3'], value='1', on_change=lambda e: output.set_text(e.value)).classes('mx-auto')
+                    ui.select({1: 'One', 2: 'Two', 3: 'Three'}, value=1,
+                              on_change=lambda e: output.set_text(e.value)).classes('mx-auto')
+
+                with ui.column().classes('w-24'):
+                    ui.label('Output:')
+                    output = ui.label('').classes('text-bold')
+        with ui.card():
+            traffic_tracking.add().style(f'width:{width}px;height:250px')
 
 ui.markdown('## API Documentation and Examples')
 
