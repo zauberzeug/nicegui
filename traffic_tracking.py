@@ -3,13 +3,14 @@ import os
 import pickle
 import threading
 import time
+from typing import Dict, Set
 
 from starlette.requests import Request
 
 from nicegui import ui
 
-page_visits: dict[int, int] = {}
-page_sessions: dict[int, set[str]] = {}
+page_visits: Dict[int, int] = {}
+page_sessions: Dict[int, Set[str]] = {}
 
 
 def add_chart() -> ui.chart:
@@ -47,7 +48,7 @@ def add_chart() -> ui.chart:
     return traffic_chart
 
 
-def load():
+def load() -> None:
     global page_visits, page_sessions
     try:
         with open('page_visits.pickle', 'rb') as f:
@@ -60,10 +61,9 @@ def load():
         logging.exception("Error loading traffic data")
 
 
-def save():
+def save() -> None:
     def _save():
         try:
-            print(f'saving {page_visits} and {page_sessions}')
             with open('page_visits.pickle', 'wb') as f:
                 pickle.dump(page_visits, f)
             with open('page_sessions.pickle', 'wb') as f:
