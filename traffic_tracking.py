@@ -9,6 +9,8 @@ from starlette.requests import Request
 
 from nicegui import ui
 
+VISITS_FILE = 'traffic_data/visits.pickle'
+SESSIONS_FILE = 'traffic_data/sessions.pickle'
 page_visits: Dict[int, int] = {}
 page_sessions: Dict[int, Set[str]] = {}
 
@@ -50,10 +52,12 @@ def add_chart() -> ui.chart:
 
 def load() -> None:
     global page_visits, page_sessions
+    os.makedirs(os.path.dirname(VISITS_FILE), exist_ok=True)
+    os.makedirs(os.path.dirname(SESSIONS_FILE), exist_ok=True)
     try:
-        with open('page_visits.pickle', 'rb') as f:
+        with open(VISITS_FILE, 'rb') as f:
             page_visits = pickle.load(f)
-        with open('page_sessions.pickle', 'rb') as f:
+        with open(SESSIONS_FILE, 'rb') as f:
             page_sessions = pickle.load(f)
     except FileNotFoundError:
         pass
@@ -64,9 +68,9 @@ def load() -> None:
 def save() -> None:
     def _save():
         try:
-            with open('page_visits.pickle', 'wb') as f:
+            with open(VISITS_FILE, 'wb') as f:
                 pickle.dump(page_visits, f)
-            with open('page_sessions.pickle', 'wb') as f:
+            with open(SESSIONS_FILE, 'wb') as f:
                 pickle.dump(page_sessions, f)
         except:
             logging.exception("Error saving traffic data")
