@@ -44,7 +44,7 @@ def add_chart() -> ui.chart:
         ],
     })
 
-    traffic_chart.visible = os.environ.get('SHOW_TRAFFIC_CHART', False)
+    traffic_chart.visible = len(page_visits.keys) > 2 and len(page_sessions.keys) > 2
     return traffic_chart
 
 
