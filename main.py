@@ -110,8 +110,8 @@ with ui.row().classes('flex w-full'):
                 with ui.column().classes('w-24'):
                     ui.label('Output:')
                     output = ui.label('').classes('text-bold')
-        with ui.card():
-            traffic_tracking.add().style(f'width:{width}px;height:250px')
+        with ui.row().style('margin-top: 40px'):
+            traffic_tracking.add_chart().style(f'width:{width}px;height:250px')
 
 ui.markdown('## API Documentation and Examples')
 
