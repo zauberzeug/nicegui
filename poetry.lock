@@ -700,11 +700,11 @@ urllib3 = ">=1.26.0"
 
 [[package]]
 name = "typing-extensions"
-version = "3.10.0.2"
-description = "Backported and Experimental Type Hints for Python 3.5+"
+version = "4.3.0"
+description = "Backported and Experimental Type Hints for Python 3.7+"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.7"
 
 [[package]]
 name = "urllib3"
@@ -775,7 +775,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "4b2b7e9508a8dcbb3f6ff1951cb11fa7c8b5e3e46cf1965d8add01fb370ec0c4"
+content-hash = "f3ae002830c629de823107b11e41fb971fcf96acbedfbc5d4e76faf81b8f59e5"
 
 [metadata.files]
 addict = []
