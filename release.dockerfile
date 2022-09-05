@@ -4,7 +4,7 @@ RUN python -m pip install nicegui
 
 WORKDIR /app
 
-COPY main.py README.md ./ 
+COPY main.py traffic_tracking.py README.md ./ 
 
 EXPOSE 80
 
