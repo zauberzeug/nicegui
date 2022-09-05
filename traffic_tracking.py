@@ -78,4 +78,4 @@ class TrafficChard(ui.chart):
         t.start()
 
     def update_visibility(self) -> None:
-        self.visible = True  # len(self.visits.keys()) >= 3 and len(self.sessions.keys()) >= 3
+        self.visible = len(self.visits.keys()) >= 3 and len(self.sessions.keys()) >= 3
