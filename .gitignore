@@ -3,3 +3,4 @@ __pycache__/
 .*.swp
 dist
 /test.py
+*.pickle

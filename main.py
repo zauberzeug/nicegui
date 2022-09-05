@@ -8,6 +8,7 @@ from typing import Callable, Union
 import docutils.core
 
 from nicegui import ui
+from traffic_tracking import TrafficChard as traffic_chart
 
 # add docutils css to webpage
 ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
@@ -86,8 +87,10 @@ with ui.row().classes('flex w-full'):
         content = re.sub(r'(?m)^\<img.*\n?', '', content)
         ui.markdown(content).classes('w-6/12')
 
-    with ui.card().classes('mx-auto mt-24'):
-        with ui.row():
+    with ui.column().classes('w-5/12 flex-center'):
+        width = 450
+
+        with ui.card(), ui.row().style(f'width:{width}px'):
             with ui.column():
                 ui.button('Click me!', on_click=lambda: output.set_text('Click'))
                 ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
@@ -105,6 +108,9 @@ with ui.row().classes('flex w-full'):
             with ui.column().classes('w-24'):
                 ui.label('Output:')
                 output = ui.label('').classes('text-bold')
+
+        with ui.row().style('margin-top: 40px'):
+            traffic_chart().style(f'width:{width}px;height:250px')
 
 ui.markdown('## API Documentation and Examples')
 
