@@ -3,9 +3,9 @@ FROM python:3.7-slim
 RUN apt update && apt install curl -y
 
 # We use Poetry for dependency management
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_HOME=/opt/poetry python && \
+RUN curl -sSL https://install.python-poetry.org | python3 - && \
     cd /usr/local/bin && \
-    ln -s /opt/poetry/bin/poetry && \
+    ln -s ~/.local/bin/poetry && \
     poetry config virtualenvs.create false
 
 WORKDIR /app
