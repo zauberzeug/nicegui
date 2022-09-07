@@ -337,22 +337,22 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "justpy"
-version = "0.2.3"
+version = "0.2.8"
 description = "JustPy is an object-oriented, component based, high-level Python Web Framework that requires no front-end programming"
 category = "main"
 optional = false
 python-versions = "*"
 
 [package.dependencies]
-addict = ">=2.2.1"
+addict = ">=2.4.0"
 aiofiles = "*"
-demjson3 = "*"
-httpx = ">=0.11.0"
-itsdangerous = ">=1.1.0"
-jinja2 = ">=2.10.1"
-starlette = ">=0.12.0"
+demjson3 = ">=3.0.5"
+httpx = ">=0.23.0"
+itsdangerous = ">=2.1.2"
+jinja2 = ">=3.1.2"
+starlette = ">=0.20.4"
 twine = "*"
-uvicorn = ">=0.7.1"
+uvicorn = ">=0.18.3"
 websockets = "*"
 
 [[package]]
@@ -636,7 +636,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "starlette"
-version = "0.20.2"
+version = "0.20.4"
 description = "The little ASGI library that shines."
 category = "main"
 optional = false
@@ -760,7 +760,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "2c6a08b9abe4664a3b05148af63b03e13afd23bbb2281655152842e84e6d2e65"
+content-hash = "8c01274d97f2f2064f317a8f450c1ea032cede6e09fa57f8180ae848b401b544"
 
 [metadata.files]
 addict = []
