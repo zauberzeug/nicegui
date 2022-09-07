@@ -19,7 +19,7 @@ docutils = "^0.17.1"
 asttokens = "^2.0.5"
 uvicorn = "^0.18.0"
 watchgod = "^0.7"
-websockets = "10.3"
+websockets = "^10.3"
 httpx = "^0.23.0"
 
 [tool.poetry.dev-dependencies]
