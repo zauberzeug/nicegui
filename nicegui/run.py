@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 import webbrowser
-from typing import Optional
+from typing import List, Optional
 
 import uvicorn
 
@@ -15,15 +15,18 @@ def _start_server(config: Config) -> None:
     if config.show:
         webbrowser.open(f'http://{config.host if config.host != "0.0.0.0" else "127.0.0.1"}:{config.port}/')
 
+    def split_args(args: str) -> List[str]:
+        return args.split(',') if ',' in args else [args]
+
     uvicorn.run(
         'nicegui:app' if config.reload else globals.app,
         host=config.host,
         port=config.port,
         lifespan='on',
         reload=config.reload,
-        reload_includes=config.uvicorn_reload_includes if config.reload else None,
-        reload_excludes=config.uvicorn_reload_excludes if config.reload else None,
-        reload_dirs=config.uvicorn_reload_dirs if config.reload else None,
+        reload_includes=split_args(config.uvicorn_reload_includes) if config.reload else None,
+        reload_excludes=split_args(config.uvicorn_reload_excludes) if config.reload else None,
+        reload_dirs=split_args(config.uvicorn_reload_dirs) if config.reload else None,
         log_level=config.uvicorn_logging_level,
     )
 
