@@ -18,9 +18,9 @@ Pygments = "^2.9.0"
 docutils = "^0.17.1"
 asttokens = "^2.0.5"
 uvicorn = "^0.18.0"
-watchgod = "^0.7"
 websockets = "^10.3"
 httpx = "^0.23.0"
+watchfiles = "^0.16.1"
 
 [tool.poetry.dev-dependencies]
 icecream = "^2.1.0"

@@ -722,12 +722,15 @@ typing-extensions = {version = "*", markers = "python_version < \"3.8\""}
 standard = ["colorama (>=0.4)", "httptools (>=0.4.0)", "python-dotenv (>=0.13)", "pyyaml (>=5.1)", "uvloop (>=0.14.0,!=0.15.0,!=0.15.1)", "watchfiles (>=0.13)", "websockets (>=10.0)"]
 
 [[package]]
-name = "watchgod"
-version = "0.7"
-description = "Simple, modern file watching and code reload in python."
+name = "watchfiles"
+version = "0.16.1"
+description = "Simple, modern and high performance file watching and code reload in python."
 category = "main"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.7"
+
+[package.dependencies]
+anyio = ">=3.0.0,<4"
 
 [[package]]
 name = "webencodings"
@@ -760,7 +763,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "8c01274d97f2f2064f317a8f450c1ea032cede6e09fa57f8180ae848b401b544"
+content-hash = "ddd798736f6dcc5bcab2b3ea70f09e73e324b9b2be2a9a53b97ae6826ac969d9"
 
 [metadata.files]
 addict = []
@@ -823,7 +826,7 @@ twine = []
 typing-extensions = []
 urllib3 = []
 uvicorn = []
-watchgod = []
+watchfiles = []
 webencodings = []
 websockets = []
 zipp = []
