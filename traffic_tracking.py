@@ -40,6 +40,9 @@ class TrafficChard(ui.chart):
         })
 
     def on_connect(self, request: Request) -> None:
+        if request.client.host == '206.81.24.204':
+            return  # ignore monitoring requests from zauberzeug
+
         def seconds_to_day(seconds: float) -> int: return int(seconds / 60 / 60 / 24)
         def day_to_milliseconds(day: int) -> float: return day * 24 * 60 * 60 * 1000
         today = seconds_to_day(time.time())
