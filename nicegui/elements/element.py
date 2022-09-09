@@ -5,7 +5,7 @@ import asyncio
 import justpy as jp
 
 from ..binding import BindableProperty, bind_from, bind_to
-from ..globals import page_stack, view_stack
+from ..globals import view_stack
 from ..task_logger import create_task
 
 
