@@ -28,7 +28,7 @@ class TrafficChard(ui.chart):
             'title': {'text': 'Page Visits'},
             'navigation': {'buttonOptions': {'enabled': False}},
             'chart': {'type': 'line'},
-            'yAxis': {'title': False},
+            'yAxis': {'title': False, 'type': 'logarithmic', },
             'xAxis': {
                 'type': 'datetime',
                 'labels': {'format': '{value:%b %e}', },
