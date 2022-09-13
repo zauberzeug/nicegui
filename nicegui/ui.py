@@ -33,7 +33,7 @@ class Ui:
     from .elements.notify import Notify as notify
     from .elements.number import Number as number
     from .elements.open import open, open_async
-    from .elements.page import Page as page, add_head_html, add_body_html
+    from .elements.page import page, add_head_html, add_body_html
     from .elements.radio import Radio as radio
     from .elements.row import Row as row
     from .elements.select import Select as select
@@ -45,7 +45,7 @@ class Ui:
     from .elements.update import update
     from .elements.upload import Upload as upload
     from .lifecycle import on_connect, on_disconnect, on_shutdown, on_startup
-    from .routes import add_route, add_static_files, get, private_page
+    from .routes import add_route, add_static_files, get
     from .timer import Timer as timer
 
     if 'colors' not in _excludes:

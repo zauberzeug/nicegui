@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Awaitable, Callable, List, Union
+from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Union
 
 if TYPE_CHECKING:
     import justpy as jp
@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 app: 'Starlette'
 config: 'Config'
+shared_pages: Dict['Page'] = {}
 page_stack: List['Page'] = []
 view_stack: List['jp.HTMLBaseComponent'] = []
 tasks: List[asyncio.tasks.Task] = []

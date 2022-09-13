@@ -2,6 +2,7 @@ import asyncio
 import inspect
 import time
 import uuid
+from functools import wraps
 from typing import Callable, Optional
 
 import justpy as jp
@@ -9,7 +10,7 @@ from addict import Dict
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
 
-from ..globals import config, connect_handlers, disconnect_handlers, page_stack, view_stack
+from ..globals import config, connect_handlers, disconnect_handlers, page_stack, shared_pages, view_stack
 from ..helpers import is_coroutine
 
 
@@ -43,7 +44,6 @@ class Page(jp.QuasarPage):
         """
         super().__init__()
 
-        self.delete_flag = route is None
         self.title = title or config.title
         self.favicon = favicon or config.favicon
         self.dark = dark if dark is not ... else config.dark
@@ -61,8 +61,6 @@ class Page(jp.QuasarPage):
         self.view.add_page(self)
 
         self.route = route
-        if route is not None:
-            jp.Route(route, self._route_function)
 
     async def _route_function(self, request: Request):
         for connect_handler in connect_handlers + ([self.connect_handler] if self.connect_handler else []):
@@ -130,3 +128,20 @@ def add_head_html(self, html: str) -> None:
 
 def add_body_html(self, html: str) -> None:
     page_stack[-1].body_html += html
+
+
+def page(self, path: str, *, shared: bool = False, **kwargs):
+    def decorator(func):
+        @wraps(func)
+        async def decorated():
+            with Page(None) as p:
+                p.delete_flag = not shared
+                await func() if is_coroutine(func) else func()
+            return p
+        if shared:
+            shared_pages[path] = decorated
+        else:
+            jp.Route(path, decorated)
+
+        return decorated
+    return decorator

@@ -26,7 +26,8 @@ async def patched_justpy_startup():
 
 
 @jp.app.on_event('startup')
-def startup():
+async def startup():
+    [jp.Route(route, (await page())._route_function) for route, page in globals.shared_pages.items()]
     globals.tasks.extend(create_task(t.coro, name=t.name) for t in Timer.prepared_coroutines)
     Timer.prepared_coroutines.clear()
     globals.tasks.extend(create_task(t, name='startup task')
@@ -57,8 +58,3 @@ ui = Ui()
 
 def handle_page_ready(socket: WebSocket):
     create_task(page.update(socket))
-
-
-page = ui.page('/', classes=globals.config.main_page_classes, on_page_ready=handle_page_ready)
-page.__enter__()
-jp.justpy(lambda: page, start_server=False)
