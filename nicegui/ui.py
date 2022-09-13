@@ -1,7 +1,5 @@
 # isort:skip_file
 import os
-from . import globals
-import justpy as jp
 
 
 class Ui:
@@ -46,7 +44,7 @@ class Ui:
     from .elements.tree import Tree as tree
     from .elements.update import update
     from .elements.upload import Upload as upload
-    from .lifecycle import on_connect, on_disconnect, on_shutdown, on_startup
+    from .lifecycle import on_connect, on_disconnect, on_shutdown, on_startup, shutdown
     from .routes import add_route, add_static_files, get
     from .timer import Timer as timer
 
@@ -77,9 +75,3 @@ class Ui:
 
     if 'three' not in _excludes:
         from .elements.scene import Scene as scene
-
-    @staticmethod
-    async def shutdown():
-        for socket in [s for page in jp.WebPage.sockets.values() for s in page.values()]:
-            await socket.close()
-        globals.server.should_exit = True

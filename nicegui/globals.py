@@ -4,6 +4,8 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING, Awaitable, Callable, List, Union
 
+from uvicorn import Server
+
 if TYPE_CHECKING:
     import justpy as jp
     from starlette.applications import Starlette
@@ -13,7 +15,7 @@ if TYPE_CHECKING:
 
 app: 'Starlette'
 config: 'Config'
-server: 'uvicorn.Server'
+server: Server
 page_stack: List['Page'] = []
 view_stack: List['jp.HTMLBaseComponent'] = []
 tasks: List[asyncio.tasks.Task] = []
