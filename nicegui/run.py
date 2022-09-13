@@ -69,11 +69,11 @@ def run(self, *,
     globals.config.main_page_classes = main_page_classes
     globals.config.binding_refresh_interval = binding_refresh_interval
 
-    main_page = globals.page_stack[-1]
-    main_page.title = globals.config.title
-    main_page.favicon = globals.config.favicon
-    main_page.dark = globals.config.dark
-    main_page.view.classes = globals.config.main_page_classes
+    # main_page = globals.page_stack[-1]
+    # main_page.title = globals.config.title
+    # main_page.favicon = globals.config.favicon
+    # main_page.dark = globals.config.dark
+    # main_page.view.classes = globals.config.main_page_classes
 
     if inspect.stack()[-2].filename.endswith('spawn.py'):
         return  # server is reloading

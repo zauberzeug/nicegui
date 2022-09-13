@@ -10,7 +10,7 @@ from addict import Dict
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
 
-from ..globals import config, connect_handlers, disconnect_handlers, page_stack, shared_pages, view_stack
+from ..globals import config, connect_handlers, disconnect_handlers, pages, view_stack
 from ..helpers import is_coroutine
 
 
@@ -99,12 +99,10 @@ class Page(jp.QuasarPage):
         await super().on_disconnect(websocket)
 
     def __enter__(self):
-        page_stack.append(self)
         view_stack.append(self.view)
         return self
 
     def __exit__(self, *_):
-        page_stack.pop()
         view_stack.pop()
 
     async def await_javascript(self, code: str, check_interval: float = 0.01, timeout: float = 1.0) -> str:
@@ -123,11 +121,11 @@ class Page(jp.QuasarPage):
 
 
 def add_head_html(self, html: str) -> None:
-    page_stack[-1].head_html += html
+    page_stack[-1].head_html += html  # TODO access main page differently
 
 
 def add_body_html(self, html: str) -> None:
-    page_stack[-1].body_html += html
+    page_stack[-1].body_html += html  # TODO access main page differently
 
 
 def page(self, path: str, *, shared: bool = False, **kwargs):
@@ -138,8 +136,9 @@ def page(self, path: str, *, shared: bool = False, **kwargs):
                 p.delete_flag = not shared
                 await func() if is_coroutine(func) else func()
             return p
+        decorated.is_shared = shared
         if shared:
-            shared_pages[path] = decorated
+            pages[path] = decorated
         else:
             jp.Route(path, decorated)
 

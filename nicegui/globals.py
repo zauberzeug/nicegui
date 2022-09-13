@@ -13,8 +13,7 @@ if TYPE_CHECKING:
 
 app: 'Starlette'
 config: 'Config'
-shared_pages: Dict['Page'] = {}
-page_stack: List['Page'] = []
+pages: Dict['Page'] = {}
 view_stack: List['jp.HTMLBaseComponent'] = []
 tasks: List[asyncio.tasks.Task] = []
 log: logging.Logger = logging.getLogger('nicegui')
