@@ -121,11 +121,11 @@ class Page(jp.QuasarPage):
 
 
 def add_head_html(self, html: str) -> None:
-    page_stack[-1].head_html += html  # TODO access main page differently
+    pages['/'].head_html += html  # TODO access main page differently
 
 
 def add_body_html(self, html: str) -> None:
-    page_stack[-1].body_html += html  # TODO access main page differently
+    pages['/'].body_html += html  # TODO access main page differently
 
 
 def page(self, path: str, *, shared: bool = False, **kwargs):
