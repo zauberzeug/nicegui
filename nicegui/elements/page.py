@@ -44,6 +44,8 @@ class Page(jp.QuasarPage):
         """
         super().__init__()
 
+        self.route = route
+
         self.title = title or config.title
         self.favicon = favicon or config.favicon
         self.dark = dark if dark is not ... else config.dark
@@ -59,8 +61,6 @@ class Page(jp.QuasarPage):
 
         self.view = jp.Div(a=self, classes=classes, style='row-gap: 1em', temp=False)
         self.view.add_page(self)
-
-        self.route = route
 
     async def _route_function(self, request: Request):
         for connect_handler in connect_handlers + ([self.connect_handler] if self.connect_handler else []):
@@ -121,11 +121,11 @@ class Page(jp.QuasarPage):
 
 
 def add_head_html(self, html: str) -> None:
-    pages['/'].head_html += html  # TODO access main page differently
+    pages['/'].head_html += html  # TODO move to page class because it can be different on every page
 
 
 def add_body_html(self, html: str) -> None:
-    pages['/'].body_html += html  # TODO access main page differently
+    pages['/'].body_html += html  # TODO move to page class because it can be different on every page
 
 
 def page(self, path: str, *, shared: bool = False, **kwargs):
