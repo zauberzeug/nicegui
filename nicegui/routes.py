@@ -1,12 +1,9 @@
 import inspect
 from functools import wraps
 
-import justpy as jp
 from starlette import requests, routing
 from starlette.routing import BaseRoute, Mount
 from starlette.staticfiles import StaticFiles
-
-from nicegui.elements.page import Page
 
 from . import globals
 from .helpers import is_coroutine
