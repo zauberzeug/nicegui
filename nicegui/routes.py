@@ -1,9 +1,12 @@
 import inspect
 from functools import wraps
 
+import justpy as jp
 from starlette import requests, routing
 from starlette.routing import BaseRoute, Mount
 from starlette.staticfiles import StaticFiles
+
+from nicegui.elements.page import Page
 
 from . import globals
 from .helpers import is_coroutine
@@ -51,5 +54,24 @@ def get(self, path: str):
                 args['request'] = request
             return await func(**args) if is_coroutine(func) else func(**args)
         self.add_route(routing.Route(path, decorated))
+        return decorated
+    return decorator
+
+
+def private_page(self, path: str):
+    '''
+    Use as a decorator for a function like this:
+
+    @ui.private_page('/private')
+    def create_private_page():
+        ui.label(f'your private page {uuid4()}')
+    '''
+    def decorator(func):
+        @wraps(func)
+        async def decorated():
+            with Page(None) as page:
+                await func() if is_coroutine(func) else func()
+            return page
+        jp.Route(path, decorated)
         return decorated
     return decorator

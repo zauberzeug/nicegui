@@ -43,7 +43,7 @@ class Page(jp.QuasarPage):
         """
         super().__init__()
 
-        self.delete_flag = False
+        self.delete_flag = route is None
         self.title = title or config.title
         self.favicon = favicon or config.favicon
         self.dark = dark if dark is not ... else config.dark
@@ -61,7 +61,8 @@ class Page(jp.QuasarPage):
         self.view.add_page(self)
 
         self.route = route
-        jp.Route(route, self._route_function)
+        if route is not None:
+            jp.Route(route, self._route_function)
 
     async def _route_function(self, request: Request):
         for connect_handler in connect_handlers + ([self.connect_handler] if self.connect_handler else []):
