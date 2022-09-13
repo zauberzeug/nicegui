@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 app: 'Starlette'
 config: 'Config'
+server: 'uvicorn.Server'
 page_stack: List['Page'] = []
 view_stack: List['jp.HTMLBaseComponent'] = []
 tasks: List[asyncio.tasks.Task] = []

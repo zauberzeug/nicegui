@@ -2,6 +2,7 @@ import inspect
 import logging
 import os
 import sys
+import typing
 import webbrowser
 from typing import List, Optional
 
@@ -18,7 +19,7 @@ def _start_server(config: Config) -> None:
     def split_args(args: str) -> List[str]:
         return args.split(',') if ',' in args else [args]
 
-    uvicorn.run(
+    config = uvicorn.Config(
         'nicegui:app' if config.reload else globals.app,
         host=config.host,
         port=config.port,
@@ -29,6 +30,8 @@ def _start_server(config: Config) -> None:
         reload_dirs=split_args(config.uvicorn_reload_dirs) if config.reload else None,
         log_level=config.uvicorn_logging_level,
     )
+    globals.server = uvicorn.Server(config=config)
+    globals.server.run()
 
 
 if globals.pre_evaluation_succeeded and globals.config.reload and not inspect.stack()[-2].filename.endswith('spawn.py'):

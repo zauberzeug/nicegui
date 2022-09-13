@@ -1,5 +1,7 @@
 # isort:skip_file
 import os
+from . import globals
+import justpy as jp
 
 
 class Ui:
@@ -75,3 +77,9 @@ class Ui:
 
     if 'three' not in _excludes:
         from .elements.scene import Scene as scene
+
+    @staticmethod
+    async def shutdown():
+        for socket in [s for page in jp.WebPage.sockets.values() for s in page.values()]:
+            await socket.close()
+        globals.server.should_exit = True
