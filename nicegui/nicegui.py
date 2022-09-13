@@ -26,7 +26,7 @@ async def patched_justpy_startup():
 
 @jp.app.on_event('startup')
 async def startup():
-    [jp.Route(route, (await page())._route_function) for route, page in globals.pages.items() if page.is_shared]
+    [jp.Route(route, (await builder())._route_function if builder.is_shared else builder) for route, builder in globals.pages.items()]
     globals.tasks.extend(create_task(t.coro, name=t.name) for t in Timer.prepared_coroutines)
     Timer.prepared_coroutines.clear()
     globals.tasks.extend(create_task(t, name='startup task')

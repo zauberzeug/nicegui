@@ -98,13 +98,6 @@ class Page(jp.QuasarPage):
                 raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         await super().on_disconnect(websocket)
 
-    def __enter__(self):
-        view_stack.append(self.view)
-        return self
-
-    def __exit__(self, *_):
-        view_stack.pop()
-
     async def await_javascript(self, code: str, check_interval: float = 0.01, timeout: float = 1.0) -> str:
         start_time = time.time()
         request_id = str(uuid.uuid4())
@@ -129,18 +122,17 @@ def add_body_html(self, html: str) -> None:
 
 
 def page(self, path: str, *, shared: bool = False, **kwargs):
+    global view_stack
+
     def decorator(func):
         @wraps(func)
         async def decorated():
-            with Page(None) as p:
-                p.delete_flag = not shared
-                await func() if is_coroutine(func) else func()
+            p = Page(route=path, **kwargs)
+            view_stack[:] = [p.view]
+            p.delete_flag = not shared
+            await func() if is_coroutine(func) else func()
             return p
         decorated.is_shared = shared
-        if shared:
-            pages[path] = decorated
-        else:
-            jp.Route(path, decorated)
-
+        pages[path] = decorated
         return decorated
     return decorator
