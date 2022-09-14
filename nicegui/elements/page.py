@@ -10,7 +10,7 @@ from addict import Dict
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
 
-from ..globals import config, connect_handlers, disconnect_handlers, pages, view_stack
+from ..globals import config, connect_handlers, disconnect_handlers, page_builders, view_stack
 from ..helpers import is_coroutine
 
 
@@ -114,11 +114,11 @@ class Page(jp.QuasarPage):
 
 
 def add_head_html(self, html: str) -> None:
-    pages['/'].head_html += html  # TODO move to page class because it can be different on every page
+    page_builders['/'].head_html += html  # TODO move to page class because it can be different on every page
 
 
 def add_body_html(self, html: str) -> None:
-    pages['/'].body_html += html  # TODO move to page class because it can be different on every page
+    page_builders['/'].body_html += html  # TODO move to page class because it can be different on every page
 
 
 def page(self, path: str, *, shared: bool = False, **kwargs):
@@ -128,11 +128,11 @@ def page(self, path: str, *, shared: bool = False, **kwargs):
         @wraps(func)
         async def decorated():
             p = Page(route=path, **kwargs)
-            view_stack[:] = [p.view]
             p.delete_flag = not shared
+            view_stack[:] = [p.view]
             await func() if is_coroutine(func) else func()
             return p
         decorated.is_shared = shared
-        pages[path] = decorated
+        page_builders[path] = decorated
         return decorated
     return decorator
