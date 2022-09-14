@@ -121,11 +121,13 @@ class Page(jp.QuasarPage):
 
 
 def add_head_html(self, html: str) -> None:
-    page_builders['/'].head_html += html  # TODO move to page class because it can be different on every page
+    for page in view_stack[-1].pages.values():
+        page.head_html += html
 
 
 def add_body_html(self, html: str) -> None:
-    page_builders['/'].body_html += html  # TODO move to page class because it can be different on every page
+    for page in view_stack[-1].pages.values():
+        page.body_html += html
 
 
 def page(self, path: str, *, shared: bool = False, **kwargs):
