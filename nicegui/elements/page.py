@@ -2,6 +2,7 @@ import asyncio
 import inspect
 import time
 import uuid
+from dataclasses import dataclass
 from functools import wraps
 from typing import Callable, Optional
 
@@ -12,6 +13,12 @@ from starlette.requests import Request
 
 from ..globals import config, connect_handlers, disconnect_handlers, main_page, page_builders, view_stack
 from ..helpers import is_coroutine
+
+
+@dataclass
+class PageBuilder:
+    function: Callable
+    shared: bool
 
 
 class Page(jp.QuasarPage):
@@ -122,18 +129,15 @@ def add_body_html(self, html: str) -> None:
 
 
 def page(self, path: str, *, shared: bool = False, **kwargs):
-    global view_stack
-
     def decorator(func):
         @wraps(func)
         async def decorated():
-            p = Page(route=path, **kwargs)
-            p.delete_flag = not shared
-            view_stack[:] = [p.view]
+            page = Page(route=path, **kwargs)
+            page.delete_flag = not shared
+            view_stack[:] = [page.view]
             await func() if is_coroutine(func) else func()
             view_stack[:] = [main_page]
-            return p
-        decorated.is_shared = shared
-        page_builders[path] = decorated
+            return page
+        page_builders[path] = PageBuilder(decorated, shared)
         return decorated
     return decorator

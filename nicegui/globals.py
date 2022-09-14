@@ -9,12 +9,12 @@ if TYPE_CHECKING:
     from starlette.applications import Starlette
 
     from .config import Config
-    from .elements.page import Page
+    from .elements.page import Page, PageBuilder
 
 app: 'Starlette'
 config: 'Config'
 main_page: 'Page' = None
-page_builders: Dict[str, 'Page'] = {}
+page_builders: Dict[str, 'PageBuilder'] = {}
 view_stack: List['jp.HTMLBaseComponent'] = []
 tasks: List[asyncio.tasks.Task] = []
 log: logging.Logger = logging.getLogger('nicegui')
