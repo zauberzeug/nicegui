@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from starlette.applications import Starlette
 
     from .config import Config
-    from .elements.page import Page, PageBuilder
+    from .elements.page import PageBuilder
 
 app: 'Starlette'
 config: 'Config'
