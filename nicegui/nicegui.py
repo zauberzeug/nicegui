@@ -1,8 +1,6 @@
 # isort:skip_file
 from typing import Awaitable, Callable
 
-from nicegui.elements.page import Page
-
 if True:  # NOTE: prevent formatter from mixing up these lines
     import builtins
     print_backup = builtins.print

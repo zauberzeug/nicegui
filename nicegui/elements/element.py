@@ -4,9 +4,10 @@ import asyncio
 
 import justpy as jp
 
+from .. import globals
 from ..binding import BindableProperty, bind_from, bind_to
-from ..globals import view_stack
 from ..task_logger import create_task
+from .page import Page
 
 
 def _handle_visibility_change(sender: Element, visible: bool) -> None:
@@ -22,7 +23,13 @@ class Element:
     visible = BindableProperty(on_change=_handle_visibility_change)
 
     def __init__(self, view: jp.HTMLBaseComponent):
-        self.parent_view = view_stack[-1]
+        if not globals.view_stack:
+            globals.main_page = Page('/')
+            globals.main_page.delete_flag = False
+            globals.view_stack[:] = [globals.main_page.view]
+            jp.Route('/', globals.main_page._route_function)
+
+        self.parent_view = globals.view_stack[-1]
         self.parent_view.add(view)
         self.view = view
         assert len(self.parent_view.pages) == 1
@@ -31,7 +38,7 @@ class Element:
 
         self.visible = True
 
-        if len(view_stack) == 1 and asyncio.get_event_loop().is_running():
+        if len(globals.view_stack) == 1 and asyncio.get_event_loop().is_running():
             # NOTE: This is the main page. There won't be any context exit and thus no UI update. So let's do that here.
             create_task(self.parent_view.update())
 
