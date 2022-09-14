@@ -34,25 +34,11 @@ class Page(jp.QuasarPage):
                  on_connect: Optional[Callable] = None,
                  on_page_ready: Optional[Callable] = None,
                  on_disconnect: Optional[Callable] = None,
+                 shared: bool = False,
                  ):
-        """Page
-
-        Creates a new page at the given path.
-
-        :param route: route of the new page (path must start with '/')
-        :param title: optional page title
-        :param favicon: optional favicon
-        :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
-        :param classes: tailwind classes for the container div (default: `'q-ma-md column items-start'`)
-        :param css: CSS definitions
-        :param on_connect: optional function or coroutine which is called for each new client connection
-        :param on_page_ready: optional function or coroutine which is called when the websocket is connected
-        :param on_disconnect: optional function or coroutine which is called when a client disconnects
-        """
         super().__init__()
 
         self.route = route
-
         self.title = title or config.title
         self.favicon = favicon or config.favicon
         self.dark = dark if dark is not ... else config.dark
@@ -61,6 +47,7 @@ class Page(jp.QuasarPage):
         self.connect_handler = on_connect
         self.page_ready_handler = on_page_ready
         self.disconnect_handler = on_disconnect
+        self.delete_flag = not shared
 
         self.waiting_javascript_commands: dict[str, str] = {}
         self.on('result_ready', self.handle_javascript_result)
@@ -130,17 +117,54 @@ def add_body_html(self, html: str) -> None:
         page.body_html += html
 
 
-def page(self, path: str, *, shared: bool = False, **kwargs):
+def page(self,
+         route: str,
+         title: Optional[str] = None,
+         *,
+         favicon: Optional[str] = None,
+         dark: Optional[bool] = ...,
+         classes: str = 'q-ma-md column items-start',
+         css: str = HtmlFormatter().get_style_defs('.codehilite'),
+         on_connect: Optional[Callable] = None,
+         on_page_ready: Optional[Callable] = None,
+         on_disconnect: Optional[Callable] = None,
+         shared: bool = False,
+         ):
+    """Page
+
+    Creates a new page at the given route.
+
+    :param route: route of the new page (path must start with '/')
+    :param title: optional page title
+    :param favicon: optional favicon
+    :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
+    :param classes: tailwind classes for the container div (default: `'q-ma-md column items-start'`)
+    :param css: CSS definitions
+    :param on_connect: optional function or coroutine which is called for each new client connection
+    :param on_page_ready: optional function or coroutine which is called when the websocket is connected
+    :param on_disconnect: optional function or coroutine which is called when a client disconnects
+    :param shared: whether the page instance is shared between multiple clients (default: `False`)
+    """
     def decorator(func):
         @wraps(func)
         async def decorated():
-            page = Page(route=path, **kwargs)
-            page.delete_flag = not shared
+            page = Page(
+                route=route,
+                title=title,
+                favicon=favicon,
+                dark=dark,
+                classes=classes,
+                css=css,
+                on_connect=on_connect,
+                on_page_ready=on_page_ready,
+                on_disconnect=on_disconnect,
+                shared=shared,
+            )
             view_stack.append(page.view)
             await func() if is_coroutine(func) else func()
             view_stack.pop()
             return page
-        page_builders[path] = PageBuilder(decorated, shared)
+        page_builders[route] = PageBuilder(decorated, shared)
         return decorated
     return decorator
 
