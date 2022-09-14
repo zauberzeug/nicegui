@@ -11,7 +11,7 @@ from addict import Dict
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
 
-from ..globals import config, connect_handlers, disconnect_handlers, main_page, page_builders, view_stack
+from ..globals import config, connect_handlers, disconnect_handlers, page_builders, view_stack
 from ..helpers import is_coroutine
 
 
@@ -136,9 +136,9 @@ def page(self, path: str, *, shared: bool = False, **kwargs):
         async def decorated():
             page = Page(route=path, **kwargs)
             page.delete_flag = not shared
-            view_stack[:] = [page.view]
+            view_stack.append(page.view)
             await func() if is_coroutine(func) else func()
-            view_stack[:] = [main_page]
+            view_stack.pop()
             return page
         page_builders[path] = PageBuilder(decorated, shared)
         return decorated

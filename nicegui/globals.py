@@ -13,7 +13,6 @@ if TYPE_CHECKING:
 
 app: 'Starlette'
 config: 'Config'
-main_page: 'Page' = None
 page_builders: Dict[str, 'PageBuilder'] = {}
 view_stack: List['jp.HTMLBaseComponent'] = []
 tasks: List[asyncio.tasks.Task] = []

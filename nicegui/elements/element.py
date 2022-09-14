@@ -24,10 +24,10 @@ class Element:
 
     def __init__(self, view: jp.HTMLBaseComponent):
         if not globals.view_stack:
-            globals.main_page = Page('/')
-            globals.main_page.delete_flag = False
-            globals.view_stack[:] = [globals.main_page.view]
-            jp.Route('/', globals.main_page._route_function)
+            main_page = Page('/')
+            main_page.delete_flag = False
+            globals.view_stack.append(main_page.view)
+            jp.Route('/', main_page._route_function)
 
         self.parent_view = globals.view_stack[-1]
         self.parent_view.add(view)
