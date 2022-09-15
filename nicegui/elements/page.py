@@ -171,7 +171,7 @@ def page(self,
 
 def get_current_view() -> jp.HTMLBaseComponent:
     if not view_stack:
-        page = Page(route='/', title=config.title, dark=config.dark, classes=config.main_page_classes, shared=False)
+        page = Page(route='/', title=config.title, dark=config.dark, classes=config.main_page_classes, shared=True)
         view_stack.append(page.view)
         jp.Route('/', page._route_function)
     return view_stack[-1]
