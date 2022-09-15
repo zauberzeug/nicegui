@@ -104,7 +104,7 @@ class Page(jp.QuasarPage):
                 raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         await super().on_disconnect(websocket)
 
-    async def await_javascript(self, code: str, check_interval: float = 0.01, timeout: float = 1.0) -> str:
+    async def await_javascript(self, code: str, *, check_interval: float = 0.01, timeout: float = 1.0) -> str:
         start_time = time.time()
         request_id = str(uuid.uuid4())
         await self.run_javascript(code, request_id=request_id)
@@ -127,6 +127,16 @@ def add_head_html(self, html: str) -> None:
 def add_body_html(self, html: str) -> None:
     for page in get_current_view().pages.values():
         page.body_html += html
+
+
+async def run_javascript(self, code: str) -> None:
+    for page in get_current_view().pages.values():
+        await page.run_javascript(code)
+
+
+async def await_javascript(self, code: str, *, check_interval: float = 0.01, timeout: float = 1.0) -> None:
+    for page in get_current_view().pages.values():
+        return await page.await_javascript(code)
 
 
 def page(self,

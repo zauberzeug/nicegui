@@ -665,4 +665,23 @@ with example(sessions):
 
     ui.link('Visit session demo', session_demo)
 
+javascript = '''#### JavaScript
+
+With `ui.run_javascript()` you can run arbitrary JavaScript code on a page that is executed in the browser.
+The asynchronous function will return after sending the command.
+
+With `ui.await_javascript()` you can send a JavaScript command and wait for its response.
+The asynchronous function will only return after receiving the result.
+'''
+with example(javascript):
+    async def run_javascript():
+        await ui.run_javascript('alert("Hello!")')
+
+    async def await_javascript():
+        response = await ui.await_javascript('Date()')
+        ui.notify(f'Browser time: {response}')
+
+    ui.button('run JavaScript', on_click=run_javascript)
+    ui.button('await JavaScript', on_click=await_javascript)
+
 ui.run()

@@ -33,7 +33,7 @@ class Ui:
     from .elements.notify import Notify as notify
     from .elements.number import Number as number
     from .elements.open import open, open_async
-    from .elements.page import page, add_head_html, add_body_html
+    from .elements.page import page, add_head_html, add_body_html, run_javascript, await_javascript
     from .elements.radio import Radio as radio
     from .elements.row import Row as row
     from .elements.select import Select as select
