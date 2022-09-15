@@ -584,11 +584,13 @@ with example(async_handlers):
 h3('Pages and Routes')
 
 with example(ui.page):
-    with ui.page('/other_page'):
+    @ui.page('/other_page')
+    def other_page():
         ui.label('Welcome to the other side')
         ui.link('Back to main page', '#page')
 
-    with ui.page('/dark_page', dark=True):
+    @ui.page('/dark_page', dark=True)
+    def dark_page():
         ui.label('Welcome to the dark side')
         ui.link('Back to main page', '#page')
 
@@ -596,11 +598,12 @@ with example(ui.page):
     ui.link('Visit dark page', 'dark_page')
 
 with example(ui.open):
-    with ui.page('/yet_another_page') as other:
+    @ui.page('/yet_another_page')
+    def yet_another_page():
         ui.label('Welcome to yet another page')
         ui.button('RETURN', on_click=lambda e: ui.open('#open', e.socket))
 
-    ui.button('REDIRECT', on_click=lambda e: ui.open(other, e.socket))
+    ui.button('REDIRECT', on_click=lambda e: ui.open('yet_another_page', e.socket))
 
 add_route = '''#### Route
 
@@ -655,9 +658,11 @@ with example(sessions):
         id_counter[request.session_id] += 1
         visits.set_text(f'{len(id_counter)} unique views ({sum(id_counter.values())} overall) since {creation}')
 
-    with ui.page('/session_demo', on_connect=handle_connection) as page:
+    @ui.page('/session_demo', on_connect=handle_connection)
+    def session_demo():
+        global visits
         visits = ui.label()
 
-    ui.link('Visit session demo', page)
+    ui.link('Visit session demo', 'session_demo')
 
 ui.run()

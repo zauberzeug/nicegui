@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import asyncio
 import inspect
 import time
 import uuid
 from dataclasses import dataclass
 from functools import wraps
-from typing import Callable, Optional
+from typing import Awaitable, Callable, Optional
 
 import justpy as jp
 from addict import Dict
@@ -17,8 +19,18 @@ from ..helpers import is_coroutine
 
 @dataclass
 class PageBuilder:
-    function: Callable
+    function: Callable[[], Awaitable[Page]]
     shared: bool
+
+    _shared_page: Optional[Page] = None
+
+    async def build(self) -> None:
+        assert self.shared
+        self._shared_page = await self.function()
+
+    async def route_function(self, request: Request) -> Page:
+        page = self._shared_page if self.shared else await self.function()
+        return await page._route_function(request)
 
 
 class Page(jp.QuasarPage):
