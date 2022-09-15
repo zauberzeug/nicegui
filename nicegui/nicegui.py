@@ -12,6 +12,7 @@ if True:  # NOTE: prevent formatter from mixing up these lines
 from . import binding, globals
 from .task_logger import create_task
 from .timer import Timer
+from .elements.page import error404
 
 jp.app.router.on_startup.clear()  # NOTE: remove JustPy's original startup function
 
@@ -26,6 +27,7 @@ async def patched_justpy_startup():
 
 @jp.app.on_event('startup')
 async def startup():
+    jp.Route("/{path:path}", error404, last=True)
     for route, page_builder in globals.page_builders.items():
         if page_builder.shared:
             jp.Route(route, (await page_builder.function())._route_function)

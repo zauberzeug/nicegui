@@ -175,3 +175,13 @@ def get_current_view() -> jp.HTMLBaseComponent:
         view_stack.append(page.view)
         jp.Route('/', page._route_function)
     return view_stack[-1]
+
+
+def error404() -> jp.QuasarPage:
+    wp = jp.QuasarPage(title=config.title, favicon=config.favicon, dark=config.dark, tailwind=True)
+    div = jp.Div(a=wp, classes='py-20 text-center')
+    jp.Div(a=div, classes='text-8xl py-5', text='☹',
+           style='font-family: "Arial Unicode MS", "Times New Roman", Times, serif;')
+    jp.Div(a=div, classes='text-6xl py-5', text='404')
+    jp.Div(a=div, classes='text-xl py-5', text='This page doesn\'t exist.')
+    return wp
