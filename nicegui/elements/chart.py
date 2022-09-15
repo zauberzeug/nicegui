@@ -4,8 +4,11 @@ import justpy as jp
 
 from .element import Element
 
+jp.template_options['highcharts'] = False
+
 
 class Chart(Element):
+
     def __init__(self, options: Dict):
         """Chart
 
@@ -15,4 +18,5 @@ class Chart(Element):
         """
         view = jp.HighCharts(temp=False)
         view.options = self.options = jp.Dict(**options)
+        jp.template_options['highcharts'] = True
         super().__init__(view)

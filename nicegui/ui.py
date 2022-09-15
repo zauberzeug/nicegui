@@ -8,12 +8,11 @@ class Ui:
     # _excludes = [word.strip().lower() for word in globals.config.exclude.split(',')]
     # _excludes = [e[:-3] if e.endswith('.js') else e for e in _excludes]  # NOTE: for python <3.9 without removesuffix
     _excludes = []
-    os.environ['HIGHCHARTS'] = str('highcharts' not in _excludes)
-    os.environ['AGGRID'] = str('aggrid' not in _excludes)
 
     from .elements.button import Button as button
     from .elements.card import Card as card
     from .elements.card import CardSection as card_section
+    from .elements.chart import Chart as chart
     from .elements.checkbox import Checkbox as checkbox
     from .elements.color_input import ColorInput as color_input
     from .elements.color_picker import ColorPicker as color_picker
@@ -53,9 +52,6 @@ class Ui:
 
     if 'custom_example' not in _excludes:
         from .elements.custom_example import CustomExample as custom_example
-
-    if 'highcharts' not in _excludes:
-        from .elements.chart import Chart as chart
 
     if 'interactive_image' not in _excludes:
         from .elements.interactive_image import InteractiveImage as interactive_image

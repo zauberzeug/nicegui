@@ -4,8 +4,11 @@ import justpy as jp
 
 from .element import Element
 
+jp.template_options['aggrid'] = False
+
 
 class Table(Element):
+
     def __init__(self, options: Dict):
         """Table
 
@@ -15,4 +18,5 @@ class Table(Element):
         """
         view = jp.AgGrid(temp=False)
         view.options = self.options = jp.Dict(**options)
+        jp.template_options['aggrid'] = True
         super().__init__(view)
