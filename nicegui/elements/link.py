@@ -1,22 +1,22 @@
-from typing import Union
+from typing import Callable, Union
 
 import justpy as jp
 
+from ..globals import find_route
 from .group import Group
-from .page import Page
 
 
 class Link(Group):
 
-    def __init__(self, text: str = '', target: Union[Page, str] = '#'):
+    def __init__(self, text: str = '', target: Union[Callable, str] = '#'):
         """Link
 
         Create a hyperlink.
 
         :param text: display text
-        :param target: page or string that is a an absolute URL or relative path from base URL
+        :param target: page function or string that is a an absolute URL or relative path from base URL
         """
-        href = target if isinstance(target, str) else target.route[1:]
+        href = target if isinstance(target, str) else find_route(target)[1:]
         view = jp.A(text=text, href=href, classes='underline text-blue', temp=False)
 
         super().__init__(view)

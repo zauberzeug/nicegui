@@ -1,13 +1,13 @@
-from typing import Optional, Union
+from typing import Callable, Optional, Union
 
 from justpy import WebPage
-from nicegui.elements.page import Page
 from starlette.websockets import WebSocket
 
+from ..globals import find_route
 from ..task_logger import create_task
 
 
-def open(self, target: Union[Page, str], socket: Optional[WebSocket] = None):
+def open(self, target: Union[Callable, str], socket: Optional[WebSocket] = None):
     """Open
 
     Can be used to programmatically trigger redirects for a specific client.
@@ -15,14 +15,14 @@ def open(self, target: Union[Page, str], socket: Optional[WebSocket] = None):
     Note that *all* clients (i.e. browsers) connected to the page will open the target URL *unless* a socket is specified.
     User events like button clicks provide such a socket.
 
-    :param target: page or string that is a an absolute URL or relative path from base URL
+    :param target: page function or string that is a an absolute URL or relative path from base URL
     :param socket: optional WebSocket defining the target client
     """
     create_task(open_async(self, target, socket), name='open_async')
 
 
-async def open_async(self, target: Union[Page, str], socket: Optional[WebSocket] = None):
-    path = target if isinstance(target, str) else target.route[1:]
+async def open_async(self, target: Union[Callable, str], socket: Optional[WebSocket] = None):
+    path = target if isinstance(target, str) else find_route(target)[1:]
     sockets = [socket] if socket else [s for socket_dict in WebPage.sockets.values() for s in socket_dict.values()]
     for socket in sockets:
         if not path:

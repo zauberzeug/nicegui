@@ -594,8 +594,8 @@ with example(ui.page):
         ui.label('Welcome to the dark side')
         ui.link('Back to main page', '#page')
 
-    ui.link('Visit other page', 'other_page')
-    ui.link('Visit dark page', 'dark_page')
+    ui.link('Visit other page', other_page)
+    ui.link('Visit dark page', dark_page)
 
 with example(ui.open):
     @ui.page('/yet_another_page')
@@ -603,7 +603,7 @@ with example(ui.open):
         ui.label('Welcome to yet another page')
         ui.button('RETURN', on_click=lambda e: ui.open('#open', e.socket))
 
-    ui.button('REDIRECT', on_click=lambda e: ui.open('yet_another_page', e.socket))
+    ui.button('REDIRECT', on_click=lambda e: ui.open(yet_another_page, e.socket))
 
 add_route = '''#### Route
 
@@ -663,6 +663,6 @@ with example(sessions):
         global visits
         visits = ui.label()
 
-    ui.link('Visit session demo', 'session_demo')
+    ui.link('Visit session demo', session_demo)
 
 ui.run()

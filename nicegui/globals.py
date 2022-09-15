@@ -25,3 +25,10 @@ disconnect_handlers: List[Union[Callable, Awaitable]] = []
 startup_handlers: List[Union[Callable, Awaitable]] = []
 shutdown_handlers: List[Union[Callable, Awaitable]] = []
 pre_evaluation_succeeded: bool = False
+
+
+def find_route(function: Callable) -> str:
+    routes = [route for route, page_builder in page_builders.items() if page_builder.function == function]
+    if not routes:
+        raise ValueError(f'Invalid page function {function}')
+    return routes[0]
