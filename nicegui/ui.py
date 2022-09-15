@@ -44,7 +44,7 @@ class Ui:
     from .elements.tree import Tree as tree
     from .elements.update import update
     from .elements.upload import Upload as upload
-    from .lifecycle import on_connect, on_disconnect, on_shutdown, on_startup
+    from .lifecycle import on_connect, on_disconnect, on_shutdown, on_startup, shutdown
     from .routes import add_route, add_static_files, get
     from .timer import Timer as timer
 

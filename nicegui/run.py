@@ -6,6 +6,8 @@ import webbrowser
 from typing import List, Optional
 
 import uvicorn
+from uvicorn.main import STARTUP_FAILURE
+from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from . import globals
 from .config import Config
@@ -18,7 +20,7 @@ def _start_server(config: Config) -> None:
     def split_args(args: str) -> List[str]:
         return args.split(',') if ',' in args else [args]
 
-    uvicorn.run(
+    config = uvicorn.Config(
         'nicegui:app' if config.reload else globals.app,
         host=config.host,
         port=config.port,
@@ -29,6 +31,25 @@ def _start_server(config: Config) -> None:
         reload_dirs=split_args(config.uvicorn_reload_dirs) if config.reload else None,
         log_level=config.uvicorn_logging_level,
     )
+    globals.server = uvicorn.Server(config=config)
+
+    if (config.reload or config.workers > 1) and not isinstance(config.app, str):
+        logging.warning('You must pass the application as an import string to enable "reload" or "workers".')
+        sys.exit(1)
+
+    if config.should_reload:
+        sock = config.bind_socket()
+        ChangeReload(config, target=globals.server.run, sockets=[sock]).run()
+    elif config.workers > 1:
+        sock = config.bind_socket()
+        Multiprocess(config, target=globals.server.run, sockets=[sock]).run()
+    else:
+        globals.server.run()
+    if config.uds:
+        os.remove(config.uds)  # pragma: py-win32
+
+    if not globals.server.started and not config.should_reload and config.workers == 1:
+        sys.exit(STARTUP_FAILURE)
 
 
 if globals.pre_evaluation_succeeded and globals.config.reload and not inspect.stack()[-2].filename.endswith('spawn.py'):
