@@ -8,16 +8,16 @@ from typing import Deque
 
 from justpy.htmlcomponents import WebPage
 
+from ..routes import add_dependencies
 from ..task_logger import create_task
 from .custom_view import CustomView
 from .element import Element
-
-CustomView.use(__file__)
 
 
 class LogView(CustomView):
 
     def __init__(self, lines: Deque[str], max_lines: int):
+        add_dependencies(__file__)
         super().__init__('log', max_lines=max_lines)
         self.lines = lines
         self.allowed_events = ['onConnect']

@@ -25,6 +25,7 @@ disconnect_handlers: List[Union[Callable, Awaitable]] = []
 startup_handlers: List[Union[Callable, Awaitable]] = []
 shutdown_handlers: List[Union[Callable, Awaitable]] = []
 has_auto_index_page: bool = False
+dependencies: Dict[str, List[str]] = {}
 
 
 def find_route(function: Callable) -> str:

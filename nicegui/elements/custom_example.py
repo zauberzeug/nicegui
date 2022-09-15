@@ -1,12 +1,12 @@
+from ..routes import add_dependencies
 from .custom_view import CustomView
 from .element import Element
-
-CustomView.use(__file__)
 
 
 class CustomExampleView(CustomView):
 
     def __init__(self, on_change):
+        add_dependencies(__file__)
         super().__init__('custom_example', value=0)
 
         self.on_change = on_change

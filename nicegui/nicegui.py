@@ -11,6 +11,7 @@ if True:  # NOTE: prevent formatter from mixing up these lines
 
 from . import binding, globals
 from .elements.page import create_page_routes, init_auto_index_page
+from .routes import serve_dependencies
 from .task_logger import create_task
 from .timer import Timer
 
@@ -29,6 +30,7 @@ async def patched_justpy_startup():
 async def startup():
     init_auto_index_page()
     await create_page_routes()
+    serve_dependencies()
     globals.tasks.extend(create_task(t.coro, name=t.name) for t in Timer.prepared_coroutines)
     Timer.prepared_coroutines.clear()
     globals.tasks.extend(create_task(t, name='startup task')
