@@ -5,10 +5,6 @@ import os
 class Ui:
     from .run import run  # NOTE: before justpy
 
-    # _excludes = [word.strip().lower() for word in globals.config.exclude.split(',')]
-    # _excludes = [e[:-3] if e.endswith('.js') else e for e in _excludes]  # NOTE: for python <3.9 without removesuffix
-    _excludes = []
-
     from .elements.button import Button as button
     from .elements.card import Card as card
     from .elements.card import CardSection as card_section
@@ -16,15 +12,21 @@ class Ui:
     from .elements.checkbox import Checkbox as checkbox
     from .elements.color_input import ColorInput as color_input
     from .elements.color_picker import ColorPicker as color_picker
+    from .elements.colors import Colors as colors
     from .elements.column import Column as column
+    from .elements.custom_example import CustomExample as custom_example
     from .elements.dialog import Dialog as dialog
     from .elements.expansion import Expansion as expansion
     from .elements.html import Html as html
     from .elements.icon import Icon as icon
     from .elements.image import Image as image
     from .elements.input import Input as input
+    from .elements.interactive_image import InteractiveImage as interactive_image
+    from .elements.joystick import Joystick as joystick
+    from .elements.keyboard import Keyboard as keyboard
     from .elements.label import Label as label
     from .elements.link import Link as link
+    from .elements.log import Log as log
     from .elements.markdown import Markdown as markdown
     from .elements.menu import Menu as menu
     from .elements.menu_item import MenuItem as menu_item
@@ -35,6 +37,7 @@ class Ui:
     from .elements.page import page, add_head_html, add_body_html, run_javascript, await_javascript
     from .elements.radio import Radio as radio
     from .elements.row import Row as row
+    from .elements.scene import Scene as scene
     from .elements.select import Select as select
     from .elements.slider import Slider as slider
     from .elements.switch import Switch as switch
@@ -47,27 +50,6 @@ class Ui:
     from .routes import add_route, add_static_files, get
     from .timer import Timer as timer
 
-    if 'colors' not in _excludes:
-        from .elements.colors import Colors as colors
-
-    if 'custom_example' not in _excludes:
-        from .elements.custom_example import CustomExample as custom_example
-
-    if 'interactive_image' not in _excludes:
-        from .elements.interactive_image import InteractiveImage as interactive_image
-
-    if 'keyboard' not in _excludes:
-        from .elements.keyboard import Keyboard as keyboard
-
-    if 'log' not in _excludes:
-        from .elements.log import Log as log
-
-    if 'matplotlib' not in _excludes:
+    if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
         from .elements.line_plot import LinePlot as line_plot
         from .elements.plot import Plot as plot
-
-    if 'nipple' not in _excludes:
-        from .elements.joystick import Joystick as joystick
-
-    if 'three' not in _excludes:
-        from .elements.scene import Scene as scene
