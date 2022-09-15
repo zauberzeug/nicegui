@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Union
+from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Optional, Union
 
 from uvicorn import Server
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .elements.page import PageBuilder
 
 app: 'Starlette'
-config: 'Config'
+config: Optional['Config'] = None
 server: Server
 page_builders: Dict[str, 'PageBuilder'] = {}
 view_stack: List['jp.HTMLBaseComponent'] = []
@@ -24,7 +24,7 @@ connect_handlers: List[Union[Callable, Awaitable]] = []
 disconnect_handlers: List[Union[Callable, Awaitable]] = []
 startup_handlers: List[Union[Callable, Awaitable]] = []
 shutdown_handlers: List[Union[Callable, Awaitable]] = []
-pre_evaluation_succeeded: bool = False
+has_auto_index_page: bool = False
 
 
 def find_route(function: Callable) -> str:

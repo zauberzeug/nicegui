@@ -13,7 +13,7 @@ from addict import Dict
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
 
-from ..globals import config, connect_handlers, disconnect_handlers, page_builders, view_stack
+from .. import globals
 from ..helpers import is_coroutine
 
 
@@ -36,7 +36,6 @@ class PageBuilder:
 class Page(jp.QuasarPage):
 
     def __init__(self,
-                 route: str,
                  title: Optional[str] = None,
                  *,
                  favicon: Optional[str] = None,
@@ -50,10 +49,14 @@ class Page(jp.QuasarPage):
                  ):
         super().__init__()
 
-        self.route = route
-        self.title = title or config.title
-        self.favicon = favicon or config.favicon
-        self.dark = dark if dark is not ... else config.dark
+        if globals.config:
+            self.title = title or globals.config.title
+            self.favicon = favicon or globals.config.favicon
+            self.dark = dark if dark is not ... else globals.config.dark
+        else:
+            self.title = title
+            self.favicon = favicon
+            self.dark = dark if dark is not ... else None
         self.tailwind = True  # use Tailwind classes instead of Quasars
         self.css = css
         self.connect_handler = on_connect
@@ -69,13 +72,13 @@ class Page(jp.QuasarPage):
         self.view.add_page(self)
 
     async def _route_function(self, request: Request):
-        for connect_handler in connect_handlers + ([self.connect_handler] if self.connect_handler else []):
-            arg_count = len(inspect.signature(connect_handler).parameters)
-            is_coro = is_coroutine(connect_handler)
+        for handler in globals.connect_handlers + ([self.connect_handler] if self.connect_handler else []):
+            arg_count = len(inspect.signature(handler).parameters)
+            is_coro = is_coroutine(handler)
             if arg_count == 1:
-                await connect_handler(request) if is_coro else connect_handler(request)
+                await handler(request) if is_coro else handler(request)
             elif arg_count == 0:
-                await connect_handler() if is_coro else connect_handler()
+                await handler() if is_coro else handler()
             else:
                 raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         return self
@@ -93,13 +96,13 @@ class Page(jp.QuasarPage):
         return False
 
     async def on_disconnect(self, websocket=None) -> None:
-        for disconnect_handler in ([self.disconnect_handler] if self.disconnect_handler else []) + disconnect_handlers:
-            arg_count = len(inspect.signature(disconnect_handler).parameters)
-            is_coro = is_coroutine(disconnect_handler)
+        for handler in globals.disconnect_handlers + ([self.disconnect_handler] if self.disconnect_handler else[]):
+            arg_count = len(inspect.signature(handler).parameters)
+            is_coro = is_coroutine(handler)
             if arg_count == 1:
-                await disconnect_handler(websocket) if is_coro else disconnect_handler(websocket)
+                await handler(websocket) if is_coro else handler(websocket)
             elif arg_count == 0:
-                await disconnect_handler() if is_coro else disconnect_handler()
+                await handler() if is_coro else handler()
             else:
                 raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         await super().on_disconnect(websocket)
@@ -171,7 +174,6 @@ def page(self,
         @wraps(func)
         async def decorated():
             page = Page(
-                route=route,
                 title=title,
                 favicon=favicon,
                 dark=dark,
@@ -182,28 +184,49 @@ def page(self,
                 on_disconnect=on_disconnect,
                 shared=shared,
             )
-            view_stack.append(page.view)
+            globals.view_stack.append(page.view)
             await func() if is_coroutine(func) else func()
-            view_stack.pop()
+            globals.view_stack.pop()
             return page
-        page_builders[route] = PageBuilder(decorated, shared)
+        globals.page_builders[route] = PageBuilder(decorated, shared)
         return decorated
     return decorator
 
 
 def get_current_view() -> jp.HTMLBaseComponent:
-    if not view_stack:
-        page = Page(route='/', title=config.title, dark=config.dark, classes=config.main_page_classes, shared=True)
-        view_stack.append(page.view)
+    if not globals.view_stack:
+        page = Page(shared=True)
+        globals.view_stack.append(page.view)
+        globals.has_auto_index_page = True  # NOTE: this automatically created page will get some attributes at startup
         jp.Route('/', page._route_function)
-    return view_stack[-1]
+    return globals.view_stack[-1]
 
 
 def error404() -> jp.QuasarPage:
-    wp = jp.QuasarPage(title=config.title, favicon=config.favicon, dark=config.dark, tailwind=True)
+    wp = jp.QuasarPage(title=globals.config.title, favicon=globals.config.favicon,
+                       dark=globals.config.dark, tailwind=True)
     div = jp.Div(a=wp, classes='py-20 text-center')
     jp.Div(a=div, classes='text-8xl py-5', text='☹',
            style='font-family: "Arial Unicode MS", "Times New Roman", Times, serif;')
     jp.Div(a=div, classes='text-6xl py-5', text='404')
     jp.Div(a=div, classes='text-xl py-5', text='This page doesn\'t exist.')
     return wp
+
+
+def init_auto_index_page() -> None:
+    if not globals.has_auto_index_page:
+        return
+    page: Page = get_current_view().pages[0]
+    page.title = globals.config.title
+    page.favicon = globals.config.favicon
+    page.dark = globals.config.dark
+    page.view.classes = globals.config.main_page_classes
+
+
+async def create_page_routes() -> None:
+    jp.Route("/{path:path}", error404, last=True)
+
+    for route, page_builder in globals.page_builders.items():
+        if page_builder.shared:
+            await page_builder.build()
+        jp.Route(route, page_builder.route_function)

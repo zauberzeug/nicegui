@@ -6,7 +6,7 @@ from typing import Any, Callable, Optional, Set, Tuple
 
 from justpy.htmlcomponents import HTMLBaseComponent
 
-from .globals import config
+from . import globals
 from .task_logger import create_task
 
 bindings = defaultdict(list)
@@ -31,7 +31,7 @@ async def loop():
         update_views(visited_views)
         if time.time() - t > 0.01:
             logging.warning(f'binding update for {len(visited_views)} visited views took {time.time() - t:.3f} s')
-        await asyncio.sleep(config.binding_refresh_interval)
+        await asyncio.sleep(globals.config.binding_refresh_interval)
 
 
 async def update_views_async(views: Set[HTMLBaseComponent]):

@@ -10,9 +10,9 @@ if True:  # NOTE: prevent formatter from mixing up these lines
     builtins.print = print_backup
 
 from . import binding, globals
+from .elements.page import create_page_routes, init_auto_index_page
 from .task_logger import create_task
 from .timer import Timer
-from .elements.page import error404
 
 jp.app.router.on_startup.clear()  # NOTE: remove JustPy's original startup function
 
@@ -27,11 +27,8 @@ async def patched_justpy_startup():
 
 @jp.app.on_event('startup')
 async def startup():
-    jp.Route("/{path:path}", error404, last=True)
-    for route, page_builder in globals.page_builders.items():
-        if page_builder.shared:
-            await page_builder.build()
-        jp.Route(route, page_builder.route_function)
+    init_auto_index_page()
+    await create_page_routes()
     globals.tasks.extend(create_task(t.coro, name=t.name) for t in Timer.prepared_coroutines)
     Timer.prepared_coroutines.clear()
     globals.tasks.extend(create_task(t, name='startup task')
