@@ -30,7 +30,7 @@ async def startup():
     jp.Route("/{path:path}", error404, last=True)
     for route, page_builder in globals.page_builders.items():
         if page_builder.shared:
-            page_builder.build()
+            await page_builder.build()
         jp.Route(route, page_builder.route_function)
     globals.tasks.extend(create_task(t.coro, name=t.name) for t in Timer.prepared_coroutines)
     Timer.prepared_coroutines.clear()
