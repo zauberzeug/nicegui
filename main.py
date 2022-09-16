@@ -183,8 +183,7 @@ with example(ui.color_picker):
     button = ui.button(on_click=picker.open).props('icon=colorize')
 
 with example(ui.upload):
-    ui.upload(on_upload=lambda e: upload_result.set_text(e.files))
-    upload_result = ui.label()
+    ui.upload(on_upload=lambda e: ui.notify(f'{len(e.files[0])} bytes'))
 
 h3('Markdown and HTML')
 
