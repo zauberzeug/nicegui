@@ -10,7 +10,7 @@ if True:  # NOTE: prevent formatter from mixing up these lines
     builtins.print = print_backup
 
 from . import binding, globals
-from .elements.page import create_page_routes, init_auto_index_page
+from .page import create_page_routes, init_auto_index_page
 from .task_logger import create_task
 from .timer import Timer
 

@@ -13,8 +13,8 @@ from addict import Dict
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
 
-from .. import globals
-from ..helpers import is_coroutine
+from . import globals
+from .helpers import is_coroutine
 
 
 @dataclass

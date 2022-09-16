@@ -7,11 +7,11 @@ from justpy import WebPage
 
 from ..events import handle_event
 from ..globals import view_stack
+from ..page import Page
 from ..routes import add_dependencies
 from ..task_logger import create_task
 from .custom_view import CustomView
 from .element import Element
-from .page import Page
 from .scene_object3d import Object3D
 
 

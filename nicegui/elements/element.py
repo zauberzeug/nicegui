@@ -6,8 +6,8 @@ import justpy as jp
 
 from .. import globals
 from ..binding import BindableProperty, bind_from, bind_to
+from ..page import get_current_view
 from ..task_logger import create_task
-from .page import get_current_view
 
 
 def _handle_visibility_change(sender: Element, visible: bool) -> None:

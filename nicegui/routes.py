@@ -11,8 +11,8 @@ from starlette.routing import BaseRoute, Mount, Route
 from starlette.staticfiles import StaticFiles
 
 from . import globals
-from .elements.page import Page, get_current_view
 from .helpers import is_coroutine
+from .page import Page, get_current_view
 from .task_logger import create_task
 
 

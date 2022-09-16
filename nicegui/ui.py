@@ -5,6 +5,9 @@ import os
 class Ui:
     from .run import run  # NOTE: before justpy
 
+    from .page import page, add_head_html, add_body_html, run_javascript, await_javascript
+    from .update import update
+
     from .elements.button import Button as button
     from .elements.card import Card as card
     from .elements.card import CardSection as card_section
@@ -34,7 +37,6 @@ class Ui:
     from .elements.notify import Notify as notify
     from .elements.number import Number as number
     from .elements.open import open, open_async
-    from .elements.page import page, add_head_html, add_body_html, run_javascript, await_javascript
     from .elements.radio import Radio as radio
     from .elements.row import Row as row
     from .elements.scene import Scene as scene
@@ -44,7 +46,6 @@ class Ui:
     from .elements.table import Table as table
     from .elements.toggle import Toggle as toggle
     from .elements.tree import Tree as tree
-    from .elements.update import update
     from .elements.upload import Upload as upload
     from .lifecycle import on_connect, on_disconnect, on_shutdown, on_startup, shutdown
     from .routes import add_route, add_static_files, get
