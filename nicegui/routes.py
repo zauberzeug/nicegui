@@ -68,10 +68,6 @@ def add_dependencies(py_filepath: str, dependencies: List[str] = []) -> None:
     globals.dependencies[py_filepath] = dependencies
 
     vue_filepath = os.path.splitext(os.path.realpath(py_filepath))[0] + '.js'
-    if vue_filepath not in jp.component_file_list:
-        filename = os.path.basename(vue_filepath)
-        jp.app.routes.insert(0, Route(f'/{filename}', lambda _: FileResponse(vue_filepath)))
-        jp.component_file_list += [filename]
 
     for dependency in dependencies:
         is_remote = dependency.startswith('http://') or dependency.startswith('https://')
@@ -82,6 +78,11 @@ def add_dependencies(py_filepath: str, dependencies: List[str] = []) -> None:
                 filepath = f'{os.path.dirname(vue_filepath)}/{src}'
                 route = Route(f'/{src}', lambda _, filepath=filepath: FileResponse(filepath))
                 jp.app.routes.insert(0, route)
+
+    if vue_filepath not in jp.component_file_list:
+        filename = os.path.basename(vue_filepath)
+        jp.app.routes.insert(0, Route(f'/{filename}', lambda _: FileResponse(vue_filepath)))
+        jp.component_file_list += [filename]
 
     if asyncio.get_event_loop().is_running():
         # NOTE: if new dependencies are added after starting the server, we need to reload the page on connected clients
