@@ -6,7 +6,7 @@ import justpy as jp
 
 from .. import globals
 from ..binding import BindableProperty, bind_from, bind_to
-from ..page import get_current_view
+from ..page import Page, get_current_view
 from ..task_logger import create_task
 
 
@@ -27,7 +27,7 @@ class Element:
         self.parent_view.add(view)
         self.view = view
         assert len(self.parent_view.pages) == 1
-        self.page = list(self.parent_view.pages.values())[0]
+        self.page: Page = list(self.parent_view.pages.values())[0]
         self.view.add_page(self.page)
 
         self.visible = True

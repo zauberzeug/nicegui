@@ -1,7 +1,9 @@
+import asyncio
 from typing import Dict
 
 import justpy as jp
 
+from ..task_logger import create_task
 from .element import Element
 
 jp.template_options['aggrid'] = False
@@ -18,5 +20,8 @@ class Table(Element):
         """
         view = jp.AgGrid(temp=False)
         view.options = self.options = jp.Dict(**options)
-        jp.template_options['aggrid'] = True
         super().__init__(view)
+
+        if not jp.template_options['aggrid'] and asyncio.get_event_loop().is_running():
+            create_task(self.page.run_javascript('location.reload()'))
+        jp.template_options['aggrid'] = True
