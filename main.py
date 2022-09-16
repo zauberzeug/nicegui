@@ -596,6 +596,35 @@ with example(ui.page):
     ui.link('Visit other page', other_page)
     ui.link('Visit dark page', dark_page)
 
+shared_and_private_pages = '''#### Shared and Private Pages
+
+By default, pages created with the `@ui.page` decorator are "private".
+Their content is re-created for each client.
+Thus, the displayed ID changes when the browser reloads the page.
+
+With `shared=True` you can create a shared page.
+Its content is created once at startup and each client sees the *same* elements.
+Thus, the displayed ID remains constant when the browser reloads the page.
+
+#### Index page
+
+All elements that are not created within a decorated page function are automatically added to a new, *shared* index page at route "/".
+To make it "private" or to change other attributes like title, favicon etc. you can wrap it in a page function with `@ui.page('/', ...)` decorator.
+'''
+with example(shared_and_private_pages):
+    from uuid import uuid4
+
+    @ui.page('/private_page')
+    async def private_page():
+        ui.label(f'private page with ID {uuid4()}')
+
+    @ui.page('/shared_page', shared=True)
+    async def shared_page():
+        ui.label(f'shared page with ID {uuid4()}')
+
+    ui.link('private page', private_page)
+    ui.link('shared page', shared_page)
+
 with example(ui.open):
     @ui.page('/yet_another_page')
     def yet_another_page():
