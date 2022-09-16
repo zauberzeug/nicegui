@@ -1,3 +1,4 @@
+import asyncio
 import inspect
 import os.path
 from functools import wraps
@@ -10,7 +11,9 @@ from starlette.routing import BaseRoute, Mount, Route
 from starlette.staticfiles import StaticFiles
 
 from . import globals
+from .elements.page import Page, get_current_view
 from .helpers import is_coroutine
+from .task_logger import create_task
 
 
 def add_route(self, route: BaseRoute) -> None:
@@ -60,24 +63,41 @@ def get(self, path: str):
 
 
 def add_dependencies(py_filepath: str, dependencies: List[str] = []) -> None:
+    if py_filepath in globals.dependencies:
+        return
     globals.dependencies[py_filepath] = dependencies
 
+    new_dependencies: List[str] = []
 
-def serve_dependencies() -> None:
-    for py_filepath, dependencies in globals.dependencies.items():
-        vue_filepath = os.path.splitext(os.path.realpath(py_filepath))[0] + '.js'
+    vue_filepath = os.path.splitext(os.path.realpath(py_filepath))[0] + '.js'
+    if vue_filepath not in jp.component_file_list:
+        filename = os.path.basename(vue_filepath)
+        jp.app.routes.insert(0, Route(f'/{filename}', lambda _: FileResponse(vue_filepath)))
+        jp.component_file_list += [filename]
+        new_dependencies.append(filename)
 
-        for dependency in dependencies:
-            is_remote = dependency.startswith('http://') or dependency.startswith('https://')
-            src = dependency if is_remote else f'lib/{dependency}'
-            if src not in jp.component_file_list:
-                jp.component_file_list += [src]
-                if not is_remote:
-                    filepath = f'{os.path.dirname(vue_filepath)}/{src}'
-                    route = Route(f'/{src}', lambda _, filepath=filepath: FileResponse(filepath))
-                    jp.app.routes.insert(0, route)
+    for dependency in dependencies:
+        is_remote = dependency.startswith('http://') or dependency.startswith('https://')
+        src = dependency if is_remote else f'lib/{dependency}'
+        if src not in jp.component_file_list:
+            jp.component_file_list += [src]
+            if not is_remote:
+                filepath = f'{os.path.dirname(vue_filepath)}/{src}'
+                route = Route(f'/{src}', lambda _, filepath=filepath: FileResponse(filepath))
+                jp.app.routes.insert(0, route)
+            new_dependencies.append(src)
 
-        if vue_filepath not in jp.component_file_list:
-            filename = os.path.basename(vue_filepath)
-            jp.app.routes.insert(0, Route(f'/{filename}', lambda _: FileResponse(vue_filepath)))
-            jp.component_file_list += [filename]
+    if asyncio.get_event_loop().is_running():
+        create_task(inject_dependencies(new_dependencies))
+
+
+async def inject_dependencies(dependencies: List[str]) -> None:
+    for page in get_current_view().pages.values():
+        assert isinstance(page, Page)
+        for src in dependencies:
+            await page.await_javascript(f'''
+            let script = document.createElement("script");
+            script.src = "{src}";
+            document.body.append(script);
+            ''')
+        await page.update()
