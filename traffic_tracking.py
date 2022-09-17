@@ -44,7 +44,6 @@ class TrafficChard(ui.chart):
         agent = request.headers['user-agent'].lower()
         if any(s in agent for s in ('bot', 'spider', 'crawler', 'monitor', 'curl', 'wget', 'python-requests', 'kuma')):
             return
-        logging.warning(agent)
 
         def seconds_to_day(seconds: float) -> int: return int(seconds / 60 / 60 / 24)
         def day_to_milliseconds(day: int) -> float: return day * 24 * 60 * 60 * 1000
