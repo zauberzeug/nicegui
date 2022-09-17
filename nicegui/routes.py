@@ -1,12 +1,19 @@
+import asyncio
 import inspect
+import os.path
 from functools import wraps
+from typing import List
 
+import justpy as jp
 from starlette import requests, routing
-from starlette.routing import BaseRoute, Mount
+from starlette.responses import FileResponse
+from starlette.routing import BaseRoute, Mount, Route
 from starlette.staticfiles import StaticFiles
 
 from . import globals
 from .helpers import is_coroutine
+from .page import Page, get_current_view
+from .task_logger import create_task
 
 
 def add_route(self, route: BaseRoute) -> None:
@@ -53,3 +60,34 @@ def get(self, path: str):
         self.add_route(routing.Route(path, decorated))
         return decorated
     return decorator
+
+
+def add_dependencies(py_filepath: str, dependencies: List[str] = []) -> None:
+    if py_filepath in globals.dependencies:
+        return
+    globals.dependencies[py_filepath] = dependencies
+
+    vue_filepath = os.path.splitext(os.path.realpath(py_filepath))[0] + '.js'
+
+    for dependency in dependencies:
+        is_remote = dependency.startswith('http://') or dependency.startswith('https://')
+        src = dependency if is_remote else f'lib/{dependency}'
+        if src not in jp.component_file_list:
+            jp.component_file_list += [src]
+            if not is_remote:
+                filepath = f'{os.path.dirname(vue_filepath)}/{src}'
+                route = Route(f'/{src}', lambda _, filepath=filepath: FileResponse(filepath))
+                jp.app.routes.insert(0, route)
+
+    if vue_filepath not in jp.component_file_list:
+        filename = os.path.basename(vue_filepath)
+        jp.app.routes.insert(0, Route(f'/{filename}', lambda _: FileResponse(vue_filepath)))
+        jp.component_file_list += [filename]
+
+    if asyncio.get_event_loop().is_running():
+        # NOTE: if new dependencies are added after starting the server, we need to reload the page on connected clients
+        async def reload() -> None:
+            for page in get_current_view().pages.values():
+                assert isinstance(page, Page)
+                await page.await_javascript('location.reload()')
+        create_task(reload())

@@ -5,7 +5,7 @@ import asyncio
 import justpy as jp
 
 from ..binding import BindableProperty, bind_from, bind_to
-from ..globals import view_stack
+from ..page import Page, get_current_view
 from ..task_logger import create_task
 
 
@@ -22,18 +22,14 @@ class Element:
     visible = BindableProperty(on_change=_handle_visibility_change)
 
     def __init__(self, view: jp.HTMLBaseComponent):
-        self.parent_view = view_stack[-1]
+        self.parent_view = get_current_view()
         self.parent_view.add(view)
         self.view = view
         assert len(self.parent_view.pages) == 1
-        self.page = list(self.parent_view.pages.values())[0]
+        self.page: Page = list(self.parent_view.pages.values())[0]
         self.view.add_page(self.page)
 
         self.visible = True
-
-        if len(view_stack) == 1 and asyncio.get_event_loop().is_running():
-            # NOTE: This is the main page. There won't be any context exit and thus no UI update. So let's do that here.
-            create_task(self.parent_view.update())
 
     def bind_visibility_to(self, target_object, target_name, forward=lambda x: x):
         bind_to(self, 'visible', target_object, target_name, forward=forward)

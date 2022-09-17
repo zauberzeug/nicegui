@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Awaitable, Callable, List, Union
+from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Optional, Union
 
 from uvicorn import Server
 
@@ -11,12 +11,12 @@ if TYPE_CHECKING:
     from starlette.applications import Starlette
 
     from .config import Config
-    from .elements.page import Page
+    from .elements.page import PageBuilder
 
 app: 'Starlette'
-config: 'Config'
+config: Optional['Config'] = None
 server: Server
-page_stack: List['Page'] = []
+page_builders: Dict[str, 'PageBuilder'] = {}
 view_stack: List['jp.HTMLBaseComponent'] = []
 tasks: List[asyncio.tasks.Task] = []
 log: logging.Logger = logging.getLogger('nicegui')
@@ -24,4 +24,12 @@ connect_handlers: List[Union[Callable, Awaitable]] = []
 disconnect_handlers: List[Union[Callable, Awaitable]] = []
 startup_handlers: List[Union[Callable, Awaitable]] = []
 shutdown_handlers: List[Union[Callable, Awaitable]] = []
-pre_evaluation_succeeded: bool = False
+has_auto_index_page: bool = False
+dependencies: Dict[str, List[str]] = {}
+
+
+def find_route(function: Callable) -> str:
+    routes = [route for route, page_builder in page_builders.items() if page_builder.function == function]
+    if not routes:
+        raise ValueError(f'Invalid page function {function}')
+    return routes[0]

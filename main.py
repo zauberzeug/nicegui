@@ -183,8 +183,7 @@ with example(ui.color_picker):
     button = ui.button(on_click=picker.open).props('icon=colorize')
 
 with example(ui.upload):
-    ui.upload(on_upload=lambda e: upload_result.set_text(e.files))
-    upload_result = ui.label()
+    ui.upload(on_upload=lambda e: ui.notify(f'{len(e.files[0])} bytes'))
 
 h3('Markdown and HTML')
 
@@ -584,23 +583,55 @@ with example(async_handlers):
 h3('Pages and Routes')
 
 with example(ui.page):
-    with ui.page('/other_page'):
+    @ui.page('/other_page')
+    def other_page():
         ui.label('Welcome to the other side')
         ui.link('Back to main page', '#page')
 
-    with ui.page('/dark_page', dark=True):
+    @ui.page('/dark_page', dark=True)
+    def dark_page():
         ui.label('Welcome to the dark side')
         ui.link('Back to main page', '#page')
 
-    ui.link('Visit other page', 'other_page')
-    ui.link('Visit dark page', 'dark_page')
+    ui.link('Visit other page', other_page)
+    ui.link('Visit dark page', dark_page)
+
+shared_and_private_pages = '''#### Shared and Private Pages
+
+By default, pages created with the `@ui.page` decorator are "private".
+Their content is re-created for each client.
+Thus, in the example to the right, the displayed ID changes when the browser reloads the page.
+
+With `shared=True` you can create a shared page.
+Its content is created once at startup and each client sees the *same* elements.
+Here, the displayed ID remains constant when the browser reloads the page.
+
+#### Index page
+
+All elements that are not created within a decorated page function are automatically added to a new, *shared* index page at route "/".
+To make it "private" or to change other attributes like title, favicon etc. you can wrap it in a page function with `@ui.page('/', ...)` decorator.
+'''
+with example(shared_and_private_pages):
+    from uuid import uuid4
+
+    @ui.page('/private_page')
+    async def private_page():
+        ui.label(f'private page with ID {uuid4()}')
+
+    @ui.page('/shared_page', shared=True)
+    async def shared_page():
+        ui.label(f'shared page with ID {uuid4()}')
+
+    ui.link('private page', private_page)
+    ui.link('shared page', shared_page)
 
 with example(ui.open):
-    with ui.page('/yet_another_page') as other:
+    @ui.page('/yet_another_page')
+    def yet_another_page():
         ui.label('Welcome to yet another page')
         ui.button('RETURN', on_click=lambda e: ui.open('#open', e.socket))
 
-    ui.button('REDIRECT', on_click=lambda e: ui.open(other, e.socket))
+    ui.button('REDIRECT', on_click=lambda e: ui.open(yet_another_page, e.socket))
 
 add_route = '''#### Route
 
@@ -655,9 +686,30 @@ with example(sessions):
         id_counter[request.session_id] += 1
         visits.set_text(f'{len(id_counter)} unique views ({sum(id_counter.values())} overall) since {creation}')
 
-    with ui.page('/session_demo', on_connect=handle_connection) as page:
+    @ui.page('/session_demo', on_connect=handle_connection)
+    def session_demo():
+        global visits
         visits = ui.label()
 
-    ui.link('Visit session demo', page)
+    ui.link('Visit session demo', session_demo)
+
+javascript = '''#### JavaScript
+
+With `ui.run_javascript()` you can run arbitrary JavaScript code on a page that is executed in the browser.
+The asynchronous function will return after sending the command.
+
+With `ui.await_javascript()` you can send a JavaScript command and wait for its response.
+The asynchronous function will only return after receiving the result.
+'''
+with example(javascript):
+    async def run_javascript():
+        await ui.run_javascript('alert("Hello!")')
+
+    async def await_javascript():
+        response = await ui.await_javascript('Date()')
+        ui.notify(f'Browser time: {response}')
+
+    ui.button('run JavaScript', on_click=run_javascript)
+    ui.button('await JavaScript', on_click=await_javascript)
 
 ui.run()

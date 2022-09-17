@@ -1,5 +1,4 @@
 # isort:skip_file
-from starlette.websockets import WebSocket
 from typing import Awaitable, Callable
 
 if True:  # NOTE: prevent formatter from mixing up these lines
@@ -11,6 +10,7 @@ if True:  # NOTE: prevent formatter from mixing up these lines
     builtins.print = print_backup
 
 from . import binding, globals
+from .page import create_page_routes, init_auto_index_page
 from .task_logger import create_task
 from .timer import Timer
 
@@ -26,7 +26,9 @@ async def patched_justpy_startup():
 
 
 @jp.app.on_event('startup')
-def startup():
+async def startup():
+    init_auto_index_page()
+    await create_page_routes()
     globals.tasks.extend(create_task(t.coro, name=t.name) for t in Timer.prepared_coroutines)
     Timer.prepared_coroutines.clear()
     globals.tasks.extend(create_task(t, name='startup task')
@@ -53,12 +55,3 @@ def safe_invoke(func: Callable):
 
 app = globals.app = jp.app
 ui = Ui()
-
-
-def handle_page_ready(socket: WebSocket):
-    create_task(page.update(socket))
-
-
-page = ui.page('/', classes=globals.config.main_page_classes, on_page_ready=handle_page_ready)
-page.__enter__()
-jp.justpy(lambda: page, start_server=False)

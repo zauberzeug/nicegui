@@ -1,8 +1,8 @@
 import asyncio
 from typing import List
 
-from ..task_logger import create_task
-from .element import Element
+from .elements.element import Element
+from .task_logger import create_task
 
 
 def update(self, *elements: List[Element]) -> None:

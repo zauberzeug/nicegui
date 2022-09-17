@@ -22,7 +22,6 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 ## Features
 
 - browser-based graphical user interface
-- shared state between multiple browser windows
 - implicit reload on code change
 - standard GUI elements like label, button, checkbox, switch, slider, input, file upload, ...
 - simple grouping with rows, columns, cards and dialogs
@@ -31,13 +30,17 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
   - plot graphs and charts,
   - render 3D scenes,
   - get steering events via virtual joysticks
-  - annotate images
+  - annotate and overlay images
+  - interact with tables
+  - navigate foldable tree structures
 - built-in timer to refresh data in intervals (even every 10 ms)
 - straight-forward data binding to write even less code
 - notifications, dialogs and menus to provide state of the art user interaction
+- shared and individual web pages
 - ability to add custom routes and data responses
 - capture keyboard input for global shortcuts etc
 - customize look by defining primary, secondary and accent colors
+- live-cycle events and session data
 
 ## Installation
 
@@ -73,37 +76,29 @@ Full documentation can be found at [https://nicegui.io](https://nicegui.io).
 
 You can call `ui.run()` with optional arguments:
 
-<!-- prettier-ignore-start -->
-<!-- NOTE: to keep explicit underscores `\_` -->
-
 - `host` (default: `'0.0.0.0'`)
 - `port` (default: `8080`)
 - `title` (default: `'NiceGUI'`)
 - `favicon` (default: `'favicon.ico'`)
 - `dark`: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
-- `reload`: automatically reload the ui on file changes (default: `True`)
+- `main_page_classes`: configure Quasar classes of main page (default: `'q-ma-md column items-start'`)
+- `binding_refresh_interval`: time between binding updates (default: `0.1` seconds, bigger is more cpu friendly)
 - `show`: automatically open the ui in a browser tab (default: `True`)
+- `reload`: automatically reload the ui on file changes (default: `True`)
 - `uvicorn_logging_level`: logging level for uvicorn server (default: `'warning'`)
 - `uvicorn_reload_dirs`: string with comma-separated list for directories to be monitored (default is current working directory only)
 - `uvicorn_reload_includes`: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`)
 - `uvicorn_reload_excludes`: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
-- `main_page_classes`: configure Quasar classes of main page (default: `'q-ma-md column items-start'`)
-- `binding_refresh_interval`: time between binding updates (default: `0.1` seconds, bigger is more cpu friendly)
-- `exclude`: comma-separated string to exclude libraries (with corresponding elements) to save bandwidth and/or startup time:
-  - "aggrid" (`ui.table`)
-  - "colors" (`ui.colors`)
-  - "custom\_example" (`ui.custom_example`)
-  - "highcharts" (`ui.chart`)
-  - "interactive\_image" (`ui.interactive_image`)
-  - "keyboard" (`ui.keyboard`)
-  - "log" (`ui.log`)
-  - "matplotlib" (`ui.plot` and `ui.line_plot`)
-  - "nipple" (`ui.joystick`)
-  - "three" (`ui.scene`)
-
-<!-- prettier-ignore-end -->
 
 The environment variables `HOST` and `PORT` can also be used to configure NiceGUI.
+
+To avoid the potentially costly import of Matplotlib, you set the environment variable `MATPLOTLIB=false`.
+This will make `ui.plot` and `ui.line_plot` unavailable.
+
+Note:
+The parameter `exclude` from earlier versions of NiceGUI has been removed.
+Libraries are now automatically served on demand.
+As a small caveat, the page will be reloaded if a new dependency is added dynamically, e.g. when adding a `ui.chart` only after pressing a button.
 
 ## Docker
 
@@ -120,12 +115,13 @@ Code modification triggers an automatic reload.
 ## Why?
 
 We like [Streamlit](https://streamlit.io/) but find it does [too much magic when it comes to state handling](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651).
-In search for an alternative nice library to write simple graphical user interfaces in Python we discovered [justpy](https://justpy.io/).
-While too "low-level HTML" for our daily usage it provides a great basis for "NiceGUI".
+In search for an alternative nice library to write simple graphical user interfaces in Python we discovered [JustPy](https://justpy.io/).
+While it is too "low-level HTML" for our daily usage, it provides a great basis for NiceGUI.
 
-## API
+## Documentation and Examples
 
-The API reference is hosted at [https://nicegui.io](https://nicegui.io) and is [implemented with NiceGUI itself](https://github.com/zauberzeug/nicegui/blob/main/main.py).
+The API reference is hosted at [https://nicegui.io](https://nicegui.io).
+It is [implemented with NiceGUI itself](https://github.com/zauberzeug/nicegui/blob/main/main.py).
 You may also have a look at [examples.py](https://github.com/zauberzeug/nicegui/tree/main/examples.py) for more demonstrations of what you can do with NiceGUI.
 
 ## Abstraction
