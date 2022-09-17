@@ -600,11 +600,11 @@ shared_and_private_pages = '''#### Shared and Private Pages
 
 By default, pages created with the `@ui.page` decorator are "private".
 Their content is re-created for each client.
-Thus, the displayed ID changes when the browser reloads the page.
+Thus, in the example to the right, the displayed ID changes when the browser reloads the page.
 
 With `shared=True` you can create a shared page.
 Its content is created once at startup and each client sees the *same* elements.
-Thus, the displayed ID remains constant when the browser reloads the page.
+Here, the displayed ID remains constant when the browser reloads the page.
 
 #### Index page
 

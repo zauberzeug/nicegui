@@ -22,7 +22,6 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 ## Features
 
 - browser-based graphical user interface
-- shared state between multiple browser windows
 - implicit reload on code change
 - standard GUI elements like label, button, checkbox, switch, slider, input, file upload, ...
 - simple grouping with rows, columns, cards and dialogs
@@ -31,13 +30,17 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
   - plot graphs and charts,
   - render 3D scenes,
   - get steering events via virtual joysticks
-  - annotate images
+  - annotate and overlay images
+  - interact with tables
+  - navigate foldable tree structures
 - built-in timer to refresh data in intervals (even every 10 ms)
 - straight-forward data binding to write even less code
 - notifications, dialogs and menus to provide state of the art user interaction
+- shared and individual web pages
 - ability to add custom routes and data responses
 - capture keyboard input for global shortcuts etc
 - customize look by defining primary, secondary and accent colors
+- live-cycle events and session data
 
 ## Installation
 
