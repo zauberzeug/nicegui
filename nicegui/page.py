@@ -203,8 +203,10 @@ def get_current_view() -> jp.HTMLBaseComponent:
 
 
 def error404() -> jp.QuasarPage:
-    wp = jp.QuasarPage(title=globals.config.title, favicon=globals.config.favicon,
-                       dark=globals.config.dark, tailwind=True)
+    title = globals.config.title if globals.config else '404'
+    favicon = globals.config.favicon if globals.config else None
+    dark = globals.config.dark if globals.config else False
+    wp = jp.QuasarPage(title=title, favicon=favicon, dark=dark, tailwind=True)
     div = jp.Div(a=wp, classes='py-20 text-center')
     jp.Div(a=div, classes='text-8xl py-5', text='☹',
            style='font-family: "Arial Unicode MS", "Times New Roman", Times, serif;')

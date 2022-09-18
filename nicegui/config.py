@@ -9,6 +9,7 @@ class Config():
     host: str = os.environ.get('HOST', '0.0.0.0')
     port: int = int(os.environ.get('PORT', '8080'))
     title: str = 'NiceGUI'
+    reload: bool = True
     favicon: str = 'favicon.ico'
     dark: Optional[bool] = False
     main_page_classes: str = 'q-ma-md column items-start'
