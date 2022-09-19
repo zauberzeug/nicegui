@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from .server import Server
+from .user import User
 
 
 @pytest.fixture
@@ -22,10 +22,10 @@ def selenium(selenium):
 
 
 @pytest.fixture()
-def server():
-    server = Server()
-    yield server
-    server.stop()
+def user(selenium):
+    user = User(selenium)
+    yield user
+    user.stop_server()
 
 
 @pytest.fixture
