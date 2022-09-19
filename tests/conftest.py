@@ -3,6 +3,8 @@ import os
 
 import pytest
 
+from .server import Server
+
 
 @pytest.fixture
 def chrome_options(chrome_options):
@@ -14,13 +16,21 @@ def chrome_options(chrome_options):
 
 @pytest.fixture
 def selenium(selenium):
-    selenium.implicitly_wait(0.1)
+    selenium.implicitly_wait(2)
+    selenium.set_page_load_timeout(5)
     return selenium
 
 
-# original taken from https://github.com/theserverlessway/pytest-chrome/blob/master/tests/conftest.py
+@pytest.fixture()
+def server():
+    server = Server()
+    yield server
+    server.stop()
+
+
 @pytest.fixture
 def screenshot(selenium):
+    # original taken from https://github.com/theserverlessway/pytest-chrome/blob/master/tests/conftest.py
     def shot(name=''):
         directory = 'screenshots'
         if not os.path.exists(directory):
