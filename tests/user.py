@@ -5,6 +5,7 @@ from time import sleep
 from nicegui import globals as nicegui_globals
 from nicegui import ui
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -40,4 +41,10 @@ class User():
         self.find(target_text).click()
 
     def find(self, text: str) -> WebElement:
-        return self.selenium.find_element(By.XPATH, f'//*[contains(text(),"{text}")]')
+        try:
+            return self.selenium.find_element(By.XPATH, f'//*[contains(text(),"{text}")]')
+        except NoSuchElementException:
+            raise AssertionError(f'Could not find "{text}" on:\n{self.get_body()}')
+
+    def get_body(self) -> str:
+        return self.selenium.find_element(By.TAG_NAME, 'body').text
