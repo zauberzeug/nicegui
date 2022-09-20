@@ -21,6 +21,18 @@ async def test_route_with_custom_path(user: User):
     user.should_see('page with custom path')
 
 
+async def test_auto_index_page_with_link_to_subpage(user: User):
+    ui.link('link to subpage', '/subpage')
+
+    @ui.page('/subpage')
+    def page():
+        ui.label('the subpage')
+
+    user.open()
+    user.click('link to subpage')
+    user.should_see('the subpage')
+
+
 async def test_link_to_page_by_passing_function(user: User):
     @ui.page('/subpage')
     def page():
