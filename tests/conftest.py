@@ -16,8 +16,8 @@ def chrome_options(chrome_options):
 
 @pytest.fixture
 def selenium(selenium):
-    selenium.implicitly_wait(2)
-    selenium.set_page_load_timeout(5)
+    selenium.implicitly_wait(0.1)
+    selenium.set_page_load_timeout(1)
     return selenium
 
 
