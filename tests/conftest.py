@@ -1,9 +1,12 @@
 import datetime
 import os
 
+import icecream
 import pytest
 
 from .user import User
+
+icecream.install()
 
 
 @pytest.fixture
