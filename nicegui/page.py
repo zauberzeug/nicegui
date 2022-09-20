@@ -35,7 +35,7 @@ class PageBuilder:
 
     def create_route(self, route: str) -> None:
         if self.shared:
-            create_task(self.build)
+            create_task(self.build())
         jp.Route(route, self.route_function)
 
 
@@ -195,7 +195,7 @@ def page(self,
             globals.view_stack.pop()
             return page
         builder = PageBuilder(decorated, shared)
-        if hasattr(globals, 'server') and globals.server is not None:
+        if globals.server:
             builder.create_route(route)
         globals.page_builders[route] = builder
         return decorated
