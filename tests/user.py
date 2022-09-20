@@ -20,7 +20,6 @@ class User():
         '''Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script.'''
         self.thread = threading.Thread(target=ui.run, kwargs={'port': 3392, 'show': False, 'reload': False})
         self.thread.start()
-        time.sleep(1)
 
     def stop_server(self) -> None:
         '''Stop the webserver.'''
@@ -31,7 +30,18 @@ class User():
     def open(self, path: str = '/') -> None:
         if self.thread is None:
             self.start_server()
-        self.selenium.get('http://localhost:3392' + path)
+        start = time.time()
+        while True:
+            try:
+                self.selenium.get(f'http://localhost:3392{path}')
+                break
+            except Exception:
+                if time.time() - start > 3:
+                    raise
+                time.sleep(0.1)
+                if not self.thread.is_alive():
+                    raise RuntimeError('The NiceGUI server has stopped running')
+                logging.warning(f'Failed to open page at {path}, retrying...')
 
     def should_see(self, text: str) -> None:
         if text == self.selenium.title:
