@@ -7,7 +7,7 @@
 ```bash
 cd nicegui # enter the project root dir
 brew install cask chromedriver
-python3 -m pip install tests/requirements.txt
+python3 -m pip install -r tests/requirements.txt
 ```
 
 ## Usage

@@ -1,6 +1,6 @@
+import logging
 import threading
 import time
-from asyncio import start_server
 
 from nicegui import globals as nicegui_globals
 from nicegui import ui
@@ -12,7 +12,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 class User():
 
-    def __init__(self, selenium: webdriver.Chrome):
+    def __init__(self, selenium: webdriver.Chrome) -> None:
         self.selenium = selenium
         self.thread = None
 
@@ -44,9 +44,7 @@ class User():
                 logging.warning(f'Failed to open page at {path}, retrying...')
 
     def should_see(self, text: str) -> None:
-        if text == self.selenium.title:
-            return
-        assert self.find(text).text == text
+        assert self.selenium.title == text or self.find(text).text == text
 
     def click(self, target_text: str) -> None:
         self.find(target_text).click()
