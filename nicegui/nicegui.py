@@ -26,9 +26,9 @@ async def patched_justpy_startup():
 
 
 @jp.app.on_event('startup')
-async def startup():
+def startup():
     init_auto_index_page()
-    await create_page_routes()
+    create_page_routes()
     globals.tasks.extend(create_task(t.coro, name=t.name) for t in Timer.prepared_coroutines)
     Timer.prepared_coroutines.clear()
     globals.tasks.extend(create_task(t, name='startup task')

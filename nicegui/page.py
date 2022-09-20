@@ -15,6 +15,7 @@ from starlette.requests import Request
 
 from . import globals
 from .helpers import is_coroutine
+from .task_logger import create_task
 
 
 @dataclass
@@ -31,6 +32,11 @@ class PageBuilder:
     async def route_function(self, request: Request) -> Page:
         page = self._shared_page if self.shared else await self.function()
         return await page._route_function(request)
+
+    def create_route(self, route: str) -> None:
+        if self.shared:
+            create_task(self.build)
+        jp.Route(route, self.route_function)
 
 
 class Page(jp.QuasarPage):
@@ -188,7 +194,10 @@ def page(self,
             await func() if is_coroutine(func) else func()
             globals.view_stack.pop()
             return page
-        globals.page_builders[route] = PageBuilder(decorated, shared)
+        builder = PageBuilder(decorated, shared)
+        if hasattr(globals, 'server') and globals.server is not None:
+            builder.create_route(route)
+        globals.page_builders[route] = builder
         return decorated
     return decorator
 
@@ -223,10 +232,7 @@ def init_auto_index_page() -> None:
     page.view.classes = globals.config.main_page_classes
 
 
-async def create_page_routes() -> None:
+def create_page_routes() -> None:
     jp.Route("/{path:path}", error404, last=True)
-
     for route, page_builder in globals.page_builders.items():
-        if page_builder.shared:
-            await page_builder.build()
-        jp.Route(route, page_builder.route_function)
+        page_builder.create_route(route)
