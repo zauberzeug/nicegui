@@ -24,6 +24,7 @@ class User():
 
     def stop_server(self) -> None:
         '''Stop the webserver.'''
+        self.selenium.close()
         nicegui_globals.server.should_exit = True
         self.thread.join()
 
