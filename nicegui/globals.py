@@ -11,11 +11,11 @@ if TYPE_CHECKING:
     from starlette.applications import Starlette
 
     from .config import Config
-    from .elements.page import PageBuilder
+    from .page import PageBuilder
 
 app: 'Starlette'
 config: Optional['Config'] = None
-server: Server
+server: Optional[Server] = None
 page_builders: Dict[str, 'PageBuilder'] = {}
 view_stack: List['jp.HTMLBaseComponent'] = []
 tasks: List[asyncio.tasks.Task] = []

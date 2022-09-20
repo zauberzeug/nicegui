@@ -195,7 +195,7 @@ def page(self,
             globals.view_stack.pop()
             return page
         builder = PageBuilder(decorated, shared)
-        if hasattr(globals, 'server') and globals.server is not None:
+        if globals.server:
             builder.create_route(route)
         globals.page_builders[route] = builder
         return decorated
