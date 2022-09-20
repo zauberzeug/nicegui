@@ -35,7 +35,7 @@ class PageBuilder:
 
     def create_route(self, route: str) -> None:
         if self.shared:
-            create_task(self.build)
+            create_task(self.build())
         jp.Route(route, self.route_function)
 
 
