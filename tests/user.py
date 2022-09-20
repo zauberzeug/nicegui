@@ -1,6 +1,6 @@
 import threading
+import time
 from asyncio import start_server
-from time import sleep
 
 from nicegui import globals as nicegui_globals
 from nicegui import ui
@@ -20,7 +20,7 @@ class User():
         '''Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script.'''
         self.thread = threading.Thread(target=ui.run, kwargs={'port': 3392, 'show': False, 'reload': False})
         self.thread.start()
-        sleep(1)
+        time.sleep(1)
 
     def stop_server(self) -> None:
         '''Stop the webserver.'''
