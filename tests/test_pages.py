@@ -46,7 +46,7 @@ async def test_link_to_page_by_passing_function(user: User):
 
 
 async def test_creating_new_page_after_startup(user: User):
-    user.open('/')
+    user.start_server()
 
     @ui.page('/late_page')
     def page():

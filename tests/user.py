@@ -41,7 +41,6 @@ class User():
                 time.sleep(0.1)
                 if not self.thread.is_alive():
                     raise RuntimeError('The NiceGUI server has stopped running')
-                logging.warning(f'Failed to open page at {path}, retrying...')
 
     def should_see(self, text: str) -> None:
         assert self.selenium.title == text or self.find(text).text == text
