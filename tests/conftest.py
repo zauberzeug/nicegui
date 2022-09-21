@@ -4,6 +4,8 @@ from typing import Callable, Generator
 
 import icecream
 import pytest
+from justpy.htmlcomponents import JustpyBaseComponent, WebPage
+from nicegui import globals
 from selenium import webdriver
 
 from .user import User
@@ -25,6 +27,26 @@ def selenium(selenium: webdriver.Chrome) -> webdriver.Chrome:
     selenium.implicitly_wait(0.1)
     selenium.set_page_load_timeout(1)
     return selenium
+
+
+@pytest.fixture(autouse=True)
+def reset_globals() -> Generator[None, None, None]:
+    WebPage.instances = {}
+    WebPage.sockets = {}
+    WebPage.next_page_id = 0
+    JustpyBaseComponent.next_id = 0
+    JustpyBaseComponent.instances = {}
+    globals.config = None
+    globals.server = None
+    globals.page_builders = {}
+    globals.view_stack = []
+    globals.tasks = []
+    globals.connect_handlers = []
+    globals.disconnect_handlers = []
+    globals.startup_handlers = []
+    globals.shutdown_handlers = []
+    globals.has_auto_index_page = False
+    globals.dependencies = {}
 
 
 @pytest.fixture()
