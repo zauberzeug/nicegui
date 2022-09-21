@@ -76,7 +76,7 @@ def test_automatic_loading_of_keyboard_dependency(user: User):
 
     user.open('/')
     assert any(('keyboard.js' in s) for s in user.get_attributes('script', 'src'))
-    user.sleep(2)
+    user.sleep(2)  # NOTE we need to sleep to wait for the js error to be printed (start pytest with -s to see it)
 
 
 def test_shared_and_individual_pages(user: User):
