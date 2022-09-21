@@ -69,6 +69,16 @@ def test_automatic_loading_of_joystick_dependency(user: User):
     assert any(('nipplejs.min.js' in s) for s in srcs)
 
 
+def test_automatic_loading_of_keyboard_dependency(user: User):
+    @ui.page('/')
+    def page():
+        ui.keyboard()
+
+    user.open('/')
+    assert any(('keyboard.js' in s) for s in user.get_attributes('script', 'src'))
+    user.sleep(2)
+
+
 def test_shared_and_individual_pages(user: User):
 
     @ ui.page('/individual_page')
