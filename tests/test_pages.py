@@ -69,19 +69,31 @@ def test_automatic_loading_of_joystick_dependency(user: User):
     assert any(('nipplejs.min.js' in s) for s in srcs)
 
 
-def test_automatic_loading_of_keyboard_dependency(user: User):
+def test_automatic_loading_of_keyboard_dependency_before_startup(user: User):
     @ui.page('/')
     def page():
         ui.keyboard()
 
     user.open('/')
     assert any(('keyboard.js' in s) for s in user.get_attributes('script', 'src'))
-    user.sleep(2)  # NOTE we need to sleep to wait for the js error to be printed (start pytest with -s to see it)
+    user.sleep(2)  # NOTE we need to sleep here so the js timeout error is printed (start pytest with -s to see it)
+
+
+def test_automatic_loading_of_keyboard_dependency_after_startup(user: User):
+
+    @ui.page('/')
+    def page():
+        ui.button('activate keyboard', on_click=lambda: ui.keyboard())
+
+    user.open('/')
+    user.click('activate keyboard')
+    assert any(('keyboard.js' in s) for s in user.get_attributes('script', 'src'))
+    user.sleep(2)  # NOTE we need to sleep here so the js timeout error is printed (start pytest with -s to see it)
 
 
 def test_shared_and_individual_pages(user: User):
 
-    @ ui.page('/individual_page')
+    @ui.page('/individual_page')
     def individual_page():
         ui.label(f'your individual page with uuid {uuid4()}')
 
