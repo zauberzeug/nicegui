@@ -8,7 +8,7 @@ async def test_title(user: User):
     def page():
         ui.label('some content')
 
-    user.open()
+    user.open('/')
     user.should_see('My Custom Title')
 
 
@@ -28,7 +28,7 @@ async def test_auto_index_page_with_link_to_subpage(user: User):
     def page():
         ui.label('the subpage')
 
-    user.open()
+    user.open('/')
     user.click('link to subpage')
     user.should_see('the subpage')
 
@@ -40,13 +40,13 @@ async def test_link_to_page_by_passing_function(user: User):
 
     ui.link('link to subpage', page)
 
-    user.open()
+    user.open('/')
     user.click('link to subpage')
     user.should_see('the subpage')
 
 
 async def test_creating_new_page_after_startup(user: User):
-    user.open()
+    user.open('/')
 
     @ui.page('/late_page')
     def page():

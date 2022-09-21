@@ -27,7 +27,7 @@ class User():
         nicegui_globals.server.should_exit = True
         self.thread.join()
 
-    def open(self, path: str = '/') -> None:
+    def open(self, path: str) -> None:
         if self.thread is None:
             self.start_server()
         start = time.time()
