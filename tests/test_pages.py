@@ -58,7 +58,7 @@ def test_creating_new_page_after_startup(user: User):
     user.should_see('page created after startup')
 
 
-def test_automatic_loading_off_dependencies(user: User):
+def test_automatic_loading_of_dependencies(user: User):
     @ui.page('/')
     def page():
         ui.joystick()
