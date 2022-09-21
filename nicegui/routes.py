@@ -66,8 +66,7 @@ def add_dependencies(py_filepath: str, dependencies: List[str] = []) -> None:
     if py_filepath in globals.dependencies:
         return
     globals.dependencies[py_filepath] = dependencies
-    if not dependencies:
-        return
+
     vue_filepath = os.path.splitext(os.path.realpath(py_filepath))[0] + '.js'
 
     for dependency in dependencies:
