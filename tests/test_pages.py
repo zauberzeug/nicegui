@@ -57,13 +57,26 @@ def test_creating_new_page_after_startup(user: User):
     user.open('/late_page')
     user.should_see('page created after startup')
 
+
+def test_automatic_loading_off_dependencies(user: User):
+    @ui.page('/')
+    def page():
+        ui.joystick()
+
+    user.open('/')
+    script_tags = user.selenium.find_elements_by_tag_name('script')
+    srcs = [tag.get_attribute('src') for tag in script_tags]
+    assert any(('joystick.js' in s) for s in srcs)
+    assert any(('nipplejs.min.js' in s) for s in srcs)
+
+
 def test_shared_and_individual_pages(user: User):
 
-    @ui.page('/individual_page')
+    @ ui.page('/individual_page')
     def individual_page():
         ui.label(f'your individual page with uuid {uuid4()}')
 
-    @ui.page('/shared_page', shared=True)
+    @ ui.page('/shared_page', shared=True)
     def shared_page():
         ui.label(f'a shared page with uuid {uuid4()}')
 
