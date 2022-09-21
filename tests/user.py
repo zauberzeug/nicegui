@@ -56,3 +56,12 @@ class User():
 
     def get_body(self) -> str:
         return self.selenium.find_element(By.TAG_NAME, 'body').text
+
+    def get_tags(self, name: str) -> list[WebElement]:
+        return self.selenium.find_elements(By.TAG_NAME, name)
+
+    def get_attributes(self, tag: str, attribute: str) -> list[str]:
+        return [t.get_attribute(attribute) for t in self.get_tags(tag)]
+
+    def sleep(self, t: float) -> None:
+        time.sleep(t)

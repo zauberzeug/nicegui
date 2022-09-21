@@ -58,14 +58,13 @@ def test_creating_new_page_after_startup(user: User):
     user.should_see('page created after startup')
 
 
-def test_automatic_loading_of_dependencies(user: User):
+def test_automatic_loading_of_joystick_dependency(user: User):
     @ui.page('/')
     def page():
         ui.joystick()
 
     user.open('/')
-    script_tags = user.selenium.find_elements_by_tag_name('script')
-    srcs = [tag.get_attribute('src') for tag in script_tags]
+    srcs = user.get_attributes('script', 'src')
     assert any(('joystick.js' in s) for s in srcs)
     assert any(('nipplejs.min.js' in s) for s in srcs)
 
