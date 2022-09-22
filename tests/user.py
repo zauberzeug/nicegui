@@ -1,4 +1,3 @@
-import logging
 import threading
 import time
 
@@ -6,7 +5,6 @@ from nicegui import globals as nicegui_globals
 from nicegui import ui
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
 
@@ -50,15 +48,15 @@ class User():
 
     def find(self, text: str) -> WebElement:
         try:
-            return self.selenium.find_element(By.XPATH, f'//*[contains(text(),"{text}")]')
+            return self.selenium.find_element_by_xpath(f'//*[contains(text(),"{text}")]')
         except NoSuchElementException:
             raise AssertionError(f'Could not find "{text}" on:\n{self.get_body()}')
 
     def get_body(self) -> str:
-        return self.selenium.find_element(By.TAG_NAME, 'body').text
+        return self.selenium.find_element_by_tag_name('body').text
 
     def get_tags(self, name: str) -> list[WebElement]:
-        return self.selenium.find_elements(By.TAG_NAME, name)
+        return self.selenium.find_elements_by_tag_name(name)
 
     def get_attributes(self, tag: str, attribute: str) -> list[str]:
         return [t.get_attribute(attribute) for t in self.get_tags(tag)]
