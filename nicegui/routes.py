@@ -89,5 +89,5 @@ def add_dependencies(py_filepath: str, dependencies: List[str] = []) -> None:
         async def reload() -> None:
             for page in get_current_view().pages.values():
                 assert isinstance(page, Page)
-                await page.await_javascript('console.log("RELOAD"); location.reload()')
+                await page.run_javascript('location.reload()')
         create_task(reload())
