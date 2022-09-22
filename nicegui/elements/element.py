@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from typing import Dict, Optional
 
 import justpy as jp
 
@@ -11,10 +12,6 @@ from ..task_logger import create_task
 
 def _handle_visibility_change(sender: Element, visible: bool) -> None:
     (sender.view.remove_class if visible else sender.view.set_class)('hidden')
-    try:
-        asyncio.get_running_loop()  # NOTE: make sure we already have an event loop
-    except RuntimeError:
-        return
     sender.update()
 
 
@@ -50,53 +47,61 @@ class Element:
         bind_to(self, 'visible', target_object, target_name, forward=forward)
         return self
 
-    def classes(self, add: str = None, *, remove: str = None, replace: str = None):
+    def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):
         '''HTML classes to modify the look of the element.
         Every class in the `remove` parameter will be removed from the element.
         Classes are separated with a blank space.
         This can be helpful if the predefined classes by NiceGUI are not wanted in a particular styling.
         '''
-        class_list = [] if replace is not None else self.view.classes.split()
-        class_list = [c for c in class_list if c not in (remove or '')]
+        class_list = self.view.classes.split() if replace is None else []
+        class_list = [c for c in class_list if c not in (remove or '').split()]
         class_list += (add or '').split()
         class_list += (replace or '').split()
-        self.view.classes = ' '.join(class_list)
-
-        self.update()
+        new_classes = ' '.join(dict.fromkeys(class_list))  # NOTE: remove duplicates while preserving order
+        if self.view.classes != new_classes:
+            self.view.classes = new_classes
+            self.update()
         return self
 
-    def style(self, add: str = None, *, remove: str = None, replace: str = None):
+    def style(self, add: str = Optional[str], *, remove: str = Optional[str], replace: str = Optional[str]):
         '''CSS style sheet definitions to modify the look of the element.
         Every style in the `remove` parameter will be removed from the element.
         Styles are separated with a semicolon.
         This can be helpful if the predefined style sheet definitions by NiceGUI are not wanted in a particular styling.
         '''
-        style_list = [] if replace is not None else self.view.style.split(';')
-        style_list = [c for c in style_list if c not in (remove or '').split(';')]
-        style_list += (add or '').split(';')
-        style_list += (replace or '').split(';')
-        self.view.style = ';'.join(style_list)
-
-        self.update()
+        def str_to_dict(s: Optional[str]) -> Dict[str, str]:
+            return dict((word.strip() for word in part.split(':')) for part in s.split(';')) if s else {}
+        style_dict = str_to_dict(self.view.style) if replace is None else {}
+        for key in str_to_dict(remove):
+            del style_dict[key]
+        style_dict.update(str_to_dict(add))
+        style_dict.update(str_to_dict(replace))
+        new_style = ';'.join(f'{key}:{value}' for key, value in style_dict.items())
+        if self.view.style != new_style:
+            self.view.style = new_style
+            self.update()
         return self
 
-    def props(self, add: str = None, *, remove: str = None, replace: str = None):
+    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None):
         '''Quasar props https://quasar.dev/vue-components/button#design to modify the look of the element.
         Boolean props will automatically activated if they appear in the list of the `add` property.
         Props are separated with a blank space.
         Every prop passed to the `remove` parameter will be removed from the element.
         This can be helpful if the predefined props by NiceGUI are not wanted in a particular styling.
         '''
-        for prop in (remove or '').split() + (replace or '').split():
-            setattr(self.view, prop.split('=')[0], None)
-
-        for prop in (add or '').split() + (replace or '').split():
-            if '=' in prop:
-                setattr(self.view, *prop.split('='))
-            else:
-                setattr(self.view, prop, True)
-
-        self.update()
+        def str_to_dict(s: Optional[str]) -> Dict[str, str]:
+            return {prop.split('=')[0]: prop.split('=')[1] if '=' in prop else True for prop in s.split()} if s else {}
+        needs_update = False
+        for key in str_to_dict(remove):
+            if getattr(self.view, key, None) is not None:
+                needs_update = True
+            setattr(self.view, key, None)
+        for key, value in str_to_dict(add).items():
+            if getattr(self.view, key, None) != value:
+                needs_update = True
+            setattr(self.view, key, value)
+        if needs_update:
+            self.update()
         return self
 
     def tooltip(self, text: str, *, props: str = ''):
@@ -116,4 +121,4 @@ class Element:
             asyncio.get_running_loop()
         except RuntimeError:
             return
-            create_task(self.view.update())
+        create_task(self.view.update())
