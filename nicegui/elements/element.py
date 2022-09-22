@@ -112,5 +112,8 @@ class Element:
         return self
 
     def update(self) -> None:
-        if asyncio.get_event_loop().is_running():
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return
             create_task(self.view.update())
