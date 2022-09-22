@@ -63,7 +63,7 @@ class Element:
             self.update()
         return self
 
-    def style(self, add: str = Optional[str], *, remove: str = Optional[str], replace: str = Optional[str]):
+    def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):
         '''CSS style sheet definitions to modify the look of the element.
         Every style in the `remove` parameter will be removed from the element.
         Styles are separated with a semicolon.
