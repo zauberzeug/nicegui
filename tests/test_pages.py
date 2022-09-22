@@ -86,6 +86,7 @@ def test_automatic_loading_of_keyboard_dependency_after_startup(user: User):
         ui.button('activate keyboard', on_click=lambda: ui.keyboard())
 
     user.open('/')
+    assert not any(('keyboard.js' in s) for s in user.get_attributes('script', 'src'))
     user.click('activate keyboard')
     assert any(('keyboard.js' in s) for s in user.get_attributes('script', 'src'))
     user.sleep(2)  # NOTE we need to sleep here so the js timeout error is printed (start pytest with -s to see it)
