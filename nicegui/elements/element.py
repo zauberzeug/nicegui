@@ -71,7 +71,7 @@ class Element:
         '''
         def str_to_dict(s: Optional[str]) -> Dict[str, str]:
             return dict((word.strip() for word in part.split(':')) for part in s.split(';')) if s else {}
-        style_dict = str_to_dict(self.view.style) if replace is None else {}
+        style_dict = str_to_dict((self.view.style or '').strip('; ')) if replace is None else {}
         for key in str_to_dict(remove):
             del style_dict[key]
         style_dict.update(str_to_dict(add))
