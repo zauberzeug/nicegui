@@ -2,7 +2,7 @@ from typing import Callable, Union
 
 import justpy as jp
 
-from ..globals import find_route
+from .. import globals
 from .group import Group
 
 
@@ -16,7 +16,7 @@ class Link(Group):
         :param text: display text
         :param target: page function or string that is a an absolute URL or relative path from base URL
         """
-        href = target if isinstance(target, str) else find_route(target)[1:]
+        href = target if isinstance(target, str) else globals.find_route(target)[1:]
         view = jp.A(text=text, href=href, classes='underline text-blue', temp=False)
 
         super().__init__(view)

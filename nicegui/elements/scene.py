@@ -5,8 +5,8 @@ from typing import Callable, Optional
 import websockets
 from justpy import WebPage
 
+from .. import globals
 from ..events import handle_event
-from ..globals import view_stack
 from ..page import Page
 from ..routes import add_dependencies
 from ..task_logger import create_task
@@ -107,14 +107,14 @@ class Scene(Element):
         super().__init__(SceneView(width=width, height=height, on_click=on_click))
 
     def __enter__(self):
-        view_stack.append(self.view)
+        globals.view_stack.append(self.view)
         scene = self.view.objects.get('scene', SceneObject(self.view, self.page))
         Object3D.stack.clear()
         Object3D.stack.append(scene)
         return self
 
     def __exit__(self, *_):
-        view_stack.pop()
+        globals.view_stack.pop()
 
     def move_camera(self,
                     x: Optional[float] = None,

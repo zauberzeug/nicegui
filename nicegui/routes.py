@@ -12,7 +12,7 @@ from starlette.staticfiles import StaticFiles
 
 from . import globals
 from .helpers import is_coroutine
-from .page import Page, get_current_view
+from .page import Page
 from .task_logger import create_task
 
 
@@ -86,8 +86,8 @@ def add_dependencies(py_filepath: str, dependencies: List[str] = []) -> None:
 
     if asyncio.get_event_loop().is_running():
         # NOTE: if new dependencies are added after starting the server, we need to reload the page on connected clients
-        async def reload() -> None:
-            for page in get_current_view().pages.values():
+        async def reload(view: jp.HTMLBaseComponent) -> None:
+            for page in view.pages.values():
                 assert isinstance(page, Page)
-                await page.await_javascript('location.reload()')
-        create_task(reload())
+                await page.run_javascript('location.reload()')
+        create_task(reload(globals.view_stack[-1]))

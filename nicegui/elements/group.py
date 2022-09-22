@@ -4,20 +4,20 @@ from typing import List
 
 import justpy as jp
 
+from .. import globals
 from ..binding import active_links, bindable_properties, bindings
-from ..globals import view_stack
 from .element import Element
 
 
 class Group(Element):
 
     def __enter__(self):
-        view_stack.append(self.view)
+        globals.view_stack.append(self.view)
         return self
 
     def __exit__(self, *_):
-        view_stack.pop()
-        if len(view_stack) <= 1:
+        globals.view_stack.pop()
+        if len(globals.view_stack) <= 1:
             self.update()  # NOTE: update when we are back on top of the stack (only the first page is in view stack)
 
     def tight(self) -> Group:
