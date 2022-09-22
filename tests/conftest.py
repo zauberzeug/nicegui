@@ -1,8 +1,10 @@
 import datetime
+import importlib
 import os
 from typing import Callable, Generator
 
 import icecream
+import justpy as jp
 import pytest
 from justpy.htmlcomponents import JustpyBaseComponent, WebPage
 from nicegui import globals
@@ -36,17 +38,9 @@ def reset_globals() -> Generator[None, None, None]:
     WebPage.next_page_id = 0
     JustpyBaseComponent.next_id = 0
     JustpyBaseComponent.instances = {}
-    globals.config = None
-    globals.server = None
-    globals.page_builders = {}
-    globals.view_stack = []
-    globals.tasks = []
-    globals.connect_handlers = []
-    globals.disconnect_handlers = []
-    globals.startup_handlers = []
-    globals.shutdown_handlers = []
-    globals.has_auto_index_page = False
-    globals.dependencies = {}
+    jp.component_file_list = jp.create_component_file_list()
+    jp.template_options['component_file_list'] = jp.component_file_list
+    importlib.reload(globals)
 
 
 @pytest.fixture()
