@@ -4,8 +4,8 @@ import traceback
 from collections import namedtuple
 from typing import Callable, List
 
+from . import globals
 from .binding import BindableProperty
-from .globals import tasks, view_stack
 from .helpers import is_coroutine
 from .task_logger import create_task
 
@@ -65,4 +65,4 @@ class Timer:
         if not event_loop.is_running():
             self.prepared_coroutines.append(NamedCoroutine(str(callback), coroutine))
         else:
-            tasks.append(create_task(coroutine, name=str(callback)))
+            globals.tasks.append(create_task(coroutine, name=str(callback)))

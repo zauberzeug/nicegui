@@ -3,7 +3,7 @@ from typing import Callable, Optional, Union
 from justpy import WebPage
 from starlette.websockets import WebSocket
 
-from ..globals import find_route
+from .. import globals
 from ..task_logger import create_task
 
 
@@ -22,7 +22,7 @@ def open(self, target: Union[Callable, str], socket: Optional[WebSocket] = None)
 
 
 async def open_async(self, target: Union[Callable, str], socket: Optional[WebSocket] = None):
-    path = target if isinstance(target, str) else find_route(target)[1:]
+    path = target if isinstance(target, str) else globals.find_route(target)[1:]
     sockets = [socket] if socket else [s for socket_dict in WebPage.sockets.values() for s in socket_dict.values()]
     for socket in sockets:
         if not path:
