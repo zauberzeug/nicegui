@@ -1,43 +1,44 @@
 import threading
 import time
 
-from nicegui import globals as nicegui_globals
-from nicegui import ui
+from nicegui import globals, ui
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.remote.webelement import WebElement
+
+PORT = 3392
 
 
 class User():
 
     def __init__(self, selenium: webdriver.Chrome) -> None:
         self.selenium = selenium
-        self.thread = None
+        self.server_thread = None
 
     def start_server(self) -> None:
         '''Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script.'''
-        self.thread = threading.Thread(target=ui.run, kwargs={'port': 3392, 'show': False, 'reload': False})
-        self.thread.start()
+        self.server_thread = threading.Thread(target=ui.run, kwargs={'port': PORT, 'show': False, 'reload': False})
+        self.server_thread.start()
 
     def stop_server(self) -> None:
         '''Stop the webserver.'''
         self.selenium.close()
-        nicegui_globals.server.should_exit = True
-        self.thread.join()
+        globals.server.should_exit = True
+        self.server_thread.join()
 
     def open(self, path: str) -> None:
-        if self.thread is None:
+        if self.server_thread is None:
             self.start_server()
         start = time.time()
         while True:
             try:
-                self.selenium.get(f'http://localhost:3392{path}')
+                self.selenium.get(f'http://localhost:{PORT}{path}')
                 break
             except Exception:
                 if time.time() - start > 3:
                     raise
                 time.sleep(0.1)
-                if not self.thread.is_alive():
+                if not self.server_thread.is_alive():
                     raise RuntimeError('The NiceGUI server has stopped running')
 
     def should_see(self, text: str) -> None:
