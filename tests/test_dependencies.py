@@ -12,6 +12,7 @@ def test_joystick_dependency(user: User):
     srcs = user.get_attributes('script', 'src')
     assert any(s.endswith('joystick.js') for s in srcs)
     assert any(s.endswith('nipplejs.min.js') for s in srcs)
+    user.sleep(2)  # NOTE we need to sleep here so the js timeout error is printed (start pytest with -s to see it)
 
 
 def test_keyboard_dependency_before_startup(user: User):
