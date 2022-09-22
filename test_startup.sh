@@ -27,8 +27,8 @@ check() {
     fi
 }
 
-success=0
-check main.py || success=1
-check examples.py || success=1
-echo exit $success
-test $success -eq 0
+error=0
+check main.py || error=1
+check examples.py || error=1
+check examples/slideshow/main.py || error=1
+test $error -eq 0
