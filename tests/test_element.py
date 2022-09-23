@@ -4,17 +4,12 @@ from .user import User
 
 
 def test_classes(user: User):
-    label = ui.label('label')
-    user.open('/')
+    label = ui.label('Some label')
 
     def assert_classes(classes: str) -> None:
-        for _ in range(20):
-            if user.find('label').get_attribute('class') == classes:
-                return
-            user.sleep(0.01)
-        else:
-            raise AssertionError(f'Expected {classes}, got {user.find("label").get_attribute("class")}')
+        assert user.selenium.find_element_by_xpath(f'//*[normalize-space(@class)="{classes}" and text()="Some label"]')
 
+    user.open('/')
     assert_classes('')
 
     label.classes('one')
@@ -34,48 +29,48 @@ def test_classes(user: User):
 
 
 def test_style(user: User):
-    label = ui.label('label')
+    label = ui.label('Some label')
 
-    def style() -> str:
-        user.open('/')
-        return user.find('label').get_attribute('style')
+    def assert_style(style: str) -> None:
+        assert user.selenium.find_element_by_xpath(f'//*[normalize-space(@style)="{style}" and text()="Some label"]')
 
-    assert style() == ''
-
-    label.style('color: red')
-    assert style() == 'color: red;'
+    user.open('/')
+    assert_style('')
 
     label.style('color: red')
-    assert style() == 'color: red;'
+    assert_style('color: red;')
+
+    label.style('color: red')
+    assert_style('color: red;')
 
     label.style('color: blue')
-    assert style() == 'color: blue;'
+    assert_style('color: blue;')
 
     label.style('font-weight: bold')
-    assert style() == 'color: blue; font-weight: bold;'
+    assert_style('color: blue; font-weight: bold;')
 
     label.style(remove='color: blue')
-    assert style() == 'font-weight: bold;'
+    assert_style('font-weight: bold;')
 
     label.style(replace='text-decoration: underline')
-    assert style() == 'text-decoration: underline;'
+    assert_style('text-decoration: underline;')
 
 
 def test_props(user: User):
-    input = ui.input('input')
+    input = ui.input()
 
-    def props() -> str:
-        user.open('/')
-        element = user.selenium.find_element_by_tag_name('label')
-        return [c.replace('q-field--', '') for c in element.get_attribute('class').split() if c.startswith('q-field--')]
+    def assert_props(*props: str) -> None:
+        class_conditions = [f'contains(@class, "q-field--{prop}")' for prop in props]
+        assert user.selenium.find_element_by_xpath(f'//label[{" and ".join(class_conditions)}]')
 
-    assert props() == ['standard', 'labeled']
-
-    input.props('dark')
-    assert props() == ['standard', 'labeled', 'dark']
+    user.open('/')
+    assert_props('standard', 'labeled')
 
     input.props('dark')
-    assert props() == ['standard', 'labeled', 'dark']
+    assert_props('standard', 'labeled', 'dark')
+
+    input.props('dark')
+    assert_props('standard', 'labeled', 'dark')
 
     input.props(remove='dark')
-    assert props() == ['standard', 'labeled']
+    assert_props('standard', 'labeled')
