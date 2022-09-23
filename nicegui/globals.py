@@ -2,23 +2,21 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Optional, Union
+from typing import Awaitable, Callable, Dict, List, Optional, Union
 
+import justpy as jp
+from starlette.applications import Starlette
 from uvicorn import Server
 
-if TYPE_CHECKING:
-    import justpy as jp
-    from starlette.applications import Starlette
+from .config import Config
+from .page_builder import PageBuilder
 
-    from .config import Config
-    from .page import PageBuilder
-
-app: 'Starlette'
-config: Optional['Config'] = None
+app: Starlette
+config: Optional[Config] = None
 server: Optional[Server] = None
 loop: Optional[asyncio.AbstractEventLoop] = None
 page_builders: Dict[str, 'PageBuilder'] = {}
-view_stack: List['jp.HTMLBaseComponent'] = []
+view_stack: List[jp.HTMLBaseComponent] = []
 tasks: List[asyncio.tasks.Task] = []
 log: logging.Logger = logging.getLogger('nicegui')
 connect_handlers: List[Union[Callable, Awaitable]] = []

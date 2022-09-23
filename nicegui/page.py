@@ -4,9 +4,8 @@ import asyncio
 import inspect
 import time
 import uuid
-from dataclasses import dataclass
 from functools import wraps
-from typing import Awaitable, Callable, Optional
+from typing import Callable, Optional
 
 import justpy as jp
 from addict import Dict
@@ -15,28 +14,7 @@ from starlette.requests import Request
 
 from . import globals
 from .helpers import is_coroutine
-from .task_logger import create_task
-
-
-@dataclass
-class PageBuilder:
-    function: Callable[[], Awaitable[Page]]
-    shared: bool
-
-    _shared_page: Optional[Page] = None
-
-    async def build(self) -> None:
-        assert self.shared
-        self._shared_page = await self.function()
-
-    async def route_function(self, request: Request) -> Page:
-        page = self._shared_page if self.shared else await self.function()
-        return await page._route_function(request)
-
-    def create_route(self, route: str) -> None:
-        if self.shared:
-            create_task(self.build())
-        jp.Route(route, self.route_function)
+from .page_builder import PageBuilder
 
 
 class Page(jp.QuasarPage):
