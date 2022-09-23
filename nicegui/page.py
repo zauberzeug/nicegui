@@ -129,22 +129,22 @@ class Page(jp.QuasarPage):
 
 
 def add_head_html(self, html: str) -> None:
-    for page in get_current_view().pages.values():
+    for page in find_parent_view().pages.values():
         page.head_html += html
 
 
 def add_body_html(self, html: str) -> None:
-    for page in get_current_view().pages.values():
+    for page in find_parent_view().pages.values():
         page.body_html += html
 
 
 async def run_javascript(self, code: str) -> None:
-    for page in get_current_view().pages.values():
+    for page in find_parent_view().pages.values():
         await page.run_javascript(code)
 
 
 async def await_javascript(self, code: str, *, check_interval: float = 0.01, timeout: float = 1.0) -> None:
-    for page in get_current_view().pages.values():
+    for page in find_parent_view().pages.values():
         return await page.await_javascript(code)
 
 
@@ -202,11 +202,12 @@ def page(self,
     return decorator
 
 
-def get_current_view() -> jp.HTMLBaseComponent:
+def find_parent_view() -> jp.HTMLBaseComponent:
     if not globals.view_stack:
+        if globals.loop and globals.loop.is_running():
+            raise RuntimeError('cannot find parent view, view stack is empty')
         page = Page(shared=True)
         globals.view_stack.append(page.view)
-        globals.has_auto_index_page = True  # NOTE: this automatically created page will get some attributes at startup
         jp.Route('/', page._route_function)
     return globals.view_stack[-1]
 
@@ -225,13 +226,14 @@ def error404() -> jp.QuasarPage:
 
 
 def init_auto_index_page() -> None:
-    if not globals.has_auto_index_page:
-        return
-    page: Page = get_current_view().pages[0]
+    if not globals.view_stack:
+        return  # there is no auto-index page on the view stack
+    page: Page = globals.view_stack.pop().pages[0]
     page.title = globals.config.title
     page.favicon = globals.config.favicon
     page.dark = globals.config.dark
     page.view.classes = globals.config.main_page_classes
+    assert len(globals.view_stack) == 0
 
 
 def create_page_routes() -> None:
