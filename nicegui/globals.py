@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Awaitable, Callable, Dict, List, Optional, Union
+from contextlib import contextmanager
+from typing import Awaitable, Callable, Dict, Generator, List, Optional, Union
 
 import justpy as jp
 from starlette.applications import Starlette
@@ -10,6 +11,7 @@ from uvicorn import Server
 
 from .config import Config
 from .page_builder import PageBuilder
+from .task_logger import create_task
 
 app: Starlette
 config: Optional[Config] = None
@@ -30,3 +32,13 @@ def find_route(function: Callable) -> str:
     if not routes:
         raise ValueError(f'Invalid page function {function}')
     return routes[0]
+
+
+@contextmanager
+def within_view(view: jp.HTMLBaseComponent) -> Generator[None, None, None]:
+    child_count = len(view)
+    view_stack.append(view)
+    yield
+    view_stack.pop()
+    if len(view) != child_count:
+        create_task(view.update())

@@ -230,7 +230,8 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments) -> Opti
         if handler is None:
             return False
         no_arguments = not signature(handler).parameters
-        result = handler() if no_arguments else handler(arguments)
+        with globals.within_view(arguments.sender.parent_view):
+            result = handler() if no_arguments else handler(arguments)
         if is_coroutine(handler):
             if globals.loop and globals.loop.is_running():
                 create_task(result, name=str(handler))
