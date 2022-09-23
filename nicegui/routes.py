@@ -1,4 +1,3 @@
-import asyncio
 import inspect
 import os.path
 from functools import wraps

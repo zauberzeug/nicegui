@@ -8,7 +8,7 @@ def test_classes(user: User):
     user.open('/')
 
     def assert_classes(classes: str) -> None:
-        for i in range(20):
+        for _ in range(20):
             if user.find('label').get_attribute('class') == classes:
                 return
             user.sleep(0.01)

@@ -61,8 +61,7 @@ class Timer:
                     await asyncio.sleep(self.interval)
 
         coroutine = timeout() if once else loop()
-        event_loop = asyncio.get_event_loop()
-        if not event_loop.is_running():
+        if not (globals.loop and globals.loop.is_running()):
             self.prepared_coroutines.append(NamedCoroutine(str(callback), coroutine))
         else:
             globals.tasks.append(create_task(coroutine, name=str(callback)))
