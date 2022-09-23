@@ -7,6 +7,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.remote.webelement import WebElement
 
 PORT = 3392
+IGNORED_CLASSES = ['row', 'column', 'q-field', 'q-field__label', 'q-input']
 
 
 class User():
@@ -51,10 +52,48 @@ class User():
         try:
             return self.selenium.find_element_by_xpath(f'//*[contains(text(),"{text}")]')
         except NoSuchElementException:
-            raise AssertionError(f'Could not find "{text}" on:\n{self.get_body()}')
+            raise AssertionError(f'Could not find "{text}" on:\n{self.page()}')
 
-    def get_body(self) -> str:
-        return self.selenium.find_element_by_tag_name('body').text
+    def page(self) -> str:
+        return f'Title: {self.selenium.title}\n\n' + self.content(self.selenium.find_element_by_tag_name('body'))
+
+    def content(self, element: WebElement, indent: str = '') -> str:
+        content = ''
+        classes: list[str] = []
+        for child in element.find_elements_by_xpath('./*'):
+            is_element = False
+            is_group = False
+            render_children = True
+            assert isinstance(child, WebElement)
+            if not child.find_elements_by_xpath('./*') and child.text:
+                is_element = True
+                content += f'{indent}{child.text}'
+            classes = child.get_attribute('class').strip().split()
+            if classes:
+                if classes[0] in ['row', 'column']:
+                    content += classes[0]
+                    is_element = True
+                    is_group = True
+                if classes[0] == 'q-field':
+                    try:
+                        name = child.find_element_by_class_name('q-field__label').text
+                    except NoSuchElementException:
+                        name = ''
+                    input = child.find_element_by_tag_name('input')
+                    value = input.get_attribute('value') or input.get_attribute('placeholder')
+                    content += f'{indent}{name}: {value}'
+                    render_children = False
+                    is_element = True
+                [classes.remove(c) for c in IGNORED_CLASSES if c in classes]
+                for i, c in enumerate(classes):
+                    classes[i] = c.removeprefix('q-field--')
+                if is_element:
+                    content += f' [class: {" ".join(classes)}]'
+            if is_element:
+                content += '\n'
+            if render_children:
+                content += self.content(child, indent + ('  ' if is_group else ''))
+        return content
 
     def get_tags(self, name: str) -> list[WebElement]:
         return self.selenium.find_elements_by_tag_name(name)

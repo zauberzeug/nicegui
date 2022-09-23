@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 app: 'Starlette'
 config: Optional['Config'] = None
 server: Optional[Server] = None
+loop: Optional[asyncio.AbstractEventLoop] = None
 page_builders: Dict[str, 'PageBuilder'] = {}
 view_stack: List['jp.HTMLBaseComponent'] = []
 tasks: List[asyncio.tasks.Task] = []

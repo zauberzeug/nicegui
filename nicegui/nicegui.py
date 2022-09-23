@@ -1,4 +1,5 @@
 # isort:skip_file
+import asyncio
 from typing import Awaitable, Callable
 
 if True:  # NOTE: prevent formatter from mixing up these lines
@@ -27,6 +28,7 @@ async def patched_justpy_startup():
 
 @jp.app.on_event('startup')
 def startup():
+    globals.loop = asyncio.get_running_loop()
     init_auto_index_page()
     create_page_routes()
     globals.tasks.extend(create_task(t.coro, name=t.name) for t in Timer.prepared_coroutines)

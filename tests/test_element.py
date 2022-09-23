@@ -5,27 +5,32 @@ from .user import User
 
 def test_classes(user: User):
     label = ui.label('label')
+    user.open('/')
 
-    def classes() -> str:
-        user.open('/')
-        return user.find('label').get_attribute('class')
+    def assert_classes(classes: str) -> None:
+        for i in range(20):
+            if user.find('label').get_attribute('class') == classes:
+                return
+            user.sleep(0.01)
+        else:
+            raise AssertionError(f'Expected {classes}, got {user.find("label").get_attribute("class")}')
 
-    assert classes() == ''
+    assert_classes('')
 
     label.classes('one')
-    assert classes() == 'one'
+    assert_classes('one')
 
     label.classes('one')
-    assert classes() == 'one'
+    assert_classes('one')
 
     label.classes('two three')
-    assert classes() == 'one two three'
+    assert_classes('one two three')
 
     label.classes(remove='two')
-    assert classes() == 'one three'
+    assert_classes('one three')
 
     label.classes(replace='four')
-    assert classes() == 'four'
+    assert_classes('four')
 
 
 def test_style(user: User):

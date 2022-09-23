@@ -6,6 +6,8 @@ import logging
 import sys
 from typing import Any, Awaitable, Optional, Tuple, TypeVar
 
+from . import globals
+
 T = TypeVar('T')
 
 
@@ -26,7 +28,7 @@ def create_task(
     message = 'Task raised an exception'
     message_args = ()
     if loop is None:
-        loop = asyncio.get_running_loop()
+        loop = globals.loop
     if sys.version_info[1] < 8:
         task = loop.create_task(coroutine)  # name parameter is only supported from 3.8 onward
     else:
