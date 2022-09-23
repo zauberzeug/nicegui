@@ -12,6 +12,9 @@ from uvicorn.supervisors import ChangeReload, Multiprocess
 from . import globals
 from .config import Config
 
+os.environ['STATIC_DIRECTORY'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
+os.environ['TEMPLATES_DIRECTORY'] = os.path.join(os.environ['STATIC_DIRECTORY'], 'templates')
+
 
 def run(self, *,
         host: str = os.environ.get('HOST', '0.0.0.0'),
@@ -40,8 +43,6 @@ def run(self, *,
     )
     os.environ['HOST'] = globals.config.host
     os.environ['PORT'] = str(globals.config.port)
-    os.environ['STATIC_DIRECTORY'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
-    os.environ['TEMPLATES_DIRECTORY'] = os.path.join(os.environ['STATIC_DIRECTORY'], 'templates')
 
     if inspect.stack()[-2].filename.endswith('spawn.py'):
         return
