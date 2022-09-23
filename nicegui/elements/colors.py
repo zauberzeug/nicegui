@@ -2,11 +2,12 @@ from ..routes import add_dependencies
 from .custom_view import CustomView
 from .element import Element
 
+add_dependencies(__file__)
+
 
 class ColorsView(CustomView):
 
     def __init__(self, primary, secondary, accent, positive, negative, info, warning):
-        add_dependencies(__file__)
         super().__init__('colors',
                          primary=primary,
                          secondary=secondary,

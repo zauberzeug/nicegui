@@ -2,11 +2,7 @@ from typing import Dict
 
 import justpy as jp
 
-from .. import globals
-from ..task_logger import create_task
 from .element import Element
-
-jp.template_options['highcharts'] = False
 
 
 class Chart(Element):
@@ -21,7 +17,3 @@ class Chart(Element):
         view = jp.HighCharts(temp=False)
         view.options = self.options = jp.Dict(**options)
         super().__init__(view)
-
-        if not jp.template_options['highcharts'] and globals.loop and globals.loop.is_running():
-            create_task(self.page.run_javascript('location.reload()'))
-        jp.template_options['highcharts'] = True

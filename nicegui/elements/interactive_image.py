@@ -10,11 +10,12 @@ from ..routes import add_dependencies
 from .custom_view import CustomView
 from .element import Element
 
+add_dependencies(__file__)
+
 
 class InteractiveImageView(CustomView):
 
     def __init__(self, source: str, on_mouse: Callable, events: List[str], cross: bool):
-        add_dependencies(__file__)
         super().__init__('interactive_image', source=source, events=events, cross=cross, svg_content='')
         self.allowed_events = ['onMouse', 'onConnect']
         self.initialize(onMouse=on_mouse, onConnect=self.on_connect)

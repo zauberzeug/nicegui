@@ -14,6 +14,15 @@ from .custom_view import CustomView
 from .element import Element
 from .scene_object3d import Object3D
 
+add_dependencies(__file__, [
+    'three.min.js',
+    'CSS2DRenderer.js',
+    'CSS3DRenderer.js',
+    'OrbitControls.js',
+    'STLLoader.js',
+    'tween.umd.min.js',
+])
+
 
 @dataclass
 class SceneCamera:
@@ -37,14 +46,6 @@ class SceneCamera:
 class SceneView(CustomView):
 
     def __init__(self, *, width: int, height: int, on_click: Optional[Callable]):
-        add_dependencies(__file__, [
-            'three.min.js',
-            'CSS2DRenderer.js',
-            'CSS3DRenderer.js',
-            'OrbitControls.js',
-            'STLLoader.js',
-            'tween.umd.min.js',
-        ])
         super().__init__('scene', width=width, height=height)
         self.on_click = on_click
         self.allowed_events = ['onConnect', 'onClick']

@@ -4,6 +4,8 @@ from ..routes import add_dependencies
 from .custom_view import CustomView
 from .element import Element
 
+add_dependencies(__file__, ['nipplejs.min.js'])
+
 
 class JoystickView(CustomView):
 
@@ -12,7 +14,6 @@ class JoystickView(CustomView):
                  on_move: Optional[Callable],
                  on_end: Optional[Callable],
                  **options: Any):
-        add_dependencies(__file__, ['nipplejs.min.js'])
         super().__init__('joystick', **options)
 
         self.on_start = on_start

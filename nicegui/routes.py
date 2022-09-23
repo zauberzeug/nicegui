@@ -62,12 +62,6 @@ def get(self, path: str):
 
 
 def add_dependencies(py_filepath: str, dependencies: List[str] = []) -> None:
-    if py_filepath in globals.dependencies:
-        return
-    if globals.loop and globals.loop.is_running():
-        raise RuntimeError('can not add new dependencies after startup')
-    globals.dependencies[py_filepath] = dependencies
-
     vue_filepath = os.path.splitext(os.path.realpath(py_filepath))[0] + '.js'
 
     for dependency in dependencies:

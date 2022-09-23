@@ -6,11 +6,12 @@ from ..routes import add_dependencies
 from .custom_view import CustomView
 from .element import Element
 
+add_dependencies(__file__)
+
 
 class KeyboardView(CustomView):
 
     def __init__(self, on_key: Callable, repeating: bool):
-        add_dependencies(__file__)
         super().__init__('keyboard', active_js_events=['keydown', 'keyup'], repeating=repeating)
         self.allowed_events = ['keyboardEvent']
         self.style = 'display: none'
