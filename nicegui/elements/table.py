@@ -3,6 +3,7 @@ from typing import Dict
 
 import justpy as jp
 
+from .. import globals
 from ..task_logger import create_task
 from .element import Element
 
@@ -22,6 +23,6 @@ class Table(Element):
         view.options = self.options = jp.Dict(**options)
         super().__init__(view)
 
-        if not jp.template_options['aggrid'] and asyncio.get_event_loop().is_running():
+        if not jp.template_options['aggrid'] and globals.loop and globals.loop.is_running():
             create_task(self.page.run_javascript('location.reload()'))
         jp.template_options['aggrid'] = True

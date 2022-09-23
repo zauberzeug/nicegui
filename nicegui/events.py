@@ -232,7 +232,7 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments) -> Opti
         no_arguments = not signature(handler).parameters
         result = handler() if no_arguments else handler(arguments)
         if is_coroutine(handler):
-            if asyncio.get_event_loop().is_running():
+            if globals.loop and globals.loop.is_running():
                 create_task(result, name=str(handler))
             else:
                 on_startup(None, result)

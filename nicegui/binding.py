@@ -40,7 +40,7 @@ async def update_views_async(views: Set[HTMLBaseComponent]):
 
 
 def update_views(views: Set[HTMLBaseComponent]):
-    if asyncio._get_running_loop() is None:
+    if globals.loop is None:
         return  # NOTE: no need to update view if event loop is not running, yet
     create_task(update_views_async(views), name='update_views_async')
 

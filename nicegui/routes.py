@@ -84,7 +84,7 @@ def add_dependencies(py_filepath: str, dependencies: List[str] = []) -> None:
         jp.app.routes.insert(0, Route(f'/{filename}', lambda _: FileResponse(vue_filepath)))
         jp.component_file_list += [filename]
 
-    if asyncio.get_event_loop().is_running():
+    if globals.loop and globals.loop.is_running():
         # NOTE: if new dependencies are added after starting the server, we need to reload the page on connected clients
         async def reload(view: jp.HTMLBaseComponent) -> None:
             for page in view.pages.values():

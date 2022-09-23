@@ -5,6 +5,7 @@ from typing import Dict, Optional
 
 import justpy as jp
 
+from .. import globals
 from ..binding import BindableProperty, bind_from, bind_to
 from ..page import Page, get_current_view
 from ..task_logger import create_task
@@ -117,8 +118,5 @@ class Element:
         return self
 
     def update(self) -> None:
-        try:
-            asyncio.get_running_loop()
-        except RuntimeError:
-            return
-        create_task(self.view.update())
+        if globals.loop is not None:
+            create_task(self.view.update())
