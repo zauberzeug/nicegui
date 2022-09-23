@@ -64,6 +64,8 @@ def get(self, path: str):
 def add_dependencies(py_filepath: str, dependencies: List[str] = []) -> None:
     if py_filepath in globals.dependencies:
         return
+    if globals.loop and globals.loop.is_running():
+        raise RuntimeError('can not add new dependencies after startup')
     globals.dependencies[py_filepath] = dependencies
 
     vue_filepath = os.path.splitext(os.path.realpath(py_filepath))[0] + '.js'
@@ -82,11 +84,3 @@ def add_dependencies(py_filepath: str, dependencies: List[str] = []) -> None:
         filename = os.path.basename(vue_filepath)
         jp.app.routes.insert(0, Route(f'/{filename}', lambda _: FileResponse(vue_filepath)))
         jp.component_file_list += [filename]
-
-    if globals.loop and globals.loop.is_running():
-        # NOTE: if new dependencies are added after starting the server, we need to reload the page on connected clients
-        async def reload(view: jp.HTMLBaseComponent) -> None:
-            for page in view.pages.values():
-                assert isinstance(page, Page)
-                await page.run_javascript('location.reload()')
-        create_task(reload(globals.view_stack[-1]))
