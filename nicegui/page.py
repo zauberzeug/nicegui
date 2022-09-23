@@ -204,7 +204,7 @@ def error404() -> jp.QuasarPage:
 
 
 def init_auto_index_page() -> None:
-    view_stack = globals.get_view_stack()
+    view_stack = globals.view_stacks.get(0)
     if not view_stack:
         return  # there is no auto-index page on the view stack
     page: Page = view_stack.pop().pages[0]
