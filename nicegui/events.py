@@ -233,10 +233,13 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments) -> Opti
         with globals.within_view(arguments.sender.parent_view):
             result = handler() if no_arguments else handler(arguments)
         if is_coroutine(handler):
+            async def wait_for_result():
+                with globals.within_view(arguments.sender.parent_view):
+                    await result
             if globals.loop and globals.loop.is_running():
-                create_task(result, name=str(handler))
+                create_task(wait_for_result(), name=str(handler))
             else:
-                on_startup(None, result)
+                on_startup(None, wait_for_result())
         return False
     except Exception:
         traceback.print_exc()
