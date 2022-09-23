@@ -89,6 +89,8 @@ You can call `ui.run()` with optional arguments:
 - `uvicorn_reload_dirs`: string with comma-separated list for directories to be monitored (default is current working directory only)
 - `uvicorn_reload_includes`: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`)
 - `uvicorn_reload_excludes`: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
+- `exclude`: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
+  (possible entries: chart, colors, custom_example, interactive_image, keyboard, log, joystick, scene, table)
 
 The environment variables `HOST` and `PORT` can also be used to configure NiceGUI.
 

@@ -1,6 +1,6 @@
 import os
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import List, Optional
 
 
 @dataclass
@@ -14,3 +14,4 @@ class Config():
     dark: Optional[bool] = False
     main_page_classes: str = 'q-ma-md column items-start'
     binding_refresh_interval: float = 0.1
+    excludes: List[str] = field(default_factory=list)

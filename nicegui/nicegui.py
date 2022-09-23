@@ -13,6 +13,7 @@ if True:  # NOTE: prevent formatter from mixing up these lines
 from . import binding, globals
 from .page import create_page_routes, init_auto_index_page
 from .task_logger import create_task
+from .routes import create_exclude_routes
 from .timer import Timer
 
 jp.app.router.on_startup.clear()  # NOTE: remove JustPy's original startup function
@@ -31,6 +32,7 @@ def startup():
     globals.loop = asyncio.get_running_loop()
     init_auto_index_page()
     create_page_routes()
+    create_exclude_routes()
     globals.tasks.extend(create_task(t.coro, name=t.name) for t in Timer.prepared_coroutines)
     Timer.prepared_coroutines.clear()
     globals.tasks.extend(create_task(t, name='startup task')

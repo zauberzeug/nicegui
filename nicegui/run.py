@@ -30,6 +30,7 @@ def run(self, *,
         uvicorn_reload_dirs: str = '.',
         uvicorn_reload_includes: str = '*.py',
         uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
+        exclude: str = '',
         ):
     globals.config = Config(
         host=host,
@@ -40,6 +41,7 @@ def run(self, *,
         dark=dark,
         main_page_classes=main_page_classes,
         binding_refresh_interval=binding_refresh_interval,
+        excludes=[e.strip() for e in exclude.split(',')],
     )
     os.environ['HOST'] = globals.config.host
     os.environ['PORT'] = str(globals.config.port)

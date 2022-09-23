@@ -4,15 +4,13 @@ from functools import wraps
 from typing import List
 
 import justpy as jp
-from starlette import requests, routing
-from starlette.responses import FileResponse
-from starlette.routing import BaseRoute, Mount, Route
+from starlette.requests import Request
+from starlette.responses import FileResponse, PlainTextResponse
+from starlette.routing import BaseRoute, Mount, Route, compile_path
 from starlette.staticfiles import StaticFiles
 
 from . import globals
 from .helpers import is_coroutine
-from .page import Page
-from .task_logger import create_task
 
 
 def add_route(self, route: BaseRoute) -> None:
@@ -37,11 +35,11 @@ def get(self, path: str):
     :param path: string that starts with a '/'
     :return:
     """
-    *_, converters = routing.compile_path(path)
+    *_, converters = compile_path(path)
 
     def decorator(func):
         @wraps(func)
-        async def decorated(request: requests.Request):
+        async def decorated(request: Request):
             args = {name: converter.convert(request.path_params.get(name)) for name, converter in converters.items()}
             parameters = inspect.signature(func).parameters
             for key in parameters:
@@ -56,7 +54,7 @@ def get(self, path: str):
             if 'request' in parameters and 'request' not in args:
                 args['request'] = request
             return await func(**args) if is_coroutine(func) else func(**args)
-        self.add_route(routing.Route(path, decorated))
+        self.add_route(Route(path, decorated))
         return decorated
     return decorator
 
@@ -78,3 +76,34 @@ def add_dependencies(py_filepath: str, dependencies: List[str] = []) -> None:
         filename = os.path.basename(vue_filepath)
         jp.app.routes.insert(0, Route(f'/{filename}', lambda _: FileResponse(vue_filepath)))
         jp.component_file_list += [filename]
+
+
+def create_exclude_routes() -> None:
+    def void(_: Request) -> PlainTextResponse:
+        return PlainTextResponse()
+
+    if 'chart' in globals.config.excludes:
+        add_route(None, Route('/templates/local/highcharts.js', void))
+    if 'colors' in globals.config.excludes:
+        add_route(None, Route('/colors.js', void))
+    if 'custom_example' in globals.config.excludes:
+        add_route(None, Route('/custom_example.js', void))
+    if 'interactive_image' in globals.config.excludes:
+        add_route(None, Route('/interactive_image.js', void))
+    if 'keyboard' in globals.config.excludes:
+        add_route(None, Route('/keyboard.js', void))
+    if 'log' in globals.config.excludes:
+        add_route(None, Route('/log.js', void))
+    if 'joystick' in globals.config.excludes:
+        add_route(None, Route('/joystick.js', void))
+        add_route(None, Route('/lib/nipplejs.min.js', void))
+    if 'scene' in globals.config.excludes:
+        add_route(None, Route('/scene.js', void))
+        add_route(None, Route('/lib/CSS2DRenderer.js', void))
+        add_route(None, Route('/lib/CSS3DRenderer.js', void))
+        add_route(None, Route('/lib/OrbitControls.js', void))
+        add_route(None, Route('/lib/STLLoader.js', void))
+        add_route(None, Route('/lib/three.min.js', void))
+        add_route(None, Route('/lib/tween.umd.min.js', void))
+    if 'table' in globals.config.excludes:
+        add_route(None, Route('/templates/local/ag-grid-community.js', void))
