@@ -6,7 +6,7 @@ from .user import User
 def test_rendering_page(user: User):
     ui.label('test label')
     with ui.row().classes('positive'):
-        ui.input('test input', placeholder='test placeholder')
+        ui.input('test input', placeholder='some placeholder')
     with ui.column():
         ui.label('1')
         ui.label('2')
@@ -16,9 +16,9 @@ def test_rendering_page(user: User):
     assert user.page() == '''Title: NiceGUI
 
 test label
-row
-  test input: test placeholder
-column
+row [class: items-start positive]
+  test input: some placeholder [class: no-wrap items-start standard labeled]
+column [class: items-start]
   1
   2
   3
