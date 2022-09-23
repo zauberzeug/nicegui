@@ -42,7 +42,7 @@ class User():
                     raise RuntimeError('The NiceGUI server has stopped running')
 
     def should_see(self, text: str) -> None:
-        assert self.selenium.title == text or self.find(text).text == text
+        assert text in self.page(), f'Could not find "{text}" on:\n{self.page()}'
 
     def click(self, target_text: str) -> None:
         self.find(target_text).click()
@@ -51,10 +51,34 @@ class User():
         try:
             return self.selenium.find_element_by_xpath(f'//*[contains(text(),"{text}")]')
         except NoSuchElementException:
-            raise AssertionError(f'Could not find "{text}" on:\n{self.get_body()}')
+            raise AssertionError(f'Could not find "{text}" on:\n{self.page()}')
 
-    def get_body(self) -> str:
-        return self.selenium.find_element_by_tag_name('body').text
+    def page(self) -> str:
+        return f'Title: {self.selenium.title}\n\n' + self.content(self.selenium.find_element_by_tag_name('body'))
+
+    def content(self, element: WebElement, indent: str = '') -> str:
+        content = ''
+        is_group = False
+        for child in element.find_elements_by_xpath('./*'):
+            assert isinstance(child, WebElement)
+            classes = child.get_attribute('class').split(' ')
+            if not child.find_elements_by_xpath('./*') and child.text:
+                content += f'{indent}{child.text}\n'
+            if classes and classes[0] in ['row', 'column']:
+                content += f'{classes[0]}\n'
+                is_group = True
+
+            if classes and classes[0] == 'q-field':
+                try:
+                    name = child.find_element_by_class_name('q-field__label').text
+                except NoSuchElementException:
+                    name = ''
+                input = child.find_element_by_tag_name('input')
+                value = input.get_attribute('value') or input.get_attribute('placeholder')
+                content += f'{indent}{name}: {value}\n'
+            else:
+                content += self.content(child, indent + ('  ' if is_group else ''))
+        return content
 
     def get_tags(self, name: str) -> list[WebElement]:
         return self.selenium.find_elements_by_tag_name(name)
