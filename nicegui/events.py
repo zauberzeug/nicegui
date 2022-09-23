@@ -5,6 +5,7 @@ from typing import Any, Callable, List, Optional
 
 from starlette.websockets import WebSocket
 
+from . import globals
 from .elements.element import Element
 from .helpers import is_coroutine
 from .lifecycle import on_startup
