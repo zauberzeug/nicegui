@@ -43,7 +43,7 @@ class User():
                     raise RuntimeError('The NiceGUI server has stopped running')
 
     def should_see(self, text: str) -> None:
-        assert text in self.page(), f'Could not find "{text}" on:\n{self.page()}'
+        assert self.selenium.title == text or self.find(text).text == text
 
     def click(self, target_text: str) -> None:
         self.find(target_text).click()
