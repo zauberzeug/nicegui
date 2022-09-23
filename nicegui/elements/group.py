@@ -12,11 +12,14 @@ from .element import Element
 class Group(Element):
 
     def __enter__(self):
+        self._child_count_on_enter = len(self.view)
         globals.get_view_stack().append(self.view)
         return self
 
     def __exit__(self, *_):
         globals.get_view_stack().pop()
+        if self._child_count_on_enter != len(self.view):
+            self.update()
 
     def tight(self) -> Group:
         return self.classes(replace='').style(replace='')
