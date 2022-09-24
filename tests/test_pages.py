@@ -5,13 +5,42 @@ from nicegui import ui
 from .user import User
 
 
-def test_title(user: User):
+def test_page(user: User):
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    user.open('/')
+    user.should_see('NiceGUI')
+    user.should_see('Hello, world!')
+
+
+def test_shared_page(user: User):
+    @ui.page('/', shared=True)
+    def page():
+        ui.label('Hello, world!')
+
+    user.open('/')
+    user.should_see('NiceGUI')
+    user.should_see('Hello, world!')
+
+
+def test_auto_index_page(user: User):
+    ui.label('Hello, world!')
+
+    user.open('/')
+    user.should_see('NiceGUI')
+    user.should_see('Hello, world!')
+
+
+def test_custom_title(user: User):
     @ui.page('/', title='My Custom Title')
     def page():
-        ui.label('some content')
+        ui.label('Hello, world!')
 
     user.open('/')
     user.should_see('My Custom Title')
+    user.should_see('Hello, world!')
 
 
 def test_route_with_custom_path(user: User):

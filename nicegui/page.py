@@ -168,9 +168,8 @@ def page(self,
                 on_disconnect=on_disconnect,
                 shared=shared,
             )
-            globals.view_stack.append(page.view)
-            await func() if is_coroutine(func) else func()
-            globals.view_stack.pop()
+            with globals.within_view(page.view):
+                await func() if is_coroutine(func) else func()
             return page
         builder = PageBuilder(decorated, shared)
         if globals.server:
@@ -181,13 +180,14 @@ def page(self,
 
 
 def find_parent_view() -> jp.HTMLBaseComponent:
-    if not globals.view_stack:
+    view_stack = globals.get_view_stack()
+    if not view_stack:
         if globals.loop and globals.loop.is_running():
             raise RuntimeError('cannot find parent view, view stack is empty')
         page = Page(shared=True)
-        globals.view_stack.append(page.view)
+        view_stack.append(page.view)
         jp.Route('/', page._route_function)
-    return globals.view_stack[-1]
+    return view_stack[-1]
 
 
 def error404() -> jp.QuasarPage:
@@ -204,14 +204,15 @@ def error404() -> jp.QuasarPage:
 
 
 def init_auto_index_page() -> None:
-    if not globals.view_stack:
+    view_stack = globals.view_stacks.get(0)
+    if not view_stack:
         return  # there is no auto-index page on the view stack
-    page: Page = globals.view_stack.pop().pages[0]
+    page: Page = view_stack.pop().pages[0]
     page.title = globals.config.title
     page.favicon = globals.config.favicon
     page.dark = globals.config.dark
     page.view.classes = globals.config.main_page_classes
-    assert len(globals.view_stack) == 0
+    assert len(view_stack) == 0
 
 
 def create_page_routes() -> None:

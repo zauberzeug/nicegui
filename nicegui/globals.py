@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Awaitable, Callable, Dict, List, Optional, Union
+from contextlib import contextmanager
+from typing import Awaitable, Callable, Dict, Generator, List, Optional, Union
 
 import justpy as jp
 from starlette.applications import Starlette
@@ -10,13 +11,14 @@ from uvicorn import Server
 
 from .config import Config
 from .page_builder import PageBuilder
+from .task_logger import create_task
 
 app: Starlette
 config: Optional[Config] = None
 server: Optional[Server] = None
 loop: Optional[asyncio.AbstractEventLoop] = None
 page_builders: Dict[str, 'PageBuilder'] = {}
-view_stack: List[jp.HTMLBaseComponent] = []
+view_stacks: Dict[List[jp.HTMLBaseComponent]] = {}
 tasks: List[asyncio.tasks.Task] = []
 log: logging.Logger = logging.getLogger('nicegui')
 connect_handlers: List[Union[Callable, Awaitable]] = []
@@ -30,3 +32,31 @@ def find_route(function: Callable) -> str:
     if not routes:
         raise ValueError(f'Invalid page function {function}')
     return routes[0]
+
+
+def get_task_id() -> int:
+    return id(asyncio.current_task()) if loop and loop.is_running() else 0
+
+
+def get_view_stack() -> List[jp.HTMLBaseComponent]:
+    task_id = get_task_id()
+    if task_id not in view_stacks:
+        view_stacks[task_id] = []
+    return view_stacks[task_id]
+
+
+def prune_view_stack() -> None:
+    task_id = get_task_id()
+    if not view_stacks[task_id]:
+        del view_stacks[task_id]
+
+
+@contextmanager
+def within_view(view: jp.HTMLBaseComponent) -> Generator[None, None, None]:
+    child_count = len(view)
+    get_view_stack().append(view)
+    yield
+    get_view_stack().pop()
+    prune_view_stack()
+    if len(view) != child_count:
+        create_task(view.update())

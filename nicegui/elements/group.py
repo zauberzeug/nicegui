@@ -12,13 +12,14 @@ from .element import Element
 class Group(Element):
 
     def __enter__(self):
-        globals.view_stack.append(self.view)
+        self._child_count_on_enter = len(self.view)
+        globals.get_view_stack().append(self.view)
         return self
 
     def __exit__(self, *_):
-        globals.view_stack.pop()
-        if len(globals.view_stack) <= 1:
-            self.update()  # NOTE: update when we are back on top of the stack (only the first page is in view stack)
+        globals.get_view_stack().pop()
+        if self._child_count_on_enter != len(self.view):
+            self.update()
 
     def tight(self) -> Group:
         return self.classes(replace='').style(replace='')

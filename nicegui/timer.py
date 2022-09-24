@@ -7,6 +7,7 @@ from typing import Callable, List
 from . import globals
 from .binding import BindableProperty
 from .helpers import is_coroutine
+from .page import find_parent_view
 from .task_logger import create_task
 
 NamedCoroutine = namedtuple('NamedCoroutine', ['name', 'coro'])
@@ -32,13 +33,14 @@ class Timer:
 
         self.active = active
         self.interval = interval
+        self.parent_view = find_parent_view()
 
         async def do_callback():
             try:
-                if is_coroutine(callback):
-                    return await callback()
-                else:
-                    return callback()
+                with globals.within_view(self.parent_view):
+                    result = callback()
+                    if is_coroutine(callback):
+                        await result
             except Exception:
                 traceback.print_exc()
 

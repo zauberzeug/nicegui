@@ -108,14 +108,14 @@ class Scene(Element):
         super().__init__(SceneView(width=width, height=height, on_click=on_click))
 
     def __enter__(self):
-        globals.view_stack.append(self.view)
+        globals.get_view_stack().append(self.view)
         scene = self.view.objects.get('scene', SceneObject(self.view, self.page))
         Object3D.stack.clear()
         Object3D.stack.append(scene)
         return self
 
     def __exit__(self, *_):
-        globals.view_stack.pop()
+        globals.get_view_stack().pop()
 
     def move_camera(self,
                     x: Optional[float] = None,
