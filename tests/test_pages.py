@@ -1,6 +1,7 @@
+import asyncio
 from uuid import uuid4
 
-from nicegui import ui
+from nicegui import task_logger, ui
 
 from .user import User
 
@@ -107,3 +108,25 @@ def test_shared_and_individual_pages(user: User):
     user.open('/individual_page')
     uuid2 = user.find('individual page').text.split()[-1]
     assert uuid1 != uuid2
+
+
+def test_on_page_ready_event(user: User):
+    '''This feature was introduced to fix #50; see https://github.com/zauberzeug/nicegui/issues/50#issuecomment-1210962617.'''
+
+    async def load():
+        label.text = 'loading...'
+        # NOTE we can not use asyncio.create_task() here because we are on a different thread than the nicegui event loop
+        task_logger.create_task(takes_a_while())
+
+    async def takes_a_while():
+        await asyncio.sleep(0.1)
+        label.text = 'delayed data has been loaded'
+
+    @ui.page('/', on_page_ready=load)
+    def page():
+        global label
+        label = ui.label()
+
+    user.open('/')
+    user.sleep(0.2)
+    user.should_see('delayed data has been loaded')
