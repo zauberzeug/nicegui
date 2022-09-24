@@ -1,6 +1,7 @@
 import threading
 import time
 
+import pytest
 from nicegui import globals, ui
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -44,6 +45,12 @@ class User():
 
     def should_see(self, text: str) -> None:
         assert self.selenium.title == text or self.find(text).text == text
+
+    def should_not_see(self, text: str) -> None:
+        assert self.selenium.title != text
+        with pytest.raises(AssertionError):
+            element = self.find(text)
+            print(element.get_attribute('outerHTML'))
 
     def click(self, target_text: str) -> None:
         self.find(target_text).click()

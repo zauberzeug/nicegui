@@ -5,7 +5,7 @@ from nicegui import ui
 from .user import User
 
 
-def test_adding_element_to_index_page(user: User):
+def test_adding_element_to_shared_index_page(user: User):
     ui.button('add label', on_click=lambda: ui.label('added'))
 
     user.open('/')
