@@ -1,14 +1,20 @@
+
 from nicegui import ui
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 
 from .user import User
 
 
 def test_keyboard(user: User):
-    ui.keyboard()
+    result = ui.label('')
+    ui.keyboard(on_key=lambda e: result.set_text(f'{e.key, e.action}'))
 
     user.open('/')
     assert any(s.endswith('keyboard.js') for s in user.get_attributes('script', 'src'))
-    assert user.selenium.find_element_by_tag_name('span')
+    assert user.selenium.find_element_by_tag_name('span')  # NOTE keyboard dom element is a span
+    ActionChains(user.selenium).send_keys('t').perform()
+    user.should_see('t, KeyboardAction(keydown=False, keyup=True, repeat=False)')
 
 
 def test_classes(user: User):
