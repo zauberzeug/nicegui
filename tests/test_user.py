@@ -11,9 +11,24 @@ def test_rendering_page(user: User):
         ui.label('1')
         ui.label('2')
         ui.label('3')
+    with ui.card():
+        ui.label('some text')
 
     user.open('/')
     assert user.page() == '''Title: NiceGUI
+
+test label
+row
+  test input: some placeholder
+column
+  1
+  2
+  3
+card
+  some text
+'''
+
+    assert user.page(with_extras=True) == '''Title: NiceGUI
 
 test label
 row [class: items-start positive]
@@ -22,4 +37,6 @@ column [class: items-start]
   1
   2
   3
+card [class: items-start q-pa-md]
+  some text
 '''
