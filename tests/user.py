@@ -7,7 +7,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.remote.webelement import WebElement
 
 PORT = 3392
-IGNORED_CLASSES = ['row', 'column', 'q-field', 'q-field__label', 'q-input']
+IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-input']
 
 
 class User():
@@ -54,10 +54,11 @@ class User():
         except NoSuchElementException:
             raise AssertionError(f'Could not find "{text}" on:\n{self.page()}')
 
-    def page(self) -> str:
-        return f'Title: {self.selenium.title}\n\n' + self.content(self.selenium.find_element_by_tag_name('body'))
+    def page(self, with_extras: bool = False) -> str:
+        return f'Title: {self.selenium.title}\n\n' + \
+            self.content(self.selenium.find_element_by_tag_name('body'), with_extras=with_extras)
 
-    def content(self, element: WebElement, indent: str = '') -> str:
+    def content(self, element: WebElement, indent: str = '', with_extras: bool = False) -> str:
         content = ''
         classes: list[str] = []
         for child in element.find_elements_by_xpath('./*'):
@@ -70,8 +71,8 @@ class User():
                 content += f'{indent}{child.text}'
             classes = child.get_attribute('class').strip().split()
             if classes:
-                if classes[0] in ['row', 'column']:
-                    content += classes[0]
+                if classes[0] in ['row', 'column', 'q-card']:
+                    content += classes[0].removeprefix('q-')
                     is_element = True
                     is_group = True
                 if classes[0] == 'q-field':
@@ -87,12 +88,12 @@ class User():
                 [classes.remove(c) for c in IGNORED_CLASSES if c in classes]
                 for i, c in enumerate(classes):
                     classes[i] = c.removeprefix('q-field--')
-                if is_element:
+                if is_element and with_extras:
                     content += f' [class: {" ".join(classes)}]'
             if is_element:
                 content += '\n'
             if render_children:
-                content += self.content(child, indent + ('  ' if is_group else ''))
+                content += self.content(child, indent + ('  ' if is_group else ''), with_extras)
         return content
 
     def get_tags(self, name: str) -> list[WebElement]:
