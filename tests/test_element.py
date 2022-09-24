@@ -1,7 +1,6 @@
 
 from nicegui import ui
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.keys import Keys
 
 from .user import User
 
