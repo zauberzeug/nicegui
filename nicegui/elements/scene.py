@@ -76,6 +76,9 @@ class SceneView(CustomView):
             pass
         return True
 
+    def __len__(self):
+        return len(self.objects)
+
 
 class Scene(Element):
     from .scene_objects import Box as box
