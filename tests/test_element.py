@@ -3,6 +3,14 @@ from nicegui import ui
 from .user import User
 
 
+def test_keyboard(user: User):
+    ui.keyboard()
+
+    user.open('/')
+    assert any(s.endswith('keyboard.js') for s in user.get_attributes('script', 'src'))
+    assert user.selenium.find_element_by_tag_name('span')
+
+
 def test_classes(user: User):
     label = ui.label('Some label')
 

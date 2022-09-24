@@ -38,8 +38,6 @@ def reset_globals() -> Generator[None, None, None]:
     WebPage.next_page_id = 0
     JustpyBaseComponent.instances.clear()
     JustpyBaseComponent.next_id = 0
-    jp.component_file_list = jp.create_component_file_list()
-    jp.template_options['component_file_list'] = jp.component_file_list
     importlib.reload(globals)
 
 
