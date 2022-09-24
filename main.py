@@ -215,11 +215,11 @@ def index():
 
     captions_and_overlays = '''#### Captions and Overlays
 
-    By nesting elements inside a `ui.image` you can create augmentations.
+By nesting elements inside a `ui.image` you can create augmentations.
 
-    Use [Quasar classes](https://quasar.dev/vue-components/img) for positioning and styling captions.
-    To overlay an SVG, make the `viewBox` exactly the size of the image and provide `100%` width/height to match the actual rendered size.
-    '''
+Use [Quasar classes](https://quasar.dev/vue-components/img) for positioning and styling captions.
+To overlay an SVG, make the `viewBox` exactly the size of the image and provide `100%` width/height to match the actual rendered size.
+'''
     with example(captions_and_overlays):
         with ui.image('http://placeimg.com/640/360/nature'):
             ui.label('Nice!').classes('absolute-bottom text-subtitle2 text-center')
@@ -369,8 +369,8 @@ def index():
 
     clear_containers = '''#### Clear Containers
 
-    To remove all elements from a row, column or card container, use the `clear()` method.
-    '''
+To remove all elements from a row, column or card container, use the `clear()` method.
+'''
     with example(clear_containers):
         container = ui.row()
 
@@ -399,8 +399,8 @@ def index():
 
     tooltips = '''#### Tooltips
 
-    Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
-    '''
+Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
+'''
     with example(tooltips):
         ui.label('Tooltips...').tooltip('...are shown on mouse over')
         ui.button().props('icon=thumb_up').tooltip('I like this')
@@ -417,10 +417,10 @@ def index():
 
     async_dialog = '''#### Awaitable dialog
 
-    Dialogs can be awaited.
-    Use the `submit` method to close the dialog and return a result.
-    Canceling the dialog by clicking in the background or pressing the escape key yields `None`.
-    '''
+Dialogs can be awaited.
+Use the `submit` method to close the dialog and return a result.
+Canceling the dialog by clicking in the background or pressing the escape key yields `None`.
+'''
     with example(async_dialog):
         with ui.dialog() as dialog, ui.card():
             ui.label('Are you sure?')
@@ -438,15 +438,15 @@ def index():
 
     design = '''#### Styling
 
-    NiceGUI uses the [Quasar Framework](https://quasar.dev/) version 1.0 and hence has its full design power.
-    Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
-    Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
-    You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method.
+NiceGUI uses the [Quasar Framework](https://quasar.dev/) version 1.0 and hence has its full design power.
+Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
+Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
+You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method.
 
-    If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
+If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
 
-    All three functions also provide `remove` and `replace` parameters in case the predefined look is not wanted in a particular styling.
-    '''
+All three functions also provide `remove` and `replace` parameters in case the predefined look is not wanted in a particular styling.
+'''
     with example(design):
         ui.radio(['x', 'y', 'z'], value='x').props('inline color=green')
         ui.button().props('icon=touch_app outline round').classes('shadow-lg')
@@ -461,16 +461,16 @@ def index():
 
     lifecycle = '''#### Lifecycle
 
-    You can run a function or coroutine as a parallel task by passing it to one of the following register methods:
+You can run a function or coroutine as a parallel task by passing it to one of the following register methods:
 
-    - `ui.on_startup`: Called when NiceGUI is started or restarted.
-    - `ui.on_shutdown`: Called when NiceGUI is shut down or restarted.
-    - `ui.on_connect`: Called when a client connects to NiceGUI. (Optional argument: Starlette request)
-    - `ui.on_page_ready`: Called when the page is ready and the websocket is connected. (Optional argument: socket)
-    - `ui.on_disconnect`: Called when a client disconnects from NiceGUI. (Optional argument: socket)
+- `ui.on_startup`: Called when NiceGUI is started or restarted.
+- `ui.on_shutdown`: Called when NiceGUI is shut down or restarted.
+- `ui.on_connect`: Called when a client connects to NiceGUI. (Optional argument: Starlette request)
+- `ui.on_page_ready`: Called when the page is ready and the websocket is connected. (Optional argument: socket)
+- `ui.on_disconnect`: Called when a client disconnects from NiceGUI. (Optional argument: socket)
 
-    When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
-    '''
+When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
+'''
     with example(lifecycle):
         import asyncio
         import time
@@ -527,13 +527,13 @@ def index():
 
     bindings = '''#### Bindings
 
-    NiceGUI is able to directly bind UI elements to models.
-    Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes.
+NiceGUI is able to directly bind UI elements to models.
+Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes.
 
-    Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property.
-    To define a one-way binding use the `_from` and `_to` variants of these methods.
-    Just pass a property of the model as parameter to these methods to create the binding.
-    '''
+Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property.
+To define a one-way binding use the `_from` and `_to` variants of these methods.
+Just pass a property of the model as parameter to these methods to create the binding.
+'''
     with example(bindings):
         class Demo:
             def __init__(self):
@@ -548,10 +548,10 @@ def index():
 
     ui_updates = '''#### UI Updates
 
-    NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed.
-    In other cases, you can explicitly call `element.update()` or `ui.update(*elements)` to update.
-    The example code shows both methods for a `ui.table`, where it is difficult to automatically detect changes in the `options` dictionary.
-    '''
+NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed.
+In other cases, you can explicitly call `element.update()` or `ui.update(*elements)` to update.
+The example code shows both methods for a `ui.table`, where it is difficult to automatically detect changes in the `options` dictionary.
+'''
     with example(ui_updates):
         from random import randint
 
@@ -569,10 +569,10 @@ def index():
 
     async_handlers = '''#### Async event handlers
 
-    Most elements also support asynchronous event handlers.
+Most elements also support asynchronous event handlers.
 
-    Note: You can also pass a `functools.partial` into the `on_click` property to wrap async functions with parameters.
-    '''
+Note: You can also pass a `functools.partial` into the `on_click` property to wrap async functions with parameters.
+'''
     with example(async_handlers):
         async def async_task():
             ui.notify('Asynchronous task started')
@@ -599,19 +599,19 @@ def index():
 
     shared_and_private_pages = '''#### Shared and Private Pages
 
-    By default, pages created with the `@ui.page` decorator are "private".
-    Their content is re-created for each client.
-    Thus, in the example to the right, the displayed ID changes when the browser reloads the page.
+By default, pages created with the `@ui.page` decorator are "private".
+Their content is re-created for each client.
+Thus, in the example to the right, the displayed ID changes when the browser reloads the page.
 
-    With `shared=True` you can create a shared page.
-    Its content is created once at startup and each client sees the *same* elements.
-    Here, the displayed ID remains constant when the browser reloads the page.
+With `shared=True` you can create a shared page.
+Its content is created once at startup and each client sees the *same* elements.
+Here, the displayed ID remains constant when the browser reloads the page.
 
-    #### Index page
+#### Index page
 
-    All elements that are not created within a decorated page function are automatically added to a new, *shared* index page at route "/".
-    To make it "private" or to change other attributes like title, favicon etc. you can wrap it in a page function with `@ui.page('/', ...)` decorator.
-    '''
+All elements that are not created within a decorated page function are automatically added to a new, *shared* index page at route "/".
+To make it "private" or to change other attributes like title, favicon etc. you can wrap it in a page function with `@ui.page('/', ...)` decorator.
+'''
     with example(shared_and_private_pages):
         from uuid import uuid4
 
@@ -636,9 +636,9 @@ def index():
 
     add_route = '''#### Route
 
-    Add a new route by calling `ui.add_route` with a starlette route including a path and a function to be called.
-    Routed paths must start with a `'/'`.
-    '''
+Add a new route by calling `ui.add_route` with a starlette route including a path and a function to be called.
+Routed paths must start with a `'/'`.
+'''
     with example(add_route):
         import starlette
 
@@ -650,13 +650,13 @@ def index():
 
     get_decorator = '''#### Get decorator
 
-    Syntactic sugar to add routes.
-    Decorating a function with the `@ui.get` makes it available at the specified endpoint, e.g. `'/another/route/<id>'`.
+Syntactic sugar to add routes.
+Decorating a function with the `@ui.get` makes it available at the specified endpoint, e.g. `'/another/route/<id>'`.
 
-    Path parameters can be passed to the request handler like with [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/).
-    If type-annotated, they are automatically converted to `bool`, `int`, `float` and `complex` values.
-    An optional `request` argument gives access to the complete request object.
-    '''
+Path parameters can be passed to the request handler like with [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/).
+If type-annotated, they are automatically converted to `bool`, `int`, `float` and `complex` values.
+An optional `request` argument gives access to the complete request object.
+'''
     with example(get_decorator):
         from starlette import requests, responses
 
@@ -668,12 +668,12 @@ def index():
 
     sessions = '''#### Sessions
 
-    `ui.page` provides an optional `on_connect` argument to register a callback.
-    It is invoked for each new connection to the page.
+`ui.page` provides an optional `on_connect` argument to register a callback.
+It is invoked for each new connection to the page.
 
-    The optional `request` argument provides insights about the clients URL parameters etc. (see [the JustPy docs](https://justpy.io/tutorial/request_object/) for more details).
-    It also enables you to identify sessions over [longer time spans by configuring cookies](https://justpy.io/tutorial/sessions/).
-    '''
+The optional `request` argument provides insights about the clients URL parameters etc. (see [the JustPy docs](https://justpy.io/tutorial/request_object/) for more details).
+It also enables you to identify sessions over [longer time spans by configuring cookies](https://justpy.io/tutorial/sessions/).
+'''
     with example(sessions):
         from collections import Counter
         from datetime import datetime
@@ -696,12 +696,12 @@ def index():
 
     javascript = '''#### JavaScript
 
-    With `ui.run_javascript()` you can run arbitrary JavaScript code on a page that is executed in the browser.
-    The asynchronous function will return after sending the command.
+With `ui.run_javascript()` you can run arbitrary JavaScript code on a page that is executed in the browser.
+The asynchronous function will return after sending the command.
 
-    With `ui.await_javascript()` you can send a JavaScript command and wait for its response.
-    The asynchronous function will only return after receiving the result.
-    '''
+With `ui.await_javascript()` you can send a JavaScript command and wait for its response.
+The asynchronous function will only return after receiving the result.
+'''
     with example(javascript):
         async def run_javascript():
             await ui.run_javascript('alert("Hello!")')
