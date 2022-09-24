@@ -9,12 +9,6 @@ import docutils.core
 from nicegui import ui
 from traffic_tracking import TrafficChard as traffic_chart
 
-# add docutils css to webpage
-ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
-
-# avoid display:block for PyPI/Docker/GitHub badges
-ui.add_head_html('<style>p a img {display: inline; vertical-align: baseline}</style>')
-
 
 @contextmanager
 def example(content: Union[Callable, type, str]):
@@ -76,6 +70,11 @@ def example(content: Union[Callable, type, str]):
 
 @ui.page('/')
 def index():
+    # add docutils css to webpage
+    ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
+    # avoid display:block for PyPI/Docker/GitHub badges
+    ui.add_head_html('<style>p a img {display: inline; vertical-align: baseline}</style>')
+
     ui.html(
         '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css" />'
         '<style>.github-fork-ribbon:before { background-color: #999; }</style>'
@@ -195,8 +194,8 @@ def index():
 
     svg = '''#### SVG
 
-    You can add Scalable Vector Graphics using the `ui.html` element.
-    '''
+You can add Scalable Vector Graphics using the `ui.html` element.
+'''
     with example(svg):
         content = '''
             <svg viewBox="0 0 200 200" width="100" height="100" xmlns="http://www.w3.org/2000/svg">
