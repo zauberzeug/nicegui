@@ -70,7 +70,7 @@ class Element:
         This can be helpful if the predefined style sheet definitions by NiceGUI are not wanted in a particular styling.
         '''
         def str_to_dict(s: Optional[str]) -> Dict[str, str]:
-            return dict((word.strip() for word in part.split(':')) for part in s.split(';')) if s else {}
+            return dict((word.strip() for word in part.split(':')) for part in s.strip('; ').split(';')) if s else {}
         style_dict = str_to_dict((self.view.style or '').strip('; ')) if replace is None else {}
         for key in str_to_dict(remove):
             del style_dict[key]

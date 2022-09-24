@@ -1,4 +1,3 @@
-
 from nicegui import ui
 
 from .user import User
