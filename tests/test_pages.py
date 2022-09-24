@@ -128,5 +128,4 @@ def test_on_page_ready_event(user: User):
         label = ui.label()
 
     user.open('/')
-    user.sleep(0.2)
     user.should_see('delayed data has been loaded')
