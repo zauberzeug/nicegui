@@ -68,6 +68,9 @@ def test_style(user: User):
     label.style(replace='text-decoration: underline')
     assert_style('text-decoration: underline;')
 
+    label.style('color: blue;')
+    assert_style('text-decoration: underline; color: blue;')
+
 
 def test_props(user: User):
     input = ui.input()
