@@ -12,7 +12,7 @@ PORT = 3392
 IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-input']
 
 
-class User():
+class Screen():
 
     def __init__(self, selenium: webdriver.Chrome) -> None:
         self.selenium = selenium
@@ -44,11 +44,11 @@ class User():
                 if not self.server_thread.is_alive():
                     raise RuntimeError('The NiceGUI server has stopped running')
 
-    def should_see(self, text: str) -> None:
+    def should_contain(self, text: str) -> None:
         assert self.selenium.title == text or self.find(text), \
-            f'could not find "{text}" on:\n{self.page()}'
+            f'could not find "{text}" on:\n{self.render_content()}'
 
-    def should_not_see(self, text: str) -> None:
+    def should_not_contain(self, text: str) -> None:
         assert self.selenium.title != text
         with pytest.raises(AssertionError):
             element = self.find(text)
@@ -61,9 +61,9 @@ class User():
         try:
             return self.selenium.find_element_by_xpath(f'//*[contains(text(),"{text}")]')
         except NoSuchElementException:
-            raise AssertionError(f'Could not find "{text}" on:\n{self.page()}')
+            raise AssertionError(f'Could not find "{text}" on:\n{self.render_content()}')
 
-    def page(self, with_extras: bool = False) -> str:
+    def render_content(self, with_extras: bool = False) -> str:
         body = self.selenium.find_element_by_tag_name('body').get_attribute('innerHTML')
         soup = BeautifulSoup(body, 'html.parser')
         self.simplify_input_tags(soup)
@@ -112,5 +112,5 @@ class User():
     def get_attributes(self, tag: str, attribute: str) -> list[str]:
         return [t.get_attribute(attribute) for t in self.get_tags(tag)]
 
-    def sleep(self, t: float) -> None:
+    def wait(self, t: float) -> None:
         time.sleep(t)

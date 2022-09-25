@@ -10,7 +10,7 @@ from justpy.htmlcomponents import JustpyBaseComponent, WebPage
 from nicegui import globals
 from selenium import webdriver
 
-from .user import User
+from .screen import Screen
 
 icecream.install()
 
@@ -42,10 +42,10 @@ def reset_globals() -> Generator[None, None, None]:
 
 
 @pytest.fixture()
-def user(selenium: webdriver.Chrome) -> Generator[User, None, None]:
-    user = User(selenium)
-    yield user
-    user.stop_server()
+def screen(selenium: webdriver.Chrome) -> Generator[Screen, None, None]:
+    screen = Screen(selenium)
+    yield screen
+    screen.stop_server()
 
 
 @pytest.fixture

@@ -1,9 +1,9 @@
 from nicegui import ui
 
-from .user import User
+from .screen import Screen
 
 
-def test_rendering_page(user: User):
+def test_rendering_page(screen: Screen):
     ui.label('test label')
     with ui.row().classes('positive'):
         ui.input('test input', placeholder='some placeholder')
@@ -14,8 +14,8 @@ def test_rendering_page(user: User):
     with ui.card():
         ui.label('some text')
 
-    user.open('/')
-    assert user.page() == '''Title: NiceGUI
+    screen.open('/')
+    assert screen.render_content() == '''Title: NiceGUI
 
 test label
 row
@@ -28,7 +28,7 @@ card
   some text
 '''
 
-    assert user.page(with_extras=True) == '''Title: NiceGUI
+    assert screen.render_content(with_extras=True) == '''Title: NiceGUI
 
 test label
 row [class: items-start positive]

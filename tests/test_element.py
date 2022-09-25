@@ -2,27 +2,28 @@
 from nicegui import ui
 from selenium.webdriver.common.action_chains import ActionChains
 
-from .user import User
+from .screen import Screen
 
 
-def test_keyboard(user: User):
+def test_keyboard(screen: Screen):
     result = ui.label('')
     ui.keyboard(on_key=lambda e: result.set_text(f'{e.key, e.action}'))
 
-    user.open('/')
-    assert any(s.endswith('keyboard.js') for s in user.get_attributes('script', 'src'))
-    assert user.selenium.find_element_by_tag_name('span')  # NOTE keyboard dom element is a span
-    ActionChains(user.selenium).send_keys('t').perform()
-    user.should_see('t, KeyboardAction(keydown=False, keyup=True, repeat=False)')
+    screen.open('/')
+    assert any(s.endswith('keyboard.js') for s in screen.get_attributes('script', 'src'))
+    assert screen.selenium.find_element_by_tag_name('span')  # NOTE keyboard dom element is a span
+    ActionChains(screen.selenium).send_keys('t').perform()
+    screen.should_contain('t, KeyboardAction(keydown=False, keyup=True, repeat=False)')
 
 
-def test_classes(user: User):
+def test_classes(screen: Screen):
     label = ui.label('Some label')
 
     def assert_classes(classes: str) -> None:
-        assert user.selenium.find_element_by_xpath(f'//*[normalize-space(@class)="{classes}" and text()="Some label"]')
+        assert screen.selenium.find_element_by_xpath(
+            f'//*[normalize-space(@class)="{classes}" and text()="Some label"]')
 
-    user.open('/')
+    screen.open('/')
     assert_classes('')
 
     label.classes('one')
@@ -41,13 +42,13 @@ def test_classes(user: User):
     assert_classes('four')
 
 
-def test_style(user: User):
+def test_style(screen: Screen):
     label = ui.label('Some label')
 
     def assert_style(style: str) -> None:
-        assert user.selenium.find_element_by_xpath(f'//*[normalize-space(@style)="{style}" and text()="Some label"]')
+        assert screen.selenium.find_element_by_xpath(f'//*[normalize-space(@style)="{style}" and text()="Some label"]')
 
-    user.open('/')
+    screen.open('/')
     assert_style('')
 
     label.style('color: red')
@@ -72,14 +73,14 @@ def test_style(user: User):
     assert_style('text-decoration: underline; color: blue;')
 
 
-def test_props(user: User):
+def test_props(screen: Screen):
     input = ui.input()
 
     def assert_props(*props: str) -> None:
         class_conditions = [f'contains(@class, "q-field--{prop}")' for prop in props]
-        assert user.selenium.find_element_by_xpath(f'//label[{" and ".join(class_conditions)}]')
+        assert screen.selenium.find_element_by_xpath(f'//label[{" and ".join(class_conditions)}]')
 
-    user.open('/')
+    screen.open('/')
     assert_props('standard', 'labeled')
 
     input.props('dark')
