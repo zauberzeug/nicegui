@@ -26,6 +26,10 @@ jobs:
           poetry install
       - name: test startup
         run: ./test_startup.sh
+      - name: setup chromedriver
+        uses: nanasess/setup-chromedriver@v1
+      - name: pytest
+        run: pytest
 
   slack:
     needs:
