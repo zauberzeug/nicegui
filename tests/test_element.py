@@ -11,6 +11,7 @@ def test_keyboard(screen: Screen):
     ui.keyboard(on_key=lambda e: result.set_text(f'{e.key, e.action}'))
 
     screen.open('/')
+    screen.wait(0.5)
     assert any(s.endswith('keyboard.js') for s in screen.get_attributes('script', 'src'))
     assert screen.get_tags('span')  # NOTE keyboard dom element is a span
     ActionChains(screen.selenium).send_keys('t').perform()
