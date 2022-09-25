@@ -614,6 +614,21 @@ toml = "*"
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xmlschema"]
 
 [[package]]
+name = "pytest-asyncio"
+version = "0.19.0"
+description = "Pytest support for asyncio"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+pytest = ">=6.1.0"
+typing-extensions = {version = ">=3.7.2", markers = "python_version < \"3.8\""}
+
+[package.extras]
+testing = ["coverage (>=6.2)", "hypothesis (>=5.7.1)", "flaky (>=3.5.0)", "mypy (>=0.931)", "pytest-trio (>=0.7.0)"]
+
+[[package]]
 name = "pytest-base-url"
 version = "2.0.0"
 description = "pytest plugin for URL based testing"
@@ -1039,7 +1054,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "8c992cd136d9341a28ba65513d28172dd1f13f69e063779dababa6767ef27845"
+content-hash = "ac26e59e1627db64de9084eeb8e8e5b1622bb4bdb6f649eff9e7ca483744409e"
 
 [metadata.files]
 addict = []
@@ -1094,6 +1109,7 @@ pygments = []
 pyparsing = []
 pysocks = []
 pytest = []
+pytest-asyncio = []
 pytest-base-url = []
 pytest-html = []
 pytest-metadata = []
