@@ -1,5 +1,6 @@
 import threading
 import time
+from typing import List
 
 import pytest
 from bs4 import BeautifulSoup
@@ -106,10 +107,10 @@ class Screen():
             new['class'] = element['class']
             element.replace_with(new)
 
-    def get_tags(self, name: str) -> list[WebElement]:
+    def get_tags(self, name: str) -> List[WebElement]:
         return self.selenium.find_elements_by_tag_name(name)
 
-    def get_attributes(self, tag: str, attribute: str) -> list[str]:
+    def get_attributes(self, tag: str, attribute: str) -> List[str]:
         return [t.get_attribute(attribute) for t in self.get_tags(tag)]
 
     def wait(self, t: float) -> None:
