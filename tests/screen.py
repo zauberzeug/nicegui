@@ -10,6 +10,8 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
+from .helper import remove_prefix
+
 PORT = 3392
 IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-input']
 
@@ -81,13 +83,13 @@ class Screen():
             classes = child.get('class', '')
             if classes:
                 if classes[0] in ['row', 'column', 'q-card']:
-                    content += depth + classes[0].removeprefix('q-')
+                    content += depth + remove_prefix(classes[0], 'q-')
                     is_element = True
                 if classes[0] == 'q-field':
                     pass
                 [classes.remove(c) for c in IGNORED_CLASSES if c in classes]
                 for i, c in enumerate(classes):
-                    classes[i] = c.removeprefix('q-field--')
+                    classes[i] = remove_prefix(c, 'q-field--')
                 if is_element and with_extras:
                     content += f' [class: {" ".join(classes)}]'
 
