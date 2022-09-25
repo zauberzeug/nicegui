@@ -98,6 +98,18 @@ class Screen():
 
         return f'Title: {self.selenium.title}\n\n{content}'
 
+    def render_html(self) -> str:
+        body = self.selenium.page_source
+        soup = BeautifulSoup(body, 'html.parser')
+        for element in soup.find_all():
+            if element.name in ['script', 'style'] and len(element.text) > 10:
+                element.string = '... removed lengthly content ...'
+        return soup.prettify()
+
+    def render_logs(self) -> str:
+        console = '\n'.join([l['message'] for l in self.selenium.get_log('browser')])
+        return f'-- console logs ---\n{console}\n---------------------'
+
     @staticmethod
     def simplify_input_tags(soup: BeautifulSoup) -> None:
         for element in soup.find_all(class_="q-field"):
