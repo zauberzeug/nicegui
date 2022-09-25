@@ -59,6 +59,21 @@ pycodestyle = ">=2.8.0"
 toml = "*"
 
 [[package]]
+name = "beautifulsoup4"
+version = "4.11.1"
+description = "Screen-scraping library"
+category = "dev"
+optional = false
+python-versions = ">=3.6.0"
+
+[package.dependencies]
+soupsieve = ">1.2"
+
+[package.extras]
+html5lib = ["html5lib"]
+lxml = ["lxml"]
+
+[[package]]
 name = "bleach"
 version = "5.0.0"
 description = "An easy safelist-based HTML-sanitizing tool."
@@ -635,6 +650,14 @@ optional = false
 python-versions = ">=3.5"
 
 [[package]]
+name = "soupsieve"
+version = "2.3.2.post1"
+description = "A modern CSS selector implementation for Beautiful Soup."
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
 name = "starlette"
 version = "0.20.4"
 description = "The little ASGI library that shines."
@@ -763,7 +786,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "ddd798736f6dcc5bcab2b3ea70f09e73e324b9b2be2a9a53b97ae6826ac969d9"
+content-hash = "0e519b5bdbf2cb497b54df422c1ed190079bfae5f8ba836d4534d5439da5139d"
 
 [metadata.files]
 addict = []
@@ -771,6 +794,7 @@ aiofiles = []
 anyio = []
 asttokens = []
 autopep8 = []
+beautifulsoup4 = []
 bleach = []
 certifi = []
 cffi = []
@@ -819,6 +843,7 @@ secretstorage = []
 setuptools-scm = []
 six = []
 sniffio = []
+soupsieve = []
 starlette = []
 toml = []
 tomli = []

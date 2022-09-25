@@ -2,6 +2,7 @@ import threading
 import time
 
 import pytest
+from bs4 import BeautifulSoup
 from nicegui import globals, ui
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -63,46 +64,47 @@ class User():
             raise AssertionError(f'Could not find "{text}" on:\n{self.page()}')
 
     def page(self, with_extras: bool = False) -> str:
-        return f'Title: {self.selenium.title}\n\n' + \
-            self.content(self.selenium.find_element_by_tag_name('body'), with_extras=with_extras)
-
-    def content(self, element: WebElement, indent: str = '', with_extras: bool = False) -> str:
+        body = self.selenium.find_element_by_tag_name('body').get_attribute('innerHTML')
+        soup = BeautifulSoup(body, 'html.parser')
+        self.simplify_input_tags(soup)
         content = ''
-        classes: list[str] = []
-        for child in element.find_elements_by_xpath('./*'):
+        for child in soup.find_all():
             is_element = False
-            is_group = False
-            render_children = True
-            assert isinstance(child, WebElement)
-            if not child.find_elements_by_xpath('./*') and child.text:
+            if child is None or child.name == 'script':
+                continue
+            depth = (len(list(child.parents)) - 3) * '  '
+            if not child.find_all() and child.text:
+                content += depth + child.getText()
                 is_element = True
-                content += f'{indent}{child.text}'
-            classes = child.get_attribute('class').strip().split()
+            classes = child.get('class', '')
             if classes:
                 if classes[0] in ['row', 'column', 'q-card']:
-                    content += classes[0].removeprefix('q-')
+                    content += depth + classes[0].removeprefix('q-')
                     is_element = True
-                    is_group = True
                 if classes[0] == 'q-field':
-                    try:
-                        name = child.find_element_by_class_name('q-field__label').text
-                    except NoSuchElementException:
-                        name = ''
-                    input = child.find_element_by_tag_name('input')
-                    value = input.get_attribute('value') or input.get_attribute('placeholder')
-                    content += f'{indent}{name}: {value}'
-                    render_children = False
-                    is_element = True
+                    pass
                 [classes.remove(c) for c in IGNORED_CLASSES if c in classes]
                 for i, c in enumerate(classes):
                     classes[i] = c.removeprefix('q-field--')
                 if is_element and with_extras:
                     content += f' [class: {" ".join(classes)}]'
+
             if is_element:
                 content += '\n'
-            if render_children:
-                content += self.content(child, indent + ('  ' if is_group else ''), with_extras)
-        return content
+
+        return f'Title: {self.selenium.title}\n\n{content}'
+
+    @staticmethod
+    def simplify_input_tags(soup: BeautifulSoup) -> None:
+        for element in soup.find_all(class_="q-field"):
+            print(element.prettify())
+            new = soup.new_tag('simple_input')
+            name = element.find(class_='q-field__label').text
+            placeholder = element.find(class_='q-field__native').get('placeholder')
+            value = element.find(class_='q-field__native').get('value')
+            new.string = (f'{name}: ' if name else '') + (value or placeholder or '')
+            new['class'] = element['class']
+            element.replace_with(new)
 
     def get_tags(self, name: str) -> list[WebElement]:
         return self.selenium.find_elements_by_tag_name(name)
