@@ -4,10 +4,12 @@ import os
 from typing import Callable, Generator
 
 import icecream
-import justpy as jp
 import pytest
+
+if True:  # NOTE: prevent formatter from sorting the imports (nicegui must come before justpy)
+    from nicegui import ui, globals
+
 from justpy.htmlcomponents import JustpyBaseComponent, WebPage
-from nicegui import globals
 from selenium import webdriver
 
 from .screen import Screen
