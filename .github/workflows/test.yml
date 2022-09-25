@@ -19,7 +19,7 @@ jobs:
       - name: set up Poetry
         uses: benjavicente/setup-poetry@main
       - name: test startup
-        run: ./test_startup.sh
+        run: poetry run ./test_startup.sh
       - name: setup chromedriver
         uses: nanasess/setup-chromedriver@v1
       - name: pytest
