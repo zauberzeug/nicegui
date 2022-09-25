@@ -1,5 +1,5 @@
 Vue.component("keyboard", {
-  template: `<span v-bind:id="jp_props.id" :class="jp_props.classes" :style="jp_props.style"></span>`,
+  template: `<span data-nicegui='keyboard' v-bind:id="jp_props.id" :class="jp_props.classes" :style="jp_props.style"></span>`,
   mounted() {
     for (const event of this.$props.jp_props.options.active_js_events) {
       document.addEventListener(event, (evt) => {

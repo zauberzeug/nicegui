@@ -11,11 +11,20 @@ def test_keyboard(screen: Screen):
     ui.keyboard(on_key=lambda e: result.set_text(f'{e.key, e.action}'))
 
     screen.open('/')
-    screen.wait(2.5)
+    assert screen.selenium.find_element(By.TAG_NAME, 'base')
     assert any(s.endswith('keyboard.js') for s in screen.get_attributes('script', 'src'))
-    assert screen.get_tags('span')  # NOTE keyboard dom element is a span
+
+    assert screen.selenium.find_element(By.XPATH, '//span[@data-nicegui="keyboard"]')
     ActionChains(screen.selenium).send_keys('t').perform()
     screen.should_contain('t, KeyboardAction(keydown=False, keyup=True, repeat=False)')
+
+
+def test_joystick(screen: Screen):
+    ui.joystick()
+
+    screen.open('/')
+    assert any(s.endswith('keyboard.js') for s in screen.get_attributes('script', 'src'))
+    assert screen.selenium.find_element(By.XPATH, '//div[@data-nicegui="joystick"]')
 
 
 def test_classes(screen: Screen):
