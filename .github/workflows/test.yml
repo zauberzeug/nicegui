@@ -19,7 +19,7 @@ jobs:
       - name: set up Poetry
         uses: Gr1N/setup-poetry@v7
         with:
-          poetry-version: 1.1.7
+          poetry-version: 1.1.10
       - name: test startup
         run: poetry run ./test_startup.sh
       - name: setup chromedriver
