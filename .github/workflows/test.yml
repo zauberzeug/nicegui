@@ -11,25 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
       - name: set up Poetry
-        uses: abatilo/actions-poetry@v2.0.0
-        with:
-          poetry-version: "1.1.6"
-      - name: install dependencies
-        run: |
-          poetry config virtualenvs.create false --local
-          poetry install
+        uses: benjavicente/setup-poetry@main
       - name: test startup
         run: ./test_startup.sh
       - name: setup chromedriver
         uses: nanasess/setup-chromedriver@v1
       - name: pytest
-        run: pytest
+        run: poetry pytest
 
   slack:
     needs:
