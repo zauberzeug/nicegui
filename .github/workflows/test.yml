@@ -17,7 +17,9 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: set up Poetry
-        uses: benjavicente/setup-poetry@main
+        uses: Gr1N/setup-poetry@v7
+        with:
+          poetry-version: 1.1.7
       - name: test startup
         run: poetry run ./test_startup.sh
       - name: setup chromedriver
