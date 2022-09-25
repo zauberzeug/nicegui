@@ -20,7 +20,7 @@ def chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeO
     chrome_options.add_argument('headless')
     chrome_options.add_argument('disable-gpu')
     chrome_options.add_argument('window-size=600x600')
-    chrome_options.add_experimental_option('w3c', False)
+    #chrome_options.add_experimental_option('w3c', False)
     return chrome_options
 
 
