@@ -1,6 +1,7 @@
 
 from nicegui import ui
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
 
 from .screen import Screen
 
@@ -11,7 +12,7 @@ def test_keyboard(screen: Screen):
 
     screen.open('/')
     assert any(s.endswith('keyboard.js') for s in screen.get_attributes('script', 'src'))
-    assert screen.selenium.find_element_by_tag_name('span')  # NOTE keyboard dom element is a span
+    assert screen.get_tags('span')  # NOTE keyboard dom element is a span
     ActionChains(screen.selenium).send_keys('t').perform()
     screen.should_contain('t, KeyboardAction(keydown=False, keyup=True, repeat=False)')
 
@@ -20,8 +21,8 @@ def test_classes(screen: Screen):
     label = ui.label('Some label')
 
     def assert_classes(classes: str) -> None:
-        assert screen.selenium.find_element_by_xpath(
-            f'//*[normalize-space(@class)="{classes}" and text()="Some label"]')
+        assert screen.selenium.find_element(By.XPATH,
+                                            f'//*[normalize-space(@class)="{classes}" and text()="Some label"]')
 
     screen.open('/')
     assert_classes('')
@@ -46,7 +47,7 @@ def test_style(screen: Screen):
     label = ui.label('Some label')
 
     def assert_style(style: str) -> None:
-        assert screen.selenium.find_element_by_xpath(f'//*[normalize-space(@style)="{style}" and text()="Some label"]')
+        assert screen.selenium.find_element(By.XPATH, f'//*[normalize-space(@style)="{style}" and text()="Some label"]')
 
     screen.open('/')
     assert_style('')
@@ -78,7 +79,7 @@ def test_props(screen: Screen):
 
     def assert_props(*props: str) -> None:
         class_conditions = [f'contains(@class, "q-field--{prop}")' for prop in props]
-        assert screen.selenium.find_element_by_xpath(f'//label[{" and ".join(class_conditions)}]')
+        assert screen.selenium.find_element(By.XPATH, f'//label[{" and ".join(class_conditions)}]')
 
     screen.open('/')
     assert_props('standard', 'labeled')

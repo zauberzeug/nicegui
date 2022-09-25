@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from nicegui import globals, ui
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
 PORT = 3392
@@ -60,12 +61,12 @@ class Screen():
 
     def find(self, text: str) -> WebElement:
         try:
-            return self.selenium.find_element_by_xpath(f'//*[contains(text(),"{text}")]')
+            return self.selenium.find_element(By.XPATH, f'//*[contains(text(),"{text}")]')
         except NoSuchElementException:
             raise AssertionError(f'Could not find "{text}" on:\n{self.render_content()}')
 
     def render_content(self, with_extras: bool = False) -> str:
-        body = self.selenium.find_element_by_tag_name('body').get_attribute('innerHTML')
+        body = self.selenium.find_element(By.TAG_NAME, 'body').get_attribute('innerHTML')
         soup = BeautifulSoup(body, 'html.parser')
         self.simplify_input_tags(soup)
         content = ''
@@ -108,7 +109,7 @@ class Screen():
             element.replace_with(new)
 
     def get_tags(self, name: str) -> List[WebElement]:
-        return self.selenium.find_elements_by_tag_name(name)
+        return self.selenium.find_elements(By.TAG_NAME, name)
 
     def get_attributes(self, tag: str, attribute: str) -> List[str]:
         return [t.get_attribute(attribute) for t in self.get_tags(tag)]
