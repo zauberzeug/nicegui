@@ -11,8 +11,8 @@ def test_rendering_page(screen: Screen):
         ui.label('1')
         ui.label('2')
         ui.label('3')
-    with ui.card():
-        ui.label('some text')
+        with ui.card():
+            ui.label('some text')
 
     screen.open('/')
     assert screen.render_content() == '''Title: NiceGUI
@@ -24,8 +24,8 @@ column
   1
   2
   3
-card
-  some text
+  card
+    some text
 '''
 
     assert screen.render_content(with_extras=True) == '''Title: NiceGUI
@@ -37,6 +37,6 @@ column [class: items-start]
   1
   2
   3
-card [class: items-start q-pa-md]
-  some text
+  card [class: items-start q-pa-md]
+    some text
 '''
