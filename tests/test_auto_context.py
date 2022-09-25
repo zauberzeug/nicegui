@@ -39,12 +39,7 @@ def test_adding_elements_with_async_await(screen: Screen):
 
     screen.open('/')
     for i in range(40):
-        if not '''
-card
-  A
-card
-  B
-''' in screen.render_content():
+        if not '''card\n  A\ncard\n  B''' in screen.render_content():
             screen.wait(0.1)
         else:
             raise AssertionError(f'{screen.render_content()} should show cards with "A" and "B"')
