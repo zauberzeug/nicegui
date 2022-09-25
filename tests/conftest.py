@@ -11,6 +11,7 @@ if True:  # NOTE: prevent formatter from sorting the imports (nicegui must come 
 
 from justpy.htmlcomponents import JustpyBaseComponent, WebPage
 from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from .screen import Screen
 
@@ -24,6 +25,12 @@ def chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeO
     chrome_options.add_argument('window-size=600x600')
     #chrome_options.add_experimental_option('w3c', False)
     return chrome_options
+
+
+@pytest.fixture
+def capabilities(capabilities):
+    capabilities['goog:loggingPrefs'] = {'browser': 'ALL'}
+    return capabilities
 
 
 @pytest.fixture
