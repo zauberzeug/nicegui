@@ -35,8 +35,8 @@ def capabilities(capabilities):
 
 @pytest.fixture
 def selenium(selenium: webdriver.Chrome) -> webdriver.Chrome:
-    selenium.implicitly_wait(0.1)
-    selenium.set_page_load_timeout(1)
+    selenium.implicitly_wait(0.5)
+    selenium.set_page_load_timeout(2)
     return selenium
 
 
