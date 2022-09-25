@@ -38,6 +38,7 @@ def test_adding_elements_with_async_await(screen: Screen):
         ui.timer(1.1, add_b, once=True)
 
     screen.open('/')
+    screen.wait(1)
     assert '''
 card
   A
