@@ -24,5 +24,5 @@ def test_moving_sphere_with_timer(screen: Screen):
         raise Exception('Could not get position')
 
     pos = position()
-    screen.wait(0.1)
+    screen.wait(0.2)
     assert position() > pos
