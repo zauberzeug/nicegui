@@ -183,9 +183,9 @@ class page:
                 shared=self.shared,
             )
             with globals.within_view(page.view):
-                await self.head()
+                await self.header()
                 await func(*args, **kwargs) if is_coroutine(func) else func(*args, **kwargs)
-                await self.tail()
+                await self.footer()
             return page
         builder = PageBuilder(decorated, self.shared)
         if globals.server:
@@ -193,10 +193,10 @@ class page:
         globals.page_builders[self.route] = builder
         return decorated
 
-    async def head(self):
+    async def header(self):
         pass
 
-    async def tail(self):
+    async def footer(self):
         pass
 
 

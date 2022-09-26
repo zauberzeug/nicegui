@@ -10,13 +10,13 @@ class page(ui.page):
         super().__init__(route, classes='fit column items-start', title='Modularization Demo')
         self.kwargs = kwargs
 
-    async def head(self) -> None:
-        await super().head()
+    async def header(self) -> None:
+        await super().header()
         navbar(**self.kwargs)
         self.content = ui.row().classes('justify-center fit mt-10').__enter__()
 
-    async def tail(self) -> None:
-        await super().tail()
+    async def footer(self) -> None:
+        await super().footer()
         self.content.__exit__(None, None, None)
 
 
