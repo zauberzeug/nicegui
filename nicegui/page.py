@@ -126,57 +126,78 @@ async def await_javascript(self, code: str, *, check_interval: float = 0.01, tim
         return await page.await_javascript(code)
 
 
-def page(self,
-         route: str,
-         title: Optional[str] = None,
-         *,
-         favicon: Optional[str] = None,
-         dark: Optional[bool] = ...,
-         classes: str = 'q-ma-md column items-start',
-         css: str = HtmlFormatter().get_style_defs('.codehilite'),
-         on_connect: Optional[Callable] = None,
-         on_page_ready: Optional[Callable] = None,
-         on_disconnect: Optional[Callable] = None,
-         shared: bool = False,
-         ):
-    """Page
+class page:
+    def __init__(
+        self,
+        route: str,
+        title: Optional[str] = None,
+        *,
+        favicon: Optional[str] = None,
+        dark: Optional[bool] = ...,
+        classes: str = 'q-ma-md column items-start',
+        css: str = HtmlFormatter().get_style_defs('.codehilite'),
+        on_connect: Optional[Callable] = None,
+        on_page_ready: Optional[Callable] = None,
+        on_disconnect: Optional[Callable] = None,
+        shared: bool = False,
+    ):
+        """Page
 
-    Creates a new page at the given route.
+        Creates a new page at the given route.
 
-    :param route: route of the new page (path must start with '/')
-    :param title: optional page title
-    :param favicon: optional favicon
-    :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
-    :param classes: tailwind classes for the container div (default: `'q-ma-md column items-start'`)
-    :param css: CSS definitions
-    :param on_connect: optional function or coroutine which is called for each new client connection
-    :param on_page_ready: optional function or coroutine which is called when the websocket is connected
-    :param on_disconnect: optional function or coroutine which is called when a client disconnects
-    :param shared: whether the page instance is shared between multiple clients (default: `False`)
-    """
-    def decorator(func):
+        :param route: route of the new page (path must start with '/')
+        :param title: optional page title
+        :param favicon: optional favicon
+        :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
+        :param classes: tailwind classes for the container div (default: `'q-ma-md column items-start'`)
+        :param css: CSS definitions
+        :param on_connect: optional function or coroutine which is called for each new client connection
+        :param on_page_ready: optional function or coroutine which is called when the websocket is connected
+        :param on_disconnect: optional function or coroutine which is called when a client disconnects
+        :param shared: whether the page instance is shared between multiple clients (default: `False`)
+        """
+        self.route = route
+        self.title = title
+        self.favicon = favicon
+        self.dark = dark
+        self.classes = classes
+        self.css = css
+        self.on_connect = on_connect
+        self.on_page_ready = on_page_ready
+        self.on_disconnect = on_disconnect
+        self.shared = shared
+
+    def __call__(self, func, *args, **kwargs):
+
         @wraps(func)
         async def decorated():
             page = Page(
-                title=title,
-                favicon=favicon,
-                dark=dark,
-                classes=classes,
-                css=css,
-                on_connect=on_connect,
-                on_page_ready=on_page_ready,
-                on_disconnect=on_disconnect,
-                shared=shared,
+                title=self.title,
+                favicon=self.favicon,
+                dark=self.dark,
+                classes=self.classes,
+                css=self.css,
+                on_connect=self.on_connect,
+                on_page_ready=self.on_page_ready,
+                on_disconnect=self.on_disconnect,
+                shared=self.shared,
             )
             with globals.within_view(page.view):
-                await func() if is_coroutine(func) else func()
+                await self.head()
+                await func(*args, **kwargs) if is_coroutine(func) else func(*args, **kwargs)
+                await self.tail()
             return page
-        builder = PageBuilder(decorated, shared)
+        builder = PageBuilder(decorated, self.shared)
         if globals.server:
-            builder.create_route(route)
-        globals.page_builders[route] = builder
+            builder.create_route(self.route)
+        globals.page_builders[self.route] = builder
         return decorated
-    return decorator
+
+    async def head(self):
+        pass
+
+    async def tail(self):
+        pass
 
 
 def find_parent_view() -> jp.HTMLBaseComponent:
