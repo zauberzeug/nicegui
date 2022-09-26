@@ -38,7 +38,7 @@ def test_adding_elements_with_async_await(screen: Screen):
         ui.timer(1.1, add_b, once=True)
 
     screen.open('/')
-    for i in range(40):
+    for i in range(100):
         if 'card\n  A\ncard\n  B' in screen.render_content():
             return
         screen.wait(0.1)
