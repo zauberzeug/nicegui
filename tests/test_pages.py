@@ -1,6 +1,8 @@
 import asyncio
+from tkinter import N
 from uuid import uuid4
 
+import justpy.htmlcomponents
 from nicegui import task_logger, ui
 
 from .screen import Screen
@@ -141,6 +143,8 @@ def test_customised_page(screen: Screen):
             trace.append('init')
 
         async def header(self) -> None:
+            assert isinstance(self.page.view, justpy.htmlcomponents.Div), \
+                'we should be able to access the underlying justpy view'
             await super().header()
             trace.append('header')
 

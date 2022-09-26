@@ -166,12 +166,13 @@ class page:
         self.on_page_ready = on_page_ready
         self.on_disconnect = on_disconnect
         self.shared = shared
+        self.page: Optional[Page] = None
 
     def __call__(self, func, *args, **kwargs):
 
         @wraps(func)
         async def decorated():
-            page = Page(
+            self.page = Page(
                 title=self.title,
                 favicon=self.favicon,
                 dark=self.dark,
@@ -182,11 +183,11 @@ class page:
                 on_disconnect=self.on_disconnect,
                 shared=self.shared,
             )
-            with globals.within_view(page.view):
+            with globals.within_view(self.page.view):
                 await self.header()
                 await func(*args, **kwargs) if is_coroutine(func) else func(*args, **kwargs)
                 await self.footer()
-            return page
+            return self.page
         builder = PageBuilder(decorated, self.shared)
         if globals.server:
             builder.create_route(self.route)
