@@ -13,10 +13,12 @@ class page(ui.page):
     async def header(self) -> None:
         await super().header()
         navbar(**self.kwargs)
+        # start using a ui row to let all content between header and footer be centered
         self.content = ui.row().classes('justify-center fit mt-10').__enter__()
 
     async def footer(self) -> None:
         await super().footer()
+        # closing the row which was opened in header
         self.content.__exit__(None, None, None)
 
 
