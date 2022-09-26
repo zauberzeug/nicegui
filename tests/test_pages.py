@@ -129,3 +129,32 @@ def test_on_page_ready_event(screen: Screen):
 
     screen.open('/')
     screen.should_contain('delayed data has been loaded')
+
+
+def test_customised_page(screen: Screen):
+    trace = []
+
+    class custom_page(ui.page):
+
+        def __init__(self, route: str, **kwargs):
+            super().__init__(route, title='My Customized Page', **kwargs)
+            trace.append('init')
+
+        async def header(self) -> None:
+            await super().header()
+            trace.append('header')
+
+        async def footer(self) -> None:
+            await super().footer()
+            trace.append('footer')
+
+    @custom_page('/', dark=True)
+    def mainpage():
+        trace.append('content')
+        ui.label('Hello, world!')
+
+    screen.open('/')
+    screen.should_contain('Hello, world!')
+    screen.should_contain('My Customized Page')
+    assert 'body--dark' in screen.get_tags('body')[0].get_attribute('class')
+    assert trace == ['init', 'header', 'content', 'footer']
