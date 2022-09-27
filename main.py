@@ -5,7 +5,7 @@ import docutils.core
 
 import api_docs_and_examples
 from nicegui import ui
-from traffic_tracking import TrafficChard as traffic_chart
+from traffic_tracking import TrafficChart as traffic_chart
 
 
 @ui.page('/', on_page_ready=api_docs_and_examples.create)
