@@ -77,10 +77,14 @@ class TrafficChart(ui.chart):
         today = seconds_to_day(time.time())
         visits[today] = visits.get(today, 0) + 1
         self.options.series[0].data[:] = [[day_to_milliseconds(day), count] for day, count in visits.items()]
+        # remove first day because data are inconclusive depending on deployment time
+        self.options.series[0].data[:] = self.options.series[0].data[1:]
         if today not in sessions:
             sessions[today] = set()
         sessions[today].add(request.session_id)
         self.options.series[1].data[:] = [[day_to_milliseconds(day), len(s)] for day, s in sessions.items()]
+        # remove first day because data are inconclusive depending on deployment time
+        self.options.series[1].data[:] = self.options.series[1].data[1:]
         self.update()
 
     def update_visibility(self) -> None:
