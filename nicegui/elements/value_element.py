@@ -21,6 +21,10 @@ class ValueElement(Element):
     def value_to_view(self, value):
         return value
 
+    def set_value(self, value):
+        self.value = value
+        return self
+
     def handle_change(self, msg: Dict):
         self.value = msg['value']
         self.update()
