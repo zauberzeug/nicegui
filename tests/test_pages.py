@@ -3,9 +3,11 @@ from tkinter import N
 from uuid import uuid4
 
 import justpy.htmlcomponents
+import pytest
+import starlette
 from nicegui import task_logger, ui
 
-from .screen import Screen
+from .screen import PORT, Screen
 
 
 def test_page(screen: Screen):
@@ -142,6 +144,11 @@ def test_customised_page(screen: Screen):
             super().__init__(route, title='My Customized Page', **kwargs)
             trace.append('init')
 
+        async def connected(self, request):
+            await super().connected(request)
+            assert isinstance(request, starlette.requests.Request)
+            trace.append('connected')
+
         async def header(self) -> None:
             assert isinstance(self.page.view, justpy.htmlcomponents.Div), \
                 'we should be able to access the underlying justpy view'
@@ -161,4 +168,13 @@ def test_customised_page(screen: Screen):
     screen.should_contain('Hello, world!')
     screen.should_contain('My Customized Page')
     assert 'body--dark' in screen.get_tags('body')[0].get_attribute('class')
-    assert trace == ['init', 'header', 'content', 'footer']
+    assert trace == ['init', 'connected', 'header', 'content', 'footer']
+
+
+def test_shared_page_with_request_parameter_raises_exception(screen: Screen):
+    @ui.page('/', shared=True)
+    def page(request):
+        ui.label('Hello, world!')
+
+    screen.open('/')
+    screen.should_contain("This page doesn't exist")

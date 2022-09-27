@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Awaitable, Callable, Optional
 
@@ -22,7 +23,12 @@ class PageBuilder:
         self._shared_page = await self.function()
 
     async def route_function(self, request: Request) -> 'Page':
-        page = self._shared_page if self.shared else await self.function()
+        if self.shared:
+            while self._shared_page is None:
+                await asyncio.sleep(0.05)
+            return self._shared_page
+        else:
+            page = await self.function(request)
         return await page._route_function(request)
 
     def create_route(self, route: str) -> None:

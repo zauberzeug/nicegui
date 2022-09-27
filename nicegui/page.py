@@ -8,9 +8,9 @@ from functools import wraps
 from typing import Callable, Optional
 
 import justpy as jp
+import starlette
 from addict import Dict
 from pygments.formatters import HtmlFormatter
-from starlette.requests import Request
 
 from . import globals
 from .helpers import is_coroutine
@@ -55,7 +55,7 @@ class Page(jp.QuasarPage):
         self.view = jp.Div(a=self, classes=classes, style='row-gap: 1em', temp=False)
         self.view.add_page(self)
 
-    async def _route_function(self, request: Request):
+    async def _route_function(self, request: starlette.requests.Request) -> Page:
         for handler in globals.connect_handlers + ([self.connect_handler] if self.connect_handler else []):
             arg_count = len(inspect.signature(handler).parameters)
             is_coro = is_coroutine(handler)
@@ -171,7 +171,7 @@ class page:
     def __call__(self, func, *args, **kwargs):
 
         @wraps(func)
-        async def decorated():
+        async def decorated(request: starlette.requests.Request = None):
             self.page = Page(
                 title=self.title,
                 favicon=self.favicon,
@@ -184,6 +184,12 @@ class page:
                 shared=self.shared,
             )
             with globals.within_view(self.page.view):
+                if 'request' in inspect.signature(func).parameters:
+                    if self.shared:
+                        globals.log.error('cannot use `request` argument in shared page; providing 404 error page')
+                        return error404()
+                    kwargs['request'] = request
+                await self.connected(request)
                 await self.header()
                 await func(*args, **kwargs) if is_coroutine(func) else func(*args, **kwargs)
                 await self.footer()
@@ -193,6 +199,9 @@ class page:
             builder.create_route(self.route)
         globals.page_builders[self.route] = builder
         return decorated
+
+    async def connected(self, request: starlette.requests.Request):
+        pass
 
     async def header(self):
         pass
