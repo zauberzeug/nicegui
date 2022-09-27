@@ -69,14 +69,15 @@ class Page(jp.QuasarPage):
 
     async def handle_page_ready(self, msg: Dict) -> bool:
         if self.page_ready_handler:
-            arg_count = len(inspect.signature(self.page_ready_handler).parameters)
-            is_coro = is_coroutine(self.page_ready_handler)
-            if arg_count == 1:
-                await self.page_ready_handler(msg.websocket) if is_coro else self.page_ready_handler(msg.websocket)
-            elif arg_count == 0:
-                await self.page_ready_handler() if is_coro else self.page_ready_handler()
-            else:
-                raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
+            with globals.within_view(self.view):
+                arg_count = len(inspect.signature(self.page_ready_handler).parameters)
+                is_coro = is_coroutine(self.page_ready_handler)
+                if arg_count == 1:
+                    await self.page_ready_handler(msg.websocket) if is_coro else self.page_ready_handler(msg.websocket)
+                elif arg_count == 0:
+                    await self.page_ready_handler() if is_coro else self.page_ready_handler()
+                else:
+                    raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         return False
 
     async def on_disconnect(self, websocket=None) -> None:

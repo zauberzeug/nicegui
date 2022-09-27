@@ -178,3 +178,12 @@ def test_shared_page_with_request_parameter_raises_exception(screen: Screen):
 
     screen.open('/')
     screen.should_contain("This page doesn't exist")
+
+
+def test_adding_elements_in_on_page_ready_event(screen: Screen):
+    @ui.page('/', on_page_ready=lambda: ui.markdown('Hello, world!'))
+    def page():
+        pass
+
+    screen.open('/')
+    screen.should_contain('Hello, world!')
