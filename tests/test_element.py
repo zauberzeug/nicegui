@@ -1,4 +1,5 @@
 
+import pytest
 from nicegui import ui
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
@@ -25,6 +26,17 @@ def test_joystick(screen: Screen):
     screen.open('/')
     assert any(s.endswith('keyboard.js') for s in screen.get_attributes('script', 'src'))
     assert screen.selenium.find_element(By.XPATH, '//div[@data-nicegui="joystick"]')
+
+
+@pytest.mark.skip(reason='not jet fixed; see https://github.com/zauberzeug/nicegui/issues/98')
+def test_input_with_multi_word_error_message(screen: Screen):
+    input = ui.input(label='some input')
+    ui.button('set error', on_click=lambda: input.props('error-message="Some multi word error message" error=error'))
+
+    screen.open('/')
+    screen.should_not_contain('Some multi word error message')
+    screen.click('set error')
+    screen.should_contain('Some multi word error message')
 
 
 def test_classes(screen: Screen):
