@@ -97,7 +97,7 @@ def test_shared_and_individual_pages(screen: Screen):
     def individual_page():
         ui.label(f'individual page with uuid {uuid4()}')
 
-    @ ui.page('/shared_page', shared=True)
+    @ui.page('/shared_page', shared=True)
     def shared_page():
         ui.label(f'shared page with uuid {uuid4()}')
 
