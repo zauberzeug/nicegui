@@ -70,9 +70,6 @@ def on_connect(request: Request) -> None:
 class chart(ui.chart):
 
     def __init__(self) -> None:
-
-        ui.timer(10, self.update)
-
         super().__init__({
             'title': {'text': 'Page Visits'},
             'navigation': {'buttonOptions': {'enabled': False}},
@@ -87,13 +84,10 @@ class chart(ui.chart):
                 {'name': 'Sessions', 'data': []},
             ],
         })
+        self.visible = len(visits.keys()) >= 3 and len(sessions.keys()) >= 3
+        ui.timer(10, self.update)
 
     def update(self) -> None:
-        if len(visits.keys()) < 3 and len(sessions.keys()) < 3:
-            self.visible = False
-            return
-        self.visible = True
-
         def day_to_milliseconds(day: int) -> float: return day * 24 * 60 * 60 * 1000
         self.options.series[0].data[:] = [[day_to_milliseconds(day), count] for day, count in visits.items()]
         # remove first day because data are inconclusive depending on deployment time
