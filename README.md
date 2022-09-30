@@ -2,7 +2,7 @@
 
 # NiceGUI
 
-NiceGUI is an easy-to-use, Python-based UI framework, which renders to the web browser.
+NiceGUI is an easy-to-use, Python-based UI framework, which shows up in your web browser.
 You can create buttons, dialogs, markdown, 3D scenes, plots and much more.
 
 It is great for micro web apps, dashboards, robotics projects, smart home solutions and similar use cases.
@@ -124,7 +124,7 @@ While it is too "low-level HTML" for our daily usage, it provides a great basis 
 
 The API reference is hosted at [https://nicegui.io](https://nicegui.io).
 It is [implemented with NiceGUI itself](https://github.com/zauberzeug/nicegui/blob/main/main.py).
-You may also have a look at [examples.py](https://github.com/zauberzeug/nicegui/tree/main/examples.py) for more demonstrations of what you can do with NiceGUI.
+You may also have a look at the [examples folder](https://github.com/zauberzeug/nicegui/tree/main/examples) for more demonstrations of what you can do with NiceGUI.
 
 ## Abstraction
 
