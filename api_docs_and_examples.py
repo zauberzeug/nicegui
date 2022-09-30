@@ -667,4 +667,4 @@ The asynchronous function will only return after receiving the result.
         ui.button('await JavaScript', on_click=await_javascript)
 
     # NOTE because the docs are added after inital page load, we need to manually trigger the jump tho the anchor
-    await ui.run_javascript('parts = document.URL.split("#"); window.location.hash = "#"; setTimeout(function(){ window.location.hash = "#" + (parts.length > 1) ? parts[1] : null; }, 100);')
+    await ui.run_javascript('parts = document.URL.split("#"); window.location.hash = "#"; setTimeout(function(){ if (parts.length > 1) window.location.hash = "#" + parts[1]; }, 100); ')
