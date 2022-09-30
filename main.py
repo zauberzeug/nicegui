@@ -4,11 +4,11 @@ import re
 import docutils.core
 
 import api_docs_and_examples
+import traffic_tracking
 from nicegui import ui
-from traffic_tracking import TrafficChart as traffic_chart
 
 
-@ui.page('/', on_page_ready=api_docs_and_examples.create)
+@ui.page('/', on_page_ready=api_docs_and_examples.create, on_connect=traffic_tracking.on_connect)
 async def index():
     # add docutils css to webpage
     ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
@@ -51,6 +51,6 @@ async def index():
                     output = ui.label('').classes('text-bold')
 
             with ui.row().style('margin-top: 40px'):
-                traffic_chart().style(f'width:{width}px;height:250px')
+                traffic_tracking.chart().style(f'width:{width}px;height:250px')
 
 ui.run()

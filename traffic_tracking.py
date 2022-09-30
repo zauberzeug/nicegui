@@ -3,11 +3,12 @@ import os
 import pickle
 import threading
 import time
+from datetime import datetime
 from typing import Dict, Set
 
 from starlette.requests import Request
 
-from nicegui import ui
+from nicegui import globals, ui
 
 VISITS_FILE = 'traffic_data/visits.pickle'
 SESSIONS_FILE = 'traffic_data/sessions.pickle'
@@ -22,34 +23,55 @@ try:
         visits = pickle.load(f)
     with open(SESSIONS_FILE, 'rb') as f:
         sessions = pickle.load(f)
+
 except FileNotFoundError:
     pass
 except:
     logging.exception('Error loading traffic data')
 
+should_exit = threading.Event()
 
-def keep_backups(self) -> None:
+
+def keep_backups() -> None:
     def _save() -> None:
-        try:
-            with open(VISITS_FILE, 'wb') as f:
-                pickle.dump(visits, f)
-            with open(SESSIONS_FILE, 'wb') as f:
-                pickle.dump(sessions, f)
-        except:
-            logging.exception('Error saving traffic data')
+        while not should_exit.is_set():
+            try:
+                with open(VISITS_FILE, 'wb') as f:
+                    pickle.dump(visits, f)
+                with open(SESSIONS_FILE, 'wb') as f:
+                    pickle.dump(sessions, f)
+            except:
+                logging.exception('Error saving traffic data')
+            time.sleep(1)
 
-    while True:
-        time.sleep(10)
-        t = threading.Thread(target=_save, name='Save Traffic Data')
-        t.start()
+    t = threading.Thread(target=_save, name='Save Traffic Data')
+    t.start()
 
 
-class TrafficChart(ui.chart):
+ui.on_startup(keep_backups)
+ui.on_shutdown(should_exit.set)
+
+
+def on_connect(request: Request) -> None:
+    # ignore monitoring, web crawlers and the like
+    agent = request.headers['user-agent'].lower()
+    if any(s in agent for s in ('bot', 'spider', 'crawler', 'monitor', 'curl', 'wget', 'python-requests', 'kuma')):
+        return
+    print(f'new connection from {agent}')
+    def seconds_to_day(seconds: float) -> int: return int(seconds / 60 / 60 / 24)
+    #print(f'traffic data: {[datetime.fromtimestamp(day_to_milliseconds(t)/1000) for t in visits.keys()]}')
+    today = seconds_to_day(time.time())
+    visits[today] = visits.get(today, 0) + 1
+    if today not in sessions:
+        sessions[today] = set()
+    sessions[today].add(request.session_id)
+
+
+class chart(ui.chart):
 
     def __init__(self) -> None:
 
-        ui.on_connect(self.on_connect)
-        ui.timer(10, self.update_visibility)
+        ui.timer(10, self.update)
 
         super().__init__({
             'title': {'text': 'Page Visits'},
@@ -66,26 +88,18 @@ class TrafficChart(ui.chart):
             ],
         })
 
-    def on_connect(self, request: Request) -> None:
-        # ignore monitoring, web crawlers and the like
-        agent = request.headers['user-agent'].lower()
-        if any(s in agent for s in ('bot', 'spider', 'crawler', 'monitor', 'curl', 'wget', 'python-requests', 'kuma')):
+    def update(self) -> None:
+        if len(visits.keys()) < 3 and len(sessions.keys()) < 3:
+            self.visible = False
             return
+        self.visible = True
 
-        def seconds_to_day(seconds: float) -> int: return int(seconds / 60 / 60 / 24)
         def day_to_milliseconds(day: int) -> float: return day * 24 * 60 * 60 * 1000
-        today = seconds_to_day(time.time())
-        visits[today] = visits.get(today, 0) + 1
         self.options.series[0].data[:] = [[day_to_milliseconds(day), count] for day, count in visits.items()]
         # remove first day because data are inconclusive depending on deployment time
         self.options.series[0].data[:] = self.options.series[0].data[1:]
-        if today not in sessions:
-            sessions[today] = set()
-        sessions[today].add(request.session_id)
+
         self.options.series[1].data[:] = [[day_to_milliseconds(day), len(s)] for day, s in sessions.items()]
         # remove first day because data are inconclusive depending on deployment time
         self.options.series[1].data[:] = self.options.series[1].data[1:]
-        self.update()
-
-    def update_visibility(self) -> None:
-        self.visible = len(visits.keys()) >= 3 and len(sessions.keys()) >= 3
+        super().update()
