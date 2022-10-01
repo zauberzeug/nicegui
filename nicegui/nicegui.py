@@ -29,6 +29,7 @@ async def patched_justpy_startup():
 
 @jp.app.on_event('startup')
 def startup():
+    globals.state = globals.State.STARTING
     globals.loop = asyncio.get_running_loop()
     init_auto_index_page()
     create_page_routes()
@@ -39,13 +40,16 @@ def startup():
                          for t in globals.startup_handlers if isinstance(t, Awaitable))
     [safe_invoke(t) for t in globals.startup_handlers if isinstance(t, Callable)]
     jp.run_task(binding.loop())
+    globals.state = globals.State.STARTED
 
 
 @jp.app.on_event('shutdown')
 def shutdown():
+    globals.state = globals.State.STOPPING
     [create_task(t, name='shutdown task') for t in globals.shutdown_handlers if isinstance(t, Awaitable)]
     [safe_invoke(t) for t in globals.shutdown_handlers if isinstance(t, Callable)]
     [t.cancel() for t in globals.tasks]
+    globals.state = globals.State.STOPPED
 
 
 def safe_invoke(func: Callable):

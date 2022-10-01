@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from contextlib import contextmanager
+from enum import Enum
 from typing import TYPE_CHECKING, Awaitable, Callable, Dict, Generator, List, Optional, Union
 
 from starlette.applications import Starlette
@@ -16,9 +17,18 @@ if TYPE_CHECKING:
 
     from .page_builder import PageBuilder
 
+
+class State(Enum):
+    STOPPED = 0
+    STARTING = 1
+    STARTED = 2
+    STOPPING = 3
+
+
 app: Starlette
 config: Optional[Config] = None
 server: Optional[Server] = None
+state: State = State.STOPPED
 loop: Optional[asyncio.AbstractEventLoop] = None
 page_builders: Dict[str, 'PageBuilder'] = {}
 view_stacks: Dict[List['jp.HTMLBaseComponent']] = {}

@@ -196,7 +196,7 @@ class page:
                 await self.footer()
             return self.page
         builder = PageBuilder(decorated, self.shared)
-        if globals.server:
+        if globals.state != globals.State.STOPPED:
             builder.create_route(self.route)
         globals.page_builders[self.route] = builder
         return decorated
