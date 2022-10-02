@@ -57,8 +57,8 @@ class Badge(ValueElement, BindMixin):
     def __init__(self, target_object, target_name='progress_str', **kwargs):
         """QBadge"""
         view = QBadge(color='white', text_color='accent', delete_flag=False, temp=True)
-        view.label = 'n/v'
-        super().__init__(view, value='garnix', on_change=None)
+        view.label = 'n/v'  # workaround attribute issues -> any idea?
+        super().__init__(view, value='some', on_change=None)
         if target_object:
             self.bind_from(attr='value', target_object=target_object, target_name=target_name)
 
