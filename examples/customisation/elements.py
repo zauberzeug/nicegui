@@ -4,7 +4,7 @@ from nicegui.elements.float_element import FloatElement
 from nicegui.elements.group import Group
 from nicegui.elements.value_element import ValueElement
 
-from examples.customisation.mixins import ContextMixin, LabelValueGetSetMixin, BindMixin
+from mixins import ContextMixin, LabelValueGetSetMixin, BindMixin
 
 
 class Layout(Group):

@@ -2,9 +2,9 @@ from typing import Optional
 
 from nicegui import ui
 
-from examples.customisation.data import Data
-from examples.customisation.elements import Footer, LinearProgress, Badge, Layout, Header, PageContainer, Div
-from examples.customisation.navbar import navbar
+from data import Data
+from elements import Footer, LinearProgress, Badge, Layout, Header, PageContainer, Div
+from navbar import navbar
 
 
 class page(ui.page):
