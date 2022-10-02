@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from nicegui import globals, ui
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -61,12 +62,18 @@ class Screen():
         with pytest.raises(AssertionError):
             element = self.find(text)
 
-    def click(self, target_text: str) -> None:
-        self.find(target_text).click()
+    def click(self, target_text: str) -> WebElement:
+        element = self.find(target_text)
+        element.click()
+        return element
+
+    def click_at_position(self, element: WebElement, x: int = 5, y: int = 5) -> None:
+        action = ActionChains(self.selenium)
+        action.move_to_element_with_offset(element, x, y).click().perform()
 
     def find(self, text: str) -> WebElement:
         try:
-            return self.selenium.find_element(By.XPATH, f'//*[contains(text(),"{text}")]')
+            return self.selenium.find_element(By.XPATH, f'//*[not(self::script) and contains(text(), "{text}")]')
         except NoSuchElementException:
             raise AssertionError(f'Could not find "{text}" on:\n{self.render_content()}')
 
