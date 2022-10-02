@@ -11,7 +11,6 @@ if True:  # NOTE: prevent formatter from sorting the imports (nicegui must come 
 
 from justpy.htmlcomponents import JustpyBaseComponent, WebPage
 from selenium import webdriver
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from .screen import Screen
 

@@ -113,12 +113,10 @@ class Screen():
     @staticmethod
     def simplify_input_tags(soup: BeautifulSoup) -> None:
         for element in soup.find_all(class_="q-field"):
-            print(element.prettify())
             new = soup.new_tag('simple_input')
             name = element.find(class_='q-field__label').text
             placeholder = element.find(class_='q-field__native').get('placeholder')
             messages = element.find(class_='q-field__messages')
-            ic(messages)
             value = element.find(class_='q-field__native').get('value')
             new.string = (f'{name}: ' if name else '') + (value or placeholder or '') + \
                 (f' \u002A{messages.text}' if messages else '')

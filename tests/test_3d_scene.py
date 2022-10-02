@@ -15,7 +15,6 @@ def test_moving_sphere_with_timer(screen: Screen):
         for i in range(20):
             try:
                 pos = screen.selenium.execute_script('return scene.children[4].position.y')
-                ic(pos)
                 if pos is not None:
                     return pos
             except JavascriptException:
