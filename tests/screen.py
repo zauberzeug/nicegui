@@ -1,5 +1,8 @@
+import logging
+import os
 import threading
 import time
+from datetime import datetime
 from typing import List
 
 import pytest
@@ -17,6 +20,7 @@ IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-in
 
 
 class Screen():
+    SCREENSHOT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshots')
 
     def __init__(self, selenium: webdriver.Chrome) -> None:
         self.selenium = selenium
@@ -56,7 +60,6 @@ class Screen():
         assert self.selenium.title != text
         with pytest.raises(AssertionError):
             element = self.find(text)
-            print(element.get_attribute('outerHTML'))
 
     def click(self, target_text: str) -> None:
         self.find(target_text).click()
@@ -131,3 +134,9 @@ class Screen():
 
     def wait(self, t: float) -> None:
         time.sleep(t)
+
+    def shot(self, name: str) -> None:
+        os.makedirs(self.SCREENSHOT_DIR, exist_ok=True)
+        filename = f'{self.SCREENSHOT_DIR}/{name}.png'
+        print(f'Storing Screenshot to {filename}')
+        self.selenium.get_screenshot_as_file(filename)

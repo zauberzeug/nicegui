@@ -4,3 +4,4 @@ __pycache__/
 dist
 /test.py
 *.pickle
+tests/screenshots/

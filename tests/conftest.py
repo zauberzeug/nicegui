@@ -50,23 +50,10 @@ def reset_globals() -> Generator[None, None, None]:
 
 
 @pytest.fixture()
-def screen(selenium: webdriver.Chrome) -> Generator[Screen, None, None]:
+def screen(selenium: webdriver.Chrome, request: pytest.FixtureRequest) -> Generator[Screen, None, None]:
+    name = request.node.name
+    os.remove(os.path.join(Screen.SCREENSHOT_DIR, f'{name}.png'))
     screen = Screen(selenium)
     yield screen
+    screen.shot(name)
     screen.stop_server()
-
-
-@pytest.fixture
-def screenshot(selenium: webdriver.Chrome) -> Callable[[str], None]:
-    # original taken from https://github.com/theserverlessway/pytest-chrome/blob/master/tests/conftest.py
-    def shot(name: str = '') -> None:
-        directory = 'screenshots'
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        identifier = datetime.datetime.now().isoformat()
-        if name:
-            identifier = f'{identifier}-{name}'
-        filename = f'{directory}/{identifier}.png'
-        print(f'Storing Screenshot to {filename}')
-        selenium.get_screenshot_as_file(filename)
-    return shot
