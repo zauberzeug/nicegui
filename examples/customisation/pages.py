@@ -2,9 +2,9 @@ import custom
 
 
 def create():
-    for name in ['A', 'B', 'C', 'D']:
+    for index, name in enumerate(['A', 'B', 'C', 'D'], 1):
         # here we store the custom page builder in a variable and pass the specific contend for every page
-        page_builder = custom.page(f'/{name.lower()}', navtitle=f'- {name} -')
+        page_builder = custom.page(f'/{name.lower()}', navtitle=f'- {name} -', step=index)
         page_builder(create_content, title=name)
 
 
