@@ -49,11 +49,15 @@ def reset_globals() -> Generator[None, None, None]:
     importlib.reload(globals)
 
 
+@pytest.fixture(scope='session')
+def remove_all_screenshots() -> None:
+    for name in os.listdir(Screen.SCREENSHOT_DIR):
+        os.remove(os.path.join(Screen.SCREENSHOT_DIR, f'{name}'))
+
+
 @pytest.fixture()
 def screen(selenium: webdriver.Chrome, request: pytest.FixtureRequest) -> Generator[Screen, None, None]:
-    name = request.node.name
-    os.remove(os.path.join(Screen.SCREENSHOT_DIR, f'{name}.png'))
     screen = Screen(selenium)
     yield screen
-    screen.shot(name)
+    screen.shot(request.node.name)
     screen.stop_server()
