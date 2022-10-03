@@ -9,14 +9,14 @@ from .screen import Screen
 
 def test_binding_ui_select_with_tuple_as_key(screen: Screen):
     class Model():
-        location = None
+        selection = None
     data = Model()
     options = {
-        (51.9607, 7.6261): 'option A',
-        (48.3069, 14.2858): 'option B',
+        (1, 1): 'option A',
+        (1, 2): 'option B',
     }
-    data.location = list(options.keys())[0]
-    ui.select(options).bind_value(data, 'location')
+    data.selection = list(options.keys())[0]
+    ui.select(options).bind_value(data, 'selection')
 
     screen.open('/')
     screen.should_not_contain('option B')
