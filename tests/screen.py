@@ -9,7 +9,7 @@ import pytest
 from bs4 import BeautifulSoup
 from nicegui import globals, ui
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import ElementNotInteractableException, NoSuchElementException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
@@ -64,7 +64,10 @@ class Screen():
 
     def click(self, target_text: str) -> WebElement:
         element = self.find(target_text)
-        element.click()
+        try:
+            element.click()
+        except ElementNotInteractableException:
+            raise AssertionError(f'Could not click on "{target_text}" on:\n{element.get_attribute("outerHTML")}')
         return element
 
     def click_at_position(self, element: WebElement, x: int = 5, y: int = 5) -> None:
@@ -73,7 +76,8 @@ class Screen():
 
     def find(self, text: str) -> WebElement:
         try:
-            return self.selenium.find_element(By.XPATH, f'//*[not(self::script) and contains(text(), "{text}")]')
+            query = f'//*[not(self::script) and not(self::style) and contains(text(), "{text}")]'
+            return self.selenium.find_element(By.XPATH, query)
         except NoSuchElementException:
             raise AssertionError(f'Could not find "{text}" on:\n{self.render_content()}')
 
