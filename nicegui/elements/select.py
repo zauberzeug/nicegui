@@ -1,14 +1,8 @@
-from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import justpy as jp
 
 from .choice_element import ChoiceElement
-
-
-@dataclass(frozen=True, eq=True)
-class Wrapper:
-    value: tuple
 
 
 class Select(ChoiceElement):
