@@ -1,8 +1,14 @@
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import justpy as jp
 
 from .choice_element import ChoiceElement
+
+
+@dataclass(frozen=True, eq=True)
+class Wrapper:
+    value: tuple
 
 
 class Select(ChoiceElement):
@@ -20,6 +26,8 @@ class Select(ChoiceElement):
         super().__init__(view, options, value=value, on_change=on_change)
 
     def value_to_view(self, value: Any):
+        if isinstance(value, list):
+            value = tuple(value)
         matches = [o for o in self.view.options if o['value'] == value]
         if any(matches):
             return matches[0]['label']
@@ -29,4 +37,6 @@ class Select(ChoiceElement):
     def handle_change(self, msg: Dict):
         msg['label'] = msg['value']['label']
         msg['value'] = msg['value']['value']
+        if isinstance(self.view.options[0]['value'], tuple) and isinstance(msg['value'], list):
+            msg['value'] = tuple(msg['value'])
         return super().handle_change(msg)
