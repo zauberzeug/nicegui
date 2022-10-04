@@ -1,13 +1,12 @@
-import datetime
 import importlib
 import os
-from typing import Callable, Generator
+from typing import Dict, Generator
 
 import icecream
 import pytest
 
-if True:  # NOTE: prevent formatter from sorting the imports (nicegui must come before justpy)
-    from nicegui import ui, globals
+if True:  # NOTE: prevent formatter from sorting the imports (NiceGUI must come before JustPy)
+    from nicegui import globals
 
 from justpy.htmlcomponents import JustpyBaseComponent, WebPage
 from selenium import webdriver
@@ -22,12 +21,11 @@ def chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeO
     chrome_options.add_argument('headless')
     chrome_options.add_argument('disable-gpu')
     chrome_options.add_argument('window-size=600x600')
-    #chrome_options.add_experimental_option('w3c', False)
     return chrome_options
 
 
 @pytest.fixture
-def capabilities(capabilities):
+def capabilities(capabilities: Dict) -> Dict:
     capabilities['goog:loggingPrefs'] = {'browser': 'ALL'}
     return capabilities
 
@@ -52,10 +50,10 @@ def reset_globals() -> Generator[None, None, None]:
 @pytest.fixture(scope='session')
 def remove_all_screenshots() -> None:
     for name in os.listdir(Screen.SCREENSHOT_DIR):
-        os.remove(os.path.join(Screen.SCREENSHOT_DIR, f'{name}'))
+        os.remove(os.path.join(Screen.SCREENSHOT_DIR, name))
 
 
-@pytest.fixture()
+@pytest.fixture
 def screen(selenium: webdriver.Chrome, request: pytest.FixtureRequest) -> Generator[Screen, None, None]:
     screen = Screen(selenium)
     yield screen

@@ -1,4 +1,3 @@
-import asyncio
 import inspect
 import re
 from contextlib import contextmanager
@@ -426,6 +425,7 @@ You can run a function or coroutine as a parallel task by passing it to one of t
 When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
 '''
     with example(lifecycle):
+        import asyncio
         import time
 
         l = ui.label()
@@ -527,6 +527,8 @@ Most elements also support asynchronous event handlers.
 Note: You can also pass a `functools.partial` into the `on_click` property to wrap async functions with parameters.
 '''
     with example(async_handlers):
+        import asyncio
+
         async def async_task():
             ui.notify('Asynchronous task started')
             await asyncio.sleep(5)
@@ -560,7 +562,7 @@ With `shared=True` you can create a shared page.
 Its content is created once at startup and each client sees the *same* elements.
 Here, the displayed ID remains constant when the browser reloads the page.
 
-# Index page
+#### Index page
 
 All elements that are not created within a decorated page function are automatically added to a new, *shared* index page at route "/".
 To make it "private" or to change other attributes like title, favicon etc. you can wrap it in a page function with `@ui.page('/', ...)` decorator.

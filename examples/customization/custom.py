@@ -5,7 +5,7 @@ from navbar import navbar
 
 class page(ui.page):
 
-    def __init__(self, route: str, **kwargs):
+    def __init__(self, route: str, **kwargs) -> None:
         '''Custom page decorator to share the same styling and behavior across all pages'''
         super().__init__(route, classes='fit column items-start', title='Modularization Demo')
         self.kwargs = kwargs

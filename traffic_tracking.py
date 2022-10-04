@@ -3,12 +3,11 @@ import os
 import pickle
 import threading
 import time
-from datetime import datetime
 from typing import Dict, Set
 
 from starlette.requests import Request
 
-from nicegui import globals, ui
+from nicegui import ui
 
 VISITS_FILE = 'traffic_data/visits.pickle'
 SESSIONS_FILE = 'traffic_data/sessions.pickle'
@@ -23,7 +22,6 @@ try:
         visits = pickle.load(f)
     with open(SESSIONS_FILE, 'rb') as f:
         sessions = pickle.load(f)
-
 except FileNotFoundError:
     pass
 except:

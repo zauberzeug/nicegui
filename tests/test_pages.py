@@ -1,13 +1,11 @@
 import asyncio
-from tkinter import N
 from uuid import uuid4
 
 import justpy.htmlcomponents
-import pytest
-import starlette
 from nicegui import task_logger, ui
+from starlette.requests import Request
 
-from .screen import PORT, Screen
+from .screen import Screen
 
 
 def test_page(screen: Screen):
@@ -117,12 +115,12 @@ def test_shared_and_individual_pages(screen: Screen):
 def test_on_page_ready_event(screen: Screen):
     '''This feature was introduced to fix #50; see https://github.com/zauberzeug/nicegui/issues/50#issuecomment-1210962617.'''
 
-    async def load():
+    async def load() -> None:
         label.text = 'loading...'
         # NOTE we can not use asyncio.create_task() here because we are on a different thread than the nicegui event loop
         task_logger.create_task(takes_a_while())
 
-    async def takes_a_while():
+    async def takes_a_while() -> None:
         await asyncio.sleep(0.1)
         label.text = 'delayed data has been loaded'
 
@@ -135,7 +133,7 @@ def test_on_page_ready_event(screen: Screen):
     screen.should_contain('delayed data has been loaded')
 
 
-def test_customised_page(screen: Screen):
+def test_customized_page(screen: Screen):
     trace = []
 
     class custom_page(ui.page):
@@ -144,14 +142,14 @@ def test_customised_page(screen: Screen):
             super().__init__(route, title='My Customized Page', **kwargs)
             trace.append('init')
 
-        async def connected(self, request):
+        async def connected(self, request: Request) -> None:
             await super().connected(request)
-            assert isinstance(request, starlette.requests.Request)
+            assert isinstance(request, Request)
             trace.append('connected')
 
         async def header(self) -> None:
             assert isinstance(self.page.view, justpy.htmlcomponents.Div), \
-                'we should be able to access the underlying justpy view'
+                'we should be able to access the underlying JustPy view'
             await super().header()
             trace.append('header')
 
@@ -173,7 +171,7 @@ def test_customised_page(screen: Screen):
 
 def test_shared_page_with_request_parameter_raises_exception(screen: Screen):
     @ui.page('/', shared=True)
-    def page(request):
+    def page(request: Request):
         ui.label('Hello, world!')
 
     screen.open('/')

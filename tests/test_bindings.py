@@ -5,7 +5,7 @@ from .screen import Screen
 
 
 def test_ui_select_with_tuple_as_key(screen: Screen):
-    class Model():
+    class Model:
         selection = None
     data = Model()
     options = {
@@ -26,7 +26,7 @@ def test_ui_select_with_tuple_as_key(screen: Screen):
 
 
 def test_ui_select_with_list_of_tuples(screen: Screen):
-    class Model():
+    class Model:
         selection = None
     data = Model()
     options = [(1, 1), (2, 2), (3, 3)]
@@ -44,7 +44,7 @@ def test_ui_select_with_list_of_tuples(screen: Screen):
 
 
 def test_ui_select_with_list_of_lists(screen: Screen):
-    class Model():
+    class Model:
         selection = None
     data = Model()
     options = [[1, 1], [2, 2], [3, 3]]

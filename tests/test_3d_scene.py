@@ -11,8 +11,8 @@ def test_moving_sphere_with_timer(screen: Screen):
 
     screen.open('/')
 
-    def position():
-        for i in range(20):
+    def position() -> None:
+        for _ in range(20):
             try:
                 pos = screen.selenium.execute_script('return scene.children[4].position.y')
                 if pos is not None:

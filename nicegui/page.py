@@ -5,12 +5,12 @@ import inspect
 import time
 import uuid
 from functools import wraps
-from typing import Callable, Optional
+from typing import Callable, Dict, Optional
 
 import justpy as jp
-import starlette
-from addict import Dict
+from addict import Dict as AdDict
 from pygments.formatters import HtmlFormatter
+from starlette.requests import Request
 
 from . import globals
 from .helpers import is_coroutine
@@ -30,7 +30,7 @@ class Page(jp.QuasarPage):
                  on_page_ready: Optional[Callable] = None,
                  on_disconnect: Optional[Callable] = None,
                  shared: bool = False,
-                 ):
+                 ) -> None:
         super().__init__()
 
         if globals.config:
@@ -48,14 +48,14 @@ class Page(jp.QuasarPage):
         self.disconnect_handler = on_disconnect
         self.delete_flag = not shared
 
-        self.waiting_javascript_commands: dict[str, str] = {}
+        self.waiting_javascript_commands: Dict[str, str] = {}
         self.on('result_ready', self.handle_javascript_result)
         self.on('page_ready', self.handle_page_ready)
 
         self.view = jp.Div(a=self, classes=classes, style='row-gap: 1em', temp=False)
         self.view.add_page(self)
 
-    async def _route_function(self, request: starlette.requests.Request) -> Page:
+    async def _route_function(self, request: Request) -> Page:
         for handler in globals.connect_handlers + ([self.connect_handler] if self.connect_handler else []):
             arg_count = len(inspect.signature(handler).parameters)
             is_coro = is_coroutine(handler)
@@ -67,7 +67,7 @@ class Page(jp.QuasarPage):
                 raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         return self
 
-    async def handle_page_ready(self, msg: Dict) -> bool:
+    async def handle_page_ready(self, msg: AdDict) -> bool:
         if self.page_ready_handler:
             with globals.within_view(self.view):
                 arg_count = len(inspect.signature(self.page_ready_handler).parameters)
@@ -169,10 +169,9 @@ class page:
         self.shared = shared
         self.page: Optional[Page] = None
 
-    def __call__(self, func, *args, **kwargs):
-
+    def __call__(self, func, *args, **kwargs) -> Callable:
         @wraps(func)
-        async def decorated(request: starlette.requests.Request = None):
+        async def decorated(request: Optional[Request] = None) -> Page:
             self.page = Page(
                 title=self.title,
                 favicon=self.favicon,
@@ -201,13 +200,13 @@ class page:
         globals.page_builders[self.route] = builder
         return decorated
 
-    async def connected(self, request: starlette.requests.Request):
+    async def connected(self, request: Optional[Request]) -> None:
         pass
 
-    async def header(self):
+    async def header(self) -> None:
         pass
 
-    async def footer(self):
+    async def footer(self) -> None:
         pass
 
 

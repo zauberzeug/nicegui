@@ -1,10 +1,12 @@
+#!/usr/bin/env python3
+from typing import Dict
 
-import starlette
 from nicegui import ui
+from starlette.requests import Request
+from starlette.websockets import WebSocket
 
-from session_info import SessionInfo
-
-session_infos = SessionInfo()
+# in reality we would load/save session info to DB
+session_infos: Dict[str, Dict] = {}
 
 
 def build_content(username: str) -> None:
@@ -13,7 +15,7 @@ def build_content(username: str) -> None:
 
 
 def build_login_form() -> None:
-    def on_login(username: str, password: str, socket: starlette.websockets.WebSocket):
+    def on_login(username: str, password: str, socket: WebSocket) -> None:
         session_id = socket.cookies['jp_token'].split('.')[0]
         if (username == 'user1' and password == 'pass1') or (username == 'user2' and password == 'pass2'):
             session_infos[session_id] = {'authenticated': True, 'user': username}
@@ -27,9 +29,9 @@ def build_login_form() -> None:
 
 
 @ui.page('/')
-def main_page(request: starlette.requests.Request):
-    if session_infos[request.session_id].get('authenticated', False):
-        build_content(session_infos[request.session_id]["user"])
+def main_page(request: Request) -> None:
+    if session_infos.get(request.session_id, {}).get('authenticated', False):
+        build_content(session_infos[request.session_id]['user'])
     else:
         build_login_form()
 

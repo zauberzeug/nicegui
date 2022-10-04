@@ -28,7 +28,7 @@ class PageBuilder:
                 await asyncio.sleep(0.05)
             return self._shared_page
         else:
-            page = await self.function(request)
+            page: Page = await self.function(request)
         return await page._route_function(request)
 
     def create_route(self, route: str) -> None:

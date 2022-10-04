@@ -1,8 +1,6 @@
-import logging
 import os
 import threading
 import time
-from datetime import datetime
 from typing import List
 
 import pytest
@@ -20,7 +18,7 @@ PORT = 3392
 IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-input']
 
 
-class Screen():
+class Screen:
     SCREENSHOT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshots')
 
     def __init__(self, selenium: webdriver.Chrome) -> None:
@@ -60,7 +58,7 @@ class Screen():
     def should_not_contain(self, text: str) -> None:
         assert self.selenium.title != text
         with pytest.raises(AssertionError):
-            element = self.find(text)
+            self.find(text)
 
     def click(self, target_text: str) -> WebElement:
         element = self.find(target_text)
@@ -70,7 +68,7 @@ class Screen():
             raise AssertionError(f'Could not click on "{target_text}" on:\n{element.get_attribute("outerHTML")}')
         return element
 
-    def click_at_position(self, element: WebElement, x: int = 5, y: int = 5) -> None:
+    def click_at_position(self, element: WebElement, x: int, y: int) -> None:
         action = ActionChains(self.selenium)
         action.move_to_element_with_offset(element, x, y).click().perform()
 
@@ -117,16 +115,16 @@ class Screen():
         soup = BeautifulSoup(body, 'html.parser')
         for element in soup.find_all():
             if element.name in ['script', 'style'] and len(element.text) > 10:
-                element.string = '... removed lengthly content ...'
+                element.string = '... removed lengthy content ...'
         return soup.prettify()
 
     def render_logs(self) -> str:
-        console = '\n'.join([l['message'] for l in self.selenium.get_log('browser')])
+        console = '\n'.join(l['message'] for l in self.selenium.get_log('browser'))
         return f'-- console logs ---\n{console}\n---------------------'
 
     @staticmethod
     def simplify_input_tags(soup: BeautifulSoup) -> None:
-        for element in soup.find_all(class_="q-field"):
+        for element in soup.find_all(class_='q-field'):
             new = soup.new_tag('simple_input')
             name = element.find(class_='q-field__label').text
             placeholder = element.find(class_='q-field__native').get('placeholder')
@@ -149,5 +147,5 @@ class Screen():
     def shot(self, name: str) -> None:
         os.makedirs(self.SCREENSHOT_DIR, exist_ok=True)
         filename = f'{self.SCREENSHOT_DIR}/{name}.png'
-        print(f'Storing Screenshot to {filename}')
+        print(f'Storing screenshot to {filename}')
         self.selenium.get_screenshot_as_file(filename)

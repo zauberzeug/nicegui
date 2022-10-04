@@ -1,7 +1,7 @@
 import custom
 
 
-def create():
+def create() -> None:
     for name in ['A', 'B', 'C', 'D']:
         # here we store the custom page builder in a variable and pass the specific contend for every page
         page_builder = custom.page(f'/{name.lower()}', navtitle=f'- {name} -')

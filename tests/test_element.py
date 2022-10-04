@@ -8,7 +8,7 @@ from .screen import Screen
 
 
 def test_keyboard(screen: Screen):
-    result = ui.label('')
+    result = ui.label()
     ui.keyboard(on_key=lambda e: result.set_text(f'{e.key, e.action}'))
 
     screen.open('/')

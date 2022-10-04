@@ -6,19 +6,19 @@ from .screen import Screen
 
 
 def test_executing_javascript(screen: Screen):
-    async def set_title():
+    async def set_title() -> None:
         await ui.run_javascript('document.title = "A New Title"')
     ui.button('change title', on_click=set_title)
 
     screen.open('/')
-    screen.selenium.title == 'NiceGUI'
+    assert screen.selenium.title == 'NiceGUI'
     screen.click('change title')
-    screen.selenium.title == 'A New Title'
-    screen.selenium.title != 'NiceGUI'
+    assert screen.selenium.title == 'A New Title'
+    assert screen.selenium.title != 'NiceGUI'
 
 
 def test_retrieving_content_from_javascript(screen: Screen):
-    async def write_time():
+    async def write_time() -> None:
         response = await ui.await_javascript('Date.now()')
         ui.label(f'Browser time: {response}')
 
@@ -27,5 +27,5 @@ def test_retrieving_content_from_javascript(screen: Screen):
     screen.open('/')
     screen.click('write time')
     label = screen.find('Browser time').text
-    jstime = datetime.fromtimestamp(int(label.split(': ')[1])/1000)
-    assert abs((datetime.now() - jstime).total_seconds()) < 1, f'{jstime} should be close to now'
+    js_time = datetime.fromtimestamp(int(label.split(': ')[1]) / 1000)
+    assert abs((datetime.now() - js_time).total_seconds()) < 1, f'{js_time} should be close to now'
