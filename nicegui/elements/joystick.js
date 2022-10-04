@@ -1,6 +1,6 @@
 Vue.component("joystick", {
   template: `
-    <div data-nicegui='joystick' v-bind:id="jp_props.id" :class="jp_props.classes" :style="jp_props.style"></div>
+    <div v-bind:id="jp_props.id" style="background-color:AliceBlue;position:relative;width:10em;height:10em" :style="jp_props.style"></div>
     `,
   mounted() {
     const joystick = nipplejs.create({

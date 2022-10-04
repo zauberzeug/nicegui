@@ -19,7 +19,6 @@ class JoystickView(CustomView):
         self.on_start = on_start
         self.on_move = on_move
         self.on_end = on_end
-        self.style = 'position:relative;'
         self.allowed_events = ['onStart', 'onMove', 'onEnd']
         self.initialize(temp=False,
                         onStart=self.handle_start,
