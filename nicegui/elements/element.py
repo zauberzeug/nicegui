@@ -64,29 +64,40 @@ class Element:
             self.update()
         return self
 
+    @staticmethod
+    def _parse_style(text: Optional[str]) -> Dict[str, str]:
+        if not text:
+            return {}
+        lexer = shlex.shlex(text, posix=True)
+        lexer.whitespace = ';'
+        lexer.wordchars += ':- '
+        return dict(map(str.strip, word.split(':', 1)) for word in lexer)
+
     def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):
         '''CSS style sheet definitions to modify the look of the element.
         Every style in the `remove` parameter will be removed from the element.
         Styles are separated with a semicolon.
         This can be helpful if the predefined style sheet definitions by NiceGUI are not wanted in a particular styling.
         '''
-        def parse_style(text: Optional[str]) -> Dict[str, str]:
-            if not text:
-                return {}
-            lexer = shlex.shlex(text, posix=True)
-            lexer.whitespace = ';'
-            lexer.wordchars += ':- '
-            return dict(map(str.strip, word.split(':', 1)) for word in lexer)
-        style_dict = parse_style((self.view.style or '').strip('; ')) if replace is None else {}
-        for key in parse_style(remove):
+        style_dict = self._parse_style((self.view.style or '').strip('; ')) if replace is None else {}
+        for key in self._parse_style(remove):
             del style_dict[key]
-        style_dict.update(parse_style(add))
-        style_dict.update(parse_style(replace))
+        style_dict.update(self._parse_style(add))
+        style_dict.update(self._parse_style(replace))
         new_style = ';'.join(f'{key}:{value}' for key, value in style_dict.items())
         if self.view.style != new_style:
             self.view.style = new_style
             self.update()
         return self
+
+    @staticmethod
+    def _parse_props(text: Optional[str]) -> Dict[str, str]:
+        if not text:
+            return {}
+        lexer = shlex.shlex(text, posix=True)
+        lexer.whitespace = ' '
+        lexer.wordchars += '=-'
+        return dict(word.split('=', 1) if '=' in word else (word, True) for word in lexer)
 
     def props(self, add: Optional[str] = None, *, remove: Optional[str] = None):
         '''Quasar props https://quasar.dev/vue-components/button#design to modify the look of the element.
@@ -95,19 +106,12 @@ class Element:
         Every prop passed to the `remove` parameter will be removed from the element.
         This can be helpful if the predefined props by NiceGUI are not wanted in a particular styling.
         '''
-        def parse_props(text: Optional[str]) -> Dict[str, str]:
-            if not text:
-                return {}
-            lexer = shlex.shlex(text, posix=True)
-            lexer.whitespace = ' '
-            lexer.wordchars += '=-'
-            return dict(word.split('=', 1) if '=' in word else (word, True) for word in lexer)
         needs_update = False
-        for key in parse_props(remove):
+        for key in self._parse_props(remove):
             if getattr(self.view, key, None) is not None:
                 needs_update = True
             setattr(self.view, key, None)
-        for key, value in parse_props(add).items():
+        for key, value in self._parse_props(add).items():
             if getattr(self.view, key, None) != value:
                 needs_update = True
             setattr(self.view, key, value)

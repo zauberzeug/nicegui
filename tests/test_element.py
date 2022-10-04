@@ -1,5 +1,6 @@
 
 from nicegui import ui
+from nicegui.elements.element import Element
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 
@@ -79,6 +80,14 @@ def test_classes(screen: Screen):
 
     label.classes(replace='four')
     assert_classes('four')
+
+
+def test_style_parsing():
+    assert Element._parse_style('color: red; background-color: green') == {'color': 'red', 'background-color': 'green'}
+
+
+def test_props_parsing():
+    assert Element._parse_props('one two=1 three="abc def"') == {'one': True, 'two': '1', 'three': 'abc def'}
 
 
 def test_style(screen: Screen):
