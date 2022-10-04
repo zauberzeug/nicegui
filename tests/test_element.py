@@ -1,5 +1,4 @@
 
-import pytest
 from nicegui import ui
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
@@ -46,10 +45,9 @@ def test_styling_joystick(screen: Screen):
     assert 'shadow-lg' in joystick.get_attribute('class')
 
 
-@pytest.mark.skip(reason='not jet fixed; see https://github.com/zauberzeug/nicegui/issues/98')
 def test_input_with_multi_word_error_message(screen: Screen):
     input = ui.input(label='some input')
-    ui.button('set error', on_click=lambda: input.props('error-message="Some multi word error message" error=error'))
+    ui.button('set error', on_click=lambda: input.props('error error-message="Some multi word error message"'))
 
     screen.open('/')
     screen.should_not_contain('Some multi word error message')
