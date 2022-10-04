@@ -37,6 +37,15 @@ def test_joystick(screen: Screen):
     screen.should_contain('end 0, 0')
 
 
+def test_styling_joystick(screen: Screen):
+    ui.joystick().style('background-color: gray;').classes('shadow-lg')
+
+    screen.open('/')
+    joystick = screen.selenium.find_element(By.XPATH, '//div[@data-nicegui="joystick"]')
+    assert 'background-color: gray;' in joystick.get_attribute('style')
+    assert 'shadow-lg' in joystick.get_attribute('class')
+
+
 @pytest.mark.skip(reason='not jet fixed; see https://github.com/zauberzeug/nicegui/issues/98')
 def test_input_with_multi_word_error_message(screen: Screen):
     input = ui.input(label='some input')
