@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Literal, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import justpy as jp
 
@@ -21,7 +21,7 @@ class ChoiceElement(ValueElement):
         except ValueError:
             return value
 
-    def handle_change(self, msg: Dict) -> Literal[False]:
+    def handle_change(self, msg: Dict):
         index = msg['value']['value'] if isinstance(msg['value'], dict) else msg['value']
         msg['index'] = index
         msg['label'] = self.labels[index]
