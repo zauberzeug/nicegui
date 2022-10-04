@@ -8,7 +8,7 @@ from .choice_element import ChoiceElement
 class Select(ChoiceElement):
 
     def __init__(self, options: Union[List, Dict], *,
-                 label: Optional[str] = None, value: Any = None, on_change: Optional[Callable] = None):
+                 label: Optional[str] = None, value: Any = None, on_change: Optional[Callable] = None) -> None:
         """Dropdown Selection
 
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
@@ -20,17 +20,7 @@ class Select(ChoiceElement):
         super().__init__(view, options, value=value, on_change=on_change)
 
     def value_to_view(self, value: Any):
-        if isinstance(value, list):
-            value = tuple(value)
-        matches = [o for o in self.view.options if o['value'] == value]
-        if any(matches):
-            return matches[0]['label']
-        else:
+        try:
+            return self.labels[self.values.index(value)]
+        except ValueError:
             return value
-
-    def handle_change(self, msg: Dict):
-        msg['label'] = msg['value']['label']
-        msg['value'] = msg['value']['value']
-        if isinstance(self.view.options[0]['value'], tuple) and isinstance(msg['value'], list):
-            msg['value'] = tuple(msg['value'])
-        return super().handle_change(msg)

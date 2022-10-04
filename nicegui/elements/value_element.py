@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Literal, Optional
 
 import justpy as jp
 
@@ -25,7 +25,7 @@ class ValueElement(Element):
     def set_value(self, value) -> None:
         self.value = value
 
-    def handle_change(self, msg: Dict):
+    def handle_change(self, msg: Dict) -> Literal[False]:
         self.value = msg['value']
         self.update()
         return False
