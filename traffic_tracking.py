@@ -11,17 +11,22 @@ from nicegui import ui
 
 VISITS_FILE = 'traffic_data/visits.pickle'
 SESSIONS_FILE = 'traffic_data/sessions.pickle'
+REFERRERS_FILE = 'traffic_data/referrers.pickle'
 
 visits: Dict[int, int] = {}
 sessions: Dict[int, Set[str]] = {}
+referrers: Dict[int, Dict[str, int]] = {}
 
 os.makedirs(os.path.dirname(VISITS_FILE), exist_ok=True)
 os.makedirs(os.path.dirname(SESSIONS_FILE), exist_ok=True)
+os.makedirs(os.path.dirname(REFERRERS_FILE), exist_ok=True)
 try:
     with open(VISITS_FILE, 'rb') as f:
         visits = pickle.load(f)
     with open(SESSIONS_FILE, 'rb') as f:
         sessions = pickle.load(f)
+    with open(REFERRERS_FILE, 'rb') as f:
+        referrers = pickle.load(f)
 except FileNotFoundError:
     pass
 except:
@@ -38,6 +43,8 @@ def keep_backups() -> None:
                     pickle.dump(visits, f)
                 with open(SESSIONS_FILE, 'wb') as f:
                     pickle.dump(sessions, f)
+                with open(REFERRERS_FILE, 'wb') as f:
+                    pickle.dump(referrers, f)
             except:
                 logging.exception('Error saving traffic data')
             time.sleep(1)
@@ -55,11 +62,15 @@ def on_connect(request: Request) -> None:
     agent = request.headers['user-agent'].lower()
     if any(s in agent for s in ('bot', 'spider', 'crawler', 'monitor', 'curl', 'wget', 'python-requests', 'kuma')):
         return
-    print(f'new connection from {agent}')
+    origin_url = request.headers.get('referer', 'unknown')
+    print(f'new connection from {agent}, coming from {origin_url}', flush=True)
     def seconds_to_day(seconds: float) -> int: return int(seconds / 60 / 60 / 24)
     #print(f'traffic data: {[datetime.fromtimestamp(day_to_milliseconds(t)/1000) for t in visits.keys()]}')
     today = seconds_to_day(time.time())
     visits[today] = visits.get(today, 0) + 1
+    referrers[today] = referrers.get(today, {})
+    referrers[today][origin_url] = referrers[today].get(origin_url, 0) + 1
+    print(referrers, flush=True)
     if today not in sessions:
         sessions[today] = set()
     sessions[today].add(request.session_id)
