@@ -21,11 +21,20 @@ def test_keyboard(screen: Screen):
 
 
 def test_joystick(screen: Screen):
-    ui.joystick()
+    ui.joystick(on_move=lambda e: coordinates.set_text(f'move {e.data.vector.x:.3f}, {e.data.vector.y:.3f}'),
+                on_end=lambda e: coordinates.set_text('end 0, 0'))
+    coordinates = ui.label('start 0, 0')
 
     screen.open('/')
     assert any(s.endswith('keyboard.js') for s in screen.get_attributes('script', 'src'))
-    assert screen.selenium.find_element(By.XPATH, '//div[@data-nicegui="joystick"]')
+    joystick = screen.selenium.find_element(By.XPATH, '//div[@data-nicegui="joystick"]')
+    assert joystick
+    screen.should_contain('start 0, 0')
+    ActionChains(screen.selenium).move_to_element_with_offset(joystick, 25, 25)\
+        .click_and_hold().pause(1).move_by_offset(20, 20).pause(1).perform()
+    screen.should_contain('move 0.400, -0.400')
+    ActionChains(screen.selenium).move_to_element_with_offset(joystick, 25, 25).click().perform()
+    screen.should_contain('end 0, 0')
 
 
 @pytest.mark.skip(reason='not jet fixed; see https://github.com/zauberzeug/nicegui/issues/98')
