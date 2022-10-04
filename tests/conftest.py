@@ -49,8 +49,9 @@ def reset_globals() -> Generator[None, None, None]:
 
 @pytest.fixture(scope='session', autouse=True)
 def remove_all_screenshots() -> None:
-    for name in os.listdir(Screen.SCREENSHOT_DIR):
-        os.remove(os.path.join(Screen.SCREENSHOT_DIR, name))
+    if os.path.exists(Screen.SCREENSHOT_DIR):
+        for name in os.listdir(Screen.SCREENSHOT_DIR):
+            os.remove(os.path.join(Screen.SCREENSHOT_DIR, name))
 
 
 @pytest.fixture
