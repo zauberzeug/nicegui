@@ -84,10 +84,14 @@ def test_classes(screen: Screen):
 
 def test_style_parsing():
     assert Element._parse_style('color: red; background-color: green') == {'color': 'red', 'background-color': 'green'}
+    assert Element._parse_style('width:12em;height:34.5em') == {'width': '12em', 'height': '34.5em'}
+    assert Element._parse_style('transform: translate(120.0px, 50%)') == {'transform': 'translate(120.0px, 50%)'}
 
 
 def test_props_parsing():
     assert Element._parse_props('one two=1 three="abc def"') == {'one': True, 'two': '1', 'three': 'abc def'}
+    assert Element._parse_props('loading percentage=12.5') == {'loading': True, 'percentage': '12.5'}
+    assert Element._parse_props('size=50%') == {'size': '50%'}
 
 
 def test_style(screen: Screen):

@@ -70,7 +70,7 @@ class Element:
             return {}
         lexer = shlex.shlex(text, posix=True)
         lexer.whitespace = ';'
-        lexer.wordchars += ':- '
+        lexer.wordchars += ':-.%,() '
         return dict(map(str.strip, word.split(':', 1)) for word in lexer)
 
     def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):
@@ -96,7 +96,7 @@ class Element:
             return {}
         lexer = shlex.shlex(text, posix=True)
         lexer.whitespace = ' '
-        lexer.wordchars += '=-'
+        lexer.wordchars += '=-.%'
         return dict(word.split('=', 1) if '=' in word else (word, True) for word in lexer)
 
     def props(self, add: Optional[str] = None, *, remove: Optional[str] = None):
