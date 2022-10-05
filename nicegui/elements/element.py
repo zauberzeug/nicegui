@@ -102,7 +102,7 @@ class Element:
     def props(self, add: Optional[str] = None, *, remove: Optional[str] = None):
         '''Quasar props https://quasar.dev/vue-components/button#design to modify the look of the element.
         Boolean props will automatically activated if they appear in the list of the `add` property.
-        Props are separated with a blank space.
+        Props are separated with a blank space. String values must be quoted.
         Every prop passed to the `remove` parameter will be removed from the element.
         This can be helpful if the predefined props by NiceGUI are not wanted in a particular styling.
         '''
