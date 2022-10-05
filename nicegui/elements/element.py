@@ -66,12 +66,7 @@ class Element:
 
     @staticmethod
     def _parse_style(text: Optional[str]) -> Dict[str, str]:
-        if not text:
-            return {}
-        lexer = shlex.shlex(text, posix=True)
-        lexer.whitespace = ';'
-        lexer.wordchars += ':-.%,() '
-        return dict(map(str.strip, word.split(':', 1)) for word in lexer)
+        return dict((word.strip() for word in part.split(':')) for part in text.strip('; ').split(';')) if text else {}
 
     def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):
         '''CSS style sheet definitions to modify the look of the element.

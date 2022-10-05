@@ -86,6 +86,7 @@ def test_style_parsing():
     assert Element._parse_style('color: red; background-color: green') == {'color': 'red', 'background-color': 'green'}
     assert Element._parse_style('width:12em;height:34.5em') == {'width': '12em', 'height': '34.5em'}
     assert Element._parse_style('transform: translate(120.0px, 50%)') == {'transform': 'translate(120.0px, 50%)'}
+    assert Element._parse_style('box-shadow: 0 0 0.5em #1976d2') == {'box-shadow': '0 0 0.5em #1976d2'}
 
 
 def test_props_parsing():
