@@ -10,5 +10,5 @@ class Row(Group):
 
         Provides a container which arranges its child in a row.
         '''
-        view = jp.QDiv(classes='row items-start', style='gap: 1em', delete_flag=False, temp=False)
+        view = jp.QDiv(classes='row items-start gap-4', delete_flag=False, temp=False)
         super().__init__(view)

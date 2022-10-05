@@ -12,6 +12,6 @@ class Config():
     reload: bool = True
     favicon: str = 'favicon.ico'
     dark: Optional[bool] = False
-    main_page_classes: str = 'q-ma-md column items-start'
+    main_page_classes: str = 'q-ma-md column items-start gap-4'
     binding_refresh_interval: float = 0.1
     excludes: List[str] = field(default_factory=list)

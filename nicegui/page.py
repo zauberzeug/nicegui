@@ -24,7 +24,7 @@ class Page(jp.QuasarPage):
                  *,
                  favicon: Optional[str] = None,
                  dark: Optional[bool] = ...,
-                 classes: str = 'q-ma-md column items-start',
+                 classes: str = 'q-ma-md column items-start gap-4',
                  css: str = HtmlFormatter().get_style_defs('.codehilite'),
                  on_connect: Optional[Callable] = None,
                  on_page_ready: Optional[Callable] = None,
@@ -52,7 +52,7 @@ class Page(jp.QuasarPage):
         self.on('result_ready', self.handle_javascript_result)
         self.on('page_ready', self.handle_page_ready)
 
-        self.view = jp.Div(a=self, classes=classes, style='row-gap: 1em', temp=False)
+        self.view = jp.Div(a=self, classes=classes, temp=False)
         self.view.add_page(self)
 
     async def _route_function(self, request: Request) -> Page:
@@ -135,7 +135,7 @@ class page:
         *,
         favicon: Optional[str] = None,
         dark: Optional[bool] = ...,
-        classes: str = 'q-ma-md column items-start',
+        classes: str = 'q-ma-md column items-start gap-4',
         css: str = HtmlFormatter().get_style_defs('.codehilite'),
         on_connect: Optional[Callable] = None,
         on_page_ready: Optional[Callable] = None,
@@ -150,7 +150,7 @@ class page:
         :param title: optional page title
         :param favicon: optional favicon
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
-        :param classes: tailwind classes for the container div (default: `'q-ma-md column items-start'`)
+        :param classes: tailwind classes for the container div (default: `'q-ma-md column items-start gap-4'`)
         :param css: CSS definitions
         :param on_connect: optional function or coroutine which is called for each new client connection
         :param on_page_ready: optional function or coroutine which is called when the websocket is connected

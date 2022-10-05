@@ -10,7 +10,7 @@ class Card(Group):
 
         Provides a container with a dropped shadow.
         """
-        view = jp.QCard(classes='column items-start q-pa-md', style='gap: 1em', delete_flag=False, temp=False)
+        view = jp.QCard(classes='column items-start q-pa-md gap-4', delete_flag=False, temp=False)
         super().__init__(view)
 
 
