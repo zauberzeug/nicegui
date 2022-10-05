@@ -31,12 +31,12 @@ column
     assert screen.render_content(with_extras=True) == '''Title: NiceGUI
 
 test label
-row [class: items-start positive]
+row [class: items-start gap-4 positive]
   test input: some placeholder [class: no-wrap items-start standard labeled]
-column [class: items-start]
+column [class: items-start gap-4]
   1
   2
   3
-  card [class: items-start q-pa-md]
+  card [class: items-start q-pa-md gap-4]
     some text
 '''
