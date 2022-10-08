@@ -130,7 +130,7 @@ async def await_javascript(self, code: str, *, check_interval: float = 0.01, tim
         assert isinstance(page, Page)
         if page.page_id not in jp.WebPage.sockets:
             raise RuntimeError('page not ready; use the `on_page_ready` argument: https://nicegui.io/#page')
-        return await page.await_javascript(code)
+        return await page.await_javascript(code, check_interval=check_interval, timeout=timeout)
 
 
 class page:
