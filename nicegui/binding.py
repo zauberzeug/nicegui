@@ -163,11 +163,15 @@ class BindVisibilityMixin(BindMixin):
     def bind_visibility_to(self, target_object, target_name, forward=lambda x: x):
         return super()._bind_to(attr='visible', target_object=target_object, target_name=target_name, forward=forward)
 
-    def bind_visibility_from(self, target_object, target_name, backward=lambda x: x):
+    def bind_visibility_from(self, target_object, target_name, backward=lambda x: x, *, value=None):
+        if value is not None:
+            def backward(x): return x == value
         return super()._bind_from(attr='visible', target_object=target_object, target_name=target_name,
                                   backward=backward)
 
-    def bind_value(self, target_object, target_name, forward=lambda x: x, backward=lambda x: x):
+    def bind_visibility(self, target_object, target_name, forward=lambda x: x, backward=lambda x: x, *, value=None):
+        if value is not None:
+            def backward(x): return x == value
         self.bind_visibility_from(target_object=target_object, target_name=target_name, backward=backward)
         self.bind_visibility_to(target_object=target_object, target_name=target_name, forward=forward)
         return self
