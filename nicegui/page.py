@@ -120,13 +120,16 @@ def add_body_html(self, html: str) -> None:
 async def run_javascript(self, code: str) -> None:
     for page in find_parent_view().pages.values():
         assert isinstance(page, Page)
-        while page.page_id not in jp.WebPage.sockets:
-            await asyncio.sleep(0.01)
+        if page.page_id not in jp.WebPage.sockets:
+            raise RuntimeError('page not ready; use the `on_page_ready` argument: https://nicegui.io/#page')
         await page.run_javascript(code)
 
 
 async def await_javascript(self, code: str, *, check_interval: float = 0.01, timeout: float = 1.0) -> None:
     for page in find_parent_view().pages.values():
+        assert isinstance(page, Page)
+        if page.page_id not in jp.WebPage.sockets:
+            raise RuntimeError('page not ready; use the `on_page_ready` argument: https://nicegui.io/#page')
         return await page.await_javascript(code)
 
 

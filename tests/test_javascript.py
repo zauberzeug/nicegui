@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pytest
 from nicegui import ui
 from nicegui.events import ValueChangeEventArguments
 
@@ -19,11 +20,14 @@ def test_executing_javascript_on_button_press(screen: Screen):
 
 
 def test_executing_javascript_on_value_change(screen: Screen):
-    async def set_title(e: ValueChangeEventArguments) -> None:
-        await ui.run_javascript(f'document.title = "{e.value}"')
-    radio = ui.radio(['Page Title A', 'Page Title B'], on_change=set_title)
-    # NOTE setting the value here will trigger on_change before the page is opened, so js needs to hold back until the page is loaded
-    radio.value = 'Initial Page Title'
+    async def ready():
+        await ui.run_javascript('document.title = "Initial Page Title"')
+
+    @ui.page('/', on_page_ready=ready)
+    def main_page():
+        async def set_title(e: ValueChangeEventArguments) -> None:
+            await ui.run_javascript(f'document.title = "{e.value}"')
+        ui.radio(['Page Title A', 'Page Title B'], on_change=set_title)
 
     screen.open('/')
     screen.wait(0.3)
@@ -34,6 +38,20 @@ def test_executing_javascript_on_value_change(screen: Screen):
     screen.click('Title A')
     screen.wait(0.3)
     assert screen.selenium.title == 'Page Title A'
+
+
+def test_executing_javascript_on_async_page(screen: Screen):
+    @ui.page('/')
+    async def page():
+        ui.label('before js')
+        with pytest.raises(RuntimeError):
+            await ui.run_javascript('document.title = "A New Title"')
+        ui.label('after js')
+
+    screen.open('/')
+    assert screen.selenium.title == 'NiceGUI'
+    screen.should_contain('before js')
+    screen.should_contain('after js')
 
 
 def test_retrieving_content_from_javascript(screen: Screen):
