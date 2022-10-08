@@ -6,7 +6,7 @@ from typing import Dict, Optional
 import justpy as jp
 
 from .. import globals
-from ..binding import BindableProperty, bind_from, bind_to
+from ..binding import BindableProperty, BindVisibilityMixin
 from ..page import Page, find_parent_view
 from ..task_logger import create_task
 
@@ -16,7 +16,7 @@ def _handle_visibility_change(sender: Element, visible: bool) -> None:
     sender.update()
 
 
-class Element:
+class Element(BindVisibilityMixin):
     visible = BindableProperty(on_change=_handle_visibility_change)
 
     def __init__(self, view: jp.HTMLBaseComponent):
@@ -28,25 +28,6 @@ class Element:
         self.view.add_page(self.page)
 
         self.visible = True
-
-    def bind_visibility_to(self, target_object, target_name, forward=lambda x: x):
-        bind_to(self, 'visible', target_object, target_name, forward=forward)
-        return self
-
-    def bind_visibility_from(self, target_object, target_name, backward=lambda x: x, *, value=None):
-        if value is not None:
-            def backward(x): return x == value
-
-        bind_from(self, 'visible', target_object, target_name, backward=backward)
-        return self
-
-    def bind_visibility(self, target_object, target_name, forward=lambda x: x, backward=None, *, value=None):
-        if value is not None:
-            def backward(x): return x == value
-
-        bind_from(self, 'visible', target_object, target_name, backward=backward)
-        bind_to(self, 'visible', target_object, target_name, forward=forward)
-        return self
 
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):
         '''HTML classes to modify the look of the element.
