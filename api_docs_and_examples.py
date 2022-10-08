@@ -419,7 +419,7 @@ You can run a function or coroutine as a parallel task by passing it to one of t
 - `ui.on_startup`: Called when NiceGUI is started or restarted.
 - `ui.on_shutdown`: Called when NiceGUI is shut down or restarted.
 - `ui.on_connect`: Called when a client connects to NiceGUI. (Optional argument: Starlette request)
-- `ui.on_page_ready`: Called when the page is ready and the websocket is connected. (Optional argument: socket)
+- `ui.on_page_ready`: Called when the page is ready and the websocket is connected (Optional argument: socket). See [Yield for Page Ready](#yield_for_page_ready) as an alternative.
 - `ui.on_disconnect`: Called when a client disconnects from NiceGUI. (Optional argument: socket)
 
 When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
@@ -580,6 +580,25 @@ To make it "private" or to change other attributes like title, favicon etc. you 
 
         ui.link('private page', private_page)
         ui.link('shared page', shared_page)
+
+    yield_page_ready = '''#### Yield for Page Ready
+
+This is an handy alternative to using the `on_page_ready` callback (either as parameter of `@ui.page` or via `ui.on_page_ready` function).
+
+If a `yield` statement is provided in a page builder function, all code below that statement is executed after the page is ready.
+This allows you to execute JavaScript; which is only possible after the page has been loaded (see [#112](https://github.com/zauberzeug/nicegui/issues/112)).
+Also it's possible to do async stuff while the user alreay sees the content added before the yield statement.
+    '''
+    with example(yield_page_ready):
+        @ui.page('/yield_page_ready')
+        async def yield_page_ready():
+            ui.label('This text is displayed immediately.')
+            yield
+            ui.run_javascript('document.title = "JavaScript Controlled Title")')
+            await asyncio.sleep(3)
+            ui.label('This text is displayed 3 seconds after the page has been fully loaded.')
+
+        ui.link('show page ready code after yield', '/yield_page_ready')
 
     with example(ui.open):
         @ui.page('/yet_another_page')

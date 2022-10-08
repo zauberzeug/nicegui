@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import time
+import types
 import uuid
 from functools import wraps
 from typing import Callable, Dict, Optional
@@ -45,6 +46,7 @@ class Page(jp.QuasarPage):
         self.css = css
         self.connect_handler = on_connect
         self.page_ready_handler = on_page_ready
+        self.page_ready_generator: types.GeneratorType = None
         self.disconnect_handler = on_disconnect
         self.delete_flag = not shared
 
@@ -68,8 +70,13 @@ class Page(jp.QuasarPage):
         return self
 
     async def handle_page_ready(self, msg: AdDict) -> bool:
-        if self.page_ready_handler:
-            with globals.within_view(self.view):
+        with globals.within_view(self.view):
+            if self.page_ready_generator is not None:
+                if isinstance(self.page_ready_generator, types.AsyncGeneratorType):
+                    await self.page_ready_generator.__anext__()
+                elif isinstance(self.page_ready_generator, types.GeneratorType):
+                    next(self.page_ready_generator)
+            if self.page_ready_handler:
                 arg_count = len(inspect.signature(self.page_ready_handler).parameters)
                 is_coro = is_coroutine(self.page_ready_handler)
                 if arg_count == 1:
@@ -159,7 +166,7 @@ class page:
         :param classes: tailwind classes for the container div (default: `'q-ma-md column items-start gap-4'`)
         :param css: CSS definitions
         :param on_connect: optional function or coroutine which is called for each new client connection
-        :param on_page_ready: optional function or coroutine which is called when the websocket is connected
+        :param on_page_ready: optional function or coroutine which is called when the websocket is connected;  see `"Yield for Page Ready" <https://nicegui.io/#yield_for_page_ready>`_ as an alternative.
         :param on_disconnect: optional function or coroutine which is called when a client disconnects
         :param shared: whether the page instance is shared between multiple clients (default: `False`)
         """
@@ -197,7 +204,12 @@ class page:
                     kwargs['request'] = request
                 await self.connected(request)
                 await self.header()
-                await func(*args, **kwargs) if is_coroutine(func) else func(*args, **kwargs)
+                result = await func(*args, **kwargs) if is_coroutine(func) else func(*args, **kwargs)
+                if isinstance(result, types.GeneratorType):
+                    next(result)
+                if isinstance(result, types.AsyncGeneratorType):
+                    await result.__anext__()
+                self.page.page_ready_generator = result
                 await self.footer()
             return self.page
         builder = PageBuilder(decorated, self.shared)
