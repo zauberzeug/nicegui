@@ -119,6 +119,9 @@ def add_body_html(self, html: str) -> None:
 
 async def run_javascript(self, code: str) -> None:
     for page in find_parent_view().pages.values():
+        assert isinstance(page, Page)
+        while page.page_id not in jp.WebPage.sockets:
+            await asyncio.sleep(0.01)
         await page.run_javascript(code)
 
 
