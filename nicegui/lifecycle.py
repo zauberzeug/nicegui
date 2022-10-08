@@ -2,6 +2,9 @@ from typing import Awaitable, Callable, Union
 
 import justpy as jp
 
+from nicegui.helpers import safe_invoke
+from nicegui.task_logger import create_task
+
 from . import globals
 
 
@@ -14,7 +17,10 @@ def on_disconnect(self, handler: Union[Callable, Awaitable]):
 
 
 def on_startup(self, handler: Union[Callable, Awaitable]):
-    globals.startup_handlers.append(handler)
+    if globals.state == globals.State.STARTED:
+        create_task(handler, name='startup task') if isinstance(handler, Awaitable) else safe_invoke(handler)
+    else:
+        globals.startup_handlers.append(handler)
 
 
 def on_shutdown(self, handler: Union[Callable, Awaitable]):

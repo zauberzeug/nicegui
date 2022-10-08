@@ -2,6 +2,8 @@
 import asyncio
 from typing import Awaitable, Callable
 
+from nicegui.helpers import safe_invoke
+
 if True:  # NOTE: prevent formatter from mixing up these lines
     import builtins
     print_backup = builtins.print
@@ -50,15 +52,6 @@ def shutdown():
     [safe_invoke(t) for t in globals.shutdown_handlers if isinstance(t, Callable)]
     [t.cancel() for t in globals.tasks]
     globals.state = globals.State.STOPPED
-
-
-def safe_invoke(func: Callable):
-    try:
-        result = func()
-        if isinstance(result, Awaitable):
-            create_task(result)
-    except:
-        globals.log.exception(f'could not invoke {func}')
 
 
 app = globals.app = jp.app

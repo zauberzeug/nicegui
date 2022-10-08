@@ -2,7 +2,10 @@ import asyncio
 import functools
 import inspect
 import time
-from typing import Any
+from typing import Any, Awaitable, Callable
+
+from nicegui import globals
+from nicegui.task_logger import create_task
 
 
 def measure(*, reset: bool = False, ms: bool = False):
@@ -21,3 +24,12 @@ def is_coroutine(object: Any) -> bool:
     while isinstance(object, functools.partial):
         object = object.func
     return asyncio.iscoroutinefunction(object)
+
+
+def safe_invoke(func: Callable):
+    try:
+        result = func()
+        if isinstance(result, Awaitable):
+            create_task(result)
+    except:
+        globals.log.exception(f'could not invoke {func}')
