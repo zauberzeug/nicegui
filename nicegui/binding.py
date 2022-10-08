@@ -101,3 +101,22 @@ class BindableProperty:
         update_views(propagate(owner, self.name))
         if value_changed and self.on_change is not None:
             self.on_change(owner, value)
+
+
+class BindTextMixin:
+    """
+    Mixin providing bind text methods.
+    """
+
+    def bind_text_to(self, target_object, target_name, forward=lambda x: x):
+        bind_to(self, 'text', target_object, target_name, forward=forward)
+        return self
+
+    def bind_text_from(self, target_object, target_name, backward=lambda x: x):
+        bind_from(self, 'text', target_object, target_name, backward=backward)
+        return self
+
+    def bind_text(self, target_object, target_name, forward=lambda x: x, backward=lambda x: x):
+        bind_from(self, 'text', target_object, target_name, backward=backward)
+        bind_to(self, 'text', target_object, target_name, forward=forward)
+        return self
