@@ -92,10 +92,10 @@ class Page(jp.QuasarPage):
                 raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         await super().on_disconnect(websocket)
 
-    async def await_javascript(self, code: str, *, check_interval: float = 0.01, timeout: float = 1.0) -> str:
+    async def run_javascript(self, code: str, *, check_interval: float = 0.01, timeout: float = 1.0) -> str:
         start_time = time.time()
         request_id = str(uuid.uuid4())
-        await self.run_javascript(code, request_id=request_id)
+        await super().run_javascript(code, request_id=request_id)
         while request_id not in self.waiting_javascript_commands:
             if time.time() > start_time + timeout:
                 raise TimeoutError('JavaScript did not respond in time')
@@ -117,20 +117,12 @@ def add_body_html(self, html: str) -> None:
         page.body_html += html
 
 
-async def run_javascript(self, code: str) -> None:
+async def run_javascript(self, code: str, *, check_interval: float = 0.01, timeout: float = 1.0) -> None:
     for page in find_parent_view().pages.values():
         assert isinstance(page, Page)
         if page.page_id not in jp.WebPage.sockets:
             raise RuntimeError('page not ready; use the `on_page_ready` argument: https://nicegui.io/#page')
-        await page.run_javascript(code)
-
-
-async def await_javascript(self, code: str, *, check_interval: float = 0.01, timeout: float = 1.0) -> None:
-    for page in find_parent_view().pages.values():
-        assert isinstance(page, Page)
-        if page.page_id not in jp.WebPage.sockets:
-            raise RuntimeError('page not ready; use the `on_page_ready` argument: https://nicegui.io/#page')
-        return await page.await_javascript(code, check_interval=check_interval, timeout=timeout)
+        return await page.run_javascript(code, check_interval=check_interval, timeout=timeout)
 
 
 class page:

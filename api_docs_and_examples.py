@@ -652,21 +652,19 @@ It also enables you to identify sessions over [longer time spans by configuring 
     javascript = '''#### JavaScript
 
 With `ui.run_javascript()` you can run arbitrary JavaScript code on a page that is executed in the browser.
-The asynchronous function will return after sending the command.
-
-With `ui.await_javascript()` you can send a JavaScript command and wait for its response.
-The asynchronous function will only return after receiving the result.
+The asynchronous function will return after the command(s) are executed.
+The result of the execution is returned as a string.
 '''
     with example(javascript):
-        async def run_javascript():
+        async def alert():
             await ui.run_javascript('alert("Hello!")')
 
-        async def await_javascript():
-            response = await ui.await_javascript('Date()')
+        async def get_date():
+            response = await ui.run_javascript('Date()')
             ui.notify(f'Browser time: {response}')
 
-        ui.button('run JavaScript', on_click=run_javascript)
-        ui.button('await JavaScript', on_click=await_javascript)
+        ui.button('fire and forget', on_click=alert)
+        ui.button('receive result', on_click=get_date)
 
     # NOTE because the docs are added after inital page load, we need to manually trigger the jump tho the anchor
     await ui.run_javascript('parts = document.URL.split("#"); window.location.hash = "#"; setTimeout(function(){ if (parts.length > 1) window.location.hash = "#" + parts[1]; }, 100); ')
