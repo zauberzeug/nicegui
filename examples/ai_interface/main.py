@@ -5,12 +5,13 @@ import functools
 import io
 from typing import Callable
 
-import replicate
+import replicate  # very nice API to run AI models; see https://replicate.com/
 from nicegui import ui
-from nicegui.events import UploadEventArguments, ValueChangeEventArguments
+from nicegui.events import UploadEventArguments
 
 
 async def io_bound(callback: Callable, *args: any, **kwargs: any):
+    '''Makes a blocking function awaitable; pass function as first parameter and its arguments as the rest'''
     return await asyncio.get_event_loop().run_in_executor(None, functools.partial(callback, *args, **kwargs))
 
 
@@ -22,12 +23,13 @@ async def transcribe(args: UploadEventArguments):
     transcription.set_text(f'result: "{text}"')
 
 
-async def generate_image(args: ValueChangeEventArguments):
+async def generate_image():
     image.source = 'https://dummyimage.com/600x400/ccc/000000.png&text=building+image...'
     model = replicate.models.get('stability-ai/stable-diffusion')
     prediction = await io_bound(model.predict, prompt=prompt.value)
     image.source = prediction[0]
 
+# User Interface
 with ui.row().style('gap:10em'):
     with ui.column():
         ui.label('OpenAI Whisper (voice transcription)').classes('text-2xl')
