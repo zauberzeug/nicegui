@@ -73,18 +73,6 @@ Note: The script will automatically reload the page when you modify the code.
 Full documentation can be found at [https://nicegui.io](https://nicegui.io).
 Just scroll down.
 
-## Docker
-
-You can use our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) for pain-free installation:
-
-```bash
-docker run --rm -p 8888:8080 -v $(pwd):/app/ -it zauberzeug/nicegui:latest
-```
-
-This will start the server at http://localhost:8888 with the code from your current directory.
-The file containing your `ui.run(port=8080, ...)` command must be named `main.py`.
-Code modification triggers an automatic reload.
-
 ## Why?
 
 We like [Streamlit](https://streamlit.io/) but find it does [too much magic when it comes to state handling](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651).
@@ -101,10 +89,22 @@ You may also have a look at the [examples folder](https://github.com/zauberzeug/
 
 NiceGUI is based on [JustPy](https://justpy.io/) which is based on the ASGI framework [Starlette](https://www.starlette.io/) and the ASGI webserver [Uvicorn](https://www.uvicorn.org/).
 
+## Docker
+
+You can use our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui):
+
+```bash
+docker run --rm -p 8888:8080 -v $(pwd):/app/ -it zauberzeug/nicegui:latest
+```
+
+This will start the server at http://localhost:8888 with the code from your current directory.
+The file containing your `ui.run(port=8080, ...)` command must be named `main.py`.
+Code modification triggers an automatic reload.
+
 ## Deployment
 
 To deploy your NiceGUI app, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your server infrastructure.
-You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server or use our [pre-built Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
+You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server or use our [pre-built Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies (see above).
 For example you can use this `docker run` command to start the script `main.py` in the current directory on port 80:
 
 ```bash
