@@ -68,7 +68,7 @@ python3 main.py
 ```
 
 The GUI is now available through http://localhost:8080/ in your browser.
-Note: The script will automatically reload the page when you modify the code.
+Note: NiceGUI will automatically reload the page when you modify the code.
 
 Full documentation can be found at [https://nicegui.io](https://nicegui.io).
 Just scroll down.
@@ -77,7 +77,7 @@ Just scroll down.
 
 We like [Streamlit](https://streamlit.io/) but find it does [too much magic when it comes to state handling](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651).
 In search for an alternative nice library to write simple graphical user interfaces in Python we discovered [JustPy](https://justpy.io/).
-While it is too "low-level HTML" for our daily usage, it provides a great basis for NiceGUI:
+While it is too "low-level HTML" for our daily usage, it provides a great basis for NiceGUI.
 
 ## Documentation and Examples
 
