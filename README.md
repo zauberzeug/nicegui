@@ -97,11 +97,6 @@ The environment variables `HOST` and `PORT` can also be used to configure NiceGU
 To avoid the potentially costly import of Matplotlib, you set the environment variable `MATPLOTLIB=false`.
 This will make `ui.plot` and `ui.line_plot` unavailable.
 
-Note:
-The parameter `exclude` from earlier versions of NiceGUI has been removed.
-Libraries are now automatically served on demand.
-As a small caveat, the page will be reloaded if a new dependency is added dynamically, e.g. when adding a `ui.chart` only after pressing a button.
-
 ## Docker
 
 You can use our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) for pain-free installation:
