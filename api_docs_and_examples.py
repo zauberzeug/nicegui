@@ -60,7 +60,10 @@ def example(content: Union[Callable, type, str]):
             code.insert(1, 'from nicegui import ui')
             if code[2].split()[0] not in ['from', 'import']:
                 code.insert(2, '')
-            code.append('ui.run()')
+            if code[-1].startswith('#ui.run'):
+                code[-1] = code[-1][1:]
+            else:
+                code.append('ui.run()')
             code.append('```')
             code = '\n'.join(code)
             ui.markdown(code).classes('mt-12 w-5/12 overflow-auto')
@@ -670,3 +673,35 @@ The asynchronous function will only return after receiving the result.
 
     # NOTE because the docs are added after inital page load, we need to manually trigger the jump tho the anchor
     await ui.run_javascript('parts = document.URL.split("#"); window.location.hash = "#"; setTimeout(function(){ if (parts.length > 1) window.location.hash = "#" + parts[1]; }, 100); ')
+
+    h3('Configuration')
+
+    ui_run = '''#### ui.run
+
+You can call `ui.run()` with optional arguments:
+
+- `host` (default: `'0.0.0.0'`)
+- `port` (default: `8080`)
+- `title` (default: `'NiceGUI'`)
+- `favicon` (default: `'favicon.ico'`)
+- `dark`: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
+- `main_page_classes`: configure Quasar classes of main page (default: `'q-ma-md column items-start'`)
+- `binding_refresh_interval`: time between binding updates (default: `0.1` seconds, bigger is more cpu friendly)
+- `show`: automatically open the ui in a browser tab (default: `True`)
+- `reload`: automatically reload the ui on file changes (default: `True`)
+- `uvicorn_logging_level`: logging level for uvicorn server (default: `'warning'`)
+- `uvicorn_reload_dirs`: string with comma-separated list for directories to be monitored (default is current working directory only)
+- `uvicorn_reload_includes`: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`)
+- `uvicorn_reload_excludes`: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
+- `exclude`: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
+  (possible entries: chart, colors, custom_example, interactive_image, keyboard, log, joystick, scene, table)
+
+The environment variables `HOST` and `PORT` can also be used to configure NiceGUI.
+
+To avoid the potentially costly import of Matplotlib, you set the environment variable `MATPLOTLIB=false`.
+This will make `ui.plot` and `ui.line_plot` unavailable.
+'''
+    with example(ui_run):
+        ui.label('dark page on port 7000 without relaoding')
+
+        #ui.run(dark=True, port=7000, reload=False)

@@ -71,31 +71,7 @@ The GUI is now available through http://localhost:8080/ in your browser.
 Note: The script will automatically reload the page when you modify the code.
 
 Full documentation can be found at [https://nicegui.io](https://nicegui.io).
-
-## Configuration
-
-You can call `ui.run()` with optional arguments:
-
-- `host` (default: `'0.0.0.0'`)
-- `port` (default: `8080`)
-- `title` (default: `'NiceGUI'`)
-- `favicon` (default: `'favicon.ico'`)
-- `dark`: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
-- `main_page_classes`: configure Quasar classes of main page (default: `'q-ma-md column items-start'`)
-- `binding_refresh_interval`: time between binding updates (default: `0.1` seconds, bigger is more cpu friendly)
-- `show`: automatically open the ui in a browser tab (default: `True`)
-- `reload`: automatically reload the ui on file changes (default: `True`)
-- `uvicorn_logging_level`: logging level for uvicorn server (default: `'warning'`)
-- `uvicorn_reload_dirs`: string with comma-separated list for directories to be monitored (default is current working directory only)
-- `uvicorn_reload_includes`: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`)
-- `uvicorn_reload_excludes`: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
-- `exclude`: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
-  (possible entries: chart, colors, custom_example, interactive_image, keyboard, log, joystick, scene, table)
-
-The environment variables `HOST` and `PORT` can also be used to configure NiceGUI.
-
-To avoid the potentially costly import of Matplotlib, you set the environment variable `MATPLOTLIB=false`.
-This will make `ui.plot` and `ui.line_plot` unavailable.
+Just scroll down.
 
 ## Docker
 
