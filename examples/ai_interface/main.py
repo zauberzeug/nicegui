@@ -7,23 +7,37 @@ from typing import Callable
 
 import replicate
 from nicegui import ui
-from nicegui.events import UploadEventArguments
+from nicegui.events import UploadEventArguments, ValueChangeEventArguments
 
 
 async def io_bound(callback: Callable, *args: any, **kwargs: any):
     return await asyncio.get_event_loop().run_in_executor(None, functools.partial(callback, *args, **kwargs))
 
 
-async def transcribe(upload: UploadEventArguments):
+async def transcribe(args: UploadEventArguments):
     transcription.text = 'Transcribing...'
     model = replicate.models.get('openai/whisper')
-    prediction = await io_bound(model.predict, audio=io.BytesIO(upload.files[0]))
+    prediction = await io_bound(model.predict, audio=io.BytesIO(args.files[0]))
     text = prediction.get("transcription", "no transcription")
     transcription.set_text(f'result: "{text}"')
 
 
-ui.label('OpenAI Whisper (voice transcription)').classes('text-2xl')
-ui.upload(on_upload=transcribe).style('width: 20em')
-transcription = ui.label().classes('text-xl')
+async def generate_image(args: ValueChangeEventArguments):
+    image.source = 'https://dummyimage.com/600x400/ccc/000000.png&text=building+image...'
+    model = replicate.models.get('stability-ai/stable-diffusion')
+    prediction = await io_bound(model.predict, prompt=prompt.value)
+    print(prediction)
+    image.source = prediction[0]
+
+with ui.row().style('gap:10em'):
+    with ui.column():
+        ui.label('OpenAI Whisper (voice transcription)').classes('text-2xl')
+        ui.upload(on_upload=transcribe).style('width: 20em')
+        transcription = ui.label().classes('text-xl')
+    with ui.column():
+        ui.label('Stable Diffusion (image generator)').classes('text-2xl')
+        prompt = ui.input('prompt').style('width: 20em')
+        ui.button('Generate', on_click=generate_image).style('width: 15em')
+        image = ui.image().style('width: 60em')
 
 ui.run()
