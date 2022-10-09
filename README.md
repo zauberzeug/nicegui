@@ -77,13 +77,21 @@ Just scroll down.
 
 We like [Streamlit](https://streamlit.io/) but find it does [too much magic when it comes to state handling](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651).
 In search for an alternative nice library to write simple graphical user interfaces in Python we discovered [JustPy](https://justpy.io/).
-While it is too "low-level HTML" for our daily usage, it provides a great basis for NiceGUI.
+While it is too "low-level HTML" for our daily usage, it provides a great basis for NiceGUI:
 
 ## Documentation and Examples
 
-The API reference is hosted at [https://nicegui.io](https://nicegui.io).
-It is [implemented with NiceGUI itself](https://github.com/zauberzeug/nicegui/blob/main/main.py).
-You may also have a look at the [examples folder](https://github.com/zauberzeug/nicegui/tree/main/examples) for more demonstrations of what you can do with NiceGUI.
+The API reference is hosted at [https://nicegui.io](https://nicegui.io) and provides a ton of live examples.
+The page is [implemented with NiceGUI itself](https://github.com/zauberzeug/nicegui/blob/main/main.py).
+
+You may also have a look at the following examples for in-depth demonstrations of what you can do with NiceGUI:
+
+- [Slideshow](https://github.com/zauberzeug/nicegui/tree/main/examples/slideshow/main.py):
+  implements a keyboard controlled image slideshow
+- [Authentication](https://github.com/zauberzeug/nicegui/blob/main/examples/authentication/main.py): shows how to use sessions to build a login screen
+- [Customization](https://github.com/zauberzeug/nicegui/blob/main/examples/customization/main.py): provides an example of how to modularize your application into multiple files and creating a specialized `@ui.page` decorator.
+- [Map](https://github.com/zauberzeug/nicegui/blob/main/examples/map/main.py): using the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations
+- [AI User Interface](https://github.com/zauberzeug/nicegui/blob/main/examples/ai_interface/main.py): utilizing the great but non-async API from <https://replicate.com> to perform voice-to-text transcription and generate images from promts with Stable Diffusion.
 
 ## Abstraction
 
