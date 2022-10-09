@@ -26,7 +26,6 @@ async def generate_image(args: ValueChangeEventArguments):
     image.source = 'https://dummyimage.com/600x400/ccc/000000.png&text=building+image...'
     model = replicate.models.get('stability-ai/stable-diffusion')
     prediction = await io_bound(model.predict, prompt=prompt.value)
-    print(prediction)
     image.source = prediction[0]
 
 with ui.row().style('gap:10em'):
