@@ -82,6 +82,7 @@ Creating a user interface with NiceGUI is as simple as writing a single line of 
 '''
     with example(hello_world, first_col=2):
         ui.label('Hello, world!')
+        ui.markdown('Have a look at the full <br/> [API reference](reference)!  ')
 
     common_elements = '''#### Common UI Elements
 
@@ -102,7 +103,7 @@ Binding values between UI elements is built into NiceGUI.
 '''
     with example(binding, first_col=2):
         slider = ui.slider(min=0, max=100, value=50)
-        ui.number('Value').bind_value(slider, 'value')
+        ui.number('Value').bind_value(slider, 'value').classes('fit')
 
     # HACK: this comment prevents another blank line sneaking into the example above
 
