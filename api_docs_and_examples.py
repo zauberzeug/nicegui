@@ -5,7 +5,7 @@ from typing import Callable, Union
 
 import docutils.core
 
-from nicegui import ui
+from nicegui import globals, ui
 
 REGEX_H4 = re.compile(r'<h4.*?>(.*?)</h4>')
 SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
@@ -259,7 +259,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         import numpy as np
 
-        line_plot = ui.line_plot(n=2, limit=20, figsize=(2.5, 1.8)) \
+        line_plot = ui.line_plot(n=2, limit=20, figsize=(2.5, 1.8), update_every=5) \
             .with_legend(['sin', 'cos'], loc='upper center', ncol=2)
 
         def update_line_plot() -> None:
@@ -270,7 +270,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             line_plot.push([now], [[y1], [y2]])
 
         line_updates = ui.timer(0.1, update_line_plot, active=False)
-        ui.checkbox('active').bind_value(line_updates, 'active')
+        line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')
 
     with example(ui.scene):
         with ui.scene(width=200, height=200) as scene:
@@ -720,3 +720,16 @@ This will make `ui.plot` and `ui.line_plot` unavailable.
         ui.label('dark page on port 7000 without reloading')
 
         #ui.run(dark=True, port=7000, reload=False)
+
+    # HACK: turn expensive line plot off after 10 seconds
+    def handle_change(self, msg):
+        def turn_off():
+            line_checkbox.value = False
+            ui.notify('Turning off that line plot to save resources on our live demo server. 😎')
+        line_checkbox.value = msg.value
+        if msg.value:
+            with globals.within_view(line_checkbox.view):
+                ui.timer(10.0, turn_off, once=True)
+        line_checkbox.update()
+        return False
+    line_checkbox.view.on('input', handle_change)

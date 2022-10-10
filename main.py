@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import re
 
-import docutils.core
 import markdown2
 
 import api_docs_and_examples
