@@ -69,7 +69,7 @@ def example(content: Union[Callable, type, str], first_col=4) -> None:
                 code.append('ui.run()')
             code.append('```')
             code = '\n'.join(code)
-            ui.markdown(code).classes(f'mt-12 w-{9 -first_col}/12 overflow-auto')
+            ui.markdown(code).classes(f'mt-12 w-{9-first_col}/12 overflow-auto')
 
 
 def create_intro() -> None:
@@ -82,7 +82,7 @@ Creating a user interface with NiceGUI is as simple as writing a single line of 
 '''
     with example(hello_world, first_col=2):
         ui.label('Hello, world!')
-        ui.markdown('Have a look at the full <br/> [API reference](reference)!  ')
+        ui.markdown('Have a look at the full <br/> [API reference](reference)!')
 
     common_elements = '''#### Common UI Elements
 

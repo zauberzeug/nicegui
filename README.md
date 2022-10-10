@@ -79,11 +79,16 @@ You may also have a look at the following examples for in-depth demonstrations o
 
 - [Slideshow](https://github.com/zauberzeug/nicegui/tree/main/examples/slideshow/main.py):
   implements a keyboard-controlled image slideshow
-- [Authentication](https://github.com/zauberzeug/nicegui/blob/main/examples/authentication/main.py): shows how to use sessions to build a login screen
-- [Customization](https://github.com/zauberzeug/nicegui/blob/main/examples/customization/main.py): provides an example of how to modularize your application into multiple files and create a specialized `@ui.page` decorator.
-- [Map](https://github.com/zauberzeug/nicegui/blob/main/examples/map/main.py): using the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations
-- [AI User Interface](https://github.com/zauberzeug/nicegui/blob/main/examples/ai_interface/main.py): utilizing the great but non-async API from <https://replicate.com> to perform voice-to-text transcription and generate images from prompts with Stable Diffusion.
-- [3D scene](https://github.com/zauberzeug/nicegui/blob/main/examples/3d_scene/main.py): creates a 3d scene and loades an stl mesh illuminated with a spotlight.
+- [Authentication](https://github.com/zauberzeug/nicegui/blob/main/examples/authentication/main.py):
+  shows how to use sessions to build a login screen
+- [Customization](https://github.com/zauberzeug/nicegui/blob/main/examples/customization/main.py):
+  provides an example of how to modularize your application into multiple files and create a specialized `@ui.page` decorator
+- [Map](https://github.com/zauberzeug/nicegui/blob/main/examples/map/main.py):
+  uses the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations
+- [AI User Interface](https://github.com/zauberzeug/nicegui/blob/main/examples/ai_interface/main.py):
+  utilizes the great but non-async API from <https://replicate.com> to perform voice-to-text transcription and generate images from prompts with Stable Diffusion
+- [3D scene](https://github.com/zauberzeug/nicegui/blob/main/examples/3d_scene/main.py):
+  creates a 3D scene and loads an STL mesh illuminated with a spotlight
 
 ## Why?
 
