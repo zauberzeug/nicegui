@@ -73,6 +73,9 @@ def example(content: Union[Callable, type, str]):
 
 
 def create():
+    # add docutils css to webpage
+    ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
+
     ui.markdown('## API Documentation and Examples')
 
     def h3(text: str) -> None:

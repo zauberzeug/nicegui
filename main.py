@@ -32,8 +32,6 @@ async def go_to_anchor() -> None:
 
 @ui.page('/', on_connect=traffic_tracking.on_connect, on_page_ready=go_to_anchor)
 async def index():
-    # add docutils css to webpage
-    ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
     # avoid display:block for PyPI/Docker/GitHub badges
     ui.add_head_html('<style>p a img {display: inline; vertical-align: baseline}</style>')
 
