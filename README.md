@@ -88,11 +88,10 @@ You may also have a look at the following examples for in-depth demonstrations o
 
 We like [Streamlit](https://streamlit.io/) but find it does [too much magic when it comes to state handling](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651).
 In search for an alternative nice library to write simple graphical user interfaces in Python we discovered [JustPy](https://justpy.io/).
-While it is too "low-level HTML" for our daily usage, it provides a great basis for NiceGUI.
+While we liked the approach, it is too "low-level HTML" for our daily usage.
 
-## Abstraction
-
-NiceGUI is based on [JustPy](https://justpy.io/) which is based on the ASGI framework [Starlette](https://www.starlette.io/) and the ASGI webserver [Uvicorn](https://www.uvicorn.org/).
+Therefore we created NiceGUI ontop of [JustPy](https://justpy.io/).
+Which itself is based on the ASGI framework [Starlette](https://www.starlette.io/) (like [FastAPI](https://fastapi.tiangolo.com/)) and the ASGI webserver [Uvicorn](https://www.uvicorn.org/).
 
 ## Docker
 
