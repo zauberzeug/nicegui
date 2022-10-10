@@ -2,6 +2,7 @@
 
 from nicegui import ui
 
+# this module wraps the javascript lib leafletjs.com into an easy to use NiceGUI element
 import leaflet
 
 locations = {
