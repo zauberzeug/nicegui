@@ -72,8 +72,7 @@ def example(content: Union[Callable, type, str]):
             ui.markdown(code).classes('mt-12 w-5/12 overflow-auto')
 
 
-async def create():
-
+def create():
     ui.markdown('## API Documentation and Examples')
 
     def h3(text: str) -> None:
@@ -696,6 +695,6 @@ To avoid the potentially costly import of Matplotlib, you set the environment va
 This will make `ui.plot` and `ui.line_plot` unavailable.
 '''
     with example(ui_run):
-        ui.label('dark page on port 7000 without relaoding')
+        ui.label('dark page on port 7000 without reloading')
 
         #ui.run(dark=True, port=7000, reload=False)

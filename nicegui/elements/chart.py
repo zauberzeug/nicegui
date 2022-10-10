@@ -11,7 +11,7 @@ class Chart(Element):
         """Chart
 
         An element to create a chart using `Highcharts <https://www.highcharts.com/>`_.
-        Updates can be pushed to the chart  by changing the `options` property.
+        Updates can be pushed to the chart by changing the `options` property.
         After data has changed, call the `update` method to refresh the chart.
 
         :param options: dictionary of Highcharts options

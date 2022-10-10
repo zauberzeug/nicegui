@@ -72,8 +72,3 @@ class map(ui.card):
             });
         </script>
         ''')
-
-# var target = L.latLng('53.44', '14.06'); // Fahrenwalde, Uckermark
-#                     map.setView(target, 13);
-#                     marker = L.marker(target);
-#                     marker.addTo(map);

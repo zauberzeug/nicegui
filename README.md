@@ -78,11 +78,11 @@ The whole content of [https://nicegui.io](https://nicegui.io) is [implemented wi
 You may also have a look at the following examples for in-depth demonstrations of what you can do with NiceGUI:
 
 - [Slideshow](https://github.com/zauberzeug/nicegui/tree/main/examples/slideshow/main.py):
-  implements a keyboard controlled image slideshow
+  implements a keyboard-controlled image slideshow
 - [Authentication](https://github.com/zauberzeug/nicegui/blob/main/examples/authentication/main.py): shows how to use sessions to build a login screen
-- [Customization](https://github.com/zauberzeug/nicegui/blob/main/examples/customization/main.py): provides an example of how to modularize your application into multiple files and creating a specialized `@ui.page` decorator.
+- [Customization](https://github.com/zauberzeug/nicegui/blob/main/examples/customization/main.py): provides an example of how to modularize your application into multiple files and create a specialized `@ui.page` decorator.
 - [Map](https://github.com/zauberzeug/nicegui/blob/main/examples/map/main.py): using the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations
-- [AI User Interface](https://github.com/zauberzeug/nicegui/blob/main/examples/ai_interface/main.py): utilizing the great but non-async API from <https://replicate.com> to perform voice-to-text transcription and generate images from promts with Stable Diffusion.
+- [AI User Interface](https://github.com/zauberzeug/nicegui/blob/main/examples/ai_interface/main.py): utilizing the great but non-async API from <https://replicate.com> to perform voice-to-text transcription and generate images from prompts with Stable Diffusion.
 
 ## Why?
 
@@ -90,8 +90,8 @@ We like [Streamlit](https://streamlit.io/) but find it does [too much magic when
 In search for an alternative nice library to write simple graphical user interfaces in Python we discovered [JustPy](https://justpy.io/).
 While we liked the approach, it is too "low-level HTML" for our daily usage.
 
-Therefore we created NiceGUI ontop of [JustPy](https://justpy.io/).
-Which itself is based on the ASGI framework [Starlette](https://www.starlette.io/) (like [FastAPI](https://fastapi.tiangolo.com/)) and the ASGI webserver [Uvicorn](https://www.uvicorn.org/).
+Therefore we created NiceGUI on top of [JustPy](https://justpy.io/),
+which itself is based on the ASGI framework [Starlette](https://www.starlette.io/) (like [FastAPI](https://fastapi.tiangolo.com/)) and the ASGI webserver [Uvicorn](https://www.uvicorn.org/).
 
 ## Docker
 

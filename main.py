@@ -9,20 +9,20 @@ import traffic_tracking
 from nicegui import ui
 from nicegui.elements.markdown import Markdown
 
-with open('README.md', 'r') as file:
-    content = file.read()
+with open('README.md') as f:
+    content = f.read()
     content = re.sub(r'(?m)^\<img.*\n?', '', content)
     # change absolute link on GitHub to relative link
     content = content.replace('(https://nicegui.io/reference)', '(reference)')
     README = Markdown.apply_tailwind(markdown2.markdown(content, extras=['fenced-code-blocks']))
 
 
-async def go_to_anchor():
-    # NOTE because the docs are added after inital page load, we need to manually trigger the jump tho the anchor
+async def go_to_anchor() -> None:
+    # NOTE because the docs are added after initial page load, we need to manually trigger the jump to the anchor
     await ui.run_javascript('''
         parts = document.URL.split("#");
         console.log(parts);
-        if (parts.length > 1){    
+        if (parts.length > 1) {
             console.log(window.location);
             window.location = parts[0] + "reference#" + parts[1];
             console.log(window.location);
@@ -74,7 +74,8 @@ async def index():
 
 
 @ui.page('/reference')
-async def reference():
-    await api_docs_and_examples.create()
+def reference():
+    api_docs_and_examples.create()
+
 
 ui.run()

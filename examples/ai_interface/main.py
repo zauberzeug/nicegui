@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import asyncio
 import functools
 import io
@@ -19,7 +18,7 @@ async def transcribe(args: UploadEventArguments):
     transcription.text = 'Transcribing...'
     model = replicate.models.get('openai/whisper')
     prediction = await io_bound(model.predict, audio=io.BytesIO(args.files[0]))
-    text = prediction.get("transcription", "no transcription")
+    text = prediction.get('transcription', 'no transcription')
     transcription.set_text(f'result: "{text}"')
 
 

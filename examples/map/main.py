@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-
 from nicegui import ui
 
-# this module wraps the javascript lib leafletjs.com into an easy to use NiceGUI element
+# this module wraps the JavaScript lib leafletjs.com into an easy-to-use NiceGUI element
 import leaflet
 
 locations = {
@@ -16,7 +15,7 @@ selection = None
 
 @ui.page('/', on_page_ready=lambda: selection.set_value(next(iter(locations))))
 def main_page():
-    # NOTE we need to use the on_page_ready event to make sure the page is loaded before we execute javascript
+    # NOTE we need to use the on_page_ready event to make sure the page is loaded before we execute JavaScript
     global selection
     map = leaflet.map()
     selection = ui.select(locations, on_change=map.set_location).style('width: 10em')
