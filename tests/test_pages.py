@@ -1,4 +1,5 @@
 import asyncio
+from time import time
 from uuid import uuid4
 
 import justpy.htmlcomponents
@@ -175,7 +176,8 @@ def test_shared_page_with_request_parameter_raises_exception(screen: Screen):
         ui.label('Hello, world!')
 
     screen.open('/')
-    screen.should_contain("This page doesn't exist")
+    screen.should_contain('501')
+    screen.should_contain('Server error')
 
 
 def test_adding_elements_in_on_page_ready_event(screen: Screen):
@@ -185,3 +187,40 @@ def test_adding_elements_in_on_page_ready_event(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Hello, world!')
+
+
+def test_pageready_after_yield_on_async_page(screen: Screen):
+    @ui.page('/')
+    async def page():
+        ui.label('before')
+        yield
+        await asyncio.sleep(1)
+        ui.label('after')
+
+    screen.open('/')
+    screen.should_contain('before')
+    screen.should_not_contain('after')
+    screen.wait(1)
+    screen.should_contain('after')
+
+
+def test_pageready_after_yield_on_non_async_page(screen: Screen):
+    @ui.page('/')
+    def page():
+        t = time()
+        yield
+        ui.label(f'loading page took {time() - t:.2f} seconds')
+
+    screen.open('/')
+    timing = screen.find('loading page took')
+    assert 0 < float(timing.text.split()[-2]) < 1
+
+
+def test_pageready_after_yield_on_shared_page_raises_exception(screen: Screen):
+    @ui.page('/', shared=True)
+    def page():
+        yield
+
+    screen.open('/')
+    screen.should_contain('501')
+    screen.should_contain('Server error')
