@@ -2,11 +2,17 @@
 import re
 
 import docutils.core
+import markdown2
 
 import api_docs_and_examples
 import traffic_tracking
 from nicegui import ui
+from nicegui.elements.markdown import Markdown
 
+with open('README.md', 'r') as file:
+    content = file.read()
+    content = re.sub(r'(?m)^\<img.*\n?', '', content)
+    README = Markdown.apply_tailwind(markdown2.markdown(content))
 
 @ui.page('/', on_page_ready=api_docs_and_examples.create, on_connect=traffic_tracking.on_connect)
 async def index():
@@ -22,10 +28,7 @@ async def index():
     )
 
     with ui.row().classes('flex w-full'):
-        with open('README.md', 'r') as file:
-            content = file.read()
-            content = re.sub(r'(?m)^\<img.*\n?', '', content)
-            ui.markdown(content).classes('w-6/12')
+        ui.html(README).classes('w-6/12')
 
         with ui.column().classes('w-5/12 flex-center'):
             width = 450
