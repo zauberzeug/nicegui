@@ -176,7 +176,8 @@ def test_shared_page_with_request_parameter_raises_exception(screen: Screen):
         ui.label('Hello, world!')
 
     screen.open('/')
-    screen.should_contain("This page doesn't exist")
+    screen.should_contain('501')
+    screen.should_contain('Server error')
 
 
 def test_adding_elements_in_on_page_ready_event(screen: Screen):
@@ -213,3 +214,13 @@ def test_pageready_after_yield_on_non_async_page(screen: Screen):
     screen.open('/')
     timing = screen.find('loading page took')
     assert 0 < float(timing.text.split()[-2]) < 1
+
+
+def test_pageready_after_yield_on_shared_page_raises_exception(screen: Screen):
+    @ui.page('/', shared=True)
+    def page():
+        yield
+
+    screen.open('/')
+    screen.should_contain('501')
+    screen.should_contain('Server error')

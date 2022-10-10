@@ -581,24 +581,24 @@ To make it "private" or to change other attributes like title, favicon etc. you 
         ui.link('private page', private_page)
         ui.link('shared page', shared_page)
 
-    yield_page_ready = '''#### Yield for Page Ready
+    yield_page_ready = '''#### Yielding for Page-Ready
 
-This is an handy alternative to using the `on_page_ready` callback (either as parameter of `@ui.page` or via `ui.on_page_ready` function).
+This is a handy alternative to the `on_page_ready` callback (either as parameter of `@ui.page` or via `ui.on_page_ready` function).
 
 If a `yield` statement is provided in a page builder function, all code below that statement is executed after the page is ready.
 This allows you to execute JavaScript; which is only possible after the page has been loaded (see [#112](https://github.com/zauberzeug/nicegui/issues/112)).
-Also it's possible to do async stuff while the user alreay sees the content added before the yield statement.
+Also it is possible to do async stuff while the user already sees the content added before the yield statement.
     '''
     with example(yield_page_ready):
         @ui.page('/yield_page_ready')
         async def yield_page_ready():
             ui.label('This text is displayed immediately.')
             yield
-            ui.run_javascript('document.title = "JavaScript Controlled Title")')
+            ui.run_javascript('document.title = "JavaScript-Controlled Title")')
             await asyncio.sleep(3)
             ui.label('This text is displayed 3 seconds after the page has been fully loaded.')
 
-        ui.link('show page ready code after yield', '/yield_page_ready')
+        ui.link('show page-ready code after yield', '/yield_page_ready')
 
     with example(ui.open):
         @ui.page('/yet_another_page')
