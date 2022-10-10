@@ -12,7 +12,7 @@ SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 
 
 @contextmanager
-def example(content: Union[Callable, type, str]) -> None:
+def example(content: Union[Callable, type, str], first_col=4) -> None:
     callFrame = inspect.currentframe().f_back.f_back
     begin = callFrame.f_lineno
 
@@ -34,7 +34,7 @@ def example(content: Union[Callable, type, str]) -> None:
 
     with ui.row().classes('flex w-full'):
         if isinstance(content, str):
-            add_html_anchor(ui.markdown(content).classes('mr-8 w-4/12'))
+            add_html_anchor(ui.markdown(content).classes(f'mr-8 w-{first_col}/12'))
         else:
             doc = content.__doc__ or content.__init__.__doc__
             html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
@@ -69,7 +69,7 @@ def example(content: Union[Callable, type, str]) -> None:
                 code.append('ui.run()')
             code.append('```')
             code = '\n'.join(code)
-            ui.markdown(code).classes('mt-12 w-5/12 overflow-auto')
+            ui.markdown(code).classes(f'mt-12 w-{9 -first_col}/12 overflow-auto')
 
 
 def create_intro() -> None:
@@ -80,14 +80,14 @@ def create_intro() -> None:
 
 Creating a user interface with NiceGUI is as simple as writing a single line of code.
 '''
-    with example(hello_world):
+    with example(hello_world, first_col=2):
         ui.label('Hello, world!')
 
     common_elements = '''#### Common UI Elements
 
 NiceGUI comes with a collection of commonly used UI elements.
 '''
-    with example(common_elements):
+    with example(common_elements, first_col=2):
         ui.button('Button', on_click=lambda: ui.notify('Click'))
         ui.checkbox('Checkbox', on_change=lambda e: ui.notify('Checked' if e.value else 'Unchecked'))
         ui.switch('Switch', on_change=lambda e: ui.notify('Switched' if e.value else 'Unswitched'))
@@ -100,7 +100,7 @@ NiceGUI comes with a collection of commonly used UI elements.
 
 Binding values between UI elements is built into NiceGUI.
 '''
-    with example(binding):
+    with example(binding, first_col=2):
         slider = ui.slider(min=0, max=100, value=50)
         ui.number('Value').bind_value(slider, 'value')
 
