@@ -14,7 +14,7 @@ with open('README.md', 'r') as file:
     content = re.sub(r'(?m)^\<img.*\n?', '', content)
     # change absolute link on GitHub to relative link
     content = content.replace('(https://nicegui.io/reference)', '(reference)')
-    README = Markdown.apply_tailwind(markdown2.markdown(content))
+    README = Markdown.apply_tailwind(markdown2.markdown(content, extras=['fenced-code-blocks']))
 
 
 async def go_to_anchor():
