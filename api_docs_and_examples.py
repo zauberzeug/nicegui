@@ -542,7 +542,7 @@ Note: You can also pass a `functools.partial` into the `on_click` property to wr
 
         ui.button('start async task', on_click=async_task)
 
-    h3('Pages and Routes')
+    h3('Pages')
 
     with example(ui.page):
         @ui.page('/other_page')
@@ -595,38 +595,6 @@ To make it "private" or to change other attributes like title, favicon etc. you 
 
         ui.button('REDIRECT', on_click=lambda e: ui.open(yet_another_page, e.socket))
 
-    add_route = '''#### Route
-
-Add a new route by calling `ui.add_route` with a starlette route including a path and a function to be called.
-Routed paths must start with a `'/'`.
-'''
-    with example(add_route):
-        import starlette
-
-        ui.add_route(starlette.routing.Route(
-            '/new/route', lambda _: starlette.responses.PlainTextResponse('Response')
-        ))
-
-        ui.link('Try the new route!', 'new/route')
-
-    get_decorator = '''#### Get decorator
-
-Syntactic sugar to add routes.
-Decorating a function with the `@ui.get` makes it available at the specified endpoint, e.g. `'/another/route/<id>'`.
-
-Path parameters can be passed to the request handler like with [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/).
-If type-annotated, they are automatically converted to `bool`, `int`, `float` and `complex` values.
-An optional `request` argument gives access to the complete request object.
-'''
-    with example(get_decorator):
-        from starlette import requests, responses
-
-        @ui.get('/another/route/{id}')
-        def produce_plain_response(id: str, request: requests.Request):
-            return responses.PlainTextResponse(f'{request.client.host} asked for id={id}')
-
-        ui.link('Try yet another route!', 'another/route/42')
-
     sessions = '''#### Sessions
 
 `ui.page` provides an optional `on_connect` argument to register a callback.
@@ -674,8 +642,31 @@ The asynchronous function will only return after receiving the result.
         ui.button('run JavaScript', on_click=run_javascript)
         ui.button('await JavaScript', on_click=await_javascript)
 
-    # NOTE because the docs are added after inital page load, we need to manually trigger the jump tho the anchor
-    await ui.run_javascript('parts = document.URL.split("#"); window.location.hash = "#"; setTimeout(function(){ if (parts.length > 1) window.location.hash = "#" + parts[1]; }, 100); ')
+    h3('Routes')
+
+    with example(ui.get):
+        from starlette import requests, responses
+
+        @ui.get('/another/route/{id}')
+        def produce_plain_response(id: str, request: requests.Request):
+            return responses.PlainTextResponse(f'{request.client.host} asked for id={id}')
+
+        ui.link('Try yet another route!', 'another/route/42')
+
+    with example(ui.add_static_files):
+        ui.add_static_files('/examples', 'examples')
+        ui.link('Slideshow Example (raw file)', 'examples/slideshow/main.py')
+        with ui.image('examples/slideshow/slides/slide1.jpg'):
+            ui.label('first image from slideshow').classes('absolute-bottom text-subtitle2')
+
+    with example(ui.add_route):
+        import starlette
+
+        ui.add_route(starlette.routing.Route(
+            '/new/route', lambda _: starlette.responses.PlainTextResponse('Response')
+        ))
+
+        ui.link('Try the new route!', 'new/route')
 
     h3('Configuration')
 
@@ -708,3 +699,6 @@ This will make `ui.plot` and `ui.line_plot` unavailable.
         ui.label('dark page on port 7000 without relaoding')
 
         #ui.run(dark=True, port=7000, reload=False)
+
+    # NOTE because the docs are added after inital page load, we need to manually trigger the jump tho the anchor
+    await ui.run_javascript('parts = document.URL.split("#"); window.location.hash = "#"; setTimeout(function(){ if (parts.length > 1) window.location.hash = "#" + parts[1]; }, 100); ')
