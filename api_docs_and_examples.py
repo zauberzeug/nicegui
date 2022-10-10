@@ -27,7 +27,7 @@ def example(content: Union[Callable, type, str]):
             return
 
         icon = '<span class="material-icons">link</span>'
-        anchor = f'<a href="#{headline_id}" class="text-gray-300 hover:text-black">{icon}</a>'
+        anchor = f'<a href="reference#{headline_id}" class="text-gray-300 hover:text-black">{icon}</a>'
         html = html.replace('<h4', f'<h4 id="{headline_id}"', 1)
         html = html.replace('</h4>', f' {anchor}</h4>', 1)
         element.view.inner_html = html
