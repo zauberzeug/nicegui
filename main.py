@@ -40,8 +40,13 @@ async def index():
         '<a class="github-fork-ribbon" href="https://github.com/zauberzeug/nicegui" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>'
     )
 
+    installation_start = README.find('<h2 class="text-4xl mb-3 mt-5">Installation</h2>')
+    documentation_start = README.find('The API reference is hosted at')
+    assert installation_start >= 0
+    assert documentation_start >= 0
+
     with ui.row().classes('flex w-full'):
-        ui.html(README).classes('w-6/12')
+        ui.html(README[:installation_start]).classes('w-6/12')
 
         with ui.column().classes('w-5/12 flex-center'):
             width = 450
@@ -69,10 +74,18 @@ async def index():
             with ui.row().style('margin-top: 40px'):
                 traffic_tracking.chart().style(f'width:{width}px;height:250px')
 
+    ui.html(README[installation_start:documentation_start])
+
+    api_docs_and_examples.create_intro()
+    with ui.row().style('background-color: #e8f0fa; width: 100%; margin: 1em 0; padding: 1em 1em 0.5em 1em; font-size: large'):
+        ui.markdown('See the [API reference](/reference) for many more interactive examples!')
+
+    ui.html(README[documentation_start:])
+
 
 @ui.page('/reference')
 def reference():
-    api_docs_and_examples.create()
+    api_docs_and_examples.create_full()
 
 
 ui.run()

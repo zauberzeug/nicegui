@@ -12,7 +12,7 @@ SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 
 
 @contextmanager
-def example(content: Union[Callable, type, str]):
+def example(content: Union[Callable, type, str]) -> None:
     callFrame = inspect.currentframe().f_back.f_back
     begin = callFrame.f_lineno
 
@@ -72,7 +72,42 @@ def example(content: Union[Callable, type, str]):
             ui.markdown(code).classes('mt-12 w-5/12 overflow-auto')
 
 
-def create():
+def create_intro() -> None:
+    # add docutils css to webpage
+    ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
+
+    hello_world = '''#### Hello, World!
+
+Creating a user interface with NiceGUI is as simple as writing a single line of code.
+'''
+    with example(hello_world):
+        ui.label('Hello, world!')
+
+    common_elements = '''#### Common UI Elements
+
+NiceGUI comes with a collection of commonly used UI elements.
+'''
+    with example(common_elements):
+        ui.button('Button', on_click=lambda: ui.notify('Click'))
+        ui.checkbox('Checkbox', on_change=lambda e: ui.notify('Checked' if e.value else 'Unchecked'))
+        ui.switch('Switch', on_change=lambda e: ui.notify('Switched' if e.value else 'Unswitched'))
+        ui.input('Text input', on_change=lambda e: ui.notify(e.value))
+        ui.radio(['A', 'B'], value='A', on_change=lambda e: ui.notify(e.value)).props('inline')
+        ui.select(['One', 'Two'], value='One', on_change=lambda e: ui.notify(e.value))
+        ui.link('And many more...', '/reference').classes('text-lg')
+
+    binding = '''#### Value Binding
+
+Binding values between UI elements is built into NiceGUI.
+'''
+    with example(binding):
+        slider = ui.slider(min=0, max=100, value=50)
+        ui.number('Value').bind_value(slider, 'value')
+
+    # HACK: this comment prevents another blank line sneaking into the example above
+
+
+def create_full() -> None:
     # add docutils css to webpage
     ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
 
