@@ -699,6 +699,3 @@ This will make `ui.plot` and `ui.line_plot` unavailable.
         ui.label('dark page on port 7000 without relaoding')
 
         #ui.run(dark=True, port=7000, reload=False)
-
-    # NOTE because the docs are added after inital page load, we need to manually trigger the jump tho the anchor
-    await ui.run_javascript('parts = document.URL.split("#"); window.location.hash = "#"; setTimeout(function(){ if (parts.length > 1) window.location.hash = "#" + parts[1]; }, 100); ')

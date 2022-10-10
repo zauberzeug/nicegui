@@ -12,9 +12,25 @@ from nicegui.elements.markdown import Markdown
 with open('README.md', 'r') as file:
     content = file.read()
     content = re.sub(r'(?m)^\<img.*\n?', '', content)
+    # change absolute link on GitHub to relative link
+    content = content.replace('(https://nicegui.io/reference)', '(reference)')
     README = Markdown.apply_tailwind(markdown2.markdown(content))
 
-@ui.page('/', on_page_ready=api_docs_and_examples.create, on_connect=traffic_tracking.on_connect)
+
+async def go_to_anchor():
+    # NOTE because the docs are added after inital page load, we need to manually trigger the jump tho the anchor
+    await ui.run_javascript('''
+        parts = document.URL.split("#");
+        console.log(parts);
+        if (parts.length > 1){    
+            console.log(window.location);
+            window.location = parts[0] + "reference#" + parts[1];
+            console.log(window.location);
+        }
+    ''')
+
+
+@ui.page('/', on_connect=traffic_tracking.on_connect, on_page_ready=go_to_anchor)
 async def index():
     # add docutils css to webpage
     ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
@@ -55,5 +71,10 @@ async def index():
 
             with ui.row().style('margin-top: 40px'):
                 traffic_tracking.chart().style(f'width:{width}px;height:250px')
+
+
+@ui.page('/reference')
+async def reference():
+    await api_docs_and_examples.create()
 
 ui.run()
