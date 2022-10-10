@@ -99,7 +99,7 @@ NiceGUI comes with a collection of commonly used UI elements.
 
     binding = '''#### Value Binding
 
-Binding values between UI elements is built into NiceGUI.
+Binding values between UI elements or [to data models](http://127.0.0.1:8080/reference#bindings) is built into NiceGUI.
 '''
     with example(binding, first_col=2):
         slider = ui.slider(min=0, max=100, value=50)
