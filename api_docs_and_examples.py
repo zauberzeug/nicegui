@@ -7,6 +7,9 @@ import docutils.core
 
 from nicegui import ui
 
+REGEX_H4 = re.compile(r'<h4.*?>(.*?)</h4>')
+SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
+
 
 @contextmanager
 def example(content: Union[Callable, type, str]):
@@ -15,11 +18,11 @@ def example(content: Union[Callable, type, str]):
 
     def add_html_anchor(element: ui.html):
         html = element.content
-        match = re.search(r'<h4.*?>(.*?)</h4>', html)
+        match = REGEX_H4.search(html)
         if not match:
             return
-
-        headline_id = re.sub('[^(a-z)(A-Z)(0-9)-]', '_', match.groups()[0].strip()).lower()
+        headline = match.groups()[0].strip()
+        headline_id = SPECIAL_CHARACTERS.sub('_', headline).lower()
         if not headline_id:
             return
 
