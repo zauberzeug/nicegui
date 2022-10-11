@@ -63,14 +63,14 @@ def on_connect(request: Request) -> None:
     if any(s in agent for s in ('bot', 'spider', 'crawler', 'monitor', 'curl', 'wget', 'python-requests', 'kuma')):
         return
     origin_url = request.headers.get('referer', 'unknown')
-    print(f'new connection from {agent}, coming from {origin_url}', flush=True)
+    #print(f'new connection from {agent}, coming from {origin_url}', flush=True)
     def seconds_to_day(seconds: float) -> int: return int(seconds / 60 / 60 / 24)
     #print(f'traffic data: {[datetime.fromtimestamp(day_to_milliseconds(t)/1000) for t in visits.keys()]}')
     today = seconds_to_day(time.time())
     visits[today] = visits.get(today, 0) + 1
     referrers[today] = referrers.get(today, {})
     referrers[today][origin_url] = referrers[today].get(origin_url, 0) + 1
-    print(referrers, flush=True)
+    #print(referrers, flush=True)
     if today not in sessions:
         sessions[today] = set()
     sessions[today].add(request.session_id)
