@@ -1,10 +1,10 @@
 import justpy as jp
 
-from ..binding import BindableProperty, bind_from, bind_to
+from ..binding import BindableProperty, BindSourceMixin
 from .group import Group
 
 
-class Image(Group):
+class Image(Group, BindSourceMixin):
     source = BindableProperty()
 
     def __init__(self, source: str = ''):
@@ -22,16 +22,3 @@ class Image(Group):
 
     def set_source(self, source: str):
         self.source = source
-
-    def bind_source_to(self, target_object, target_name, forward=lambda x: x):
-        bind_to(self, 'source', target_object, target_name, forward=forward)
-        return self
-
-    def bind_source_from(self, target_object, target_name, backward=lambda x: x):
-        bind_from(self, 'source', target_object, target_name, backward=backward)
-        return self
-
-    def bind_source(self, target_object, target_name, forward=lambda x: x, backward=lambda x: x):
-        bind_from(self, 'source', target_object, target_name, backward=backward)
-        bind_to(self, 'source', target_object, target_name, forward=forward)
-        return self
