@@ -63,8 +63,10 @@ def example(content: Union[Callable, type, str], first_col=4) -> None:
             code.insert(1, 'from nicegui import ui')
             if code[2].split()[0] not in ['from', 'import']:
                 code.insert(2, '')
-            if code[-1].startswith('#ui.run'):
-                code[-1] = code[-1][1:]
+            for l, line in enumerate(code):
+                if line.startswith('# ui.run'):
+                    code[l] = line[2:]
+                    break
             else:
                 code.append('ui.run()')
             code.append('```')
@@ -755,7 +757,7 @@ This will make `ui.plot` and `ui.line_plot` unavailable.
     with example(ui_run):
         ui.label('dark page on port 7000 without reloading')
 
-        #ui.run(dark=True, port=7000, reload=False)
+        #  ui.run(dark=True, port=7000, reload=Fals2)
 
     # HACK: turn expensive line plot off after 10 seconds
     def handle_change(self, msg):
