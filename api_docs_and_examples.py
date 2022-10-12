@@ -65,7 +65,7 @@ def example(content: Union[Callable, type, str], first_col=4) -> None:
             if code[2].split()[0] not in ['from', 'import']:
                 code.insert(2, '')
             for l, line in enumerate(code):
-                if line.startswith('# ui.run'):
+                if line.startswith('# ui.'):
                     code[l] = line[2:]
                     break
             else:
@@ -473,16 +473,15 @@ When NiceGUI is shut down or restarted, the startup tasks will be automatically 
 '''
     with example(lifecycle):
         import asyncio
-        import time
 
         l = ui.label()
 
-        async def run_clock():
-            while True:
-                l.text = f'unix time: {time.time():.1f}'
+        async def countdown():
+            for i in [5, 4, 3, 2, 1, 0]:
+                l.text = f'{i}...' if i else 'Take-off!'
                 await asyncio.sleep(1)
 
-        ui.on_startup(run_clock)
+        # ui.on_connect(countdown)
 
     with example(ui.timer):
         from datetime import datetime
@@ -772,5 +771,5 @@ This will make `ui.plot` and `ui.line_plot` unavailable.
         return False
     line_checkbox.view.on('input', handle_change)
 
-    # HACK: start clock even though it missed the on_startup lifecycle hook
-    create_task(run_clock())
+    # HACK: start countdown here to avoid using global lifecycle hook
+    create_task(countdown(), name='countdown')
