@@ -757,7 +757,7 @@ This will make `ui.plot` and `ui.line_plot` unavailable.
     with example(ui_run):
         ui.label('dark page on port 7000 without reloading')
 
-        #  ui.run(dark=True, port=7000, reload=False)
+        # ui.run(dark=True, port=7000, reload=False)
 
     # HACK: turn expensive line plot off after 10 seconds
     def handle_change(self, msg):
