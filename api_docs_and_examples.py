@@ -6,6 +6,7 @@ from typing import Callable, Union
 import docutils.core
 
 from nicegui import globals, ui
+from nicegui.task_logger import create_task
 
 REGEX_H4 = re.compile(r'<h4.*?>(.*?)</h4>')
 SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
@@ -482,7 +483,6 @@ When NiceGUI is shut down or restarted, the startup tasks will be automatically 
                 await asyncio.sleep(1)
 
         ui.on_startup(run_clock)
-        ui.on_connect(lambda: l.set_text('new connection'))
 
     with example(ui.timer):
         from datetime import datetime
@@ -771,3 +771,6 @@ This will make `ui.plot` and `ui.line_plot` unavailable.
         line_checkbox.update()
         return False
     line_checkbox.view.on('input', handle_change)
+
+    # HACK: start clock even though it missed the on_startup lifecycle hook
+    create_task(run_clock())
