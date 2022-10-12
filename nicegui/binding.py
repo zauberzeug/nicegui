@@ -110,6 +110,7 @@ class BindMixin:
 
     def _bind_from(self, target_object, target_name, *, attr: str = 'value', backward=lambda x: x):
         bind_from(self, attr, target_object, target_name, backward=backward)
+        return self
 
     def _bind_to(self, target_object, target_name, *, attr: str = 'value', forward=lambda x: x):
         bind_to(self, attr, target_object, target_name, forward=forward)
