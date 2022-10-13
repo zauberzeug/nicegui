@@ -213,7 +213,7 @@ def test_pageready_after_yield_on_non_async_page(screen: Screen):
 
     screen.open('/')
     timing = screen.find('loading page took')
-    assert 0 < float(timing.text.split()[-2]) < 1
+    assert 0 < float(timing.text.split()[-2]) < 3
 
 
 def test_pageready_after_yield_on_shared_page_raises_exception(screen: Screen):
