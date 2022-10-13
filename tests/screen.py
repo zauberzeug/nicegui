@@ -20,6 +20,7 @@ IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-in
 
 class Screen:
     SCREENSHOT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshots')
+    UI_RUN_KWARGS = {'port': PORT, 'show': False, 'reload': False}
 
     def __init__(self, selenium: webdriver.Chrome) -> None:
         self.selenium = selenium
@@ -27,7 +28,7 @@ class Screen:
 
     def start_server(self) -> None:
         '''Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script.'''
-        self.server_thread = threading.Thread(target=ui.run, kwargs={'port': PORT, 'show': False, 'reload': False})
+        self.server_thread = threading.Thread(target=ui.run, kwargs=self.UI_RUN_KWARGS)
         self.server_thread.start()
 
     def stop_server(self) -> None:

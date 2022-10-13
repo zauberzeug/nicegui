@@ -3,9 +3,10 @@ from __future__ import annotations
 import asyncio
 import inspect
 import time
+import types
 import uuid
 from functools import wraps
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, Generator, Optional
 
 import justpy as jp
 from addict import Dict as AdDict
@@ -45,6 +46,7 @@ class Page(jp.QuasarPage):
         self.css = css
         self.connect_handler = on_connect
         self.page_ready_handler = on_page_ready
+        self.page_ready_generator: Optional[Generator[None, None, None]] = None
         self.disconnect_handler = on_disconnect
         self.delete_flag = not shared
 
@@ -68,8 +70,13 @@ class Page(jp.QuasarPage):
         return self
 
     async def handle_page_ready(self, msg: AdDict) -> bool:
-        if self.page_ready_handler:
-            with globals.within_view(self.view):
+        with globals.within_view(self.view):
+            if self.page_ready_generator is not None:
+                if isinstance(self.page_ready_generator, types.AsyncGeneratorType):
+                    await self.page_ready_generator.__anext__()
+                elif isinstance(self.page_ready_generator, types.GeneratorType):
+                    next(self.page_ready_generator)
+            if self.page_ready_handler:
                 arg_count = len(inspect.signature(self.page_ready_handler).parameters)
                 is_coro = is_coroutine(self.page_ready_handler)
                 if arg_count == 1:
@@ -151,7 +158,7 @@ class page:
         :param classes: tailwind classes for the container div (default: `'q-ma-md column items-start gap-4'`)
         :param css: CSS definitions
         :param on_connect: optional function or coroutine which is called for each new client connection
-        :param on_page_ready: optional function or coroutine which is called when the websocket is connected
+        :param on_page_ready: optional function or coroutine which is called when the websocket is connected;  see `"Yield for Page Ready" <https://nicegui.io/#yield_for_page_ready>`_ as an alternative.
         :param on_disconnect: optional function or coroutine which is called when a client disconnects
         :param shared: whether the page instance is shared between multiple clients (default: `False`)
         """
@@ -184,12 +191,23 @@ class page:
             with globals.within_view(self.page.view):
                 if 'request' in inspect.signature(func).parameters:
                     if self.shared:
-                        globals.log.error('cannot use `request` argument in shared page; providing 404 error page')
-                        return error404()
+                        globals.log.error('Cannot use `request` argument in shared page')
+                        return error(501)
                     kwargs['request'] = request
                 await self.connected(request)
                 await self.header()
-                await func(*args, **kwargs) if is_coroutine(func) else func(*args, **kwargs)
+                result = await func(*args, **kwargs) if is_coroutine(func) else func(*args, **kwargs)
+                if isinstance(result, types.GeneratorType):
+                    if self.shared:
+                        globals.log.error('Yielding for page_ready is not supported on shared pages')
+                        return error(501)
+                    next(result)
+                if isinstance(result, types.AsyncGeneratorType):
+                    if self.shared:
+                        globals.log.error('Yielding for page_ready is not supported on shared pages')
+                        return error(501)
+                    await result.__anext__()
+                self.page.page_ready_generator = result
                 await self.footer()
             return self.page
         builder = PageBuilder(decorated, self.shared)
@@ -219,16 +237,22 @@ def find_parent_view() -> jp.HTMLBaseComponent:
     return view_stack[-1]
 
 
-def error404() -> jp.QuasarPage:
-    title = globals.config.title if globals.config else '404'
+def error(status_code: int) -> jp.QuasarPage:
+    title = globals.config.title if globals.config else f'Error {status_code}'
     favicon = globals.config.favicon if globals.config else None
     dark = globals.config.dark if globals.config else False
     wp = jp.QuasarPage(title=title, favicon=favicon, dark=dark, tailwind=True)
     div = jp.Div(a=wp, classes='py-20 text-center')
     jp.Div(a=div, classes='text-8xl py-5', text='☹',
            style='font-family: "Arial Unicode MS", "Times New Roman", Times, serif;')
-    jp.Div(a=div, classes='text-6xl py-5', text='404')
-    jp.Div(a=div, classes='text-xl py-5', text='This page doesn\'t exist.')
+    jp.Div(a=div, classes='text-6xl py-5', text=status_code)
+    if 400 <= status_code <= 499:
+        message = "This page doesn't exist"
+    elif 500 <= status_code <= 599:
+        message = 'Server error'
+    else:
+        message = 'Unknown error'
+    jp.Div(a=div, classes='text-xl py-5', text=message)
     return wp
 
 
@@ -245,6 +269,6 @@ def init_auto_index_page() -> None:
 
 
 def create_page_routes() -> None:
-    jp.Route("/{path:path}", error404, last=True)
+    jp.Route("/{path:path}", lambda: error(404), last=True)
     for route, page_builder in globals.page_builders.items():
         page_builder.create_route(route)

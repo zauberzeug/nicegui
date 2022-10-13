@@ -1,17 +1,36 @@
 #!/usr/bin/env python3
 import re
 
-import docutils.core
+import markdown2
 
 import api_docs_and_examples
 import traffic_tracking
 from nicegui import ui
+from nicegui.elements.markdown import Markdown
+
+with open('README.md') as f:
+    content = f.read()
+    content = re.sub(r'(?m)^\<img.*\n?', '', content)
+    # change absolute link on GitHub to relative link
+    content = content.replace('(https://nicegui.io/reference)', '(reference)')
+    README = Markdown.apply_tailwind(markdown2.markdown(content, extras=['fenced-code-blocks']))
 
 
-@ui.page('/', on_page_ready=api_docs_and_examples.create, on_connect=traffic_tracking.on_connect)
+async def go_to_anchor() -> None:
+    # NOTE because the docs are added after initial page load, we need to manually trigger the jump to the anchor
+    await ui.run_javascript('''
+        parts = document.URL.split("#");
+        console.log(parts);
+        if (parts.length > 1) {
+            console.log(window.location);
+            window.location = parts[0] + "reference#" + parts[1];
+            console.log(window.location);
+        }
+    ''')
+
+
+@ui.page('/', on_connect=traffic_tracking.on_connect, on_page_ready=go_to_anchor)
 async def index():
-    # add docutils css to webpage
-    ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
     # avoid display:block for PyPI/Docker/GitHub badges
     ui.add_head_html('<style>p a img {display: inline; vertical-align: baseline}</style>')
 
@@ -21,11 +40,13 @@ async def index():
         '<a class="github-fork-ribbon" href="https://github.com/zauberzeug/nicegui" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>'
     )
 
+    installation_start = README.find('<h2 class="text-4xl mb-3 mt-5">Installation</h2>')
+    documentation_start = README.find('The API reference is hosted at')
+    assert installation_start >= 0
+    assert documentation_start >= 0
+
     with ui.row().classes('flex w-full'):
-        with open('README.md', 'r') as file:
-            content = file.read()
-            content = re.sub(r'(?m)^\<img.*\n?', '', content)
-            ui.markdown(content).classes('w-6/12')
+        ui.html(README[:installation_start]).classes('w-6/12')
 
         with ui.column().classes('w-5/12 flex-center'):
             width = 450
@@ -52,5 +73,19 @@ async def index():
 
             with ui.row().style('margin-top: 40px'):
                 traffic_tracking.chart().style(f'width:{width}px;height:250px')
+
+    ui.html(README[installation_start:documentation_start])
+
+    api_docs_and_examples.create_intro()
+    with ui.row().style('background-color: #e8f0fa; width: 100%; margin: 1em 0; padding: 1em 1em 0.5em 1em; font-size: large'):
+        ui.markdown('See the [API reference](/reference) for many more interactive examples!')
+
+    ui.html(README[documentation_start:])
+
+
+@ui.page('/reference')
+def reference():
+    api_docs_and_examples.create_full()
+
 
 ui.run()

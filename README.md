@@ -68,43 +68,40 @@ python3 main.py
 ```
 
 The GUI is now available through http://localhost:8080/ in your browser.
-Note: The script will automatically reload the page when you modify the code.
+Note: NiceGUI will automatically reload the page when you modify the code.
 
-Full documentation can be found at [https://nicegui.io](https://nicegui.io).
+## Documentation and Examples
 
-## Configuration
+The API reference is hosted at [https://nicegui.io/reference](https://nicegui.io/reference) and provides a ton of live examples.
+The whole content of [https://nicegui.io](https://nicegui.io) is [implemented with NiceGUI itself](https://github.com/zauberzeug/nicegui/blob/main/main.py).
 
-You can call `ui.run()` with optional arguments:
+You may also have a look at the following examples for in-depth demonstrations of what you can do with NiceGUI:
 
-- `host` (default: `'0.0.0.0'`)
-- `port` (default: `8080`)
-- `title` (default: `'NiceGUI'`)
-- `favicon` (default: `'favicon.ico'`)
-- `dark`: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
-- `main_page_classes`: configure Quasar classes of main page (default: `'q-ma-md column items-start'`)
-- `binding_refresh_interval`: time between binding updates (default: `0.1` seconds, bigger is more cpu friendly)
-- `show`: automatically open the ui in a browser tab (default: `True`)
-- `reload`: automatically reload the ui on file changes (default: `True`)
-- `uvicorn_logging_level`: logging level for uvicorn server (default: `'warning'`)
-- `uvicorn_reload_dirs`: string with comma-separated list for directories to be monitored (default is current working directory only)
-- `uvicorn_reload_includes`: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`)
-- `uvicorn_reload_excludes`: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
-- `exclude`: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
-  (possible entries: chart, colors, custom_example, interactive_image, keyboard, log, joystick, scene, table)
+- [Slideshow](https://github.com/zauberzeug/nicegui/tree/main/examples/slideshow/main.py):
+  implements a keyboard-controlled image slideshow
+- [Authentication](https://github.com/zauberzeug/nicegui/blob/main/examples/authentication/main.py):
+  shows how to use sessions to build a login screen
+- [Customization](https://github.com/zauberzeug/nicegui/blob/main/examples/customization/main.py):
+  provides an example of how to modularize your application into multiple files and create a specialized `@ui.page` decorator
+- [Map](https://github.com/zauberzeug/nicegui/blob/main/examples/map/main.py):
+  uses the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations
+- [AI User Interface](https://github.com/zauberzeug/nicegui/blob/main/examples/ai_interface/main.py):
+  utilizes the great but non-async API from <https://replicate.com> to perform voice-to-text transcription and generate images from prompts with Stable Diffusion
+- [3D scene](https://github.com/zauberzeug/nicegui/blob/main/examples/3d_scene/main.py):
+  creates a 3D scene and loads an STL mesh illuminated with a spotlight
 
-The environment variables `HOST` and `PORT` can also be used to configure NiceGUI.
+## Why?
 
-To avoid the potentially costly import of Matplotlib, you set the environment variable `MATPLOTLIB=false`.
-This will make `ui.plot` and `ui.line_plot` unavailable.
+We like [Streamlit](https://streamlit.io/) but find it does [too much magic when it comes to state handling](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651).
+In search for an alternative nice library to write simple graphical user interfaces in Python we discovered [JustPy](https://justpy.io/).
+While we liked the approach, it is too "low-level HTML" for our daily usage.
 
-Note:
-The parameter `exclude` from earlier versions of NiceGUI has been removed.
-Libraries are now automatically served on demand.
-As a small caveat, the page will be reloaded if a new dependency is added dynamically, e.g. when adding a `ui.chart` only after pressing a button.
+Therefore we created NiceGUI on top of [JustPy](https://justpy.io/),
+which itself is based on the ASGI framework [Starlette](https://www.starlette.io/) (like [FastAPI](https://fastapi.tiangolo.com/)) and the ASGI webserver [Uvicorn](https://www.uvicorn.org/).
 
 ## Docker
 
-You can use our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) for pain-free installation:
+You can use our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui):
 
 ```bash
 docker run --rm -p 8888:8080 -v $(pwd):/app/ -it zauberzeug/nicegui:latest
@@ -114,26 +111,10 @@ This will start the server at http://localhost:8888 with the code from your curr
 The file containing your `ui.run(port=8080, ...)` command must be named `main.py`.
 Code modification triggers an automatic reload.
 
-## Why?
-
-We like [Streamlit](https://streamlit.io/) but find it does [too much magic when it comes to state handling](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651).
-In search for an alternative nice library to write simple graphical user interfaces in Python we discovered [JustPy](https://justpy.io/).
-While it is too "low-level HTML" for our daily usage, it provides a great basis for NiceGUI.
-
-## Documentation and Examples
-
-The API reference is hosted at [https://nicegui.io](https://nicegui.io).
-It is [implemented with NiceGUI itself](https://github.com/zauberzeug/nicegui/blob/main/main.py).
-You may also have a look at the [examples folder](https://github.com/zauberzeug/nicegui/tree/main/examples) for more demonstrations of what you can do with NiceGUI.
-
-## Abstraction
-
-NiceGUI is based on [JustPy](https://justpy.io/) which is based on the ASGI framework [Starlette](https://www.starlette.io/) and the ASGI webserver [Uvicorn](https://www.uvicorn.org/).
-
 ## Deployment
 
 To deploy your NiceGUI app, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your server infrastructure.
-You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server or use our [pre-built Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
+You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server or use our [pre-built Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies (see above).
 For example you can use this `docker run` command to start the script `main.py` in the current directory on port 80:
 
 ```bash

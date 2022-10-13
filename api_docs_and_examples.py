@@ -5,33 +5,37 @@ from typing import Callable, Union
 
 import docutils.core
 
-from nicegui import ui
+from nicegui import globals, ui
+from nicegui.task_logger import create_task
+
+REGEX_H4 = re.compile(r'<h4.*?>(.*?)</h4>')
+SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 
 
 @contextmanager
-def example(content: Union[Callable, type, str]):
+def example(content: Union[Callable, type, str], first_col=4) -> None:
     callFrame = inspect.currentframe().f_back.f_back
     begin = callFrame.f_lineno
 
     def add_html_anchor(element: ui.html):
         html = element.content
-        match = re.search(r'<h4.*?>(.*?)</h4>', html)
+        match = REGEX_H4.search(html)
         if not match:
             return
-
-        headline_id = re.sub('[^(a-z)(A-Z)(0-9)-]', '_', match.groups()[0].strip()).lower()
+        headline = match.groups()[0].strip()
+        headline_id = SPECIAL_CHARACTERS.sub('_', headline).lower()
         if not headline_id:
             return
 
         icon = '<span class="material-icons">link</span>'
-        anchor = f'<a href="#{headline_id}" class="text-gray-300 hover:text-black">{icon}</a>'
+        anchor = f'<a href="reference#{headline_id}" class="text-gray-300 hover:text-black">{icon}</a>'
         html = html.replace('<h4', f'<h4 id="{headline_id}"', 1)
         html = html.replace('</h4>', f' {anchor}</h4>', 1)
         element.view.inner_html = html
 
     with ui.row().classes('flex w-full'):
         if isinstance(content, str):
-            add_html_anchor(ui.markdown(content).classes('mr-8 w-4/12'))
+            add_html_anchor(ui.markdown(content).classes(f'mr-8 w-{first_col}/12'))
         else:
             doc = content.__doc__ or content.__init__.__doc__
             html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
@@ -60,13 +64,56 @@ def example(content: Union[Callable, type, str]):
             code.insert(1, 'from nicegui import ui')
             if code[2].split()[0] not in ['from', 'import']:
                 code.insert(2, '')
-            code.append('ui.run()')
+            for l, line in enumerate(code):
+                if line.startswith('# ui.'):
+                    code[l] = line[2:]
+                    break
+            else:
+                code.append('ui.run()')
             code.append('```')
             code = '\n'.join(code)
-            ui.markdown(code).classes('mt-12 w-5/12 overflow-auto')
+            ui.markdown(code).classes(f'mt-12 w-{9-first_col}/12 overflow-auto')
 
 
-async def create():
+def create_intro() -> None:
+    # add docutils css to webpage
+    ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
+
+    hello_world = '''#### Hello, World!
+
+Creating a user interface with NiceGUI is as simple as writing a single line of code.
+'''
+    with example(hello_world, first_col=2):
+        ui.label('Hello, world!')
+        ui.markdown('Have a look at the full <br/> [API reference](reference)!')
+
+    common_elements = '''#### Common UI Elements
+
+NiceGUI comes with a collection of commonly used UI elements.
+'''
+    with example(common_elements, first_col=2):
+        ui.button('Button', on_click=lambda: ui.notify('Click'))
+        ui.checkbox('Checkbox', on_change=lambda e: ui.notify('Checked' if e.value else 'Unchecked'))
+        ui.switch('Switch', on_change=lambda e: ui.notify('Switched' if e.value else 'Unswitched'))
+        ui.input('Text input', on_change=lambda e: ui.notify(e.value))
+        ui.radio(['A', 'B'], value='A', on_change=lambda e: ui.notify(e.value)).props('inline')
+        ui.select(['One', 'Two'], value='One', on_change=lambda e: ui.notify(e.value))
+        ui.link('And many more...', '/reference').classes('text-lg')
+
+    binding = '''#### Value Binding
+
+Binding values between UI elements or [to data models](http://127.0.0.1:8080/reference#bindings) is built into NiceGUI.
+'''
+    with example(binding, first_col=2):
+        slider = ui.slider(min=0, max=100, value=50)
+        ui.number('Value').bind_value(slider, 'value').classes('fit')
+
+    # HACK: this comment prevents another blank line sneaking into the example above
+
+
+def create_full() -> None:
+    # add docutils css to webpage
+    ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
 
     ui.markdown('## API Documentation and Examples')
 
@@ -251,7 +298,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         import numpy as np
 
-        line_plot = ui.line_plot(n=2, limit=20, figsize=(2.5, 1.8)) \
+        line_plot = ui.line_plot(n=2, limit=20, figsize=(2.5, 1.8), update_every=5) \
             .with_legend(['sin', 'cos'], loc='upper center', ncol=2)
 
         def update_line_plot() -> None:
@@ -262,7 +309,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             line_plot.push([now], [[y1], [y2]])
 
         line_updates = ui.timer(0.1, update_line_plot, active=False)
-        ui.checkbox('active').bind_value(line_updates, 'active')
+        line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')
 
     with example(ui.scene):
         with ui.scene(width=200, height=200) as scene:
@@ -419,24 +466,22 @@ You can run a function or coroutine as a parallel task by passing it to one of t
 - `ui.on_startup`: Called when NiceGUI is started or restarted.
 - `ui.on_shutdown`: Called when NiceGUI is shut down or restarted.
 - `ui.on_connect`: Called when a client connects to NiceGUI. (Optional argument: Starlette request)
-- `ui.on_page_ready`: Called when the page is ready and the websocket is connected. (Optional argument: socket)
+- `ui.on_page_ready`: Called when the page is ready and the websocket is connected (Optional argument: socket). See [Yield for Page Ready](#yield_for_page_ready) as an alternative.
 - `ui.on_disconnect`: Called when a client disconnects from NiceGUI. (Optional argument: socket)
 
 When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
 '''
     with example(lifecycle):
         import asyncio
-        import time
 
         l = ui.label()
 
-        async def run_clock():
-            while True:
-                l.text = f'unix time: {time.time():.1f}'
+        async def countdown():
+            for i in [5, 4, 3, 2, 1, 0]:
+                l.text = f'{i}...' if i else 'Take-off!'
                 await asyncio.sleep(1)
 
-        ui.on_startup(run_clock)
-        ui.on_connect(lambda: l.set_text('new connection'))
+        # ui.on_connect(countdown)
 
     with example(ui.timer):
         from datetime import datetime
@@ -536,7 +581,7 @@ Note: You can also pass a `functools.partial` into the `on_click` property to wr
 
         ui.button('start async task', on_click=async_task)
 
-    h3('Pages and Routes')
+    h3('Pages')
 
     with example(ui.page):
         @ui.page('/other_page')
@@ -581,6 +626,25 @@ To make it "private" or to change other attributes like title, favicon etc. you 
         ui.link('private page', private_page)
         ui.link('shared page', shared_page)
 
+    yield_page_ready = '''#### Yielding for Page-Ready
+
+This is a handy alternative to the `on_page_ready` callback (either as parameter of `@ui.page` or via `ui.on_page_ready` function).
+
+If a `yield` statement is provided in a page builder function, all code below that statement is executed after the page is ready.
+This allows you to execute JavaScript; which is only possible after the page has been loaded (see [#112](https://github.com/zauberzeug/nicegui/issues/112)).
+Also it is possible to do async stuff while the user already sees the content added before the yield statement.
+    '''
+    with example(yield_page_ready):
+        @ui.page('/yield_page_ready')
+        async def yield_page_ready():
+            ui.label('This text is displayed immediately.')
+            yield
+            ui.run_javascript('document.title = "JavaScript-Controlled Title")')
+            await asyncio.sleep(3)
+            ui.label('This text is displayed 3 seconds after the page has been fully loaded.')
+
+        ui.link('show page-ready code after yield', '/yield_page_ready')
+
     with example(ui.open):
         @ui.page('/yet_another_page')
         def yet_another_page():
@@ -588,38 +652,6 @@ To make it "private" or to change other attributes like title, favicon etc. you 
             ui.button('RETURN', on_click=lambda e: ui.open('#open', e.socket))
 
         ui.button('REDIRECT', on_click=lambda e: ui.open(yet_another_page, e.socket))
-
-    add_route = '''#### Route
-
-Add a new route by calling `ui.add_route` with a starlette route including a path and a function to be called.
-Routed paths must start with a `'/'`.
-'''
-    with example(add_route):
-        import starlette
-
-        ui.add_route(starlette.routing.Route(
-            '/new/route', lambda _: starlette.responses.PlainTextResponse('Response')
-        ))
-
-        ui.link('Try the new route!', 'new/route')
-
-    get_decorator = '''#### Get decorator
-
-Syntactic sugar to add routes.
-Decorating a function with the `@ui.get` makes it available at the specified endpoint, e.g. `'/another/route/<id>'`.
-
-Path parameters can be passed to the request handler like with [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/).
-If type-annotated, they are automatically converted to `bool`, `int`, `float` and `complex` values.
-An optional `request` argument gives access to the complete request object.
-'''
-    with example(get_decorator):
-        from starlette import requests, responses
-
-        @ui.get('/another/route/{id}')
-        def produce_plain_response(id: str, request: requests.Request):
-            return responses.PlainTextResponse(f'{request.client.host} asked for id={id}')
-
-        ui.link('Try yet another route!', 'another/route/42')
 
     sessions = '''#### Sessions
 
@@ -666,5 +698,76 @@ The result of the execution is returned as a string.
         ui.button('fire and forget', on_click=alert)
         ui.button('receive result', on_click=get_date)
 
-    # NOTE because the docs are added after inital page load, we need to manually trigger the jump tho the anchor
-    await ui.run_javascript('parts = document.URL.split("#"); window.location.hash = "#"; setTimeout(function(){ if (parts.length > 1) window.location.hash = "#" + parts[1]; }, 100); ')
+    h3('Routes')
+
+    with example(ui.get):
+        from starlette import requests, responses
+
+        @ui.get('/another/route/{id}')
+        def produce_plain_response(id: str, request: requests.Request):
+            return responses.PlainTextResponse(f'{request.client.host} asked for id={id}')
+
+        ui.link('Try yet another route!', 'another/route/42')
+
+    with example(ui.add_static_files):
+        ui.add_static_files('/examples', 'examples')
+        ui.link('Slideshow Example (raw file)', 'examples/slideshow/main.py')
+        with ui.image('examples/slideshow/slides/slide1.jpg'):
+            ui.label('first image from slideshow').classes('absolute-bottom text-subtitle2')
+
+    with example(ui.add_route):
+        import starlette
+
+        ui.add_route(starlette.routing.Route(
+            '/new/route', lambda _: starlette.responses.PlainTextResponse('Response')
+        ))
+
+        ui.link('Try the new route!', 'new/route')
+
+    h3('Configuration')
+
+    ui_run = '''#### ui.run
+
+You can call `ui.run()` with optional arguments:
+
+- `host` (default: `'0.0.0.0'`)
+- `port` (default: `8080`)
+- `title` (default: `'NiceGUI'`)
+- `favicon` (default: `'favicon.ico'`)
+- `dark`: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
+- `main_page_classes`: configure Quasar classes of main page (default: `'q-ma-md column items-start'`)
+- `binding_refresh_interval`: time between binding updates (default: `0.1` seconds, bigger is more cpu friendly)
+- `show`: automatically open the ui in a browser tab (default: `True`)
+- `reload`: automatically reload the ui on file changes (default: `True`)
+- `uvicorn_logging_level`: logging level for uvicorn server (default: `'warning'`)
+- `uvicorn_reload_dirs`: string with comma-separated list for directories to be monitored (default is current working directory only)
+- `uvicorn_reload_includes`: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`)
+- `uvicorn_reload_excludes`: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
+- `exclude`: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
+  (possible entries: chart, colors, custom_example, interactive_image, keyboard, log, joystick, scene, table)
+
+The environment variables `HOST` and `PORT` can also be used to configure NiceGUI.
+
+To avoid the potentially costly import of Matplotlib, you set the environment variable `MATPLOTLIB=false`.
+This will make `ui.plot` and `ui.line_plot` unavailable.
+'''
+    with example(ui_run):
+        ui.label('dark page on port 7000 without reloading')
+
+        # ui.run(dark=True, port=7000, reload=False)
+
+    # HACK: turn expensive line plot off after 10 seconds
+    def handle_change(self, msg):
+        def turn_off():
+            line_checkbox.value = False
+            ui.notify('Turning off that line plot to save resources on our live demo server. 😎')
+        line_checkbox.value = msg.value
+        if msg.value:
+            with globals.within_view(line_checkbox.view):
+                ui.timer(10.0, turn_off, once=True)
+        line_checkbox.update()
+        return False
+    line_checkbox.view.on('input', handle_change)
+
+    # HACK: start countdown here to avoid using global lifecycle hook
+    create_task(countdown(), name='countdown')

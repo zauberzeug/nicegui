@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from justpy import WebPage
 
+from ..binding import BindableProperty, BindSourceMixin
 from ..events import MouseEventArguments, handle_event
 from ..routes import add_dependencies
 from .custom_view import CustomView
@@ -30,9 +31,15 @@ class InteractiveImageView(CustomView):
         self.sockets = [s for s in self.sockets if s in page_sockets]
 
 
-class InteractiveImage(Element):
+def _handle_source_change(sender: Element, source: str) -> None:
+    sender.view.options.source = source
+    sender.update()
 
-    def __init__(self, source: str, *,
+
+class InteractiveImage(Element, BindSourceMixin):
+    source = BindableProperty(on_change=_handle_source_change)
+
+    def __init__(self, source: str = '', *,
                  on_mouse: Optional[Callable] = None, events: List[str] = ['click'], cross: bool = False):
         """Interactive Image
 
@@ -45,6 +52,8 @@ class InteractiveImage(Element):
         """
         self.mouse_handler = on_mouse
         super().__init__(InteractiveImageView(source, self.handle_mouse, events, cross))
+
+        self.source = source
 
     def handle_mouse(self, msg: Dict[str, Any]) -> Optional[bool]:
         if self.mouse_handler is None:
