@@ -14,6 +14,8 @@ def on_disconnect(self, handler: Union[Callable, Awaitable]):
 
 
 def on_startup(self, handler: Union[Callable, Awaitable]):
+    if globals.state == globals.State.STARTED:
+        raise RuntimeError('Unable to register another startup handler. NiceGUI has already been started.')
     globals.startup_handlers.append(handler)
 
 
