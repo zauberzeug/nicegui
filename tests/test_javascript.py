@@ -55,15 +55,13 @@ def test_executing_javascript_on_async_page(screen: Screen):
 
 
 def test_retrieving_content_from_javascript(screen: Screen):
-    async def write_time() -> None:
-        response = await ui.run_javascript('Date.now()')
-        for socket, time in response.items():
-            ui.notify(f'Browser time on host {socket.client.host}: {time}')
+    async def compute() -> None:
+        response = await ui.run_javascript('1 + 41')
+        for _, answer in response.items():
+            ui.label(answer)
 
-    ui.button('write time', on_click=write_time)
+    ui.button('compute', on_click=compute)
 
     screen.open('/')
-    screen.click('write time')
-    label = screen.find('Browser time').text
-    js_time = datetime.fromtimestamp(int(label.split(': ')[1]) / 1000)
-    assert abs((datetime.now() - js_time).total_seconds()) < 1, f'{js_time} should be close to now'
+    screen.click('compute')
+    screen.should_contain('42')
