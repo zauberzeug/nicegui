@@ -148,15 +148,15 @@ def test_customized_page(screen: Screen):
             assert isinstance(request, Request)
             trace.append('connected')
 
-        async def header(self) -> None:
+        async def before_content(self) -> None:
             assert isinstance(self.page.view, justpy.htmlcomponents.Div), \
                 'we should be able to access the underlying JustPy view'
-            await super().header()
-            trace.append('header')
+            await super().before_content()
+            trace.append('before_content')
 
-        async def footer(self) -> None:
-            await super().footer()
-            trace.append('footer')
+        async def after_content(self) -> None:
+            await super().after_content()
+            trace.append('after_content')
 
     @custom_page('/', dark=True)
     def mainpage():
@@ -167,7 +167,7 @@ def test_customized_page(screen: Screen):
     screen.should_contain('Hello, world!')
     screen.should_contain('My Customized Page')
     assert 'body--dark' in screen.get_tags('body')[0].get_attribute('class')
-    assert trace == ['init', 'connected', 'header', 'content', 'footer']
+    assert trace == ['init', 'connected', 'before_content', 'content', 'after_content']
 
 
 def test_shared_page_with_request_parameter_raises_exception(screen: Screen):
