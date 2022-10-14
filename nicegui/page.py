@@ -12,11 +12,13 @@ import justpy as jp
 from addict import Dict as AdDict
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
+from starlette.routing import compile_path
 from starlette.websockets import WebSocket
 
 from . import globals
 from .helpers import is_coroutine
 from .page_builder import PageBuilder
+from .routes import convert_arguments
 
 
 class Page(jp.QuasarPage):
@@ -184,8 +186,9 @@ class page:
         self.on_disconnect = on_disconnect
         self.shared = shared
         self.page: Optional[Page] = None
+        *_, self.converters = compile_path(route)
 
-    def __call__(self, func, *args, **kwargs) -> Callable:
+    def __call__(self, func, **kwargs) -> Callable:
         @wraps(func)
         async def decorated(request: Optional[Request] = None) -> Page:
             self.page = Page(
@@ -203,18 +206,18 @@ class page:
                 with globals.within_view(self.page.view):
                     if 'request' in inspect.signature(func).parameters:
                         if self.shared:
-                            raise Exception('Cannot use `request` argument in shared page')
-                        kwargs['request'] = request
+                            raise RuntimeError('Cannot use `request` argument in shared page')
                     await self.connected(request)
                     await self.header()
-                    result = await func(*args, **kwargs) if is_coroutine(func) else func(*args, **kwargs)
+                    args = {**kwargs, **convert_arguments(request, self.converters, func)}
+                    result = await func(**args) if is_coroutine(func) else func(**args)
                     if isinstance(result, types.GeneratorType):
                         if self.shared:
-                            raise Exception('Yielding for page_ready is not supported on shared pages')
+                            raise RuntimeError('Yielding for page_ready is not supported on shared pages')
                         next(result)
                     if isinstance(result, types.AsyncGeneratorType):
                         if self.shared:
-                            raise Exception('Yielding for page_ready is not supported on shared pages')
+                            raise RuntimeError('Yielding for page_ready is not supported on shared pages')
                         await result.__anext__()
                     self.page.page_ready_generator = result
                     await self.footer()
