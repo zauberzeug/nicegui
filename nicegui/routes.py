@@ -105,8 +105,6 @@ def create_exclude_routes() -> None:
         add_route(None, Route('/templates/local/highcharts.js', void))
     if 'colors' in globals.config.excludes:
         add_route(None, Route('/colors.js', void))
-    if 'custom_example' in globals.config.excludes:
-        add_route(None, Route('/custom_example.js', void))
     if 'interactive_image' in globals.config.excludes:
         add_route(None, Route('/interactive_image.js', void))
     if 'keyboard' in globals.config.excludes:
