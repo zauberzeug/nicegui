@@ -73,7 +73,7 @@ def get(self, path: str):
         async def decorated(request: Request):
             args = convert_arguments(request, converters, func)
             return await func(**args) if is_coroutine(func) else func(**args)
-        self.add_route(Route(path, decorated))
+        add_route(None, Route(path, decorated))
         return decorated
     return decorator
 

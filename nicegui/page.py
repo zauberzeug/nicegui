@@ -6,7 +6,7 @@ import time
 import types
 import uuid
 from functools import wraps
-from typing import Callable, Dict, Generator, Optional
+from typing import Callable, Dict, Generator, List, Optional
 
 import justpy as jp
 from addict import Dict as AdDict
@@ -281,7 +281,7 @@ def error(status_code: int, message: Optional[str] = None) -> Page:
 
 
 def init_auto_index_page() -> None:
-    view_stack = globals.view_stacks.get(0)
+    view_stack: List[jp.HTMLBaseComponent] = globals.view_stacks.get(0, [])
     if not view_stack:
         return  # there is no auto-index page on the view stack
     page: Page = view_stack.pop().pages[0]
