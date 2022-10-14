@@ -100,6 +100,8 @@ class Page(jp.QuasarPage):
         await super().on_disconnect(websocket)
 
     async def run_javascript(self, code: str, *, check_interval: float = 0.01, timeout: float = 1.0) -> str:
+        if self.page_id not in jp.WebPage.sockets:
+            raise RuntimeError('Cannot run JavaScript, because page is not ready.')
         start_time = time.time()
         request_id = str(uuid.uuid4())
         await super().run_javascript(code, request_id=request_id)
@@ -109,27 +111,21 @@ class Page(jp.QuasarPage):
             await asyncio.sleep(check_interval)
         return self.waiting_javascript_commands.pop(request_id)
 
-    def handle_javascript_result(self, msg) -> bool:
+    def handle_javascript_result(self, msg: AdDict) -> bool:
         self.waiting_javascript_commands[msg.request_id] = msg.result
         return False
 
 
 def add_head_html(self, html: str) -> None:
-    for page in find_parent_view().pages.values():
-        page.head_html += html
+    find_parent_page().head_html += html
 
 
 def add_body_html(self, html: str) -> None:
-    for page in find_parent_view().pages.values():
-        page.body_html += html
+    find_parent_page().body_html += html
 
 
 async def run_javascript(self, code: str, *, check_interval: float = 0.01, timeout: float = 1.0) -> None:
-    for page in find_parent_view().pages.values():
-        assert isinstance(page, Page)
-        if page.page_id not in jp.WebPage.sockets:
-            raise RuntimeError('page not ready; use the `on_page_ready` argument: https://nicegui.io/#page')
-        return await page.run_javascript(code, check_interval=check_interval, timeout=timeout)
+    return await find_parent_page().run_javascript(code, check_interval=check_interval, timeout=timeout)
 
 
 class page:
@@ -235,6 +231,12 @@ def find_parent_view() -> jp.HTMLBaseComponent:
         view_stack.append(page.view)
         jp.Route('/', page._route_function)
     return view_stack[-1]
+
+
+def find_parent_page() -> Page:
+    pages = list(find_parent_view().pages.values())
+    assert len(pages) == 1
+    return pages[0]
 
 
 def error(status_code: int) -> jp.QuasarPage:
