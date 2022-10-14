@@ -12,10 +12,12 @@ import justpy as jp
 from addict import Dict as AdDict
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
+from starlette.routing import compile_path
 
 from . import globals
 from .helpers import is_coroutine
 from .page_builder import PageBuilder
+from .routes import convert_arguments
 
 
 class Page(jp.QuasarPage):
@@ -181,8 +183,9 @@ class page:
         self.on_disconnect = on_disconnect
         self.shared = shared
         self.page: Optional[Page] = None
+        *_, self.converters = compile_path(route)
 
-    def __call__(self, func, *args, **kwargs) -> Callable:
+    def __call__(self, func, **args) -> Callable:
         @wraps(func)
         async def decorated(request: Optional[Request] = None) -> Page:
             self.page = Page(
@@ -201,10 +204,10 @@ class page:
                     if self.shared:
                         globals.log.error('Cannot use `request` argument in shared page')
                         return error(501)
-                    kwargs['request'] = request
                 await self.connected(request)
                 await self.header()
-                result = await func(*args, **kwargs) if is_coroutine(func) else func(*args, **kwargs)
+                args = convert_arguments(request, self.converters, func)
+                result = await func(**args) if is_coroutine(func) else func(**args)
                 if isinstance(result, types.GeneratorType):
                     if self.shared:
                         globals.log.error('Yielding for page_ready is not supported on shared pages')

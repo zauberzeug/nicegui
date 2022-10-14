@@ -1,12 +1,12 @@
 import inspect
 import os.path
 from functools import wraps
-from typing import List
+from typing import Any, Callable, Dict, List
 
 import justpy as jp
 from starlette.requests import Request
 from starlette.responses import FileResponse, PlainTextResponse
-from starlette.routing import BaseRoute, Mount, Route, compile_path
+from starlette.routing import BaseRoute, Convertor, Mount, Route, compile_path
 from starlette.staticfiles import StaticFiles
 
 from . import globals
@@ -38,6 +38,23 @@ def add_static_files(self, path: str, directory: str) -> None:
     add_route(None, Mount(path, app=StaticFiles(directory=directory)))
 
 
+def convert_arguments(request: Request, converters: Dict[str, Convertor], func: Callable) -> Dict[str, Any]:
+    args = {name: converter.convert(request.path_params.get(name)) for name, converter in converters.items()}
+    parameters = inspect.signature(func).parameters
+    for key in parameters:
+        if parameters[key].annotation.__name__ == 'bool':
+            args[key] = bool(args[key])
+        if parameters[key].annotation.__name__ == 'int':
+            args[key] = int(args[key])
+        elif parameters[key].annotation.__name__ == 'float':
+            args[key] = float(args[key])
+        elif parameters[key].annotation.__name__ == 'complex':
+            args[key] = complex(args[key])
+    if 'request' in parameters and 'request' not in args:
+        args['request'] = request
+    return args
+
+
 def get(self, path: str):
     """GET Decorator
 
@@ -54,19 +71,7 @@ def get(self, path: str):
     def decorator(func):
         @wraps(func)
         async def decorated(request: Request):
-            args = {name: converter.convert(request.path_params.get(name)) for name, converter in converters.items()}
-            parameters = inspect.signature(func).parameters
-            for key in parameters:
-                if parameters[key].annotation.__name__ == 'bool':
-                    args[key] = bool(args[key])
-                if parameters[key].annotation.__name__ == 'int':
-                    args[key] = int(args[key])
-                elif parameters[key].annotation.__name__ == 'float':
-                    args[key] = float(args[key])
-                elif parameters[key].annotation.__name__ == 'complex':
-                    args[key] = complex(args[key])
-            if 'request' in parameters and 'request' not in args:
-                args['request'] = request
+            args = convert_arguments(request, converters, func)
             return await func(**args) if is_coroutine(func) else func(**args)
         self.add_route(Route(path, decorated))
         return decorated
