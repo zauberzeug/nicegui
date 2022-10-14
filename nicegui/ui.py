@@ -5,7 +5,7 @@ import os
 class Ui:
     from .run import run  # NOTE: before justpy
 
-    from .page import page, add_head_html, add_body_html, run_javascript, await_javascript
+    from .page import page, add_head_html, add_body_html, run_javascript
     from .update import update
 
     from .elements.button import Button as button
