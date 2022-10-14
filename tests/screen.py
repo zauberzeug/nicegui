@@ -31,9 +31,18 @@ class Screen:
         self.server_thread = threading.Thread(target=ui.run, kwargs=self.UI_RUN_KWARGS)
         self.server_thread.start()
 
+    @property
+    def is_open(self) -> None:
+        # https://stackoverflow.com/a/66150779/3419103
+        try:
+            self.selenium.current_url
+            return True
+        except:
+            return False
+
     def stop_server(self) -> None:
         '''Stop the webserver.'''
-        self.selenium.close()
+        self.close()
         globals.server.should_exit = True
         self.server_thread.join()
 
@@ -51,6 +60,10 @@ class Screen:
                 time.sleep(0.1)
                 if not self.server_thread.is_alive():
                     raise RuntimeError('The NiceGUI server has stopped running')
+
+    def close(self) -> None:
+        if self.is_open:
+            self.selenium.close()
 
     def should_contain(self, text: str) -> None:
         assert self.selenium.title == text or self.find(text), \

@@ -2,12 +2,14 @@ import asyncio
 import time
 import traceback
 from collections import namedtuple
-from typing import Callable, List
+from typing import Callable, List, Optional
+
+from starlette.websockets import WebSocket
 
 from . import globals
 from .binding import BindableProperty
 from .helpers import is_coroutine
-from .page import find_parent_view
+from .page import Page, find_parent_page, find_parent_view
 from .task_logger import create_task
 
 NamedCoroutine = namedtuple('NamedCoroutine', ['name', 'coro'])
@@ -33,6 +35,8 @@ class Timer:
 
         self.active = active
         self.interval = interval
+        self.socket: Optional[WebSocket] = None
+        self.parent_page = find_parent_page()
         self.parent_view = find_parent_view()
 
         async def do_callback():
@@ -50,6 +54,12 @@ class Timer:
 
         async def loop():
             while True:
+                if not self.parent_page.shared:
+                    sockets = list(Page.sockets.get(self.parent_page.page_id, {}).values())
+                    if not self.socket and sockets:
+                        self.socket = sockets[0]
+                    elif self.socket and not sockets:
+                        return
                 try:
                     start = time.time()
                     if self.active:

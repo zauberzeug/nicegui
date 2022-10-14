@@ -49,6 +49,7 @@ class Page(jp.QuasarPage):
         self.page_ready_handler = on_page_ready
         self.page_ready_generator: Optional[Generator[None, None, None]] = None
         self.disconnect_handler = on_disconnect
+        self.shared = shared
         self.delete_flag = not shared
 
         self.waiting_javascript_commands: Dict[str, str] = {}
