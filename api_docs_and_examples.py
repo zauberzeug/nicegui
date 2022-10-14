@@ -685,15 +685,17 @@ It also enables you to identify sessions over [longer time spans by configuring 
 
 With `ui.run_javascript()` you can run arbitrary JavaScript code on a page that is executed in the browser.
 The asynchronous function will return after the command(s) are executed.
-The result of the execution is returned as a string.
+The result of the execution is returned as a dictionary containing the response string per websocket.
+You can also set `respond=False` to send a command without waiting for a response.
 '''
     with example(javascript):
         async def alert():
-            await ui.run_javascript('alert("Hello!")')
+            await ui.run_javascript('alert("Hello!")', respond=False)
 
         async def get_date():
             response = await ui.run_javascript('Date()')
-            ui.notify(f'Browser time: {response}')
+            for socket, time in response.items():
+                ui.notify(f'Browser time on host {socket.client.host}: {time}')
 
         ui.button('fire and forget', on_click=alert)
         ui.button('receive result', on_click=get_date)

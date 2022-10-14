@@ -12,6 +12,7 @@ import justpy as jp
 from addict import Dict as AdDict
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
+from starlette.websockets import WebSocket
 
 from . import globals
 from .helpers import is_coroutine
@@ -88,7 +89,7 @@ class Page(jp.QuasarPage):
                     raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         return False
 
-    async def on_disconnect(self, websocket=None) -> None:
+    async def on_disconnect(self, websocket: Optional[WebSocket] = None) -> None:
         with globals.within_view(self.view):
             for handler in globals.disconnect_handlers + ([self.disconnect_handler] if self.disconnect_handler else[]):
                 arg_count = len(inspect.signature(handler).parameters)
@@ -101,17 +102,28 @@ class Page(jp.QuasarPage):
                     raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         await super().on_disconnect(websocket)
 
-    async def run_javascript(self, code: str, *, check_interval: float = 0.01, timeout: float = 1.0) -> str:
-        if self.page_id not in jp.WebPage.sockets:
-            raise RuntimeError('Cannot run JavaScript, because page is not ready.')
+    async def run_javascript_on_socket(self, code: str, websocket: WebSocket, *,
+                                       respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Optional[str]:
         start_time = time.time()
         request_id = str(uuid.uuid4())
-        await super().run_javascript(code, request_id=request_id)
+        await websocket.send_json({'type': 'run_javascript', 'data': code, 'request_id': request_id, 'send': respond})
+        if not respond:
+            return
         while request_id not in self.waiting_javascript_commands:
             if time.time() > start_time + timeout:
                 raise TimeoutError('JavaScript did not respond in time')
             await asyncio.sleep(check_interval)
         return self.waiting_javascript_commands.pop(request_id)
+
+    async def run_javascript(self, code: str, *,
+                             respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Dict[WebSocket, Optional[str]]:
+        if self.page_id not in jp.WebPage.sockets:
+            raise RuntimeError('Cannot run JavaScript, because page is not ready.')
+        sockets = list(jp.WebPage.sockets[self.page_id].values())
+        results = await asyncio.gather(
+            *[self.run_javascript_on_socket(code, socket, respond=respond, timeout=timeout, check_interval=check_interval)
+              for socket in sockets], return_exceptions=True)
+        return dict(zip(sockets, results))
 
     def handle_javascript_result(self, msg: AdDict) -> bool:
         self.waiting_javascript_commands[msg.request_id] = msg.result
@@ -126,8 +138,9 @@ def add_body_html(self, html: str) -> None:
     find_parent_page().body_html += html
 
 
-async def run_javascript(self, code: str, *, check_interval: float = 0.01, timeout: float = 1.0) -> None:
-    return await find_parent_page().run_javascript(code, check_interval=check_interval, timeout=timeout)
+async def run_javascript(self, code: str, *,
+                         respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Dict[WebSocket, Optional[str]]:
+    return await find_parent_page().run_javascript(code, respond=respond, timeout=timeout, check_interval=check_interval)
 
 
 class page:

@@ -57,7 +57,8 @@ def test_executing_javascript_on_async_page(screen: Screen):
 def test_retrieving_content_from_javascript(screen: Screen):
     async def write_time() -> None:
         response = await ui.run_javascript('Date.now()')
-        ui.label(f'Browser time: {response}')
+        for socket, time in response.items():
+            ui.notify(f'Browser time on host {socket.client.host}: {time}')
 
     ui.button('write time', on_click=write_time)
 
