@@ -13,6 +13,7 @@ from addict import Dict as AdDict
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
 from starlette.routing import compile_path
+from starlette.websockets import WebSocket
 
 from . import globals
 from .helpers import is_coroutine
@@ -60,15 +61,16 @@ class Page(jp.QuasarPage):
         self.view.add_page(self)
 
     async def _route_function(self, request: Request) -> Page:
-        for handler in globals.connect_handlers + ([self.connect_handler] if self.connect_handler else []):
-            arg_count = len(inspect.signature(handler).parameters)
-            is_coro = is_coroutine(handler)
-            if arg_count == 1:
-                await handler(request) if is_coro else handler(request)
-            elif arg_count == 0:
-                await handler() if is_coro else handler()
-            else:
-                raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
+        with globals.within_view(self.view):
+            for handler in globals.connect_handlers + ([self.connect_handler] if self.connect_handler else []):
+                arg_count = len(inspect.signature(handler).parameters)
+                is_coro = is_coroutine(handler)
+                if arg_count == 1:
+                    await handler(request) if is_coro else handler(request)
+                elif arg_count == 0:
+                    await handler() if is_coro else handler()
+                else:
+                    raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         return self
 
     async def handle_page_ready(self, msg: AdDict) -> bool:
@@ -89,57 +91,58 @@ class Page(jp.QuasarPage):
                     raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         return False
 
-    async def on_disconnect(self, websocket=None) -> None:
-        for handler in globals.disconnect_handlers + ([self.disconnect_handler] if self.disconnect_handler else[]):
-            arg_count = len(inspect.signature(handler).parameters)
-            is_coro = is_coroutine(handler)
-            if arg_count == 1:
-                await handler(websocket) if is_coro else handler(websocket)
-            elif arg_count == 0:
-                await handler() if is_coro else handler()
-            else:
-                raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
+    async def on_disconnect(self, websocket: Optional[WebSocket] = None) -> None:
+        with globals.within_view(self.view):
+            for handler in globals.disconnect_handlers + ([self.disconnect_handler] if self.disconnect_handler else[]):
+                arg_count = len(inspect.signature(handler).parameters)
+                is_coro = is_coroutine(handler)
+                if arg_count == 1:
+                    await handler(websocket) if is_coro else handler(websocket)
+                elif arg_count == 0:
+                    await handler() if is_coro else handler()
+                else:
+                    raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         await super().on_disconnect(websocket)
 
-    async def await_javascript(self, code: str, *, check_interval: float = 0.01, timeout: float = 1.0) -> str:
+    async def run_javascript_on_socket(self, code: str, websocket: WebSocket, *,
+                                       respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Optional[str]:
         start_time = time.time()
         request_id = str(uuid.uuid4())
-        await self.run_javascript(code, request_id=request_id)
+        await websocket.send_json({'type': 'run_javascript', 'data': code, 'request_id': request_id, 'send': respond})
+        if not respond:
+            return
         while request_id not in self.waiting_javascript_commands:
             if time.time() > start_time + timeout:
                 raise TimeoutError('JavaScript did not respond in time')
             await asyncio.sleep(check_interval)
         return self.waiting_javascript_commands.pop(request_id)
 
-    def handle_javascript_result(self, msg) -> bool:
+    async def run_javascript(self, code: str, *,
+                             respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Dict[WebSocket, Optional[str]]:
+        if self.page_id not in jp.WebPage.sockets:
+            raise RuntimeError('Cannot run JavaScript, because page is not ready.')
+        sockets = list(jp.WebPage.sockets[self.page_id].values())
+        results = await asyncio.gather(
+            *[self.run_javascript_on_socket(code, socket, respond=respond, timeout=timeout, check_interval=check_interval)
+              for socket in sockets], return_exceptions=True)
+        return dict(zip(sockets, results))
+
+    def handle_javascript_result(self, msg: AdDict) -> bool:
         self.waiting_javascript_commands[msg.request_id] = msg.result
         return False
 
 
 def add_head_html(self, html: str) -> None:
-    for page in find_parent_view().pages.values():
-        page.head_html += html
+    find_parent_page().head_html += html
 
 
 def add_body_html(self, html: str) -> None:
-    for page in find_parent_view().pages.values():
-        page.body_html += html
+    find_parent_page().body_html += html
 
 
-async def run_javascript(self, code: str) -> None:
-    for page in find_parent_view().pages.values():
-        assert isinstance(page, Page)
-        if page.page_id not in jp.WebPage.sockets:
-            raise RuntimeError('page not ready; use the `on_page_ready` argument: https://nicegui.io/#page')
-        await page.run_javascript(code)
-
-
-async def await_javascript(self, code: str, *, check_interval: float = 0.01, timeout: float = 1.0) -> None:
-    for page in find_parent_view().pages.values():
-        assert isinstance(page, Page)
-        if page.page_id not in jp.WebPage.sockets:
-            raise RuntimeError('page not ready; use the `on_page_ready` argument: https://nicegui.io/#page')
-        return await page.await_javascript(code, check_interval=check_interval, timeout=timeout)
+async def run_javascript(self, code: str, *,
+                         respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Dict[WebSocket, Optional[str]]:
+    return await find_parent_page().run_javascript(code, respond=respond, timeout=timeout, check_interval=check_interval)
 
 
 class page:
@@ -185,7 +188,7 @@ class page:
         self.page: Optional[Page] = None
         *_, self.converters = compile_path(route)
 
-    def __call__(self, func, **args) -> Callable:
+    def __call__(self, func) -> Callable:
         @wraps(func)
         async def decorated(request: Optional[Request] = None) -> Page:
             self.page = Page(
@@ -199,28 +202,29 @@ class page:
                 on_disconnect=self.on_disconnect,
                 shared=self.shared,
             )
-            with globals.within_view(self.page.view):
-                if 'request' in inspect.signature(func).parameters:
-                    if self.shared:
-                        globals.log.error('Cannot use `request` argument in shared page')
-                        return error(501)
-                await self.connected(request)
-                await self.header()
-                args = convert_arguments(request, self.converters, func)
-                result = await func(**args) if is_coroutine(func) else func(**args)
-                if isinstance(result, types.GeneratorType):
-                    if self.shared:
-                        globals.log.error('Yielding for page_ready is not supported on shared pages')
-                        return error(501)
-                    next(result)
-                if isinstance(result, types.AsyncGeneratorType):
-                    if self.shared:
-                        globals.log.error('Yielding for page_ready is not supported on shared pages')
-                        return error(501)
-                    await result.__anext__()
-                self.page.page_ready_generator = result
-                await self.footer()
-            return self.page
+            try:
+                with globals.within_view(self.page.view):
+                    if 'request' in inspect.signature(func).parameters:
+                        if self.shared:
+                            raise RuntimeError('Cannot use `request` argument in shared page')
+                    await self.connected(request)
+                    await self.header()
+                    args = convert_arguments(request, self.converters, func)
+                    result = await func(**args) if is_coroutine(func) else func(**args)
+                    if isinstance(result, types.GeneratorType):
+                        if self.shared:
+                            raise RuntimeError('Yielding for page_ready is not supported on shared pages')
+                        next(result)
+                    if isinstance(result, types.AsyncGeneratorType):
+                        if self.shared:
+                            raise RuntimeError('Yielding for page_ready is not supported on shared pages')
+                        await result.__anext__()
+                    self.page.page_ready_generator = result
+                    await self.footer()
+                return self.page
+            except Exception as e:
+                globals.log.exception(e)
+                return error(500, str(e))
         builder = PageBuilder(decorated, self.shared)
         if globals.state != globals.State.STOPPED:
             builder.create_route(self.route)
@@ -248,22 +252,31 @@ def find_parent_view() -> jp.HTMLBaseComponent:
     return view_stack[-1]
 
 
-def error(status_code: int) -> jp.QuasarPage:
+def find_parent_page() -> Page:
+    pages = list(find_parent_view().pages.values())
+    assert len(pages) == 1
+    return pages[0]
+
+
+def error(status_code: int, message: Optional[str] = None) -> Page:
     title = globals.config.title if globals.config else f'Error {status_code}'
     favicon = globals.config.favicon if globals.config else None
     dark = globals.config.dark if globals.config else False
-    wp = jp.QuasarPage(title=title, favicon=favicon, dark=dark, tailwind=True)
+    wp = Page(title=title, favicon=favicon, dark=dark)
     div = jp.Div(a=wp, classes='py-20 text-center')
     jp.Div(a=div, classes='text-8xl py-5', text='☹',
            style='font-family: "Arial Unicode MS", "Times New Roman", Times, serif;')
     jp.Div(a=div, classes='text-6xl py-5', text=status_code)
     if 400 <= status_code <= 499:
-        message = "This page doesn't exist"
+        title = "This page doesn't exist"
     elif 500 <= status_code <= 599:
-        message = 'Server error'
+        title = 'Server error'
     else:
-        message = 'Unknown error'
-    jp.Div(a=div, classes='text-xl py-5', text=message)
+        title = 'Unknown error'
+    if message is not None:
+        title += ':'
+    jp.Div(a=div, classes='text-xl pt-5', text=title)
+    jp.Div(a=div, classes='text-lg pt-2 text-gray-500', text=message or '')
     return wp
 
 

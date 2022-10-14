@@ -176,7 +176,7 @@ def test_shared_page_with_request_parameter_raises_exception(screen: Screen):
         ui.label('Hello, world!')
 
     screen.open('/')
-    screen.should_contain('501')
+    screen.should_contain('500')
     screen.should_contain('Server error')
 
 
@@ -222,5 +222,5 @@ def test_pageready_after_yield_on_shared_page_raises_exception(screen: Screen):
         yield
 
     screen.open('/')
-    screen.should_contain('501')
+    screen.should_contain('500')
     screen.should_contain('Server error')
