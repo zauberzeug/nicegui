@@ -57,7 +57,9 @@ class Page(jp.QuasarPage):
         self.on('result_ready', self.handle_javascript_result)
         self.on('page_ready', self.handle_page_ready)
 
-        self.view = jp.Div(a=self, classes=classes, temp=False)
+        self.layout = jp.QLayout(a=self, view='HHH LpR FFF', temp=False)
+        container = jp.QPageContainer(a=self.layout, temp=False)
+        self.view = jp.Div(a=container, classes=classes, temp=False)
         self.view.add_page(self)
 
     async def _route_function(self, request: Request) -> Page:

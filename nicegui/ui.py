@@ -6,6 +6,10 @@ class Ui:
     from .run import run  # NOTE: before justpy
 
     from .page import page, add_head_html, add_body_html, run_javascript
+    from .page_layout import Header as header
+    from .page_layout import Footer as footer
+    from .page_layout import LeftDrawer as left_drawer
+    from .page_layout import RightDrawer as right_drawer
     from .update import update
 
     from .elements.button import Button as button
