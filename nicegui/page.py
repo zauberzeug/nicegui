@@ -58,15 +58,16 @@ class Page(jp.QuasarPage):
         self.view.add_page(self)
 
     async def _route_function(self, request: Request) -> Page:
-        for handler in globals.connect_handlers + ([self.connect_handler] if self.connect_handler else []):
-            arg_count = len(inspect.signature(handler).parameters)
-            is_coro = is_coroutine(handler)
-            if arg_count == 1:
-                await handler(request) if is_coro else handler(request)
-            elif arg_count == 0:
-                await handler() if is_coro else handler()
-            else:
-                raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
+        with globals.within_view(self.view):
+            for handler in globals.connect_handlers + ([self.connect_handler] if self.connect_handler else []):
+                arg_count = len(inspect.signature(handler).parameters)
+                is_coro = is_coroutine(handler)
+                if arg_count == 1:
+                    await handler(request) if is_coro else handler(request)
+                elif arg_count == 0:
+                    await handler() if is_coro else handler()
+                else:
+                    raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         return self
 
     async def handle_page_ready(self, msg: AdDict) -> bool:
@@ -88,15 +89,16 @@ class Page(jp.QuasarPage):
         return False
 
     async def on_disconnect(self, websocket=None) -> None:
-        for handler in globals.disconnect_handlers + ([self.disconnect_handler] if self.disconnect_handler else[]):
-            arg_count = len(inspect.signature(handler).parameters)
-            is_coro = is_coroutine(handler)
-            if arg_count == 1:
-                await handler(websocket) if is_coro else handler(websocket)
-            elif arg_count == 0:
-                await handler() if is_coro else handler()
-            else:
-                raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
+        with globals.within_view(self.view):
+            for handler in globals.disconnect_handlers + ([self.disconnect_handler] if self.disconnect_handler else[]):
+                arg_count = len(inspect.signature(handler).parameters)
+                is_coro = is_coroutine(handler)
+                if arg_count == 1:
+                    await handler(websocket) if is_coro else handler(websocket)
+                elif arg_count == 0:
+                    await handler() if is_coro else handler()
+                else:
+                    raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
         await super().on_disconnect(websocket)
 
     async def run_javascript(self, code: str, *, check_interval: float = 0.01, timeout: float = 1.0) -> str:

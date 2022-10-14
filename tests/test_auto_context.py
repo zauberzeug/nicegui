@@ -43,3 +43,11 @@ def test_adding_elements_with_async_await(screen: Screen):
             return
         screen.wait(0.1)
     raise AssertionError(f'{screen.render_content()} should show cards with "A" and "B"')
+
+
+def test_adding_elements_during_onconnect(screen: Screen):
+    ui.label('Label 1')
+    ui.on_connect(lambda: ui.label('Label 2'))
+
+    screen.open('/')
+    screen.should_contain('Label 2')
