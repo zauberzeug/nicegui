@@ -196,28 +196,29 @@ class page:
                 on_disconnect=self.on_disconnect,
                 shared=self.shared,
             )
-            with globals.within_view(self.page.view):
-                if 'request' in inspect.signature(func).parameters:
-                    if self.shared:
-                        globals.log.error('Cannot use `request` argument in shared page')
-                        return error(501)
-                    kwargs['request'] = request
-                await self.connected(request)
-                await self.header()
-                result = await func(*args, **kwargs) if is_coroutine(func) else func(*args, **kwargs)
-                if isinstance(result, types.GeneratorType):
-                    if self.shared:
-                        globals.log.error('Yielding for page_ready is not supported on shared pages')
-                        return error(501)
-                    next(result)
-                if isinstance(result, types.AsyncGeneratorType):
-                    if self.shared:
-                        globals.log.error('Yielding for page_ready is not supported on shared pages')
-                        return error(501)
-                    await result.__anext__()
-                self.page.page_ready_generator = result
-                await self.footer()
-            return self.page
+            try:
+                with globals.within_view(self.page.view):
+                    if 'request' in inspect.signature(func).parameters:
+                        if self.shared:
+                            raise Exception('Cannot use `request` argument in shared page')
+                        kwargs['request'] = request
+                    await self.connected(request)
+                    await self.header()
+                    result = await func(*args, **kwargs) if is_coroutine(func) else func(*args, **kwargs)
+                    if isinstance(result, types.GeneratorType):
+                        if self.shared:
+                            raise Exception('Yielding for page_ready is not supported on shared pages')
+                        next(result)
+                    if isinstance(result, types.AsyncGeneratorType):
+                        if self.shared:
+                            raise Exception('Yielding for page_ready is not supported on shared pages')
+                        await result.__anext__()
+                    self.page.page_ready_generator = result
+                    await self.footer()
+                return self.page
+            except Exception as e:
+                globals.log.exception(e)
+                return error(500, str(e))
         builder = PageBuilder(decorated, self.shared)
         if globals.state != globals.State.STOPPED:
             builder.create_route(self.route)
@@ -245,22 +246,25 @@ def find_parent_view() -> jp.HTMLBaseComponent:
     return view_stack[-1]
 
 
-def error(status_code: int) -> jp.QuasarPage:
+def error(status_code: int, message: Optional[str] = None) -> Page:
     title = globals.config.title if globals.config else f'Error {status_code}'
     favicon = globals.config.favicon if globals.config else None
     dark = globals.config.dark if globals.config else False
-    wp = jp.QuasarPage(title=title, favicon=favicon, dark=dark, tailwind=True)
+    wp = Page(title=title, favicon=favicon, dark=dark)
     div = jp.Div(a=wp, classes='py-20 text-center')
     jp.Div(a=div, classes='text-8xl py-5', text='☹',
            style='font-family: "Arial Unicode MS", "Times New Roman", Times, serif;')
     jp.Div(a=div, classes='text-6xl py-5', text=status_code)
     if 400 <= status_code <= 499:
-        message = "This page doesn't exist"
+        title = "This page doesn't exist"
     elif 500 <= status_code <= 599:
-        message = 'Server error'
+        title = 'Server error'
     else:
-        message = 'Unknown error'
-    jp.Div(a=div, classes='text-xl py-5', text=message)
+        title = 'Unknown error'
+    if message is not None:
+        title += ':'
+    jp.Div(a=div, classes='text-xl pt-5', text=title)
+    jp.Div(a=div, classes='text-lg pt-2 text-gray-500', text=message or '')
     return wp
 
 
