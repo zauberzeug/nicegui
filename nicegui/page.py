@@ -188,7 +188,7 @@ class page:
         self.page: Optional[Page] = None
         *_, self.converters = compile_path(route)
 
-    def __call__(self, func) -> Callable:
+    def __call__(self, func, **kwargs) -> Callable:
         @wraps(func)
         async def decorated(request: Optional[Request] = None) -> Page:
             self.page = Page(
@@ -209,7 +209,7 @@ class page:
                             raise RuntimeError('Cannot use `request` argument in shared page')
                     await self.connected(request)
                     await self.header()
-                    args = convert_arguments(request, self.converters, func)
+                    args = {**kwargs, **convert_arguments(request, self.converters, func)}
                     result = await func(**args) if is_coroutine(func) else func(**args)
                     if isinstance(result, types.GeneratorType):
                         if self.shared:
