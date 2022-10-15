@@ -607,7 +607,7 @@ With `shared=True` you can create a shared page.
 Its content is created once at startup and each client sees the *same* elements.
 Here, the displayed ID remains constant when the browser reloads the page.
 
-#### Index page
+#### Index Page
 
 All elements that are not created within a decorated page function are automatically added to a new, *shared* index page at route "/".
 To make it "private" or to change other attributes like title, favicon etc. you can wrap it in a page function with `@ui.page('/', ...)` decorator.
@@ -625,6 +625,19 @@ To make it "private" or to change other attributes like title, favicon etc. you 
 
         ui.link('private page', private_page)
         ui.link('shared page', shared_page)
+
+    page_with_path_parameters = '''#### Pages with Path Parameters
+
+Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/>).
+If type-annotated, they are automatically converted to bool, int, float and complex values.
+If the page function expects a `request` argument, the request object is automatically provided.
+'''
+    with example(page_with_path_parameters):
+        @ui.page('/repeat/{word}/{count}')
+        def page(word: str, count: int):
+            ui.label(word * count)
+
+        ui.link('Say hi to Santa!', 'repeat/Ho! /3')
 
     yield_page_ready = '''#### Yielding for Page-Ready
 
@@ -746,7 +759,7 @@ You can call `ui.run()` with optional arguments:
 - `uvicorn_reload_includes`: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`)
 - `uvicorn_reload_excludes`: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
 - `exclude`: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
-  (possible entries: chart, colors, custom_example, interactive_image, keyboard, log, joystick, scene, table)
+  (possible entries: chart, colors, interactive_image, keyboard, log, joystick, scene, table)
 
 The environment variables `HOST` and `PORT` can also be used to configure NiceGUI.
 
