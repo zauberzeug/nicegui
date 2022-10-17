@@ -46,33 +46,31 @@ async def index():
     assert documentation_start >= 0
 
     with ui.row().classes('flex w-full'):
-        ui.html(README[:installation_start]).classes('w-6/12')
+        ui.html(README[:installation_start]).classes('w-1/2 flex-grow')
 
-        with ui.column().classes('w-5/12 flex-center'):
-            width = 450
-
-            with ui.card(), ui.row().style(f'width:{width}px'):
-                with ui.column():
+        with ui.column().classes('flex-none items-center'):
+            with ui.card(), ui.row().classes('w-96'):
+                with ui.column().classes('w-5/12'):
                     ui.button('Click me!', on_click=lambda: output.set_text('Click'))
-                    ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
+                    ui.checkbox('Check me!', on_change=lambda e: output.set_text(
+                        'Checked' if e.value else 'Unchecked'))
                     ui.switch('Switch me!', on_change=lambda e: output.set_text(
                         'Switched' if e.value else 'Unswitched'))
                     ui.input('Text', value='abc', on_change=lambda e: output.set_text(e.value))
                     ui.number('Number', value=3.1415927, format='%.2f', on_change=lambda e: output.set_text(e.value))
 
-                with ui.column():
+                with ui.column().classes('w-5/12'):
                     ui.slider(min=0, max=100, value=50, step=0.1, on_change=lambda e: output.set_text(e.value))
                     ui.radio(['A', 'B', 'C'], value='A', on_change=lambda e: output.set_text(e.value)).props('inline')
                     ui.toggle(['1', '2', '3'], value='1', on_change=lambda e: output.set_text(e.value)).classes('mx-auto')
                     ui.select({1: 'One', 2: 'Two', 3: 'Three'}, value=1,
                               on_change=lambda e: output.set_text(e.value)).classes('mx-auto')
 
-                with ui.column().classes('w-24'):
+                with ui.row().classes('mt-8'):
                     ui.label('Output:')
-                    output = ui.label('').classes('text-bold')
+                    output = ui.label().classes('text-bold')
 
-            with ui.row().style('margin-top: 40px'):
-                traffic_tracking.chart().style(f'width:{width}px;height:250px')
+            traffic_tracking.chart().classes('mt-8 w-96 h-64')
 
     ui.html(README[installation_start:documentation_start])
 
