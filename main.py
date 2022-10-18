@@ -33,6 +33,7 @@ async def go_to_anchor() -> None:
 async def index():
     # avoid display:block for PyPI/Docker/GitHub badges
     ui.add_head_html('<style>p a img {display: inline; vertical-align: baseline}</style>')
+    ui.add_head_html('<meta name="viewport" content="width=device-width, initial-scale=1" />')
 
     ui.html(
         '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css" />'
@@ -45,44 +46,43 @@ async def index():
     assert installation_start >= 0
     assert documentation_start >= 0
 
-    with ui.row().classes('flex w-full'):
+    with ui.row().classes('flex w-full overflow-scroll'):
         ui.html(README[:installation_start]).classes('w-1/2 flex-grow')
 
         with ui.column().classes('flex-none items-center'):
             with ui.card(), ui.row().classes('w-96'):
                 with ui.column().classes('w-5/12'):
                     ui.button('Click me!', on_click=lambda: output.set_text('Click'))
-                    ui.checkbox('Check me!', on_change=lambda e: output.set_text(
-                        'Checked' if e.value else 'Unchecked'))
+                    ui.checkbox('Check me!', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
                     ui.switch('Switch me!', on_change=lambda e: output.set_text(
                         'Switched' if e.value else 'Unswitched'))
                     ui.input('Text', value='abc', on_change=lambda e: output.set_text(e.value))
                     ui.number('Number', value=3.1415927, format='%.2f', on_change=lambda e: output.set_text(e.value))
 
-                with ui.column().classes('w-5/12'):
+                with ui.column().classes('w-6/12'):
                     ui.slider(min=0, max=100, value=50, step=0.1, on_change=lambda e: output.set_text(e.value))
                     ui.radio(['A', 'B', 'C'], value='A', on_change=lambda e: output.set_text(e.value)).props('inline')
-                    ui.toggle(['1', '2', '3'], value='1', on_change=lambda e: output.set_text(e.value)).classes('mx-auto')
-                    ui.select({1: 'One', 2: 'Two', 3: 'Three'}, value=1,
-                              on_change=lambda e: output.set_text(e.value)).classes('mx-auto')
+                    ui.toggle(['1', '2', '3'], value='1', on_change=lambda e: output.set_text(e.value))
+                    ui.select({1: 'One', 2: 'Two', 3: 'Three'}, value=1, on_change=lambda e: output.set_text(e.value))
 
                 with ui.row().classes('mt-8'):
                     ui.label('Output:')
                     output = ui.label().classes('text-bold')
 
-            traffic_tracking.chart().classes('mt-8 w-96 h-64')
+            traffic_tracking.chart().classes('mt-8 w-full h-64')
 
-    ui.html(README[installation_start:documentation_start])
+    ui.html(README[installation_start:documentation_start]).classes('w-full')
 
     api_docs_and_examples.create_intro()
     with ui.row().style('background-color: #e8f0fa; width: 100%; margin: 1em 0; padding: 1em 1em 0.5em 1em; font-size: large'):
         ui.markdown('See the [API reference](/reference) for many more interactive examples!')
 
-    ui.html(README[documentation_start:])
+    ui.html(README[documentation_start:]).classes('w-full')
 
 
 @ui.page('/reference')
 def reference():
+    ui.add_head_html('<meta name="viewport" content="width=device-width, initial-scale=1" />')
     api_docs_and_examples.create_full()
 
 
