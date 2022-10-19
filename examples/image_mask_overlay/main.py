@@ -22,6 +22,9 @@ with ui.row().classes('w-full flex items-center'):
             <feColorMatrix type="matrix" values="1 0 0 0 0   0 1 0 0 0   0 0 1 0 0  3 -1 -1 0 0" />
         </filter>
     '''
-ui.markdown('Images where discovered through <https://stackoverflow.com/a/57579290/364388>.').classes('mt-4')
+ui.markdown(
+    'Images where discovered through <https://stackoverflow.com/a/57579290/364388>. '
+    'SVG filters where used to colorize the mask. You may want to check out <https://webplatform.github.io/docs/svg/tutorials/smarter_svg_filters/>.'
+).classes('mt-4')
 
 ui.run()
