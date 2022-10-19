@@ -89,6 +89,8 @@ You may also have a look at the following examples for in-depth demonstrations o
   utilizes the great but non-async API from <https://replicate.com> to perform voice-to-text transcription and generate images from prompts with Stable Diffusion
 - [3D scene](https://github.com/zauberzeug/nicegui/blob/main/examples/3d_scene/main.py):
   creates a 3D scene and loads an STL mesh illuminated with a spotlight
+- [Image Mask Overlay](https://github.com/zauberzeug/nicegui/blob/main/examples/image_mask_overlay/main.py):
+  shows how to overlay an image with a mask
 
 ## Why?
 
