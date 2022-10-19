@@ -4,11 +4,11 @@ from nicegui import ui
 img_src = 'https://i.stack.imgur.com/PpIqU.png'
 mask_src = 'https://i.stack.imgur.com/OfwWp.png'
 
-with ui.row().classes('full-width items-center'):
+with ui.row().classes('w-full flex items-center'):
     ui.image(img_src).style('width: 25%')
-    ui.label('+').style('font-size:18em')
+    ui.label('+').style('font-size: 18em')
     ui.image(mask_src).style('width: 25%')
-    ui.label('=').style('font-size:18em')
+    ui.label('=').style('font-size: 18em')
     image = ui.interactive_image(img_src).style('width: 25%')
     image.svg_content = f'''
         <image xlink:href="{mask_src}" width="100%" height="100%" x="0" y="0" filter="url(#mask)" />
@@ -19,9 +19,9 @@ with ui.row().classes('full-width items-center'):
                 <feFuncB type="linear" slope="40" intercept="-(0.5 * 40) + 0.5"/>
                 <feFuncR type="linear" slope="1000"/>
             </feComponentTransfer>
-    <feColorMatrix type="matrix" values="1 0 0 0 0   0 1 0 0 0   0 0 1 0 0  3 -1 -1 0 0" />
+            <feColorMatrix type="matrix" values="1 0 0 0 0   0 1 0 0 0   0 0 1 0 0  3 -1 -1 0 0" />
         </filter>
     '''
-ui.markdown('Images where discoved through <https://stackoverflow.com/a/57579290/364388>.').classes('mt-4')
+ui.markdown('Images where discovered through <https://stackoverflow.com/a/57579290/364388>.').classes('mt-4')
 
 ui.run()

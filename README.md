@@ -87,8 +87,10 @@ You may also have a look at the following examples for in-depth demonstrations o
   uses the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations
 - [AI User Interface](https://github.com/zauberzeug/nicegui/blob/main/examples/ai_interface/main.py):
   utilizes the great but non-async API from <https://replicate.com> to perform voice-to-text transcription and generate images from prompts with Stable Diffusion
-- [3D scene](https://github.com/zauberzeug/nicegui/blob/main/examples/3d_scene/main.py):
+- [3D Scene](https://github.com/zauberzeug/nicegui/blob/main/examples/3d_scene/main.py):
   creates a 3D scene and loads an STL mesh illuminated with a spotlight
+- [Custom Vue Component](https://github.com/zauberzeug/nicegui/blob/main/examples/custom_vue_component/main.py)
+  shows how to write and integrate a custom vue component
 - [Image Mask Overlay](https://github.com/zauberzeug/nicegui/blob/main/examples/image_mask_overlay/main.py):
   shows how to overlay an image with a mask
 
