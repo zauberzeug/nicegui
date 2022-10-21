@@ -13,7 +13,7 @@ SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 
 
 @contextmanager
-def example(content: Union[Callable, type, str], first_col=4) -> None:
+def example(content: Union[Callable, type, str], tight: bool = False) -> None:
     callFrame = inspect.currentframe().f_back.f_back
     begin = callFrame.f_lineno
 
@@ -34,20 +34,23 @@ def example(content: Union[Callable, type, str], first_col=4) -> None:
         element.view.inner_html = html
 
     with ui.row().classes('flex w-full'):
+        markdown_classes = f'mr-8 w-full flex-none lg:w-{48 if tight else 80} xl:w-80'
+        rendering_classes = f'w-{48 if tight else 64} flex-none lg:mt-12'
+        source_classes = f'w-80 flex-grow overflow-auto lg:mt-12'
+
         if isinstance(content, str):
-            add_html_anchor(ui.markdown(content).classes(f'mr-8 w-{first_col}/12'))
+            add_html_anchor(ui.markdown(content).classes(markdown_classes))
         else:
             doc = content.__doc__ or content.__init__.__doc__
             html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
             html = html.replace('<p>', '<h4>', 1)
             html = html.replace('</p>', '</h4>', 1)
             html = ui.markdown.apply_tailwind(html)
-            add_html_anchor(ui.html(html).classes('mr-8 w-4/12'))
+            add_html_anchor(ui.html(html).classes(markdown_classes))
 
         try:
-            with ui.card().classes('mt-12 w-2/12'):
-                with ui.column().classes('flex w-full'):
-                    yield
+            with ui.card().classes(rendering_classes):
+                yield
         finally:
             code: str = open(__file__).read()
             end = begin + 1
@@ -72,7 +75,7 @@ def example(content: Union[Callable, type, str], first_col=4) -> None:
                 code.append('ui.run()')
             code.append('```')
             code = '\n'.join(code)
-            ui.markdown(code).classes(f'mt-12 w-{9-first_col}/12 overflow-auto')
+            ui.markdown(code).classes(source_classes)
 
 
 def create_intro() -> None:
@@ -83,7 +86,7 @@ def create_intro() -> None:
 
 Creating a user interface with NiceGUI is as simple as writing a single line of code.
 '''
-    with example(hello_world, first_col=2):
+    with example(hello_world, tight=True):
         ui.label('Hello, world!')
         ui.markdown('Have a look at the full <br/> [API reference](reference)!')
 
@@ -91,7 +94,7 @@ Creating a user interface with NiceGUI is as simple as writing a single line of 
 
 NiceGUI comes with a collection of commonly used UI elements.
 '''
-    with example(common_elements, first_col=2):
+    with example(common_elements, tight=True):
         ui.button('Button', on_click=lambda: ui.notify('Click'))
         ui.checkbox('Checkbox', on_change=lambda e: ui.notify('Checked' if e.value else 'Unchecked'))
         ui.switch('Switch', on_change=lambda e: ui.notify('Switched' if e.value else 'Unswitched'))
@@ -104,7 +107,7 @@ NiceGUI comes with a collection of commonly used UI elements.
 
 Binding values between UI elements or [to data models](http://127.0.0.1:8080/reference#bindings) is built into NiceGUI.
 '''
-    with example(binding, first_col=2):
+    with example(binding, tight=True):
         slider = ui.slider(min=0, max=100, value=50)
         ui.number('Value').bind_value(slider, 'value').classes('fit')
 
@@ -274,7 +277,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
                 {'name': 'Alpha', 'data': [0.1, 0.2]},
                 {'name': 'Beta', 'data': [0.3, 0.4]},
             ],
-        }).classes('max-w-full h-64')
+        }).classes('w-full h-64')
 
         def update():
             chart.options.series[0].data[:] = random(2)
@@ -312,7 +315,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')
 
     with example(ui.scene):
-        with ui.scene(width=200, height=200) as scene:
+        with ui.scene(width=225, height=225) as scene:
             scene.sphere().material('#4488ff')
             scene.cylinder(1, 0.5, 2, 20).material('#ff8800', opacity=0.5).move(-2, 1)
             scene.extrusion([[0, 0], [0, 1], [1, 0.5]], 0.1).material('#ff8888').move(-2, -2)
@@ -344,7 +347,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
     with example(ui.log):
         from datetime import datetime
 
-        log = ui.log(max_lines=10).classes('h-16')
+        log = ui.log(max_lines=10).classes('w-full h-16')
         ui.button('Log time', on_click=lambda: log.push(datetime.now().strftime("%X.%f")[:-5]))
 
     h3('Layout')
