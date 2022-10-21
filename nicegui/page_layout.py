@@ -6,9 +6,12 @@ from .page import find_parent_page
 
 class Header(Group):
 
-    def __init__(self) -> None:
+    def __init__(self, fixed: bool = True) -> None:
         view = jp.QHeader(classes='q-pa-md row items-start gap-4', temp=False)
         super().__init__(view)
+        code = list(find_parent_page().layout.view)
+        code[1] = 'H' if fixed else 'h'
+        find_parent_page().layout.view = ''.join(code)
 
 
 class Drawer(Group):
@@ -50,6 +53,9 @@ class RightDrawer(Drawer):
 
 class Footer(Group):
 
-    def __init__(self) -> None:
+    def __init__(self, fixed: bool = True) -> None:
         view = jp.QFooter(classes='q-pa-md row items-start gap-4', temp=False)
         super().__init__(view)
+        code = list(find_parent_page().layout.view)
+        code[1] = 'F' if fixed else 'f'
+        find_parent_page().layout.view = ''.join(code)
