@@ -10,6 +10,7 @@ class Ui:
     from .page_layout import Footer as footer
     from .page_layout import LeftDrawer as left_drawer
     from .page_layout import RightDrawer as right_drawer
+    from .page_layout import PageSticky as page_sticky
     from .update import update
 
     from .elements.button import Button as button

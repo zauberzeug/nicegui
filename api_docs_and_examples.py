@@ -668,6 +668,8 @@ The `fixed` argument controls whether the element should scroll or stay fixed on
 The `top_corner` and `bottom_corner` arguments indicate whether a drawer should expand to the top or bottom of the page.
 See <https://quasar.dev/layout/header-and-footer> and <https://quasar.dev/layout/drawer> for more information about possible props like
 `elevated`, `bordered` and many more.
+With `ui.page_sticky` you can place an element "sticky" on the screen.
+See <https://quasar.dev/layout/page-sticky> for more information.
     '''
     with example(page_layout):
         @ui.page('/page_layout')

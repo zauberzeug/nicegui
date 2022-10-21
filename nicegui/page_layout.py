@@ -59,3 +59,10 @@ class Footer(Group):
         code = list(find_parent_page().layout.view)
         code[1] = 'F' if fixed else 'f'
         find_parent_page().layout.view = ''.join(code)
+
+
+class PageSticky(Group):
+
+    def __init__(self) -> None:
+        view = jp.QPageSticky(temp=False)
+        super().__init__(view)
