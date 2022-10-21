@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 class PageBuilder:
     function: Callable[[], Awaitable['Page']]
     shared: bool
+    favicon: Optional[str] = None
 
     _shared_page: Optional['Page'] = None
 

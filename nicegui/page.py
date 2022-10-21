@@ -12,13 +12,14 @@ import justpy as jp
 from addict import Dict as AdDict
 from pygments.formatters import HtmlFormatter
 from starlette.requests import Request
-from starlette.routing import compile_path
+from starlette.responses import FileResponse
+from starlette.routing import Route, compile_path
 from starlette.websockets import WebSocket
 
 from . import globals
 from .helpers import is_coroutine
 from .page_builder import PageBuilder
-from .routes import convert_arguments
+from .routes import add_route, convert_arguments
 
 
 class Page(jp.QuasarPage):
@@ -39,11 +40,11 @@ class Page(jp.QuasarPage):
 
         if globals.config:
             self.title = title or globals.config.title
-            self.favicon = favicon or globals.config.favicon
+            self.set_favicon(favicon or globals.config.favicon)
             self.dark = dark if dark is not ... else globals.config.dark
         else:
             self.title = title
-            self.favicon = favicon
+            self.set_favicon(favicon)
             self.dark = dark if dark is not ... else None
         self.tailwind = True  # use Tailwind classes instead of Quasars
         self.css = css
@@ -60,6 +61,9 @@ class Page(jp.QuasarPage):
 
         self.view = jp.Div(a=self, classes=classes, temp=False)
         self.view.add_page(self)
+
+    def set_favicon(self, favicon: Optional[str]) -> None:
+        self.favicon = f'_favicon/{favicon}' if favicon else 'favicon.ico'
 
     async def _route_function(self, request: Request) -> Page:
         with globals.within_view(self.view):
@@ -167,7 +171,7 @@ class page:
 
         :param route: route of the new page (path must start with '/')
         :param title: optional page title
-        :param favicon: optional favicon
+        :param favicon: optional relative filepath to a favicon (default: `None`, NiceGUI icon will be used)
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
         :param classes: tailwind classes for the container div (default: `'q-ma-md column items-start gap-4'`)
         :param css: CSS definitions
@@ -226,7 +230,7 @@ class page:
             except Exception as e:
                 globals.log.exception(e)
                 return error(500, str(e))
-        builder = PageBuilder(decorated, self.shared)
+        builder = PageBuilder(decorated, self.shared, self.favicon)
         if globals.state != globals.State.STOPPED:
             builder.create_route(self.route)
         globals.page_builders[self.route] = builder
@@ -287,7 +291,7 @@ def init_auto_index_page() -> None:
         return  # there is no auto-index page on the view stack
     page: Page = view_stack.pop().pages[0]
     page.title = globals.config.title
-    page.favicon = globals.config.favicon
+    page.set_favicon(globals.config.favicon)
     page.dark = globals.config.dark
     page.view.classes = globals.config.main_page_classes
     assert len(view_stack) == 0
@@ -297,3 +301,13 @@ def create_page_routes() -> None:
     jp.Route("/{path:path}", lambda: error(404), last=True)
     for route, page_builder in globals.page_builders.items():
         page_builder.create_route(route)
+
+
+def create_favicon_routes() -> None:
+    for page_builder in globals.page_builders.values():
+        if page_builder.favicon:
+            add_route(None, Route(f'/static/_favicon/{page_builder.favicon}',
+                                  lambda _, filepath=page_builder.favicon: FileResponse(filepath)))
+    if globals.config.favicon:
+        add_route(None, Route(f'/static/_favicon/{globals.config.favicon}',
+                              lambda _: FileResponse(globals.config.favicon)))

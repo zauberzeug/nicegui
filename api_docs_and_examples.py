@@ -751,7 +751,7 @@ You can call `ui.run()` with optional arguments:
 - `host` (default: `'0.0.0.0'`)
 - `port` (default: `8080`)
 - `title` (default: `'NiceGUI'`)
-- `favicon` (default: `'favicon.ico'`)
+- `favicon`: relative filepath to a favicon (default: `None`, NiceGUI icon will be used)
 - `dark`: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
 - `main_page_classes`: configure Quasar classes of main page (default: `'q-ma-md column items-start'`)
 - `binding_refresh_interval`: time between binding updates (default: `0.1` seconds, bigger is more cpu friendly)
