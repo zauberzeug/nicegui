@@ -17,26 +17,26 @@ def test_rendering_page(screen: Screen):
     screen.open('/')
     assert screen.render_content() == '''Title: NiceGUI
 
-test label
-row
-  test input: some placeholder
-column
-  1
-  2
-  3
-  card
-    some text
+    test label
+    row
+      test input: some placeholder
+    column
+      1
+      2
+      3
+      card
+        some text
 '''
 
     assert screen.render_content(with_extras=True) == '''Title: NiceGUI
 
-test label
-row [class: items-start gap-4 positive]
-  test input: some placeholder [class: no-wrap items-start standard labeled]
-column [class: items-start gap-4]
-  1
-  2
-  3
-  card [class: items-start q-pa-md gap-4]
-    some text
+    test label
+    row [class: items-start gap-4 positive]
+      test input: some placeholder [class: no-wrap items-start standard labeled]
+    column [class: items-start gap-4]
+      1
+      2
+      3
+      card [class: items-start q-pa-md gap-4]
+        some text
 '''

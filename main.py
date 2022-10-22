@@ -35,11 +35,14 @@ async def index():
     ui.add_head_html('<style>p a img {display: inline; vertical-align: baseline}</style>')
     ui.add_head_html('<meta name="viewport" content="width=device-width, initial-scale=1" />')
 
-    ui.html(
-        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css" />'
-        '<style>.github-fork-ribbon:before { background-color: #999; }</style>'
-        '<a class="github-fork-ribbon" href="https://github.com/zauberzeug/nicegui" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>'
-    )
+    ui.html('''
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css" />
+        <style>
+            .github-fork-ribbon { top: -16px; }
+            .github-fork-ribbon:before { background-color: #999; }
+        </style>
+        <a class="github-fork-ribbon" href="https://github.com/zauberzeug/nicegui" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+    ''')
 
     installation_start = README.find('<h2 class="text-4xl mb-3 mt-5">Installation</h2>')
     documentation_start = README.find('The API reference is hosted at')

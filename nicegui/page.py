@@ -59,7 +59,9 @@ class Page(jp.QuasarPage):
         self.on('result_ready', self.handle_javascript_result)
         self.on('page_ready', self.handle_page_ready)
 
-        self.view = jp.Div(a=self, classes=classes, temp=False)
+        self.layout = jp.QLayout(a=self, view='HHH LpR FFF', temp=False)
+        container = jp.QPageContainer(a=self.layout, temp=False)
+        self.view = jp.Div(a=container, classes=classes, temp=False)
         self.view.add_page(self)
 
     def set_favicon(self, favicon: Optional[str]) -> None:
@@ -213,7 +215,7 @@ class page:
                         if self.shared:
                             raise RuntimeError('Cannot use `request` argument in shared page')
                     await self.connected(request)
-                    await self.header()
+                    await self.before_content()
                     args = {**kwargs, **convert_arguments(request, self.converters, func)}
                     result = await func(**args) if is_coroutine(func) else func(**args)
                     if isinstance(result, types.GeneratorType):
@@ -225,7 +227,7 @@ class page:
                             raise RuntimeError('Yielding for page_ready is not supported on shared pages')
                         await result.__anext__()
                     self.page.page_ready_generator = result
-                    await self.footer()
+                    await self.after_content()
                 return self.page
             except Exception as e:
                 globals.log.exception(e)
@@ -239,10 +241,10 @@ class page:
     async def connected(self, request: Optional[Request]) -> None:
         pass
 
-    async def header(self) -> None:
+    async def before_content(self) -> None:
         pass
 
-    async def footer(self) -> None:
+    async def after_content(self) -> None:
         pass
 
 
