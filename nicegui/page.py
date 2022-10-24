@@ -65,7 +65,12 @@ class Page(jp.QuasarPage):
         self.view.add_page(self)
 
     def set_favicon(self, favicon: Optional[str]) -> None:
-        self.favicon = f'_favicon/{favicon}' if favicon else 'favicon.ico'
+        if not favicon:
+            self.favicon = 'favicon.ico'
+        elif favicon.startswith('http://') or favicon.startswith('https://'):
+            self.favicon = favicon
+        else:
+            self.favicon = f'_favicon/{favicon}'
 
     async def _route_function(self, request: Request) -> Page:
         with globals.within_view(self.view):
