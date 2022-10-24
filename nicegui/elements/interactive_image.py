@@ -70,7 +70,7 @@ class InteractiveImage(Element, BindSourceMixin):
         except:
             traceback.print_exc()
 
-    async def set_source(self, source: str):
+    async def set_source(self, source: str) -> None:
         self.view.options.source = source
         self.view.prune_sockets()
         for socket in self.view.sockets:
@@ -82,4 +82,9 @@ class InteractiveImage(Element, BindSourceMixin):
 
     @svg_content.setter
     def svg_content(self, content: str):
-        self.view.options.svg_content = content
+        if self.view.options.svg_content != content:
+            self.view.options.svg_content = content
+            self.update()
+
+    def set_svg_content(self, svg_content: str) -> None:
+        self.svg_content = svg_content
