@@ -778,7 +778,7 @@ You can call `ui.run()` with optional arguments:
 - `title` (default: `'NiceGUI'`)
 - `favicon`: relative filepath to a favicon (default: `None`, NiceGUI icon will be used)
 - `dark`: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
-- `main_page_classes`: configure Quasar classes of main page (default: `'q-ma-md column items-start'`)
+- `main_page_classes`: configure Quasar classes of main page (default: `'q-pa-md column items-start'`)
 - `binding_refresh_interval`: time between binding updates (default: `0.1` seconds, bigger is more cpu friendly)
 - `show`: automatically open the ui in a browser tab (default: `True`)
 - `reload`: automatically reload the ui on file changes (default: `True`)

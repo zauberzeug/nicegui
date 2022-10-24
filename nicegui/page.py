@@ -29,7 +29,7 @@ class Page(jp.QuasarPage):
                  *,
                  favicon: Optional[str] = None,
                  dark: Optional[bool] = ...,
-                 classes: str = 'q-ma-md column items-start gap-4',
+                 classes: str = 'q-pa-md column items-start gap-4',
                  css: str = HtmlFormatter().get_style_defs('.codehilite'),
                  on_connect: Optional[Callable] = None,
                  on_page_ready: Optional[Callable] = None,
@@ -165,7 +165,7 @@ class page:
         *,
         favicon: Optional[str] = None,
         dark: Optional[bool] = ...,
-        classes: str = 'q-ma-md column items-start gap-4',
+        classes: str = 'q-pa-md column items-start gap-4',
         css: str = HtmlFormatter().get_style_defs('.codehilite'),
         on_connect: Optional[Callable] = None,
         on_page_ready: Optional[Callable] = None,
@@ -180,7 +180,7 @@ class page:
         :param title: optional page title
         :param favicon: optional relative filepath to a favicon (default: `None`, NiceGUI icon will be used)
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
-        :param classes: tailwind classes for the container div (default: `'q-ma-md column items-start gap-4'`)
+        :param classes: tailwind classes for the container div (default: `'q-pa-md column items-start gap-4'`)
         :param css: CSS definitions
         :param on_connect: optional function or coroutine which is called for each new client connection
         :param on_page_ready: optional function or coroutine which is called when the websocket is connected;  see `"Yield for Page Ready" <https://nicegui.io/#yield_for_page_ready>`_ as an alternative.
