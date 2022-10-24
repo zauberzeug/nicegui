@@ -7,7 +7,7 @@ from .screen import Screen
 def test_moving_sphere_with_timer(screen: Screen):
     with ui.scene() as scene:
         sphere = scene.sphere()
-        ui.timer(0.03, lambda: sphere.move(0, 0, sphere.z + 0.01))
+        ui.timer(0.1, lambda: sphere.move(0, 0, sphere.z + 0.01))
 
     screen.open('/')
 
