@@ -11,7 +11,9 @@ class Dialog(Group):
     def __init__(self, *, value: bool = False):
         """Dialog
 
-        Creates a dialog. By default it is non-modal. To make it modal, set `.props('persistent')` on the dialog object. 
+        Creates a dialog.
+        By default it is non-modal.
+        To make it modal, set `.props('persistent')` on the dialog element.
 
         :param value: whether the dialog is already opened (default: `False`)
         """
