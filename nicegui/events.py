@@ -1,21 +1,22 @@
 import traceback
 from dataclasses import dataclass
 from inspect import signature
-from typing import Any, Callable, List, Optional
+from typing import TYPE_CHECKING, Any, Callable, List, Optional
 
 from starlette.websockets import WebSocket
 
 from . import globals
-from .elements.element import Element
 from .helpers import is_coroutine
 from .lifecycle import on_startup
-from .page import PageEvent
 from .task_logger import create_task
+
+if TYPE_CHECKING:
+    from .elements.element import Element
 
 
 @dataclass
 class EventArguments:
-    sender: Element
+    sender: 'Element'
     socket: Optional[WebSocket]
 
 
@@ -224,6 +225,11 @@ class KeyEventArguments(EventArguments):
     action: KeyboardAction
     key: KeyboardKey
     modifiers: KeyboardModifiers
+
+
+@dataclass
+class PageEvent:
+    socket: WebSocket
 
 
 def handle_event(handler: Optional[Callable], arguments: EventArguments) -> Optional[bool]:

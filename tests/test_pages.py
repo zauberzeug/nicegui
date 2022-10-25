@@ -4,7 +4,6 @@ from typing import Generator
 from uuid import uuid4
 
 import justpy.htmlcomponents
-import pytest
 from nicegui import task_logger, ui
 from nicegui.events import PageEvent
 from starlette.requests import Request

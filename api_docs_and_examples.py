@@ -653,6 +653,7 @@ The yield statement returns `nicegui.events.PageEvent`.
 This contains the websocket of the client.
     '''
     with example(yield_page_ready):
+        import asyncio
         from typing import Generator
 
         from nicegui.events import PageEvent
