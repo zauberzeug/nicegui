@@ -9,6 +9,7 @@ from . import globals
 from .elements.element import Element
 from .helpers import is_coroutine
 from .lifecycle import on_startup
+from .page import PageEvent
 from .task_logger import create_task
 
 

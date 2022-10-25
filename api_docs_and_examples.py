@@ -643,20 +643,28 @@ If the page function expects a `request` argument, the request object is automat
 
     yield_page_ready = '''#### Yielding for Page-Ready
 
-This is a handy alternative to the `on_page_ready` callback (either as parameter of `@ui.page` or via `ui.on_page_ready` function).
+This is a handy alternative to the `on_page_ready` callback of the `@ui.page` decorator.
 
 If a `yield` statement is provided in a page builder function, all code below that statement is executed after the page is ready.
 This allows you to execute JavaScript; which is only possible after the page has been loaded (see [#112](https://github.com/zauberzeug/nicegui/issues/112)).
-Also it is possible to do async stuff while the user already sees the content added before the yield statement.
+Also it is possible to do async stuff while the user already sees the content which was added before the yield statement.
+
+The yield statement returns `nicegui.events.PageEvent`. 
+This contains the websocket of the client.
     '''
     with example(yield_page_ready):
+        from typing import Generator
+
+        from nicegui.events import PageEvent
+
         @ui.page('/yield_page_ready')
-        async def yield_page_ready():
+        async def yield_page_ready() -> Generator[None, PageEvent, None]:
             ui.label('This text is displayed immediately.')
-            yield
-            ui.run_javascript('document.title = "JavaScript-Controlled Title")')
-            await asyncio.sleep(3)
-            ui.label('This text is displayed 3 seconds after the page has been fully loaded.')
+            page_ready = yield
+            await ui.run_javascript('document.title = "JavaScript-Controlled Title")')
+            await asyncio.sleep(2)
+            ui.label('This text is displayed 2 seconds after the page has been fully loaded.')
+            ui.label(f'The IP address {page_ready.socket.client.host} could be obtained from the websocket.')
 
         ui.link('show page-ready code after yield', '/yield_page_ready')
 
