@@ -5,6 +5,7 @@ import inspect
 import time
 import types
 import uuid
+from dataclasses import dataclass
 from functools import wraps
 from typing import Callable, Dict, Generator, List, Optional
 
@@ -20,6 +21,11 @@ from . import globals
 from .helpers import is_coroutine
 from .page_builder import PageBuilder
 from .routes import add_route, convert_arguments
+
+
+@dataclass
+class PageEvent:
+    socket: WebSocket
 
 
 class Page(jp.QuasarPage):
@@ -50,7 +56,7 @@ class Page(jp.QuasarPage):
         self.css = css
         self.connect_handler = on_connect
         self.page_ready_handler = on_page_ready
-        self.page_ready_generator: Optional[Generator[None, None, None]] = None
+        self.page_ready_generator: Optional[Generator[None, PageEvent, None]] = None
         self.disconnect_handler = on_disconnect
         self.shared = shared
         self.delete_flag = not shared
@@ -89,9 +95,9 @@ class Page(jp.QuasarPage):
         with globals.within_view(self.view):
             if self.page_ready_generator is not None:
                 if isinstance(self.page_ready_generator, types.AsyncGeneratorType):
-                    await self.page_ready_generator.__anext__()
+                    await self.page_ready_generator.asend(PageEvent(msg.websocket))
                 elif isinstance(self.page_ready_generator, types.GeneratorType):
-                    next(self.page_ready_generator)
+                    self.page_ready_generator.send(PageEvent(msg.websocket))
             if self.page_ready_handler:
                 arg_count = len(inspect.signature(self.page_ready_handler).parameters)
                 is_coro = is_coroutine(self.page_ready_handler)
@@ -183,7 +189,7 @@ class page:
         :param classes: tailwind classes for the container div (default: `'q-pa-md column items-start gap-4'`)
         :param css: CSS definitions
         :param on_connect: optional function or coroutine which is called for each new client connection
-        :param on_page_ready: optional function or coroutine which is called when the websocket is connected;  see `"Yield for Page Ready" <https://nicegui.io/#yield_for_page_ready>`_ as an alternative.
+        :param on_page_ready: optional function or coroutine which is called when the websocket is connected;  see `"Yielding for Page-Ready" <https://nicegui.io/reference#yielding_for_page-ready>`_ as an alternative.
         :param on_disconnect: optional function or coroutine which is called when a client disconnects
         :param shared: whether the page instance is shared between multiple clients (default: `False`)
         """

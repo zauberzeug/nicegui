@@ -1,9 +1,11 @@
 import asyncio
 from time import time
+from typing import Generator
 from uuid import uuid4
 
 import justpy.htmlcomponents
 from nicegui import task_logger, ui
+from nicegui.events import PageEvent
 from starlette.requests import Request
 
 from .screen import Screen
@@ -191,29 +193,33 @@ def test_adding_elements_in_on_page_ready_event(screen: Screen):
 
 def test_pageready_after_yield_on_async_page(screen: Screen):
     @ui.page('/')
-    async def page():
+    async def page() -> Generator[None, PageEvent, None]:
         ui.label('before')
-        yield
+        page_ready = yield
         await asyncio.sleep(1)
         ui.label('after')
+        ui.label(page_ready.socket.base_url)
 
     screen.open('/')
     screen.should_contain('before')
     screen.should_not_contain('after')
     screen.wait(1)
     screen.should_contain('after')
+    screen.should_contain('ws://localhost:3392/')
 
 
 def test_pageready_after_yield_on_non_async_page(screen: Screen):
     @ui.page('/')
-    def page():
+    def page() -> Generator[None, PageEvent, None]:
         t = time()
-        yield
+        page_ready = yield
         ui.label(f'loading page took {time() - t:.2f} seconds')
+        ui.label(page_ready.socket.base_url)
 
     screen.open('/')
     timing = screen.find('loading page took')
     assert 0 < float(timing.text.split()[-2]) < 3
+    screen.should_contain('ws://localhost:3392/')
 
 
 def test_pageready_after_yield_on_shared_page_raises_exception(screen: Screen):
