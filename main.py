@@ -38,7 +38,6 @@ async def index():
     ui.html('''
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css" />
         <style>
-            .github-fork-ribbon { top: -16px; }
             .github-fork-ribbon:before { background-color: #999; }
         </style>
         <a class="github-fork-ribbon" href="https://github.com/zauberzeug/nicegui" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
