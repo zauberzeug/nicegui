@@ -5,7 +5,6 @@ import inspect
 import time
 import types
 import uuid
-from dataclasses import dataclass
 from functools import wraps
 from typing import Callable, Dict, Generator, List, Optional
 
@@ -18,14 +17,10 @@ from starlette.routing import Route, compile_path
 from starlette.websockets import WebSocket
 
 from . import globals
+from .events import PageEvent
 from .helpers import is_coroutine
 from .page_builder import PageBuilder
 from .routes import add_route, convert_arguments
-
-
-@dataclass
-class PageEvent:
-    socket: WebSocket
 
 
 class Page(jp.QuasarPage):
