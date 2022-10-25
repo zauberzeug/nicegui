@@ -189,7 +189,7 @@ class page:
         :param classes: tailwind classes for the container div (default: `'q-pa-md column items-start gap-4'`)
         :param css: CSS definitions
         :param on_connect: optional function or coroutine which is called for each new client connection
-        :param on_page_ready: optional function or coroutine which is called when the websocket is connected;  see `"Yield for Page Ready" <https://nicegui.io/#yield_for_page_ready>`_ as an alternative.
+        :param on_page_ready: optional function or coroutine which is called when the websocket is connected;  see `"Yielding for Page-Ready" <https://nicegui.io/reference#yielding_for_page-ready>`_ as an alternative.
         :param on_disconnect: optional function or coroutine which is called when a client disconnects
         :param shared: whether the page instance is shared between multiple clients (default: `False`)
         """

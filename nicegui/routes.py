@@ -18,7 +18,7 @@ def add_route(self, route: BaseRoute) -> None:
 
     Adds a new `Starlette route <https://www.starlette.io/routing/>`_.
     Routed paths must start with a slash "/".
-    Also see `@ui.get <https://nicegui.io/#get_decorator>`_ and `ui.add_static_files <https://nicegui.io/#get_decorator>`_
+    Also see `@ui.get <https://nicegui.io/reference#get_decorator>`_ and `ui.add_static_files <https://nicegui.io/reference#get_decorator>`_
     for more convenient ways to deliver non-UI content.
 
     :param route: Starlette route including a path and a function to be called
