@@ -171,3 +171,4 @@ class Screen:
         print('---------------', record.levelname, record.message)
         assert record.levelname == name, f'Expected "{name}" but got "{record.levelname}"'
         assert record.message == message, f'Expected "{message}" but got "{record.message}"'
+        self.caplog.records.clear()

@@ -61,4 +61,6 @@ def screen(selenium: webdriver.Chrome, request: pytest.FixtureRequest, caplog: p
     yield screen
     if screen.is_open:
         screen.shot(request.node.name)
+    logs = screen.caplog.get_records('call')
+    assert len(logs) == 0, f'There were unexpected logs:\n-------\n{logs}\n-------'
     screen.stop_server()
