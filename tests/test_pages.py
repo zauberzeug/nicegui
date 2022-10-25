@@ -255,3 +255,16 @@ def test_exception_after_yield_on_async_page(screen: Screen):
     screen.open('/')
     screen.should_contain('this is shown')
     screen.assert_py_logger('ERROR', 'Failed to execute page-ready')
+
+
+def test_exception_in_on_page_ready_callback(screen: Screen):
+    def ready():
+        raise Exception('some exception')
+
+    @ui.page('/', on_page_ready=ready)
+    async def page() -> None:
+        ui.label('this is shown')
+
+    screen.open('/')
+    screen.should_contain('this is shown')
+    screen.assert_py_logger('ERROR', 'Failed to execute page-ready')
