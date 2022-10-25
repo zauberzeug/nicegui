@@ -22,8 +22,9 @@ class Screen:
     SCREENSHOT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshots')
     UI_RUN_KWARGS = {'port': PORT, 'show': False, 'reload': False}
 
-    def __init__(self, selenium: webdriver.Chrome) -> None:
+    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture) -> None:
         self.selenium = selenium
+        self.caplog = caplog
         self.server_thread = None
 
     def start_server(self) -> None:
@@ -132,7 +133,7 @@ class Screen:
                 element.string = '... removed lengthy content ...'
         return soup.prettify()
 
-    def render_logs(self) -> str:
+    def render_js_logs(self) -> str:
         console = '\n'.join(l['message'] for l in self.selenium.get_log('browser'))
         return f'-- console logs ---\n{console}\n---------------------'
 
@@ -163,3 +164,10 @@ class Screen:
         filename = f'{self.SCREENSHOT_DIR}/{name}.png'
         print(f'Storing screenshot to {filename}')
         self.selenium.get_screenshot_as_file(filename)
+
+    def assert_py_logger(self, name: str, message: str) -> None:
+        assert len(self.caplog.records) == 1, 'Expected exactly one log message'
+        record = self.caplog.records[0]
+        print('---------------', record.levelname, record.message)
+        assert record.levelname == name, f'Expected "{name}" but got "{record.levelname}"'
+        assert record.message == message, f'Expected "{message}" but got "{record.message}"'

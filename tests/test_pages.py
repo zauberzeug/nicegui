@@ -4,6 +4,7 @@ from typing import Generator
 from uuid import uuid4
 
 import justpy.htmlcomponents
+import pytest
 from nicegui import task_logger, ui
 from nicegui.events import PageEvent
 from starlette.requests import Request
@@ -180,6 +181,7 @@ def test_shared_page_with_request_parameter_raises_exception(screen: Screen):
     screen.open('/')
     screen.should_contain('500')
     screen.should_contain('Server error')
+    screen.assert_py_logger('ERROR', 'Cannot use `request` argument in shared page')
 
 
 def test_adding_elements_in_on_page_ready_event(screen: Screen):
@@ -230,3 +232,27 @@ def test_pageready_after_yield_on_shared_page_raises_exception(screen: Screen):
     screen.open('/')
     screen.should_contain('500')
     screen.should_contain('Server error')
+    screen.assert_py_logger('ERROR', 'Yielding for page_ready is not supported on shared pages')
+
+
+def test_exception_before_yield_on_async_page(screen: Screen):
+    @ui.page('/')
+    async def page() -> Generator[None, PageEvent, None]:
+        raise Exception('some exception')
+
+    screen.open('/')
+    screen.should_contain('500')
+    screen.should_contain('Server error')
+    screen.assert_py_logger('ERROR', 'some exception')
+
+
+def test_exception_after_yield_on_async_page(screen: Screen):
+    @ui.page('/')
+    async def page() -> Generator[None, PageEvent, None]:
+        yield
+        ui.label('this is shown')
+        raise Exception('some exception')
+
+    screen.open('/')
+    screen.should_contain('this is shown')
+    screen.assert_py_logger('ERROR', 'Failed to execute page-ready')

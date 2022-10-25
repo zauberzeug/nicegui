@@ -93,20 +93,26 @@ class Page(jp.QuasarPage):
 
     async def handle_page_ready(self, msg: AdDict) -> bool:
         with globals.within_view(self.view):
-            if self.page_ready_generator is not None:
-                if isinstance(self.page_ready_generator, types.AsyncGeneratorType):
-                    await self.page_ready_generator.asend(PageEvent(msg.websocket))
-                elif isinstance(self.page_ready_generator, types.GeneratorType):
-                    self.page_ready_generator.send(PageEvent(msg.websocket))
-            if self.page_ready_handler:
-                arg_count = len(inspect.signature(self.page_ready_handler).parameters)
-                is_coro = is_coroutine(self.page_ready_handler)
-                if arg_count == 1:
-                    await self.page_ready_handler(msg.websocket) if is_coro else self.page_ready_handler(msg.websocket)
-                elif arg_count == 0:
-                    await self.page_ready_handler() if is_coro else self.page_ready_handler()
-                else:
-                    raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
+            try:
+                if self.page_ready_generator is not None:
+                    if isinstance(self.page_ready_generator, types.AsyncGeneratorType):
+                        await self.page_ready_generator.asend(PageEvent(msg.websocket))
+                    elif isinstance(self.page_ready_generator, types.GeneratorType):
+                        self.page_ready_generator.send(PageEvent(msg.websocket))
+            except:
+                globals.log.exception('Failed to execute page-ready')
+            try:
+                if self.page_ready_handler:
+                    arg_count = len(inspect.signature(self.page_ready_handler).parameters)
+                    is_coro = is_coroutine(self.page_ready_handler)
+                    if arg_count == 1:
+                        await self.page_ready_handler(msg.websocket) if is_coro else self.page_ready_handler(msg.websocket)
+                    elif arg_count == 0:
+                        await self.page_ready_handler() if is_coro else self.page_ready_handler()
+                    else:
+                        raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
+            except:
+                globals.log.exception('Failed to execute page-ready')
         return False
 
     async def on_disconnect(self, websocket: Optional[WebSocket] = None) -> None:

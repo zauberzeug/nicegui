@@ -55,8 +55,9 @@ def remove_all_screenshots() -> None:
 
 
 @pytest.fixture
-def screen(selenium: webdriver.Chrome, request: pytest.FixtureRequest) -> Generator[Screen, None, None]:
-    screen = Screen(selenium)
+def screen(selenium: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture) \
+        -> Generator[Screen, None, None]:
+    screen = Screen(selenium, caplog)
     yield screen
     if screen.is_open:
         screen.shot(request.node.name)
