@@ -287,7 +287,7 @@ def error(status_code: int, message: Optional[str] = None) -> Page:
     favicon = globals.config.favicon if globals.config else None
     dark = globals.config.dark if globals.config else False
     wp = Page(title=title, favicon=favicon, dark=dark)
-    div = jp.Div(a=wp, classes='py-20 text-center')
+    div = jp.Div(a=wp.view, classes='w-full py-20 text-center')
     jp.Div(a=div, classes='text-8xl py-5', text='☹',
            style='font-family: "Arial Unicode MS", "Times New Roman", Times, serif;')
     jp.Div(a=div, classes='text-6xl py-5', text=status_code)
