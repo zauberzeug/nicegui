@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import inspect
 import time
-import traceback
 import types
 import uuid
 from functools import wraps
@@ -96,7 +95,7 @@ class Page(jp.QuasarPage):
                     elif isinstance(self.page_ready_generator, types.GeneratorType):
                         self.page_ready_generator.send(PageEvent(msg.websocket))
             except (StopIteration, StopAsyncIteration):
-                pass  # after the page_ready_generator returns it will raise StopIteration; it's part oft the generator protocol and expected
+                pass  # after the page_ready_generator returns, it will raise StopIteration; it's part of the generator protocol and expected
             except:
                 globals.log.exception('Failed to execute page-ready')
             try:
