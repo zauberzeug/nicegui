@@ -89,9 +89,9 @@ class Page(jp.QuasarPage):
         with globals.within_view(self.view):
             if self.page_ready_generator is not None:
                 if isinstance(self.page_ready_generator, types.AsyncGeneratorType):
-                    await self.page_ready_generator.__anext__()
+                    await self.page_ready_generator.asend(msg.websocket)
                 elif isinstance(self.page_ready_generator, types.GeneratorType):
-                    next(self.page_ready_generator)
+                    self.page_ready_generator.send(msg.websocket)
             if self.page_ready_handler:
                 arg_count = len(inspect.signature(self.page_ready_handler).parameters)
                 is_coro = is_coroutine(self.page_ready_handler)
