@@ -21,6 +21,6 @@ class Select(ChoiceElement):
 
     def value_to_view(self, value: Any):
         try:
-            return self.labels[self.values.index(value)]
+            return self._labels[self._values.index(value)]
         except ValueError:
             return value
