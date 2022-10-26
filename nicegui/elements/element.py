@@ -23,7 +23,8 @@ class Element(BindVisibilityMixin):
         self.parent_view = find_parent_view()
         self.parent_view.add(view)
         self.view = view
-        assert len(self.parent_view.pages) == 1
+        assert len(self.parent_view.pages) == 1, \
+            'NiceGUI elements can only be added to one page at a time'
         self.page: Page = list(self.parent_view.pages.values())[0]
         self.view.add_page(self.page)
 
