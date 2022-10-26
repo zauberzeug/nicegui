@@ -38,7 +38,8 @@ class Upload(Element):
             for form_data in msg.form_data:
                 if form_data.type == 'file':
                     files = [base64.b64decode(f.file_content) for f in form_data.files]
-                    arguments = UploadEventArguments(sender=self, socket=msg.websocket, files=files)
+                    names = [f.name for f in form_data.files]
+                    arguments = UploadEventArguments(sender=self, socket=msg.websocket, files=files, names=names)
                     if handle_event(self.upload_handler, arguments):
                         page_update = None
             return page_update

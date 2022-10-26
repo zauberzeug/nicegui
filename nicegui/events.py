@@ -40,6 +40,7 @@ class MouseEventArguments(EventArguments):
 @dataclass
 class UploadEventArguments(EventArguments):
     files: List[bytes]
+    names: List[str]
 
 
 @dataclass
