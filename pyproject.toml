@@ -21,6 +21,10 @@ uvicorn = "^0.18.0"
 websockets = "^10.3"
 httpx = "^0.23.0"
 watchfiles = "^0.16.1"
+numpy = [
+    { version = "<1.22.0", markers = "python_version ~= '3.10.0' and (extra == 'numpy' or extra == 'all')", optional = true },
+    { version = "^1.23.0", markers = "python_version ~= '3.11' and (extra == 'numpy' or extra == 'all')", optional = true },
+]
 
 [tool.poetry.dev-dependencies]
 icecream = "^2.1.0"
