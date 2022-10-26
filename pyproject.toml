@@ -21,8 +21,8 @@ websockets = "^10.3"
 httpx = "^0.23.0"
 watchfiles = "^0.16.1"
 matplotlib = [
-    { version = "^3.5.0", markers = "python_version ~= '3.7'", optional = true },
-    { version = "^3.6.0", markers = "python_version ~= '3.11.0'", optional = true },
+    { version = "^3.5.0", markers = "python_version ~= '3.7'"},
+    { version = "^3.6.0", markers = "python_version ~= '3.11.0'"},
 ]
 
 [tool.poetry.dev-dependencies]
