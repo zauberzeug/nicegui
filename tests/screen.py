@@ -159,6 +159,13 @@ class Screen:
     def wait(self, t: float) -> None:
         time.sleep(t)
 
+    def wait_for(self, text: str, timeout=1):
+        start = time.time()
+        while not self.find(text):
+            if time.time() - start > timeout:
+                raise TimeoutError()
+            self.wait(0.01)
+
     def shot(self, name: str) -> None:
         os.makedirs(self.SCREENSHOT_DIR, exist_ok=True)
         filename = f'{self.SCREENSHOT_DIR}/{name}.png'
