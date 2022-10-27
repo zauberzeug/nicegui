@@ -6,7 +6,7 @@ from typing import Callable, List, Optional
 
 from starlette.websockets import WebSocket
 
-from . import globals
+from . import auto_context, globals
 from .binding import BindableProperty
 from .helpers import is_coroutine
 from .page import Page, find_parent_page, find_parent_view
@@ -41,7 +41,7 @@ class Timer:
 
         async def do_callback():
             try:
-                with globals.within_view(self.parent_view):
+                with auto_context.within_view(self.parent_view):
                     result = callback()
                     if is_coroutine(callback):
                         await result

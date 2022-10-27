@@ -16,7 +16,7 @@ from starlette.responses import FileResponse
 from starlette.routing import Route, compile_path
 from starlette.websockets import WebSocket
 
-from . import globals
+from . import auto_context, globals
 from .events import PageEvent
 from .helpers import is_coroutine
 from .page_builder import PageBuilder
@@ -74,7 +74,7 @@ class Page(jp.QuasarPage):
             self.favicon = f'_favicon/{favicon}'
 
     async def _route_function(self, request: Request) -> Page:
-        with globals.within_view(self.view):
+        with auto_context.within_view(self.view):
             for handler in globals.connect_handlers + ([self.connect_handler] if self.connect_handler else []):
                 arg_count = len(inspect.signature(handler).parameters)
                 is_coro = is_coroutine(handler)
@@ -87,7 +87,7 @@ class Page(jp.QuasarPage):
         return self
 
     async def handle_page_ready(self, msg: AdDict) -> bool:
-        with globals.within_view(self.view) as context:
+        with auto_context.within_view(self.view) as context:
             try:
                 if self.page_ready_generator is not None:
                     if isinstance(self.page_ready_generator, types.AsyncGeneratorType):
@@ -113,7 +113,7 @@ class Page(jp.QuasarPage):
         return False
 
     async def on_disconnect(self, websocket: Optional[WebSocket] = None) -> None:
-        with globals.within_view(self.view):
+        with auto_context.within_view(self.view):
             for handler in globals.disconnect_handlers + ([self.disconnect_handler] if self.disconnect_handler else[]):
                 arg_count = len(inspect.signature(handler).parameters)
                 is_coro = is_coroutine(handler)
@@ -224,7 +224,7 @@ class page:
                 shared=self.shared,
             )
             try:
-                with globals.within_view(self.page.view):
+                with auto_context.within_view(self.page.view):
                     if 'request' in inspect.signature(func).parameters:
                         if self.shared:
                             raise RuntimeError('Cannot use `request` argument in shared page')
@@ -263,7 +263,7 @@ class page:
 
 
 def find_parent_view() -> jp.HTMLBaseComponent:
-    view_stack = globals.get_view_stack()
+    view_stack = auto_context.get_view_stack()
     if not view_stack:
         if globals.loop and globals.loop.is_running():
             raise RuntimeError('cannot find parent view, view stack is empty')

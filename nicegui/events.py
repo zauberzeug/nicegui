@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional
 
 from starlette.websockets import WebSocket
 
-from . import globals
+from . import auto_context, globals
 from .helpers import is_coroutine
 from .lifecycle import on_startup
 from .task_logger import create_task
@@ -238,11 +238,11 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments) -> Opti
         if handler is None:
             return False
         no_arguments = not signature(handler).parameters
-        with globals.within_view(arguments.sender.parent_view):
+        with auto_context.within_view(arguments.sender.parent_view):
             result = handler() if no_arguments else handler(arguments)
         if is_coroutine(handler):
             async def wait_for_result():
-                with globals.within_view(arguments.sender.parent_view):
+                with auto_context.within_view(arguments.sender.parent_view):
                     await result
             if globals.loop and globals.loop.is_running():
                 create_task(wait_for_result(), name=str(handler))
