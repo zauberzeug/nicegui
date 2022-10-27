@@ -104,11 +104,13 @@ class Page(jp.QuasarPage):
                     arg_count = len(inspect.signature(self.page_ready_handler).parameters)
                     is_coro = is_coroutine(self.page_ready_handler)
                     if arg_count == 1:
-                        await self.page_ready_handler(msg.websocket) if is_coro else self.page_ready_handler(msg.websocket)
+                        result = self.page_ready_handler(msg.websocket)
                     elif arg_count == 0:
-                        await self.page_ready_handler() if is_coro else self.page_ready_handler()
+                        result = self.page_ready_handler()
                     else:
                         raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
+                    if is_coro:
+                        await update_before_await(result, context)
             except:
                 globals.log.exception('Failed to execute page-ready')
         return False

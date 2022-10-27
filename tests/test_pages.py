@@ -268,27 +268,3 @@ def test_exception_in_on_page_ready_callback(screen: Screen):
     screen.open('/')
     screen.should_contain('this is shown')
     screen.assert_py_logger('ERROR', 'Failed to execute page-ready')
-
-
-def test_autoupdate_on_async_page_after_yield(screen: Screen):
-    @ui.page('/')
-    async def page() -> Generator[None, PageEvent, None]:
-        ui.label('before page is ready')
-        yield
-        ui.label('page ready')
-        await asyncio.sleep(1)
-        ui.label('one')
-        await asyncio.sleep(1)
-        ui.label('two')
-        await asyncio.sleep(1)
-        ui.label('three')
-
-    screen.open('/')
-    screen.should_contain('before page is ready')
-    screen.should_contain('page ready')
-    screen.should_not_contain('one')
-    screen.wait_for('one')
-    screen.should_not_contain('two')
-    screen.wait_for('two')
-    screen.should_not_contain('three')
-    screen.wait_for('three')
