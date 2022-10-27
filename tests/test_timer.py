@@ -55,7 +55,7 @@ def test_timer_with_update_after_await(screen: Screen):
             await asyncio.sleep(1.0)
             ui.label('2')
 
-        ui.timer(1.0, update, once=True)
+        ui.timer(2.0, update, once=True)
 
     screen.open('/')
     screen.should_not_contain('1')
