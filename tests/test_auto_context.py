@@ -102,7 +102,7 @@ def test_autoupdate_on_async_event_handler(screen: Screen):
             l = ui.label('This should be visible')
         dialog.open()
         await asyncio.sleep(1)
-        l.text = "New text after 1 second"
+        l.text = 'New text after 1 second'
     ui.button('Dialog', on_click=open)
 
     screen.open('/')
@@ -113,14 +113,14 @@ def test_autoupdate_on_async_event_handler(screen: Screen):
 
 
 def test_autoupdate_on_async_timer_callback(screen: Screen):
-    async def show():
-        ui.label('This should be visible')
-        await asyncio.sleep(1.3)
-        ui.label('after 1 sec')
-    ui.timer(0.1, show, once=True)
+    async def update():
+        ui.label('1')
+        await asyncio.sleep(1.0)
+        ui.label('2')
+    ui.timer(2.0, update, once=True)
 
     screen.open('/')
-    screen.wait(0.1)
-    screen.should_contain('This should be visible')
-    screen.should_not_contain('after 1 sec')
-    screen.wait_for('after 1 sec', timeout=2)
+    screen.should_not_contain('1')
+    screen.wait_for('1')
+    screen.should_not_contain('2')
+    screen.wait_for('2')

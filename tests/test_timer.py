@@ -45,20 +45,3 @@ def test_timer_on_private_page(screen: Screen):
     count = counter.value
     screen.wait(0.5)
     assert counter.value == count, 'timer is not running anymore after closing the page'
-
-
-def test_timer_with_update_after_await(screen: Screen):
-    @ui.page('/')
-    def page():
-        async def update():
-            ui.label('1')
-            await asyncio.sleep(1.0)
-            ui.label('2')
-
-        ui.timer(2.0, update, once=True)
-
-    screen.open('/')
-    screen.should_not_contain('1')
-    screen.wait_for('1')
-    screen.should_not_contain('2')
-    screen.wait_for('2')

@@ -5,7 +5,7 @@ from nicegui import ui
 from .screen import Screen
 
 
-def test_event_with_update_after_await(screen: Screen):
+def test_event_with_update_before_await(screen: Screen):
     @ui.page('/')
     def page():
         async def update():
