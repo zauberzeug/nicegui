@@ -53,7 +53,7 @@ class update_after_await:
         self.context = context
         self.context.lazy_update()
 
-    def __await__(self) -> Generator[Any, None, Any | None]:
+    def __await__(self) -> Generator[Any, None, Any]:
         coro_iter = self.coro.__await__()
         iter_send, iter_throw = coro_iter.send, coro_iter.throw
         send, message = iter_send, None
