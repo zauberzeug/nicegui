@@ -1,6 +1,5 @@
 import asyncio
-from contextlib import contextmanager
-from typing import TYPE_CHECKING, Awaitable, Callable, Dict, Generator, List, Optional, Union
+from typing import Any, Coroutine, Generator, List
 
 from . import globals
 from .task_logger import create_task
@@ -41,3 +40,28 @@ class within_view(object):
         if len(self.view) != self.child_count:
             self.child_count = len(self.view)
             create_task(self.view.update())
+
+
+class update_after_await:
+
+    def __init__(self, coro: Coroutine, context):
+        self.coro = coro
+        self.context = context
+        self.context.lazy_update()
+
+    def __await__(self) -> Generator[Any, None, Any | None]:
+        coro_iter = self.coro.__await__()
+        iter_send, iter_throw = coro_iter.send, coro_iter.throw
+        send, message = iter_send, None
+        while True:
+            try:
+                signal = send(message)
+                self.context.lazy_update()
+            except StopIteration as err:
+                return err.value
+            else:
+                send = iter_send
+            try:
+                message = yield signal
+            except BaseException as err:
+                send, message = iter_throw, err
