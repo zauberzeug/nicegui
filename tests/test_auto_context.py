@@ -110,3 +110,17 @@ def test_autoupdate_on_async_event_handler(screen: Screen):
     screen.should_contain('This should be visible')
     screen.should_not_contain('New text after 1 second')
     screen.wait_for('New text after 1 second')
+
+
+def test_autoupdate_on_async_timer_callback(screen: Screen):
+    async def show():
+        ui.label('This should be visible')
+        await asyncio.sleep(1.3)
+        ui.label('after 1 sec')
+    ui.timer(0.1, show, once=True)
+
+    screen.open('/')
+    screen.wait(0.1)
+    screen.should_contain('This should be visible')
+    screen.should_not_contain('after 1 sec')
+    screen.wait_for('after 1 sec', timeout=2)
