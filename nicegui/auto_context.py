@@ -1,8 +1,11 @@
 import asyncio
-from typing import Any, Coroutine, Generator, List
+from typing import TYPE_CHECKING, Any, Coroutine, Generator, List
 
 from . import globals
 from .task_logger import create_task
+
+if TYPE_CHECKING:
+    import justpy as jp
 
 
 def get_task_id() -> int:
@@ -22,8 +25,9 @@ def prune_view_stack() -> None:
         del globals.view_stacks[task_id]
 
 
-class within_view(object):
-    def __init__(self, view: 'jp.HTMLBaseComponent'):
+class Context:
+
+    def __init__(self, view: 'jp.HTMLBaseComponent') -> None:
         self.view = view
 
     def __enter__(self):
@@ -36,7 +40,7 @@ class within_view(object):
         prune_view_stack()
         self.lazy_update()
 
-    def lazy_update(self):
+    def lazy_update(self) -> None:
         if len(self.view) != self.child_count:
             self.child_count = len(self.view)
             create_task(self.view.update())
@@ -44,7 +48,7 @@ class within_view(object):
 
 class update_after_await:
 
-    def __init__(self, coro: Coroutine, context):
+    def __init__(self, coro: Coroutine, context: Context) -> None:
         self.coro = coro
         self.context = context
         self.context.lazy_update()

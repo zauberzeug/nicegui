@@ -159,7 +159,7 @@ class Screen:
     def wait(self, t: float) -> None:
         time.sleep(t)
 
-    def wait_for(self, text: str, timeout=1):
+    def wait_for(self, text: str, timeout: float = 1.0) -> None:
         start = time.time()
         while not self.find(text):
             if time.time() - start > timeout:

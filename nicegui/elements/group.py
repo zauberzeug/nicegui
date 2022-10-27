@@ -4,7 +4,7 @@ from typing import List
 
 import justpy as jp
 
-from .. import auto_context, globals
+from ..auto_context import get_view_stack
 from ..binding import active_links, bindable_properties, bindings
 from .element import Element
 
@@ -13,11 +13,11 @@ class Group(Element):
 
     def __enter__(self):
         self._child_count_on_enter = len(self.view)
-        auto_context.get_view_stack().append(self.view)
+        get_view_stack().append(self.view)
         return self
 
     def __exit__(self, *_):
-        auto_context.get_view_stack().pop()
+        get_view_stack().pop()
         if self._child_count_on_enter != len(self.view):
             self.update()
 

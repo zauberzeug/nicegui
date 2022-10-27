@@ -2,15 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from contextlib import contextmanager
 from enum import Enum
-from typing import TYPE_CHECKING, Awaitable, Callable, Dict, Generator, List, Optional, Union
+from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Optional, Union
 
 from starlette.applications import Starlette
 from uvicorn import Server
 
 from .config import Config
-from .task_logger import create_task
 
 if TYPE_CHECKING:
     import justpy as jp

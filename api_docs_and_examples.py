@@ -5,7 +5,8 @@ from typing import Callable, Union
 
 import docutils.core
 
-from nicegui import auto_context, globals, ui
+from nicegui import ui
+from nicegui.auto_context import Context
 from nicegui.task_logger import create_task
 
 REGEX_H4 = re.compile(r'<h4.*?>(.*?)</h4>')
@@ -815,7 +816,7 @@ This will make `ui.plot` and `ui.line_plot` unavailable.
             ui.notify('Turning off that line plot to save resources on our live demo server. 😎')
         line_checkbox.value = msg.value
         if msg.value:
-            with auto_context.within_view(line_checkbox.view):
+            with Context(line_checkbox.view):
                 ui.timer(10.0, turn_off, once=True)
         line_checkbox.update()
         return False
