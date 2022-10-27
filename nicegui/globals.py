@@ -64,12 +64,21 @@ def prune_view_stack() -> None:
         del view_stacks[task_id]
 
 
-@contextmanager
-def within_view(view: 'jp.HTMLBaseComponent') -> Generator[None, None, None]:
-    child_count = len(view)
-    get_view_stack().append(view)
-    yield
-    get_view_stack().pop()
-    prune_view_stack()
-    if len(view) != child_count:
-        create_task(view.update())
+class within_view(object):
+    def __init__(self, view: 'jp.HTMLBaseComponent'):
+        self.view = view
+
+    def __enter__(self):
+        self.child_count = len(self.view)
+        get_view_stack().append(self.view)
+        return self
+
+    def __exit__(self, type, value, traceback):
+        get_view_stack().pop()
+        prune_view_stack()
+        self.lazy_update()
+
+    def lazy_update(self):
+        if len(self.view) != self.child_count:
+            self.child_count = len(self.view)
+            create_task(self.view.update())

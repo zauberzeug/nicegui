@@ -6,7 +6,7 @@ import time
 import types
 import uuid
 from functools import wraps
-from typing import Callable, Dict, Generator, List, Optional
+from typing import Any, Callable, Coroutine, Dict, Generator, List, Optional
 
 import justpy as jp
 from addict import Dict as AdDict
@@ -87,11 +87,11 @@ class Page(jp.QuasarPage):
         return self
 
     async def handle_page_ready(self, msg: AdDict) -> bool:
-        with globals.within_view(self.view):
+        with globals.within_view(self.view) as context:
             try:
                 if self.page_ready_generator is not None:
                     if isinstance(self.page_ready_generator, types.AsyncGeneratorType):
-                        await self.page_ready_generator.asend(PageEvent(msg.websocket))
+                        await Automation(self.page_ready_generator.asend(PageEvent(msg.websocket)), context)
                     elif isinstance(self.page_ready_generator, types.GeneratorType):
                         self.page_ready_generator.send(PageEvent(msg.websocket))
             except (StopIteration, StopAsyncIteration):
@@ -209,7 +209,7 @@ class page:
         self.page: Optional[Page] = None
         *_, self.converters = compile_path(route)
 
-    def __call__(self, func, **kwargs) -> Callable:
+    def __call__(self, func: Callable, **kwargs) -> Callable:
         @wraps(func)
         async def decorated(request: Optional[Request] = None) -> Page:
             self.page = Page(
@@ -327,3 +327,28 @@ def create_favicon_routes() -> None:
     if globals.config.favicon:
         add_route(None, Route(f'/static/_favicon/{globals.config.favicon}',
                               lambda _: FileResponse(globals.config.favicon)))
+
+
+class Automation:
+
+    def __init__(self, coro: Coroutine, context):
+        self.coro = coro
+        self.context = context
+        self.context.lazy_update()
+
+    def __await__(self) -> Generator[Any, None, Any | None]:
+        coro_iter = self.coro.__await__()
+        iter_send, iter_throw = coro_iter.send, coro_iter.throw
+        send, message = iter_send, None
+        while True:
+            try:
+                signal = send(message)
+                self.context.lazy_update()
+            except StopIteration as err:
+                return err.value
+            else:
+                send = iter_send
+            try:
+                message = yield signal
+            except BaseException as err:
+                send, message = iter_throw, err
