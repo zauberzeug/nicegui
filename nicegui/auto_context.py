@@ -46,7 +46,7 @@ class Context:
             create_task(self.view.update())
 
 
-class update_after_await:
+class update_before_await:
 
     def __init__(self, coro: Coroutine, context: Context) -> None:
         self.coro = coro

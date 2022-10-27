@@ -17,7 +17,7 @@ from starlette.routing import Route, compile_path
 from starlette.websockets import WebSocket
 
 from . import globals
-from .auto_context import Context, get_view_stack, update_after_await
+from .auto_context import Context, get_view_stack, update_before_await
 from .events import PageEvent
 from .helpers import is_coroutine
 from .page_builder import PageBuilder
@@ -92,7 +92,7 @@ class Page(jp.QuasarPage):
             try:
                 if self.page_ready_generator is not None:
                     if isinstance(self.page_ready_generator, types.AsyncGeneratorType):
-                        await update_after_await(self.page_ready_generator.asend(PageEvent(msg.websocket)), context)
+                        await update_before_await(self.page_ready_generator.asend(PageEvent(msg.websocket)), context)
                     elif isinstance(self.page_ready_generator, types.GeneratorType):
                         self.page_ready_generator.send(PageEvent(msg.websocket))
             except (StopIteration, StopAsyncIteration):
