@@ -159,12 +159,15 @@ class Screen:
     def wait(self, t: float) -> None:
         time.sleep(t)
 
-    def wait_for(self, text: str, timeout: float = 1.0) -> None:
-        start = time.time()
-        while not self.find(text):
-            if time.time() - start > timeout:
-                raise TimeoutError()
-            self.wait(0.01)
+    def wait_for(self, text: str, *, timeout: float = 1.0) -> None:
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            try:
+                self.find(text)
+                return
+            except:
+                self.wait(0.1)
+        raise TimeoutError()
 
     def shot(self, name: str) -> None:
         os.makedirs(self.SCREENSHOT_DIR, exist_ok=True)
