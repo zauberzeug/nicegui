@@ -24,11 +24,10 @@ class Plot(Element):
 
     def __enter__(self):
         plt.figure(self.fig)
-
         return self
 
     def __exit__(self, *_):
         self.view.set_figure(plt.gcf())
-
         if self.close:
             plt.close(self.fig)
+        self.update()

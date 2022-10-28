@@ -109,5 +109,5 @@ class Element(BindVisibilityMixin):
         return self
 
     def update(self) -> None:
-        if globals.loop is not None:
+        if globals.loop and globals.loop.is_running():
             create_task(self.view.update())
