@@ -93,6 +93,8 @@ You may also have a look at the following examples for in-depth demonstrations o
   shows how to write and integrate a custom vue component
 - [Image Mask Overlay](https://github.com/zauberzeug/nicegui/blob/main/examples/image_mask_overlay/main.py):
   shows how to overlay an image with a mask
+- [Infinite Scroll](https://github.com/zauberzeug/nicegui/blob/main/examples/infinite_scroll/main.py):
+  shows an infinitely scrolling image gallery
 
 ## Why?
 
