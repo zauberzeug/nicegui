@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 from typing import TYPE_CHECKING, Any, Coroutine, Generator, List
 
@@ -45,7 +47,7 @@ class Context:
             self.child_count = len(self.view)
             create_task(self.view.update())
 
-    def watch_asyncs(self, coro: Coroutine):
+    def watch_asyncs(self, coro: Coroutine) -> AutoUpdaterForAsyncs:
         return AutoUpdaterForAsyncs(coro, self)
 
 

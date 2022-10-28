@@ -1,5 +1,3 @@
-import asyncio
-
 from nicegui import ui
 
 from .screen import Screen
