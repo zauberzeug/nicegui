@@ -1,6 +1,8 @@
 import asyncio
+from typing import Generator
 
 from nicegui import ui
+from nicegui.events import PageEvent
 
 from .screen import Screen
 
@@ -51,3 +53,74 @@ def test_adding_elements_during_onconnect(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Label 2')
+
+
+def test_autoupdate_on_async_page_after_yield(screen: Screen):
+    @ui.page('/')
+    async def page() -> Generator[None, PageEvent, None]:
+        ui.label('before page is ready')
+        yield
+        ui.label('page ready')
+        await asyncio.sleep(1)
+        ui.label('one')
+        await asyncio.sleep(1)
+        ui.label('two')
+        await asyncio.sleep(1)
+        ui.label('three')
+
+    screen.open('/')
+    screen.should_contain('before page is ready')
+    screen.should_contain('page ready')
+    screen.should_not_contain('one')
+    screen.wait_for('one')
+    screen.should_not_contain('two')
+    screen.wait_for('two')
+    screen.should_not_contain('three')
+    screen.wait_for('three')
+
+
+def test_autoupdate_on_async_page_ready_callback(screen: Screen):
+    async def ready():
+        ui.label('page ready')
+        await asyncio.sleep(1)
+        ui.label('after delay')
+
+    @ui.page('/', on_page_ready=ready)
+    def page() -> Generator[None, PageEvent, None]:
+        ui.label('before page is ready')
+
+    screen.open('/')
+    screen.should_contain('before page is ready')
+    screen.should_contain('page ready')
+    screen.should_not_contain('after delay')
+    screen.wait_for('after delay')
+
+
+def test_autoupdate_on_async_event_handler(screen: Screen):
+    async def open():
+        with ui.dialog() as dialog, ui.card():
+            l = ui.label('This should be visible')
+        dialog.open()
+        await asyncio.sleep(1)
+        l.text = 'New text after 1 second'
+    ui.button('Dialog', on_click=open)
+
+    screen.open('/')
+    screen.click('Dialog')
+    screen.should_contain('This should be visible')
+    screen.should_not_contain('New text after 1 second')
+    screen.wait_for('New text after 1 second')
+
+
+def test_autoupdate_on_async_timer_callback(screen: Screen):
+    async def update():
+        ui.label('1')
+        await asyncio.sleep(1.0)
+        ui.label('2')
+    ui.timer(2.0, update, once=True)
+
+    screen.open('/')
+    screen.should_not_contain('1')
+    screen.wait_for('1')
+    screen.should_not_contain('2')
+    screen.wait_for('2')
