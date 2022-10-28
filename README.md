@@ -81,7 +81,7 @@ You may also have a look at the following examples for in-depth demonstrations o
   implements a keyboard-controlled image slideshow
 - [Authentication](https://github.com/zauberzeug/nicegui/blob/main/examples/authentication/main.py):
   shows how to use sessions to build a login screen
-- [Customization](https://github.com/zauberzeug/nicegui/blob/main/examples/customization/main.py):
+- [Modularization](https://github.com/zauberzeug/nicegui/blob/main/examples/modularization/main.py):
   provides an example of how to modularize your application into multiple files and create a specialized `@ui.page` decorator
 - [Map](https://github.com/zauberzeug/nicegui/blob/main/examples/map/main.py):
   uses the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations
