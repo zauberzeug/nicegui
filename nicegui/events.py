@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional
 from starlette.websockets import WebSocket
 
 from . import globals
-from .auto_context import Context, update_before_await
+from .auto_context import Context
 from .helpers import is_coroutine
 from .lifecycle import on_startup
 from .task_logger import create_task
@@ -244,7 +244,7 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments) -> Opti
         if is_coroutine(handler):
             async def wait_for_result():
                 with Context(arguments.sender.parent_view) as context:
-                    await update_before_await(result, context)
+                    await context.watch_asyncs(result)
             if globals.loop and globals.loop.is_running():
                 create_task(wait_for_result(), name=str(handler))
             else:

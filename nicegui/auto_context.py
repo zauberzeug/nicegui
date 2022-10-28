@@ -45,8 +45,11 @@ class Context:
             self.child_count = len(self.view)
             create_task(self.view.update())
 
+    def watch_asyncs(self, coro: Coroutine):
+        return AutoUpdaterForAsyncs(coro, self)
 
-class update_before_await:
+
+class AutoUpdaterForAsyncs:
 
     def __init__(self, coro: Coroutine, context: Context) -> None:
         self.coro = coro
