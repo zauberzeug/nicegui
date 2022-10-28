@@ -2,15 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from contextlib import contextmanager
 from enum import Enum
-from typing import TYPE_CHECKING, Awaitable, Callable, Dict, Generator, List, Optional, Union
+from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Optional, Union
 
 from starlette.applications import Starlette
 from uvicorn import Server
 
 from .config import Config
-from .task_logger import create_task
 
 if TYPE_CHECKING:
     import justpy as jp
@@ -45,31 +43,3 @@ def find_route(function: Callable) -> str:
     if not routes:
         raise ValueError(f'Invalid page function {function}')
     return routes[0]
-
-
-def get_task_id() -> int:
-    return id(asyncio.current_task()) if loop and loop.is_running() else 0
-
-
-def get_view_stack() -> List['jp.HTMLBaseComponent']:
-    task_id = get_task_id()
-    if task_id not in view_stacks:
-        view_stacks[task_id] = []
-    return view_stacks[task_id]
-
-
-def prune_view_stack() -> None:
-    task_id = get_task_id()
-    if not view_stacks[task_id]:
-        del view_stacks[task_id]
-
-
-@contextmanager
-def within_view(view: 'jp.HTMLBaseComponent') -> Generator[None, None, None]:
-    child_count = len(view)
-    get_view_stack().append(view)
-    yield
-    get_view_stack().pop()
-    prune_view_stack()
-    if len(view) != child_count:
-        create_task(view.update())

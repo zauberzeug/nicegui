@@ -17,6 +17,7 @@ from starlette.routing import Route, compile_path
 from starlette.websockets import WebSocket
 
 from . import globals
+from .auto_context import Context, get_view_stack
 from .events import PageEvent
 from .helpers import is_coroutine
 from .page_builder import PageBuilder
@@ -74,7 +75,7 @@ class Page(jp.QuasarPage):
             self.favicon = f'_favicon/{favicon}'
 
     async def _route_function(self, request: Request) -> Page:
-        with globals.within_view(self.view):
+        with Context(self.view):
             for handler in globals.connect_handlers + ([self.connect_handler] if self.connect_handler else []):
                 arg_count = len(inspect.signature(handler).parameters)
                 is_coro = is_coroutine(handler)
@@ -87,11 +88,11 @@ class Page(jp.QuasarPage):
         return self
 
     async def handle_page_ready(self, msg: AdDict) -> bool:
-        with globals.within_view(self.view):
+        with Context(self.view) as context:
             try:
                 if self.page_ready_generator is not None:
                     if isinstance(self.page_ready_generator, types.AsyncGeneratorType):
-                        await self.page_ready_generator.asend(PageEvent(msg.websocket))
+                        await context.watch_asyncs(self.page_ready_generator.asend(PageEvent(msg.websocket)))
                     elif isinstance(self.page_ready_generator, types.GeneratorType):
                         self.page_ready_generator.send(PageEvent(msg.websocket))
             except (StopIteration, StopAsyncIteration):
@@ -103,17 +104,19 @@ class Page(jp.QuasarPage):
                     arg_count = len(inspect.signature(self.page_ready_handler).parameters)
                     is_coro = is_coroutine(self.page_ready_handler)
                     if arg_count == 1:
-                        await self.page_ready_handler(msg.websocket) if is_coro else self.page_ready_handler(msg.websocket)
+                        result = self.page_ready_handler(msg.websocket)
                     elif arg_count == 0:
-                        await self.page_ready_handler() if is_coro else self.page_ready_handler()
+                        result = self.page_ready_handler()
                     else:
                         raise ValueError(f'invalid number of arguments (0 or 1 allowed, got {arg_count})')
+                    if is_coro:
+                        await context.watch_asyncs(result)
             except:
                 globals.log.exception('Failed to execute page-ready')
         return False
 
     async def on_disconnect(self, websocket: Optional[WebSocket] = None) -> None:
-        with globals.within_view(self.view):
+        with Context(self.view):
             for handler in globals.disconnect_handlers + ([self.disconnect_handler] if self.disconnect_handler else[]):
                 arg_count = len(inspect.signature(handler).parameters)
                 is_coro = is_coroutine(handler)
@@ -209,7 +212,7 @@ class page:
         self.page: Optional[Page] = None
         *_, self.converters = compile_path(route)
 
-    def __call__(self, func, **kwargs) -> Callable:
+    def __call__(self, func: Callable, **kwargs) -> Callable:
         @wraps(func)
         async def decorated(request: Optional[Request] = None) -> Page:
             self.page = Page(
@@ -224,7 +227,7 @@ class page:
                 shared=self.shared,
             )
             try:
-                with globals.within_view(self.page.view):
+                with Context(self.page.view):
                     if 'request' in inspect.signature(func).parameters:
                         if self.shared:
                             raise RuntimeError('Cannot use `request` argument in shared page')
@@ -263,7 +266,7 @@ class page:
 
 
 def find_parent_view() -> jp.HTMLBaseComponent:
-    view_stack = globals.get_view_stack()
+    view_stack = get_view_stack()
     if not view_stack:
         if globals.loop and globals.loop.is_running():
             raise RuntimeError('cannot find parent view, view stack is empty')
