@@ -41,6 +41,8 @@ class Ui:
     from .elements.notify import Notify as notify
     from .elements.number import Number as number
     from .elements.open import open, open_async
+    from .elements.progress import LinearProgress as linear_progress
+    from .elements.progress import CircularProgress as circular_progress
     from .elements.radio import Radio as radio
     from .elements.row import Row as row
     from .elements.scene import Scene as scene
