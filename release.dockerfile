@@ -1,5 +1,7 @@
 FROM python:3.11-slim
 
+LABEL maintainer="Zauberzeug GmbH <info@zauberzeug.com>"
+
 RUN python -m pip install nicegui
 
 WORKDIR /app
