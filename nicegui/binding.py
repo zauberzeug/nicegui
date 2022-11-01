@@ -156,6 +156,23 @@ class BindValueMixin(BindMixin):
         return self
 
 
+class BindContentMixin(BindMixin):
+    """
+    Mixin providing bind methods for attribute content.
+    """
+
+    def bind_content_to(self, target_object, target_name, forward=lambda x: x):
+        return super()._bind_to(attr='content', target_object=target_object, target_name=target_name, forward=forward)
+
+    def bind_content_from(self, target_object, target_name, backward=lambda x: x):
+        return super()._bind_from(attr='content', target_object=target_object, target_name=target_name, backward=backward)
+
+    def bind_content(self, target_object, target_name, forward=lambda x: x, backward=lambda x: x):
+        self.bind_content_from(target_object=target_object, target_name=target_name, backward=backward)
+        self.bind_content_to(target_object=target_object, target_name=target_name, forward=forward)
+        return self
+
+
 class BindVisibilityMixin(BindMixin):
     """
     Mixin providing bind methods for attribute visible.
