@@ -1,11 +1,12 @@
 from typing import Any
 
 import justpy as jp
+from nicegui.binding import BindContentMixin
 
 from .element import Element
 
 
-class Html(Element):
+class Html(Element, BindContentMixin):
 
     def __init__(self, content: str = ''):
         """HTML Element
