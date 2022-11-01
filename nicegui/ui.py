@@ -23,6 +23,7 @@ class Ui:
     from .elements.colors import Colors as colors
     from .elements.column import Column as column
     from .elements.dialog import Dialog as dialog
+    from .elements.div import Div as div
     from .elements.expansion import Expansion as expansion
     from .elements.html import Html as html
     from .elements.icon import Icon as icon

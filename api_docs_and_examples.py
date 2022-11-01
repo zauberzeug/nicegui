@@ -561,11 +561,9 @@ Just pass a property of the model as parameter to these methods to create the bi
             ui.toggle({1: 'a', 2: 'b', 3: 'c'}).bind_value(demo, 'number')
             ui.number().bind_value(demo, 'number')
 
-            with ui.linear_progress(target_object=demo, target_name='progress_float') as progress:
-                with Div() as progress_lbl:
-                    progress_lbl.classes(add='absolute-full flex flex-center')
-                    lbl = ui.label(text='number')
-                    lbl.classes('text-center text-subtitle2 text-white')
+            with ui.linear_progress(target_object=demo, target_name='progress_float'):
+                with ui.div(classes='absolute-full flex flex-center'):
+                    lbl = ui.label(text='number').classes('text-center text-subtitle2 text-white')
                     lbl.bind_text_from(demo, 'progress')
 
             ui.circular_progress(target_object=demo, target_name='progress')
