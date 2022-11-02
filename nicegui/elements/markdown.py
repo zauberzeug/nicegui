@@ -53,3 +53,6 @@ class Markdown(Element, BindContentMixin):
 
         self.content = content
         _handle_content_change(self, content)
+
+    def set_content(self, content: str) -> None:
+        self.content = content
