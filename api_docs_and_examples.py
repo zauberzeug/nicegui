@@ -320,7 +320,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         ui.linear_progress(value=0.3)
 
     with example(ui.circular_progress):
-        ui.circular_progress(value=67.0)
+        ui.circular_progress(value=0.67)
 
     with example(ui.scene):
         with ui.scene(width=225, height=225) as scene:
