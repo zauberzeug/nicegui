@@ -7,7 +7,6 @@ import docutils.core
 
 from nicegui import ui
 from nicegui.auto_context import Context
-from nicegui.elements.div import Div
 from nicegui.task_logger import create_task
 
 REGEX_H4 = re.compile(r'<h4.*?>(.*?)</h4>')
@@ -562,7 +561,7 @@ Just pass a property of the model as parameter to these methods to create the bi
             ui.number().bind_value(demo, 'number')
 
             with ui.linear_progress(target_object=demo, target_name='progress_float'):
-                with ui.div(classes='absolute-full flex flex-center'):
+                with ui.container(classes='absolute-full flex flex-center'):
                     lbl = ui.label(text='number').classes('text-center text-subtitle2 text-white')
                     lbl.bind_text_from(demo, 'progress')
 
