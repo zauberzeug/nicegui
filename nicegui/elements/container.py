@@ -1,10 +1,9 @@
 import justpy as jp
 
-from .element import Element
-from ..auto_context import ContextMixin
+from .group import Group
 
 
-class Container(Element, ContextMixin):
+class Container(Group):
 
     def __init__(self, **kwargs):
         """QDiv Container"""
