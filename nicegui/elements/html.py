@@ -1,12 +1,13 @@
 from typing import Any
 
 import justpy as jp
-from nicegui.binding import BindContentMixin
 
+from ..binding import BindableProperty, BindContentMixin
 from .element import Element
 
 
 class Html(Element, BindContentMixin):
+    content = BindableProperty()
 
     def __init__(self, content: str = ''):
         """HTML Element
@@ -19,19 +20,12 @@ class Html(Element, BindContentMixin):
         """
         view = jp.QDiv(temp=False)
         super().__init__(view)
+
         self.content = content
-
-    @property
-    def content(self) -> str:
-        return self.view.inner_html
-
-    @content.setter
-    def content(self, content: str) -> None:
-        self.set_content(content)
+        self.bind_content_to(self.view, 'inner_html')
 
     def set_content(self, content: str) -> None:
         if '</script>' in content:
+            # TODO: should also be checked if content is set directly
             raise ValueError('HTML elements must not contain <script> tags. Use ui.add_body_html() instead.')
-        if self.view.inner_html != content:
-            self.view.inner_html = content
-            self.update()
+        self.content = content

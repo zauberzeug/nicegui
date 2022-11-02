@@ -7,6 +7,7 @@ import docutils.core
 
 from nicegui import ui
 from nicegui.auto_context import Context
+from nicegui.elements.markdown import apply_tailwind
 from nicegui.task_logger import create_task
 
 REGEX_H4 = re.compile(r'<h4.*?>(.*?)</h4>')
@@ -46,7 +47,7 @@ def example(content: Union[Callable, type, str], tight: bool = False) -> None:
             html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
             html = html.replace('<p>', '<h4>', 1)
             html = html.replace('</p>', '</h4>', 1)
-            html = ui.markdown.apply_tailwind(html)
+            html = apply_tailwind(html)
             add_html_anchor(ui.html(html).classes(markdown_classes))
 
         try:
