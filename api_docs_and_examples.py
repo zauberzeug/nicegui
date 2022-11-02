@@ -547,11 +547,8 @@ Just pass a property of the model as parameter to these methods to create the bi
                 self.number = 1
 
             @property
-            def progress_float(self) -> float:
+            def progress(self) -> float:
                 return (self.number - 1) / 2
-            @property
-            def progress(self) -> int:
-                return int(self.progress_float * 100)
 
         demo = Demo()
         v = ui.checkbox('visible', value=True)
@@ -560,7 +557,7 @@ Just pass a property of the model as parameter to these methods to create the bi
             ui.toggle({1: 'a', 2: 'b', 3: 'c'}).bind_value(demo, 'number')
             ui.number().bind_value(demo, 'number')
 
-            with ui.linear_progress(target_object=demo, target_name='progress_float'):
+            with ui.linear_progress(target_object=demo, target_name='progress'):
                 with ui.container(classes='absolute-full flex flex-center'):
                     lbl = ui.label(text='number').classes('text-center text-subtitle2 text-white')
                     lbl.bind_text_from(demo, 'progress')
