@@ -6,14 +6,14 @@ import markdown2
 import api_docs_and_examples
 import traffic_tracking
 from nicegui import ui
-from nicegui.elements.markdown import Markdown
+from nicegui.elements.markdown import apply_tailwind
 
 with open('README.md') as f:
     content = f.read()
     content = re.sub(r'(?m)^\<img.*\n?', '', content)
     # change absolute link on GitHub to relative link
     content = content.replace('(https://nicegui.io/reference)', '(reference)')
-    README = Markdown.apply_tailwind(markdown2.markdown(content, extras=['fenced-code-blocks']))
+    README = apply_tailwind(markdown2.markdown(content, extras=['fenced-code-blocks']))
 
 
 async def go_to_anchor() -> None:
