@@ -22,7 +22,6 @@ class Ui:
     from .elements.color_picker import ColorPicker as color_picker
     from .elements.colors import Colors as colors
     from .elements.column import Column as column
-    from .elements.container import Container as container
     from .elements.dialog import Dialog as dialog
     from .elements.expansion import Expansion as expansion
     from .elements.html import Html as html

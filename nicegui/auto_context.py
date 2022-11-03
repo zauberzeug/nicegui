@@ -74,20 +74,3 @@ class AutoUpdaterForAsyncs:
                 message = yield signal
             except BaseException as err:
                 send, message = iter_throw, err
-
-
-class ContextMixin:
-    """
-    Mixin providing a context manager for additional components.
-    copied from nicegui.elements.group.Group
-    """
-
-    def __enter__(self):
-        self._child_count_on_enter = len(self.view)
-        get_view_stack().append(self.view)
-        return self
-
-    def __exit__(self, *_):
-        get_view_stack().pop()
-        if self._child_count_on_enter != len(self.view):
-            self.update()
