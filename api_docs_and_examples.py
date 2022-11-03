@@ -331,14 +331,14 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             scene.extrusion([[0, 0], [0, 1], [1, 0.5]], 0.1).material('#ff8888').move(-2, -2)
 
             with scene.group().move(z=2):
-                box1 = scene.box().move(x=2)
+                scene.box().move(x=2)
                 scene.box().move(y=2).rotate(0.25, 0.5, 0.75)
                 scene.box(wireframe=True).material('#888888').move(x=2, y=2)
 
             scene.line([-4, 0, 0], [-4, 2, 0]).material('#ff0000')
             scene.curve([-4, 0, 0], [-4, -1, 0], [-3, -1, 0], [-3, -2, 0]).material('#008800')
 
-            logo = "https://avatars.githubusercontent.com/u/2843826"
+            logo = 'https://avatars.githubusercontent.com/u/2843826'
             scene.texture(logo, [[[0.5, 2, 0], [2.5, 2, 0]],
                                  [[0.5, 0, 0], [2.5, 0, 0]]]).move(1, -2)
 
@@ -358,7 +358,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         from datetime import datetime
 
         log = ui.log(max_lines=10).classes('w-full h-16')
-        ui.button('Log time', on_click=lambda: log.push(datetime.now().strftime("%X.%f")[:-5]))
+        ui.button('Log time', on_click=lambda: log.push(datetime.now().strftime('%X.%f')[:-5]))
 
     h3('Layout')
 
@@ -503,7 +503,7 @@ When NiceGUI is shut down or restarted, the startup tasks will be automatically 
 
         with ui.row().classes('items-center'):
             clock = ui.label()
-            t = ui.timer(interval=0.1, callback=lambda: clock.set_text(datetime.now().strftime("%X.%f")[:-5]))
+            t = ui.timer(interval=0.1, callback=lambda: clock.set_text(datetime.now().strftime('%X.%f')[:-5]))
             ui.checkbox('active').bind_value(t, 'active')
 
         with ui.row():
