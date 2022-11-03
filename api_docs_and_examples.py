@@ -316,6 +316,12 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         line_updates = ui.timer(0.1, update_line_plot, active=False)
         line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')
 
+    with example(ui.linear_progress):
+        ui.linear_progress(value=0.3)
+
+    with example(ui.circular_progress):
+        ui.circular_progress(value=0.67)
+
     with example(ui.scene):
         with ui.scene(width=225, height=225) as scene:
             scene.sphere().material('#4488ff')
@@ -544,12 +550,23 @@ Just pass a property of the model as parameter to these methods to create the bi
             def __init__(self):
                 self.number = 1
 
+            @property
+            def progress(self) -> float:
+                return (self.number - 1) / 2
+
         demo = Demo()
         v = ui.checkbox('visible', value=True)
         with ui.column().bind_visibility_from(v, 'value'):
             ui.slider(min=1, max=3).bind_value(demo, 'number')
             ui.toggle({1: 'a', 2: 'b', 3: 'c'}).bind_value(demo, 'number')
             ui.number().bind_value(demo, 'number')
+
+            with ui.linear_progress(target_object=demo, target_name='progress'):
+                with ui.container(classes='absolute-full flex flex-center'):
+                    lbl = ui.label(text='number').classes('text-center text-subtitle2 text-white')
+                    lbl.bind_text_from(demo, 'progress')
+
+            ui.circular_progress(target_object=demo, target_name='progress')
 
     ui_updates = '''#### UI Updates
 
