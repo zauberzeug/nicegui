@@ -129,7 +129,7 @@ docker run -p 80:8080 -v $(pwd)/:/app/ -d --restart always zauberzeug/nicegui:la
 
 The example assumes `main.py` uses the port 8080 in the `ui.run` command (which is the default).
 The `--restart always` makes sure the container is restarted if the app crashes or the server reboots.
-Of course this can also be written in a docker compose file:
+Of course this can also be written in a Docker compose file:
 
 ```yaml
 nicegui:

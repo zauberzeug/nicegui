@@ -375,6 +375,8 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
     clear_containers = '''#### Clear Containers
 
 To remove all elements from a row, column or card container, use the `clear()` method.
+
+Alternatively, you can remove individual elements with `remove(element)`, where `element` is an Element or an index.
 '''
     with example(clear_containers):
         container = ui.row()
@@ -385,6 +387,7 @@ To remove all elements from a row, column or card container, use the `clear()` m
         add_face()
 
         ui.button('Add', on_click=add_face)
+        ui.button('Remove', on_click=lambda: container.remove(0))
         ui.button('Clear', on_click=container.clear)
 
     with example(ui.expansion):

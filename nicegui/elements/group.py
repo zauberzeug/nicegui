@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Union
 
 import justpy as jp
 
@@ -61,4 +61,9 @@ class Group(Element):
                 del bindable_properties[(obj_id, name)]
 
         self.view.delete_components()
+        self.update()
+
+    def remove(self, element: Union[Element, int]) -> None:
+        view = element.view if isinstance(element, Element) else self.view.get_components()[element]
+        self.view.remove_component(view)
         self.update()

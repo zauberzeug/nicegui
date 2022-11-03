@@ -1,4 +1,3 @@
-
 from nicegui import ui
 from nicegui.elements.element import Element
 from selenium.webdriver.common.action_chains import ActionChains
