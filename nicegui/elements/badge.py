@@ -22,13 +22,17 @@ class _QBadge(jp.QBadge):
 class Badge(Element, BindTextMixin):
     text = BindableProperty()
 
-    def __init__(self, text: str = '', color: str = 'blue', text_color: str = 'white', outline: bool = False) -> None:
+    def __init__(self, text: str = '', *,
+                 color: str = 'blue', text_color: str = 'white', outline: bool = False) -> None:
         """Badge
 
         A badge element wrapping Quasar's
         `QBadge <https://v1.quasar.dev/vue-components/badge>`_ component.
 
         :param text: the initial value of the text field
+        :param color: the color name for component from the Quasar Color Palette (default: "blue")
+        :param text_color: overrides text color (if needed); color name from the Quasar Color Palette (default: "white")
+        :param outline: use 'outline' design (colored text and borders only) (default: False)
         """
         view = _QBadge(color=color, text_color=text_color, delete_flag=False, temp=True, align='middle',
                        outline=outline, text=text)
