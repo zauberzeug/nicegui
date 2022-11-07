@@ -25,7 +25,7 @@ Vue.component('quasar_component', {
                     if (typeof this.jp_props.attrs[evaluated_prop] == 'string') {
                         this.jp_props.attrs[evaluated_prop] = eval(this.jp_props.attrs[evaluated_prop])
                     } else {
-                        for (let j = 0; i < this.jp_props.attrs[evaluated_prop].length; j++) {
+                        for (let j = 0; j < this.jp_props.attrs[evaluated_prop].length; j++) {
                             this.jp_props.attrs[evaluated_prop][j] = eval(this.jp_props.attrs[evaluated_prop][j]);
                         }
                     }
