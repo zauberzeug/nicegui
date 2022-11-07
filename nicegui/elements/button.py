@@ -2,9 +2,9 @@ from typing import Callable, Optional
 
 import justpy as jp
 
-from .group import Group
 from ..binding import BindableProperty, BindTextMixin
 from ..events import ClickEventArguments, handle_event
+from .group import Group
 
 
 class Button(Group, BindTextMixin):
