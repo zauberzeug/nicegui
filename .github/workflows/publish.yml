@@ -60,6 +60,7 @@ jobs:
           # Set output parameters.
           echo ::set-output name=tags::${TAGS}
           echo ::set-output name=docker_image::${DOCKER_IMAGE}
+          echo ::set-output name=version::${VERSION}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@master
         with:
@@ -83,6 +84,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.prep.outputs.tags }}
+          build-args: VERSION=${{ steps.prep.outputs.version }}
 
       # Uploading the README.md is not a core feature of docker/build-push-action yet
       - name: Update README
