@@ -2,12 +2,12 @@ from typing import Callable, Optional
 
 import justpy as jp
 
+from .group import Group
 from ..binding import BindableProperty, BindTextMixin
 from ..events import ClickEventArguments, handle_event
-from .element import Element
 
 
-class Button(Element, BindTextMixin):
+class Button(Group, BindTextMixin):
     text = BindableProperty()
 
     def __init__(self, text: str = '', *, on_click: Optional[Callable] = None):

@@ -139,6 +139,10 @@ def create_full() -> None:
     with example(ui.button):
         ui.button('Click me!', on_click=lambda: ui.notify(f'You clicked me!'))
 
+    with example(ui.badge):
+        with ui.button('Click me!', on_click=lambda: badge.set_text(int(badge.text) + 1)):
+            badge = ui.badge('0', color='secondary')
+
     with example(ui.toggle):
         toggle1 = ui.toggle([1, 2, 3], value=1)
         toggle2 = ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(toggle1, 'value')
@@ -423,6 +427,7 @@ Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
 
     with example(ui.notify):
         ui.button('Say hi!', on_click=lambda: ui.notify('Hi!', close_button='OK'))
+
 
     with example(ui.dialog):
         with ui.dialog() as dialog, ui.card():

@@ -13,6 +13,7 @@ class Ui:
     from .page_layout import PageSticky as page_sticky
     from .update import update
 
+    from .elements.badge import Badge as badge
     from .elements.button import Button as button
     from .elements.card import Card as card
     from .elements.card import CardSection as card_section
