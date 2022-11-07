@@ -32,7 +32,7 @@ class Ui:
     from .elements.joystick import Joystick as joystick
     from .elements.keyboard import Keyboard as keyboard
     from .elements.label import Label as label
-    from .elements.link import Link as link
+    from .elements.link import Link as link, LinkTarget as link_target
     from .elements.log import Log as log
     from .elements.markdown import Markdown as markdown
     from .elements.menu import Menu as menu
