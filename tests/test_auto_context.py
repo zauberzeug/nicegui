@@ -3,6 +3,7 @@ from typing import Generator
 
 from nicegui import ui
 from nicegui.events import PageEvent
+from nicegui.task_logger import create_task
 
 from .screen import Screen
 
@@ -124,3 +125,31 @@ def test_autoupdate_on_async_timer_callback(screen: Screen):
     screen.wait_for('1')
     screen.should_not_contain('2')
     screen.wait_for('2')
+
+
+def test_adding_elements_from_different_tasks(screen: Screen):
+    card1 = ui.card()
+    card2 = ui.card()
+
+    async def add_label1() -> None:
+        with card1:
+            await asyncio.sleep(1.0)
+            ui.label('1')
+
+    async def add_label2() -> None:
+        with card2:
+            ui.label('2')
+            await asyncio.sleep(1.0)
+
+    screen.open('/')
+    create_task(add_label1())
+    create_task(add_label2())
+    screen.wait_for('1')
+    screen.wait_for('2')
+    assert screen.render_content() == '''Title: NiceGUI
+
+    card
+      1
+    card
+      2
+'''
