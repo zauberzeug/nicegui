@@ -27,7 +27,7 @@ class PageBuilder:
         if self.shared:
             while self._shared_page is None:
                 await asyncio.sleep(0.05)
-            return self._shared_page
+            page = self._shared_page
         else:
             page: Page = await self.function(request)
         return await page._route_function(request)
