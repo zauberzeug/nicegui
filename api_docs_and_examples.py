@@ -72,6 +72,7 @@ def example(content: Union[Callable, type, str], tight: bool = False) -> None:
             for l, line in enumerate(code):
                 if line.startswith('# ui.'):
                     code[l] = line[2:]
+                if line.startswith('# ui.run('):
                     break
             else:
                 code.append('ui.run()')
