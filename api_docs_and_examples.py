@@ -1,6 +1,5 @@
 import inspect
 import re
-from contextlib import contextmanager
 from typing import Callable, Union
 
 import docutils.core
@@ -14,12 +13,53 @@ REGEX_H4 = re.compile(r'<h4.*?>(.*?)</h4>')
 SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 
 
-@contextmanager
-def example(content: Union[Callable, type, str], tight: bool = False) -> None:
-    callFrame = inspect.currentframe().f_back.f_back
-    begin = callFrame.f_lineno
+class example:
 
-    def add_html_anchor(element: ui.html):
+    def __init__(self, content: Union[Callable, type, str], tight: bool = False) -> None:
+        self.content = content
+        self.markdown_classes = f'mr-8 w-full flex-none lg:w-{48 if tight else 80} xl:w-80'
+        self.rendering_classes = f'w-{48 if tight else 64} flex-none lg:mt-12'
+        self.source_classes = f'w-80 flex-grow overflow-auto lg:mt-12'
+
+    def __call__(self, f: Callable) -> Callable:
+        with ui.row().classes('flex w-full'):
+            if isinstance(self.content, str):
+                self._add_html_anchor(ui.markdown(self.content).classes(self.markdown_classes))
+            else:
+                doc = self.content.__doc__ or self.content.__init__.__doc__
+                html: str = docutils.core.publish_parts(doc, writer_name='html')['html_body']
+                html = html.replace('<p>', '<h4>', 1)
+                html = html.replace('</p>', '</h4>', 1)
+                html = apply_tailwind(html)
+                self._add_html_anchor(ui.html(html).classes(self.markdown_classes))
+
+            with ui.card().classes(self.rendering_classes):
+                f()
+
+            code = inspect.getsource(f).splitlines()
+            while not code[0].startswith(' ' * 8):
+                del code[0]
+            code = [l[8:] for l in code]
+            while code[0].startswith('global '):
+                del code[0]
+            code.insert(0, '```python')
+            code.insert(1, 'from nicegui import ui')
+            if code[2].split()[0] not in ['from', 'import']:
+                code.insert(2, '')
+            for l, line in enumerate(code):
+                if line.startswith('# ui.'):
+                    code[l] = line[2:]
+                if line.startswith('# ui.run('):
+                    break
+            else:
+                code.append('')
+                code.append('ui.run()')
+            code.append('```')
+            code = '\n'.join(code)
+            ui.markdown(code).classes(self.source_classes)
+        return f
+
+    def _add_html_anchor(self, element: ui.html) -> None:
         html = element.content
         match = REGEX_H4.search(html)
         if not match:
@@ -35,69 +75,24 @@ def example(content: Union[Callable, type, str], tight: bool = False) -> None:
         html = html.replace('</h4>', f' {anchor}</h4>', 1)
         element.view.inner_html = html
 
-    with ui.row().classes('flex w-full'):
-        markdown_classes = f'mr-8 w-full flex-none lg:w-{48 if tight else 80} xl:w-80'
-        rendering_classes = f'w-{48 if tight else 64} flex-none lg:mt-12'
-        source_classes = f'w-80 flex-grow overflow-auto lg:mt-12'
-
-        if isinstance(content, str):
-            add_html_anchor(ui.markdown(content).classes(markdown_classes))
-        else:
-            doc = content.__doc__ or content.__init__.__doc__
-            html = docutils.core.publish_parts(doc, writer_name='html')['html_body']
-            html = html.replace('<p>', '<h4>', 1)
-            html = html.replace('</p>', '</h4>', 1)
-            html = apply_tailwind(html)
-            add_html_anchor(ui.html(html).classes(markdown_classes))
-
-        try:
-            with ui.card().classes(rendering_classes):
-                yield
-        finally:
-            code: str = open(__file__).read()
-            end = begin + 1
-            lines = code.splitlines()
-            while True:
-                end += 1
-                if end >= len(lines):
-                    break
-                if inspect.indentsize(lines[end]) < inspect.indentsize(lines[begin]) and lines[end]:
-                    break
-            code = lines[begin:end]
-            code = [l[8:] for l in code]
-            code.insert(0, '```python')
-            code.insert(1, 'from nicegui import ui')
-            if code[2].split()[0] not in ['from', 'import']:
-                code.insert(2, '')
-            for l, line in enumerate(code):
-                if line.startswith('# ui.'):
-                    code[l] = line[2:]
-                if line.startswith('# ui.run('):
-                    break
-            else:
-                code.append('ui.run()')
-            code.append('```')
-            code = '\n'.join(code)
-            ui.markdown(code).classes(source_classes)
-
 
 def create_intro() -> None:
     # add docutils css to webpage
     ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
 
-    hello_world = '''#### Hello, World!
+    @example('''#### Hello, World!
 
 Creating a user interface with NiceGUI is as simple as writing a single line of code.
-'''
-    with example(hello_world, tight=True):
+''', tight=True)
+    def hello_world_example():
         ui.label('Hello, world!')
         ui.markdown('Have a look at the full <br/> [API reference](reference)!')
 
-    common_elements = '''#### Common UI Elements
+    @example('''#### Common UI Elements
 
 NiceGUI comes with a collection of commonly used UI elements.
-'''
-    with example(common_elements, tight=True):
+''', tight=True)
+    def common_elements_example():
         ui.button('Button', on_click=lambda: ui.notify('Click'))
         ui.checkbox('Checkbox', on_change=lambda e: ui.notify('Checked' if e.value else 'Unchecked'))
         ui.switch('Switch', on_change=lambda e: ui.notify('Switched' if e.value else 'Unswitched'))
@@ -106,15 +101,13 @@ NiceGUI comes with a collection of commonly used UI elements.
         ui.select(['One', 'Two'], value='One', on_change=lambda e: ui.notify(e.value))
         ui.link('And many more...', '/reference').classes('text-lg')
 
-    binding = '''#### Value Binding
+    @example('''#### Value Binding
 
 Binding values between UI elements or [to data models](http://127.0.0.1:8080/reference#bindings) is built into NiceGUI.
-'''
-    with example(binding, tight=True):
+''', tight=True)
+    def binding_example():
         slider = ui.slider(min=0, max=100, value=50)
         ui.number('Value').bind_value(slider, 'value').classes('fit')
-
-    # HACK: this comment prevents another blank line sneaking into the example above
 
 
 def create_full() -> None:
@@ -128,87 +121,106 @@ def create_full() -> None:
 
     h3('Basic Elements')
 
-    with example(ui.label):
+    @example(ui.label)
+    def label_example():
         ui.label('some label')
 
-    with example(ui.icon):
+    @example(ui.icon)
+    def icon_example():
         ui.icon('thumb_up')
 
-    with example(ui.link):
+    @example(ui.link)
+    def link_example():
         ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
 
-    with example(ui.button):
+    @example(ui.button)
+    def button_example():
         ui.button('Click me!', on_click=lambda: ui.notify(f'You clicked me!'))
 
-    with example(ui.badge):
+    @example(ui.badge)
+    def badge_example():
         with ui.button('Click me!', on_click=lambda: badge.set_text(int(badge.text) + 1)):
             badge = ui.badge('0', color='red').props('floating')
 
-    with example(ui.toggle):
+    @example(ui.toggle)
+    def toggle_example():
         toggle1 = ui.toggle([1, 2, 3], value=1)
         toggle2 = ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(toggle1, 'value')
 
-    with example(ui.radio):
+    @example(ui.radio)
+    def radio_example():
         radio1 = ui.radio([1, 2, 3], value=1).props('inline')
         radio2 = ui.radio({1: 'A', 2: 'B', 3: 'C'}).props('inline').bind_value(radio1, 'value')
 
-    with example(ui.select):
+    @example(ui.select)
+    def select_example():
         select1 = ui.select([1, 2, 3], value=1)
         select2 = ui.select({1: 'One', 2: 'Two', 3: 'Three'}).bind_value(select1, 'value')
 
-    with example(ui.checkbox):
+    @example(ui.checkbox)
+    def checkbox_example():
         checkbox = ui.checkbox('check me')
         ui.label('Check!').bind_visibility_from(checkbox, 'value')
 
-    with example(ui.switch):
+    @example(ui.switch)
+    def switch_example():
         switch = ui.switch('switch me')
         ui.label('Switch!').bind_visibility_from(switch, 'value')
 
-    with example(ui.slider):
+    @example(ui.slider)
+    def slider_example():
         slider = ui.slider(min=0, max=100, value=50).props('label')
         ui.label().bind_text_from(slider, 'value')
 
-    with example(ui.joystick):
+    @example(ui.joystick)
+    def joystick_example():
         ui.joystick(color='blue', size=50,
                     on_move=lambda msg: coordinates.set_text(f'{msg.data.vector.x:.3f}, {msg.data.vector.y:.3f}'),
                     on_end=lambda msg: coordinates.set_text('0, 0'))
         coordinates = ui.label('0, 0')
 
-    with example(ui.input):
+    @example(ui.input)
+    def input_example():
         ui.input(label='Text', placeholder='press ENTER to apply',
                  on_change=lambda e: input_result.set_text('you typed: ' + e.value))
         input_result = ui.label()
 
-    with example(ui.number):
+    @example(ui.number)
+    def number_example():
         ui.number(label='Number', value=3.1415927, format='%.2f',
                   on_change=lambda e: number_result.set_text(f'you entered: {e.value}'))
         number_result = ui.label()
 
-    with example(ui.color_input):
+    @example(ui.color_input)
+    def color_input_example():
         color_label = ui.label('Change my color!')
         ui.color_input(label='Color', value='#000000',
                        on_change=lambda e: color_label.style(f'color:{e.value}'))
 
-    with example(ui.color_picker):
+    @example(ui.color_picker)
+    def color_picker_example():
         picker = ui.color_picker(on_pick=lambda e: button.style(f'background-color:{e.color}!important'))
         button = ui.button(on_click=picker.open).props('icon=colorize')
 
-    with example(ui.upload):
+    @example(ui.upload)
+    def upload_example():
         ui.upload(on_upload=lambda e: ui.notify(f'{len(e.files[0])} bytes'))
 
     h3('Markdown and HTML')
 
-    with example(ui.markdown):
+    @example(ui.markdown)
+    def markdown_example():
         ui.markdown('''This is **Markdown**.''')
 
-    with example(ui.html):
+    @example(ui.html)
+    def html_example():
         ui.html('This is <strong>HTML</strong>.')
 
-    svg = '''#### SVG
+    @example('''#### SVG
 
 You can add Scalable Vector Graphics using the `ui.html` element.
-'''
-    with example(svg):
+''')
+    def svg_example():
         content = '''
             <svg viewBox="0 0 200 200" width="100" height="100" xmlns="http://www.w3.org/2000/svg">
             <circle cx="100" cy="100" r="78" fill="#ffde34" stroke="black" stroke-width="3" />
@@ -220,17 +232,18 @@ You can add Scalable Vector Graphics using the `ui.html` element.
 
     h3('Images')
 
-    with example(ui.image):
+    @example(ui.image)
+    def image_example():
         ui.image('http://placeimg.com/640/360/tech')
 
-    captions_and_overlays = '''#### Captions and Overlays
+    @example('''#### Captions and Overlays
 
 By nesting elements inside a `ui.image` you can create augmentations.
 
 Use [Quasar classes](https://quasar.dev/vue-components/img) for positioning and styling captions.
 To overlay an SVG, make the `viewBox` exactly the size of the image and provide `100%` width/height to match the actual rendered size.
-'''
-    with example(captions_and_overlays):
+''')
+    def captions_and_overlays_example():
         with ui.image('http://placeimg.com/640/360/nature'):
             ui.label('Nice!').classes('absolute-bottom text-subtitle2 text-center')
 
@@ -241,7 +254,8 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
                 </svg>'''
             ui.html(content).style('background:transparent')
 
-    with example(ui.interactive_image):
+    @example(ui.interactive_image)
+    def interactive_image_example():
         from nicegui.events import MouseEventArguments
 
         def mouse_handler(e: MouseEventArguments):
@@ -254,7 +268,8 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
     h3('Data Elements')
 
-    with example(ui.table):
+    @example(ui.table)
+    def table_example():
         table = ui.table({
             'columnDefs': [
                 {'headerName': 'Name', 'field': 'name'},
@@ -273,7 +288,8 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         ui.button('Update', on_click=update)
 
-    with example(ui.chart):
+    @example(ui.chart)
+    def chart_example():
         from numpy.random import random
 
         chart = ui.chart({
@@ -292,7 +308,8 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         ui.button('Update', on_click=update)
 
-    with example(ui.plot):
+    @example(ui.plot)
+    def plot_example():
         import numpy as np
         from matplotlib import pyplot as plt
 
@@ -303,7 +320,9 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             plt.xlabel('time (s)')
             plt.ylabel('Damped oscillation')
 
-    with example(ui.line_plot):
+    @example(ui.line_plot)
+    def line_plot_example():
+        global line_checkbox
         from datetime import datetime
 
         import numpy as np
@@ -321,15 +340,18 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         line_updates = ui.timer(0.1, update_line_plot, active=False)
         line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')
 
-    with example(ui.linear_progress):
+    @example(ui.linear_progress)
+    def linear_progress_example():
         slider = ui.slider(min=0, max=1, step=0.01, value=0.5)
         ui.linear_progress().bind_value_from(slider, 'value')
 
-    with example(ui.circular_progress):
+    @example(ui.circular_progress)
+    def circular_progress_example():
         slider = ui.slider(min=0, max=1, step=0.01, value=0.5)
         ui.circular_progress().bind_value_from(slider, 'value')
 
-    with example(ui.scene):
+    @example(ui.scene)
+    def scene_example():
         with ui.scene(width=225, height=225) as scene:
             scene.sphere().material('#4488ff')
             scene.cylinder(1, 0.5, 2, 20).material('#ff8800', opacity=0.5).move(-2, 1)
@@ -353,13 +375,15 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             scene.text('2D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(z=2)
             scene.text3d('3D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(y=-2).scale(.05)
 
-    with example(ui.tree):
+    @example(ui.tree)
+    def tree_example():
         ui.tree([
             {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
             {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
         ], label_key='id', on_select=lambda e: ui.notify(e.value))
 
-    with example(ui.log):
+    @example(ui.log)
+    def log_example():
         from datetime import datetime
 
         log = ui.log(max_lines=10).classes('w-full h-16')
@@ -367,31 +391,34 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
     h3('Layout')
 
-    with example(ui.card):
+    @example(ui.card)
+    def card_example():
         with ui.card().tight():
             ui.image('http://placeimg.com/640/360/nature')
             with ui.card_section():
                 ui.label('Lorem ipsum dolor sit amet, consectetur adipiscing elit, ...')
 
-    with example(ui.column):
+    @example(ui.column)
+    def column_example():
         with ui.column():
             ui.label('label 1')
             ui.label('label 2')
             ui.label('label 3')
 
-    with example(ui.row):
+    @example(ui.row)
+    def row_example():
         with ui.row():
             ui.label('label 1')
             ui.label('label 2')
             ui.label('label 3')
 
-    clear_containers = '''#### Clear Containers
+    @example('''#### Clear Containers
 
 To remove all elements from a row, column or card container, use the `clear()` method.
 
 Alternatively, you can remove individual elements with `remove(element)`, where `element` is an Element or an index.
-'''
-    with example(clear_containers):
+''')
+    def clear_containers_example():
         container = ui.row()
 
         def add_face():
@@ -403,11 +430,13 @@ Alternatively, you can remove individual elements with `remove(element)`, where 
         ui.button('Remove', on_click=lambda: container.remove(0))
         ui.button('Clear', on_click=container.clear)
 
-    with example(ui.expansion):
+    @example(ui.expansion)
+    def expansion_example():
         with ui.expansion('Expand!', icon='work').classes('w-full'):
             ui.label('inside the expansion')
 
-    with example(ui.menu):
+    @example(ui.menu)
+    def menu_example():
         choice = ui.label('Try the menu.')
         with ui.menu() as menu:
             ui.menu_item('Menu item 1', lambda: choice.set_text('Selected item 1.'))
@@ -418,31 +447,33 @@ Alternatively, you can remove individual elements with `remove(element)`, where 
 
         ui.button('Open menu', on_click=menu.open)
 
-    tooltips = '''#### Tooltips
+    @example('''#### Tooltips
 
 Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
-'''
-    with example(tooltips):
+''')
+    def tooltips_example():
         ui.label('Tooltips...').tooltip('...are shown on mouse over')
         ui.button().props('icon=thumb_up').tooltip('I like this')
 
-    with example(ui.notify):
+    @example(ui.notify)
+    def notify_example():
         ui.button('Say hi!', on_click=lambda: ui.notify('Hi!', close_button='OK'))
 
-    with example(ui.dialog):
+    @example(ui.dialog)
+    def dialog_example():
         with ui.dialog() as dialog, ui.card():
             ui.label('Hello world!')
             ui.button('Close', on_click=dialog.close)
 
         ui.button('Open a dialog', on_click=dialog.open)
 
-    async_dialog = '''#### Awaitable dialog
+    @example('''#### Awaitable dialog
 
 Dialogs can be awaited.
 Use the `submit` method to close the dialog and return a result.
 Canceling the dialog by clicking in the background or pressing the escape key yields `None`.
-'''
-    with example(async_dialog):
+''')
+    def async_dialog_example():
         with ui.dialog() as dialog, ui.card():
             ui.label('Are you sure?')
             with ui.row():
@@ -457,7 +488,7 @@ Canceling the dialog by clicking in the background or pressing the escape key yi
 
     h3('Appearance')
 
-    design = '''#### Styling
+    @example('''#### Styling
 
 NiceGUI uses the [Quasar Framework](https://quasar.dev/) version 1.0 and hence has its full design power.
 Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
@@ -467,20 +498,21 @@ You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the
 If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
 
 All three functions also provide `remove` and `replace` parameters in case the predefined look is not wanted in a particular styling.
-'''
-    with example(design):
+''')
+    def design_example():
         ui.radio(['x', 'y', 'z'], value='x').props('inline color=green')
         ui.button().props('icon=touch_app outline round').classes('shadow-lg')
         ui.label('Stylish!').style('color: #6E93D6; font-size: 200%; font-weight: 300')
 
-    with example(ui.colors):
+    @example(ui.colors)
+    def colors_example():
         ui.colors()
         ui.button('Default', on_click=lambda: ui.colors())
         ui.button('Gray', on_click=lambda: ui.colors(primary='#555'))
 
     h3('Action')
 
-    lifecycle = '''#### Lifecycle
+    @example('''#### Lifecycle
 
 You can run a function or coroutine as a parallel task by passing it to one of the following register methods:
 
@@ -490,8 +522,9 @@ You can run a function or coroutine as a parallel task by passing it to one of t
 - `ui.on_disconnect`: Called when a client disconnects from NiceGUI. (Optional argument: socket)
 
 When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
-'''
-    with example(lifecycle):
+''')
+    def lifecycle_example():
+        global countdown
         import asyncio
 
         l = ui.label()
@@ -503,7 +536,8 @@ When NiceGUI is shut down or restarted, the startup tasks will be automatically 
 
         # ui.on_connect(countdown)
 
-    with example(ui.timer):
+    @example(ui.timer)
+    def timer_example():
         from datetime import datetime
 
         with ui.row().classes('items-center'):
@@ -520,7 +554,8 @@ When NiceGUI is shut down or restarted, the startup tasks will be automatically 
             lazy_clock = ui.label()
             ui.timer(interval=0.1, callback=lazy_update)
 
-    with example(ui.keyboard):
+    @example(ui.keyboard)
+    def keyboard_example():
         from nicegui.events import KeyEventArguments
 
         def handle_key(e: KeyEventArguments):
@@ -543,7 +578,7 @@ When NiceGUI is shut down or restarted, the startup tasks will be automatically 
         ui.label('Key events can be caught globally by using the keyboard element.')
         ui.checkbox('Track key events').bind_value_to(keyboard, 'active')
 
-    bindings = '''#### Bindings
+    @example('''#### Bindings
 
 NiceGUI is able to directly bind UI elements to models.
 Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes.
@@ -551,8 +586,8 @@ Binding is possible for UI element properties like text, value or visibility and
 Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property.
 To define a one-way binding use the `_from` and `_to` variants of these methods.
 Just pass a property of the model as parameter to these methods to create the binding.
-'''
-    with example(bindings):
+''')
+    def bindings_example():
         class Demo:
             def __init__(self):
                 self.number = 1
@@ -564,13 +599,13 @@ Just pass a property of the model as parameter to these methods to create the bi
             ui.toggle({1: 'a', 2: 'b', 3: 'c'}).bind_value(demo, 'number')
             ui.number().bind_value(demo, 'number')
 
-    ui_updates = '''#### UI Updates
+    @example('''#### UI Updates
 
 NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed.
 In other cases, you can explicitly call `element.update()` or `ui.update(*elements)` to update.
 The example code shows both methods for a `ui.table`, where it is difficult to automatically detect changes in the `options` dictionary.
-'''
-    with example(ui_updates):
+''')
+    def ui_updates_example():
         from random import randint
 
         def add():
@@ -585,13 +620,13 @@ The example code shows both methods for a `ui.table`, where it is difficult to a
         ui.button('Add', on_click=add)
         ui.button('Clear', on_click=clear)
 
-    async_handlers = '''#### Async event handlers
+    @example('''#### Async event handlers
 
 Most elements also support asynchronous event handlers.
 
 Note: You can also pass a `functools.partial` into the `on_click` property to wrap async functions with parameters.
-'''
-    with example(async_handlers):
+''')
+    def async_handlers_example():
         import asyncio
 
         async def async_task():
@@ -603,7 +638,8 @@ Note: You can also pass a `functools.partial` into the `on_click` property to wr
 
     h3('Pages')
 
-    with example(ui.page):
+    @example(ui.page)
+    def page_example():
         @ui.page('/other_page')
         def other_page():
             ui.label('Welcome to the other side')
@@ -617,7 +653,7 @@ Note: You can also pass a `functools.partial` into the `on_click` property to wr
         ui.link('Visit other page', other_page)
         ui.link('Visit dark page', dark_page)
 
-    shared_and_private_pages = '''#### Shared and Private Pages
+    @example('''#### Shared and Private Pages
 
 By default, pages created with the `@ui.page` decorator are "private".
 Their content is re-created for each client.
@@ -631,8 +667,8 @@ Here, the displayed ID remains constant when the browser reloads the page.
 
 All elements that are not created within a decorated page function are automatically added to a new, *shared* index page at route "/".
 To make it "private" or to change other attributes like title, favicon etc. you can wrap it in a page function with `@ui.page('/', ...)` decorator.
-'''
-    with example(shared_and_private_pages):
+''')
+    def shared_and_private_pages_example():
         from uuid import uuid4
 
         @ui.page('/private_page')
@@ -646,20 +682,20 @@ To make it "private" or to change other attributes like title, favicon etc. you 
         ui.link('private page', private_page)
         ui.link('shared page', shared_page)
 
-    page_with_path_parameters = '''#### Pages with Path Parameters
+    @example('''#### Pages with Path Parameters
 
 Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/>).
 If type-annotated, they are automatically converted to bool, int, float and complex values.
 If the page function expects a `request` argument, the request object is automatically provided.
-'''
-    with example(page_with_path_parameters):
+''')
+    def page_with_path_parameters_example():
         @ui.page('/repeat/{word}/{count}')
         def page(word: str, count: int):
             ui.label(word * count)
 
         ui.link('Say hi to Santa!', 'repeat/Ho! /3')
 
-    yield_page_ready = '''#### Yielding for Page-Ready
+    @example('''#### Yielding for Page-Ready
 
 This is a handy alternative to the `on_page_ready` callback of the `@ui.page` decorator.
 
@@ -669,8 +705,8 @@ Also it is possible to do async stuff while the user already sees the content wh
 
 The yield statement returns `nicegui.events.PageEvent`. 
 This contains the websocket of the client.
-    '''
-    with example(yield_page_ready):
+    ''')
+    def yield_page_ready_example():
         import asyncio
         from typing import Generator
 
@@ -687,7 +723,7 @@ This contains the websocket of the client.
 
         ui.link('show page-ready code after yield', '/yield_page_ready')
 
-    page_layout = '''#### Page Layout
+    @example('''#### Page Layout
 
 With `ui.header`, `ui.footer`, `ui.left_drawer` and `ui.right_drawer` you can add additional layout elements to a page.
 The `fixed` argument controls whether the element should scroll or stay fixed on the screen.
@@ -696,8 +732,8 @@ See <https://quasar.dev/layout/header-and-footer> and <https://quasar.dev/layout
 `elevated`, `bordered` and many more.
 With `ui.page_sticky` you can place an element "sticky" on the screen.
 See <https://quasar.dev/layout/page-sticky> for more information.
-    '''
-    with example(page_layout):
+    ''')
+    def page_layout_example():
         @ui.page('/page_layout')
         async def page_layout():
             ui.label('CONTENT')
@@ -713,7 +749,8 @@ See <https://quasar.dev/layout/page-sticky> for more information.
 
         ui.link('show page with fancy layout', page_layout)
 
-    with example(ui.open):
+    @example(ui.open)
+    def ui_open_example():
         @ui.page('/yet_another_page')
         def yet_another_page():
             ui.label('Welcome to yet another page')
@@ -721,15 +758,15 @@ See <https://quasar.dev/layout/page-sticky> for more information.
 
         ui.button('REDIRECT', on_click=lambda e: ui.open(yet_another_page, e.socket))
 
-    sessions = '''#### Sessions
+    @example('''#### Sessions
 
 `ui.page` provides an optional `on_connect` argument to register a callback.
 It is invoked for each new connection to the page.
 
 The optional `request` argument provides insights about the clients URL parameters etc. (see [the JustPy docs](https://justpy.io/tutorial/request_object/) for more details).
 It also enables you to identify sessions over [longer time spans by configuring cookies](https://justpy.io/tutorial/sessions/).
-'''
-    with example(sessions):
+''')
+    def sessions_example():
         from collections import Counter
         from datetime import datetime
 
@@ -749,14 +786,14 @@ It also enables you to identify sessions over [longer time spans by configuring 
 
         ui.link('Visit session demo', session_demo)
 
-    javascript = '''#### JavaScript
+    @example('''#### JavaScript
 
 With `ui.run_javascript()` you can run arbitrary JavaScript code on a page that is executed in the browser.
 The asynchronous function will return after the command(s) are executed.
 The result of the execution is returned as a dictionary containing the response string per websocket.
 You can also set `respond=False` to send a command without waiting for a response.
-'''
-    with example(javascript):
+''')
+    def javascript_example():
         async def alert():
             await ui.run_javascript('alert("Hello!")', respond=False)
 
@@ -770,7 +807,8 @@ You can also set `respond=False` to send a command without waiting for a respons
 
     h3('Routes')
 
-    with example(ui.get):
+    @example(ui.get)
+    def get_example():
         from starlette import requests, responses
 
         @ui.get('/another/route/{id}')
@@ -779,13 +817,15 @@ You can also set `respond=False` to send a command without waiting for a respons
 
         ui.link('Try yet another route!', 'another/route/42')
 
-    with example(ui.add_static_files):
+    @example(ui.add_static_files)
+    def add_static_files_example():
         ui.add_static_files('/examples', 'examples')
         ui.link('Slideshow Example (raw file)', 'examples/slideshow/main.py')
         with ui.image('examples/slideshow/slides/slide1.jpg'):
             ui.label('first image from slideshow').classes('absolute-bottom text-subtitle2')
 
-    with example(ui.add_route):
+    @example(ui.add_route)
+    def add_route_example():
         import starlette
 
         ui.add_route(starlette.routing.Route(
@@ -796,7 +836,7 @@ You can also set `respond=False` to send a command without waiting for a respons
 
     h3('Configuration')
 
-    ui_run = '''#### ui.run
+    @example('''#### ui.run
 
 You can call `ui.run()` with optional arguments:
 
@@ -820,8 +860,8 @@ The environment variables `HOST` and `PORT` can also be used to configure NiceGU
 
 To avoid the potentially costly import of Matplotlib, you set the environment variable `MATPLOTLIB=false`.
 This will make `ui.plot` and `ui.line_plot` unavailable.
-'''
-    with example(ui_run):
+''')
+    def ui_run_example():
         ui.label('dark page on port 7000 without reloading')
 
         # ui.run(dark=True, port=7000, reload=False)
