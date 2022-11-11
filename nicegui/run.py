@@ -7,6 +7,9 @@ from . import globals
 
 
 def run(*, host: str = '0.0.0.0', port: int = 5000, reload: bool = True) -> None:
+    globals.host = host
+    globals.port = port
+
     if inspect.stack()[-2].filename.endswith('spawn.py'):
         return
 

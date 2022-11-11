@@ -13,6 +13,9 @@ sio: AsyncServer
 loop: Optional[asyncio.AbstractEventLoop] = None
 log: logging.Logger = logging.getLogger('nicegui')
 
+host: str
+port: int
+
 client_stack: List['Client'] = []
 clients: Dict[int, 'Client'] = {}
 next_client_id: int = 0

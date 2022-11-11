@@ -44,6 +44,7 @@ class Client:
         elements = json.dumps({id: element.to_dict() for id, element in self.elements.items()})
         return HTMLResponse(TEMPLATE
                             .replace(r'{{ client_id }}', str(self.id))
+                            .replace(r'{{ socket_address }}', f'ws://{globals.host}:{globals.port}')
                             .replace(r'{{ elements | safe }}', elements)
                             .replace(r'{{ vue_html | safe }}', vue_html)
                             .replace(r'{{ vue_styles | safe }}', vue_styles)
