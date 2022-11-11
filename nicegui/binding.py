@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Any, Callable, Optional, Set, Tuple
 
@@ -8,7 +9,6 @@ from justpy.htmlcomponents import HTMLBaseComponent
 
 from . import globals
 from .task_logger import create_task
-from .updatable import Updatable
 
 bindings = defaultdict(list)
 bindable_properties = dict()
@@ -81,6 +81,12 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, ba
     update_views(propagate(other_obj, other_name))
 
 
+def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
+         forward: Callable = lambda x: x, backward: Callable = lambda x: x) -> None:
+    bind_from(self_obj, self_name, other_obj, other_name, backward=backward)
+    bind_to(self_obj, self_name, other_obj, other_name, forward=forward)
+
+
 class BindableProperty:
 
     def __init__(self, on_change: Optional[Callable] = None) -> None:
@@ -104,126 +110,115 @@ class BindableProperty:
             self.on_change(owner, value)
 
 
-class BindMixin(Updatable):
-    """
-    Mixin providing bind methods for target object attributes.
-    """
-
-    def _bind_from(self, target_object: Any, target_name: str, *, attr: str, backward=lambda x: x):
-        bind_from(self, attr, target_object, target_name, backward=backward)
-        return self
-
-    def _bind_to(self, target_object: Any, target_name: str, *, attr: str, forward=lambda x: x):
-        bind_to(self, attr, target_object, target_name, forward=forward)
-        return self
-
-    def _bind(self, target_object: Any, target_name: str, *, attr: str, forward=lambda x: x, backward=lambda x: x):
-        self._bind_from(target_object, target_name, attr=attr, backward=backward)
-        self._bind_to(target_object, target_name, attr=attr, forward=forward)
-        return self
-
-
-class BindTextMixin(BindMixin):
+class BindTextMixin(ABC):
     """
     Mixin providing bind methods for attribute text.
     """
     text = BindableProperty()
 
     def bind_text_to(self, target_object: Any, target_name: str, forward: Callable = lambda x: x):
-        return super()._bind_to(target_object, target_name, attr='text', forward=forward)
+        bind_to(self, 'text', target_object, target_name, forward)
+        return self
 
     def bind_text_from(self, target_object: Any, target_name: str, backward: Callable = lambda x: x):
-        return super()._bind_from(target_object, target_name, attr='text', backward=backward)
+        bind_from(self, 'text', target_object, target_name, backward)
+        return self
 
-    def bind_text(self, target_object: Any, target_name: str, forward: Callable = lambda x: x, backward=lambda x: x):
-        self.bind_text_from(target_object, target_name, backward=backward)
-        self.bind_text_to(target_object, target_name, forward=forward)
+    def bind_text(self, target_object: Any, target_name: str, *,
+                  forward: Callable = lambda x: x, backward: Callable = lambda x: x):
+        bind(self, 'text', target_object, target_name, forward=forward, backward=backward)
         return self
 
     @property
+    @abstractmethod
     def text(self) -> str:
-        return self._content
+        pass
 
     @text.setter
+    @abstractmethod
     def text(self, text: str) -> None:
-        self.set_text(text)
+        pass
 
     def set_text(self, text: str) -> None:
-        self._content = text
-        self.update()
+        self.text = text
 
 
-class BindValueMixin(BindMixin):
+class BindValueMixin:
     """
     Mixin providing bind methods for attribute value.
     """
 
     def bind_value_to(self, target_object: Any, target_name: str, forward: Callable = lambda x: x):
-        return super()._bind_to(target_object, target_name, attr='value', forward=forward)
+        bind_to(self, 'value', target_object, target_name, forward)
+        return self
 
     def bind_value_from(self, target_object: Any, target_name: str, backward: Callable = lambda x: x):
-        return super()._bind_from(target_object, target_name, attr='value', backward=backward)
+        bind_from(self, 'value', target_object, target_name, backward)
+        return self
 
-    def bind_value(self, target_object, target_name, forward: Callable = lambda x: x, backward: Callable = lambda x: x):
-        self.bind_value_from(target_object, target_name, backward=backward)
-        self.bind_value_to(target_object, target_name, forward=forward)
+    def bind_value(self, target_object: Any, target_name: str, *,
+                   forward: Callable = lambda x: x, backward: Callable = lambda x: x):
+        bind(self, 'value', target_object, target_name, forward=forward, backward=backward)
         return self
 
 
-class BindContentMixin(BindMixin):
+class BindContentMixin:
     """
     Mixin providing bind methods for attribute content.
     """
 
     def bind_content_to(self, target_object: Any, target_name: str, forward: Callable = lambda x: x):
-        return super()._bind_to(target_object, target_name, attr='content', forward=forward)
+        bind_to(self, 'content', target_object, target_name, forward)
+        return self
 
     def bind_content_from(self, target_object: Any, target_name: str, backward: Callable = lambda x: x):
-        return super()._bind_from(target_object, target_name, attr='content', backward=backward)
+        bind_from(self, 'content', target_object, target_name, backward)
+        return self
 
-    def bind_content(self, target_object: Any, target_name: str,
+    def bind_content(self, target_object: Any, target_name: str, *,
                      forward: Callable = lambda x: x, backward: Callable = lambda x: x):
-        self.bind_content_from(target_object, target_name, backward=backward)
-        self.bind_content_to(target_object, target_name, forward=forward)
+        bind(self, 'content', target_object, target_name, forward=forward, backward=backward)
         return self
 
 
-class BindVisibilityMixin(BindMixin):
+class BindVisibilityMixin:
     """
     Mixin providing bind methods for attribute visible.
     """
 
     def bind_visibility_to(self, target_object: Any, target_name: str, forward: Callable = lambda x: x):
-        return super()._bind_to(target_object, target_name, attr='visible', forward=forward)
+        bind_to(self, 'visible', target_object, target_name, forward)
+        return self
 
-    def bind_visibility_from(self, target_object: Any, target_name: str,
-                             backward: Callable = lambda x: x, *, value: Any = None):
+    def bind_visibility_from(self, target_object: Any, target_name: str, backward: Callable = lambda x: x, *,
+                             value: Any = None):
         if value is not None:
             def backward(x): return x == value
-        return super()._bind_from(target_object, target_name, attr='visible', backward=backward)
+        bind_from(self, 'visible', target_object, target_name, backward)
+        return self
 
-    def bind_visibility(self, target_object: Any, target_name: str,
-                        forward: Callable = lambda x: x, backward: Callable = lambda x: x, *, value: Any = None):
+    def bind_visibility(self, target_object: Any, target_name: str,  *,
+                        forward: Callable = lambda x: x, backward: Callable = lambda x: x, value: Any = None):
         if value is not None:
             def backward(x): return x == value
-        self.bind_visibility_from(target_object, target_name, backward=backward)
-        self.bind_visibility_to(target_object, target_name, forward=forward)
+        bind(self, 'visible', target_object, target_name, forward=forward, backward=backward)
         return self
 
 
-class BindSourceMixin(BindMixin):
+class BindSourceMixin:
     """
     Mixin providing bind methods for attribute source.
     """
 
     def bind_source_to(self, target_object: Any, target_name: str, forward: Callable = lambda x: x):
-        return super()._bind_to(target_object, target_name, attr='source', forward=forward)
+        bind_to(self, 'source', target_object, target_name, forward)
+        return self
 
     def bind_source_from(self, target_object: Any, target_name: str, backward: Callable = lambda x: x):
-        return super()._bind_from(target_object, target_name, attr='source', backward=backward)
+        bind_from(self, 'source', target_object, target_name, backward)
+        return self
 
-    def bind_source(self, target_object: Any, target_name: str,
+    def bind_source(self, target_object: Any, target_name: str, *,
                     forward: Callable = lambda x: x, backward: Callable = lambda x: x):
-        self.bind_source_from(target_object, target_name, backward=backward)
-        self.bind_source_to(target_object, target_name, forward=forward)
+        bind(self, 'source', target_object, target_name, forward=forward, backward=backward)
         return self

@@ -1,11 +1,10 @@
 from typing import Callable, Optional
 
-from ..binding import BindTextMixin
-from ..element import Element
 from ..events import ClickEventArguments, handle_event
+from .text_element import TextElement
 
 
-class Button(Element, BindTextMixin):
+class Button(TextElement):
 
     def __init__(self, text: str = '', *, on_click: Optional[Callable] = None) -> None:
         """Button
@@ -13,7 +12,7 @@ class Button(Element, BindTextMixin):
         :param text: the label of the button
         :param on_click: callback which is invoked when button is pressed
         """
-        super().__init__('q-btn')
+        super().__init__('q-btn', text)
         self.text = text
         self.props('color=primary')
 

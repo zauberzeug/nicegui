@@ -1,14 +1,14 @@
 import shlex
+from abc import ABC
 from typing import Callable, Dict, List, Optional
 
 from . import globals
 from .event_listener import EventListener
 from .slot import Slot
 from .task_logger import create_task
-from .updatable import Updatable
 
 
-class Element(Updatable):
+class Element(ABC):
 
     def __init__(self, tag: str) -> None:
         self.client = globals.client_stack[-1]

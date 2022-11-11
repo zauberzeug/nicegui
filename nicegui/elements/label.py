@@ -1,8 +1,7 @@
-from ..binding import BindTextMixin
-from ..element import Element
+from .text_element import TextElement
 
 
-class Label(Element, BindTextMixin):
+class Label(TextElement):
 
     def __init__(self, text: str = '') -> None:
         """Label
@@ -11,5 +10,4 @@ class Label(Element, BindTextMixin):
 
         :param text: the content of the label
         """
-        super().__init__('div')
-        self.text = text
+        super().__init__('div', text)
