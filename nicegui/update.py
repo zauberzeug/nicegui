@@ -1,6 +1,6 @@
-from .elements.element import Element
+from .element import Element
 
 
-def update(self, *elements: Element) -> None:
+def update(*elements: Element) -> None:
     for element in elements:
         element.update()

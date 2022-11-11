@@ -9,3 +9,4 @@ from .elements.separator import Separator as separator
 from .notify import notify
 from .page import page
 from .run import run
+from .update import update
