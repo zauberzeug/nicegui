@@ -11,6 +11,7 @@ from .elements.image import Image as image
 from .elements.label import Label as label
 from .elements.row import Row as row
 from .elements.separator import Separator as separator
+from .elements.tooltip import Tooltip as tooltip
 from .notify import notify
 from .page import page
 from .run import run
