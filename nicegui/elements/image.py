@@ -1,5 +1,5 @@
-from ..binding import BindSourceMixin
 from ..element import Element
+from .binding_mixins import BindSourceMixin
 
 
 class Image(Element, BindSourceMixin):

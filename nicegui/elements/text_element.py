@@ -1,5 +1,5 @@
-from ..binding import BindTextMixin
 from ..element import Element
+from .binding_mixins import BindTextMixin
 
 
 class TextElement(Element, BindTextMixin):
