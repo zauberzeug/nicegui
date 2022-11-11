@@ -6,8 +6,9 @@ from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi_socketio import SocketManager
 
-from . import globals, vue
+from . import binding, globals, vue
 from .client import Client
+from .task_logger import create_task
 
 globals.app = app = FastAPI(routes=vue.generate_js_routes())
 globals.sio = sio = SocketManager(app=app)._sio
@@ -25,6 +26,7 @@ def index():
 @app.on_event('startup')
 def on_startup() -> None:
     globals.loop = asyncio.get_running_loop()
+    create_task(binding.loop())
 
 
 @sio.on('connect')

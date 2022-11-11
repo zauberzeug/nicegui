@@ -23,7 +23,7 @@ async def loop():
                 propagate(target_obj, target_name, visited)
         if time.time() - t > 0.01:
             logging.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
-        await asyncio.sleep(globals.config.binding_refresh_interval)
+        await asyncio.sleep(globals.binding_refresh_interval)
 
 
 def propagate(source_obj: Any, source_name: str, visited: Set[Tuple[int, str]] = None) -> None:
@@ -77,6 +77,7 @@ class BindableProperty:
             return
         setattr(owner, '___' + self.name, value)
         bindable_properties[(id(owner), self.name)] = owner
+        propagate(owner, self.name)
         if value_changed and self.on_change is not None:
             self.on_change(owner, value)
 
