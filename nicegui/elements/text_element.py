@@ -3,7 +3,7 @@ from ..element import Element
 
 
 class TextElement(Element, BindTextMixin):
-    """An element with its _content representing a bindable text property."""
+    """An element with a bindable text property."""
 
     def __init__(self, tag: str, text: str) -> None:
         super().__init__(tag)
@@ -11,9 +11,9 @@ class TextElement(Element, BindTextMixin):
 
     @property
     def text(self) -> str:
-        return self._content
+        return self._text
 
     @text.setter
     def text(self, text: str) -> None:
-        self._content = text
+        self._text = text
         self.update()

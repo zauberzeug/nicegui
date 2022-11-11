@@ -41,8 +41,8 @@
         const slots = {};
         Object.entries(element.slots).forEach(([name, ids]) => {
           const children = ids.map(id => render_recursively(elements, id));
-          if (name == 'default' && element.content) {
-            children.unshift(element.content);
+          if (name == 'default' && element.text) {
+            children.unshift(element.text);
           }
           slots[name] = () => children;
         });

@@ -19,7 +19,7 @@ class Element(ABC):
         self._style: Dict[str, str] = {}
         self._props: Dict[str, str] = {}
         self._event_listeners: List[EventListener] = []
-        self._content: str = ''
+        self._text: str = ''
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
 
@@ -49,7 +49,7 @@ class Element(ABC):
             'style': self._style,
             'props': self._props,
             'events': events,
-            'content': self._content,
+            'text': self._text,
             'slots': {name: [child.id for child in slot.children] for name, slot in self.slots.items()},
         }
 
