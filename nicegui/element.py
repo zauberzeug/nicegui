@@ -2,7 +2,7 @@ import shlex
 from typing import Callable, Dict, List, Optional
 
 from . import globals
-from .event import Event
+from .event_listener import EventListener
 from .slot import Slot
 from .task_logger import create_task
 from .updatable import Updatable
@@ -11,37 +11,37 @@ from .updatable import Updatable
 class Element(Updatable):
 
     def __init__(self, tag: str) -> None:
-        client = globals.client_stack[-1]
-        self.id = client.next_element_id
-        client.next_element_id += 1
+        self.client = globals.client_stack[-1]
+        self.id = self.client.next_element_id
+        self.client.next_element_id += 1
         self.tag = tag
         self._classes: List[str] = []
         self._style: Dict[str, str] = {}
         self._props: Dict[str, str] = {}
-        self._events: List[Event] = []
+        self._event_listeners: List[EventListener] = []
         self._content: str = ''
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
 
-        client.elements[self.id] = self
-        if client.slot_stack:
-            client.slot_stack[-1].children.append(self)
+        self.client.elements[self.id] = self
+        if self.client.slot_stack:
+            self.client.slot_stack[-1].children.append(self)
 
     def add_slot(self, name: str) -> Slot:
         self.slots[name] = Slot(self, name)
         return self.slots[name]
 
     def __enter__(self):
-        globals.client_stack[-1].slot_stack.append(self.default_slot)
+        self.client.slot_stack.append(self.default_slot)
         return self
 
     def __exit__(self, *_):
-        globals.client_stack[-1].slot_stack.pop()
+        self.client.slot_stack.pop()
 
     def to_dict(self) -> Dict:
         events: Dict[str, List[str]] = {}
-        for event in self._events:
-            events[event.type] = events.get(event.type, []) + event.args
+        for listener in self._event_listeners:
+            events[listener.type] = events.get(listener.type, []) + listener.args
         return {
             'id': self.id,
             'tag': self.tag,
@@ -116,13 +116,13 @@ class Element(Updatable):
 
     def on(self, type: str, handler: Optional[Callable], args: List[str] = []):
         if handler:
-            self._events.append(Event(element_id=self.id, type=type, args=args, handler=handler))
+            self._event_listeners.append(EventListener(element_id=self.id, type=type, args=args, handler=handler))
         return self
 
     def handle_event(self, msg: Dict) -> None:
-        for event in self._events:
-            if event.type == msg['type']:
-                event.handler(msg)
+        for listener in self._event_listeners:
+            if listener.type == msg['type']:
+                listener.handler(msg)
 
     def update(self) -> None:
         if not globals.loop:
@@ -130,10 +130,10 @@ class Element(Updatable):
         ids: List[int] = []
 
         def collect_ids(id: str):
-            for slot in globals.client_stack[-1].elements[id].slots.values():
+            for slot in self.client.elements[id].slots.values():
                 for child in slot.children:
                     collect_ids(child.id)
             ids.append(id)
         collect_ids(self.id)
-        elements = {id: globals.client_stack[-1].elements[id].to_dict() for id in ids}
-        create_task(globals.sio.emit('update', {'elements': elements}, room=str(globals.client_stack[-1].id)))
+        elements = {id: self.client.elements[id].to_dict() for id in ids}
+        create_task(globals.sio.emit('update', {'elements': elements}, room=str(self.client.id)))

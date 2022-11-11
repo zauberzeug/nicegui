@@ -3,7 +3,7 @@ from typing import Callable, List
 
 
 @dataclass
-class Event:
+class EventListener:
     element_id: str
     type: str
     args: List[str]

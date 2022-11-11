@@ -3,22 +3,21 @@ from dataclasses import dataclass
 from inspect import signature
 from typing import TYPE_CHECKING, Any, Callable, List, Optional
 
-from starlette.websockets import WebSocket
-
 from . import globals
 from .auto_context import Context
+from .client import Client
 from .helpers import is_coroutine
 from .lifecycle import on_startup
 from .task_logger import create_task
 
 if TYPE_CHECKING:
-    from .elements.element import Element
+    from .element import Element
 
 
 @dataclass
 class EventArguments:
     sender: 'Element'
-    socket: Optional[WebSocket]
+    client: Client
 
 
 @dataclass
@@ -229,26 +228,22 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
-@dataclass
-class PageEvent:
-    socket: WebSocket
-
-
-def handle_event(handler: Optional[Callable], arguments: EventArguments) -> Optional[bool]:
+def handle_event(handler: Optional[Callable], arguments: EventArguments) -> None:
     try:
         if handler is None:
             return False
         no_arguments = not signature(handler).parameters
-        with Context(arguments.sender.parent_view):
-            result = handler() if no_arguments else handler(arguments)
+        # TODO: with Context(arguments.sender.parent_view)
+        result = handler() if no_arguments else handler(arguments)
         if is_coroutine(handler):
-            async def wait_for_result():
-                with Context(arguments.sender.parent_view) as context:
-                    await context.watch_asyncs(result)
             if globals.loop and globals.loop.is_running():
+                async def wait_for_result():
+                    # TODO
+                    # with Context(arguments.sender.parent_view) as context:
+                    #     await context.watch_asyncs(result)
+                    await result
                 create_task(wait_for_result(), name=str(handler))
             else:
                 on_startup(None, wait_for_result())
-        return False
     except Exception:
         traceback.print_exc()
