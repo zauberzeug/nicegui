@@ -4,6 +4,7 @@ from .elements.card import Card as card
 from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section
 from .elements.checkbox import Checkbox as checkbox
+from .elements.colors import Colors as colors
 from .elements.column import Column as column
 from .elements.icon import Icon as icon
 from .elements.image import Image as image
