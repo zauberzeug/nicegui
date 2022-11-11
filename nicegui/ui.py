@@ -1,3 +1,4 @@
+from .elements.badge import Badge as badge
 from .elements.button import Button as button
 from .elements.card import Card as card
 from .elements.card import CardActions as card_actions
