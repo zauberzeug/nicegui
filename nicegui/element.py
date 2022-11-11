@@ -1,14 +1,14 @@
 import shlex
-from abc import ABC
 from typing import Callable, Dict, List, Optional
 
 from . import globals
 from .event import Event
 from .slot import Slot
 from .task_logger import create_task
+from .updatable import Updatable
 
 
-class Element(ABC):
+class Element(Updatable):
 
     def __init__(self, tag: str) -> None:
         client = globals.client_stack[-1]
@@ -19,7 +19,7 @@ class Element(ABC):
         self._style: Dict[str, str] = {}
         self._props: Dict[str, str] = {}
         self._events: List[Event] = []
-        self.content: str = ''
+        self._content: str = ''
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
 
@@ -49,7 +49,7 @@ class Element(ABC):
             'style': self._style,
             'props': self._props,
             'events': events,
-            'content': self.content,
+            'content': self._content,
             'slots': {name: [child.id for child in slot.children] for name, slot in self.slots.items()},
         }
 
@@ -114,8 +114,9 @@ class Element(ABC):
             self.update()
         return self
 
-    def on(self, type: str, handler: Callable, args: List[str] = []):
-        self._events.append(Event(element_id=self.id, type=type, args=args, handler=handler))
+    def on(self, type: str, handler: Optional[Callable], args: List[str] = []):
+        if handler:
+            self._events.append(Event(element_id=self.id, type=type, args=args, handler=handler))
         return self
 
     def handle_event(self, msg: Dict) -> None:
@@ -123,7 +124,7 @@ class Element(ABC):
             if event.type == msg['type']:
                 event.handler(msg)
 
-    def update(self) -> str:
+    def update(self) -> None:
         if not globals.loop:
             return
         ids: List[int] = []

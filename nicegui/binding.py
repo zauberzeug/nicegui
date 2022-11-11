@@ -8,6 +8,7 @@ from justpy.htmlcomponents import HTMLBaseComponent
 
 from . import globals
 from .task_logger import create_task
+from .updatable import Updatable
 
 bindings = defaultdict(list)
 bindable_properties = dict()
@@ -103,7 +104,7 @@ class BindableProperty:
             self.on_change(owner, value)
 
 
-class BindMixin:
+class BindMixin(Updatable):
     """
     Mixin providing bind methods for target object attributes.
     """
@@ -126,6 +127,7 @@ class BindTextMixin(BindMixin):
     """
     Mixin providing bind methods for attribute text.
     """
+    text = BindableProperty()
 
     def bind_text_to(self, target_object, target_name, forward=lambda x: x):
         return super()._bind_to(attr='text', target_object=target_object, target_name=target_name, forward=forward)
@@ -137,6 +139,18 @@ class BindTextMixin(BindMixin):
         self.bind_text_from(target_object=target_object, target_name=target_name, backward=backward)
         self.bind_text_to(target_object=target_object, target_name=target_name, forward=forward)
         return self
+
+    @property
+    def text(self) -> str:
+        return self._content
+
+    @text.setter
+    def text(self, text: str) -> None:
+        self.set_text(text)
+
+    def set_text(self, text: str) -> None:
+        self._content = text
+        self.update()
 
 
 class BindValueMixin(BindMixin):
