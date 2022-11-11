@@ -111,6 +111,7 @@ class BindValueMixin:
     """
     Mixin providing bind methods for attribute value.
     """
+    value = BindableProperty(on_change=lambda sender, value: sender.on_value_change(value))
 
     def bind_value_to(self, target_object: Any, target_name: str, forward: Callable = lambda x: x):
         bind_to(self, 'value', target_object, target_name, forward)
@@ -125,11 +126,18 @@ class BindValueMixin:
         bind(self, 'value', target_object, target_name, forward=forward, backward=backward)
         return self
 
+    def set_value(self, value: str) -> None:
+        self.value = value
+
+    def on_value_change(self, value: str) -> None:
+        pass
+
 
 class BindContentMixin:
     """
     Mixin providing bind methods for attribute content.
     """
+    content = BindableProperty(on_change=lambda sender, content: sender.on_content_change(content))
 
     def bind_content_to(self, target_object: Any, target_name: str, forward: Callable = lambda x: x):
         bind_to(self, 'content', target_object, target_name, forward)
@@ -144,11 +152,18 @@ class BindContentMixin:
         bind(self, 'content', target_object, target_name, forward=forward, backward=backward)
         return self
 
+    def set_content(self, content: str) -> None:
+        self.content = content
+
+    def on_content_change(self, content: str) -> None:
+        pass
+
 
 class BindVisibilityMixin:
     """
     Mixin providing bind methods for attribute visible.
     """
+    visibility = BindableProperty(on_change=lambda sender, visibility: sender.on_visibility_change(visibility))
 
     def bind_visibility_to(self, target_object: Any, target_name: str, forward: Callable = lambda x: x):
         bind_to(self, 'visible', target_object, target_name, forward)
@@ -167,6 +182,12 @@ class BindVisibilityMixin:
             def backward(x): return x == value
         bind(self, 'visible', target_object, target_name, forward=forward, backward=backward)
         return self
+
+    def set_visibility(self, visibility: str) -> None:
+        self.visibility = visibility
+
+    def on_visibility_change(self, visibility: str) -> None:
+        pass
 
 
 class BindSourceMixin:
