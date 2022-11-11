@@ -173,6 +173,7 @@ class BindSourceMixin:
     """
     Mixin providing bind methods for attribute source.
     """
+    source = BindableProperty(on_change=lambda sender, source: sender.on_source_change(source))
 
     def bind_source_to(self, target_object: Any, target_name: str, forward: Callable = lambda x: x):
         bind_to(self, 'source', target_object, target_name, forward)
@@ -186,3 +187,9 @@ class BindSourceMixin:
                     forward: Callable = lambda x: x, backward: Callable = lambda x: x):
         bind(self, 'source', target_object, target_name, forward=forward, backward=backward)
         return self
+
+    def set_source(self, source: str) -> None:
+        self.source = source
+
+    def on_source_change(self, source: str) -> None:
+        pass
