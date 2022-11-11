@@ -1,66 +1,50 @@
-# isort:skip_file
 import asyncio
-from typing import Awaitable, Callable
+import urllib.parse
+from typing import Dict
 
-if True:  # NOTE: prevent formatter from mixing up these lines
-    import builtins
-    print_backup = builtins.print
-    builtins.print = lambda *args, **kwargs: kwargs.get('flush') and print_backup(*args, **kwargs)
-    from .ui import Ui  # NOTE: before justpy
-    import justpy as jp
-    builtins.print = print_backup
+from fastapi import FastAPI
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi_socketio import SocketManager
 
-from . import binding, globals
-from .page import create_favicon_routes, create_page_routes, init_auto_index_page
-from .task_logger import create_task
-from .routes import create_exclude_routes
-from .timer import Timer
+from . import globals, vue
+from .client import Client
 
-jp.app.router.on_startup.clear()  # NOTE: remove JustPy's original startup function
+globals.app = app = FastAPI(routes=vue.generate_js_routes())
+globals.sio = sio = SocketManager(app=app)._sio
 
+app.add_middleware(GZipMiddleware)
 
-@jp.app.on_event('startup')
-async def patched_justpy_startup():
-    jp.WebPage.loop = jp.asyncio.get_event_loop()
-    jp.JustPy.loop = jp.WebPage.loop
-    jp.JustPy.STATIC_DIRECTORY = jp.os.environ["STATIC_DIRECTORY"]
-    print(f'NiceGUI ready to go on {"https" if jp.SSL_KEYFILE else "http"}://{jp.HOST}:{jp.PORT}')
+Client().__enter__()
 
 
-@jp.app.on_event('startup')
-def startup():
-    globals.state = globals.State.STARTING
+@app.get('/')
+def index():
+    return globals.client_stack[-1].build_response()
+
+
+@app.on_event('startup')
+def on_startup() -> None:
     globals.loop = asyncio.get_running_loop()
-    init_auto_index_page()
-    create_page_routes()
-    create_favicon_routes()
-    create_exclude_routes()
-    globals.tasks.extend(create_task(t.coro, name=t.name) for t in Timer.prepared_coroutines)
-    Timer.prepared_coroutines.clear()
-    globals.tasks.extend(create_task(t, name='startup task')
-                         for t in globals.startup_handlers if isinstance(t, Awaitable))
-    [safe_invoke(t) for t in globals.startup_handlers if isinstance(t, Callable)]
-    jp.run_task(binding.loop())
-    globals.state = globals.State.STARTED
 
 
-@jp.app.on_event('shutdown')
-def shutdown():
-    globals.state = globals.State.STOPPING
-    [create_task(t, name='shutdown task') for t in globals.shutdown_handlers if isinstance(t, Awaitable)]
-    [safe_invoke(t) for t in globals.shutdown_handlers if isinstance(t, Callable)]
-    [t.cancel() for t in globals.tasks]
-    globals.state = globals.State.STOPPED
+@sio.on('connect')
+async def handle_connect(sid: str, _) -> None:
+    client = get_client(sid)
+    client.environ = sio.get_environ(sid)
+    sio.enter_room(sid, str(client.id))
 
 
-def safe_invoke(func: Callable):
-    try:
-        result = func()
-        if isinstance(result, Awaitable):
-            create_task(result)
-    except:
-        globals.log.exception(f'could not invoke {func}')
+@sio.on('event')
+def handle_event(sid: str, msg: Dict) -> None:
+    client = get_client(sid)
+    with client:
+        sender = client.elements.get(msg['id'])
+        if sender:
+            sender.handle_event(msg)
 
 
-app = globals.app = jp.app
-ui = Ui()
+def get_client(sid: str) -> Client:
+    query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
+    query = urllib.parse.parse_qs(query_bytes.decode())
+    client_id = int(query['client_id'][0])
+    return globals.clients[client_id]

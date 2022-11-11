@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>NiceGUI</title>
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link href="https://cdn.jsdelivr.net/npm/quasar@2.10.0/dist/quasar.prod.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quasar@2.10.0/dist/quasar.umd.prod.js"></script>
+
+    {{ vue_styles | safe }} {{ vue_html | safe }}
+    <div id="app"></div>
+    <script type="module">
+      const True = true;
+      const False = false;
+      const None = undefined;
+
+      const elements = {{ elements | safe }};
+
+      function render_recursively(elements, id) {
+        const element = elements[id];
+        const props = {
+          id: element.id,
+          class: element.class.join(' ') || undefined,
+          style: Object.entries(element.style).reduce((str, [p, val]) => `${str}${p}:${val};`, '') || undefined,
+          ...element.props,
+        };
+        Object.entries(element.events).forEach(([type, arg_names]) => {
+          props['on' + type[0].toUpperCase() + type.substring(1)] = (e) => {
+            const args = typeof e === 'object' ? Object.fromEntries(arg_names.map(a => [a, e[a]])) : e;
+            window.socket.emit("event", {id: element.id, type, args});
+          };
+        });
+        const slots = {};
+        Object.entries(element.slots).forEach(([name, ids]) => {
+          const children = ids.map(id => render_recursively(elements, id));
+          if (name == 'default' && element.content) {
+            children.unshift(element.content);
+          }
+          slots[name] = () => children;
+        });
+        return Vue.h(Vue.resolveComponent(element.tag), props, slots);
+      }
+
+      const app = Vue.createApp({
+        data() {
+          return {
+            elements,
+          };
+        },
+        render() {
+          return render_recursively(this.elements, 0);
+        },
+        mounted() {
+          window.socket = io("ws://127.0.0.1:5000", { path: "/ws/socket.io", query: { client_id: {{ client_id }} } });
+          window.socket.on("update", (msg) => {
+            Object.entries(msg.elements).forEach(([id, element]) => this.elements[element.id] = element);
+          });
+          window.socket.on("notify", (msg) => Quasar.Notify.create(msg));
+          window.socket.on("disconnect", () => window.location.reload());
+        },
+      }).use(Quasar);
+
+      {{ vue_scripts | safe }}
+      {{ js_imports | safe }}
+
+      app.mount("#app");
+    </script>
+  </body>
+</html>

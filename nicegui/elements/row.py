@@ -1,14 +1,12 @@
-import justpy as jp
-
-from .group import Group
+from ..element import Element
 
 
-class Row(Group):
+class Row(Element):
 
-    def __init__(self):
+    def __init__(self) -> None:
         '''Row Element
 
         Provides a container which arranges its child in a row.
         '''
-        view = jp.QDiv(classes='row items-start gap-4', delete_flag=False, temp=False)
-        super().__init__(view)
+        super().__init__('div')
+        self.classes('row items-start gap-4')

@@ -4,7 +4,11 @@
       "path": "."
     }
   ],
-  "settings": {},
+  "settings": {
+    "files.associations": {
+      "*.html": "jinja-html"
+    }
+  },
   "extensions": {
     "recommendations": [
       "ms-python.vscode-pylance",

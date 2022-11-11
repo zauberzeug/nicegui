@@ -5,7 +5,7 @@ import time
 from typing import Any
 
 
-def measure(*, reset: bool = False, ms: bool = False):
+def measure(*, reset: bool = False, ms: bool = False) -> None:
     global t
     if 't' in globals() and not reset:
         dt = time.time() - t

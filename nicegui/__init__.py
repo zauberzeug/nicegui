@@ -1,2 +1,2 @@
-from nicegui import elements
-from nicegui.nicegui import app, ui
+from . import elements, globals, ui
+from .nicegui import app

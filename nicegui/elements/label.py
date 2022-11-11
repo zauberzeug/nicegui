@@ -1,24 +1,28 @@
-import justpy as jp
-
 from ..binding import BindableProperty, BindTextMixin
-from .element import Element
+from ..element import Element
 
 
 class Label(Element, BindTextMixin):
     text = BindableProperty()
 
-    def __init__(self, text: str = ''):
+    def __init__(self, text: str = '') -> None:
         """Label
 
         Displays some text.
 
         :param text: the content of the label
         """
-        view = jp.Div(text=text, temp=False)
-        super().__init__(view)
-
+        super().__init__('div')
         self.text = text
-        self.bind_text_to(self.view, 'text')
 
-    def set_text(self, text: str):
+    @property
+    def text(self) -> str:
+        return self.content
+
+    @text.setter
+    def text(self, value: str) -> None:
+        self.content = value
+        self.update()
+
+    def set_text(self, text: str) -> None:
         self.text = text
