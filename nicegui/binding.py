@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import time
-from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Any, Callable, Optional, Set, Tuple
 
@@ -44,12 +43,14 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forw
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
         active_links.append((self_obj, self_name, other_obj, other_name, forward))
+    propagate(self_obj, self_name)
 
 
 def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, backward: Callable) -> None:
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
         active_links.append((other_obj, other_name, self_obj, self_name, backward))
+    propagate(other_obj, other_name)
 
 
 def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
@@ -80,11 +81,11 @@ class BindableProperty:
             self.on_change(owner, value)
 
 
-class BindTextMixin(ABC):
+class BindTextMixin:
     """
     Mixin providing bind methods for attribute text.
     """
-    text = BindableProperty()
+    text = BindableProperty(on_change=lambda sender, text: sender.on_text_change(text))
 
     def bind_text_to(self, target_object: Any, target_name: str, forward: Callable = lambda x: x):
         bind_to(self, 'text', target_object, target_name, forward)
@@ -99,18 +100,11 @@ class BindTextMixin(ABC):
         bind(self, 'text', target_object, target_name, forward=forward, backward=backward)
         return self
 
-    @property
-    @abstractmethod
-    def text(self) -> str:
-        pass
-
-    @text.setter
-    @abstractmethod
-    def text(self, text: str) -> None:
-        pass
-
     def set_text(self, text: str) -> None:
         self.text = text
+
+    def on_text_change(self, text: str) -> None:
+        pass
 
 
 class BindValueMixin:

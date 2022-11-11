@@ -8,12 +8,7 @@ class TextElement(Element, BindTextMixin):
     def __init__(self, tag: str, text: str) -> None:
         super().__init__(tag)
         self.text = text
+        self.bind_text_to(self, '_text')
 
-    @property
-    def text(self) -> str:
-        return self._text
-
-    @text.setter
-    def text(self, text: str) -> None:
-        self._text = text
+    def on_text_change(self, _) -> None:
         self.update()
