@@ -13,7 +13,7 @@ class Colors(Element):
                  positive='#21ba45',
                  negative='#c10015',
                  info='#31ccec',
-                 warning='#f2c037'):
+                 warning='#f2c037') -> None:
         """Color Theming
 
         Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/>`_.
