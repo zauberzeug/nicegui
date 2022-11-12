@@ -1,4 +1,4 @@
-from .text_element import TextElement
+from .mixins.text_element import TextElement
 
 
 class Badge(TextElement):
@@ -15,7 +15,8 @@ class Badge(TextElement):
         :param text_color: overrides text color (if needed); color name from the Quasar Color Palette (default: "white")
         :param outline: use 'outline' design (colored text and borders only) (default: False)
         """
-        super().__init__('q-badge', text)
+        super().__init__('q-badge')
+        self.init_text(text)
         self._props['color'] = color
         self._props['text_color'] = text_color
         self._props['outline'] = outline

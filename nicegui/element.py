@@ -3,13 +3,13 @@ from abc import ABC
 from typing import Callable, Dict, List, Optional
 
 from . import globals
-from .elements.binding_mixins import BindVisibilityMixin
+from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
 from .task_logger import create_task
 
 
-class Element(ABC, BindVisibilityMixin):
+class Element(ABC, Visibility):
 
     def __init__(self, tag: str) -> None:
         self.client = globals.client_stack[-1]
@@ -23,19 +23,12 @@ class Element(ABC, BindVisibilityMixin):
         self._text: str = ''
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
-        self.visible = True
 
         self.client.elements[self.id] = self
         if self.client.slot_stack:
             self.client.slot_stack[-1].children.append(self)
 
-    def on_visibility_change(self, visible: str) -> None:
-        if visible and 'hidden' in self._classes:
-            self._classes.remove('hidden')
-            self.update()
-        if not visible and 'hidden' not in self._classes:
-            self._classes.append('hidden')
-            self.update()
+        self.init_visibility()
 
     def add_slot(self, name: str) -> Slot:
         self.slots[name] = Slot(self, name)

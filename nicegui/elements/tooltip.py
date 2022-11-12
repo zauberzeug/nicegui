@@ -1,4 +1,4 @@
-from .text_element import TextElement
+from .mixins.text_element import TextElement
 
 
 class Tooltip(TextElement):
@@ -10,4 +10,5 @@ class Tooltip(TextElement):
 
         :param text: the content of the tooltip
         """
-        super().__init__('q-tooltip', text)
+        super().__init__('q-tooltip')
+        self.init_text(text)

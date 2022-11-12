@@ -1,8 +1,7 @@
-from ..element import Element
-from .binding_mixins import BindSourceMixin
+from .mixins.source_element import SourceElement
 
 
-class Image(Element, BindSourceMixin):
+class Image(SourceElement):
 
     def __init__(self, source: str = '') -> None:
         """Image
@@ -12,9 +11,4 @@ class Image(Element, BindSourceMixin):
         :param source: the source of the image; can be a URL or a base64 string
         """
         super().__init__('q-img')
-        self.source = source
-        self._props['src'] = source
-
-    def on_source_change(self, source: str) -> None:
-        self._props['src'] = source
-        self.update()
+        self.init_source(source)

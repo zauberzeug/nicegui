@@ -1,4 +1,4 @@
-from .text_element import TextElement
+from .mixins.text_element import TextElement
 
 
 class Label(TextElement):
@@ -10,4 +10,5 @@ class Label(TextElement):
 
         :param text: the content of the label
         """
-        super().__init__('div', text)
+        super().__init__('div')
+        self.init_text(text)

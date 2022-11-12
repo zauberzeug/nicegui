@@ -1,8 +1,7 @@
-from ..element import Element
-from .binding_mixins import BindContentMixin
+from .mixins.content_element import ContentElement
 
 
-class Html(Element, BindContentMixin):
+class Html(ContentElement):
 
     def __init__(self, content: str = '') -> None:
         """HTML Element
@@ -15,11 +14,4 @@ class Html(Element, BindContentMixin):
         :param content: the HTML code to be displayed
         """
         super().__init__('div')
-        self.content = content
-        self.on_content_change(content)
-
-    def on_content_change(self, content: str) -> None:
-        if '</script>' in content:
-            raise ValueError('HTML elements must not contain <script> tags. Use ui.add_body_html() instead.')
-        self._text = content
-        self.update()
+        self.init_content(content)

@@ -1,7 +1,7 @@
 from typing import Callable, Optional
 
 from ..events import ClickEventArguments, handle_event
-from .text_element import TextElement
+from .mixins.text_element import TextElement
 
 
 class Button(TextElement):
@@ -12,8 +12,8 @@ class Button(TextElement):
         :param text: the label of the button
         :param on_click: callback which is invoked when button is pressed
         """
-        super().__init__('q-btn', text)
-        self.text = text
-        self.props('color=primary')
+        super().__init__('q-btn')
+        self.init_text(text)
+        self._props['color'] = 'primary'
 
         self.on('click', lambda _: handle_event(on_click, ClickEventArguments(sender=self, client=self.client)))
