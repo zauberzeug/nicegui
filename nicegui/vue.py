@@ -44,7 +44,6 @@ def generate_js_routes() -> List[Route]:
     routes: List[Route] = []
     for component in components.values():
         for dependency in component.dependencies:
-            print(dependency, flush=True)
             routes.append(Route(f'/_vue/{component.name}/{dependency}',
                                 lambda _, path=dependency: FileResponse(path, media_type='text/javascript')))
     for component in get_js_components():

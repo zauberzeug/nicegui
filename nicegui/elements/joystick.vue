@@ -1,15 +1,15 @@
 <template>
-  <div class="joystick"></div>
+  <div></div>
 </template>
 
 <script>
 export default {
   mounted() {
     const joystick = nipplejs.create({
-      zone: document.querySelector(".joystick"),
+      zone: this.$el,
       position: { left: "50%", top: "50%" },
       dynamicPage: true,
-      ...this.$props.options,
+      ...this.options,
     });
     joystick.on("start", (e) => this.$emit("start", e));
     joystick.on("move", (_, data) => this.$emit("move", { data }));
