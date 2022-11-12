@@ -10,5 +10,4 @@ class Label(TextElement):
 
         :param text: the content of the label
         """
-        super().__init__('div')
-        self.init_text(text)
+        super().__init__(tag='div', text=text)

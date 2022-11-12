@@ -12,6 +12,7 @@ from .task_logger import create_task
 class Element(ABC, Visibility):
 
     def __init__(self, tag: str) -> None:
+        super().__init__()
         self.client = globals.client_stack[-1]
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
@@ -27,8 +28,6 @@ class Element(ABC, Visibility):
         self.client.elements[self.id] = self
         if self.client.slot_stack:
             self.client.slot_stack[-1].children.append(self)
-
-        self.init_visibility()
 
     def add_slot(self, name: str) -> Slot:
         self.slots[name] = Slot(self, name)

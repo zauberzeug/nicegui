@@ -13,5 +13,4 @@ class Html(ContentElement):
 
         :param content: the HTML code to be displayed
         """
-        super().__init__('div')
-        self.init_content(content)
+        super().__init__(tag='div', content=content)

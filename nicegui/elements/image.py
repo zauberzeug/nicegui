@@ -10,5 +10,4 @@ class Image(SourceElement):
 
         :param source: the source of the image; can be a URL or a base64 string
         """
-        super().__init__('q-img')
-        self.init_source(source)
+        super().__init__(tag='q-img', source=source)

@@ -13,6 +13,4 @@ class Checkbox(TextElement, ValueElement):
         :param value: whether it should be checked initially (default: `False`)
         :param on_change: callback to execute when value changes
         """
-        super().__init__('q-checkbox')
-        self.init_text(text)
-        self.init_value(value, on_change)
+        super().__init__(tag='q-checkbox', text=text, value=value, on_value_change=on_change)

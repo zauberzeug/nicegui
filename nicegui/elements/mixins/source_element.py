@@ -7,7 +7,8 @@ from ...element import Element
 class SourceElement(Element):
     source = BindableProperty(on_change=lambda sender, source: sender.on_source_change(source))
 
-    def init_source(self, source: str) -> None:
+    def __init__(self, *, source: str, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.source = source
         self._props['src'] = source
 

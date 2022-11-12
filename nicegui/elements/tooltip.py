@@ -10,5 +10,4 @@ class Tooltip(TextElement):
 
         :param text: the content of the tooltip
         """
-        super().__init__('q-tooltip')
-        self.init_text(text)
+        super().__init__(tag='q-tooltip', text=text)

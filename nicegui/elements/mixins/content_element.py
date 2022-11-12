@@ -7,7 +7,8 @@ from ...element import Element
 class ContentElement(Element):
     content = BindableProperty(on_change=lambda sender, content: sender.on_content_change(content))
 
-    def init_content(self, content: str) -> None:
+    def __init__(self, *, content: str, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.content = content
         self.on_content_change(content)
 

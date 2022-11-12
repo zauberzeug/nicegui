@@ -12,8 +12,7 @@ class Button(TextElement):
         :param text: the label of the button
         :param on_click: callback which is invoked when button is pressed
         """
-        super().__init__('q-btn')
-        self.init_text(text)
+        super().__init__(tag='q-btn', text=text)
         self._props['color'] = 'primary'
 
         self.on('click', lambda _: handle_event(on_click, ClickEventArguments(sender=self, client=self.client)))

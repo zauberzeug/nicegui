@@ -8,10 +8,11 @@ from ...events import ValueChangeEventArguments, handle_event
 class ValueElement(Element):
     value = BindableProperty(on_change=lambda sender, value: sender.on_value_change(value))
 
-    def init_value(self, value: Any, on_change: Callable) -> None:
+    def __init__(self, *, value: Any, on_value_change: Callable, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.value = value
         self._props['model-value'] = value
-        self.change_handler = on_change
+        self.change_handler = on_value_change
 
         def handle_change(msg: Dict) -> None:
             self.value = msg['args']
