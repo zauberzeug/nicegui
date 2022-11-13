@@ -9,6 +9,7 @@ from .elements.column import Column as column
 from .elements.html import Html as html
 from .elements.icon import Icon as icon
 from .elements.image import Image as image
+from .elements.input import Input as input
 from .elements.joystick import Joystick as joystick
 from .elements.label import Label as label
 from .elements.link import Link as link
