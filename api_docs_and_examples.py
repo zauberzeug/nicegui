@@ -434,7 +434,7 @@ Alternatively, you can remove individual elements with `remove(element)`, where 
         ui.button('Remove', on_click=lambda: container.remove(0))
         ui.button('Clear', on_click=container.clear)
 
-    # @example(ui.expansion)
+    @example(ui.expansion, skip=False)
     def expansion_example():
         with ui.expansion('Expand!', icon='work').classes('w-full'):
             ui.label('inside the expansion')

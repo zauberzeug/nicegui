@@ -6,6 +6,7 @@ from .elements.card import CardSection as card_section
 from .elements.checkbox import Checkbox as checkbox
 from .elements.colors import Colors as colors
 from .elements.column import Column as column
+from .elements.expansion import Expansion as expansion
 from .elements.html import Html as html
 from .elements.icon import Icon as icon
 from .elements.image import Image as image
