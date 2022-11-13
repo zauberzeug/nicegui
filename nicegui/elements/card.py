@@ -11,6 +11,11 @@ class Card(Element):
         super().__init__('q-card')
         self.classes('column items-start q-pa-md gap-4')
 
+    def tight(self):
+        self._classes.clear()
+        self._style.clear()
+        return self
+
 
 class CardSection(Element):
 
