@@ -189,7 +189,7 @@ def create_full() -> None:
                  on_change=lambda e: input_result.set_text('you typed: ' + e.value))
         input_result = ui.label()
 
-    # @example(ui.number)
+    @example(ui.number, skip=False)
     def number_example():
         ui.number(label='Number', value=3.1415927, format='%.2f',
                   on_change=lambda e: number_result.set_text(f'you entered: {e.value}'))

@@ -16,6 +16,7 @@ from .elements.label import Label as label
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
 from .elements.markdown import Markdown as markdown
+from .elements.number import Number as number
 from .elements.radio import Radio as radio
 from .elements.row import Row as row
 from .elements.select import Select as select
