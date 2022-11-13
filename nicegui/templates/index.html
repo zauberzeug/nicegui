@@ -33,10 +33,13 @@
           ...element.props,
         };
         Object.entries(element.events).forEach(([type, arg_names]) => {
-          props['on' + type[0].toUpperCase() + type.substring(1)] = (e) => {
+          const parts = type.split('.');
+          const event_name = 'on' + parts[0][0].toLocaleUpperCase() + parts[0].substring(1);
+          const modifiers = parts.splice(1);
+          props[event_name] = Vue.withModifiers((e) => {
             const args = typeof e === 'object' ? Object.fromEntries(arg_names.map(a => [a, e[a]])) : e;
             window.socket.emit("event", {id: element.id, type, args});
-          };
+          }, modifiers);
         });
         const slots = {};
         Object.entries(element.slots).forEach(([name, ids]) => {
