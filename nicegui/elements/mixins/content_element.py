@@ -31,5 +31,5 @@ class ContentElement(Element):
     def on_content_change(self, content: str) -> None:
         if '</script>' in content:
             raise ValueError('HTML elements must not contain <script> tags. Use ui.add_body_html() instead.')
-        self._text = content
+        self._props['innerHTML'] = content
         self.update()

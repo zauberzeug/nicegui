@@ -41,6 +41,6 @@ class Markdown(ContentElement):
     def on_content_change(self, content: str) -> None:
         html = markdown2.markdown(content, extras=self.extras)
         html = apply_tailwind(html)  # we need explicit markdown styling because tailwind CSS removes all default styles
-        if self._text != html:
-            self._text = html
+        if self._props.get('innerHTML') != html:
+            self._props['innerHTML'] = html
             self.update()
