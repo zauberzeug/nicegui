@@ -15,11 +15,12 @@ SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 
 class example:
 
-    def __init__(self, content: Union[Callable, type, str], tight: bool = False) -> None:
+    def __init__(self, content: Union[Callable, type, str], tight: bool = False, skip: bool = True) -> None:
         self.content = content
         self.markdown_classes = f'mr-8 w-full flex-none lg:w-{48 if tight else 80} xl:w-80'
         self.rendering_classes = f'w-{48 if tight else 64} flex-none lg:mt-12'
         self.source_classes = f'w-80 flex-grow overflow-auto lg:mt-12'
+        self.skip = skip
 
     def __call__(self, f: Callable) -> Callable:
         with ui.row().classes('flex w-full'):
@@ -34,7 +35,8 @@ class example:
                 self._add_html_anchor(ui.html(html).classes(self.markdown_classes))
 
             with ui.card().classes(self.rendering_classes):
-                f()
+                if not self.skip:
+                    f()
 
             code = inspect.getsource(f).splitlines()
             while not code[0].startswith(' ' * 8):
@@ -78,12 +80,12 @@ class example:
 
 def create_intro() -> None:
     # add docutils css to webpage
-    ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
+    # ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
 
     @example('''#### Hello, World!
 
 Creating a user interface with NiceGUI is as simple as writing a single line of code.
-''', tight=True)
+''', tight=True, skip=False)
     def hello_world_example():
         ui.label('Hello, world!')
         ui.markdown('Have a look at the full <br/> [API reference](reference)!')
