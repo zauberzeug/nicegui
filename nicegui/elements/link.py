@@ -1,15 +1,12 @@
 from typing import Callable, Union
 
-import justpy as jp
-
-from .. import globals
-from .element import Element
-from .group import Group
+from ..element import Element
+from .mixins.text_element import TextElement
 
 
-class Link(Group):
+class Link(TextElement):
 
-    def __init__(self, text: str = '', target: Union[Callable, str] = '#'):
+    def __init__(self, text: str = '', target: Union[Callable, str] = '#') -> None:
         """Link
 
         Create a hyperlink.
@@ -20,10 +17,9 @@ class Link(Group):
         :param text: display text
         :param target: page function or string that is a an absolute URL or relative path from base URL
         """
-        href = target if isinstance(target, str) else globals.find_route(target)[1:]
-        view = jp.A(text=text, href=href, classes='underline text-blue', temp=False)
-
-        super().__init__(view)
+        super().__init__(tag='a', text=text)
+        self._props['href'] = target if isinstance(target, str) else None  # TODO: globals.find_route(target)[1:]
+        self._classes.extend(['underline, text-blue'])
 
 
 class LinkTarget(Element):
@@ -35,5 +31,5 @@ class LinkTarget(Element):
 
         :param name: target name
         """
-        view = jp.A(name=name, temp=False)
-        super().__init__(view)
+        super().__init__('a')
+        self._props['name'] = name

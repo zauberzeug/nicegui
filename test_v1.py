@@ -50,6 +50,9 @@ with ui.card():
                                                          f"{msg['args']['data']['vector']['y']:.3f}"),
                 on_end=lambda msg: coordinates.set_text('0, 0')).style('width: 15em')
     coordinates = ui.label('0, 0')
+    ui.link('Google', 'https://www.google.com/')
+    ui.link('Target', '#target')
+    ui.link_target('target')
 
 
 ui.run(port=1234)

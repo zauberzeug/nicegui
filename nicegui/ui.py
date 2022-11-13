@@ -11,6 +11,8 @@ from .elements.icon import Icon as icon
 from .elements.image import Image as image
 from .elements.joystick import Joystick as joystick
 from .elements.label import Label as label
+from .elements.link import Link as link
+from .elements.link import LinkTarget as link_target
 from .elements.row import Row as row
 from .elements.separator import Separator as separator
 from .elements.tooltip import Tooltip as tooltip
