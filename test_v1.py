@@ -53,6 +53,7 @@ with ui.card():
     ui.link('Google', 'https://www.google.com/')
     ui.link('Target', '#target')
     ui.link_target('target')
+    ui.markdown('**Markdown**')
 
 
 ui.run(port=1234)

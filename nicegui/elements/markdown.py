@@ -3,11 +3,9 @@ from __future__ import annotations
 import re
 from typing import List
 
-import justpy as jp
 import markdown2
 
-from ..binding import BindableProperty, BindContentMixin
-from .element import Element
+from .mixins.content_element import ContentElement
 
 
 def apply_tailwind(html: str) -> str:
@@ -27,18 +25,9 @@ def apply_tailwind(html: str) -> str:
     return pattern.sub(lambda m: rep[re.escape(m.group(0))], html)
 
 
-def _handle_content_change(sender: Markdown, content: str) -> None:
-    html = markdown2.markdown(content, extras=sender.extras)
-    html = apply_tailwind(html)  # we need explicit markdown styling because tailwind CSS removes all default styles
-    if sender.view.inner_html != html:
-        sender.view.inner_html = html
-        sender.update()
+class Markdown(ContentElement):
 
-
-class Markdown(Element, BindContentMixin):
-    content = BindableProperty(on_change=_handle_content_change)
-
-    def __init__(self, content: str = '', *, extras: List[str] = ['fenced-code-blocks', 'tables']):
+    def __init__(self, content: str = '', *, extras: List[str] = ['fenced-code-blocks', 'tables']) -> None:
         """Markdown Element
 
         Renders markdown onto the page.
@@ -47,12 +36,11 @@ class Markdown(Element, BindContentMixin):
         :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)
         """
         self.extras = extras
+        super().__init__(tag='div', content=content)
 
-        view = jp.QDiv(temp=False)
-        super().__init__(view)
-
-        self.content = content
-        _handle_content_change(self, content)
-
-    def set_content(self, content: str) -> None:
-        self.content = content
+    def on_content_change(self, content: str) -> None:
+        html = markdown2.markdown(content, extras=self.extras)
+        html = apply_tailwind(html)  # we need explicit markdown styling because tailwind CSS removes all default styles
+        if self._text != html:
+            self._text = html
+            self.update()
