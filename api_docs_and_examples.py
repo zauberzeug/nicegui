@@ -23,6 +23,8 @@ class example:
         self.skip = skip
 
     def __call__(self, f: Callable) -> Callable:
+        if self.skip:
+            return
         with ui.row().classes('flex w-full'):
             if isinstance(self.content, str):
                 self._add_html_anchor(ui.markdown(self.content).classes(self.markdown_classes))
@@ -35,8 +37,7 @@ class example:
                 self._add_html_anchor(ui.html(html).classes(self.markdown_classes))
 
             with ui.card().classes(self.rendering_classes):
-                if not self.skip:
-                    f()
+                f()
 
             code = inspect.getsource(f).splitlines()
             while not code[0].startswith(' ' * 8):
@@ -93,7 +94,7 @@ Creating a user interface with NiceGUI is as simple as writing a single line of 
     @example('''#### Common UI Elements
 
 NiceGUI comes with a collection of commonly used UI elements.
-''', tight=True)
+''', tight=True, skip=False)
     def common_elements_example():
         ui.button('Button', on_click=lambda: ui.notify('Click'))
         ui.checkbox('Checkbox', on_change=lambda e: ui.notify('Checked' if e.value else 'Unchecked'))

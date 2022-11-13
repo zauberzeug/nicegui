@@ -1,7 +1,6 @@
 from typing import Any, Callable, Dict, List, Optional, Union
 
-import justpy as jp
-
+from ..events import ValueChangeEventArguments, handle_event
 from .choice_element import ChoiceElement
 
 
@@ -15,12 +14,14 @@ class Select(ChoiceElement):
         :param value: the initial value
         :param on_change: callback to execute when selection changes
         """
-        view = jp.QSelect(options=options, label=label, input=self.handle_change, temp=False)
+        super().__init__(tag='q-select', options=options, value=value, on_change=on_change)
+        self._props['label'] = label
 
-        super().__init__(view, options, value=value, on_change=on_change)
+    def _msg_to_value(self, msg: Dict) -> Any:
+        return msg['args']['value']
 
-    def value_to_view(self, value: Any):
-        try:
-            return self._labels[self._values.index(value)]
-        except ValueError:
-            return value
+    def _value_to_model(self, value: Any) -> Any:
+        return self._labels[self._values.index(value)] if isinstance(value, str) else self._labels[value]
+
+    def _value_to_event_value(self, value: Any) -> Any:
+        return self._values[value]
