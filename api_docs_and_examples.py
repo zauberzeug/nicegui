@@ -107,7 +107,7 @@ NiceGUI comes with a collection of commonly used UI elements.
     @example('''#### Value Binding
 
 Binding values between UI elements or [to data models](http://127.0.0.1:8080/reference#bindings) is built into NiceGUI.
-''', tight=True)
+''', tight=True, skip=False)
     def binding_example():
         slider = ui.slider(min=0, max=100, value=50)
         ui.number('Value').bind_value(slider, 'value').classes('fit')
@@ -170,7 +170,7 @@ def create_full() -> None:
         switch = ui.switch('switch me')
         ui.label('Switch!').bind_visibility_from(switch, 'value')
 
-    # @example(ui.slider)
+    @example(ui.slider, skip=False)
     def slider_example():
         slider = ui.slider(min=0, max=100, value=50).props('label')
         ui.label().bind_text_from(slider, 'value')
@@ -592,7 +592,7 @@ Binding is possible for UI element properties like text, value or visibility and
 Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property.
 To define a one-way binding use the `_from` and `_to` variants of these methods.
 Just pass a property of the model as parameter to these methods to create the binding.
-''')
+''', skip=False)
     def bindings_example():
         class Demo:
             def __init__(self):

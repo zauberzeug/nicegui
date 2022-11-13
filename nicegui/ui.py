@@ -21,6 +21,7 @@ from .elements.radio import Radio as radio
 from .elements.row import Row as row
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
+from .elements.slider import Slider as slider
 from .elements.switch import Switch as switch
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip

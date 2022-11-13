@@ -1,18 +1,16 @@
 from typing import Callable, Optional
 
-import justpy as jp
-
-from .float_element import FloatElement
+from .mixins.value_element import ValueElement
 
 
-class Slider(FloatElement):
+class Slider(ValueElement):
 
     def __init__(self, *,
                  min: float,
                  max: float,
-                 step: float = 1,
+                 step: float = 1.0,
                  value: float = None,
-                 on_change: Optional[Callable] = None):
+                 on_change: Optional[Callable] = None) -> None:
         """Slider
 
         :param min: lower bound of the slider
@@ -21,6 +19,7 @@ class Slider(FloatElement):
         :param value: initial value to set position of the slider
         :param on_change: callback which is invoked when the user releases the slider
         """
-        view = jp.QSlider(min=min, max=max, step=step, change=self.handle_change, disable_input_event=True, temp=False)
-
-        super().__init__(view, value=value, on_change=on_change)
+        super().__init__(tag='q-slider', value=value, on_value_change=on_change)
+        self._props['min'] = min
+        self._props['max'] = max
+        self._props['step'] = step
