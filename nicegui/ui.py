@@ -16,6 +16,7 @@ from .elements.link import LinkTarget as link_target
 from .elements.markdown import Markdown as markdown
 from .elements.row import Row as row
 from .elements.separator import Separator as separator
+from .elements.switch import Switch as switch
 from .elements.tooltip import Tooltip as tooltip
 from .notify import notify
 from .page import page
