@@ -342,12 +342,12 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         line_updates = ui.timer(0.1, update_line_plot, active=False)
         line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')
 
-    # @example(ui.linear_progress)
+    @example(ui.linear_progress, skip=False)
     def linear_progress_example():
         slider = ui.slider(min=0, max=1, step=0.01, value=0.5)
         ui.linear_progress().bind_value_from(slider, 'value')
 
-    # @example(ui.circular_progress)
+    @example(ui.circular_progress, skip=False)
     def circular_progress_example():
         slider = ui.slider(min=0, max=1, step=0.01, value=0.5)
         ui.circular_progress().bind_value_from(slider, 'value')
