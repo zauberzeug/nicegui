@@ -2,18 +2,14 @@
 <html>
   <head>
     <title>NiceGUI</title>
-    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
-    <link
-      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link href="https://cdn.jsdelivr.net/npm/quasar@2.10.0/dist/quasar.prod.css" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="static/socket.io.min.js"></script>
+    <link href="static/fonts.css" rel="stylesheet" type="text/css" />
+    <link href="static/quasar.prod.css" rel="stylesheet" type="text/css" />
+    <script src="static/tailwind.min.js"></script>
   </head>
   <body>
-    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/quasar@2.10.0/dist/quasar.umd.prod.js"></script>
+    <script src="static/vue.global.prod.js"></script>
+    <script src="static/quasar.umd.prod.js"></script>
 
     {{ vue_styles | safe }} {{ vue_html | safe }}
     <div id="app"></div>

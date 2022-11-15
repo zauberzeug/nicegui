@@ -1,9 +1,11 @@
 import asyncio
 import urllib.parse
+from pathlib import Path
 from typing import Dict
 
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
 from . import binding, globals, vue
@@ -14,6 +16,7 @@ globals.app = app = FastAPI(routes=vue.generate_js_routes())
 globals.sio = sio = SocketManager(app=app)._sio
 
 app.add_middleware(GZipMiddleware)
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / 'static'), name='static')
 
 Client().__enter__()
 
