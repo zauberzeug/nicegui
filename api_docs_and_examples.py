@@ -437,14 +437,14 @@ Alternatively, you can remove individual elements with `remove(element)`, where 
         with ui.expansion('Expand!', icon='work').classes('w-full'):
             ui.label('inside the expansion')
 
-    # @example(ui.menu)
+    @example(ui.menu, skip=False)
     def menu_example():
         choice = ui.label('Try the menu.')
         with ui.menu() as menu:
             ui.menu_item('Menu item 1', lambda: choice.set_text('Selected item 1.'))
             ui.menu_item('Menu item 2', lambda: choice.set_text('Selected item 2.'))
             ui.menu_item('Menu item 3 (keep open)', lambda: choice.set_text('Selected item 3.'), auto_close=False)
-            ui.menu_separator()
+            ui.separator()
             ui.menu_item('Close', on_click=menu.close)
 
         ui.button('Open menu', on_click=menu.open)

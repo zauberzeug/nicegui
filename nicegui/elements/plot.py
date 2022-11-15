@@ -7,7 +7,7 @@ from ..element import Element
 
 class Plot(Element):
 
-    def __init__(self, *, close: bool = True, **kwargs):
+    def __init__(self, *, close: bool = True, **kwargs) -> None:
         """Plot Context
 
         Create a context to configure a `Matplotlib <https://matplotlib.org/>`_ plot.
