@@ -312,7 +312,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         ui.button('Update', on_click=update)
 
-    # @example(ui.plot)
+    @example(ui.plot, skip=False)
     def plot_example():
         import numpy as np
         from matplotlib import pyplot as plt
@@ -321,8 +321,6 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             x = np.linspace(0.0, 5.0)
             y = np.cos(2 * np.pi * x) * np.exp(-x)
             plt.plot(x, y, '-')
-            plt.xlabel('time (s)')
-            plt.ylabel('Damped oscillation')
 
     # @example(ui.line_plot)
     def line_plot_example():
