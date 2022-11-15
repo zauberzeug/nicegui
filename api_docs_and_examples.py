@@ -377,7 +377,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             scene.text('2D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(z=2)
             scene.text3d('3D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(y=-2).scale(.05)
 
-    # @example(ui.tree)
+    @example(ui.tree, skip=False)
     def tree_example():
         ui.tree([
             {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},

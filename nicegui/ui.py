@@ -30,6 +30,7 @@ from .elements.slider import Slider as slider
 from .elements.switch import Switch as switch
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
+from .elements.tree import Tree as tree
 from .notify import notify
 from .page import page
 from .run import run
