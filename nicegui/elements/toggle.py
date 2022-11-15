@@ -15,10 +15,7 @@ class Toggle(ChoiceElement):
         super().__init__(tag='q-btn-toggle', options=options, value=value, on_change=on_change)
 
     def _msg_to_value(self, msg: Dict) -> Any:
-        return msg['args']
+        return self._values[msg['args']]
 
-    def _value_to_model(self, value: Any) -> Any:
-        return self._values.index(value) if value in self._values else value
-
-    def _value_to_event_value(self, value: Any) -> Any:
-        return self._values[value]
+    def _value_to_model_value(self, value: Any) -> Any:
+        return self._values.index(value) if value in self._values else None

@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, Optional
 
 from .mixins.value_element import ValueElement
 
@@ -25,7 +25,10 @@ class Number(ValueElement):
         self._props['label'] = label
         self._props['placeholder'] = placeholder
 
-    def _value_to_model(self, value: Any) -> Any:
+    def _msg_to_value(self, msg: Dict) -> Any:
+        return float(msg['args'])
+
+    def _value_to_model_value(self, value: Any) -> Any:
         if value is None:
             return None
         elif self.format is None:

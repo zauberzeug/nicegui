@@ -17,5 +17,5 @@ class Radio(ChoiceElement):
     def _msg_to_value(self, msg: Dict) -> Any:
         return self._values[msg['args']]
 
-    def _value_to_model(self, value: Any) -> Any:
-        return self._values.index(value) if value in self._values else value
+    def _value_to_model_value(self, value: Any) -> Any:
+        return self._values.index(value) if value in self._values else None

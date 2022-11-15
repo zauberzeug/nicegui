@@ -155,7 +155,7 @@ def create_full() -> None:
         radio1 = ui.radio([1, 2, 3], value=1).props('inline')
         radio2 = ui.radio({1: 'A', 2: 'B', 3: 'C'}).props('inline').bind_value(radio1, 'value')
 
-    @example(ui.select)
+    @example(ui.select, skip=False)
     def select_example():
         select1 = ui.select([1, 2, 3], value=1)
         select2 = ui.select({1: 'One', 2: 'Two', 3: 'Three'}).bind_value(select1, 'value')
@@ -602,7 +602,7 @@ Just pass a property of the model as parameter to these methods to create the bi
         v = ui.checkbox('visible', value=True)
         with ui.column().bind_visibility_from(v, 'value'):
             ui.slider(min=1, max=3).bind_value(demo, 'number')
-            ui.toggle({1: 'a', 2: 'b', 3: 'c'}).bind_value(demo, 'number')
+            ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
             ui.number().bind_value(demo, 'number')
 
     @example('''#### UI Updates

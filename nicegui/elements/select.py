@@ -1,6 +1,5 @@
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from ..events import ValueChangeEventArguments, handle_event
 from .choice_element import ChoiceElement
 
 
@@ -18,10 +17,11 @@ class Select(ChoiceElement):
         self._props['label'] = label
 
     def _msg_to_value(self, msg: Dict) -> Any:
-        return msg['args']['value']
+        return self._values[msg['args']['value']]
 
-    def _value_to_model(self, value: Any) -> Any:
-        return self._labels[self._values.index(value)] if isinstance(value, str) else self._labels[value]
-
-    def _value_to_event_value(self, value: Any) -> Any:
-        return self._values[value]
+    def _value_to_model_value(self, value: Any) -> Any:
+        try:
+            index = self._values.index(value)
+            return {'value': index, 'label': self._labels[index]}
+        except ValueError:
+            return None
