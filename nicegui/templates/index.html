@@ -24,6 +24,7 @@
         const element = elements[id];
         const props = {
           id: element.id,
+          ref: 'r' + element.id,
           class: element.class.join(' ') || undefined,
           style: Object.entries(element.style).reduce((str, [p, val]) => `${str}${p}:${val};`, '') || undefined,
           ...element.props,
@@ -63,6 +64,7 @@
           window.socket.on("update", (msg) => {
             Object.entries(msg.elements).forEach(([id, element]) => this.elements[element.id] = element);
           });
+          window.socket.on("run_method", (msg) => this.$refs['r' + msg.id][msg.name](...msg.args));
           window.socket.on("notify", (msg) => Quasar.Notify.create(msg));
           window.socket.on("disconnect", () => window.location.reload());
         },

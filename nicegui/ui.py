@@ -15,6 +15,7 @@ from .elements.joystick import Joystick as joystick
 from .elements.label import Label as label
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
+from .elements.log import Log as log
 from .elements.markdown import Markdown as markdown
 from .elements.menu import Menu as menu
 from .elements.menu import MenuItem as menu_item

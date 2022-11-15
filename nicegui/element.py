@@ -1,6 +1,6 @@
 import shlex
 from abc import ABC
-from typing import Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from . import globals
 from .elements.mixins.visibility import Visibility
@@ -145,3 +145,7 @@ class Element(ABC, Visibility):
         collect_ids(self.id)
         elements = {id: self.client.elements[id].to_dict() for id in ids}
         create_task(globals.sio.emit('update', {'elements': elements}, room=str(self.client.id)))
+
+    def run_method(self, name: str, *args: Any) -> None:
+        data = {'id': self.id, 'name': name, 'args': args}
+        create_task(globals.sio.emit('run_method', data, room=str(self.client.id)))

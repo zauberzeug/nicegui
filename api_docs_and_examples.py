@@ -384,7 +384,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
         ], label_key='id', on_select=lambda e: ui.notify(e.value))
 
-    # @example(ui.log)
+    @example(ui.log, skip=False)
     def log_example():
         from datetime import datetime
 
