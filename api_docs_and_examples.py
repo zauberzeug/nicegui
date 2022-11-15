@@ -452,12 +452,13 @@ Alternatively, you can remove individual elements with `remove(element)`, where 
     @example('''#### Tooltips
 
 Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
+
+For more artistic control you can nest tooltip elements and apply props, classes and styles.
 ''', skip=False)
     def tooltips_example():
-        with ui.label('Tooltips...'):
-            ui.tooltip('...are shown on mouse over')
+        ui.label('Tooltips...').tooltip('...are shown on mouse over')
         with ui.button().props('icon=thumb_up'):
-            ui.tooltip('I like this')
+            ui.tooltip('I like this').classes('bg-green')
 
     @example(ui.notify, skip=False)
     def notify_example():

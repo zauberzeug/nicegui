@@ -116,6 +116,12 @@ class Element(ABC, Visibility):
             self.update()
         return self
 
+    def tooltip(self, text: str):
+        with self:
+            tooltip = Element('q-tooltip')
+            tooltip._text = text
+        return self
+
     def on(self, type: str, handler: Optional[Callable], args: List[str] = []):
         if handler:
             self._event_listeners.append(EventListener(element_id=self.id, type=type, args=args, handler=handler))
