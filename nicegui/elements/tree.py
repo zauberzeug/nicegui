@@ -25,7 +25,8 @@ class Tree(Element):
         self._props['node-key'] = node_key
         self._props['label-key'] = label_key
         self._props['children-key'] = children_key
+        self._props['selected'] = []
 
-        self.on('update:selected',
-                lambda msg: handle_event(on_select,
-                                         ValueChangeEventArguments(sender=self, client=self.client, value=msg['args'])))
+        def handle_selected(msg):
+            handle_event(on_select, ValueChangeEventArguments(sender=self, client=self.client, value=msg['args']))
+        self.on('update:selected', handle_selected)
