@@ -560,7 +560,7 @@ When NiceGUI is shut down or restarted, the startup tasks will be automatically 
             lazy_clock = ui.label()
             ui.timer(interval=0.1, callback=lazy_update)
 
-    # @example(ui.keyboard)
+    @example(ui.keyboard, skip=False)
     def keyboard_example():
         from nicegui.events import KeyEventArguments
 

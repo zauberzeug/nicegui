@@ -34,7 +34,8 @@
           const event_name = 'on' + parts[0][0].toLocaleUpperCase() + parts[0].substring(1);
           const modifiers = parts.splice(1);
           props[event_name] = Vue.withModifiers((e) => {
-            const args = typeof e === 'object' ? Object.fromEntries(arg_names.map(a => [a, e[a]])) : e;
+            const all = typeof e !== 'object' || arg_names.includes('*');
+            const args = all ? e : Object.fromEntries(arg_names.map(a => [a, e[a]]));
             window.socket.emit("event", {id: element.id, type, args});
           }, modifiers);
         });
