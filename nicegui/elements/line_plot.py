@@ -5,7 +5,7 @@ from .plot import Plot
 
 class LinePlot(Plot):
 
-    def __init__(self, *, n: int = 1, limit: int = 100, update_every: int = 1, close: bool = True, **kwargs):
+    def __init__(self, *, n: int = 1, limit: int = 100, update_every: int = 1, close: bool = True, **kwargs) -> None:
         """Line Plot
 
         Create a line plot. The `push` method provides live updating when utilized in combination with `ui.timer`.
@@ -27,10 +27,10 @@ class LinePlot(Plot):
 
     def with_legend(self, titles: List[str], **kwargs):
         self.fig.gca().legend(titles, **kwargs)
-        self.view.set_figure(self.fig)
+        self._convert_to_html()
         return self
 
-    def push(self, x: List[float], Y: List[List[float]]):
+    def push(self, x: List[float], Y: List[List[float]]) -> None:
         self.push_counter += 1
 
         self.x = [*self.x, *x][self.slice]
@@ -53,5 +53,5 @@ class LinePlot(Plot):
         pad_y = 0.01 * (max_y - min_y)
         self.fig.gca().set_xlim(min_x - pad_x, max_x + pad_x)
         self.fig.gca().set_ylim(min_y - pad_y, max_y + pad_y)
-        self.view.set_figure(self.fig)
+        self._convert_to_html()
         self.update()

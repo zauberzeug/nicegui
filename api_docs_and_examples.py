@@ -322,7 +322,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             y = np.cos(2 * np.pi * x) * np.exp(-x)
             plt.plot(x, y, '-')
 
-    # @example(ui.line_plot)
+    @example(ui.line_plot, skip=False)
     def line_plot_example():
         global line_checkbox
         from datetime import datetime
@@ -339,8 +339,9 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             y2 = np.cos(x)
             line_plot.push([now], [[y1], [y2]])
 
-        line_updates = ui.timer(0.1, update_line_plot, active=False)
-        line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')
+        # line_updates = ui.timer(0.1, update_line_plot, active=False)
+        # line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')
+        ui.button('update', on_click=update_line_plot)  # TODO: use ui.timer instead
 
     @example(ui.linear_progress, skip=False)
     def linear_progress_example():

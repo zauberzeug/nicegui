@@ -13,6 +13,7 @@ from .elements.image import Image as image
 from .elements.input import Input as input
 from .elements.joystick import Joystick as joystick
 from .elements.label import Label as label
+from .elements.line_plot import LinePlot as line_plot
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
 from .elements.log import Log as log
