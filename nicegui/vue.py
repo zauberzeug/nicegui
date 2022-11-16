@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -8,14 +6,15 @@ import vbuild
 from starlette.responses import FileResponse
 from starlette.routing import Route
 
-components: Dict[str, Component] = {}
-
 
 @dataclass
 class Component:
     name: str
     path: Path
     dependencies: List[str]
+
+
+components: Dict[str, Component] = {}
 
 
 def register_component(name: str, py_filepath: str, component_filepath: str, dependencies: List[str] = []) -> None:

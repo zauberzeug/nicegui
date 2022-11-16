@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import List, Optional
 
 import numpy as np
@@ -72,9 +70,9 @@ class Ring(Object3D):
 class QuadraticBezierTube(Object3D):
 
     def __init__(self,
-                 start: List(float, float, float),
-                 mid: List(float, float, float),
-                 end: List(float, float, float),
+                 start: List[float],
+                 mid: List[float],
+                 end: List[float],
                  tubular_segments: int = 64,
                  radius: float = 1.0,
                  radial_segments: int = 8,
@@ -88,7 +86,7 @@ class QuadraticBezierTube(Object3D):
 class Extrusion(Object3D):
 
     def __init__(self,
-                 outline: List[List[float, float]],
+                 outline: List[List[float]],
                  height: float,
                  wireframe: bool = False,
                  ) -> None:
@@ -107,8 +105,8 @@ class Stl(Object3D):
 class Line(Object3D):
 
     def __init__(self,
-                 start: List[float, float, float],
-                 end: List[float, float, float],
+                 start: List[float],
+                 end: List[float],
                  ) -> None:
         super().__init__('line', start, end)
 
@@ -116,10 +114,10 @@ class Line(Object3D):
 class Curve(Object3D):
 
     def __init__(self,
-                 start: List[float, float, float],
-                 control1: List[float, float, float],
-                 control2: List[float, float, float],
-                 end: List[float, float, float],
+                 start: List[float],
+                 control1: List[float],
+                 control2: List[float],
+                 end: List[float],
                  num_points: int = 20,
                  ) -> None:
         super().__init__('curve', start, control1, control2, end, num_points)
