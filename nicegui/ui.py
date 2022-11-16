@@ -12,6 +12,7 @@ from .elements.html import Html as html
 from .elements.icon import Icon as icon
 from .elements.image import Image as image
 from .elements.input import Input as input
+from .elements.interactive_image import InteractiveImage as interactive_image
 from .elements.joystick import Joystick as joystick
 from .elements.keyboard import Keyboard as keyboard
 from .elements.label import Label as label

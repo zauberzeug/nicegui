@@ -258,13 +258,13 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
                 </svg>'''
             ui.html(content).style('background:transparent')
 
-    # @example(ui.interactive_image)
+    @example(ui.interactive_image, skip=False)
     def interactive_image_example():
         from nicegui.events import MouseEventArguments
 
         def mouse_handler(e: MouseEventArguments):
             color = 'SkyBlue' if e.type == 'mousedown' else 'SteelBlue'
-            ii.svg_content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="20" fill="{color}"/>'
+            ii.content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="20" fill="{color}"/>'
             ui.notify(f'{e.type} at ({e.image_x:.1f}, {e.image_y:.1f})')
 
         src = 'https://cdn.stocksnap.io/img-thumbs/960w/corn-cob_YSZZZEC59W.jpg'
