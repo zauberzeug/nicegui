@@ -1,17 +1,3 @@
-var scene;
-var look_at;
-var camera;
-var camera_tween;
-var orbitControls;
-var texture_loader = new THREE.TextureLoader();
-var stl_loader = new THREE.STLLoader();
-var objects = new Map();
-var is_initialized = false;
-
-const None = null;
-const False = false;
-const True = true;
-
 function texture_geometry(coords) {
   const geometry = new THREE.BufferGeometry();
   const nI = coords[0].length;
@@ -64,19 +50,20 @@ export default {
     </div>`,
 
   mounted() {
-    scene = new THREE.Scene();
-    objects.set("scene", scene);
+    this.scene = new THREE.Scene();
+    this.objects = new Map();
+    this.objects.set("scene", this.scene);
 
-    look_at = new THREE.Vector3(0, 0, 0);
-    camera = new THREE.PerspectiveCamera(75, this.width / this.height, 0.1, 1000);
-    camera.lookAt(look_at);
-    camera.up = new THREE.Vector3(0, 0, 1);
-    camera.position.set(0, -3, 5);
+    this.look_at = new THREE.Vector3(0, 0, 0);
+    this.camera = new THREE.PerspectiveCamera(75, this.width / this.height, 0.1, 1000);
+    this.camera.lookAt(this.look_at);
+    this.camera.up = new THREE.Vector3(0, 0, 1);
+    this.camera.position.set(0, -3, 5);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.7));
     const light = new THREE.DirectionalLight(0xffffff, 0.3);
     light.position.set(5, 10, 40);
-    scene.add(light);
+    this.scene.add(light);
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -99,22 +86,22 @@ export default {
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: "#eee" }));
     ground.translateZ(-0.01);
     ground.object_id = "ground";
-    scene.add(ground);
+    this.scene.add(ground);
 
     const grid = new THREE.GridHelper(100, 100);
     grid.material.transparent = true;
     grid.material.opacity = 0.2;
     grid.rotateX(Math.PI / 2);
-    scene.add(grid);
+    this.scene.add(grid);
 
-    orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+    new THREE.OrbitControls(this.camera, renderer.domElement);
 
-    const render = function () {
+    const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
       TWEEN.update();
-      renderer.render(scene, camera);
-      text_renderer.render(scene, camera);
-      text3d_renderer.render(scene, camera);
+      renderer.render(this.scene, this.camera);
+      text_renderer.render(this.scene, this.camera);
+      text3d_renderer.render(this.scene, this.camera);
     };
     render();
 
@@ -122,10 +109,10 @@ export default {
     const click_handler = (mouseEvent) => {
       let x = (mouseEvent.offsetX / renderer.domElement.width) * 2 - 1;
       let y = -(mouseEvent.offsetY / renderer.domElement.height) * 2 + 1;
-      raycaster.setFromCamera({ x: x, y: y }, camera);
+      raycaster.setFromCamera({ x: x, y: y }, this.camera);
       this.$emit("click", {
         hits: raycaster
-          .intersectObjects(scene.children, true)
+          .intersectObjects(this.scene.children, true)
           .filter((o) => o.object.object_id)
           .map((o) => ({
             object_id: o.object.object_id,
@@ -138,8 +125,12 @@ export default {
     this.$el.onclick = click_handler;
     this.$el.ondblclick = click_handler;
 
+    this.texture_loader = new THREE.TextureLoader();
+    this.stl_loader = new THREE.STLLoader();
+
+    this.is_initialized = false;
     const sendConnectEvent = () => {
-      if (!is_initialized) this.$emit("connect");
+      if (!this.is_initialized) this.$emit("connect");
       else clearInterval(connectInterval);
     };
     const connectInterval = setInterval(sendConnectEvent, 100);
@@ -147,7 +138,7 @@ export default {
 
   methods: {
     init() {
-      is_initialized = true;
+      this.is_initialized = true;
     },
     create(type, id, parent_id, ...args) {
       let mesh;
@@ -184,7 +175,7 @@ export default {
         const url = args[0];
         const coords = args[1];
         const geometry = texture_geometry(coords);
-        const material = texture_material(texture_loader.load(url));
+        const material = texture_material(this.texture_loader.load(url));
         mesh = new THREE.Mesh(geometry, material);
       } else if (type == "spot_light") {
         mesh = new THREE.Group();
@@ -222,7 +213,7 @@ export default {
         if (type == "stl") {
           const url = args[0];
           geometry = new THREE.BufferGeometry();
-          stl_loader.load(url, (geometry) => (mesh.geometry = geometry));
+          this.stl_loader.load(url, (geometry) => (mesh.geometry = geometry));
         }
         let material;
         if (wireframe) {
@@ -236,11 +227,11 @@ export default {
         }
       }
       mesh.object_id = id;
-      objects.set(id, mesh);
-      objects.get(parent_id).add(objects.get(id));
+      this.objects.set(id, mesh);
+      this.objects.get(parent_id).add(this.objects.get(id));
     },
     material(object_id, color, opacity, side) {
-      const material = objects.get(object_id).material;
+      const material = this.objects.get(object_id).material;
       if (!material) return;
       material.color.set(color);
       material.opacity = opacity;
@@ -249,10 +240,10 @@ export default {
       else material.side = THREE.DoubleSide;
     },
     move(object_id, x, y, z) {
-      objects.get(object_id).position.set(x, y, z);
+      this.objects.get(object_id).position.set(x, y, z);
     },
     scale(object_id, sx, sy, sz) {
-      objects.get(object_id).scale.set(sx, sy, sz);
+      this.objects.get(object_id).scale.set(sx, sy, sz);
     },
     rotate(object_id, R) {
       const R4 = new THREE.Matrix4().makeBasis(
@@ -260,17 +251,17 @@ export default {
         new THREE.Vector3(...R[1]),
         new THREE.Vector3(...R[2])
       );
-      objects.get(object_id).rotation.setFromRotationMatrix(R4.transpose());
+      this.objects.get(object_id).rotation.setFromRotationMatrix(R4.transpose());
     },
     visible(object_id, value) {
-      objects.get(object_id).visible = value;
+      this.objects.get(object_id).visible = value;
     },
     delete(object_id) {
-      objects.get(object_id).removeFromParent();
-      objects.delete(object_id);
+      this.objects.get(object_id).removeFromParent();
+      this.objects.delete(object_id);
     },
     set_texture_url(object_id, url) {
-      const obj = objects.get(object_id);
+      const obj = this.objects.get(object_id);
       if (obj.busy) return;
       obj.busy = true;
       const on_success = (texture) => {
@@ -278,43 +269,43 @@ export default {
         obj.busy = false;
       };
       const on_error = () => (obj.busy = false);
-      texture_loader.load(url, on_success, undefined, on_error);
+      this.texture_loader.load(url, on_success, undefined, on_error);
     },
     set_texture_coordinates(object_id, coords) {
-      objects.get(object_id).geometry = texture_geometry(coords);
+      this.objects.get(object_id).geometry = texture_geometry(coords);
     },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
-      if (camera_tween) camera_tween.stop();
-      camera_tween = new TWEEN.Tween([
-        camera.position.x,
-        camera.position.y,
-        camera.position.z,
-        camera.up.x,
-        camera.up.y,
-        camera.up.z,
-        look_at.x,
-        look_at.y,
-        look_at.z,
+      if (this.camera_tween) this.camera_tween.stop();
+      this.camera_tween = new TWEEN.Tween([
+        this.camera.position.x,
+        this.camera.position.y,
+        this.camera.position.z,
+        this.camera.up.x,
+        this.camera.up.y,
+        this.camera.up.z,
+        this.look_at.x,
+        this.look_at.y,
+        this.look_at.z,
       ])
         .to(
           [
-            x === null ? camera.position.x : x,
-            y === null ? camera.position.y : y,
-            z === null ? camera.position.z : z,
-            up_x === null ? camera.up.x : up_x,
-            up_y === null ? camera.up.y : up_y,
-            up_z === null ? camera.up.z : up_z,
-            look_at_x === null ? look_at.x : look_at_x,
-            look_at_y === null ? look_at.y : look_at_y,
-            look_at_z === null ? look_at.z : look_at_z,
+            x === null ? this.camera.position.x : x,
+            y === null ? this.camera.position.y : y,
+            z === null ? this.camera.position.z : z,
+            up_x === null ? this.camera.up.x : up_x,
+            up_y === null ? this.camera.up.y : up_y,
+            up_z === null ? this.camera.up.z : up_z,
+            look_at_x === null ? this.look_at.x : look_at_x,
+            look_at_y === null ? this.look_at.y : look_at_y,
+            look_at_z === null ? this.look_at.z : look_at_z,
           ],
           duration * 1000
         )
         .onUpdate((p) => {
-          camera.position.set(p[0], p[1], p[2]);
-          camera.up.set(p[3], p[4], p[5]); // NOTE: before calling lookAt
-          look_at.set(p[6], p[7], p[8]);
-          camera.lookAt(p[6], p[7], p[8]);
+          this.camera.position.set(p[0], p[1], p[2]);
+          this.camera.up.set(p[3], p[4], p[5]); // NOTE: before calling lookAt
+          this.look_at.set(p[6], p[7], p[8]);
+          this.camera.lookAt(p[6], p[7], p[8]);
         })
         .start();
     },

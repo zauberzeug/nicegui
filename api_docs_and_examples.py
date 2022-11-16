@@ -353,7 +353,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         slider = ui.slider(min=0, max=1, step=0.01, value=0.5)
         ui.circular_progress().bind_value_from(slider, 'value')
 
-    # @example(ui.scene)
+    @example(ui.scene, skip=False)
     def scene_example():
         with ui.scene(width=225, height=225) as scene:
             scene.sphere().material('#4488ff')
