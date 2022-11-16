@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict
 
 from ..binding import BindableProperty
 from ..element import Element
@@ -11,7 +11,7 @@ register_component('keyboard', __file__, 'keyboard.js')
 class Keyboard(Element):
     active = BindableProperty()
 
-    def __init__(self, *, on_key: Optional[Callable] = None, active: bool = True, repeating: bool = True) -> None:
+    def __init__(self, on_key: Callable, *, active: bool = True, repeating: bool = True) -> None:
         """
         Keyboard
 
