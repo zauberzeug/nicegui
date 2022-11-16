@@ -465,7 +465,7 @@ For more artistic control you can nest tooltip elements and apply props, classes
     def notify_example():
         ui.button('Say hi!', on_click=lambda: ui.notify('Hi!', close_button='OK'))
 
-    # @example(ui.dialog)
+    @example(ui.dialog, skip=False)
     def dialog_example():
         with ui.dialog() as dialog, ui.card():
             ui.label('Hello world!')
@@ -478,7 +478,7 @@ For more artistic control you can nest tooltip elements and apply props, classes
 Dialogs can be awaited.
 Use the `submit` method to close the dialog and return a result.
 Canceling the dialog by clicking in the background or pressing the escape key yields `None`.
-''')
+''', skip=False)
     def async_dialog_example():
         with ui.dialog() as dialog, ui.card():
             ui.label('Are you sure?')
