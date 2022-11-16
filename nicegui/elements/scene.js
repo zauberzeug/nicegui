@@ -110,7 +110,7 @@ export default {
       let x = (mouseEvent.offsetX / renderer.domElement.width) * 2 - 1;
       let y = -(mouseEvent.offsetY / renderer.domElement.height) * 2 + 1;
       raycaster.setFromCamera({ x: x, y: y }, this.camera);
-      this.$emit("click", {
+      this.$emit("click3d", {
         hits: raycaster
           .intersectObjects(this.scene.children, true)
           .filter((o) => o.object.object_id)
@@ -119,6 +119,10 @@ export default {
             point: o.point,
           })),
         click_type: mouseEvent.type,
+        button: mouseEvent.button,
+        alt_key: mouseEvent.altKey,
+        ctrl_key: mouseEvent.ctrlKey,
+        meta_key: mouseEvent.metaKey,
         shift_key: mouseEvent.shiftKey,
       });
     };

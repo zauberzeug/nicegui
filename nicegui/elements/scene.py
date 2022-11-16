@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, Union
 
 from ..element import Element
+from ..events import handle_event
 from ..vue import register_component
 from .scene_object3d import Object3D
 from .scene_objects import Scene as SceneObject
@@ -69,6 +70,7 @@ class Scene(Element):
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
         self.on('connect', self.handle_connect)
+        self.on('click3d', lambda msg: handle_event(on_click, msg['args']), ['*'])
 
     def handle_connect(self, _) -> None:
         self.run_method('init')
