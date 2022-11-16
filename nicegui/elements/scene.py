@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Union
 
 from ..element import Element
 from ..vue import register_component
@@ -27,6 +27,11 @@ class SceneCamera:
     up_x: float = 0
     up_y: float = 0
     up_z: float = 1
+
+
+@dataclass
+class SceneObject:
+    id: str = 'scene'
 
 
 class Scene(Element):
@@ -60,15 +65,15 @@ class Scene(Element):
         super().__init__('scene')
         self._props['width'] = width
         self._props['height'] = height
-        self.objects: Dict[Object3D] = {}
-        self.stack: List[Object3D] = []
-        with self:
-            SceneObject()
+        self.objects: Dict[str, Object3D] = {}
+        self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
         self.on('connect', self.handle_connect)
 
-    def handle_connect(self, msg: Dict) -> None:
-        print('CONNECT', msg, flush=True)
+    def handle_connect(self, _) -> None:
+        self.run_method('init')
+        for object in self.objects.values():
+            object.send()
 
     def __len__(self) -> int:
         return len(self.objects)

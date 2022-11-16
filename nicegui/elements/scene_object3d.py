@@ -19,7 +19,7 @@ class Object3D:
         self.name: Optional[str] = None
         self.scene: 'Scene' = globals.client_stack[-1].slot_stack[-1].parent
         self.scene.objects[self.id] = self
-        self.parent: Optional[Object3D] = self.scene.stack[-1] if self.scene.stack else None
+        self.parent: Object3D = self.scene.stack[-1]
         self.args: List = list(args)
         self.color: str = '#ffffff'
         self.opacity: float = 1.0
@@ -32,8 +32,7 @@ class Object3D:
         self.sx: float = 1
         self.sy: float = 1
         self.sz: float = 1
-        if self.parent:
-            self._create()
+        self._create()
 
     def with_name(self, name: str):
         self.name = name
@@ -55,7 +54,7 @@ class Object3D:
         self.scene.stack.pop()
 
     def _create(self) -> None:
-        self.scene.run_method('create', self.type, self.id, self.parent.id, self.args)
+        self.scene.run_method('create', self.type, self.id, self.parent.id, *self.args)
 
     def _material(self) -> None:
         self.scene.run_method('material', self.id, self.color, self.opacity, self.side_)

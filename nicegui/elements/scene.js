@@ -6,6 +6,7 @@ var orbitControls;
 var texture_loader = new THREE.TextureLoader();
 var stl_loader = new THREE.STLLoader();
 var objects = new Map();
+var is_initialized = false;
 
 const None = null;
 const False = false;
@@ -136,9 +137,18 @@ export default {
     };
     this.$el.onclick = click_handler;
     this.$el.ondblclick = click_handler;
+
+    const sendConnectEvent = () => {
+      if (!is_initialized) this.$emit("connect");
+      else clearInterval(connectInterval);
+    };
+    const connectInterval = setInterval(sendConnectEvent, 100);
   },
 
   methods: {
+    init() {
+      is_initialized = true;
+    },
     create(type, id, parent_id, ...args) {
       let mesh;
       if (type == "group") {
