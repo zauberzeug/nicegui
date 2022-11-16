@@ -1,0 +1,99 @@
+from dataclasses import dataclass
+from typing import Callable, Dict, List, Optional
+
+from ..element import Element
+from ..vue import register_component
+from .scene_object3d import Object3D
+from .scene_objects import Scene as SceneObject
+
+register_component('scene', __file__, 'scene.js', [
+    'lib/three.min.js',
+    'lib/CSS2DRenderer.js',
+    'lib/CSS3DRenderer.js',
+    'lib/OrbitControls.js',
+    'lib/STLLoader.js',
+    'lib/tween.umd.min.js',
+])
+
+
+@dataclass
+class SceneCamera:
+    x: float = 0
+    y: float = -3
+    z: float = 5
+    look_at_x: float = 0
+    look_at_y: float = 0
+    look_at_z: float = 0
+    up_x: float = 0
+    up_y: float = 0
+    up_z: float = 1
+
+
+class Scene(Element):
+    from .scene_objects import Box as box
+    from .scene_objects import Curve as curve
+    from .scene_objects import Cylinder as cylinder
+    from .scene_objects import Extrusion as extrusion
+    from .scene_objects import Group as group
+    from .scene_objects import Line as line
+    from .scene_objects import QuadraticBezierTube as quadratic_bezier_tube
+    from .scene_objects import Ring as ring
+    from .scene_objects import Sphere as sphere
+    from .scene_objects import SpotLight as spot_light
+    from .scene_objects import Stl as stl
+    from .scene_objects import Text as text
+    from .scene_objects import Text3d as text3d
+    from .scene_objects import Texture as texture
+
+    def __init__(self, width: int = 400, height: int = 300, on_click: Optional[Callable] = None) -> None:
+        """3D Scene
+
+        Display a 3d scene using `three.js <https://threejs.org/>`_.
+        Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes.
+        Objects can be translated, rotated and displayed with different color, opacity or as wireframes.
+        They can also be grouped to apply joint movements.
+
+        :param width: width of the canvas
+        :param height: height of the canvas
+        :param on_click: callback to execute when a 3d object is clicked
+        """
+        super().__init__('scene')
+        self._props['width'] = width
+        self._props['height'] = height
+        self.objects: Dict[Object3D] = {}
+        self.stack: List[Object3D] = []
+        with self:
+            SceneObject()
+        self.camera: SceneCamera = SceneCamera()
+        self.on('connect', self.handle_connect)
+
+    def handle_connect(self, msg: Dict) -> None:
+        print('CONNECT', msg, flush=True)
+
+    def __len__(self) -> int:
+        return len(self.objects)
+
+    def move_camera(self,
+                    x: Optional[float] = None,
+                    y: Optional[float] = None,
+                    z: Optional[float] = None,
+                    look_at_x: Optional[float] = None,
+                    look_at_y: Optional[float] = None,
+                    look_at_z: Optional[float] = None,
+                    up_x: Optional[float] = None,
+                    up_y: Optional[float] = None,
+                    up_z: Optional[float] = None,
+                    duration: float = 0.5) -> None:
+        self.camera.x = self.camera.x if x is None else x
+        self.camera.y = self.camera.y if y is None else y
+        self.camera.z = self.camera.z if z is None else z
+        self.camera.look_at_x = self.camera.look_at_x if look_at_x is None else look_at_x
+        self.camera.look_at_y = self.camera.look_at_y if look_at_y is None else look_at_y
+        self.camera.look_at_z = self.camera.look_at_z if look_at_z is None else look_at_z
+        self.camera.up_x = self.camera.up_x if up_x is None else up_x
+        self.camera.up_y = self.camera.up_y if up_y is None else up_y
+        self.camera.up_z = self.camera.up_z if up_z is None else up_z
+        self.run_method('move_camera',
+                        self.camera.x, self.camera.y, self.camera.z,
+                        self.camera.look_at_x, self.camera.look_at_y, self.camera.look_at_z,
+                        self.camera.up_x, self.camera.up_y, self.camera.up_z, duration)

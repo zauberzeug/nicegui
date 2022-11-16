@@ -54,9 +54,9 @@ function texture_material(texture) {
   });
 }
 
-Vue.component("scene", {
+export default {
   template: `
-    <div v-bind:id="jp_props.id" style="position:relative">
+    <div style="position:relative">
       <canvas style="position:relative"></canvas>
       <div style="position:absolute;pointer-events:none;top:0"></div>
       <div style="position:absolute;pointer-events:none;top:0"></div>
@@ -66,11 +66,8 @@ Vue.component("scene", {
     scene = new THREE.Scene();
     objects.set("scene", scene);
 
-    const width = this.$props.jp_props.options.width;
-    const height = this.$props.jp_props.options.height;
-
     look_at = new THREE.Vector3(0, 0, 0);
-    camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+    camera = new THREE.PerspectiveCamera(75, this.width / this.height, 0.1, 1000);
     camera.lookAt(look_at);
     camera.up = new THREE.Vector3(0, 0, 1);
     camera.position.set(0, -3, 5);
@@ -83,20 +80,20 @@ Vue.component("scene", {
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
-      canvas: document.getElementById(this.$props.jp_props.id).children[0],
+      canvas: this.$el.children[0],
     });
     renderer.setClearColor("#eee");
-    renderer.setSize(width, height);
+    renderer.setSize(this.width, this.height);
 
     const text_renderer = new THREE.CSS2DRenderer({
-      element: document.getElementById(this.$props.jp_props.id).children[1],
+      element: this.$el.children[1],
     });
-    text_renderer.setSize(width, height);
+    text_renderer.setSize(this.width, this.height);
 
     const text3d_renderer = new THREE.CSS3DRenderer({
-      element: document.getElementById(this.$props.jp_props.id).children[2],
+      element: this.$el.children[2],
     });
-    text3d_renderer.setSize(width, height);
+    text3d_renderer.setSize(this.width, this.height);
 
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: "#eee" }));
     ground.translateZ(-0.01);
@@ -125,12 +122,7 @@ Vue.component("scene", {
       let x = (mouseEvent.offsetX / renderer.domElement.width) * 2 - 1;
       let y = -(mouseEvent.offsetY / renderer.domElement.height) * 2 + 1;
       raycaster.setFromCamera({ x: x, y: y }, camera);
-      const event = {
-        event_type: "onClick",
-        vue_type: this.$props.jp_props.vue_type,
-        id: this.$props.jp_props.id,
-        page_id: page_id,
-        websocket_id: websocket_id,
+      this.$emit("click", {
         hits: raycaster
           .intersectObjects(scene.children, true)
           .filter((o) => o.object.object_id)
@@ -140,30 +132,11 @@ Vue.component("scene", {
           })),
         click_type: mouseEvent.type,
         shift_key: mouseEvent.shiftKey,
-      };
-      send_to_server(event, "event");
+      });
     };
-    document.getElementById(this.$props.jp_props.id).onclick = click_handler;
-    document.getElementById(this.$props.jp_props.id).ondblclick = click_handler;
-
-    comp_dict[this.$props.jp_props.id] = this;
-
-    const sendConnectEvent = () => {
-      if (websocket_id === "") return;
-      const event = {
-        event_type: "onConnect",
-        vue_type: this.$props.jp_props.vue_type,
-        id: this.$props.jp_props.id,
-        page_id: page_id,
-        websocket_id: websocket_id,
-      };
-      send_to_server(event, "event");
-      clearInterval(connectInterval);
-    };
-    const connectInterval = setInterval(sendConnectEvent, 100);
+    this.$el.onclick = click_handler;
+    this.$el.ondblclick = click_handler;
   },
-
-  updated() {},
 
   methods: {
     create(type, id, parent_id, ...args) {
@@ -338,6 +311,7 @@ Vue.component("scene", {
   },
 
   props: {
-    jp_props: Object,
+    width: Number,
+    height: Number,
   },
-});
+};

@@ -147,5 +147,7 @@ class Element(ABC, Visibility):
         create_task(globals.sio.emit('update', {'elements': elements}, room=str(self.client.id)))
 
     def run_method(self, name: str, *args: Any) -> None:
+        if globals.loop is None:
+            return
         data = {'id': self.id, 'name': name, 'args': args}
         create_task(globals.sio.emit('run_method', data, room=str(self.client.id)))
