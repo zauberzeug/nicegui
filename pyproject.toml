@@ -25,6 +25,7 @@ matplotlib = [
     { version = "^3.6.0", markers = "python_version ~= '3.11.0'"},
 ]
 cryptography = "^38.0.3"
+pillow = ">=9.3.0"
 
 [tool.poetry.dev-dependencies]
 icecream = "^2.1.0"
