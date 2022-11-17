@@ -206,9 +206,9 @@ def create_full() -> None:
         picker = ui.color_picker(on_pick=lambda e: button.style(f'background-color:{e.color}!important'))
         button = ui.button(on_click=picker.open).props('icon=colorize')
 
-    # @example(ui.upload)
+    @example(ui.upload, skip=False)
     def upload_example():
-        ui.upload(on_upload=lambda e: ui.notify(f'{len(e.files[0])} bytes'))
+        ui.upload(on_upload=lambda e: ui.notify(f'{e.files[0].size} bytes'))
 
     h3('Markdown and HTML')
 

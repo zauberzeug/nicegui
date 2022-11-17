@@ -37,6 +37,7 @@ from .elements.switch import Switch as switch
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
+from .elements.upload import Upload as upload
 from .notify import notify
 from .page import page
 from .run import run

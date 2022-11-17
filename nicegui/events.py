@@ -38,9 +38,17 @@ class MouseEventArguments(EventArguments):
 
 
 @dataclass
+class UploadFile:
+    name: str
+    lastModified: float
+    lastModifiedDate: str
+    size: int
+    type: str
+
+
+@dataclass
 class UploadEventArguments(EventArguments):
-    files: List[bytes]
-    names: List[str]
+    files: List[UploadFile]
 
 
 @dataclass
