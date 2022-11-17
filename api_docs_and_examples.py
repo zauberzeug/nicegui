@@ -252,11 +252,11 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             ui.label('Nice!').classes('absolute-bottom text-subtitle2 text-center')
 
         with ui.image('https://cdn.stocksnap.io/img-thumbs/960w/airplane-sky_DYPWDEEILG.jpg'):
-            content = '''
+            ui.html('''
                 <svg viewBox="0 0 960 638" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="445" cy="300" r="100" fill="none" stroke="red" stroke-width="20" />
-                </svg>'''
-            ui.html(content).style('background:transparent')
+                </svg>
+            ''').classes('bg-transparent')
 
     @example(ui.interactive_image, skip=False)
     def interactive_image_example():
