@@ -30,6 +30,10 @@ class Client:
         self.content = ui.column().classes('q-ma-md')
         globals.client_stack.pop()
 
+    @property
+    def ip(self) -> Optional[str]:
+        return self.environ.get('REMOTE_ADDR') if self.environ else None
+
     def __enter__(self):
         globals.client_stack.append(self)
         self.content.__enter__()

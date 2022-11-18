@@ -701,33 +701,29 @@ If the page function expects a `request` argument, the request object is automat
 
         ui.link('Say hi to Santa!', 'repeat/Ho! /3')
 
-    @example('''#### Yielding for Page-Ready
+    @example('''#### Wait for Handshake with Client
 
-This is a handy alternative to the `on_page_ready` callback of the `@ui.page` decorator.
+To wait for a client connection, you can add a `client` argument to the decorated page function
+and await `client.handshake()`.
+All code below that statement is executed after the websocket connection between server and client has been established.
 
-If a `yield` statement is provided in a page builder function, all code below that statement is executed after the page is ready.
-This allows you to execute JavaScript; which is only possible after the page has been loaded (see [#112](https://github.com/zauberzeug/nicegui/issues/112)).
-Also it is possible to do async stuff while the user already sees the content which was added before the yield statement.
-
-The yield statement returns `nicegui.events.PageEvent`. 
-This contains the websocket of the client.
-    ''')
-    def yield_page_ready_example():
+For example, this allows you to run JavaScript commands; which is only possible with a client connection (see [#112](https://github.com/zauberzeug/nicegui/issues/112)).
+Also it is possible to do async stuff while the user already sees some content.
+    ''', skip=False)
+    def wait_for_handshake_example():
         import asyncio
-        from typing import Generator
 
-        from nicegui.events import PageEvent
+        from nicegui import Client
 
-        @ui.page('/yield_page_ready')
-        async def yield_page_ready() -> Generator[None, PageEvent, None]:
+        @ui.page('/wait_for_handshake')
+        async def wait_for_handshake(client: Client):
             ui.label('This text is displayed immediately.')
-            page_ready = yield
-            await ui.run_javascript('document.title = "JavaScript-Controlled Title")')
+            await client.handshake()
             await asyncio.sleep(2)
             ui.label('This text is displayed 2 seconds after the page has been fully loaded.')
-            ui.label(f'The IP address {page_ready.socket.client.host} could be obtained from the websocket.')
+            ui.label(f'The IP address {client.ip} was obtained from the websocket.')
 
-        ui.link('show page-ready code after yield', '/yield_page_ready')
+        ui.link('wait for handshake', wait_for_handshake)
 
     @example('''#### Page Layout
 

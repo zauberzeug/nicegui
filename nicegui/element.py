@@ -34,11 +34,11 @@ class Element(ABC, Visibility):
         return self.slots[name]
 
     def __enter__(self):
-        self.client.slot_stack.append(self.default_slot)
+        self.default_slot.__enter__()
         return self
 
     def __exit__(self, *_):
-        self.client.slot_stack.pop()
+        self.default_slot.__exit__(*_)
 
     def to_dict(self) -> Dict:
         events: Dict[str, List[str]] = {}
