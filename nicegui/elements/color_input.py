@@ -4,6 +4,7 @@ from nicegui import ui
 
 from ..element import Element
 from ..events import ValueChangeEventArguments, handle_event
+from .color_picker import ColorPicker
 from .mixins.value_element import ValueElement
 
 
@@ -22,18 +23,7 @@ class ColorInput(ValueElement):
         self._props['label'] = label
         self._props['placeholder'] = placeholder
 
-        with self, ui.menu() as self.popup:
-            def handle_change(msg: Dict) -> None:
-                arguments = ValueChangeEventArguments(sender=self, client=self.client, value=msg['args'])
-                handle_event(on_change, arguments)
-            self.color_element = Element('q-color').on('change', handle_change)
-
         with self.add_slot('append'):
-            self.button = ui.button(on_click=self.popup.open) \
+            self.picker = ColorPicker(on_pick=lambda e: self.set_value(e.color))
+            self.button = ui.button(on_click=self.picker.open) \
                 .props('icon=colorize flat round', remove='color').classes('cursor-pointer')
-
-    def open(self) -> None:
-        self.popup.open()
-
-    def close(self) -> None:
-        self.popup.close()

@@ -5,6 +5,7 @@ from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section
 from .elements.checkbox import Checkbox as checkbox
 from .elements.color_input import ColorInput as color_input
+from .elements.color_picker import ColorPicker as color_picker
 from .elements.colors import Colors as colors
 from .elements.column import Column as column
 from .elements.dialog import Dialog as dialog

@@ -201,7 +201,7 @@ def create_full() -> None:
         ui.color_input(label='Color', value='#000000',
                        on_change=lambda e: color_label.style(f'color:{e.value}'))
 
-    # @example(ui.color_picker)
+    @example(ui.color_picker, skip=False)
     def color_picker_example():
         picker = ui.color_picker(on_pick=lambda e: button.style(f'background-color:{e.color}!important'))
         button = ui.button(on_click=picker.open).props('icon=colorize')
