@@ -71,6 +71,11 @@ def handle_event(sid: str, msg: Dict) -> None:
             sender.handle_event(msg)
 
 
+@sio.on('javascript_response')
+def handle_event(sid: str, msg: Dict) -> None:
+    get_client(sid).waiting_javascript_commands[msg['request_id']] = msg['result']
+
+
 def get_client(sid: str) -> Client:
     query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
     query = urllib.parse.parse_qs(query_bytes.decode())

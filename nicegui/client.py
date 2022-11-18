@@ -1,6 +1,7 @@
 import asyncio
 import json
 import time
+import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -9,6 +10,7 @@ from fastapi.responses import HTMLResponse
 from . import globals, ui, vue
 from .element import Element
 from .slot import Slot
+from .task_logger import create_task
 
 TEMPLATE = (Path(__file__).parent / 'templates' / 'index.html').read_text()
 
@@ -29,6 +31,8 @@ class Client:
         globals.client_stack.append(self)
         self.content = ui.column().classes('q-ma-md')
         globals.client_stack.pop()
+
+        self.waiting_javascript_commands: Dict[str, str] = {}
 
     @property
     def ip(self) -> Optional[str]:
@@ -63,3 +67,20 @@ class Client:
                 raise TimeoutError(f'No handshake after {timeout} seconds')
             await asyncio.sleep(check_interval)
         self.is_waiting_for_handshake = False
+
+    async def run_javascript(self, code: str, *,
+                             respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Optional[str]:
+        request_id = str(uuid.uuid4())
+        command = {
+            'code': code,
+            'request_id': request_id if respond else None,
+        }
+        create_task(globals.sio.emit('run_javascript', command, room=str(self.id)))
+        if not respond:
+            return
+        deadline = time.time() + timeout
+        while request_id not in self.waiting_javascript_commands:
+            if time.time() > deadline:
+                raise TimeoutError('JavaScript did not respond in time')
+            await asyncio.sleep(check_interval)
+        return self.waiting_javascript_commands.pop(request_id)

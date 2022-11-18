@@ -40,6 +40,7 @@ from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
 from .elements.upload import Upload as upload
+from .javascript import run_javascript
 from .notify import notify
 from .page import page
 from .run import run

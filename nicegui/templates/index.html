@@ -50,6 +50,13 @@
         return Vue.h(Vue.resolveComponent(element.tag), props, slots);
       }
 
+      function run_javascript(code, request_id) {
+        const result = eval(code);
+        if (request_id) {
+          window.socket.emit("javascript_response", {request_id, result});
+        }
+      }
+
       const app = Vue.createApp({
         data() {
           return {
@@ -66,6 +73,7 @@
             Object.entries(msg.elements).forEach(([id, element]) => this.elements[element.id] = element);
           });
           window.socket.on("run_method", (msg) => this.$refs['r' + msg.id][msg.name](...msg.args));
+          window.socket.on("run_javascript", (msg) => run_javascript(msg['code'], msg['request_id']));
           window.socket.on("notify", (msg) => Quasar.Notify.create(msg));
           window.socket.on("disconnect", () => window.location.reload());
         },
