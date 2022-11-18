@@ -807,35 +807,6 @@ You can also set `respond=False` to send a command without waiting for a respons
         ui.button('fire and forget', on_click=alert)
         ui.button('receive result', on_click=get_date)
 
-    h3('Routes')
-
-    # @example(ui.get)
-    def get_example():
-        from starlette import requests, responses
-
-        @ui.get('/another/route/{id}')
-        def produce_plain_response(id: str, request: requests.Request):
-            return responses.PlainTextResponse(f'{request.client.host} asked for id={id}')
-
-        ui.link('Try yet another route!', 'another/route/42')
-
-    # @example(ui.add_static_files)
-    def add_static_files_example():
-        ui.add_static_files('/examples', 'examples')
-        ui.link('Slideshow Example (raw file)', 'examples/slideshow/main.py')
-        with ui.image('examples/slideshow/slides/slide1.jpg'):
-            ui.label('first image from slideshow').classes('absolute-bottom text-subtitle2')
-
-    # @example(ui.add_route)
-    def add_route_example():
-        import starlette
-
-        ui.add_route(starlette.routing.Route(
-            '/new/route', lambda _: starlette.responses.PlainTextResponse('Response')
-        ))
-
-        ui.link('Try the new route!', 'new/route')
-
     h3('Configuration')
 
     @example('''#### ui.run
