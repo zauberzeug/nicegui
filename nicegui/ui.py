@@ -43,4 +43,5 @@ from .elements.upload import Upload as upload
 from .notify import notify
 from .page import page
 from .run import run
+from .timer import Timer as timer
 from .update import update

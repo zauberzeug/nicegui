@@ -11,6 +11,7 @@ from fastapi_socketio import SocketManager
 
 from . import binding, globals, vue
 from .client import Client
+from .helpers import safe_invoke
 from .task_logger import create_task
 
 globals.app = app = FastAPI()
@@ -39,8 +40,19 @@ def vue_dependencies(name: str):
 
 @app.on_event('startup')
 def on_startup() -> None:
+    globals.state = globals.State.STARTING
     globals.loop = asyncio.get_running_loop()
+    [safe_invoke(t) for t in globals.startup_handlers]
     create_task(binding.loop())
+    globals.state = globals.State.STARTED
+
+
+@app.on_event('shutdown')
+def shutdown() -> None:
+    globals.state = globals.State.STOPPING
+    [safe_invoke(t) for t in globals.shutdown_handlers]
+    [t.cancel() for t in globals.tasks]
+    globals.state = globals.State.STOPPED
 
 
 @sio.on('connect')

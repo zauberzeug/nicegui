@@ -1,31 +1,21 @@
 from typing import Awaitable, Callable, Union
 
-import justpy as jp
-
 from . import globals
 
 
-def on_connect(self, handler: Union[Callable, Awaitable]):
+def on_connect(handler: Union[Callable, Awaitable]) -> None:
     globals.connect_handlers.append(handler)
 
 
-def on_disconnect(self, handler: Union[Callable, Awaitable]):
+def on_disconnect(handler: Union[Callable, Awaitable]) -> None:
     globals.disconnect_handlers.append(handler)
 
 
-def on_startup(self, handler: Union[Callable, Awaitable]):
+def on_startup(handler: Union[Callable, Awaitable]) -> None:
     if globals.state == globals.State.STARTED:
         raise RuntimeError('Unable to register another startup handler. NiceGUI has already been started.')
     globals.startup_handlers.append(handler)
 
 
-def on_shutdown(self, handler: Union[Callable, Awaitable]):
+def on_shutdown(handler: Union[Callable, Awaitable]) -> None:
     globals.shutdown_handlers.append(handler)
-
-
-async def shutdown(self) -> None:
-    if globals.config.reload:
-        raise Exception('ui.shutdown is not supported when auto-reload is enabled')
-    for socket in [s for page in jp.WebPage.sockets.values() for s in page.values()]:
-        await socket.close()
-    globals.server.should_exit = True

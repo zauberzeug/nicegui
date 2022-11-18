@@ -339,9 +339,8 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             y2 = np.cos(x)
             line_plot.push([now], [[y1], [y2]])
 
-        # line_updates = ui.timer(0.1, update_line_plot, active=False)
-        # line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')
-        ui.button('update', on_click=update_line_plot)  # TODO: use ui.timer instead
+        line_updates = ui.timer(0.1, update_line_plot, active=False)
+        line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')
 
     @example(ui.linear_progress, skip=False)
     def linear_progress_example():
@@ -542,7 +541,7 @@ When NiceGUI is shut down or restarted, the startup tasks will be automatically 
 
         # ui.on_connect(countdown)
 
-    # @example(ui.timer)
+    @example(ui.timer, skip=False)
     def timer_example():
         from datetime import datetime
 
