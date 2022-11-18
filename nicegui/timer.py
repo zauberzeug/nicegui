@@ -29,6 +29,7 @@ class Timer:
         self.interval = interval
         self.callback = callback
         self.active = active
+        self.client = globals.client_stack[-1]
 
         coroutine = self._run_once if once else self._run_in_loop
         if globals.state == globals.State.STARTED:
@@ -56,8 +57,9 @@ class Timer:
 
     async def _invoke_callback(self) -> None:
         try:
-            result = self.callback()
-            if is_coroutine(self.callback):
-                await result
+            with self.client:
+                result = self.callback()
+                if is_coroutine(self.callback):
+                    await result
         except Exception:
             traceback.print_exc()
