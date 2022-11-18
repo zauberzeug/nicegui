@@ -30,6 +30,7 @@ class Upload(Element):
         def upload(msg: Dict) -> None:
             files = [
                 UploadFile(
+                    content=file['content'],
                     name=file['name'],
                     lastModified=file['lastModified'],
                     lastModifiedDate=file['lastModifiedDate'],

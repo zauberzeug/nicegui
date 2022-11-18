@@ -17,12 +17,12 @@ export default {
       if (!this.file) return;
       const files = this.multiple ? this.file : [this.file];
       const args = files.map((file) => ({
+        content: file,
         name: file.name,
         lastModified: file.lastModified / 1000,
         lastModifiedDate: file.lastModifiedDate,
         size: file.size,
         type: file.type,
-        content: file,
       }));
       this.$emit("upload", args);
     },

@@ -39,6 +39,7 @@ class MouseEventArguments(EventArguments):
 
 @dataclass
 class UploadFile:
+    content: bytes
     name: str
     lastModified: float
     lastModifiedDate: str

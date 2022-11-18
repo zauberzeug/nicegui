@@ -5,6 +5,7 @@ import io
 from typing import Callable
 
 import replicate  # very nice API to run AI models; see https://replicate.com/
+
 from nicegui import ui
 from nicegui.events import UploadEventArguments
 
@@ -17,7 +18,7 @@ async def io_bound(callback: Callable, *args: any, **kwargs: any):
 async def transcribe(args: UploadEventArguments):
     transcription.text = 'Transcribing...'
     model = replicate.models.get('openai/whisper')
-    prediction = await io_bound(model.predict, audio=io.BytesIO(args.files[0]))
+    prediction = await io_bound(model.predict, audio=io.BytesIO(args.files[0].content))
     text = prediction.get('transcription', 'no transcription')
     transcription.set_text(f'result: "{text}"')
 
