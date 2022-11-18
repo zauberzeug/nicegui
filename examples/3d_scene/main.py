@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-from fastapi.staticfiles import StaticFiles
+from nicegui import ui
 
-from nicegui import app, ui
-
-app.mount('/stl', StaticFiles(directory='static'), name='stl')
+ui.add_static_files('/stl', 'static')
 
 with ui.scene(width=1024, height=800) as scene:
     scene.spot_light(distance=100, intensity=0.1).move(-10, 0, 10)
