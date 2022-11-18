@@ -34,6 +34,9 @@ class Client:
 
         self.waiting_javascript_commands: Dict[str, str] = {}
 
+        self.head_html = ''
+        self.body_html = ''
+
     @property
     def ip(self) -> Optional[str]:
         return self.environ.get('REMOTE_ADDR') if self.environ else None
@@ -54,8 +57,8 @@ class Client:
                             .replace(r'{{ client_id }}', str(self.id))
                             .replace(r'{{ socket_address }}', f'ws://{globals.host}:{globals.port}')
                             .replace(r'{{ elements | safe }}', elements)
-                            .replace(r'{{ vue_html | safe }}', vue_html)
-                            .replace(r'{{ vue_styles | safe }}', vue_styles)
+                            .replace(r'{{ head_html | safe }}', self.head_html)
+                            .replace(r'{{ body_html | safe }}', f'{self.body_html}\n{vue_html}\n{vue_styles}')
                             .replace(r'{{ vue_scripts | safe }}', vue_scripts)
                             .replace(r'{{ js_imports | safe }}', vue.generate_js_imports()))
 

@@ -40,9 +40,11 @@ from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
 from .elements.upload import Upload as upload
-from .javascript import run_javascript
-from .notify import notify
+from .functions.html import add_body_html, add_head_html
+from .functions.javascript import run_javascript
+from .functions.notify import notify
+from .functions.timer import Timer as timer
+from .functions.update import update
+from .lifecycle import on_connect, on_disconnect, on_shutdown, on_startup
 from .page import page
 from .run import run
-from .timer import Timer as timer
-from .update import update

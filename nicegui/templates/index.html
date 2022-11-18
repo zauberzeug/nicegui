@@ -6,12 +6,14 @@
     <link href="/static/fonts.css" rel="stylesheet" type="text/css" />
     <link href="/static/quasar.prod.css" rel="stylesheet" type="text/css" />
     <script src="/static/tailwind.min.js"></script>
+    {{ head_html | safe }}
   </head>
   <body>
     <script src="/static/vue.global.prod.js"></script>
     <script src="/static/quasar.umd.prod.js"></script>
 
-    {{ vue_styles | safe }} {{ vue_html | safe }}
+    {{ body_html | safe }}
+
     <div id="app"></div>
     <script type="module">
       const True = true;

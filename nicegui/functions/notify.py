@@ -1,7 +1,7 @@
 from typing import Optional, Union
 
-from . import globals
-from .task_logger import create_task
+from .. import globals
+from ..task_logger import create_task
 
 
 def notify(message: str, *,

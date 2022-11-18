@@ -81,7 +81,7 @@ class example:
 
 def create_intro() -> None:
     # add docutils CSS to webpage
-    # ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
+    ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
 
     @example('''#### Hello, World!
 
@@ -115,7 +115,7 @@ Binding values between UI elements or [to data models](http://127.0.0.1:8080/ref
 
 def create_full() -> None:
     # add docutils CSS to webpage
-    # ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
+    ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
 
     ui.markdown('## API Documentation and Examples')
 

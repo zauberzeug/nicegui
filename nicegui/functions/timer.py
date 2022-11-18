@@ -3,11 +3,11 @@ import time
 import traceback
 from typing import Callable
 
-from . import globals
-from .binding import BindableProperty
-from .helpers import is_coroutine
-from .lifecycle import on_startup
-from .task_logger import create_task
+from .. import globals
+from ..binding import BindableProperty
+from ..helpers import is_coroutine
+from ..lifecycle import on_startup
+from ..task_logger import create_task
 
 
 class Timer:

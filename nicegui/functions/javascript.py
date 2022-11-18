@@ -1,6 +1,6 @@
 from typing import Optional
 
-from . import globals
+from .. import globals
 
 
 async def run_javascript(code: str, *,
