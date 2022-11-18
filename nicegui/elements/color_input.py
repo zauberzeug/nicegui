@@ -1,9 +1,7 @@
-from typing import Callable, Dict, Optional
+from typing import Callable, Optional
 
 from nicegui import ui
 
-from ..element import Element
-from ..events import ValueChangeEventArguments, handle_event
 from .color_picker import ColorPicker
 from .mixins.value_element import ValueElement
 
