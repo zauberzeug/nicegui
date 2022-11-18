@@ -1,5 +1,6 @@
 from typing import Callable, Union
 
+from .. import globals
 from ..element import Element
 from .mixins.text_element import TextElement
 
@@ -18,7 +19,7 @@ class Link(TextElement):
         :param target: page function or string that is a an absolute URL or relative path from base URL
         """
         super().__init__(tag='a', text=text)
-        self._props['href'] = target if isinstance(target, str) else None  # TODO: globals.find_route(target)[1:]
+        self._props['href'] = target if isinstance(target, str) else globals.page_routes[target]
         self._classes.extend(['underline, text-blue'])
 
 

@@ -1,7 +1,7 @@
 import asyncio
 import inspect
 import time
-from typing import Callable
+from typing import Callable, Optional
 
 from fastapi import Response
 
@@ -12,9 +12,23 @@ from .task_logger import create_task
 
 class page:
 
-    def __init__(self, path: str, response_timeout: float = 3.0) -> None:
+    def __init__(self,
+                 path: str, *,
+                 dark: Optional[bool] = ...,
+                 response_timeout: float = 3.0,
+                 ) -> None:
+        """Page
+
+        Creates a new page at the given route.
+
+        :param path: route of the new page (path must start with '/')
+        :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
+        :param response_timeout: maximum time for the decorated function to build the page (default: 3.0)
+        """
         self.path = path
+        self.dark = dark  # TODO: actually use this value
         self.response_timeout = response_timeout
+
         # NOTE we need to remove existing routes for this path to make sure only the latest definition is used
         globals.app.routes[:] = [r for r in globals.app.routes if r.path != path]
 
@@ -44,5 +58,7 @@ class page:
 
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']
         decorated.__signature__ = inspect.Signature(parameters)
+
+        globals.page_routes[decorated] = self.path
 
         return globals.app.get(self.path)(decorated)

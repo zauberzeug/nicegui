@@ -644,17 +644,17 @@ Note: You can also pass a `functools.partial` into the `on_click` property to wr
 
     h3('Pages')
 
-    @example(ui.page)
+    @example(ui.page, skip=False)
     def page_example():
         @ui.page('/other_page')
         def other_page():
             ui.label('Welcome to the other side')
-            ui.link('Back to main page', '#page')
+            ui.link('Back to main page', '/#page')
 
         @ui.page('/dark_page', dark=True)
         def dark_page():
             ui.label('Welcome to the dark side')
-            ui.link('Back to main page', '#page')
+            ui.link('Back to main page', '/#page')
 
         ui.link('Visit other page', other_page)
         ui.link('Visit dark page', dark_page)
@@ -693,7 +693,7 @@ To make it "private" or to change other attributes like title, favicon etc. you 
 Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/>).
 If type-annotated, they are automatically converted to bool, int, float and complex values.
 If the page function expects a `request` argument, the request object is automatically provided.
-''')
+''', skip=False)
     def page_with_path_parameters_example():
         @ui.page('/repeat/{word}/{count}')
         def page(word: str, count: int):
