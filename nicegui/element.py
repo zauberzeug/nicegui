@@ -1,5 +1,6 @@
 import shlex
 from abc import ABC
+from copy import deepcopy
 from typing import Any, Callable, Dict, List, Optional
 
 from . import globals
@@ -79,7 +80,7 @@ class Element(ABC, Visibility):
         '''
         def parse_style(text: Optional[str]) -> Dict[str, str]:
             return dict((word.strip() for word in part.split(':')) for part in text.strip('; ').split(';')) if text else {}
-        style_dict = self._style if replace is None else {}
+        style_dict = deepcopy(self._style) if replace is None else {}
         for key in parse_style(remove):
             del style_dict[key]
         style_dict.update(parse_style(add))

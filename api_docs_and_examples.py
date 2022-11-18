@@ -195,7 +195,7 @@ def create_full() -> None:
                   on_change=lambda e: number_result.set_text(f'you entered: {e.value}'))
         number_result = ui.label()
 
-    # @example(ui.color_input)
+    @example(ui.color_input, skip=False)
     def color_input_example():
         color_label = ui.label('Change my color!')
         ui.color_input(label='Color', value='#000000',
