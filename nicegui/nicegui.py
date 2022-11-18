@@ -5,6 +5,7 @@ from typing import Dict
 
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
@@ -12,7 +13,7 @@ from . import binding, globals, vue
 from .client import Client
 from .task_logger import create_task
 
-globals.app = app = FastAPI(routes=vue.generate_js_routes())
+globals.app = app = FastAPI()
 globals.sio = sio = SocketManager(app=app)._sio
 
 app.add_middleware(GZipMiddleware)
@@ -24,6 +25,16 @@ Client().__enter__()
 @app.get('/')
 def index():
     return globals.client_stack[-1].build_response()
+
+
+@app.get('/_vue/dependencies/{path:path}')
+def vue_dependencies(path: str):
+    return FileResponse(path, media_type='text/javascript')
+
+
+@app.get('/_vue/components/{name}')
+def vue_dependencies(name: str):
+    return FileResponse(vue.js_components[name], media_type='text/javascript')
 
 
 @app.on_event('startup')
