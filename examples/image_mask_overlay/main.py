@@ -10,7 +10,7 @@ with ui.row().classes('w-full flex items-center'):
     ui.image(mask_src).style('width: 25%')
     ui.label('=').style('font-size: 18em')
     image = ui.interactive_image(img_src).style('width: 25%')
-    image.svg_content = f'''
+    image.content = f'''
         <image xlink:href="{mask_src}" width="100%" height="100%" x="0" y="0" filter="url(#mask)" />
         <filter id="mask">
             <feComponentTransfer>
