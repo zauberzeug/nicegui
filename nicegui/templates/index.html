@@ -84,6 +84,8 @@
       {{ vue_scripts | safe }}
       {{ js_imports | safe }}
 
+      Quasar.Dark.set({{ dark }});
+
       app.mount("#app");
     </script>
   </body>

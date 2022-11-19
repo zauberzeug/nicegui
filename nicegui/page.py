@@ -26,7 +26,7 @@ class page:
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0)
         """
         self.path = path
-        self.dark = dark  # TODO: actually use this value
+        self.dark = dark
         self.response_timeout = response_timeout
 
         # NOTE we need to remove existing routes for this path to make sure only the latest definition is used
@@ -35,7 +35,7 @@ class page:
     def __call__(self, func: Callable) -> Callable:
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             try:
-                with Client() as client:
+                with Client(dark=self.dark) as client:
                     if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                         dec_kwargs['client'] = client
                     result = func(*dec_args, **dec_kwargs)

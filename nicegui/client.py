@@ -17,7 +17,7 @@ TEMPLATE = (Path(__file__).parent / 'templates' / 'index.html').read_text()
 
 class Client:
 
-    def __init__(self) -> None:
+    def __init__(self, dark: Optional[bool] = ...) -> None:
         self.id = globals.next_client_id
         globals.next_client_id += 1
         globals.clients[self.id] = self
@@ -36,6 +36,7 @@ class Client:
 
         self.head_html = ''
         self.body_html = ''
+        self.dark = dark if dark is not ... else False
 
     @property
     def ip(self) -> Optional[str]:
@@ -53,14 +54,17 @@ class Client:
     def build_response(self) -> HTMLResponse:
         vue_html, vue_styles, vue_scripts = vue.generate_vue_content()
         elements = json.dumps({id: element.to_dict() for id, element in self.elements.items()})
-        return HTMLResponse(TEMPLATE
-                            .replace(r'{{ client_id }}', str(self.id))
-                            .replace(r'{{ socket_address }}', f'ws://{globals.host}:{globals.port}')
-                            .replace(r'{{ elements | safe }}', elements)
-                            .replace(r'{{ head_html | safe }}', self.head_html)
-                            .replace(r'{{ body_html | safe }}', f'{self.body_html}\n{vue_html}\n{vue_styles}')
-                            .replace(r'{{ vue_scripts | safe }}', vue_scripts)
-                            .replace(r'{{ js_imports | safe }}', vue.generate_js_imports()))
+        return HTMLResponse(
+            TEMPLATE
+            .replace(r'{{ client_id }}', str(self.id))
+            .replace(r'{{ socket_address }}', f'ws://{globals.host}:{globals.port}')
+            .replace(r'{{ elements | safe }}', elements)
+            .replace(r'{{ head_html | safe }}', self.head_html)
+            .replace(r'{{ body_html | safe }}', f'{self.body_html}\n{vue_html}\n{vue_styles}')
+            .replace(r'{{ vue_scripts | safe }}', vue_scripts)
+            .replace(r'{{ js_imports | safe }}', vue.generate_js_imports())
+            .replace(r'{{ dark }}', '"auto"' if self.dark is None else str(self.dark))
+        )
 
     async def handshake(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
         self.is_waiting_for_handshake = True
