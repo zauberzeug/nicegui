@@ -14,6 +14,7 @@ class page:
 
     def __init__(self,
                  path: str, *,
+                 title: Optional[str] = None,
                  dark: Optional[bool] = ...,
                  response_timeout: float = 3.0,
                  ) -> None:
@@ -26,6 +27,7 @@ class page:
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0)
         """
         self.path = path
+        self.title = title
         self.dark = dark
         self.response_timeout = response_timeout
 
@@ -35,7 +37,7 @@ class page:
     def __call__(self, func: Callable) -> Callable:
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             try:
-                with Client(dark=self.dark) as client:
+                with Client(title=self.title, dark=self.dark) as client:
                     if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                         dec_kwargs['client'] = client
                     result = func(*dec_args, **dec_kwargs)
