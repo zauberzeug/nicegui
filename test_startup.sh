@@ -28,7 +28,7 @@ check() {
 }
 
 error=0
-check main.py || error=1
+check website/main.py || error=1
 for path in examples/*
 do
     check $path/main.py || error=1
