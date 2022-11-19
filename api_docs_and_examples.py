@@ -733,7 +733,7 @@ See <https://quasar.dev/layout/header-and-footer> and <https://quasar.dev/layout
 `elevated`, `bordered` and many more.
 With `ui.page_sticky` you can place an element "sticky" on the screen.
 See <https://quasar.dev/layout/page-sticky> for more information.
-    ''')
+    ''', skip=False)
     def page_layout_example():
         @ui.page('/page_layout')
         async def page_layout():

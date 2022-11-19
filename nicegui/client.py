@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 
 from fastapi.responses import HTMLResponse
 
-from . import globals, ui, vue
+from . import globals, vue
 from .element import Element
 from .slot import Slot
 from .task_logger import create_task
@@ -32,7 +32,9 @@ class Client:
         self.environ: Optional[Dict[str, Any]] = None
 
         globals.client_stack.append(self)
-        self.content = ui.column().classes('q-ma-md')
+        with Element('q-layout').props('view="HHH LpR FFF"') as self.layout:
+            with Element('q-page-container'):
+                self.content = Element('div').classes('q-pa-md column items-start gap-4')
         globals.client_stack.pop()
 
         self.waiting_javascript_commands: Dict[str, str] = {}
