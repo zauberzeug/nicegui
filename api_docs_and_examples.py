@@ -830,7 +830,7 @@ The environment variables `HOST` and `PORT` can also be used to configure NiceGU
 
 To avoid the potentially costly import of Matplotlib, you set the environment variable `MATPLOTLIB=false`.
 This will make `ui.plot` and `ui.line_plot` unavailable.
-''')
+''', skip=False)
     def ui_run_example():
         ui.label('dark page on port 7000 without reloading')
 
