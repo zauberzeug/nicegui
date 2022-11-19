@@ -25,6 +25,7 @@ state: State = State.STOPPED
 
 host: str
 port: int
+dark: Optional[bool] = False
 binding_refresh_interval: float
 
 client_stack: List['Client'] = []

@@ -36,7 +36,7 @@ class Client:
 
         self.head_html = ''
         self.body_html = ''
-        self.dark = dark if dark is not ... else False
+        self.dark = dark
 
     @property
     def ip(self) -> Optional[str]:
@@ -54,6 +54,7 @@ class Client:
     def build_response(self) -> HTMLResponse:
         vue_html, vue_styles, vue_scripts = vue.generate_vue_content()
         elements = json.dumps({id: element.to_dict() for id, element in self.elements.items()})
+        dark = self.dark if self.dark is not ... else globals.dark
         return HTMLResponse(
             TEMPLATE
             .replace(r'{{ client_id }}', str(self.id))
@@ -63,7 +64,7 @@ class Client:
             .replace(r'{{ body_html | safe }}', f'{self.body_html}\n{vue_html}\n{vue_styles}')
             .replace(r'{{ vue_scripts | safe }}', vue_scripts)
             .replace(r'{{ js_imports | safe }}', vue.generate_js_imports())
-            .replace(r'{{ dark }}', '"auto"' if self.dark is None else str(self.dark))
+            .replace(r'{{ dark }}', '"auto"' if dark is None else str(dark))
         )
 
     async def handshake(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
