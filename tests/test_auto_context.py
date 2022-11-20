@@ -2,7 +2,6 @@ import asyncio
 from typing import Generator
 
 from nicegui import ui
-from nicegui.events import PageEvent
 from nicegui.task_logger import create_task
 
 from .screen import Screen

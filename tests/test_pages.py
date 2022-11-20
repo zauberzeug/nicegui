@@ -4,9 +4,9 @@ from typing import Generator
 from uuid import uuid4
 
 import justpy.htmlcomponents
-from nicegui import task_logger, ui
-from nicegui.events import PageEvent
 from starlette.requests import Request
+
+from nicegui import task_logger, ui
 
 from .screen import Screen
 

@@ -1,7 +1,8 @@
-from nicegui import ui
-from nicegui.elements.element import Element
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
+
+from nicegui import ui
+from nicegui.element import Element
 
 from .screen import Screen
 
