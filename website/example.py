@@ -13,7 +13,7 @@ SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 
 class example:
 
-    def __init__(self, content: Union[Callable, type, str], tight: bool = False, skip: bool = True) -> None:
+    def __init__(self, content: Union[Callable, type, str], tight: bool = False, skip: bool = False) -> None:
         self.content = content
         self.markdown_classes = f'mr-8 w-full flex-none lg:w-{48 if tight else 80} xl:w-80'
         self.rendering_classes = f'w-{48 if tight else 64} flex-none lg:mt-12'
