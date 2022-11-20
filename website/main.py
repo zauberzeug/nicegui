@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from pathlib import Path
 
+import docutils.core
+
 import website.api_docs_and_examples as api_docs_and_examples
 from nicegui import Client, ui
 
@@ -11,7 +13,8 @@ HEADER_HEIGHT = '70px'
 @ui.page('/')
 async def index(client: Client):
     ui.add_head_html('<meta name="viewport" content="width=device-width, initial-scale=1" />')
-    client.content.classes(remove='q-pa-md gap-4')
+    ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
+    client.content.classes(remove='q-pa-md gap-4').style('background: #f8f8f8')
 
     with ui.header() \
             .classes('justify-between items-center') \
@@ -40,7 +43,7 @@ async def index(client: Client):
 
     with ui.row() \
             .classes('w-full q-pa-md items-center gap-32 p-32 no-wrap') \
-            .style(f'height: calc(100vh - {HEADER_HEIGHT}); background-color: {ACCENT_COLOR}'):
+            .style(f'height: calc(100vh - {HEADER_HEIGHT}); background: {ACCENT_COLOR}'):
         with ui.column().classes('gap-8'):
             ui.markdown('Create buttons, dialogs, markdown,\n\n3D scenes, plots and much more at ease.') \
                 .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500')
