@@ -2,6 +2,7 @@
 from pathlib import Path
 
 import docutils.core
+from pygments.formatters import HtmlFormatter
 
 import website.api_docs_and_examples as api_docs_and_examples
 from nicegui import Client, ui
@@ -14,6 +15,7 @@ HEADER_HEIGHT = '70px'
 async def index(client: Client):
     ui.add_head_html('<meta name="viewport" content="width=device-width, initial-scale=1" />')
     ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
+    ui.add_head_html(f'<style>{HtmlFormatter(nobackground=True).get_style_defs(".codehilite")}</style>')
     client.content.classes(remove='q-pa-md gap-4').style('background: #f8f8f8')
 
     with ui.header() \
