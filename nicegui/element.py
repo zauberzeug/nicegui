@@ -127,8 +127,9 @@ class Element(ABC, Visibility):
             tooltip._text = text
         return self
 
-    def on(self, type: str, handler: Optional[Callable], args: List[str] = []):
+    def on(self, type: str, handler: Optional[Callable], args: Optional[List[str]] = None):
         if handler:
+            args = args if args is not None else ['*']
             self._event_listeners.append(EventListener(element_id=self.id, type=type, args=args, handler=handler))
         return self
 
