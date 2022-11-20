@@ -73,7 +73,7 @@ class Element(ABC, Visibility):
         return self
 
     @staticmethod
-    def parse_style(text: Optional[str]) -> Dict[str, str]:
+    def _parse_style(text: Optional[str]) -> Dict[str, str]:
         return dict((word.strip() for word in part.split(':')) for part in text.strip('; ').split(';')) if text else {}
 
     def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):

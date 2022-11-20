@@ -5,17 +5,22 @@ from typing import List
 
 import pytest
 from bs4 import BeautifulSoup
-from nicegui import globals, ui
 from selenium import webdriver
 from selenium.common.exceptions import ElementNotInteractableException, NoSuchElementException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from .helper import remove_prefix
+from nicegui import globals, ui
 
 PORT = 3392
 IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-input']
+
+
+def remove_prefix(text: str, prefix: str) -> str:
+    if prefix and text.startswith(prefix):
+        return text[len(prefix):]
+    return text
 
 
 class Screen:
