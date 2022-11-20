@@ -19,3 +19,9 @@ def on_startup(handler: Union[Callable, Awaitable]) -> None:
 
 def on_shutdown(handler: Union[Callable, Awaitable]) -> None:
     globals.shutdown_handlers.append(handler)
+
+
+async def shutdown() -> None:
+    if globals.reload:
+        raise Exception('ui.shutdown is not supported when auto-reload is enabled')
+    globals.server.should_exit = True

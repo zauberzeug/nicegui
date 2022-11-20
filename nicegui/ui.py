@@ -47,7 +47,7 @@ from .functions.open import open
 from .functions.static_files import add_static_files
 from .functions.timer import Timer as timer
 from .functions.update import update
-from .lifecycle import on_connect, on_disconnect, on_shutdown, on_startup
+from .lifecycle import on_connect, on_disconnect, on_shutdown, on_startup, shutdown
 from .page import page
 from .page_layout import Footer as footer
 from .page_layout import Header as header

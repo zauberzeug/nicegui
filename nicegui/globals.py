@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Optional, Uni
 
 from fastapi import FastAPI
 from socketio import AsyncServer
+from uvicorn import Server
 
 if TYPE_CHECKING:
     from .client import Client
@@ -19,12 +20,14 @@ class State(Enum):
 
 app: FastAPI
 sio: AsyncServer
+server: Optional[Server] = None
 loop: Optional[asyncio.AbstractEventLoop] = None
 log: logging.Logger = logging.getLogger('nicegui')
 state: State = State.STOPPED
 
 host: str
 port: int
+reload: bool
 title: str
 dark: Optional[bool]
 binding_refresh_interval: float
