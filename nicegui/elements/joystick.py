@@ -2,6 +2,7 @@ from typing import Any, Callable, Optional
 
 from .. import vue
 from ..element import Element
+from ..events import JoystickEventArguments, handle_event
 
 vue.register_component('joystick', __file__, 'joystick.vue', ['lib/nipplejs.min.js'])
 
@@ -23,7 +24,19 @@ class Joystick(Element):
         :param options: arguments like `color` which should be passed to the `underlying nipple.js library <https://github.com/yoannmoinet/nipplejs#options>`_
         """
         super().__init__('joystick')
-        self.on('start', on_start)
-        self.on('move', on_move, args=['data'])
-        self.on('end', on_end)
+        self.on('start',
+                lambda _: handle_event(on_start, JoystickEventArguments(sender=self,
+                                                                        client=self.client,
+                                                                        action='start')))
+        self.on('move',
+                lambda msg: handle_event(on_move, JoystickEventArguments(sender=self,
+                                                                         client=self.client,
+                                                                         action='move',
+                                                                         x=msg['args']['data']['vector']['x'],
+                                                                         y=msg['args']['data']['vector']['y'])),
+                args=['data'])
+        self.on('end',
+                lambda _: handle_event(on_end, JoystickEventArguments(sender=self,
+                                                                      client=self.client,
+                                                                      action='end')))
         self._props['options'] = options

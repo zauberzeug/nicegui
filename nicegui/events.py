@@ -38,6 +38,13 @@ class MouseEventArguments(EventArguments):
 
 
 @dataclass
+class JoystickEventArguments(EventArguments):
+    action: str
+    x: Optional[float] = None
+    y: Optional[float] = None
+
+
+@dataclass
 class UploadFile:
     content: bytes
     name: str
