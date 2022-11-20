@@ -667,14 +667,14 @@ See <https://quasar.dev/layout/page-sticky> for more information.
 
         ui.link('show page with fancy layout', page_layout)
 
-    # @example(ui.open)
+    @example(ui.open, skip=False)
     def ui_open_example():
         @ui.page('/yet_another_page')
         def yet_another_page():
             ui.label('Welcome to yet another page')
-            ui.button('RETURN', on_click=lambda e: ui.open('#open', e.socket))
+            ui.button('RETURN', on_click=lambda: ui.open('/#open'))
 
-        ui.button('REDIRECT', on_click=lambda e: ui.open(yet_another_page, e.socket))
+        ui.button('REDIRECT', on_click=lambda: ui.open(yet_another_page))
 
     @example('''#### Sessions
 

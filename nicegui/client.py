@@ -3,7 +3,7 @@ import json
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from fastapi.responses import HTMLResponse
 
@@ -98,3 +98,7 @@ class Client:
                 raise TimeoutError('JavaScript did not respond in time')
             await asyncio.sleep(check_interval)
         return self.waiting_javascript_commands.pop(request_id)
+
+    def open(self, target: Union[Callable, str]) -> None:
+        path = target if isinstance(target, str) else globals.page_routes[target]
+        create_task(globals.sio.emit('open', path, room=str(self.id)))
