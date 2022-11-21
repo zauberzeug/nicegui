@@ -63,6 +63,13 @@ async def handle_connect(sid: str, _) -> None:
     sio.enter_room(sid, str(client.id))
 
 
+@sio.on('disconnect')
+async def handle_disconnect(sid: str) -> None:
+    client = get_client(sid)
+    if client.id != 0:
+        del globals.clients[client.id]
+
+
 @sio.on('event')
 def handle_event(sid: str, msg: Dict) -> None:
     client = get_client(sid)

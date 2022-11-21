@@ -43,6 +43,8 @@ class Timer:
 
     async def _run_in_loop(self) -> None:
         while True:
+            if self.client.id not in globals.clients:
+                return
             try:
                 start = time.time()
                 if self.active:
