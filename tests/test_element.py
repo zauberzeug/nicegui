@@ -9,25 +9,21 @@ from .screen import Screen
 
 def test_keyboard(screen: Screen):
     result = ui.label()
-    ui.keyboard(on_key=lambda e: result.set_text(f'{e.key, e.action}'))
+    keyboard = ui.keyboard(on_key=lambda e: result.set_text(f'{e.key, e.action}'))
 
     screen.open('/')
-    assert screen.selenium.find_element(By.TAG_NAME, 'base')
-    assert any(s.endswith('keyboard.js') for s in screen.get_attributes('script', 'src'))
-
-    assert screen.selenium.find_element(By.XPATH, '//span[@data-nicegui="keyboard"]')
+    assert screen.selenium.find_element(By.ID, keyboard.id)
     ActionChains(screen.selenium).send_keys('t').perform()
     screen.should_contain('t, KeyboardAction(keydown=False, keyup=True, repeat=False)')
 
 
 def test_joystick(screen: Screen):
-    ui.joystick(on_move=lambda e: coordinates.set_text(f'move {e.data.vector.x:.3f}, {e.data.vector.y:.3f}'),
-                on_end=lambda e: coordinates.set_text('end 0, 0'))
+    j = ui.joystick(on_move=lambda e: coordinates.set_text(f'move {e.x:.3f}, {e.y:.3f}'),
+                    on_end=lambda _: coordinates.set_text('end 0, 0'))
     coordinates = ui.label('start 0, 0')
 
     screen.open('/')
-    assert any(s.endswith('keyboard.js') for s in screen.get_attributes('script', 'src'))
-    joystick = screen.selenium.find_element(By.XPATH, '//div[@data-nicegui="joystick"]')
+    joystick = screen.selenium.find_element(By.ID, j.id)
     assert joystick
     screen.should_contain('start 0, 0')
     ActionChains(screen.selenium).move_to_element_with_offset(joystick, 25, 25)\
@@ -38,10 +34,10 @@ def test_joystick(screen: Screen):
 
 
 def test_styling_joystick(screen: Screen):
-    ui.joystick().style('background-color: gray;').classes('shadow-lg')
+    j = ui.joystick().style('background-color: gray;').classes('shadow-lg')
 
     screen.open('/')
-    joystick = screen.selenium.find_element(By.XPATH, '//div[@data-nicegui="joystick"]')
+    joystick = screen.selenium.find_element(By.ID, j.id)
     assert 'background-color: gray;' in joystick.get_attribute('style')
     assert 'shadow-lg' in joystick.get_attribute('class')
 
@@ -173,4 +169,4 @@ def test_base64_image(screen: Screen):
     screen.open('/')
     screen.wait(0.2)
     image = screen.selenium.find_element(By.CLASS_NAME, 'q-img__image')
-    assert 'background-image: url("data:image/png;base64,iVB' in image.get_attribute('style')
+    assert 'data:image/png;base64,iVB' in image.get_attribute('src')
