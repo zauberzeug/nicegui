@@ -1,5 +1,6 @@
+from typing import Dict
+
 from nicegui import ui
-from nicegui.auto_context import Context
 
 from .example import example
 
@@ -753,17 +754,14 @@ This will make `ui.plot` and `ui.line_plot` unavailable.
         # ui.run(dark=True, port=7000, reload=False)
 
     # HACK: turn expensive line plot off after 10 seconds
-    def handle_change(self, msg):
-        def turn_off():
-            line_checkbox.value = False
+    def handle_change(msg: Dict) -> None:
+        def turn_off() -> None:
+            line_checkbox.set_value(False)
             ui.notify('Turning off that line plot to save resources on our live demo server. 😎')
-        line_checkbox.value = msg.value
-        if msg.value:
-            with Context(line_checkbox.view):
-                ui.timer(10.0, turn_off, once=True)
-        line_checkbox.update()
-        return False
-    # line_checkbox.view.on('input', handle_change)
+        line_checkbox.value = msg['args']
+        if line_checkbox.value:
+            ui.timer(10.0, turn_off, once=True)
+    line_checkbox.on('update:model-value', handle_change)
 
     # HACK: start countdown here to avoid using global lifecycle hook
     # create_task(countdown(), name='countdown')
