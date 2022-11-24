@@ -83,9 +83,9 @@ def test_creating_new_page_after_startup(screen: Screen):
     screen.should_contain('page created after startup')
 
 
-def test_shared_and_individual_pages(screen: Screen):
-    @ui.page('/individual_page')
-    def individual_page():
+def test_shared_and_private_pages(screen: Screen):
+    @ui.page('/private_page')
+    def private_page():
         ui.label(f'private page with uuid {uuid4()}')
 
     ui.label(f'shared page with uuid {uuid4()}')

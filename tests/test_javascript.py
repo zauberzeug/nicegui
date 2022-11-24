@@ -6,7 +6,7 @@ from nicegui.events import ValueChangeEventArguments
 from .screen import Screen
 
 
-def test_executing_javascript_on_button_press(screen: Screen):
+def test_run_javascript_on_button_press(screen: Screen):
     async def set_title() -> None:
         await ui.run_javascript('document.title = "A New Title"')
     ui.button('change title', on_click=set_title)
@@ -18,7 +18,7 @@ def test_executing_javascript_on_button_press(screen: Screen):
     assert screen.selenium.title != 'NiceGUI'
 
 
-def test_executing_javascript_on_value_change(screen: Screen):
+def test_run_javascript_on_value_change(screen: Screen):
     @ui.page('/')
     async def main_page(client: Client):
         async def set_title(e: ValueChangeEventArguments) -> None:
@@ -38,7 +38,7 @@ def test_executing_javascript_on_value_change(screen: Screen):
     assert screen.selenium.title == 'Page Title A'
 
 
-def test_executing_javascript_on_async_page(screen: Screen):
+def test_run_javascript_on_async_page(screen: Screen):
     @ui.page('/')
     async def page():
         ui.label('before js')
@@ -52,7 +52,7 @@ def test_executing_javascript_on_async_page(screen: Screen):
     screen.should_contain('after js')
 
 
-def test_retrieving_content_from_javascript(screen: Screen):
+def test_response_from_javascript(screen: Screen):
     async def compute() -> None:
         response = await ui.run_javascript('1 + 41')
         for _, answer in response.items():
