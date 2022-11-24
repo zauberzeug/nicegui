@@ -268,3 +268,12 @@ def test_exception_in_on_page_ready_callback(screen: Screen):
     screen.open('/')
     screen.should_contain('this is shown')
     screen.assert_py_logger('ERROR', 'Failed to execute page-ready')
+
+
+def test_page_with_args(screen: Screen):
+    @ui.page('/page/{id}')
+    def page(id: int):
+        ui.label(f'Page {id}')
+
+    screen.open('/page/42')
+    screen.should_contain('Page 42')
