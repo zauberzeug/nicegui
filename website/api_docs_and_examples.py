@@ -209,7 +209,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         ui.button('Update', on_click=update)
 
-    # @example(ui.chart)
+    @example(ui.chart)
     def chart_example():
         from numpy.random import random
 
@@ -224,7 +224,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         }).classes('w-full h-64')
 
         def update():
-            chart.options.series[0].data[:] = random(2)
+            chart.options['series'][0]['data'][:] = random(2)
             chart.update()
 
         ui.button('Update', on_click=update)
