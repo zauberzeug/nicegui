@@ -428,7 +428,6 @@ All three functions also provide `remove` and `replace` parameters in case the p
 
     @example(ui.colors)
     def colors_example():
-        ui.colors()
         ui.button('Default', on_click=lambda: ui.colors())
         ui.button('Gray', on_click=lambda: ui.colors(primary='#555'))
 
