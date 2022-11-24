@@ -1,3 +1,5 @@
+import os
+
 from .elements.badge import Badge as badge
 from .elements.button import Button as button
 from .elements.card import Card as card
@@ -18,7 +20,6 @@ from .elements.interactive_image import InteractiveImage as interactive_image
 from .elements.joystick import Joystick as joystick
 from .elements.keyboard import Keyboard as keyboard
 from .elements.label import Label as label
-from .elements.line_plot import LinePlot as line_plot
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
 from .elements.log import Log as log
@@ -26,7 +27,6 @@ from .elements.markdown import Markdown as markdown
 from .elements.menu import Menu as menu
 from .elements.menu import MenuItem as menu_item
 from .elements.number import Number as number
-from .elements.plot import Plot as plot
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
 from .elements.radio import Radio as radio
@@ -55,3 +55,7 @@ from .page_layout import LeftDrawer as left_drawer
 from .page_layout import PageSticky as page_sticky
 from .page_layout import RightDrawer as right_drawer
 from .run import run
+
+if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
+    from .elements.line_plot import LinePlot as line_plot
+    from .elements.plot import Plot as plot
