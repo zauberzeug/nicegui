@@ -34,10 +34,12 @@ class Object3D:
 
     def with_name(self, name: str):
         self.name = name
+        self._name()
         return self
 
     def send(self) -> None:
         self._create()
+        self._name()
         self._material()
         self._move()
         self._rotate()
@@ -53,6 +55,9 @@ class Object3D:
 
     def _create(self) -> None:
         self.scene.run_method('create', self.type, self.id, self.parent.id, *self.args)
+
+    def _name(self) -> None:
+        self.scene.run_method('name', self.id, self.name)
 
     def _material(self) -> None:
         self.scene.run_method('material', self.id, self.color, self.opacity, self.side_)

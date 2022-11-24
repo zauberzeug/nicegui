@@ -54,6 +54,8 @@ export default {
     this.objects = new Map();
     this.objects.set("scene", this.scene);
 
+    window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
+
     this.look_at = new THREE.Vector3(0, 0, 0);
     this.camera = new THREE.PerspectiveCamera(75, this.width / this.height, 0.1, 1000);
     this.camera.lookAt(this.look_at);
@@ -233,6 +235,9 @@ export default {
       mesh.object_id = id;
       this.objects.set(id, mesh);
       this.objects.get(parent_id).add(this.objects.get(id));
+    },
+    name(object_id, name) {
+      this.objects.get(object_id).name = name;
     },
     material(object_id, color, opacity, side) {
       const material = this.objects.get(object_id).material;
