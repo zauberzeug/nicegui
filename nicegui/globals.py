@@ -31,6 +31,7 @@ reload: bool
 title: str
 dark: Optional[bool]
 binding_refresh_interval: float
+excludes: List[str]
 
 client_stack: List['Client'] = []
 clients: Dict[int, 'Client'] = {}

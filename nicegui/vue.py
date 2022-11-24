@@ -3,9 +3,11 @@ from typing import Dict, List, Tuple
 
 import vbuild
 
+from . import globals
+
 vue_components: Dict[str, Path] = {}
 js_components: Dict[str, Path] = {}
-js_dependencies: List[Path] = []
+js_dependencies: Dict[str, List[Path]] = {}
 
 
 def register_component(name: str, py_filepath: str, component_filepath: str, dependencies: List[str] = []) -> None:
@@ -15,15 +17,20 @@ def register_component(name: str, py_filepath: str, component_filepath: str, dep
         assert name not in vue_components, f'Duplicate VUE component name {name}'
         vue_components[name] = Path(py_filepath).parent / component_filepath
     elif suffix == '.js':
-        assert name not in js_dependencies, f'Duplicate JS component name {name}'
+        assert name not in js_components, f'Duplicate JS component name {name}'
         js_components[name] = Path(py_filepath).parent / component_filepath
+    js_dependencies[name] = []
     for dependency in dependencies:
         assert Path(dependency).suffix == '.js', 'Only JS dependencies are supported.'
-        js_dependencies.append(Path(py_filepath).parent / dependency)
+        js_dependencies[name].append(Path(py_filepath).parent / dependency)
 
 
 def generate_vue_content() -> Tuple[str]:
-    builds = [vbuild.VBuild(name, path.read_text()) for name, path in vue_components.items()]
+    builds = [
+        vbuild.VBuild(name, path.read_text())
+        for name, path in vue_components.items()
+        if name not in globals.excludes
+    ]
     return (
         '\n'.join(v.html for v in builds),
         '<style>' + '\n'.join(v.style for v in builds) + '</style>',
@@ -33,9 +40,11 @@ def generate_vue_content() -> Tuple[str]:
 
 def generate_js_imports() -> str:
     result = ''
-    for path in js_dependencies:
-        result += f'import "/_vue/dependencies/{path}";\n'
     for name, path in js_components.items():
+        if name in globals.excludes:
+            continue
+        for path in js_dependencies[name]:
+            result += f'import "/_vue/dependencies/{path}";\n'
         result += f'import {{ default as {name} }} from "/_vue/components/{name}";\n'
         result += f'app.component("{name}", {name});\n'
     return result

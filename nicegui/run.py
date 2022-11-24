@@ -24,6 +24,7 @@ def run(*,
         uvicorn_reload_dirs: str = '.',
         uvicorn_reload_includes: str = '*.py',
         uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
+        exclude: str = '',
         ) -> None:
     globals.host = host
     globals.port = port
@@ -31,6 +32,7 @@ def run(*,
     globals.title = title
     globals.dark = dark
     globals.binding_refresh_interval = binding_refresh_interval
+    globals.excludes = [e.strip() for e in exclude.split(',')]
 
     if inspect.stack()[-2].filename.endswith('spawn.py'):
         return
