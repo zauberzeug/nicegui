@@ -40,6 +40,11 @@ def generate_vue_content() -> Tuple[str]:
 
 def generate_js_imports() -> str:
     result = ''
+    for name, path in vue_components.items():
+        if name in globals.excludes:
+            continue
+        for path in js_dependencies[name]:
+            result += f'import "/_vue/dependencies/{path}";\n'
     for name, path in js_components.items():
         if name in globals.excludes:
             continue
