@@ -575,34 +575,26 @@ Note: You can also pass a `functools.partial` into the `on_click` property to wr
         ui.link('Visit other page', other_page)
         ui.link('Visit dark page', dark_page)
 
-    @example('''#### Shared and Private Pages
+    @example('''#### Auto-index page
 
-By default, pages created with the `@ui.page` decorator are "private".
+Pages created with the `@ui.page` decorator are "private".
 Their content is re-created for each client.
-Thus, in the example to the right, the displayed ID changes when the browser reloads the page.
+Thus, in the example to the right, the displayed ID on the private page changes when the browser reloads the page.
 
-With `shared=True` you can create a shared page.
-Its content is created once at startup and each client sees the *same* elements.
-Here, the displayed ID remains constant when the browser reloads the page.
-
-#### Index Page
-
-All elements that are not created within a decorated page function are automatically added to a new, *shared* index page at route "/".
-To make it "private" or to change other attributes like title, favicon etc. you can wrap it in a page function with `@ui.page('/', ...)` decorator.
-''', skip=True)
-    def shared_and_private_pages_example():
+UI elements that are not wrapped in a decorated page function are placed on an automatically generated index page at route "/".
+This auto-index page is created once on startup and *shared* across all clients that might connect.
+Thus, each connected client will see the *same* elements.
+In the example to the right, the displayed ID on the auto-index page remains constant when the browser reloads the page.
+''')
+    def auto_index_page():
         from uuid import uuid4
 
         @ui.page('/private_page')
         async def private_page():
             ui.label(f'private page with ID {uuid4()}')
 
-        @ui.page('/shared_page', shared=True)
-        async def shared_page():
-            ui.label(f'shared page with ID {uuid4()}')
-
+        ui.label(f'shared auto-index page with ID {uuid4()}')
         ui.link('private page', private_page)
-        ui.link('shared page', shared_page)
 
     @example('''#### Pages with Path Parameters
 

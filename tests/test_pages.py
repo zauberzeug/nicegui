@@ -21,16 +21,6 @@ def test_page(screen: Screen):
     screen.should_contain('Hello, world!')
 
 
-def test_shared_page(screen: Screen):
-    @ui.page('/', shared=True)
-    def page():
-        ui.label('Hello, world!')
-
-    screen.open('/')
-    screen.should_contain('NiceGUI')
-    screen.should_contain('Hello, world!')
-
-
 def test_auto_index_page(screen: Screen):
     ui.label('Hello, world!')
 
@@ -96,23 +86,21 @@ def test_creating_new_page_after_startup(screen: Screen):
 def test_shared_and_individual_pages(screen: Screen):
     @ui.page('/individual_page')
     def individual_page():
-        ui.label(f'individual page with uuid {uuid4()}')
+        ui.label(f'private page with uuid {uuid4()}')
 
-    @ui.page('/shared_page', shared=True)
-    def shared_page():
-        ui.label(f'shared page with uuid {uuid4()}')
+    ui.label(f'shared page with uuid {uuid4()}')
 
-    screen.open('/shared_page')
+    screen.open('/private_page')
+    uuid1 = screen.find('private page').text.split()[-1]
+    screen.open('/private_page')
+    uuid2 = screen.find('private page').text.split()[-1]
+    assert uuid1 != uuid2
+
+    screen.open('/')
     uuid1 = screen.find('shared page').text.split()[-1]
-    screen.open('/shared_page')
+    screen.open('/')
     uuid2 = screen.find('shared page').text.split()[-1]
     assert uuid1 == uuid2
-
-    screen.open('/individual_page')
-    uuid1 = screen.find('individual page').text.split()[-1]
-    screen.open('/individual_page')
-    uuid2 = screen.find('individual page').text.split()[-1]
-    assert uuid1 != uuid2
 
 
 def test_on_page_ready_event(screen: Screen):
@@ -172,17 +160,6 @@ def test_customized_page(screen: Screen):
     assert trace == ['init', 'connected', 'before_content', 'content', 'after_content']
 
 
-def test_shared_page_with_request_parameter_raises_exception(screen: Screen):
-    @ui.page('/', shared=True)
-    def page(request: Request):
-        ui.label('Hello, world!')
-
-    screen.open('/')
-    screen.should_contain('500')
-    screen.should_contain('Server error')
-    screen.assert_py_logger('ERROR', 'Cannot use `request` argument in shared page')
-
-
 def test_adding_elements_in_on_page_ready_event(screen: Screen):
     @ui.page('/', on_page_ready=lambda: ui.markdown('Hello, world!'))
     def page():
@@ -221,17 +198,6 @@ def test_pageready_after_yield_on_non_async_page(screen: Screen):
     timing = screen.find('loading page took')
     assert 0 < float(timing.text.split()[-2]) < 3
     screen.should_contain('ws://localhost:3392/')
-
-
-def test_pageready_after_yield_on_shared_page_raises_exception(screen: Screen):
-    @ui.page('/', shared=True)
-    def page():
-        yield
-
-    screen.open('/')
-    screen.should_contain('500')
-    screen.should_contain('Server error')
-    screen.assert_py_logger('ERROR', 'Yielding for page_ready is not supported on shared pages')
 
 
 def test_exception_before_yield_on_async_page(screen: Screen):
