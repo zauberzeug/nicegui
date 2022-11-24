@@ -57,7 +57,7 @@ class Footer(Group):
         view = jp.QFooter(classes='q-pa-md row items-start gap-4', temp=False)
         super().__init__(view)
         code = list(find_parent_page().layout.view)
-        code[1] = 'F' if fixed else 'f'
+        code[9] = 'F' if fixed else 'f'
         find_parent_page().layout.view = ''.join(code)
 
 
