@@ -72,8 +72,7 @@ class Screen:
             self.selenium.close()
 
     def should_contain(self, text: str) -> None:
-        assert self.selenium.title == text or self.find(text), \
-            f'could not find "{text}" on:\n{self.render_content()}'
+        assert self.selenium.title == text or self.find(text), f'could not find "{text}"'
 
     def should_not_contain(self, text: str) -> None:
         assert self.selenium.title != text
@@ -97,38 +96,7 @@ class Screen:
             query = f'//*[not(self::script) and not(self::style) and contains(text(), "{text}")]'
             return self.selenium.find_element(By.XPATH, query)
         except NoSuchElementException:
-            raise AssertionError(f'Could not find "{text}" on:\n{self.render_content()}')
-
-    def render_content(self, with_extras: bool = False) -> str:
-        body = self.selenium.find_element(By.TAG_NAME, 'body').get_attribute('innerHTML')
-        soup = BeautifulSoup(body, 'html.parser')
-        self.simplify_input_tags(soup)
-        content = ''
-        for child in soup.find_all():
-            is_element = False
-            if child is None or child.name == 'script':
-                continue
-            depth = (len(list(child.parents)) - 3) * '  '
-            if not child.find_all() and child.text:
-                content += depth + child.getText()
-                is_element = True
-            classes = child.get('class', '')
-            if classes:
-                if classes[0] in ['row', 'column', 'q-card']:
-                    content += depth + remove_prefix(classes[0], 'q-')
-                    is_element = True
-                if classes[0] == 'q-field':
-                    pass
-                [classes.remove(c) for c in IGNORED_CLASSES if c in classes]
-                for i, c in enumerate(classes):
-                    classes[i] = remove_prefix(c, 'q-field--')
-                if is_element and with_extras:
-                    content += f' [class: {" ".join(classes)}]'
-
-            if is_element:
-                content += '\n'
-
-        return f'Title: {self.selenium.title}\n\n{content}'
+            raise AssertionError(f'Could not find "{text}"')
 
     def render_html(self) -> str:
         body = self.selenium.page_source
