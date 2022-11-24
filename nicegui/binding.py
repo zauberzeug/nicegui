@@ -2,7 +2,7 @@ import asyncio
 import logging
 import time
 from collections import defaultdict
-from typing import Any, Callable, Optional, Set, Tuple
+from typing import Any, Callable, List, Optional, Set, Tuple, Type
 
 from . import globals
 
@@ -80,3 +80,24 @@ class BindableProperty:
         propagate(owner, self.name)
         if value_changed and self.on_change is not None:
             self.on_change(owner, value)
+
+
+def remove(objects: List[Any], type: Type) -> None:
+    active_links[:] = [
+        (source_obj, source_name, target_obj, target_name, transform)
+        for source_obj, source_name, target_obj, target_name, transform in active_links
+        if not (isinstance(source_obj, type) and source_obj in objects or
+                isinstance(target_obj, type) and target_obj in objects)
+    ]
+    for key, binding_list in list(bindings.items()):
+        binding_list[:] = [
+            (source_obj, target_obj, target_name, transform)
+            for source_obj, target_obj, target_name, transform in binding_list
+            if not (isinstance(source_obj, type) and source_obj in objects or
+                    isinstance(target_obj, type) and target_obj in objects)
+        ]
+        if not binding_list:
+            del bindings[key]
+    for (obj_id, name), obj in list(bindable_properties.items()):
+        if isinstance(obj, type) and obj in objects:
+            del bindable_properties[(obj_id, name)]

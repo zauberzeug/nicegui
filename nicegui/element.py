@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import shlex
 from abc import ABC
 from copy import deepcopy
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
-from . import globals
+from . import binding, globals
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
@@ -138,17 +140,18 @@ class Element(ABC, Visibility):
             if listener.type == msg['type']:
                 listener.handler(msg)
 
+    def collect_descendant_ids(self) -> List[int]:
+        '''includes own ID as first element'''
+        ids: List[int] = [self.id]
+        for slot in self.slots.values():
+            for child in slot.children:
+                ids.extend(child.collect_descendant_ids())
+        return ids
+
     def update(self) -> None:
         if not globals.loop:
             return
-        ids: List[int] = []
-
-        def collect_ids(id: str):
-            for slot in self.client.elements[id].slots.values():
-                for child in slot.children:
-                    collect_ids(child.id)
-            ids.append(id)
-        collect_ids(self.id)
+        ids = self.collect_descendant_ids()
         elements = {id: self.client.elements[id].to_dict() for id in ids}
         create_task(globals.sio.emit('update', {'elements': elements}, room=str(self.client.id)))
 
@@ -157,3 +160,22 @@ class Element(ABC, Visibility):
             return
         data = {'id': self.id, 'name': name, 'args': args}
         create_task(globals.sio.emit('run_method', data, room=str(self.client.id)))
+
+    def clear(self) -> None:
+        descendants = [self.client.elements[id] for id in self.collect_descendant_ids()[1:]]
+        binding.remove(descendants, Element)
+        for element in descendants:
+            del self.client.elements[element.id]
+        for slot in self.slots.values():
+            slot.children.clear()
+        self.update()
+
+    def remove(self, element: Union[Element, int]) -> None:
+        if isinstance(element, int):
+            children = [child for slot in self.slots.values() for child in slot.children]
+            element = children[element]
+        binding.remove([element], Element)
+        del self.client.elements[element.id]
+        for slot in self.slots.values():
+            slot.children[:] = [e for e in slot.children if e.id != element.id]
+        self.update()
