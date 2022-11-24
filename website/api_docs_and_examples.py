@@ -524,20 +524,21 @@ Just pass a property of the model as parameter to these methods to create the bi
 
 NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed.
 In other cases, you can explicitly call `element.update()` or `ui.update(*elements)` to update.
-The example code shows both methods for a `ui.table`, where it is difficult to automatically detect changes in the `options` dictionary.
-''', skip=True)
+The example code shows both methods for a `ui.chart`, where it is difficult to automatically detect changes in the `options` dictionary.
+''')
     def ui_updates_example():
         from random import randint
 
+        chart = ui.chart({'title': False, 'series': [{'data': [1, 2]}]}).classes('w-full h-64')
+
         def add():
-            numbers.options.rowData.append({'numbers': randint(0, 100)})
-            numbers.update()
+            chart.options['series'][0]['data'].append(randint(0, 100))
+            chart.update()
 
         def clear():
-            numbers.options.rowData.clear()
-            ui.update(numbers)
+            chart.options['series'][0]['data'].clear()
+            ui.update(chart)
 
-        numbers = ui.table({'columnDefs': [{'field': 'numbers'}], 'rowData': []}).classes('max-h-40')
         ui.button('Add', on_click=add)
         ui.button('Clear', on_click=clear)
 
