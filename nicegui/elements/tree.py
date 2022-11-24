@@ -14,11 +14,15 @@ class Tree(Element):
                  on_select: Optional[Callable] = None) -> None:
         """Tree
 
+        Display hierarchical data using Quasar's `QTree <https://v1.quasar.dev/vue-components/tree>`_ component.
+
+        If using IDs, make sure they are unique within the whole tree.
+
         :param nodes: hierarchical list of node objects
         :param node_key: property name of each node object that holds its unique id (default: "id")
         :param label_key: property name of each node object that holds its label (default: "label")
         :param children_key: property name of each node object that holds its list of children (default: "children")
-        :param on_click: callback which is invoked when the node selection changes
+        :param on_select: callback which is invoked when the node selection changes
         """
         super().__init__('q-tree')
         self._props['nodes'] = nodes
