@@ -6,7 +6,7 @@ from uuid import uuid4
 import justpy.htmlcomponents
 from starlette.requests import Request
 
-from nicegui import task_logger, ui
+from nicegui import Client, task_logger, ui
 
 from .screen import Screen
 
@@ -103,106 +103,42 @@ def test_shared_and_private_pages(screen: Screen):
     assert uuid1 == uuid2
 
 
-def test_on_page_ready_event(screen: Screen):
-    '''This feature was introduced to fix #50; see https://github.com/zauberzeug/nicegui/issues/50#issuecomment-1210962617.'''
-
+def test_wait_for_handshake(screen: Screen):
     async def load() -> None:
         label.text = 'loading...'
-        # NOTE we can not use asyncio.create_task() here because we are on a different thread than the nicegui event loop
+        # NOTE we can not use asyncio.create_task() here because we are on a different thread than the NiceGUI event loop
         task_logger.create_task(takes_a_while())
 
     async def takes_a_while() -> None:
         await asyncio.sleep(0.1)
         label.text = 'delayed data has been loaded'
 
-    @ui.page('/', on_page_ready=load)
-    def page():
+    @ui.page('/')
+    async def page(client: Client):
         global label
         label = ui.label()
+        await client.handshake()
+        await load()
 
     screen.open('/')
     screen.should_contain('delayed data has been loaded')
 
 
-def test_customized_page(screen: Screen):
-    trace = []
-
-    class custom_page(ui.page):
-
-        def __init__(self, route: str, **kwargs):
-            super().__init__(route, title='My Customized Page', **kwargs)
-            trace.append('init')
-
-        async def connected(self, request: Request) -> None:
-            await super().connected(request)
-            assert isinstance(request, Request)
-            trace.append('connected')
-
-        async def before_content(self) -> None:
-            assert isinstance(self.page.view, justpy.htmlcomponents.Div), \
-                'we should be able to access the underlying JustPy view'
-            await super().before_content()
-            trace.append('before_content')
-
-        async def after_content(self) -> None:
-            await super().after_content()
-            trace.append('after_content')
-
-    @custom_page('/', dark=True)
-    def mainpage():
-        trace.append('content')
-        ui.label('Hello, world!')
-
-    screen.open('/')
-    screen.should_contain('Hello, world!')
-    screen.should_contain('My Customized Page')
-    assert 'body--dark' in screen.get_tags('body')[0].get_attribute('class')
-    assert trace == ['init', 'connected', 'before_content', 'content', 'after_content']
-
-
-def test_adding_elements_in_on_page_ready_event(screen: Screen):
-    @ui.page('/', on_page_ready=lambda: ui.markdown('Hello, world!'))
-    def page():
-        pass
-
-    screen.open('/')
-    screen.should_contain('Hello, world!')
-
-
-def test_pageready_after_yield_on_async_page(screen: Screen):
+def test_adding_elements_after_handshake(screen: Screen):
     @ui.page('/')
-    async def page() -> Generator[None, PageEvent, None]:
+    async def page(client: Client):
         ui.label('before')
-        page_ready = yield
-        await asyncio.sleep(1)
+        await client.handshake()
         ui.label('after')
-        ui.label(page_ready.socket.base_url)
 
     screen.open('/')
     screen.should_contain('before')
-    screen.should_not_contain('after')
-    screen.wait(1)
     screen.should_contain('after')
-    screen.should_contain('ws://localhost:3392/')
 
 
-def test_pageready_after_yield_on_non_async_page(screen: Screen):
+def test_exception(screen: Screen):
     @ui.page('/')
-    def page() -> Generator[None, PageEvent, None]:
-        t = time()
-        page_ready = yield
-        ui.label(f'loading page took {time() - t:.2f} seconds')
-        ui.label(page_ready.socket.base_url)
-
-    screen.open('/')
-    timing = screen.find('loading page took')
-    assert 0 < float(timing.text.split()[-2]) < 3
-    screen.should_contain('ws://localhost:3392/')
-
-
-def test_exception_before_yield_on_async_page(screen: Screen):
-    @ui.page('/')
-    async def page() -> Generator[None, PageEvent, None]:
+    def page():
         raise Exception('some exception')
 
     screen.open('/')
@@ -211,25 +147,12 @@ def test_exception_before_yield_on_async_page(screen: Screen):
     screen.assert_py_logger('ERROR', 'some exception')
 
 
-def test_exception_after_yield_on_async_page(screen: Screen):
+def test_exception_after_handshake(screen: Screen):
     @ui.page('/')
-    async def page() -> Generator[None, PageEvent, None]:
-        yield
+    async def page(client: Client):
+        await client.handshake()
         ui.label('this is shown')
         raise Exception('some exception')
-
-    screen.open('/')
-    screen.should_contain('this is shown')
-    screen.assert_py_logger('ERROR', 'Failed to execute page-ready')
-
-
-def test_exception_in_on_page_ready_callback(screen: Screen):
-    def ready():
-        raise Exception('some exception')
-
-    @ui.page('/', on_page_ready=ready)
-    async def page() -> None:
-        ui.label('this is shown')
 
     screen.open('/')
     screen.should_contain('this is shown')
