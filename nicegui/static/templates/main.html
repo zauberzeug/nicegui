@@ -156,27 +156,24 @@
                     comp_replace(msg.data, app1.justpyComponents);
                     break;
                 case 'run_javascript':
-                    // let js_result = eval(msg.data);
-                    let js_result;
 
-                function eval_success() {
-                    e = {
-                        'event_type': 'result_ready',
-                        'visibility': document.visibilityState,
-                        'page_id': page_id,
-                        'websocket_id': websocket_id,
-                        'request_id': msg.request_id,
-                        'result': js_result //JSON.stringify(js_result)
-                    };
-                    {% if 'result_ready' in page_options.events %}
-                        if (msg.send) send_to_server(e, 'page_event', false);
-                    {% endif %}
-                }
+                    function eval_success(js_result) {
+                        e = {
+                            'event_type': 'result_ready',
+                            'visibility': document.visibilityState,
+                            'page_id': page_id,
+                            'websocket_id': websocket_id,
+                            'request_id': msg.request_id,
+                            'result': js_result //JSON.stringify(js_result)
+                        };
+                        {% if 'result_ready' in page_options.events %}
+                            if (msg.send) send_to_server(e, 'page_event', false);
+                        {% endif %}
+                    }
 
-                    const jsPromise = (new Promise(function () {
-                        js_result = eval(msg.data);
-                    })).then(eval_success());
-
+                    const jsPromise = (new Promise((resolve) => {
+                        resolve(eval(msg.data));
+                    })).catch(() => {return eval(`(async() => {${msg.data}})()`);}).then(eval_success);
                     break;
                 case 'run_method':
                     // await websocket.send_json({'type': 'run_method', 'data': command, 'id': self.id})
