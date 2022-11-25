@@ -1,5 +1,6 @@
 from typing import Callable, Optional
 
+from .. import globals
 from ..events import ClickEventArguments, handle_event
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
@@ -36,7 +37,7 @@ class MenuItem(TextElement):
         :param auto_close: whether the menu should be closed after a click event (default: `True`)
         """
         super().__init__(tag='q-item', text=text)
-        self.menu: Menu = self.client.slot_stack[-1].parent
+        self.menu: Menu = globals.get_slot().parent
         self._props['clickable'] = True
 
         def handle_click(_) -> None:

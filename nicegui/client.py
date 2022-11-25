@@ -3,15 +3,13 @@ import json
 import time
 import uuid
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Union
 
 from fastapi.responses import HTMLResponse
 
 from . import globals, ui, vue
-from .async_updater import AsyncUpdater
 from .element import Element
 from .favicon import get_favicon_url
-from .slot import Slot
 from .task_logger import create_task
 
 if TYPE_CHECKING:
@@ -22,22 +20,20 @@ TEMPLATE = (Path(__file__).parent / 'templates' / 'index.html').read_text()
 
 class Client:
 
-    def __init__(self, page: 'page') -> None:
+    def __init__(self, page: 'page', *, shared: bool = False) -> None:
         self.id = globals.next_client_id
         globals.next_client_id += 1
         globals.clients[self.id] = self
 
         self.elements: Dict[str, Element] = {}
         self.next_element_id: int = 0
-        self.slot_stack: List[Slot] = []
         self.is_waiting_for_handshake: bool = False
         self.environ: Optional[Dict[str, Any]] = None
+        self.shared = shared
 
-        globals.get_client_stack().append(self)
-        with Element('q-layout').props('view="HHH LpR FFF"') as self.layout:
+        with Element('q-layout', _client=self).props('view="HHH LpR FFF"') as self.layout:
             with Element('q-page-container'):
                 self.content = Element('div').classes('q-pa-md column items-start gap-4')
-        globals.get_client_stack().pop()
 
         self.waiting_javascript_commands: Dict[str, str] = {}
 
@@ -51,16 +47,11 @@ class Client:
         return self.environ.get('REMOTE_ADDR') if self.environ else None
 
     def __enter__(self):
-        globals.get_client_stack().append(self)
         self.content.__enter__()
         return self
 
     def __exit__(self, *_):
         self.content.__exit__()
-        globals.get_client_stack().pop()
-
-    def watch_asyncs(self, coro: Coroutine) -> AsyncUpdater:
-        return AsyncUpdater(coro, self)
 
     def build_response(self) -> HTMLResponse:
         vue_html, vue_styles, vue_scripts = vue.generate_vue_content()
@@ -110,10 +101,16 @@ class Client:
         create_task(globals.sio.emit('open', path, room=str(self.id)))
 
 
+class IndexClient(Client):
+
+    def __init__(self, page: 'page') -> None:
+        super().__init__(page, shared=True)
+
+
 class ErrorClient(Client):
 
     def __init__(self, page: 'page') -> None:
-        super().__init__(page)
+        super().__init__(page, shared=True)
         with self:
             with ui.column().classes('w-full py-20 items-center gap-0'):
                 ui.icon('☹').classes('text-8xl py-5') \

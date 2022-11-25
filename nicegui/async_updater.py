@@ -1,14 +1,12 @@
-from typing import TYPE_CHECKING, Any, Coroutine, Generator
+from typing import Any, Coroutine, Generator
 
-if TYPE_CHECKING:
-    from .client import Client
+from . import globals
 
 
 class AsyncUpdater:
 
-    def __init__(self, coro: Coroutine, client: 'Client') -> None:
+    def __init__(self, coro: Coroutine) -> None:
         self.coro = coro
-        self.client = client
 
     def __await__(self) -> Generator[Any, None, Any]:
         coro_iter = self.coro.__await__()
@@ -28,5 +26,5 @@ class AsyncUpdater:
                 send, message = iter_throw, err
 
     def lazy_update(self) -> None:
-        for slot in self.client.slot_stack:
+        for slot in globals.get_slot_stack():
             slot.lazy_update()

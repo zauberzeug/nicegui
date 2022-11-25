@@ -3,7 +3,7 @@ from __future__ import annotations
 import shlex
 from abc import ABC
 from copy import deepcopy
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 from . import binding, globals
 from .elements.mixins.visibility import Visibility
@@ -11,12 +11,15 @@ from .event_listener import EventListener
 from .slot import Slot
 from .task_logger import create_task
 
+if TYPE_CHECKING:
+    from .client import Client
+
 
 class Element(ABC, Visibility):
 
-    def __init__(self, tag: str) -> None:
+    def __init__(self, tag: str, *, _client: Optional[Client] = None) -> None:
         super().__init__()
-        self.client = globals.get_client()
+        self.client = _client or globals.get_client()
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
         self.tag = tag
@@ -30,8 +33,9 @@ class Element(ABC, Visibility):
 
         self.client.elements[self.id] = self
         self.parent_slot: Optional[Slot] = None
-        if self.client.slot_stack:
-            self.parent_slot = self.client.slot_stack[-1]
+        slot_stack = globals.get_slot_stack()
+        if slot_stack:
+            self.parent_slot = slot_stack[-1]
             self.parent_slot.children.append(self)
 
     def add_slot(self, name: str) -> Slot:

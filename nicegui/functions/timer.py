@@ -4,8 +4,8 @@ import traceback
 from typing import Callable
 
 from .. import globals
+from ..async_updater import AsyncUpdater
 from ..binding import BindableProperty
-from ..client import Client
 from ..helpers import is_coroutine
 from ..lifecycle import on_startup
 from ..task_logger import create_task
@@ -30,6 +30,7 @@ class Timer:
         self.interval = interval
         self.callback = callback
         self.active = active
+        self.slot = globals.get_slot()
 
         coroutine = self._run_once if once else self._run_in_loop
         if globals.state == globals.State.STARTED:
@@ -38,19 +39,19 @@ class Timer:
             on_startup(coroutine)
 
     async def _run_once(self) -> None:
-        with globals.get_client() as client, client.slot_stack[-1]:
+        with self.slot:
             await asyncio.sleep(self.interval)
-            await self._invoke_callback(client)
+            await self._invoke_callback()
 
     async def _run_in_loop(self) -> None:
-        with globals.get_client() as client, client.slot_stack[-1]:
+        with self.slot:
             while True:
-                if client.id not in globals.clients:
+                if self.slot.parent.client.id not in globals.clients:
                     return
                 try:
                     start = time.time()
                     if self.active:
-                        await self._invoke_callback(client)
+                        await self._invoke_callback()
                     dt = time.time() - start
                     await asyncio.sleep(self.interval - dt)
                 except asyncio.CancelledError:
@@ -59,10 +60,10 @@ class Timer:
                     traceback.print_exc()
                     await asyncio.sleep(self.interval)
 
-    async def _invoke_callback(self, client: Client) -> None:
+    async def _invoke_callback(self) -> None:
         try:
             result = self.callback()
             if is_coroutine(self.callback):
-                await client.watch_asyncs(result)
+                await AsyncUpdater(result)
         except Exception:
             traceback.print_exc()

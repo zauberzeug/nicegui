@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
 from . import binding, globals, vue
-from .client import Client, ErrorClient
+from .client import Client, ErrorClient, IndexClient
 from .favicon import create_favicon_routes
 from .helpers import safe_invoke
 from .page import page
@@ -22,8 +22,8 @@ globals.sio = sio = SocketManager(app=app)._sio
 app.add_middleware(GZipMiddleware)
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / 'static'), name='static')
 
-globals.index_client = Client(page('/')).__enter__()
 globals.error_client = ErrorClient(page(''))
+globals.index_client = IndexClient(page('/')).__enter__()
 
 
 @app.get('/')
@@ -80,7 +80,7 @@ async def handle_connect(sid: str, _) -> None:
 @sio.on('disconnect')
 async def handle_disconnect(sid: str) -> None:
     client = get_client(sid)
-    if client.id != 0:
+    if not client.shared:
         del globals.clients[client.id]
 
 

@@ -9,6 +9,7 @@ from uvicorn import Server
 
 if TYPE_CHECKING:
     from .client import Client
+    from .slot import Slot
 
 
 class State(Enum):
@@ -34,7 +35,7 @@ dark: Optional[bool]
 binding_refresh_interval: float
 excludes: List[str]
 
-client_stacks: Dict[int, List['Client']] = {}
+slot_stacks: Dict[int, List['Slot']] = {}
 clients: Dict[int, 'Client'] = {}
 next_client_id: int = 0
 index_client: 'Client' = ...
@@ -51,15 +52,22 @@ shutdown_handlers: List[Union[Callable, Awaitable]] = []
 
 
 def get_task_id() -> int:
-    return id(asyncio.current_task()) if loop and loop.is_running() else 0
+    try:
+        return id(asyncio.current_task())
+    except RuntimeError:
+        return 0
 
 
-def get_client_stack() -> List['Client']:
+def get_slot_stack() -> List['Slot']:
     task_id = get_task_id()
-    if task_id not in client_stacks:
-        client_stacks[task_id] = [index_client]
-    return client_stacks[task_id]
+    if task_id not in slot_stacks:
+        slot_stacks[task_id] = []
+    return slot_stacks[task_id]
+
+
+def get_slot() -> 'Slot':
+    return get_slot_stack()[-1]
 
 
 def get_client() -> 'Client':
-    return get_client_stack()[-1]
+    return get_slot().parent.client

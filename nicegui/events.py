@@ -4,6 +4,7 @@ from inspect import signature
 from typing import TYPE_CHECKING, Any, Callable, List, Optional
 
 from . import globals
+from .async_updater import AsyncUpdater
 from .client import Client
 from .helpers import is_coroutine
 from .lifecycle import on_startup
@@ -250,12 +251,13 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments) -> None
         no_arguments = not signature(handler).parameters
         with arguments.sender.parent_slot:
             result = handler() if no_arguments else handler(arguments)
-            if is_coroutine(handler):
-                async def wait_for_result():
-                    await arguments.sender.client.watch_asyncs(result)
-                if globals.loop and globals.loop.is_running():
-                    create_task(wait_for_result(), name=str(handler))
-                else:
-                    on_startup(None, wait_for_result())
+        if is_coroutine(handler):
+            async def wait_for_result():
+                with arguments.sender.parent_slot:
+                    await AsyncUpdater(result)
+            if globals.loop and globals.loop.is_running():
+                create_task(wait_for_result(), name=str(handler))
+            else:
+                on_startup(None, wait_for_result())
     except Exception:
         traceback.print_exc()
