@@ -3,11 +3,12 @@ import json
 import time
 import uuid
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Optional, Union
 
 from fastapi.responses import HTMLResponse
 
 from . import globals, ui, vue
+from .async_updater import AsyncUpdater
 from .element import Element
 from .favicon import get_favicon_url
 from .slot import Slot
@@ -57,6 +58,9 @@ class Client:
     def __exit__(self, *_):
         self.content.__exit__()
         globals.client_stack.pop()
+
+    def watch_asyncs(self, coro: Coroutine) -> AsyncUpdater:
+        return AsyncUpdater(coro, self)
 
     def build_response(self) -> HTMLResponse:
         vue_html, vue_styles, vue_scripts = vue.generate_vue_content()

@@ -4,7 +4,6 @@ from inspect import signature
 from typing import TYPE_CHECKING, Any, Callable, List, Optional
 
 from . import globals
-from .auto_context import Context
 from .client import Client
 from .helpers import is_coroutine
 from .lifecycle import on_startup
@@ -249,15 +248,13 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments) -> None
         if handler is None:
             return False
         no_arguments = not signature(handler).parameters
-        # TODO: with Context(arguments.sender.parent_view)
-        result = handler() if no_arguments else handler(arguments)
+        with arguments.client:
+            result = handler() if no_arguments else handler(arguments)
         if is_coroutine(handler):
             if globals.loop and globals.loop.is_running():
                 async def wait_for_result():
-                    # TODO
-                    # with Context(arguments.sender.parent_view) as context:
-                    #     await context.watch_asyncs(result)
-                    await result
+                    with arguments.client as client:
+                        await client.watch_asyncs(result)
                 create_task(wait_for_result(), name=str(handler))
             else:
                 on_startup(None, wait_for_result())
