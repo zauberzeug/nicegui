@@ -4,8 +4,9 @@ import time
 from typing import Callable, Optional
 
 from fastapi import Response
+from fastapi.responses import HTMLResponse
 
-from . import globals
+from . import globals, ui
 from .client import Client
 from .task_logger import create_task
 
@@ -67,6 +68,7 @@ class page:
                 return client.build_response()
             except Exception as e:
                 globals.log.exception(e)
+                return error_client.build_response(500, str(e))
 
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']
         decorated.__signature__ = inspect.Signature(parameters)
@@ -74,3 +76,30 @@ class page:
         globals.page_routes[decorated] = self.path
 
         return globals.app.get(self.path)(decorated)
+
+
+class ErrorClient(Client):
+
+    def __init__(self) -> None:
+        super().__init__(page(''))
+        with self:
+            with ui.column().classes('w-full py-20 items-center gap-0'):
+                ui.icon('☹').classes('text-8xl py-5') \
+                    .style('font-family: "Arial Unicode MS", "Times New Roman", Times, serif;')
+                self.status_code = ui.label().classes('text-6xl py-5')
+                self.title = ui.label().classes('text-xl py-5')
+                self.message = ui.label().classes('text-lg py-2 text-gray-500')
+
+    def build_response(self, status_code: int, message: str = '') -> HTMLResponse:
+        self.status_code.text = status_code
+        if 400 <= status_code <= 499:
+            self.title.text = "This page doesn't exist"
+        elif 500 <= status_code <= 599:
+            self.title.text = 'Server error'
+        else:
+            self.title.text = 'Unknown error'
+        self.message.text = message
+        return super().build_response()
+
+
+error_client = ErrorClient()
