@@ -33,9 +33,6 @@ class page:
         self.dark = dark
         self.response_timeout = response_timeout
 
-        # NOTE we need to remove existing routes for this path to make sure only the latest definition is used
-        globals.app.routes[:] = [r for r in globals.app.routes if r.path != path]
-
         globals.favicons[self.path] = favicon
 
     def resolve_title(self) -> str:
@@ -45,6 +42,9 @@ class page:
         return str(self.dark if self.dark is not ... else globals.dark)
 
     def __call__(self, func: Callable) -> Callable:
+        # NOTE we need to remove existing routes for this path to make sure only the latest definition is used
+        globals.app.routes[:] = [r for r in globals.app.routes if r.path != self.path]
+
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             try:
                 with Client(self) as client:

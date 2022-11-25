@@ -6,8 +6,7 @@ import icecream
 import pytest
 from selenium import webdriver
 
-from nicegui import globals
-from nicegui.client import Client
+from nicegui import Client, globals, ui
 
 from .screen import Screen
 
@@ -38,7 +37,7 @@ def selenium(selenium: webdriver.Chrome) -> webdriver.Chrome:
 @pytest.fixture(autouse=True)
 def reset_globals() -> Generator[None, None, None]:
     importlib.reload(globals)
-    Client().__enter__()
+    Client(ui.page('/')).__enter__()
 
 
 @pytest.fixture(scope='session', autouse=True)
