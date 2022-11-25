@@ -6,6 +6,7 @@ from typing import Callable, Optional
 from fastapi import Response
 
 from . import globals
+from .async_updater import AsyncUpdater
 from .client import Client
 from .task_logger import create_task
 
@@ -55,7 +56,7 @@ class page:
             if inspect.isawaitable(result):
                 async def wait_for_result() -> Response:
                     with client:
-                        await result
+                        await AsyncUpdater(result)
                 task = create_task(wait_for_result())
                 deadline = time.time() + self.response_timeout
                 while task and not client.is_waiting_for_handshake and not task.done():
