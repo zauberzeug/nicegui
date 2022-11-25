@@ -29,8 +29,10 @@ class Element(ABC, Visibility):
         self.default_slot = self.add_slot('default')
 
         self.client.elements[self.id] = self
+        self.parent_slot: Optional[Slot] = None
         if self.client.slot_stack:
-            self.client.slot_stack[-1].children.append(self)
+            self.parent_slot = self.client.slot_stack[-1]
+            self.parent_slot.children.append(self)
 
     def add_slot(self, name: str) -> Slot:
         self.slots[name] = Slot(self, name)

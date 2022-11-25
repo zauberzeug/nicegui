@@ -37,6 +37,8 @@ excludes: List[str]
 client_stacks: Dict[int, List['Client']] = {}
 clients: Dict[int, 'Client'] = {}
 next_client_id: int = 0
+index_client: 'Client' = ...
+error_client: 'Client' = ...
 
 page_routes: Dict[Callable, str] = {}
 favicons: Dict[str, Optional[str]] = {}
@@ -55,7 +57,7 @@ def get_task_id() -> int:
 def get_client_stack() -> List['Client']:
     task_id = get_task_id()
     if task_id not in client_stacks:
-        client_stacks[task_id] = []
+        client_stacks[task_id] = [index_client]
     return client_stacks[task_id]
 
 

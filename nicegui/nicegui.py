@@ -22,13 +22,13 @@ globals.sio = sio = SocketManager(app=app)._sio
 app.add_middleware(GZipMiddleware)
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / 'static'), name='static')
 
-index_client = Client(page('/')).__enter__()
-error_client = ErrorClient(page(''))
+globals.index_client = Client(page('/')).__enter__()
+globals.error_client = ErrorClient(page(''))
 
 
 @app.get('/')
 def index():
-    return index_client.build_response()
+    return globals.index_client.build_response()
 
 
 @app.get('/_vue/dependencies/{path:path}')
@@ -62,12 +62,12 @@ def shutdown() -> None:
 
 @app.exception_handler(404)
 async def exception_handler(_: Request, exc: Exception):
-    return error_client.build_response(404, str(exc))
+    return globals.error_client.build_response(404, str(exc))
 
 
 @app.exception_handler(Exception)
 async def exception_handler(_: Request, exc: Exception):
-    return error_client.build_response(500, str(exc))
+    return globals.error_client.build_response(500, str(exc))
 
 
 @sio.on('connect')

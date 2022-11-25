@@ -246,17 +246,16 @@ class KeyEventArguments(EventArguments):
 def handle_event(handler: Optional[Callable], arguments: EventArguments) -> None:
     try:
         if handler is None:
-            return False
+            return
         no_arguments = not signature(handler).parameters
-        with arguments.client:
+        with arguments.sender.parent_slot:
             result = handler() if no_arguments else handler(arguments)
-        if is_coroutine(handler):
-            if globals.loop and globals.loop.is_running():
+            if is_coroutine(handler):
                 async def wait_for_result():
-                    with arguments.client as client:
-                        await client.watch_asyncs(result)
-                create_task(wait_for_result(), name=str(handler))
-            else:
-                on_startup(None, wait_for_result())
+                    await arguments.sender.client.watch_asyncs(result)
+                if globals.loop and globals.loop.is_running():
+                    create_task(wait_for_result(), name=str(handler))
+                else:
+                    on_startup(None, wait_for_result())
     except Exception:
         traceback.print_exc()
