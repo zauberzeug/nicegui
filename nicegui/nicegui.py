@@ -60,6 +60,11 @@ def shutdown() -> None:
     globals.state = globals.State.STOPPED
 
 
+@app.exception_handler(404)
+async def exception_handler(_: Request, exc: Exception):
+    return error_client.build_response(404, str(exc))
+
+
 @app.exception_handler(Exception)
 async def exception_handler(_: Request, exc: Exception):
     return error_client.build_response(500, str(exc))
