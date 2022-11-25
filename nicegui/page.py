@@ -24,6 +24,8 @@ class page:
         Creates a new page at the given route.
 
         :param path: route of the new page (path must start with '/')
+        :param title: optional page title
+        :param favicon: optional relative filepath to a favicon (default: `None`, NiceGUI icon will be used)
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0)
         """
