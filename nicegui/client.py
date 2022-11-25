@@ -3,7 +3,7 @@ import json
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 from fastapi.responses import HTMLResponse
 
@@ -13,17 +13,15 @@ from .favicon import get_favicon_url
 from .slot import Slot
 from .task_logger import create_task
 
+if TYPE_CHECKING:
+    from .page import page
+
 TEMPLATE = (Path(__file__).parent / 'templates' / 'index.html').read_text()
 
 
 class Client:
 
-    def __init__(self,
-                 path: str = '/',
-                 title: Optional[str] = None,
-                 favicon: Optional[str] = None,
-                 dark: Optional[bool] = ...,
-                 ) -> None:
+    def __init__(self, page: 'page') -> None:
         self.id = globals.next_client_id
         globals.next_client_id += 1
         globals.clients[self.id] = self
@@ -45,10 +43,7 @@ class Client:
         self.head_html = ''
         self.body_html = ''
 
-        self.path = path
-        self.title = title
-        self.favicon = favicon
-        self.dark = dark
+        self.page = page
 
     @property
     def ip(self) -> Optional[str]:
@@ -75,9 +70,9 @@ class Client:
             .replace(r'{{ body_html | safe }}', f'{self.body_html}\n{vue_html}\n{vue_styles}')
             .replace(r'{{ vue_scripts | safe }}', vue_scripts)
             .replace(r'{{ js_imports | safe }}', vue.generate_js_imports())
-            .replace(r'{{ title }}', self.title if self.title is not None else globals.title)
-            .replace(r'{{ favicon_url }}', get_favicon_url(self.path, self.favicon))
-            .replace(r'{{ dark }}', str(self.dark if self.dark is not ... else globals.dark))
+            .replace(r'{{ title }}', self.page.resolve_title())
+            .replace(r'{{ favicon_url }}', get_favicon_url(self.page))
+            .replace(r'{{ dark }}', str(self.page.resolve_dark()))
         )
 
     async def handshake(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:

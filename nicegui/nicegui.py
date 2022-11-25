@@ -13,6 +13,7 @@ from . import binding, globals, vue
 from .client import Client
 from .favicon import create_favicon_routes
 from .helpers import safe_invoke
+from .page import page
 from .task_logger import create_task
 
 globals.app = app = FastAPI()
@@ -21,7 +22,7 @@ globals.sio = sio = SocketManager(app=app)._sio
 app.add_middleware(GZipMiddleware)
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / 'static'), name='static')
 
-Client().__enter__()
+Client(page('/')).__enter__()
 
 
 @app.get('/')

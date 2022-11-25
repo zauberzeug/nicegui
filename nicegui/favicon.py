@@ -1,8 +1,12 @@
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from fastapi.responses import FileResponse
 
 from . import globals
+
+if TYPE_CHECKING:
+    from .page import page
 
 
 def create_favicon_routes() -> None:
@@ -10,16 +14,15 @@ def create_favicon_routes() -> None:
     for path, favicon in globals.favicons.items():
         if is_remote_url(favicon):
             continue
-        globals.app.add_route(f'{path}/favicon.ico', lambda _: FileResponse(favicon or globals.favicon or fallback))
-    if '/' not in globals.favicons:
-        globals.app.add_route('/favicon.ico', lambda _: FileResponse(globals.favicon or fallback))
+        globals.app.add_route(f'{"" if path == "/" else path}/favicon.ico',
+                              lambda _, favicon=favicon or globals.favicon or fallback: FileResponse(favicon))
 
 
-def get_favicon_url(path: str, favicon: str) -> str:
-    favicon = favicon or globals.favicon
+def get_favicon_url(page: 'page') -> str:
+    favicon = page.favicon or globals.favicon
     if is_remote_url(favicon):
         return favicon
-    return f'{path[1:]}/favicon.ico' if favicon else 'static/favicon.ico'
+    return f'{page.path[1:]}/favicon.ico' if favicon else 'static/favicon.ico'
 
 
 def is_remote_url(favicon: str) -> bool:

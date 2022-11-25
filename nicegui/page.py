@@ -38,10 +38,16 @@ class page:
 
         globals.favicons[self.path] = favicon
 
+    def resolve_title(self) -> str:
+        return self.title if self.title is not None else globals.title
+
+    def resolve_dark(self) -> Optional[bool]:
+        return str(self.dark if self.dark is not ... else globals.dark)
+
     def __call__(self, func: Callable) -> Callable:
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             try:
-                with Client(path=self.path, title=self.title, favicon=self.favicon, dark=self.dark) as client:
+                with Client(self) as client:
                     if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                         dec_kwargs['client'] = client
                     result = func(*dec_args, **dec_kwargs)
