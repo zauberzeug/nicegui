@@ -3,14 +3,14 @@ import urllib.parse
 from pathlib import Path
 from typing import Dict
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
 from . import binding, globals, vue
-from .client import Client
+from .client import Client, ErrorClient
 from .favicon import create_favicon_routes
 from .helpers import safe_invoke
 from .page import page
@@ -22,7 +22,8 @@ globals.sio = sio = SocketManager(app=app)._sio
 app.add_middleware(GZipMiddleware)
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / 'static'), name='static')
 
-Client(page('/')).__enter__()
+index_client = Client(page('/')).__enter__()
+error_client = ErrorClient(page(''))
 
 
 @app.get('/')
@@ -57,6 +58,11 @@ def shutdown() -> None:
     [safe_invoke(t) for t in globals.shutdown_handlers]
     [t.cancel() for t in globals.tasks]
     globals.state = globals.State.STOPPED
+
+
+@app.exception_handler(Exception)
+async def exception_handler(_: Request, exc: Exception):
+    return error_client.build_response(500, str(exc))
 
 
 @sio.on('connect')

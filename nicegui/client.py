@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 from fastapi.responses import HTMLResponse
 
-from . import globals, vue
+from . import globals, ui, vue
 from .element import Element
 from .favicon import get_favicon_url
 from .slot import Slot
@@ -104,3 +104,27 @@ class Client:
     def open(self, target: Union[Callable, str]) -> None:
         path = target if isinstance(target, str) else globals.page_routes[target]
         create_task(globals.sio.emit('open', path, room=str(self.id)))
+
+
+class ErrorClient(Client):
+
+    def __init__(self, page: 'page') -> None:
+        super().__init__(page)
+        with self:
+            with ui.column().classes('w-full py-20 items-center gap-0'):
+                ui.icon('☹').classes('text-8xl py-5') \
+                    .style('font-family: "Arial Unicode MS", "Times New Roman", Times, serif;')
+                self.status_code = ui.label().classes('text-6xl py-5')
+                self.title = ui.label().classes('text-xl py-5')
+                self.message = ui.label().classes('text-lg py-2 text-gray-500')
+
+    def build_response(self, status_code: int, message: str = '') -> HTMLResponse:
+        self.status_code.text = status_code
+        if 400 <= status_code <= 499:
+            self.title.text = "This page doesn't exist"
+        elif 500 <= status_code <= 599:
+            self.title.text = 'Server error'
+        else:
+            self.title.text = 'Unknown error'
+        self.message.text = message
+        return super().build_response()
