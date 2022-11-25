@@ -28,7 +28,7 @@ error_client = ErrorClient(page(''))
 
 @app.get('/')
 def index():
-    return globals.client_stack[-1].build_response()
+    return index_client.build_response()
 
 
 @app.get('/_vue/dependencies/{path:path}')

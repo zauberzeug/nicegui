@@ -16,7 +16,7 @@ class Element(ABC, Visibility):
 
     def __init__(self, tag: str) -> None:
         super().__init__()
-        self.client = globals.client_stack[-1]
+        self.client = globals.get_client()
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
         self.tag = tag

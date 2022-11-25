@@ -24,4 +24,4 @@ def notify(message: str, *,
     Note: You can pass additional keyword arguments according to [Quasar's Notify API](https://quasar.dev/quasar-plugins/notify#notify-api).
     """
     options = {key: value for key, value in locals().items() if not key.startswith('_') and value is not None}
-    create_task(globals.sio.emit('notify', options, room=str(globals.client_stack[-1].id)))
+    create_task(globals.sio.emit('notify', options, room=str(globals.get_client().id)))

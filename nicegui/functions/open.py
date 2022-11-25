@@ -15,4 +15,4 @@ def open(target: Union[Callable, str]) -> None:
     :param socket: optional WebSocket defining the target client
     """
     path = target if isinstance(target, str) else globals.page_routes[target]
-    globals.client_stack[-1].open(path)
+    globals.get_client().open(path)

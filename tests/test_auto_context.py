@@ -39,8 +39,9 @@ def test_adding_elements_with_async_await(screen: Screen):
     with ui.card():
         ui.timer(1.1, add_b, once=True)
 
-    # TODO
-    # screen.open('/')
+    screen.open('/')
+    screen.should_contain('A')
+    screen.should_contain('B')
     # for _ in range(100):
     #     if '    card\n      A\n    card\n      B' in screen.render_content():
     #         return

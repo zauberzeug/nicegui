@@ -33,11 +33,11 @@ class Client:
         self.is_waiting_for_handshake: bool = False
         self.environ: Optional[Dict[str, Any]] = None
 
-        globals.client_stack.append(self)
+        globals.get_client_stack().append(self)
         with Element('q-layout').props('view="HHH LpR FFF"') as self.layout:
             with Element('q-page-container'):
                 self.content = Element('div').classes('q-pa-md column items-start gap-4')
-        globals.client_stack.pop()
+        globals.get_client_stack().pop()
 
         self.waiting_javascript_commands: Dict[str, str] = {}
 
@@ -51,13 +51,13 @@ class Client:
         return self.environ.get('REMOTE_ADDR') if self.environ else None
 
     def __enter__(self):
-        globals.client_stack.append(self)
+        globals.get_client_stack().append(self)
         self.content.__enter__()
         return self
 
     def __exit__(self, *_):
         self.content.__exit__()
-        globals.client_stack.pop()
+        globals.get_client_stack().pop()
 
     def watch_asyncs(self, coro: Coroutine) -> AsyncUpdater:
         return AsyncUpdater(coro, self)

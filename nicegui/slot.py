@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING, List
 
-from . import globals
-
 if TYPE_CHECKING:
     from .element import Element
 
@@ -16,11 +14,11 @@ class Slot:
 
     def __enter__(self):
         self.child_count = len(self.children)
-        globals.client_stack[-1].slot_stack.append(self)
+        self.parent.client.slot_stack.append(self)
         return self
 
     def __exit__(self, *_):
-        globals.client_stack[-1].slot_stack.pop()
+        self.parent.client.slot_stack.pop()
         self.lazy_update()
 
     def lazy_update(self) -> None:

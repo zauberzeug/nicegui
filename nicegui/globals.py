@@ -34,7 +34,7 @@ dark: Optional[bool]
 binding_refresh_interval: float
 excludes: List[str]
 
-client_stack: List['Client'] = []
+client_stacks: Dict[int, List['Client']] = {}
 clients: Dict[int, 'Client'] = {}
 next_client_id: int = 0
 
@@ -46,3 +46,18 @@ connect_handlers: List[Union[Callable, Awaitable]] = []
 disconnect_handlers: List[Union[Callable, Awaitable]] = []
 startup_handlers: List[Union[Callable, Awaitable]] = []
 shutdown_handlers: List[Union[Callable, Awaitable]] = []
+
+
+def get_task_id() -> int:
+    return id(asyncio.current_task()) if loop and loop.is_running() else 0
+
+
+def get_client_stack() -> List['Client']:
+    task_id = get_task_id()
+    if task_id not in client_stacks:
+        client_stacks[task_id] = []
+    return client_stacks[task_id]
+
+
+def get_client() -> 'Client':
+    return get_client_stack()[-1]

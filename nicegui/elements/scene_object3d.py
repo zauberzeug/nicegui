@@ -15,7 +15,7 @@ class Object3D:
         self.type = type
         self.id = str(uuid.uuid4())
         self.name: Optional[str] = None
-        self.scene: 'Scene' = globals.client_stack[-1].slot_stack[-1].parent
+        self.scene: 'Scene' = globals.get_client().slot_stack[-1].parent
         self.scene.objects[self.id] = self
         self.parent: Object3D = self.scene.stack[-1]
         self.args: List = list(args)
