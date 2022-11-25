@@ -9,6 +9,7 @@ from fastapi.responses import HTMLResponse
 
 from . import globals, vue
 from .element import Element
+from .favicon import get_favicon_url
 from .slot import Slot
 from .task_logger import create_task
 
@@ -18,7 +19,9 @@ TEMPLATE = (Path(__file__).parent / 'templates' / 'index.html').read_text()
 class Client:
 
     def __init__(self,
+                 path: str = '/',
                  title: Optional[str] = None,
+                 favicon: Optional[str] = None,
                  dark: Optional[bool] = ...,
                  ) -> None:
         self.id = globals.next_client_id
@@ -41,7 +44,10 @@ class Client:
 
         self.head_html = ''
         self.body_html = ''
+
+        self.path = path
         self.title = title
+        self.favicon = favicon
         self.dark = dark
 
     @property
@@ -70,6 +76,7 @@ class Client:
             .replace(r'{{ vue_scripts | safe }}', vue_scripts)
             .replace(r'{{ js_imports | safe }}', vue.generate_js_imports())
             .replace(r'{{ title }}', self.title if self.title is not None else globals.title)
+            .replace(r'{{ favicon_url }}', get_favicon_url(self.path, self.favicon))
             .replace(r'{{ dark }}', str(self.dark if self.dark is not ... else globals.dark))
         )
 

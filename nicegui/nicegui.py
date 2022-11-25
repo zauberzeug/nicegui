@@ -11,6 +11,7 @@ from fastapi_socketio import SocketManager
 
 from . import binding, globals, vue
 from .client import Client
+from .favicon import create_favicon_routes
 from .helpers import safe_invoke
 from .task_logger import create_task
 
@@ -42,6 +43,7 @@ def vue_dependencies(name: str):
 def on_startup() -> None:
     globals.state = globals.State.STARTING
     globals.loop = asyncio.get_running_loop()
+    create_favicon_routes()
     [safe_invoke(t) for t in globals.startup_handlers]
     create_task(binding.loop())
     globals.state = globals.State.STARTED

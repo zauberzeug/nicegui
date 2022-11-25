@@ -29,6 +29,7 @@ host: str
 port: int
 reload: bool
 title: str
+favicon: Optional[str]
 dark: Optional[bool]
 binding_refresh_interval: float
 excludes: List[str]
@@ -38,6 +39,7 @@ clients: Dict[int, 'Client'] = {}
 next_client_id: int = 0
 
 page_routes: Dict[Callable, str] = {}
+favicons: Dict[str, Optional[str]] = {}
 tasks: List[asyncio.tasks.Task] = []
 
 connect_handlers: List[Union[Callable, Awaitable]] = []

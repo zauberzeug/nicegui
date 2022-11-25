@@ -16,6 +16,7 @@ def run(*,
         host: str = '0.0.0.0',
         port: int = 8080,
         title: str = 'NiceGUI',
+        favicon: Optional[str] = None,
         dark: Optional[bool] = False,
         binding_refresh_interval: float = 0.1,
         show: bool = True,
@@ -30,6 +31,7 @@ def run(*,
     globals.port = port
     globals.reload = reload
     globals.title = title
+    globals.favicon = favicon
     globals.dark = dark
     globals.binding_refresh_interval = binding_refresh_interval
     globals.excludes = [e.strip() for e in exclude.split(',')]

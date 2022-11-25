@@ -15,6 +15,7 @@ class page:
     def __init__(self,
                  path: str, *,
                  title: Optional[str] = None,
+                 favicon: Optional[str] = None,
                  dark: Optional[bool] = ...,
                  response_timeout: float = 3.0,
                  ) -> None:
@@ -28,16 +29,19 @@ class page:
         """
         self.path = path
         self.title = title
+        self.favicon = favicon
         self.dark = dark
         self.response_timeout = response_timeout
 
         # NOTE we need to remove existing routes for this path to make sure only the latest definition is used
         globals.app.routes[:] = [r for r in globals.app.routes if r.path != path]
 
+        globals.favicons[self.path] = favicon
+
     def __call__(self, func: Callable) -> Callable:
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             try:
-                with Client(title=self.title, dark=self.dark) as client:
+                with Client(path=self.path, title=self.title, favicon=self.favicon, dark=self.dark) as client:
                     if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                         dec_kwargs['client'] = client
                     result = func(*dec_args, **dec_kwargs)
