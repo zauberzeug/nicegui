@@ -45,3 +45,6 @@ class Upload(Element):
             return page_update
         except Exception:
             traceback.print_exc()
+
+    async def reset(self) -> None:
+        await self.page.run_javascript(f'document.getElementById({self.view.id}).reset()')
