@@ -26,6 +26,9 @@ export default {
       }));
       this.$emit("upload", args);
     },
+    reset() {
+      this.file = undefined;
+    },
   },
   props: {
     multiple: Boolean,
