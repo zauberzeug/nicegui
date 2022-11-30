@@ -2,9 +2,9 @@
 from pathlib import Path
 
 import docutils.core
+import reference
 from pygments.formatters import HtmlFormatter
 
-import website.reference as reference
 from nicegui import Client, ui
 
 ACCENT_COLOR = '#428BF5'
@@ -12,7 +12,7 @@ HEADER_HEIGHT = '70px'
 
 
 @ui.page('/')
-async def index(client: Client):
+async def index_page(client: Client):
     ui.add_head_html('<meta name="viewport" content="width=device-width, initial-scale=1" />')
     ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
     ui.add_head_html(f'<style>{HtmlFormatter(nobackground=True).get_style_defs(".codehilite")}</style>')
@@ -64,7 +64,7 @@ async def index(client: Client):
 
 
 @ui.page('/reference')
-def reference():
+def reference_page():
     ui.add_head_html('<meta name="viewport" content="width=device-width, initial-scale=1" />')
     reference.create_full()
 

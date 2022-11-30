@@ -2,7 +2,7 @@ from typing import Dict
 
 from nicegui import ui
 
-from .example import example
+from example import example
 
 
 def create_intro() -> None:
@@ -677,10 +677,9 @@ It also enables you to identify sessions using a [session middleware](https://ww
         from collections import Counter
         from datetime import datetime
 
+        from nicegui import app
         from starlette.middleware.sessions import SessionMiddleware
         from starlette.requests import Request
-
-        from nicegui import app
 
         app.add_middleware(SessionMiddleware, secret_key='some_random_string')
 
