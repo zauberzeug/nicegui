@@ -189,7 +189,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
     h3('Data Elements')
 
-    # @example(ui.table)
+    @example(ui.table)
     def table_example():
         table = ui.table({
             'columnDefs': [
@@ -204,7 +204,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         }).classes('max-h-40')
 
         def update():
-            table.options.rowData[0].age += 1
+            table.options['rowData'][0]['age'] += 1
             table.update()
 
         ui.button('Update', on_click=update)
