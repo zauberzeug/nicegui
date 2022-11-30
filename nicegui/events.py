@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional
 from . import globals
 from .async_updater import AsyncUpdater
 from .client import Client
+from .functions.lifecycle import on_startup
 from .helpers import is_coroutine
-from .lifecycle import on_startup
 from .task_logger import create_task
 
 if TYPE_CHECKING:

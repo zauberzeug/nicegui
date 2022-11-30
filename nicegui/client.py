@@ -1,3 +1,4 @@
+from typing import Awaitable, List
 import asyncio
 import json
 import time
@@ -41,6 +42,9 @@ class Client:
         self.body_html = ''
 
         self.page = page
+
+        self.connect_handlers: List[Union[Callable, Awaitable]] = []
+        self.disconnect_handlers: List[Union[Callable, Awaitable]] = []
 
     @property
     def ip(self) -> Optional[str]:

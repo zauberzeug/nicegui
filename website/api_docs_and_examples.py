@@ -443,9 +443,8 @@ You can run a function or coroutine as a parallel task by passing it to one of t
 - `ui.on_disconnect`: Called when a client disconnects from NiceGUI. (Optional argument: socket)
 
 When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
-''', skip=True)
+''')
     def lifecycle_example():
-        global countdown
         import asyncio
 
         l = ui.label()
@@ -455,7 +454,7 @@ When NiceGUI is shut down or restarted, the startup tasks will be automatically 
                 l.text = f'{i}...' if i else 'Take-off!'
                 await asyncio.sleep(1)
 
-        # ui.on_connect(countdown)
+        ui.on_connect(countdown)
 
     @example(ui.timer)
     def timer_example():
@@ -754,6 +753,3 @@ This will make `ui.plot` and `ui.line_plot` unavailable.
         if line_checkbox.value:
             ui.timer(10.0, turn_off, once=True)
     line_checkbox.on('update:model-value', handle_change)
-
-    # HACK: start countdown here to avoid using global lifecycle hook
-    # create_task(countdown(), name='countdown')

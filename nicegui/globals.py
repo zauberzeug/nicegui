@@ -44,8 +44,6 @@ page_routes: Dict[Callable, str] = {}
 favicons: Dict[str, Optional[str]] = {}
 tasks: List[asyncio.tasks.Task] = []
 
-connect_handlers: List[Union[Callable, Awaitable]] = []
-disconnect_handlers: List[Union[Callable, Awaitable]] = []
 startup_handlers: List[Union[Callable, Awaitable]] = []
 shutdown_handlers: List[Union[Callable, Awaitable]] = []
 

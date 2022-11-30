@@ -7,8 +7,8 @@ from .. import globals
 from ..async_updater import AsyncUpdater
 from ..binding import BindableProperty
 from ..helpers import is_coroutine
-from ..lifecycle import on_startup
 from ..task_logger import create_task
+from .lifecycle import on_startup
 
 
 class Timer:

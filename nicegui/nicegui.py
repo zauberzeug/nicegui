@@ -81,6 +81,8 @@ async def handle_connect(sid: str, _) -> None:
         return
     client.environ = sio.get_environ(sid)
     sio.enter_room(sid, str(client.id))
+    with client:
+        [safe_invoke(t) for t in client.connect_handlers]
 
 
 @sio.on('disconnect')
@@ -90,6 +92,8 @@ async def handle_disconnect(sid: str) -> None:
         return
     if not client.shared:
         del globals.clients[client.id]
+    with client:
+        [safe_invoke(t) for t in client.disconnect_handlers]
 
 
 @sio.on('event')
