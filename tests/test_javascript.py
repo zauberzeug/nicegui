@@ -38,7 +38,7 @@ def test_run_javascript_on_value_change(screen: Screen):
     assert screen.selenium.title == 'Page Title A'
 
 
-def test_run_javascript_on_async_page(screen: Screen):
+def test_run_javascript_before_client_handshake(screen: Screen):
     @ui.page('/')
     async def page():
         ui.label('before js')

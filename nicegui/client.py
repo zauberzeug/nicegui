@@ -46,6 +46,10 @@ class Client:
     def ip(self) -> Optional[str]:
         return self.environ.get('REMOTE_ADDR') if self.environ else None
 
+    @property
+    def has_socket_connection(self) -> bool:
+        return self.environ is not None
+
     def __enter__(self):
         self.content.__enter__()
         return self
