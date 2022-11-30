@@ -21,6 +21,7 @@ class Slot:
 
     def __exit__(self, *_):
         globals.get_slot_stack().pop()
+        globals.prune_slot_stack()
         self.lazy_update()
 
     def lazy_update(self) -> None:

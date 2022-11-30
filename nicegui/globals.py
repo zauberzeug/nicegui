@@ -64,6 +64,12 @@ def get_slot_stack() -> List['Slot']:
     return slot_stacks[task_id]
 
 
+def prune_slot_stack() -> None:
+    task_id = get_task_id()
+    if not slot_stacks[task_id]:
+        del slot_stacks[task_id]
+
+
 def get_slot() -> 'Slot':
     return get_slot_stack()[-1]
 
