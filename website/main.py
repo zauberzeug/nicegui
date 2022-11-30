@@ -9,6 +9,7 @@ from nicegui import Client, ui
 
 ACCENT_COLOR = '#428BF5'
 HEADER_HEIGHT = '70px'
+STATIC = Path(__file__).parent / 'static'
 
 
 @ui.page('/')
@@ -19,11 +20,12 @@ async def index_page(client: Client):
     client.content.classes(remove='q-pa-md gap-4').style('background: #f8f8f8')
 
     with ui.header() \
-            .classes('justify-between items-center') \
+            .classes('items-center') \
             .style(f'background-color: {ACCENT_COLOR}; height: {HEADER_HEIGHT}') \
             .props('elevated'):
-        ui.label('NiceGUI').classes('text-3xl')
-        with ui.row().classes('items-center'):
+        ui.html((STATIC / 'happy_face.svg').read_text()).classes('w-8 stroke-white')
+        ui.html((STATIC / 'nicegui_word.svg').read_text()).classes('w-24')
+        with ui.row().classes('items-center ml-auto'):
             ui.link('Features').classes('text-lg').style('color: white!important')
             ui.link('Installation').classes('text-lg').style('color: white!important')
             ui.link('Documentation').classes('text-lg').style('color: white!important')
@@ -31,12 +33,12 @@ async def index_page(client: Client):
             ui.link('Docker').classes('text-lg').style('color: white!important')
             ui.link('Deployment').classes('text-lg').style('color: white!important')
             with ui.link(target='https://github.com/zauberzeug/nicegui/'):
-                ui.html(Path('static/github.svg').read_text()).classes('fill-white scale-125 m-1')
+                ui.html((STATIC / 'github.svg').read_text()).classes('fill-white scale-125 m-1')
 
     with ui.row() \
-            .classes('w-full q-pa-md items-center gap-8') \
-            .style(f'height: calc(100vh - {HEADER_HEIGHT}); transform: translateX(-375px)'):
-        ui.icon('face').style('font-size: 5000%')
+            .classes('w-full q-pa-md items-center gap-12 no-wrap') \
+            .style(f'height: calc(100vh - {HEADER_HEIGHT}); transform: translateX(-250px)'):
+        ui.html((STATIC / 'happy_face.svg').read_text()).classes('stroke-black').style('width: 500px')
         with ui.column().classes('gap-8'):
             ui.markdown('The NiceGUI you really\n\nneed in your life.') \
                 .style('font-size: 400%; line-height: 0.9; font-weight: 500')
