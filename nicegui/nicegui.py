@@ -63,14 +63,14 @@ def shutdown() -> None:
 @app.exception_handler(404)
 async def exception_handler(_: Request, exc: Exception):
     with Client(page('')) as client:
-        error_content(404, str(exc))
+        error_content(404, f'{exc.__class__.__name__}: {str(exc)}')
     return client.build_response()
 
 
 @app.exception_handler(Exception)
 async def exception_handler(_: Request, exc: Exception):
     with Client(page('')) as client:
-        error_content(500, str(exc))
+        error_content(500, f'{exc.__class__.__name__}: {str(exc)}')
     return client.build_response()
 
 
