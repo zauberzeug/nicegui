@@ -39,7 +39,6 @@ slot_stacks: Dict[int, List['Slot']] = {}
 clients: Dict[int, 'Client'] = {}
 next_client_id: int = 0
 index_client: 'Client' = ...
-error_client: 'Client' = ...
 
 page_routes: Dict[Callable, str] = {}
 favicons: Dict[str, Optional[str]] = {}

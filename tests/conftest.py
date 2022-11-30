@@ -6,8 +6,7 @@ import icecream
 import pytest
 from selenium import webdriver
 
-from nicegui import globals
-from nicegui.client import ErrorClient, IndexClient
+from nicegui import Client, globals
 from nicegui.page import page
 
 from .screen import Screen
@@ -41,8 +40,7 @@ def reset_globals() -> Generator[None, None, None]:
     globals.app.routes[:] = [route for route in globals.app.routes
                              if route.path != '/' and route.path not in globals.page_routes.values()]
     importlib.reload(globals)
-    globals.error_client = ErrorClient(page(''))
-    globals.index_client = IndexClient(page('/')).__enter__()
+    globals.index_client = Client(page('/'), shared=True).__enter__()
     globals.app.get('/')(globals.index_client.build_response)
 
 
