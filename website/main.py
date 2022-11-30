@@ -4,7 +4,7 @@ from pathlib import Path
 import docutils.core
 from pygments.formatters import HtmlFormatter
 
-import website.api_docs_and_examples as api_docs_and_examples
+import website.reference as reference
 from nicegui import Client, ui
 
 ACCENT_COLOR = '#428BF5'
@@ -60,13 +60,13 @@ async def index(client: Client):
             ui.label('Demo')
 
     with ui.row().classes('w-full q-pa-md'):
-        api_docs_and_examples.create_intro()
+        reference.create_intro()
 
 
 @ui.page('/reference')
 def reference():
     ui.add_head_html('<meta name="viewport" content="width=device-width, initial-scale=1" />')
-    api_docs_and_examples.create_full()
+    reference.create_full()
 
 
 ui.run()
