@@ -55,8 +55,7 @@ def test_run_javascript_before_client_handshake(screen: Screen):
 def test_response_from_javascript(screen: Screen):
     async def compute() -> None:
         response = await ui.run_javascript('1 + 41')
-        for _, answer in response.items():
-            ui.label(answer)
+        ui.label(response)
 
     ui.button('compute', on_click=compute)
 
