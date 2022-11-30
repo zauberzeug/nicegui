@@ -1,7 +1,7 @@
 import asyncio
 import urllib.parse
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.gzip import GZipMiddleware
@@ -77,6 +77,8 @@ async def exception_handler(_: Request, exc: Exception):
 @sio.on('connect')
 async def handle_connect(sid: str, _) -> None:
     client = get_client(sid)
+    if not client:
+        return
     client.environ = sio.get_environ(sid)
     sio.enter_room(sid, str(client.id))
 
@@ -84,6 +86,8 @@ async def handle_connect(sid: str, _) -> None:
 @sio.on('disconnect')
 async def handle_disconnect(sid: str) -> None:
     client = get_client(sid)
+    if not client:
+        return
     if not client.shared:
         del globals.clients[client.id]
 
@@ -91,6 +95,8 @@ async def handle_disconnect(sid: str) -> None:
 @sio.on('event')
 def handle_event(sid: str, msg: Dict) -> None:
     client = get_client(sid)
+    if not client:
+        return
     with client:
         sender = client.elements.get(msg['id'])
         if sender:
@@ -99,11 +105,14 @@ def handle_event(sid: str, msg: Dict) -> None:
 
 @sio.on('javascript_response')
 def handle_event(sid: str, msg: Dict) -> None:
-    get_client(sid).waiting_javascript_commands[msg['request_id']] = msg['result']
+    client = get_client(sid)
+    if not client:
+        return
+    client.waiting_javascript_commands[msg['request_id']] = msg['result']
 
 
-def get_client(sid: str) -> Client:
+def get_client(sid: str) -> Optional[Client]:
     query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
     query = urllib.parse.parse_qs(query_bytes.decode())
     client_id = int(query['client_id'][0])
-    return globals.clients[client_id]
+    return globals.clients.get(client_id)
