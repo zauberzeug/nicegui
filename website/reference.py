@@ -669,29 +669,30 @@ See <https://quasar.dev/layout/page-sticky> for more information.
 
     @example('''#### Sessions
 
-`ui.page` provides an optional `on_connect` argument to register a callback.
-It is invoked for each new connection to the page.
-
-The optional `request` argument provides insights about the clients URL parameters etc. (see [the JustPy docs](https://justpy.io/tutorial/request_object/) for more details).
-It also enables you to identify sessions over [longer time spans by configuring cookies](https://justpy.io/tutorial/sessions/).
-''', skip=True)
+The optional `request` argument provides insights about the client's URL parameters etc.
+It also enables you to identify sessions using a [session middleware](https://www.starlette.io/middleware/#sessionmiddleware).
+''')
     def sessions_example():
+        import uuid
         from collections import Counter
         from datetime import datetime
 
+        from starlette.middleware.sessions import SessionMiddleware
         from starlette.requests import Request
 
-        id_counter = Counter()
-        creation = datetime.now().strftime('%H:%M, %d %B %Y')
+        from nicegui import app
 
-        def handle_connection(request: Request):
-            id_counter[request.session_id] += 1
-            visits.set_text(f'{len(id_counter)} unique views ({sum(id_counter.values())} overall) since {creation}')
+        app.add_middleware(SessionMiddleware, secret_key='some_random_string')
 
-        @ui.page('/session_demo', on_connect=handle_connection)
-        def session_demo():
-            global visits
-            visits = ui.label()
+        counter = Counter()
+        start = datetime.now().strftime('%H:%M, %d %B %Y')
+
+        @ui.page('/session_demo')
+        def session_demo(request: Request):
+            if 'id' not in request.session:
+                request.session['id'] = str(uuid.uuid4())
+            counter[request.session['id']] += 1
+            ui.label(f'{len(counter)} unique views ({sum(counter.values())} overall) since {start}')
 
         ui.link('Visit session demo', session_demo)
 
