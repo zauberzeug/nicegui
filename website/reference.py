@@ -2,7 +2,7 @@ from typing import Dict
 
 from nicegui import ui
 
-from example import example
+from .example import example
 
 
 def create_intro() -> None:

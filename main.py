@@ -2,14 +2,14 @@
 from pathlib import Path
 
 import docutils.core
-import reference
 from pygments.formatters import HtmlFormatter
 
 from nicegui import Client, ui
+from website import reference
 
 ACCENT_COLOR = '#428BF5'
 HEADER_HEIGHT = '70px'
-STATIC = Path(__file__).parent / 'static'
+STATIC = Path(__file__).parent / 'website' / 'static'
 
 
 @ui.page('/')
