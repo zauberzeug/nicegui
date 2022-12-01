@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-from nicegui import ui
+import leaflet  # this module wraps the JavaScript lib leafletjs.com into an easy-to-use NiceGUI element
 
-# this module wraps the JavaScript lib leafletjs.com into an easy-to-use NiceGUI element
-import leaflet
+from nicegui import Client, ui
+from nicegui.events import ValueChangeEventArguments
 
 
 @ui.page('/')
-def main_page():
+async def main_page(client: Client):
     map = leaflet.map()
     locations = {
         (52.5200, 13.4049): 'Berlin',
@@ -14,10 +14,14 @@ def main_page():
         (39.9042, 116.4074): 'Beijing',
         (35.6895, 139.6917): 'Tokyo',
     }
-    selection = ui.select(locations, on_change=map.set_location).style('width: 10em')
-    yield  # all code below is executed after page is ready
+
+    async def handle_location_change(e: ValueChangeEventArguments) -> None:
+        with e.client:
+            await map.set_location(e.value)
+    selection = ui.select(locations, on_change=handle_location_change).style('width: 10em')
+    await client.handshake()  # all code below is executed after client is connected
     default_location = next(iter(locations))
-    # this will trigger the map.set_location event; which is js and must be run after page is ready
+    # this will trigger the map.set_location event; which is js and must be run after client has connected
     selection.set_value(default_location)
 
 

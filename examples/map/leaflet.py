@@ -1,37 +1,26 @@
 import logging
-from typing import Dict, Optional, Tuple, Union
+from typing import Tuple
 
 from nicegui import ui
-from nicegui.events import ValueChangeEventArguments
 
 
 class map(ui.card):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.classes('osm-map').style('width:100%;height:300px;transition:opacity 1s;opacity:0.1')
+        self.classes('osm-map').style('width:100%;height:300px')
         self.add_leaflet_js()
 
-    async def set_location(self, location: Union[Optional[Tuple[float, float]], Dict[str, Tuple[float, float]], ValueChangeEventArguments]):
+    async def set_location(self, location: Tuple[float, float]) -> None:
+        print(location, flush=True)
         try:
-            if isinstance(location, ValueChangeEventArguments):
-                location = location.value
-            if isinstance(location, dict):
-                location = location.get('location', location.get('value', None))
-            if not isinstance(location, tuple) or len(location) != 2 or not all(
-                    isinstance(x, float) or isinstance(x, int) for x in location):
-                self.style('opacity: 0.1;')
-                logging.warning(f'Invalid location: {location}')
-                return
-            self.style('opacity: 1;')
             await ui.run_javascript(f'''
-                target = L.latLng("{location[0]}", "{location[1]}")
-                map.setView(target, 9);
-                if (marker != undefined) map.removeLayer(marker);
-                marker = L.marker(target);
-                marker.addTo(map);
-                0 // return something so we do net get a js error
-            ''')
+                window.target = L.latLng("{location[0]}", "{location[1]}");
+                window.map.setView(target, 9);
+                if (window.marker != undefined) window.map.removeLayer(window.marker);
+                window.marker = L.marker(target);
+                window.marker.addTo(window.map);
+            ''', respond=False)
         except:
             logging.exception(f'could not update {location}')
 
@@ -56,18 +45,16 @@ class map(ui.card):
 
                     observer.observe(document.body, {
                         childList: true,
-                        subtree: true
+                        subtree: true,
                     });
                 });
             }
-            var marker;
-            var map;
             document.addEventListener("DOMContentLoaded", function() {
                 waitForElm('.osm-map').then((container) => {
-                    map = L.map(container);
+                    window.map = L.map(container);
                     L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                    }).addTo(map);                    
+                    }).addTo(window.map);
                 });
             });
         </script>
