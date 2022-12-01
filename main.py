@@ -12,11 +12,15 @@ HEADER_HEIGHT = '70px'
 STATIC = Path(__file__).parent / 'website' / 'static'
 
 
-@ui.page('/')
-async def index_page(client: Client):
+def add_head_html() -> None:
     ui.add_head_html('<meta name="viewport" content="width=device-width, initial-scale=1" />')
     ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
     ui.add_head_html(f'<style>{HtmlFormatter(nobackground=True).get_style_defs(".codehilite")}</style>')
+
+
+@ui.page('/')
+async def index_page(client: Client):
+    add_head_html()
     client.content.classes(remove='q-pa-md gap-4').style('background: #f8f8f8')
 
     with ui.header() \
@@ -67,7 +71,7 @@ async def index_page(client: Client):
 
 @ui.page('/reference')
 def reference_page():
-    ui.add_head_html('<meta name="viewport" content="width=device-width, initial-scale=1" />')
+    add_head_html()
     reference.create_full()
 
 
