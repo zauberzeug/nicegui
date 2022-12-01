@@ -35,6 +35,7 @@ class page:
         self.favicon = favicon
         self.dark = dark
         self.response_timeout = response_timeout
+        self.func: Callable
 
         globals.favicons[self.path] = favicon
 
@@ -47,12 +48,13 @@ class page:
     def __call__(self, func: Callable) -> Callable:
         # NOTE we need to remove existing routes for this path to make sure only the latest definition is used
         globals.app.routes[:] = [r for r in globals.app.routes if r.path != self.path]
+        self.func = func
 
-        async def decorated(*dec_args, **dec_kwargs) -> Response:
+        async def decorated(*args, **kwargs) -> Response:
             with Client(self) as client:
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
-                    dec_kwargs['client'] = client
-                result = func(*dec_args, **dec_kwargs)
+                    kwargs['client'] = client
+                result = self.create_content(*args, **kwargs)
             if inspect.isawaitable(result):
                 async def wait_for_result() -> Response:
                     with client:
@@ -74,3 +76,6 @@ class page:
         globals.page_routes[decorated] = self.path
 
         return globals.app.get(self.path)(decorated)
+
+    def create_content(self, *args, **kwargs) -> None:
+        self.func(*args, **kwargs)
