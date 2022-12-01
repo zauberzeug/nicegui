@@ -5,14 +5,17 @@ from nicegui import ui
 
 def create() -> None:
 
-    @theme.page('/a', '- Example A -')
+    @ui.page('/a')
     def example_page():
-        ui.label('Example A').classes('text-h4 text-grey-8')
+        with theme.frame('- Example A -'):
+            ui.label('Example A').classes('text-h4 text-grey-8')
 
-    @theme.page('/b', '- Example B -')
+    @ui.page('/b')
     def example_page():
-        ui.label('Example B').classes('text-h4 text-grey-8')
+        with theme.frame('- Example B -'):
+            ui.label('Example B').classes('text-h4 text-grey-8')
 
-    @theme.page('/c', '- Example C -')
+    @ui.page('/c')
     def example_page():
-        ui.label('Example C').classes('text-h4 text-grey-8')
+        with theme.frame('- Example C -'):
+            ui.label('Example C').classes('text-h4 text-grey-8')

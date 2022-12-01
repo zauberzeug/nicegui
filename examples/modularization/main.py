@@ -7,12 +7,13 @@ from nicegui import ui
 
 
 # here we use our custom page decorator directly and just put the content creation into a separate function
-@theme.page('/', 'Homepage')
+@ui.page('/')
 def index_page() -> None:
-    home_page.content()
+    with theme.frame('Homepage'):
+        home_page.content()
 
 
 # this call shows that you can also move the whole page creation into a separate file
 example_pages.create()
 
-ui.run()
+ui.run(title='Modularization Demo')
