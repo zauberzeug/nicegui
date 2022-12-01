@@ -1,40 +1,46 @@
 #!/usr/bin/env python3
+import uuid
 from typing import Dict
 
+from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
-from starlette.websockets import WebSocket
 
-from nicegui import ui
+from nicegui import app, ui
 
-# in reality we would load/save session info to DB
-session_info: Dict[str, Dict] = {}
+app.add_middleware(SessionMiddleware, secret_key='some_random_string')
 
-
-def build_content(username: str) -> None:
-    with ui.row().classes('flex justify-center w-full mt-20'):
-        ui.label(f'Hello {username}!').classes('text-2xl')
-
-
-def build_login_form() -> None:
-    def on_login(username: str, password: str, socket: WebSocket) -> None:
-        session_id = socket.cookies['jp_token'].split('.')[0]
-        if (username == 'user1' and password == 'pass1') or (username == 'user2' and password == 'pass2'):
-            session_info[session_id] = {'authenticated': True, 'user': username}
-            ui.open('/', socket)
-
-    with ui.row().classes('flex justify-center w-full mt-20'):
-        with ui.card():
-            username = ui.input('User Name')
-            password = ui.input('Password').classes('w-full').props('type=password')
-            ui.button('Log in', on_click=lambda e: on_login(username.value, password.value, e.socket))
+session_info: Dict[str, Dict] = {}  # in reality in a database
 
 
 @ui.page('/')
 def main_page(request: Request) -> None:
-    if session_info.get(request.session_id, {}).get('authenticated', False):
-        build_content(session_info[request.session_id]['user'])
+    if is_authenticated(request):
+        create_welcome_message(session_info[request.session['id']]['username'])
     else:
-        build_login_form()
+        request.session['id'] = str(uuid.uuid4())
+        create_login_form(request.session['id'])
+
+
+def is_authenticated(request: Request) -> bool:
+    return session_info.get(request.session.get('id'), {}).get('authenticated', False)
+
+
+def create_login_form(session_id: str) -> None:
+    with ui.card().classes('absolute-center'):
+        username = ui.input('Username')
+        password = ui.input('Password').classes('w-full').props('type=password')
+        ui.button('Log in', on_click=lambda: try_login(session_id, username.value, password.value))
+
+
+def try_login(session_id: str, username: str, password: str) -> None:
+    if (username, password) in [('user1', 'pass1'), ('user2', 'pass2')]:
+        session_info[session_id] = {'username': username, 'authenticated': True}
+    ui.open('/')
+
+
+def create_welcome_message(username: str) -> None:
+    with ui.row().classes('absolute-center'):
+        ui.label(f'Hello {username}!').classes('text-2xl')
 
 
 ui.run()
