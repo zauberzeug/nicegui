@@ -48,12 +48,10 @@ def add_header() -> None:
         with ui.link(target=index_page):
             ui.html((STATIC / 'nicegui_word.svg').read_text()).classes('w-24')
         with ui.row().classes('items-center ml-auto'):
-            ui.link('Features').classes('text-lg').style('color: white!important')
-            ui.link('Installation').classes('text-lg').style('color: white!important')
-            ui.link('Documentation').classes('text-lg').style('color: white!important')
-            ui.link('API Reference', reference_page).classes('text-lg').style('color: white!important')
-            ui.link('Docker').classes('text-lg').style('color: white!important')
-            ui.link('Deployment').classes('text-lg').style('color: white!important')
+            ui.link('Features', '/#features').classes(replace='text-lg text-white')
+            ui.link('Installation', '/#installation').classes(replace='text-lg text-white')
+            ui.link('Examples', '/#examples').classes(replace='text-lg text-white')
+            ui.link('API Reference', reference_page).classes(replace='text-lg text-white')
             with ui.link(target='https://github.com/zauberzeug/nicegui/'):
                 ui.html((STATIC / 'github.svg').read_text()).classes('fill-white scale-125 m-1')
 
@@ -95,6 +93,33 @@ async def index_page(client: Client):
 
         demo_card.create()
 
+    ui.link_target('features').style(f'position: relative; top: -{HEADER_HEIGHT}')
+    with ui.column().classes('w-full q-pa-xl'):
+        ui.label('Features').classes('text-bold text-lg')
+        ui.html('What has <em>NiceGUI</em> to offer?') \
+            .style('font-size: 300%; font-weight: 500; margin-top: -20px')
+        with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between'):
+            with ui.column().classes('gap-1'):
+                ui.label('User Interface').classes('text-bold mb-4')
+                ui.markdown('- common elements like label, button, checkbox, switch, slider, input, ...')
+                ui.markdown('- layouting with rows, columns, cards and dialogs')
+                ui.markdown('- HTML and markdown elements')
+                ui.markdown('- high-level elements like charts, tables, trees, 3D scenes, joystick, ...')
+                ui.markdown('- built-in timer to refresh data in intervals')
+                ui.markdown('- notifications, dialogs and menus')
+                ui.markdown('- keyboard input')
+            with ui.column().classes('gap-1'):
+                ui.label('Under the hood').classes('text-bold mb-4')
+                ui.markdown('- browser-based graphical user interface')
+                ui.markdown('- based on FastAPI and Uvicorn')
+                ui.markdown('- live-cycle events and session data')
+                ui.markdown('- customizable page layout and colors')
+            with ui.column().classes('gap-1'):
+                ui.label('Development').classes('text-bold mb-4')
+                ui.markdown('- implicit reload on code change')
+                ui.markdown('- straight-forward data binding')
+
+    ui.link_target('installation').style(f'position: relative; top: -{HEADER_HEIGHT}')
     with ui.column().classes('w-full q-pa-xl'):
         ui.label('Installation').classes('text-bold text-lg')
         ui.html('Getting <em>started</em>') \
@@ -122,6 +147,7 @@ ui.run()
                 with bash_window().classes('w-full h-52'):
                     ui.markdown('```bash\npython3 main.py\n```')
 
+    ui.link_target('examples').style(f'position: relative; top: -{HEADER_HEIGHT}')
     with ui.column().classes('w-full q-pa-xl'):
         ui.label('Documentation').classes('text-bold text-lg')
         ui.html('Interactive <em>Examples</em>') \
