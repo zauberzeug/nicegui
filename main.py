@@ -67,7 +67,7 @@ async def index_page(client: Client):
             .style(f'height: calc(100vh - {HEADER_HEIGHT}); transform: translateX(-250px)'):
         ui.html((STATIC / 'happy_face.svg').read_text()).classes('stroke-black').style('width: 500px')
         with ui.column().classes('gap-8'):
-            ui.markdown('The NiceGUI you really\n\nneed in your life.') \
+            ui.markdown('Meet the NiceGUI.') \
                 .style('font-size: 400%; line-height: 0.9; font-weight: 500')
             ui.markdown('An easy-to-use Python-based UI framework\n\nwhich shows up in your web browser.') \
                 .style('font-size: 200%; line-height: 0.9')
