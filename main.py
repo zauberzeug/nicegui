@@ -76,15 +76,22 @@ async def index_page(client: Client):
     with ui.row() \
             .classes('w-full q-pa-md items-center gap-28 p-32 no-wrap') \
             .style(f'height: calc(100vh - {HEADER_HEIGHT}); background: {ACCENT_COLOR}'):
-        with ui.column().classes('gap-8'):
+        with ui.column().classes('gap-6'):
             ui.markdown('Create buttons, dialogs, markdown,\n\n3D scenes, plots and much more at ease.') \
-                .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500')
+                .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500').classes('mb-4')
             ui.label('''
                 It is great for micro web apps, dashboards, robotics projects, smart home solutions
                 and similar use cases. You can also use it in development, for example when
                 tweaking/configuring a machine learning algorithm or tuning motor controllers.
-                NiceGUl is available as PyPl package, Docker image and on GitHub
-            ''').style('font-size: 150%; color: white')
+            ''').style('font-size: 150%; color: white').classes('leading-tight')
+            with ui.row().style('font-size: 150%; color: white').classes('leading-tight gap-2'):
+                ui.html('''
+                    NiceGUI is available as
+                    <a href="https://pypi.org/project/nicegui/"><strong>PyPI package</strong><span class="material-icons">north_east</span></a>,
+                    <a href="https://hub.docker.com/r/zauberzeug/nicegui"><strong>Docker image</strong><span class="material-icons">north_east</span></a> and on
+                    <a href="https://github.com/zauberzeug/nicegui"><strong>GitHub</strong><span class="material-icons">north_east</span></a>.
+                ''')
+
         demo_card.create()
 
     with ui.row().classes('w-full q-pa-md'):
