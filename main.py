@@ -6,10 +6,7 @@ from pygments.formatters import HtmlFormatter
 
 from nicegui import Client, ui
 from website import demo_card, reference
-
-ACCENT_COLOR = '#428BF5'
-HEADER_HEIGHT = '70px'
-STATIC = Path(__file__).parent / 'website' / 'static'
+from website.constants import ACCENT_COLOR, HEADER_HEIGHT, STATIC
 
 ui.add_static_files('/favicon', Path(__file__).parent / 'website' / 'favicon')
 
@@ -84,10 +81,7 @@ async def index_page(client: Client):
                 tweaking/configuring a machine learning algorithm or tuning motor controllers.
                 NiceGUl is available as PyPl package, Docker image and on GitHub
             ''').style('font-size: 150%; color: white')
-        with ui.row().style('filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'):
-            with ui.card().classes('no-shadow') \
-                    .style(f'min-width: 360px; height: 380px; clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%)'):
-                demo_card.create_content()
+        demo_card.create()
 
     with ui.row().classes('w-full q-pa-md'):
         reference.create_intro()
