@@ -37,8 +37,10 @@ Binding values between UI elements or [to data models](http://127.0.0.1:8080/ref
 
 
 def create_full() -> None:
+    ui.html('<em>API</em> Documentation and Examples').classes('mt-8 text-5xl font-weight-500')
+
     def h3(text: str) -> None:
-        ui.label(text).classes('w-full mt-16 border-b border-slate-200 text-3xl font-light')
+        ui.html(f'<em>{text}</em>').classes('mt-8 text-3xl font-weight-500')
 
     h3('Basic Elements')
 
