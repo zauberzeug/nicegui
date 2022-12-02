@@ -88,7 +88,16 @@
           window.socket.on("notify", (msg) => Quasar.Notify.create(msg));
           window.socket.on("disconnect", () => window.location.reload());
         },
-      }).use(Quasar);
+      }).use(Quasar, {
+        config: {
+          brand: {
+            primary: '#5A99FF',
+          },
+          loadingBar: {
+            color: 'primary'
+          },
+        }
+      });
 
       {{ vue_scripts | safe }}
       {{ js_imports | safe }}
