@@ -60,7 +60,7 @@ class Client:
     def __exit__(self, *_):
         self.content.__exit__()
 
-    def build_response(self) -> HTMLResponse:
+    def build_response(self, status_code: int = 200) -> HTMLResponse:
         vue_html, vue_styles, vue_scripts = vue.generate_vue_content()
         elements = json.dumps({id: element.to_dict() for id, element in self.elements.items()})
         return HTMLResponse(
@@ -74,7 +74,8 @@ class Client:
             .replace(r'{{ js_imports | safe }}', vue.generate_js_imports())
             .replace(r'{{ title }}', self.page.resolve_title())
             .replace(r'{{ favicon_url }}', get_favicon_url(self.page))
-            .replace(r'{{ dark }}', str(self.page.resolve_dark()))
+            .replace(r'{{ dark }}', str(self.page.resolve_dark())),
+            status_code
         )
 
     async def handshake(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:

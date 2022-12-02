@@ -64,14 +64,14 @@ def shutdown() -> None:
 async def exception_handler(_: Request, exception: Exception):
     with Client(page('')) as client:
         error_content(404, exception)
-    return client.build_response()
+    return client.build_response(404)
 
 
 @app.exception_handler(Exception)
 async def exception_handler(_: Request, exception: Exception):
     with Client(page('')) as client:
         error_content(500, exception)
-    return client.build_response()
+    return client.build_response(500)
 
 
 @sio.on('connect')
