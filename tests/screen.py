@@ -4,7 +4,6 @@ import time
 from typing import List
 
 import pytest
-from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common.exceptions import ElementNotInteractableException, NoSuchElementException
 from selenium.webdriver import ActionChains
@@ -98,30 +97,9 @@ class Screen:
         except NoSuchElementException:
             raise AssertionError(f'Could not find "{text}"')
 
-    def render_html(self) -> str:
-        body = self.selenium.page_source
-        soup = BeautifulSoup(body, 'html.parser')
-        for element in soup.find_all():
-            if element.name in ['script', 'style'] and len(element.text) > 10:
-                element.string = '... removed lengthy content ...'
-        return soup.prettify()
-
     def render_js_logs(self) -> str:
         console = '\n'.join(l['message'] for l in self.selenium.get_log('browser'))
         return f'-- console logs ---\n{console}\n---------------------'
-
-    @staticmethod
-    def simplify_input_tags(soup: BeautifulSoup) -> None:
-        for element in soup.find_all(class_='q-field'):
-            new = soup.new_tag('simple_input')
-            name = element.find(class_='q-field__label').text
-            placeholder = element.find(class_='q-field__native').get('placeholder')
-            messages = element.find(class_='q-field__messages')
-            value = element.find(class_='q-field__native').get('value')
-            new.string = (f'{name}: ' if name else '') + (value or placeholder or '') + \
-                (f' \u002A{messages.text}' if messages else '')
-            new['class'] = element['class']
-            element.replace_with(new)
 
     def get_tags(self, name: str) -> List[WebElement]:
         return self.selenium.find_elements(By.TAG_NAME, name)
