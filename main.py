@@ -29,6 +29,9 @@ def add_head_html() -> None:
     ''')  # https://realfavicongenerator.net/
     ui.add_head_html(f'''
         <style>
+        html {{
+            scroll-behavior: smooth;
+        }}
         body {{
             background-color: #f8f8f8;
         }}
@@ -158,7 +161,7 @@ ui.run()
             .classes('w-full items-center gap-28 px-32 py-16 no-wrap') \
             .style(f'background: {ACCENT_COLOR}'):
         with ui.column().classes('gap-4'):
-            ui.markdown('Go to the API reference to see a ton of live examples') \
+            ui.markdown('Go to the API reference to see a ton of live examples.') \
                 .style('font-size: 220%; color: white; line-height: 0.9; font-weight: 500')
             ui.html('The whole content of <a href="https://nicegui.io/">nicegui.io</a> is implemented with NiceGUI itself.') \
                 .style('font-size: 150%; color: white')
