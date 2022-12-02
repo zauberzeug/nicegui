@@ -59,7 +59,7 @@ class example:
             code = '\n'.join(code)
             with ui.card() \
                     .classes(self.source_classes) \
-                    .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); background: #ebf0fe'):
+                    .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); background: #eff5ff'):
                 self._add_dots()
                 ui.markdown(code)
         return f

@@ -37,7 +37,7 @@ class Client:
 
         self.waiting_javascript_commands: Dict[str, str] = {}
 
-        self.head_html = ''
+        self.head_html = '<style>body { --q-primary: #5A99FF }</style>'
         self.body_html = ''
 
         self.page = page
