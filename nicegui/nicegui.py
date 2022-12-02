@@ -21,7 +21,7 @@ globals.app = app = FastAPI()
 globals.sio = sio = SocketManager(app=app)._sio
 
 app.add_middleware(GZipMiddleware)
-app.mount("/static", StaticFiles(directory=Path(__file__).parent / 'static'), name='static')
+app.mount('/static', StaticFiles(directory=Path(__file__).parent / 'static'), name='static')
 
 globals.index_client = Client(page('/'), shared=True).__enter__()
 
