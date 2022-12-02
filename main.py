@@ -26,11 +26,15 @@ def add_head_html() -> None:
         <meta name="msapplication-config" content="/favicon/browserconfig.xml">
         <meta name="theme-color" content="#ffffff">
     ''')  # https://realfavicongenerator.net/
-    ui.add_head_html(r'''
+    ui.add_head_html(f'''
         <style>
-        body {
+        body {{
             background-color: #f8f8f8;
-        }
+        }}
+        em {{
+            font-style: normal;
+            color: {ACCENT_COLOR};
+        }}
         </style>
     ''')
 
@@ -64,7 +68,7 @@ async def index_page(client: Client):
             .style(f'height: calc(100vh - {HEADER_HEIGHT}); transform: translateX(-250px)'):
         ui.html((STATIC / 'happy_face.svg').read_text()).classes('stroke-black').style('width: 500px')
         with ui.column().classes('gap-8'):
-            ui.markdown('Meet the NiceGUI.') \
+            ui.html('Meet the <em>NiceGUI</em>.') \
                 .style('font-size: 400%; line-height: 0.9; font-weight: 500')
             ui.markdown('An easy-to-use Python-based UI framework\n\nwhich shows up in your web browser.') \
                 .style('font-size: 200%; line-height: 0.9')
@@ -95,7 +99,39 @@ async def index_page(client: Client):
             ui.label('The whole content of https://nicegui.io/ is implemented with NiceGUI itself.') \
                 .style('font-size: 150%; color: white')
         ui.link('API reference', '/reference') \
-            .classes('rounded-full px-12 py-2 text-xl text-bold bg-white')
+            .classes('rounded-full mx-auto px-12 py-2 text-xl text-bold bg-white')
+
+    with ui.column().classes('w-full q-pa-xl'):
+        ui.label('In-depth demonstration').classes('text-bold text-lg')
+        ui.html('What else can you do with <em>NiceGUI</em>?') \
+            .style('font-size: 300%; font-weight: 500; margin-top: -20px')
+        with ui.row().classes('w-full no-wrap text-lg leading-tight'):
+            with ui.column().classes('w-1/3'):
+                ui.markdown(
+                    'You may also have a look at the following examples for in-depth demonstrations of what you can do with NiceGUI:')
+                example_link('Slideshow', 'implements a keyboard-controlled image slideshow')
+                example_link('Authentication', 'shows how to use sessions to build a login screen')
+                example_link(
+                    'Modularization',
+                    'provides an example of how to modularize your application into multiple files and create a specialized page decorator')
+            with ui.column().classes('w-1/3'):
+                example_link('Map', 'uses the JavaScript library leaflet to display a map at specific locations')
+                example_link(
+                    'AI Interface',
+                    'utilizes the great but non-async API from <https://replicate.com> to perform voice-to-text transcription and generate images from prompts with Stable Diffusion')
+                example_link('3D Scene', 'creates a 3D scene and loads an STL mesh illuminated with a spotlight')
+            with ui.column().classes('w-1/3'):
+                example_link('Custom Vue Component', 'shows how to write and integrate a custom vue component')
+                example_link('Image Mask Overlay', 'shows how to overlay an image with a mask')
+                example_link('Infinite Scroll', 'shows an infinitely scrolling image gallery')
+
+
+def example_link(title: str, description: str) -> None:
+    name = title.lower().replace(' ', '_')
+    with ui.column().classes('gap-0'):
+        ui.link(title, f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/main.py') \
+            .classes(replace='text-black text-bold')
+        ui.markdown(description)
 
 
 @ui.page('/reference')
