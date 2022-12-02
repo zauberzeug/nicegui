@@ -1,4 +1,5 @@
 import asyncio
+import builtins
 import urllib.parse
 from pathlib import Path
 from typing import Dict, Optional
@@ -16,7 +17,6 @@ from .favicon import create_favicon_routes
 from .helpers import safe_invoke
 from .page import page
 from .task_logger import create_task
-import builtins
 
 globals.app = app = builtins.nicegui_APP if hasattr(builtins, 'nicegui_APP') else FastAPI()
 globals.sio = sio = SocketManager(app=app)._sio
