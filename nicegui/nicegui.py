@@ -16,8 +16,9 @@ from .favicon import create_favicon_routes
 from .helpers import safe_invoke
 from .page import page
 from .task_logger import create_task
+import builtins
 
-globals.app = app = FastAPI()
+globals.app = app = builtins.nicegui_APP if hasattr(builtins, 'nicegui_APP') else FastAPI()
 globals.sio = sio = SocketManager(app=app)._sio
 
 app.add_middleware(GZipMiddleware)
@@ -49,7 +50,7 @@ def on_startup() -> None:
     [safe_invoke(t) for t in globals.startup_handlers]
     create_task(binding.loop())
     globals.state = globals.State.STARTED
-    print(f'NiceGUI ready to go on http://{globals.host}:{globals.port}')
+    #print(f'NiceGUI ready to go on http://{globals.host}:{globals.port}')
 
 
 @app.on_event('shutdown')
