@@ -163,6 +163,32 @@ ui.run()
                 example_link('Image Mask Overlay', 'shows how to overlay an image with a mask')
                 example_link('Infinite Scroll', 'shows an infinitely scrolling image gallery')
 
+    with ui.row() \
+            .classes('w-full q-pa-md items-center gap-28 p-32 no-wrap') \
+            .style(f'height: calc(100vh - {HEADER_HEIGHT}); background: {ACCENT_COLOR}'):
+        with ui.column().classes('gap-6'):
+            ui.markdown('Why?') \
+                .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500').classes('mb-4')
+            ui.html('''
+                We like
+                <strong><a href="https://streamlit.io/">Streamlit</a></strong>
+                but find it does
+                <strong><a href="https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651">too much magic</a></strong>
+                when it comes to state handling.
+                In search for an alternative nice library to write simple graphical user interfaces in Python we discovered
+                <strong><a href="https://justpy.io/">JustPy</a></strong>.
+                Although we liked the approach, it is too "low-level HTML" for our daily usage.
+
+                Therefore we created NiceGUI on top of
+                <strong><a href="https://fastapi.tiangolo.com/">FastAPI</a></strong>,
+                which itself is based on the ASGI framework
+                <strong><a href="https://www.starlette.io/">Starlette</a></strong>,
+                and the ASGI webserver
+                <strong><a href="https://www.uvicorn.org/">Uvicorn</a></strong>.
+            ''').style('font-size: 150%; color: white').classes('leading-tight')
+
+        ui.html((STATIC / 'happy_face.svg').read_text()).classes('stroke-white').style('width: 1500px')
+
 
 def example_link(title: str, description: str) -> None:
     name = title.lower().replace(' ', '_')
