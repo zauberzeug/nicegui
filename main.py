@@ -5,7 +5,7 @@ import docutils.core
 from pygments.formatters import HtmlFormatter
 
 from nicegui import Client, ui
-from website import reference
+from website import demo_card, reference
 
 ACCENT_COLOR = '#428BF5'
 HEADER_HEIGHT = '70px'
@@ -63,7 +63,7 @@ async def index_page(client: Client):
                 .style('font-size: 200%; line-height: 0.9')
 
     with ui.row() \
-            .classes('w-full q-pa-md items-center gap-32 p-32 no-wrap') \
+            .classes('w-full q-pa-md items-center gap-28 p-32 no-wrap') \
             .style(f'height: calc(100vh - {HEADER_HEIGHT}); background: {ACCENT_COLOR}'):
         with ui.column().classes('gap-8'):
             ui.markdown('Create buttons, dialogs, markdown,\n\n3D scenes, plots and much more at ease.') \
@@ -75,8 +75,10 @@ async def index_page(client: Client):
                 NiceGUl is available as PyPl package, Docker image and on GitHub
             ''') \
                 .style('font-size: 150%; color: white')
-        with ui.card().style('min-width: 350px; height: 500px'):
-            ui.label('Demo')
+        with ui.row().style('filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'):
+            with ui.card().classes('no-shadow') \
+                    .style(f'min-width: 360px; height: 380px; clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%)'):
+                demo_card.create_content()
 
     with ui.row().classes('w-full q-pa-md'):
         reference.create_intro()
