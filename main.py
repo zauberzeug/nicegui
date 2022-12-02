@@ -29,12 +29,19 @@ def add_head_html() -> None:
         <meta name="msapplication-config" content="/favicon/browserconfig.xml">
         <meta name="theme-color" content="#ffffff">
     ''')  # https://realfavicongenerator.net/
+    ui.add_head_html(r'''
+        <style>
+        body {
+            background-color: #f8f8f8;
+        }
+        </style>
+    ''')
 
 
 @ui.page('/')
 async def index_page(client: Client):
     add_head_html()
-    client.content.classes(remove='q-pa-md gap-4').style('background: #f8f8f8')
+    client.content.classes(remove='q-pa-md gap-4')
 
     with ui.header() \
             .classes('items-center') \
@@ -73,8 +80,7 @@ async def index_page(client: Client):
                 and similar use cases. You can also use it in development, for example when
                 tweaking/configuring a machine learning algorithm or tuning motor controllers.
                 NiceGUl is available as PyPl package, Docker image and on GitHub
-            ''') \
-                .style('font-size: 150%; color: white')
+            ''').style('font-size: 150%; color: white')
         with ui.row().style('filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'):
             with ui.card().classes('no-shadow') \
                     .style(f'min-width: 360px; height: 380px; clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%)'):

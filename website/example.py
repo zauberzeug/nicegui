@@ -13,17 +13,14 @@ SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 
 class example:
 
-    def __init__(self, content: Union[Callable, type, str], tight: bool = False, skip: bool = False) -> None:
+    def __init__(self, content: Union[Callable, type, str], tight: bool = False) -> None:
         self.content = content
         self.markdown_classes = f'mr-8 w-full flex-none lg:w-{48 if tight else 80} xl:w-80'
         self.rendering_classes = f'w-{48 if tight else 64} flex-none lg:mt-12'
         self.source_classes = f'w-80 flex-grow overflow-auto lg:mt-12'
-        self.skip = skip
 
     def __call__(self, f: Callable) -> Callable:
-        if self.skip:
-            return
-        with ui.row().classes('flex w-full'):
+        with ui.row().classes('mb-2 flex w-full'):
             if isinstance(self.content, str):
                 self._add_html_anchor(ui.markdown(self.content).classes(self.markdown_classes))
             else:

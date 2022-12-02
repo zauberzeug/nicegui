@@ -38,7 +38,7 @@ Binding values between UI elements or [to data models](http://127.0.0.1:8080/ref
 
 def create_full() -> None:
     def h3(text: str) -> None:
-        ui.label(text).style('width: 100%; border-bottom: 1px solid silver; font-size: 200%; font-weight: 200')
+        ui.label(text).classes('w-full mt-16 border-b border-slate-200 text-3xl font-light')
 
     h3('Basic Elements')
 
