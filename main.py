@@ -41,8 +41,7 @@ def add_head_html() -> None:
 def add_header() -> None:
     with ui.header() \
             .classes('items-center') \
-            .style(f'background-color: {ACCENT_COLOR}; height: {HEADER_HEIGHT}') \
-            .props('elevated'):
+            .style(f'background-color: {ACCENT_COLOR}; height: {HEADER_HEIGHT}; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
         ui.html((STATIC / 'happy_face.svg').read_text()).classes('w-8 stroke-white')
         with ui.link(target=index_page):
             ui.html((STATIC / 'nicegui_word.svg').read_text()).classes('w-24')
