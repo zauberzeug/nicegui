@@ -38,26 +38,30 @@ def add_head_html() -> None:
     ''')
 
 
-@ui.page('/')
-async def index_page(client: Client):
-    add_head_html()
-    client.content.classes(remove='q-pa-md gap-4')
-
+def add_header() -> None:
     with ui.header() \
             .classes('items-center') \
             .style(f'background-color: {ACCENT_COLOR}; height: {HEADER_HEIGHT}') \
             .props('elevated'):
         ui.html((STATIC / 'happy_face.svg').read_text()).classes('w-8 stroke-white')
-        ui.html((STATIC / 'nicegui_word.svg').read_text()).classes('w-24')
+        with ui.link(target=index_page):
+            ui.html((STATIC / 'nicegui_word.svg').read_text()).classes('w-24')
         with ui.row().classes('items-center ml-auto'):
             ui.link('Features').classes('text-lg').style('color: white!important')
             ui.link('Installation').classes('text-lg').style('color: white!important')
             ui.link('Documentation').classes('text-lg').style('color: white!important')
-            ui.link('API Reference').classes('text-lg').style('color: white!important')
+            ui.link('API Reference', reference_page).classes('text-lg').style('color: white!important')
             ui.link('Docker').classes('text-lg').style('color: white!important')
             ui.link('Deployment').classes('text-lg').style('color: white!important')
             with ui.link(target='https://github.com/zauberzeug/nicegui/'):
                 ui.html((STATIC / 'github.svg').read_text()).classes('fill-white scale-125 m-1')
+
+
+@ui.page('/')
+async def index_page(client: Client):
+    client.content.classes(remove='q-pa-md gap-4')
+    add_head_html()
+    add_header()
 
     with ui.row() \
             .classes('w-full q-pa-md items-center gap-12 no-wrap') \
@@ -93,6 +97,7 @@ async def index_page(client: Client):
 @ui.page('/reference')
 def reference_page():
     add_head_html()
+    add_header()
     reference.create_full()
 
 
