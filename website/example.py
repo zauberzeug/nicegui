@@ -22,19 +22,16 @@ class example:
     def __call__(self, f: Callable) -> Callable:
         with ui.row().classes('mb-2 flex w-full'):
             if isinstance(self.content, str):
-                self._add_html_anchor(ui.markdown(self.content).classes(self.markdown_classes))
+                _add_html_anchor(ui.markdown(self.content).classes(self.markdown_classes))
             else:
                 doc = self.content.__doc__ or self.content.__init__.__doc__
                 html: str = docutils.core.publish_parts(doc, writer_name='html')['html_body']
                 html = html.replace('<p>', '<h4>', 1)
                 html = html.replace('</p>', '</h4>', 1)
                 html = apply_tailwind(html)
-                self._add_html_anchor(ui.html(html).classes(self.markdown_classes))
+                _add_html_anchor(ui.html(html).classes(self.markdown_classes))
 
-            with ui.card() \
-                    .classes(self.rendering_classes) \
-                    .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
-                self._add_dots()
+            with browser_window().classes(self.rendering_classes):
                 f()
 
             code = inspect.getsource(f).splitlines()
@@ -57,33 +54,48 @@ class example:
                 code.append('ui.run()')
             code.append('```')
             code = '\n'.join(code)
-            with ui.card() \
-                    .classes(self.source_classes) \
-                    .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); background: #eff5ff'):
-                self._add_dots()
+            with python_window().classes(self.source_classes):
                 ui.markdown(code)
         return f
 
-    @staticmethod
-    def _add_html_anchor(element: ui.html) -> None:
-        html = element.content
-        match = REGEX_H4.search(html)
-        if not match:
-            return
-        headline = match.groups()[0].strip()
-        headline_id = SPECIAL_CHARACTERS.sub('_', headline).lower()
-        if not headline_id:
-            return
 
-        icon = '<span class="material-icons">link</span>'
-        anchor = f'<a href="reference#{headline_id}" class="text-gray-300 hover:text-black">{icon}</a>'
-        html = html.replace('<h4', f'<h4 id="{headline_id}"', 1)
-        html = html.replace('</h4>', f' {anchor}</h4>', 1)
-        element.content = html
+def _add_html_anchor(element: ui.html) -> None:
+    html = element.content
+    match = REGEX_H4.search(html)
+    if not match:
+        return
+    headline = match.groups()[0].strip()
+    headline_id = SPECIAL_CHARACTERS.sub('_', headline).lower()
+    if not headline_id:
+        return
 
-    @staticmethod
-    def _add_dots() -> None:
-        with ui.row().classes('gap-1').style('transform: translate(-6px, -6px)'):
-            ui.icon('circle').style('font-size: 75%').classes('text-red-400')
-            ui.icon('circle').style('font-size: 75%').classes('text-yellow-400')
-            ui.icon('circle').style('font-size: 75%').classes('text-green-400')
+    icon = '<span class="material-icons">link</span>'
+    anchor = f'<a href="reference#{headline_id}" class="text-gray-300 hover:text-black">{icon}</a>'
+    html = html.replace('<h4', f'<h4 id="{headline_id}"', 1)
+    html = html.replace('</h4>', f' {anchor}</h4>', 1)
+    element.content = html
+
+
+def _add_dots() -> None:
+    with ui.row().classes('gap-1').style('transform: translate(-6px, -6px)'):
+        ui.icon('circle').style('font-size: 75%').classes('text-red-400')
+        ui.icon('circle').style('font-size: 75%').classes('text-yellow-400')
+        ui.icon('circle').style('font-size: 75%').classes('text-green-400')
+
+
+def window(color: str) -> ui.card:
+    with ui.card().style(f'box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); background: {color}') as card:
+        _add_dots()
+    return card
+
+
+def python_window() -> ui.card:
+    return window('#eff5ff')
+
+
+def browser_window() -> ui.card:
+    return window('white')
+
+
+def bash_window() -> ui.card:
+    return window('#e8e8e8')

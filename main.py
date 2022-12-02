@@ -7,6 +7,7 @@ from pygments.formatters import HtmlFormatter
 from nicegui import Client, ui
 from website import demo_card, reference
 from website.constants import ACCENT_COLOR, HEADER_HEIGHT, STATIC
+from website.example import bash_window, python_window
 
 ui.add_static_files('/favicon', Path(__file__).parent / 'website' / 'favicon')
 
@@ -94,7 +95,37 @@ async def index_page(client: Client):
 
         demo_card.create()
 
-    with ui.row().classes('w-full q-pa-md'):
+    with ui.column().classes('w-full q-pa-xl'):
+        ui.label('Installation').classes('text-bold text-lg')
+        ui.html('Getting <em>started</em>') \
+            .style('font-size: 300%; font-weight: 500; margin-top: -20px')
+        with ui.row().classes('w-full no-wrap text-lg leading-tight'):
+            with ui.column().classes('w-1/3 gap-2'):
+                ui.html('<em>1.</em>').classes('text-3xl text-bold')
+                ui.markdown('Install').classes('text-lg')
+                with bash_window().classes('w-full h-52'):
+                    ui.markdown('```bash\npython3 -m pip install nicegui\n```')
+            with ui.column().classes('w-1/3 gap-2'):
+                ui.html('<em>2.</em>').classes('text-3xl text-bold')
+                ui.markdown('Write file __main.py__').classes('text-lg')
+                with python_window().classes('w-full h-52'):
+                    ui.markdown('''```python\n
+from nicegui import ui
+
+ui.label('Hello NiceGUI!')
+
+ui.run()
+```''')
+            with ui.column().classes('w-1/3 gap-2'):
+                ui.html('<em>3.</em>').classes('text-3xl text-bold')
+                ui.markdown('Launch it with').classes('text-lg')
+                with bash_window().classes('w-full h-52'):
+                    ui.markdown('```bash\npython3 main.py\n```')
+
+    with ui.column().classes('w-full q-pa-xl'):
+        ui.label('Documentation').classes('text-bold text-lg')
+        ui.html('Interactive <em>Examples</em>') \
+            .style('font-size: 300%; font-weight: 500; margin-top: -20px')
         reference.create_intro()
 
     with ui.row() \
@@ -103,7 +134,7 @@ async def index_page(client: Client):
         with ui.column().classes('gap-4'):
             ui.markdown('Go to the API reference to see a ton of live examples') \
                 .style('font-size: 220%; color: white; line-height: 0.9; font-weight: 500')
-            ui.label('The whole content of https://nicegui.io/ is implemented with NiceGUI itself.') \
+            ui.html('The whole content of <a href="https://nicegui.io/">nicegui.io</a> is implemented with NiceGUI itself.') \
                 .style('font-size: 150%; color: white')
         ui.link('API reference', '/reference') \
             .classes('rounded-full mx-auto px-12 py-2 text-xl text-bold bg-white')
