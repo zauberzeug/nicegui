@@ -70,7 +70,7 @@ class Scene(Element):
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
         self.on('connect', self.handle_connect)
-        self.on('click3d', lambda msg: handle_event(on_click, msg['args']), ['*'])
+        self.on('click3d', lambda msg: handle_event(on_click, msg['args']))
 
     def handle_connect(self, _) -> None:
         self.run_method('init')

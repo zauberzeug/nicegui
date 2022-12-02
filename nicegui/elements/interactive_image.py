@@ -43,7 +43,7 @@ class InteractiveImage(SourceElement, ContentElement):
                 image_y=msg['args'].get('image_y'),
             )
             return handle_event(on_mouse, arguments)
-        self.on('mouse', handle_mouse, ['*'])
+        self.on('mouse', handle_mouse)
 
     def on_source_change(self, source: str) -> None:
         self.run_method('set_source', source)

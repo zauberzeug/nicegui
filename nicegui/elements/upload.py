@@ -40,7 +40,7 @@ class Upload(Element):
                 for file in msg['args']
             ]
             handle_event(on_upload, UploadEventArguments(sender=self, client=self.client, files=files))
-        self.on('upload', upload, ['*'])
+        self.on('upload', upload)
 
     def reset(self) -> None:
         self.run_method('reset')

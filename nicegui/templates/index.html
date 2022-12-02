@@ -23,6 +23,14 @@
 
       const elements = {{ elements | safe }};
 
+      const throttles = new Set();
+      function throttle(callback, time, id) {
+        if (throttles.has(id)) return;
+        throttles.add(id);
+        callback();
+        setTimeout(() => throttles.delete(id), 1000 * time);
+      }
+
       function render_recursively(elements, id) {
         const element = elements[id];
         const props = {
@@ -32,15 +40,14 @@
           style: Object.entries(element.style).reduce((str, [p, val]) => `${str}${p}:${val};`, '') || undefined,
           ...element.props,
         };
-        Object.entries(element.events).forEach(([type, arg_names]) => {
-          const parts = type.split('.');
-          const event_name = 'on' + parts[0][0].toLocaleUpperCase() + parts[0].substring(1);
-          const modifiers = parts.splice(1);
+        Object.values(element.events).forEach((event) => {
+          const event_name = 'on' + event.type[0].toLocaleUpperCase() + event.type.substring(1);
+          const throttler = {active: false};
           props[event_name] = Vue.withModifiers((e) => {
-            const all = typeof e !== 'object' || arg_names.includes('*');
-            const args = all ? e : Object.fromEntries(arg_names.map(a => [a, e[a]]));
-            window.socket.emit("event", {id: element.id, type, args});
-          }, modifiers);
+            const all = typeof e !== 'object' || event.args.includes('*');
+            const args = all ? e : Object.fromEntries(event.args.map(a => [a, e[a]]));
+            throttle(() => window.socket.emit("event", {id: element.id, type: event.type, args}), event.throttle, event_name);
+          }, event.modifiers);
         });
         const slots = {};
         Object.entries(element.slots).forEach(([name, ids]) => {

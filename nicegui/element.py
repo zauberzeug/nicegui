@@ -50,9 +50,14 @@ class Element(ABC, Visibility):
         self.default_slot.__exit__(*_)
 
     def to_dict(self) -> Dict:
-        events: Dict[str, List[str]] = {}
+        events: Dict[str, Dict] = {}
         for listener in self._event_listeners:
-            events[listener.type] = events.get(listener.type, []) + listener.args
+            events[listener.type] = {
+                'type': listener.type.split('.')[0],
+                'modifiers': listener.type.split('.')[1:],
+                'args': list(set(events.get(listener.type, {}).get('args', []) + listener.args)),
+                'throttle': min(events.get(listener.type, {}).get('throttle', float('inf')), listener.throttle),
+            }
         return {
             'id': self.id,
             'tag': self.tag,
@@ -135,10 +140,11 @@ class Element(ABC, Visibility):
             tooltip._text = text
         return self
 
-    def on(self, type: str, handler: Optional[Callable], args: Optional[List[str]] = None):
+    def on(self, type: str, handler: Optional[Callable], args: Optional[List[str]] = None, *, throttle: float = 0.0):
         if handler:
             args = args if args is not None else ['*']
-            self._event_listeners.append(EventListener(element_id=self.id, type=type, args=args, handler=handler))
+            listener = EventListener(element_id=self.id, type=type, args=args, handler=handler, throttle=throttle)
+            self._event_listeners.append(listener)
         return self
 
     def handle_event(self, msg: Dict) -> None:

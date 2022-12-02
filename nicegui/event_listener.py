@@ -8,3 +8,4 @@ class EventListener:
     type: str
     args: List[str]
     handler: Callable
+    throttle: float
