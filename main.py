@@ -41,12 +41,34 @@ def add_head_html() -> None:
         }}
         </style>
     ''')
+    ui.add_head_html(f'''
+    <style>
+    .q-header {{
+        height: {HEADER_HEIGHT};
+        background-color: {ACCENT_COLOR};
+    }}
+    .q-header.fade {{
+        height: 50px;
+        background-color: {ACCENT_COLOR}d0;
+        backdrop-filter: blur(5px);
+    }}
+    </style>
+    <script>
+    window.onscroll = () => {{
+        const header = document.querySelector(".q-header");
+        if (document.documentElement.scrollTop > 50)
+            header.classList.add("fade");
+        else
+            header.classList.remove("fade");
+    }};
+    </script>
+    ''')
 
 
 def add_header() -> None:
     with ui.header() \
-            .classes('items-center') \
-            .style(f'background-color: {ACCENT_COLOR}; height: {HEADER_HEIGHT}; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
+            .classes('items-center duration-200 px-4', remove='q-pa-md') \
+            .style(f'box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
         ui.html((STATIC / 'happy_face.svg').read_text()).classes('w-8 stroke-white')
         with ui.link(target=index_page):
             ui.html((STATIC / 'nicegui_word.svg').read_text()).classes('w-24')
