@@ -11,8 +11,8 @@ def create():
                 ui.html((STATIC / 'happy_face.svg').read_text()) \
                     .classes('w-16 mx-6 stroke-black').on('click', lambda _: output.set_text("That's my face!"))
                 ui.button('Click me!', on_click=lambda: output.set_text('Clicked')).classes('w-full')
-                ui.checkbox('Check', on_change=lambda e: output.set_text('Checked' if e.value else 'Not checked'))
-                ui.switch('Switch', on_change=lambda e: output.set_text('Switched' if e.value else 'Not switched'))
+                ui.checkbox('Check', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
+                ui.switch('Switch', on_change=lambda e: output.set_text('Switched on' if e.value else 'Switched off'))
                 ui.input('Text', value='abc', on_change=lambda e: output.set_text(e.value))
 
             with ui.column().classes('items-center'):
