@@ -2,16 +2,17 @@
 <html>
   <head>
     <title>{{ title }}</title>
-    <script src="/static/socket.io.min.js"></script>
+    <base href="{{ prefix | safe }}/" />
+    <script src="static/socket.io.min.js"></script>
     <link rel="shortcut icon" href="{{ favicon_url }}" />
-    <link href="/static/fonts.css" rel="stylesheet" type="text/css" />
-    <link href="/static/quasar.prod.css" rel="stylesheet" type="text/css" />
-    <script src="/static/tailwind.min.js"></script>
+    <link href="static/fonts.css" rel="stylesheet" type="text/css" />
+    <link href="static/quasar.prod.css" rel="stylesheet" type="text/css" />
+    <script src="static/tailwind.min.js"></script>
     {{ head_html | safe }}
   </head>
   <body>
-    <script src="/static/vue.global.prod.js"></script>
-    <script src="/static/quasar.umd.prod.js"></script>
+    <script src="static/vue.global.prod.js"></script>
+    <script src="static/quasar.umd.prod.js"></script>
 
     {{ body_html | safe }}
 
@@ -65,6 +66,13 @@
         if (request_id) {
           window.socket.emit("javascript_response", {request_id, result});
         }
+      }
+
+      function get_websocket_url() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const port = window.location.port ? ':' + window.location.port : '';
+        const host = window.location.host;
+        return protocol + '//' + host + ':' + port;
       }
 
       const app = Vue.createApp({
