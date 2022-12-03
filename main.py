@@ -72,7 +72,7 @@ async def index_page(client: Client):
         with ui.column().classes('gap-8'):
             ui.html('Meet the <em>NiceGUI</em>.') \
                 .style('font-size: 400%; line-height: 0.9; font-weight: 500')
-            ui.markdown('An easy-to-use Python-based UI framework\n\nwhich shows up in your web browser.') \
+            ui.markdown('Your easy-to-use Python framework to create\n\nuser interfaces which show up in the browser.') \
                 .style('font-size: 200%; line-height: 0.9')
 
     with ui.row() \
@@ -105,7 +105,8 @@ async def index_page(client: Client):
             with ui.column().classes('gap-1'):
                 ui.label('User Interface').classes('text-bold mb-4')
                 ui.markdown('- common elements like label, button, checkbox, switch, slider, input, ...')
-                ui.markdown('- layouting with rows, columns, cards and dialogs')
+                ui.markdown('- page layout with navigation bars, tabs, panels, ...')
+                ui.markdown('- grouping with rows, columns, cards and dialogs')
                 ui.markdown('- HTML and markdown elements')
                 ui.markdown('- high-level elements like charts, tables, trees, 3D scenes, joystick, ...')
                 ui.markdown('- built-in timer to refresh data in intervals')
@@ -207,13 +208,18 @@ ui.run()
                 In search for an alternative nice library to write simple graphical user interfaces in Python we discovered
                 <strong><a href="https://justpy.io/">JustPy</a></strong>.
                 Although we liked the approach, it is too "low-level HTML" for our daily usage.
+                But it inspired us to use 
+                <strong><a href="https://vuejs.org/">Vue</a></strong>
+                and 
+                <strong><a href="https://quasar.dev/">Quasar</a></strong>
+                for the frontend.<br/>
 
-                Therefore we created NiceGUI on top of
+                The backend is build on top of
                 <strong><a href="https://fastapi.tiangolo.com/">FastAPI</a></strong>,
                 which itself is based on the ASGI framework
                 <strong><a href="https://www.starlette.io/">Starlette</a></strong>,
                 and the ASGI webserver
-                <strong><a href="https://www.uvicorn.org/">Uvicorn</a></strong>.
+                <strong><a href="https://www.uvicorn.org/">Uvicorn</a></strong>.                
             ''').style('font-size: 150%; color: white').classes('leading-tight')
 
         ui.html((STATIC / 'happy_face.svg').read_text()).classes('stroke-white').style('width: 1500px')
