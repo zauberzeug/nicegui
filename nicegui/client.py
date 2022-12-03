@@ -74,7 +74,7 @@ class Client:
             .replace(r'{{ head_html | safe }}', self.head_html)
             .replace(r'{{ body_html | safe }}', f'{self.body_html}\n{vue_html}\n{vue_styles}')
             .replace(r'{{ vue_scripts | safe }}', vue_scripts)
-            .replace(r'{{ js_imports | safe }}', vue.generate_js_imports())
+            .replace(r'{{ js_imports | safe }}', vue.generate_js_imports(prefix))
             .replace(r'{{ title }}', self.page.resolve_title())
             .replace(r'{{ favicon_url }}', get_favicon_url(self.page))
             .replace(r'{{ dark }}', str(self.page.resolve_dark()))

@@ -38,7 +38,7 @@ def generate_vue_content() -> Tuple[str]:
     )
 
 
-def generate_js_imports() -> str:
+def generate_js_imports(prefix: str) -> str:
     result = ''
     for name, path in vue_components.items():
         if name in globals.excludes:
@@ -49,7 +49,7 @@ def generate_js_imports() -> str:
         if name in globals.excludes:
             continue
         for path in js_dependencies[name]:
-            result += f'import "_vue/dependencies/{path}";\n'
-        result += f'import {{ default as {name} }} from "/_vue/components/{name}";\n'
+            result += f'import "{prefix}/_vue/dependencies/{path}";\n'
+        result += f'import {{ default as {name} }} from "{prefix}/_vue/components/{name}";\n'
         result += f'app.component("{name}", {name});\n'
     return result
