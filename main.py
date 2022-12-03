@@ -230,9 +230,9 @@ ui.run()
                 In search for an alternative nice library to write simple graphical user interfaces in Python we discovered
                 <strong><a href="https://justpy.io/">JustPy</a></strong>.
                 Although we liked the approach, it is too "low-level HTML" for our daily usage.
-                But it inspired us to use 
+                But it inspired us to use
                 <strong><a href="https://vuejs.org/">Vue</a></strong>
-                and 
+                and
                 <strong><a href="https://quasar.dev/">Quasar</a></strong>
                 for the frontend.<br/>
 
@@ -241,7 +241,7 @@ ui.run()
                 which itself is based on the ASGI framework
                 <strong><a href="https://www.starlette.io/">Starlette</a></strong>,
                 and the ASGI webserver
-                <strong><a href="https://www.uvicorn.org/">Uvicorn</a></strong>.                
+                <strong><a href="https://www.uvicorn.org/">Uvicorn</a></strong>.
             ''').style('font-size: 150%; color: white').classes('leading-tight')
 
         ui.html((STATIC / 'happy_face.svg').read_text()).classes('stroke-white').style('width: 1500px')
