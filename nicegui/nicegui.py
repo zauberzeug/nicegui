@@ -62,14 +62,16 @@ def shutdown() -> None:
 
 
 @app.exception_handler(404)
-async def exception_handler(_: Request, exception: Exception):
+async def exception_handler(r: Request, exception: Exception):
+    globals.log.warning(f'{r.url} not found')
     with Client(page('')) as client:
         error_content(404, exception)
     return client.build_response(404)
 
 
 @app.exception_handler(Exception)
-async def exception_handler(_: Request, exception: Exception):
+async def exception_handler(r: Request, exception: Exception):
+    globals.log.exception(f'unexpected exception for {r.url}', exception)
     with Client(page('')) as client:
         error_content(500, exception)
     return client.build_response(500)
