@@ -9,10 +9,6 @@ from website import demo_card, reference
 from website.constants import ACCENT_COLOR, HEADER_HEIGHT, STATIC
 from website.example import bash_window, python_window
 
-ACCENT_COLOR = '#428BF5'
-HEADER_HEIGHT = '70px'
-STATIC = Path(__file__).parent / 'website' / 'static'
-
 ui.add_static_files('/favicon', Path(__file__).parent / 'website' / 'favicon')
 
 
