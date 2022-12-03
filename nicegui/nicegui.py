@@ -4,7 +4,7 @@ import urllib.parse
 from pathlib import Path
 from typing import Dict, Optional
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -34,7 +34,9 @@ def index(request: Request) -> str:
 
 @app.get('/_vue/dependencies/{path:path}')
 def vue_dependencies(path: str):
-    return FileResponse(path, media_type='text/javascript')
+    if Path(path).exists():
+        return FileResponse(path, media_type='text/javascript')
+    return HTTPException(status_code=404, detail="{path} not found")
 
 
 @app.get('/_vue/components/{name}')
