@@ -5,7 +5,7 @@ from .elements.button import Button as button
 from .elements.card import Card as card
 from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section
-#from .elements.chart import Chart as chart
+from .elements.chart import Chart as chart
 from .elements.checkbox import Checkbox as checkbox
 from .elements.color_input import ColorInput as color_input
 from .elements.color_picker import ColorPicker as color_picker
@@ -32,12 +32,12 @@ from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
 from .elements.radio import Radio as radio
 from .elements.row import Row as row
-#from .elements.scene import Scene as scene
+from .elements.scene import Scene as scene
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
 from .elements.slider import Slider as slider
 from .elements.switch import Switch as switch
-#from .elements.table import Table as table
+from .elements.table import Table as table
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
