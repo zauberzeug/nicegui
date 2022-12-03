@@ -47,11 +47,11 @@ def add_head_html() -> None:
     ui.add_head_html(f'''
     <style>
     .q-header {{
-        height: {HEADER_HEIGHT};
+        height: calc({HEADER_HEIGHT} + 20px);
         background-color: {ACCENT_COLOR};
     }}
     .q-header.fade {{
-        height: 50px;
+        height: {HEADER_HEIGHT};
         background-color: {ACCENT_COLOR}d0;
         backdrop-filter: blur(5px);
     }}
@@ -71,7 +71,7 @@ def add_head_html() -> None:
 def add_header() -> None:
     with ui.header() \
             .classes('items-center duration-200 px-4', remove='q-pa-md') \
-            .style(f'box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
+            .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
         ui.html((STATIC / 'happy_face.svg').read_text()).classes('w-8 stroke-white')
         with ui.link(target=index_page):
             ui.html((STATIC / 'nicegui_word.svg').read_text()).classes('w-24')
@@ -91,8 +91,8 @@ async def index_page(client: Client):
     add_header()
 
     with ui.row() \
-            .classes('w-full q-pa-md items-center gap-12 no-wrap') \
-            .style(f'height: calc(100vh - {HEADER_HEIGHT}); transform: translateX(-250px)'):
+            .classes('w-full h-screen q-pa-md items-center gap-12 no-wrap') \
+            .style(f'transform: translateX(-250px)'):
         ui.html((STATIC / 'happy_face.svg').read_text()).classes('stroke-black').style('width: 500px')
         with ui.column().classes('gap-8'):
             ui.html('Meet the <em>NiceGUI</em>.') \
@@ -101,8 +101,8 @@ async def index_page(client: Client):
                 .style('font-size: 200%; line-height: 0.9')
 
     with ui.row() \
-            .classes('w-full q-pa-md items-center gap-28 p-32 no-wrap') \
-            .style(f'height: calc(100vh - {HEADER_HEIGHT}); background: {ACCENT_COLOR}'):
+            .classes('w-full h-screen q-pa-md items-center gap-28 p-32 no-wrap') \
+            .style(f'background: {ACCENT_COLOR}'):
         with ui.column().classes('gap-6'):
             ui.markdown('Create buttons, dialogs, markdown,\n\n3D scenes, plots and much more at ease.') \
                 .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500').classes('mb-4')
@@ -219,8 +219,8 @@ ui.run()
                 example_link('Infinite Scroll', 'shows an infinitely scrolling image gallery')
 
     with ui.row() \
-            .classes('w-full q-pa-md items-center gap-28 p-32 no-wrap') \
-            .style(f'height: calc(100vh - {HEADER_HEIGHT}); background: {ACCENT_COLOR}'):
+            .classes('w-full h-screen q-pa-md items-center gap-28 p-32 no-wrap') \
+            .style(f'background: {ACCENT_COLOR}'):
         with ui.column().classes('gap-6'):
             ui.markdown('Why?') \
                 .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500').classes('mb-4')
