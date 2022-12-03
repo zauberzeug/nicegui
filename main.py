@@ -39,6 +39,9 @@ def add_head_html() -> None:
             font-style: normal;
             color: {ACCENT_COLOR};
         }}
+        a:hover {{
+            opacity: 0.9;
+        }}
         </style>
     ''')
     ui.add_head_html(f'''
