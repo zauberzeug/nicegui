@@ -50,7 +50,7 @@ def on_startup() -> None:
     [safe_invoke(t) for t in globals.startup_handlers]
     create_task(binding.loop())
     globals.state = globals.State.STARTED
-    #print(f'NiceGUI ready to go on http://{globals.host}:{globals.port}')
+    print(f'NiceGUI ready to go on http://{globals.host}:{globals.port}')
 
 
 @app.on_event('shutdown')

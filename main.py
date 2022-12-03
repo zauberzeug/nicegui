@@ -6,10 +6,8 @@ from pygments.formatters import HtmlFormatter
 
 from nicegui import Client, ui
 from website import demo_card, reference
-
-ACCENT_COLOR = '#428BF5'
-HEADER_HEIGHT = '70px'
-STATIC = Path(__file__).parent / 'website' / 'static'
+from website.constants import ACCENT_COLOR, HEADER_HEIGHT, STATIC
+from website.example import bash_window, python_window
 
 ui.add_static_files('/favicon', Path(__file__).parent / 'website' / 'favicon')
 
@@ -29,11 +27,18 @@ def add_head_html() -> None:
         <meta name="msapplication-config" content="favicon/browserconfig.xml">
         <meta name="theme-color" content="#ffffff">
     ''')  # https://realfavicongenerator.net/
-    ui.add_head_html(r'''
+    ui.add_head_html(f'''
         <style>
-        body {
+        html {{
+            scroll-behavior: smooth;
+        }}
+        body {{
             background-color: #f8f8f8;
-        }
+        }}
+        em {{
+            font-style: normal;
+            color: {ACCENT_COLOR};
+        }}
         </style>
     ''')
 
@@ -46,12 +51,10 @@ def add_header() -> None:
         with ui.link(target=index_page):
             ui.html((STATIC / 'nicegui_word.svg').read_text()).classes('w-24')
         with ui.row().classes('items-center ml-auto'):
-            ui.link('Features').classes('text-lg').style('color: white!important')
-            ui.link('Installation').classes('text-lg').style('color: white!important')
-            ui.link('Documentation').classes('text-lg').style('color: white!important')
-            ui.link('API Reference', reference_page).classes('text-lg').style('color: white!important')
-            ui.link('Docker').classes('text-lg').style('color: white!important')
-            ui.link('Deployment').classes('text-lg').style('color: white!important')
+            ui.link('Features', '/#features').classes(replace='text-lg text-white')
+            ui.link('Installation', '/#installation').classes(replace='text-lg text-white')
+            ui.link('Examples', '/#examples').classes(replace='text-lg text-white')
+            ui.link('API Reference', reference_page).classes(replace='text-lg text-white')
             with ui.link(target='https://github.com/zauberzeug/nicegui/'):
                 ui.html((STATIC / 'github.svg').read_text()).classes('fill-white scale-125 m-1')
 
@@ -67,7 +70,7 @@ async def index_page(client: Client):
             .style(f'height: calc(100vh - {HEADER_HEIGHT}); transform: translateX(-250px)'):
         ui.html((STATIC / 'happy_face.svg').read_text()).classes('stroke-black').style('width: 500px')
         with ui.column().classes('gap-8'):
-            ui.markdown('The NiceGUI you really\n\nneed in your life.') \
+            ui.html('Meet the <em>NiceGUI</em>.') \
                 .style('font-size: 400%; line-height: 0.9; font-weight: 500')
             ui.markdown('An easy-to-use Python-based UI framework\n\nwhich shows up in your web browser.') \
                 .style('font-size: 200%; line-height: 0.9')
@@ -75,33 +78,153 @@ async def index_page(client: Client):
     with ui.row() \
             .classes('w-full q-pa-md items-center gap-28 p-32 no-wrap') \
             .style(f'height: calc(100vh - {HEADER_HEIGHT}); background: {ACCENT_COLOR}'):
-        with ui.column().classes('gap-8'):
+        with ui.column().classes('gap-6'):
             ui.markdown('Create buttons, dialogs, markdown,\n\n3D scenes, plots and much more at ease.') \
-                .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500')
+                .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500').classes('mb-4')
             ui.label('''
                 It is great for micro web apps, dashboards, robotics projects, smart home solutions
                 and similar use cases. You can also use it in development, for example when
                 tweaking/configuring a machine learning algorithm or tuning motor controllers.
-                NiceGUl is available as PyPl package, Docker image and on GitHub
-            ''').style('font-size: 150%; color: white')
-        with ui.row().style('filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'):
-            with ui.card().classes('no-shadow') \
-                    .style(f'min-width: 360px; height: 380px; clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%)'):
-                demo_card.create_content()
+            ''').style('font-size: 150%; color: white').classes('leading-tight')
+            with ui.row().style('font-size: 150%; color: white').classes('leading-tight gap-2'):
+                ui.html('''
+                    NiceGUI is available as
+                    <a href="https://pypi.org/project/nicegui/"><strong>PyPI package</strong><span class="material-icons">north_east</span></a>,
+                    <a href="https://hub.docker.com/r/zauberzeug/nicegui"><strong>Docker image</strong><span class="material-icons">north_east</span></a> and on
+                    <a href="https://github.com/zauberzeug/nicegui"><strong>GitHub</strong><span class="material-icons">north_east</span></a>.
+                ''')
 
-    with ui.row().classes('w-full q-pa-md'):
+        demo_card.create()
+
+    ui.link_target('features').style(f'position: relative; top: -{HEADER_HEIGHT}')
+    with ui.column().classes('w-full q-pa-xl'):
+        ui.label('Features').classes('text-bold text-lg')
+        ui.html('What has <em>NiceGUI</em> to offer?') \
+            .style('font-size: 300%; font-weight: 500; margin-top: -20px')
+        with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between'):
+            with ui.column().classes('gap-1'):
+                ui.label('User Interface').classes('text-bold mb-4')
+                ui.markdown('- common elements like label, button, checkbox, switch, slider, input, ...')
+                ui.markdown('- layouting with rows, columns, cards and dialogs')
+                ui.markdown('- HTML and markdown elements')
+                ui.markdown('- high-level elements like charts, tables, trees, 3D scenes, joystick, ...')
+                ui.markdown('- built-in timer to refresh data in intervals')
+                ui.markdown('- notifications, dialogs and menus')
+                ui.markdown('- keyboard input')
+            with ui.column().classes('gap-1'):
+                ui.label('Under the hood').classes('text-bold mb-4')
+                ui.markdown('- browser-based graphical user interface')
+                ui.markdown('- based on FastAPI and Uvicorn')
+                ui.markdown('- live-cycle events and session data')
+                ui.markdown('- customizable page layout and colors')
+            with ui.column().classes('gap-1'):
+                ui.label('Development').classes('text-bold mb-4')
+                ui.markdown('- implicit reload on code change')
+                ui.markdown('- straight-forward data binding')
+
+    ui.link_target('installation').style(f'position: relative; top: -{HEADER_HEIGHT}')
+    with ui.column().classes('w-full q-pa-xl'):
+        ui.label('Installation').classes('text-bold text-lg')
+        ui.html('Getting <em>started</em>') \
+            .style('font-size: 300%; font-weight: 500; margin-top: -20px')
+        with ui.row().classes('w-full no-wrap text-lg leading-tight'):
+            with ui.column().classes('w-1/3 gap-2'):
+                ui.html('<em>1.</em>').classes('text-3xl text-bold')
+                ui.markdown('Install').classes('text-lg')
+                with bash_window().classes('w-full h-52'):
+                    ui.markdown('```bash\npython3 -m pip install nicegui\n```')
+            with ui.column().classes('w-1/3 gap-2'):
+                ui.html('<em>2.</em>').classes('text-3xl text-bold')
+                ui.markdown('Write file __main.py__').classes('text-lg')
+                with python_window().classes('w-full h-52'):
+                    ui.markdown('''```python\n
+from nicegui import ui
+
+ui.label('Hello NiceGUI!')
+
+ui.run()
+```''')
+            with ui.column().classes('w-1/3 gap-2'):
+                ui.html('<em>3.</em>').classes('text-3xl text-bold')
+                ui.markdown('Launch it with').classes('text-lg')
+                with bash_window().classes('w-full h-52'):
+                    ui.markdown('```bash\npython3 main.py\n```')
+
+    ui.link_target('examples').style(f'position: relative; top: -{HEADER_HEIGHT}')
+    with ui.column().classes('w-full q-pa-xl'):
+        ui.label('Documentation').classes('text-bold text-lg')
+        ui.html('Interactive <em>Examples</em>') \
+            .style('font-size: 300%; font-weight: 500; margin-top: -20px')
         reference.create_intro()
 
     with ui.row() \
             .classes('w-full items-center gap-28 px-32 py-16 no-wrap') \
             .style(f'background: {ACCENT_COLOR}'):
         with ui.column().classes('gap-4'):
-            ui.markdown('Go to the API reference to see a ton of live examples') \
+            ui.markdown('Go to the API reference to see a ton of live examples.') \
                 .style('font-size: 220%; color: white; line-height: 0.9; font-weight: 500')
-            ui.label('The whole content of https://nicegui.io/ is implemented with NiceGUI itself.') \
+            ui.html('The whole content of <a href="https://nicegui.io/">nicegui.io</a> is implemented with NiceGUI itself.') \
                 .style('font-size: 150%; color: white')
         ui.link('API reference', '/reference') \
-            .classes('rounded-full px-12 py-2 text-xl text-bold bg-white')
+            .classes('rounded-full mx-auto px-12 py-2 text-xl text-bold bg-white')
+
+    with ui.column().classes('w-full q-pa-xl'):
+        ui.label('In-depth demonstration').classes('text-bold text-lg')
+        ui.html('What else can you do with <em>NiceGUI</em>?') \
+            .style('font-size: 300%; font-weight: 500; margin-top: -20px')
+        with ui.row().classes('w-full no-wrap text-lg leading-tight'):
+            with ui.column().classes('w-1/3'):
+                ui.markdown(
+                    'You may also have a look at the following examples for in-depth demonstrations of what you can do with NiceGUI:')
+                example_link('Slideshow', 'implements a keyboard-controlled image slideshow')
+                example_link('Authentication', 'shows how to use sessions to build a login screen')
+                example_link(
+                    'Modularization',
+                    'provides an example of how to modularize your application into multiple files and create a specialized page decorator')
+            with ui.column().classes('w-1/3'):
+                example_link('Map', 'uses the JavaScript library leaflet to display a map at specific locations')
+                example_link(
+                    'AI Interface',
+                    'utilizes the great but non-async API from <https://replicate.com> to perform voice-to-text transcription and generate images from prompts with Stable Diffusion')
+                example_link('3D Scene', 'creates a 3D scene and loads an STL mesh illuminated with a spotlight')
+            with ui.column().classes('w-1/3'):
+                example_link('Custom Vue Component', 'shows how to write and integrate a custom vue component')
+                example_link('Image Mask Overlay', 'shows how to overlay an image with a mask')
+                example_link('Infinite Scroll', 'shows an infinitely scrolling image gallery')
+
+    with ui.row() \
+            .classes('w-full q-pa-md items-center gap-28 p-32 no-wrap') \
+            .style(f'height: calc(100vh - {HEADER_HEIGHT}); background: {ACCENT_COLOR}'):
+        with ui.column().classes('gap-6'):
+            ui.markdown('Why?') \
+                .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500').classes('mb-4')
+            ui.html('''
+                We like
+                <strong><a href="https://streamlit.io/">Streamlit</a></strong>
+                but find it does
+                <strong><a href="https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651">too much magic</a></strong>
+                when it comes to state handling.
+                In search for an alternative nice library to write simple graphical user interfaces in Python we discovered
+                <strong><a href="https://justpy.io/">JustPy</a></strong>.
+                Although we liked the approach, it is too "low-level HTML" for our daily usage.
+
+                Therefore we created NiceGUI on top of
+                <strong><a href="https://fastapi.tiangolo.com/">FastAPI</a></strong>,
+                which itself is based on the ASGI framework
+                <strong><a href="https://www.starlette.io/">Starlette</a></strong>,
+                and the ASGI webserver
+                <strong><a href="https://www.uvicorn.org/">Uvicorn</a></strong>.
+            ''').style('font-size: 150%; color: white').classes('leading-tight')
+
+        ui.html((STATIC / 'happy_face.svg').read_text()).classes('stroke-white').style('width: 1500px')
+
+
+def example_link(title: str, description: str) -> None:
+    name = title.lower().replace(' ', '_')
+    with ui.column().classes('gap-0'):
+        ui.link(title, f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/main.py') \
+            .classes(replace='text-black text-bold')
+        ui.markdown(description)
 
 
 @ui.page('/reference')
