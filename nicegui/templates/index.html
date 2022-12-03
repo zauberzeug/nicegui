@@ -68,10 +68,6 @@
         }
       }
 
-      function get_websocket_url() {
-        return window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
-      }
-
       const app = Vue.createApp({
         data() {
           return {
@@ -83,7 +79,7 @@
         },
         mounted() {
           const query = { client_id: {{ client_id }} };
-          window.socket = io(get_websocket_url(), { path: "/ws/socket.io", query: query });
+          window.socket = io(window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host, { path: "/ws/socket.io", query: query });
           window.socket.on("update", (msg) => {
             Object.entries(msg.elements).forEach(([id, element]) => this.elements[element.id] = element);
           });
