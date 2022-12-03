@@ -62,13 +62,14 @@ class Client:
     def __exit__(self, *_):
         self.content.__exit__()
 
-    def build_response(self, status_code: int = 200) -> HTMLResponse:
+    def build_response(self, request: Request, status_code: int = 200) -> HTMLResponse:
+        prefix = self.request.headers.get('X-Forwarded-Prefix', '') if self.request else ''
         vue_html, vue_styles, vue_scripts = vue.generate_vue_content()
         elements = json.dumps({id: element.to_dict() for id, element in self.elements.items()})
-        prefix = self.request.headers.get('X-Forwarded-Prefix', '') if self.request else ''
         return HTMLResponse(
             TEMPLATE
             .replace(r'{{ client_id }}', str(self.id))
+            .replace(r'{{ socket_address }}', f'ws://{globals.host}:{globals.port}')
             .replace(r'{{ elements | safe }}', elements)
             .replace(r'{{ head_html | safe }}', self.head_html)
             .replace(r'{{ body_html | safe }}', f'{self.body_html}\n{vue_html}\n{vue_styles}')

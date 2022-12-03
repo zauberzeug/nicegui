@@ -28,8 +28,8 @@ globals.index_client = Client(page('/'), shared=True).__enter__()
 
 
 @app.get('/')
-def index():
-    return globals.index_client.build_response()
+def index(request: Request) -> str:
+    return globals.index_client.build_response(request)
 
 
 @app.get('/_vue/dependencies/{path:path}')
@@ -66,7 +66,7 @@ async def exception_handler(r: Request, exception: Exception):
     globals.log.warning(f'{r.url} not found')
     with Client(page('')) as client:
         error_content(404, exception)
-    return client.build_response(404)
+    return client.build_response(r, 404)
 
 
 @app.exception_handler(Exception)
@@ -74,7 +74,7 @@ async def exception_handler(r: Request, exception: Exception):
     globals.log.exception(f'unexpected exception for {r.url}', exception)
     with Client(page('')) as client:
         error_content(500, exception)
-    return client.build_response(500)
+    return client.build_response(r, 500)
 
 
 @sio.on('connect')
