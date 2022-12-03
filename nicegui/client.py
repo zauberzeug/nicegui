@@ -5,6 +5,7 @@ import uuid
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
+from fastapi import Request
 from fastapi.responses import HTMLResponse
 
 from . import globals, vue
@@ -20,7 +21,8 @@ TEMPLATE = (Path(__file__).parent / 'templates' / 'index.html').read_text()
 
 class Client:
 
-    def __init__(self, page: 'page', *, shared: bool = False) -> None:
+    def __init__(self, page: 'page', *, request: Optional[Request] = None, shared: bool = False) -> None:
+        self.request = request
         self.id = globals.next_client_id
         globals.next_client_id += 1
         globals.clients[self.id] = self
@@ -63,10 +65,10 @@ class Client:
     def build_response(self, status_code: int = 200) -> HTMLResponse:
         vue_html, vue_styles, vue_scripts = vue.generate_vue_content()
         elements = json.dumps({id: element.to_dict() for id, element in self.elements.items()})
+        prefix = self.request.headers.get('X-Forwarded-Prefix', '') if self.request else ''
         return HTMLResponse(
             TEMPLATE
             .replace(r'{{ client_id }}', str(self.id))
-            .replace(r'{{ socket_address }}', f'ws://{globals.host}:{globals.port}')
             .replace(r'{{ elements | safe }}', elements)
             .replace(r'{{ head_html | safe }}', self.head_html)
             .replace(r'{{ body_html | safe }}', f'{self.body_html}\n{vue_html}\n{vue_styles}')
@@ -74,7 +76,8 @@ class Client:
             .replace(r'{{ js_imports | safe }}', vue.generate_js_imports())
             .replace(r'{{ title }}', self.page.resolve_title())
             .replace(r'{{ favicon_url }}', get_favicon_url(self.page))
-            .replace(r'{{ dark }}', str(self.page.resolve_dark())),
+            .replace(r'{{ dark }}', str(self.page.resolve_dark()))
+            .replace(r'{{ prefix | safe }}', prefix),
             status_code
         )
 
