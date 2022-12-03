@@ -78,7 +78,7 @@
         },
         mounted() {
           const query = { client_id: {{ client_id }} };
-          window.socket = io("{{ socket_address }}", { path: "/ws/socket.io", query });
+          window.socket = io("{{ socket_address }}", { path: "/ws/socket.io", query: query });
           window.socket.on("update", (msg) => {
             Object.entries(msg.elements).forEach(([id, element]) => this.elements[element.id] = element);
           });
