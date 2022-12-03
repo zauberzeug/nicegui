@@ -44,7 +44,7 @@ def generate_js_imports(prefix: str) -> str:
         if name in globals.excludes:
             continue
         for path in js_dependencies[name]:
-            result += f'import "_vue/dependencies/{path}";\n'
+            result += f'import "{prefix}/_vue/dependencies/{path}";\n'
     for name, path in js_components.items():
         if name in globals.excludes:
             continue
