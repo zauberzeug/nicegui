@@ -63,7 +63,7 @@ class Client:
         self.content.__exit__()
 
     def build_response(self, request: Request, status_code: int = 200) -> HTMLResponse:
-        prefix = self.request.headers.get('X-Forwarded-Prefix', '') if self.request else ''
+        prefix = request.headers.get('X-Forwarded-Prefix', '')
         vue_html, vue_styles, vue_scripts = vue.generate_vue_content()
         elements = json.dumps({id: element.to_dict() for id, element in self.elements.items()})
         return HTMLResponse(
