@@ -72,8 +72,8 @@ def add_header() -> None:
     with ui.header() \
             .classes('items-center duration-200 px-4', remove='q-pa-md') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
-        ui.html((STATIC / 'happy_face.svg').read_text()).classes('w-8 stroke-white')
-        with ui.link(target=index_page):
+        with ui.link(target=index_page).classes('row gap-4 items-center'):
+            ui.html((STATIC / 'happy_face.svg').read_text()).classes('w-8 stroke-white')
             ui.html((STATIC / 'nicegui_word.svg').read_text()).classes('w-24')
         with ui.row().classes('items-center ml-auto'):
             ui.link('Features', '/#features').classes(replace='text-lg text-white')
@@ -285,9 +285,9 @@ ui.run()
 def example_link(title: str, description: str) -> None:
     name = title.lower().replace(' ', '_')
     with ui.column().classes('gap-0'):
-        ui.link(title, f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/main.py') \
-            .classes(replace='text-black text-bold')
-        ui.markdown(description)
+        with ui.link(target=f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/main.py'):
+            ui.label(title).classes(replace='text-black text-bold')
+            ui.markdown(description).classes(replace='text-black')
 
 
 @ui.page('/reference')
