@@ -140,10 +140,11 @@ async def index_page(client: Client):
                 ui.markdown('- on-screen joystick')
             with ui.column().classes('gap-1 col-3'):
                 ui.icon('space_dashboard').classes('text-5xl q-mb-md text-primary opacity-80')
-                ui.label('Layouting').classes('text-bold mb-4')
+                ui.label('Layout').classes('text-bold mb-4')
                 ui.markdown('- navigation bars, tabs, panels, ...')
                 ui.markdown('- grouping with rows, columns and cards')
                 ui.markdown('- HTML and markdown elements')
+                ui.markdown('- flex layout by default')
             with ui.column().classes('gap-1 col-3'):
                 ui.icon('insights').classes('text-5xl q-mb-md text-primary')
                 ui.label('Visualization').classes('text-bold mb-4')
@@ -157,7 +158,7 @@ async def index_page(client: Client):
                 ui.label('Styling').classes('text-bold mb-4')
                 ui.markdown('- customizable color themes')
                 ui.markdown('- add custom css and classes')
-                ui.markdown('- flex layout by default')
+                ui.markdown('- modern look with material design')
             with ui.column().classes('gap-1 col-3'):
                 ui.icon('source').classes('text-5xl q-mb-md text-primary opacity-80')
                 ui.label('Coding').classes('text-bold mb-4')
