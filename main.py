@@ -97,7 +97,7 @@ async def index_page(client: Client):
         with ui.column().classes('gap-8'):
             ui.html('Meet the <em>NiceGUI</em>.') \
                 .style('font-size: 400%; line-height: 0.9; font-weight: 500')
-            ui.markdown('And let every browser be the frontend\n\nto your Python code.') \
+            ui.markdown('And let every browser be the frontend\n\nof your Python code.') \
                 .style('font-size: 200%; line-height: 0.9')
 
     with ui.row() \
@@ -107,8 +107,8 @@ async def index_page(client: Client):
             ui.markdown('Interact with buttons, dialogs, 3D scenes, plots and much more.') \
                 .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500').classes('mb-4')
             ui.label('''
-                NiceGUI handles the web development details for you.
-                So you can focus the development of Python code that needs an user interface.
+                NiceGUI handles all the web development details for you.
+                So you can focus Python code that needs a user interface.
                 Anything from short scripts and dashboards to full robotics projects, IoT solutions, 
                 smart home automations and machine learning projects can benefit from having all code in one place.
                 
