@@ -97,23 +97,25 @@ async def index_page(client: Client):
         with ui.column().classes('gap-8'):
             ui.html('Meet the <em>NiceGUI</em>.') \
                 .style('font-size: 400%; line-height: 0.9; font-weight: 500')
-            ui.markdown('Your easy-to-use Python framework to create\n\nuser interfaces which show up in the browser.') \
+            ui.markdown('And let the browser be the frontend\n\nto your Python code.') \
                 .style('font-size: 200%; line-height: 0.9')
 
     with ui.row() \
             .classes('w-full h-screen q-pa-md items-center gap-28 p-32 no-wrap') \
             .style(f'background: {ACCENT_COLOR}'):
         with ui.column().classes('gap-6'):
-            ui.markdown('Create buttons, dialogs, markdown,\n\n3D scenes, plots and much more at ease.') \
+            ui.markdown('Interact with buttons, dialogs, 3D scenes, plots and much more.') \
                 .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500').classes('mb-4')
             ui.label('''
-                It is great for micro web apps, dashboards, robotics projects, smart home solutions
-                and similar use cases. You can also use it in development, for example when
-                tweaking/configuring a machine learning algorithm or tuning motor controllers.
+                NiceGUI handles the web development details for you.
+                So you can focus the development of your Python code that needs an user interface.
+                Anything from short scripts and dashboards to full robotics projects, IoT solutions, 
+                smart home automations and machine learning projects can benefit from having all code in one place.
+                
             ''').style('font-size: 150%; color: white').classes('leading-tight')
             with ui.row().style('font-size: 150%; color: white').classes('leading-tight gap-2'):
                 ui.html('''
-                    NiceGUI is available as
+                    Available as
                     <a href="https://pypi.org/project/nicegui/"><strong>PyPI package</strong><span class="material-icons">north_east</span></a>,
                     <a href="https://hub.docker.com/r/zauberzeug/nicegui"><strong>Docker image</strong><span class="material-icons">north_east</span></a> and on
                     <a href="https://github.com/zauberzeug/nicegui"><strong>GitHub</strong><span class="material-icons">north_east</span></a>.
@@ -124,7 +126,7 @@ async def index_page(client: Client):
     ui.link_target('features').style(f'position: relative; top: -{HEADER_HEIGHT}')
     with ui.column().classes('w-full q-pa-xl'):
         ui.label('Features').classes('text-bold text-lg')
-        ui.html('What has <em>NiceGUI</em> to offer?') \
+        ui.html('Do everything the <em>nice</em> way') \
             .style('font-size: 300%; font-weight: 500; margin-top: -20px')
         with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between'):
             with ui.column().classes('gap-1'):
@@ -151,7 +153,7 @@ async def index_page(client: Client):
     ui.link_target('installation').style(f'position: relative; top: -{HEADER_HEIGHT}')
     with ui.column().classes('w-full q-pa-xl'):
         ui.label('Installation').classes('text-bold text-lg')
-        ui.html('Getting <em>started</em>') \
+        ui.html('Get <em>started</em>') \
             .style('font-size: 300%; font-weight: 500; margin-top: -20px')
         with ui.row().classes('w-full no-wrap text-lg leading-tight'):
             with ui.column().classes('w-1/3 gap-2'):
