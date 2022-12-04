@@ -126,13 +126,13 @@ async def index_page(client: Client):
     ui.link_target('features').style(f'position: relative; top: -{HEADER_HEIGHT}')
     with ui.column().classes('w-full q-pa-xl q-mb-xl'):
         ui.label('Features').classes('text-bold text-lg')
-        ui.html('Do it the <em>nice</em> way') \
+        ui.html('Code <em>nicely</em>') \
             .style('font-size: 300%; font-weight: 500; margin-top: -20px')
         with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between q-mb-xl'):
             with ui.column().classes('gap-1 col-3'):
                 ui.icon('swap_horiz').classes('text-5xl q-mb-md text-primary opacity-80')
                 ui.label('Interaction').classes('text-bold mb-4')
-                ui.markdown('- buttons, checkboxes, switches, slider, input, ...')
+                ui.markdown('- buttons, switches, slider, input, ...')
                 ui.markdown('- notifications, dialogs and menus')
                 ui.markdown('- keyboard input')
                 ui.markdown('- on-screen joystick')
