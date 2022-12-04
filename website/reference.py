@@ -6,14 +6,6 @@ from .example import example
 
 
 def create_intro() -> None:
-    @example('''#### Hello, World!
-
-Creating a user interface with NiceGUI is as simple as writing a single line of code.
-''', tight=True)
-    def hello_world_example():
-        ui.label('Hello, world!')
-        ui.markdown('Have a look at the full <br/> [API reference](reference)!')
-
     @example('''#### Common UI Elements
 
 NiceGUI comes with a collection of commonly used UI elements.
@@ -27,13 +19,35 @@ NiceGUI comes with a collection of commonly used UI elements.
         ui.select(['One', 'Two'], value='One', on_change=lambda e: ui.notify(e.value))
         ui.link('And many more...', '/reference').classes('text-lg')
 
+    @example('''#### Formatting
+
+
+''', tight=True)
+    def formatting_example():
+        ui.icon('thumb_up')
+        ui.markdown('''This is **Markdown**.''')
+        ui.html('This is <strong>HTML</strong>.')
+        with ui.row():
+            ui.label('css').style('color: #6E93D6; font-weight: bold')
+            ui.label('tailwind').classes('font-serif')
+            ui.label('quasar').classes('q-mt-md')
+        ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
+
     @example('''#### Value Binding
 
 Binding values between UI elements or [to data models](http://127.0.0.1:8080/reference#bindings) is built into NiceGUI.
 ''', tight=True)
     def binding_example():
-        slider = ui.slider(min=0, max=100, value=50)
-        ui.number('Value').bind_value(slider, 'value').classes('fit')
+        class Demo:
+            def __init__(self):
+                self.number = 1
+
+        demo = Demo()
+        v = ui.checkbox('visible', value=True)
+        with ui.column().bind_visibility_from(v, 'value'):
+            ui.slider(min=1, max=3).bind_value(demo, 'number')
+            ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
+            ui.number().bind_value(demo, 'number')
 
 
 def create_full() -> None:
@@ -679,9 +693,10 @@ It also enables you to identify sessions using a [session middleware](https://ww
         from collections import Counter
         from datetime import datetime
 
-        from nicegui import app
         from starlette.middleware.sessions import SessionMiddleware
         from starlette.requests import Request
+
+        from nicegui import app
 
         app.add_middleware(SessionMiddleware, secret_key='some_random_string')
 
