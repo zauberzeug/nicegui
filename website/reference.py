@@ -17,7 +17,7 @@ NiceGUI comes with a collection of commonly used UI elements.
         ui.input('Text input', on_change=lambda e: ui.notify(e.value))
         ui.radio(['A', 'B'], value='A', on_change=lambda e: ui.notify(e.value)).props('inline')
         ui.select(['One', 'Two'], value='One', on_change=lambda e: ui.notify(e.value))
-        ui.link('And many more...', '/reference').classes('text-lg')
+        ui.link('And many more...', '/reference')
 
     @example('''#### Formatting
 
@@ -28,7 +28,7 @@ NiceGUI comes with a collection of commonly used UI elements.
         ui.markdown('''This is **Markdown**.''')
         ui.html('This is <strong>HTML</strong>.')
         with ui.row():
-            ui.label('css').style('color: #6E93D6; font-weight: bold')
+            ui.label('css').style('color: #888; font-weight: bold')
             ui.label('tailwind').classes('font-serif')
             ui.label('quasar').classes('q-mt-md')
         ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
