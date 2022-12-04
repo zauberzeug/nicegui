@@ -104,11 +104,11 @@ async def index_page(client: Client):
             .classes('w-full h-screen q-pa-md items-center gap-28 p-32 no-wrap') \
             .style(f'background: {ACCENT_COLOR}'):
         with ui.column().classes('gap-6'):
-            ui.markdown('Interact with buttons, dialogs, 3D scenes, plots and much more.') \
+            ui.markdown('Interact with Python through buttons, dialogs, 3D scenes, plots and much more.') \
                 .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500').classes('mb-4')
             ui.label('''
                 NiceGUI handles all the web development details for you.
-                So you can focus Python code that needs a user interface.
+                So you can focus on writing Python code.
                 Anything from short scripts and dashboards to full robotics projects, IoT solutions, 
                 smart home automations and machine learning projects can benefit from having all code in one place.
                 
