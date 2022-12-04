@@ -39,14 +39,39 @@ def add_head_html() -> None:
             font-style: normal;
             color: {ACCENT_COLOR};
         }}
+        a:hover {{
+            opacity: 0.9;
+        }}
         </style>
+    ''')
+    ui.add_head_html(f'''
+    <style>
+    .q-header {{
+        height: calc({HEADER_HEIGHT} + 20px);
+        background-color: {ACCENT_COLOR};
+    }}
+    .q-header.fade {{
+        height: {HEADER_HEIGHT};
+        background-color: {ACCENT_COLOR}d0;
+        backdrop-filter: blur(5px);
+    }}
+    </style>
+    <script>
+    window.onscroll = () => {{
+        const header = document.querySelector(".q-header");
+        if (document.documentElement.scrollTop > 50)
+            header.classList.add("fade");
+        else
+            header.classList.remove("fade");
+    }};
+    </script>
     ''')
 
 
 def add_header() -> None:
     with ui.header() \
-            .classes('items-center') \
-            .style(f'background-color: {ACCENT_COLOR}; height: {HEADER_HEIGHT}; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
+            .classes('items-center duration-200 px-4', remove='q-pa-md') \
+            .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
         ui.html((STATIC / 'happy_face.svg').read_text()).classes('w-8 stroke-white')
         with ui.link(target=index_page):
             ui.html((STATIC / 'nicegui_word.svg').read_text()).classes('w-24')
@@ -66,29 +91,31 @@ async def index_page(client: Client):
     add_header()
 
     with ui.row() \
-            .classes('w-full q-pa-md items-center gap-12 no-wrap') \
-            .style(f'height: calc(100vh - {HEADER_HEIGHT}); transform: translateX(-250px)'):
+            .classes('w-full h-screen q-pa-md items-center gap-12 no-wrap') \
+            .style(f'transform: translateX(-250px)'):
         ui.html((STATIC / 'happy_face.svg').read_text()).classes('stroke-black').style('width: 500px')
         with ui.column().classes('gap-8'):
             ui.html('Meet the <em>NiceGUI</em>.') \
                 .style('font-size: 400%; line-height: 0.9; font-weight: 500')
-            ui.markdown('Your easy-to-use Python framework to create\n\nuser interfaces which show up in the browser.') \
+            ui.markdown('And let the browser be the frontend\n\nto your Python code.') \
                 .style('font-size: 200%; line-height: 0.9')
 
     with ui.row() \
-            .classes('w-full q-pa-md items-center gap-28 p-32 no-wrap') \
-            .style(f'height: calc(100vh - {HEADER_HEIGHT}); background: {ACCENT_COLOR}'):
+            .classes('w-full h-screen q-pa-md items-center gap-28 p-32 no-wrap') \
+            .style(f'background: {ACCENT_COLOR}'):
         with ui.column().classes('gap-6'):
-            ui.markdown('Create buttons, dialogs, markdown,\n\n3D scenes, plots and much more at ease.') \
+            ui.markdown('Interact with buttons, dialogs, 3D scenes, plots and much more.') \
                 .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500').classes('mb-4')
             ui.label('''
-                It is great for micro web apps, dashboards, robotics projects, smart home solutions
-                and similar use cases. You can also use it in development, for example when
-                tweaking/configuring a machine learning algorithm or tuning motor controllers.
+                NiceGUI handles the web development details for you.
+                So you can focus the development of your Python code that needs an user interface.
+                Anything from short scripts and dashboards to full robotics projects, IoT solutions, 
+                smart home automations and machine learning projects can benefit from having all code in one place.
+                
             ''').style('font-size: 150%; color: white').classes('leading-tight')
             with ui.row().style('font-size: 150%; color: white').classes('leading-tight gap-2'):
                 ui.html('''
-                    NiceGUI is available as
+                    Available as
                     <a href="https://pypi.org/project/nicegui/"><strong>PyPI package</strong><span class="material-icons">north_east</span></a>,
                     <a href="https://hub.docker.com/r/zauberzeug/nicegui"><strong>Docker image</strong><span class="material-icons">north_east</span></a> and on
                     <a href="https://github.com/zauberzeug/nicegui"><strong>GitHub</strong><span class="material-icons">north_east</span></a>.
@@ -99,7 +126,7 @@ async def index_page(client: Client):
     ui.link_target('features').style(f'position: relative; top: -{HEADER_HEIGHT}')
     with ui.column().classes('w-full q-pa-xl'):
         ui.label('Features').classes('text-bold text-lg')
-        ui.html('What has <em>NiceGUI</em> to offer?') \
+        ui.html('Do everything the <em>nice</em> way') \
             .style('font-size: 300%; font-weight: 500; margin-top: -20px')
         with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between'):
             with ui.column().classes('gap-1'):
@@ -126,7 +153,7 @@ async def index_page(client: Client):
     ui.link_target('installation').style(f'position: relative; top: -{HEADER_HEIGHT}')
     with ui.column().classes('w-full q-pa-xl'):
         ui.label('Installation').classes('text-bold text-lg')
-        ui.html('Getting <em>started</em>') \
+        ui.html('Get <em>started</em>') \
             .style('font-size: 300%; font-weight: 500; margin-top: -20px')
         with ui.row().classes('w-full no-wrap text-lg leading-tight'):
             with ui.column().classes('w-1/3 gap-2'):
@@ -194,8 +221,8 @@ ui.run()
                 example_link('Infinite Scroll', 'shows an infinitely scrolling image gallery')
 
     with ui.row() \
-            .classes('w-full q-pa-md items-center gap-28 p-32 no-wrap') \
-            .style(f'height: calc(100vh - {HEADER_HEIGHT}); background: {ACCENT_COLOR}'):
+            .classes('w-full h-screen q-pa-md items-center gap-28 p-32 no-wrap') \
+            .style(f'background: {ACCENT_COLOR}'):
         with ui.column().classes('gap-6'):
             ui.markdown('Why?') \
                 .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500').classes('mb-4')
@@ -208,9 +235,9 @@ ui.run()
                 In search for an alternative nice library to write simple graphical user interfaces in Python we discovered
                 <strong><a href="https://justpy.io/">JustPy</a></strong>.
                 Although we liked the approach, it is too "low-level HTML" for our daily usage.
-                But it inspired us to use 
+                But it inspired us to use
                 <strong><a href="https://vuejs.org/">Vue</a></strong>
-                and 
+                and
                 <strong><a href="https://quasar.dev/">Quasar</a></strong>
                 for the frontend.<br/>
 
@@ -219,7 +246,7 @@ ui.run()
                 which itself is based on the ASGI framework
                 <strong><a href="https://www.starlette.io/">Starlette</a></strong>,
                 and the ASGI webserver
-                <strong><a href="https://www.uvicorn.org/">Uvicorn</a></strong>.                
+                <strong><a href="https://www.uvicorn.org/">Uvicorn</a></strong>.
             ''').style('font-size: 150%; color: white').classes('leading-tight')
 
         ui.html((STATIC / 'happy_face.svg').read_text()).classes('stroke-white').style('width: 1500px')
