@@ -181,7 +181,7 @@ ui.run()
     ui.link_target('examples').style(f'position: relative; top: -{HEADER_HEIGHT}')
     with ui.column().classes('w-full q-pa-xl q-mb-xl'):
         ui.label('Examples').classes('text-bold text-lg')
-        ui.html('Try <em>this</em> out') \
+        ui.html('Try <em>this</em>') \
             .style('font-size: 300%; font-weight: 500; margin-top: -20px')
         reference.create_intro()
 
