@@ -27,3 +27,6 @@ class Table(Element):
     def update(self) -> None:
         super().update()
         self.run_method('update_grid')
+
+    def call_api_method(self, name: str, *args) -> None:
+        self.run_method('call_api_method', name, args)

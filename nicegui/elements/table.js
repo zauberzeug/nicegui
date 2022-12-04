@@ -12,6 +12,9 @@ export default {
       replaceObject(this.options, this.gridOptions);
       this.gridOptions.api.refreshCells();
     },
+    call_api_method(name, ...args) {
+      this.gridOptions.api[name](...args);
+    },
   },
   props: {
     options: Object,
