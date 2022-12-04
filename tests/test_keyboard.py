@@ -15,4 +15,5 @@ def test_keyboard(screen: Screen):
     ActionChains(screen.selenium) \
         .send_keys('t') \
         .perform()
+    screen.wait(0.5)
     screen.should_contain('t, KeyboardAction(keydown=False, keyup=True, repeat=False)')
