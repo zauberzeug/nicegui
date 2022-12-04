@@ -189,9 +189,9 @@ ui.run()
             .classes('w-full items-center gap-28 px-32 py-16 no-wrap') \
             .style(f'background: {ACCENT_COLOR}'):
         with ui.column().classes('gap-4'):
-            ui.markdown('Go to the API reference to see a ton of live examples.') \
+            ui.markdown('Browse through tons of live examples.') \
                 .style('font-size: 220%; color: white; line-height: 0.9; font-weight: 500')
-            ui.html('Fun-Fact: The whole page here is coded with NiceGUI itself.') \
+            ui.html('Fun-Fact: This whole website is also coded with NiceGUI.') \
                 .style('font-size: 150%; color: white')
         ui.link('API reference', '/reference') \
             .classes('rounded-full mx-auto px-12 py-2 text-xl text-bold bg-white')
