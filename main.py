@@ -80,6 +80,8 @@ def add_header() -> None:
             ui.link('Installation', '/#installation').classes(replace='text-lg text-white')
             ui.link('Examples', '/#examples').classes(replace='text-lg text-white')
             ui.link('API Reference', reference_page).classes(replace='text-lg text-white')
+            ui.link('Demos', '/#demos').classes(replace='text-lg text-white')
+            ui.link('Why?', '/#why').classes(replace='text-lg text-white')
             with ui.link(target='https://github.com/zauberzeug/nicegui/'):
                 ui.html((STATIC / 'github.svg').read_text()).classes('fill-white scale-125 m-1')
 
@@ -217,6 +219,7 @@ ui.run()
         ui.link('API reference', '/reference') \
             .classes('rounded-full mx-auto px-12 py-2 text-xl text-bold bg-white')
 
+    ui.link_target('demos').style(f'position: relative; top: -{HEADER_HEIGHT}')
     with ui.column().classes('w-full q-pa-xl q-mb-xl'):
         ui.label('In-depth demonstrations').classes('text-bold text-lg')
         ui.html('Pick your <em>solution</em>') \
@@ -244,6 +247,7 @@ ui.run()
                 example_link('Image Mask Overlay', 'shows how to overlay an image with a mask')
                 example_link('Infinite Scroll', 'presents an infinitely scrolling image gallery')
 
+    ui.link_target('why')
     with ui.row() \
             .classes('w-full h-screen q-pa-md items-center gap-28 p-32 no-wrap') \
             .style(f'background: {ACCENT_COLOR}'):
