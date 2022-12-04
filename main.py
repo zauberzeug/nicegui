@@ -7,7 +7,7 @@ from pygments.formatters import HtmlFormatter
 from nicegui import Client, ui
 from website import demo_card, reference
 from website.constants import ACCENT_COLOR, HEADER_HEIGHT, STATIC
-from website.example import bash_window, python_window
+from website.example import bash_window, browser_window, python_window
 
 ui.add_static_files('/favicon', Path(__file__).parent / 'website' / 'favicon')
 
@@ -177,6 +177,11 @@ ui.run()
                 ui.markdown('Launch it with').classes('text-lg')
                 with bash_window().classes('w-full h-52'):
                     ui.markdown('```bash\npython3 main.py\n```')
+            with ui.column().classes('w-1/3 gap-2'):
+                ui.html('<em>4.</em>').classes('text-3xl text-bold')
+                ui.markdown('Enjoy').classes('text-lg')
+                with browser_window().classes('w-full h-52'):
+                    ui.label('Hello NiceGUI!')
 
     ui.link_target('examples').style(f'position: relative; top: -{HEADER_HEIGHT}')
     with ui.column().classes('w-full q-pa-xl q-mb-xl'):
