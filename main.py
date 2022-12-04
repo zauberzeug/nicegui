@@ -128,27 +128,42 @@ async def index_page(client: Client):
         ui.label('Features').classes('text-bold text-lg')
         ui.html('Do it the <em>nice</em> way') \
             .style('font-size: 300%; font-weight: 500; margin-top: -20px')
-        with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between'):
-            with ui.column().classes('gap-1'):
-                ui.label('User Interface').classes('text-bold mb-4')
-                ui.markdown('- common elements like label, button, checkbox, switch, slider, input, ...')
-                ui.markdown('- page layout with navigation bars, tabs, panels, ...')
-                ui.markdown('- grouping with rows, columns, cards and dialogs')
-                ui.markdown('- HTML and markdown elements')
-                ui.markdown('- high-level elements like charts, tables, trees, 3D scenes, joystick, ...')
-                ui.markdown('- built-in timer to refresh data in intervals')
+        with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between q-mb-xl'):
+            with ui.column().classes('gap-1 col-3'):
+                ui.label('Interaction').classes('text-bold mb-4')
+                ui.markdown('- buttons, checkboxes, switches, slider, input, ...')
                 ui.markdown('- notifications, dialogs and menus')
                 ui.markdown('- keyboard input')
-            with ui.column().classes('gap-1'):
-                ui.label('Under the hood').classes('text-bold mb-4')
-                ui.markdown('- browser-based graphical user interface')
-                ui.markdown('- based on FastAPI and Uvicorn')
-                ui.markdown('- live-cycle events and session data')
-                ui.markdown('- customizable page layout and colors')
-            with ui.column().classes('gap-1'):
-                ui.label('Development').classes('text-bold mb-4')
+                ui.markdown('- on-screen joystick')
+            with ui.column().classes('gap-1 col-3'):
+                ui.label('Layouting').classes('text-bold mb-4')
+                ui.markdown('- navigation bars, tabs, panels, ...')
+                ui.markdown('- grouping with rows, columns and cards')
+                ui.markdown('- HTML and markdown elements')
+            with ui.column().classes('gap-1 col-3'):
+                ui.label('Visualization').classes('text-bold mb-4')
+                ui.markdown('- charts, diagrams and tables')
+                ui.markdown('- 3D scenes')
+                ui.markdown('- progress bars')
+                ui.markdown('- built-in timer for data refresh')
+        with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between'):
+            with ui.column().classes('gap-1 col-3'):
+                ui.label('Styling').classes('text-bold mb-4')
+                ui.markdown('- customizable color themes')
+                ui.markdown('- add custom css and classes')
+                ui.markdown('- flex layout by default')
+            with ui.column().classes('gap-1 col-3'):
+                ui.label('Coding').classes('text-bold mb-4')
+                ui.markdown('- live-cycle events')
                 ui.markdown('- implicit reload on code change')
                 ui.markdown('- straight-forward data binding')
+                ui.markdown('- execute javascript from Python')
+            with ui.column().classes('gap-1 col-3'):
+                ui.label('Foundation').classes('text-bold mb-4')
+                ui.markdown('- generic Vue to Python bridge')
+                ui.markdown('- dynamic GUI through Quasar')
+                ui.markdown('- content is served with FastAPI')
+                ui.markdown('- Python 3.7 - 3.11')
 
     ui.link_target('installation').style(f'position: relative; top: -{HEADER_HEIGHT}')
     with ui.column().classes('w-full q-pa-xl q-mb-xl'):
