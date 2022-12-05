@@ -3,7 +3,7 @@ import inspect
 import time
 from typing import Callable, Optional
 
-from fastapi import Response
+from fastapi import Request, Response
 
 from . import globals
 from .async_updater import AsyncUpdater
@@ -47,9 +47,13 @@ class page:
     def __call__(self, func: Callable) -> Callable:
         # NOTE we need to remove existing routes for this path to make sure only the latest definition is used
         globals.app.routes[:] = [r for r in globals.app.routes if r.path != self.path]
+        parameters_of_decorated_func = list(inspect.signature(func).parameters.keys())
 
         async def decorated(*dec_args, **dec_kwargs) -> Response:
-            with Client(self) as client:
+            request = dec_kwargs['request']
+            # NOTE cleaning up the keyword args so the signature is consistent with "func" again
+            dec_kwargs = {k: v for k, v in dec_kwargs.items() if k in parameters_of_decorated_func}
+            with Client(self, request=request) as client:
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                     dec_kwargs['client'] = client
                 result = func(*dec_args, **dec_kwargs)
@@ -66,9 +70,12 @@ class page:
                 result = task.result() if task.done() else None
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
-            return client.build_response()
+            return client.build_response(request)
 
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']
+        # NOTE adding request as a parameter so we can pass it to the client in the decorated function
+        if 'request' not in [p.name for p in parameters]:
+            parameters.append(inspect.Parameter('request', inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request))
         decorated.__signature__ = inspect.Signature(parameters)
 
         globals.page_routes[decorated] = self.path
