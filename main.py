@@ -99,7 +99,7 @@ async def index_page(client: Client):
         with ui.column().classes('gap-8'):
             ui.html('Meet the <em>NiceGUI</em>.') \
                 .style('font-size: 400%; line-height: 0.9; font-weight: 500')
-            ui.markdown('And let the browser be the frontend\n\nof your Python code.') \
+            ui.markdown('And let any browser be the frontend\n\nof your Python code.') \
                 .style('font-size: 200%; line-height: 0.9')
 
     with ui.row() \
