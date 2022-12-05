@@ -6,22 +6,9 @@ from .example import example
 
 
 def create_intro() -> None:
-    @example('''#### Common UI Elements
+    @example('''#### Styling
 
-NiceGUI comes with a collection of commonly used UI elements.
-''')
-    def common_elements_example():
-        ui.button('Button', on_click=lambda: ui.notify('Click'))
-        ui.checkbox('Checkbox', on_change=lambda e: ui.notify('Checked' if e.value else 'Unchecked'))
-        ui.switch('Switch', on_change=lambda e: ui.notify('Switched' if e.value else 'Unswitched'))
-        ui.input('Text input', on_change=lambda e: ui.notify(e.value))
-        ui.radio(['A', 'B'], value='A', on_change=lambda e: ui.notify(e.value)).props('inline')
-        ui.select(['One', 'Two'], value='One', on_change=lambda e: ui.notify(e.value))
-        ui.link('And many more...', '/reference')
-
-    @example('''#### Formatting
-
-
+While having reasonable defaults, you can still modify the look of your app by using css and tailwind/quasar classes.
 ''')
     def formatting_example():
         ui.icon('thumb_up')
@@ -33,9 +20,30 @@ NiceGUI comes with a collection of commonly used UI elements.
             ui.label('quasar').classes('q-mt-md')
         ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
 
+    @example('''#### Common UI Elements
+
+NiceGUI comes with a collection of commonly used UI elements.
+''')
+    def common_elements_example():
+        from nicegui.events import ValueChangeEventArguments
+
+        def show(event: ValueChangeEventArguments):
+            name = type(event.sender).__name__
+            ui.notify(f'{name}: {event.value}')
+
+        ui.button('Button', on_click=lambda: ui.notify('Click'))
+        with ui.row():
+            ui.checkbox('Checkbox', on_change=show)
+            ui.switch('Switch', on_change=show)
+        ui.radio(['A', 'B', 'C'], value='A', on_change=show).props('inline')
+        with ui.row():
+            ui.input('Text input', on_change=show)
+            ui.select(['One', 'Two'], value='One', on_change=show)
+        ui.link('And many more...', '/reference').classes('mt-8')
+
     @example('''#### Value Binding
 
-Binding values between UI elements or [to data models](http://127.0.0.1:8080/reference#bindings) is built into NiceGUI.
+Binding values between UI elements and data models is built into NiceGUI.
 ''')
     def binding_example():
         class Demo:
@@ -156,8 +164,8 @@ def create_full() -> None:
 
         @example('''#### SVG
 
-    You can add Scalable Vector Graphics using the `ui.html` element.
-    ''')
+You can add Scalable Vector Graphics using the `ui.html` element.
+''')
         def svg_example():
             content = '''
                 <svg viewBox="0 0 200 200" width="100" height="100" xmlns="http://www.w3.org/2000/svg">
@@ -176,11 +184,11 @@ def create_full() -> None:
 
         @example('''#### Captions and Overlays
 
-    By nesting elements inside a `ui.image` you can create augmentations.
+By nesting elements inside a `ui.image` you can create augmentations.
 
-    Use [Quasar classes](https://quasar.dev/vue-components/img) for positioning and styling captions.
-    To overlay an SVG, make the `viewBox` exactly the size of the image and provide `100%` width/height to match the actual rendered size.
-    ''')
+Use [Quasar classes](https://quasar.dev/vue-components/img) for positioning and styling captions.
+To overlay an SVG, make the `viewBox` exactly the size of the image and provide `100%` width/height to match the actual rendered size.
+''')
         def captions_and_overlays_example():
             with ui.image('http://placeimg.com/640/360/nature'):
                 ui.label('Nice!').classes('absolute-bottom text-subtitle2 text-center')
@@ -350,10 +358,10 @@ def create_full() -> None:
 
         @example('''#### Clear Containers
 
-    To remove all elements from a row, column or card container, use the `clear()` method.
+To remove all elements from a row, column or card container, use the `clear()` method.
 
-    Alternatively, you can remove individual elements with `remove(element)`, where `element` is an Element or an index.
-    ''')
+Alternatively, you can remove individual elements with `remove(element)`, where `element` is an Element or an index.
+''')
         def clear_containers_example():
             container = ui.row()
 
@@ -385,10 +393,10 @@ def create_full() -> None:
 
         @example('''#### Tooltips
 
-    Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
+Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
 
-    For more artistic control you can nest tooltip elements and apply props, classes and styles.
-    ''')
+For more artistic control you can nest tooltip elements and apply props, classes and styles.
+''')
         def tooltips_example():
             ui.label('Tooltips...').tooltip('...are shown on mouse over')
             with ui.button().props('icon=thumb_up'):
@@ -408,10 +416,10 @@ def create_full() -> None:
 
         @example('''#### Awaitable dialog
 
-    Dialogs can be awaited.
-    Use the `submit` method to close the dialog and return a result.
-    Canceling the dialog by clicking in the background or pressing the escape key yields `None`.
-    ''')
+Dialogs can be awaited.
+Use the `submit` method to close the dialog and return a result.
+Canceling the dialog by clicking in the background or pressing the escape key yields `None`.
+''')
         def async_dialog_example():
             with ui.dialog() as dialog, ui.card():
                 ui.label('Are you sure?')
@@ -429,15 +437,15 @@ def create_full() -> None:
 
         @example('''#### Styling
 
-    NiceGUI uses the [Quasar Framework](https://quasar.dev/) version 1.0 and hence has its full design power.
-    Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
-    Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
-    You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method.
+NiceGUI uses the [Quasar Framework](https://quasar.dev/) version 1.0 and hence has its full design power.
+Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
+Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
+You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method.
 
-    If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
+If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
 
-    All three functions also provide `remove` and `replace` parameters in case the predefined look is not wanted in a particular styling.
-    ''')
+All three functions also provide `remove` and `replace` parameters in case the predefined look is not wanted in a particular styling.
+''')
         def design_example():
             ui.radio(['x', 'y', 'z'], value='x').props('inline color=green')
             ui.button().props('icon=touch_app outline round').classes('shadow-lg')
@@ -452,15 +460,15 @@ def create_full() -> None:
 
         @example('''#### Lifecycle
 
-    You can run a function or coroutine as a parallel task by passing it to one of the following register methods:
+You can run a function or coroutine as a parallel task by passing it to one of the following register methods:
 
-    - `ui.on_startup`: Called when NiceGUI is started or restarted.
-    - `ui.on_shutdown`: Called when NiceGUI is shut down or restarted.
-    - `ui.on_connect`: Called when a client connects to NiceGUI. (Optional argument: Starlette request)
-    - `ui.on_disconnect`: Called when a client disconnects from NiceGUI. (Optional argument: socket)
+- `ui.on_startup`: Called when NiceGUI is started or restarted.
+- `ui.on_shutdown`: Called when NiceGUI is shut down or restarted.
+- `ui.on_connect`: Called when a client connects to NiceGUI. (Optional argument: Starlette request)
+- `ui.on_disconnect`: Called when a client disconnects from NiceGUI. (Optional argument: socket)
 
-    When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
-    ''')
+When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
+''')
         def lifecycle_example():
             import asyncio
 
@@ -517,13 +525,13 @@ def create_full() -> None:
 
         @example('''#### Bindings
 
-    NiceGUI is able to directly bind UI elements to models.
-    Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes.
+NiceGUI is able to directly bind UI elements to models.
+Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes.
 
-    Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property.
-    To define a one-way binding use the `_from` and `_to` variants of these methods.
-    Just pass a property of the model as parameter to these methods to create the binding.
-    ''')
+Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property.
+To define a one-way binding use the `_from` and `_to` variants of these methods.
+Just pass a property of the model as parameter to these methods to create the binding.
+''')
         def bindings_example():
             class Demo:
                 def __init__(self):
@@ -538,10 +546,10 @@ def create_full() -> None:
 
         @example('''#### UI Updates
 
-    NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed.
-    In other cases, you can explicitly call `element.update()` or `ui.update(*elements)` to update.
-    The example code shows both methods for a `ui.chart`, where it is difficult to automatically detect changes in the `options` dictionary.
-    ''')
+NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed.
+In other cases, you can explicitly call `element.update()` or `ui.update(*elements)` to update.
+The example code shows both methods for a `ui.chart`, where it is difficult to automatically detect changes in the `options` dictionary.
+''')
         def ui_updates_example():
             from random import randint
 
@@ -561,10 +569,10 @@ def create_full() -> None:
 
         @example('''#### Async event handlers
 
-    Most elements also support asynchronous event handlers.
+Most elements also support asynchronous event handlers.
 
-    Note: You can also pass a `functools.partial` into the `on_click` property to wrap async functions with parameters.
-    ''')
+Note: You can also pass a `functools.partial` into the `on_click` property to wrap async functions with parameters.
+''')
         def async_handlers_example():
             import asyncio
 
@@ -594,15 +602,15 @@ def create_full() -> None:
 
         @example('''#### Auto-index page
 
-    Pages created with the `@ui.page` decorator are "private".
-    Their content is re-created for each client.
-    Thus, in the example to the right, the displayed ID on the private page changes when the browser reloads the page.
+Pages created with the `@ui.page` decorator are "private".
+Their content is re-created for each client.
+Thus, in the example to the right, the displayed ID on the private page changes when the browser reloads the page.
 
-    UI elements that are not wrapped in a decorated page function are placed on an automatically generated index page at route "/".
-    This auto-index page is created once on startup and *shared* across all clients that might connect.
-    Thus, each connected client will see the *same* elements.
-    In the example to the right, the displayed ID on the auto-index page remains constant when the browser reloads the page.
-    ''')
+UI elements that are not wrapped in a decorated page function are placed on an automatically generated index page at route "/".
+This auto-index page is created once on startup and *shared* across all clients that might connect.
+Thus, each connected client will see the *same* elements.
+In the example to the right, the displayed ID on the auto-index page remains constant when the browser reloads the page.
+''')
         def auto_index_page():
             from uuid import uuid4
 
@@ -615,10 +623,10 @@ def create_full() -> None:
 
         @example('''#### Pages with Path Parameters
 
-    Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/>).
-    If type-annotated, they are automatically converted to bool, int, float and complex values.
-    If the page function expects a `request` argument, the request object is automatically provided.
-    ''')
+Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/>).
+If type-annotated, they are automatically converted to bool, int, float and complex values.
+If the page function expects a `request` argument, the request object is automatically provided.
+''')
         def page_with_path_parameters_example():
             @ui.page('/repeat/{word}/{count}')
             def page(word: str, count: int):
@@ -628,13 +636,13 @@ def create_full() -> None:
 
         @example('''#### Wait for Handshake with Client
 
-    To wait for a client connection, you can add a `client` argument to the decorated page function
-    and await `client.handshake()`.
-    All code below that statement is executed after the websocket connection between server and client has been established.
+To wait for a client connection, you can add a `client` argument to the decorated page function
+and await `client.handshake()`.
+All code below that statement is executed after the websocket connection between server and client has been established.
 
-    For example, this allows you to run JavaScript commands; which is only possible with a client connection (see [#112](https://github.com/zauberzeug/nicegui/issues/112)).
-    Also it is possible to do async stuff while the user already sees some content.
-        ''')
+For example, this allows you to run JavaScript commands; which is only possible with a client connection (see [#112](https://github.com/zauberzeug/nicegui/issues/112)).
+Also it is possible to do async stuff while the user already sees some content.
+''')
         def wait_for_handshake_example():
             import asyncio
 
@@ -652,14 +660,14 @@ def create_full() -> None:
 
         @example('''#### Page Layout
 
-    With `ui.header`, `ui.footer`, `ui.left_drawer` and `ui.right_drawer` you can add additional layout elements to a page.
-    The `fixed` argument controls whether the element should scroll or stay fixed on the screen.
-    The `top_corner` and `bottom_corner` arguments indicate whether a drawer should expand to the top or bottom of the page.
-    See <https://quasar.dev/layout/header-and-footer> and <https://quasar.dev/layout/drawer> for more information about possible props like
-    `elevated`, `bordered` and many more.
-    With `ui.page_sticky` you can place an element "sticky" on the screen.
-    See <https://quasar.dev/layout/page-sticky> for more information.
-        ''')
+With `ui.header`, `ui.footer`, `ui.left_drawer` and `ui.right_drawer` you can add additional layout elements to a page.
+The `fixed` argument controls whether the element should scroll or stay fixed on the screen.
+The `top_corner` and `bottom_corner` arguments indicate whether a drawer should expand to the top or bottom of the page.
+See <https://quasar.dev/layout/header-and-footer> and <https://quasar.dev/layout/drawer> for more information about possible props like
+`elevated`, `bordered` and many more.
+With `ui.page_sticky` you can place an element "sticky" on the screen.
+See <https://quasar.dev/layout/page-sticky> for more information.
+''')
         def page_layout_example():
             @ui.page('/page_layout')
             async def page_layout():
@@ -687,9 +695,9 @@ def create_full() -> None:
 
         @example('''#### Sessions
 
-    The optional `request` argument provides insights about the client's URL parameters etc.
-    It also enables you to identify sessions using a [session middleware](https://www.starlette.io/middleware/#sessionmiddleware).
-    ''')
+The optional `request` argument provides insights about the client's URL parameters etc.
+It also enables you to identify sessions using a [session middleware](https://www.starlette.io/middleware/#sessionmiddleware).
+''')
         def sessions_example():
             import uuid
             from collections import Counter
@@ -716,10 +724,10 @@ def create_full() -> None:
 
         @example('''#### JavaScript
 
-    With `ui.run_javascript()` you can run arbitrary JavaScript code on a page that is executed in the browser.
-    The asynchronous function will return after the command(s) are executed.
-    You can also set `respond=False` to send a command without waiting for a response.
-    ''')
+With `ui.run_javascript()` you can run arbitrary JavaScript code on a page that is executed in the browser.
+The asynchronous function will return after the command(s) are executed.
+You can also set `respond=False` to send a command without waiting for a response.
+''')
         def javascript_example():
             async def alert():
                 await ui.run_javascript('alert("Hello!")', respond=False)
@@ -735,29 +743,29 @@ def create_full() -> None:
 
         @example('''#### ui.run
 
-    You can call `ui.run()` with optional arguments:
+You can call `ui.run()` with optional arguments:
 
-    - `host` (default: `'0.0.0.0'`)
-    - `port` (default: `8080`)
-    - `title` (default: `'NiceGUI'`)
-    - `favicon`: relative filepath to a favicon (default: `None`, NiceGUI icon will be used)
-    - `dark`: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
-    - `main_page_classes`: configure Quasar classes of main page (default: `'q-pa-md column items-start'`)
-    - `binding_refresh_interval`: time between binding updates (default: `0.1` seconds, bigger is more cpu friendly)
-    - `show`: automatically open the ui in a browser tab (default: `True`)
-    - `reload`: automatically reload the ui on file changes (default: `True`)
-    - `uvicorn_logging_level`: logging level for uvicorn server (default: `'warning'`)
-    - `uvicorn_reload_dirs`: string with comma-separated list for directories to be monitored (default is current working directory only)
-    - `uvicorn_reload_includes`: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`)
-    - `uvicorn_reload_excludes`: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
-    - `exclude`: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
-    (possible entries: chart, colors, interactive_image, joystick, keyboard, log, scene, upload, table)
+- `host` (default: `'0.0.0.0'`)
+- `port` (default: `8080`)
+- `title` (default: `'NiceGUI'`)
+- `favicon`: relative filepath to a favicon (default: `None`, NiceGUI icon will be used)
+- `dark`: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
+- `main_page_classes`: configure Quasar classes of main page (default: `'q-pa-md column items-start'`)
+- `binding_refresh_interval`: time between binding updates (default: `0.1` seconds, bigger is more cpu friendly)
+- `show`: automatically open the ui in a browser tab (default: `True`)
+- `reload`: automatically reload the ui on file changes (default: `True`)
+- `uvicorn_logging_level`: logging level for uvicorn server (default: `'warning'`)
+- `uvicorn_reload_dirs`: string with comma-separated list for directories to be monitored (default is current working directory only)
+- `uvicorn_reload_includes`: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`)
+- `uvicorn_reload_excludes`: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
+- `exclude`: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
+(possible entries: chart, colors, interactive_image, joystick, keyboard, log, scene, upload, table)
 
-    The environment variables `HOST` and `PORT` can also be used to configure NiceGUI.
+The environment variables `HOST` and `PORT` can also be used to configure NiceGUI.
 
-    To avoid the potentially costly import of Matplotlib, you set the environment variable `MATPLOTLIB=false`.
-    This will make `ui.plot` and `ui.line_plot` unavailable.
-    ''')
+To avoid the potentially costly import of Matplotlib, you set the environment variable `MATPLOTLIB=false`.
+This will make `ui.plot` and `ui.line_plot` unavailable.
+''')
         def ui_run_example():
             ui.label('dark page on port 7000 without reloading')
 

@@ -208,7 +208,8 @@ ui.run()
         ui.label('Examples').classes('text-bold text-lg')
         ui.html('Try <em>this</em>') \
             .style('font-size: 300%; font-weight: 500; margin-top: -20px')
-        reference.create_intro()
+        with ui.row().classes('justify-center w-full'), ui.column().classes('w-[65rem]'):
+            reference.create_intro()
 
     with ui.row() \
             .classes('w-full items-center gap-28 px-32 py-16 no-wrap') \
