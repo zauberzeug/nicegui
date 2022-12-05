@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from nicegui import Client, task_logger, ui
 
-from .screen import Screen
+from .screen import PORT, Screen
 
 
 def test_page(screen: Screen):
@@ -139,7 +139,10 @@ def test_exception(screen: Screen):
     screen.open('/')
     screen.should_contain('500')
     screen.should_contain('Server error')
-    screen.assert_py_logger('ERROR', 'Exception in ASGI application\n')
+    screen.assert_py_logger(
+        f'ERROR: unexpected exception for http://localhost:{PORT}/',
+        'ERROR: Exception in ASGI application',
+    )
 
 
 def test_exception_after_handshake(screen: Screen):
@@ -151,7 +154,7 @@ def test_exception_after_handshake(screen: Screen):
 
     screen.open('/')
     screen.should_contain('this is shown')
-    screen.assert_py_logger('ERROR', 'Task raised an exception')
+    screen.assert_py_logger('ERROR: Task raised an exception')
 
 
 def test_page_with_args(screen: Screen):
