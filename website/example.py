@@ -96,9 +96,11 @@ def python_window() -> ui.card:
 
 def browser_window() -> ui.card:
     with ui.card().classes('h-fill').style(f'box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); background: white') as card:
-        with ui.row().classes('mb-2 items-center gap-2').style('transform: translate(-6px, -6px)'):
-            ui.icon('language').classes('text-blue-400').style('font-size: 90%')
-            ui.label('localhost:8080').classes('text-blue-400').style('font-size: 60%')
+        with ui.row().classes('mb-2 items-center gap-2').style('margin: -8px; width: calc(100% + 16px); margin-bottom: 8px'):
+            ui.icon('arrow_back').classes('text-gray-300')
+            ui.icon('arrow_forward').classes('text-gray-300')
+            ui.icon('refresh').classes('text-gray-300')
+            ui.label('http://localhost:8080/').classes('grow text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full')
     return card
 
 
