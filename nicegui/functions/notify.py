@@ -21,7 +21,7 @@ def notify(message: str, *,
     :param type: optional type ("positive", "negative", "warning", "info" or "ongoing")
     :param color: optional color name
 
-    Note: You can pass additional keyword arguments according to [Quasar's Notify API](https://quasar.dev/quasar-plugins/notify#notify-api).
+    Note: You can pass additional keyword arguments according to `Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>`_.
     """
     options = {key: value for key, value in locals().items() if not key.startswith('_') and value is not None}
     create_task(globals.sio.emit('notify', options, room=str(globals.get_client().id)))
