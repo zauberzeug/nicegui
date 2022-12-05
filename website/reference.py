@@ -28,9 +28,9 @@ NiceGUI comes with a collection of commonly used UI elements.
         ui.markdown('''This is **Markdown**.''')
         ui.html('This is <strong>HTML</strong>.')
         with ui.row():
-            ui.label('css').style('color: #888; font-weight: bold')
-            ui.label('tailwind').classes('font-serif')
-            ui.label('quasar').classes('q-mt-md')
+            ui.label('CSS').style('color: #888; font-weight: bold')
+            ui.label('Tailwind').classes('font-serif')
+            ui.label('Quasar').classes('q-mt-md')
         ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
 
     @example('''#### Value Binding
@@ -694,10 +694,9 @@ It also enables you to identify sessions using a [session middleware](https://ww
         from collections import Counter
         from datetime import datetime
 
+        from nicegui import app
         from starlette.middleware.sessions import SessionMiddleware
         from starlette.requests import Request
-
-        from nicegui import app
 
         app.add_middleware(SessionMiddleware, secret_key='some_random_string')
 

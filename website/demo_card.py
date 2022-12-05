@@ -19,8 +19,8 @@ def create():
                 output = ui.label('Try it out!') \
                     .classes('w-44 my-6 h-8 text-xl text-grey-9 overflow-hidden text-ellipsis text-center')
                 ui.slider(min=0, max=100, value=50, step=0.1, on_change=lambda e: output.set_text(e.value)) \
-                    .style('width: 150px')
-                with ui.row().classes('mt-1'):
+                    .style('width: 150px; margin-bottom: 2px')
+                with ui.row():
                     ui.number('Number', value=3.1415927, format='%.2f', on_change=lambda e: output.set_text(e.value)) \
                         .classes('w-20')
                     ui.select({1: 'One', 2: 'Two', 3: 'Three'}, value=1, on_change=lambda e: output.set_text(e.value))

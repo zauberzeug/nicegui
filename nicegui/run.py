@@ -43,7 +43,7 @@ def run(*,
         webbrowser.open(f'http://{host if host != "0.0.0.0" else "127.0.0.1"}:{port}/')
 
     def split_args(args: str) -> List[str]:
-        return args.split(',') if ',' in args else [args]
+        return [a.strip() for a in args.split(',')]
 
     # NOTE: The following lines are basically a copy of `uvicorn.run`, but keep a reference to the `server`.
 

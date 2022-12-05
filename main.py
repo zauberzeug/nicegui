@@ -93,7 +93,7 @@ async def index_page(client: Client):
     add_header()
 
     with ui.row() \
-            .classes('w-full h-screen q-pa-md items-center gap-12 no-wrap') \
+            .classes('w-full h-screen q-pa-md items-center gap-16 no-wrap') \
             .style(f'transform: translateX(-250px)'):
         ui.html((STATIC / 'happy_face.svg').read_text()).classes('stroke-black').style('width: 500px')
         with ui.column().classes('gap-8'):
@@ -101,11 +101,12 @@ async def index_page(client: Client):
                 .style('font-size: 400%; line-height: 0.9; font-weight: 500')
             ui.markdown('And let any browser be the frontend\n\nof your Python code.') \
                 .style('font-size: 200%; line-height: 0.9')
-            with ui.column().classes('q-mt-md'):
-                ui.icon('keyboard_arrow_down').classes('text-4xl text-grey-5').style('margin: 0 0 -1.4em 0.32em')
+            with ui.link(target='#about').classes('column mt-6 items-center').style('margin-left: -1em'):
+                ui.icon('keyboard_arrow_down').classes('text-4xl text-grey-5').style('margin-bottom: -0.95em')
                 ui.icon('keyboard_arrow_down').classes('text-6xl text-black')
-                ui.icon('keyboard_arrow_down').classes('text-4xl text-grey-5').style('margin: -1.3em 0 0 0.32em')
+                ui.icon('keyboard_arrow_down').classes('text-4xl text-grey-5').style('margin-top: -0.85em')
 
+    ui.link_target('about').style(f'position: relative; top: -20px')
     with ui.row() \
             .classes('w-full h-screen q-pa-md items-center gap-28 p-32 no-wrap') \
             .style(f'background: {ACCENT_COLOR}'):
@@ -136,47 +137,48 @@ async def index_page(client: Client):
             .style('font-size: 300%; font-weight: 500; margin-top: -20px')
         with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between q-mb-xl'):
             with ui.column().classes('gap-1 col-3'):
-                ui.icon('swap_horiz').classes('text-5xl q-mb-md text-primary opacity-80')
-                ui.label('Interaction').classes('text-bold mb-4')
-                ui.markdown('- buttons, switches, slider, input, ...')
+                ui.icon('swap_horiz').classes('text-5xl mb-3 text-primary opacity-80')
+                ui.label('Interaction').classes('text-bold mb-3')
+                ui.markdown('- buttons, switches, sliders, inputs, ...')
                 ui.markdown('- notifications, dialogs and menus')
                 ui.markdown('- keyboard input')
                 ui.markdown('- on-screen joystick')
             with ui.column().classes('gap-1 col-3'):
-                ui.icon('space_dashboard').classes('text-5xl q-mb-md text-primary opacity-80')
-                ui.label('Layout').classes('text-bold mb-4')
+                ui.icon('space_dashboard').classes('text-5xl mb-3 text-primary opacity-80')
+                ui.label('Layout').classes('text-bold mb-3')
                 ui.markdown('- navigation bars, tabs, panels, ...')
                 ui.markdown('- grouping with rows, columns and cards')
                 ui.markdown('- HTML and markdown elements')
                 ui.markdown('- flex layout by default')
             with ui.column().classes('gap-1 col-3'):
-                ui.icon('insights').classes('text-5xl q-mb-md text-primary')
-                ui.label('Visualization').classes('text-bold mb-4')
+                ui.icon('insights').classes('text-5xl mb-3 text-primary')
+                ui.label('Visualization').classes('text-bold mb-3')
                 ui.markdown('- charts, diagrams and tables')
                 ui.markdown('- 3D scenes')
                 ui.markdown('- progress bars')
                 ui.markdown('- built-in timer for data refresh')
         with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between'):
             with ui.column().classes('gap-1 col-3'):
-                ui.icon('brush').classes('text-5xl q-mb-xs text-primary opacity-80')
-                ui.label('Styling').classes('text-bold mb-4')
+                ui.icon('brush').classes('text-5xl mb-3 text-primary opacity-80')
+                ui.label('Styling').classes('text-bold mb-3')
                 ui.markdown('- customizable color themes')
-                ui.markdown('- add custom css and classes')
+                ui.markdown('- custom CSS and classes')
                 ui.markdown('- modern look with material design')
+                ui.markdown('- built-in [Tailwind](https://tailwindcss.com/) support')
             with ui.column().classes('gap-1 col-3'):
-                ui.icon('source').classes('text-5xl q-mb-md text-primary opacity-80')
-                ui.label('Coding').classes('text-bold mb-4')
+                ui.icon('source').classes('text-5xl mb-3 text-primary opacity-80')
+                ui.label('Coding').classes('text-bold mb-3')
                 ui.markdown('- live-cycle events')
                 ui.markdown('- implicit reload on code change')
                 ui.markdown('- straight-forward data binding')
                 ui.markdown('- execute javascript from Python')
             with ui.column().classes('gap-1 col-3'):
-                ui.icon('anchor').classes('text-5xl q-mb-md text-primary opacity-80')
-                ui.label('Foundation').classes('text-bold mb-4')
-                ui.markdown('- generic Vue to Python bridge')
-                ui.markdown('- dynamic GUI through Quasar')
-                ui.markdown('- content is served with FastAPI')
-                ui.markdown('- Python 3.7 - 3.11')
+                ui.icon('anchor').classes('text-5xl mb-3 text-primary opacity-80')
+                ui.label('Foundation').classes('text-bold mb-3')
+                ui.markdown('- generic [Vue](https://vuejs.org/) to Python bridge')
+                ui.markdown('- dynamic GUI through [Quasar](https://quasar.dev/)')
+                ui.markdown('- content is served with [FastAPI](http://fastapi.tiangolo.com/)')
+                ui.markdown('- Python 3.7+')
 
     ui.link_target('installation').style(f'position: relative; top: -{HEADER_HEIGHT}')
     with ui.column().classes('w-full q-pa-xl q-mb-xl'):
@@ -217,7 +219,7 @@ ui.run()
             .classes('w-full items-center gap-28 px-32 py-16 no-wrap') \
             .style(f'background: {ACCENT_COLOR}'):
         with ui.column().classes('gap-4'):
-            ui.markdown('Browse through tons of live examples.') \
+            ui.markdown('Browse through plenty of live examples.') \
                 .style('font-size: 220%; color: white; line-height: 0.9; font-weight: 500')
             ui.html('Fun-Fact: This whole website is also coded with NiceGUI.') \
                 .style('font-size: 150%; color: white')
@@ -274,7 +276,7 @@ ui.run()
                 <strong><a href="https://quasar.dev/">Quasar</a></strong>
                 for the frontend.<br/>
 
-                We have build on top of
+                We have built on top of
                 <strong><a href="https://fastapi.tiangolo.com/">FastAPI</a></strong>,
                 which itself is based on the ASGI framework
                 <strong><a href="https://www.starlette.io/">Starlette</a></strong>,

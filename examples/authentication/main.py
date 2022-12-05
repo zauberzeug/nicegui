@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-'''This is only a very simple authentication example which stores session ids in memory and does not do any password hashing.
+'''This is only a very simple authentication example which stores session IDs in memory and does not do any password hashing.
 
 Please see the `OAuth2 example at FastAPI <https://fastapi.tiangolo.com/tutorial/security/simple-oauth2/>`_  or
 use the great `Authlib package <https://docs.authlib.org/en/v0.13/client/starlette.html#using-fastapi>`_ to implement a real authentication system.
@@ -37,7 +37,7 @@ def main_page(request: Request) -> None:
 def login(request: Request) -> None:
     if is_authenticated(request):
         return RedirectResponse('/')
-    request.session['id'] = str(uuid.uuid4())  # NOTE this stores a new session id in the cookie of the client
+    request.session['id'] = str(uuid.uuid4())  # NOTE this stores a new session ID in the cookie of the client
     with ui.card().classes('absolute-center'):
         username = ui.input('Username')
         password = ui.input('Password').classes('w-full').props('type=password')
