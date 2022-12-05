@@ -94,7 +94,11 @@ def python_window() -> ui.card:
 
 
 def browser_window() -> ui.card:
-    return window('white')
+    with ui.card().style(f'box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); background: white') as card:
+        with ui.row():
+            ui.icon('language').classes('text-blue-400').style('font-size: 90%; margin: -4px 0px 0px -4px')
+            ui.label('localhost:8080').classes('text-blue-200').style('font-size: 60%; margin: -3px 0px 0px -12px')
+    return card
 
 
 def bash_window() -> ui.card:
