@@ -1,6 +1,8 @@
 import asyncio
 from uuid import uuid4
 
+import pytest
+
 from nicegui import Client, task_logger, ui
 
 from .screen import Screen
@@ -131,6 +133,7 @@ def test_adding_elements_after_handshake(screen: Screen):
     screen.should_contain('after')
 
 
+@pytest.mark.skip(reason='maybe produces an error for later tests')
 def test_exception(screen: Screen):
     @ui.page('/')
     def page():
