@@ -161,7 +161,7 @@
                     // causing its result to be returned as the result of the second call.
                     // This is impossible with synchronous eval execution, but can happen with asynchronous one.
                     ((msg) => {
-                        function eval_success(js_result) {
+                            eval_success = (msg) => (js_result) => {
                             e = {
                                 'event_type': 'result_ready',
                                 'visibility': document.visibilityState,
@@ -177,7 +177,7 @@
 
                         const jsPromise = (new Promise((resolve) => {
                             resolve(eval(msg.data));
-                        })).catch((reason) => {if(reason instanceof SyntaxError) return eval(`(async() => {${msg.data}})()`); else throw reason;}).then(eval_success);
+                        })).catch((reason) => {if(reason instanceof SyntaxError) return eval(`(async() => {${msg.data}})()`); else throw reason;}).then(eval_success(msg));
                     })(msg);
                     break;
                 case 'run_method':
