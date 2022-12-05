@@ -78,7 +78,8 @@
         },
         mounted() {
           const query = { client_id: {{ client_id }} };
-          window.socket = io(window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host, { path: "{{ prefix | safe }}/ws/socket.io", query: query });
+          const url = window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
+          window.socket = io(url, { path: "{{ prefix | safe }}/ws/socket.io", query });
           window.socket.on("update", (msg) => {
             Object.entries(msg.elements).forEach(([id, element]) => this.elements[element.id] = element);
           });

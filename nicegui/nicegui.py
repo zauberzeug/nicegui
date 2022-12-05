@@ -36,7 +36,7 @@ def index(request: Request) -> str:
 def vue_dependencies(path: str):
     if Path(path).exists():
         return FileResponse(path, media_type='text/javascript')
-    return HTTPException(status_code=404, detail="{path} not found")
+    return HTTPException(status_code=404, detail='{path} not found')
 
 
 @app.get('/_vue/components/{name}')
@@ -64,19 +64,19 @@ def shutdown() -> None:
 
 
 @app.exception_handler(404)
-async def exception_handler(r: Request, exception: Exception):
-    globals.log.warning(f'{r.url} not found')
+async def exception_handler(request: Request, exception: Exception):
+    globals.log.warning(f'{request.url} not found')
     with Client(page('')) as client:
         error_content(404, exception)
-    return client.build_response(r, 404)
+    return client.build_response(request, 404)
 
 
 @app.exception_handler(Exception)
-async def exception_handler(r: Request, exception: Exception):
-    globals.log.exception(f'unexpected exception for {r.url}', exception)
+async def exception_handler(request: Request, exception: Exception):
+    globals.log.exception(f'unexpected exception for {request.url}', exception)
     with Client(page('')) as client:
         error_content(500, exception)
-    return client.build_response(r, 500)
+    return client.build_response(request, 500)
 
 
 @sio.on('connect')

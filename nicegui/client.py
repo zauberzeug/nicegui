@@ -21,8 +21,7 @@ TEMPLATE = (Path(__file__).parent / 'templates' / 'index.html').read_text()
 
 class Client:
 
-    def __init__(self, page: 'page', *, request: Optional[Request] = None, shared: bool = False) -> None:
-        self.request = request
+    def __init__(self, page: 'page', *, shared: bool = False) -> None:
         self.id = globals.next_client_id
         globals.next_client_id += 1
         globals.clients[self.id] = self
