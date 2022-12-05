@@ -101,6 +101,10 @@ async def index_page(client: Client):
                 .style('font-size: 400%; line-height: 0.9; font-weight: 500')
             ui.markdown('And let any browser be the frontend\n\nof your Python code.') \
                 .style('font-size: 200%; line-height: 0.9')
+            with ui.column().classes('q-mt-md'):
+                ui.icon('keyboard_arrow_down').classes('text-4xl text-grey-5').style('margin: 0 0 -1.4em 0.32em')
+                ui.icon('keyboard_arrow_down').classes('text-6xl text-black')
+                ui.icon('keyboard_arrow_down').classes('text-4xl text-grey-5').style('margin: -1.3em 0 0 0.32em')
 
     with ui.row() \
             .classes('w-full h-screen q-pa-md items-center gap-28 p-32 no-wrap') \
