@@ -12,8 +12,8 @@ def test_keyboard(screen: Screen):
 
     screen.open('/')
     assert screen.selenium.find_element(By.ID, keyboard.id)
+    screen.wait(1.0)
     ActionChains(screen.selenium) \
         .send_keys('t') \
         .perform()
-    screen.wait(0.5)
     screen.should_contain('t, KeyboardAction(keydown=False, keyup=True, repeat=False)')
