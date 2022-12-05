@@ -554,8 +554,9 @@ The example code shows both methods for a `ui.chart`, where it is difficult to a
             chart.options['series'][0]['data'].clear()
             ui.update(chart)
 
-        ui.button('Add', on_click=add)
-        ui.button('Clear', on_click=clear)
+        with ui.row():
+            ui.button('Add', on_click=add)
+            ui.button('Clear', on_click=clear)
 
     @example('''#### Async event handlers
 
