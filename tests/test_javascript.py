@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pytest
+
 from nicegui import ui
 from nicegui.events import ValueChangeEventArguments
 
@@ -65,3 +66,33 @@ def test_retrieving_content_from_javascript(screen: Screen):
     screen.open('/')
     screen.click('compute')
     screen.should_contain('42')
+
+
+def test_async_javascript(screen: Screen):
+    async def run():
+        result = await ui.run_javascript('await new Promise(r => setTimeout(r, 100)); return 42')
+        for value in result.values():
+            ui.label(value)
+    ui.button('run', on_click=run)
+    screen.open('/')
+    screen.click('run')
+    screen.should_contain('42')
+
+
+def test_simultaneous_async_javascript(screen: Screen):
+    async def runA():
+        result = await ui.run_javascript('await new Promise(r => setTimeout(r, 500)); return 1')
+        for value in result.values():
+            ui.label(f'A: {value}')
+
+    async def runB():
+        result = await ui.run_javascript('await new Promise(r => setTimeout(r, 250)); return 2')
+        for value in result.values():
+            ui.label(f'B: {value}')
+    ui.button('runA', on_click=runA)
+    ui.button('runB', on_click=runB)
+    screen.open('/')
+    screen.click('runA')
+    screen.click('runB')
+    screen.should_contain('A: 1')
+    screen.should_contain('B: 2')
