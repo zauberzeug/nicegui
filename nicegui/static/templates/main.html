@@ -156,27 +156,29 @@
                     comp_replace(msg.data, app1.justpyComponents);
                     break;
                 case 'run_javascript':
-                    // let js_result = eval(msg.data);
-                    let js_result;
+                    // put msg into a closure to avoid a situation when the first call times out on Python side, 
+                    // then the second call with different msg.request_id is made, then the first call succeeds, 
+                    // causing its result to be returned as the result of the second call.
+                    // This is impossible with synchronous eval execution, but can happen with asynchronous one.
+                    ((msg) => {
+                            eval_success = (msg) => (js_result) => {
+                            e = {
+                                'event_type': 'result_ready',
+                                'visibility': document.visibilityState,
+                                'page_id': page_id,
+                                'websocket_id': websocket_id,
+                                'request_id': msg.request_id,
+                                'result': js_result //JSON.stringify(js_result)
+                            };
+                            {% if 'result_ready' in page_options.events %}
+                                if (msg.send) send_to_server(e, 'page_event', false);
+                            {% endif %}
+                        }
 
-                function eval_success() {
-                    e = {
-                        'event_type': 'result_ready',
-                        'visibility': document.visibilityState,
-                        'page_id': page_id,
-                        'websocket_id': websocket_id,
-                        'request_id': msg.request_id,
-                        'result': js_result //JSON.stringify(js_result)
-                    };
-                    {% if 'result_ready' in page_options.events %}
-                        if (msg.send) send_to_server(e, 'page_event', false);
-                    {% endif %}
-                }
-
-                    const jsPromise = (new Promise(function () {
-                        js_result = eval(msg.data);
-                    })).then(eval_success());
-
+                        const jsPromise = (new Promise((resolve) => {
+                            resolve(eval(msg.data));
+                        })).catch((reason) => {if(reason instanceof SyntaxError) return eval(`(async() => {${msg.data}})()`); else throw reason;}).then(eval_success(msg));
+                    })(msg);
                     break;
                 case 'run_method':
                     // await websocket.send_json({'type': 'run_method', 'data': command, 'id': self.id})
