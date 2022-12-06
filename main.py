@@ -1,72 +1,20 @@
 #!/usr/bin/env python3
 from pathlib import Path
 
-import docutils.core
 from pygments.formatters import HtmlFormatter
 
 from nicegui import Client, ui
 from website import demo_card, reference
 from website.constants import ACCENT_COLOR, HEADER_HEIGHT, STATIC
-from website.example import bash_window, browser_window, css_for_examples, python_window
+from website.example import bash_window, browser_window, python_window
 
 ui.add_static_files('/favicon', Path(__file__).parent / 'website' / 'favicon')
 
 
 def add_head_html() -> None:
-    ui.add_head_html('<meta name="viewport" content="width=device-width, initial-scale=1" />')
-    ui.add_head_html(docutils.core.publish_parts('', writer_name='html')['stylesheet'])
+    ui.add_head_html((Path(__file__).parent / 'website' / 'static' / 'header.html').read_text())
     ui.add_head_html(f'<style>{HtmlFormatter(nobackground=True).get_style_defs(".codehilite")}</style>')
-    ui.add_head_html('''
-        <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
-        <link rel="manifest" href="favicon/site.webmanifest">
-        <link rel="mask-icon" href="favicon/safari-pinned-tab.svg" color="#000000">
-        <link rel="shortcut icon" href="favicon/favicon.ico">
-        <meta name="msapplication-TileColor" content="#ffffff">
-        <meta name="msapplication-config" content="favicon/browserconfig.xml">
-        <meta name="theme-color" content="#ffffff">
-    ''')  # https://realfavicongenerator.net/
-    ui.add_head_html(f'''
-        <style>
-        html {{
-            scroll-behavior: smooth;
-        }}
-        body {{
-            background-color: #f8f8f8;
-        }}
-        em {{
-            font-style: normal;
-            color: {ACCENT_COLOR};
-        }}
-        a:hover {{
-            opacity: 0.9;
-        }}
-        </style>
-    ''')
-    ui.add_head_html(f'''
-    <style>
-    .q-header {{
-        height: calc({HEADER_HEIGHT} + 20px);
-        background-color: {ACCENT_COLOR};
-    }}
-    .q-header.fade {{
-        height: {HEADER_HEIGHT};
-        background-color: {ACCENT_COLOR}d0;
-        backdrop-filter: blur(5px);
-    }}
-    </style>
-    <script>
-    window.onscroll = () => {{
-        const header = document.querySelector(".q-header");
-        if (document.documentElement.scrollTop > 50)
-            header.classList.add("fade");
-        else
-            header.classList.remove("fade");
-    }};
-    </script>
-    ''')
-    ui.add_head_html(f'<style>\n{css_for_examples()}\n</style>')
+    ui.add_head_html(f"<style>{(Path(__file__).parent / 'website' / 'static' / 'style.css').read_text()}</style>")
 
 
 def add_header() -> None:

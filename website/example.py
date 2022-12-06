@@ -131,22 +131,3 @@ def bash_window() -> ui.card:
 
 def browser_window() -> ui.card:
     return window(BROWSER_COLOR, BROWSER_BGCOLOR, tab='NiceGUI')
-
-
-def css_for_examples() -> str:
-    return '''
-        dl {
-            display: grid;
-            grid-template-columns: max-content auto;
-        }
-
-        dt {
-            grid-column-start: 1;
-            margin-right: 1em;
-            font-weight: bold;
-        }
-
-        dd {
-            grid-column-start: 2;
-        }
-    '''
