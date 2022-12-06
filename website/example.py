@@ -21,14 +21,11 @@ class example:
 
     def __init__(self, content: Union[Callable, type, str]) -> None:
         self.content = content
-        self.markdown_classes = f'w-full max-w-screen-lg flex-none'
-        self.rendering_classes = f'w-80 text-lg'
-        self.source_classes = f'w-[43rem] overflow-auto'
 
     def __call__(self, f: Callable) -> Callable:
         with ui.row().classes('q-mb-xl'):
             if isinstance(self.content, str):
-                _add_html_anchor(ui.markdown(self.content).classes(self.markdown_classes))
+                documentation = ui.markdown(self.content)
             else:
                 doc = self.content.__doc__ or self.content.__init__.__doc__
                 html: str = docutils.core.publish_parts(doc, writer_name='html5_polyglot')['html_body']
@@ -36,9 +33,10 @@ class example:
                 html = html.replace('</p>', '</h4>', 1)
                 html = html.replace('param ', '')
                 html = apply_tailwind(html)
-                _add_html_anchor(ui.html(html).classes(self.markdown_classes))
+                documentation = ui.html(html)
+            _add_html_anchor(documentation)
 
-            with ui.row().classes('items-stretch max-w-screen-lg'):
+            with ui.row().classes('items-stretch'):
                 code = inspect.getsource(f).splitlines()
                 indentation = len(code[0].split('@example')[0]) + 4
                 while not code[0].startswith(' ' * indentation):
@@ -60,9 +58,9 @@ class example:
                     code.append('ui.run()')
                 code.append('```')
                 code = '\n'.join(code)
-                with python_window().classes(self.source_classes):
+                with python_window().classes(f'w-[43rem] overflow-auto'):
                     ui.markdown(code)
-                with browser_window().classes(self.rendering_classes):
+                with browser_window().classes('w-80'):
                     f()
         return f
 
@@ -78,9 +76,10 @@ def _add_html_anchor(element: ui.html) -> None:
         return
 
     icon = '<span class="material-icons">link</span>'
-    anchor = f'<a href="reference#{headline_id}" class="text-gray-300 hover:text-black">{icon}</a>'
-    html = html.replace('<h4', f'<h4 id="{headline_id}"', 1)
-    html = html.replace('</h4>', f' {anchor}</h4>', 1)
+    link = f'<a href="reference#{headline_id}" class="hover:text-black" style="color: #ddd">{icon}</a>'
+    target = f'<div id="{headline_id}" style="position: relative; top: -90px"></div>'
+    html = html.replace('<h4', f'{target}<h4', 1)
+    html = html.replace('</h4>', f' {link}</h4>', 1)
     element.content = html
 
 

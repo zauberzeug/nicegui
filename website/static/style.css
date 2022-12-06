@@ -1,6 +1,11 @@
 html {
   scroll-behavior: smooth;
 }
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
 body {
   background-color: #f8f8f8;
 }
@@ -9,7 +14,7 @@ em {
   color: #5a99ff;
 }
 a:hover {
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 .q-header {
@@ -33,4 +38,9 @@ dl.field-list dt {
 }
 dl.field-list dd {
   grid-column-start: 2;
+}
+
+.dark-box {
+  background-color: #5a99ff;
+  width: 100%;
 }

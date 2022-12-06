@@ -5,8 +5,8 @@ from pygments.formatters import HtmlFormatter
 
 from nicegui import Client, ui
 from website import demo_card, reference, svg
-from website.constants import ACCENT_COLOR, HEADER_HEIGHT
 from website.example import bash_window, browser_window, python_window
+from website.style import example_link, features, header_link, heading, link_target, section_heading, subtitle, title
 
 ui.add_static_files('/favicon', Path(__file__).parent / 'website' / 'favicon')
 
@@ -25,12 +25,12 @@ def add_header() -> None:
             svg.face().classes('w-8 stroke-white stroke-2')
             svg.word().classes('w-24')
         with ui.row().classes('items-center ml-auto'):
-            ui.link('Features', '/#features').classes(replace='text-lg text-white')
-            ui.link('Installation', '/#installation').classes(replace='text-lg text-white')
-            ui.link('Examples', '/#examples').classes(replace='text-lg text-white')
-            ui.link('API Reference', reference_page).classes(replace='text-lg text-white')
-            ui.link('Demos', '/#demos').classes(replace='text-lg text-white')
-            ui.link('Why?', '/#why').classes(replace='text-lg text-white')
+            header_link('Features', '/#features')
+            header_link('Installation', '/#installation')
+            header_link('Examples', '/#examples')
+            header_link('API Reference', reference_page)
+            header_link('Demos', '/#demos')
+            header_link('Why?', '/#why')
             with ui.link(target='https://github.com/zauberzeug/nicegui/'):
                 svg.github().classes('fill-white scale-125 m-1')
 
@@ -41,99 +41,81 @@ async def index_page(client: Client):
     add_head_html()
     add_header()
 
-    with ui.row() \
-            .classes('w-full h-screen q-pa-md items-center gap-16 no-wrap') \
-            .style(f'transform: translateX(-250px)'):
-        svg.face().classes('stroke-black').style('width: 500px')
+    with ui.row().classes('w-full h-screen items-center gap-16 no-wrap').style(f'transform: translateX(-250px)'):
+        svg.face().classes('stroke-black w-[500px]')
         with ui.column().classes('gap-8'):
-            ui.html('Meet the <em>NiceGUI</em>.') \
-                .style('font-size: 400%; line-height: 0.9; font-weight: 500')
-            ui.markdown('And let any browser be the frontend\n\nof your Python code.') \
-                .style('font-size: 200%; line-height: 0.9')
-            with ui.link(target='#about').classes('column mt-6 items-center').style('margin-left: -1em'):
-                ui.icon('keyboard_arrow_down').classes('text-4xl text-grey-5').style('margin-bottom: -0.95em')
+            title('Meet the *NiceGUI*.')
+            subtitle('And let any browser be the frontend\n\nof your Python code.')
+            with ui.link(target='#about') \
+                    .classes('column mt-6 items-center ml-[-12px] hover:translate-y-1 duration-100 ease-out'):
+                ui.icon('keyboard_arrow_down').classes('text-4xl text-grey-5 mb-[-0.95em]')
                 ui.icon('keyboard_arrow_down').classes('text-6xl text-black')
-                ui.icon('keyboard_arrow_down').classes('text-4xl text-grey-5').style('margin-top: -0.85em')
+                ui.icon('keyboard_arrow_down').classes('text-4xl text-grey-5 mt-[-0.85em]')
 
-    ui.link_target('about').style(f'position: relative; top: -20px')
-    with ui.row() \
-            .classes('w-full h-screen q-pa-md items-center gap-28 p-32 no-wrap') \
-            .style(f'background: {ACCENT_COLOR}'):
-        with ui.column().classes('gap-6'):
-            ui.markdown('Interact with Python through buttons, dialogs, 3D scenes, plots and much more.') \
-                .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500').classes('mb-4')
-            ui.label('''
-                NiceGUI handles all the web development details for you.
-                So you can focus on writing Python code.
-                Anything from short scripts and dashboards to full robotics projects, IoT solutions, 
-                smart home automations and machine learning projects can benefit from having all code in one place.
-                
-            ''').style('font-size: 150%; color: white').classes('leading-tight')
-            with ui.row().style('font-size: 150%; color: white').classes('leading-tight gap-2'):
+    link_target('about', '-20px')
+    with ui.row().classes('dark-box h-screen items-center gap-28 p-32 no-wrap'):
+        with ui.column().classes('gap-6 text-white'):
+            heading('Interact with Python through buttons, dialogs, 3D scenes, plots and much more.')
+            with ui.column().classes('gap-2 text-xl'):
+                ui.html('''
+                    NiceGUI handles all the web development details for you.
+                    So you can focus on writing Python code.
+                    Anything from short scripts and dashboards to full robotics projects, IoT solutions, 
+                    smart home automations and machine learning projects can benefit from having all code in one place.
+                ''')
                 ui.html('''
                     Available as
                     <a href="https://pypi.org/project/nicegui/"><strong>PyPI package</strong><span class="material-icons">north_east</span></a>,
                     <a href="https://hub.docker.com/r/zauberzeug/nicegui"><strong>Docker image</strong><span class="material-icons">north_east</span></a> and on
                     <a href="https://github.com/zauberzeug/nicegui"><strong>GitHub</strong><span class="material-icons">north_east</span></a>.
                 ''')
-
         demo_card.create()
 
-    ui.link_target('features').style(f'position: relative; top: -{HEADER_HEIGHT}')
+    link_target('features', '-50px')
     with ui.column().classes('w-full q-pa-xl q-mb-xl'):
-        ui.label('Features').classes('text-bold text-lg')
-        ui.html('Code <em>nicely</em>') \
-            .style('font-size: 300%; font-weight: 500; margin-top: -20px')
+        section_heading('Features', 'Code *nicely*')
         with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between q-mb-xl'):
-            with ui.column().classes('gap-1 col-3'):
-                ui.icon('swap_horiz').classes('text-5xl mb-3 text-primary opacity-80')
-                ui.label('Interaction').classes('text-bold mb-3')
-                ui.markdown('- buttons, switches, sliders, inputs, ...')
-                ui.markdown('- notifications, dialogs and menus')
-                ui.markdown('- keyboard input')
-                ui.markdown('- on-screen joystick')
-            with ui.column().classes('gap-1 col-3'):
-                ui.icon('space_dashboard').classes('text-5xl mb-3 text-primary opacity-80')
-                ui.label('Layout').classes('text-bold mb-3')
-                ui.markdown('- navigation bars, tabs, panels, ...')
-                ui.markdown('- grouping with rows, columns and cards')
-                ui.markdown('- HTML and markdown elements')
-                ui.markdown('- flex layout by default')
-            with ui.column().classes('gap-1 col-3'):
-                ui.icon('insights').classes('text-5xl mb-3 text-primary')
-                ui.label('Visualization').classes('text-bold mb-3')
-                ui.markdown('- charts, diagrams and tables')
-                ui.markdown('- 3D scenes')
-                ui.markdown('- progress bars')
-                ui.markdown('- built-in timer for data refresh')
+            features('swap_horiz', 'Interaction', [
+                'buttons, switches, sliders, inputs, ...',
+                'notifications, dialogs and menus',
+                'keyboard input',
+                'on-screen joystick',
+            ])
+            features('space_dashboard', 'Layout', [
+                'navigation bars, tabs, panels, ...',
+                'grouping with rows, columns and cards',
+                'HTML and markdown elements',
+                'flex layout by default',
+            ])
+            features('insights', 'Visualization', [
+                'charts, diagrams and tables',
+                '3D scenes',
+                'progress bars',
+                'built-in timer for data refresh',
+            ])
         with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between'):
-            with ui.column().classes('gap-1 col-3'):
-                ui.icon('brush').classes('text-5xl mb-3 text-primary opacity-80')
-                ui.label('Styling').classes('text-bold mb-3')
-                ui.markdown('- customizable color themes')
-                ui.markdown('- custom CSS and classes')
-                ui.markdown('- modern look with material design')
-                ui.markdown('- built-in [Tailwind](https://tailwindcss.com/) support')
-            with ui.column().classes('gap-1 col-3'):
-                ui.icon('source').classes('text-5xl mb-3 text-primary opacity-80')
-                ui.label('Coding').classes('text-bold mb-3')
-                ui.markdown('- live-cycle events')
-                ui.markdown('- implicit reload on code change')
-                ui.markdown('- straight-forward data binding')
-                ui.markdown('- execute javascript from Python')
-            with ui.column().classes('gap-1 col-3'):
-                ui.icon('anchor').classes('text-5xl mb-3 text-primary opacity-80')
-                ui.label('Foundation').classes('text-bold mb-3')
-                ui.markdown('- generic [Vue](https://vuejs.org/) to Python bridge')
-                ui.markdown('- dynamic GUI through [Quasar](https://quasar.dev/)')
-                ui.markdown('- content is served with [FastAPI](http://fastapi.tiangolo.com/)')
-                ui.markdown('- Python 3.7+')
+            features('brush', 'Styling', [
+                'customizable color themes',
+                'custom CSS and classes',
+                'modern look with material design',
+                'built-in [Tailwind](https://tailwindcss.com/) support',
+            ])
+            features('source', 'Coding', [
+                'live-cycle events',
+                'implicit reload on code change',
+                'straight-forward data binding',
+                'execute javascript from Python',
+            ])
+            features('anchor', 'Foundation', [
+                'generic [Vue](https://vuejs.org/) to Python bridge',
+                'dynamic GUI through [Quasar](https://quasar.dev/)',
+                'content is served with [FastAPI](http://fastapi.tiangolo.com/)',
+                'Python 3.7+',
+            ])
 
-    ui.link_target('installation').style(f'position: relative; top: -{HEADER_HEIGHT}')
+    link_target('installation', '-50px')
     with ui.column().classes('w-full q-pa-xl q-mb-xl'):
-        ui.label('Installation').classes('text-bold text-lg')
-        ui.html('Get <em>started</em>') \
-            .style('font-size: 300%; font-weight: 500; margin-top: -20px')
+        section_heading('Installation', 'Get *started*')
         with ui.row().classes('w-full no-wrap text-lg leading-tight'):
             with ui.column().classes('w-1/3 gap-2'):
                 ui.html('<em>1.</em>').classes('text-3xl text-bold')
@@ -157,30 +139,21 @@ ui.run()
                 with browser_window().classes('w-full h-52'):
                     ui.label('Hello NiceGUI!')
 
-    ui.link_target('examples').style(f'position: relative; top: -{HEADER_HEIGHT}')
+    link_target('examples', '-50px')
     with ui.column().classes('w-full q-pa-xl q-mb-xl'):
-        ui.label('Examples').classes('text-bold text-lg')
-        ui.html('Try <em>this</em>') \
-            .style('font-size: 300%; font-weight: 500; margin-top: -20px')
+        section_heading('Examples', 'Try *this*')
         with ui.row().classes('justify-center w-full'), ui.column().classes('w-[65rem]'):
             reference.create_intro()
 
-    with ui.row() \
-            .classes('w-full items-center gap-28 px-32 py-16 no-wrap') \
-            .style(f'background: {ACCENT_COLOR}'):
-        with ui.column().classes('gap-4'):
-            ui.markdown('Browse through plenty of live examples.') \
-                .style('font-size: 220%; color: white; line-height: 0.9; font-weight: 500')
-            ui.html('Fun-Fact: This whole website is also coded with NiceGUI.') \
-                .style('font-size: 150%; color: white')
-        ui.link('API reference', '/reference') \
-            .classes('rounded-full mx-auto px-12 py-2 text-xl text-bold bg-white')
+    with ui.row().classes('dark-box items-center gap-28 px-32 py-16'):
+        with ui.column().classes('gap-2'):
+            ui.markdown('Browse through plenty of live examples.').classes('text-3xl text-white font-medium')
+            ui.html('Fun-Fact: This whole website is also coded with NiceGUI.').classes('text-xl text-white')
+        ui.link('API reference', '/reference').classes('rounded-full mx-auto px-12 py-2 text-xl text-bold bg-white')
 
-    ui.link_target('demos').style(f'position: relative; top: -{HEADER_HEIGHT}')
+    link_target('demos', '-50px')
     with ui.column().classes('w-full q-pa-xl q-mb-xl'):
-        ui.label('In-depth demonstrations').classes('text-bold text-lg')
-        ui.html('Pick your <em>solution</em>') \
-            .style('font-size: 300%; font-weight: 500; margin-top: -20px')
+        section_heading('In-depth demonstrations', 'Pick your *solution*')
         with ui.row().classes('w-full no-wrap text-lg leading-tight'):
             with ui.column().classes('w-1/3'):
                 example_link('Slideshow', 'implements a keyboard-controlled image slideshow')
@@ -197,53 +170,43 @@ ui.run()
                     'demonstrates wrapping the JavaScript library leaflet to display a map at specific locations')
                 example_link(
                     'AI Interface',
-                    'utilizes the great [replicate](https://replicate.com) library to perform voice-to-text transcription and generate images from prompts with Stable Diffusion')
+                    'utilizes the [replicate](https://replicate.com) library to perform voice-to-text transcription and generate images from prompts with Stable Diffusion')
                 example_link('3D Scene', 'creates a webGL view and loads an STL mesh illuminated with a spotlight')
             with ui.column().classes('w-1/3'):
                 example_link('Custom Vue Component', 'shows how to write and integrate a custom vue component')
                 example_link('Image Mask Overlay', 'shows how to overlay an image with a mask')
                 example_link('Infinite Scroll', 'presents an infinitely scrolling image gallery')
 
-    ui.link_target('why')
-    with ui.row() \
-            .classes('w-full h-screen q-pa-md items-center gap-28 p-32 no-wrap') \
-            .style(f'background: {ACCENT_COLOR}'):
-        with ui.column().classes('gap-6'):
-            ui.markdown('Why?') \
-                .style('font-size: 300%; color: white; line-height: 0.9; font-weight: 500').classes('mb-4')
-            ui.html('''
-                We like
-                <strong><a href="https://streamlit.io/">Streamlit</a></strong>
-                but find it does
-                <strong><a href="https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651">too much magic</a></strong>
-                when it comes to state handling.
-                In search for an alternative nice library to write simple graphical user interfaces in Python we discovered
-                <strong><a href="https://justpy.io/">JustPy</a></strong>.
-                Although we liked the approach, it is too "low-level HTML" for our daily usage.
-                But it inspired us to use
-                <strong><a href="https://vuejs.org/">Vue</a></strong>
-                and
-                <strong><a href="https://quasar.dev/">Quasar</a></strong>
-                for the frontend.<br/>
-
-                We have built on top of
-                <strong><a href="https://fastapi.tiangolo.com/">FastAPI</a></strong>,
-                which itself is based on the ASGI framework
-                <strong><a href="https://www.starlette.io/">Starlette</a></strong>,
-                and the ASGI webserver
-                <strong><a href="https://www.uvicorn.org/">Uvicorn</a></strong>
-                because of their great performance and ease of use.
-            ''').style('font-size: 150%; color: white').classes('leading-tight')
-
+    link_target('why', '0')
+    with ui.row().classes('dark-box h-screen items-center gap-28 p-32 no-wrap'):
+        with ui.column().classes('gap-8'):
+            heading('Why?')
+            with ui.column().classes('gap-2 text-xl text-white'):
+                ui.html('''
+                    We like
+                    <strong><a href="https://streamlit.io/">Streamlit</a></strong>
+                    but find it does
+                    <strong><a href="https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651">too much magic</a></strong>
+                    when it comes to state handling.
+                    In search for an alternative nice library to write simple graphical user interfaces in Python we discovered
+                    <strong><a href="https://justpy.io/">JustPy</a></strong>.
+                    Although we liked the approach, it is too "low-level HTML" for our daily usage.
+                    But it inspired us to use
+                    <strong><a href="https://vuejs.org/">Vue</a></strong>
+                    and
+                    <strong><a href="https://quasar.dev/">Quasar</a></strong>
+                    for the frontend.
+                ''')
+                ui.html('''
+                    We have built on top of
+                    <strong><a href="https://fastapi.tiangolo.com/">FastAPI</a></strong>,
+                    which itself is based on the ASGI framework
+                    <strong><a href="https://www.starlette.io/">Starlette</a></strong>,
+                    and the ASGI webserver
+                    <strong><a href="https://www.uvicorn.org/">Uvicorn</a></strong>
+                    because of their great performance and ease of use.
+                ''')
         svg.face().classes('stroke-white').style('width: 1500px')
-
-
-def example_link(title: str, description: str) -> None:
-    name = title.lower().replace(' ', '_')
-    with ui.column().classes('gap-0'):
-        with ui.link(target=f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/main.py'):
-            ui.label(title).classes(replace='text-black text-bold')
-            ui.markdown(description).classes(replace='text-black')
 
 
 @ui.page('/reference')
@@ -253,4 +216,4 @@ def reference_page():
     reference.create_full()
 
 
-ui.run()
+ui.run(uvicorn_reload_includes='*.py, *.css, *.html')
