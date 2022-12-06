@@ -4,8 +4,8 @@ from pathlib import Path
 from pygments.formatters import HtmlFormatter
 
 from nicegui import Client, ui
-from website import demo_card, reference
-from website.constants import ACCENT_COLOR, HEADER_HEIGHT, STATIC
+from website import demo_card, reference, svg
+from website.constants import ACCENT_COLOR, HEADER_HEIGHT
 from website.example import bash_window, browser_window, python_window
 
 ui.add_static_files('/favicon', Path(__file__).parent / 'website' / 'favicon')
@@ -19,11 +19,11 @@ def add_head_html() -> None:
 
 def add_header() -> None:
     with ui.header() \
-            .classes('items-center duration-200 px-4', remove='q-pa-md') \
+            .classes('items-center duration-200 p-0 px-4') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
         with ui.link(target=index_page).classes('row gap-4 items-center'):
-            ui.html((STATIC / 'happy_face.svg').read_text()).classes('w-8 stroke-white')
-            ui.html((STATIC / 'nicegui_word.svg').read_text()).classes('w-24')
+            svg.face().classes('w-8 stroke-white stroke-2')
+            svg.word().classes('w-24')
         with ui.row().classes('items-center ml-auto'):
             ui.link('Features', '/#features').classes(replace='text-lg text-white')
             ui.link('Installation', '/#installation').classes(replace='text-lg text-white')
@@ -32,7 +32,7 @@ def add_header() -> None:
             ui.link('Demos', '/#demos').classes(replace='text-lg text-white')
             ui.link('Why?', '/#why').classes(replace='text-lg text-white')
             with ui.link(target='https://github.com/zauberzeug/nicegui/'):
-                ui.html((STATIC / 'github.svg').read_text()).classes('fill-white scale-125 m-1')
+                svg.github().classes('fill-white scale-125 m-1')
 
 
 @ui.page('/')
@@ -44,7 +44,7 @@ async def index_page(client: Client):
     with ui.row() \
             .classes('w-full h-screen q-pa-md items-center gap-16 no-wrap') \
             .style(f'transform: translateX(-250px)'):
-        ui.html((STATIC / 'happy_face.svg').read_text()).classes('stroke-black').style('width: 500px')
+        svg.face().classes('stroke-black').style('width: 500px')
         with ui.column().classes('gap-8'):
             ui.html('Meet the <em>NiceGUI</em>.') \
                 .style('font-size: 400%; line-height: 0.9; font-weight: 500')
@@ -235,7 +235,7 @@ ui.run()
                 because of their great performance and ease of use.
             ''').style('font-size: 150%; color: white').classes('leading-tight')
 
-        ui.html((STATIC / 'happy_face.svg').read_text()).classes('stroke-white').style('width: 1500px')
+        svg.face().classes('stroke-white').style('width: 1500px')
 
 
 def example_link(title: str, description: str) -> None:

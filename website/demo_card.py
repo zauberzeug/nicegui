@@ -1,6 +1,6 @@
 from nicegui import ui
 
-from .constants import STATIC
+from . import svg
 
 
 def create():
@@ -8,8 +8,7 @@ def create():
         with ui.card().style(f'clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%)') \
                 .classes('pb-16 no-shadow'), ui.row().classes('no-wrap'):
             with ui.column().classes('items-center'):
-                ui.html((STATIC / 'happy_face.svg').read_text()) \
-                    .classes('w-16 mx-6 stroke-black').on('click', lambda _: output.set_text("That's my face!"))
+                svg.face().classes('w-16 mx-6 stroke-black stroke-2').on('click', lambda _: output.set_text("That's my face!"))
                 ui.button('Click me!', on_click=lambda: output.set_text('Clicked')).classes('w-full')
                 ui.input('Text', value='abc', on_change=lambda e: output.set_text(e.value))
                 ui.checkbox('Check', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
