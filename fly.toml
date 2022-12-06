@@ -9,6 +9,12 @@ processes = []
 
 [env]
 
+[deploy]
+# boot a single, new VM with the new release, verify its health, then
+# One by one, each running VM is taken down and replaced by the new release VM
+strategy = "canary" 
+
+
 [experimental]
   allowed_public_ports = []
   auto_rollback = true
@@ -33,22 +39,26 @@ processes = []
     port = 443
 
   [[services.tcp_checks]]
-    grace_period = "1s"
-    interval = "15s"
-    restart_limit = 0
+    grace_period = "5s"
+    interval = "5s"
+    restart_limit = 1
     timeout = "2s"
 
   [[services.http_checks]]
-    interval = 10000
-    grace_period = "5s"
+    interval = "20s"
+    grace_period = "10s"
     method = "get"
     path = "/"
     protocol = "http"
-    restart_limit = 0
-    timeout = 2000
+    restart_limit = 1
+    timeout = "4s"
     tls_skip_verify = false
     [services.http_checks.headers]
 
-  [[statics]]
+  [[statics]] # nicegui 1.0
     guest_path = "/app/nicegui/static"
     url_prefix = "/static"
+
+  [[statics]] # nicegui 0.9
+    guest_path = "/usr/local/lib/python3.11/site-packages/nicegui/static/templates"
+    url_prefix = "/templates"
