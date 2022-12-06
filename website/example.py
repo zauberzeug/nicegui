@@ -9,6 +9,12 @@ from nicegui.elements.markdown import apply_tailwind
 
 REGEX_H4 = re.compile(r'<h4.*?>(.*?)</h4>')
 SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
+PYTHON_BGCOLOR = '#e3e9f2'
+PYTHON_COLOR = '#eff5ff'
+BASH_BGCOLOR = '#dcdcdc'
+BASH_COLOR = '#e8e8e8'
+BROWSER_BGCOLOR = '#f2f2f2'
+BROWSER_COLOR = '#ffffff'
 
 
 class example:
@@ -78,35 +84,53 @@ def _add_html_anchor(element: ui.html) -> None:
     element.content = html
 
 
-def _add_dots() -> None:
-    with ui.row().classes('gap-1').style('transform: translate(-6px, -6px)'):
+def _window_header(bgcolor: str) -> ui.row():
+    return ui.row().classes('h-8 p-2') \
+        .style(f'background-color: {bgcolor}; margin: -16px -16px 0 -16px; width: calc(100% + 32px)')
+
+
+def _dots() -> None:
+    with ui.row().classes('gap-1 absolute').style('left: 10px; top: 10px'):
         ui.icon('circle').style('font-size: 75%').classes('text-red-400')
         ui.icon('circle').style('font-size: 75%').classes('text-yellow-400')
         ui.icon('circle').style('font-size: 75%').classes('text-green-400')
 
 
-def window(color: str) -> ui.card:
-    with ui.card().style(f'box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); background: {color}') as card:
-        _add_dots()
+def _title(title: str) -> None:
+    ui.label(title).classes('text-sm text-gray-600 absolute').style('left: 50%; top: 6px; transform: translateX(-50%)')
+
+
+def _tab(name: str, color: str, bgcolor: str) -> None:
+    with ui.row().classes('absolute gap-0').style('left: 80px; top: 6px'):
+        with ui.label().classes('w-2 h-[26px]').style(f'background-color: {color}'):
+            ui.label().classes('w-full h-full').style(f'background-color: {bgcolor}; border-radius: 0 0 6px 0')
+        ui.label(name).classes('text-sm text-gray-600 px-6 py-1') \
+            .style(f'height: 26px; border-radius: 6px 6px 0 0; background-color: {color}')
+        with ui.label().classes('w-2 h-[26px]').style(f'background-color: {color}'):
+            ui.label().classes('w-full h-full').style(f'background-color: {bgcolor}; border-radius: 0 0 0 6px')
+
+
+def window(color: str, bgcolor: str, *, title: str = '', tab: str = '') -> ui.card:
+    with ui.card().classes('no-wrap rounded-xl').style(f'box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); background: {color}') as card:
+        with _window_header(bgcolor):
+            _dots()
+            if title:
+                _title(title)
+            if tab:
+                _tab(tab, color, bgcolor)
     return card
 
 
 def python_window() -> ui.card:
-    return window('#eff5ff')
-
-
-def browser_window() -> ui.card:
-    with ui.card().classes('h-fill').style(f'box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); background: white') as card:
-        with ui.row().classes('mb-2 items-center gap-2').style('margin: -8px; width: calc(100% + 16px); margin-bottom: 8px'):
-            ui.icon('arrow_back').classes('text-gray-300')
-            ui.icon('arrow_forward').classes('text-gray-300')
-            ui.icon('refresh').classes('text-gray-300')
-            ui.label('http://localhost:8080/').classes('grow text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full')
-    return card
+    return window(PYTHON_COLOR, PYTHON_BGCOLOR, title='main.py')
 
 
 def bash_window() -> ui.card:
-    return window('#e8e8e8')
+    return window(BASH_COLOR, BASH_BGCOLOR, title='bash')
+
+
+def browser_window() -> ui.card:
+    return window(BROWSER_COLOR, BROWSER_BGCOLOR, tab='NiceGUI')
 
 
 def css_for_examples() -> str:
