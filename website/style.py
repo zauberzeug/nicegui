@@ -1,3 +1,5 @@
+from typing import List
+
 from nicegui import ui
 
 
@@ -34,7 +36,7 @@ def example_link(title: str, description: str) -> None:
             ui.markdown(description).classes(replace='text-black')
 
 
-def features(icon: str, title: str, items: list[str]) -> None:
+def features(icon: str, title: str, items: List[str]) -> None:
     with ui.column().classes('gap-1 col-3'):
         ui.icon(icon).classes('text-5xl mb-3 text-primary opacity-80')
         ui.label(title).classes('text-bold mb-3')
