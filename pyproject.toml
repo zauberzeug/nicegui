@@ -14,7 +14,7 @@ typing-extensions = ">=3.10.0"
 markdown2 = "^2.4.3"
 Pygments = "^2.9.0"
 docutils = "^0.17.1"
-uvicorn = "^0.18.0"
+uvicorn = {extras = ["standard"], version = "^0.20.0"}
 matplotlib = [
     { version = "^3.5.0", markers = "python_version ~= '3.7'"},
     { version = "^3.6.0", markers = "python_version ~= '3.11.0'"},
