@@ -34,9 +34,10 @@ class example:
 
             with ui.row().classes('items-stretch max-w-screen-lg'):
                 code = inspect.getsource(f).splitlines()
-                while not code[0].startswith(' ' * 8):
+                indentation = len(code[0].split('@example')[0]) + 4
+                while not code[0].startswith(' ' * indentation):
                     del code[0]
-                code = [l[8:] for l in code]
+                code = [l[indentation:] for l in code]
                 while code[0].startswith('global '):
                     del code[0]
                 code.insert(0, '```python')
