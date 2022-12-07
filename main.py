@@ -52,8 +52,8 @@ async def index_page(client: Client):
                 ui.icon('keyboard_arrow_down').classes('text-6xl text-black')
                 ui.icon('keyboard_arrow_down').classes('text-4xl text-grey-5 mt-[-0.85em]')
 
-    link_target('about', '-20px')
     with ui.row().classes('dark-box h-screen items-center gap-28 p-32 no-wrap'):
+        link_target('about')
         with ui.column().classes('gap-6 text-white'):
             heading('Interact with Python through buttons, dialogs, 3D scenes, plots and much more.')
             with ui.column().classes('gap-2 text-xl bold-links arrow-links'):
@@ -70,8 +70,8 @@ async def index_page(client: Client):
                     '[GitHub](https://github.com/zauberzeug/nicegui).')
         demo_card.create()
 
-    link_target('features', '-50px')
     with ui.column().classes('w-full q-pa-xl q-mb-xl bold-links'):
+        link_target('features', '-50px')
         section_heading('Features', 'Code *nicely*')
         with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between q-mb-xl'):
             features('swap_horiz', 'Interaction', [
@@ -112,8 +112,8 @@ async def index_page(client: Client):
                 'Python 3.7+',
             ])
 
-    link_target('installation', '-50px')
     with ui.column().classes('w-full q-pa-xl q-mb-xl'):
+        link_target('installation', '-50px')
         section_heading('Installation', 'Get *started*')
         with ui.row().classes('w-full no-wrap text-lg leading-tight'):
             with ui.column().classes('w-1/3 gap-2'):
@@ -138,8 +138,8 @@ ui.run()
                 with browser_window().classes('w-full h-52'):
                     ui.label('Hello NiceGUI!')
 
-    link_target('examples', '-50px')
     with ui.column().classes('w-full q-pa-xl q-mb-xl'):
+        link_target('examples', '-50px')
         section_heading('Examples', 'Try *this*')
         with ui.row().classes('justify-center w-full'), ui.column().classes('w-[65rem]'):
             reference.create_intro()
@@ -150,8 +150,8 @@ ui.run()
             ui.html('Fun-Fact: This whole website is also coded with NiceGUI.').classes('text-xl text-white')
         ui.link('API reference', '/reference').classes('rounded-full mx-auto px-12 py-2 text-xl text-bold bg-white')
 
-    link_target('demos', '-50px')
     with ui.column().classes('w-full q-pa-xl q-mb-xl'):
+        link_target('demos', '-50px')
         section_heading('In-depth demonstrations', 'Pick your *solution*')
         with ui.row().classes('w-full no-wrap text-lg leading-tight'):
             with ui.column().classes('w-1/3'):
@@ -176,8 +176,8 @@ ui.run()
                 example_link('Image Mask Overlay', 'shows how to overlay an image with a mask')
                 example_link('Infinite Scroll', 'presents an infinitely scrolling image gallery')
 
-    link_target('why', '0')
     with ui.row().classes('dark-box h-screen items-center gap-28 p-32 no-wrap'):
+        link_target('why')
         with ui.column().classes('gap-8'):
             heading('Why?')
             with ui.column().classes('gap-2 text-xl text-white bold-links arrow-links'):

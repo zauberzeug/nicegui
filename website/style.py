@@ -7,8 +7,10 @@ def header_link(title: str, target: str) -> ui.link:
     return ui.link(title, target).classes(replace='text-lg text-white')
 
 
-def link_target(name: str, offset: str) -> ui.link_target:
-    return ui.link_target(name).style(f'position: relative; top: {offset}')
+def link_target(name: str, offset: str = '0') -> ui.link_target:
+    target = ui.link_target(name).classes('bg-red-400 w-2 h-2').style(f'position: absolute; top: {offset}; left: 0')
+    target.parent_slot.parent.classes('relative')
+    return target
 
 
 def section_heading(subtitle: str, title: str) -> None:
