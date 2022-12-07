@@ -2,7 +2,7 @@
 <svg id="Ebene_1"
     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 62.44 71.74">
     <defs>
-        <style>.svg_face{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px;}</style>
+        <style>.svg_face{fill:none;stroke-linecap:round;stroke-linejoin:round}</style>
     </defs>
     <path class="svg_face" d="M55.35,18.98v23.97c0,14.34-10.89,25.96-24.34,25.96S6.68,57.29,6.68,42.95v-11.31c7.48,0,8.01-11.96,8.01-11.96,1.79-.78,3.82-.89,6.02,.23,11.9,6.08,26.13,1.69,31.33-.41,1.21-.49,2.34-.6,3.31-.52Z"/>
     <path class="svg_face" d="M14.7,38.09s3.18-2.52,6.99,0"/>

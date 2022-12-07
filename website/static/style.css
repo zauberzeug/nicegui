@@ -1,0 +1,46 @@
+html {
+  scroll-behavior: smooth;
+}
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+body {
+  background-color: #f8f8f8;
+}
+em {
+  font-style: normal;
+  color: #5a99ff;
+}
+a:hover {
+  opacity: 0.85;
+}
+
+.q-header {
+  height: 70px;
+  background-color: #5a99ff;
+}
+.q-header.fade {
+  height: 50px;
+  background-color: #5a99ffd0;
+  backdrop-filter: blur(5px);
+}
+
+dl.field-list {
+  display: grid;
+  grid-template-columns: max-content auto;
+}
+dl.field-list dt {
+  grid-column-start: 1;
+  margin-right: 1em;
+  font-weight: bold;
+}
+dl.field-list dd {
+  grid-column-start: 2;
+}
+
+.dark-box {
+  background-color: #5a99ff;
+  width: 100%;
+}

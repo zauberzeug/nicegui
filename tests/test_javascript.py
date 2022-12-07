@@ -62,3 +62,30 @@ def test_response_from_javascript(screen: Screen):
     screen.open('/')
     screen.click('compute')
     screen.should_contain('42')
+
+
+def test_async_javascript(screen: Screen):
+    async def run():
+        result = await ui.run_javascript('await new Promise(r => setTimeout(r, 100)); return 42')
+        ui.label(result)
+    ui.button('run', on_click=run)
+    screen.open('/')
+    screen.click('run')
+    screen.should_contain('42')
+
+
+def test_simultaneous_async_javascript(screen: Screen):
+    async def runA():
+        result = await ui.run_javascript('await new Promise(r => setTimeout(r, 500)); return 1')
+        ui.label(f'A: {result}')
+
+    async def runB():
+        result = await ui.run_javascript('await new Promise(r => setTimeout(r, 250)); return 2')
+        ui.label(f'B: {result}')
+    ui.button('runA', on_click=runA)
+    ui.button('runB', on_click=runB)
+    screen.open('/')
+    screen.click('runA')
+    screen.click('runB')
+    screen.should_contain('A: 1')
+    screen.should_contain('B: 2')

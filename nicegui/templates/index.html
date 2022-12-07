@@ -61,10 +61,16 @@
       }
 
       function run_javascript(code, request_id) {
-        const result = eval(code);
-        if (request_id) {
-          window.socket.emit("javascript_response", {request_id, result});
-        }
+        (new Promise((resolve) =>resolve(eval(code)))).catch((reason) => {
+          if(reason instanceof SyntaxError)
+            return eval(`(async() => {${code}})()`);
+          else
+            throw reason;
+        }).then((result) => {
+          if (request_id) {
+            window.socket.emit("javascript_response", {request_id, result});
+          }
+        });
       }
 
       const app = Vue.createApp({
