@@ -60,7 +60,7 @@ class example:
                 code = '\n'.join(code)
                 with python_window().classes(f'w-[43rem] overflow-auto'):
                     ui.markdown(code)
-                with browser_window().classes('w-80'):
+                with browser_window().classes('w-80 browser-window'):
                     f()
         return f
 

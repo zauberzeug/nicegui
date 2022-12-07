@@ -59,3 +59,7 @@ dl.field-list dd {
   background-color: #5a99ff;
   width: 100%;
 }
+
+.browser-window a {
+  text-decoration: underline;
+}
