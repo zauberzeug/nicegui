@@ -17,7 +17,7 @@ While having reasonable defaults, you can still modify the look of your app by u
         with ui.row():
             ui.label('CSS').style('color: #888; font-weight: bold')
             ui.label('Tailwind').classes('font-serif')
-            ui.label('Quasar').classes('q-mt-md')
+            ui.label('Quasar').classes('q-ml-xl')
         ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
 
     @example('''#### Common UI Elements
