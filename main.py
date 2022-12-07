@@ -56,23 +56,22 @@ async def index_page(client: Client):
     with ui.row().classes('dark-box h-screen items-center gap-28 p-32 no-wrap'):
         with ui.column().classes('gap-6 text-white'):
             heading('Interact with Python through buttons, dialogs, 3D scenes, plots and much more.')
-            with ui.column().classes('gap-2 text-xl'):
-                ui.html('''
-                    NiceGUI handles all the web development details for you.
-                    So you can focus on writing Python code.
-                    Anything from short scripts and dashboards to full robotics projects, IoT solutions, 
-                    smart home automations and machine learning projects can benefit from having all code in one place.
-                ''')
-                ui.html('''
-                    Available as
-                    <a href="https://pypi.org/project/nicegui/"><strong>PyPI package</strong><span class="material-icons">north_east</span></a>,
-                    <a href="https://hub.docker.com/r/zauberzeug/nicegui"><strong>Docker image</strong><span class="material-icons">north_east</span></a> and on
-                    <a href="https://github.com/zauberzeug/nicegui"><strong>GitHub</strong><span class="material-icons">north_east</span></a>.
-                ''')
+            with ui.column().classes('gap-2 text-xl bold-links arrow-links'):
+                ui.markdown(
+                    'NiceGUI handles all the web development details for you. '
+                    'So you can focus on writing Python code. '
+                    'Anything from short scripts and dashboards to full robotics projects, IoT solutions, '
+                    'smart home automations and machine learning projects can benefit from having all code in one place.'
+                )
+                ui.markdown(
+                    'Available as '
+                    '[PyPI package](https://pypi.org/project/nicegui/), '
+                    '[Docker image](https://hub.docker.com/r/zauberzeug/nicegui) and on '
+                    '[GitHub](https://github.com/zauberzeug/nicegui).')
         demo_card.create()
 
     link_target('features', '-50px')
-    with ui.column().classes('w-full q-pa-xl q-mb-xl'):
+    with ui.column().classes('w-full q-pa-xl q-mb-xl bold-links'):
         section_heading('Features', 'Code *nicely*')
         with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between q-mb-xl'):
             features('swap_horiz', 'Interaction', [
@@ -181,32 +180,31 @@ ui.run()
     with ui.row().classes('dark-box h-screen items-center gap-28 p-32 no-wrap'):
         with ui.column().classes('gap-8'):
             heading('Why?')
-            with ui.column().classes('gap-2 text-xl text-white'):
-                ui.html('''
-                    We like
-                    <strong><a href="https://streamlit.io/">Streamlit</a></strong>
-                    but find it does
-                    <strong><a href="https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651">too much magic</a></strong>
-                    when it comes to state handling.
-                    In search for an alternative nice library to write simple graphical user interfaces in Python we discovered
-                    <strong><a href="https://justpy.io/">JustPy</a></strong>.
-                    Although we liked the approach, it is too "low-level HTML" for our daily usage.
-                    But it inspired us to use
-                    <strong><a href="https://vuejs.org/">Vue</a></strong>
-                    and
-                    <strong><a href="https://quasar.dev/">Quasar</a></strong>
-                    for the frontend.
-                ''')
-                ui.html('''
-                    We have built on top of
-                    <strong><a href="https://fastapi.tiangolo.com/">FastAPI</a></strong>,
-                    which itself is based on the ASGI framework
-                    <strong><a href="https://www.starlette.io/">Starlette</a></strong>,
-                    and the ASGI webserver
-                    <strong><a href="https://www.uvicorn.org/">Uvicorn</a></strong>
-                    because of their great performance and ease of use.
-                ''')
-        svg.face().classes('stroke-white').style('width: 1500px')
+            with ui.column().classes('gap-2 text-xl text-white bold-links arrow-links'):
+                ui.markdown(
+                    'We like '
+                    '[Streamlit](https://streamlit.io/) '
+                    'but find it does '
+                    '[too much magic](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651) '
+                    'when it comes to state handling. '
+                    'In search for an alternative nice library to write simple graphical user interfaces in Python we discovered '
+                    '[JustPy](https://justpy.io/). '
+                    'Although we liked the approach, it is too "low-level HTML" for our daily usage. '
+                    'But it inspired us to use '
+                    '[Vue](https://vuejs.org/) '
+                    'and '
+                    '[Quasar](https://quasar.dev/) '
+                    'for the frontend.')
+                ui.markdown(
+                    'We have built on top of '
+                    '[FastAPI](https://fastapi.tiangolo.com/), '
+                    'which itself is based on the ASGI framework '
+                    '[Starlette](https://www.starlette.io/), '
+                    'and the ASGI webserver '
+                    '[Uvicorn](https://www.uvicorn.org/) '
+                    'because of their great performance and ease of use.'
+                )
+        svg.face().classes('stroke-white w-[1500px]')
 
 
 @ui.page('/reference')

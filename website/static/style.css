@@ -13,8 +13,23 @@ em {
   font-style: normal;
   color: #5a99ff;
 }
-a:hover {
+a:link,
+a:visited {
+  color: inherit !important;
+  text-decoration: none;
+}
+a:hover,
+a:active {
   opacity: 0.85;
+}
+.bold-links a:link {
+  font-weight: bold;
+}
+.arrow-links a:link::after {
+  content: "north_east";
+  font-family: "Material Icons";
+  font-weight: 100;
+  vertical-align: -10%;
 }
 
 .q-header {

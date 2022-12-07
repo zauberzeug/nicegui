@@ -33,7 +33,7 @@ def example_link(title: str, description: str) -> None:
     with ui.column().classes('gap-0'):
         with ui.link(target=f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/main.py'):
             ui.label(title).classes(replace='text-black text-bold')
-            ui.markdown(description).classes(replace='text-black')
+            ui.markdown(description).classes(replace='text-black bold-links')
 
 
 def features(icon: str, title: str, items: List[str]) -> None:
@@ -41,4 +41,4 @@ def features(icon: str, title: str, items: List[str]) -> None:
         ui.icon(icon).classes('text-5xl mb-3 text-primary opacity-80')
         ui.label(title).classes('text-bold mb-3')
         for item in items:
-            ui.markdown(f'- {item}')
+            ui.markdown(f'- {item}').classes('bold-links')
