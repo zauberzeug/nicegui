@@ -9,17 +9,17 @@ body {
 body {
   background-color: #f8f8f8;
 }
-em {
+em:not(.browser-window *) {
   font-style: normal;
   color: #5a99ff;
 }
-a:link,
-a:visited {
+a:link:not(.browser-window *),
+a:visited:not(.browser-window *) {
   color: inherit !important;
   text-decoration: none;
 }
-a:hover,
-a:active {
+a:hover:not(.browser-window *),
+a:active:not(.browser-window *) {
   opacity: 0.85;
 }
 .bold-links a:link {
@@ -58,8 +58,4 @@ dl.field-list dd {
 .dark-box {
   background-color: #5a99ff;
   width: 100%;
-}
-
-.browser-window a {
-  text-decoration: underline;
 }
