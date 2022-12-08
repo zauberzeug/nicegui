@@ -34,9 +34,9 @@ def index(request: Request) -> str:
 
 @app.get('/_vue/dependencies/{path:path}')
 def vue_dependencies(path: str):
-    if Path(path).exists():
+    if Path(path).exists() and vue.is_js_dependency(Path(path)):
         return FileResponse(path, media_type='text/javascript')
-    return HTTPException(status_code=404, detail='{path} not found')
+    raise HTTPException(status_code=404, detail=f'{path} not found')
 
 
 @app.get('/_vue/components/{name}')

@@ -40,12 +40,12 @@ def generate_vue_content() -> Tuple[str]:
 
 def generate_js_imports(prefix: str) -> str:
     result = ''
-    for name, path in vue_components.items():
+    for name in vue_components:
         if name in globals.excludes:
             continue
         for path in js_dependencies[name]:
             result += f'import "{prefix}/_vue/dependencies/{path}";\n'
-    for name, path in js_components.items():
+    for name in js_components:
         if name in globals.excludes:
             continue
         for path in js_dependencies[name]:
@@ -53,3 +53,8 @@ def generate_js_imports(prefix: str) -> str:
         result += f'import {{ default as {name} }} from "{prefix}/_vue/components/{name}";\n'
         result += f'app.component("{name}", {name});\n'
     return result
+
+
+def is_js_dependency(path: Path) -> bool:
+    return any(path in js_dependencies[name] for name in vue_components) or \
+        any(path in js_dependencies[name] for name in js_components)
