@@ -42,7 +42,7 @@ strategy = "canary"
     grace_period = "5s"
     interval = "5s"
     restart_limit = 1
-    timeout = "2s"
+    timeout = "1s"
 
   [[services.http_checks]]
     interval = "20s"
@@ -51,7 +51,7 @@ strategy = "canary"
     path = "/"
     protocol = "http"
     restart_limit = 1
-    timeout = "4s"
+    timeout = "2s"
     tls_skip_verify = false
     [services.http_checks.headers]
 
