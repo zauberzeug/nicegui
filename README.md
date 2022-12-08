@@ -1,4 +1,6 @@
-<img src="sceenshots/ui-elements.png" width="300" align="right">
+<a href="http://nicegui.io/#about">
+  <img src="sceenshots/ui-elements-narrow.png" width="200" align="right" alt="Try online!" />
+</a>
 
 # NiceGUI
 
