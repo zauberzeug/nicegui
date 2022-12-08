@@ -119,7 +119,7 @@ async def index_page(client: Client):
             with ui.column().classes('w-1/3 gap-2'):
                 ui.html('<em>1.</em>').classes('text-3xl text-bold')
                 ui.markdown('Create __main.py__').classes('text-lg')
-                with python_window().classes('w-full h-52'):
+                with python_window(classes='w-full h-52'):
                     ui.markdown('''```python\n
 from nicegui import ui
 
@@ -130,12 +130,12 @@ ui.run()
             with ui.column().classes('w-1/3 gap-2'):
                 ui.html('<em>2.</em>').classes('text-3xl text-bold')
                 ui.markdown('Install and launch').classes('text-lg')
-                with bash_window().classes('w-full h-52'):
+                with bash_window(classes='w-full h-52'):
                     ui.markdown('```bash\npip3 install nicegui\npython3 main.py\n```')
             with ui.column().classes('w-1/3 gap-2'):
                 ui.html('<em>3.</em>').classes('text-3xl text-bold')
                 ui.markdown('Enjoy').classes('text-lg')
-                with browser_window().classes('w-full h-52'):
+                with browser_window(classes='w-full h-52'):
                     ui.label('Hello NiceGUI!')
 
     with ui.column().classes('w-full q-pa-xl q-mb-xl'):

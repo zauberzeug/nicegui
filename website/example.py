@@ -85,49 +85,48 @@ def _add_html_anchor(element: ui.html) -> None:
 
 
 def _window_header(bgcolor: str) -> ui.row():
-    return ui.row().classes('h-8 p-2') \
-        .style(f'background-color: {bgcolor}; margin: -16px -16px 0 -16px; width: calc(100% + 32px)')
+    return ui.row().classes(f'w-full h-8 p-2 bg-[{bgcolor}]')
 
 
 def _dots() -> None:
-    with ui.row().classes('gap-1 absolute').style('left: 10px; top: 10px'):
-        ui.icon('circle').style('font-size: 75%').classes('text-red-400')
-        ui.icon('circle').style('font-size: 75%').classes('text-yellow-400')
-        ui.icon('circle').style('font-size: 75%').classes('text-green-400')
+    with ui.row().classes('gap-1 relative left-[1px] top-[1px]'):
+        ui.icon('circle').classes('text-[13px] text-red-400')
+        ui.icon('circle').classes('text-[13px] text-yellow-400')
+        ui.icon('circle').classes('text-[13px] text-green-400')
 
 
 def _title(title: str) -> None:
-    ui.label(title).classes('text-sm text-gray-600 absolute').style('left: 50%; top: 6px; transform: translateX(-50%)')
+    ui.label(title).classes('text-sm text-gray-600 absolute left-1/2 top-[6px]').style('transform: translateX(-50%)')
 
 
 def _tab(name: str, color: str, bgcolor: str) -> None:
-    with ui.row().classes('absolute gap-0').style('left: 80px; top: 6px'):
-        with ui.label().classes('w-2 h-[26px]').style(f'background-color: {color}'):
-            ui.label().classes('w-full h-full').style(f'background-color: {bgcolor}; border-radius: 0 0 6px 0')
-        ui.label(name).classes('text-sm text-gray-600 px-6 py-1') \
-            .style(f'height: 26px; border-radius: 6px 6px 0 0; background-color: {color}')
-        with ui.label().classes('w-2 h-[26px]').style(f'background-color: {color}'):
-            ui.label().classes('w-full h-full').style(f'background-color: {bgcolor}; border-radius: 0 0 0 6px')
+    with ui.row().classes('gap-0'):
+        with ui.label().classes(f'w-2 h-[24px] bg-[{color}]'):
+            ui.label().classes(f'w-full h-full bg-[{bgcolor}] rounded-br-[6px]')
+        ui.label(name).classes(f'text-sm text-gray-600 px-6 py-1 h-[24px] rounded-t-[6px] bg-[{color}]')
+        with ui.label().classes(f'w-2 h-[24px] bg-[{color}]'):
+            ui.label().classes(f'w-full h-full bg-[{bgcolor}] rounded-bl-[6px]')
 
 
-def window(color: str, bgcolor: str, *, title: str = '', tab: str = '') -> ui.card:
-    with ui.card().classes('no-wrap rounded-xl').style(f'box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); background: {color}') as card:
+def window(color: str, bgcolor: str, *, title: str = '', tab: str = '', classes: str = '') -> ui.column:
+    with ui.card().classes(f'no-wrap bg-[{color}] rounded-xl p-0 gap-0 {classes}') \
+            .style(f'box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
         with _window_header(bgcolor):
             _dots()
             if title:
                 _title(title)
             if tab:
                 _tab(tab, color, bgcolor)
-    return card
+        return ui.column().classes('h-full')
 
 
-def python_window() -> ui.card:
-    return window(PYTHON_COLOR, PYTHON_BGCOLOR, title='main.py')
+def python_window(*, classes: str = '') -> ui.card:
+    return window(PYTHON_COLOR, PYTHON_BGCOLOR, title='main.py', classes=classes).classes('p-2')
 
 
-def bash_window() -> ui.card:
-    return window(BASH_COLOR, BASH_BGCOLOR, title='bash')
+def bash_window(*, classes: str = '') -> ui.card:
+    return window(BASH_COLOR, BASH_BGCOLOR, title='bash', classes=classes).classes('p-2')
 
 
-def browser_window(title: Optional[str] = None) -> ui.card:
-    return window(BROWSER_COLOR, BROWSER_BGCOLOR, tab=title or 'NiceGUI')
+def browser_window(title: Optional[str] = None, *, classes: str = '') -> ui.card:
+    return window(BROWSER_COLOR, BROWSER_BGCOLOR, tab=title or 'NiceGUI', classes=classes).classes('p-4')
