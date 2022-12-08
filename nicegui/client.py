@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional
 
 from fastapi import Request
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 from . import globals, vue
 from .element import Element
@@ -16,7 +17,7 @@ from .task_logger import create_task
 if TYPE_CHECKING:
     from .page import page
 
-TEMPLATE = (Path(__file__).parent / 'templates' / 'index.html').read_text()
+templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
 
 class Client:
@@ -65,21 +66,20 @@ class Client:
         prefix = request.headers.get('X-Forwarded-Prefix', '')
         vue_html, vue_styles, vue_scripts = vue.generate_vue_content()
         elements = json.dumps({id: element.to_dict() for id, element in self.elements.items()})
-        return HTMLResponse(
-            TEMPLATE
-            .replace(r'{{ client_id }}', str(self.id))
-            .replace(r'{{ socket_address }}', f'ws://{globals.host}:{globals.port}')
-            .replace(r'{{ elements | safe }}', elements)
-            .replace(r'{{ head_html | safe }}', self.head_html)
-            .replace(r'{{ body_html | safe }}', f'{self.body_html}\n{vue_html}\n{vue_styles}')
-            .replace(r'{{ vue_scripts | safe }}', vue_scripts)
-            .replace(r'{{ js_imports | safe }}', vue.generate_js_imports(prefix))
-            .replace(r'{{ title }}', self.page.resolve_title())
-            .replace(r'{{ favicon_url }}', get_favicon_url(self.page))
-            .replace(r'{{ dark }}', str(self.page.resolve_dark()))
-            .replace(r'{{ prefix | safe }}', prefix),
-            status_code
-        )
+        return templates.TemplateResponse('index.html', {
+            'request': request,
+            'client_id': str(self.id),
+            'socket_address': f'ws://{globals.host}:{globals.port}',
+            'elements': elements,
+            'head_html': self.head_html,
+            'body_html': f'{self.body_html}\n{vue_html}\n{vue_styles}',
+            'vue_scripts': vue_scripts,
+            'js_imports': vue.generate_js_imports(prefix),
+            'title': self.page.resolve_title(),
+            'favicon_url': get_favicon_url(self.page),
+            'dark': str(self.page.resolve_dark()),
+            'prefix': prefix,
+        }, status_code)
 
     async def handshake(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
         self.is_waiting_for_handshake = True
