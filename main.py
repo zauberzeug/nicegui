@@ -166,13 +166,13 @@ ui.run()
             with ui.column().classes('w-1/3'):
                 example_link(
                     'Map',
-                    'demonstrates wrapping the JavaScript library leaflet to display a map at specific locations')
+                    'demonstrates wrapping the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations')
                 example_link(
                     'AI Interface',
                     'utilizes the [replicate](https://replicate.com) library to perform voice-to-text transcription and generate images from prompts with Stable Diffusion')
                 example_link('3D Scene', 'creates a webGL view and loads an STL mesh illuminated with a spotlight')
             with ui.column().classes('w-1/3'):
-                example_link('Custom Vue Component', 'shows how to write and integrate a custom vue component')
+                example_link('Custom Vue Component', 'shows how to write and integrate a custom Vue component')
                 example_link('Image Mask Overlay', 'shows how to overlay an image with a mask')
                 example_link('Infinite Scroll', 'presents an infinitely scrolling image gallery')
 
@@ -199,7 +199,7 @@ ui.run()
                     'We have built on top of '
                     '[FastAPI](https://fastapi.tiangolo.com/), '
                     'which itself is based on the ASGI framework '
-                    '[Starlette](https://www.starlette.io/), '
+                    '[Starlette](https://www.starlette.io/) '
                     'and the ASGI webserver '
                     '[Uvicorn](https://www.uvicorn.org/) '
                     'because of their great performance and ease of use.'
