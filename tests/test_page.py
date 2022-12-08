@@ -133,7 +133,6 @@ def test_adding_elements_after_handshake(screen: Screen):
     screen.should_contain('after')
 
 
-@pytest.mark.skip(reason='maybe this causes the timeout on GitHub?')
 def test_exception(screen: Screen):
     @ui.page('/')
     def page():
