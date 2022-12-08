@@ -1,6 +1,6 @@
 import inspect
 import re
-from typing import Callable, Union
+from typing import Callable, Optional, Union
 
 import docutils.core
 
@@ -19,8 +19,9 @@ BROWSER_COLOR = '#ffffff'
 
 class example:
 
-    def __init__(self, content: Union[Callable, type, str]) -> None:
+    def __init__(self, content: Union[Callable, type, str], browser_title: Optional[str] = None) -> None:
         self.content = content
+        self.browser_title = browser_title
 
     def __call__(self, f: Callable) -> Callable:
         with ui.row().classes('q-mb-xl'):
@@ -60,7 +61,7 @@ class example:
                 code = '\n'.join(code)
                 with python_window().classes(f'w-[43rem] overflow-auto'):
                     ui.markdown(code)
-                with browser_window().classes('w-80 browser-window'):
+                with browser_window(self.browser_title).classes('w-80 browser-window'):
                     f()
         return f
 
@@ -128,5 +129,5 @@ def bash_window() -> ui.card:
     return window(BASH_COLOR, BASH_BGCOLOR, title='bash')
 
 
-def browser_window() -> ui.card:
-    return window(BROWSER_COLOR, BROWSER_BGCOLOR, tab='NiceGUI')
+def browser_window(title: Optional[str] = None) -> ui.card:
+    return window(BROWSER_COLOR, BROWSER_BGCOLOR, tab=title or 'NiceGUI')
