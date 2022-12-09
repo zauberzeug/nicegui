@@ -201,7 +201,9 @@ ui.run()
                 heading('Why?')
                 with ui.column().classes('gap-2 text-xl text-white bold-links arrow-links'):
                     ui.markdown(
-                        'We like '
+                        'We at '
+                        '[Zauberzeug](https://zauberzeug.com) '
+                        'like '
                         '[Streamlit](https://streamlit.io/) '
                         'but find it does '
                         '[too much magic](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651) '
