@@ -3,7 +3,7 @@ from __future__ import annotations
 import shlex
 from abc import ABC
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from . import binding, globals
 from .elements.mixins.visibility import Visibility
@@ -150,7 +150,9 @@ class Element(ABC, Visibility):
     def handle_event(self, msg: Dict) -> None:
         for listener in self._event_listeners:
             if listener.type == msg['type']:
-                listener.handler(msg)
+                result = listener.handler(msg)
+                if isinstance(result, Awaitable):
+                    create_task(result)
 
     def collect_descendant_ids(self) -> List[int]:
         '''includes own ID as first element'''
