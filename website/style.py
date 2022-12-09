@@ -19,7 +19,7 @@ def section_heading(subtitle: str, title: str) -> None:
 
 
 def heading(title: str) -> ui.label:
-    return ui.label(title).classes('text-5xl font-medium text-white')
+    return ui.label(title).classes('text-3xl md:text-4xl xl:text-5xl font-medium text-white')
 
 
 def title(content: str) -> ui.markdown:

@@ -62,11 +62,16 @@ async def index_page(client: Client):
                 ui.icon('keyboard_arrow_down').classes('text-6xl text-black')
                 ui.icon('keyboard_arrow_down').classes('text-4xl text-grey-5 mt-[-0.85em]')
 
-    with ui.row().classes('dark-box h-screen items-center gap-28 p-32 no-wrap'):
+    with ui.row().classes('''
+            dark-box min-h-screen no-wrap
+            justify-center items-center flex-col md:flex-row
+            p-8 px-4 sm:px-8 lg:px-16
+            gap-8 sm:gap-16 md:gap-8 lg:gap-16
+        '''):
         link_target('about')
-        with ui.column().classes('gap-6 text-white'):
+        with ui.column().classes('text-white max-w-4xl'):
             heading('Interact with Python through buttons, dialogs, 3D scenes, plots and much more.')
-            with ui.column().classes('gap-2 text-xl bold-links arrow-links'):
+            with ui.column().classes('gap-2 bold-links arrow-links text-lg'):
                 ui.markdown(
                     'NiceGUI handles all the web development details for you. '
                     'So you can focus on writing Python code. '
