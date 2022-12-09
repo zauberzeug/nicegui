@@ -141,10 +141,7 @@ def test_exception(screen: Screen):
     screen.open('/')
     screen.should_contain('500')
     screen.should_contain('Server error')
-    screen.assert_py_logger(
-        'ERROR: some exception',
-        'ERROR: Exception in ASGI application',
-    )
+    screen.assert_py_logger('ERROR', 'some exception')
 
 
 def test_exception_after_handshake(screen: Screen):
@@ -156,7 +153,7 @@ def test_exception_after_handshake(screen: Screen):
 
     screen.open('/')
     screen.should_contain('this is shown')
-    screen.assert_py_logger('ERROR: Task raised an exception')
+    screen.assert_py_logger('ERROR', 'Task raised an exception')
 
 
 def test_page_with_args(screen: Screen):
