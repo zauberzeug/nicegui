@@ -24,7 +24,7 @@ class example:
         self.browser_title = browser_title
 
     def __call__(self, f: Callable) -> Callable:
-        with ui.row().classes('q-mb-xl'):
+        with ui.column().classes('w-full'):
             if isinstance(self.content, str):
                 documentation = ui.markdown(self.content)
             else:
@@ -37,7 +37,7 @@ class example:
                 documentation = ui.html(html)
             _add_html_anchor(documentation)
 
-            with ui.row().classes('items-stretch'):
+            with ui.row().classes('w-full items-stretch gap-8'):
                 code = inspect.getsource(f).splitlines()
                 indentation = len(code[0].split('@example')[0]) + 4
                 while not code[0].startswith(' ' * indentation):
@@ -59,9 +59,9 @@ class example:
                     code.append('ui.run()')
                 code.append('```')
                 code = '\n'.join(code)
-                with python_window().classes(f'w-[43rem] overflow-auto'):
+                with python_window(classes='w-full max-w-[50rem]'):
                     ui.markdown(code)
-                with browser_window(self.browser_title).classes('w-80 browser-window'):
+                with browser_window(self.browser_title, classes='w-full max-w-[20rem] browser-window'):
                     f()
         return f
 
@@ -117,7 +117,7 @@ def window(color: str, bgcolor: str, *, title: str = '', tab: str = '', classes:
                 _title(title)
             if tab:
                 _tab(tab, color, bgcolor)
-        return ui.column().classes('h-full')
+        return ui.column().classes('w-full h-full overflow-auto')
 
 
 def python_window(*, classes: str = '') -> ui.card:

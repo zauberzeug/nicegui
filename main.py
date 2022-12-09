@@ -152,10 +152,10 @@ ui.run()
                 with browser_window(classes='w-full h-52'):
                     ui.label('Hello NiceGUI!')
 
-    with ui.column().classes('w-full q-pa-xl q-mb-xl'):
+    with ui.column().classes('w-full p-8 lg:p-16 bold-links max-w-[1600px] mx-auto'):
         link_target('examples', '-50px')
         section_heading('Examples', 'Try *this*')
-        with ui.row().classes('justify-center w-full'), ui.column().classes('w-[65rem]'):
+        with ui.column().classes('w-full gap-16'):
             reference.create_intro()
 
     with ui.row().classes('dark-box items-center gap-28 px-32 py-16'):
