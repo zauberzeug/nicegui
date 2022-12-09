@@ -127,6 +127,7 @@ class Screen:
         self.selenium.get_screenshot_as_file(filename)
 
     def assert_py_logger(self, *logs: str) -> None:
+        self.wait(1.0)  # NOTE: wait for caplog
         assert len(self.caplog.records) == len(logs), \
             f'Expected {len(logs)} log message(s) but got {len(self.caplog.records)}'
         for log, record in zip(logs, self.caplog.records):
