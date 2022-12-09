@@ -50,11 +50,12 @@ async def index_page(client: Client):
     add_head_html()
     add_header()
 
-    with ui.row().classes('w-full h-screen items-center gap-16 no-wrap').style(f'transform: translateX(-250px)'):
-        svg.face().classes('stroke-black w-[500px]')
-        with ui.column().classes('gap-8'):
+    with ui.row().classes('w-full h-screen items-center gap-8 pr-4 no-wrap into-section'):
+        svg.face(half=True).classes('stroke-black w-[200px] md:w-[230px] lg:w-[300px]')
+        with ui.column().classes('gap-4 md:gap-8 pt-32'):
             title('Meet the *NiceGUI*.')
-            subtitle('And let any browser be the frontend\n\nof your Python code.')
+            subtitle('And let any browser be the frontend of your Python code.') \
+                .classes('max-w-[20rem] sm:max-w-[24rem] md:max-w-[30rem]')
             with ui.link(target='#about') \
                     .classes('column mt-6 items-center ml-[-12px] hover:translate-y-1 duration-100 ease-out'):
                 ui.icon('keyboard_arrow_down').classes('text-4xl text-grey-5 mb-[-0.95em]')

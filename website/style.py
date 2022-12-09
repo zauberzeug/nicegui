@@ -23,11 +23,11 @@ def heading(title: str) -> ui.label:
 
 
 def title(content: str) -> ui.markdown:
-    return ui.markdown(content).classes('text-6xl font-medium')
+    return ui.markdown(content).classes('text-4xl sm:text-5xl md:text-6xl font-medium')
 
 
 def subtitle(content: str) -> ui.markdown:
-    return ui.markdown(content).classes('text-3xl leading-7')
+    return ui.markdown(content).classes('text-xl sm:text-2xl md:text-3xl leading-7')
 
 
 def example_link(title: str, description: str) -> None:
