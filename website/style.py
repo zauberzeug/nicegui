@@ -32,10 +32,11 @@ def subtitle(content: str) -> ui.markdown:
 
 def example_link(title: str, description: str) -> None:
     name = title.lower().replace(' ', '_')
-    with ui.column().classes('gap-0'):
-        with ui.link(target=f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/main.py'):
-            ui.label(title).classes(replace='text-black text-bold')
-            ui.markdown(description).classes(replace='text-black bold-links')
+    with ui.link(target=f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/main.py') \
+            .classes('bg-[#deebff] p-4 self-stretch rounded flex flex-col gap-2') \
+            .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
+        ui.label(title).classes(replace='text-black text-bold')
+        ui.markdown(description).classes(replace='text-black bold-links')
 
 
 def features(icon: str, title: str, items: List[str]) -> None:

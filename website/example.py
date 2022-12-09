@@ -35,7 +35,7 @@ class example:
                 html = html.replace('param ', '')
                 html = apply_tailwind(html)
                 documentation = ui.html(html)
-            _add_html_anchor(documentation)
+            _add_html_anchor(documentation.classes('text-lg'))
 
             with ui.row().classes('w-full items-stretch gap-8'):
                 code = inspect.getsource(f).splitlines()
@@ -110,7 +110,7 @@ def _tab(name: str, color: str, bgcolor: str) -> None:
 
 def window(color: str, bgcolor: str, *, title: str = '', tab: str = '', classes: str = '') -> ui.column:
     with ui.card().classes(f'no-wrap bg-[{color}] rounded-xl p-0 gap-0 {classes}') \
-            .style(f'box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
+            .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
         with _window_header(bgcolor):
             _dots()
             if title:

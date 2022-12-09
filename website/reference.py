@@ -8,7 +8,7 @@ from .example import example
 def create_intro() -> None:
     @example('''#### Styling
 
-While having reasonable defaults, you can still modify the look of your app by using css and tailwind/quasar classes.
+While having reasonable defaults, you can still modify the look of your app with CSS as well as Tailwind and Quasar classes.
 ''')
     def formatting_example():
         ui.icon('thumb_up')

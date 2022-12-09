@@ -126,7 +126,7 @@ async def index_page(client: Client):
                 'Python 3.7+',
             ])
 
-    with ui.column().classes('w-full p-8 lg:p-16 bold-links max-w-[1600px] mx-auto'):
+    with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
         link_target('installation', '-50px')
         section_heading('Installation', 'Get *started*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8'):
@@ -152,73 +152,78 @@ ui.run()
                 with browser_window(classes='w-full h-52'):
                     ui.label('Hello NiceGUI!')
 
-    with ui.column().classes('w-full p-8 lg:p-16 bold-links max-w-[1600px] mx-auto'):
+    with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
         link_target('examples', '-50px')
         section_heading('Examples', 'Try *this*')
         with ui.column().classes('w-full gap-16'):
             reference.create_intro()
 
-    with ui.row().classes('dark-box items-center gap-28 px-32 py-16'):
-        with ui.column().classes('gap-2'):
-            ui.markdown('Browse through plenty of live examples.').classes('text-3xl text-white font-medium')
-            ui.html('Fun-Fact: This whole website is also coded with NiceGUI.').classes('text-xl text-white')
-        ui.link('API reference', '/reference').classes('rounded-full mx-auto px-12 py-2 text-xl text-bold bg-white')
+    with ui.column().classes('dark-box p-8 lg:p-16 my-16'):
+        with ui.column().classes('mx-auto items-center gap-y-8 gap-x-32 lg:flex-row'):
+            with ui.column().classes('gap-1 max-lg:items-center max-lg:text-center'):
+                ui.markdown('Browse through plenty of live examples.') \
+                    .classes('text-white text-2xl md:text-3xl font-medium')
+                ui.html('Fun-Fact: This whole website is also coded with NiceGUI.') \
+                    .classes('text-white text-lg md:text-xl')
+            ui.link('API reference', '/reference') \
+                .classes('rounded-full mx-auto px-12 py-2 text-white bg-white font-medium text-lg md:text-xl')
 
-    with ui.column().classes('w-full q-pa-xl q-mb-xl'):
+    with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
         link_target('demos', '-50px')
         section_heading('In-depth demonstrations', 'Pick your *solution*')
-        with ui.row().classes('w-full no-wrap text-lg leading-tight'):
-            with ui.column().classes('w-1/3'):
-                example_link('Slideshow', 'implements a keyboard-controlled image slideshow')
-                example_link('Authentication', 'shows how to use sessions to build a login screen')
-                example_link(
-                    'Modularization',
-                    'provides an example of how to modularize your application into multiple files and reuse code')
-                example_link(
-                    'FastAPI',
-                    'illustrates the integration of NiceGUI with an existing FastAPI application')
-            with ui.column().classes('w-1/3'):
-                example_link(
-                    'Map',
-                    'demonstrates wrapping the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations')
-                example_link(
-                    'AI Interface',
-                    'utilizes the [replicate](https://replicate.com) library to perform voice-to-text transcription and generate images from prompts with Stable Diffusion')
-                example_link('3D Scene', 'creates a webGL view and loads an STL mesh illuminated with a spotlight')
-            with ui.column().classes('w-1/3'):
-                example_link('Custom Vue Component', 'shows how to write and integrate a custom Vue component')
-                example_link('Image Mask Overlay', 'shows how to overlay an image with a mask')
-                example_link('Infinite Scroll', 'presents an infinitely scrolling image gallery')
+        with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'):
+            example_link('Slideshow', 'implements a keyboard-controlled image slideshow')
+            example_link('Authentication', 'shows how to use sessions to build a login screen')
+            example_link(
+                'Modularization',
+                'provides an example of how to modularize your application into multiple files and reuse code')
+            example_link(
+                'FastAPI',
+                'illustrates the integration of NiceGUI with an existing FastAPI application')
+            example_link(
+                'Map',
+                'demonstrates wrapping the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations')
+            example_link(
+                'AI Interface',
+                'utilizes the [replicate](https://replicate.com) library to perform voice-to-text transcription and generate images from prompts with Stable Diffusion')
+            example_link('3D Scene', 'creates a webGL view and loads an STL mesh illuminated with a spotlight')
+            example_link('Custom Vue Component', 'shows how to write and integrate a custom Vue component')
+            example_link('Image Mask Overlay', 'shows how to overlay an image with a mask')
+            example_link('Infinite Scroll', 'presents an infinitely scrolling image gallery')
 
-    with ui.row().classes('dark-box h-screen items-center gap-28 p-32 no-wrap'):
+    with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
-        with ui.column().classes('gap-8'):
-            heading('Why?')
-            with ui.column().classes('gap-2 text-xl text-white bold-links arrow-links'):
-                ui.markdown(
-                    'We like '
-                    '[Streamlit](https://streamlit.io/) '
-                    'but find it does '
-                    '[too much magic](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651) '
-                    'when it comes to state handling. '
-                    'In search for an alternative nice library to write simple graphical user interfaces in Python we discovered '
-                    '[JustPy](https://justpy.io/). '
-                    'Although we liked the approach, it is too "low-level HTML" for our daily usage. '
-                    'But it inspired us to use '
-                    '[Vue](https://vuejs.org/) '
-                    'and '
-                    '[Quasar](https://quasar.dev/) '
-                    'for the frontend.')
-                ui.markdown(
-                    'We have built on top of '
-                    '[FastAPI](https://fastapi.tiangolo.com/), '
-                    'which itself is based on the ASGI framework '
-                    '[Starlette](https://www.starlette.io/) '
-                    'and the ASGI webserver '
-                    '[Uvicorn](https://www.uvicorn.org/) '
-                    'because of their great performance and ease of use.'
-                )
-        svg.face().classes('stroke-white w-[1500px]')
+        with ui.column().classes('''
+                max-w-[1600px] p-8 lg:p-16 m-auto
+                items-center justify-center no-wrap flex-col md:flex-row gap-16
+            '''):
+            with ui.column().classes('gap-8'):
+                heading('Why?')
+                with ui.column().classes('gap-2 text-xl text-white bold-links arrow-links'):
+                    ui.markdown(
+                        'We like '
+                        '[Streamlit](https://streamlit.io/) '
+                        'but find it does '
+                        '[too much magic](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651) '
+                        'when it comes to state handling. '
+                        'In search for an alternative nice library to write simple graphical user interfaces in Python we discovered '
+                        '[JustPy](https://justpy.io/). '
+                        'Although we liked the approach, it is too "low-level HTML" for our daily usage. '
+                        'But it inspired us to use '
+                        '[Vue](https://vuejs.org/) '
+                        'and '
+                        '[Quasar](https://quasar.dev/) '
+                        'for the frontend.')
+                    ui.markdown(
+                        'We have built on top of '
+                        '[FastAPI](https://fastapi.tiangolo.com/), '
+                        'which itself is based on the ASGI framework '
+                        '[Starlette](https://www.starlette.io/) '
+                        'and the ASGI webserver '
+                        '[Uvicorn](https://www.uvicorn.org/) '
+                        'because of their great performance and ease of use.'
+                    )
+            svg.face().classes('stroke-white shrink-0 w-[200px] md:w-[300px] lg:w-[450px]')
 
 
 @ui.page('/reference')
