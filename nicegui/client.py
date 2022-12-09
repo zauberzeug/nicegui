@@ -12,19 +12,20 @@ from fastapi.templating import Jinja2Templates
 from . import globals, vue
 from .element import Element
 from .favicon import get_favicon_url
+from .ids import IncrementingIds
 from .task_logger import create_task
 
 if TYPE_CHECKING:
     from .page import page
 
 templates = Jinja2Templates(Path(__file__).parent / 'templates')
+client_ids = IncrementingIds()
 
 
 class Client:
 
     def __init__(self, page: 'page', *, shared: bool = False) -> None:
-        self.id = globals.next_client_id
-        globals.next_client_id += 1
+        self.id = client_ids.get()
         globals.clients[self.id] = self
 
         self.elements: Dict[str, Element] = {}

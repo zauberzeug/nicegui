@@ -32,16 +32,16 @@ def index(request: Request) -> str:
     return globals.index_client.build_response(request)
 
 
-@app.get('/_vue/dependencies/{path:path}')
-def vue_dependencies(path: str):
-    if Path(path).exists() and vue.is_js_dependency(Path(path)):
-        return FileResponse(path, media_type='text/javascript')
-    raise HTTPException(status_code=404, detail=f'{path} not found')
+@app.get('/_nicegui/dependencies/{id}/{name}')
+def vue_dependencies(id: int, name: str):
+    if id in vue.js_dependencies and vue.js_dependencies[id].path.exists():
+        return FileResponse(vue.js_dependencies[id].path, media_type='text/javascript')
+    raise HTTPException(status_code=404, detail=f'dependency "{name}" with ID {id} not found')
 
 
-@app.get('/_vue/components/{name}')
+@app.get('/_nicegui/components/{name}')
 def vue_dependencies(name: str):
-    return FileResponse(vue.js_components[name], media_type='text/javascript')
+    return FileResponse(vue.js_components[name].path, media_type='text/javascript')
 
 
 @app.on_event('startup')

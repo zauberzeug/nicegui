@@ -1,13 +1,31 @@
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Set, Tuple
 
 import vbuild
 
 from . import globals
+from .ids import IncrementingStringIds
 
-vue_components: Dict[str, Path] = {}
-js_components: Dict[str, Path] = {}
-js_dependencies: Dict[str, List[Path]] = {}
+
+@dataclass
+class Component:
+    name: str
+    path: Path
+
+
+@dataclass
+class Dependency:
+    id: int
+    path: Path
+    dependents: Set[str]
+
+
+dependency_ids = IncrementingStringIds()
+
+vue_components: Dict[str, Component] = {}
+js_components: Dict[str, Component] = {}
+js_dependencies: Dict[int, Dependency] = {}
 
 
 def register_component(name: str, py_filepath: str, component_filepath: str, dependencies: List[str] = []) -> None:
@@ -15,20 +33,23 @@ def register_component(name: str, py_filepath: str, component_filepath: str, dep
     assert suffix in ['.vue', '.js'], 'Only VUE and JS components are supported.'
     if suffix == '.vue':
         assert name not in vue_components, f'Duplicate VUE component name {name}'
-        vue_components[name] = Path(py_filepath).parent / component_filepath
+        vue_components[name] = Component(name=name, path=Path(py_filepath).parent / component_filepath)
     elif suffix == '.js':
         assert name not in js_components, f'Duplicate JS component name {name}'
-        js_components[name] = Path(py_filepath).parent / component_filepath
-    js_dependencies[name] = []
+        js_components[name] = Component(name=name, path=Path(py_filepath).parent / component_filepath)
     for dependency in dependencies:
-        assert Path(dependency).suffix == '.js', 'Only JS dependencies are supported.'
-        js_dependencies[name].append(Path(py_filepath).parent / dependency)
+        path = Path(py_filepath).parent / dependency
+        assert path.suffix == '.js', 'Only JS dependencies are supported.'
+        id = dependency_ids.get(str(path.resolve()))
+        if id not in js_dependencies:
+            js_dependencies[id] = Dependency(id=id, path=path, dependents=set())
+        js_dependencies[id].dependents.add(name)
 
 
 def generate_vue_content() -> Tuple[str]:
     builds = [
-        vbuild.VBuild(name, path.read_text())
-        for name, path in vue_components.items()
+        vbuild.VBuild(name, component.path.read_text())
+        for name, component in vue_components.items()
         if name not in globals.excludes
     ]
     return (
@@ -40,21 +61,13 @@ def generate_vue_content() -> Tuple[str]:
 
 def generate_js_imports(prefix: str) -> str:
     result = ''
-    for name in vue_components:
-        if name in globals.excludes:
+    for id, dependency in js_dependencies.items():
+        if not dependency.dependents.difference(globals.excludes):
             continue
-        for path in js_dependencies[name]:
-            result += f'import "{prefix}/_vue/dependencies/{path}";\n'
+        result += f'import "{prefix}/_nicegui/dependencies/{id}/{dependency.path.name}";\n'
     for name in js_components:
         if name in globals.excludes:
             continue
-        for path in js_dependencies[name]:
-            result += f'import "{prefix}/_vue/dependencies/{path}";\n'
-        result += f'import {{ default as {name} }} from "{prefix}/_vue/components/{name}";\n'
+        result += f'import {{ default as {name} }} from "{prefix}/_nicegui/components/{name}";\n'
         result += f'app.component("{name}", {name});\n'
     return result
-
-
-def is_js_dependency(path: Path) -> bool:
-    return any(path in js_dependencies[name] for name in vue_components) or \
-        any(path in js_dependencies[name] for name in js_components)
