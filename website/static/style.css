@@ -1,6 +1,3 @@
-html {
-  scroll-behavior: smooth;
-}
 html,
 body {
   max-width: 100%;
@@ -59,4 +56,11 @@ dl.field-list dd {
 .dark-box {
   background-color: #5a99ff;
   width: 100%;
+}
+
+@media only screen and (min-width: 1024px) {
+  html {
+    /* prevent issues with smooth scrolling while menu is closing */
+    scroll-behavior: smooth;
+  }
 }
