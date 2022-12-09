@@ -127,12 +127,13 @@ class Screen:
         self.selenium.get_screenshot_as_file(filename)
 
     def assert_py_logger(self, *logs: str) -> None:
-        self.wait(1.0)  # NOTE: wait for caplog
-        assert len(self.caplog.records) == len(logs), \
-            f'Expected {len(logs)} log message(s) but got {len(self.caplog.records)}'
-        for log, record in zip(logs, self.caplog.records):
-            print(record.levelname, record.message)
-            level, message = map(str.strip, log.split(': '))
-            assert record.levelname.strip() == level, f'Expected "{level}" but got "{record.levelname}"'
-            assert record.message.strip() == message, f'Expected "{message}" but got "{record.message}"'
-        self.caplog.records.clear()
+        try:
+            assert len(self.caplog.records) == len(logs), \
+                f'Expected {len(logs)} log message(s) but got {len(self.caplog.records)}'
+            for log, record in zip(logs, self.caplog.records):
+                print(record.levelname, record.message)
+                level, message = map(str.strip, log.split(': '))
+                assert record.levelname.strip() == level, f'Expected "{level}" but got "{record.levelname}"'
+                assert record.message.strip() == message, f'Expected "{message}" but got "{record.message}"'
+        finally:
+            self.caplog.records.clear()
