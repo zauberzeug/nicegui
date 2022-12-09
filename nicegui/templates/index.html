@@ -2,16 +2,16 @@
 <html>
   <head>
     <title>{{ title }}</title>
-    <script src="{{ prefix | safe }}/static/socket.io.min.js"></script>
+    <script src="{{ prefix | safe }}/_nicegui/static/socket.io.min.js"></script>
     <link rel="shortcut icon" href="{{ favicon_url }}" />
-    <link href="{{ prefix | safe }}/static/fonts.css" rel="stylesheet" type="text/css" />
-    <link href="{{ prefix | safe }}/static/quasar.prod.css" rel="stylesheet" type="text/css" />
-    <script src="{{ prefix | safe }}/static/tailwind.min.js"></script>
+    <link href="{{ prefix | safe }}/_nicegui/static/fonts.css" rel="stylesheet" type="text/css" />
+    <link href="{{ prefix | safe }}/_nicegui/static/quasar.prod.css" rel="stylesheet" type="text/css" />
+    <script src="{{ prefix | safe }}/_nicegui/static/tailwind.min.js"></script>
     {{ head_html | safe }}
   </head>
   <body>
-    <script src="{{ prefix | safe }}/static/vue.global.prod.js"></script>
-    <script src="{{ prefix | safe }}/static/quasar.umd.prod.js"></script>
+    <script src="{{ prefix | safe }}/_nicegui/static/vue.global.prod.js"></script>
+    <script src="{{ prefix | safe }}/_nicegui/static/quasar.umd.prod.js"></script>
 
     {{ body_html | safe }}
 

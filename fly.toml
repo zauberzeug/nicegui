@@ -57,7 +57,7 @@ strategy = "canary"
 
   [[statics]] # nicegui 1.0
     guest_path = "/app/nicegui/static"
-    url_prefix = "/static"
+    url_prefix = "/_nicegui/static"
 
   [[statics]] # nicegui 0.9
     guest_path = "/usr/local/lib/python3.11/site-packages/nicegui/static/templates"
