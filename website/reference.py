@@ -263,7 +263,6 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
     @example(ui.line_plot)
     def line_plot_example():
-        global line_checkbox
         from datetime import datetime
 
         import numpy as np
@@ -280,6 +279,16 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         line_updates = ui.timer(0.1, update_line_plot, active=False)
         line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')
+
+        # END OF EXAMPLE
+        def handle_change(msg: Dict) -> None:
+            def turn_off() -> None:
+                line_checkbox.set_value(False)
+                ui.notify('Turning off that line plot to save resources on our live demo server. 😎')
+            line_checkbox.value = msg['args']
+            if line_checkbox.value:
+                ui.timer(10.0, turn_off, once=True)
+        line_checkbox.on('update:model-value', handle_change)
 
     @example(ui.linear_progress)
     def linear_progress_example():
@@ -743,13 +752,3 @@ You can also set `respond=False` to send a command without waiting for a respons
         ui.label('page with custom title')
 
         # ui.run(title='My App')
-
-    # HACK: turn expensive line plot off after 10 seconds
-    def handle_change(msg: Dict) -> None:
-        def turn_off() -> None:
-            line_checkbox.set_value(False)
-            ui.notify('Turning off that line plot to save resources on our live demo server. 😎')
-        line_checkbox.value = msg['args']
-        if line_checkbox.value:
-            ui.timer(10.0, turn_off, once=True)
-    line_checkbox.on('update:model-value', handle_change)
