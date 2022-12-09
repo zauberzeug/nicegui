@@ -142,7 +142,7 @@ def test_exception(screen: Screen):
     screen.should_contain('500')
     screen.should_contain('Server error')
     screen.assert_py_logger(
-        f'ERROR: unexpected exception for http://localhost:{PORT}/',
+        'ERROR: some exception',
         'ERROR: Exception in ASGI application',
     )
 

@@ -73,6 +73,7 @@ async def exception_handler(request: Request, exception: Exception):
 
 @app.exception_handler(Exception)
 async def exception_handler(request: Request, exception: Exception):
+    globals.log.exception(exception)
     with Client(page('')) as client:
         error_content(500, exception)
     return client.build_response(request, 500)
