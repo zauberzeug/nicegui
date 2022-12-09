@@ -13,14 +13,14 @@ def test_moving_sphere_with_timer(screen: Screen):
     screen.open('/')
 
     def position() -> None:
-        for _ in range(20):
+        for _ in range(3):
             try:
                 pos = screen.selenium.execute_script('return scene_3.getChildByName("sphere").position.z')
                 if pos is not None:
                     return pos
-            except JavascriptException:
-                pass
-            screen.wait(0.1)
+            except JavascriptException as e:
+                print(e.msg, flush=True)
+            screen.wait(1.0)
         raise Exception('Could not get position')
 
     screen.wait(0.2)
