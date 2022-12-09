@@ -14,8 +14,8 @@ def link_target(name: str, offset: str = '0') -> ui.link_target:
 
 
 def section_heading(subtitle: str, title: str) -> None:
-    ui.label(subtitle).classes('text-lg text-bold')
-    ui.markdown(title).classes('text-5xl font-medium mt-[-12px]')
+    ui.label(subtitle).classes('md:text-lg text-bold')
+    ui.markdown(title).classes('text-3xl md:text-5xl font-medium mt-[-12px]')
 
 
 def heading(title: str) -> ui.label:
@@ -39,8 +39,8 @@ def example_link(title: str, description: str) -> None:
 
 
 def features(icon: str, title: str, items: List[str]) -> None:
-    with ui.column().classes('gap-1 col-3'):
-        ui.icon(icon).classes('text-5xl mb-3 text-primary opacity-80')
+    with ui.column().classes('gap-1'):
+        ui.icon(icon).classes('max-sm:hidden text-3xl md:text-5xl mb-3 text-primary opacity-80')
         ui.label(title).classes('text-bold mb-3')
         for item in items:
             ui.markdown(f'- {item}').classes('bold-links')

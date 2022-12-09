@@ -65,7 +65,7 @@ async def index_page(client: Client):
     with ui.row().classes('''
             dark-box min-h-screen no-wrap
             justify-center items-center flex-col md:flex-row
-            p-8 px-4 sm:px-8 lg:px-16
+            p-8 lg:p-16
             gap-8 sm:gap-16 md:gap-8 lg:gap-16
         '''):
         link_target('about')
@@ -85,10 +85,10 @@ async def index_page(client: Client):
                     '[GitHub](https://github.com/zauberzeug/nicegui).')
         demo_card.create()
 
-    with ui.column().classes('w-full q-pa-xl q-mb-xl bold-links'):
+    with ui.column().classes('w-full p-8 lg:p-16 bold-links max-w-[1600px] mx-auto'):
         link_target('features', '-50px')
         section_heading('Features', 'Code *nicely*')
-        with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between q-mb-xl'):
+        with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8'):
             features('swap_horiz', 'Interaction', [
                 'buttons, switches, sliders, inputs, ...',
                 'notifications, dialogs and menus',
@@ -107,7 +107,6 @@ async def index_page(client: Client):
                 'progress bars',
                 'built-in timer for data refresh',
             ])
-        with ui.row().classes('w-full no-wrap text-lg leading-tight justify-between'):
             features('brush', 'Styling', [
                 'customizable color themes',
                 'custom CSS and classes',
