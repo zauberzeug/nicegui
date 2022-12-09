@@ -20,7 +20,7 @@ a:active:not(.browser-window *) {
   opacity: 0.85;
 }
 .bold-links a:link {
-  font-weight: bold;
+  font-weight: 500;
 }
 .arrow-links a:link::after {
   content: "north_east";
@@ -42,15 +42,20 @@ a:active:not(.browser-window *) {
 
 dl.field-list {
   display: grid;
+  font-size: 85%;
   grid-template-columns: max-content auto;
+  margin: 1em 0;
 }
 dl.field-list dt {
   grid-column-start: 1;
   margin-right: 1em;
-  font-weight: bold;
+  font-weight: 500;
 }
 dl.field-list dd {
   grid-column-start: 2;
+}
+dl.field-list p {
+  margin-bottom: 0;
 }
 
 .dark-box {

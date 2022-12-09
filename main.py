@@ -155,7 +155,7 @@ ui.run()
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
         link_target('examples', '-50px')
         section_heading('Examples', 'Try *this*')
-        with ui.column().classes('w-full gap-16'):
+        with ui.column().classes('w-full'):
             reference.create_intro()
 
     with ui.column().classes('dark-box p-8 lg:p-16 my-16'):
@@ -230,7 +230,9 @@ ui.run()
 def reference_page():
     add_head_html()
     add_header()
-    reference.create_full()
+    with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
+        section_heading('Documentation and Examples', '*API* Reference')
+        reference.create_full()
 
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html')

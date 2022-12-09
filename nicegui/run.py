@@ -27,6 +27,30 @@ def run(*,
         uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
         exclude: str = '',
         ) -> None:
+    '''ui.run
+
+    You can call `ui.run()` with optional arguments:
+
+    :param host: start server with this host (default: `'0.0.0.0'`)
+    :param port: use this port (default: `8080`)
+    :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
+    :param favicon: relative filepath to a favicon (default: `None`, NiceGUI icon will be used)
+    :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
+    :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
+    :param show: automatically open the UI in a browser tab (default: `True`)
+    :param reload: automatically reload the UI on file changes (default: `True`)
+    :param uvicorn_logging_level: logging level for uvicorn server (default: `'warning'`)
+    :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only)
+    :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`)
+    :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
+    :param exclude: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
+      (possible entries: chart, colors, interactive_image, joystick, keyboard, log, scene, upload, table)
+
+    The environment variables `HOST` and `PORT` can also be used to configure NiceGUI.
+
+    To avoid the potentially costly import of Matplotlib, you set the environment variable `MATPLOTLIB=false`.
+    This will make `ui.plot` and `ui.line_plot` unavailable.
+    '''
     globals.host = host
     globals.port = port
     globals.reload = reload

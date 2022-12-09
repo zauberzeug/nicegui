@@ -24,7 +24,7 @@ class example:
         self.browser_title = browser_title
 
     def __call__(self, f: Callable) -> Callable:
-        with ui.column().classes('w-full'):
+        with ui.column().classes('w-full mb-8'):
             if isinstance(self.content, str):
                 documentation = ui.markdown(self.content)
             else:
@@ -35,9 +35,9 @@ class example:
                 html = html.replace('param ', '')
                 html = apply_tailwind(html)
                 documentation = ui.html(html)
-            _add_html_anchor(documentation.classes('text-lg'))
+            _add_html_anchor(documentation.classes('text-lg documentation bold-links'))
 
-            with ui.row().classes('w-full items-stretch gap-8'):
+            with ui.column().classes('w-full items-stretch gap-8 no-wrap xl:flex-row'):
                 code = inspect.getsource(f).splitlines()
                 indentation = len(code[0].split('@example')[0]) + 4
                 while not code[0].startswith(' ' * indentation):
@@ -59,9 +59,9 @@ class example:
                     code.append('ui.run()')
                 code.append('```')
                 code = '\n'.join(code)
-                with python_window(classes='w-full max-w-[50rem]'):
+                with python_window(classes='w-full max-w-[48rem]'):
                     ui.markdown(code)
-                with browser_window(self.browser_title, classes='w-full max-w-[20rem] browser-window'):
+                with browser_window(self.browser_title, classes='w-full max-w-[48rem] xl:max-w-[20rem] min-h-[10rem] browser-window'):
                     f()
         return f
 

@@ -22,7 +22,7 @@ class Upload(Element):
         :param upload_button_icon: icon for the upload button
         """
         super().__init__('upload')
-        self.classes('row items-baseline gap-2')
+        self.classes('row items-center gap-2')
         self._props['multiple'] = multiple
         self._props['file_picker_label'] = file_picker_label
         self._props['upload_button_icon'] = upload_button_icon
