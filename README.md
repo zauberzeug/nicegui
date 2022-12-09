@@ -171,6 +171,6 @@ nicegui:
     - ./:/app/
 ```
 
-While it is possible to provide SSL certificates directly using [FastAPI](https://fastapi.tiangolo.com/deployment/https/),
-we also like reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/).
+You can provide SSL certificates directly using [FastAPI](https://fastapi.tiangolo.com/deployment/https/).
+In production we also like using reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/) to handle these details for us.
 See our [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
