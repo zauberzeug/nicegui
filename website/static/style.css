@@ -37,7 +37,8 @@ a:active:not(.browser-window *) {
   background-color: #5a99ff;
 }
 .q-header.fade {
-  height: 50px;
+  padding-top: 20px;
+  transform: translateY(-20px);
   background-color: #5a99ffd0;
   backdrop-filter: blur(5px);
 }
