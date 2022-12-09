@@ -126,11 +126,11 @@ async def index_page(client: Client):
                 'Python 3.7+',
             ])
 
-    with ui.column().classes('w-full q-pa-xl q-mb-xl'):
+    with ui.column().classes('w-full p-8 lg:p-16 bold-links max-w-[1600px] mx-auto'):
         link_target('installation', '-50px')
         section_heading('Installation', 'Get *started*')
-        with ui.row().classes('w-full no-wrap text-lg leading-tight'):
-            with ui.column().classes('w-1/3 gap-2'):
+        with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8'):
+            with ui.column().classes('w-full max-w-md gap-2'):
                 ui.html('<em>1.</em>').classes('text-3xl text-bold')
                 ui.markdown('Create __main.py__').classes('text-lg')
                 with python_window(classes='w-full h-52'):
@@ -141,14 +141,14 @@ ui.label('Hello NiceGUI!')
 
 ui.run()
 ```''')
-            with ui.column().classes('w-1/3 gap-2'):
+            with ui.column().classes('w-full max-w-md gap-2'):
                 ui.html('<em>2.</em>').classes('text-3xl text-bold')
                 ui.markdown('Install and launch').classes('text-lg')
                 with bash_window(classes='w-full h-52'):
                     ui.markdown('```bash\npip3 install nicegui\npython3 main.py\n```')
-            with ui.column().classes('w-1/3 gap-2'):
+            with ui.column().classes('w-full max-w-md gap-2'):
                 ui.html('<em>3.</em>').classes('text-3xl text-bold')
-                ui.markdown('Enjoy').classes('text-lg')
+                ui.markdown('Enjoy!').classes('text-lg')
                 with browser_window(classes='w-full h-52'):
                     ui.label('Hello NiceGUI!')
 
