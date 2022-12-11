@@ -97,7 +97,8 @@ class Element(ABC, Visibility):
         '''
         style_dict = deepcopy(self._style) if replace is None else {}
         for key in self._parse_style(remove):
-            del style_dict[key]
+            if key in style_dict:
+                del style_dict[key]
         style_dict.update(self._parse_style(add))
         style_dict.update(self._parse_style(replace))
         if self._style != style_dict:
