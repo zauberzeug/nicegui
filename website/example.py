@@ -7,6 +7,8 @@ import docutils.core
 from nicegui import ui
 from nicegui.elements.markdown import apply_tailwind
 
+from .intersection_observer import IntersectionObserver as intersection_observer
+
 REGEX_H4 = re.compile(r'<h4.*?>(.*?)</h4>')
 SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 PYTHON_BGCOLOR = '#e3e9f2'
@@ -19,9 +21,13 @@ BROWSER_COLOR = '#ffffff'
 
 class example:
 
-    def __init__(self, content: Union[Callable, type, str], browser_title: Optional[str] = None) -> None:
+    def __init__(self,
+                 content: Union[Callable, type, str],
+                 browser_title: Optional[str] = None,
+                 immediate: bool = False) -> None:
         self.content = content
         self.browser_title = browser_title
+        self.immediate = immediate
 
     def __call__(self, f: Callable) -> Callable:
         with ui.column().classes('w-full mb-8'):
@@ -59,7 +65,11 @@ class example:
                 with python_window(classes='w-full max-w-[48rem]'):
                     ui.markdown(code)
                 with browser_window(self.browser_title, classes='w-full max-w-[48rem] xl:max-w-[20rem] min-h-[10rem] browser-window'):
-                    f()
+                    if self.immediate:
+                        f()
+                    else:
+                        intersection_observer(on_intersection=f)
+
         return f
 
 

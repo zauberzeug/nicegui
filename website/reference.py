@@ -474,7 +474,7 @@ You can run a function or coroutine as a parallel task by passing it to one of t
 - `ui.on_disconnect`: Called when a client disconnects from NiceGUI. (Optional argument: socket)
 
 When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
-''')
+''', immediate=True)
     def lifecycle_example():
         import asyncio
 
