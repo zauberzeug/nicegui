@@ -67,7 +67,7 @@ async def index_page(client: Client):
         '''):
         link_target('about')
         with ui.column().classes('text-white max-w-4xl'):
-            heading('Interact with Python through buttons, dialogs, 3D scenes, plots and much more.')
+            heading('Interact with Python through buttons, dialogs, 3D&nbsp;scenes, plots and much more.')
             with ui.column().classes('gap-2 bold-links arrow-links text-lg'):
                 ui.markdown(
                     'NiceGUI handles all the web development details for you. '
