@@ -1,14 +1,11 @@
 from fastapi import FastAPI
+from nicegui import globals, ui
 
 
 def init(app: FastAPI) -> None:
-    import builtins
-    builtins.nicegui_APP = app
-    from nicegui import ui, globals
-
     @ui.page('/show')
     def show():
-        ui.label('Hello World, FastAPI!')
+        ui.label('Hello, FastAPI!')
 
     globals.title = 'FastAPI'
     globals.favicon = None
@@ -17,3 +14,5 @@ def init(app: FastAPI) -> None:
     globals.excludes = []
     globals.host = 'localhost'
     globals.port = 8000
+
+    app.mount('/', globals.app)
