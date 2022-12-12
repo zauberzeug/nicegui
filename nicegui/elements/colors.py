@@ -7,7 +7,7 @@ vue.register_component('colors', __file__, 'colors.js')
 class Colors(Element):
 
     def __init__(self, *,
-                 primary='#5A99FF',
+                 primary='#6aa9d9',
                  secondary='#26a69a',
                  accent='#9c27b0',
                  positive='#21ba45',

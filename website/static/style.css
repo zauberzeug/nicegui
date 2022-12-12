@@ -8,7 +8,7 @@ body {
 }
 em:not(.browser-window *) {
   font-style: normal;
-  color: #5a99ff;
+  color: #6aa9d9;
 }
 a:link:not(.browser-window *),
 a:visited:not(.browser-window *) {
@@ -31,12 +31,12 @@ a:active:not(.browser-window *) {
 
 .q-header {
   height: 70px;
-  background-color: #5a99ff;
+  background-color: #6aa9d9;
 }
 .q-header.fade {
   padding-top: 20px;
   transform: translateY(-20px);
-  background-color: #5a99ffd0;
+  background-color: #6aa9d9d0;
   backdrop-filter: blur(5px);
 }
 
@@ -59,7 +59,7 @@ dl.field-list p {
 }
 
 .dark-box {
-  background-color: #5a99ff;
+  background-color: #6aa9d9;
   width: 100%;
 }
 
