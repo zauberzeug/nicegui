@@ -29,7 +29,7 @@ a:active:not(.browser-window *) {
 .bold-links a:link {
   font-weight: 500;
 }
-.arrow-links a:link::after {
+.arrow-links a:link:not(.auto-link)::after {
   content: "north_east";
   font-family: "Material Icons";
   font-weight: 100;

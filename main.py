@@ -86,7 +86,7 @@ async def index_page(client: Client):
                     '[GitHub](https://github.com/zauberzeug/nicegui).')
         demo_card.create()
 
-    with ui.column().classes('w-full p-8 lg:p-16 bold-links max-w-[1600px] mx-auto'):
+    with ui.column().classes('w-full p-8 lg:p-16 bold-links arrow-links max-w-[1600px] mx-auto'):
         link_target('features', '-50px')
         section_heading('Features', 'Code *nicely*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8'):

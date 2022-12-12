@@ -32,7 +32,7 @@ def example_link(title: str, description: str) -> None:
             .classes('bg-[#6aa9d920] p-4 self-stretch rounded flex flex-col gap-2') \
             .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
         ui.label(title).classes(replace='text-black font-bold')
-        ui.markdown(description).classes(replace='text-black bold-links')
+        ui.markdown(description).classes(replace='text-black bold-links arrow-links')
 
 
 def features(icon: str, title: str, items: List[str]) -> None:
@@ -40,4 +40,4 @@ def features(icon: str, title: str, items: List[str]) -> None:
         ui.icon(icon).classes('max-sm:hidden text-3xl md:text-5xl mb-3 text-primary opacity-80')
         ui.label(title).classes('font-bold mb-3')
         for item in items:
-            ui.markdown(f'- {item}').classes('bold-links')
+            ui.markdown(f'- {item}').classes('bold-links arrow-links')

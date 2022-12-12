@@ -35,7 +35,7 @@ class example:
                 html = html.replace('param ', '')
                 html = apply_tailwind(html)
                 documentation = ui.html(html)
-            _add_html_anchor(documentation.classes('text-lg documentation bold-links'))
+            _add_html_anchor(documentation.classes('text-lg documentation bold-links arrow-links'))
 
             with ui.column().classes('w-full items-stretch gap-8 no-wrap xl:flex-row'):
                 code = inspect.getsource(f).split('# END OF EXAMPLE')[0].strip().splitlines()
@@ -74,7 +74,7 @@ def _add_html_anchor(element: ui.html) -> None:
         return
 
     icon = '<span class="material-icons">link</span>'
-    link = f'<a href="reference#{headline_id}" class="hover:text-black" style="color: #ddd">{icon}</a>'
+    link = f'<a href="reference#{headline_id}" class="hover:text-black auto-link" style="color: #ddd">{icon}</a>'
     target = f'<div id="{headline_id}" style="position: relative; top: -90px"></div>'
     html = html.replace('<h4', f'{target}<h4', 1)
     html = html.replace('</h4>', f' {link}</h4>', 1)
