@@ -22,7 +22,7 @@ def get_favicon_url(page: 'page') -> str:
     favicon = page.favicon or globals.favicon
     if is_remote_url(favicon):
         return favicon
-    return f'{page.path[1:]}/favicon.ico' if favicon else 'static/favicon.ico'
+    return f'{page.path[1:]}/favicon.ico' if favicon else '_nicegui/static/favicon.ico'
 
 
 def is_remote_url(favicon: str) -> bool:
