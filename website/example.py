@@ -39,10 +39,9 @@ class example:
 
             with ui.column().classes('w-full items-stretch gap-8 no-wrap xl:flex-row'):
                 code = inspect.getsource(f).split('# END OF EXAMPLE')[0].strip().splitlines()
-                indentation = len(code[0].split('@example')[0]) + 4
-                while not code[0].startswith(' ' * indentation):
+                while not code[0].startswith(' ' * 8):
                     del code[0]
-                code = [l[indentation:] for l in code]
+                code = [l[8:] for l in code]
                 code.insert(0, '```python')
                 code.insert(1, 'from nicegui import ui')
                 if code[2].split()[0] not in ['from', 'import']:
