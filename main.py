@@ -6,9 +6,10 @@ from pygments.formatters import HtmlFormatter
 from nicegui import Client, ui
 from website import demo_card, reference, svg
 from website.example import bash_window, browser_window, python_window
-from website.style import example_link, features, header_link, heading, link_target, section_heading, subtitle, title
+from website.style import example_link, features, heading, link_target, section_heading, subtitle, title
 
 ui.add_static_files('/favicon', Path(__file__).parent / 'website' / 'favicon')
+ui.add_static_files('/fonts', Path(__file__).parent / 'website' / 'fonts')
 
 
 def add_head_html() -> None:
@@ -39,7 +40,7 @@ def add_header() -> None:
             ui.button(on_click=menu.open).props('flat color=white icon=menu')
         with ui.row().classes('max-lg:hidden'):
             for title, target in menu_items.items():
-                header_link(title, target)
+                ui.link(title, target).classes(replace='text-lg text-white')
         with ui.link(target='https://github.com/zauberzeug/nicegui/'):
             svg.github().classes('fill-white scale-125 m-1')
 
@@ -131,7 +132,7 @@ async def index_page(client: Client):
         section_heading('Installation', 'Get *started*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8'):
             with ui.column().classes('w-full max-w-md gap-2'):
-                ui.html('<em>1.</em>').classes('text-3xl text-bold')
+                ui.html('<em>1.</em>').classes('text-3xl font-bold')
                 ui.markdown('Create __main.py__').classes('text-lg')
                 with python_window(classes='w-full h-52'):
                     ui.markdown('''```python\n
@@ -142,12 +143,12 @@ ui.label('Hello NiceGUI!')
 ui.run()
 ```''')
             with ui.column().classes('w-full max-w-md gap-2'):
-                ui.html('<em>2.</em>').classes('text-3xl text-bold')
+                ui.html('<em>2.</em>').classes('text-3xl font-bold')
                 ui.markdown('Install and launch').classes('text-lg')
                 with bash_window(classes='w-full h-52'):
                     ui.markdown('```bash\npip3 install nicegui\npython3 main.py\n```')
             with ui.column().classes('w-full max-w-md gap-2'):
-                ui.html('<em>3.</em>').classes('text-3xl text-bold')
+                ui.html('<em>3.</em>').classes('text-3xl font-bold')
                 ui.markdown('Enjoy!').classes('text-lg')
                 with browser_window(classes='w-full h-52'):
                     ui.label('Hello NiceGUI!')

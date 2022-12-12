@@ -118,12 +118,12 @@ def window(color: str, bgcolor: str, *, title: str = '', tab: str = '', classes:
 
 
 def python_window(*, classes: str = '') -> ui.card:
-    return window(PYTHON_COLOR, PYTHON_BGCOLOR, title='main.py', classes=classes).classes('p-2')
+    return window(PYTHON_COLOR, PYTHON_BGCOLOR, title='main.py', classes=classes).classes('p-2 python-window')
 
 
 def bash_window(*, classes: str = '') -> ui.card:
-    return window(BASH_COLOR, BASH_BGCOLOR, title='bash', classes=classes).classes('p-2')
+    return window(BASH_COLOR, BASH_BGCOLOR, title='bash', classes=classes).classes('p-2 bash-window')
 
 
 def browser_window(title: Optional[str] = None, *, classes: str = '') -> ui.card:
-    return window(BROWSER_COLOR, BROWSER_BGCOLOR, tab=title or 'NiceGUI', classes=classes).classes('p-4')
+    return window(BROWSER_COLOR, BROWSER_BGCOLOR, tab=title or 'NiceGUI', classes=classes).classes('p-4 browser-window')
