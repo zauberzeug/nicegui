@@ -57,11 +57,7 @@ async def index_page(client: Client):
             title('Meet the *NiceGUI*.')
             subtitle('And let any browser be the frontend of your Python code.') \
                 .classes('max-w-[20rem] sm:max-w-[24rem] md:max-w-[30rem]')
-            with ui.link(target='#about') \
-                    .classes('column mt-6 items-center ml-[-12px] hover:translate-y-1 duration-100 ease-out'):
-                ui.icon('keyboard_arrow_down').classes('text-4xl text-grey-5 mb-[-0.95em]')
-                ui.icon('keyboard_arrow_down').classes('text-6xl text-black')
-                ui.icon('keyboard_arrow_down').classes('text-4xl text-grey-5 mt-[-0.85em]')
+            ui.link(target='#about').classes('scroll-indicator')
 
     with ui.row().classes('''
             dark-box min-h-screen no-wrap

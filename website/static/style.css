@@ -47,6 +47,43 @@ a:active:not(.browser-window *) {
   backdrop-filter: blur(5px);
 }
 
+.scroll-indicator:after {
+  content: "";
+  display: block;
+  width: 24px;
+  height: 24px;
+  margin: 8px;
+  border-left: 3px solid #444;
+  border-bottom: 3px solid #444;
+  -webkit-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+  -webkit-animation: sdb04 2s infinite;
+  animation: sdb04 1.5s infinite;
+  transition-timing-function: ease;
+}
+@-webkit-keyframes sdb04 {
+  0% {
+    -webkit-transform: rotate(-45deg) translate(0, 0);
+  }
+  15% {
+    -webkit-transform: rotate(-45deg) translate(-10px, 10px);
+  }
+  30% {
+    -webkit-transform: rotate(-45deg) translate(0, 0);
+  }
+}
+@keyframes sdb04 {
+  0% {
+    transform: rotate(-45deg) translate(0, 0);
+  }
+  15% {
+    transform: rotate(-45deg) translate(-10px, 10px);
+  }
+  30% {
+    transform: rotate(-45deg) translate(0, 0);
+  }
+}
+
 dl.field-list {
   display: grid;
   font-size: 85%;
