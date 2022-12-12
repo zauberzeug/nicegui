@@ -70,7 +70,6 @@ class Client:
         return templates.TemplateResponse('index.html', {
             'request': request,
             'client_id': str(self.id),
-            'socket_address': f'ws://{globals.host}:{globals.port}',
             'elements': elements,
             'head_html': self.head_html,
             'body_html': f'{self.body_html}\n{vue_html}\n{vue_styles}',

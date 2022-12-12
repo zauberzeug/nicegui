@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from nicegui import globals, ui
+from nicegui import ui
 
 
 def init(app: FastAPI) -> None:
@@ -7,12 +7,4 @@ def init(app: FastAPI) -> None:
     def show():
         ui.label('Hello, FastAPI!')
 
-    globals.title = 'FastAPI'
-    globals.favicon = None
-    globals.dark = False
-    globals.binding_refresh_interval = 0.1
-    globals.excludes = []
-    globals.host = 'localhost'
-    globals.port = 8000
-
-    app.mount('/', globals.app)
+    ui.run_with(app)

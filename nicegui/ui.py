@@ -57,6 +57,7 @@ from .page_layout import LeftDrawer as left_drawer
 from .page_layout import PageSticky as page_sticky
 from .page_layout import RightDrawer as right_drawer
 from .run import run
+from .run_with import run_with
 
 if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
     from .elements.line_plot import LinePlot as line_plot

@@ -44,18 +44,19 @@ def vue_dependencies(name: str):
 
 
 @app.on_event('startup')
-def on_startup() -> None:
+def handle_startup(with_welcome_message: bool = True) -> None:
     globals.state = globals.State.STARTING
     globals.loop = asyncio.get_running_loop()
     create_favicon_routes()
     [safe_invoke(t) for t in globals.startup_handlers]
     create_task(binding.loop())
     globals.state = globals.State.STARTED
-    print(f'NiceGUI ready to go on http://{globals.host}:{globals.port}')
+    if with_welcome_message:
+        print(f'NiceGUI ready to go on http://{globals.host}:{globals.port}')
 
 
 @app.on_event('shutdown')
-def shutdown() -> None:
+def handle_shutdown() -> None:
     globals.state = globals.State.STOPPING
     [safe_invoke(t) for t in globals.shutdown_handlers]
     [t.cancel() for t in globals.tasks]
