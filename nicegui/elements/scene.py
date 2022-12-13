@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, Union
 
 from ..element import Element
-from ..events import SceneClickEventArguments, handle_event
+from ..events import SceneClickEventArguments, SceneClickHit, handle_event
 from ..vue import register_component
 from .scene_object3d import Object3D
 from .scene_objects import Scene as SceneObject
@@ -69,15 +69,34 @@ class Scene(Element):
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
+        self.on_click = on_click
         self.on('connect', self.handle_connect)
-        self.on('click3d',
-                lambda msg: handle_event(on_click,
-                                         SceneClickEventArguments(sender=self, client=self.client, args=msg['args'])))
+        self.on('click3d', self.handle_click)
 
     def handle_connect(self, _) -> None:
         self.run_method('init')
         for object in self.objects.values():
             object.send()
+
+    def handle_click(self, msg: Dict) -> None:
+        arguments = SceneClickEventArguments(
+            sender=self,
+            client=self.client,
+            click_type=msg['args']['click_type'],
+            button=msg['args']['button'],
+            alt=msg['args']['alt_key'],
+            ctrl=msg['args']['ctrl_key'],
+            meta=msg['args']['meta_key'],
+            shift=msg['args']['shift_key'],
+            hits=[SceneClickHit(
+                object_id=hit['object_id'],
+                object_name=hit['object_name'],
+                x=hit['point']['x'],
+                y=hit['point']['y'],
+                z=hit['point']['z'],
+            ) for hit in msg['args']['hits']],
+        )
+        handle_event(self.on_click, arguments)
 
     def __len__(self) -> int:
         return len(self.objects)

@@ -26,8 +26,23 @@ class ClickEventArguments(EventArguments):
 
 
 @dataclass
+class SceneClickHit:
+    object_id: str
+    object_name: str
+    x: float
+    y: float
+    z: float
+
+
+@dataclass
 class SceneClickEventArguments(ClickEventArguments):
-    args: Dict
+    click_type: str
+    button: int
+    alt: bool
+    ctrl: bool
+    meta: bool
+    shift: bool
+    hits: List[SceneClickHit]
 
 
 @dataclass

@@ -118,6 +118,7 @@ export default {
           .filter((o) => o.object.object_id)
           .map((o) => ({
             object_id: o.object.object_id,
+            object_name: o.object.name,
             point: o.point,
           })),
         click_type: mouseEvent.type,
