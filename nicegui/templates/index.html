@@ -25,6 +25,10 @@
 
       const throttles = new Set();
       function throttle(callback, time, id) {
+        if (time <= 0) {
+          callback();
+          return;
+        }
         if (throttles.has(id)) return;
         throttles.add(id);
         callback();

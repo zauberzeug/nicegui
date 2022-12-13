@@ -1,7 +1,7 @@
 import traceback
 from dataclasses import dataclass
 from inspect import signature
-from typing import TYPE_CHECKING, Any, Callable, List, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 from . import globals
 from .async_updater import AsyncUpdater
@@ -23,6 +23,11 @@ class EventArguments:
 @dataclass
 class ClickEventArguments(EventArguments):
     pass
+
+
+@dataclass
+class SceneClickEventArguments(ClickEventArguments):
+    args: Dict
 
 
 @dataclass
