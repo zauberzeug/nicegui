@@ -596,12 +596,12 @@ Note: You can also pass a `functools.partial` into the `on_click` property to wr
         @ui.page('/other_page')
         def other_page():
             ui.label('Welcome to the other side')
-            ui.link('Back to main page', '/#page')
+            ui.link('Back to main page', '/reference#page')
 
         @ui.page('/dark_page', dark=True)
         def dark_page():
             ui.label('Welcome to the dark side')
-            ui.link('Back to main page', '/#page')
+            ui.link('Back to main page', '/reference#page')
 
         ui.link('Visit other page', other_page)
         ui.link('Visit dark page', dark_page)
@@ -752,14 +752,14 @@ You can also set `respond=False` to send a command without waiting for a respons
         ui.add_static_files('/examples', 'examples')
         ui.label('Some NiceGUI Examples').classes('text-h5')
         ui.link('AI interface', '/examples/ai_interface/main.py')
-        ui.link('custom FastAPI app', '/examples/custom_fastapi_app/main.py')
+        ui.link('Custom FastAPI app', '/examples/custom_fastapi_app/main.py')
         ui.link('Authentication', '/examples/authentication/main.py')
 
     @example('''#### API Responses
 
 NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/). 
 This means you can use all of FastAPI's features. 
-For example, you can implement an RESTful API in addition to your graphical user interface.
+For example, you can implement a RESTful API in addition to your graphical user interface.
 You simply import the `app` object from `nicegui`. 
 Or you can run NiceGUI on top of your own FastAPI app by using `ui.run_with(app)` instead of starting a server automatically with `ui.run()`.
 
