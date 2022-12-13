@@ -33,7 +33,6 @@ export default {
   props: {
     multiple: Boolean,
     file_picker_label: String,
-    upload_button_text: String,
     upload_button_icon: String,
   },
 };
