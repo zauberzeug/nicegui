@@ -1,0 +1,16 @@
+# flyctl launch added from .gitignore
+**/__pycache__
+**/*.egg-info
+**/.*.swp
+**/dist
+test.py
+**/*.pickle
+**/tests/screenshots
+
+# flyctl launch added from .pytest_cache/.gitignore
+# Created by pytest automatically.
+.pytest_cache/**/*
+
+# flyctl launch added from tests/.pytest_cache/.gitignore
+# Created by pytest automatically.
+tests/.pytest_cache/**/*
