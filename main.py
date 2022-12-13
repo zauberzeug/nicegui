@@ -232,6 +232,10 @@ def reference_page():
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
         section_heading('Documentation and Examples', '*API* Reference')
+        ui.markdown(
+            'This is the API reference for NiceGUI >= 1.0. '
+            'Documentation for older versions can be found at [https://0.9.nicegui.io](https://0.9.nicegui.io/reference).'
+        ).classes('bold-links arrow-links')
         reference.create_full()
 
 
