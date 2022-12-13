@@ -79,7 +79,7 @@ class Client:
             'favicon_url': get_favicon_url(self.page),
             'dark': str(self.page.resolve_dark()),
             'prefix': prefix,
-        }, status_code)
+        }, status_code, {'Cache-Control': 'no-store'})
 
     async def handshake(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
         self.is_waiting_for_handshake = True
