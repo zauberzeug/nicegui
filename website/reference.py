@@ -745,6 +745,40 @@ You can also set `respond=False` to send a command without waiting for a respons
         ui.button('fire and forget', on_click=alert)
         ui.button('receive result', on_click=get_date)
 
+    h3('Routes')
+
+    @example(ui.add_static_files)
+    def add_static_files_example():
+        ui.add_static_files('/examples', 'examples')
+        ui.label('Some NiceGUI Examples').classes('text-h5')
+        ui.link('AI interface', '/examples/ai_interface/main.py')
+        ui.link('custom FastAPI app', '/examples/custom_fastapi_app/main.py')
+        ui.link('Authentication', '/examples/authentication/main.py')
+
+    @example('''#### API Responses
+
+NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/). 
+This means you can use all of FastAPI's features. 
+For example, you can implement an RESTful API in addition to your graphical user interface.
+You simply import the `app` object from `nicegui`. 
+Or you can run NiceGUI on top of your own FastAPI app by using `ui.run_with(app)` instead of starting a server automatically with `ui.run()`.
+
+You can also return any other FastAPI response object inside a page function.
+For example, you can return a `RedirectResponse` to redirect the user to another page if certain conditions are met.
+This is used in our [authentication demo](https://github.com/zauberzeug/nicegui/tree/main/examples/authentication/main.py).
+''')
+    def fastapi_example():
+        import random
+
+        from nicegui import app
+
+        @app.get('/random/{max}')
+        def generate_random_number(max: int):
+            return {'min': 0, 'max': max, 'value': random.randint(0, max)}
+
+        max = ui.number('max', value=100)
+        ui.button('generate random number', on_click=lambda: ui.open(f'/random/{max.value}'))
+
     h3('Configuration')
 
     @example(ui.run, browser_title='My App')
