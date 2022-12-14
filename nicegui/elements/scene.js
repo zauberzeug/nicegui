@@ -212,8 +212,10 @@ export default {
           const outline = args[0];
           const height = args[1];
           shape.autoClose = true;
-          shape.moveTo(outline[0][0], outline[0][1]);
-          outline.slice(1).forEach((p) => shape.lineTo(p[0], p[1]));
+          if (outline.length) {
+            shape.moveTo(outline[0][0], outline[0][1]);
+            outline.slice(1).forEach((p) => shape.lineTo(p[0], p[1]));
+          }
           const settings = { depth: height, bevelEnabled: false };
           geometry = new THREE.ExtrudeGeometry(shape, settings);
         }
@@ -238,9 +240,11 @@ export default {
       this.objects.get(parent_id).add(this.objects.get(id));
     },
     name(object_id, name) {
+      if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).name = name;
     },
     material(object_id, color, opacity, side) {
+      if (!this.objects.has(object_id)) return;
       const material = this.objects.get(object_id).material;
       if (!material) return;
       material.color.set(color);
@@ -250,12 +254,15 @@ export default {
       else material.side = THREE.DoubleSide;
     },
     move(object_id, x, y, z) {
+      if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).position.set(x, y, z);
     },
     scale(object_id, sx, sy, sz) {
+      if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).scale.set(sx, sy, sz);
     },
     rotate(object_id, R) {
+      if (!this.objects.has(object_id)) return;
       const R4 = new THREE.Matrix4().makeBasis(
         new THREE.Vector3(...R[0]),
         new THREE.Vector3(...R[1]),
@@ -264,13 +271,16 @@ export default {
       this.objects.get(object_id).rotation.setFromRotationMatrix(R4.transpose());
     },
     visible(object_id, value) {
+      if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).visible = value;
     },
     delete(object_id) {
+      if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).removeFromParent();
       this.objects.delete(object_id);
     },
     set_texture_url(object_id, url) {
+      if (!this.objects.has(object_id)) return;
       const obj = this.objects.get(object_id);
       if (obj.busy) return;
       obj.busy = true;
@@ -282,6 +292,7 @@ export default {
       this.texture_loader.load(url, on_success, undefined, on_error);
     },
     set_texture_coordinates(object_id, coords) {
+      if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).geometry = texture_geometry(coords);
     },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
