@@ -86,7 +86,6 @@ a:active:not(.browser-window *) {
 
 dl.field-list {
   display: grid;
-  font-size: 85%;
   grid-template-columns: max-content auto;
   margin: 1em 0;
 }

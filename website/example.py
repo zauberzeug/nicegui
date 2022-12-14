@@ -41,7 +41,7 @@ class example:
                 html = html.replace('param ', '')
                 html = apply_tailwind(html)
                 documentation = ui.html(html)
-            _add_html_anchor(documentation.classes('text-lg documentation bold-links arrow-links'))
+            _add_html_anchor(documentation.classes('documentation bold-links arrow-links'))
 
             with ui.column().classes('w-full items-stretch gap-8 no-wrap xl:flex-row'):
                 code = inspect.getsource(f).split('# END OF EXAMPLE')[0].strip().splitlines()
