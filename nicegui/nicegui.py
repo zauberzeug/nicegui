@@ -105,7 +105,7 @@ async def handle_disconnect(sid: str) -> None:
 @sio.on('event')
 def handle_event(sid: str, msg: Dict) -> None:
     client = get_client(sid)
-    if not client:
+    if not client or not client.has_socket_connection:
         return
     with client:
         sender = client.elements.get(msg['id'])
