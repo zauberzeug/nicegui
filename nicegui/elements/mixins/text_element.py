@@ -10,7 +10,7 @@ class TextElement(Element):
     def __init__(self, *, text: str, **kwargs) -> None:
         super().__init__(**kwargs)
         self.text = text
-        self._text = text
+        self._text_to_model_text(text)
 
     def bind_text_to(self, target_object: Any, target_name: str = 'text', forward: Callable = lambda x: x):
         bind_to(self, 'text', target_object, target_name, forward)
@@ -29,5 +29,8 @@ class TextElement(Element):
         self.text = text
 
     def on_text_change(self, text: str) -> None:
-        self._text = text
+        self._text_to_model_text(text)
         self.update()
+
+    def _text_to_model_text(self, text: str) -> None:
+        self._text = text
