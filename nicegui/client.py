@@ -12,20 +12,18 @@ from fastapi.templating import Jinja2Templates
 from . import globals, vue
 from .element import Element
 from .favicon import get_favicon_url
-from .ids import IncrementingIds
 from .task_logger import create_task
 
 if TYPE_CHECKING:
     from .page import page
 
 templates = Jinja2Templates(Path(__file__).parent / 'templates')
-client_ids = IncrementingIds()
 
 
 class Client:
 
     def __init__(self, page: 'page', *, shared: bool = False) -> None:
-        self.id = client_ids.get()
+        self.id = str(uuid.uuid4())
         globals.clients[self.id] = self
 
         self.elements: Dict[str, Element] = {}
@@ -97,7 +95,7 @@ class Client:
             'code': code,
             'request_id': request_id if respond else None,
         }
-        create_task(globals.sio.emit('run_javascript', command, room=str(self.id)))
+        create_task(globals.sio.emit('run_javascript', command, room=self.id))
         if not respond:
             return
         deadline = time.time() + timeout
@@ -109,4 +107,4 @@ class Client:
 
     def open(self, target: Union[Callable, str]) -> None:
         path = target if isinstance(target, str) else globals.page_routes[target]
-        create_task(globals.sio.emit('open', path, room=str(self.id)))
+        create_task(globals.sio.emit('open', path, room=self.id))

@@ -36,8 +36,7 @@ binding_refresh_interval: float
 excludes: List[str]
 
 slot_stacks: Dict[int, List['Slot']] = {}
-clients: Dict[int, 'Client'] = {}
-next_client_id: int = 0
+clients: Dict[str, 'Client'] = {}
 index_client: 'Client' = ...
 
 page_routes: Dict[Callable, str] = {}

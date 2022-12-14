@@ -85,7 +85,7 @@ async def handle_handshake(sid: str) -> bool:
     if not client:
         return False
     client.environ = sio.get_environ(sid)
-    sio.enter_room(sid, str(client.id))
+    sio.enter_room(sid, client.id)
     with client:
         [safe_invoke(t) for t in client.connect_handlers]
     return True
@@ -124,5 +124,5 @@ def handle_event(sid: str, msg: Dict) -> None:
 def get_client(sid: str) -> Optional[Client]:
     query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
     query = urllib.parse.parse_qs(query_bytes.decode())
-    client_id = int(query['client_id'][0])
+    client_id = query['client_id'][0]
     return globals.clients.get(client_id)

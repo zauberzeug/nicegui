@@ -87,7 +87,7 @@
           return render_recursively(this.elements, 0);
         },
         mounted() {
-          const query = { client_id: {{ client_id }} };
+          const query = { client_id: "{{ client_id }}" };
           const url = window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
           window.socket = io(url, { path: "{{ prefix | safe }}/ws/socket.io", query });
           window.socket.on("connect", () => {

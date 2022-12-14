@@ -1,17 +1,6 @@
 from typing import Dict
 
 
-class IncrementingIds:
-    '''Generates incrementing IDs'''
-
-    def __init__(self) -> None:
-        self.current_id = -1
-
-    def get(self) -> int:
-        self.current_id += 1
-        return self.current_id
-
-
 class IncrementingStringIds:
     '''Maps incrementing IDs to given strings'''
 
