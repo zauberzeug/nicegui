@@ -112,7 +112,7 @@ def create_full() -> None:
 
     @example(ui.slider)
     def slider_example():
-        slider = ui.slider(min=0, max=100, value=50).props('label')
+        slider = ui.slider(min=0, max=100, value=50)
         ui.label().bind_text_from(slider, 'value')
 
     @example(ui.joystick)
