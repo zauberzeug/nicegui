@@ -79,15 +79,16 @@ async def exception_handler(request: Request, exception: Exception):
     return client.build_response(request, 500)
 
 
-@sio.on('connect')
-async def handle_connect(sid: str, _) -> None:
+@sio.on('handshake')
+async def handle_handshake(sid: str) -> bool:
     client = get_client(sid)
     if not client:
-        return
+        return False
     client.environ = sio.get_environ(sid)
     sio.enter_room(sid, str(client.id))
     with client:
         [safe_invoke(t) for t in client.connect_handlers]
+    return True
 
 
 @sio.on('disconnect')

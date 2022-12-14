@@ -90,6 +90,11 @@
           const query = { client_id: {{ client_id }} };
           const url = window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
           window.socket = io(url, { path: "{{ prefix | safe }}/ws/socket.io", query });
+          window.socket.on("connect", () => {
+            window.socket.emit("handshake", (ok) => {
+              if (!ok) window.location.reload();
+            });
+          });
           window.socket.on("update", (msg) => {
             Object.entries(msg.elements).forEach(([id, element]) => this.elements[element.id] = element);
           });
@@ -97,7 +102,6 @@
           window.socket.on("run_javascript", (msg) => run_javascript(msg['code'], msg['request_id']));
           window.socket.on("open", (msg) => (location.href = msg));
           window.socket.on("notify", (msg) => Quasar.Notify.create(msg));
-          window.socket.on("disconnect", () => window.location.reload());
         },
       }).use(Quasar, {
         config: {
