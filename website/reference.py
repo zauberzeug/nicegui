@@ -1,8 +1,11 @@
+import uuid
 from typing import Dict
 
 from nicegui import ui
 
 from .example import example
+
+CONSTANT_UUID = str(uuid.uuid4())
 
 
 def create_intro() -> None:
@@ -624,7 +627,10 @@ In the example to the right, the displayed ID on the auto-index page remains con
         async def private_page():
             ui.label(f'private page with ID {uuid4()}')
 
-        ui.label(f'shared auto-index page with ID {uuid4()}')
+        # ui.label(f'shared auto-index page with ID {uuid4()}')
+        # ui.link('private page', private_page)
+        # END OF EXAMPLE
+        ui.label(f'shared auto-index page with ID {CONSTANT_UUID}')
         ui.link('private page', private_page)
 
     @example('''#### Pages with Path Parameters
