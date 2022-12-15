@@ -29,7 +29,7 @@ def subtitle(content: str) -> ui.markdown:
 def example_link(title: str, description: str) -> None:
     name = title.lower().replace(' ', '_')
     with ui.link(target=f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/main.py') \
-            .classes('bg-[#6aa9d920] p-4 self-stretch rounded flex flex-col gap-2') \
+            .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
             .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
         ui.label(title).classes(replace='text-black font-bold')
         ui.markdown(description).classes(replace='text-black bold-links arrow-links')
