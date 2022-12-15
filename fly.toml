@@ -5,7 +5,6 @@ processes = []
 
 [build]
   dockerfile = "fly.dockerfile"
-  #image = "zauberzeug/nicegui:0.9.25"
 
 [env]
 
@@ -39,14 +38,14 @@ strategy = "canary"
     port = 443
 
   [[services.tcp_checks]]
-    grace_period = "5s"
+    grace_period = "10s"
     interval = "5s"
     restart_limit = 1
     timeout = "1s"
 
   [[services.http_checks]]
     interval = "20s"
-    grace_period = "10s"
+    grace_period = "30s"
     method = "get"
     path = "/"
     protocol = "http"

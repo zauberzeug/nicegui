@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+
+if True:
+    # increasing max decode packets to be able to transfer images
+    # see https://github.com/miguelgrinberg/python-engineio/issues/142
+    from engineio.payload import Payload
+    Payload.max_decode_packets = 500
+
 from pathlib import Path
 
 from pygments.formatters import HtmlFormatter
