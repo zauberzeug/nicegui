@@ -4,8 +4,8 @@ kill_timeout = 5
 processes = []
 
 [build]
-  #dockerfile = "fly.dockerfile"
-  image = "zauberzeug/nicegui:0.9.25"
+  dockerfile = "fly.dockerfile"
+  #image = "zauberzeug/nicegui:0.9.25"
 
 [env]
 
@@ -55,10 +55,6 @@ strategy = "canary"
     tls_skip_verify = false
     [services.http_checks.headers]
 
-  [[statics]] # nicegui 1.0
+  [[statics]]
     guest_path = "/app/nicegui/static"
     url_prefix = "/_nicegui/static"
-
-  [[statics]] # nicegui 0.9
-    guest_path = "/usr/local/lib/python3.11/site-packages/nicegui/static/templates"
-    url_prefix = "/templates"
