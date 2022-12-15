@@ -11,11 +11,11 @@ from .intersection_observer import IntersectionObserver as intersection_observer
 
 REGEX_H4 = re.compile(r'<h4.*?>(.*?)</h4>')
 SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
-PYTHON_BGCOLOR = '#e3e9f2'
-PYTHON_COLOR = '#eff5ff'
-BASH_BGCOLOR = '#dcdcdc'
+PYTHON_BGCOLOR = '#00000010'
+PYTHON_COLOR = '#eef5fb'
+BASH_BGCOLOR = '#00000010'
 BASH_COLOR = '#e8e8e8'
-BROWSER_BGCOLOR = '#f2f2f2'
+BROWSER_BGCOLOR = '#00000010'
 BROWSER_COLOR = '#ffffff'
 
 

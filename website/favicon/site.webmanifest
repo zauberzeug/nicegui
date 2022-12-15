@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "short_name": "",
+  "name": "NiceGUI",
+  "short_name": "NiceGUI",
   "icons": [
     {
       "src": "/favicon/android-chrome-192x192.png",
@@ -13,7 +13,7 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#6aa9d9",
-  "background_color": "#6aa9d9",
+  "theme_color": "#5898d4",
+  "background_color": "#5898d4",
   "display": "standalone"
 }

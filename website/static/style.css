@@ -15,7 +15,7 @@ body {
 }
 em:not(.browser-window *) {
   font-style: normal;
-  color: #6aa9d9;
+  color: #5898d4;
 }
 a:link:not(.browser-window *),
 a:visited:not(.browser-window *) {
@@ -38,12 +38,12 @@ a:active:not(.browser-window *) {
 
 .q-header {
   height: 70px;
-  background-color: #6aa9d9;
+  background-color: #5898d4;
 }
 .q-header.fade {
   padding-top: 20px;
   transform: translateY(-20px);
-  background-color: #6aa9d9d0;
+  background-color: #5898d4d0;
   backdrop-filter: blur(5px);
 }
 
@@ -102,7 +102,7 @@ dl.field-list p {
 }
 
 .dark-box {
-  background-color: #6aa9d9;
+  background-color: #5898d4;
   width: 100%;
 }
 
