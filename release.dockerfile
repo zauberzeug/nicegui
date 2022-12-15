@@ -7,8 +7,9 @@ RUN python -m pip install nicegui==$VERSION
 
 WORKDIR /app
 
-COPY main.py reference.py README.md ./ 
+COPY main.py README.md ./ 
 ADD examples ./examples
+ADD website ./website
 
 EXPOSE 8080
 
