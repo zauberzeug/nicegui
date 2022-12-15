@@ -1,14 +1,14 @@
 # fly.toml file generated for nicegui-0-9 on 2022-12-12T19:52:01+01:00
 
 app = "nicegui-0-9"
-kill_signal = "SIGINT"
+kill_signal = "SIGTERM"
 kill_timeout = 5
 processes = []
 
 [env]
 
 [build]
-  image = "zauberzeug/nicegui:0.9.25"
+  image = "zauberzeug/nicegui:0.9.26"
 
 [experimental]
   allowed_public_ports = []
