@@ -30,7 +30,7 @@ def propagate(source_obj: Any, source_name: str, visited: Set[Tuple[int, str]] =
     if visited is None:
         visited = set()
     visited.add((id(source_obj), source_name))
-    for _, target_obj, target_name, transform in bindings[(id(source_obj), source_name)]:
+    for _, target_obj, target_name, transform in bindings.get((id(source_obj), source_name), []):
         if (id(target_obj), target_name) in visited:
             continue
         target_value = transform(getattr(source_obj, source_name))
