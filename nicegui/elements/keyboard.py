@@ -1,26 +1,17 @@
-import traceback
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict
 
+from ..binding import BindableProperty
+from ..element import Element
 from ..events import KeyboardAction, KeyboardKey, KeyboardModifiers, KeyEventArguments, handle_event
-from ..routes import add_dependencies
-from .custom_view import CustomView
-from .element import Element
+from ..vue import register_component
 
-add_dependencies(__file__)
-
-
-class KeyboardView(CustomView):
-
-    def __init__(self, on_key: Callable, repeating: bool):
-        super().__init__('keyboard', active_js_events=['keydown', 'keyup'], repeating=repeating)
-        self.allowed_events = ['keyboardEvent']
-        self.style = 'display: none'
-        self.initialize(temp=False, on_keyboardEvent=on_key)
+register_component('keyboard', __file__, 'keyboard.js')
 
 
 class Keyboard(Element):
+    active = BindableProperty()
 
-    def __init__(self, *, on_key: Optional[Callable] = None, active: bool = True, repeating: bool = True):
+    def __init__(self, on_key: Callable, *, active: bool = True, repeating: bool = True) -> None:
         """
         Keyboard
 
@@ -30,38 +21,39 @@ class Keyboard(Element):
         :param active: boolean flag indicating whether the callback should be executed or not (default: `True`)
         :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: `True`)
         """
-        super().__init__(KeyboardView(on_key=self.handle_key, repeating=repeating))
-        self.active = active
+        super().__init__('keyboard')
         self.key_handler = on_key
+        self.active = active
+        self._props['events'] = ['keydown', 'keyup']
+        self._props['repeating'] = repeating
+        self.style('display: none')
+        self.on('key', self.handle_key)
 
-    def handle_key(self, msg: Dict) -> Optional[bool]:
+    def handle_key(self, msg: Dict) -> None:
         if not self.active:
-            return False
+            return
 
-        try:
-            action = KeyboardAction(
-                keydown=msg.key_data.action == 'keydown',
-                keyup=msg.key_data.action == 'keyup',
-                repeat=msg.key_data.repeat,
-            )
-            modifiers = KeyboardModifiers(
-                alt=msg.key_data.altKey,
-                ctrl=msg.key_data.ctrlKey,
-                meta=msg.key_data.metaKey,
-                shift=msg.key_data.shiftKey,
-            )
-            key = KeyboardKey(
-                name=msg.key_data.key,
-                code=msg.key_data.code,
-                location=msg.key_data.location,
-            )
-            arguments = KeyEventArguments(
-                sender=self,
-                socket=msg.websocket,
-                action=action,
-                modifiers=modifiers,
-                key=key
-            )
-            return handle_event(self.key_handler, arguments)
-        except Exception:
-            traceback.print_exc()
+        action = KeyboardAction(
+            keydown=msg['args']['action'] == 'keydown',
+            keyup=msg['args']['action'] == 'keyup',
+            repeat=msg['args']['repeat'],
+        )
+        modifiers = KeyboardModifiers(
+            alt=msg['args']['altKey'],
+            ctrl=msg['args']['ctrlKey'],
+            meta=msg['args']['metaKey'],
+            shift=msg['args']['shiftKey'],
+        )
+        key = KeyboardKey(
+            name=msg['args']['key'],
+            code=msg['args']['code'],
+            location=msg['args']['location'],
+        )
+        arguments = KeyEventArguments(
+            sender=self,
+            client=self.client,
+            action=action,
+            modifiers=modifiers,
+            key=key,
+        )
+        return handle_event(self.key_handler, arguments)

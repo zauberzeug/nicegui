@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title }}</title>
+    <script src="{{ prefix | safe }}/_nicegui/static/socket.io.min.js"></script>
+    <link rel="shortcut icon" href="{{ favicon_url }}" />
+    <link href="{{ prefix | safe }}/_nicegui/static/fonts.css" rel="stylesheet" type="text/css" />
+    <link href="{{ prefix | safe }}/_nicegui/static/quasar.prod.css" rel="stylesheet" type="text/css" />
+    <script src="{{ prefix | safe }}/_nicegui/static/tailwind.min.js"></script>
+    {{ head_html | safe }}
+  </head>
+  <body>
+    <script src="{{ prefix | safe }}/_nicegui/static/vue.global.prod.js"></script>
+    <script src="{{ prefix | safe }}/_nicegui/static/quasar.umd.prod.js"></script>
+
+    {{ body_html | safe }}
+
+    <div id="app"></div>
+    <script type="module">
+      const True = true;
+      const False = false;
+      const None = undefined;
+
+      const elements = {{ elements | safe }};
+
+      const throttles = new Set();
+      function throttle(callback, time, id) {
+        if (time <= 0) {
+          callback();
+          return;
+        }
+        if (throttles.has(id)) return;
+        throttles.add(id);
+        callback();
+        setTimeout(() => throttles.delete(id), 1000 * time);
+      }
+
+      function render_recursively(elements, id) {
+        const element = elements[id];
+        const props = {
+          id: element.id,
+          ref: 'r' + element.id,
+          class: element.class.join(' ') || undefined,
+          style: Object.entries(element.style).reduce((str, [p, val]) => `${str}${p}:${val};`, '') || undefined,
+          ...element.props,
+        };
+        Object.values(element.events).forEach((event) => {
+          const event_name = 'on' + event.type[0].toLocaleUpperCase() + event.type.substring(1);
+          const throttler = {active: false};
+          props[event_name] = Vue.withModifiers((e) => {
+            const all = typeof e !== 'object' || event.args.includes('*');
+            const args = all ? e : Object.fromEntries(event.args.map(a => [a, e[a]]));
+            throttle(() => window.socket.emit("event", {id: element.id, type: event.type, args}), event.throttle, event_name);
+          }, event.modifiers);
+        });
+        const slots = {};
+        Object.entries(element.slots).forEach(([name, ids]) => {
+          const children = ids.map(id => render_recursively(elements, id));
+          if (name == 'default' && element.text) {
+            children.unshift(element.text);
+          }
+          slots[name] = () => children;
+        });
+        return Vue.h(Vue.resolveComponent(element.tag), props, slots);
+      }
+
+      function run_javascript(code, request_id) {
+        (new Promise((resolve) =>resolve(eval(code)))).catch((reason) => {
+          if(reason instanceof SyntaxError)
+            return eval(`(async() => {${code}})()`);
+          else
+            throw reason;
+        }).then((result) => {
+          if (request_id) {
+            window.socket.emit("javascript_response", {request_id, result});
+          }
+        });
+      }
+
+      const app = Vue.createApp({
+        data() {
+          return {
+            elements,
+          };
+        },
+        render() {
+          return render_recursively(this.elements, 0);
+        },
+        mounted() {
+          const query = { client_id: "{{ client_id }}" };
+          const url = window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
+          window.socket = io(url, { path: "{{ prefix | safe }}/ws/socket.io", query });
+          window.socket.on("connect", () => {
+            window.socket.emit("handshake", (ok) => {
+              if (!ok) window.location.reload();
+            });
+          });
+          window.socket.on("update", (msg) => {
+            Object.entries(msg.elements).forEach(([id, element]) => this.elements[element.id] = element);
+          });
+          window.socket.on("run_method", (msg) => this.$refs['r' + msg.id]?.[msg.name](...msg.args));
+          window.socket.on("run_javascript", (msg) => run_javascript(msg['code'], msg['request_id']));
+          window.socket.on("open", (msg) => (location.href = msg));
+          window.socket.on("notify", (msg) => Quasar.Notify.create(msg));
+        },
+      }).use(Quasar, {
+        config: {
+          brand: {
+            primary: '#6aa9d9',
+          },
+          loadingBar: {
+            color: 'primary'
+          },
+        }
+      });
+
+      {{ vue_scripts | safe }}
+      {{ js_imports | safe }}
+
+      const dark = {{ dark }};
+      Quasar.Dark.set(dark === None ? "auto": dark);
+
+      app.mount("#app");
+    </script>
+  </body>
+</html>

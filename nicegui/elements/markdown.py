@@ -1,13 +1,9 @@
-from __future__ import annotations
-
 import re
 from typing import List
 
-import justpy as jp
 import markdown2
 
-from ..binding import BindableProperty, BindContentMixin
-from .element import Element
+from .mixins.content_element import ContentElement
 
 
 def apply_tailwind(html: str) -> str:
@@ -20,25 +16,16 @@ def apply_tailwind(html: str) -> str:
         '<a': '<a class="underline text-blue-600 hover:text-blue-800 visited:text-purple-600"',
         '<ul': '<ul class="list-disc ml-6"',
         '<p>': '<p class="mb-2">',
-        '<div\ class="codehilite">': '<div class=" codehilite mb-2 p-2" style="overflow: scroll">',
-        '<code': '<code style="background-color: #f8f8f8"',
+        '<div\ class="codehilite">': '<div class="codehilite mb-2 p-2">',
+        '<code': '<code style="background-color: transparent"',
     }
     pattern = re.compile('|'.join(rep.keys()))
     return pattern.sub(lambda m: rep[re.escape(m.group(0))], html)
 
 
-def _handle_content_change(sender: Markdown, content: str) -> None:
-    html = markdown2.markdown(content, extras=sender.extras)
-    html = apply_tailwind(html)  # we need explicit markdown styling because tailwind CSS removes all default styles
-    if sender.view.inner_html != html:
-        sender.view.inner_html = html
-        sender.update()
+class Markdown(ContentElement):
 
-
-class Markdown(Element, BindContentMixin):
-    content = BindableProperty(on_change=_handle_content_change)
-
-    def __init__(self, content: str = '', *, extras: List[str] = ['fenced-code-blocks', 'tables']):
+    def __init__(self, content: str = '', *, extras: List[str] = ['fenced-code-blocks', 'tables']) -> None:
         """Markdown Element
 
         Renders markdown onto the page.
@@ -47,12 +34,11 @@ class Markdown(Element, BindContentMixin):
         :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)
         """
         self.extras = extras
+        super().__init__(tag='div', content=content)
 
-        view = jp.QDiv(temp=False)
-        super().__init__(view)
-
-        self.content = content
-        _handle_content_change(self, content)
-
-    def set_content(self, content: str) -> None:
-        self.content = content
+    def on_content_change(self, content: str) -> None:
+        html = markdown2.markdown(content, extras=self.extras)
+        html = apply_tailwind(html)  # we need explicit markdown styling because tailwind CSS removes all default styles
+        if self._props.get('innerHTML') != html:
+            self._props['innerHTML'] = html
+            self.update()

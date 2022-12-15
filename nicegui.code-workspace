@@ -4,7 +4,11 @@
       "path": "."
     }
   ],
-  "settings": {},
+  "settings": {
+    "files.associations": {
+      "*.html": "jinja-html"
+    }
+  },
   "extensions": {
     "recommendations": [
       "ms-python.vscode-pylance",
@@ -14,7 +18,8 @@
       "littlefoxteam.vscode-python-test-adapter",
       "cschleiden.vscode-github-actions",
       "samuelcolvin.jinjahtml",
-      "ms-python.isort"
+      "ms-python.isort",
+      "Vue.volar"
     ]
   },
   "launch": {

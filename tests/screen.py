@@ -4,18 +4,22 @@ import time
 from typing import List
 
 import pytest
-from bs4 import BeautifulSoup
-from nicegui import globals, ui
 from selenium import webdriver
 from selenium.common.exceptions import ElementNotInteractableException, NoSuchElementException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from .helper import remove_prefix
+from nicegui import globals, ui
 
 PORT = 3392
 IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-input']
+
+
+def remove_prefix(text: str, prefix: str) -> str:
+    if prefix and text.startswith(prefix):
+        return text[len(prefix):]
+    return text
 
 
 class Screen:
@@ -67,8 +71,7 @@ class Screen:
             self.selenium.close()
 
     def should_contain(self, text: str) -> None:
-        assert self.selenium.title == text or self.find(text), \
-            f'could not find "{text}" on:\n{self.render_content()}'
+        assert self.selenium.title == text or self.find(text), f'could not find "{text}"'
 
     def should_not_contain(self, text: str) -> None:
         assert self.selenium.title != text
@@ -92,63 +95,11 @@ class Screen:
             query = f'//*[not(self::script) and not(self::style) and contains(text(), "{text}")]'
             return self.selenium.find_element(By.XPATH, query)
         except NoSuchElementException:
-            raise AssertionError(f'Could not find "{text}" on:\n{self.render_content()}')
-
-    def render_content(self, with_extras: bool = False) -> str:
-        body = self.selenium.find_element(By.TAG_NAME, 'body').get_attribute('innerHTML')
-        soup = BeautifulSoup(body, 'html.parser')
-        self.simplify_input_tags(soup)
-        content = ''
-        for child in soup.find_all():
-            is_element = False
-            if child is None or child.name == 'script':
-                continue
-            depth = (len(list(child.parents)) - 3) * '  '
-            if not child.find_all() and child.text:
-                content += depth + child.getText()
-                is_element = True
-            classes = child.get('class', '')
-            if classes:
-                if classes[0] in ['row', 'column', 'q-card']:
-                    content += depth + remove_prefix(classes[0], 'q-')
-                    is_element = True
-                if classes[0] == 'q-field':
-                    pass
-                [classes.remove(c) for c in IGNORED_CLASSES if c in classes]
-                for i, c in enumerate(classes):
-                    classes[i] = remove_prefix(c, 'q-field--')
-                if is_element and with_extras:
-                    content += f' [class: {" ".join(classes)}]'
-
-            if is_element:
-                content += '\n'
-
-        return f'Title: {self.selenium.title}\n\n{content}'
-
-    def render_html(self) -> str:
-        body = self.selenium.page_source
-        soup = BeautifulSoup(body, 'html.parser')
-        for element in soup.find_all():
-            if element.name in ['script', 'style'] and len(element.text) > 10:
-                element.string = '... removed lengthy content ...'
-        return soup.prettify()
+            raise AssertionError(f'Could not find "{text}"')
 
     def render_js_logs(self) -> str:
         console = '\n'.join(l['message'] for l in self.selenium.get_log('browser'))
         return f'-- console logs ---\n{console}\n---------------------'
-
-    @staticmethod
-    def simplify_input_tags(soup: BeautifulSoup) -> None:
-        for element in soup.find_all(class_='q-field'):
-            new = soup.new_tag('simple_input')
-            name = element.find(class_='q-field__label').text
-            placeholder = element.find(class_='q-field__native').get('placeholder')
-            messages = element.find(class_='q-field__messages')
-            value = element.find(class_='q-field__native').get('value')
-            new.string = (f'{name}: ' if name else '') + (value or placeholder or '') + \
-                (f' \u002A{messages.text}' if messages else '')
-            new['class'] = element['class']
-            element.replace_with(new)
 
     def get_tags(self, name: str) -> List[WebElement]:
         return self.selenium.find_elements(By.TAG_NAME, name)
@@ -175,10 +126,12 @@ class Screen:
         print(f'Storing screenshot to {filename}')
         self.selenium.get_screenshot_as_file(filename)
 
-    def assert_py_logger(self, name: str, message: str) -> None:
-        assert len(self.caplog.records) == 1, 'Expected exactly one log message'
-        record = self.caplog.records[0]
-        print('---------------', record.levelname, record.message)
-        assert record.levelname == name, f'Expected "{name}" but got "{record.levelname}"'
-        assert record.message == message, f'Expected "{message}" but got "{record.message}"'
-        self.caplog.records.clear()
+    def assert_py_logger(self, level: str, message: str) -> None:
+        try:
+            assert self.caplog.records, f'Expected a log message'
+            record = self.caplog.records[0]
+            print(record.levelname, record.message)
+            assert record.levelname.strip() == level, f'Expected "{level}" but got "{record.levelname}"'
+            assert record.message.strip() == message, f'Expected "{message}" but got "{record.message}"'
+        finally:
+            self.caplog.records.clear()

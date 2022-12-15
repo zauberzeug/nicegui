@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 import time
 
-from nicegui import ui
+from nicegui import Client, ui
 
 
 @ui.page('/')
-def page():
+async def page(client: Client):
     async def check():
-        response = await ui.run_javascript('window.pageYOffset >= document.body.offsetHeight - 2 * window.innerHeight')
-        if list(response.values())[0]:
+        if await ui.run_javascript('window.pageYOffset >= document.body.offsetHeight - 2 * window.innerHeight'):
             ui.image(f'https://picsum.photos/640/360?{time.time()}')
-    yield
+    await client.handshake()
     ui.timer(0.1, check)
 
 

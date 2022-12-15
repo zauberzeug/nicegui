@@ -1,4 +1,6 @@
-<img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/ui-elements.png" width="300" align="right">
+<a href="http://nicegui.io/#about">
+  <img src="sceenshots/ui-elements-narrow.png" width="200" align="right" alt="Try online!" />
+</a>
 
 # NiceGUI
 
@@ -21,26 +23,47 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 
 ## Features
 
-- browser-based graphical user interface
+### Interaction
+
+- buttons, switches, sliders, inputs, ...
+- notifications, dialogs and menus
+- keyboard input
+- on-screen joystick
+
+### Layout
+
+- navigation bars, tabs, panels, ...
+- grouping with rows, columns and cards
+- HTML and markdown elements
+- flex layout by default
+
+### Visualization
+
+- charts, diagrams and tables
+- 3D scenes
+- progress bars
+- built-in timer for data refresh
+
+### Styling
+
+- customizable color themes
+- custom CSS and classes
+- modern look with material design
+- built-in [Tailwind](https://tailwindcss.com/) support
+
+### Coding
+
+- live-cycle events
 - implicit reload on code change
-- standard GUI elements like label, button, checkbox, switch, slider, input, file upload, ...
-- simple grouping with rows, columns, cards and dialogs
-- general-purpose HTML and markdown elements
-- powerful high-level elements to
-  - plot graphs and charts,
-  - render 3D scenes,
-  - get steering events via virtual joysticks
-  - annotate and overlay images
-  - interact with tables
-  - navigate foldable tree structures
-- built-in timer to refresh data in intervals (even every 10 ms)
-- straight-forward data binding to write even less code
-- notifications, dialogs and menus to provide state of the art user interaction
-- shared and individual web pages
-- ability to add custom routes and data responses
-- capture keyboard input for global shortcuts etc
-- customize look by defining primary, secondary and accent colors
-- live-cycle events and session data
+- straight-forward data binding
+- execute javascript from Python
+
+### Foundation
+
+- generic [Vue](https://vuejs.org/) to Python bridge
+- dynamic GUI through [Quasar](https://quasar.dev/)
+- content is served with [FastAPI](http://fastapi.tiangolo.com/)
+- Python 3.7+
 
 ## Installation
 
@@ -72,7 +95,7 @@ Note: NiceGUI will automatically reload the page when you modify the code.
 
 ## Documentation and Examples
 
-The API reference is hosted at [https://nicegui.io/reference](https://nicegui.io/reference) and provides a ton of live examples.
+The API reference is hosted at [https://nicegui.io/reference](https://nicegui.io/reference) and provides plenty of live examples.
 The whole content of [https://nicegui.io](https://nicegui.io) is [implemented with NiceGUI itself](https://github.com/zauberzeug/nicegui/blob/main/main.py).
 
 You may also have a look at the following examples for in-depth demonstrations of what you can do with NiceGUI:
@@ -82,28 +105,34 @@ You may also have a look at the following examples for in-depth demonstrations o
 - [Authentication](https://github.com/zauberzeug/nicegui/blob/main/examples/authentication/main.py):
   shows how to use sessions to build a login screen
 - [Modularization](https://github.com/zauberzeug/nicegui/blob/main/examples/modularization/main.py):
-  provides an example of how to modularize your application into multiple files and create a specialized `@ui.page` decorator
+  provides an example of how to modularize your application into multiple files and reuse code
+- [FastAPI](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi/main.py)
+  illustrates the integration of NiceGUI with an existing FastAPI application
 - [Map](https://github.com/zauberzeug/nicegui/blob/main/examples/map/main.py):
-  uses the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations
+  demonstrates wrapping the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations
 - [AI User Interface](https://github.com/zauberzeug/nicegui/blob/main/examples/ai_interface/main.py):
-  utilizes the great but non-async API from <https://replicate.com> to perform voice-to-text transcription and generate images from prompts with Stable Diffusion
+  utilizes the [replicate](https://replicate.com) library to perform voice-to-text transcription and generate images from prompts with Stable Diffusion
 - [3D Scene](https://github.com/zauberzeug/nicegui/blob/main/examples/3d_scene/main.py):
-  creates a 3D scene and loads an STL mesh illuminated with a spotlight
+  creates a webGL view and loads an STL mesh illuminated with a spotlight
 - [Custom Vue Component](https://github.com/zauberzeug/nicegui/blob/main/examples/custom_vue_component/main.py)
-  shows how to write and integrate a custom vue component
+  shows how to write and integrate a custom Vue component
 - [Image Mask Overlay](https://github.com/zauberzeug/nicegui/blob/main/examples/image_mask_overlay/main.py):
   shows how to overlay an image with a mask
 - [Infinite Scroll](https://github.com/zauberzeug/nicegui/blob/main/examples/infinite_scroll/main.py):
-  shows an infinitely scrolling image gallery
+  presents an infinitely scrolling image gallery
 
 ## Why?
 
-We like [Streamlit](https://streamlit.io/) but find it does [too much magic when it comes to state handling](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651).
+We like [Streamlit](https://streamlit.io/)
+but find it does [too much magic](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651) when it comes to state handling.
 In search for an alternative nice library to write simple graphical user interfaces in Python we discovered [JustPy](https://justpy.io/).
-While we liked the approach, it is too "low-level HTML" for our daily usage.
+Although we liked the approach, it is too "low-level HTML" for our daily usage.
+But it inspired us to use [Vue](https://vuejs.org/) and [Quasar](https://quasar.dev/) for the frontend.
 
-Therefore we created NiceGUI on top of [JustPy](https://justpy.io/),
-which itself is based on the ASGI framework [Starlette](https://www.starlette.io/) (like [FastAPI](https://fastapi.tiangolo.com/)) and the ASGI webserver [Uvicorn](https://www.uvicorn.org/).
+We have built on top of [FastAPI](https://fastapi.tiangolo.com/),
+which itself is based on the ASGI framework [Starlette](https://www.starlette.io/)
+and the ASGI webserver [Uvicorn](https://www.uvicorn.org/)
+because of their great performance and ease of use.
 
 ## Docker
 
@@ -120,7 +149,8 @@ Code modification triggers an automatic reload.
 ## Deployment
 
 To deploy your NiceGUI app, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your server infrastructure.
-You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server or use our [pre-built Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies (see above).
+You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server
+or use our [pre-built Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies (see above).
 For example you can use this `docker run` command to start the script `main.py` in the current directory on port 80:
 
 ```bash
@@ -141,5 +171,6 @@ nicegui:
     - ./:/app/
 ```
 
-While it is possible to provide SSL certificates directly through NiceGUI (using [JustPy config](https://justpy.io/reference/configuration/)), we also like reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/).
+You can provide SSL certificates directly using [FastAPI](https://fastapi.tiangolo.com/deployment/https/).
+In production we also like using reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/) to handle these details for us.
 See our [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.

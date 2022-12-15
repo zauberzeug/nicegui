@@ -1,22 +1,19 @@
-from __future__ import annotations
-
 from typing import List, Optional
 
 import numpy as np
-from justpy import WebPage
 
 from .scene_object3d import Object3D
 
 
 class Scene(Object3D):
 
-    def __init__(self, view):
-        super().__init__('scene', view)
+    def __init__(self) -> None:
+        super().__init__('scene')
 
 
 class Group(Object3D):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__('group')
 
 
@@ -27,7 +24,7 @@ class Box(Object3D):
                  height: float = 1.0,
                  depth: float = 1.0,
                  wireframe: bool = False,
-                 ):
+                 ) -> None:
         super().__init__('box', width, height, depth, wireframe)
 
 
@@ -38,7 +35,7 @@ class Sphere(Object3D):
                  width_segments: int = 32,
                  height_segments: int = 16,
                  wireframe: bool = False,
-                 ):
+                 ) -> None:
         super().__init__('sphere', radius, width_segments, height_segments, wireframe)
 
 
@@ -51,7 +48,7 @@ class Cylinder(Object3D):
                  radial_segments: int = 8,
                  height_segments: int = 1,
                  wireframe: bool = False,
-                 ):
+                 ) -> None:
         super().__init__('cylinder', top_radius, bottom_radius, height, radial_segments, height_segments, wireframe)
 
 
@@ -65,7 +62,7 @@ class Ring(Object3D):
                  theta_start: float = 0,
                  theta_length: float = 2 * np.pi,
                  wireframe: bool = False,
-                 ):
+                 ) -> None:
         super().__init__('ring',
                          inner_radius, outer_radius, theta_segments, phi_segments, theta_start, theta_length, wireframe)
 
@@ -73,15 +70,15 @@ class Ring(Object3D):
 class QuadraticBezierTube(Object3D):
 
     def __init__(self,
-                 start: List(float, float, float),
-                 mid: List(float, float, float),
-                 end: List(float, float, float),
+                 start: List[float],
+                 mid: List[float],
+                 end: List[float],
                  tubular_segments: int = 64,
                  radius: float = 1.0,
                  radial_segments: int = 8,
                  closed: bool = False,
                  wireframe: bool = False,
-                 ):
+                 ) -> None:
         super().__init__('quadratic_bezier_tube',
                          start, mid, end, tubular_segments, radius, radial_segments, closed, wireframe)
 
@@ -89,10 +86,10 @@ class QuadraticBezierTube(Object3D):
 class Extrusion(Object3D):
 
     def __init__(self,
-                 outline: List[List[float, float]],
+                 outline: List[List[float]],
                  height: float,
                  wireframe: bool = False,
-                 ):
+                 ) -> None:
         super().__init__('extrusion', outline, height, wireframe)
 
 
@@ -101,28 +98,28 @@ class Stl(Object3D):
     def __init__(self,
                  url: str,
                  wireframe: bool = False,
-                 ):
+                 ) -> None:
         super().__init__('stl', url, wireframe)
 
 
 class Line(Object3D):
 
     def __init__(self,
-                 start: List[float, float, float],
-                 end: List[float, float, float],
-                 ):
+                 start: List[float],
+                 end: List[float],
+                 ) -> None:
         super().__init__('line', start, end)
 
 
 class Curve(Object3D):
 
     def __init__(self,
-                 start: List[float, float, float],
-                 control1: List[float, float, float],
-                 control2: List[float, float, float],
-                 end: List[float, float, float],
+                 start: List[float],
+                 control1: List[float],
+                 control2: List[float],
+                 end: List[float],
                  num_points: int = 20,
-                 ):
+                 ) -> None:
         super().__init__('curve', start, control1, control2, end, num_points)
 
 
@@ -131,7 +128,7 @@ class Text(Object3D):
     def __init__(self,
                  text: str,
                  style: str = '',
-                 ):
+                 ) -> None:
         super().__init__('text', text, style)
 
 
@@ -140,7 +137,7 @@ class Text3d(Object3D):
     def __init__(self,
                  text: str,
                  style: str = '',
-                 ):
+                 ) -> None:
         super().__init__('text3d', text, style)
 
 
@@ -149,18 +146,16 @@ class Texture(Object3D):
     def __init__(self,
                  url: str,
                  coordinates: List[List[Optional[List[float]]]],
-                 ):
+                 ) -> None:
         super().__init__('texture', url, coordinates)
 
-    async def set_url(self, url: str):
+    def set_url(self, url: str) -> None:
         self.args[0] = url
-        for socket in WebPage.sockets.get(self.page.page_id, {}).values():
-            await self.view.run_method(f'set_texture_url("{self.id}", "{url}")', socket)
+        self.scene.run_method('set_texture_url', self.id, url)
 
-    async def set_coordinates(self, coordinates: List[List[Optional[List[float]]]]):
+    def set_coordinates(self, coordinates: List[List[Optional[List[float]]]]) -> None:
         self.args[1] = coordinates
-        for socket in WebPage.sockets.get(self.page.page_id, {}).values():
-            await self.view.run_method(f'set_texture_coordinates("{self.id}", {coordinates})', socket)
+        self.scene.run_method('set_texture_coordinates', self.id, coordinates)
 
 
 class SpotLight(Object3D):
@@ -172,5 +167,5 @@ class SpotLight(Object3D):
                  angle: float = np.pi / 3,
                  penumbra: float = 0.0,
                  decay: float = 1.0,
-                 ):
+                 ) -> None:
         super().__init__('spot_light', color, intensity, distance, angle, penumbra, decay)

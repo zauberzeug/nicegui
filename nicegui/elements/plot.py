@@ -1,12 +1,13 @@
-import justpy as jp
+import io
+
 import matplotlib.pyplot as plt
 
-from .element import Element
+from ..element import Element
 
 
 class Plot(Element):
 
-    def __init__(self, *, close: bool = True, **kwargs):
+    def __init__(self, *, close: bool = True, **kwargs) -> None:
         """Plot Context
 
         Create a context to configure a `Matplotlib <https://matplotlib.org/>`_ plot.
@@ -14,20 +15,22 @@ class Plot(Element):
         :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later (default: `True`)
         :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_
         """
+        super().__init__('div')
         self.close = close
         self.fig = plt.figure(**kwargs)
+        self._convert_to_html()
 
-        view = jp.Matplotlib(temp=False)
-        view.set_figure(self.fig)
-
-        super().__init__(view)
+    def _convert_to_html(self) -> None:
+        with io.StringIO() as output:
+            self.fig.savefig(output, format='svg')
+            self._props['innerHTML'] = output.getvalue()
 
     def __enter__(self):
         plt.figure(self.fig)
         return self
 
     def __exit__(self, *_):
-        self.view.set_figure(plt.gcf())
+        self._convert_to_html()
         if self.close:
             plt.close(self.fig)
         self.update()

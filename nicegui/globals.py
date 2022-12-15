@@ -1,19 +1,15 @@
-from __future__ import annotations
-
 import asyncio
 import logging
 from enum import Enum
 from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Optional, Union
 
-from starlette.applications import Starlette
+from fastapi import FastAPI
+from socketio import AsyncServer
 from uvicorn import Server
 
-from .config import Config
-
 if TYPE_CHECKING:
-    import justpy as jp
-
-    from .page_builder import PageBuilder
+    from .client import Client
+    from .slot import Slot
 
 
 class State(Enum):
@@ -23,23 +19,57 @@ class State(Enum):
     STOPPING = 3
 
 
-app: Starlette
-config: Optional[Config] = None
+app: FastAPI
+sio: AsyncServer
 server: Optional[Server] = None
-state: State = State.STOPPED
 loop: Optional[asyncio.AbstractEventLoop] = None
-page_builders: Dict[str, 'PageBuilder'] = {}
-view_stacks: Dict[int, List['jp.HTMLBaseComponent']] = {}
-tasks: List[asyncio.tasks.Task] = []
 log: logging.Logger = logging.getLogger('nicegui')
-connect_handlers: List[Union[Callable, Awaitable]] = []
-disconnect_handlers: List[Union[Callable, Awaitable]] = []
+state: State = State.STOPPED
+
+host: str
+port: int
+reload: bool
+title: str
+favicon: Optional[str]
+dark: Optional[bool]
+binding_refresh_interval: float
+excludes: List[str]
+
+slot_stacks: Dict[int, List['Slot']] = {}
+clients: Dict[str, 'Client'] = {}
+index_client: 'Client' = ...
+
+page_routes: Dict[Callable, str] = {}
+favicons: Dict[str, Optional[str]] = {}
+tasks: List[asyncio.tasks.Task] = []
+
 startup_handlers: List[Union[Callable, Awaitable]] = []
 shutdown_handlers: List[Union[Callable, Awaitable]] = []
 
 
-def find_route(function: Callable) -> str:
-    routes = [route for route, page_builder in page_builders.items() if page_builder.function == function]
-    if not routes:
-        raise ValueError(f'Invalid page function {function}')
-    return routes[0]
+def get_task_id() -> int:
+    try:
+        return id(asyncio.current_task())
+    except RuntimeError:
+        return 0
+
+
+def get_slot_stack() -> List['Slot']:
+    task_id = get_task_id()
+    if task_id not in slot_stacks:
+        slot_stacks[task_id] = []
+    return slot_stacks[task_id]
+
+
+def prune_slot_stack() -> None:
+    task_id = get_task_id()
+    if not slot_stacks[task_id]:
+        del slot_stacks[task_id]
+
+
+def get_slot() -> 'Slot':
+    return get_slot_stack()[-1]
+
+
+def get_client() -> 'Client':
+    return get_slot().parent.client

@@ -4,12 +4,10 @@ from typing import Dict, Generator
 
 import icecream
 import pytest
-
-if True:  # NOTE: prevent formatter from sorting the imports (NiceGUI must come before JustPy)
-    from nicegui import globals
-
-from justpy.htmlcomponents import JustpyBaseComponent, WebPage
 from selenium import webdriver
+
+from nicegui import Client, globals
+from nicegui.page import page
 
 from .screen import Screen
 
@@ -39,12 +37,11 @@ def selenium(selenium: webdriver.Chrome) -> webdriver.Chrome:
 
 @pytest.fixture(autouse=True)
 def reset_globals() -> Generator[None, None, None]:
-    WebPage.sockets.clear()
-    WebPage.instances.clear()
-    WebPage.next_page_id = 0
-    JustpyBaseComponent.instances.clear()
-    JustpyBaseComponent.next_id = 0
+    globals.app.routes[:] = [route for route in globals.app.routes
+                             if route.path != '/' and route.path not in globals.page_routes.values()]
     importlib.reload(globals)
+    globals.index_client = Client(page('/'), shared=True).__enter__()
+    globals.app.get('/')(globals.index_client.build_response)
 
 
 @pytest.fixture(scope='session', autouse=True)

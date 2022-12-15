@@ -1,105 +1,96 @@
-from __future__ import annotations
-
 import uuid
-from typing import List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 
 import numpy as np
-from justpy.htmlcomponents import WebPage
 
-from ..task_logger import create_task
+from .. import globals
+
+if TYPE_CHECKING:
+    from .scene import Scene
 
 
 class Object3D:
-    stack: List[Object3D] = []
 
-    def __init__(self, type: str, *args):
+    def __init__(self, type: str, *args: Any) -> None:
         self.type = type
         self.id = str(uuid.uuid4())
-        self.name = None
-        self.parent = self.stack[-1]
-        self.view = self.parent.view
-        self.page = self.parent.page
-        self.args = list(args)
-        self.color = '#ffffff'
-        self.opacity = 1.0
+        self.name: Optional[str] = None
+        self.scene: 'Scene' = globals.get_slot().parent
+        self.scene.objects[self.id] = self
+        self.parent: Object3D = self.scene.stack[-1]
+        self.args: List = list(args)
+        self.color: str = '#ffffff'
+        self.opacity: float = 1.0
         self.side_: str = 'front'
         self.visible_: bool = True
-        self.x = 0
-        self.y = 0
-        self.z = 0
-        self.R = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-        self.sx = 1
-        self.sy = 1
-        self.sz = 1
-        self.run_command(self._create_command)
-        self.view.objects[self.id] = self
+        self.x: float = 0
+        self.y: float = 0
+        self.z: float = 0
+        self.R: List[List[float]] = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        self.sx: float = 1
+        self.sy: float = 1
+        self.sz: float = 1
+        self._create()
 
-    def with_name(self, name: str) -> Object3D:
+    def with_name(self, name: str):
         self.name = name
+        self._name()
         return self
 
-    def run_command(self, command: str, socket=None):
-        sockets = [socket] if socket else WebPage.sockets.get(self.page.page_id, {}).values()
-        for socket in sockets:
-            create_task(self.view.run_method(command, socket), name=command)
-
-    def send_to(self, socket):
-        self.run_command(self._create_command, socket)
-        self.run_command(self._material_command, socket)
-        self.run_command(self._move_command, socket)
-        self.run_command(self._rotate_command, socket)
-        self.run_command(self._scale_command, socket)
-        self.run_command(self._visible_command, socket)
+    def send(self) -> None:
+        self._create()
+        self._name()
+        self._material()
+        self._move()
+        self._rotate()
+        self._scale()
+        self._visible()
 
     def __enter__(self):
-        self.stack.append(self)
+        self.scene.stack.append(self)
         return self
 
     def __exit__(self, *_):
-        self.stack.pop()
+        self.scene.stack.pop()
 
-    @property
-    def _create_command(self):
-        return f'create("{self.type}", "{self.id}", "{self.parent.id}", {str(self.args)[1:-1]})'
+    def _create(self) -> None:
+        self.scene.run_method('create', self.type, self.id, self.parent.id, *self.args)
 
-    @property
-    def _material_command(self):
-        return f'material("{self.id}", "{self.color}", "{self.opacity}", "{self.side_}")'
+    def _name(self) -> None:
+        self.scene.run_method('name', self.id, self.name)
 
-    @property
-    def _move_command(self):
-        return f'move("{self.id}", {self.x}, {self.y}, {self.z})'
+    def _material(self) -> None:
+        self.scene.run_method('material', self.id, self.color, self.opacity, self.side_)
 
-    @property
-    def _rotate_command(self):
-        return f'rotate("{self.id}", {self.R})'
+    def _move(self) -> None:
+        self.scene.run_method('move', self.id, self.x, self.y, self.z)
 
-    @property
-    def _scale_command(self):
-        return f'scale("{self.id}", {self.sx}, {self.sy}, {self.sz})'
+    def _rotate(self) -> None:
+        self.scene.run_method('rotate', self.id, self.R)
 
-    @property
-    def _visible_command(self):
-        return f'visible("{self.id}", {self.visible_})'
+    def _scale(self) -> None:
+        self.scene.run_method('scale', self.id, self.sx, self.sy, self.sz)
 
-    @property
-    def _delete_command(self):
-        return f'delete("{self.id}")'
+    def _visible(self) -> None:
+        self.scene.run_method('visible', self.id, self.visible_)
+
+    def _delete(self) -> None:
+        self.scene.run_method('delete', self.id)
 
     def material(self, color: str = '#ffffff', opacity: float = 1.0, side: str = 'front'):
         if self.color != color or self.opacity != opacity or self.side_ != side:
             self.color = color
             self.opacity = opacity
             self.side_ = side
-            self.run_command(self._material_command)
+            self._material()
         return self
 
-    def move(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> Object3D:
+    def move(self, x: float = 0.0, y: float = 0.0, z: float = 0.0):
         if self.x != x or self.y != y or self.z != z:
             self.x = x
             self.y = y
             self.z = z
-            self.run_command(self._move_command)
+            self._move()
         return self
 
     def rotate(self, omega: float, phi: float, kappa: float):
@@ -111,7 +102,7 @@ class Object3D:
     def rotate_R(self, R: List[List[float]]):
         if self.R != R:
             self.R = R
-            self.run_command(self._rotate_command)
+            self._rotate()
         return self
 
     def scale(self, sx: float = 1.0, sy: Optional[float] = None, sz: Optional[float] = None):
@@ -123,15 +114,15 @@ class Object3D:
             self.sx = sx
             self.sy = sy
             self.sz = sz
-            self.run_command(self._scale_command)
+            self._scale()
         return self
 
     def visible(self, value: bool = True):
         if self.visible_ != value:
             self.visible_ = value
-            self.run_command(self._visible_command)
+            self._visible()
         return self
 
-    def delete(self):
-        del self.view.objects[self.id]
-        self.run_command(self._delete_command)
+    def delete(self) -> None:
+        del self.scene.objects[self.id]
+        self._delete()

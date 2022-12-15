@@ -1,14 +1,12 @@
 from typing import Callable, Optional
 
-import justpy as jp
-
-from .string_element import StringElement
+from .mixins.value_element import ValueElement
 
 
-class Input(StringElement):
+class Input(ValueElement):
 
     def __init__(self, label: str = None, *,
-                 placeholder: str = None, value: str = '', on_change: Optional[Callable] = None):
+                 placeholder: str = None, value: str = '', on_change: Optional[Callable] = None) -> None:
         """Text Input
 
         :param label: displayed label for the text input
@@ -16,13 +14,6 @@ class Input(StringElement):
         :param value: the current value of the text input
         :param on_change: callback to execute when the input is confirmed by leaving the focus
         """
-        view = jp.QInput(
-            label=label,
-            placeholder=placeholder,
-            value=value,
-            change=self.handle_change,
-            disable_input_event=True,
-            temp=False,
-        )
-
-        super().__init__(view, value=value, on_change=on_change)
+        super().__init__(tag='q-input', value=value, on_value_change=on_change)
+        self._props['label'] = label
+        self._props['placeholder'] = placeholder

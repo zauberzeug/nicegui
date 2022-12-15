@@ -1,29 +1,48 @@
 import traceback
 from dataclasses import dataclass
 from inspect import signature
-from typing import TYPE_CHECKING, Any, Callable, List, Optional
-
-from starlette.websockets import WebSocket
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 from . import globals
-from .auto_context import Context
+from .async_updater import AsyncUpdater
+from .client import Client
+from .functions.lifecycle import on_startup
 from .helpers import is_coroutine
-from .lifecycle import on_startup
 from .task_logger import create_task
 
 if TYPE_CHECKING:
-    from .elements.element import Element
+    from .element import Element
 
 
 @dataclass
 class EventArguments:
     sender: 'Element'
-    socket: Optional[WebSocket]
+    client: Client
 
 
 @dataclass
 class ClickEventArguments(EventArguments):
     pass
+
+
+@dataclass
+class SceneClickHit:
+    object_id: str
+    object_name: str
+    x: float
+    y: float
+    z: float
+
+
+@dataclass
+class SceneClickEventArguments(ClickEventArguments):
+    click_type: str
+    button: int
+    alt: bool
+    ctrl: bool
+    meta: bool
+    shift: bool
+    hits: List[SceneClickHit]
 
 
 @dataclass
@@ -39,9 +58,25 @@ class MouseEventArguments(EventArguments):
 
 
 @dataclass
+class JoystickEventArguments(EventArguments):
+    action: str
+    x: Optional[float] = None
+    y: Optional[float] = None
+
+
+@dataclass
+class UploadFile:
+    content: bytes
+    name: str
+    lastModified: float
+    lastModifiedDate: str
+    size: int
+    type: str
+
+
+@dataclass
 class UploadEventArguments(EventArguments):
-    files: List[bytes]
-    names: List[str]
+    files: List[UploadFile]
 
 
 @dataclass
@@ -229,26 +264,20 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
-@dataclass
-class PageEvent:
-    socket: WebSocket
-
-
-def handle_event(handler: Optional[Callable], arguments: EventArguments) -> Optional[bool]:
+def handle_event(handler: Optional[Callable], arguments: EventArguments) -> None:
     try:
         if handler is None:
-            return False
+            return
         no_arguments = not signature(handler).parameters
-        with Context(arguments.sender.parent_view):
+        with arguments.sender.parent_slot:
             result = handler() if no_arguments else handler(arguments)
         if is_coroutine(handler):
             async def wait_for_result():
-                with Context(arguments.sender.parent_view) as context:
-                    await context.watch_asyncs(result)
+                with arguments.sender.parent_slot:
+                    await AsyncUpdater(result)
             if globals.loop and globals.loop.is_running():
                 create_task(wait_for_result(), name=str(handler))
             else:
                 on_startup(None, wait_for_result())
-        return False
     except Exception:
         traceback.print_exc()

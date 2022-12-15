@@ -1,19 +1,16 @@
 from typing import Callable, Optional
 
-import justpy as jp
+from .mixins.text_element import TextElement
+from .mixins.value_element import ValueElement
 
-from .bool_element import BoolElement
 
+class Switch(TextElement, ValueElement):
 
-class Switch(BoolElement):
-
-    def __init__(self, text: str = '', *, value: bool = False, on_change: Optional[Callable] = None):
+    def __init__(self, text: str = '', *, value: bool = False, on_change: Optional[Callable] = None) -> None:
         """Switch
 
         :param text: the label to display next to the switch
         :param value: whether it should be active initially (default: `False`)
         :param on_change: callback which is invoked when state is changed by the user
         """
-        view = jp.QToggle(text=text, input=self.handle_change, temp=False)
-
-        super().__init__(view, value=value, on_change=on_change)
+        super().__init__(tag='q-toggle', text=text, value=value, on_value_change=on_change)

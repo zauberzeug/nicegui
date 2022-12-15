@@ -1,11 +1,10 @@
-import base64
-import traceback
-from typing import Callable, Optional
+from typing import Callable, Dict, Optional
 
-import justpy as jp
+from ..element import Element
+from ..events import UploadEventArguments, UploadFile, handle_event
+from ..vue import register_component
 
-from ..events import UploadEventArguments, handle_event
-from .element import Element
+register_component('upload', __file__, 'upload.vue')
 
 
 class Upload(Element):
@@ -13,38 +12,35 @@ class Upload(Element):
     def __init__(self, *,
                  multiple: bool = False,
                  on_upload: Optional[Callable] = None,
-                 upload_button_text: str = 'Upload') -> None:
+                 file_picker_label: str = '',
+                 upload_button_icon: str = 'file_upload') -> None:
         """File Upload
 
         :param multiple: allow uploading multiple files at once (default: `False`)
         :param on_upload: callback to execute when a file is uploaded (list of bytearrays)
-        :param upload_button_text: text for the upload button
+        :param file_picker_label: label for the file picker element
+        :param upload_button_icon: icon for the upload button
         """
-        self.upload_handler = on_upload
-        view = jp.Form(
-            enctype='multipart/form-data',
-            classes='flex gap-4 items-center',
-            submit=lambda sender, msg: self.submit(sender, msg),
-            temp=False,
-        )
-        jp.Input(type='file', multiple=multiple, change=lambda *_: False, a=view, temp=False)
-        jp.QBtn(type='submit', text=upload_button_text, color='primary', a=view, temp=False)
+        super().__init__('upload')
+        self.classes('row items-center gap-2')
+        self._props['multiple'] = multiple
+        self._props['file_picker_label'] = file_picker_label
+        self._props['upload_button_icon'] = upload_button_icon
 
-        super().__init__(view)
+        def upload(msg: Dict) -> None:
+            files = [
+                UploadFile(
+                    content=file['content'],
+                    name=file['name'],
+                    lastModified=file['lastModified'],
+                    lastModifiedDate=file['lastModifiedDate'],
+                    size=file['size'],
+                    type=file['type'],
+                )
+                for file in msg['args']
+            ]
+            handle_event(on_upload, UploadEventArguments(sender=self, client=self.client, files=files))
+        self.on('upload', upload)
 
-    def submit(self, _, msg) -> Optional[bool]:
-        try:
-            page_update = False
-            for form_data in msg.form_data:
-                if form_data.type == 'file':
-                    files = [base64.b64decode(f.file_content) for f in form_data.files]
-                    names = [f.name for f in form_data.files]
-                    arguments = UploadEventArguments(sender=self, socket=msg.websocket, files=files, names=names)
-                    if handle_event(self.upload_handler, arguments):
-                        page_update = None
-            return page_update
-        except Exception:
-            traceback.print_exc()
-
-    async def reset(self) -> None:
-        await self.page.run_javascript(f'document.getElementById({self.view.id}).reset()')
+    def reset(self) -> None:
+        self.run_method('reset')

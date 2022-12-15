@@ -1,25 +1,47 @@
-import justpy as jp
+from typing import Callable, Optional
 
-from .group import Group
+from .. import globals
+from ..events import ClickEventArguments, handle_event
+from .mixins.text_element import TextElement
+from .mixins.value_element import ValueElement
 
 
-class Menu(Group):
+class Menu(ValueElement):
 
-    def __init__(self, *, value: bool = False):
+    def __init__(self, *, value: bool = False) -> None:
         """Menu
 
         Creates a menu.
 
         :param value: whether the menu is already opened (default: `False`)
         """
-        view = jp.QMenu(value=value, temp=False, no_parent_event=True)
+        super().__init__(tag='q-menu', value=value, on_value_change=None)
+        self._props['no-parent-event'] = True
 
-        super().__init__(view)
+    def open(self) -> None:
+        self.value = True
 
-    def open(self):
-        self.view.value = True
-        self.update()
+    def close(self) -> None:
+        self.value = False
 
-    def close(self):
-        self.view.value = False
-        self.update()
+
+class MenuItem(TextElement):
+
+    def __init__(self, text: str = '', on_click: Optional[Callable] = None, *, auto_close: bool = True) -> None:
+        """Menu Item
+
+        A menu item to be added to a menu.
+
+        :param text: label of the menu item
+        :param on_click: callback to be executed when selecting the menu item
+        :param auto_close: whether the menu should be closed after a click event (default: `True`)
+        """
+        super().__init__(tag='q-item', text=text)
+        self.menu: Menu = globals.get_slot().parent
+        self._props['clickable'] = True
+
+        def handle_click(_) -> None:
+            handle_event(on_click, ClickEventArguments(sender=self, client=self.client))
+            if auto_close:
+                self.menu.close()
+        self.on('click', handle_click)

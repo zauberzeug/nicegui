@@ -1,7 +1,5 @@
 from typing import Any, Callable, Dict, List, Optional, Union
 
-import justpy as jp
-
 from .choice_element import ChoiceElement
 
 
@@ -14,6 +12,10 @@ class Radio(ChoiceElement):
         :param value: the initial value
         :param on_change: callback to execute when selection changes
         """
-        view = jp.QOptionGroup(options=options, input=self.handle_change, temp=False)
+        super().__init__(tag='q-option-group', options=options, value=value, on_change=on_change)
 
-        super().__init__(view, options, value=value, on_change=on_change)
+    def _msg_to_value(self, msg: Dict) -> Any:
+        return self._values[msg['args']]
+
+    def _value_to_model_value(self, value: Any) -> Any:
+        return self._values.index(value) if value in self._values else None

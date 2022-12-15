@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
-from nicegui import ui
+import example_pages
+import home_page
+import theme
 
-import custom
-import home
-import pages
+from nicegui import ui
 
 
 # here we use our custom page decorator directly and just put the content creation into a separate function
-@custom.page('/', navtitle='Homepage')
-def homepage() -> None:
-    home.content()
+@ui.page('/')
+def index_page() -> None:
+    with theme.frame('Homepage'):
+        home_page.content()
 
 
 # this call shows that you can also move the whole page creation into a separate file
-pages.create()
+example_pages.create()
 
-ui.run()
+ui.run(title='Modularization Demo')

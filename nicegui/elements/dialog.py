@@ -1,14 +1,12 @@
 import asyncio
-from typing import Any, Optional
+from typing import Any
 
-import justpy as jp
-
-from .group import Group
+from .mixins.value_element import ValueElement
 
 
-class Dialog(Group):
+class Dialog(ValueElement):
 
-    def __init__(self, *, value: bool = False):
+    def __init__(self, *, value: bool = False) -> None:
         """Dialog
 
         Creates a dialog.
@@ -17,39 +15,31 @@ class Dialog(Group):
 
         :param value: whether the dialog is already opened (default: `False`)
         """
-        view = jp.QDialog(value=value, input=self._on_input, temp=False)
-
-        self._submitted: Optional[asyncio.Event] = None
+        super().__init__(tag='q-dialog', value=value, on_value_change=None)
         self._result: Any = None
-
-        super().__init__(view)
+        self._submitted = asyncio.Event()
 
     def open(self) -> None:
-        self.view.value = True
-        self.update()
+        self.value = True
 
     def close(self) -> None:
-        self.view.value = False
-        self.update()
+        self.value = False
 
     def __await__(self):
-        self._submitted = asyncio.Event()
-        self._submitted.clear()
         self._result = None
+        self._submitted.clear()
         self.open()
-        yield from self.view.update().__await__()
         yield from self._submitted.wait().__await__()
+        result = self._result
         self.close()
-        return self._result
+        return result
 
-    def submit(self, result: Any) -> bool:
+    def submit(self, result: Any) -> None:
         self._result = result
         self._submitted.set()
-        return False
 
-    def _on_input(self, *_) -> bool:
-        self._result = None
-        if self._submitted is not None:
+    def on_value_change(self, value: Any) -> None:
+        super().on_value_change(value)
+        if not self.value:
+            self._result = None
             self._submitted.set()
-        self.update()
-        return False

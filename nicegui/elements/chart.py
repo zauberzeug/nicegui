@@ -1,13 +1,14 @@
 from typing import Dict
 
-import justpy as jp
+from ..element import Element
+from ..vue import register_component
 
-from .element import Element
+register_component('chart', __file__, 'chart.js', ['lib/highcharts.js'])
 
 
 class Chart(Element):
 
-    def __init__(self, options: Dict):
+    def __init__(self, options: Dict) -> None:
         """Chart
 
         An element to create a chart using `Highcharts <https://www.highcharts.com/>`_.
@@ -16,6 +17,13 @@ class Chart(Element):
 
         :param options: dictionary of Highcharts options
         """
-        view = jp.HighCharts(temp=False)
-        view.options = self.options = jp.Dict(**options)
-        super().__init__(view)
+        super().__init__('chart')
+        self._props['options'] = options
+
+    @property
+    def options(self) -> Dict:
+        return self._props['options']
+
+    def update(self) -> None:
+        super().update()
+        self.run_method('update_chart')

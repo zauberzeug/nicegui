@@ -1,66 +1,128 @@
-# isort:skip_file
 import asyncio
-from typing import Awaitable, Callable
+import urllib.parse
+from pathlib import Path
+from typing import Dict, Optional
 
-if True:  # NOTE: prevent formatter from mixing up these lines
-    import builtins
-    print_backup = builtins.print
-    builtins.print = lambda *args, **kwargs: kwargs.get('flush') and print_backup(*args, **kwargs)
-    from .ui import Ui  # NOTE: before justpy
-    import justpy as jp
-    builtins.print = print_backup
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi_socketio import SocketManager
 
-from . import binding, globals
-from .page import create_favicon_routes, create_page_routes, init_auto_index_page
+from . import binding, globals, vue
+from .client import Client
+from .error import error_content
+from .favicon import create_favicon_routes
+from .helpers import safe_invoke
+from .page import page
 from .task_logger import create_task
-from .routes import create_exclude_routes
-from .timer import Timer
 
-jp.app.router.on_startup.clear()  # NOTE: remove JustPy's original startup function
+globals.app = app = FastAPI()
+globals.sio = sio = SocketManager(app=app)._sio
 
+app.add_middleware(GZipMiddleware)
+app.mount('/_nicegui/static', StaticFiles(directory=Path(__file__).parent / 'static'), name='static')
 
-@jp.app.on_event('startup')
-async def patched_justpy_startup():
-    jp.WebPage.loop = jp.asyncio.get_event_loop()
-    jp.JustPy.loop = jp.WebPage.loop
-    jp.JustPy.STATIC_DIRECTORY = jp.os.environ["STATIC_DIRECTORY"]
-    print(f'NiceGUI ready to go on {"https" if jp.SSL_KEYFILE else "http"}://{jp.HOST}:{jp.PORT}')
+globals.index_client = Client(page('/'), shared=True).__enter__()
 
 
-@jp.app.on_event('startup')
-def startup():
+@app.get('/')
+def index(request: Request) -> str:
+    return globals.index_client.build_response(request)
+
+
+@app.get('/_nicegui/dependencies/{id}/{name}')
+def vue_dependencies(id: int, name: str):
+    if id in vue.js_dependencies and vue.js_dependencies[id].path.exists():
+        return FileResponse(vue.js_dependencies[id].path, media_type='text/javascript')
+    raise HTTPException(status_code=404, detail=f'dependency "{name}" with ID {id} not found')
+
+
+@app.get('/_nicegui/components/{name}')
+def vue_dependencies(name: str):
+    return FileResponse(vue.js_components[name].path, media_type='text/javascript')
+
+
+@app.on_event('startup')
+def handle_startup(with_welcome_message: bool = True) -> None:
     globals.state = globals.State.STARTING
     globals.loop = asyncio.get_running_loop()
-    init_auto_index_page()
-    create_page_routes()
     create_favicon_routes()
-    create_exclude_routes()
-    globals.tasks.extend(create_task(t.coro, name=t.name) for t in Timer.prepared_coroutines)
-    Timer.prepared_coroutines.clear()
-    globals.tasks.extend(create_task(t, name='startup task')
-                         for t in globals.startup_handlers if isinstance(t, Awaitable))
-    [safe_invoke(t) for t in globals.startup_handlers if isinstance(t, Callable)]
-    jp.run_task(binding.loop())
+    [safe_invoke(t) for t in globals.startup_handlers]
+    create_task(binding.loop())
     globals.state = globals.State.STARTED
+    if with_welcome_message:
+        print(f'NiceGUI ready to go on http://{globals.host}:{globals.port}')
 
 
-@jp.app.on_event('shutdown')
-def shutdown():
+@app.on_event('shutdown')
+def handle_shutdown() -> None:
     globals.state = globals.State.STOPPING
-    [create_task(t, name='shutdown task') for t in globals.shutdown_handlers if isinstance(t, Awaitable)]
-    [safe_invoke(t) for t in globals.shutdown_handlers if isinstance(t, Callable)]
+    [safe_invoke(t) for t in globals.shutdown_handlers]
     [t.cancel() for t in globals.tasks]
     globals.state = globals.State.STOPPED
 
 
-def safe_invoke(func: Callable):
-    try:
-        result = func()
-        if isinstance(result, Awaitable):
-            create_task(result)
-    except:
-        globals.log.exception(f'could not invoke {func}')
+@app.exception_handler(404)
+async def exception_handler(request: Request, exception: Exception):
+    globals.log.warning(f'{request.url} not found')
+    with Client(page('')) as client:
+        error_content(404, exception)
+    return client.build_response(request, 404)
 
 
-app = globals.app = jp.app
-ui = Ui()
+@app.exception_handler(Exception)
+async def exception_handler(request: Request, exception: Exception):
+    globals.log.exception(exception)
+    with Client(page('')) as client:
+        error_content(500, exception)
+    return client.build_response(request, 500)
+
+
+@sio.on('handshake')
+async def handle_handshake(sid: str) -> bool:
+    client = get_client(sid)
+    if not client:
+        return False
+    client.environ = sio.get_environ(sid)
+    sio.enter_room(sid, client.id)
+    with client:
+        [safe_invoke(t) for t in client.connect_handlers]
+    return True
+
+
+@sio.on('disconnect')
+async def handle_disconnect(sid: str) -> None:
+    client = get_client(sid)
+    if not client:
+        return
+    if not client.shared:
+        del globals.clients[client.id]
+    with client:
+        [safe_invoke(t) for t in client.disconnect_handlers]
+
+
+@sio.on('event')
+def handle_event(sid: str, msg: Dict) -> None:
+    client = get_client(sid)
+    if not client or not client.has_socket_connection:
+        return
+    with client:
+        sender = client.elements.get(msg['id'])
+        if sender:
+            sender.handle_event(msg)
+
+
+@sio.on('javascript_response')
+def handle_event(sid: str, msg: Dict) -> None:
+    client = get_client(sid)
+    if not client:
+        return
+    client.waiting_javascript_commands[msg['request_id']] = msg['result']
+
+
+def get_client(sid: str) -> Optional[Client]:
+    query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
+    query = urllib.parse.parse_qs(query_bytes.decode())
+    client_id = query['client_id'][0]
+    return globals.clients.get(client_id)

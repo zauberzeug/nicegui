@@ -1,11 +1,9 @@
-import justpy as jp
-
-from .element import Element
+from ..element import Element
 
 
 class Icon(Element):
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         """Icon
 
         Displays an icon.
@@ -14,6 +12,5 @@ class Icon(Element):
 
         :param name: the name of the icon
         """
-        view = jp.QIcon(name=name, classes=f'q-pt-xs', size='20px', temp=False)
-
-        super().__init__(view)
+        super().__init__('q-icon')
+        self._props['name'] = name

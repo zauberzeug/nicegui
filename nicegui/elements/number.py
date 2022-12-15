@@ -1,15 +1,16 @@
-from typing import Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
-import justpy as jp
-
-from .float_element import FloatElement
+from .mixins.value_element import ValueElement
 
 
-class Number(FloatElement):
+class Number(ValueElement):
 
-    def __init__(
-            self, label: str = None, *,
-            placeholder: str = None, value: float = None, format: str = None, on_change: Optional[Callable] = None):
+    def __init__(self,
+                 label: str = None, *,
+                 placeholder: str = None,
+                 value: float = None,
+                 format: str = None,
+                 on_change: Optional[Callable] = None) -> None:
         """Number Input
 
         :param label: displayed name for the number input
@@ -18,18 +19,24 @@ class Number(FloatElement):
         :param format: a string like '%.2f' to format the displayed value
         :param on_change: callback to execute when the input is confirmed by leaving the focus
         """
-        view = jp.QInput(
-            type='number',
-            label=label,
-            placeholder=placeholder,
-            change=self.handle_change,
-            disable_input_event=True,
-            temp=False,
-        )
+        self.format = format
+        super().__init__(tag='q-input', value=value, on_value_change=on_change)
+        self._props['type'] = 'number'
+        self._props['label'] = label
+        self._props['placeholder'] = placeholder
 
-        super().__init__(view, value=value, format=format, on_change=on_change)
+    def _msg_to_value(self, msg: Dict) -> Any:
+        return float(msg['args'])
 
-    def handle_change(self, msg: Dict):
-        msg['value'] = float(msg['value'])
+    def _value_to_model_value(self, value: Any) -> Any:
+        if value is None:
+            return None
+        elif self.format is None:
+            return str(value)
+        elif value == '':
+            return 0
+        else:
+            return self.format % float(value)
 
-        return super().handle_change(msg)
+    def _value_to_event_value(self, value: Any) -> Any:
+        return float(value) if value else 0

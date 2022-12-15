@@ -1,8 +1,8 @@
 import asyncio
-from typing import Generator
 
-from nicegui import ui
-from nicegui.events import PageEvent
+from selenium.webdriver.common.by import By
+
+from nicegui import Client, ui
 from nicegui.task_logger import create_task
 
 from .screen import Screen
@@ -35,33 +35,26 @@ def test_adding_elements_with_async_await(screen: Screen):
         await asyncio.sleep(0.1)
         ui.label('B')
 
-    with ui.card():
+    with ui.card() as cardA:
         ui.timer(1.0, add_a, once=True)
-    with ui.card():
+    with ui.card() as cardB:
         ui.timer(1.1, add_b, once=True)
 
     screen.open('/')
-    for _ in range(100):
-        if '    card\n      A\n    card\n      B' in screen.render_content():
-            return
-        screen.wait(0.1)
-    raise AssertionError(f'{screen.render_content()} should show cards with "A" and "B"')
+    screen.wait_for('A')
+    screen.wait_for('B')
+    cA = screen.selenium.find_element(By.ID, cardA.id)
+    cA.find_element(By.XPATH, f'.//*[contains(text(), "A")]')
+    cB = screen.selenium.find_element(By.ID, cardB.id)
+    cB.find_element(By.XPATH, f'.//*[contains(text(), "B")]')
 
 
-def test_adding_elements_during_onconnect(screen: Screen):
-    ui.label('Label 1')
-    ui.on_connect(lambda: ui.label('Label 2'))
-
-    screen.open('/')
-    screen.should_contain('Label 2')
-
-
-def test_autoupdate_on_async_page_after_yield(screen: Screen):
+def test_autoupdate_after_handshake(screen: Screen):
     @ui.page('/')
-    async def page() -> Generator[None, PageEvent, None]:
-        ui.label('before page is ready')
-        yield
-        ui.label('page ready')
+    async def page(client: Client):
+        ui.label('before handshake')
+        await client.handshake()
+        ui.label('after handshake')
         await asyncio.sleep(1)
         ui.label('one')
         await asyncio.sleep(1)
@@ -70,31 +63,14 @@ def test_autoupdate_on_async_page_after_yield(screen: Screen):
         ui.label('three')
 
     screen.open('/')
-    screen.should_contain('before page is ready')
-    screen.should_contain('page ready')
+    screen.should_contain('before handshake')
+    screen.should_contain('after handshake')
     screen.should_not_contain('one')
     screen.wait_for('one')
     screen.should_not_contain('two')
     screen.wait_for('two')
     screen.should_not_contain('three')
     screen.wait_for('three')
-
-
-def test_autoupdate_on_async_page_ready_callback(screen: Screen):
-    async def ready():
-        ui.label('page ready')
-        await asyncio.sleep(1)
-        ui.label('after delay')
-
-    @ui.page('/', on_page_ready=ready)
-    def page() -> Generator[None, PageEvent, None]:
-        ui.label('before page is ready')
-
-    screen.open('/')
-    screen.should_contain('before page is ready')
-    screen.should_contain('page ready')
-    screen.should_not_contain('after delay')
-    screen.wait_for('after delay')
 
 
 def test_autoupdate_on_async_event_handler(screen: Screen):
@@ -116,15 +92,17 @@ def test_autoupdate_on_async_event_handler(screen: Screen):
 def test_autoupdate_on_async_timer_callback(screen: Screen):
     async def update():
         ui.label('1')
-        await asyncio.sleep(1.0)
+        await asyncio.sleep(2.0)
         ui.label('2')
+    ui.label('0')
     ui.timer(2.0, update, once=True)
 
     screen.open('/')
+    screen.should_contain('0')
     screen.should_not_contain('1')
-    screen.wait_for('1')
+    screen.wait_for('1', timeout=3.0)
     screen.should_not_contain('2')
-    screen.wait_for('2')
+    screen.wait_for('2', timeout=3.0)
 
 
 def test_adding_elements_from_different_tasks(screen: Screen):
@@ -146,10 +124,7 @@ def test_adding_elements_from_different_tasks(screen: Screen):
     create_task(add_label2())
     screen.wait_for('1')
     screen.wait_for('2')
-    assert screen.render_content() == '''Title: NiceGUI
-
-    card
-      1
-    card
-      2
-'''
+    c1 = screen.selenium.find_element(By.ID, card1.id)
+    c1.find_element(By.XPATH, f'.//*[contains(text(), "1")]')
+    c2 = screen.selenium.find_element(By.ID, card2.id)
+    c2.find_element(By.XPATH, f'.//*[contains(text(), "2")]')

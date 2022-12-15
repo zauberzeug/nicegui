@@ -1,32 +1,21 @@
 from typing import Callable, Optional
 
-import justpy as jp
-
-from ..binding import BindableProperty, BindTextMixin
 from ..events import ClickEventArguments, handle_event
-from .group import Group
+from .mixins.text_element import TextElement
 
 
-class Button(Group, BindTextMixin):
-    text = BindableProperty()
+class Button(TextElement):
 
-    def __init__(self, text: str = '', *, on_click: Optional[Callable] = None):
+    def __init__(self, text: str = '', *, on_click: Optional[Callable] = None) -> None:
         """Button
 
         :param text: the label of the button
         :param on_click: callback which is invoked when button is pressed
         """
+        super().__init__(tag='q-btn', text=text)
+        self._props['color'] = 'primary'
 
-        view = jp.QButton(label=text, color='primary', temp=False)
-        super().__init__(view)
+        self.on('click', lambda _: handle_event(on_click, ClickEventArguments(sender=self, client=self.client)))
 
-        self.text = text
-        self.bind_text_to(self.view, 'label')
-
-        def process_event(view, event) -> Optional[bool]:
-            return handle_event(on_click, ClickEventArguments(sender=self, socket=event.get('websocket')))
-
-        view.on('click', process_event)
-
-    def set_text(self, text: str):
-        self.text = text
+    def _text_to_model_text(self, text: str) -> None:
+        self._props['label'] = text
