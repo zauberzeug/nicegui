@@ -18,11 +18,16 @@ def create_favicon_routes() -> None:
                               lambda _, favicon=favicon or globals.favicon or fallback: FileResponse(favicon))
 
 
-def get_favicon_url(page: 'page') -> str:
+def get_favicon_url(page: 'page', prefix: str) -> str:
     favicon = page.favicon or globals.favicon
     if is_remote_url(favicon):
         return favicon
-    return f'{page.path[1:]}/favicon.ico' if favicon else '_nicegui/static/favicon.ico'
+    elif not favicon:
+        return f'{prefix}/_nicegui/static/favicon.ico'
+    elif page.path == '/':
+        return f'{prefix}/favicon.ico'
+    else:
+        return f'{prefix}{page.path}/favicon.ico'
 
 
 def is_remote_url(favicon: str) -> bool:

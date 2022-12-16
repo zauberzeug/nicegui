@@ -75,7 +75,7 @@ class Client:
             'vue_scripts': vue_scripts,
             'js_imports': vue.generate_js_imports(prefix),
             'title': self.page.resolve_title(),
-            'favicon_url': get_favicon_url(self.page),
+            'favicon_url': get_favicon_url(self.page, prefix),
             'dark': str(self.page.resolve_dark()),
             'prefix': prefix,
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
