@@ -20,7 +20,6 @@ export default {
         content: file,
         name: file.name,
         lastModified: file.lastModified / 1000,
-        lastModifiedDate: file.lastModifiedDate,
         size: file.size,
         type: file.type,
       }));

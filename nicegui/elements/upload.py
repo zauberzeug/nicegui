@@ -33,7 +33,6 @@ class Upload(Element):
                     content=file['content'],
                     name=file['name'],
                     lastModified=file['lastModified'],
-                    lastModifiedDate=file['lastModifiedDate'],
                     size=file['size'],
                     type=file['type'],
                 )

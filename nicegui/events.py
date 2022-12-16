@@ -69,7 +69,6 @@ class UploadFile:
     content: bytes
     name: str
     lastModified: float
-    lastModifiedDate: str
     size: int
     type: str
 
