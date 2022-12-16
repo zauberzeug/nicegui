@@ -8,7 +8,7 @@ class Badge(TextElement):
         """Badge
 
         A badge element wrapping Quasar's
-        `QBadge <https://v1.quasar.dev/vue-components/badge>`_ component.
+        `QBadge <https://quasar.dev/vue-components/badge>`_ component.
 
         :param text: the initial value of the text field
         :param color: the color name for component from the Quasar Color Palette (default: "blue")

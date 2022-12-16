@@ -14,7 +14,7 @@ class Tree(Element):
                  on_select: Optional[Callable] = None) -> None:
         """Tree
 
-        Display hierarchical data using Quasar's `QTree <https://v1.quasar.dev/vue-components/tree>`_ component.
+        Display hierarchical data using Quasar's `QTree <https://quasar.dev/vue-components/tree>`_ component.
 
         If using IDs, make sure they are unique within the whole tree.
 
