@@ -89,7 +89,7 @@
         mounted() {
           const query = { client_id: "{{ client_id }}" };
           const url = window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
-          const extraHeaders = { "fly-force-instance-id": "{{ fly_instance_id }}" }
+          const extraHeaders = { {{ socket_io_js_extra_headers | safe }} }
           window.socket = io(url, { path: "{{ prefix | safe }}/ws/socket.io", query, extraHeaders });
           window.socket.on("connect", () => {
             window.socket.emit("handshake", (ok) => {

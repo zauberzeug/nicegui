@@ -34,6 +34,7 @@ favicon: Optional[str]
 dark: Optional[bool]
 binding_refresh_interval: float
 excludes: List[str]
+socket_io_js_extra_headers: str = ''
 
 slot_stacks: Dict[int, List['Slot']] = {}
 clients: Dict[str, 'Client'] = {}

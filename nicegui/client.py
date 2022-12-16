@@ -63,15 +63,12 @@ class Client:
         self.content.__exit__()
 
     def build_response(self, request: Request, status_code: int = 200) -> HTMLResponse:
-        fly_instance_id = os.environ.get('FLY_ALLOC_ID', '').split('-')[0]
-        print('fly instance id', fly_instance_id)
         prefix = request.headers.get('X-Forwarded-Prefix', '')
         vue_html, vue_styles, vue_scripts = vue.generate_vue_content()
         elements = json.dumps({id: element.to_dict() for id, element in self.elements.items()})
         return templates.TemplateResponse('index.html', {
             'request': request,
             'client_id': str(self.id),
-            'fly_instance_id': fly_instance_id,
             'elements': elements,
             'head_html': self.head_html,
             'body_html': f'{self.body_html}\n{vue_html}\n{vue_styles}',
@@ -81,6 +78,7 @@ class Client:
             'favicon_url': get_favicon_url(self.page),
             'dark': str(self.page.resolve_dark()),
             'prefix': prefix,
+            'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
         }, status_code, {'Cache-Control': 'no-store'})
 
     async def handshake(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:

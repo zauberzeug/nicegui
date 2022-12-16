@@ -6,17 +6,25 @@ if True:
     from engineio.payload import Payload
     Payload.max_decode_packets = 500
 
+import os
 from pathlib import Path
 
 from pygments.formatters import HtmlFormatter
 
-from nicegui import Client, ui
+from nicegui import Client
+from nicegui import globals as nicegui_globals
+from nicegui import ui
 from website import demo_card, reference, svg
 from website.example import bash_window, browser_window, python_window
 from website.style import example_link, features, heading, link_target, section_heading, subtitle, title
 
 ui.add_static_files('/favicon', Path(__file__).parent / 'website' / 'favicon')
 ui.add_static_files('/fonts', Path(__file__).parent / 'website' / 'fonts')
+
+# NOTE in our global fly.io deployment we need to make sure that the websocket connects back to the same instance
+fly_instance_id = os.environ.get('FLY_ALLOC_ID', '').split('-')[0]
+if fly_instance_id:
+    nicegui_globals.socket_io_js_extra_headers = f'"fly-force-instance-id": "{fly_instance_id}"'
 
 
 def add_head_html() -> None:
