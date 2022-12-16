@@ -6,6 +6,7 @@ WORKDIR /app
 
 ADD . .
 RUN pip install -e .
+RUN pip install itsdangerous
 
 EXPOSE 8080
 
