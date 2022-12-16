@@ -1,8 +1,11 @@
+import asyncio
 import io
 
 import matplotlib.pyplot as plt
 
+from .. import globals
 from ..element import Element
+from ..task_logger import create_task
 
 
 class Plot(Element):
@@ -19,6 +22,7 @@ class Plot(Element):
         self.close = close
         self.fig = plt.figure(**kwargs)
         self._convert_to_html()
+        create_task(self._auto_close(), name='auto-close plot figure')
 
     def _convert_to_html(self) -> None:
         with io.StringIO() as output:
@@ -34,3 +38,8 @@ class Plot(Element):
         if self.close:
             plt.close(self.fig)
         self.update()
+
+    async def _auto_close(self) -> None:
+        while self.client.id in globals.clients:
+            await asyncio.sleep(1.0)
+        plt.close(self.fig)
