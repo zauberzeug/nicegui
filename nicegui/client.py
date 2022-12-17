@@ -79,7 +79,7 @@ class Client:
             'dark': str(self.page.resolve_dark()),
             'prefix': prefix,
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
-        }, status_code, {'Cache-Control': 'no-store'})
+        }, status_code, {'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'})
 
     async def handshake(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
         self.is_waiting_for_handshake = True

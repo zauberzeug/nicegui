@@ -11,12 +11,15 @@ from pathlib import Path
 
 from pygments.formatters import HtmlFormatter
 
-from nicegui import Client
+import prometheus
+from nicegui import Client, app
 from nicegui import globals as nicegui_globals
 from nicegui import ui
 from website import demo_card, reference, svg
 from website.example import bash_window, browser_window, python_window
 from website.style import example_link, features, heading, link_target, section_heading, subtitle, title
+
+prometheus.start_monitor(app)
 
 ui.add_static_files('/favicon', Path(__file__).parent / 'website' / 'favicon')
 ui.add_static_files('/fonts', Path(__file__).parent / 'website' / 'fonts')

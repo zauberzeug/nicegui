@@ -58,3 +58,7 @@ strategy = "canary"
   [[statics]]
     guest_path = "/app/nicegui/static"
     url_prefix = "/_nicegui/static"
+
+  [metrics]
+  port = 9062
+  path = "/metrics" # default for most prometheus clients
