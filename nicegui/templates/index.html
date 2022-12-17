@@ -96,6 +96,9 @@
               if (!ok) window.location.reload();
             });
           });
+          window.socket.on("connect_error", (err) => {
+            if (err.message == 'timeout') window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
+          });
           window.socket.on("update", (msg) => {
             Object.entries(msg.elements).forEach(([id, element]) => this.elements[element.id] = element);
           });
