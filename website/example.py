@@ -33,6 +33,7 @@ class example:
         with ui.column().classes('w-full mb-8'):
             if isinstance(self.content, str):
                 documentation = ui.markdown(self.content)
+                _add_markdown_anchor(documentation)
             else:
                 doc = self.content.__doc__ or self.content.__init__.__doc__
                 html: str = docutils.core.publish_parts(doc, writer_name='html5_polyglot')['html_body']
@@ -41,7 +42,7 @@ class example:
                 html = html.replace('param ', '')
                 html = apply_tailwind(html)
                 documentation = ui.html(html)
-            _add_html_anchor(documentation.classes('documentation bold-links arrow-links'))
+                _add_html_anchor(documentation.classes('documentation bold-links arrow-links'))
 
             with ui.column().classes('w-full items-stretch gap-8 no-wrap xl:flex-row'):
                 code = inspect.getsource(f).split('# END OF EXAMPLE')[0].strip().splitlines()
@@ -71,6 +72,18 @@ class example:
                         intersection_observer(on_intersection=f)
 
         return f
+
+
+def _add_markdown_anchor(element: ui.markdown) -> None:
+    first_line, body = element.content.split('\n', 1)
+    assert first_line.startswith('#### ')
+    headline = first_line[5:].strip()
+    headline_id = SPECIAL_CHARACTERS.sub('_', headline).lower()
+    icon = '<span class="material-icons">link</span>'
+    link = f'<a href="reference#{headline_id}" class="hover:text-black auto-link" style="color: #ddd">{icon}</a>'
+    target = f'<div id="{headline_id}" style="position: relative; top: -90px"></div>'
+    title = f'{target}<h4>{headline} {link}</h4>'
+    element.content = title + '\n' + element.content.split('\n', 1)[1]
 
 
 def _add_html_anchor(element: ui.html) -> None:
