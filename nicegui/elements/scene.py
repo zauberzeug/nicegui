@@ -75,6 +75,7 @@ class Scene(Element):
 
     def handle_connect(self, _) -> None:
         self.run_method('init')
+        self.move_camera(duration=0)
         for object in self.objects.values():
             object.send()
 
