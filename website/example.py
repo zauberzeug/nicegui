@@ -75,7 +75,7 @@ class example:
 
 
 def _add_markdown_anchor(element: ui.markdown) -> None:
-    first_line, body = element.content.split('\n', 1)
+    first_line, _ = element.content.split('\n', 1)
     assert first_line.startswith('#### ')
     headline = first_line[5:].strip()
     headline_id = SPECIAL_CHARACTERS.sub('_', headline).lower()

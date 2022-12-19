@@ -10,11 +10,11 @@ EXCLUDED_USER_AGENTS = ('bot', 'spider', 'crawler', 'monitor', 'curl',
                         'wget', 'python-requests', 'kuma', 'health check')
 
 
-def start_monitor(app: FastAPI):
+def start_monitor(app: FastAPI) -> None:
     try:
         import prometheus_client
-        visits = prometheus_client.Counter('nicegui_page_visits', 'Number of real page visits', [
-                                           'path', 'session', 'origin'])
+        visits = prometheus_client.Counter('nicegui_page_visits', 'Number of real page visits',
+                                           ['path', 'session', 'origin'])
 
         class PrometheusMiddleware(BaseHTTPMiddleware):
             async def dispatch(self, request: Request, call_next):
