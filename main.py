@@ -80,7 +80,7 @@ async def index_page(client: Client):
     with ui.row().classes('''
             dark-box min-h-screen no-wrap
             justify-center items-center flex-col md:flex-row
-            p-8 lg:p-16
+            py-20 px-8 lg:px-16
             gap-8 sm:gap-16 md:gap-8 lg:gap-16
         '''):
         link_target('about')
@@ -209,7 +209,8 @@ ui.run()
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
         with ui.column().classes('''
-                max-w-[1600px] p-8 lg:p-16 m-auto
+                max-w-[1600px] m-auto
+                py-20 px-8 lg:px-16
                 items-center justify-center no-wrap flex-col md:flex-row gap-16
             '''):
             with ui.column().classes('gap-8'):
