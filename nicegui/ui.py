@@ -1,5 +1,6 @@
 import os
 
+from .elements.audio import Audio as audio
 from .elements.badge import Badge as badge
 from .elements.button import Button as button
 from .elements.card import Card as card
@@ -42,6 +43,7 @@ from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
 from .elements.upload import Upload as upload
+from .elements.video import Video as video
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
 from .functions.lifecycle import on_connect, on_disconnect, on_shutdown, on_startup, shutdown

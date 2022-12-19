@@ -176,7 +176,7 @@ You can add Scalable Vector Graphics using the `ui.html` element.
             </svg>'''
         ui.html(content)
 
-    h3('Images')
+    h3('Images, Audio and Video')
 
     @example(ui.image)
     def image_example():
@@ -211,6 +211,19 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         src = 'https://cdn.stocksnap.io/img-thumbs/960w/corn-cob_YSZZZEC59W.jpg'
         ii = ui.interactive_image(src, on_mouse=mouse_handler, events=['mousedown', 'mouseup'], cross=True)
+
+    @example(ui.audio)
+    def image_example():
+        a = ui.audio('https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab41b.mp3')
+        a.on('ended', lambda _: ui.notify('Audio playback completed'))
+
+        ui.button(on_click=lambda: a.props('muted')).props('outline icon=volume_up')
+        ui.button(on_click=lambda: a.props(remove='muted')).props('outline icon=volume_off')
+
+    @example(ui.video)
+    def image_example():
+        v = ui.video('https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4')
+        v.on('ended', lambda _: ui.notify('Video playback completed'))
 
     h3('Data Elements')
 
