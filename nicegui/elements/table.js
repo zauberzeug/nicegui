@@ -6,6 +6,7 @@ export default {
       onGridReady: (params) => params.api.sizeColumnsToFit(),
     };
     this.grid = new agGrid.Grid(this.$el, this.gridOptions);
+    this.gridOptions.api.addGlobalListener(this.handle_event);
   },
   methods: {
     update_grid() {
@@ -14,6 +15,9 @@ export default {
     },
     call_api_method(name, ...args) {
       this.gridOptions.api[name](...args);
+    },
+    handle_event(event, args) {
+      this.$emit(event, args);
     },
   },
   props: {
