@@ -12,6 +12,7 @@ from fastapi_socketio import SocketManager
 
 from . import binding, globals, vue
 from .client import Client
+from .element import Element
 from .error import error_content
 from .favicon import create_favicon_routes
 from .helpers import safe_invoke
@@ -99,7 +100,7 @@ async def handle_disconnect(sid: str) -> None:
     if not client:
         return
     if not client.shared:
-        del globals.clients[client.id]
+        delete_client(client.id)
     with client:
         [safe_invoke(t) for t in client.disconnect_handlers]
 
@@ -138,5 +139,10 @@ async def prune_clients() -> None:
             if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
         ]
         for id in stale:
-            del globals.clients[id]
+            delete_client(id)
         await asyncio.sleep(10)
+
+
+def delete_client(id: str) -> None:
+    binding.remove(list(globals.clients[id].elements.values()), Element)
+    del globals.clients[id]
