@@ -1,6 +1,5 @@
 import asyncio
 import json
-import os
 import time
 import uuid
 from pathlib import Path
@@ -25,6 +24,7 @@ class Client:
 
     def __init__(self, page: 'page', *, shared: bool = False) -> None:
         self.id = str(uuid.uuid4())
+        self.created = time.time()
         globals.clients[self.id] = self
 
         self.elements: Dict[str, Element] = {}

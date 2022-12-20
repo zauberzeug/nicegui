@@ -1,4 +1,5 @@
 import asyncio
+import time
 import urllib.parse
 from pathlib import Path
 from typing import Dict, Optional
@@ -50,6 +51,7 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     create_favicon_routes()
     [safe_invoke(t) for t in globals.startup_handlers]
     create_task(binding.loop())
+    create_task(prune_clients())
     globals.state = globals.State.STARTED
     if with_welcome_message:
         print(f'NiceGUI ready to go on http://{globals.host}:{globals.port}')
@@ -126,3 +128,15 @@ def get_client(sid: str) -> Optional[Client]:
     query = urllib.parse.parse_qs(query_bytes.decode())
     client_id = query['client_id'][0]
     return globals.clients.get(client_id)
+
+
+async def prune_clients() -> None:
+    while True:
+        stale = [
+            id
+            for id, client in globals.clients.items()
+            if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
+        ]
+        for id in stale:
+            del globals.clients[id]
+        await asyncio.sleep(10)
