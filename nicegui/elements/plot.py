@@ -22,7 +22,9 @@ class Plot(Element):
         self.close = close
         self.fig = plt.figure(**kwargs)
         self._convert_to_html()
-        create_task(self._auto_close(), name='auto-close plot figure')
+
+        if not self.client.shared:
+            create_task(self._auto_close(), name='auto-close plot figure')
 
     def _convert_to_html(self) -> None:
         with io.StringIO() as output:
