@@ -42,12 +42,13 @@ class Timer:
         with self.slot:
             await asyncio.sleep(self.interval)
             await self._invoke_callback()
+        self.cleanup()
 
     async def _run_in_loop(self) -> None:
         with self.slot:
             while True:
                 if self.slot.parent.client.id not in globals.clients:
-                    return
+                    break
                 try:
                     start = time.time()
                     if self.active:
@@ -55,10 +56,11 @@ class Timer:
                     dt = time.time() - start
                     await asyncio.sleep(self.interval - dt)
                 except asyncio.CancelledError:
-                    return
+                    break
                 except:
                     traceback.print_exc()
                     await asyncio.sleep(self.interval)
+        self.cleanup()
 
     async def _invoke_callback(self) -> None:
         try:
@@ -67,3 +69,7 @@ class Timer:
                 await AsyncUpdater(result)
         except Exception:
             traceback.print_exc()
+
+    def cleanup(self) -> None:
+        self.slot = None
+        self.callback = None
