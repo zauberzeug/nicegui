@@ -53,6 +53,7 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     [safe_invoke(t) for t in globals.startup_handlers]
     create_task(binding.loop())
     create_task(prune_clients())
+    create_task(prune_slot_stacks())
     globals.state = globals.State.STARTED
     if with_welcome_message:
         print(f'NiceGUI ready to go on http://{globals.host}:{globals.port}')
@@ -136,11 +137,28 @@ async def prune_clients() -> None:
         stale = [
             id
             for id, client in globals.clients.items()
-            if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
+            if not client.shared and not client.has_socket_connection and client.created < time.time() - 5.0
         ]
         for id in stale:
             delete_client(id)
-        await asyncio.sleep(10)
+        await asyncio.sleep(2)
+
+
+async def prune_slot_stacks() -> None:
+    while True:
+        running = [
+            id(task)
+            for task in asyncio.tasks.all_tasks()
+            if not task.done() and not task.cancelled()
+        ]
+        stale = [
+            id_
+            for id_ in globals.slot_stacks
+            if id_ not in running
+        ]
+        for id_ in stale:
+            del globals.slot_stacks[id_]
+        await asyncio.sleep(2)
 
 
 def delete_client(id: str) -> None:
