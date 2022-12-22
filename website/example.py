@@ -80,7 +80,7 @@ def _add_markdown_anchor(element: ui.markdown) -> None:
     headline = first_line[5:].strip()
     headline_id = SPECIAL_CHARACTERS.sub('_', headline).lower()
     icon = '<span class="material-icons">link</span>'
-    link = f'<a href="reference#{headline_id}" class="hover:text-black auto-link" style="color: #ddd">{icon}</a>'
+    link = f'<a href="#{headline_id}" class="hover:text-black auto-link" style="color: #ddd">{icon}</a>'
     target = f'<div id="{headline_id}" style="position: relative; top: -90px"></div>'
     title = f'{target}<h4>{headline} {link}</h4>'
     element.content = title + '\n' + element.content.split('\n', 1)[1]
@@ -97,7 +97,7 @@ def _add_html_anchor(element: ui.html) -> None:
         return
 
     icon = '<span class="material-icons">link</span>'
-    link = f'<a href="reference#{headline_id}" class="hover:text-black auto-link" style="color: #ddd">{icon}</a>'
+    link = f'<a href="#{headline_id}" class="hover:text-black auto-link" style="color: #ddd">{icon}</a>'
     target = f'<div id="{headline_id}" style="position: relative; top: -90px"></div>'
     html = html.replace('<h4', f'{target}<h4', 1)
     html = html.replace('</h4>', f' {link}</h4>', 1)
