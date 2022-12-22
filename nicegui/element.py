@@ -3,7 +3,7 @@ from __future__ import annotations
 import shlex
 from abc import ABC
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Tuple, Union
 
 from . import binding, globals
 from .elements.mixins.visibility import Visibility
@@ -25,7 +25,7 @@ class Element(ABC, Visibility):
         self.tag = tag
         self._classes: List[str] = []
         self._style: Dict[str, str] = {}
-        self._props: Dict[str, str] = {}
+        self._props: Dict[str, Any] = {}
         self._event_listeners: List[EventListener] = []
         self._text: str = ''
         self.slots: Dict[str, Slot] = {}
@@ -87,7 +87,7 @@ class Element(ABC, Visibility):
 
     @staticmethod
     def _parse_style(text: Optional[str]) -> Dict[str, str]:
-        return dict((word.strip() for word in part.split(':')) for part in text.strip('; ').split(';')) if text else {}
+        return dict(_split(part, ':') for part in text.strip('; ').split(';')) if text else {}
 
     def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):
         '''CSS style sheet definitions to modify the look of the element.
@@ -107,13 +107,13 @@ class Element(ABC, Visibility):
         return self
 
     @staticmethod
-    def _parse_props(text: Optional[str]) -> Dict[str, str]:
+    def _parse_props(text: Optional[str]) -> Dict[str, Any]:
         if not text:
             return {}
         lexer = shlex.shlex(text, posix=True)
         lexer.whitespace = ' '
         lexer.wordchars += '=-.%:/'
-        return dict(word.split('=', 1) if '=' in word else (word, True) for word in lexer)
+        return dict(_split(word, '=') if '=' in word else (word, True) for word in lexer)
 
     def props(self, add: Optional[str] = None, *, remove: Optional[str] = None):
         '''Quasar props https://quasar.dev/vue-components/button#design to modify the look of the element.
@@ -171,7 +171,7 @@ class Element(ABC, Visibility):
         create_task(globals.sio.emit('update', {'elements': elements}, room=self.client.id))
 
     def run_method(self, name: str, *args: Any) -> None:
-        if globals.loop is None:
+        if not globals.loop:
             return
         data = {'id': self.id, 'name': name, 'args': args}
         create_task(globals.sio.emit('run_method', data, room=self.client.id))
@@ -194,3 +194,8 @@ class Element(ABC, Visibility):
         for slot in self.slots.values():
             slot.children[:] = [e for e in slot.children if e.id != element.id]
         self.update()
+
+
+def _split(text: str, separator: str) -> Tuple[str, str]:
+    words = text.split(separator, 1)
+    return words[0].strip(), words[1].strip()

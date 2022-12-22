@@ -46,7 +46,7 @@ def register_component(name: str, py_filepath: str, component_filepath: str, dep
         js_dependencies[id].dependents.add(name)
 
 
-def generate_vue_content() -> Tuple[str]:
+def generate_vue_content() -> Tuple[str, str, str]:
     builds = [
         vbuild.VBuild(name, component.path.read_text())
         for name, component in vue_components.items()

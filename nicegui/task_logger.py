@@ -23,16 +23,16 @@ def create_task(
     using the provided ``logger``, with additional context provided by ``message`` and optionally
     ``message_args``.
     '''
-
     logger = logging.getLogger(__name__)
     message = 'Task raised an exception'
     message_args = ()
     if loop is None:
         loop = globals.loop
+        assert loop is not None
     if sys.version_info[1] < 8:
-        task = loop.create_task(coroutine)  # name parameter is only supported from 3.8 onward
+        task: asyncio.Task[T] = loop.create_task(coroutine)  # name parameter is only supported from 3.8 onward
     else:
-        task = loop.create_task(coroutine, name=name)
+        task: asyncio.Task[T] = loop.create_task(coroutine, name=name)
     task.add_done_callback(
         functools.partial(_handle_task_result, logger=logger, message=message, message_args=message_args)
     )

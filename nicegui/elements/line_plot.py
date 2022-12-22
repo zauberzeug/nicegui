@@ -18,8 +18,8 @@ class LinePlot(Plot):
         """
         super().__init__(close=close, **kwargs)
 
-        self.x = []
-        self.Y = [[] for _ in range(n)]
+        self.x: List[float] = []
+        self.Y: List[List[float]] = [[] for _ in range(n)]
         self.lines = [self.fig.gca().plot([], [])[0] for _ in range(n)]
         self.slice = slice(0 if limit is None else -limit, None)
         self.update_every = update_every

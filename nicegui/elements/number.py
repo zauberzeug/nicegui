@@ -6,10 +6,10 @@ from .mixins.value_element import ValueElement
 class Number(ValueElement):
 
     def __init__(self,
-                 label: str = None, *,
-                 placeholder: str = None,
-                 value: float = None,
-                 format: str = None,
+                 label: Optional[str] = None, *,
+                 placeholder: Optional[str] = None,
+                 value: Optional[float] = None,
+                 format: Optional[str] = None,
                  on_change: Optional[Callable] = None) -> None:
         """Number Input
 

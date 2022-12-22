@@ -21,7 +21,7 @@ class State(Enum):
 
 app: FastAPI
 sio: AsyncServer
-server: Optional[Server] = None
+server: Server
 loop: Optional[asyncio.AbstractEventLoop] = None
 log: logging.Logger = logging.getLogger('nicegui')
 state: State = State.STOPPED
@@ -38,7 +38,7 @@ socket_io_js_extra_headers: Dict = {}
 
 slot_stacks: Dict[int, List['Slot']] = {}
 clients: Dict[str, 'Client'] = {}
-index_client: 'Client' = ...
+index_client: 'Client'
 
 page_routes: Dict[Callable, str] = {}
 favicons: Dict[str, Optional[str]] = {}

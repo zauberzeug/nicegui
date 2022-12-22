@@ -9,7 +9,7 @@ class Slider(ValueElement):
                  min: float,
                  max: float,
                  step: float = 1.0,
-                 value: float = None,
+                 value: Optional[float] = None,
                  on_change: Optional[Callable] = None) -> None:
         """Slider
 

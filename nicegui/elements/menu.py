@@ -37,11 +37,12 @@ class MenuItem(TextElement):
         :param auto_close: whether the menu should be closed after a click event (default: `True`)
         """
         super().__init__(tag='q-item', text=text)
-        self.menu: Menu = globals.get_slot().parent
+        self.menu = globals.get_slot().parent
         self._props['clickable'] = True
 
         def handle_click(_) -> None:
             handle_event(on_click, ClickEventArguments(sender=self, client=self.client))
             if auto_close:
+                assert isinstance(self.menu, Menu)
                 self.menu.close()
         self.on('click', handle_click)

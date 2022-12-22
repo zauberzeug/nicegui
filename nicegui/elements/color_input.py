@@ -8,8 +8,8 @@ from .mixins.value_element import ValueElement
 
 class ColorInput(ValueElement):
 
-    def __init__(self, label: str = None, *,
-                 placeholder: str = None, value: str = '', on_change: Optional[Callable] = None) -> None:
+    def __init__(self, label: Optional[str] = None, *,
+                 placeholder: Optional[str] = None, value: str = '', on_change: Optional[Callable] = None) -> None:
         """Color Input
 
         :param label: displayed label for the color input

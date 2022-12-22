@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ..element import Element
 from ..vue import register_component
 
@@ -6,7 +8,7 @@ register_component('log', __file__, 'log.js')
 
 class Log(Element):
 
-    def __init__(self, max_lines: int = None) -> None:
+    def __init__(self, max_lines: Optional[int] = None) -> None:
         """Log view
 
         Create a log view that allows to add new lines without re-transmitting the whole history to the client.

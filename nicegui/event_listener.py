@@ -4,7 +4,7 @@ from typing import Callable, List
 
 @dataclass
 class EventListener:
-    element_id: str
+    element_id: int
     type: str
     args: List[str]
     handler: Callable

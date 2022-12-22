@@ -2,13 +2,13 @@ import asyncio
 import logging
 import time
 from collections import defaultdict
-from typing import Any, Callable, List, Optional, Set, Tuple, Type
+from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Tuple, Type
 
 from . import globals
 
-bindings = defaultdict(list)
-bindable_properties = dict()
-active_links = []
+bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
+bindable_properties: Dict[Tuple[int, str], Any] = dict()
+active_links: List[Tuple[Any, str, Any, str, Callable]] = []
 
 
 async def loop():
@@ -26,7 +26,7 @@ async def loop():
         await asyncio.sleep(globals.binding_refresh_interval)
 
 
-def propagate(source_obj: Any, source_name: str, visited: Set[Tuple[int, str]] = None) -> None:
+def propagate(source_obj: Any, source_name: str, visited: Optional[Set[Tuple[int, str]]] = None) -> None:
     if visited is None:
         visited = set()
     visited.add((id(source_obj), source_name))

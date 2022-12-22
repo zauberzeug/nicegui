@@ -21,8 +21,8 @@ from website.style import example_link, features, heading, link_target, section_
 
 prometheus.start_monitor(app)
 
-ui.add_static_files('/favicon', Path(__file__).parent / 'website' / 'favicon')
-ui.add_static_files('/fonts', Path(__file__).parent / 'website' / 'fonts')
+ui.add_static_files('/favicon', str(Path(__file__).parent / 'website' / 'favicon'))
+ui.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
 
 # NOTE in our global fly.io deployment we need to make sure that the websocket connects back to the same instance
 fly_instance_id = os.environ.get('FLY_ALLOC_ID', '').split('-')[0]

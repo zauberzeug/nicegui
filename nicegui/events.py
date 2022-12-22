@@ -104,8 +104,13 @@ class KeyboardKey:
     code: str
     location: int
 
-    def __eq__(self, other: str) -> bool:
-        return self.name == other or self.code == other
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, str):
+            return self.name == other or self.code == other
+        elif isinstance(other, KeyboardKey):
+            return self == other
+        else:
+            return False
 
     def __repr__(self):
         return str(self.name)
@@ -268,6 +273,7 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments) -> None
         if handler is None:
             return
         no_arguments = not signature(handler).parameters
+        assert arguments.sender.parent_slot is not None
         with arguments.sender.parent_slot:
             result = handler() if no_arguments else handler(arguments)
         if is_coroutine(handler):
@@ -277,6 +283,6 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments) -> None
             if globals.loop and globals.loop.is_running():
                 create_task(wait_for_result(), name=str(handler))
             else:
-                on_startup(None, wait_for_result())
+                on_startup(wait_for_result())
     except Exception:
         traceback.print_exc()

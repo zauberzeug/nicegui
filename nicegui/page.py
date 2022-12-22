@@ -42,11 +42,11 @@ class page:
         return self.title if self.title is not None else globals.title
 
     def resolve_dark(self) -> Optional[bool]:
-        return str(self.dark if self.dark is not ... else globals.dark)
+        return self.dark if self.dark is not ... else globals.dark
 
     def __call__(self, func: Callable) -> Callable:
         # NOTE we need to remove existing routes for this path to make sure only the latest definition is used
-        globals.app.routes[:] = [r for r in globals.app.routes if r.path != self.path]
+        globals.app.routes[:] = [r for r in globals.app.routes if getattr(r, 'path', None) != self.path]
         parameters_of_decorated_func = list(inspect.signature(func).parameters.keys())
 
         async def decorated(*dec_args, **dec_kwargs) -> Response:
@@ -58,7 +58,7 @@ class page:
                     dec_kwargs['client'] = client
                 result = func(*dec_args, **dec_kwargs)
             if inspect.isawaitable(result):
-                async def wait_for_result() -> Response:
+                async def wait_for_result() -> None:
                     with client:
                         await AsyncUpdater(result)
                 task = create_task(wait_for_result())

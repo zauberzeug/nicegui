@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from fastapi import Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 
 from . import globals, vue
@@ -27,7 +27,7 @@ class Client:
         self.created = time.time()
         globals.clients[self.id] = self
 
-        self.elements: Dict[str, Element] = {}
+        self.elements: Dict[int, Element] = {}
         self.next_element_id: int = 0
         self.is_waiting_for_handshake: bool = False
         self.environ: Optional[Dict[str, Any]] = None
@@ -62,7 +62,7 @@ class Client:
     def __exit__(self, *_):
         self.content.__exit__()
 
-    def build_response(self, request: Request, status_code: int = 200) -> HTMLResponse:
+    def build_response(self, request: Request, status_code: int = 200) -> Response:
         prefix = request.headers.get('X-Forwarded-Prefix', '')
         vue_html, vue_styles, vue_scripts = vue.generate_vue_content()
         elements = json.dumps({id: element.to_dict() for id, element in self.elements.items()})
@@ -99,7 +99,7 @@ class Client:
         }
         create_task(globals.sio.emit('run_javascript', command, room=self.id))
         if not respond:
-            return
+            return None
         deadline = time.time() + timeout
         while request_id not in self.waiting_javascript_commands:
             if time.time() > deadline:

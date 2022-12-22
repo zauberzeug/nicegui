@@ -6,7 +6,7 @@ from typing import Dict, Optional
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
@@ -29,19 +29,19 @@ globals.index_client = Client(page('/'), shared=True).__enter__()
 
 
 @app.get('/')
-def index(request: Request) -> str:
+def index(request: Request) -> Response:
     return globals.index_client.build_response(request)
 
 
 @app.get('/_nicegui/dependencies/{id}/{name}')
-def vue_dependencies(id: int, name: str):
+def get_dependencies(id: int, name: str):
     if id in vue.js_dependencies and vue.js_dependencies[id].path.exists():
         return FileResponse(vue.js_dependencies[id].path, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'dependency "{name}" with ID {id} not found')
 
 
 @app.get('/_nicegui/components/{name}')
-def vue_dependencies(name: str):
+def get_components(name: str):
     return FileResponse(vue.js_components[name].path, media_type='text/javascript')
 
 
@@ -50,7 +50,8 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     globals.state = globals.State.STARTING
     globals.loop = asyncio.get_running_loop()
     create_favicon_routes()
-    [safe_invoke(t) for t in globals.startup_handlers]
+    for t in globals.startup_handlers:
+        safe_invoke(t)
     create_task(binding.loop())
     create_task(prune_clients())
     globals.state = globals.State.STARTED
@@ -61,13 +62,15 @@ def handle_startup(with_welcome_message: bool = True) -> None:
 @app.on_event('shutdown')
 def handle_shutdown() -> None:
     globals.state = globals.State.STOPPING
-    [safe_invoke(t) for t in globals.shutdown_handlers]
-    [t.cancel() for t in globals.tasks]
+    for t in globals.shutdown_handlers:
+        safe_invoke(t)
+    for t in globals.tasks:
+        t.cancel()
     globals.state = globals.State.STOPPED
 
 
 @app.exception_handler(404)
-async def exception_handler(request: Request, exception: Exception):
+async def exception_handler_404(request: Request, exception: Exception) -> Response:
     globals.log.warning(f'{request.url} not found')
     with Client(page('')) as client:
         error_content(404, exception)
@@ -75,7 +78,7 @@ async def exception_handler(request: Request, exception: Exception):
 
 
 @app.exception_handler(Exception)
-async def exception_handler(request: Request, exception: Exception):
+async def exception_handler_500(request: Request, exception: Exception) -> Response:
     globals.log.exception(exception)
     with Client(page('')) as client:
         error_content(500, exception)
@@ -90,7 +93,8 @@ async def handle_handshake(sid: str) -> bool:
     client.environ = sio.get_environ(sid)
     sio.enter_room(sid, client.id)
     with client:
-        [safe_invoke(t) for t in client.connect_handlers]
+        for t in client.connect_handlers:
+            safe_invoke(t)
     return True
 
 
@@ -102,7 +106,8 @@ async def handle_disconnect(sid: str) -> None:
     if not client.shared:
         delete_client(client.id)
     with client:
-        [safe_invoke(t) for t in client.disconnect_handlers]
+        for t in client.disconnect_handlers:
+            safe_invoke(t)
 
 
 @sio.on('event')
@@ -117,7 +122,7 @@ def handle_event(sid: str, msg: Dict) -> None:
 
 
 @sio.on('javascript_response')
-def handle_event(sid: str, msg: Dict) -> None:
+def handle_javascript_response(sid: str, msg: Dict) -> None:
     client = get_client(sid)
     if not client:
         return
