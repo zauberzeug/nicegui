@@ -15,7 +15,7 @@ While having reasonable defaults, you can still modify the look of your app with
 ''')
     def formatting_example():
         ui.icon('thumb_up')
-        ui.markdown('''This is **Markdown**.''')
+        ui.markdown('This is **Markdown**.')
         ui.html('This is <strong>HTML</strong>.')
         with ui.row():
             ui.label('CSS').style('color: #888; font-weight: bold')
