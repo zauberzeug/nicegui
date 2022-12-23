@@ -137,11 +137,11 @@ async def prune_clients() -> None:
         stale = [
             id
             for id, client in globals.clients.items()
-            if not client.shared and not client.has_socket_connection and client.created < time.time() - 5.0
+            if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
         ]
         for id in stale:
             delete_client(id)
-        await asyncio.sleep(2)
+        await asyncio.sleep(10)
 
 
 async def prune_slot_stacks() -> None:
@@ -158,7 +158,7 @@ async def prune_slot_stacks() -> None:
         ]
         for id_ in stale:
             del globals.slot_stacks[id_]
-        await asyncio.sleep(2)
+        await asyncio.sleep(10)
 
 
 def delete_client(id: str) -> None:
