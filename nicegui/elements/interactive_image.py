@@ -17,8 +17,13 @@ class InteractiveImage(SourceElement, ContentElement):
         """Interactive Image
 
         Create an image with an SVG overlay that handles mouse events and yields image coordinates.
+        It's also the best choice for non-flickering image updates.
+        If the url changes of source faster than images can be loaded by the browser, some images are simply skipped.
+        Thereby a stream of images automatically adapts to the available bandwidth.
+        See `OpenCV Webcam <https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam>`_ for an example.
 
         :param source: the source of the image; can be an URL or a base64 string
+        :param content: svg content which should be overlayed; viewport has the same dimensions as the image
         :param on_mouse: callback for mouse events (yields `type`, `image_x` and `image_y`)
         :param events: list of JavaScript events to subscribe to (default: `['click']`)
         :param cross: whether to show crosshairs (default: `False`)
