@@ -24,47 +24,26 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 
 ## Features
 
-### Interaction
-
-- buttons, switches, sliders, inputs, ...
-- notifications, dialogs and menus
-- keyboard input
-- on-screen joystick
-
-### Layout
-
-- navigation bars, tabs, panels, ...
-- grouping with rows, columns and cards
-- HTML and markdown elements
-- flex layout by default
-
-### Visualization
-
-- charts, diagrams and tables
-- 3D scenes
-- progress bars
-- built-in timer for data refresh
-
-### Styling
-
-- customizable color themes
-- custom CSS and classes
-- modern look with material design
-- built-in [Tailwind](https://tailwindcss.com/) support
-
-### Coding
-
-- live-cycle events
+- browser-based graphical user interface
 - implicit reload on code change
-- straight-forward data binding
-- execute javascript from Python
-
-### Foundation
-
-- generic [Vue](https://vuejs.org/) to Python bridge
-- dynamic GUI through [Quasar](https://quasar.dev/)
-- content is served with [FastAPI](http://fastapi.tiangolo.com/)
-- Python 3.7+
+- standard GUI elements like label, button, checkbox, switch, slider, input, file upload, ...
+- simple grouping with rows, columns, cards and dialogs
+- general-purpose HTML and markdown elements
+- powerful high-level elements to
+  - plot graphs and charts,
+  - render 3D scenes,
+  - get steering events via virtual joysticks
+  - annotate and overlay images
+  - interact with tables
+  - navigate foldable tree structures
+- built-in timer to refresh data in intervals (even every 10 ms)
+- straight-forward data binding to write even less code
+- notifications, dialogs and menus to provide state of the art user interaction
+- shared and individual web pages
+- ability to add custom routes and data responses
+- capture keyboard input for global shortcuts etc
+- customize look by defining primary, secondary and accent colors
+- live-cycle events and session data
 
 ## Installation
 
@@ -99,32 +78,11 @@ Note: NiceGUI will automatically reload the page when you modify the code.
 The API reference is hosted at [https://nicegui.io/reference](https://nicegui.io/reference) and provides plenty of live examples.
 The whole content of [https://nicegui.io](https://nicegui.io) is [implemented with NiceGUI itself](https://github.com/zauberzeug/nicegui/blob/main/main.py).
 
-You may also have a look at the following examples for in-depth demonstrations of what you can do with NiceGUI:
-
-- [Slideshow](https://github.com/zauberzeug/nicegui/tree/main/examples/slideshow/main.py):
-  implements a keyboard-controlled image slideshow
-- [Authentication](https://github.com/zauberzeug/nicegui/blob/main/examples/authentication/main.py):
-  shows how to use sessions to build a login screen
-- [Modularization](https://github.com/zauberzeug/nicegui/blob/main/examples/modularization/main.py):
-  provides an example of how to modularize your application into multiple files and reuse code
-- [FastAPI](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi/main.py)
-  illustrates the integration of NiceGUI with an existing FastAPI application
-- [Map](https://github.com/zauberzeug/nicegui/blob/main/examples/map/main.py):
-  demonstrates wrapping the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations
-- [AI User Interface](https://github.com/zauberzeug/nicegui/blob/main/examples/ai_interface/main.py):
-  utilizes the [replicate](https://replicate.com) library to perform voice-to-text transcription and generate images from prompts with Stable Diffusion
-- [3D Scene](https://github.com/zauberzeug/nicegui/blob/main/examples/3d_scene/main.py):
-  creates a webGL view and loads an STL mesh illuminated with a spotlight
-- [Custom Vue Component](https://github.com/zauberzeug/nicegui/blob/main/examples/custom_vue_component/main.py)
-  shows how to write and integrate a custom Vue component
-- [Image Mask Overlay](https://github.com/zauberzeug/nicegui/blob/main/examples/image_mask_overlay/main.py):
-  shows how to overlay an image with a mask
-- [Infinite Scroll](https://github.com/zauberzeug/nicegui/blob/main/examples/infinite_scroll/main.py):
-  presents an infinitely scrolling image gallery
+You may also have a look at [our in-depth demonstrations](https://github.com/zauberzeug/nicegui/tree/main/examples) of what you can do with NiceGUI.
 
 ## Why?
 
-We like [Streamlit](https://streamlit.io/)
+We, at [Zauberzeug](https://zauberzeug.com), like [Streamlit](https://streamlit.io/)
 but find it does [too much magic](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651) when it comes to state handling.
 In search for an alternative nice library to write simple graphical user interfaces in Python we discovered [JustPy](https://justpy.io/).
 Although we liked the approach, it is too "low-level HTML" for our daily usage.
