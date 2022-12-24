@@ -205,6 +205,7 @@ ui.run()
             example_link('Custom Vue Component', 'shows how to write and integrate a custom Vue component')
             example_link('Image Mask Overlay', 'shows how to overlay an image with a mask')
             example_link('Infinite Scroll', 'presents an infinitely scrolling image gallery')
+            example_link('OpenCV Webcam', 'uses OpenCV to capture images from a webcam')
 
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
