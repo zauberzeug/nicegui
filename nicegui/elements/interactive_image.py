@@ -20,7 +20,7 @@ class InteractiveImage(SourceElement, ContentElement):
         It's also the best choice for non-flickering image updates.
         If the url changes of source faster than images can be loaded by the browser, some images are simply skipped.
         Thereby a stream of images automatically adapts to the available bandwidth.
-        See `OpenCV Webcam <https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam>`_ for an example.
+        See `OpenCV Webcam <https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam/main.py>`_ for an example.
 
         :param source: the source of the image; can be an URL or a base64 string
         :param content: svg content which should be overlayed; viewport has the same dimensions as the image
