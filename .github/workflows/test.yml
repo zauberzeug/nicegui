@@ -23,7 +23,8 @@ jobs:
       - name: install dependencies
         run: |
           poetry install
-          poetry add opencv-python==4.6.0.66
+          poetry add numpy==1.21.6 opencv-python==4.6.0.66 --python 3.7
+          poetry add opencv-python --python >=3.8
       - name: test startup
         run: poetry run ./test_startup.sh
       - name: setup chromedriver
