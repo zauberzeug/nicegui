@@ -23,6 +23,7 @@ jobs:
       - name: install dependencies
         run: |
           poetry install
+          pip install opencv-python
       - name: test startup
         run: poetry run ./test_startup.sh
       - name: setup chromedriver
