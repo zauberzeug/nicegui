@@ -1,4 +1,5 @@
 import re
+from functools import lru_cache
 from typing import List
 
 import markdown2
@@ -37,8 +38,13 @@ class Markdown(ContentElement):
         super().__init__(tag='div', content=content)
 
     def on_content_change(self, content: str) -> None:
-        html = markdown2.markdown(content, extras=self.extras)
-        html = apply_tailwind(html)  # we need explicit markdown styling because tailwind CSS removes all default styles
+        html = prepare_content(content, extras=' '.join(self.extras))
         if self._props.get('innerHTML') != html:
             self._props['innerHTML'] = html
             self.update()
+
+
+@lru_cache(maxsize=1000)
+def prepare_content(content: str, extras: str) -> str:
+    html = markdown2.markdown(content, extras=extras.split())
+    return apply_tailwind(html)  # we need explicit markdown styling because tailwind CSS removes all default styles
