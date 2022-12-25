@@ -49,6 +49,8 @@ class Timer:
             while True:
                 if self.slot.parent.client.id not in globals.clients:
                     break
+                if not self.slot.parent.client.shared:
+                    await self.slot.parent.client.handshake()
                 try:
                     start = time.time()
                     if self.active:
