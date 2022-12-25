@@ -130,10 +130,15 @@ def test_remove_and_clear(screen: Screen):
 
 def test_setting_visibility_in_timer(screen: Screen):
     '''reproduction of https://github.com/zauberzeug/nicegui/issues/206'''
+    label: ui.label = None
+
     @ui.page('/')
     def page():
-        label = ui.label('Invisible')
+        nonlocal label
+        label = ui.label('Some Label')
         ui.timer(1, lambda: label.set_visibility(False))
 
     screen.open('/')
-    screen.should_not_contain('Invisible')
+    assert not label.visible
+    assert 'hidden' in label._classes
+    screen.should_not_contain('Some Label')
