@@ -50,6 +50,7 @@ class Timer:
                 if self.slot.parent.client.id not in globals.clients:
                     break
                 if not self.slot.parent.client.shared:
+                    # NOTE: we need to wait for the client before state can be further manipulated (see https://github.com/zauberzeug/nicegui/issues/206)
                     await self.slot.parent.client.handshake()
                 try:
                     start = time.time()
