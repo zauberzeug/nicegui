@@ -58,7 +58,7 @@ class Timer:
                 except asyncio.CancelledError:
                     break
                 except:
-                    traceback.print_exc()
+                    globals.log.exception('Exception in timer callback')
                     await asyncio.sleep(self.interval)
         self.cleanup()
 
