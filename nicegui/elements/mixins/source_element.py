@@ -26,7 +26,6 @@ class SourceElement(Element):
         return self
 
     def set_source(self, source: str) -> None:
-        '''changes the image source'''
         self.source = source
 
     def on_source_change(self, source: str) -> None:
