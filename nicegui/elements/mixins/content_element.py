@@ -26,7 +26,6 @@ class ContentElement(Element):
         return self
 
     def set_content(self, content: str) -> None:
-        '''changes the content'''
         self.content = content
 
     def on_content_change(self, content: str) -> None:

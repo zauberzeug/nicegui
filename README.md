@@ -41,7 +41,7 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 - notifications, dialogs and menus to provide state of the art user interaction
 - shared and individual web pages
 - ability to add custom routes and data responses
-- capture keyboard input for global shortcuts etc
+- capture keyboard input for global shortcuts etc.
 - customize look by defining primary, secondary and accent colors
 - live-cycle events and session data
 
@@ -82,7 +82,7 @@ You may also have a look at [our in-depth demonstrations](https://github.com/zau
 
 ## Why?
 
-We, at [Zauberzeug](https://zauberzeug.com), like [Streamlit](https://streamlit.io/)
+We at [Zauberzeug](https://zauberzeug.com) like [Streamlit](https://streamlit.io/)
 but find it does [too much magic](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651) when it comes to state handling.
 In search for an alternative nice library to write simple graphical user interfaces in Python we discovered [JustPy](https://justpy.io/).
 Although we liked the approach, it is too "low-level HTML" for our daily usage.

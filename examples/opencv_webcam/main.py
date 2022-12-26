@@ -11,13 +11,13 @@ from nicegui import app, ui
 black_1px = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjYGBg+A8AAQQBAHAgZQsAAAAASUVORK5CYII='
 placeholder = Response(content=base64.b64decode(black_1px.encode('ascii')), media_type='image/png')
 
-# openCV is used to accesss the webcam
+# OpenCV is used to access the webcam
 video_capture = cv2.VideoCapture(0)
 
 
 @app.get('/video/frame')
 async def grab_video_frame() -> Response:
-    # thanks to FastAPI it's easy to create a web route which always provides the latest image from openCV
+    # thanks to FastAPI it is easy to create a web route which always provides the latest image from OpenCV
     if not video_capture.isOpened():
         return placeholder
     ret, frame = video_capture.read()
@@ -27,7 +27,7 @@ async def grab_video_frame() -> Response:
     jpeg = imencode_image.tobytes()
     return Response(content=jpeg, media_type='image/jpeg')
 
-# For non-flickering image updates an interactive image is much better than ui.image()
+# For non-flickering image updates an interactive image is much better than ui.image().
 video_image = ui.interactive_image().classes('w-full h-full')
 # A timer constantly updates the source of the image.
 # But because the path is always the same, we must force an update by adding the current timestamp to the source.
