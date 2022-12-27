@@ -15,7 +15,6 @@ processes = []
   auto_rollback = true
 
 [[services]]
-  http_checks = []
   internal_port = 8080
   processes = ["app"]
   protocol = "tcp"
@@ -39,3 +38,14 @@ processes = []
     interval = "15s"
     restart_limit = 0
     timeout = "2s"
+
+  [[services.http_checks]]
+    interval = "20s"
+    grace_period = "30s"
+    method = "get"
+    path = "/"
+    protocol = "http"
+    restart_limit = 1
+    timeout = "2s"
+    tls_skip_verify = false
+    [services.http_checks.headers]
