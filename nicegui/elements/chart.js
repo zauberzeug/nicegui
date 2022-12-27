@@ -8,7 +8,10 @@ export default {
   },
   methods: {
     update_chart() {
-      this.chart.update(this.options);
+      while (this.chart.series.length > this.options.series.length) this.chart.series[0].remove();
+      while (this.chart.series.length < this.options.series.length) this.chart.addSeries({}, false);
+      this.chart.update(this.options, false);
+      this.chart.redraw();
     },
   },
   props: {
