@@ -27,10 +27,10 @@ def test_change_chart_series(screen: Screen):
     ui.button('Update', on_click=update)
 
     screen.open('/')
-    screen.wait(.5)
+    screen.wait(0.5)
     before = [bar.size['width'] for bar in get_series_0(screen.selenium)]
     screen.click('Update')
-    screen.wait(.5)
+    screen.wait(0.5)
     after = [bar.size['width'] for bar in get_series_0(screen.selenium)]
     assert before[0] < after[0]
     assert before[1] < after[1]

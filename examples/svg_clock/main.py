@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-import datetime
+from datetime import datetime
 
 from nicegui import ui
 
 
-def build_svg():
-    '''returns svg showing the current time.
-    Original was taken from https://de.m.wikipedia.org/wiki/Datei:Station_Clock.svg.'''
-    now = datetime.datetime.now()
+def build_svg() -> str:
+    '''Returns an SVG showing the current time.
+    Original was borrowed from https://de.m.wikipedia.org/wiki/Datei:Station_Clock.svg.'''
+    now = datetime.now()
     return f'''
 <svg width="800" height="800" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 	<circle cx="400" cy="400" r="400" fill="#fff"/>
@@ -28,13 +28,13 @@ def build_svg():
 		</g>
 		<use transform="rotate(90 400 400)" xlink:href="#d"/>
 	</g>
-    <g transform="rotate({(250 + now.hour*6*5)%360} 400 400)">
+    <g transform="rotate({250 + now.hour / 12 * 360} 400 400)">
     	<path d="m334.31 357.65-12.068 33.669 283.94 100.8 23.565-10.394-13.332-24.325z"/>
     </g>
-    <g transform="rotate({(117.3 + now.minute*6)%360} 400 400)">
+    <g transform="rotate({117 + now.minute / 60 * 360} 400 400)">
     	<path d="m480.73 344.98 11.019 21.459-382.37 199.37-18.243-7.2122 4.768-19.029z"/>
     </g>
-    <g transform="rotate({(169 + now.second*6)%360} 400 400)">
+    <g transform="rotate({169 + now.second / 60 * 360} 400 400)">
         <path d="m410.21 301.98-43.314 242.68a41.963 41.963 0 0 0-2.8605-0.091 41.963 41.963 0 0 0-41.865 42.059 41.963 41.963 0 0 0 30.073 40.144l-18.417 103.18 1.9709 3.9629 3.2997-2.9496 21.156-102.65a41.963 41.963 0 0 0 3.9771 0.1799 41.963 41.963 0 0 0 41.865-42.059 41.963 41.963 0 0 0-29.003-39.815l49.762-241.44zm-42.448 265.56a19.336 19.336 0 0 1 15.703 18.948 19.336 19.336 0 0 1-19.291 19.38 19.336 19.336 0 0 1-19.38-19.291 19.336 19.336 0 0 1 19.291-19.38 19.336 19.336 0 0 1 3.6752 0.3426z" fill="#a40000"/>
     </g>
 </svg>
