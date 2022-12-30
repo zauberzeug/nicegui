@@ -76,7 +76,6 @@ class Timer:
         '''Wait for the client handshake before the timer callback can can be allowed to manipulate the state.
         See https://github.com/zauberzeug/nicegui/issues/206 for details.
         '''
-
         if not self.slot.parent.client.shared:
             await self.slot.parent.client.handshake()
 
