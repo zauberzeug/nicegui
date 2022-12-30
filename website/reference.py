@@ -805,3 +805,15 @@ This is used in our [authentication demo](https://github.com/zauberzeug/nicegui/
         ui.label('page with custom title')
 
         # ui.run(title='My App')
+
+    @example('''#### Environment Variables
+
+You can set the following environment variables to configure NiceGUI:
+
+- `MATPLOTLIB` (default: true) can be set to `false` to avoid the potentially costly import of Matplotlib. This will make `ui.plot` and `ui.line_plot` unavailable.
+- `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.
+''')
+    def env_var_example():
+        from nicegui.elements import markdown
+
+        ui.label(f'markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')

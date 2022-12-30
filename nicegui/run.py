@@ -45,11 +45,6 @@ def run(*,
     :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
     :param exclude: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
       (possible entries: chart, colors, interactive_image, joystick, keyboard, log, scene, upload, table)
-
-    The environment variables `HOST` and `PORT` can also be used to configure NiceGUI.
-
-    To avoid the potentially costly import of Matplotlib, you set the environment variable `MATPLOTLIB=false`.
-    This will make `ui.plot` and `ui.line_plot` unavailable.
     '''
     globals.host = host
     globals.port = port
