@@ -40,12 +40,14 @@ class Timer:
 
     async def _run_once(self) -> None:
         with self.slot:
+            await self._handshake()
             await asyncio.sleep(self.interval)
             await self._invoke_callback()
         self.cleanup()
 
     async def _run_in_loop(self) -> None:
         with self.slot:
+            await self._handshake()
             while True:
                 if self.slot.parent.client.id not in globals.clients:
                     break
@@ -58,7 +60,7 @@ class Timer:
                 except asyncio.CancelledError:
                     break
                 except:
-                    traceback.print_exc()
+                    globals.log.exception('Exception in timer callback')
                     await asyncio.sleep(self.interval)
         self.cleanup()
 
@@ -69,6 +71,13 @@ class Timer:
                 await AsyncUpdater(result)
         except Exception:
             traceback.print_exc()
+
+    async def _handshake(self) -> None:
+        '''Wait for the client handshake before the timer callback can can be allowed to manipulate the state.
+        See https://github.com/zauberzeug/nicegui/issues/206 for details.
+        '''
+        if not self.slot.parent.client.shared:
+            await self.slot.parent.client.handshake()
 
     def cleanup(self) -> None:
         self.slot = None
