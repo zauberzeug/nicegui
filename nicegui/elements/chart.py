@@ -95,7 +95,7 @@ class Chart(Element):
         self._props['options'] = options
         urls = [f'/_nicegui/dependencies/{id}/{dependency.path.name}'
                 for id, dependency in js_extra_dependencies.items()
-                if dependency.path.stem in extras]
+                if dependency.path.stem in extras and 'chart' in dependency.dependents]
         self._props['extras'] = urls
 
     @property
