@@ -45,7 +45,7 @@ class Markdown(ContentElement):
             self.update()
 
 
-@lru_cache(maxsize=int(os.environ.get('MARKDOWN_CONTENT_CACHE_SIZE', ('1000'))))
+@lru_cache(maxsize=int(os.environ.get('MARKDOWN_CONTENT_CACHE_SIZE', '1000')))
 def prepare_content(content: str, extras: str) -> str:
     html = markdown2.markdown(content, extras=extras.split())
     return apply_tailwind(html)  # we need explicit markdown styling because tailwind CSS removes all default styles

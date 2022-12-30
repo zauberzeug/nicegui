@@ -810,8 +810,6 @@ This is used in our [authentication demo](https://github.com/zauberzeug/nicegui/
 
 You can set the following environment variables to configure NiceGUI:
 
-- `HOST`: Alternative to specify the host address (normally via `ui.run(host=...)`).
-- `PORT`: Alternative to specify the port (normally via `ui.run(port=...)`).
 - `MATPLOTLIB` (default: true) can be set to `false` to avoid the potentially costly import of Matplotlib. This will make `ui.plot` and `ui.line_plot` unavailable.
 - `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.
 ''')
