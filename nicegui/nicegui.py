@@ -37,6 +37,8 @@ def index(request: Request) -> Response:
 def get_dependencies(id: int, name: str):
     if id in vue.js_dependencies and vue.js_dependencies[id].path.exists():
         return FileResponse(vue.js_dependencies[id].path, media_type='text/javascript')
+    if id in vue.js_extra_dependencies and vue.js_extra_dependencies[id].path.exists():
+        return FileResponse(vue.js_extra_dependencies[id].path, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'dependency "{name}" with ID {id} not found')
 
 

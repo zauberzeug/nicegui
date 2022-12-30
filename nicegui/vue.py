@@ -26,9 +26,11 @@ dependency_ids = IncrementingStringIds()
 vue_components: Dict[str, Component] = {}
 js_components: Dict[str, Component] = {}
 js_dependencies: Dict[int, Dependency] = {}
+js_extra_dependencies: Dict[int, Dependency] = {}
 
 
-def register_component(name: str, py_filepath: str, component_filepath: str, dependencies: List[str] = []) -> None:
+def register_component(name: str, py_filepath: str, component_filepath: str, dependencies: List[str] = [],
+                       optional_dependencies: List[str] = []) -> None:
     suffix = Path(component_filepath).suffix.lower()
     assert suffix in ['.vue', '.js'], 'Only VUE and JS components are supported.'
     if suffix == '.vue':
@@ -44,6 +46,13 @@ def register_component(name: str, py_filepath: str, component_filepath: str, dep
         if id not in js_dependencies:
             js_dependencies[id] = Dependency(id=id, path=path, dependents=set())
         js_dependencies[id].dependents.add(name)
+    for dependency in optional_dependencies:
+        path = Path(py_filepath).parent / dependency
+        assert path.suffix == '.js', 'Only JS dependencies are supported.'
+        id = dependency_ids.get(str(path.resolve()))
+        if id not in js_dependencies:
+            js_extra_dependencies[id] = Dependency(id=id, path=path, dependents=set())
+        js_extra_dependencies[id].dependents.add(name)
 
 
 def generate_vue_content() -> Tuple[str, str, str]:

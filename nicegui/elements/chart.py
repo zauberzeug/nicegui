@@ -1,85 +1,86 @@
-from typing import Dict
+from typing import Dict, List
 
 from ..element import Element
-from ..vue import register_component
+from ..vue import js_extra_dependencies, register_component
 
-register_component('chart', __file__, 'chart.js', 
-                    ['lib/highcharts.js',
-                     'lib/highcharts-more.js', 
-                     'modules/accessibility.js', 
-                     'modules/solid-gauge.js', 
-                     'modules/exporting.js', 
-                     'modules/export-data.js'])
-                #  not tested
-                #     'modules/annotations-advanced.js',
-                #     'modules/annotations.js',
-                #     'modules/arc-diagram.js',
-                #     'modules/arrow-symbols.js',
-                #     'modules/boost-canvas.js',
-                #     'modules/boost.js',
-                #     'modules/broken-axis.js',
-                #     'modules/bullet.js',
-                #     'modules/coloraxis.js',
-                #     'modules/current-date-indicator.js',
-                #     'modules/cylinder.js',
-                #     'modules/datagrouping.js',
-                #     'modules/data.js',
-                #     'modules/debugger.js',
-                #     'modules/dependency-wheel.js',
-                #     'modules/dotplot.js',
-                #     'modules/draggable-points.js',
-                #     'modules/drag-panes.js',
-                #     'modules/drilldown.js',
-                #     'modules/dumbbell.js',
-                #     'modules/full-screen.js',
-                #     'modules/funnel3d.js',
-                #     'modules/funnel.js',
-                #     'modules/gantt.js',
-                #     'modules/grid-axis.js',
-                #     'modules/heatmap.js',
-                #     'modules/heikinashi.js',
-                #     'modules/histogram-bellcurve.js',
-                #     'modules/hollowcandlestick.js',
-                #     'modules/item-series.js',
-                #     'modules/lollipop.js',
-                #     'modules/marker-clusters.js',
-                #     'modules/networkgraph.js',
-                #     'modules/no-data-to-display.js',
-                #     'modules/offline-exporting.js',
-                #     'modules/oldie.js',
-                #     'modules/oldie-polyfills.js',
-                #     'modules/organization.js',
-                #     'modules/overlapping-datalabels.js',
-                #     'modules/parallel-coordinates.js',
-                #     'modules/pareto.js',
-                #     'modules/pathfinder.js',
-                #     'modules/pattern-fill.js',
-                #     'modules/price-indicator.js',
-                #     'modules/pyramid3d.js',
-                #     'modules/sankey.js',
-                #     'modules/series-label.js',
-                #     'modules/series-on-point.js',
-                #     'modules/sonification.js',
-                #     'modules/static-scale.js',
-                #     'modules/stock.js',
-                #     'modules/stock-tools.js',
-                #     'modules/streamgraph.js',
-                #     'modules/sunburst.js',
-                #     'modules/tilemap.js',
-                #     'modules/timeline.js',
-                #     'modules/treegraph.js',
-                #     'modules/treegrid.js',
-                #     'modules/variable-pie.js',
-                #     'modules/variwide.js',
-                #     'modules/vector.js',
-                #     'modules/venn.js',
-                #     'modules/windbarb.js',
-                #     'modules/wordcloud.js',
-                #     'modules/xrange.js'])
+register_component('chart', __file__, 'chart.js',
+                   ['lib/highcharts.js',
+                    'lib/highcharts-more.js',
+                    'modules/accessibility.js',
+                    'modules/exporting.js',
+                    'modules/export-data.js'],
+                   ['modules/solid-gauge.js',])
+#  not tested
+#     'modules/annotations-advanced.js',
+#     'modules/annotations.js',
+#     'modules/arc-diagram.js',
+#     'modules/arrow-symbols.js',
+#     'modules/boost-canvas.js',
+#     'modules/boost.js',
+#     'modules/broken-axis.js',
+#     'modules/bullet.js',
+#     'modules/coloraxis.js',
+#     'modules/current-date-indicator.js',
+#     'modules/cylinder.js',
+#     'modules/datagrouping.js',
+#     'modules/data.js',
+#     'modules/debugger.js',
+#     'modules/dependency-wheel.js',
+#     'modules/dotplot.js',
+#     'modules/draggable-points.js',
+#     'modules/drag-panes.js',
+#     'modules/drilldown.js',
+#     'modules/dumbbell.js',
+#     'modules/full-screen.js',
+#     'modules/funnel3d.js',
+#     'modules/funnel.js',
+#     'modules/gantt.js',
+#     'modules/grid-axis.js',
+#     'modules/heatmap.js',
+#     'modules/heikinashi.js',
+#     'modules/histogram-bellcurve.js',
+#     'modules/hollowcandlestick.js',
+#     'modules/item-series.js',
+#     'modules/lollipop.js',
+#     'modules/marker-clusters.js',
+#     'modules/networkgraph.js',
+#     'modules/no-data-to-display.js',
+#     'modules/offline-exporting.js',
+#     'modules/oldie.js',
+#     'modules/oldie-polyfills.js',
+#     'modules/organization.js',
+#     'modules/overlapping-datalabels.js',
+#     'modules/parallel-coordinates.js',
+#     'modules/pareto.js',
+#     'modules/pathfinder.js',
+#     'modules/pattern-fill.js',
+#     'modules/price-indicator.js',
+#     'modules/pyramid3d.js',
+#     'modules/sankey.js',
+#     'modules/series-label.js',
+#     'modules/series-on-point.js',
+#     'modules/sonification.js',
+#     'modules/static-scale.js',
+#     'modules/stock.js',
+#     'modules/stock-tools.js',
+#     'modules/streamgraph.js',
+#     'modules/sunburst.js',
+#     'modules/tilemap.js',
+#     'modules/timeline.js',
+#     'modules/treegraph.js',
+#     'modules/treegrid.js',
+#     'modules/variable-pie.js',
+#     'modules/variwide.js',
+#     'modules/vector.js',
+#     'modules/venn.js',
+#     'modules/windbarb.js',
+#     'modules/wordcloud.js',
+#     'modules/xrange.js'])
+
 
 class Chart(Element):
 
-    def __init__(self, options: Dict) -> None:
+    def __init__(self, options: Dict, extras: List[str] = []) -> None:
         """Chart
 
         An element to create a chart using `Highcharts <https://www.highcharts.com/>`_.
@@ -90,6 +91,10 @@ class Chart(Element):
         """
         super().__init__('chart')
         self._props['options'] = options
+        urls = [f'/_nicegui/dependencies/{id}/{dependency.path.name}'
+                for id, dependency in js_extra_dependencies.items()
+                if any(e in dependency.path.name for e in extras)]
+        self._props['extras'] = urls
 
     @property
     def options(self) -> Dict:
