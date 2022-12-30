@@ -1,21 +1,11 @@
 export default {
   template: "<div></div>",
   mounted() {
-    for (const extra of this.extras) {
-      console.log("loading extra " + extra);
-      import(extra)
-        .then((module) => {
-          console.log("loaded extra " + extra);
-        })
-        .catch((err) => {
-          console.log("error loading extra " + extra);
-          console.log(err);
-        });
-    }
-    setTimeout(() => {
+    const imports = this.extras.map((extra) => import(extra));
+    Promise.allSettled(imports).then(() => {
       this.chart = Highcharts.chart(this.$el, this.options);
       this.chart.reflow();
-    }, 1000);
+    });
   },
   methods: {
     update_chart() {
