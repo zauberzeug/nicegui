@@ -93,7 +93,12 @@ class Screen:
     def find(self, text: str) -> WebElement:
         try:
             query = f'//*[not(self::script) and not(self::style) and contains(text(), "{text}")]'
-            return self.selenium.find_element(By.XPATH, query)
+            element = self.selenium.find_element(By.XPATH, query)
+            if not element.is_displayed():
+                self.wait(0.1)  # HACK: repeat check after a short delay to avoid timing issue on fast machines
+                if not element.is_displayed():
+                    raise AssertionError(f'Found "{text}" but it is hidden')
+            return element
         except NoSuchElementException:
             raise AssertionError(f'Could not find "{text}"')
 

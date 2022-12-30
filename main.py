@@ -206,6 +206,7 @@ ui.run()
             example_link('Image Mask Overlay', 'shows how to overlay an image with a mask')
             example_link('Infinite Scroll', 'presents an infinitely scrolling image gallery')
             example_link('OpenCV Webcam', 'uses OpenCV to capture images from a webcam')
+            example_link('SVG Clock', 'displays an analog clock by updating an SVG with `ui.timer`')
 
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
