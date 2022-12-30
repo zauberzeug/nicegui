@@ -1,3 +1,4 @@
+import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
@@ -128,12 +129,13 @@ def test_remove_and_clear(screen: Screen):
     screen.should_not_contain('Label C')
 
 
-def test_setting_visibility_in_timer(screen: Screen):
+@pytest.mark.parametrize('once', [True, False])
+def test_setting_visibility_in_timer(screen: Screen, once: bool):
     '''reproduction of https://github.com/zauberzeug/nicegui/issues/206'''
     @ui.page('/')
     def page():
         label = ui.label('Some Label')
-        ui.timer(1, lambda: label.set_visibility(False))
+        ui.timer(0.1, lambda: label.set_visibility(False), once=once)
 
     screen.open('/')
     screen.wait(0.5)
