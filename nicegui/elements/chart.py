@@ -4,10 +4,11 @@ from ..element import Element
 from ..vue import js_extra_dependencies, register_component
 
 register_component('chart', __file__, 'chart.js',
-                   ['lib/highcharts.js',
+                    ['lib/highcharts.js',
                     'lib/highcharts-more.js',
                     'lib/highcharts-3d.js',
-                    'modules/sankey.js',
+                    ], 
+                    ['modules/sankey.js',
                     'modules/accessibility.js',
                     'modules/exporting.js',
                     'modules/export-data.js',
@@ -75,7 +76,8 @@ register_component('chart', __file__, 'chart.js',
                     'modules/heikinashi.js',
                     'modules/hollowcandlestick.js',
                     'modules/pyramid3d.js',
-                    'modules/cylinder.js',])
+                    'modules/cylinder.js',
+                    ])
 
 class Chart(Element):
 
