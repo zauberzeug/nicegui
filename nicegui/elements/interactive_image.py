@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Callable, Dict, List, Optional
 
+from ..dependencies import register_component
 from ..events import MouseEventArguments, handle_event
-from ..vue import register_component
 from .mixins.content_element import ContentElement
 from .mixins.source_element import SourceElement
 

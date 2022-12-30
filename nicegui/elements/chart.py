@@ -1,7 +1,7 @@
 from typing import Dict, List
 
+from ..dependencies import js_extra_dependencies, register_component
 from ..element import Element
-from ..vue import js_extra_dependencies, register_component
 
 register_component('chart', __file__, 'chart.js',
                    ['lib/highcharts.js',

@@ -9,7 +9,8 @@ from fastapi import Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 
-from . import globals, vue
+from . import globals
+from .dependencies import generate_js_imports, generate_vue_content
 from .element import Element
 from .favicon import get_favicon_url
 from .task_logger import create_task
@@ -64,7 +65,7 @@ class Client:
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         prefix = request.headers.get('X-Forwarded-Prefix', '')
-        vue_html, vue_styles, vue_scripts = vue.generate_vue_content()
+        vue_html, vue_styles, vue_scripts = generate_vue_content()
         elements = json.dumps({id: element.to_dict() for id, element in self.elements.items()})
         return templates.TemplateResponse('index.html', {
             'request': request,
@@ -73,7 +74,7 @@ class Client:
             'head_html': self.head_html,
             'body_html': f'{self.body_html}\n{vue_html}\n{vue_styles}',
             'vue_scripts': vue_scripts,
-            'js_imports': vue.generate_js_imports(prefix),
+            'js_imports': generate_js_imports(prefix),
             'title': self.page.resolve_title(),
             'favicon_url': get_favicon_url(self.page, prefix),
             'dark': str(self.page.resolve_dark()),

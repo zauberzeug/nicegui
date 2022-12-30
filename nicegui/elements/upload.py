@@ -1,8 +1,8 @@
 from typing import Callable, Dict, Optional
 
+from ..dependencies import register_component
 from ..element import Element
 from ..events import UploadEventArguments, UploadFile, handle_event
-from ..vue import register_component
 
 register_component('upload', __file__, 'upload.vue')
 

@@ -1,8 +1,8 @@
 from typing import Tuple
 
 from nicegui import ui
+from nicegui.dependencies import register_component
 from nicegui.element import Element
-from nicegui.vue import register_component
 
 register_component('leaflet', __file__, 'leaflet.js')
 

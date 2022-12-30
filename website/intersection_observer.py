@@ -1,8 +1,8 @@
 from typing import Callable
 
+from nicegui.dependencies import register_component
 from nicegui.element import Element
 from nicegui.events import EventArguments, handle_event
-from nicegui.vue import register_component
 
 register_component('intersection_observer', __file__, 'intersection_observer.js')
 

@@ -1,10 +1,10 @@
 from typing import Any, Callable, Optional
 
-from .. import vue
+from ..dependencies import register_component
 from ..element import Element
 from ..events import JoystickEventArguments, handle_event
 
-vue.register_component('joystick', __file__, 'joystick.vue', ['lib/nipplejs.min.js'])
+register_component('joystick', __file__, 'joystick.vue', ['lib/nipplejs.min.js'])
 
 
 class Joystick(Element):

@@ -1,5 +1,5 @@
+from ..dependencies import register_component
 from ..element import Element
-from ..vue import register_component
 
 register_component('audio', __file__, 'audio.js')
 

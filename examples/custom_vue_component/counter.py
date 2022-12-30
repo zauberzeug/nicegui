@@ -1,7 +1,7 @@
 from typing import Callable, Optional
 
+from nicegui.dependencies import register_component
 from nicegui.element import Element
-from nicegui.vue import register_component
 
 register_component('counter', __file__, 'counter.js')
 

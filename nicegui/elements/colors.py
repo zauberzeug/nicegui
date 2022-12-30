@@ -1,7 +1,7 @@
-from .. import vue
+from ..dependencies import register_component
 from ..element import Element
 
-vue.register_component('colors', __file__, 'colors.js')
+register_component('colors', __file__, 'colors.js')
 
 
 class Colors(Element):

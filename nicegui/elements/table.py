@@ -1,9 +1,9 @@
 from typing import Dict
 
-from .. import vue
+from ..dependencies import register_component
 from ..element import Element
 
-vue.register_component('table', __file__, 'table.js', ['lib/ag-grid-community.min.js'])
+register_component('table', __file__, 'table.js', ['lib/ag-grid-community.min.js'])
 
 
 class Table(Element):

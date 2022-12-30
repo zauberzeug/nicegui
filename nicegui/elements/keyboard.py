@@ -1,9 +1,9 @@
 from typing import Callable, Dict
 
 from ..binding import BindableProperty
+from ..dependencies import register_component
 from ..element import Element
 from ..events import KeyboardAction, KeyboardKey, KeyboardModifiers, KeyEventArguments, handle_event
-from ..vue import register_component
 
 register_component('keyboard', __file__, 'keyboard.js')
 

@@ -1,7 +1,7 @@
 from typing import Optional
 
+from ..dependencies import register_component
 from ..element import Element
-from ..vue import register_component
 
 register_component('log', __file__, 'log.js')
 

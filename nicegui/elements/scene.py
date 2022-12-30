@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, Union
 
+from ..dependencies import register_component
 from ..element import Element
 from ..events import SceneClickEventArguments, SceneClickHit, handle_event
-from ..vue import register_component
 from .scene_object3d import Object3D
 from .scene_objects import Scene as SceneObject
 
