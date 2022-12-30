@@ -90,6 +90,7 @@ class Chart(Element):
         After data has changed, call the `update` method to refresh the chart.
 
         :param options: dictionary of Highcharts options
+        :param extras: list of extra dependencies to include (e.g. "annotations", "arc-diagram", "solid-gauge", ...)
         """
         super().__init__('chart')
         self._props['options'] = options
