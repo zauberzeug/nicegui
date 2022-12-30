@@ -82,7 +82,7 @@ register_component('chart', __file__, 'chart.js',
 
 class Chart(Element):
 
-    def __init__(self, options: Dict, extras: List[str] = []) -> None:
+    def __init__(self, options: Dict, *, extras: List[str] = []) -> None:
         """Chart
 
         An element to create a chart using `Highcharts <https://www.highcharts.com/>`_.
