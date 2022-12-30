@@ -4,11 +4,11 @@ from ..element import Element
 from ..vue import js_extra_dependencies, register_component
 
 register_component('chart', __file__, 'chart.js',
-                    ['lib/highcharts.js',
+                   ['lib/highcharts.js',
                     'lib/highcharts-more.js',
                     'lib/highcharts-3d.js',
-                    ], 
-                    ['modules/sankey.js',
+                    ],
+                   ['modules/sankey.js',
                     'modules/accessibility.js',
                     'modules/exporting.js',
                     'modules/export-data.js',
@@ -37,7 +37,7 @@ register_component('chart', __file__, 'chart.js',
                     'modules/gantt.js',
                     'modules/grid-axis.js',
                     'modules/heatmap.js',
-                    'modules/histogram-bellcurve.js',                    
+                    'modules/histogram-bellcurve.js',
                     'modules/item-series.js',
                     'modules/lollipop.js',
                     'modules/marker-clusters.js',
@@ -52,7 +52,7 @@ register_component('chart', __file__, 'chart.js',
                     'modules/pareto.js',
                     'modules/pathfinder.js',
                     'modules/pattern-fill.js',
-                    'modules/price-indicator.js',                    
+                    'modules/price-indicator.js',
                     'modules/series-label.js',
                     'modules/series-on-point.js',
                     'modules/sonification.js',
@@ -78,6 +78,7 @@ register_component('chart', __file__, 'chart.js',
                     'modules/pyramid3d.js',
                     'modules/cylinder.js',
                     ])
+
 
 class Chart(Element):
 
