@@ -1,10 +1,11 @@
 export default {
   template: "<div></div>",
   mounted() {
-    this.chart = Highcharts.chart(this.$el, this.options);
-    setTimeout(() => {
+    const imports = this.extras.map((extra) => import(extra));
+    Promise.allSettled(imports).then(() => {
+      this.chart = Highcharts.chart(this.$el, this.options);
       this.chart.reflow();
-    }, 0);
+    });
   },
   methods: {
     update_chart() {
@@ -15,5 +16,6 @@ export default {
   },
   props: {
     options: Object,
+    extras: Array,
   },
 };
