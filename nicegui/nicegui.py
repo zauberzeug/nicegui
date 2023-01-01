@@ -36,7 +36,7 @@ def index(request: Request) -> Response:
 
 @app.get('/_nicegui/dependencies/{id}/{name}')
 def get_dependencies(id: int, name: str):
-    if id in js_dependencies and js_dependencies[id].path.exists():
+    if id in js_dependencies and js_dependencies[id].path.exists() and js_dependencies[id].path.name == name:
         return FileResponse(js_dependencies[id].path, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'dependency "{name}" with ID {id} not found')
 
