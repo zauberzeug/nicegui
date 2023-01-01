@@ -96,10 +96,11 @@ class Chart(Element):
         """
         super().__init__('chart')
         self._props['options'] = options
-        urls = [f'/_nicegui/dependencies/{id}/{dependency.path.name}'
-                for id, dependency in js_dependencies.items()
-                if dependency.optional and dependency.path.stem in extras and 'chart' in dependency.dependents]
-        self._props['extras'] = urls
+        self._props['extras'] = [
+            dependency.import_path
+            for dependency in js_dependencies.values()
+            if dependency.optional and dependency.path.stem in extras and 'chart' in dependency.dependents
+        ]
 
     @property
     def options(self) -> Dict:

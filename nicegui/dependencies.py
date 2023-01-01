@@ -13,6 +13,10 @@ class Component:
     name: str
     path: Path
 
+    @property
+    def import_path(self) -> str:
+        return f'/_nicegui/components/{self.name}'
+
 
 @dataclass
 class Dependency:
@@ -20,6 +24,10 @@ class Dependency:
     path: Path
     dependents: Set[str]
     optional: bool
+
+    @property
+    def import_path(self) -> str:
+        return f'/_nicegui/dependencies/{self.id}/{self.path.name}'
 
 
 dependency_ids = IncrementingStringIds()
@@ -64,15 +72,15 @@ def generate_vue_content() -> Tuple[str, str, str]:
 
 def generate_js_imports(prefix: str) -> str:
     result = ''
-    for id, dependency in js_dependencies.items():
+    for dependency in js_dependencies.values():
         if dependency.optional:
             continue
         if not dependency.dependents.difference(globals.excludes):
             continue
-        result += f'import "{prefix}/_nicegui/dependencies/{id}/{dependency.path.name}";\n'
-    for name in js_components:
+        result += f'import "{prefix}{dependency.import_path}";\n'
+    for name, component in js_components.items():
         if name in globals.excludes:
             continue
-        result += f'import {{ default as {name} }} from "{prefix}/_nicegui/components/{name}";\n'
+        result += f'import {{ default as {name} }} from "{prefix}{component.import_path}";\n'
         result += f'app.component("{name}", {name});\n'
     return result
