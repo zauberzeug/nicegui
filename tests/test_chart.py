@@ -71,3 +71,17 @@ def test_removing_chart_series(screen: Screen):
     screen.click('Remove')
     screen.wait(0.5)
     assert len(screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-point')) == 3
+
+
+def test_extra(screen: Screen):
+    ui.chart({'chart': {'type': 'solidgauge'}}, extras=['solid-gauge'])
+
+    screen.open('/')
+    assert screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-pane')
+
+
+def test_missing_extra(screen: Screen):
+    ui.chart({'chart': {'type': 'solidgauge'}})
+
+    screen.open('/')
+    assert not screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-pane')
