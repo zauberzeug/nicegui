@@ -1,11 +1,13 @@
 export default {
   template: "<div></div>",
   mounted() {
-    const imports = this.extras.map((extra) => import(window.path_prefix + extra));
-    Promise.allSettled(imports).then(() => {
-      this.chart = Highcharts.chart(this.$el, this.options);
-      this.chart.reflow();
-    });
+    setTimeout(() => {
+      const imports = this.extras.map((extra) => import(window.path_prefix + extra));
+      Promise.allSettled(imports).then(() => {
+        this.chart = Highcharts.chart(this.$el, this.options);
+        this.chart.reflow();
+      });
+    }, 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
   },
   methods: {
     update_chart() {
