@@ -1,7 +1,7 @@
 export default {
   template: "<div></div>",
   mounted() {
-    const imports = this.extras.map((extra) => import(extra));
+    const imports = this.extras.map((extra) => import(window.path_prefix + extra));
     Promise.allSettled(imports).then(() => {
       this.chart = Highcharts.chart(this.$el, this.options);
       this.chart.reflow();
