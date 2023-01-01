@@ -12,7 +12,7 @@ from fastapi_socketio import SocketManager
 
 from . import binding, globals
 from .client import Client
-from .dependencies import js_components, js_dependencies, js_extra_dependencies
+from .dependencies import js_components, js_dependencies
 from .element import Element
 from .error import error_content
 from .favicon import create_favicon_routes
@@ -38,8 +38,6 @@ def index(request: Request) -> Response:
 def get_dependencies(id: int, name: str):
     if id in js_dependencies and js_dependencies[id].path.exists():
         return FileResponse(js_dependencies[id].path, media_type='text/javascript')
-    if id in js_extra_dependencies and js_extra_dependencies[id].path.exists():
-        return FileResponse(js_extra_dependencies[id].path, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'dependency "{name}" with ID {id} not found')
 
 

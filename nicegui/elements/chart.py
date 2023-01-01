@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from ..dependencies import js_extra_dependencies, register_component
+from ..dependencies import js_dependencies, register_component
 from ..element import Element
 
 register_component('chart', __file__, 'chart.js',
@@ -95,8 +95,8 @@ class Chart(Element):
         super().__init__('chart')
         self._props['options'] = options
         urls = [f'/_nicegui/dependencies/{id}/{dependency.path.name}'
-                for id, dependency in js_extra_dependencies.items()
-                if dependency.path.stem in extras and 'chart' in dependency.dependents]
+                for id, dependency in js_dependencies.items()
+                if dependency.optional and dependency.path.stem in extras and 'chart' in dependency.dependents]
         self._props['extras'] = urls
 
     @property
