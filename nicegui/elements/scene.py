@@ -4,6 +4,7 @@ from typing import Callable, Dict, List, Optional, Union
 from ..dependencies import register_component
 from ..element import Element
 from ..events import SceneClickEventArguments, SceneClickHit, handle_event
+from ..globals import socketio_id
 from .scene_object3d import Object3D
 from .scene_objects import Scene as SceneObject
 
@@ -73,11 +74,15 @@ class Scene(Element):
         self.on('connect', self.handle_connect)
         self.on('click3d', self.handle_click)
 
-    def handle_connect(self, _) -> None:
-        self.run_method('init')
-        self.move_camera(duration=0)
-        for object in self.objects.values():
-            object.send()
+    def handle_connect(self, x) -> None:
+        if not 'args' in x:
+            raise Exception('no args')
+        with socketio_id(x['args']):
+            self.run_method('init')
+            self.move_camera(duration=0)
+            for object in self.objects.values():
+                object.send()
+        return 'bam2'
 
     def handle_click(self, msg: Dict) -> None:
         arguments = SceneClickEventArguments(

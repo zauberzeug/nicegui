@@ -136,9 +136,11 @@ export default {
     this.stl_loader = new THREE.STLLoader();
 
     this.is_initialized = false;
-    const sendConnectEvent = () => {
-      if (!this.is_initialized) this.$emit("connect");
-      else clearInterval(connectInterval);
+    const sendConnectEvent = async () => {
+      if (window.socket.id === undefined) return;
+      if (!this.is_initialized) {
+        this.$emit("connect", window.socket.id);
+      } else clearInterval(connectInterval);
     };
     const connectInterval = setInterval(sendConnectEvent, 100);
   },

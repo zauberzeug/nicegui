@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from contextlib import contextmanager
 from enum import Enum
 from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Optional, Union
 
@@ -35,6 +36,7 @@ dark: Optional[bool]
 binding_refresh_interval: float
 excludes: List[str]
 socket_io_js_extra_headers: Dict = {}
+_socketio_id: Optional[str] = None
 
 slot_stacks: Dict[int, List['Slot']] = {}
 clients: Dict[str, 'Client'] = {}
@@ -74,3 +76,11 @@ def get_slot() -> 'Slot':
 
 def get_client() -> 'Client':
     return get_slot().parent.client
+
+
+@contextmanager
+def socketio_id(id: str) -> None:
+    global _socketio_id
+    _socketio_id = id
+    yield
+    _socketio_id = None

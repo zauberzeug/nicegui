@@ -174,7 +174,7 @@ class Element(ABC, Visibility):
         if not globals.loop:
             return
         data = {'id': self.id, 'name': name, 'args': args}
-        create_task(globals.sio.emit('run_method', data, room=self.client.id))
+        create_task(globals.sio.emit('run_method', data, room=globals._socketio_id or self.client.id))
 
     def clear(self) -> None:
         descendants = [self.client.elements[id] for id in self.collect_descendant_ids()[1:]]
