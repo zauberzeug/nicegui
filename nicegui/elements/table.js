@@ -10,6 +10,11 @@ export default {
         ...this.options,
         onGridReady: (params) => params.api.sizeColumnsToFit(),
       };
+      for (const column of this.html_columns) {
+        if (this.gridOptions.columnDefs[column].cellRenderer === undefined) {
+          this.gridOptions.columnDefs[column].cellRenderer = (params) => (params.value ? params.value : "");
+        }
+      }
       this.grid = new agGrid.Grid(this.$el, this.gridOptions);
       this.gridOptions.api.addGlobalListener(this.handle_event);
     },
@@ -53,5 +58,6 @@ export default {
   },
   props: {
     options: Object,
+    html_columns: Array,
   },
 };
