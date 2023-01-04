@@ -41,7 +41,6 @@ clients: Dict[str, 'Client'] = {}
 index_client: 'Client'
 
 page_routes: Dict[Callable, str] = {}
-favicons: Dict[str, Optional[str]] = {}
 tasks: List[asyncio.tasks.Task] = []
 
 startup_handlers: List[Union[Callable, Awaitable]] = []

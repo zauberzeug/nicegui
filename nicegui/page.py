@@ -8,6 +8,7 @@ from fastapi import Request, Response
 from . import globals
 from .async_updater import AsyncUpdater
 from .client import Client
+from .favicon import create_favicon_route
 from .task_logger import create_task
 
 
@@ -36,7 +37,7 @@ class page:
         self.dark = dark
         self.response_timeout = response_timeout
 
-        globals.favicons[self.path] = favicon
+        create_favicon_route(self.path, favicon)
 
     def resolve_title(self) -> str:
         return self.title if self.title is not None else globals.title

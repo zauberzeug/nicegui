@@ -15,7 +15,6 @@ from .client import Client
 from .dependencies import js_components, js_dependencies
 from .element import Element
 from .error import error_content
-from .favicon import create_favicon_routes
 from .helpers import safe_invoke
 from .page import page
 from .task_logger import create_task
@@ -50,7 +49,6 @@ def get_components(name: str):
 def handle_startup(with_welcome_message: bool = True) -> None:
     globals.state = globals.State.STARTING
     globals.loop = asyncio.get_running_loop()
-    create_favicon_routes()
     for t in globals.startup_handlers:
         safe_invoke(t)
     create_task(binding.loop())
