@@ -1,10 +1,12 @@
+from . import globals
 from .element import Element
 
 
 class Header(Element):
 
     def __init__(self, fixed: bool = True) -> None:
-        super().__init__('q-header')
+        with globals.get_client().layout:
+            super().__init__('q-header')
         self.classes('q-pa-md row items-start gap-4')
         code = list(self.client.layout._props['view'])
         code[1] = 'H' if fixed else 'h'
@@ -15,7 +17,8 @@ class Drawer(Element):
 
     def __init__(self, side: str, *, fixed: bool = True, top_corner: bool = False, bottom_corner: bool = False) -> None:
         assert side in ['left', 'right']
-        super().__init__('q-drawer')
+        with globals.get_client().layout:
+            super().__init__('q-drawer')
         self._props['show-if-above'] = True
         self._props['side'] = side
         self._classes = ['q-pa-md']
@@ -41,7 +44,8 @@ class RightDrawer(Drawer):
 class Footer(Element):
 
     def __init__(self, fixed: bool = True) -> None:
-        super().__init__('q-footer')
+        with globals.get_client().layout:
+            super().__init__('q-footer')
         self.classes('q-pa-md row items-start gap-4')
         code = list(self.client.layout._props['view'])
         code[9] = 'F' if fixed else 'f'
