@@ -94,9 +94,8 @@ async def handle_handshake(sid: str) -> bool:
         return False
     client.environ = sio.get_environ(sid)
     sio.enter_room(sid, client.id)
-    with client:
-        for t in client.connect_handlers:
-            safe_invoke(t)
+    for t in client.connect_handlers:
+        safe_invoke(t, client)
     return True
 
 
@@ -107,9 +106,8 @@ async def handle_disconnect(sid: str) -> None:
         return
     if not client.shared:
         delete_client(client.id)
-    with client:
-        for t in client.disconnect_handlers:
-            safe_invoke(t)
+    for t in client.disconnect_handlers:
+        safe_invoke(t, client)
 
 
 @sio.on('event')

@@ -9,3 +9,13 @@ def test_adding_elements_during_onconnect(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Label 2')
+
+
+def test_async_connect_handler(screen: Screen):
+    async def run_js():
+        result.text = await ui.run_javascript('41 + 1')
+    result = ui.label()
+    ui.on_connect(run_js)
+
+    screen.open('/')
+    screen.should_contain('42')
