@@ -50,3 +50,15 @@ def test_click_cell(screen: Screen):
     screen.open('/')
     screen.click('Alice')
     screen.should_contain('Alice has been clicked!')
+
+
+def test_html_columns(screen: Screen):
+    ui.table({
+        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+        'rowData': [{'name': '<span class="text-bold">Alice</span>', 'age': 18}],
+    }, html_columns=[0])
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_not_contain('<span')
+    assert 'text-bold' in screen.find('Alice').get_attribute('class')
