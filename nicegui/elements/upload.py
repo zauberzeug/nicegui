@@ -1,8 +1,11 @@
-from typing import Callable, Dict, Optional
+from typing import Callable, Optional
+
+from fastapi import Request, Response
 
 from ..dependencies import register_component
 from ..element import Element
-from ..events import UploadEventArguments, UploadFile, handle_event
+from ..events import UploadEventArguments, handle_event
+from ..nicegui import app
 
 register_component('upload', __file__, 'upload.vue')
 
@@ -27,19 +30,18 @@ class Upload(Element):
         self._props['file_picker_label'] = file_picker_label
         self._props['upload_button_icon'] = upload_button_icon
 
-        def upload(msg: Dict) -> None:
-            files = [
-                UploadFile(
-                    content=file['content'],
-                    name=file['name'],
-                    lastModified=file['lastModified'],
-                    size=file['size'],
-                    type=file['type'],
+        @app.post('/_nicegui/upload')
+        async def upload_route(request: Request) -> Response:
+            for data in (await request.form()).values():
+                args = UploadEventArguments(
+                    sender=self,
+                    client=self.client,
+                    content=data.file,
+                    name=data.filename,
+                    type=data.content_type,
                 )
-                for file in msg['args']
-            ]
-            handle_event(on_upload, UploadEventArguments(sender=self, client=self.client, files=files))
-        self.on('upload', upload)
+                handle_event(on_upload, args)
+            return {'upload': 'success'}
 
     def reset(self) -> None:
         self.run_method('reset')

@@ -1,8 +1,5 @@
 <template>
-  <div>
-    <q-file :label="file_picker_label" v-model="file" :multiple="multiple" />
-    <q-btn :icon="upload_button_icon" @click="upload" size="sm" round color="primary" />
-  </div>
+  <q-uploader url="_nicegui/upload" :label="file_picker_label" :multiple="multiple" />
 </template>
 
 <script>
