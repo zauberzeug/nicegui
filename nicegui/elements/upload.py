@@ -16,6 +16,7 @@ class Upload(Element):
                  multiple: bool = False,
                  on_upload: Optional[Callable] = None,
                  file_picker_label: str = '',
+                 auto_upload: bool = False,
                  upload_button_icon: str = 'file_upload') -> None:
         """File Upload
 
@@ -28,9 +29,11 @@ class Upload(Element):
         self.classes('row items-center gap-2')
         self._props['multiple'] = multiple
         self._props['file_picker_label'] = file_picker_label
+        self._props['auto_upload'] = auto_upload
         self._props['upload_button_icon'] = upload_button_icon
+        self._props['url'] = f'/_nicegui/upload/{self.id}'
 
-        @app.post('/_nicegui/upload')
+        @app.post(f'/_nicegui/upload/{self.id}')
         async def upload_route(request: Request) -> Response:
             for data in (await request.form()).values():
                 args = UploadEventArguments(

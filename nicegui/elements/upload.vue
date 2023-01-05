@@ -1,5 +1,5 @@
 <template>
-  <q-uploader url="_nicegui/upload" :label="file_picker_label" :multiple="multiple" />
+  <q-uploader :url="url" :label="file_picker_label" :auto-upload="auto_upload" :multiple="multiple" />
 </template>
 
 <script>
@@ -29,7 +29,9 @@ export default {
   props: {
     multiple: Boolean,
     file_picker_label: String,
+    auto_upload: Boolean,
     upload_button_icon: String,
+    url: String,
   },
 };
 </script>
