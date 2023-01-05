@@ -54,10 +54,6 @@ class Client:
         return self.environ.get('REMOTE_ADDR') if self.environ else None
 
     @property
-    def room(self) -> str:
-        return globals._current_socket_ids[-1] if globals._use_current_socket[-1] else self.id
-
-    @property
     def has_socket_connection(self) -> bool:
         return self.environ is not None
 
@@ -103,7 +99,7 @@ class Client:
             'code': code,
             'request_id': request_id if respond else None,
         }
-        create_task(globals.sio.emit('run_javascript', command, room=self.room))
+        create_task(globals.sio.emit('run_javascript', command, room=self.id))
         if not respond:
             return None
         deadline = time.time() + timeout
@@ -115,4 +111,4 @@ class Client:
 
     def open(self, target: Union[Callable, str]) -> None:
         path = target if isinstance(target, str) else globals.page_routes[target]
-        create_task(globals.sio.emit('open', path, room=self.room))
+        create_task(globals.sio.emit('open', path, room=self.id))

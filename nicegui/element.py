@@ -168,13 +168,13 @@ class Element(ABC, Visibility):
             return
         ids = self.collect_descendant_ids()
         elements = {id: self.client.elements[id].to_dict() for id in ids}
-        create_task(globals.sio.emit('update', {'elements': elements}, room=self.client.room))
+        create_task(globals.sio.emit('update', {'elements': elements}, room=self.client.id))
 
     def run_method(self, name: str, *args: Any) -> None:
         if not globals.loop:
             return
         data = {'id': self.id, 'name': name, 'args': args}
-        create_task(globals.sio.emit('run_method', data, room=self.client.room))
+        create_task(globals.sio.emit('run_method', data, room=globals._socketio_id or self.client.id))
 
     def clear(self) -> None:
         descendants = [self.client.elements[id] for id in self.collect_descendant_ids()[1:]]
