@@ -44,7 +44,6 @@ _current_socket_ids: List[str] = []
 _use_current_socket: List[bool] = [False]
 
 page_routes: Dict[Callable, str] = {}
-favicons: Dict[str, Optional[str]] = {}
 tasks: List[asyncio.tasks.Task] = []
 
 startup_handlers: List[Union[Callable, Awaitable]] = []

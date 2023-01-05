@@ -36,7 +36,8 @@ class Client:
 
         with Element('q-layout', _client=self).props('view="HHH LpR FFF"') as self.layout:
             with Element('q-page-container'):
-                self.content = Element('div').classes('q-pa-md column items-start gap-4')
+                with Element('q-page'):
+                    self.content = Element('div').classes('q-pa-md column items-start gap-4')
 
         self.waiting_javascript_commands: Dict[str, str] = {}
 

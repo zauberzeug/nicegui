@@ -1,8 +1,10 @@
 import asyncio
 import functools
-from typing import Any, Awaitable, Callable, Union
+from contextlib import nullcontext
+from typing import Any, Awaitable, Callable, Optional, Union
 
 from . import globals
+from .client import Client
 from .task_logger import create_task
 
 
@@ -12,13 +14,20 @@ def is_coroutine(object: Any) -> bool:
     return asyncio.iscoroutinefunction(object)
 
 
-def safe_invoke(func: Union[Callable, Awaitable]) -> None:
+def safe_invoke(func: Union[Callable, Awaitable], client: Optional[Client] = None) -> None:
     try:
         if isinstance(func, Awaitable):
-            create_task(func)
+            async def func_with_client():
+                with client or nullcontext():
+                    await func
+            create_task(func_with_client())
         else:
-            result = func()
+            with client or nullcontext():
+                result = func()
             if isinstance(result, Awaitable):
-                create_task(result)
+                async def result_with_client():
+                    with client or nullcontext():
+                        await result
+                create_task(result_with_client())
     except:
         globals.log.exception(f'could not invoke {func}')
