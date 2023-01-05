@@ -70,6 +70,15 @@ class Screen:
         if self.is_open:
             self.selenium.close()
 
+    def switch_to(self, tab_id: int) -> None:
+        window_count = len(self.selenium.window_handles)
+        if tab_id > window_count:
+            raise IndexError(f'Could not go to or create tab {tab_id}, there are only {window_count} tabs')
+        elif tab_id == window_count:
+            self.selenium.switch_to.new_window('tab')
+        else:
+            self.selenium.switch_to.window(self.selenium.window_handles[tab_id])
+
     def should_contain(self, text: str) -> None:
         assert self.selenium.title == text or self.find(text), f'could not find "{text}"'
 

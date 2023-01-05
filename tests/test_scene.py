@@ -25,3 +25,17 @@ def test_moving_sphere_with_timer(screen: Screen):
 
     screen.wait(0.2)
     assert position() > 0
+
+
+def test_no_object_duplication_on_index_client(screen: Screen):
+    with ui.scene() as scene:
+        sphere = scene.sphere().move(0, -4, 0)
+        ui.timer(0.1, lambda: sphere.move(0, sphere.y + 0.5, 0))
+
+    screen.open('/')
+    screen.wait(0.4)
+    screen.switch_to(1)
+    screen.open('/')
+    screen.switch_to(0)
+    screen.wait(0.2)
+    assert screen.selenium.execute_script(f'return scene_{scene.id}.children.length') == 5

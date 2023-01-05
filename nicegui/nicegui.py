@@ -92,8 +92,9 @@ async def handle_handshake(sid: str) -> bool:
         return False
     client.environ = sio.get_environ(sid)
     sio.enter_room(sid, client.id)
-    for t in client.connect_handlers:
-        safe_invoke(t, client)
+    with globals.socketio_id(sid):
+        for t in client.connect_handlers:
+            safe_invoke(t, client)
     return True
 
 
