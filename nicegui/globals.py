@@ -36,8 +36,8 @@ dark: Optional[bool]
 binding_refresh_interval: float
 excludes: List[str]
 socket_io_js_extra_headers: Dict = {}
-_socketio_id: Optional[str] = None
 
+_socket_id: Optional[str] = None
 slot_stacks: Dict[int, List['Slot']] = {}
 clients: Dict[str, 'Client'] = {}
 index_client: 'Client'
@@ -78,8 +78,8 @@ def get_client() -> 'Client':
 
 
 @contextmanager
-def socketio_id(id: str) -> None:
-    global _socketio_id
-    _socketio_id = id
+def socket_id(id: str) -> None:
+    global _socket_id
+    _socket_id = id
     yield
-    _socketio_id = None
+    _socket_id = None

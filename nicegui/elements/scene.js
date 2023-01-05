@@ -135,20 +135,14 @@ export default {
     this.texture_loader = new THREE.TextureLoader();
     this.stl_loader = new THREE.STLLoader();
 
-    this.is_initialized = false;
-    const sendConnectEvent = async () => {
+    const connectInterval = setInterval(async () => {
       if (window.socket.id === undefined) return;
-      if (!this.is_initialized) {
-        this.$emit("connect", window.socket.id);
-      } else clearInterval(connectInterval);
-    };
-    const connectInterval = setInterval(sendConnectEvent, 100);
+      this.$emit("init", window.socket.id);
+      clearInterval(connectInterval);
+    }, 100);
   },
 
   methods: {
-    init() {
-      this.is_initialized = true;
-    },
     create(type, id, parent_id, ...args) {
       let mesh;
       if (type == "group") {
