@@ -21,8 +21,9 @@ class Upload(Element):
         """File Upload
 
         :param multiple: allow uploading multiple files at once (default: `False`)
-        :param on_upload: callback to execute when a file is uploaded (list of bytearrays)
-        :param file_picker_label: label for the file picker element
+        :param on_upload: callback to execute when for each file which is uploaded (type: nicegui.events.UploadEventArguments)
+        :param file_picker_label: label for the file picker element (default: `''`)
+        :param auto_upload: automatically upload files when they are selected (default: `False`)
         :param upload_button_icon: icon for the upload button
         """
         super().__init__('upload')
