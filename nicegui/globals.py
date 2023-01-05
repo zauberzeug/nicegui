@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from contextlib import contextmanager
 from enum import Enum
 from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Optional, Union
 
@@ -39,6 +40,8 @@ socket_io_js_extra_headers: Dict = {}
 slot_stacks: Dict[int, List['Slot']] = {}
 clients: Dict[str, 'Client'] = {}
 index_client: 'Client'
+_current_socket_ids: List[str] = []
+_use_current_socket: List[bool] = [False]
 
 page_routes: Dict[Callable, str] = {}
 tasks: List[asyncio.tasks.Task] = []
@@ -73,3 +76,17 @@ def get_slot() -> 'Slot':
 
 def get_client() -> 'Client':
     return get_slot().parent.client
+
+
+@contextmanager
+def socketio_id(id: str) -> None:
+    _current_socket_ids.append(id)
+    yield
+    _current_socket_ids.pop()
+
+
+@contextmanager
+def current_socket() -> None:
+    _use_current_socket.append(True)
+    yield
+    _use_current_socket.pop()

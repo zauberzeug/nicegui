@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, Union
 
+from .. import globals
 from ..dependencies import register_component
 from ..element import Element
 from ..events import SceneClickEventArguments, SceneClickHit, handle_event
+from ..functions.lifecycle import on_connect
 from .scene_object3d import Object3D
 from .scene_objects import Scene as SceneObject
 
@@ -70,14 +72,14 @@ class Scene(Element):
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
         self.on_click = on_click
-        self.on('connect', self.handle_connect)
         self.on('click3d', self.handle_click)
+        on_connect(self.handle_connect)
 
-    def handle_connect(self, _) -> None:
-        self.run_method('init')
-        self.move_camera(duration=0)
-        for object in self.objects.values():
-            object.send()
+    def handle_connect(self) -> None:
+        with globals.current_socket():
+            self.move_camera(duration=0)
+            for object in self.objects.values():
+                object.send()
 
     def handle_click(self, msg: Dict) -> None:
         arguments = SceneClickEventArguments(
