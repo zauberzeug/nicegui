@@ -56,3 +56,19 @@ def test_two_upload_elements(screen: Screen):
     assert result1.name == 'test_upload.py'
     assert result2 is not None
     assert result2.name == 'test_scene.py'
+
+
+def test_uploading_from_two_tabs(screen: Screen):
+    @ui.page('/')
+    def page():
+        def handle_upload(event: events.UploadEventArguments):
+            ui.label(event.name)
+        ui.upload(on_upload=handle_upload, auto_upload=True)
+
+    screen.open('/')
+    screen.switch_to_tab(1)
+    screen.should_not_contain('test_upload.py')
+    screen.selenium.find_element(By.CLASS_NAME, 'q-uploader__input')\
+        .send_keys(str(Path('tests/test_upload.py').resolve()))
+    screen.wait(0.1)
+    screen.should_contain('test_upload.py')
