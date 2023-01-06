@@ -14,7 +14,7 @@ def test_uploading_text_file(screen: Screen):
         nonlocal result
         result = event
 
-    ui.upload(on_upload=handle_upload, file_picker_label='Test Title')
+    ui.upload(on_upload=handle_upload, label='Test Title')
 
     screen.open('/')
     screen.should_contain('Test Title')
@@ -41,8 +41,8 @@ def test_two_upload_elements(screen: Screen):
         nonlocal result2
         result2 = event
 
-    ui.upload(on_upload=handle_upload1, auto_upload=True, file_picker_label='Test Title 1')
-    ui.upload(on_upload=handle_upload2, auto_upload=True, file_picker_label='Test Title 2')
+    ui.upload(on_upload=handle_upload1, auto_upload=True, label='Test Title 1')
+    ui.upload(on_upload=handle_upload2, auto_upload=True, label='Test Title 2')
 
     screen.open('/')
     screen.should_contain('Test Title 1')
