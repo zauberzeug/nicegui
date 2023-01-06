@@ -32,9 +32,9 @@ class Upload(Element):
         self._props['file_picker_label'] = file_picker_label
         self._props['auto_upload'] = auto_upload
         self._props['upload_button_icon'] = upload_button_icon
-        self._props['url'] = f'/_nicegui/upload/{self.id}'
+        self._props['url'] = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
 
-        @app.post(f'/_nicegui/upload/{self.id}')
+        @app.post(f'/_nicegui/client/{self.client.id}/upload/{self.id}')
         async def upload_route(request: Request) -> Response:
             for data in (await request.form()).values():
                 args = UploadEventArguments(

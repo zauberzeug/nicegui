@@ -62,13 +62,16 @@ def test_uploading_from_two_tabs(screen: Screen):
     @ui.page('/')
     def page():
         def handle_upload(event: events.UploadEventArguments):
-            ui.label(event.name)
+            ui.label(f'uploaded {event.name}')
         ui.upload(on_upload=handle_upload, auto_upload=True)
 
     screen.open('/')
-    screen.switch_to_tab(1)
+    screen.switch_to(1)
+    screen.open('/')
     screen.should_not_contain('test_upload.py')
     screen.selenium.find_element(By.CLASS_NAME, 'q-uploader__input')\
         .send_keys(str(Path('tests/test_upload.py').resolve()))
-    screen.wait(0.1)
-    screen.should_contain('test_upload.py')
+    screen.wait(0.3)
+    screen.should_contain('uploaded test_upload.py')
+    screen.switch_to(0)
+    screen.should_not_contain('uploaded test_upload.py')
