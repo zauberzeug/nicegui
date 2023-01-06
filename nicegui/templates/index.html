@@ -6,8 +6,9 @@
     <link href="{{ favicon_url }}" rel="shortcut icon" />
     <link href="{{ prefix | safe }}/_nicegui/static/fonts.css" rel="stylesheet" type="text/css" />
     <link href="{{ prefix | safe }}/_nicegui/static/quasar.prod.css" rel="stylesheet" type="text/css" />
+    {% if tailwind %}
     <script src="{{ prefix | safe }}/_nicegui/static/tailwind.min.js"></script>
-    {{ head_html | safe }}
+    {% endif %} {{ head_html | safe }}
   </head>
   <body>
     <script src="{{ prefix | safe }}/_nicegui/static/vue.global.prod.js"></script>

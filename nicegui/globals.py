@@ -35,6 +35,7 @@ favicon: Optional[str]
 dark: Optional[bool]
 binding_refresh_interval: float
 excludes: List[str]
+tailwind: bool
 socket_io_js_extra_headers: Dict = {}
 
 _socket_id: Optional[str] = None
