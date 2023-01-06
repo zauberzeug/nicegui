@@ -17,7 +17,7 @@ class Upload(Element):
                  ) -> None:
         """File Upload
 
-        Based on Quasar's [QUploader](https://quasar.dev/vue-components/uploader) component.
+        Based on Quasar's `QUploader <https://quasar.dev/vue-components/uploader>`_ component.
 
         :param multiple: allow uploading multiple files at once (default: `False`)
         :param on_upload: callback to execute for each uploaded file (type: nicegui.events.UploadEventArguments)
