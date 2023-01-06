@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import List
 
 from selenium.webdriver.common.by import By
 
@@ -6,72 +7,53 @@ from nicegui import events, ui
 
 from .screen import Screen
 
+test_path1 = Path('tests/test_upload.py').resolve()
+test_path2 = Path('tests/test_scene.py').resolve()
+
 
 def test_uploading_text_file(screen: Screen):
-    result: events.UploadEventArguments = None
-
-    def handle_upload(event: events.UploadEventArguments):
-        nonlocal result
-        result = event
-
-    ui.upload(on_upload=handle_upload, label='Test Title')
+    results: List[events.UploadEventArguments] = []
+    ui.upload(on_upload=results.append, label='Test Title')
 
     screen.open('/')
     screen.should_contain('Test Title')
-    screen.selenium.find_element(By.CLASS_NAME, 'q-uploader__input')\
-        .send_keys(str(Path('tests/test_upload.py').resolve()))
+    screen.selenium.find_element(By.CLASS_NAME, 'q-uploader__input').send_keys(str(test_path1))
     screen.wait(0.1)
     screen.selenium.find_elements(By.CLASS_NAME, 'q-btn')[1].click()
     screen.wait(0.1)
-    assert result is not None
-    assert result.name == 'test_upload.py'
-    assert result.type == 'text/x-python-script'
-    assert result.content.read() == Path('tests/test_upload.py').read_bytes()
+    assert len(results) == 1
+    assert results[0].name == test_path1.name
+    assert results[0].type == 'text/x-python-script'
+    assert results[0].content.read() == test_path1.read_bytes()
 
 
 def test_two_upload_elements(screen: Screen):
-    result1: events.UploadEventArguments = None
-    result2: events.UploadEventArguments = None
-
-    def handle_upload1(event: events.UploadEventArguments):
-        nonlocal result1
-        result1 = event
-
-    def handle_upload2(event: events.UploadEventArguments):
-        nonlocal result2
-        result2 = event
-
-    ui.upload(on_upload=handle_upload1, auto_upload=True, label='Test Title 1')
-    ui.upload(on_upload=handle_upload2, auto_upload=True, label='Test Title 2')
+    results: List[events.UploadEventArguments] = []
+    ui.upload(on_upload=results.append, auto_upload=True, label='Test Title 1')
+    ui.upload(on_upload=results.append, auto_upload=True, label='Test Title 2')
 
     screen.open('/')
     screen.should_contain('Test Title 1')
     screen.should_contain('Test Title 2')
-    screen.selenium.find_element(By.CLASS_NAME, 'q-uploader__input')\
-        .send_keys(str(Path('tests/test_upload.py').resolve()))
-    screen.selenium.find_elements(By.CLASS_NAME, 'q-uploader__input')[1]\
-        .send_keys(str(Path('tests/test_scene.py').resolve()))
+    screen.selenium.find_element(By.CLASS_NAME, 'q-uploader__input').send_keys(str(test_path1))
+    screen.selenium.find_elements(By.CLASS_NAME, 'q-uploader__input')[1].send_keys(str(test_path2))
     screen.wait(0.1)
-    assert result1 is not None
-    assert result1.name == 'test_upload.py'
-    assert result2 is not None
-    assert result2.name == 'test_scene.py'
+    assert len(results) == 2
+    assert results[0].name == test_path1.name
+    assert results[1].name == test_path2.name
 
 
 def test_uploading_from_two_tabs(screen: Screen):
     @ui.page('/')
     def page():
-        def handle_upload(event: events.UploadEventArguments):
-            ui.label(f'uploaded {event.name}')
-        ui.upload(on_upload=handle_upload, auto_upload=True)
+        ui.upload(on_upload=lambda e: ui.label(f'uploaded {e.name}'), auto_upload=True)
 
     screen.open('/')
     screen.switch_to(1)
     screen.open('/')
-    screen.should_not_contain('test_upload.py')
-    screen.selenium.find_element(By.CLASS_NAME, 'q-uploader__input')\
-        .send_keys(str(Path('tests/test_upload.py').resolve()))
+    screen.should_not_contain(test_path1.name)
+    screen.selenium.find_element(By.CLASS_NAME, 'q-uploader__input').send_keys(str(test_path1))
     screen.wait(0.3)
-    screen.should_contain('uploaded test_upload.py')
+    screen.should_contain(f'uploaded {test_path1.name}')
     screen.switch_to(0)
-    screen.should_not_contain('uploaded test_upload.py')
+    screen.should_not_contain(f'uploaded {test_path1.name}')

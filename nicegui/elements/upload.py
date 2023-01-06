@@ -17,9 +17,11 @@ class Upload(Element):
                  ) -> None:
         """File Upload
 
+        Based on Quasar's [QUploader](https://quasar.dev/vue-components/uploader) component.
+
         :param multiple: allow uploading multiple files at once (default: `False`)
-        :param on_upload: callback to execute when for each file which is uploaded (type: nicegui.events.UploadEventArguments)
-        :param label: label for the file picker element (default: `''`)
+        :param on_upload: callback to execute for each uploaded file (type: nicegui.events.UploadEventArguments)
+        :param label: label for the uploader (default: `''`)
         :param auto_upload: automatically upload files when they are selected (default: `False`)
         """
         super().__init__('q-uploader')
