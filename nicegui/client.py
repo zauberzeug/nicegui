@@ -31,6 +31,7 @@ class Client:
         self.elements: Dict[int, Element] = {}
         self.next_element_id: int = 0
         self.is_waiting_for_connection: bool = False
+        self.is_waiting_for_disconnect: bool = False
         self.environ: Optional[Dict[str, Any]] = None
         self.shared = shared
 
@@ -92,6 +93,12 @@ class Client:
                 raise TimeoutError(f'No connection after {timeout} seconds')
             await asyncio.sleep(check_interval)
         self.is_waiting_for_connection = False
+
+    async def disconnected(self, check_interval: float = 0.1) -> None:
+        self.is_waiting_for_disconnect = True
+        while self.id in globals.clients:
+            await asyncio.sleep(check_interval)
+        self.is_waiting_for_disconnect = False
 
     async def run_javascript(self, code: str, *,
                              respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Optional[str]:

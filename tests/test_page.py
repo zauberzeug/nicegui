@@ -121,6 +121,24 @@ def test_wait_for_connected(screen: Screen):
     screen.should_contain('delayed data has been loaded')
 
 
+def test_wait_for_disconnect(screen: Screen):
+    events = []
+
+    @ui.page('/')
+    async def page(client: Client):
+        nonlocal events
+        await client.connected()
+        events.append('connected')
+        await client.disconnected()
+        events.append('disconnected')
+
+    screen.open('/')
+    screen.open('/')
+    assert events == ['connected', 'disconnected']
+    screen.wait(0.1)
+    assert ['connected', 'disconnected', 'connected'] == events
+
+
 def test_adding_elements_after_connected(screen: Screen):
     @ui.page('/')
     async def page(client: Client):
