@@ -1,7 +1,7 @@
 import traceback
 from dataclasses import dataclass
 from inspect import signature
-from typing import TYPE_CHECKING, Any, Callable, List, Optional
+from typing import TYPE_CHECKING, Any, BinaryIO, Callable, List, Optional
 
 from . import globals
 from .async_updater import AsyncUpdater
@@ -65,17 +65,10 @@ class JoystickEventArguments(EventArguments):
 
 
 @dataclass
-class UploadFile:
-    content: bytes
-    name: str
-    lastModified: float
-    size: int
-    type: str
-
-
-@dataclass
 class UploadEventArguments(EventArguments):
-    files: List[UploadFile]
+    content: BinaryIO
+    name: str
+    type: str
 
 
 @dataclass

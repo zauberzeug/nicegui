@@ -1,10 +1,10 @@
-from typing import Callable, Dict, Optional
+from typing import Callable, Optional
 
-from ..dependencies import register_component
+from fastapi import Request, Response
+
 from ..element import Element
-from ..events import UploadEventArguments, UploadFile, handle_event
-
-register_component('upload', __file__, 'upload.vue')
+from ..events import UploadEventArguments, handle_event
+from ..nicegui import app
 
 
 class Upload(Element):
@@ -12,34 +12,36 @@ class Upload(Element):
     def __init__(self, *,
                  multiple: bool = False,
                  on_upload: Optional[Callable] = None,
-                 file_picker_label: str = '',
-                 upload_button_icon: str = 'file_upload') -> None:
+                 label: str = '',
+                 auto_upload: bool = False,
+                 ) -> None:
         """File Upload
 
-        :param multiple: allow uploading multiple files at once (default: `False`)
-        :param on_upload: callback to execute when a file is uploaded (list of bytearrays)
-        :param file_picker_label: label for the file picker element
-        :param upload_button_icon: icon for the upload button
-        """
-        super().__init__('upload')
-        self.classes('row items-center gap-2')
-        self._props['multiple'] = multiple
-        self._props['file_picker_label'] = file_picker_label
-        self._props['upload_button_icon'] = upload_button_icon
+        Based on Quasar's `QUploader <https://quasar.dev/vue-components/uploader>`_ component.
 
-        def upload(msg: Dict) -> None:
-            files = [
-                UploadFile(
-                    content=file['content'],
-                    name=file['name'],
-                    lastModified=file['lastModified'],
-                    size=file['size'],
-                    type=file['type'],
+        :param multiple: allow uploading multiple files at once (default: `False`)
+        :param on_upload: callback to execute for each uploaded file (type: nicegui.events.UploadEventArguments)
+        :param label: label for the uploader (default: `''`)
+        :param auto_upload: automatically upload files when they are selected (default: `False`)
+        """
+        super().__init__('q-uploader')
+        self._props['multiple'] = multiple
+        self._props['label'] = label
+        self._props['auto-upload'] = auto_upload
+        self._props['url'] = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
+
+        @app.post(f'/_nicegui/client/{self.client.id}/upload/{self.id}')
+        async def upload_route(request: Request) -> Response:
+            for data in (await request.form()).values():
+                args = UploadEventArguments(
+                    sender=self,
+                    client=self.client,
+                    content=data.file,
+                    name=data.filename,
+                    type=data.content_type,
                 )
-                for file in msg['args']
-            ]
-            handle_event(on_upload, UploadEventArguments(sender=self, client=self.client, files=files))
-        self.on('upload', upload)
+                handle_event(on_upload, args)
+            return {'upload': 'success'}
 
     def reset(self) -> None:
         self.run_method('reset')

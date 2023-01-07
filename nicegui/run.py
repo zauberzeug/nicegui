@@ -26,6 +26,7 @@ def run(*,
         uvicorn_reload_includes: str = '*.py',
         uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
         exclude: str = '',
+        tailwind: bool = True,
         ) -> None:
     '''ui.run
 
@@ -45,6 +46,7 @@ def run(*,
     :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
     :param exclude: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
       (possible entries: chart, colors, interactive_image, joystick, keyboard, log, scene, upload, table)
+    :param tailwind: whether to use Tailwind (default: `True`)
     '''
     globals.host = host
     globals.port = port
@@ -54,6 +56,7 @@ def run(*,
     globals.dark = dark
     globals.binding_refresh_interval = binding_refresh_interval
     globals.excludes = [e.strip() for e in exclude.split(',')]
+    globals.tailwind = tailwind
 
     if inspect.stack()[-2].filename.endswith('spawn.py'):
         return

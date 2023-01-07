@@ -150,7 +150,7 @@ def create_full() -> None:
 
     @example(ui.upload)
     def upload_example():
-        ui.upload(on_upload=lambda e: ui.notify(f'{e.files[0].size} bytes'))
+        ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('max-w-full')
 
     h3('Markdown and HTML')
 
