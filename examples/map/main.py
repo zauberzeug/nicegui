@@ -15,7 +15,7 @@ locations = {
 async def main_page(client: Client):
     map = leaflet().classes('w-full h-96')
     selection = ui.select(locations, on_change=lambda e: map.set_location(e.value)).classes('w-40')
-    await client.handshake()  # wait for websocket connection
+    await client.connected()  # wait for websocket connection
     selection.set_value(next(iter(locations)))  # trigger map.set_location with first location in selection
 
 

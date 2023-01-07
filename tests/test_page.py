@@ -100,7 +100,7 @@ def test_shared_and_private_pages(screen: Screen):
     assert uuid1 == uuid2
 
 
-def test_wait_for_handshake(screen: Screen):
+def test_wait_for_connected(screen: Screen):
     async def load() -> None:
         label.text = 'loading...'
         # NOTE we can not use asyncio.create_task() here because we are on a different thread than the NiceGUI event loop
@@ -114,18 +114,18 @@ def test_wait_for_handshake(screen: Screen):
     async def page(client: Client):
         global label
         label = ui.label()
-        await client.handshake()
+        await client.connected()
         await load()
 
     screen.open('/')
     screen.should_contain('delayed data has been loaded')
 
 
-def test_adding_elements_after_handshake(screen: Screen):
+def test_adding_elements_after_connected(screen: Screen):
     @ui.page('/')
     async def page(client: Client):
         ui.label('before')
-        await client.handshake()
+        await client.connected()
         ui.label('after')
 
     screen.open('/')
@@ -144,10 +144,10 @@ def test_exception(screen: Screen):
     screen.assert_py_logger('ERROR', 'some exception')
 
 
-def test_exception_after_handshake(screen: Screen):
+def test_exception_after_connected(screen: Screen):
     @ui.page('/')
     async def page(client: Client):
-        await client.handshake()
+        await client.connected()
         ui.label('this is shown')
         raise Exception('some exception')
 

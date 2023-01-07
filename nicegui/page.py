@@ -64,7 +64,7 @@ class page:
                         await AsyncUpdater(result)
                 task = create_task(wait_for_result())
                 deadline = time.time() + self.response_timeout
-                while task and not client.is_waiting_for_handshake and not task.done():
+                while task and not client.is_waiting_for_connection and not task.done():
                     if time.time() > deadline:
                         raise TimeoutError(f'Response not ready after {self.response_timeout} seconds')
                     await asyncio.sleep(0.1)

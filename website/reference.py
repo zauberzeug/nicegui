@@ -659,29 +659,29 @@ If the page function expects a `request` argument, the request object is automat
 
         ui.link('Say hi to Santa!', 'repeat/Ho! /3')
 
-    @example('''#### Wait for Handshake with Client
+    @example('''#### Wait for Client Connection
 
 To wait for a client connection, you can add a `client` argument to the decorated page function
-and await `client.handshake()`.
+and await `client.connected()`.
 All code below that statement is executed after the websocket connection between server and client has been established.
 
 For example, this allows you to run JavaScript commands; which is only possible with a client connection (see [#112](https://github.com/zauberzeug/nicegui/issues/112)).
 Also it is possible to do async stuff while the user already sees some content.
 ''')
-    def wait_for_handshake_example():
+    def wait_for_connected_example():
         import asyncio
 
         from nicegui import Client
 
-        @ui.page('/wait_for_handshake')
-        async def wait_for_handshake(client: Client):
+        @ui.page('/wait_for_connection')
+        async def wait_for_connection(client: Client):
             ui.label('This text is displayed immediately.')
-            await client.handshake()
+            await client.connected()
             await asyncio.sleep(2)
             ui.label('This text is displayed 2 seconds after the page has been fully loaded.')
             ui.label(f'The IP address {client.ip} was obtained from the websocket.')
 
-        ui.link('wait for handshake', wait_for_handshake)
+        ui.link('wait for connection', wait_for_connection)
 
     @example('''#### Page Layout
 

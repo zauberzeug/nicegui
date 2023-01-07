@@ -30,7 +30,7 @@ class Client:
 
         self.elements: Dict[int, Element] = {}
         self.next_element_id: int = 0
-        self.is_waiting_for_handshake: bool = False
+        self.is_waiting_for_connection: bool = False
         self.environ: Optional[Dict[str, Any]] = None
         self.shared = shared
 
@@ -84,14 +84,14 @@ class Client:
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
         }, status_code, {'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'})
 
-    async def handshake(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
-        self.is_waiting_for_handshake = True
+    async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
+        self.is_waiting_for_connection = True
         deadline = time.time() + timeout
         while not self.environ:
             if time.time() > deadline:
-                raise TimeoutError(f'No handshake after {timeout} seconds')
+                raise TimeoutError(f'No connection after {timeout} seconds')
             await asyncio.sleep(check_interval)
-        self.is_waiting_for_handshake = False
+        self.is_waiting_for_connection = False
 
     async def run_javascript(self, code: str, *,
                              respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Optional[str]:
