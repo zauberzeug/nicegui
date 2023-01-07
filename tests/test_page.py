@@ -163,3 +163,25 @@ def test_page_with_args(screen: Screen):
 
     screen.open('/page/42')
     screen.should_contain('Page 42')
+
+
+def test_adding_elements_during_onconnect(screen: Screen):
+    @ui.page('/')
+    def page(client: Client):
+        ui.label('Label 1')
+        client.on_connect(lambda: ui.label('Label 2'))
+
+    screen.open('/')
+    screen.should_contain('Label 2')
+
+
+def test_async_connect_handler(screen: Screen):
+    @ui.page('/')
+    def page(client: Client):
+        async def run_js():
+            result.text = await ui.run_javascript('41 + 1')
+        result = ui.label()
+        client.on_connect(run_js)
+
+    screen.open('/')
+    screen.should_contain('42')

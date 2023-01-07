@@ -113,3 +113,9 @@ class Client:
     def open(self, target: Union[Callable, str]) -> None:
         path = target if isinstance(target, str) else globals.page_routes[target]
         create_task(globals.sio.emit('open', path, room=self.id))
+
+    def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
+        self.connect_handlers.append(handler)
+
+    def on_disconnect(self, handler: Union[Callable, Awaitable]) -> None:
+        self.disconnect_handlers.append(handler)
