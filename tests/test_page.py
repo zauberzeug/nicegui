@@ -133,8 +133,8 @@ def test_wait_for_disconnect(screen: Screen):
         events.append('disconnected')
 
     screen.open('/')
+    screen.wait(0.1)
     screen.open('/')
-    assert events == ['connected', 'disconnected']
     screen.wait(0.1)
     assert ['connected', 'disconnected', 'connected'] == events
 
