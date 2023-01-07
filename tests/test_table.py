@@ -62,3 +62,21 @@ def test_html_columns(screen: Screen):
     screen.should_contain('Alice')
     screen.should_not_contain('<span')
     assert 'text-bold' in screen.find('Alice').get_attribute('class')
+
+
+def test_call_api_method_with_argument(screen: Screen):
+    table = ui.table({
+        'columnDefs': [{'field': 'name', 'filter': True}],
+        'rowData': [{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
+    })
+    filter = {'name': {'filterType': 'text', 'type': 'equals', 'filter': 'Alice'}}
+    ui.button('Filter', on_click=lambda: table.call_api_method('setFilterModel', filter))
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_contain('Carol')
+    screen.click('Filter')
+    screen.should_contain('Alice')
+    screen.should_not_contain('Bob')
+    screen.should_not_contain('Carol')
