@@ -4,11 +4,11 @@ from .. import globals
 
 
 def on_connect(handler: Union[Callable, Awaitable]) -> None:
-    globals.get_client().connect_handlers.append(handler)
+    globals.connect_handlers.append(handler)
 
 
 def on_disconnect(handler: Union[Callable, Awaitable]) -> None:
-    globals.get_client().disconnect_handlers.append(handler)
+    globals.disconnect_handlers.append(handler)
 
 
 def on_startup(handler: Union[Callable, Awaitable]) -> None:

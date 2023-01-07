@@ -48,6 +48,8 @@ tasks: List[asyncio.tasks.Task] = []
 
 startup_handlers: List[Union[Callable, Awaitable]] = []
 shutdown_handlers: List[Union[Callable, Awaitable]] = []
+connect_handlers: List[Union[Callable, Awaitable]] = []
+disconnect_handlers: List[Union[Callable, Awaitable]] = []
 
 
 def get_task_id() -> int:

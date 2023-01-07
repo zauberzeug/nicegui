@@ -486,22 +486,23 @@ You can run a function or coroutine as a parallel task by passing it to one of t
 
 - `ui.on_startup`: Called when NiceGUI is started or restarted.
 - `ui.on_shutdown`: Called when NiceGUI is shut down or restarted.
-- `ui.on_connect`: Called when a client connects to NiceGUI. (Optional argument: Starlette request)
-- `ui.on_disconnect`: Called when a client disconnects from NiceGUI. (Optional argument: socket)
+- `ui.on_connect`: Called for each client which connects. (nicegui.Client is passed as argument)
+- `ui.on_disconnect`: Called for each client which disconnects. (nicegui.Client is passed as argument)
 
 When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
 ''', immediate=True)
     def lifecycle_example():
-        import asyncio
+        from nicegui import Client
 
-        l = ui.label()
+        async def increment(client: Client):
+            counter.value += 1
 
-        async def countdown():
-            for i in [5, 4, 3, 2, 1, 0]:
-                l.text = f'{i}...' if i else 'Take-off!'
-                await asyncio.sleep(1)
+        async def decrement(client: Client):
+            counter.value -= 1
 
-        ui.on_connect(countdown)
+        counter = ui.number('connections', value=0).props('readonly').classes('w-24')
+        ui.on_connect(increment)
+        ui.on_disconnect(decrement)
 
     @example(ui.timer)
     def timer_example():
