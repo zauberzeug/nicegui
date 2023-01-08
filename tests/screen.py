@@ -85,7 +85,9 @@ class Screen:
     def should_not_contain(self, text: str) -> None:
         assert self.selenium.title != text
         with pytest.raises(AssertionError):
+            self.selenium.implicitly_wait(0.5)
             self.find(text)
+            self.selenium.implicitly_wait(2)
 
     def click(self, target_text: str) -> WebElement:
         element = self.find(target_text)
