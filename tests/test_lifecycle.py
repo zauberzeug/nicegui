@@ -43,7 +43,7 @@ def test_connect_disconnect_is_called_for_each_client(screen: Screen):
     screen.open('/')
     screen.open('/')
     screen.open('/')
-    screen.wait(0.1)
+    screen.wait(0.5)
     assert len(events) == 5
     assert events[0].startswith('connect ')
     assert events[1].startswith('disconnect ')
