@@ -494,15 +494,13 @@ When NiceGUI is shut down or restarted, the startup tasks will be automatically 
     def lifecycle_example():
         from nicegui import Client
 
-        async def increment(client: Client):
-            counter.value += 1
+        def handle_connect():
+            if watch.value:
+                count.set_text(str(int(count.text or 0) + 1))
 
-        async def decrement(client: Client):
-            counter.value -= 1
-
-        counter = ui.number('connections', value=0).props('readonly').classes('w-24')
-        ui.on_connect(increment)
-        ui.on_disconnect(decrement)
+        watch = ui.checkbox('count new connections')
+        count = ui.label('').classes('mt-8 self-center text-5xl')
+        ui.on_connect(handle_connect)
 
     @example(ui.timer)
     def timer_example():
