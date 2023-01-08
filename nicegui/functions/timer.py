@@ -33,7 +33,7 @@ class Timer:
 
         coroutine = self._run_once if once else self._run_in_loop
         if globals.state == globals.State.STARTED:
-            globals.tasks.append(background_tasks.create(coroutine(), name=str(callback)))
+            background_tasks.create(coroutine(), name=str(callback))
         else:
             on_startup(coroutine)
 

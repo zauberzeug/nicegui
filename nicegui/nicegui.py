@@ -63,7 +63,7 @@ def handle_shutdown() -> None:
     globals.state = globals.State.STOPPING
     for t in globals.shutdown_handlers:
         safe_invoke(t)
-    for t in globals.tasks:
+    for t in background_tasks.running_tasks:
         t.cancel()
     globals.state = globals.State.STOPPED
 
