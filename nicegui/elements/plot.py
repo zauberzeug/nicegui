@@ -3,8 +3,7 @@ import io
 
 import matplotlib.pyplot as plt
 
-from .. import globals
-from ..background_tasks import create
+from .. import background_tasks, globals
 from ..element import Element
 
 
@@ -24,7 +23,7 @@ class Plot(Element):
         self._convert_to_html()
 
         if not self.client.shared:
-            create(self._auto_close(), name='auto-close plot figure')
+            background_tasks.create(self._auto_close(), name='auto-close plot figure')
 
     def _convert_to_html(self) -> None:
         with io.StringIO() as output:

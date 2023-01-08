@@ -10,8 +10,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
-from . import binding, globals
-from .background_tasks import create
+from . import background_tasks, binding, globals
 from .client import Client
 from .dependencies import js_components, js_dependencies
 from .element import Element
@@ -51,9 +50,9 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     globals.loop = asyncio.get_running_loop()
     for t in globals.startup_handlers:
         safe_invoke(t)
-    create(binding.loop())
-    create(prune_clients())
-    create(prune_slot_stacks())
+    background_tasks.create(binding.loop())
+    background_tasks.create(prune_clients())
+    background_tasks.create(prune_slot_stacks())
     globals.state = globals.State.STARTED
     if with_welcome_message:
         print(f'NiceGUI ready to go on http://{globals.host}:{globals.port}')

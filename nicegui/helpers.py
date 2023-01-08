@@ -3,8 +3,7 @@ import functools
 from contextlib import nullcontext
 from typing import Any, Awaitable, Callable, Optional, Union
 
-from . import globals
-from .background_tasks import create
+from . import background_tasks, globals
 from .client import Client
 
 
@@ -20,7 +19,7 @@ def safe_invoke(func: Union[Callable, Awaitable], client: Optional[Client] = Non
             async def func_with_client():
                 with client or nullcontext():
                     await func
-            create(func_with_client())
+            background_tasks.create(func_with_client())
         else:
             with client or nullcontext():
                 result = func()
@@ -28,6 +27,6 @@ def safe_invoke(func: Union[Callable, Awaitable], client: Optional[Client] = Non
                 async def result_with_client():
                     with client or nullcontext():
                         await result
-                create(result_with_client())
+                background_tasks.create(result_with_client())
     except:
         globals.log.exception(f'could not invoke {func}')

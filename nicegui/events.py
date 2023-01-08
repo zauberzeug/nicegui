@@ -3,9 +3,8 @@ from dataclasses import dataclass
 from inspect import signature
 from typing import TYPE_CHECKING, Any, BinaryIO, Callable, List, Optional
 
-from . import globals
+from . import background_tasks, globals
 from .async_updater import AsyncUpdater
-from .background_tasks import create
 from .client import Client
 from .functions.lifecycle import on_startup
 from .helpers import is_coroutine
@@ -274,7 +273,7 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments) -> None
                 with arguments.sender.parent_slot:
                     await AsyncUpdater(result)
             if globals.loop and globals.loop.is_running():
-                create(wait_for_result(), name=str(handler))
+                background_tasks.create(wait_for_result(), name=str(handler))
             else:
                 on_startup(wait_for_result())
     except Exception:
