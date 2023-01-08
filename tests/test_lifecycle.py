@@ -41,7 +41,9 @@ def test_connect_disconnect_is_called_for_each_client(screen: Screen):
     ui.on_disconnect(lambda c: events.append(f'disconnect {c.id}'))
 
     screen.open('/')
+    screen.wait(0.5)
     screen.open('/')
+    screen.wait(0.5)
     screen.open('/')
     screen.wait(0.5)
     assert len(events) == 5
