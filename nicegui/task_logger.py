@@ -10,6 +10,8 @@ from . import globals
 
 T = TypeVar('T')
 
+running_tasks = set()
+
 
 def create_task(
     coroutine: Awaitable[T],
@@ -22,6 +24,8 @@ def create_task(
     an exception handler added to the resulting task. If the task raises an exception it is logged
     using the provided ``logger``, with additional context provided by ``message`` and optionally
     ``message_args``.
+    Also a reference to the task is kept until it is done, so that the task is not garbage collected mid-execution.
+    See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
     '''
     logger = logging.getLogger(__name__)
     message = 'Task raised an exception'
@@ -36,6 +40,8 @@ def create_task(
     task.add_done_callback(
         functools.partial(_handle_task_result, logger=logger, message=message, message_args=message_args)
     )
+    running_tasks.add(task)
+    task.add_done_callback(running_tasks.discard)
     return task
 
 
