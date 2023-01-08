@@ -126,7 +126,6 @@ def test_wait_for_disconnect(screen: Screen):
 
     @ui.page('/')
     async def page(client: Client):
-        nonlocal events
         await client.connected()
         events.append('connected')
         await client.disconnected()
