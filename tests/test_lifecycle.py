@@ -37,16 +37,16 @@ def test_connect_disconnect_is_called_for_each_client(screen: Screen):
     @ui.page('/')
     def page(client: Client):
         ui.label(f'client id: {client.id}')
-    ui.on_connect(lambda c: events.append(f'|connect {c.id}|'))
-    ui.on_disconnect(lambda c: events.append(f'|disconnect {c.id}|'))
+    ui.on_connect(lambda c: events.append(f'connect {c.id}'))
+    ui.on_disconnect(lambda c: events.append(f'disconnect {c.id}'))
 
     screen.open('/')
     screen.open('/')
     screen.open('/')
     screen.wait(0.1)
     assert len(events) == 5
-    assert events[0].startswith('|connect ')
-    assert events[1].startswith('|disconnect ')
-    assert events[2].startswith('|connect ')
-    assert events[3].startswith('|disconnect ')
-    assert events[4].startswith('|connect ')
+    assert events[0].startswith('connect ')
+    assert events[1].startswith('disconnect ')
+    assert events[2].startswith('connect ')
+    assert events[3].startswith('disconnect ')
+    assert events[4].startswith('connect ')
