@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING, Any, BinaryIO, Callable, List, Optional
 
 from . import globals
 from .async_updater import AsyncUpdater
+from .background_tasks import create
 from .client import Client
 from .functions.lifecycle import on_startup
 from .helpers import is_coroutine
-from .task_logger import create_task
 
 if TYPE_CHECKING:
     from .element import Element
@@ -274,7 +274,7 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments) -> None
                 with arguments.sender.parent_slot:
                     await AsyncUpdater(result)
             if globals.loop and globals.loop.is_running():
-                create_task(wait_for_result(), name=str(handler))
+                create(wait_for_result(), name=str(handler))
             else:
                 on_startup(wait_for_result())
     except Exception:

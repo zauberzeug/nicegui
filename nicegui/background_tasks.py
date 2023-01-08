@@ -13,7 +13,7 @@ T = TypeVar('T')
 running_tasks = set()
 
 
-def create_task(
+def create(
     coroutine: Awaitable[T],
     *,
     loop: Optional[asyncio.AbstractEventLoop] = None,

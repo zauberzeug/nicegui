@@ -1,7 +1,7 @@
 from typing import Optional, Union
 
 from .. import globals
-from ..task_logger import create_task
+from ..background_tasks import create
 
 
 def notify(message: str, *,
@@ -24,4 +24,4 @@ def notify(message: str, *,
     Note: You can pass additional keyword arguments according to `Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>`_.
     """
     options = {key: value for key, value in locals().items() if not key.startswith('_') and value is not None}
-    create_task(globals.sio.emit('notify', options, room=globals.get_client().id))
+    create(globals.sio.emit('notify', options, room=globals.get_client().id))
