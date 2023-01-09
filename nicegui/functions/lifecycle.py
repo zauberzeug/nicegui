@@ -4,10 +4,18 @@ from .. import globals
 
 
 def on_connect(handler: Union[Callable, Awaitable]) -> None:
+    '''Called every time a new client connects to NiceGUI.
+
+    The callback has an optional parameter of `nicegui.Client`.'''
+
     globals.connect_handlers.append(handler)
 
 
 def on_disconnect(handler: Union[Callable, Awaitable]) -> None:
+    '''Called every time a new client disconnects from NiceGUI.
+
+    The callback has an optional parameter of `nicegui.Client`.'''
+
     globals.disconnect_handlers.append(handler)
 
 
