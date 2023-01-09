@@ -1,7 +1,7 @@
 import uuid
 from typing import Dict
 
-from nicegui import ui
+from nicegui import app, ui
 
 from .example import example
 
@@ -480,28 +480,27 @@ All three functions also provide `remove` and `replace` parameters in case the p
 
     h3('Action')
 
-    @example('''#### Lifecycle
+    @example('''#### Lifecycle functions
 
-You can run a function or coroutine as a parallel task by passing it to one of the following register methods:
+You can register coroutines or functions to be called for the following events:
 
-- `ui.on_startup`: Called when NiceGUI is started or restarted.
-- `ui.on_shutdown`: Called when NiceGUI is shut down or restarted.
-- `ui.on_connect`: Called when a client connects to NiceGUI. (Optional argument: Starlette request)
-- `ui.on_disconnect`: Called when a client disconnects from NiceGUI. (Optional argument: socket)
+- `app.on_startup`: called when NiceGUI is started or restarted
+- `app.on_shutdown`: called when NiceGUI is shut down or restarted
+- `app.on_connect`: called for each client which connects (optional argument: nicegui.Client)
+- `app.on_disconnect`: called for each client which disconnects (optional argument: nicegui.Client)
 
-When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
-''', immediate=True)
+When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.
+''')
     def lifecycle_example():
-        import asyncio
+        from nicegui import app
 
-        l = ui.label()
+        def handle_connect():
+            if watch.value:
+                count.set_text(str(int(count.text or 0) + 1))
 
-        async def countdown():
-            for i in [5, 4, 3, 2, 1, 0]:
-                l.text = f'{i}...' if i else 'Take-off!'
-                await asyncio.sleep(1)
-
-        ui.on_connect(countdown)
+        watch = ui.checkbox('count new connections')
+        count = ui.label().classes('mt-8 self-center text-5xl')
+        app.on_connect(handle_connect)
 
     @example(ui.timer)
     def timer_example():
@@ -659,29 +658,29 @@ If the page function expects a `request` argument, the request object is automat
 
         ui.link('Say hi to Santa!', 'repeat/Ho! /3')
 
-    @example('''#### Wait for Handshake with Client
+    @example('''#### Wait for Client Connection
 
 To wait for a client connection, you can add a `client` argument to the decorated page function
-and await `client.handshake()`.
+and await `client.connected()`.
 All code below that statement is executed after the websocket connection between server and client has been established.
 
 For example, this allows you to run JavaScript commands; which is only possible with a client connection (see [#112](https://github.com/zauberzeug/nicegui/issues/112)).
 Also it is possible to do async stuff while the user already sees some content.
 ''')
-    def wait_for_handshake_example():
+    def wait_for_connected_example():
         import asyncio
 
         from nicegui import Client
 
-        @ui.page('/wait_for_handshake')
-        async def wait_for_handshake(client: Client):
+        @ui.page('/wait_for_connection')
+        async def wait_for_connection(client: Client):
             ui.label('This text is displayed immediately.')
-            await client.handshake()
+            await client.connected()
             await asyncio.sleep(2)
             ui.label('This text is displayed 2 seconds after the page has been fully loaded.')
             ui.label(f'The IP address {client.ip} was obtained from the websocket.')
 
-        ui.link('wait for handshake', wait_for_handshake)
+        ui.link('wait for connection', wait_for_connection)
 
     @example('''#### Page Layout
 
@@ -766,9 +765,11 @@ You can also set `respond=False` to send a command without waiting for a respons
 
     h3('Routes')
 
-    @example(ui.add_static_files)
+    @example(app.add_static_files)
     def add_static_files_example():
-        ui.add_static_files('/examples', 'examples')
+        from nicegui import app
+
+        app.add_static_files('/examples', 'examples')
         ui.label('Some NiceGUI Examples').classes('text-h5')
         ui.link('AI interface', '/examples/ai_interface/main.py')
         ui.link('Custom FastAPI app', '/examples/fastapi/main.py')

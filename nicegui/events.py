@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any, BinaryIO, Callable, List, Optional
 from . import background_tasks, globals
 from .async_updater import AsyncUpdater
 from .client import Client
-from .functions.lifecycle import on_startup
 from .helpers import is_coroutine
 
 if TYPE_CHECKING:
@@ -275,6 +274,6 @@ def handle_event(handler: Optional[Callable], arguments: EventArguments) -> None
             if globals.loop and globals.loop.is_running():
                 background_tasks.create(wait_for_result(), name=str(handler))
             else:
-                on_startup(wait_for_result())
+                globals.app.on_startup(wait_for_result())
     except Exception:
         traceback.print_exc()

@@ -48,12 +48,12 @@ def test_adding_elements_with_async_await(screen: Screen):
     cB.find_element(By.XPATH, f'.//*[contains(text(), "B")]')
 
 
-def test_autoupdate_after_handshake(screen: Screen):
+def test_autoupdate_after_connected(screen: Screen):
     @ui.page('/')
     async def page(client: Client):
-        ui.label('before handshake')
-        await client.handshake()
-        ui.label('after handshake')
+        ui.label('before connected')
+        await client.connected()
+        ui.label('after connected')
         await asyncio.sleep(1)
         ui.label('one')
         await asyncio.sleep(1)
@@ -62,8 +62,8 @@ def test_autoupdate_after_handshake(screen: Screen):
         ui.label('three')
 
     screen.open('/')
-    screen.should_contain('before handshake')
-    screen.should_contain('after handshake')
+    screen.should_contain('before connected')
+    screen.should_contain('after connected')
     screen.should_not_contain('one')
     screen.wait_for('one')
     screen.should_not_contain('two')

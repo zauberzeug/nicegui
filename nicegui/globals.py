@@ -4,9 +4,10 @@ from contextlib import contextmanager
 from enum import Enum
 from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Optional, Union
 
-from fastapi import FastAPI
 from socketio import AsyncServer
 from uvicorn import Server
+
+from .app import App
 
 if TYPE_CHECKING:
     from .client import Client
@@ -20,7 +21,7 @@ class State(Enum):
     STOPPING = 3
 
 
-app: FastAPI
+app: App
 sio: AsyncServer
 server: Server
 loop: Optional[asyncio.AbstractEventLoop] = None
@@ -47,6 +48,8 @@ page_routes: Dict[Callable, str] = {}
 
 startup_handlers: List[Union[Callable, Awaitable]] = []
 shutdown_handlers: List[Union[Callable, Awaitable]] = []
+connect_handlers: List[Union[Callable, Awaitable]] = []
+disconnect_handlers: List[Union[Callable, Awaitable]] = []
 
 
 def get_task_id() -> int:

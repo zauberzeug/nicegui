@@ -1,5 +1,6 @@
 import asyncio
 import functools
+import inspect
 from contextlib import nullcontext
 from typing import Any, Awaitable, Callable, Optional, Union
 
@@ -22,7 +23,7 @@ def safe_invoke(func: Union[Callable, Awaitable], client: Optional[Client] = Non
             background_tasks.create(func_with_client())
         else:
             with client or nullcontext():
-                result = func()
+                result = func(client) if len(inspect.signature(func).parameters) == 1 and client is not None else func()
             if isinstance(result, Awaitable):
                 async def result_with_client():
                     with client or nullcontext():

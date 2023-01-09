@@ -24,7 +24,7 @@ def test_run_javascript_on_value_change(screen: Screen):
         async def set_title(e: ValueChangeEventArguments) -> None:
             await ui.run_javascript(f'document.title = "{e.value}"')
         ui.radio(['Page Title A', 'Page Title B'], on_change=set_title)
-        await client.handshake()
+        await client.connected()
         await ui.run_javascript('document.title = "Initial Page Title"')
 
     screen.open('/')
@@ -38,7 +38,7 @@ def test_run_javascript_on_value_change(screen: Screen):
     assert screen.selenium.title == 'Page Title A'
 
 
-def test_run_javascript_before_client_handshake(screen: Screen):
+def test_run_javascript_before_client_connected(screen: Screen):
     @ui.page('/')
     async def page():
         ui.label('before js')

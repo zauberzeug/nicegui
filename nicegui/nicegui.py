@@ -4,13 +4,14 @@ import urllib.parse
 from pathlib import Path
 from typing import Dict, Optional
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
 from . import background_tasks, binding, globals
+from .app import App
 from .client import Client
 from .dependencies import js_components, js_dependencies
 from .element import Element
@@ -18,7 +19,7 @@ from .error import error_content
 from .helpers import safe_invoke
 from .page import page
 
-globals.app = app = FastAPI()
+globals.app = app = App()
 globals.sio = sio = SocketManager(app=app)._sio
 
 app.add_middleware(GZipMiddleware)
@@ -93,6 +94,8 @@ async def handle_handshake(sid: str) -> bool:
     sio.enter_room(sid, client.id)
     for t in client.connect_handlers:
         safe_invoke(t, client)
+    for t in globals.connect_handlers:
+        safe_invoke(t, client)
     return True
 
 
@@ -104,6 +107,8 @@ async def handle_disconnect(sid: str) -> None:
     if not client.shared:
         delete_client(client.id)
     for t in client.disconnect_handlers:
+        safe_invoke(t, client)
+    for t in globals.disconnect_handlers:
         safe_invoke(t, client)
 
 

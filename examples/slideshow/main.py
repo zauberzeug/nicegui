@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 
-from nicegui import ui
+from nicegui import app, ui
 from nicegui.events import KeyEventArguments
 
 folder = Path(__file__).resolve().parent / 'slides'  # image source: https://pixabay.com/
@@ -20,7 +20,7 @@ def handle_key(event: KeyEventArguments) -> None:
         slide.set_source(f'slides/{files[index]}')
 
 
-ui.add_static_files('/slides', folder)  # serve all files in this folder
+app.add_static_files('/slides', folder)  # serve all files in this folder
 slide = ui.image(f'slides/{files[index]}')  # show the first image
 ui.keyboard(on_key=handle_key)  # handle keyboard events
 

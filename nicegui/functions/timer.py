@@ -7,7 +7,6 @@ from .. import background_tasks, globals
 from ..async_updater import AsyncUpdater
 from ..binding import BindableProperty
 from ..helpers import is_coroutine
-from .lifecycle import on_startup
 
 
 class Timer:
@@ -35,18 +34,18 @@ class Timer:
         if globals.state == globals.State.STARTED:
             background_tasks.create(coroutine(), name=str(callback))
         else:
-            on_startup(coroutine)
+            globals.app.on_startup(coroutine)
 
     async def _run_once(self) -> None:
         with self.slot:
-            await self._handshake()
+            await self._connected()
             await asyncio.sleep(self.interval)
             await self._invoke_callback()
         self.cleanup()
 
     async def _run_in_loop(self) -> None:
         with self.slot:
-            await self._handshake()
+            await self._connected()
             while True:
                 if self.slot.parent.client.id not in globals.clients:
                     break
@@ -71,12 +70,12 @@ class Timer:
         except Exception:
             traceback.print_exc()
 
-    async def _handshake(self) -> None:
-        '''Wait for the client handshake before the timer callback can can be allowed to manipulate the state.
+    async def _connected(self) -> None:
+        '''Wait for the client connection before the timer callback can can be allowed to manipulate the state.
         See https://github.com/zauberzeug/nicegui/issues/206 for details.
         '''
         if not self.slot.parent.client.shared:
-            await self.slot.parent.client.handshake()
+            await self.slot.parent.client.connected()
 
     def cleanup(self) -> None:
         self.slot = None
