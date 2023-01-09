@@ -480,17 +480,7 @@ All three functions also provide `remove` and `replace` parameters in case the p
 
     h3('Action')
 
-    @example('''#### Lifecycle
-
-You can run a function or coroutine as a parallel task by passing it to one of the following register methods:
-
-- `ui.on_startup`: Called when NiceGUI is started or restarted.
-- `ui.on_shutdown`: Called when NiceGUI is shut down or restarted.
-- `ui.on_connect`: Called for each client which connects. (nicegui.Client is passed as optional argument)
-- `ui.on_disconnect`: Called for each client which disconnects. (nicegui.Client is passed as optional argument)
-
-When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
-''', immediate=True)
+    @example(ui.lifecycle, immediate=True)
     def lifecycle_example():
         from nicegui import Client
 
@@ -500,7 +490,7 @@ When NiceGUI is shut down or restarted, the startup tasks will be automatically 
 
         watch = ui.checkbox('count new connections')
         count = ui.label('').classes('mt-8 self-center text-5xl')
-        ui.on_connect(handle_connect)
+        ui.lifecycle.on_connect(handle_connect)
 
     @example(ui.timer)
     def timer_example():

@@ -1,3 +1,14 @@
+'''Lifecycle functions
+
+You can run a function or coroutine as a parallel task by passing it to one of the following register methods:
+
+- `ui.lifecycle.on_startup`: Called when NiceGUI is started or restarted.
+- `ui.lifecycle.on_shutdown`: Called when NiceGUI is shut down or restarted.
+- `ui.lifecycle.on_connect`: Called for each client which connects. (nicegui.Client is passed as optional argument)
+- `ui.lifecycle.on_disconnect`: Called for each client which disconnects. (nicegui.Client is passed as optional argument)
+
+When NiceGUI is shut down or restarted, the startup tasks will be automatically canceled.
+'''
 from typing import Awaitable, Callable, Union
 
 from .. import globals

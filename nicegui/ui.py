@@ -44,9 +44,9 @@ from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
 from .elements.upload import Upload as upload
 from .elements.video import Video as video
+from .functions import lifecycle
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
-from .functions.lifecycle import on_connect, on_disconnect, on_shutdown, on_startup, shutdown
 from .functions.notify import notify
 from .functions.open import open
 from .functions.static_files import add_static_files
