@@ -3,11 +3,10 @@ import time
 import traceback
 from typing import Callable
 
-from .. import globals
+from .. import background_tasks, globals
 from ..async_updater import AsyncUpdater
 from ..binding import BindableProperty
 from ..helpers import is_coroutine
-from ..task_logger import create_task
 
 
 class Timer:
@@ -33,7 +32,7 @@ class Timer:
 
         coroutine = self._run_once if once else self._run_in_loop
         if globals.state == globals.State.STARTED:
-            globals.tasks.append(create_task(coroutine(), name=str(callback)))
+            background_tasks.create(coroutine(), name=str(callback))
         else:
             globals.app.on_startup(coroutine)
 

@@ -2,8 +2,7 @@ import asyncio
 
 from selenium.webdriver.common.by import By
 
-from nicegui import Client, ui
-from nicegui.task_logger import create_task
+from nicegui import Client, background_tasks, ui
 
 from .screen import Screen
 
@@ -120,8 +119,8 @@ def test_adding_elements_from_different_tasks(screen: Screen):
             await asyncio.sleep(1.0)
 
     screen.open('/')
-    create_task(add_label1())
-    create_task(add_label2())
+    background_tasks.create(add_label1())
+    background_tasks.create(add_label2())
     screen.wait_for('1')
     screen.wait_for('2')
     c1 = screen.selenium.find_element(By.ID, card1.id)

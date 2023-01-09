@@ -5,11 +5,10 @@ from typing import Callable, Optional
 
 from fastapi import Request, Response
 
-from . import globals
+from . import background_tasks, globals
 from .async_updater import AsyncUpdater
 from .client import Client
 from .favicon import create_favicon_route
-from .task_logger import create_task
 
 
 class page:
@@ -62,7 +61,7 @@ class page:
                 async def wait_for_result() -> None:
                     with client:
                         await AsyncUpdater(result)
-                task = create_task(wait_for_result())
+                task = background_tasks.create(wait_for_result())
                 deadline = time.time() + self.response_timeout
                 while task and not client.is_waiting_for_connection and not task.done():
                     if time.time() > deadline:

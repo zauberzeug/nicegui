@@ -1,7 +1,7 @@
 import asyncio
 from uuid import uuid4
 
-from nicegui import Client, task_logger, ui
+from nicegui import Client, background_tasks, ui
 
 from .screen import Screen
 
@@ -102,7 +102,7 @@ def test_wait_for_connected(screen: Screen):
     async def load() -> None:
         label.text = 'loading...'
         # NOTE we can not use asyncio.create_task() here because we are on a different thread than the NiceGUI event loop
-        task_logger.create_task(takes_a_while())
+        background_tasks.create(takes_a_while())
 
     async def takes_a_while() -> None:
         await asyncio.sleep(0.1)
