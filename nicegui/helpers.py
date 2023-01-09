@@ -2,7 +2,7 @@ import asyncio
 import functools
 import inspect
 from contextlib import nullcontext
-from typing import Any, Awaitable, Callable, List, Optional, Union
+from typing import Any, Awaitable, Callable, Optional, Union
 
 from . import globals
 from .client import Client

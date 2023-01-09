@@ -1,11 +1,9 @@
 import asyncio
 from uuid import uuid4
 
-import pytest
-
 from nicegui import Client, task_logger, ui
 
-from .screen import PORT, Screen
+from .screen import Screen
 
 
 def test_page(screen: Screen):
@@ -135,7 +133,7 @@ def test_wait_for_disconnect(screen: Screen):
     screen.wait(0.1)
     screen.open('/')
     screen.wait(0.1)
-    assert ['connected', 'disconnected', 'connected'] == events
+    assert events == ['connected', 'disconnected', 'connected']
 
 
 def test_adding_elements_after_connected(screen: Screen):

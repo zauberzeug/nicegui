@@ -22,7 +22,7 @@ def test_adding_elements_during_onconnect_on_auto_index_page(screen: Screen):
 
 
 def test_async_connect_handler(screen: Screen):
-    async def run_js(client: Client):
+    async def run_js():
         result.text = await ui.run_javascript('41 + 1')
     result = ui.label()
     ui.lifecycle.on_connect(run_js)
@@ -37,8 +37,8 @@ def test_connect_disconnect_is_called_for_each_client(screen: Screen):
     @ui.page('/')
     def page(client: Client):
         ui.label(f'client id: {client.id}')
-    ui.lifecycle.on_connect(lambda c: events.append(f'connect {c.id}'))
-    ui.lifecycle.on_disconnect(lambda c: events.append(f'disconnect {c.id}'))
+    ui.lifecycle.on_connect(lambda: events.append('connect'))
+    ui.lifecycle.on_disconnect(lambda: events.append('disconnect'))
 
     screen.open('/')
     screen.wait(0.5)
@@ -46,9 +46,4 @@ def test_connect_disconnect_is_called_for_each_client(screen: Screen):
     screen.wait(0.5)
     screen.open('/')
     screen.wait(0.5)
-    assert len(events) == 5
-    assert events[0].startswith('connect ')
-    assert events[1].startswith('disconnect ')
-    assert events[2].startswith('connect ')
-    assert events[3].startswith('disconnect ')
-    assert events[4].startswith('connect ')
+    assert events == ['connect', 'disconnect', 'connect', 'disconnect', 'connect']

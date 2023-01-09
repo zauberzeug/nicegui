@@ -480,16 +480,14 @@ All three functions also provide `remove` and `replace` parameters in case the p
 
     h3('Action')
 
-    @example(ui.lifecycle, immediate=True)
+    @example(ui.lifecycle)
     def lifecycle_example():
-        from nicegui import Client
-
         def handle_connect():
             if watch.value:
                 count.set_text(str(int(count.text or 0) + 1))
 
         watch = ui.checkbox('count new connections')
-        count = ui.label('').classes('mt-8 self-center text-5xl')
+        count = ui.label().classes('mt-8 self-center text-5xl')
         ui.lifecycle.on_connect(handle_connect)
 
     @example(ui.timer)
