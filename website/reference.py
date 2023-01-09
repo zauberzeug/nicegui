@@ -1,7 +1,7 @@
 import uuid
 from typing import Dict
 
-from nicegui import ui
+from nicegui import app, ui
 
 from .example import example
 
@@ -480,15 +480,27 @@ All three functions also provide `remove` and `replace` parameters in case the p
 
     h3('Action')
 
-    @example(ui.lifecycle)
+    @example('''#### Lifecycle functions
+
+You can register coroutines or functions to be called for the following events:
+
+- `app.on_startup`: called when NiceGUI is started or restarted
+- `app.on_shutdown`: called when NiceGUI is shut down or restarted
+- `app.on_connect`: called for each client which connects (optional argument: nicegui.Client)
+- `app.on_disconnect`: called for each client which disconnects (optional argument: nicegui.Client)
+
+When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.
+''')
     def lifecycle_example():
+        from nicegui import app
+
         def handle_connect():
             if watch.value:
                 count.set_text(str(int(count.text or 0) + 1))
 
         watch = ui.checkbox('count new connections')
         count = ui.label().classes('mt-8 self-center text-5xl')
-        ui.lifecycle.on_connect(handle_connect)
+        app.on_connect(handle_connect)
 
     @example(ui.timer)
     def timer_example():
@@ -753,9 +765,11 @@ You can also set `respond=False` to send a command without waiting for a respons
 
     h3('Routes')
 
-    @example(ui.add_static_files)
+    @example(app.add_static_files)
     def add_static_files_example():
-        ui.add_static_files('/examples', 'examples')
+        from nicegui import app
+
+        app.add_static_files('/examples', 'examples')
         ui.label('Some NiceGUI Examples').classes('text-h5')
         ui.link('AI interface', '/examples/ai_interface/main.py')
         ui.link('Custom FastAPI app', '/examples/fastapi/main.py')

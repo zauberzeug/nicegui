@@ -4,13 +4,14 @@ import urllib.parse
 from pathlib import Path
 from typing import Dict, Optional
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
 from . import binding, globals
+from .app import App
 from .client import Client
 from .dependencies import js_components, js_dependencies
 from .element import Element
@@ -19,7 +20,7 @@ from .helpers import safe_invoke
 from .page import page
 from .task_logger import create_task
 
-globals.app = app = FastAPI()
+globals.app = app = App()
 globals.sio = sio = SocketManager(app=app)._sio
 
 app.add_middleware(GZipMiddleware)

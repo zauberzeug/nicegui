@@ -44,12 +44,10 @@ from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
 from .elements.upload import Upload as upload
 from .elements.video import Video as video
-from .functions import lifecycle
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
 from .functions.notify import notify
 from .functions.open import open
-from .functions.static_files import add_static_files
 from .functions.timer import Timer as timer
 from .functions.update import update
 from .page import page

@@ -8,7 +8,6 @@ from ..async_updater import AsyncUpdater
 from ..binding import BindableProperty
 from ..helpers import is_coroutine
 from ..task_logger import create_task
-from .lifecycle import on_startup
 
 
 class Timer:
@@ -36,7 +35,7 @@ class Timer:
         if globals.state == globals.State.STARTED:
             globals.tasks.append(create_task(coroutine(), name=str(callback)))
         else:
-            on_startup(coroutine)
+            globals.app.on_startup(coroutine)
 
     async def _run_once(self) -> None:
         with self.slot:
