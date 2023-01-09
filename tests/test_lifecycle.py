@@ -47,3 +47,34 @@ def test_connect_disconnect_is_called_for_each_client(screen: Screen):
     screen.open('/')
     screen.wait(0.5)
     assert events == ['connect', 'disconnect', 'connect', 'disconnect', 'connect']
+
+
+def test_startup_and_shutdown_handlers(screen: Screen):
+    events: List[str] = []
+
+    def startup():
+        events.append('startup')
+
+    async def startup_async():
+        events.append('startup_async')
+
+    def shutdown():
+        events.append('shutdown')
+
+    async def shutdown_async():
+        events.append('shutdown_async')
+
+    app.on_startup(startup)
+    app.on_startup(startup_async)
+    app.on_startup(startup_async())
+    app.on_shutdown(shutdown)
+    app.on_shutdown(shutdown_async)
+    app.on_shutdown(shutdown_async())
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert events == ['startup', 'startup_async', 'startup_async']
+
+    app.shutdown()
+    screen.wait(0.5)
+    assert events == ['startup', 'startup_async', 'startup_async', 'shutdown', 'shutdown_async', 'shutdown_async']
