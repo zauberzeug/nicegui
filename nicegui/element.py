@@ -5,11 +5,10 @@ from abc import ABC
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Tuple, Union
 
-from . import binding, globals
+from . import background_tasks, binding, globals
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
-from .task_logger import create_task
 
 if TYPE_CHECKING:
     from .client import Client
@@ -153,7 +152,7 @@ class Element(ABC, Visibility):
             if listener.type == msg['type']:
                 result = listener.handler(msg)
                 if isinstance(result, Awaitable):
-                    create_task(result)
+                    background_tasks.create(result)
 
     def collect_descendant_ids(self) -> List[int]:
         '''includes own ID as first element'''
@@ -168,13 +167,13 @@ class Element(ABC, Visibility):
             return
         ids = self.collect_descendant_ids()
         elements = {id: self.client.elements[id].to_dict() for id in ids}
-        create_task(globals.sio.emit('update', {'elements': elements}, room=self.client.id))
+        background_tasks.create(globals.sio.emit('update', {'elements': elements}, room=self.client.id))
 
     def run_method(self, name: str, *args: Any) -> None:
         if not globals.loop:
             return
         data = {'id': self.id, 'name': name, 'args': args}
-        create_task(globals.sio.emit('run_method', data, room=globals._socket_id or self.client.id))
+        background_tasks.create(globals.sio.emit('run_method', data, room=globals._socket_id or self.client.id))
 
     def clear(self) -> None:
         descendants = [self.client.elements[id] for id in self.collect_descendant_ids()[1:]]
