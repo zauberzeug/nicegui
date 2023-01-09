@@ -40,7 +40,8 @@ class Timer:
         with self.slot:
             await self._connected()
             await asyncio.sleep(self.interval)
-            await self._invoke_callback()
+            if globals.state not in [globals.State.STOPPING, globals.State.STOPPED]:
+                await self._invoke_callback()
         self.cleanup()
 
     async def _run_in_loop(self) -> None:
@@ -48,6 +49,8 @@ class Timer:
             await self._connected()
             while True:
                 if self.slot.parent.client.id not in globals.clients:
+                    break
+                if globals.state in [globals.State.STOPPING, globals.State.STOPPED]:
                     break
                 try:
                     start = time.time()
