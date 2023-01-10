@@ -68,7 +68,7 @@ def handle_shutdown() -> None:
 
 
 @app.exception_handler(404)
-async def exception_handler_404(request: Request, exception: Exception) -> Response:
+def exception_handler_404(request: Request, exception: Exception) -> Response:
     globals.log.warning(f'{request.url} not found')
     with Client(page('')) as client:
         error_content(404, exception)
@@ -76,7 +76,7 @@ async def exception_handler_404(request: Request, exception: Exception) -> Respo
 
 
 @app.exception_handler(Exception)
-async def exception_handler_500(request: Request, exception: Exception) -> Response:
+def exception_handler_500(request: Request, exception: Exception) -> Response:
     globals.log.exception(exception)
     with Client(page('')) as client:
         error_content(500, exception)
@@ -84,7 +84,7 @@ async def exception_handler_500(request: Request, exception: Exception) -> Respo
 
 
 @sio.on('handshake')
-async def handle_handshake(sid: str) -> bool:
+def handle_handshake(sid: str) -> bool:
     client = get_client(sid)
     if not client:
         return False
@@ -98,7 +98,7 @@ async def handle_handshake(sid: str) -> bool:
 
 
 @sio.on('disconnect')
-async def handle_disconnect(sid: str) -> None:
+def handle_disconnect(sid: str) -> None:
     client = get_client(sid)
     if not client:
         return
