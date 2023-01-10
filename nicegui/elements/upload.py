@@ -30,7 +30,7 @@ class Upload(Element):
         self._props['auto-upload'] = auto_upload
         self._props['url'] = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
 
-        @app.post(f'/_nicegui/client/{self.client.id}/upload/{self.id}')
+        @app.post(self._props['url'])
         async def upload_route(request: Request) -> Response:
             for data in (await request.form()).values():
                 args = UploadEventArguments(
@@ -42,6 +42,7 @@ class Upload(Element):
                 )
                 handle_event(on_upload, args)
             return {'upload': 'success'}
+        self.client.on_disconnect(lambda: self.client.shared or app.remove_route(self._props['url']))
 
     def reset(self) -> None:
         self.run_method('reset')
