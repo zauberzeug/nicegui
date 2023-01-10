@@ -42,7 +42,10 @@ class Upload(Element):
                 )
                 handle_event(on_upload, args)
             return {'upload': 'success'}
-        self.client.on_disconnect(lambda: self.client.shared or app.remove_route(self._props['url']))
 
     def reset(self) -> None:
         self.run_method('reset')
+
+    def delete(self) -> None:
+        app.remove_route(self._props['url'])
+        super().delete()

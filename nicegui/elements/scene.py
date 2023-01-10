@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, Union
 
+from .. import binding
 from ..dependencies import register_component
 from ..element import Element
 from ..events import SceneClickEventArguments, SceneClickHit, handle_event
@@ -127,3 +128,7 @@ class Scene(Element):
                         self.camera.x, self.camera.y, self.camera.z,
                         self.camera.look_at_x, self.camera.look_at_y, self.camera.look_at_z,
                         self.camera.up_x, self.camera.up_y, self.camera.up_z, duration)
+
+    def delete(self) -> None:
+        binding.remove(list(self.objects.values()), Object3D)
+        super().delete()

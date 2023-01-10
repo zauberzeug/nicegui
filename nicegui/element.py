@@ -194,6 +194,12 @@ class Element(ABC, Visibility):
             slot.children[:] = [e for e in slot.children if e.id != element.id]
         self.update()
 
+    def delete(self) -> None:
+        """Called when the corresponding client is deleted.
+
+        Can be overridden to perform cleanup.
+        """
+
 
 def _split(text: str, separator: str) -> Tuple[str, str]:
     words = text.split(separator, 1)

@@ -167,4 +167,6 @@ async def prune_slot_stacks() -> None:
 
 def delete_client(id: str) -> None:
     binding.remove(list(globals.clients[id].elements.values()), Element)
+    for element in globals.clients[id].elements.values():
+        element.delete()
     del globals.clients[id]
