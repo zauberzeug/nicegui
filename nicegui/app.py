@@ -59,3 +59,7 @@ class App(FastAPI):
         :param directory: folder with static files to serve under the given path
         """
         globals.app.mount(path, StaticFiles(directory=directory))
+
+    def remove_route(self, path: str) -> None:
+        """Remove routes with the given path."""
+        self.routes[:] = [r for r in self.routes if getattr(r, 'path', None) != path]

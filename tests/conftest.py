@@ -37,8 +37,8 @@ def selenium(selenium: webdriver.Chrome) -> webdriver.Chrome:
 
 @pytest.fixture(autouse=True)
 def reset_globals() -> Generator[None, None, None]:
-    globals.app.routes[:] = [route for route in globals.app.routes
-                             if route.path != '/' and route.path not in globals.page_routes.values()]
+    for path in ['/'] + list(globals.page_routes.values()):
+        globals.app.remove_route(path)
     importlib.reload(globals)
     globals.index_client = Client(page('/'), shared=True).__enter__()
     globals.app.get('/')(globals.index_client.build_response)
