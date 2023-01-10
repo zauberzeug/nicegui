@@ -19,8 +19,8 @@ def error_content(status_code: int, exception: Union[str, Exception] = '') -> No
         if str(exception):
             message += ': ' + str(exception)
 
-    with ui.column().classes('w-full py-20 items-center gap-0'):
-        ui.html((Path(__file__).parent / 'static' / 'sad_face.svg').read_text()).classes('w-32 py-5')
-        ui.label(str(status_code)).classes('text-6xl py-5')
-        ui.label(title).classes('text-xl py-5')
-        ui.label(message).classes('text-lg text-gray-500')
+    with ui.column().style('width: 100%; padding: 5rem 0; align-items: center; gap: 0'):
+        ui.html((Path(__file__).parent / 'static' / 'sad_face.svg').read_text()).style('width: 8rem; padding: 1.25rem 0')
+        ui.label(str(status_code)).style('font-size: 3.75rem; line-height: 1; padding: 1.25rem 0')
+        ui.label(title).style('font-size: 1.25rem; line-height: 1.75rem; padding: 1.25rem 0')
+        ui.label(message).style('font-size: 1.125rem; line-height: 1.75rem; color: rgb(107 114 128)')
