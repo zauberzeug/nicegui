@@ -68,7 +68,7 @@ def handle_shutdown() -> None:
 
 
 @app.exception_handler(404)
-def exception_handler_404(request: Request, exception: Exception) -> Response:
+async def exception_handler_404(request: Request, exception: Exception) -> Response:
     globals.log.warning(f'{request.url} not found')
     with Client(page('')) as client:
         error_content(404, exception)
@@ -76,7 +76,7 @@ def exception_handler_404(request: Request, exception: Exception) -> Response:
 
 
 @app.exception_handler(Exception)
-def exception_handler_500(request: Request, exception: Exception) -> Response:
+async def exception_handler_500(request: Request, exception: Exception) -> Response:
     globals.log.exception(exception)
     with Client(page('')) as client:
         error_content(500, exception)
