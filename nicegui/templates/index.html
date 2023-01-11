@@ -8,7 +8,9 @@
     <link href="{{ prefix | safe }}/_nicegui/static/quasar.prod.css" rel="stylesheet" type="text/css" />
     {% if tailwind %}
     <script src="{{ prefix | safe }}/_nicegui/static/tailwind.min.js"></script>
-    {% endif %} {{ head_html | safe }}
+    {% endif %}
+    <link href="{{ prefix | safe }}/_nicegui/static/nicegui.css" rel="stylesheet" type="text/css" />
+    {{ head_html | safe }}
   </head>
   <body>
     <script src="{{ prefix | safe }}/_nicegui/static/vue.global.prod.js"></script>
@@ -17,6 +19,10 @@
     {{ body_html | safe }}
 
     <div id="app"></div>
+    <div id="popup">
+      <span>Connection lost.</span>
+      <span>Trying to reconnect...</span>
+    </div>
     <script type="module">
       const True = true;
       const False = false;
@@ -78,23 +84,6 @@
         });
       }
 
-      function show_popup() {
-        const popup = document.createElement('template');
-        popup.innerHTML = `
-          <div id="popup" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(240, 240, 240, 0.8)">
-            <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 4em; background-color: #fff; border: 1pt solid #ddd; box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.01)">
-              <h3 style="font-size: x-large; margin-bottom: 1ex">Connection lost</h3>
-              <p style="font-size: large">Trying to reconnect...</p>
-            </div>
-          </div>
-        `.trim();
-        document.body.appendChild(popup.content.firstChild);
-      }
-
-      function hide_popup() {
-        document.getElementById('popup')?.remove();
-      }
-
       const app = Vue.createApp({
         data() {
           return {
@@ -113,14 +102,14 @@
           window.socket.on("connect", () => {
             window.socket.emit("handshake", (ok) => {
               if (!ok) window.location.reload();
-              hide_popup();
+              document.getElementById('popup').style.opacity = 0;
             });
           });
           window.socket.on("connect_error", (err) => {
             if (err.message == 'timeout') window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
           });
           window.socket.on("disconnect", () => {
-            show_popup();
+            document.getElementById('popup').style.opacity = 1;
           });
           window.socket.on("update", (msg) => {
             Object.entries(msg.elements).forEach(([id, element]) => this.elements[element.id] = element);

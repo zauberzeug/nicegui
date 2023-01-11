@@ -1,0 +1,27 @@
+#popup {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  background-color: white;
+  border: 1pt solid #eee;
+  border-radius: 0.25em;
+  box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.02);
+  margin: 2em;
+  padding: 1.5em 4em;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  opacity: 0;
+  transition-duration: 500ms;
+}
+#popup[style*="opacity: 1;"] {
+  transition-delay: 2000ms;
+}
+#popup > span:first-child {
+  font-weight: bold;
+}
+#popup > span:first-child::before {
+  content: "⚠️";
+  position: absolute;
+  left: 1.5em;
+}
