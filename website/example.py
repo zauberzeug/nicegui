@@ -3,6 +3,7 @@ import re
 from typing import Callable, Optional, Union
 
 import docutils.core
+import isort
 
 from nicegui import ui
 from nicegui.elements.markdown import apply_tailwind
@@ -48,23 +49,13 @@ class example:
                 code = inspect.getsource(f).split('# END OF EXAMPLE')[0].strip().splitlines()
                 while not code[0].startswith(' ' * 8):
                     del code[0]
-                code = [l[8:] for l in code]
-                code.insert(0, '```python')
-                code.insert(1, 'from nicegui import ui')
-                if code[2].split()[0] not in ['from', 'import']:
-                    code.insert(2, '')
-                for l, line in enumerate(code):
-                    if line.startswith('# ui.'):
-                        code[l] = line[2:]
-                    if line.startswith('# ui.run('):
-                        break
-                else:
+                code = ['from nicegui import ui'] + [line[8:].removeprefix('# ') for line in code]
+                if not code[-1].startswith('ui.run('):
                     code.append('')
                     code.append('ui.run()')
-                code.append('```')
-                code = '\n'.join(code)
+                code = isort.code('\n'.join(code), no_sections=True, lines_after_imports=1)
                 with python_window(classes='w-full max-w-[48rem]'):
-                    ui.markdown(code)
+                    ui.markdown(f'```python\n{code}\n```')
                 with browser_window(self.browser_title, classes='w-full max-w-[48rem] xl:max-w-[20rem] min-h-[10rem] browser-window'):
                     if self.immediate:
                         f()
