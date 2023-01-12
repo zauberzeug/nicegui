@@ -492,15 +492,22 @@ You can register coroutines or functions to be called for the following events:
 When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.
 ''')
     def lifecycle_example():
+        from datetime import datetime
+
         from nicegui import app
 
-        def handle_connect():
-            if watch.value:
-                count.set_text(str(int(count.text or 0) + 1))
+        # dt = datetime.now()
 
-        watch = ui.checkbox('count new connections')
-        count = ui.label().classes('mt-8 self-center text-5xl')
-        app.on_connect(handle_connect)
+        def handle_connection():
+            global dt
+            dt = datetime.now()
+        app.on_connect(handle_connection)
+
+        label = ui.label()
+        ui.timer(1, lambda: label.set_text(f'Last new connection: {dt:%H:%M:%S}'))
+        # END OF EXAMPLE
+        global dt
+        dt = datetime.now()
 
     @example(ui.timer)
     def timer_example():
