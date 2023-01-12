@@ -42,7 +42,7 @@
         setTimeout(() => throttles.delete(id), 1000 * time);
       }
 
-      function render_recursively(elements, id) {
+      function renderRecursively(elements, id) {
         const element = elements[id];
         const props = {
           id: element.id,
@@ -62,7 +62,7 @@
         });
         const slots = {};
         Object.entries(element.slots).forEach(([name, ids]) => {
-          const children = ids.map(id => render_recursively(elements, id));
+          const children = ids.map(id => renderRecursively(elements, id));
           if (name == 'default' && element.text) {
             children.unshift(element.text);
           }
@@ -75,7 +75,7 @@
         return window.app.$refs['r' + id];
       }
 
-      function run_javascript(code, request_id) {
+      function runJavascript(code, request_id) {
         (new Promise((resolve) =>resolve(eval(code)))).catch((reason) => {
           if(reason instanceof SyntaxError)
             return eval(`(async() => {${code}})()`);
@@ -95,7 +95,7 @@
           };
         },
         render() {
-          return render_recursively(this.elements, 0);
+          return renderRecursively(this.elements, 0);
         },
         mounted() {
           window.app = this;
@@ -120,7 +120,7 @@
             Object.entries(msg.elements).forEach(([id, element]) => this.elements[element.id] = element);
           });
           window.socket.on("run_method", (msg) => getElement(msg.id)?.[msg.name](...msg.args));
-          window.socket.on("run_javascript", (msg) => run_javascript(msg['code'], msg['request_id']));
+          window.socket.on("run_javascript", (msg) => runJavascript(msg['code'], msg['request_id']));
           window.socket.on("open", (msg) => (location.href = msg));
           window.socket.on("notify", (msg) => Quasar.Notify.create(msg));
         },
