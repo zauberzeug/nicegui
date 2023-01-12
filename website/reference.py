@@ -128,20 +128,20 @@ def create_full() -> None:
     @example(ui.input)
     def input_example():
         ui.input(label='Text', placeholder='start typing',
-                 on_change=lambda e: input_result.set_text('you typed: ' + e.value))
-        input_result = ui.label()
+                 on_change=lambda e: result.set_text('you typed: ' + e.value))
+        result = ui.label()
 
     @example(ui.number)
     def number_example():
         ui.number(label='Number', value=3.1415927, format='%.2f',
-                  on_change=lambda e: number_result.set_text(f'you entered: {e.value}'))
-        number_result = ui.label()
+                  on_change=lambda e: result.set_text(f'you entered: {e.value}'))
+        result = ui.label()
 
     @example(ui.color_input)
     def color_input_example():
-        color_label = ui.label('Change my color!')
+        label = ui.label('Change my color!')
         ui.color_input(label='Color', value='#000000',
-                       on_change=lambda e: color_label.style(f'color:{e.value}'))
+                       on_change=lambda e: label.style(f'color:{e.value}'))
 
     @example(ui.color_picker)
     def color_picker_example():
