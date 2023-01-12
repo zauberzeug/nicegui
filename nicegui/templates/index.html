@@ -71,6 +71,10 @@
         return Vue.h(Vue.resolveComponent(element.tag), props, slots);
       }
 
+      function getElement(id) {
+        return window.app.$refs['r' + id];
+      }
+
       function run_javascript(code, request_id) {
         (new Promise((resolve) =>resolve(eval(code)))).catch((reason) => {
           if(reason instanceof SyntaxError)
@@ -94,6 +98,7 @@
           return render_recursively(this.elements, 0);
         },
         mounted() {
+          window.app = this;
           const query = { client_id: "{{ client_id }}" };
           const url = window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
           const extraHeaders = {{ socket_io_js_extra_headers | safe }};
@@ -114,7 +119,7 @@
           window.socket.on("update", (msg) => {
             Object.entries(msg.elements).forEach(([id, element]) => this.elements[element.id] = element);
           });
-          window.socket.on("run_method", (msg) => this.$refs['r' + msg.id]?.[msg.name](...msg.args));
+          window.socket.on("run_method", (msg) => getElement(msg.id)?.[msg.name](...msg.args));
           window.socket.on("run_javascript", (msg) => run_javascript(msg['code'], msg['request_id']));
           window.socket.on("open", (msg) => (location.href = msg));
           window.socket.on("notify", (msg) => Quasar.Notify.create(msg));
