@@ -13,6 +13,7 @@
   gap: 1em;
   opacity: 0;
   transition-duration: 500ms;
+  pointer-events: none;
 }
 #popup[style*="opacity: 1;"] {
   transition-delay: 2000ms;
