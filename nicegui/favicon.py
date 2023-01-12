@@ -13,8 +13,9 @@ def create_favicon_route(path: str, favicon: Optional[str]) -> None:
     if favicon and is_remote_url(favicon):
         return
     fallback = Path(__file__).parent / 'static' / 'favicon.ico'
-    globals.app.add_route(f'{"" if path == "/" else path}/favicon.ico',
-                          lambda _: FileResponse(favicon or globals.favicon or fallback))
+    path = f'{"" if path == "/" else path}/favicon.ico'
+    globals.app.remove_route(path)
+    globals.app.add_route(path, lambda _: FileResponse(favicon or globals.favicon or fallback))
 
 
 def get_favicon_url(page: 'page', prefix: str) -> str:
