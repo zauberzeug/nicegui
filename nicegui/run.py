@@ -1,5 +1,5 @@
-import inspect
 import logging
+import multiprocessing
 import os
 import sys
 import webbrowser
@@ -58,7 +58,7 @@ def run(*,
     globals.excludes = [e.strip() for e in exclude.split(',')]
     globals.tailwind = tailwind
 
-    if inspect.stack()[-2].filename.endswith('spawn.py'):
+    if multiprocessing.current_process().name != 'MainProcess':
         return
 
     if show:
