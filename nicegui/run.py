@@ -46,7 +46,7 @@ def run(*,
     :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
     :param exclude: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
       (possible entries: chart, colors, interactive_image, joystick, keyboard, log, scene, upload, table)
-    :param tailwind: whether to use Tailwind (default: `True`)
+    :param tailwind: whether to use Tailwind (experimental, default: `True`)
     '''
     globals.host = host
     globals.port = port
