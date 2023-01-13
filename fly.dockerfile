@@ -6,7 +6,7 @@ WORKDIR /app
 
 ADD . .
 RUN pip install -e .
-RUN pip install itsdangerous prometheus_client
+RUN pip install itsdangerous prometheus_client isort
 
 EXPOSE 8080
 EXPOSE 9062
