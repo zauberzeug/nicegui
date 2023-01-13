@@ -3,11 +3,11 @@ ARG VERSION
 
 LABEL maintainer="Zauberzeug GmbH <info@zauberzeug.com>"
 
-RUN python -m pip install nicegui==$VERSION
+RUN python -m pip install nicegui==$VERSION itsdangerous isort
 
 WORKDIR /app
 
-COPY main.py README.md ./ 
+COPY main.py README.md prometheus.py ./ 
 ADD examples ./examples
 ADD website ./website
 
