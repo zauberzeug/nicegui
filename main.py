@@ -9,6 +9,7 @@ if True:
 import os
 from pathlib import Path
 
+from fastapi.responses import FileResponse
 from pygments.formatters import HtmlFormatter
 
 import prometheus
@@ -23,6 +24,12 @@ prometheus.start_monitor(app)
 
 app.add_static_files('/favicon', str(Path(__file__).parent / 'website' / 'favicon'))
 app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
+
+
+@app.get('/logo.svg')
+def logo():
+    return FileResponse(svg.PATH / 'happy_face.svg', media_type='image/svg+xml')
+
 
 # NOTE in our global fly.io deployment we need to make sure that the websocket connects back to the same instance
 fly_instance_id = os.environ.get('FLY_ALLOC_ID', '').split('-')[0]
