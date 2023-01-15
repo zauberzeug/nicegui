@@ -26,9 +26,9 @@ app.add_static_files('/favicon', str(Path(__file__).parent / 'website' / 'favico
 app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
 
 
-@app.get('/logo.svg')
+@app.get('/logo.png')
 def logo():
-    return FileResponse(svg.PATH / 'happy_face.svg', media_type='image/svg+xml')
+    return FileResponse(svg.PATH / 'logo.png', media_type='image/png')
 
 
 # NOTE in our global fly.io deployment we need to make sure that the websocket connects back to the same instance
