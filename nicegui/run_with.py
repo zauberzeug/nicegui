@@ -19,6 +19,7 @@ def run_with(
     globals.dark = dark
     globals.binding_refresh_interval = binding_refresh_interval
     globals.excludes = [e.strip() for e in exclude.split(',')]
+    globals.tailwind = True
 
     app.on_event('startup')(lambda: handle_startup(with_welcome_message=False))
     app.on_event('shutdown')(lambda: handle_shutdown())
