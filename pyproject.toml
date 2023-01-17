@@ -36,6 +36,7 @@ pytest = "6.2.5"
 replicate = "^0.4.0"
 itsdangerous = "^2.1.2" # required by SessionMiddleware (see https://fastapi.tiangolo.com/?h=itsdangerous#optional-dependencies)
 isort = "^5.11.4"
+opencv-python = "^4.7.0.68"
 
 [build-system]
 requires = [

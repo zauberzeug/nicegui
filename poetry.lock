@@ -1090,6 +1090,33 @@ files = [
 ]
 
 [[package]]
+name = "opencv-python"
+version = "4.7.0.68"
+description = "Wrapper package for OpenCV python bindings."
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "opencv-python-4.7.0.68.tar.gz", hash = "sha256:9829e6efedde1d1b8419c5bd4d62d289ecbf44ae35b843c6da9e3cbcba1a9a8a"},
+    {file = "opencv_python-4.7.0.68-cp37-abi3-macosx_10_13_x86_64.whl", hash = "sha256:abc6adfa8694f71a4caffa922b279bd9d96954a37eee40b147f613c64310b411"},
+    {file = "opencv_python-4.7.0.68-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:86f4b60b9536948f16d2170ba3a9b22d3955a957dc61a9bc56e53692c6db2c7e"},
+    {file = "opencv_python-4.7.0.68-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:6d1c993811f92ddd7919314ada7b9be1f23db1c73f1384915c834dee8549c0b9"},
+    {file = "opencv_python-4.7.0.68-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3a00e12546e5578f6bb7ed408c37fcfea533d74e9691cfaf40926f6b43295577"},
+    {file = "opencv_python-4.7.0.68-cp37-abi3-win32.whl", hash = "sha256:e770e9f653a0e5e72b973adb8213fae2df4642730ba1faf31e73a54287a4d5d4"},
+    {file = "opencv_python-4.7.0.68-cp37-abi3-win_amd64.whl", hash = "sha256:7a08f9d1f9dd52de63a7bb448ab7d6d4a1a85b767c2358501d968d1e4d95098d"},
+]
+
+[package.dependencies]
+numpy = [
+    {version = ">=1.21.0", markers = "python_version <= \"3.9\" and platform_system == \"Darwin\" and platform_machine == \"arm64\""},
+    {version = ">=1.21.2", markers = "python_version >= \"3.10\""},
+    {version = ">=1.21.4", markers = "python_version >= \"3.10\" and platform_system == \"Darwin\""},
+    {version = ">=1.19.3", markers = "python_version >= \"3.6\" and platform_system == \"Linux\" and platform_machine == \"aarch64\" or python_version >= \"3.9\""},
+    {version = ">=1.17.0", markers = "python_version >= \"3.7\""},
+    {version = ">=1.17.3", markers = "python_version >= \"3.8\""},
+]
+
+[[package]]
 name = "outcome"
 version = "1.2.0"
 description = "Capture the outcome of Python function calls."
@@ -1131,6 +1158,13 @@ files = [
     {file = "Pillow-9.4.0-1-cp39-cp39-macosx_10_10_x86_64.whl", hash = "sha256:b8c2f6eb0df979ee99433d8b3f6d193d9590f735cf12274c108bd954e30ca858"},
     {file = "Pillow-9.4.0-1-pp38-pypy38_pp73-macosx_10_10_x86_64.whl", hash = "sha256:b70756ec9417c34e097f987b4d8c510975216ad26ba6e57ccb53bc758f490dab"},
     {file = "Pillow-9.4.0-1-pp39-pypy39_pp73-macosx_10_10_x86_64.whl", hash = "sha256:43521ce2c4b865d385e78579a082b6ad1166ebed2b1a2293c3be1d68dd7ca3b9"},
+    {file = "Pillow-9.4.0-2-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:9d9a62576b68cd90f7075876f4e8444487db5eeea0e4df3ba298ee38a8d067b0"},
+    {file = "Pillow-9.4.0-2-cp311-cp311-macosx_10_10_x86_64.whl", hash = "sha256:87708d78a14d56a990fbf4f9cb350b7d89ee8988705e58e39bdf4d82c149210f"},
+    {file = "Pillow-9.4.0-2-cp37-cp37m-macosx_10_10_x86_64.whl", hash = "sha256:8a2b5874d17e72dfb80d917213abd55d7e1ed2479f38f001f264f7ce7bae757c"},
+    {file = "Pillow-9.4.0-2-cp38-cp38-macosx_10_10_x86_64.whl", hash = "sha256:83125753a60cfc8c412de5896d10a0a405e0bd88d0470ad82e0869ddf0cb3848"},
+    {file = "Pillow-9.4.0-2-cp39-cp39-macosx_10_10_x86_64.whl", hash = "sha256:9e5f94742033898bfe84c93c831a6f552bb629448d4072dd312306bab3bd96f1"},
+    {file = "Pillow-9.4.0-2-pp38-pypy38_pp73-macosx_10_10_x86_64.whl", hash = "sha256:013016af6b3a12a2f40b704677f8b51f72cb007dac785a9933d5c86a72a7fe33"},
+    {file = "Pillow-9.4.0-2-pp39-pypy39_pp73-macosx_10_10_x86_64.whl", hash = "sha256:99d92d148dd03fd19d16175b6d355cc1b01faf80dae93c6c3eb4163709edc0a9"},
     {file = "Pillow-9.4.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:2968c58feca624bb6c8502f9564dd187d0e1389964898f5e9e1fbc8533169157"},
     {file = "Pillow-9.4.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:c5c1362c14aee73f50143d74389b2c158707b4abce2cb055b7ad37ce60738d47"},
     {file = "Pillow-9.4.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bd752c5ff1b4a870b7661234694f24b1d2b9076b8bf337321a814c612665f343"},
@@ -2073,4 +2107,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "53a19e8b9966223d10ebe58c4ee9c44634c1a484739c62ac99efacd7fc58f6c0"
+content-hash = "f54c7283a77f30fe4cc353ff5762930f465169866ec4423be8fa43b8227c2ee6"
