@@ -10,6 +10,8 @@ from . import globals
 
 T = TypeVar('T')
 
+logger = logging.getLogger(__name__)
+
 running_tasks = set()
 
 
@@ -27,7 +29,6 @@ def create(
     Also a reference to the task is kept until it is done, so that the task is not garbage collected mid-execution.
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
     '''
-    logger = logging.getLogger(__name__)
     message = 'Task raised an exception'
     message_args = ()
     if loop is None:
