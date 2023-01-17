@@ -9,7 +9,7 @@ from nicegui import app, ui
 pool = ProcessPoolExecutor()
 
 
-def heavy_computation(q: Queue):
+def heavy_computation(q: Queue) -> str:
     '''Some heavy computation that updates the progress bar through the queue.'''
     n = 50
     for i in range(n):
@@ -43,6 +43,6 @@ def main_page():
 
 
 # stop the pool when the app is closed; will not cancel any running tasks
-app.on_shutdown(lambda: pool.shutdown(cancel_futures=True))
+app.on_shutdown(pool.shutdown)
 
 ui.run()
