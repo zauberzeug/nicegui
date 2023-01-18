@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  app:
+    image: zauberzeug/nicegui:latest
+    ports:
+      - "3000:8080"
+
+  proxy:
+    image: nginx:1.16.0-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
