@@ -7,7 +7,7 @@ from .mixins.text_element import TextElement
 
 class Link(TextElement):
 
-    def __init__(self, text: str = '', target: Union[Callable, str] = '#') -> None:
+    def __init__(self, text: str = '', target: Union[Callable, str] = '#', new_tab: bool = False) -> None:
         """Link
 
         Create a hyperlink.
@@ -17,9 +17,11 @@ class Link(TextElement):
 
         :param text: display text
         :param target: page function or string that is a an absolute URL or relative path from base URL
+        :param new_tab: open link in new tab (default: False)
         """
         super().__init__(tag='a', text=text)
         self._props['href'] = target if isinstance(target, str) else globals.page_routes[target]
+        self._props['target'] = '_blank' if new_tab else '_self'
         self._classes.extend(['underline', 'text-blue-500'])
 
 
