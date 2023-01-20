@@ -12,6 +12,7 @@ from .elements.color_input import ColorInput as color_input
 from .elements.color_picker import ColorPicker as color_picker
 from .elements.colors import Colors as colors
 from .elements.column import Column as column
+from .elements.date import Date as date
 from .elements.dialog import Dialog as dialog
 from .elements.expansion import Expansion as expansion
 from .elements.html import Html as html
@@ -39,6 +40,7 @@ from .elements.separator import Separator as separator
 from .elements.slider import Slider as slider
 from .elements.switch import Switch as switch
 from .elements.table import Table as table
+from .elements.time import Time as time
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree

@@ -1,0 +1,23 @@
+from typing import Callable, Optional
+
+from .mixins.value_element import ValueElement
+
+
+class Date(ValueElement):
+
+    def __init__(self,
+                 value: Optional[str] = None,
+                 *,
+                 mask: str = 'YYYY-MM-DD',
+                 on_change: Optional[Callable] = None) -> None:
+        """Date Input
+
+        This element is based on Quasar's `QDate <https://quasar.dev/vue-components/date>`_ component.
+        The date is a string in the format defined by the `mask` parameter.
+
+        :param value: the initial date
+        :param mask: the format of the date string (default: 'YYYY-MM-DD')
+        :param on_change: callback to execute when changing the date
+        """
+        super().__init__(tag='q-date', value=value, on_value_change=on_change)
+        self._props['mask'] = mask

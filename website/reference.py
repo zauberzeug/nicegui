@@ -148,6 +148,16 @@ def create_full() -> None:
         picker = ui.color_picker(on_pick=lambda e: button.style(f'background-color:{e.color}!important'))
         button = ui.button(on_click=picker.open).props('icon=colorize')
 
+    @example(ui.date)
+    def date_example():
+        ui.date(value='2023-01-01', on_change=lambda e: result.set_text(e.value))
+        result = ui.label()
+
+    @example(ui.time)
+    def time_example():
+        ui.time(value='12:00', on_change=lambda e: result.set_text(e.value))
+        result = ui.label()
+
     @example(ui.upload)
     def upload_example():
         ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('max-w-full')
