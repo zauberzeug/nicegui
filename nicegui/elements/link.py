@@ -20,7 +20,7 @@ class Link(TextElement):
         """
         super().__init__(tag='a', text=text)
         self._props['href'] = target if isinstance(target, str) else globals.page_routes[target]
-        self._classes.extend(['underline', 'text-blue'])
+        self._classes.extend(['underline', 'text-blue-500'])
 
 
 class LinkTarget(Element):
