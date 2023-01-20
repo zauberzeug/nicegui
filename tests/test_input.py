@@ -30,3 +30,21 @@ def test_password(screen: Screen):
 
     element.send_keys('789')
     assert element.get_attribute('value') == '123456789'
+
+
+def test_toggle_button(screen: Screen):
+    ui.input('Your password', value='123456', password=True, password_toggle_button=True)
+
+    screen.open('/')
+    screen.should_contain('Your password')
+    screen.should_contain('visibility_off')
+
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Your password"]')
+    assert element.get_attribute('type') == 'password'
+    assert element.get_attribute('value') == '123456'
+
+    screen.click('visibility_off')
+    assert element.get_attribute('type') == 'text'
+
+    screen.click('visibility')
+    assert element.get_attribute('type') == 'password'
