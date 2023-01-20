@@ -9,3 +9,4 @@ class Separator(Element):
         A separator for cards, menus and other component containers.
         """
         super().__init__('q-separator')
+        self._classes = ['w-full']
