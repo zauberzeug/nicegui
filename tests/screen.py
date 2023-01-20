@@ -16,12 +16,6 @@ PORT = 3392
 IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-input']
 
 
-def remove_prefix(text: str, prefix: str) -> str:
-    if prefix and text.startswith(prefix):
-        return text[len(prefix):]
-    return text
-
-
 class Screen:
     SCREENSHOT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshots')
     UI_RUN_KWARGS = {'port': PORT, 'show': False, 'reload': False}
@@ -42,7 +36,7 @@ class Screen:
         try:
             self.selenium.current_url
             return True
-        except:
+        except Exception:
             return False
 
     def stop_server(self) -> None:
@@ -59,12 +53,12 @@ class Screen:
             try:
                 self.selenium.get(f'http://localhost:{PORT}{path}')
                 break
-            except Exception:
+            except Exception as e:
                 if time.time() - start > 3:
                     raise
                 time.sleep(0.1)
                 if not self.server_thread.is_alive():
-                    raise RuntimeError('The NiceGUI server has stopped running')
+                    raise RuntimeError('The NiceGUI server has stopped running') from e
 
     def close(self) -> None:
         if self.is_open:
@@ -93,8 +87,8 @@ class Screen:
         element = self.find(target_text)
         try:
             element.click()
-        except ElementNotInteractableException:
-            raise AssertionError(f'Could not click on "{target_text}" on:\n{element.get_attribute("outerHTML")}')
+        except ElementNotInteractableException as e:
+            raise AssertionError(f'Could not click on "{target_text}" on:\n{element.get_attribute("outerHTML")}') from e
         return element
 
     def click_at_position(self, element: WebElement, x: int, y: int) -> None:
@@ -110,8 +104,8 @@ class Screen:
                 if not element.is_displayed():
                     raise AssertionError(f'Found "{text}" but it is hidden')
             return element
-        except NoSuchElementException:
-            raise AssertionError(f'Could not find "{text}"')
+        except NoSuchElementException as e:
+            raise AssertionError(f'Could not find "{text}"') from e
 
     def render_js_logs(self) -> str:
         console = '\n'.join(l['message'] for l in self.selenium.get_log('browser'))
@@ -132,7 +126,7 @@ class Screen:
             try:
                 self.find(text)
                 return
-            except:
+            except Exception:
                 self.wait(0.1)
         raise TimeoutError()
 
@@ -144,7 +138,7 @@ class Screen:
 
     def assert_py_logger(self, level: str, message: str) -> None:
         try:
-            assert self.caplog.records, f'Expected a log message'
+            assert self.caplog.records, 'Expected a log message'
             record = self.caplog.records[0]
             print(record.levelname, record.message)
             assert record.levelname.strip() == level, f'Expected "{level}" but got "{record.levelname}"'

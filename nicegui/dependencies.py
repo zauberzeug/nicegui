@@ -40,7 +40,7 @@ js_dependencies: Dict[int, Dependency] = {}
 def register_component(name: str, py_filepath: str, component_filepath: str, dependencies: List[str] = [],
                        optional_dependencies: List[str] = []) -> None:
     suffix = Path(component_filepath).suffix.lower()
-    assert suffix in ['.vue', '.js'], 'Only VUE and JS components are supported.'
+    assert suffix in {'.vue', '.js'}, 'Only VUE and JS components are supported.'
     if suffix == '.vue':
         assert name not in vue_components, f'Duplicate VUE component name {name}'
         vue_components[name] = Component(name=name, path=Path(py_filepath).parent / component_filepath)

@@ -73,7 +73,7 @@ class page:
 
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']
         # NOTE adding request as a parameter so we can pass it to the client in the decorated function
-        if 'request' not in [p.name for p in parameters]:
+        if 'request' not in {p.name for p in parameters}:
             parameters.append(inspect.Parameter('request', inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request))
         decorated.__signature__ = inspect.Signature(parameters)
 

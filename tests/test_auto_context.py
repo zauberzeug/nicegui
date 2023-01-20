@@ -43,9 +43,9 @@ def test_adding_elements_with_async_await(screen: Screen):
     screen.wait_for('A')
     screen.wait_for('B')
     cA = screen.selenium.find_element(By.ID, cardA.id)
-    cA.find_element(By.XPATH, f'.//*[contains(text(), "A")]')
+    cA.find_element(By.XPATH, './/*[contains(text(), "A")]')
     cB = screen.selenium.find_element(By.ID, cardB.id)
-    cB.find_element(By.XPATH, f'.//*[contains(text(), "B")]')
+    cB.find_element(By.XPATH, './/*[contains(text(), "B")]')
 
 
 def test_autoupdate_after_connected(screen: Screen):
@@ -124,6 +124,6 @@ def test_adding_elements_from_different_tasks(screen: Screen):
     screen.wait_for('1')
     screen.wait_for('2')
     c1 = screen.selenium.find_element(By.ID, card1.id)
-    c1.find_element(By.XPATH, f'.//*[contains(text(), "1")]')
+    c1.find_element(By.XPATH, './/*[contains(text(), "1")]')
     c2 = screen.selenium.find_element(By.ID, card2.id)
-    c2.find_element(By.XPATH, f'.//*[contains(text(), "2")]')
+    c2.find_element(By.XPATH, './/*[contains(text(), "2")]')

@@ -23,7 +23,7 @@ def test_uploading_text_file(screen: Screen):
     screen.wait(0.1)
     assert len(results) == 1
     assert results[0].name == test_path1.name
-    assert results[0].type in ['text/x-python', 'text/x-python-script']
+    assert results[0].type in {'text/x-python', 'text/x-python-script'}
     assert results[0].content.read() == test_path1.read_bytes()
 
 

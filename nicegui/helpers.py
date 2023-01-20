@@ -29,5 +29,5 @@ def safe_invoke(func: Union[Callable, Awaitable], client: Optional[Client] = Non
                     with client or nullcontext():
                         await result
                 background_tasks.create(result_with_client())
-    except:
+    except Exception:
         globals.log.exception(f'could not invoke {func}')

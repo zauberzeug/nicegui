@@ -5,7 +5,7 @@ from . import svg
 
 def create():
     with ui.row().style('filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'):
-        with ui.card().style(f'clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%)') \
+        with ui.card().style(r'clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%)') \
                 .classes('pb-16 no-shadow'), ui.row().classes('no-wrap'):
             with ui.column().classes('items-center'):
                 svg.face().classes('w-16 mx-6 stroke-black stroke-2').on('click', lambda _: output.set_text("That's my face!"))
@@ -29,7 +29,7 @@ def create():
 
 def create_narrow():
     with ui.row().style('filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'):
-        with ui.card().style(f'clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%)') \
+        with ui.card().style(r'clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%)') \
                 .classes('pb-16 no-shadow'), ui.row().classes('no-wrap'):
             with ui.column().classes('items-center'):
                 svg.face().classes('w-16 mx-6 stroke-black stroke-2').on('click', lambda _: output.set_text("That's my face!"))

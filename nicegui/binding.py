@@ -7,7 +7,7 @@ from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Tuple,
 from . import globals
 
 bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
-bindable_properties: Dict[Tuple[int, str], Any] = dict()
+bindable_properties: Dict[Tuple[int, str], Any] = {}
 active_links: List[Tuple[Any, str, Any, str, Callable]] = []
 
 

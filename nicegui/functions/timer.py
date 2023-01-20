@@ -41,7 +41,7 @@ class Timer:
             with self.slot:
                 await self._connected()
                 await asyncio.sleep(self.interval)
-                if globals.state not in [globals.State.STOPPING, globals.State.STOPPED]:
+                if globals.state not in {globals.State.STOPPING, globals.State.STOPPED}:
                     await self._invoke_callback()
         finally:
             self.cleanup()
@@ -53,7 +53,7 @@ class Timer:
                 while True:
                     if self.slot.parent.client.id not in globals.clients:
                         break
-                    if globals.state in [globals.State.STOPPING, globals.State.STOPPED]:
+                    if globals.state in {globals.State.STOPPING, globals.State.STOPPED}:
                         break
                     try:
                         start = time.time()
@@ -63,7 +63,7 @@ class Timer:
                         await asyncio.sleep(self.interval - dt)
                     except asyncio.CancelledError:
                         break
-                    except:
+                    except Exception:
                         globals.log.exception('Exception in timer callback')
                         await asyncio.sleep(self.interval)
         finally:

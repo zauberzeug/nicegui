@@ -16,7 +16,7 @@ class Header(Element):
 class Drawer(Element):
 
     def __init__(self, side: str, *, fixed: bool = True, top_corner: bool = False, bottom_corner: bool = False) -> None:
-        assert side in ['left', 'right']
+        assert side in {'left', 'right'}
         with globals.get_client().layout:
             super().__init__('q-drawer')
         self._props['show-if-above'] = True
