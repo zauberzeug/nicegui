@@ -18,6 +18,7 @@ from nicegui import globals as nicegui_globals
 from nicegui import ui
 from website import demo_card, reference, svg
 from website.example import bash_window, browser_window, python_window
+from website.star import add_star
 from website.style import example_link, features, heading, link_target, section_heading, subtitle, title
 
 prometheus.start_monitor(app)
@@ -68,6 +69,7 @@ def add_header() -> None:
                 ui.link(title, target).classes(replace='text-lg text-white')
         with ui.link(target='https://github.com/zauberzeug/nicegui/'):
             svg.github().classes('fill-white scale-125 m-1')
+        add_star()
 
 
 @ui.page('/')
