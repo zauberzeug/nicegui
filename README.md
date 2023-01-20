@@ -134,5 +134,5 @@ You can provide SSL certificates directly using [FastAPI](https://fastapi.tiango
 In production we also like using reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/) to handle these details for us.
 See our [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
 
-You may also have look at [our example for using an custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
+You may also have look at [our example for using a custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
 This will allow you to do very flexible deployments as described in the [FastAPI documentation](https://fastapi.tiangolo.com/deployment/).
