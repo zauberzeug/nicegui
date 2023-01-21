@@ -19,8 +19,8 @@ STYLE = '''
     .star {
         height: 1.75em;
         fill: white;
-        animation: 1s ease-in-out 1s both star-tumble,
-                   3s ease-in-out 5s infinite star-pulse;
+        animation: 1s ease-in-out 6s both star-tumble,
+                   3s ease-in-out 3s infinite star-pulse;
     }
     .star:hover {
         fill: rgb(250 204 21);
@@ -31,7 +31,7 @@ STYLE = '''
         100% { width: 2em }
     }
     .star-container {
-        animation: 1s ease-in-out 1s both star-grow;
+        animation: 1s ease-in-out 6s both star-grow;
     }
 </style>
 '''
@@ -53,4 +53,4 @@ def add_star() -> None:
                 svg.face().classes('w-14 stroke-white stroke-[1pt]')
                 with ui.column().classes('p-2 gap-2'):
                     ui.label('Star us on GitHub!').classes('text-[180%]')
-                    ui.label('And help others to hear about NiceGUI.').classes('text-[140%]')
+                    ui.label('And tell others about NiceGUI.').classes('text-[140%]')
