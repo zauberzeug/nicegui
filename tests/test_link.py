@@ -17,3 +17,20 @@ def test_local_target_linking_on_sub_pages(screen: Screen):
     screen.click('goto target')
     screen.should_contain('the target')
     screen.should_not_contain('main page')
+
+
+def test_opening_link_in_new_tab(screen: Screen):
+    @ui.page('/sub')
+    def subpage():
+        ui.label('the sub-page')
+
+    ui.link('open sub-page in new tab', '/sub', new_tab=True)
+
+    screen.open('/')
+    screen.click('open sub-page')
+    screen.switch_to(1)
+    screen.should_contain('the sub-page')
+    screen.should_not_contain('open sub-page')
+    screen.switch_to(0)
+    screen.should_not_contain('the sub-page')
+    screen.should_contain('open sub-page')
