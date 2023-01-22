@@ -51,9 +51,17 @@ class Element(ABC, Visibility):
     def to_dict(self) -> Dict:
         events: Dict[str, Dict] = {}
         for listener in self._event_listeners:
+            words = listener.type.split('.')
+            type = words.pop(0)
+            specials = [w for w in words if w in {'capture', 'once', 'passive'}]
+            modifiers = [w for w in words if w in {'stop', 'prevent', 'self', 'ctrl', 'shift', 'alt', 'meta'}]
+            keys = [w for w in words if w not in specials + modifiers]
             events[listener.type] = {
-                'type': listener.type.split('.')[0],
-                'modifiers': listener.type.split('.')[1:],
+                'listener_type': listener.type,
+                'type': type,
+                'specials': specials,
+                'modifiers': modifiers,
+                'keys': keys,
                 'args': list(set(events.get(listener.type, {}).get('args', []) + listener.args)),
                 'throttle': min(events.get(listener.type, {}).get('throttle', float('inf')), listener.throttle),
             }
