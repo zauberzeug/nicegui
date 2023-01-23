@@ -48,6 +48,7 @@ def run(*,
       (possible entries: audio, chart, colors, interactive_image, joystick, keyboard, log, scene, table, video)
     :param tailwind: whether to use Tailwind (experimental, default: `True`)
     '''
+    globals.ui_run_has_been_called = True
     globals.host = host
     globals.port = port
     globals.reload = reload
