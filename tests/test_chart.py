@@ -85,3 +85,10 @@ def test_missing_extra(screen: Screen):
 
     screen.open('/')
     assert not screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-pane')
+
+
+def test_stock_chart(screen: Screen):
+    ui.chart({}, type='stockChart', extras=['stock'])
+
+    screen.open('/')
+    assert screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-range-selector-buttons')
