@@ -5,6 +5,8 @@ from typing import List
 
 import markdown2
 
+from nicegui import globals
+
 from .mixins.content_element import ContentElement
 
 
@@ -37,6 +39,22 @@ class Markdown(ContentElement):
         """
         self.extras = extras
         super().__init__(tag='div', content=content)
+
+        MARKER = '<!-- INTERACTIVE MERMAID -->'
+        client = globals.get_client()
+        if 'mermaid' in extras and MARKER not in client.head_html:
+            client.head_html += f'{MARKER}\n'
+            client.head_html += '<style>.mermaid-pre { visibility: hidden }</style>\n'
+            client.body_html += '''
+            <script type="module" defer>
+                import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@9/dist/mermaid.esm.min.mjs';
+                mermaid.initialize({ securityLevel: 'loose', startOnLoad: true });
+                const observer = new MutationObserver(mutations => mutations.forEach(m => m.target.style.visibility = "visible"));
+                document.querySelectorAll("pre.mermaid-pre div.mermaid").forEach(item => {
+                    observer.observe(item, { attributes: true, attributeFilter: ['data-processed'] });
+                });
+            </script>
+            '''
 
     def on_content_change(self, content: str) -> None:
         html = prepare_content(content, extras=' '.join(self.extras))
