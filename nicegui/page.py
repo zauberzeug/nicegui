@@ -18,6 +18,7 @@ class page:
                  title: Optional[str] = None,
                  favicon: Optional[str] = None,
                  dark: Optional[bool] = ...,
+                 viewport: Optional[bool] = ...,
                  response_timeout: float = 3.0,
                  ) -> None:
         """Page
@@ -28,12 +29,14 @@ class page:
         :param title: optional page title
         :param favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
+        :param viewport: whether to include <meta> viewport element (defaults to `viewport` argument of `run` command)
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0)
         """
         self.path = path
         self.title = title
         self.favicon = favicon
         self.dark = dark
+        self.viewport = viewport
         self.response_timeout = response_timeout
 
         create_favicon_route(self.path, favicon)
@@ -43,6 +46,9 @@ class page:
 
     def resolve_dark(self) -> Optional[bool]:
         return self.dark if self.dark is not ... else globals.dark
+
+    def resolve_viewport(self) -> Optional[bool]:
+        return self.viewport if self.viewport is not ... else globals.viewport
 
     def __call__(self, func: Callable) -> Callable:
         globals.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used

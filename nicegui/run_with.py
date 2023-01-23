@@ -11,12 +11,14 @@ def run_with(
     title: str = 'NiceGUI',
     favicon: Optional[str] = None,
     dark: Optional[bool] = False,
+    viewport: Optional[bool] = True,
     binding_refresh_interval: float = 0.1,
     exclude: str = '',
 ) -> None:
     globals.title = title
     globals.favicon = favicon
     globals.dark = dark
+    globals.viewport = viewport
     globals.binding_refresh_interval = binding_refresh_interval
     globals.excludes = [e.strip() for e in exclude.split(',')]
     globals.tailwind = True

@@ -2,6 +2,9 @@
 <html>
   <head>
     <title>{{ title }}</title>
+    {% if viewport -%}
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    {% endif -%}
     <script src="{{ prefix | safe }}/_nicegui/static/socket.io.min.js"></script>
     <link href="{{ favicon_url }}" rel="shortcut icon" />
     <link href="{{ prefix | safe }}/_nicegui/static/fonts.css" rel="stylesheet" type="text/css" />

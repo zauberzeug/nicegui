@@ -18,6 +18,7 @@ def run(*,
         title: str = 'NiceGUI',
         favicon: Optional[str] = None,
         dark: Optional[bool] = False,
+        viewport: Optional[bool] = True,
         binding_refresh_interval: float = 0.1,
         show: bool = True,
         reload: bool = True,
@@ -37,6 +38,7 @@ def run(*,
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
     :param favicon: relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
+    :param viewport: whether to include <meta> viewport element (default: `True`)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param show: automatically open the UI in a browser tab (default: `True`)
     :param reload: automatically reload the UI on file changes (default: `True`)
@@ -54,6 +56,7 @@ def run(*,
     globals.title = title
     globals.favicon = favicon
     globals.dark = dark
+    globals.viewport = viewport
     globals.binding_refresh_interval = binding_refresh_interval
     globals.excludes = [e.strip() for e in exclude.split(',')]
     globals.tailwind = tailwind

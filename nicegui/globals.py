@@ -34,6 +34,7 @@ reload: bool
 title: str
 favicon: Optional[str]
 dark: Optional[bool]
+viewport: Optional[bool]
 binding_refresh_interval: float
 excludes: List[str]
 tailwind: bool

@@ -79,6 +79,7 @@ class Client:
             'title': self.page.resolve_title(),
             'favicon_url': get_favicon_url(self.page, prefix),
             'dark': str(self.page.resolve_dark()),
+            'viewport': self.page.resolve_viewport(),
             'prefix': prefix,
             'tailwind': globals.tailwind,
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
