@@ -4,7 +4,7 @@ export default {
     setTimeout(() => {
       const imports = this.extras.map((extra) => import(window.path_prefix + extra));
       Promise.allSettled(imports).then(() => {
-        this.chart = Highcharts.chart(this.$el, this.options);
+        this.chart = Highcharts[this.type](this.$el, this.options);
         this.chart.reflow();
       });
     }, 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
@@ -17,6 +17,7 @@ export default {
     },
   },
   props: {
+    type: String,
     options: Object,
     extras: Array,
   },
