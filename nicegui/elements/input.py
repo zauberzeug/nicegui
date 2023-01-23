@@ -15,6 +15,12 @@ class Input(ValueElement):
                  on_change: Optional[Callable] = None) -> None:
         """Text Input
 
+        This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
+
+        The `on_change` event is called on every keystroke and the value updates accordingly.
+        If you want to wait until the user confirms the input, you can register a custom event callback, e.g.
+        `ui.input(...).on('keydown.enter', ...)` or `ui.input(...).on('blur', ...)`.
+
         :param label: displayed label for the text input
         :param placeholder: text to show if no value is entered
         :param value: the current value of the text input
