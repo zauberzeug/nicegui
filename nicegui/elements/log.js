@@ -5,6 +5,11 @@ export default {
       num_lines: 0,
     };
   },
+  mounted() {
+    const text = decodeURIComponent(this.lines);
+    this.$el.innerHTML = text;
+    this.num_lines = text ? text.split("\n").length : 0;
+  },
   methods: {
     push(line) {
       const decoded = decodeURIComponent(line);
@@ -22,5 +27,6 @@ export default {
   },
   props: {
     max_lines: Number,
+    lines: String,
   },
 };
