@@ -24,6 +24,6 @@ class Log(Element):
         self.lines: deque[str] = deque(maxlen=max_lines)
 
     def push(self, line: str) -> None:
-        self.lines.append(line)
+        self.lines.extend(line.splitlines())
         self._props['lines'] = '\n'.join(self.lines)
         self.run_method('push', line)
