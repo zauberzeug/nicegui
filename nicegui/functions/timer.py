@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import time
 import traceback
 from typing import Callable
@@ -82,7 +83,9 @@ class Timer:
         See https://github.com/zauberzeug/nicegui/issues/206 for details.
         '''
         if not self.slot.parent.client.shared:
-            await self.slot.parent.client.connected()
+            # ignore served pages which do not reconnect to backend (eg. monitoring requests, scrapers etc.)
+            with contextlib.suppress(TimeoutError):
+                await self.slot.parent.client.connected()
 
     def cleanup(self) -> None:
         self.slot = None
