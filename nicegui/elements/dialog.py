@@ -9,7 +9,7 @@ class Dialog(ValueElement):
     def __init__(self, *, value: bool = False) -> None:
         """Dialog
 
-        Creates a modal dialog.
+        Creates a dialog.
         By default it is dismissible by clicking or pressing ESC.
         To make it persistent, set `.props('persistent')` on the dialog element.
 
