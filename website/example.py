@@ -50,6 +50,7 @@ class example:
                 while not code[0].startswith(' ' * 8):
                     del code[0]
                 code = ['from nicegui import ui'] + [line[8:].removeprefix('# ') for line in code]
+                code = ['' if line == '#' else line for line in code]
                 if not code[-1].startswith('ui.run('):
                     code.append('')
                     code.append('ui.run()')

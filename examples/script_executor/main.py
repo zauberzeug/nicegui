@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-
 import asyncio
-import os
+import os.path
 import shlex
 
 from nicegui import background_tasks, ui
-from nicegui.element import Element
 
 
 async def run_command(command: str) -> None:
