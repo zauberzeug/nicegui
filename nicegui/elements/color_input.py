@@ -8,8 +8,15 @@ from .mixins.value_element import ValueElement
 
 class ColorInput(ValueElement):
 
-    def __init__(self, label: Optional[str] = None, *,
-                 placeholder: Optional[str] = None, value: str = '', on_change: Optional[Callable] = None) -> None:
+    def __init__(self,
+                 label: Optional[str] = None, *,
+                 placeholder: Optional[str] = None,
+                 value: str = '',
+                 on_change: Optional[Callable] = None,
+                 throttle: float = 0,
+                 only_serverside_react: bool = False,
+                 server_side_loopback: bool = False,
+                 **kwargs) -> None:
         """Color Input
 
         :param label: displayed label for the color input
@@ -17,7 +24,14 @@ class ColorInput(ValueElement):
         :param value: the current color value
         :param on_change: callback to execute when the input is confirmed by leaving the focus
         """
-        super().__init__(tag='q-input', value=value, on_value_change=on_change)
+        super().__init__(
+            tag='q-input',
+            value=value,
+            on_value_change=on_change,
+            throttle=throttle,
+            only_serverside_react=only_serverside_react,
+            server_side_loopback=server_side_loopback,
+            **kwargs)
         self._props['label'] = label
         self._props['placeholder'] = placeholder
 

@@ -10,7 +10,11 @@ class Number(ValueElement):
                  placeholder: Optional[str] = None,
                  value: Optional[float] = None,
                  format: Optional[str] = None,
-                 on_change: Optional[Callable] = None) -> None:
+                 on_change: Optional[Callable] = None,
+                 throttle: float = 0,
+                 only_serverside_react: bool = False,
+                 server_side_loopback: bool = False,
+                 **kwargs) -> None:
         """Number Input
 
         :param label: displayed name for the number input
@@ -20,7 +24,14 @@ class Number(ValueElement):
         :param on_change: callback to execute when the input is confirmed by leaving the focus
         """
         self.format = format
-        super().__init__(tag='q-input', value=value, on_value_change=on_change)
+        super().__init__(
+            tag='q-input',
+            value=value,
+            on_value_change=on_change,
+            throttle=throttle,
+            only_serverside_react=only_serverside_react,
+            server_side_loopback=server_side_loopback,
+            **kwargs)
         self._props['type'] = 'number'
         self._props['label'] = label
         self._props['placeholder'] = placeholder

@@ -10,10 +10,20 @@ class ValueElement(Element):
     EVENT_ARGS = ['value']
     value = BindableProperty(on_change=lambda sender, value: sender.on_value_change(value))
 
-    def __init__(self, *, value: Any, on_value_change: Optional[Callable], throttle: float = 0, **kwargs) -> None:
+    def __init__(self, *,
+                 value: Any,
+                 on_value_change: Optional[Callable],
+                 throttle: float = 0,
+                 only_serverside_react: bool = True,
+                 server_side_loopback: bool = True,
+                 **kwargs) -> None:
         super().__init__(**kwargs)
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
+        self._props['is-value-element'] = True
+        self._props['only-serverside-react'] = only_serverside_react
+        self.only_serverside_react: bool = only_serverside_react
+        self.server_side_loopback: bool = server_side_loopback
         self.change_handler = on_value_change
 
         def handle_change(msg: Dict) -> None:
@@ -38,7 +48,9 @@ class ValueElement(Element):
 
     def on_value_change(self, value: Any) -> None:
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
-        self.update()
+        if self.server_side_loopback:
+            self.update()
+
         args = ValueChangeEventArguments(sender=self, client=self.client, value=self._value_to_event_value(value))
         handle_event(self.change_handler, args)
 

@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import asyncio
 import shlex
 from abc import ABC
+from collections import deque
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Deque, Dict, List, Optional, Tuple, Union
 
 from . import background_tasks, binding, globals
+from .background_tasks import T
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
@@ -18,6 +21,8 @@ class Element(ABC, Visibility):
 
     def __init__(self, tag: str, *, _client: Optional[Client] = None) -> None:
         super().__init__()
+        self._update_task: Optional[asyncio.Task[T]] = None
+        self._update_tasks_queue: Deque = deque()
         self.client = _client or globals.get_client()
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
@@ -175,7 +180,25 @@ class Element(ABC, Visibility):
             return
         ids = self.collect_descendant_ids()
         elements = {id: self.client.elements[id].to_dict() for id in ids}
-        background_tasks.create(globals.sio.emit('update', {'elements': elements}, room=self.client.id))
+
+        def remove_update_task(task: asyncio.Future):
+            self._update_task = None
+            if self._update_tasks_queue:
+                args, kwargs = self._update_tasks_queue.popleft()
+                register_update_task(*args, **kwargs)
+
+        def args_kwargs_to_containers(*args, **kwargs):
+            return (args, kwargs)
+
+        def register_update_task(*args, **kwargs):
+            self._update_task = background_tasks.create(globals.sio.emit(*args, **kwargs))
+            self._update_task.add_done_callback(remove_update_task)
+
+        if self._update_task is None:
+            register_update_task('update', {'elements': elements}, room=self.client.id)
+        else:
+            self._update_tasks_queue.append(args_kwargs_to_containers(
+                'update', {'elements': elements}, room=self.client.id))
 
     def run_method(self, name: str, *args: Any) -> None:
         if not globals.loop:
