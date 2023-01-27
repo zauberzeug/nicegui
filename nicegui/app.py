@@ -39,8 +39,9 @@ class App(FastAPI):
         globals.shutdown_handlers.append(handler)
 
     def shutdown(self) -> None:
-        """Programmatically shut down NiceGUI.
+        """Shut down NiceGUI.
 
+        This will programmatically stop the server.
         Only possible when auto-reload is disabled.
         """
         if globals.reload:

@@ -38,8 +38,9 @@ class Timer:
 
     async def _run_once(self) -> None:
         try:
+            if not await self._connected():
+                return
             with self.slot:
-                await self._connected()
                 await asyncio.sleep(self.interval)
                 if globals.state not in {globals.State.STOPPING, globals.State.STOPPED}:
                     await self._invoke_callback()
@@ -48,8 +49,9 @@ class Timer:
 
     async def _run_in_loop(self) -> None:
         try:
+            if not await self._connected():
+                return
             with self.slot:
-                await self._connected()
                 while True:
                     if self.slot.parent.client.id not in globals.clients:
                         break
@@ -77,12 +79,20 @@ class Timer:
         except Exception:
             traceback.print_exc()
 
-    async def _connected(self) -> None:
-        '''Wait for the client connection before the timer callback can can be allowed to manipulate the state.
+    async def _connected(self) -> bool:
+        '''Wait for the client connection before the timer callback can be allowed to manipulate the state.
         See https://github.com/zauberzeug/nicegui/issues/206 for details.
+        Returns True if the client is connected, False if the client is not connected and the timer should be cancelled.
         '''
-        if not self.slot.parent.client.shared:
-            await self.slot.parent.client.connected()
+        if self.slot.parent.client.shared:
+            return True
+        else:
+            # ignore served pages which do not reconnect to backend (eg. monitoring requests, scrapers etc.)
+            try:
+                await self.slot.parent.client.connected()
+                return True
+            except TimeoutError:
+                return False
 
     def cleanup(self) -> None:
         self.slot = None

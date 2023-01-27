@@ -490,35 +490,6 @@ All three functions also provide `remove` and `replace` parameters in case the p
 
     h3('Action')
 
-    @example('''#### Lifecycle functions
-
-You can register coroutines or functions to be called for the following events:
-
-- `app.on_startup`: called when NiceGUI is started or restarted
-- `app.on_shutdown`: called when NiceGUI is shut down or restarted
-- `app.on_connect`: called for each client which connects (optional argument: nicegui.Client)
-- `app.on_disconnect`: called for each client which disconnects (optional argument: nicegui.Client)
-
-When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.
-''')
-    def lifecycle_example():
-        from datetime import datetime
-
-        from nicegui import app
-
-        # dt = datetime.now()
-
-        def handle_connection():
-            global dt
-            dt = datetime.now()
-        app.on_connect(handle_connection)
-
-        label = ui.label()
-        ui.timer(1, lambda: label.set_text(f'Last new connection: {dt:%H:%M:%S}'))
-        # END OF EXAMPLE
-        global dt
-        dt = datetime.now()
-
     @example(ui.timer)
     def timer_example():
         from datetime import datetime
@@ -815,6 +786,48 @@ This is used in our [authentication demo](https://github.com/zauberzeug/nicegui/
 
         max = ui.number('max', value=100)
         ui.button('generate random number', on_click=lambda: ui.open(f'/random/{max.value}'))
+
+    h3('Lifecycle')
+
+    @example('''#### Events
+
+You can register coroutines or functions to be called for the following events:
+
+- `app.on_startup`: called when NiceGUI is started or restarted
+- `app.on_shutdown`: called when NiceGUI is shut down or restarted
+- `app.on_connect`: called for each client which connects (optional argument: nicegui.Client)
+- `app.on_disconnect`: called for each client which disconnects (optional argument: nicegui.Client)
+
+When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.
+''')
+    def lifecycle_example():
+        from datetime import datetime
+
+        from nicegui import app
+
+        # dt = datetime.now()
+
+        def handle_connection():
+            global dt
+            dt = datetime.now()
+        app.on_connect(handle_connection)
+
+        label = ui.label()
+        ui.timer(1, lambda: label.set_text(f'Last new connection: {dt:%H:%M:%S}'))
+        # END OF EXAMPLE
+        global dt
+        dt = datetime.now()
+
+    @example(app.shutdown)
+    def shutdown_example():
+        from nicegui import app
+
+        # ui.button('shutdown', on_click=app.shutdown)
+        #
+        # ui.run(reload=False)
+        # END OF EXAMPLE
+        ui.button('shutdown', on_click=lambda: ui.notify(
+            'Nah. We do not actually shutdown the documentation server. Try it in your own app!'))
 
     h3('Configuration')
 

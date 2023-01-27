@@ -10,10 +10,10 @@ class Dialog(ValueElement):
         """Dialog
 
         Creates a dialog.
-        By default it is non-modal.
-        To make it modal, set `.props('persistent')` on the dialog element.
+        By default it is dismissible by clicking or pressing ESC.
+        To make it persistent, set `.props('persistent')` on the dialog element.
 
-        :param value: whether the dialog is already opened (default: `False`)
+        :param value: whether the dialog should be opened on creation (default: `False`)
         """
         super().__init__(tag='q-dialog', value=value, on_value_change=None)
         self._result: Any = None

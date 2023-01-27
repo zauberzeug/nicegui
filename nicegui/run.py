@@ -16,6 +16,7 @@ def run(*,
         host: str = '0.0.0.0',
         port: int = 8080,
         title: str = 'NiceGUI',
+        viewport: str = 'width=device-width, initial-scale=1',
         favicon: Optional[str] = None,
         dark: Optional[bool] = False,
         binding_refresh_interval: float = 0.1,
@@ -35,6 +36,7 @@ def run(*,
     :param host: start server with this host (default: `'0.0.0.0'`)
     :param port: use this port (default: `8080`)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
+    :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
     :param favicon: relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
@@ -48,10 +50,12 @@ def run(*,
       (possible entries: audio, chart, colors, interactive_image, joystick, keyboard, log, mermaid, scene, table, video)
     :param tailwind: whether to use Tailwind (experimental, default: `True`)
     '''
+    globals.ui_run_has_been_called = True
     globals.host = host
     globals.port = port
     globals.reload = reload
     globals.title = title
+    globals.viewport = viewport
     globals.favicon = favicon
     globals.dark = dark
     globals.binding_refresh_interval = binding_refresh_interval

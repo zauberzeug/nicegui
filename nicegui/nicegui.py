@@ -47,6 +47,14 @@ def get_components(name: str):
 
 @app.on_event('startup')
 def handle_startup(with_welcome_message: bool = True) -> None:
+    if not globals.ui_run_has_been_called:
+        raise RuntimeError('\n\n'
+                           'You must call ui.run() to start the server.\n'
+                           'If ui.run() is behind a main guard\n'
+                           '   if __name__ == "__main__":\n'
+                           'remove the guard or replace it with\n'
+                           '   if __name__ in {"__main__", "__mp_main__"}:\n'
+                           'to allow for multiprocessing.')
     globals.state = globals.State.STARTING
     globals.loop = asyncio.get_running_loop()
     for t in globals.startup_handlers:

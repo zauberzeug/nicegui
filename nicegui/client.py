@@ -34,7 +34,7 @@ class Client:
         self.environ: Optional[Dict[str, Any]] = None
         self.shared = shared
 
-        with Element('q-layout', _client=self).props('view="HHH LpR FFF"') as self.layout:
+        with Element('q-layout', _client=self).props('view="HHH LpR FFF"').classes('outline-none') as self.layout:
             with Element('q-page-container'):
                 with Element('q-page'):
                     self.content = Element('div').classes('q-pa-md column items-start gap-4')
@@ -77,6 +77,7 @@ class Client:
             'vue_scripts': vue_scripts,
             'js_imports': generate_js_imports(prefix),
             'title': self.page.resolve_title(),
+            'viewport': self.page.resolve_viewport(),
             'favicon_url': get_favicon_url(self.page, prefix),
             'dark': str(self.page.resolve_dark()),
             'prefix': prefix,
