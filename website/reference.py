@@ -823,11 +823,11 @@ When NiceGUI is shut down or restarted, all tasks still in execution will be aut
         from nicegui import app
 
         # ui.button('shutdown', on_click=app.shutdown)
-
+        #
         # ui.run(reload=False)
         # END OF EXAMPLE
         ui.button('shutdown', on_click=lambda: ui.notify(
-            'Na. We do not actually shutdown the documentation server. Try it in your own app!'))
+            'Nah. We do not actually shutdown the documentation server. Try it in your own app!'))
 
     h3('Configuration')
 
