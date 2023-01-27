@@ -8,6 +8,7 @@ from ...events import ValueChangeEventArguments, handle_event
 class ValueElement(Element):
     VALUE_PROP = 'model-value'
     EVENT_ARGS = ['value']
+    UPDATE_ONE_CHANGE = True
     value = BindableProperty(on_change=lambda sender, value: sender.on_value_change(value))
 
     def __init__(self, *, value: Any, on_value_change: Optional[Callable], throttle: float = 0, **kwargs) -> None:
@@ -19,6 +20,9 @@ class ValueElement(Element):
         def handle_change(msg: Dict) -> None:
             self.set_value(self._msg_to_value(msg))
         self.on(f'update:{self.VALUE_PROP}', handle_change, self.EVENT_ARGS, throttle=throttle)
+
+        if not self.UPDATE_ONE_CHANGE:
+            self.on('blur', lambda _: self.update())
 
     def bind_value_to(self, target_object: Any, target_name: str = 'value', forward: Callable = lambda x: x):
         bind_to(self, 'value', target_object, target_name, forward)
@@ -38,7 +42,8 @@ class ValueElement(Element):
 
     def on_value_change(self, value: Any) -> None:
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
-        self.update()
+        if self.UPDATE_ONE_CHANGE:
+            self.update()
         args = ValueChangeEventArguments(sender=self, client=self.client, value=self._value_to_event_value(value))
         handle_event(self.change_handler, args)
 

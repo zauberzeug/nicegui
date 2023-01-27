@@ -4,6 +4,7 @@ from .mixins.value_element import ValueElement
 
 
 class Number(ValueElement):
+    UPDATE_ONE_CHANGE = False
 
     def __init__(self,
                  label: Optional[str] = None, *,
