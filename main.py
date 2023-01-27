@@ -218,6 +218,7 @@ ui.run()
             example_link('SVG Clock', 'displays an analog clock by updating an SVG with `ui.timer`')
             example_link('Progress', 'demonstrates a progress bar for heavy computations')
             example_link('NGINX Subpath', 'shows the setup to serve an app behind a reverse proxy subpath', filename='')
+            example_link('Local File Picker', 'demonstrates a dialog for selecting files locally on the server')
 
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
