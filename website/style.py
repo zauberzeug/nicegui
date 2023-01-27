@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 
 from nicegui import ui
@@ -26,8 +27,12 @@ def subtitle(content: str) -> ui.markdown:
     return ui.markdown(content).classes('text-xl sm:text-2xl md:text-3xl leading-7')
 
 
-def example_link(title: str, description: str, *, filename: str = 'main.py') -> None:
+def example_link(title: str, description: str) -> None:
     name = title.lower().replace(' ', '_')
+    directory = Path(__file__).parent.parent / 'examples' / name
+    content = [p for p in directory.glob('*') if p.name != '__pycache__' and not p.name.startswith('.')]
+    print(name, content, flush=True)
+    filename = 'main.py' if len(content) == 1 else ''
     with ui.link(target=f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/{filename}') \
             .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
             .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
