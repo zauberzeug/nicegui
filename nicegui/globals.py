@@ -33,6 +33,7 @@ host: str
 port: int
 reload: bool
 title: str
+viewport: str
 favicon: Optional[str]
 dark: Optional[bool]
 binding_refresh_interval: float

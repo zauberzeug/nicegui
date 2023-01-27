@@ -16,6 +16,7 @@ class page:
     def __init__(self,
                  path: str, *,
                  title: Optional[str] = None,
+                 viewport: Optional[str] = None,
                  favicon: Optional[str] = None,
                  dark: Optional[bool] = ...,
                  response_timeout: float = 3.0,
@@ -26,12 +27,14 @@ class page:
 
         :param path: route of the new page (path must start with '/')
         :param title: optional page title
+        :param viewport: optional viewport meta tag content
         :param favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0)
         """
         self.path = path
         self.title = title
+        self.viewport = viewport
         self.favicon = favicon
         self.dark = dark
         self.response_timeout = response_timeout
@@ -40,6 +43,9 @@ class page:
 
     def resolve_title(self) -> str:
         return self.title if self.title is not None else globals.title
+
+    def resolve_viewport(self) -> str:
+        return self.viewport if self.viewport is not None else globals.viewport
 
     def resolve_dark(self) -> Optional[bool]:
         return self.dark if self.dark is not ... else globals.dark
