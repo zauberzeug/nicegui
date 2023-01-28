@@ -5,12 +5,13 @@ import shlex
 from abc import ABC
 from collections import deque
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Deque, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Deque, Dict, List, Optional, Tuple, Union
 
 from . import background_tasks, binding, globals
 from .background_tasks import T
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
+from .events import handle_event
 from .slot import Slot
 
 if TYPE_CHECKING:
@@ -163,9 +164,7 @@ class Element(ABC, Visibility):
     def handle_event(self, msg: Dict) -> None:
         for listener in self._event_listeners:
             if listener.type == msg['type']:
-                result = listener.handler(msg)
-                if isinstance(result, Awaitable):
-                    background_tasks.create(result)
+                handle_event(listener.handler, msg, sender=self)
 
     def collect_descendant_ids(self) -> List[int]:
         '''includes own ID as first element'''
