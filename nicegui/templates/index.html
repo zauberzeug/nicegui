@@ -61,6 +61,9 @@
             const args = all ? e : Object.fromEntries(event.args.map(a => [a, e[a]]));
             const emitter = () => window.socket.emit("event", {id: element.id, type: event.listener_type, args});
             throttle(emitter, event.throttle, event.listener_type);
+            if (element.props["loopback"] === False && event.type == "update:model-value") {
+              element.props["model-value"] = args;
+            }
           };
           handler = Vue.withModifiers(handler, event.modifiers);
           handler = event.keys.length ? Vue.withKeys(handler, event.keys) : handler;

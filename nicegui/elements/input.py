@@ -5,7 +5,7 @@ from .mixins.value_element import ValueElement
 
 
 class Input(ValueElement):
-    UPDATE_ONE_CHANGE = False
+    LOOPBACK = False
 
     def __init__(self,
                  label: Optional[str] = None, *,
