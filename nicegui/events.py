@@ -1,21 +1,21 @@
 import traceback
 from dataclasses import dataclass
 from inspect import signature
-from typing import TYPE_CHECKING, Any, BinaryIO, Callable, List, Optional
+from typing import TYPE_CHECKING, Any, BinaryIO, Callable, List, Optional, Union
 
 from . import background_tasks, globals
 from .async_updater import AsyncUpdater
-from .client import Client
 from .helpers import is_coroutine
 
 if TYPE_CHECKING:
+    from .client import Client
     from .element import Element
 
 
 @dataclass
 class EventArguments:
     sender: 'Element'
-    client: Client
+    client: 'Client'
 
 
 @dataclass
@@ -259,17 +259,20 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
-def handle_event(handler: Optional[Callable], arguments: EventArguments) -> None:
+def handle_event(handler: Optional[Callable],
+                 arguments: Union[EventArguments, dict], *,
+                 sender: Optional['Element'] = None) -> None:
     try:
         if handler is None:
             return
         no_arguments = not signature(handler).parameters
-        assert arguments.sender.parent_slot is not None
-        with arguments.sender.parent_slot:
+        sender = arguments.sender if isinstance(arguments, EventArguments) else sender
+        assert sender.parent_slot is not None
+        with sender.parent_slot:
             result = handler() if no_arguments else handler(arguments)
         if is_coroutine(handler):
             async def wait_for_result():
-                with arguments.sender.parent_slot:
+                with sender.parent_slot:
                     await AsyncUpdater(result)
             if globals.loop and globals.loop.is_running():
                 background_tasks.create(wait_for_result(), name=str(handler))
