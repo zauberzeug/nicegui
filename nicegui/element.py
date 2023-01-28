@@ -12,6 +12,7 @@ from .background_tasks import T
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .events import handle_event
+from .helpers import args_and_kwargs_to_container
 from .slot import Slot
 
 if TYPE_CHECKING:
@@ -186,9 +187,6 @@ class Element(ABC, Visibility):
                 args, kwargs = self._update_tasks_queue.popleft()
                 register_update_task(*args, **kwargs)
 
-        def args_kwargs_to_containers(*args, **kwargs):
-            return (args, kwargs)
-
         def register_update_task(*args, **kwargs):
             self._update_task = background_tasks.create(globals.sio.emit(*args, **kwargs))
             self._update_task.add_done_callback(remove_update_task)
@@ -196,7 +194,7 @@ class Element(ABC, Visibility):
         if self._update_task is None:
             register_update_task('update', {'elements': elements}, room=self.client.id)
         else:
-            self._update_tasks_queue.append(args_kwargs_to_containers(
+            self._update_tasks_queue.append(args_and_kwargs_to_container(
                 'update', {'elements': elements}, room=self.client.id))
 
     def run_method(self, name: str, *args: Any) -> None:
