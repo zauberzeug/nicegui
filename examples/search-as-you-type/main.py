@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import asyncio
 from typing import Optional
 
@@ -13,7 +12,6 @@ running_query: Optional[asyncio.Task] = None
 
 async def search(e: events.ValueChangeEventArguments) -> None:
     '''Search for cocktails as you type.'''
-
     global running_query
     if running_query:
         running_query.cancel()  # cancel the previous query; happens when you type fast
@@ -25,16 +23,15 @@ async def search(e: events.ValueChangeEventArguments) -> None:
     if response.text == '':
         return
     with results:  # enter the context of the the results row
-        for o in response.json()['drinks'] or []:  # iterate over the response data of the api
-            with ui.image(o['strDrinkThumb']).classes('w-64'):
-                ui.label(o['strDrink']).classes('absolute-bottom text-subtitle2 text-center')
+        for drink in response.json()['drinks'] or []:  # iterate over the response data of the api
+            with ui.image(drink['strDrinkThumb']).classes('w-64'):
+                ui.label(drink['strDrink']).classes('absolute-bottom text-subtitle2 text-center')
     running_query = None
 
 # create a search field which is initially focused and leaves space at the top
-search_field = ui.input(on_change=search)\
-    .props('autofocus outlined rounded item-aligned input-class="ml-3"')\
+search_field = ui.input(on_change=search) \
+    .props('autofocus outlined rounded item-aligned input-class="ml-3"') \
     .classes('w-96 self-center mt-24 transition-all')
 results = ui.row()
-
 
 ui.run()
