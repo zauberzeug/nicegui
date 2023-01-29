@@ -24,7 +24,8 @@ jobs:
         run: |
           poetry config virtualenvs.create false
           poetry install
-          pip install opencv-python opencv-contrib-python-headless
+          # install packages to run the examples
+          pip install opencv-python opencv-contrib-python-headless httpx replicate
       - name: test startup
         run: ./test_startup.sh
       - name: setup chromedriver

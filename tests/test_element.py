@@ -85,16 +85,16 @@ def test_props(screen: Screen):
         assert screen.selenium.find_element(By.XPATH, f'//label[{" and ".join(class_conditions)}]')
 
     screen.open('/')
-    assert_props('standard', 'labeled')
+    assert_props('standard')
 
     input.props('dark')
-    assert_props('standard', 'labeled', 'dark')
+    assert_props('standard', 'dark')
 
     input.props('dark')
-    assert_props('standard', 'labeled', 'dark')
+    assert_props('standard', 'dark')
 
     input.props(remove='dark')
-    assert_props('standard', 'labeled')
+    assert_props('standard')
 
 
 def test_remove_and_clear(screen: Screen):

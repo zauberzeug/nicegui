@@ -2,10 +2,10 @@
   position: fixed;
   bottom: 0;
   left: 0;
-  background-color: white;
-  border: 1pt solid #eee;
+  background-color: --q-dark-page;
+  border: 1pt solid rgba(127, 127, 127, 0.25);
   border-radius: 0.25em;
-  box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.02);
+  box-shadow: 0 0 0.5em rgba(127, 127, 127, 0.05);
   margin: 2em;
   padding: 1.5em 4em;
   display: flex;
