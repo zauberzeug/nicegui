@@ -20,7 +20,7 @@ BROWSER_BGCOLOR = '#00000010'
 BROWSER_COLOR = '#ffffff'
 
 
-def remove_prefix(text, prefix):
+def remove_prefix(text: str, prefix: str) -> str:
     return text[len(prefix):] if text.startswith(prefix) else text
 
 
