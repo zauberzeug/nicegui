@@ -11,11 +11,6 @@ export default {
       </svg>
     </div>
   `,
-  data() {
-    return {
-      content: "",
-    };
-  },
   mounted() {
     this.image = this.$el.firstChild;
     const handle_completion = () => {
@@ -62,17 +57,9 @@ export default {
         });
       });
     }
-
-    this.is_initialized = false;
-    const sendConnectEvent = () => {
-      if (!this.is_initialized) this.$emit("connect");
-      else clearInterval(connectInterval);
-    };
-    const connectInterval = setInterval(sendConnectEvent, 100);
   },
   methods: {
     set_source(source) {
-      this.is_initialized = true;
       if (this.loading) {
         this.waiting_source = source;
         return;
@@ -80,12 +67,10 @@ export default {
       this.loading = true;
       this.image.src = source;
     },
-    set_content(content) {
-      this.content = content;
-    },
   },
   props: {
     src: String,
+    content: String,
     events: Array,
     cross: Boolean,
   },
