@@ -57,8 +57,9 @@ def handle_startup(with_welcome_message: bool = True) -> None:
                            'to allow for multiprocessing.')
     globals.state = globals.State.STARTING
     globals.loop = asyncio.get_running_loop()
-    for t in globals.startup_handlers:
-        safe_invoke(t)
+    with globals.index_client:
+        for t in globals.startup_handlers:
+            safe_invoke(t)
     background_tasks.create(binding.loop())
     background_tasks.create(prune_clients())
     background_tasks.create(prune_slot_stacks())
@@ -70,8 +71,9 @@ def handle_startup(with_welcome_message: bool = True) -> None:
 @app.on_event('shutdown')
 def handle_shutdown() -> None:
     globals.state = globals.State.STOPPING
-    for t in globals.shutdown_handlers:
-        safe_invoke(t)
+    with globals.index_client:
+        for t in globals.shutdown_handlers:
+            safe_invoke(t)
     globals.state = globals.State.STOPPED
 
 
