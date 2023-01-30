@@ -20,6 +20,10 @@ BROWSER_BGCOLOR = '#00000010'
 BROWSER_COLOR = '#ffffff'
 
 
+def remove_prefix(text, prefix):
+    return text[len(prefix):] if text.startswith(prefix) else text
+
+
 class example:
 
     def __init__(self,
@@ -49,7 +53,7 @@ class example:
                 code = inspect.getsource(f).split('# END OF EXAMPLE')[0].strip().splitlines()
                 while not code[0].startswith(' ' * 8):
                     del code[0]
-                code = ['from nicegui import ui'] + [line[8:].removeprefix('# ') for line in code]
+                code = ['from nicegui import ui'] + [remove_prefix(line[8:], '# ') for line in code]
                 code = ['' if line == '#' else line for line in code]
                 if not code[-1].startswith('ui.run('):
                     code.append('')
