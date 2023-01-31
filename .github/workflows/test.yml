@@ -32,6 +32,13 @@ jobs:
         uses: nanasess/setup-chromedriver@v1
       - name: pytest
         run: pytest
+      - name: upload screenshots
+        uses: actions/upload-artifact@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: pytest-screenshots
+          path: tests/screenshots
 
   slack:
     needs:
