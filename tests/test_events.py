@@ -74,9 +74,9 @@ def test_event_with_update_before_await(screen: Screen):
 
     screen.open('/')
     screen.click('update')
-    screen.wait_for('1')
+    screen.should_contain('1')
     screen.should_not_contain('2')
-    screen.wait_for('2')
+    screen.should_contain('2')
 
 
 def test_event_modifiers(screen: Screen):
