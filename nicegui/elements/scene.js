@@ -67,7 +67,7 @@ export default {
     light.position.set(5, 10, 40);
     this.scene.add(light);
 
-    const renderer = undefined;
+    let renderer = undefined;
     try {
       renderer = new THREE.WebGLRenderer({
         antialias: true,
