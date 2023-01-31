@@ -7,7 +7,7 @@ export default {
           <line x1="100" y1="0" x2="100" y2="100%" stroke="black" />
           <line x1="0" y1="100" x2="100%" y2="100" stroke="black" />
         </g>
-        <g v-html="content"></g>
+        <g v-html="content" style="display:none"></g>
       </svg>
     </div>
   `,
@@ -46,6 +46,7 @@ export default {
     this.image.onload = (e) => {
       const viewBox = `0 0 ${this.image.naturalWidth} ${this.image.naturalHeight}`;
       this.svg.setAttribute("viewBox", viewBox);
+      this.svg.lastChild.setAttribute("style", "");
     };
     this.image.src = this.src;
     for (const type of this.events) {
