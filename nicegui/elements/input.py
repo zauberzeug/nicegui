@@ -29,9 +29,9 @@ class Input(ValueElement):
         :param on_change: callback to execute when the input is confirmed by leaving the focus
         """
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
-        if label:
+        if label is not None:
             self._props['label'] = label
-        if placeholder:
+        if placeholder is not None:
             self._props['placeholder'] = placeholder
         self._props['type'] = 'password' if password else 'text'
 
