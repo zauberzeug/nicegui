@@ -40,8 +40,8 @@ def test_adding_elements_with_async_await(screen: Screen):
         ui.timer(1.1, add_b, once=True)
 
     screen.open('/')
-    screen.wait_for('A')
-    screen.wait_for('B')
+    screen.should_contain('A')
+    screen.should_contain('B')
     cA = screen.selenium.find_element(By.ID, cardA.id)
     cA.find_element(By.XPATH, './/*[contains(text(), "A")]')
     cB = screen.selenium.find_element(By.ID, cardB.id)
@@ -65,11 +65,14 @@ def test_autoupdate_after_connected(screen: Screen):
     screen.should_contain('before connected')
     screen.should_contain('after connected')
     screen.should_not_contain('one')
-    screen.wait_for('one')
+    screen.wait(0.5)
+    screen.should_contain('one')
     screen.should_not_contain('two')
-    screen.wait_for('two')
+    screen.wait(0.5)
+    screen.should_contain('two')
     screen.should_not_contain('three')
-    screen.wait_for('three')
+    screen.wait(0.5)
+    screen.should_contain('three')
 
 
 def test_autoupdate_on_async_event_handler(screen: Screen):
@@ -85,7 +88,7 @@ def test_autoupdate_on_async_event_handler(screen: Screen):
     screen.click('Dialog')
     screen.should_contain('This should be visible')
     screen.should_not_contain('New text after 1 second')
-    screen.wait_for('New text after 1 second')
+    screen.should_contain('New text after 1 second')
 
 
 def test_autoupdate_on_async_timer_callback(screen: Screen):
@@ -99,9 +102,11 @@ def test_autoupdate_on_async_timer_callback(screen: Screen):
     screen.open('/')
     screen.should_contain('0')
     screen.should_not_contain('1')
-    screen.wait_for('1', timeout=3.0)
+    screen.wait(2.0)
+    screen.should_contain('1')
     screen.should_not_contain('2')
-    screen.wait_for('2', timeout=3.0)
+    screen.wait(2.0)
+    screen.should_contain('2')
 
 
 def test_adding_elements_from_different_tasks(screen: Screen):
@@ -121,8 +126,8 @@ def test_adding_elements_from_different_tasks(screen: Screen):
     screen.open('/')
     background_tasks.create(add_label1())
     background_tasks.create(add_label2())
-    screen.wait_for('1')
-    screen.wait_for('2')
+    screen.should_contain('1')
+    screen.should_contain('2')
     c1 = screen.selenium.find_element(By.ID, card1.id)
     c1.find_element(By.XPATH, './/*[contains(text(), "1")]')
     c2 = screen.selenium.find_element(By.ID, card2.id)
