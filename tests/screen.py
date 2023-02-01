@@ -42,6 +42,7 @@ class Screen:
     def stop_server(self) -> None:
         '''Stop the webserver.'''
         self.close()
+        self.caplog.clear()
         globals.server.should_exit = True
         self.server_thread.join()
 
@@ -119,16 +120,6 @@ class Screen:
 
     def wait(self, t: float) -> None:
         time.sleep(t)
-
-    def wait_for(self, text: str, *, timeout: float = 1.0) -> None:
-        deadline = time.time() + timeout
-        while time.time() < deadline:
-            try:
-                self.find(text)
-                return
-            except Exception:
-                self.wait(0.1)
-        raise TimeoutError()
 
     def shot(self, name: str) -> None:
         os.makedirs(self.SCREENSHOT_DIR, exist_ok=True)

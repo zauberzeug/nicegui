@@ -9,7 +9,7 @@ jobs:
         python: ["3.7", "3.8", "3.9", "3.10", "3.11"]
       fail-fast: false
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3
       - name: set up Python
@@ -32,6 +32,13 @@ jobs:
         uses: nanasess/setup-chromedriver@v1
       - name: pytest
         run: pytest
+      - name: upload screenshots
+        uses: actions/upload-artifact@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: pytest-screenshots
+          path: tests/screenshots
 
   slack:
     needs:

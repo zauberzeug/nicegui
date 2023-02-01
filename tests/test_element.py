@@ -14,6 +14,7 @@ def test_classes(screen: Screen):
                                             f'//*[normalize-space(@class)="{classes}" and text()="Some label"]')
 
     screen.open('/')
+    screen.wait(0.5)
     assert_classes('')
 
     label.classes('one')
@@ -53,6 +54,7 @@ def test_style(screen: Screen):
         assert screen.selenium.find_element(By.XPATH, f'//*[normalize-space(@style)="{style}" and text()="Some label"]')
 
     screen.open('/')
+    screen.wait(0.5)
     assert_style('')
 
     label.style('color: red')
@@ -85,6 +87,7 @@ def test_props(screen: Screen):
         assert screen.selenium.find_element(By.XPATH, f'//label[{" and ".join(class_conditions)}]')
 
     screen.open('/')
+    screen.wait(0.5)
     assert_props('standard')
 
     input.props('dark')

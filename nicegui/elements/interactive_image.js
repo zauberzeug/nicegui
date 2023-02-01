@@ -7,15 +7,10 @@ export default {
           <line x1="100" y1="0" x2="100" y2="100%" stroke="black" />
           <line x1="0" y1="100" x2="100%" y2="100" stroke="black" />
         </g>
-        <g v-html="content"></g>
+        <g v-html="content" style="display:none"></g>
       </svg>
     </div>
   `,
-  data() {
-    return {
-      content: "",
-    };
-  },
   mounted() {
     this.image = this.$el.firstChild;
     const handle_completion = () => {
@@ -51,6 +46,7 @@ export default {
     this.image.onload = (e) => {
       const viewBox = `0 0 ${this.image.naturalWidth} ${this.image.naturalHeight}`;
       this.svg.setAttribute("viewBox", viewBox);
+      this.svg.lastChild.setAttribute("style", "");
     };
     this.image.src = this.src;
     for (const type of this.events) {
@@ -62,17 +58,9 @@ export default {
         });
       });
     }
-
-    this.is_initialized = false;
-    const sendConnectEvent = () => {
-      if (!this.is_initialized) this.$emit("connect");
-      else clearInterval(connectInterval);
-    };
-    const connectInterval = setInterval(sendConnectEvent, 100);
   },
   methods: {
     set_source(source) {
-      this.is_initialized = true;
       if (this.loading) {
         this.waiting_source = source;
         return;
@@ -80,12 +68,10 @@ export default {
       this.loading = true;
       this.image.src = source;
     },
-    set_content(content) {
-      this.content = content;
-    },
   },
   props: {
     src: String,
+    content: String,
     events: Array,
     cross: Boolean,
   },

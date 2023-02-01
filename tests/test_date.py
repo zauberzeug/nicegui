@@ -21,8 +21,8 @@ def test_date_with_range(screen: Screen):
     screen.click('19')
     screen.should_contain('4 days')
 
-    screen.click('26')
-    screen.click('29')
+    screen.click('25')
+    screen.click('28')
     screen.should_contain('4 days')
 
 
@@ -34,8 +34,8 @@ def test_date_with_multi_selection(screen: Screen):
     screen.click('19')
     screen.should_contain('2 days')
 
-    screen.click('26')
-    screen.click('29')
+    screen.click('25')
+    screen.click('28')
     screen.should_contain('4 days')
 
 
@@ -47,6 +47,6 @@ def test_date_with_range_and_multi_selection(screen: Screen):
     screen.click('19')
     screen.should_contain('4 days')
 
-    screen.click('26')
-    screen.click('29')
+    screen.click('25')
+    screen.click('28')
     screen.should_contain('8 days')

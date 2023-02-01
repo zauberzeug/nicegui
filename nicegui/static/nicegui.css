@@ -2,7 +2,6 @@
   position: fixed;
   bottom: 0;
   left: 0;
-  background-color: --q-dark-page;
   border: 1pt solid rgba(127, 127, 127, 0.25);
   border-radius: 0.25em;
   box-shadow: 0 0 0.5em rgba(127, 127, 127, 0.05);
@@ -14,6 +13,12 @@
   opacity: 0;
   transition-duration: 500ms;
   pointer-events: none;
+}
+.body--dark #popup {
+  background-color: black;
+}
+.body--light #popup {
+  background-color: white;
 }
 #popup[style*="opacity: 1;"] {
   transition-delay: 2000ms;
