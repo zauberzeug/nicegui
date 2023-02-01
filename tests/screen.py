@@ -42,6 +42,7 @@ class Screen:
     def stop_server(self) -> None:
         '''Stop the webserver.'''
         self.close()
+        self.caplog.clear()
         globals.server.should_exit = True
         self.server_thread.join()
 
