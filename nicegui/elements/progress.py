@@ -8,14 +8,7 @@ from .mixins.value_element import ValueElement
 class LinearProgress(ValueElement):
     VALUE_PROP = 'value'
 
-    def __init__(self,
-                 value: float = 0.0, *,
-                 size: Optional[str] = None,
-                 show_value: bool = True,
-                 throttle: float = 0,
-                 only_serverside_react: bool = False,
-                 server_side_loopback: bool = False,
-                 **kwargs) -> None:
+    def __init__(self, value: float = 0.0, *, size: Optional[str] = None, show_value: bool = True) -> None:
         """Linear Progress
 
         A linear progress bar wrapping Quasar's
@@ -25,14 +18,7 @@ class LinearProgress(ValueElement):
         :param size: the height of the progress bar (default: "20px" with value label and "4px" without)
         :param show_value: whether to show a value label in the center (default: `True`)
         """
-        super().__init__(
-            tag='q-linear-progress',
-            value=value,
-            on_value_change=None,
-            throttle=throttle,
-            only_serverside_react=only_serverside_react,
-            server_side_loopback=server_side_loopback,
-            **kwargs)
+        super().__init__(tag='q-linear-progress', value=value, on_value_change=None)
         self._props['size'] = size if size is not None else '20px' if show_value else '4px'
 
         if show_value:
@@ -43,16 +29,8 @@ class LinearProgress(ValueElement):
 class CircularProgress(ValueElement):
     VALUE_PROP = 'value'
 
-    def __init__(self,
-                 value: float = 0.0, *,
-                 min: float = 0.0,
-                 max: float = 1.0,
-                 size: str = 'xl',
-                 show_value: bool = True,
-                 throttle: float = 0,
-                 only_serverside_react: bool = False,
-                 server_side_loopback: bool = False,
-                 **kwargs) -> None:
+    def __init__(self, value: float = 0.0, *,
+                 min: float = 0.0, max: float = 1.0, size: str = 'xl', show_value: bool = True) -> None:
         """Circular Progress
 
         A circular progress bar wrapping Quasar's
@@ -62,14 +40,7 @@ class CircularProgress(ValueElement):
         :param size: the size of the progress circle (default: "xl")
         :param show_value: whether to show a value label in the center (default: `True`)
         """
-        super().__init__(
-            tag='q-circular-progress',
-            value=value,
-            on_value_change=None,
-            throttle=throttle,
-            only_serverside_react=only_serverside_react,
-            server_side_loopback=server_side_loopback,
-            **kwargs)
+        super().__init__(tag='q-circular-progress', value=value, on_value_change=None)
         self._props['min'] = min
         self._props['max'] = max
         self._props['size'] = size

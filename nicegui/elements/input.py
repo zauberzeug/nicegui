@@ -12,11 +12,7 @@ class Input(ValueElement):
                  value: str = '',
                  password: bool = False,
                  password_toggle_button: bool = False,
-                 on_change: Optional[Callable] = None,
-                 throttle: float = 0,
-                 only_serverside_react: bool = False,
-                 server_side_loopback: bool = False,
-                 **kwargs) -> None:
+                 on_change: Optional[Callable] = None) -> None:
         """Text Input
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
@@ -32,14 +28,7 @@ class Input(ValueElement):
         :param password_toggle_button: whether to show a button to toggle the password visibility (default: False)
         :param on_change: callback to execute when the input is confirmed by leaving the focus
         """
-        super().__init__(
-            tag='q-input',
-            value=value,
-            on_value_change=on_change,
-            throttle=throttle,
-            only_serverside_react=only_serverside_react,
-            server_side_loopback=server_side_loopback,
-            **kwargs)
+        super().__init__(tag='q-input', value=value, on_value_change=on_change)
         self._props['label'] = label
         self._props['placeholder'] = placeholder
         self._props['type'] = 'password' if password else 'text'

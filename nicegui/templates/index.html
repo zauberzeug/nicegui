@@ -32,19 +32,11 @@
       const elements = {{ elements | safe }};
 
       const throttles = new Set();
-      function throttled_react_on_event(element, event, args, callback, time, id) {
-        if (("is-value-element" in element.props) && element.props["is-value-element"]) {
-          if ((!("only-serverside-react" in element.props)) || (("only-serverside-react" in element.props) && !element.props["only-serverside-react"])) {
-            if ("update:model-value" === event.type) {
-              element.props["model-value"] = args;
-            };
-          };
-        };
-
+      function throttle(callback, time, id) {
         if (time <= 0) {
           callback();
           return;
-        };
+        }
         if (throttles.has(id)) return;
         throttles.add(id);
         callback();
@@ -68,7 +60,7 @@
             const all = typeof e !== 'object' || event.args.includes('*');
             const args = all ? e : Object.fromEntries(event.args.map(a => [a, e[a]]));
             const emitter = () => window.socket.emit("event", {id: element.id, type: event.listener_type, args});
-            throttled_react_on_event(element, event, args, emitter, event.throttle, event.listener_type);
+            throttle(emitter, event.throttle, event.listener_type);
           };
           handler = Vue.withModifiers(handler, event.modifiers);
           handler = event.keys.length ? Vue.withKeys(handler, event.keys) : handler;
