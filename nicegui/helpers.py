@@ -2,12 +2,10 @@ import asyncio
 import functools
 import inspect
 from contextlib import nullcontext
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Union
+from typing import Any, Awaitable, Callable, Optional, Union
 
 from . import background_tasks, globals
-
-if TYPE_CHECKING:
-    from .client import Client
+from .client import Client
 
 
 def is_coroutine(object: Any) -> bool:
@@ -16,7 +14,7 @@ def is_coroutine(object: Any) -> bool:
     return asyncio.iscoroutinefunction(object)
 
 
-def safe_invoke(func: Union[Callable, Awaitable], client: Optional['Client'] = None) -> None:
+def safe_invoke(func: Union[Callable, Awaitable], client: Optional[Client] = None) -> None:
     try:
         if isinstance(func, Awaitable):
             async def func_with_client():
