@@ -25,8 +25,8 @@ strategy = "canary"
   protocol = "tcp"
   script_checks = []
   [services.concurrency]
-    hard_limit = 30
-    soft_limit = 20
+    hard_limit = 20
+    soft_limit = 10
     type = "connections"
 
   [[services.ports]]
