@@ -7,6 +7,7 @@ from .mixins.value_element import ValueElement
 
 
 class ColorInput(ValueElement):
+    LOOPBACK = False
 
     def __init__(self, label: Optional[str] = None, *,
                  placeholder: Optional[str] = None, value: str = '', on_change: Optional[Callable] = None) -> None:

@@ -638,6 +638,7 @@ In the example to the right, the displayed ID on the auto-index page remains con
 Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/>).
 If type-annotated, they are automatically converted to bool, int, float and complex values.
 If the page function expects a `request` argument, the request object is automatically provided.
+The `client` argument provides access to the websocket connection, layout, etc.
 ''')
     def page_with_path_parameters_example():
         @ui.page('/repeat/{word}/{count}')
