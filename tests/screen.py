@@ -17,6 +17,7 @@ IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-in
 
 
 class Screen:
+    IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshots')
     UI_RUN_KWARGS = {'port': PORT, 'show': False, 'reload': False}
 
@@ -111,9 +112,11 @@ class Screen:
                     raise AssertionError(f'Found "{text}" but it is hidden')
             return element
         except NoSuchElementException as e:
+            self.selenium.implicitly_wait(0)
             for input in self.selenium.find_elements(By.TAG_NAME, 'input'):
                 if input.get_attribute('value') == text:
                     return input
+            self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
             raise AssertionError(f'Could not find "{text}"') from e
 
     def render_js_logs(self) -> str:

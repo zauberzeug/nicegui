@@ -30,7 +30,7 @@ def capabilities(capabilities: Dict) -> Dict:
 
 @pytest.fixture
 def selenium(selenium: webdriver.Chrome) -> webdriver.Chrome:
-    selenium.implicitly_wait(4)
+    selenium.implicitly_wait(Screen.IMPLICIT_WAIT)
     selenium.set_page_load_timeout(4)
     return selenium
 
