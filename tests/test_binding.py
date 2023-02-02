@@ -70,16 +70,16 @@ def test_binding_to_input(screen: Screen):
     element = ui.input().bind_value(data, 'text')
 
     screen.open('/')
-    screen.should_contain('one')
+    screen.should_contain_input('one')
     screen.type(Keys.TAB)
     screen.type('two')
-    screen.should_contain('two')
+    screen.should_contain_input('two')
     assert data.text == 'two'
     data.text = 'three'
-    screen.should_contain('three')
+    screen.should_contain_input('three')
     element.set_value('four')
-    screen.should_contain('four')
+    screen.should_contain_input('four')
     assert data.text == 'four'
     element.value = 'five'
-    screen.should_contain('five')
+    screen.should_contain_input('five')
     assert data.text == 'five'

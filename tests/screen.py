@@ -85,6 +85,15 @@ class Screen:
             self.find(text)
             self.selenium.implicitly_wait(2)
 
+    def should_contain_input(self, text: str) -> None:
+        deadline = time.time() + self.IMPLICIT_WAIT
+        while time.time() < deadline:
+            for input in self.selenium.find_elements(By.TAG_NAME, 'input'):
+                if input.get_attribute('value') == text:
+                    return
+            self.wait(0.1)
+        raise AssertionError(f'Could not find input with value "{text}"')
+
     def click(self, target_text: str) -> WebElement:
         element = self.find(target_text)
         try:
@@ -112,11 +121,6 @@ class Screen:
                     raise AssertionError(f'Found "{text}" but it is hidden')
             return element
         except NoSuchElementException as e:
-            self.selenium.implicitly_wait(0)
-            for input in self.selenium.find_elements(By.TAG_NAME, 'input'):
-                if input.get_attribute('value') == text:
-                    return input
-            self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
             raise AssertionError(f'Could not find "{text}"') from e
 
     def render_js_logs(self) -> str:
