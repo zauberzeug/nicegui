@@ -29,7 +29,7 @@ class Number(ValueElement):
             self._props['placeholder'] = placeholder
 
     def _msg_to_value(self, msg: Dict) -> Any:
-        return float(msg['args'])
+        return float(msg['args']) if msg['args'] else None
 
     def _value_to_model_value(self, value: Any) -> Any:
         if value is None:
