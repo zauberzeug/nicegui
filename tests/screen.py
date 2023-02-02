@@ -76,7 +76,9 @@ class Screen:
             self.selenium.switch_to.window(self.selenium.window_handles[tab_id])
 
     def should_contain(self, text: str) -> None:
-        assert self.selenium.title == text or self.find(text), f'could not find "{text}"'
+        if self.selenium.title == text:
+            return
+        self.find(text)
 
     def should_not_contain(self, text: str) -> None:
         assert self.selenium.title != text
