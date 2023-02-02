@@ -96,6 +96,11 @@ class Screen:
         action = ActionChains(self.selenium)
         action.move_to_element_with_offset(element, x, y).click().perform()
 
+    def type(self, text: str) -> None:
+        self.selenium.execute_script("window.focus();")
+        self.wait(0.2)
+        self.selenium.switch_to.active_element.send_keys(text)
+
     def find(self, text: str) -> WebElement:
         try:
             query = f'//*[not(self::script) and not(self::style) and contains(text(), "{text}")]'
@@ -106,6 +111,9 @@ class Screen:
                     raise AssertionError(f'Found "{text}" but it is hidden')
             return element
         except NoSuchElementException as e:
+            for input in self.selenium.find_elements(By.TAG_NAME, 'input'):
+                if input.get_attribute('value') == text:
+                    return input
             raise AssertionError(f'Could not find "{text}"') from e
 
     def render_js_logs(self) -> str:
