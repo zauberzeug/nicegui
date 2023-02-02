@@ -67,7 +67,7 @@ def test_binding_to_input(screen: Screen):
     class Model:
         text = 'one'
     data = Model()
-    input = ui.input().bind_value(data, 'text')
+    element = ui.input().bind_value(data, 'text')
 
     screen.open('/')
     screen.should_contain('one')
@@ -77,9 +77,9 @@ def test_binding_to_input(screen: Screen):
     assert data.text == 'two'
     data.text = 'three'
     screen.should_contain('three')
-    input.set_value('four')
+    element.set_value('four')
     screen.should_contain('four')
     assert data.text == 'four'
-    input.value = 'five'
+    element.value = 'five'
     screen.should_contain('five')
     assert data.text == 'five'
