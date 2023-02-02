@@ -1,6 +1,5 @@
 from typing import List
 
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
@@ -42,6 +41,6 @@ def test_await_dialog(screen: Screen):
     screen.click('Open')
     screen.click('No')
     screen.click('Open')
-    ActionChains(screen.selenium).send_keys(Keys.ESCAPE).perform()
+    screen.type(Keys.ESCAPE)
     screen.wait(0.5)
     assert results == ['Yes', 'No', None]

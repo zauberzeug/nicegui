@@ -17,6 +17,7 @@ IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-in
 
 
 class Screen:
+    IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshots')
     UI_RUN_KWARGS = {'port': PORT, 'show': False, 'reload': False}
 
@@ -75,7 +76,9 @@ class Screen:
             self.selenium.switch_to.window(self.selenium.window_handles[tab_id])
 
     def should_contain(self, text: str) -> None:
-        assert self.selenium.title == text or self.find(text), f'could not find "{text}"'
+        if self.selenium.title == text:
+            return
+        self.find(text)
 
     def should_not_contain(self, text: str) -> None:
         assert self.selenium.title != text
@@ -83,6 +86,15 @@ class Screen:
             self.selenium.implicitly_wait(0.5)
             self.find(text)
             self.selenium.implicitly_wait(2)
+
+    def should_contain_input(self, text: str) -> None:
+        deadline = time.time() + self.IMPLICIT_WAIT
+        while time.time() < deadline:
+            for input in self.selenium.find_elements(By.TAG_NAME, 'input'):
+                if input.get_attribute('value') == text:
+                    return
+            self.wait(0.1)
+        raise AssertionError(f'Could not find input with value "{text}"')
 
     def click(self, target_text: str) -> WebElement:
         element = self.find(target_text)
@@ -95,6 +107,11 @@ class Screen:
     def click_at_position(self, element: WebElement, x: int, y: int) -> None:
         action = ActionChains(self.selenium)
         action.move_to_element_with_offset(element, x, y).click().perform()
+
+    def type(self, text: str) -> None:
+        self.selenium.execute_script("window.focus();")
+        self.wait(0.2)
+        self.selenium.switch_to.active_element.send_keys(text)
 
     def find(self, text: str) -> WebElement:
         try:
