@@ -106,7 +106,7 @@ export default {
     grid.rotateX(Math.PI / 2);
     this.scene.add(grid);
 
-    new THREE.OrbitControls(this.camera, renderer.domElement);
+    this.controls = new THREE.OrbitControls(this.camera, renderer.domElement);
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
@@ -333,6 +333,7 @@ export default {
           this.camera.up.set(p[3], p[4], p[5]); // NOTE: before calling lookAt
           this.look_at.set(p[6], p[7], p[8]);
           this.camera.lookAt(p[6], p[7], p[8]);
+          this.controls.target.set(p[6], p[7], p[8]);
         })
         .start();
     },
