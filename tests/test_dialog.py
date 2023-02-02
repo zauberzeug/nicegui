@@ -42,6 +42,6 @@ def test_await_dialog(screen: Screen):
     screen.click('Open')
     screen.click('No')
     screen.click('Open')
-    ActionChains(screen.selenium).send_keys(Keys.ESCAPE).perform()
+    screen.type(Keys.ESCAPE)
     screen.wait(0.5)
     assert results == ['Yes', 'No', None]
