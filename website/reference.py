@@ -168,6 +168,14 @@ def create_full() -> None:
     def markdown_example():
         ui.markdown('''This is **Markdown**.''')
 
+    @example(ui.mermaid)
+    def mermaid_example():
+        ui.mermaid('''
+        graph LR;
+            A --> B;
+            A --> C;
+        ''')
+
     @example(ui.html)
     def html_example():
         ui.html('This is <strong>HTML</strong>.')
