@@ -12,7 +12,6 @@ register_component('markdown', __file__, 'markdown.js', ['lib/mermaid.min.js'])
 
 
 class Markdown(ContentElement):
-    CONTENT_PROP = 'content'
 
     def __init__(self, content: str = '', *, extras: List[str] = ['fenced-code-blocks', 'tables']) -> None:
         """Markdown Element
@@ -27,8 +26,8 @@ class Markdown(ContentElement):
 
     def on_content_change(self, content: str) -> None:
         html = prepare_content(content, extras=' '.join(self.extras))
-        if self._props.get('content') != html:
-            self._props['content'] = html
+        if self._props.get('innerHTML') != html:
+            self._props['innerHTML'] = html
             self.run_method('update', html)
 
 

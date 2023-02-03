@@ -1,7 +1,7 @@
 export default {
   template: `<div></div>`,
   mounted() {
-    this.update(this.content);
+    this.update(this.$el.innerHTML);
   },
   methods: {
     update(content) {
@@ -11,9 +11,6 @@ export default {
         mermaid.render(`mermaid_${this.$el.id}_${i}`, code, (svg) => (pre.innerHTML = svg));
       });
     },
-  },
-  props: {
-    content: String,
   },
 };
 
