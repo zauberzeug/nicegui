@@ -5,10 +5,9 @@ from abc import ABC
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
 
-from . import background_tasks, binding, globals
+from . import background_tasks, binding, events, globals, updates
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
-from .events import handle_event
 from .slot import Slot
 
 if TYPE_CHECKING:
@@ -159,7 +158,7 @@ class Element(ABC, Visibility):
     def handle_event(self, msg: Dict) -> None:
         for listener in self._event_listeners:
             if listener.type == msg['type']:
-                handle_event(listener.handler, msg, sender=self)
+                events.handle_event(listener.handler, msg, sender=self)
 
     def collect_descendant_ids(self) -> List[int]:
         '''includes own ID as first element'''
@@ -170,11 +169,7 @@ class Element(ABC, Visibility):
         return ids
 
     def update(self) -> None:
-        if not globals.loop:
-            return
-        ids = self.collect_descendant_ids()
-        elements = {id: self.client.elements[id].to_dict() for id in ids}
-        background_tasks.create(globals.sio.emit('update', {'elements': elements}, room=self.client.id))
+        updates.enqueue(self)
 
     def run_method(self, name: str, *args: Any) -> None:
         if not globals.loop:
