@@ -28,7 +28,9 @@ async def loop() -> None:
     '''Repeatedly updates all elements in the update queue.'''
     while True:
         elements: Dict[int, 'Element'] = {}
-        for _, value in update_queue.items():
+        for id, value in sorted(update_queue.items()):  # NOTE: sort by element ID to process parents before children
+            if id in elements:
+                continue
             element: 'Element' = value[0]
             for id in element.collect_descendant_ids():
                 elements[id] = element.client.elements[id].to_dict()
