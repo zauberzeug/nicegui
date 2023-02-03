@@ -65,14 +65,11 @@ def test_autoupdate_after_connected(screen: Screen):
     screen.should_contain('before connected')
     screen.should_contain('after connected')
     screen.should_not_contain('one')
-    screen.wait(0.5)
-    screen.should_contain('one')
+    screen.wait_for('one')
     screen.should_not_contain('two')
-    screen.wait(0.5)
-    screen.should_contain('two')
+    screen.wait_for('two')
     screen.should_not_contain('three')
-    screen.wait(0.5)
-    screen.should_contain('three')
+    screen.wait_for('three')
 
 
 def test_autoupdate_on_async_event_handler(screen: Screen):
@@ -102,11 +99,9 @@ def test_autoupdate_on_async_timer_callback(screen: Screen):
     screen.open('/')
     screen.should_contain('0')
     screen.should_not_contain('1')
-    screen.wait(2.0)
-    screen.should_contain('1')
+    screen.wait_for('1')
     screen.should_not_contain('2')
-    screen.wait(2.0)
-    screen.should_contain('2')
+    screen.wait_for('2')
 
 
 def test_adding_elements_from_different_tasks(screen: Screen):

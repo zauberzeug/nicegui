@@ -53,7 +53,6 @@ def test_uploading_from_two_tabs(screen: Screen):
     screen.open('/')
     screen.should_not_contain(test_path1.name)
     screen.selenium.find_element(By.CLASS_NAME, 'q-uploader__input').send_keys(str(test_path1))
-    screen.wait(0.3)
     screen.should_contain(f'uploaded {test_path1.name}')
     screen.switch_to(0)
     screen.should_not_contain(f'uploaded {test_path1.name}')

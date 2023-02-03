@@ -80,6 +80,9 @@ class Screen:
             return
         self.find(text)
 
+    def wait_for(self, text: str) -> None:
+        self.should_contain(text)
+
     def should_not_contain(self, text: str, wait: float = 0.5) -> None:
         assert self.selenium.title != text
         self.selenium.implicitly_wait(wait)

@@ -15,28 +15,27 @@ def test_run_javascript_on_button_press(screen: Screen):
     assert screen.selenium.title == 'NiceGUI'
     screen.click('change title')
     screen.wait(0.5)
-    assert screen.selenium.title == 'A New Title'
-    assert screen.selenium.title != 'NiceGUI'
+    screen.should_contain('A New Title')
 
 
 def test_run_javascript_on_value_change(screen: Screen):
     @ui.page('/')
-    async def main_page(client: Client):
+    async def page(client: Client):
         async def set_title(e: ValueChangeEventArguments) -> None:
-            await ui.run_javascript(f'document.title = "{e.value}"')
-        ui.radio(['Page Title A', 'Page Title B'], on_change=set_title)
+            await ui.run_javascript(f'document.title = "Page {e.value}"')
+        ui.radio(['A', 'B'], on_change=set_title)
         await client.connected()
-        await ui.run_javascript('document.title = "Initial Page Title"')
+        await ui.run_javascript('document.title = "Initial Title"')
 
     screen.open('/')
-    screen.wait(0.3)
-    assert screen.selenium.title == 'Initial Page Title'
-    screen.click('Title B')
-    screen.wait(0.3)
-    assert screen.selenium.title == 'Page Title B'
-    screen.click('Title A')
-    screen.wait(0.3)
-    assert screen.selenium.title == 'Page Title A'
+    screen.wait(0.5)
+    screen.should_contain('Initial Title')
+    screen.click('A')
+    screen.wait(0.5)
+    screen.should_contain('Page A')
+    screen.click('B')
+    screen.wait(0.5)
+    screen.should_contain('Page B')
 
 
 def test_run_javascript_before_client_connected(screen: Screen):
