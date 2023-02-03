@@ -80,12 +80,12 @@ class Screen:
             return
         self.find(text)
 
-    def should_not_contain(self, text: str) -> None:
+    def should_not_contain(self, text: str, wait: float = 0.5) -> None:
         assert self.selenium.title != text
+        self.selenium.implicitly_wait(wait)
         with pytest.raises(AssertionError):
-            self.selenium.implicitly_wait(0.5)
             self.find(text)
-            self.selenium.implicitly_wait(2)
+        self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
 
     def should_contain_input(self, text: str) -> None:
         deadline = time.time() + self.IMPLICIT_WAIT
