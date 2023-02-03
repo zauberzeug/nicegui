@@ -5,7 +5,37 @@ from typing import List
 
 import markdown2
 
+from ..dependencies import register_component
 from .mixins.content_element import ContentElement
+
+register_component('markdown', __file__, 'markdown.js', ['lib/mermaid.min.js'])
+
+
+class Markdown(ContentElement):
+    CONTENT_PROP = 'content'
+
+    def __init__(self, content: str = '', *, extras: List[str] = ['fenced-code-blocks', 'tables']) -> None:
+        """Markdown Element
+
+        Renders markdown onto the page.
+
+        :param content: the markdown content to be displayed
+        :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)
+        """
+        self.extras = extras
+        super().__init__(tag='markdown', content=content)
+
+    def on_content_change(self, content: str) -> None:
+        html = prepare_content(content, extras=' '.join(self.extras))
+        if self._props.get('content') != html:
+            self._props['content'] = html
+            self.run_method('update', html)
+
+
+@lru_cache(maxsize=int(os.environ.get('MARKDOWN_CONTENT_CACHE_SIZE', '1000')))
+def prepare_content(content: str, extras: str) -> str:
+    html = markdown2.markdown(content, extras=extras.split())
+    return apply_tailwind(html)  # we need explicit markdown styling because tailwind CSS removes all default styles
 
 
 def apply_tailwind(html: str) -> str:
@@ -23,29 +53,3 @@ def apply_tailwind(html: str) -> str:
     }
     pattern = re.compile('|'.join(rep.keys()))
     return pattern.sub(lambda m: rep[re.escape(m.group(0))], html)
-
-
-class Markdown(ContentElement):
-
-    def __init__(self, content: str = '', *, extras: List[str] = ['fenced-code-blocks', 'tables']) -> None:
-        """Markdown Element
-
-        Renders markdown onto the page.
-
-        :param content: the markdown content to be displayed
-        :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)
-        """
-        self.extras = extras
-        super().__init__(tag='div', content=content)
-
-    def on_content_change(self, content: str) -> None:
-        html = prepare_content(content, extras=' '.join(self.extras))
-        if self._props.get('innerHTML') != html:
-            self._props['innerHTML'] = html
-            self.update()
-
-
-@lru_cache(maxsize=int(os.environ.get('MARKDOWN_CONTENT_CACHE_SIZE', '1000')))
-def prepare_content(content: str, extras: str) -> str:
-    html = markdown2.markdown(content, extras=extras.split())
-    return apply_tailwind(html)  # we need explicit markdown styling because tailwind CSS removes all default styles
