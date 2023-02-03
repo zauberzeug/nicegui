@@ -125,15 +125,18 @@ class Screen:
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 
+    def find_by_tag(self, name: str) -> WebElement:
+        return self.selenium.find_element(By.TAG_NAME, name)
+
+    def find_all_by_tag(self, name: str) -> List[WebElement]:
+        return self.selenium.find_elements(By.TAG_NAME, name)
+
     def render_js_logs(self) -> str:
         console = '\n'.join(l['message'] for l in self.selenium.get_log('browser'))
         return f'-- console logs ---\n{console}\n---------------------'
 
-    def get_tags(self, name: str) -> List[WebElement]:
-        return self.selenium.find_elements(By.TAG_NAME, name)
-
     def get_attributes(self, tag: str, attribute: str) -> List[str]:
-        return [t.get_attribute(attribute) for t in self.get_tags(tag)]
+        return [t.get_attribute(attribute) for t in self.find_all_by_tag(tag)]
 
     def wait(self, t: float) -> None:
         time.sleep(t)
