@@ -1,5 +1,6 @@
 import os
 
+from .element import Element as element
 from .elements.audio import Audio as audio
 from .elements.badge import Badge as badge
 from .elements.button import Button as button

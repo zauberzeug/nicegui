@@ -1,4 +1,6 @@
 
+from selenium.webdriver.common.keys import Keys
+
 from nicegui import ui
 
 from .screen import Screen
@@ -59,3 +61,25 @@ def test_ui_select_with_list_of_lists(screen: Screen):
     screen.should_contain('2,2')
     screen.should_not_contain('1,1')
     assert data.selection == [2, 2]
+
+
+def test_binding_to_input(screen: Screen):
+    class Model:
+        text = 'one'
+    data = Model()
+    element = ui.input().bind_value(data, 'text')
+
+    screen.open('/')
+    screen.should_contain_input('one')
+    screen.type(Keys.TAB)
+    screen.type('two')
+    screen.should_contain_input('two')
+    assert data.text == 'two'
+    data.text = 'three'
+    screen.should_contain_input('three')
+    element.set_value('four')
+    screen.should_contain_input('four')
+    assert data.text == 'four'
+    element.value = 'five'
+    screen.should_contain_input('five')
+    assert data.text == 'five'

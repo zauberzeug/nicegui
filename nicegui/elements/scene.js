@@ -67,11 +67,21 @@ export default {
     light.position.set(5, 10, 40);
     this.scene.add(light);
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      canvas: this.$el.children[0],
-    });
+    let renderer = undefined;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        canvas: this.$el.children[0],
+      });
+    } catch {
+      this.$el.innerHTML = "Could not create WebGL renderer.";
+      this.$el.style.width = this.width + "px";
+      this.$el.style.height = this.height + "px";
+      this.$el.style.padding = "10px";
+      this.$el.style.border = "1px solid silver";
+      return;
+    }
     renderer.setClearColor("#eee");
     renderer.setSize(this.width, this.height);
 
@@ -96,7 +106,7 @@ export default {
     grid.rotateX(Math.PI / 2);
     this.scene.add(grid);
 
-    new THREE.OrbitControls(this.camera, renderer.domElement);
+    this.controls = new THREE.OrbitControls(this.camera, renderer.domElement);
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
@@ -323,6 +333,7 @@ export default {
           this.camera.up.set(p[3], p[4], p[5]); // NOTE: before calling lookAt
           this.look_at.set(p[6], p[7], p[8]);
           this.camera.lookAt(p[6], p[7], p[8]);
+          this.controls.target.set(p[6], p[7], p[8]);
         })
         .start();
     },

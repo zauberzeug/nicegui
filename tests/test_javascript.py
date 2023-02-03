@@ -14,6 +14,7 @@ def test_run_javascript_on_button_press(screen: Screen):
     screen.open('/')
     assert screen.selenium.title == 'NiceGUI'
     screen.click('change title')
+    screen.wait(0.5)
     assert screen.selenium.title == 'A New Title'
     assert screen.selenium.title != 'NiceGUI'
 

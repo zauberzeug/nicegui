@@ -5,6 +5,7 @@ from ...element import Element
 
 
 class ContentElement(Element):
+    CONTENT_PROP = 'innerHTML'
     content = BindableProperty(on_change=lambda sender, content: sender.on_content_change(content))
 
     def __init__(self, *, content: str, **kwargs) -> None:
@@ -29,7 +30,7 @@ class ContentElement(Element):
         self.content = content
 
     def on_content_change(self, content: str) -> None:
-        if '</script>' in content:
+        if self.CONTENT_PROP == 'innerHTML' and '</script>' in content:
             raise ValueError('HTML elements must not contain <script> tags. Use ui.add_body_html() instead.')
-        self._props['innerHTML'] = content
+        self._props[self.CONTENT_PROP] = content
         self.update()

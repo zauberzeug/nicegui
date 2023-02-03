@@ -5,6 +5,7 @@ from .mixins.value_element import ValueElement
 
 
 class Input(ValueElement):
+    LOOPBACK = False
 
     def __init__(self,
                  label: Optional[str] = None, *,
@@ -29,8 +30,10 @@ class Input(ValueElement):
         :param on_change: callback to execute when the input is confirmed by leaving the focus
         """
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
-        self._props['label'] = label
-        self._props['placeholder'] = placeholder
+        if label is not None:
+            self._props['label'] = label
+        if placeholder is not None:
+            self._props['placeholder'] = placeholder
         self._props['type'] = 'password' if password else 'text'
 
         if password_toggle_button:

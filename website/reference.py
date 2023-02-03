@@ -190,7 +190,7 @@ You can add Scalable Vector Graphics using the `ui.html` element.
 
     @example(ui.image)
     def image_example():
-        ui.image('http://placeimg.com/640/360/tech')
+        ui.image('https://picsum.photos/id/377/640/360')
 
     @example('''#### Captions and Overlays
 
@@ -200,7 +200,7 @@ Use [Quasar classes](https://quasar.dev/vue-components/img) for positioning and 
 To overlay an SVG, make the `viewBox` exactly the size of the image and provide `100%` width/height to match the actual rendered size.
 ''')
     def captions_and_overlays_example():
-        with ui.image('http://placeimg.com/640/360/nature'):
+        with ui.image('https://picsum.photos/id/29/640/360'):
             ui.label('Nice!').classes('absolute-bottom text-subtitle2 text-center')
 
         with ui.image('https://cdn.stocksnap.io/img-thumbs/960w/airplane-sky_DYPWDEEILG.jpg'):
@@ -216,10 +216,10 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         def mouse_handler(e: MouseEventArguments):
             color = 'SkyBlue' if e.type == 'mousedown' else 'SteelBlue'
-            ii.content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="20" fill="{color}"/>'
+            ii.content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="15" fill="none" stroke="{color}" stroke-width="4" />'
             ui.notify(f'{e.type} at ({e.image_x:.1f}, {e.image_y:.1f})')
 
-        src = 'https://cdn.stocksnap.io/img-thumbs/960w/corn-cob_YSZZZEC59W.jpg'
+        src = 'https://picsum.photos/id/565/640/360'
         ii = ui.interactive_image(src, on_mouse=mouse_handler, events=['mousedown', 'mouseup'], cross=True)
 
     @example(ui.audio)
@@ -370,7 +370,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
     @example(ui.card)
     def card_example():
         with ui.card().tight() as card:
-            ui.image('http://placeimg.com/640/360/nature')
+            ui.image('https://picsum.photos/id/684/640/360')
             with ui.card_section():
                 ui.label('Lorem ipsum dolor sit amet, consectetur adipiscing elit, ...')
 
@@ -414,14 +414,14 @@ Alternatively, you can remove individual elements with `remove(element)`, where 
     @example(ui.menu)
     def menu_example():
         choice = ui.label('Try the menu.')
-        with ui.menu() as menu:
-            ui.menu_item('Menu item 1', lambda: choice.set_text('Selected item 1.'))
-            ui.menu_item('Menu item 2', lambda: choice.set_text('Selected item 2.'))
-            ui.menu_item('Menu item 3 (keep open)', lambda: choice.set_text('Selected item 3.'), auto_close=False)
-            ui.separator()
-            ui.menu_item('Close', on_click=menu.close)
-
-        ui.button('Open menu', on_click=menu.open)
+        with ui.row():
+            with ui.menu() as menu:
+                ui.menu_item('Menu item 1', lambda: choice.set_text('Selected item 1.'))
+                ui.menu_item('Menu item 2', lambda: choice.set_text('Selected item 2.'))
+                ui.menu_item('Menu item 3 (keep open)', lambda: choice.set_text('Selected item 3.'), auto_close=False)
+                ui.separator()
+                ui.menu_item('Close', on_click=menu.close)
+            ui.button('Open menu', on_click=menu.open)
 
     @example('''#### Tooltips
 
@@ -638,6 +638,7 @@ In the example to the right, the displayed ID on the auto-index page remains con
 Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/>).
 If type-annotated, they are automatically converted to bool, int, float and complex values.
 If the page function expects a `request` argument, the request object is automatically provided.
+The `client` argument provides access to the websocket connection, layout, etc.
 ''')
     def page_with_path_parameters_example():
         @ui.page('/repeat/{word}/{count}')
@@ -701,7 +702,7 @@ See <https://quasar.dev/layout/page-sticky> for more information.
         @ui.page('/yet_another_page')
         def yet_another_page():
             ui.label('Welcome to yet another page')
-            ui.button('RETURN', on_click=lambda: ui.open('/#open'))
+            ui.button('RETURN', on_click=lambda: ui.open('reference#open'))
 
         ui.button('REDIRECT', on_click=lambda: ui.open(yet_another_page))
 

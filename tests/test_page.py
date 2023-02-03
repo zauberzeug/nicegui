@@ -130,9 +130,9 @@ def test_wait_for_disconnect(screen: Screen):
         events.append('disconnected')
 
     screen.open('/')
-    screen.wait(0.1)
+    screen.wait(0.5)
     screen.open('/')
-    screen.wait(0.1)
+    screen.wait(0.5)
     assert events == ['connected', 'disconnected', 'connected']
 
 
@@ -200,3 +200,34 @@ def test_async_connect_handler(screen: Screen):
 
     screen.open('/')
     screen.should_contain('42')
+
+
+def test_dark_mode(screen: Screen):
+    @ui.page('/auto', dark=None)
+    def page():
+        ui.label('A').classes('text-blue-400 dark:text-red-400')
+
+    @ui.page('/light', dark=False)
+    def page():
+        ui.label('B').classes('text-blue-400 dark:text-red-400')
+
+    @ui.page('/dark', dark=True)
+    def page():
+        ui.label('C').classes('text-blue-400 dark:text-red-400')
+
+    blue = 'rgba(96, 165, 250, 1)'
+    red = 'rgba(248, 113, 113, 1)'
+    white = 'rgba(0, 0, 0, 0)'
+    black = 'rgba(18, 18, 18, 1)'
+
+    screen.open('/auto')
+    assert screen.find('A').value_of_css_property('color') == blue
+    assert screen.find_by_tag('body').value_of_css_property('background-color') == white
+
+    screen.open('/light')
+    assert screen.find('B').value_of_css_property('color') == blue
+    assert screen.find_by_tag('body').value_of_css_property('background-color') == white
+
+    screen.open('/dark')
+    assert screen.find('C').value_of_css_property('color') == red
+    assert screen.find_by_tag('body').value_of_css_property('background-color') == black

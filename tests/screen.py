@@ -17,6 +17,7 @@ IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-in
 
 
 class Screen:
+    IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshots')
     UI_RUN_KWARGS = {'port': PORT, 'show': False, 'reload': False}
 
@@ -42,6 +43,7 @@ class Screen:
     def stop_server(self) -> None:
         '''Stop the webserver.'''
         self.close()
+        self.caplog.clear()
         globals.server.should_exit = True
         self.server_thread.join()
 
@@ -74,7 +76,9 @@ class Screen:
             self.selenium.switch_to.window(self.selenium.window_handles[tab_id])
 
     def should_contain(self, text: str) -> None:
-        assert self.selenium.title == text or self.find(text), f'could not find "{text}"'
+        if self.selenium.title == text:
+            return
+        self.find(text)
 
     def should_not_contain(self, text: str) -> None:
         assert self.selenium.title != text
@@ -82,6 +86,15 @@ class Screen:
             self.selenium.implicitly_wait(0.5)
             self.find(text)
             self.selenium.implicitly_wait(2)
+
+    def should_contain_input(self, text: str) -> None:
+        deadline = time.time() + self.IMPLICIT_WAIT
+        while time.time() < deadline:
+            for input in self.selenium.find_elements(By.TAG_NAME, 'input'):
+                if input.get_attribute('value') == text:
+                    return
+            self.wait(0.1)
+        raise AssertionError(f'Could not find input with value "{text}"')
 
     def click(self, target_text: str) -> WebElement:
         element = self.find(target_text)
@@ -95,6 +108,11 @@ class Screen:
         action = ActionChains(self.selenium)
         action.move_to_element_with_offset(element, x, y).click().perform()
 
+    def type(self, text: str) -> None:
+        self.selenium.execute_script("window.focus();")
+        self.wait(0.2)
+        self.selenium.switch_to.active_element.send_keys(text)
+
     def find(self, text: str) -> WebElement:
         try:
             query = f'//*[not(self::script) and not(self::style) and contains(text(), "{text}")]'
@@ -107,28 +125,21 @@ class Screen:
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 
+    def find_by_tag(self, name: str) -> WebElement:
+        return self.selenium.find_element(By.TAG_NAME, name)
+
+    def find_all_by_tag(self, name: str) -> List[WebElement]:
+        return self.selenium.find_elements(By.TAG_NAME, name)
+
     def render_js_logs(self) -> str:
         console = '\n'.join(l['message'] for l in self.selenium.get_log('browser'))
         return f'-- console logs ---\n{console}\n---------------------'
 
-    def get_tags(self, name: str) -> List[WebElement]:
-        return self.selenium.find_elements(By.TAG_NAME, name)
-
     def get_attributes(self, tag: str, attribute: str) -> List[str]:
-        return [t.get_attribute(attribute) for t in self.get_tags(tag)]
+        return [t.get_attribute(attribute) for t in self.find_all_by_tag(tag)]
 
     def wait(self, t: float) -> None:
         time.sleep(t)
-
-    def wait_for(self, text: str, *, timeout: float = 1.0) -> None:
-        deadline = time.time() + timeout
-        while time.time() < deadline:
-            try:
-                self.find(text)
-                return
-            except Exception:
-                self.wait(0.1)
-        raise TimeoutError()
 
     def shot(self, name: str) -> None:
         os.makedirs(self.SCREENSHOT_DIR, exist_ok=True)

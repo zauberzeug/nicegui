@@ -7,20 +7,23 @@ from nicegui import ui
 class local_file_picker(ui.dialog):
 
     def __init__(self, directory: str, *,
-                 upper_limit: Optional[str] = None, multiple: bool = False, show_hidden_files: bool = False) -> None:
+                 upper_limit: Optional[str] = ..., multiple: bool = False, show_hidden_files: bool = False) -> None:
         """Local File Picker
 
         This is a simple file picker that allows you to select a file from the local filesystem where NiceGUI is running.
 
         :param directory: The directory to start in.
-        :param upper_limit: The directory to stop at. If not specified, the upper limit is the same as the starting directory.
+        :param upper_limit: The directory to stop at (None: no limit, default: same as the starting directory).
         :param multiple: Whether to allow multiple files to be selected.
         :param show_hidden_files: Whether to show hidden files.
         """
         super().__init__()
 
         self.path = Path(directory).expanduser()
-        self.upper_limit = Path(upper_limit if upper_limit else directory).expanduser()
+        if upper_limit is None:
+            self.upper_limit = None
+        else:
+            self.upper_limit = Path(directory if upper_limit == ... else upper_limit).expanduser()
         self.show_hidden_files = show_hidden_files
 
         with self, ui.card():
@@ -44,9 +47,11 @@ class local_file_picker(ui.dialog):
             {
                 'name': f'📁 <strong>{p.name}</strong>' if p.is_dir() else p.name,
                 'path': str(p),
-            } for p in paths
+            }
+            for p in paths
         ]
-        if self.path != self.upper_limit:
+        if self.upper_limit is None and self.path != self.path.parent or \
+                self.upper_limit is not None and self.path != self.upper_limit:
             self.table.options['rowData'].insert(0, {
                 'name': '📁 <strong>..</strong>',
                 'path': str(self.path.parent),

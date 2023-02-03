@@ -11,6 +11,7 @@ register_component('interactive_image', __file__, 'interactive_image.js')
 
 
 class InteractiveImage(SourceElement, ContentElement):
+    CONTENT_PROP = 'content'
 
     def __init__(self, source: str = '', *,
                  content: str = '',
@@ -33,11 +34,6 @@ class InteractiveImage(SourceElement, ContentElement):
         self._props['events'] = events
         self._props['cross'] = cross
 
-        def handle_connect(_) -> None:
-            self.run_method('set_source', self.source)
-            self.run_method('set_content', self.content)
-        self.on('connect', handle_connect)
-
         def handle_mouse(msg: Dict) -> None:
             if on_mouse is None:
                 return
@@ -53,6 +49,3 @@ class InteractiveImage(SourceElement, ContentElement):
 
     def on_source_change(self, source: str) -> None:
         self.run_method('set_source', source)
-
-    def on_content_change(self, content: str) -> None:
-        self.run_method('set_content', content)

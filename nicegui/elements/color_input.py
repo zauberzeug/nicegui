@@ -7,6 +7,7 @@ from .mixins.value_element import ValueElement
 
 
 class ColorInput(ValueElement):
+    LOOPBACK = False
 
     def __init__(self, label: Optional[str] = None, *,
                  placeholder: Optional[str] = None, value: str = '', on_change: Optional[Callable] = None) -> None:
@@ -18,8 +19,10 @@ class ColorInput(ValueElement):
         :param on_change: callback to execute when the input is confirmed by leaving the focus
         """
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
-        self._props['label'] = label
-        self._props['placeholder'] = placeholder
+        if label is not None:
+            self._props['label'] = label
+        if placeholder is not None:
+            self._props['placeholder'] = placeholder
 
         with self.add_slot('append'):
             self.picker = ColorPicker(on_pick=lambda e: self.set_value(e.color))

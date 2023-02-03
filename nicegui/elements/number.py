@@ -4,6 +4,7 @@ from .mixins.value_element import ValueElement
 
 
 class Number(ValueElement):
+    LOOPBACK = False
 
     def __init__(self,
                  label: Optional[str] = None, *,
@@ -22,11 +23,13 @@ class Number(ValueElement):
         self.format = format
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
         self._props['type'] = 'number'
-        self._props['label'] = label
-        self._props['placeholder'] = placeholder
+        if label is not None:
+            self._props['label'] = label
+        if placeholder is not None:
+            self._props['placeholder'] = placeholder
 
     def _msg_to_value(self, msg: Dict) -> Any:
-        return float(msg['args'])
+        return float(msg['args']) if msg['args'] else None
 
     def _value_to_model_value(self, value: Any) -> Any:
         if value is None:
