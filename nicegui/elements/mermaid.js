@@ -8,7 +8,4 @@ export default {
       mermaid.render("mermaid" + this.$el.id, content, (svg) => (this.$el.innerHTML = svg));
     },
   },
-  props: {
-    content: String,
-  },
 };
