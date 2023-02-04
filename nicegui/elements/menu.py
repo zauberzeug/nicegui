@@ -16,7 +16,7 @@ class Menu(ValueElement):
         :param value: whether the menu is already opened (default: `False`)
         """
         super().__init__(tag='q-menu', value=value, on_value_change=None)
-        self._props['no-parent-event'] = True
+        self.looks._props['no-parent-event'] = True
 
     def open(self) -> None:
         self.value = True
@@ -38,7 +38,7 @@ class MenuItem(TextElement):
         """
         super().__init__(tag='q-item', text=text)
         self.menu = globals.get_slot().parent
-        self._props['clickable'] = True
+        self.looks._props['clickable'] = True
 
         def handle_click(_) -> None:
             handle_event(on_click, ClickEventArguments(sender=self, client=self.client))

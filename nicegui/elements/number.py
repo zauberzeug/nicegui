@@ -22,11 +22,11 @@ class Number(ValueElement):
         """
         self.format = format
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
-        self._props['type'] = 'number'
+        self.looks._props['type'] = 'number'
         if label is not None:
-            self._props['label'] = label
+            self.looks._props['label'] = label
         if placeholder is not None:
-            self._props['placeholder'] = placeholder
+            self.looks._props['placeholder'] = placeholder
 
     def _msg_to_value(self, msg: Dict) -> Any:
         return float(msg['args']) if msg['args'] else None

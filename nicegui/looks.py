@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 if TYPE_CHECKING:
     from .element import Element
@@ -172,8 +172,9 @@ class Alignment(Topic):
 class Looks:
 
     def __init__(self, element: Optional['Element'] = None):
-        self.classes: List[str] = []
         self.element = element
+        self.classes: List[str] = []
+        self._props: Dict[str, Any] = {}
 
     @property
     def width(self) -> Sizing:
@@ -216,4 +217,28 @@ class Looks:
 
     def add(self, other: Looks) -> Looks:
         self.classes.extend(other.classes)
+        self._props.update(other._props)
+        return self
+
+
+class ButtonLooks(Looks):
+
+    def rounded(self) -> Looks:
+        self._props['rounded'] = True
+        return self
+
+    def square(self) -> Looks:
+        self._props['square'] = True
+        return self
+
+    def flat(self) -> Looks:
+        self._props['flat'] = True
+        return self
+
+    def outline(self) -> Looks:
+        self._props['outline'] = True
+        return self
+
+    def unelevated(self) -> Looks:
+        self._props['unelevated'] = True
         return self

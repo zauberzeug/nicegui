@@ -19,7 +19,7 @@ class LinearProgress(ValueElement):
         :param show_value: whether to show a value label in the center (default: `True`)
         """
         super().__init__(tag='q-linear-progress', value=value, on_value_change=None)
-        self._props['size'] = size if size is not None else '20px' if show_value else '4px'
+        self.looks._props['size'] = size if size is not None else '20px' if show_value else '4px'
 
         if show_value:
             with self:
@@ -41,12 +41,12 @@ class CircularProgress(ValueElement):
         :param show_value: whether to show a value label in the center (default: `True`)
         """
         super().__init__(tag='q-circular-progress', value=value, on_value_change=None)
-        self._props['min'] = min
-        self._props['max'] = max
-        self._props['size'] = size
-        self._props['show-value'] = show_value
-        self._props['color'] = 'primary'
-        self._props['track-color'] = 'grey-4'
+        self.looks._props['min'] = min
+        self.looks._props['max'] = max
+        self.looks._props['size'] = size
+        self.looks._props['show-value'] = show_value
+        self.looks._props['color'] = 'primary'
+        self.looks._props['track-color'] = 'grey-4'
 
         if show_value:
             with self:

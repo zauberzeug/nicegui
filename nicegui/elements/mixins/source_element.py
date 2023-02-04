@@ -10,7 +10,7 @@ class SourceElement(Element):
     def __init__(self, *, source: str, **kwargs) -> None:
         super().__init__(**kwargs)
         self.source = source
-        self._props['src'] = source
+        self.looks._props['src'] = source
 
     def bind_source_to(self, target_object: Any, target_name: str = 'source', forward: Callable = lambda x: x):
         bind_to(self, 'source', target_object, target_name, forward)
@@ -29,5 +29,5 @@ class SourceElement(Element):
         self.source = source
 
     def on_source_change(self, source: str) -> None:
-        self._props['src'] = source
+        self.looks._props['src'] = source
         self.update()

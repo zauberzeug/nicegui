@@ -26,7 +26,6 @@ class Element(ABC, Visibility):
         self.tag = tag
         self.looks = Looks(self)
         self._style: Dict[str, str] = {}
-        self._props: Dict[str, Any] = {}
         self._event_listeners: List[EventListener] = []
         self._text: str = ''
         self.slots: Dict[str, Slot] = {}
@@ -72,7 +71,7 @@ class Element(ABC, Visibility):
             'tag': self.tag,
             'class': self.looks.classes,
             'style': self._style,
-            'props': self._props,
+            'props': self.looks._props,
             'events': events,
             'text': self._text,
             'slots': {name: [child.id for child in slot.children] for name, slot in self.slots.items()},
@@ -138,13 +137,13 @@ class Element(ABC, Visibility):
         '''
         needs_update = False
         for key in self._parse_props(remove):
-            if key in self._props:
+            if key in self.looks._props:
                 needs_update = True
-                del self._props[key]
+                del self.looks._props[key]
         for key, value in self._parse_props(add).items():
-            if self._props.get(key) != value:
+            if self.looks._props.get(key) != value:
                 needs_update = True
-                self._props[key] = value
+                self.looks._props[key] = value
         if needs_update:
             self.update()
         return self

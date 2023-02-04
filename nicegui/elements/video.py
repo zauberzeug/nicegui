@@ -20,8 +20,8 @@ class Video(Element):
         for a list of events you can subscribe to using the generic event subscription `on()`.
         """
         super().__init__('video')
-        self._props['src'] = src
-        self._props['type'] = type
-        self._props['controls'] = controls
-        self._props['autoplay'] = autoplay
-        self._props['muted'] = muted
+        self.looks._props['src'] = src
+        self.looks._props['type'] = type
+        self.looks._props['controls'] = controls
+        self.looks._props['autoplay'] = autoplay
+        self.looks._props['muted'] = muted

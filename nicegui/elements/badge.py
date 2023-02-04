@@ -16,6 +16,6 @@ class Badge(TextElement):
         :param outline: use 'outline' design (colored text and borders only) (default: False)
         """
         super().__init__(tag='q-badge', text=text)
-        self._props['color'] = color
-        self._props['text_color'] = text_color
-        self._props['outline'] = outline
+        self.looks._props['color'] = color
+        self.looks._props['text_color'] = text_color
+        self.looks._props['outline'] = outline

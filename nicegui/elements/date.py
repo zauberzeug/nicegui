@@ -27,4 +27,4 @@ class Date(ValueElement):
         :param on_change: callback to execute when changing the date
         """
         super().__init__(tag='q-date', value=value, on_value_change=on_change)
-        self._props['mask'] = mask
+        self.looks._props['mask'] = mask

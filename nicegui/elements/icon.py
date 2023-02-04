@@ -13,4 +13,4 @@ class Icon(Element):
         :param name: the name of the icon
         """
         super().__init__('q-icon')
-        self._props['name'] = name
+        self.looks._props['name'] = name

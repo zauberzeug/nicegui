@@ -20,4 +20,4 @@ class Time(ValueElement):
         :param on_change: callback to execute when changing the time
         """
         super().__init__(tag='q-time', value=value, on_value_change=on_change)
-        self._props['mask'] = mask
+        self.looks._props['mask'] = mask

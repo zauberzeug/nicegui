@@ -20,6 +20,6 @@ class Slider(ValueElement):
         :param on_change: callback which is invoked when the user releases the slider
         """
         super().__init__(tag='q-slider', value=value, on_value_change=on_change, throttle=0.05)
-        self._props['min'] = min
-        self._props['max'] = max
-        self._props['step'] = step
+        self.looks._props['min'] = min
+        self.looks._props['max'] = max
+        self.looks._props['step'] = step
