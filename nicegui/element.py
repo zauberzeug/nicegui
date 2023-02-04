@@ -98,7 +98,13 @@ class Element(ABC, Visibility):
 
     @staticmethod
     def _parse_style(text: Optional[str]) -> Dict[str, str]:
-        return dict(_split(part, ':') for part in text.strip('; ').split(';')) if text else {}
+        result = {}
+        for word in (text or '').split(';'):
+            word = word.strip()
+            if word:
+                key, value = word.split(':', 1)
+                result[key.strip()] = value.strip()
+        return result
 
     def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):
         '''CSS style sheet definitions to modify the look of the element.
@@ -211,8 +217,3 @@ class Element(ABC, Visibility):
 
         Can be overridden to perform cleanup.
         """
-
-
-def _split(text: str, separator: str) -> Tuple[str, str]:
-    words = text.split(separator, 1)
-    return words[0].strip(), words[1].strip()
