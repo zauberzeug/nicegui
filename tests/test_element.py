@@ -41,10 +41,13 @@ def test_style_parsing():
 
 
 def test_props_parsing():
+    assert Element._parse_props(None) == {}
     assert Element._parse_props('one two=1 three="abc def"') == {'one': True, 'two': '1', 'three': 'abc def'}
     assert Element._parse_props('loading percentage=12.5') == {'loading': True, 'percentage': '12.5'}
     assert Element._parse_props('size=50%') == {'size': '50%'}
     assert Element._parse_props('href=http://192.168.42.100/') == {'href': 'http://192.168.42.100/'}
+    assert Element._parse_props('hint="Your \\"given\\" name"') == {'hint': 'Your "given" name'}
+    assert Element._parse_props('input-style="{ color: #ff0000 }"') == {'input-style': '{ color: #ff0000 }'}
 
 
 def test_style(screen: Screen):

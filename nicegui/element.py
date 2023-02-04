@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import shlex
+import json
+import re
 from abc import ABC
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
@@ -13,6 +14,8 @@ from .slot import Slot
 
 if TYPE_CHECKING:
     from .client import Client
+
+PROPS_PATTERN = re.compile(r'([\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
 
 
 class Element(ABC, Visibility):
@@ -116,12 +119,14 @@ class Element(ABC, Visibility):
 
     @staticmethod
     def _parse_props(text: Optional[str]) -> Dict[str, Any]:
-        if not text:
-            return {}
-        lexer = shlex.shlex(text, posix=True)
-        lexer.whitespace = ' '
-        lexer.wordchars += '=-.%:/'
-        return dict(_split(word, '=') if '=' in word else (word, True) for word in lexer)
+        dictionary = {}
+        for match in PROPS_PATTERN.finditer(text or ''):
+            key = match.group(1)
+            value = match.group(2) or match.group(3)
+            if value and value.startswith('"') and value.endswith('"'):
+                value = json.loads(value)
+            dictionary[key] = value or True
+        return dictionary
 
     def props(self, add: Optional[str] = None, *, remove: Optional[str] = None):
         '''Quasar props https://quasar.dev/vue-components/button#design to modify the look of the element.
