@@ -12,11 +12,37 @@ class Topic():
         self._look = look
 
 
+class FixedSize(Topic):
+
+    def twelve(self) -> Looks:
+        self._look.classes.append('w-12')
+        return self._look
+
+    def sixty_four(self) -> Looks:
+        self._look.classes.append('w-64')
+        return self._look
+
+
+class FractionalSize(Topic):
+
+    def one_sixth(self) -> Looks:
+        self._look.classes.append('w-1/6')
+        return self._look
+
+
 class Width(Topic):
 
     def full(self) -> Looks:
         self._look.classes.append('w-full')
         return self._look
+
+    @property
+    def fixed(self) -> FixedSize:
+        return FixedSize(self._look)
+
+    @property
+    def fractional(self) -> FractionalSize:
+        return FractionalSize(self._look)
 
 
 class Color(Topic):
