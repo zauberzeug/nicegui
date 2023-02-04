@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from typing import List
+from typing import TYPE_CHECKING, List, Optional
+
+if TYPE_CHECKING:
+    from .element import Element
 
 
 class Topic():
@@ -54,8 +57,9 @@ class Alignment(Topic):
 
 class Looks:
 
-    def __init__(self):
+    def __init__(self, element: Optional['Element'] = None):
         self.classes: List[str] = []
+        self.element = element
 
     @property
     def w(self) -> Width:

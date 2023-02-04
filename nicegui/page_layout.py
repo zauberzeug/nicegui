@@ -21,7 +21,7 @@ class Drawer(Element):
             super().__init__('q-drawer')
         self._props['show-if-above'] = True
         self._props['side'] = side
-        self._classes = ['q-pa-md']
+        self.looks.classes = ['q-pa-md']
         code = list(self.client.layout._props['view'])
         code[0 if side == 'left' else 2] = side[0].lower() if top_corner else 'h'
         code[4 if side == 'left' else 6] = side[0].upper() if fixed else side[0].lower()

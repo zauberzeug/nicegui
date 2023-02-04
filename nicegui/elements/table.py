@@ -20,7 +20,7 @@ class Table(Element):
         super().__init__('table')
         self._props['options'] = options
         self._props['html_columns'] = html_columns
-        self._classes = [f'ag-theme-{theme}', 'w-full', 'h-64']
+        self.looks.classes = [f'ag-theme-{theme}', 'w-full', 'h-64']
 
     @property
     def options(self) -> Dict:

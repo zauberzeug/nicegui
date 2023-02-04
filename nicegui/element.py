@@ -24,7 +24,7 @@ class Element(ABC, Visibility):
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
         self.tag = tag
-        self._classes: List[str] = []
+        self.looks = Looks(self)
         self._style: Dict[str, str] = {}
         self._props: Dict[str, Any] = {}
         self._event_listeners: List[EventListener] = []
@@ -70,7 +70,7 @@ class Element(ABC, Visibility):
         return {
             'id': self.id,
             'tag': self.tag,
-            'class': self._classes,
+            'class': self.looks.classes,
             'style': self._style,
             'props': self._props,
             'events': events,
@@ -80,7 +80,7 @@ class Element(ABC, Visibility):
 
     def apply(self, look: Looks):
         '''Apply a look to the element.'''
-        self._classes.extend(look.classes)
+        self.looks.classes.extend(look.classes)
         return self
 
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):
@@ -89,13 +89,13 @@ class Element(ABC, Visibility):
         Classes are separated with a blank space.
         This can be helpful if the predefined classes by NiceGUI are not wanted in a particular styling.
         '''
-        class_list = self._classes if replace is None else []
+        class_list = self.looks.classes if replace is None else []
         class_list = [c for c in class_list if c not in (remove or '').split()]
         class_list += (add or '').split()
         class_list += (replace or '').split()
         new_classes = list(dict.fromkeys(class_list))  # NOTE: remove duplicates while preserving order
-        if self._classes != new_classes:
-            self._classes = new_classes
+        if self.looks.classes != new_classes:
+            self.looks.classes = new_classes
             self.update()
         return self
 
