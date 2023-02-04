@@ -18,6 +18,6 @@ with ui.row().looks.add(shared).height.fixed.twenty().background.grey(0.4).align
 
 with ui.row().looks.add(shared).gap.none().element:
     ui.image('https://picsum.photos/id/29/640/360').looks.width.fractional.one_half()
-    ui.image('https://picsum.photos/id/24/640/360').looks.width.fractional.one_half()
+    ui.image('https://picsum.photos/id/565/640/360').looks.width.fractional.one_half()
 
 ui.run()
