@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-from nicegui import ui
+from nicegui import Looks, ui
 
-with ui.row().classes('w-full bg-primary p-2 justify-center'):
+with ui.row().apply(Looks().w.full().bg.primary().p.two().align.main_axis.center()):
     for i in range(5):
-        with ui.card().classes(''):
+        with ui.card():
             ui.label(str(i))
 
 ui.run()

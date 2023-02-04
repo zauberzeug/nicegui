@@ -9,6 +9,7 @@ from . import background_tasks, binding, globals
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .events import handle_event
+from .looks import Looks
 from .slot import Slot
 
 if TYPE_CHECKING:
@@ -76,6 +77,11 @@ class Element(ABC, Visibility):
             'text': self._text,
             'slots': {name: [child.id for child in slot.children] for name, slot in self.slots.items()},
         }
+
+    def apply(self, look: Looks):
+        '''Apply a look to the element.'''
+        self._classes.extend(look.classes)
+        return self
 
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):
         '''HTML classes to modify the look of the element.
