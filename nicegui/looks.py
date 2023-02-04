@@ -42,6 +42,10 @@ class FractionalSize(Topic):
         self._looks.classes.append(f'{self._prefix}-2/3')
         return self._looks
 
+    def one_half(self) -> Looks:
+        self._looks.classes.append(f'{self._prefix}-1/2')
+        return self._looks
+
 
 class Sizing(Topic):
 
@@ -139,6 +143,21 @@ class Text(Topic):
         return self._looks
 
 
+class Gap(Topic):
+
+    def none(self) -> Looks:
+        self._looks.classes.append('gap-0')
+        return self._looks
+
+    def small(self) -> Looks:
+        self._looks.classes.append('gap-2')
+        return self._looks
+
+    def medium(self) -> Looks:
+        self._looks.classes.append('gap-4')
+        return self._looks
+
+
 class Alignment(Topic):
 
     @property
@@ -186,10 +205,15 @@ class Looks:
         '''Text'''
         return Text(self)
 
+    @property
+    def gap(self) -> Gap:
+        '''Gap'''
+        return Gap(self)
+
     def on_hover(self, looks: Looks) -> Looks:
         self.classes.extend([f'hover:{c}' for c in looks.classes])
         return self
 
-    def extend(self, other: Looks) -> Looks:
+    def add(self, other: Looks) -> Looks:
         self.classes.extend(other.classes)
         return self
