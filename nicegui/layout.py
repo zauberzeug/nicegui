@@ -15,6 +15,10 @@ class Topic():
 
 class FixedSize(Topic):
 
+    def six(self) -> Layout:
+        self._looks._classes.append(f'{self._prefix}-6')
+        return self._looks
+
     def twelve(self) -> Layout:
         self._looks._classes.append(f'{self._prefix}-12')
         return self._looks
@@ -93,12 +97,27 @@ class Spacing(Topic):
         self._looks._classes.append(f'{self.prefix}-sm')
         return self._looks
 
+    def auto(self) -> Layout:
+        self._looks._classes.append(f'{self.prefix}-auto')
+        return self._looks
+
 
 class Padding(Topic):
 
     @property
     def y_axis(self) -> Spacing:
         return Spacing(self._looks, 'q-py')
+
+
+class Margin(Topic):
+
+    @property
+    def x_axis(self) -> Spacing:
+        return Spacing(self._looks, 'q-mx')
+
+    @property
+    def left(self) -> Spacing:
+        return Spacing(self._looks, 'q-ml')
 
 
 class MainAxis(Topic):
@@ -175,6 +194,7 @@ class Layout:
         self.element = element
         self._classes: List[str] = []
         self._props: Dict[str, Any] = {}
+        self._opacity: float = 1.0
 
     @property
     def width(self) -> Sizing:
@@ -211,6 +231,11 @@ class Layout:
         '''Gap'''
         return Gap(self)
 
+    @property
+    def margin(self) -> Margin:
+        '''Margin'''
+        return Margin(self)
+
     def on_hover(self, looks: Layout) -> Layout:
         self._classes.extend([f'hover:{c}' for c in looks._classes])
         return self
@@ -218,6 +243,10 @@ class Layout:
     def add(self, other: Layout) -> Layout:
         self._classes.extend(other._classes)
         self._props.update(other._props)
+        return self
+
+    def opacity(self, opacity: float) -> Layout:
+        self._opacity = opacity
         return self
 
 
