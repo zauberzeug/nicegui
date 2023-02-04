@@ -20,9 +20,9 @@ class Link(TextElement):
         :param new_tab: open link in new tab (default: False)
         """
         super().__init__(tag='a', text=text)
-        self.looks._props['href'] = target if isinstance(target, str) else globals.page_routes[target]
-        self.looks._props['target'] = '_blank' if new_tab else '_self'
-        self.looks.classes.extend(['underline', 'text-blue-500'])
+        self.layout._props['href'] = target if isinstance(target, str) else globals.page_routes[target]
+        self.layout._props['target'] = '_blank' if new_tab else '_self'
+        self.layout._classes.extend(['underline', 'text-blue-500'])
 
 
 class LinkTarget(Element):
@@ -35,4 +35,4 @@ class LinkTarget(Element):
         :param name: target name
         """
         super().__init__('a')
-        self.looks._props['name'] = name
+        self.layout._props['name'] = name

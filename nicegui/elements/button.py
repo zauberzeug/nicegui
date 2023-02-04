@@ -1,7 +1,7 @@
 from typing import Callable, Optional
 
 from ..events import ClickEventArguments, handle_event
-from ..looks import ButtonLooks
+from ..layout import ButtonLayout
 from .mixins.text_element import TextElement
 
 
@@ -14,13 +14,13 @@ class Button(TextElement):
         :param on_click: callback which is invoked when button is pressed
         """
         super().__init__(tag='q-btn', text=text)
-        orig = self.looks
-        self.looks = ButtonLooks(self)
-        self.looks.classes = orig.classes
-        self.looks._props = orig._props
-        self.looks._props['color'] = 'primary'
+        orig = self.layout
+        self.layout = ButtonLayout(self)
+        self.layout._classes = orig._classes
+        self.layout._props = orig._props
+        self.layout._props['color'] = 'primary'
 
         self.on('click', lambda _: handle_event(on_click, ClickEventArguments(sender=self, client=self.client)))
 
     def _text_to_model_text(self, text: str) -> None:
-        self.looks._props['label'] = text
+        self.layout._props['label'] = text

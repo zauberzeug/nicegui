@@ -8,49 +8,49 @@ if TYPE_CHECKING:
 
 class Topic():
 
-    def __init__(self, looks: Looks, prefix: str = ''):
+    def __init__(self, looks: Layout, prefix: str = ''):
         self._looks = looks
         self._prefix = prefix
 
 
 class FixedSize(Topic):
 
-    def twelve(self) -> Looks:
-        self._looks.classes.append(f'{self._prefix}-12')
+    def twelve(self) -> Layout:
+        self._looks._classes.append(f'{self._prefix}-12')
         return self._looks
 
-    def twenty(self) -> Looks:
-        self._looks.classes.append(f'{self._prefix}-20')
+    def twenty(self) -> Layout:
+        self._looks._classes.append(f'{self._prefix}-20')
         return self._looks
 
-    def forty_eight(self) -> Looks:
-        self._looks.classes.append(f'{self._prefix}-48')
+    def forty_eight(self) -> Layout:
+        self._looks._classes.append(f'{self._prefix}-48')
         return self._looks
 
-    def sixty_four(self) -> Looks:
-        self._looks.classes.append(f'{self._prefix}-64')
+    def sixty_four(self) -> Layout:
+        self._looks._classes.append(f'{self._prefix}-64')
         return self._looks
 
 
 class FractionalSize(Topic):
 
-    def one_sixth(self) -> Looks:
-        self._looks.classes.append(f'{self._prefix}-1/6')
+    def one_sixth(self) -> Layout:
+        self._looks._classes.append(f'{self._prefix}-1/6')
         return self._looks
 
-    def two_thirds(self) -> Looks:
-        self._looks.classes.append(f'{self._prefix}-2/3')
+    def two_thirds(self) -> Layout:
+        self._looks._classes.append(f'{self._prefix}-2/3')
         return self._looks
 
-    def one_half(self) -> Looks:
-        self._looks.classes.append(f'{self._prefix}-1/2')
+    def one_half(self) -> Layout:
+        self._looks._classes.append(f'{self._prefix}-1/2')
         return self._looks
 
 
 class Sizing(Topic):
 
-    def full(self) -> Looks:
-        self._looks.classes.append(f'{self._prefix}-full')
+    def full(self) -> Layout:
+        self._looks._classes.append(f'{self._prefix}-full')
         return self._looks
 
     @property
@@ -64,33 +64,33 @@ class Sizing(Topic):
 
 class Color(Topic):
 
-    def primary(self) -> Looks:
-        self._looks.classes.append('bg-primary')
+    def primary(self) -> Layout:
+        self._looks._classes.append('bg-primary')
         return self._looks
 
-    def secondary(self) -> Looks:
-        self._looks.classes.append('bg-secondary')
+    def secondary(self) -> Layout:
+        self._looks._classes.append('bg-secondary')
         return self._looks
 
-    def teal(self, level: float) -> Looks:
+    def teal(self, level: float) -> Layout:
         level = int(level * 10)
-        self._looks.classes.append(f'bg-teal-{level}')
+        self._looks._classes.append(f'bg-teal-{level}')
         return self._looks
 
-    def grey(self, level: float) -> Looks:
+    def grey(self, level: float) -> Layout:
         level = int(level * 10)
-        self._looks.classes.append(f'bg-grey-{level}')
+        self._looks._classes.append(f'bg-grey-{level}')
         return self._looks
 
 
 class Spacing(Topic):
 
-    def __init__(self, look: Looks, prefix: str):
+    def __init__(self, look: Layout, prefix: str):
         super().__init__(look)
         self.prefix = prefix
 
-    def small(self) -> Looks:
-        self._looks.classes.append(f'{self.prefix}-sm')
+    def small(self) -> Layout:
+        self._looks._classes.append(f'{self.prefix}-sm')
         return self._looks
 
 
@@ -103,58 +103,58 @@ class Padding(Topic):
 
 class MainAxis(Topic):
 
-    def start(self) -> Looks:
-        self._looks.classes.append('justify-start')
+    def start(self) -> Layout:
+        self._looks._classes.append('justify-start')
         return self._looks
 
-    def end(self) -> Looks:
-        self._looks.classes.append('justify-end')
+    def end(self) -> Layout:
+        self._looks._classes.append('justify-end')
         return self._looks
 
-    def center(self) -> Looks:
-        self._looks.classes.append('justify-center')
+    def center(self) -> Layout:
+        self._looks._classes.append('justify-center')
         return self._looks
 
-    def evenly(self) -> Looks:
-        self._looks.classes.append('justify-evenly')
+    def evenly(self) -> Layout:
+        self._looks._classes.append('justify-evenly')
         return self._looks
 
 
 class CrossAxis(Topic):
 
-    def start(self) -> Looks:
-        self._looks.classes.append('items-start')
+    def start(self) -> Layout:
+        self._looks._classes.append('items-start')
         return self._looks
 
-    def center(self) -> Looks:
-        self._looks.classes.append('items-center')
+    def center(self) -> Layout:
+        self._looks._classes.append('items-center')
         return self._looks
 
 
 class Text(Topic):
 
-    def red(self, level: float) -> Looks:
+    def red(self, level: float) -> Layout:
         level = int(level * 1000)
-        self._looks.classes.append(f'text-red-{level}')
+        self._looks._classes.append(f'text-red-{level}')
         return self._looks
 
-    def gray(self, level: float) -> Looks:
-        self._looks.classes.append(f'text-red-{level}')
+    def gray(self, level: float) -> Layout:
+        self._looks._classes.append(f'text-red-{level}')
         return self._looks
 
 
 class Gap(Topic):
 
-    def none(self) -> Looks:
-        self._looks.classes.append('gap-0')
+    def none(self) -> Layout:
+        self._looks._classes.append('gap-0')
         return self._looks
 
-    def small(self) -> Looks:
-        self._looks.classes.append('gap-2')
+    def small(self) -> Layout:
+        self._looks._classes.append('gap-2')
         return self._looks
 
-    def medium(self) -> Looks:
-        self._looks.classes.append('gap-4')
+    def medium(self) -> Layout:
+        self._looks._classes.append('gap-4')
         return self._looks
 
 
@@ -169,11 +169,11 @@ class Alignment(Topic):
         return CrossAxis(self._looks)
 
 
-class Looks:
+class Layout:
 
     def __init__(self, element: Optional['Element'] = None):
         self.element = element
-        self.classes: List[str] = []
+        self._classes: List[str] = []
         self._props: Dict[str, Any] = {}
 
     @property
@@ -211,34 +211,34 @@ class Looks:
         '''Gap'''
         return Gap(self)
 
-    def on_hover(self, looks: Looks) -> Looks:
-        self.classes.extend([f'hover:{c}' for c in looks.classes])
+    def on_hover(self, looks: Layout) -> Layout:
+        self._classes.extend([f'hover:{c}' for c in looks._classes])
         return self
 
-    def add(self, other: Looks) -> Looks:
-        self.classes.extend(other.classes)
+    def add(self, other: Layout) -> Layout:
+        self._classes.extend(other._classes)
         self._props.update(other._props)
         return self
 
 
-class ButtonLooks(Looks):
+class ButtonLayout(Layout):
 
-    def rounded(self) -> Looks:
+    def rounded(self) -> Layout:
         self._props['rounded'] = True
         return self
 
-    def square(self) -> Looks:
+    def square(self) -> Layout:
         self._props['square'] = True
         return self
 
-    def flat(self) -> Looks:
+    def flat(self) -> Layout:
         self._props['flat'] = True
         return self
 
-    def outline(self) -> Looks:
+    def outline(self) -> Layout:
         self._props['outline'] = True
         return self
 
-    def unelevated(self) -> Looks:
+    def unelevated(self) -> Layout:
         self._props['unelevated'] = True
         return self

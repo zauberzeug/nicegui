@@ -29,17 +29,17 @@ class Tree(Element):
         :param on_tick: callback which is invoked when a node is ticked or unticked
         """
         super().__init__('q-tree')
-        self.looks._props['nodes'] = nodes
-        self.looks._props['node-key'] = node_key
-        self.looks._props['label-key'] = label_key
-        self.looks._props['children-key'] = children_key
-        self.looks._props['selected'] = []
-        self.looks._props['expanded'] = []
-        self.looks._props['ticked'] = []
+        self.layout._props['nodes'] = nodes
+        self.layout._props['node-key'] = node_key
+        self.layout._props['label-key'] = label_key
+        self.layout._props['children-key'] = children_key
+        self.layout._props['selected'] = []
+        self.layout._props['expanded'] = []
+        self.layout._props['ticked'] = []
 
         def update_prop(name: str, value: Any) -> None:
-            if self.looks._props[name] != value:
-                self.looks._props[name] = value
+            if self.layout._props[name] != value:
+                self.layout._props[name] = value
                 self.update()
 
         def handle_selected(msg: Dict) -> None:

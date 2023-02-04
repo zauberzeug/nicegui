@@ -12,7 +12,7 @@ class Card(Element):
         self.classes('column items-start q-pa-md gap-4')
 
     def tight(self):
-        self.looks.classes.clear()
+        self.layout._classes.clear()
         self._style.clear()
         return self
 

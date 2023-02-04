@@ -10,7 +10,7 @@ class Counter(Element):
 
     def __init__(self, title: str, *, on_change: Optional[Callable] = None) -> None:
         super().__init__('counter')
-        self.looks._props['title'] = title
+        self.layout._props['title'] = title
         self.on('change', on_change)
 
     def reset(self) -> None:

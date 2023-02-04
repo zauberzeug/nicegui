@@ -17,7 +17,7 @@ class Select(ChoiceElement):
         :param on_change: callback to execute when selection changes
         """
         super().__init__(tag='q-select', options=options, value=value, on_change=on_change)
-        self.looks._props['label'] = label
+        self.layout._props['label'] = label
 
     def _msg_to_value(self, msg: Dict) -> Any:
         return self._values[msg['args']['value']]

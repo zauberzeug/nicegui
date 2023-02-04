@@ -42,4 +42,4 @@ class Joystick(Element):
                 lambda _: handle_event(on_end, JoystickEventArguments(sender=self,
                                                                       client=self.client,
                                                                       action='end')))
-        self.looks._props['options'] = options
+        self.layout._props['options'] = options

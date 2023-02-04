@@ -35,9 +35,9 @@ class Visibility:
         self.visible = visible
 
     def on_visibility_change(self: 'Element', visible: str) -> None:
-        if visible and 'hidden' in self.looks.classes:
-            self.looks.classes.remove('hidden')
+        if visible and 'hidden' in self.layout._classes:
+            self.layout._classes.remove('hidden')
             self.update()
-        if not visible and 'hidden' not in self.looks.classes:
-            self.looks.classes.append('hidden')
+        if not visible and 'hidden' not in self.layout._classes:
+            self.layout._classes.append('hidden')
             self.update()

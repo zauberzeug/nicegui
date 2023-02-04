@@ -99,9 +99,9 @@ class Chart(Element):
         :param extras: list of extra dependencies to include (e.g. "annotations", "arc-diagram", "solid-gauge", ...)
         """
         super().__init__('chart')
-        self.looks._props['type'] = type
-        self.looks._props['options'] = options
-        self.looks._props['extras'] = [
+        self.layout._props['type'] = type
+        self.layout._props['options'] = options
+        self.layout._props['extras'] = [
             dependency.import_path
             for dependency in js_dependencies.values()
             if dependency.optional and dependency.path.stem in extras and 'chart' in dependency.dependents
@@ -109,7 +109,7 @@ class Chart(Element):
 
     @property
     def options(self) -> Dict:
-        return self.looks._props['options']
+        return self.layout._props['options']
 
     def update(self) -> None:
         super().update()

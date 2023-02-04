@@ -20,9 +20,9 @@ class ColorInput(ValueElement):
         """
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
         if label is not None:
-            self.looks._props['label'] = label
+            self.layout._props['label'] = label
         if placeholder is not None:
-            self.looks._props['placeholder'] = placeholder
+            self.layout._props['placeholder'] = placeholder
 
         with self.add_slot('append'):
             self.picker = ColorPicker(on_pick=lambda e: self.set_value(e.color))

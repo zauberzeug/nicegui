@@ -28,7 +28,7 @@ class Plot(Element):
     def _convert_to_html(self) -> None:
         with io.StringIO() as output:
             self.fig.savefig(output, format='svg')
-            self.looks._props['innerHTML'] = output.getvalue()
+            self.layout._props['innerHTML'] = output.getvalue()
 
     def __enter__(self):
         plt.figure(self.fig)

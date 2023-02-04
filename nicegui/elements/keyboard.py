@@ -24,8 +24,8 @@ class Keyboard(Element):
         super().__init__('keyboard')
         self.key_handler = on_key
         self.active = active
-        self.looks._props['events'] = ['keydown', 'keyup']
-        self.looks._props['repeating'] = repeating
+        self.layout._props['events'] = ['keydown', 'keyup']
+        self.layout._props['repeating'] = repeating
         self.style('display: none')
         self.on('key', self.handle_key)
 

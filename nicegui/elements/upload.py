@@ -25,12 +25,12 @@ class Upload(Element):
         :param auto_upload: automatically upload files when they are selected (default: `False`)
         """
         super().__init__('q-uploader')
-        self.looks._props['multiple'] = multiple
-        self.looks._props['label'] = label
-        self.looks._props['auto-upload'] = auto_upload
-        self.looks._props['url'] = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
+        self.layout._props['multiple'] = multiple
+        self.layout._props['label'] = label
+        self.layout._props['auto-upload'] = auto_upload
+        self.layout._props['url'] = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
 
-        @app.post(self.looks._props['url'])
+        @app.post(self.layout._props['url'])
         async def upload_route(request: Request) -> Response:
             for data in (await request.form()).values():
                 args = UploadEventArguments(
@@ -47,5 +47,5 @@ class Upload(Element):
         self.run_method('reset')
 
     def delete(self) -> None:
-        app.remove_route(self.looks._props['url'])
+        app.remove_route(self.layout._props['url'])
         super().delete()

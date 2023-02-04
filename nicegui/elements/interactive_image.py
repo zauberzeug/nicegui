@@ -31,8 +31,8 @@ class InteractiveImage(SourceElement, ContentElement):
         :param cross: whether to show crosshairs (default: `False`)
         """
         super().__init__(tag='interactive_image', source=source, content=content)
-        self.looks._props['events'] = events
-        self.looks._props['cross'] = cross
+        self.layout._props['events'] = events
+        self.layout._props['cross'] = cross
 
         def handle_mouse(msg: Dict) -> None:
             if on_mouse is None:
