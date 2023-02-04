@@ -62,17 +62,17 @@ class Looks:
         self.element = element
 
     @property
-    def w(self) -> Width:
+    def width(self) -> Width:
         '''Width'''
         return Width(self)
 
     @property
-    def bg(self) -> Color:
+    def background(self) -> Color:
         '''Background'''
         return Color(self)
 
     @property
-    def p(self) -> Padding:
+    def padding(self) -> Padding:
         '''Padding'''
         return Padding(self)
 
