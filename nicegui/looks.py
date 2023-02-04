@@ -52,11 +52,22 @@ class Color(Topic):
         return self._look
 
 
+class Spacing(Topic):
+
+    def __init__(self, look: Looks, prefix: str):
+        super().__init__(look)
+        self.prefix = prefix
+
+    def small(self) -> Looks:
+        self._look.classes.append(f'{self.prefix}-sm')
+        return self._look
+
+
 class Padding(Topic):
 
-    def two(self) -> Looks:
-        self._look.classes.append('p-2')
-        return self._look
+    @property
+    def y_axis(self) -> Spacing:
+        return Spacing(self._look, 'q-py')
 
 
 class MainAxis(Topic):
