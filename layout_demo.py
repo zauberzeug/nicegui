@@ -25,6 +25,6 @@ with ui.row().layout.width.full().align.cross_axis.center().element:
         .opacity(0.3).background.primary().element
     ui.label('transparency')
     ui.toggle([0.3, 0.5, 1.0], value=0.5, on_change=progress.update).\
-        bind_value_to(progress.layout, '_opacity').layout.margin.left.auto()
+        bind_value_to(progress.layout.bindables, 'opacity').layout.margin.left.auto()
 
 ui.run()

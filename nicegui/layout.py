@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 if TYPE_CHECKING:
@@ -188,13 +189,18 @@ class Alignment(Topic):
         return CrossAxis(self._looks)
 
 
+@dataclass
+class Bindable:
+    opacity: float = 1.0
+
+
 class Layout:
 
     def __init__(self, element: Optional['Element'] = None):
         self.element = element
         self._classes: List[str] = []
         self._props: Dict[str, Any] = {}
-        self._opacity: float = 1.0
+        self.bindables = Bindable()
 
     @property
     def width(self) -> Sizing:
@@ -246,7 +252,7 @@ class Layout:
         return self
 
     def opacity(self, opacity: float) -> Layout:
-        self._opacity = opacity
+        self.bindables.opacity = opacity
         return self
 
 

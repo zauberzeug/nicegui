@@ -69,7 +69,7 @@ class Element(ABC, Visibility):
         return {
             'id': self.id,
             'tag': self.tag,
-            'class': self.layout._classes + [f'opacity-{int(self.layout._opacity * 100)}'],
+            'class': self.layout._classes + [f'opacity-{int(self.layout.bindables.opacity * 100)}'],
             'style': self._style,
             'props': self.layout._props,
             'events': events,
