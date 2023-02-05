@@ -9,17 +9,18 @@ from . import background_tasks, binding, globals
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .events import handle_event
-from .layout import Layout
 from .slot import Slot
 
 if TYPE_CHECKING:
     from .client import Client
+    from .layout import Layout
 
 
 class Element(ABC, Visibility):
 
     def __init__(self, tag: str, *, _client: Optional[Client] = None) -> None:
         super().__init__()
+        from .layout import Layout  # NOTE this breaks a otherwise circular import
         self.client = _client or globals.get_client()
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
@@ -77,7 +78,7 @@ class Element(ABC, Visibility):
             'slots': {name: [child.id for child in slot.children] for name, slot in self.slots.items()},
         }
 
-    def apply(self, look: Layout):
+    def apply(self, look: 'Layout'):
         '''Apply a look to the element.'''
         self.layout._classes.extend(look._classes)
         return self

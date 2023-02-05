@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
-if TYPE_CHECKING:
-    from .element import Element
+from .element import Element
 
 
 class Topic():
@@ -196,8 +196,8 @@ class Bindable:
 
 class Layout:
 
-    def __init__(self, element: Optional['Element'] = None):
-        self.element = element
+    def __init__(self, element=None):
+        self.element: Optional[Element] = element
         self._classes: List[str] = []
         self._props: Dict[str, Any] = {}
         self.bindables = Bindable()
@@ -242,6 +242,11 @@ class Layout:
         '''Margin'''
         return Margin(self)
 
+    def row(self) -> Layout:
+        self._classes.append('row')
+        self.align.main_axis.start().gap.medium()
+        return self
+
     def on_hover(self, looks: Layout) -> Layout:
         self._classes.extend([f'hover:{c}' for c in looks._classes])
         return self
@@ -254,6 +259,19 @@ class Layout:
     def opacity(self, opacity: float) -> Layout:
         self.bindables.opacity = opacity
         return self
+
+    def __enter__(self):
+        if self.element is None:
+            self.element = Element('div')
+            self.element.layout = self
+        self.element.__enter__()
+
+    def __exit__(self, *_):
+        self.element.__exit__(*_)
+        self.element = None
+
+    def __call__(self, *args: Any, **kwds: Any) -> 'Layout':
+        return deepcopy(self)
 
 
 class ButtonLayout(Layout):
@@ -277,3 +295,6 @@ class ButtonLayout(Layout):
     def unelevated(self) -> Layout:
         self._props['unelevated'] = True
         return self
+
+
+layout = Layout()
