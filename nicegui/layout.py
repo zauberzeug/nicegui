@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from .element import Element
 
@@ -51,21 +51,6 @@ class FractionalSize(Topic):
     def one_half(self) -> Layout:
         self._looks._classes.append(f'{self._prefix}-1/2')
         return self._looks
-
-
-class Sizing(Topic):
-
-    def full(self) -> Layout:
-        self._looks._classes.append(f'{self._prefix}-full')
-        return self._looks
-
-    @property
-    def fixed(self) -> FixedSize:
-        return FixedSize(self._looks, self._prefix)
-
-    @property
-    def fractional(self) -> FractionalSize:
-        return FractionalSize(self._looks, self._prefix)
 
 
 class Color(Topic):
@@ -231,6 +216,9 @@ class Bindable:
     opacity: float = 1.0
 
 
+ElementSize = Literal[None, '0', '0.5', '1', '1.5', '6', '12', '64', '1/2', '1/6', '2/3', 'full']
+
+
 class Layout:
 
     def __init__(self, element=None):
@@ -239,15 +227,13 @@ class Layout:
         self._props: Dict[str, Any] = {}
         self.bindables = Bindable()
 
-    @property
-    def width(self) -> Sizing:
-        '''Width'''
-        return Sizing(self, 'w')
-
-    @property
-    def height(self) -> Sizing:
-        '''Height'''
-        return Sizing(self, 'h')
+    def size(self, width: ElementSize = None, height: ElementSize = None) -> Layout:
+        '''Set the dimensions of the element'''
+        if width is not None:
+            self._classes.append(f'w-{width}')
+        if height is not None:
+            self._classes.append(f'h-{height}')
+        return self
 
     @property
     def background(self) -> Color:

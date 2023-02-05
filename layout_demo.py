@@ -15,7 +15,7 @@ ui.markdown('''### Features
 
 ui.icon('star').layout.color.yellow(0.8).size.medium().align.center()
 
-shared_row = Layout().width.full().background.secondary().row()
+shared_row = Layout().size(width='full').background.secondary().row()
 
 with shared_row().padding.y_axis.small().align.main_axis.center():
     for i in range(5):
@@ -25,17 +25,17 @@ with shared_row().padding.y_axis.small().align.main_axis.center():
 button_layout = ButtonLayout().rounded().background.teal(0.9)
 hover = Layout().text.gray(0.6)
 
-with shared_row().height.fixed.twenty().background.grey(0.4).align.main_axis.evenly().align.cross_axis.center():
-    ui.button('12').layout.square().width.fixed.twelve().add(button_layout)
-    ui.button('64').layout.width.fixed.sixty_four().add(button_layout).height.fractional.two_thirds()
-    ui.button('1/6').layout.width.fractional.one_sixth().add(button_layout).on_hover(hover)
+with shared_row().size(height='20').background.grey(0.4).align.main_axis.evenly().align.cross_axis.center():
+    ui.button('12').layout.square().size(width='12').add(button_layout)
+    ui.button('64').layout.size(width='64', height='2/3').add(button_layout)
+    ui.button('1/6').layout.size(width='1/6').add(button_layout).on_hover(hover)
 
 with shared_row().gap.none():
-    ui.image('https://picsum.photos/id/29/640/360').layout.width.fractional.one_half()
-    ui.image('https://picsum.photos/id/565/640/360').layout.width.fractional.one_half()
+    ui.image('https://picsum.photos/id/29/640/360').layout.size(width='1/2')
+    ui.image('https://picsum.photos/id/565/640/360').layout.size(width='1/2')
 
-with ui.layout().row().width.full().align.cross_axis.center():
-    progress = ui.element('div').layout.width.fractional.one_half().height.fixed.six()\
+with ui.layout().row().size(width='full').align.cross_axis.center():
+    progress = ui.element('div').layout.size(width='1/2', height='6')\
         .opacity(0.3).background.primary().element
     ui.label('transparency')
     ui.toggle([0.3, 0.5, 1.0], value=0.5, on_change=progress.update).\
