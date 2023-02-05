@@ -18,6 +18,7 @@ class Button(TextElement):
         self.layout = ButtonLayout(self)
         self.layout._classes = orig._classes
         self.layout._props = orig._props
+
         self.layout._props['color'] = 'primary'
 
         self.on('click', lambda _: handle_event(on_click, ClickEventArguments(sender=self, client=self.client)))

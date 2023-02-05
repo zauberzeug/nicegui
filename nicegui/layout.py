@@ -9,9 +9,10 @@ from .element import Element
 
 class Topic():
 
-    def __init__(self, looks: Layout, prefix: str = ''):
-        self._looks = looks
-        self._prefix = prefix
+    def __init__(self, looks: Layout, prefix: str = '', prop: str = None):
+        self._looks: Layout = looks
+        self._prefix: str = prefix
+        self._prop: Optional[str] = prop
 
 
 class FixedSize(Topic):
@@ -69,22 +70,41 @@ class Sizing(Topic):
 
 class Color(Topic):
 
+    def _apply(self, color: str) -> Layout:
+        if self._prop:
+            self._looks._props[self._prop] = color
+        else:
+            self._looks._classes.append(f'{self._prefix}-{color}')
+        return self._looks
+
     def primary(self) -> Layout:
-        self._looks._classes.append('bg-primary')
+        self._apply('primary')
         return self._looks
 
     def secondary(self) -> Layout:
-        self._looks._classes.append('bg-secondary')
+        self._apply('secondary')
         return self._looks
 
     def teal(self, level: float) -> Layout:
         level = int(level * 10)
-        self._looks._classes.append(f'bg-teal-{level}')
+        self._apply(f'teal-{level}')
         return self._looks
 
     def grey(self, level: float) -> Layout:
         level = int(level * 10)
-        self._looks._classes.append(f'bg-grey-{level}')
+        self._apply(f'grey-{level}')
+        return self._looks
+
+    def yellow(self, level: float) -> Layout:
+        level = int(level * 10)
+        self._apply(f'yellow-{level}')
+        return self._looks
+
+
+class Shadow(Topic):
+
+    def small(self) -> Layout:
+        self._looks._classes.append('shadow-4')
         return self._looks
 
 
@@ -99,6 +119,10 @@ class Spacing(Topic):
         return self._looks
 
     def auto(self) -> Layout:
+        if self.prefix[-2] != 'm':
+            raise ValueError('auto spacing can only be used on margins')
+        if not any(self.prefix.endswith(direction) for direction in ['l', 'r', 'x']):
+            raise ValueError('auto spacing can only be used on x axis')
         self._looks._classes.append(f'{self.prefix}-auto')
         return self._looks
 
@@ -115,6 +139,14 @@ class Margin(Topic):
     @property
     def x_axis(self) -> Spacing:
         return Spacing(self._looks, 'q-mx')
+
+    @property
+    def y_axis(self) -> Spacing:
+        return Spacing(self._looks, 'q-my')
+
+    @property
+    def all(self) -> Spacing:
+        return Spacing(self._looks, 'q-ma')
 
     @property
     def left(self) -> Spacing:
@@ -188,6 +220,11 @@ class Alignment(Topic):
     def cross_axis(self) -> CrossAxis:
         return CrossAxis(self._looks)
 
+    @property
+    def center(self) -> Layout:
+        self._looks.margin.x_axis.auto()
+        return self._looks
+
 
 @dataclass
 class Bindable:
@@ -215,7 +252,7 @@ class Layout:
     @property
     def background(self) -> Color:
         '''Background'''
-        return Color(self)
+        return Color(self, 'bg')
 
     @property
     def padding(self) -> Padding:
@@ -241,6 +278,11 @@ class Layout:
     def margin(self) -> Margin:
         '''Margin'''
         return Margin(self)
+
+    @property
+    def shadow(self) -> Shadow:
+        '''Shadow'''
+        return Shadow(self)
 
     def row(self) -> Layout:
         self._classes.append('row')
@@ -295,6 +337,32 @@ class ButtonLayout(Layout):
     def unelevated(self) -> Layout:
         self._props['unelevated'] = True
         return self
+
+
+class IconSizing(Topic):
+
+    def small(self) -> Layout:
+        self._looks._props['size'] = '1rem'
+        return self._looks
+
+    def medium(self) -> Layout:
+        self._looks._props['size'] = '3rem'
+        return self._looks
+
+    def large(self) -> Layout:
+        self._looks._props['size'] = '5rem'
+        return self._looks
+
+
+class IconLayout(Layout):
+
+    @property
+    def size(self) -> IconSizing:
+        return IconSizing(self)
+
+    @property
+    def color(self) -> Color:
+        return Color(self, prop='color')
 
 
 layout = Layout()

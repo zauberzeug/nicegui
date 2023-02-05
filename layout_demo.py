@@ -1,6 +1,20 @@
 #!/usr/bin/env python3
 from nicegui import ButtonLayout, Layout, ui
 
+ui.markdown('''### Features
+- auto completion + documentation for common layout and styling aspects through builder pattern
+- nesting layout aspects of arbitrary depth: `align.main_axis.evenly()`, thereby reducing number of options to search through
+- error reports for invalid layout aspects (e.g. `margin.top.auto()` is not possible with css)
+- the Layout of an existing element can be modify by accessing its layout property
+- Layouts can be created independently because they are just objects
+- Layouts can be used as contexts to create generic groups, rows, columns: `with ui.layout().row()`
+- specialized Layouts can provide additional styling (e.g. `ButtonLayout` to configure shape etc.)
+- a Layout can be applied to (multiple) elements via `add`
+- a Layout is copied by invoking the object (just a shortcut for layout factory functions)
+''')
+
+ui.icon('star').layout.color.yellow(0.8).size.medium().align.center()
+
 shared_row = Layout().width.full().background.secondary().row()
 
 with shared_row().padding.y_axis.small().align.main_axis.center():
@@ -27,14 +41,5 @@ with ui.layout().row().width.full().align.cross_axis.center():
     ui.toggle([0.3, 0.5, 1.0], value=0.5, on_change=progress.update).\
         bind_value_to(progress.layout.bindables, 'opacity').layout.margin.left.auto()
 
-ui.markdown('''### Features
-- auto completion for common layout and styling aspects through builder pattern
-- nesting layout aspects of arbitrary depth: `align.main_axis.evenly()`)
-- the Layout of an existing element can be modify by accessing its layout property
-- Layouts can be created independently because they are just objects
-- Layouts can be used as contexts to create generic groups, rows, columns, ... (for example `with ui.layout().row():`)
-- specialized Layouts can provide additional styling (e.g. `ButtonLayout` to configure shape etc.)
-- a Layout can be applied to (multiple) elements via `add`
-- a Layout is copied by invoking the object (just a shortcut for layout factory functions)
-''')
+
 ui.run()
