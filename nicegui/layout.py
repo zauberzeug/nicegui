@@ -112,7 +112,6 @@ class Alignment(Topic):
             self._looks._classes.append(f'items-{cross_axis}')
         return self._looks
 
-    @property
     def center(self) -> Layout:
         self._looks.margin.x_axis.auto()
         return self._looks
@@ -214,7 +213,7 @@ class Layout:
         self.element.__exit__(*_)
         self.element = None
 
-    def __call__(self, *args: Any, **kwds: Any) -> 'Layout':
+    def copy(self) -> 'Layout':
         return deepcopy(self)
 
 
@@ -243,15 +242,15 @@ class ButtonLayout(Layout):
 
 class IconSizing(Topic):
 
-    def small(self) -> Layout:
+    def small(self) -> 'IconLayout':
         self._looks._props['size'] = '1rem'
         return self._looks
 
-    def medium(self) -> Layout:
+    def medium(self) -> 'IconLayout':
         self._looks._props['size'] = '3rem'
         return self._looks
 
-    def large(self) -> Layout:
+    def large(self) -> 'IconLayout':
         self._looks._props['size'] = '5rem'
         return self._looks
 
@@ -281,4 +280,5 @@ class IconLayout(Layout):
         return self
 
 
-layout = Layout()
+def layout():
+    return Layout()
