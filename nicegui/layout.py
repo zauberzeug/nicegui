@@ -6,6 +6,10 @@ from typing import Any, Dict, List, Literal, Optional
 
 from .element import Element
 
+ElementSize = Literal[None, '0', '0.5', '1', '1.5', '6', '12', '64', '1/2', '1/6', '2/3', 'full']
+MainAxisChildAlignment = Literal[None, 'start', 'center', 'end', 'evenly', 'between', 'around']
+CrossAxisChildAlignment = Literal[None, 'start', 'center', 'end', 'stretch', 'baseline']
+
 
 class Topic():
 
@@ -13,44 +17,6 @@ class Topic():
         self._looks: Layout = looks
         self._prefix: str = prefix
         self._prop: Optional[str] = prop
-
-
-class FixedSize(Topic):
-
-    def six(self) -> Layout:
-        self._looks._classes.append(f'{self._prefix}-6')
-        return self._looks
-
-    def twelve(self) -> Layout:
-        self._looks._classes.append(f'{self._prefix}-12')
-        return self._looks
-
-    def twenty(self) -> Layout:
-        self._looks._classes.append(f'{self._prefix}-20')
-        return self._looks
-
-    def forty_eight(self) -> Layout:
-        self._looks._classes.append(f'{self._prefix}-48')
-        return self._looks
-
-    def sixty_four(self) -> Layout:
-        self._looks._classes.append(f'{self._prefix}-64')
-        return self._looks
-
-
-class FractionalSize(Topic):
-
-    def one_sixth(self) -> Layout:
-        self._looks._classes.append(f'{self._prefix}-1/6')
-        return self._looks
-
-    def two_thirds(self) -> Layout:
-        self._looks._classes.append(f'{self._prefix}-2/3')
-        return self._looks
-
-    def one_half(self) -> Layout:
-        self._looks._classes.append(f'{self._prefix}-1/2')
-        return self._looks
 
 
 class Color(Topic):
@@ -138,36 +104,6 @@ class Margin(Topic):
         return Spacing(self._looks, 'q-ml')
 
 
-class MainAxis(Topic):
-
-    def start(self) -> Layout:
-        self._looks._classes.append('justify-start')
-        return self._looks
-
-    def end(self) -> Layout:
-        self._looks._classes.append('justify-end')
-        return self._looks
-
-    def center(self) -> Layout:
-        self._looks._classes.append('justify-center')
-        return self._looks
-
-    def evenly(self) -> Layout:
-        self._looks._classes.append('justify-evenly')
-        return self._looks
-
-
-class CrossAxis(Topic):
-
-    def start(self) -> Layout:
-        self._looks._classes.append('items-start')
-        return self._looks
-
-    def center(self) -> Layout:
-        self._looks._classes.append('items-center')
-        return self._looks
-
-
 class Text(Topic):
 
     def red(self, level: float) -> Layout:
@@ -197,13 +133,13 @@ class Gap(Topic):
 
 class Alignment(Topic):
 
-    @property
-    def main_axis(self) -> MainAxis:
-        return MainAxis(self._looks)
-
-    @property
-    def cross_axis(self) -> CrossAxis:
-        return CrossAxis(self._looks)
+    def children(self, main_axis: MainAxisChildAlignment = None, cross_axis: CrossAxisChildAlignment = None) -> Layout:
+        '''configure alignment'''
+        if main_axis is not None:
+            self._looks._classes.append(f'justify-{main_axis}')
+        if cross_axis is not None:
+            self._looks._classes.append(f'items-{cross_axis}')
+        return self._looks
 
     @property
     def center(self) -> Layout:
@@ -214,9 +150,6 @@ class Alignment(Topic):
 @dataclass
 class Bindable:
     opacity: float = 1.0
-
-
-ElementSize = Literal[None, '0', '0.5', '1', '1.5', '6', '12', '64', '1/2', '1/6', '2/3', 'full']
 
 
 class Layout:
@@ -272,7 +205,7 @@ class Layout:
 
     def row(self) -> Layout:
         self._classes.append('row')
-        self.align.main_axis.start().gap.medium()
+        self.align.children(main_axis='start').gap.medium()
         return self
 
     def on_hover(self, looks: Layout) -> Layout:

@@ -3,7 +3,7 @@ from nicegui import ButtonLayout, Layout, ui
 
 ui.markdown('''### Features
 - auto completion + documentation for common layout and styling aspects through builder pattern
-- nesting layout aspects of arbitrary depth: `align.main_axis.evenly()`, thereby reducing number of options to search through
+- nesting layout aspects of arbitrary depth: `align.children(main_axis='evenly')`, thereby reducing number of options to search through
 - error reports for invalid layout aspects (e.g. `margin.top.auto()` is not possible with css)
 - the Layout of an existing element can be modify by accessing its layout property
 - Layouts can be created independently because they are just objects
@@ -17,7 +17,7 @@ ui.icon('star').layout.color.yellow(0.8).size.medium().align.center()
 
 shared_row = Layout().size(width='full').background.secondary().row()
 
-with shared_row().padding.y_axis.small().align.main_axis.center():
+with shared_row().padding.y_axis.small().align.children(main_axis='center'):
     for i in range(5):
         with ui.card():
             ui.label(str(i))
@@ -25,7 +25,7 @@ with shared_row().padding.y_axis.small().align.main_axis.center():
 button_layout = ButtonLayout().rounded().background.teal(0.9)
 hover = Layout().text.gray(0.6)
 
-with shared_row().size(height='20').background.grey(0.4).align.main_axis.evenly().align.cross_axis.center():
+with shared_row().size(height='20').background.grey(0.4).align.children(main_axis='evenly', cross_axis='center'):
     ui.button('12').layout.square().size(width='12').add(button_layout)
     ui.button('64').layout.size(width='64', height='2/3').add(button_layout)
     ui.button('1/6').layout.size(width='1/6').add(button_layout).on_hover(hover)
@@ -34,7 +34,7 @@ with shared_row().gap.none():
     ui.image('https://picsum.photos/id/29/640/360').layout.size(width='1/2')
     ui.image('https://picsum.photos/id/565/640/360').layout.size(width='1/2')
 
-with ui.layout().row().size(width='full').align.cross_axis.center():
+with ui.layout().row().size(width='full').align.children(cross_axis='center'):
     progress = ui.element('div').layout.size(width='1/2', height='6')\
         .opacity(0.3).background.primary().element
     ui.label('transparency')
