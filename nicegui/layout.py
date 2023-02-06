@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, overload
 
 from .element import Element
 
 ElementSize = Literal[None, '0', '0.5', '1', '1.5', '6', '12', '64', '1/2', '1/6', '2/3', 'full']
+Color = Literal[None, 'primary', 'secondary', 'teal', 'grey', 'yellow']
+Tone = Literal[None, '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+ThemeColor = Literal[None, 'primary', 'secondary', 'accent', 'positive', 'negative', 'info', 'warning']
 
 
 class Topic():
@@ -15,39 +18,6 @@ class Topic():
         self._looks: Layout = looks
         self._prefix: str = prefix
         self._prop: Optional[str] = prop
-
-
-class Color(Topic):
-
-    def _apply(self, color: str) -> Layout:
-        if self._prop:
-            self._looks._props[self._prop] = color
-        else:
-            self._looks._classes.append(f'{self._prefix}-{color}')
-        return self._looks
-
-    def primary(self) -> Layout:
-        self._apply('primary')
-        return self._looks
-
-    def secondary(self) -> Layout:
-        self._apply('secondary')
-        return self._looks
-
-    def teal(self, level: float) -> Layout:
-        level = int(level * 10)
-        self._apply(f'teal-{level}')
-        return self._looks
-
-    def grey(self, level: float) -> Layout:
-        level = int(level * 10)
-        self._apply(f'grey-{level}')
-        return self._looks
-
-    def yellow(self, level: float) -> Layout:
-        level = int(level * 10)
-        self._apply(f'yellow-{level}')
-        return self._looks
 
 
 class Shadow(Topic):
@@ -169,10 +139,22 @@ class Layout:
             self._classes.append(f'h-{height}')
         return self
 
-    @property
-    def background(self) -> Color:
-        '''Background'''
-        return Color(self, 'bg')
+    @overload
+    def background(self, theme_color: ThemeColor) -> Layout:
+        '''Use one of the theme colors which can be defined with `ui.color`'''
+
+    @overload
+    def background(self, color: Color, tone: Tone) -> Layout:
+        '''Pick a color and optional tone to specify the shade'''
+
+    def background(self, theme_color: ThemeColor = ..., color: Color = ...,  tone: Tone = ...) -> Layout:
+        if theme_color is not ...:
+            self._classes.append(f'bg-{theme_color}')
+        elif color is not ...:
+            if tone is ...:
+                self._classes.append(f'bg-{color}')
+            self._classes.append(f'bg-{color}-{tone}')
+        return self
 
     @property
     def padding(self) -> Padding:
@@ -280,9 +262,23 @@ class IconLayout(Layout):
     def size(self) -> IconSizing:
         return IconSizing(self)
 
-    @property
-    def color(self) -> Color:
-        return Color(self, prop='color')
+    @overload
+    def color(self, theme_color: ThemeColor) -> IconLayout:
+        '''Use one of the theme colors which can be defined with `ui.color`'''
+
+    @overload
+    def color(self, color: Color, tone: Tone) -> IconLayout:
+        '''Pick a color by name and optional a tone to specify the shade'''
+
+    def color(self, theme_color: ThemeColor = ..., color: Color = ...,  tone: Tone = ...) -> IconLayout:
+        '''Set the color of the icon'''
+        if theme_color is not ...:
+            self._props['color'] = theme_color
+        elif color is not ...:
+            if tone is ...:
+                self._props['color'] = f'bg-{color}'
+            self._props['color'] = f'bg-{color}-{tone}'
+        return self
 
 
 layout = Layout()
