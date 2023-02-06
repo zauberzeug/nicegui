@@ -7,8 +7,6 @@ from typing import Any, Dict, List, Literal, Optional
 from .element import Element
 
 ElementSize = Literal[None, '0', '0.5', '1', '1.5', '6', '12', '64', '1/2', '1/6', '2/3', 'full']
-MainAxisChildAlignment = Literal[None, 'start', 'center', 'end', 'evenly', 'between', 'around']
-CrossAxisChildAlignment = Literal[None, 'start', 'center', 'end', 'stretch', 'baseline']
 
 
 class Topic():
@@ -133,7 +131,10 @@ class Gap(Topic):
 
 class Alignment(Topic):
 
-    def children(self, main_axis: MainAxisChildAlignment = None, cross_axis: CrossAxisChildAlignment = None) -> Layout:
+    ChildrenOnMainAxis = Literal[None, 'start', 'center', 'end', 'evenly', 'between', 'around']
+    ChildrenOnCrossAxis = Literal[None, 'start', 'center', 'end', 'stretch', 'baseline']
+
+    def children(self, main_axis: ChildrenOnMainAxis = None, cross_axis: ChildrenOnCrossAxis = None) -> Layout:
         '''configure alignment'''
         if main_axis is not None:
             self._looks._classes.append(f'justify-{main_axis}')
