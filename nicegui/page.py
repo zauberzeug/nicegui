@@ -6,7 +6,6 @@ from typing import Callable, Optional
 from fastapi import Request, Response
 
 from . import background_tasks, globals
-from .async_updater import AsyncUpdater
 from .client import Client
 from .favicon import create_favicon_route
 

@@ -4,7 +4,6 @@ import traceback
 from typing import Callable
 
 from .. import background_tasks, globals
-from ..async_updater import AsyncUpdater
 from ..binding import BindableProperty
 from ..helpers import is_coroutine
 

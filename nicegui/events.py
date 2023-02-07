@@ -4,7 +4,6 @@ from inspect import signature
 from typing import TYPE_CHECKING, Any, BinaryIO, Callable, List, Optional, Union
 
 from . import background_tasks, globals
-from .async_updater import AsyncUpdater
 from .helpers import is_coroutine
 
 if TYPE_CHECKING:
