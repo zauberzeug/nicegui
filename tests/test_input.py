@@ -29,6 +29,7 @@ def test_password(screen: Screen):
     assert element.get_attribute('value') == '123456'
 
     element.send_keys('789')
+    screen.wait(0.5)
     assert element.get_attribute('value') == '123456789'
 
 
@@ -44,7 +45,9 @@ def test_toggle_button(screen: Screen):
     assert element.get_attribute('value') == '123456'
 
     screen.click('visibility_off')
+    screen.wait(0.5)
     assert element.get_attribute('type') == 'text'
 
     screen.click('visibility')
+    screen.wait(0.5)
     assert element.get_attribute('type') == 'password'

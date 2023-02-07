@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
-from . import background_tasks, binding, globals, updates
+from . import background_tasks, binding, globals, outbox
 from .app import App
 from .client import Client
 from .dependencies import js_components, js_dependencies
@@ -61,7 +61,7 @@ def handle_startup(with_welcome_message: bool = True) -> None:
         for t in globals.startup_handlers:
             safe_invoke(t)
     background_tasks.create(binding.loop())
-    background_tasks.create(updates.loop())
+    background_tasks.create(outbox.loop())
     background_tasks.create(prune_clients())
     background_tasks.create(prune_slot_stacks())
     globals.state = globals.State.STARTED

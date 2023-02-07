@@ -273,7 +273,7 @@ def handle_event(handler: Optional[Callable],
         if is_coroutine(handler):
             async def wait_for_result():
                 with sender.parent_slot:
-                    await AsyncUpdater(result)
+                    await result
             if globals.loop and globals.loop.is_running():
                 background_tasks.create(wait_for_result(), name=str(handler))
             else:

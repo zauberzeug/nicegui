@@ -9,7 +9,7 @@ from fastapi import Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 
-from . import background_tasks, globals
+from . import globals, outbox
 from .dependencies import generate_js_imports, generate_vue_content
 from .element import Element
 from .favicon import get_favicon_url
@@ -114,7 +114,7 @@ class Client:
             'code': code,
             'request_id': request_id if respond else None,
         }
-        background_tasks.create(globals.sio.emit('run_javascript', command, room=self.id))
+        outbox.enqueue_message('run_javascript', command, self.id)
         if not respond:
             return None
         deadline = time.time() + timeout
@@ -126,7 +126,7 @@ class Client:
 
     def open(self, target: Union[Callable, str]) -> None:
         path = target if isinstance(target, str) else globals.page_routes[target]
-        background_tasks.create(globals.sio.emit('open', path, room=self.id))
+        outbox.enqueue_message('open', path, self.id)
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
         self.connect_handlers.append(handler)

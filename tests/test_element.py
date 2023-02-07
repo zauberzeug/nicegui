@@ -120,16 +120,19 @@ def test_remove_and_clear(screen: Screen):
     screen.should_contain('Label C')
 
     screen.click('Remove B')
+    screen.wait(0.5)
     screen.should_contain('Label A')
     screen.should_not_contain('Label B')
     screen.should_contain('Label C')
 
     screen.click('Remove 0')
+    screen.wait(0.5)
     screen.should_not_contain('Label A')
     screen.should_not_contain('Label B')
     screen.should_contain('Label C')
 
     screen.click('Clear')
+    screen.wait(0.5)
     screen.should_not_contain('Label A')
     screen.should_not_contain('Label B')
     screen.should_not_contain('Label C')

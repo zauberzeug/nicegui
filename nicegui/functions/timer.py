@@ -75,7 +75,7 @@ class Timer:
         try:
             result = self.callback()
             if is_coroutine(self.callback):
-                await AsyncUpdater(result)
+                await result
         except Exception:
             traceback.print_exc()
 

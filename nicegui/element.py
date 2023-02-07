@@ -4,9 +4,9 @@ import json
 import re
 from abc import ABC
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
-from . import background_tasks, binding, events, globals, updates
+from . import binding, events, globals, outbox
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
@@ -39,6 +39,9 @@ class Element(ABC, Visibility):
         if slot_stack:
             self.parent_slot = slot_stack[-1]
             self.parent_slot.children.append(self)
+            outbox.enqueue_update(self.parent_slot.parent)
+
+        outbox.enqueue_update(self)
 
     def add_slot(self, name: str) -> Slot:
         self.slots[name] = Slot(self, name)
@@ -180,13 +183,13 @@ class Element(ABC, Visibility):
         return ids
 
     def update(self) -> None:
-        updates.enqueue(self)
+        outbox.enqueue_update(self)
 
     def run_method(self, name: str, *args: Any) -> None:
         if not globals.loop:
             return
         data = {'id': self.id, 'name': name, 'args': args}
-        background_tasks.create(globals.sio.emit('run_method', data, room=globals._socket_id or self.client.id))
+        outbox.enqueue_message('run_method', data, globals._socket_id or self.client.id)
 
     def clear(self) -> None:
         descendants = [self.client.elements[id] for id in self.collect_descendant_ids()[1:]]
