@@ -1,13 +1,13 @@
 import asyncio
 from collections import deque
-from typing import TYPE_CHECKING, Any, Deque, Literal, Tuple
+from typing import TYPE_CHECKING, Any, Deque, Tuple
 
 from . import globals
 
 if TYPE_CHECKING:
     from .element import Element
     ClientId = int
-    MessageType = Literal['update', 'run_method', 'run_javascript', 'open', 'notify']
+    MessageType = str
     MessageGroup = Tuple[ClientId, MessageType, Any]
 
 queue: Deque['MessageGroup'] = deque()
