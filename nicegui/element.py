@@ -4,21 +4,29 @@ import json
 import re
 from abc import ABC
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 from . import background_tasks, binding, globals
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .events import handle_event
 from .slot import Slot
+from .typedefs import ElementAsDict
 
 if TYPE_CHECKING:
     from .client import Client
 
+
 PROPS_PATTERN = re.compile(r'([\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
 
 
+# noinspection PySingleQuotedDocstring
 class Element(ABC, Visibility):
+    '''
+    Define the base class for all html elements represented as Python objects.
+
+    :param tag: The html tag (e.g. div, p, etc. of the element.)
+    '''
 
     def __init__(self, tag: str, *, _client: Optional[Client] = None) -> None:
         super().__init__()
@@ -45,14 +53,16 @@ class Element(ABC, Visibility):
         self.slots[name] = Slot(self, name)
         return self.slots[name]
 
-    def __enter__(self):
+    def __enter__(self) -> 'Element':
+        '''Allow element to be used as a context manager (with statement.)'''
         self.default_slot.__enter__()
         return self
 
     def __exit__(self, *_):
         self.default_slot.__exit__(*_)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> ElementAsDict:
+        '''Get important attributes of an element as a dictionary.'''
         events: Dict[str, Dict] = {}
         for listener in self._event_listeners:
             words = listener.type.split('.')
@@ -80,11 +90,19 @@ class Element(ABC, Visibility):
             'slots': {name: [child.id for child in slot.children] for name, slot in self.slots.items()},
         }
 
-    def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):
-        '''HTML classes to modify the look of the element.
-        Every class in the `remove` parameter will be removed from the element.
-        Classes are separated with a blank space.
-        This can be helpful if the predefined classes by NiceGUI are not wanted in a particular styling.
+    def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
+            -> 'Element':
+        '''
+        Apply, remove, or replace HTML classes.
+
+        Generally, this is for the purpose of modifying the look of the element or its layout, based on the
+        Quasar framework.
+
+        .. note:: Removing classes can be helpful if default NiceGUI class-styling is not desired.
+
+        :param add: a white-space delimited string of classes
+        :param remove: A white-space delimited string of classes to remove from the element.
+        :param replace: A white-space delimited string of classes to use instead of existing.
         '''
         class_list = self._classes if replace is None else []
         class_list = [c for c in class_list if c not in (remove or '').split()]
@@ -106,12 +124,23 @@ class Element(ABC, Visibility):
                 result[key.strip()] = value.strip()
         return result
 
-    def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):
-        '''CSS style sheet definitions to modify the look of the element.
-        Every style in the `remove` parameter will be removed from the element.
-        Styles are separated with a semicolon.
-        This can be helpful if the predefined style sheet definitions by NiceGUI are not wanted in a particular styling.
+    def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None)\
+            -> 'Element':
         '''
+        Apply, remove, or replace CSS style sheet definitions to modify the look of the element.
+
+        .. note::
+            Removing styles can be helpful if the predefined style sheet definitions by NiceGUI are not wanted
+            in a particular styling.
+
+        .. codeblock:: python
+
+            my_btn=Button("MyButton).style("color: #6E93D6; font-size: 200%", remove="font-weight; background-color")
+
+        :param add: A semicolon separated list of styles to add to the element.
+        :param remove: A semicolon separated list of styles to remove from the element.
+        :param replace: Like add, but existing styles will be replaced by given.
+         '''
         style_dict = deepcopy(self._style) if replace is None else {}
         for key in self._parse_style(remove):
             if key in style_dict:
@@ -134,12 +163,19 @@ class Element(ABC, Visibility):
             dictionary[key] = value or True
         return dictionary
 
-    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None):
-        '''Quasar props https://quasar.dev/vue-components/button#design to modify the look of the element.
-        Boolean props will automatically activated if they appear in the list of the `add` property.
-        Props are separated with a blank space. String values must be quoted.
-        Every prop passed to the `remove` parameter will be removed from the element.
-        This can be helpful if the predefined props by NiceGUI are not wanted in a particular styling.
+    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> 'Element':
+        '''Add or remove Quasar-specif properties to modify the look of the element.
+
+        see https://quasar.dev/vue-components/button#design
+
+        .. code:: python
+
+            by_btn = Button("my_btn").props("outline icon=volume_up")
+
+        .. note:: Boolean properties are assumed True by their existence.
+
+        :param add: A whitespace separated list of either boolean values or key=value pair to add
+        :param remove: A whitespace separated list of property keys to remove.
         '''
         needs_update = False
         for key in self._parse_props(remove):
@@ -160,7 +196,8 @@ class Element(ABC, Visibility):
             tooltip._text = text
         return self
 
-    def on(self, type: str, handler: Optional[Callable], args: Optional[List[str]] = None, *, throttle: float = 0.0):
+    def on(self, type: str, handler: Optional[Callable], args: Optional[List[str]] = None, *, throttle: float = 0.0) \
+            -> 'Element':
         if handler:
             args = args if args is not None else ['*']
             listener = EventListener(element_id=self.id, type=type, args=args, handler=handler, throttle=throttle)
@@ -173,7 +210,11 @@ class Element(ABC, Visibility):
                 handle_event(listener.handler, msg, sender=self)
 
     def collect_descendant_ids(self) -> List[int]:
-        '''includes own ID as first element'''
+        '''
+        Return a list of ids of the element and each of its descendents.
+
+        ... note:: The first id in the list is that of the element.
+        '''
         ids: List[int] = [self.id]
         for slot in self.slots.values():
             for child in slot.children:
@@ -194,6 +235,7 @@ class Element(ABC, Visibility):
         background_tasks.create(globals.sio.emit('run_method', data, room=globals._socket_id or self.client.id))
 
     def clear(self) -> None:
+        '''Remove all descendant (child) elements.'''
         descendants = [self.client.elements[id] for id in self.collect_descendant_ids()[1:]]
         binding.remove(descendants, Element)
         for element in descendants:
@@ -203,6 +245,11 @@ class Element(ABC, Visibility):
         self.update()
 
     def remove(self, element: Union[Element, int]) -> None:
+        '''
+        Remove a descendant (child) element.
+
+        :param element: Either the element instance or its id.
+        '''
         if isinstance(element, int):
             children = [child for slot in self.slots.values() for child in slot.children]
             element = children[element]
