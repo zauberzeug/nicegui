@@ -39,9 +39,10 @@ class Element(ABC, Visibility):
         if slot_stack:
             self.parent_slot = slot_stack[-1]
             self.parent_slot.children.append(self)
-            outbox.enqueue_update(self.parent_slot.parent)
 
         outbox.enqueue_update(self)
+        if self.parent_slot:
+            outbox.enqueue_update(self.parent_slot.parent)
 
     def add_slot(self, name: str) -> Slot:
         self.slots[name] = Slot(self, name)
