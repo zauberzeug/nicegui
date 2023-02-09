@@ -119,6 +119,7 @@ def test_adding_elements_from_different_tasks(screen: Screen):
             await asyncio.sleep(1.0)
 
     screen.open('/')
+    screen.wait(0.5)
     background_tasks.create(add_label1())
     background_tasks.create(add_label2())
     screen.should_contain('1')
