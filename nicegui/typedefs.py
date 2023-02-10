@@ -5,7 +5,7 @@ from typing import List, Dict, Any, Union
 
 from typing_extensions import TypedDict, Literal
 
-# note: This element of typed dict is necessary due to the use of the "class" keyword.
+# note: This format of typed dict is necessary due to the use of the "class" keyword.
 # note: Ideally the dict types get better refined moving forward to give more clarity to the caller.
 ElementAsDict = TypedDict(
     "ElementAsDict",
