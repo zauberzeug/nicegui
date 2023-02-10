@@ -259,6 +259,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
                 {'name': 'Bob', 'age': 21},
                 {'name': 'Carol', 'age': 42},
             ],
+            'rowSelection': 'multiple',
         }).classes('max-h-40')
 
         def update():
@@ -266,6 +267,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             table.update()
 
         ui.button('Update', on_click=update)
+        ui.button('Select all', on_click=lambda: table.call_api_method('selectAll'))
 
     @example(ui.chart, menu)
     def chart_example():
