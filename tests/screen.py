@@ -48,6 +48,10 @@ class Screen:
         self.server_thread.join()
 
     def open(self, path: str) -> None:
+        '''Try to open the page until the server is ready or we time out.
+
+        If the server is not jet running, start it.
+        '''
         if self.server_thread is None:
             self.start_server()
         start = time.time()
