@@ -684,8 +684,7 @@ Also it is possible to do async stuff while the user already sees some content.
 With `ui.header`, `ui.footer`, `ui.left_drawer` and `ui.right_drawer` you can add additional layout elements to a page.
 The `fixed` argument controls whether the element should scroll or stay fixed on the screen.
 The `top_corner` and `bottom_corner` arguments indicate whether a drawer should expand to the top or bottom of the page.
-See <https://quasar.dev/layout/header-and-footer> and <https://quasar.dev/layout/drawer> for more information about possible props like
-`elevated`, `bordered` and many more.
+See <https://quasar.dev/layout/header-and-footer> and <https://quasar.dev/layout/drawer> for more information about possible props.
 With `ui.page_sticky` you can place an element "sticky" on the screen.
 See <https://quasar.dev/layout/page-sticky> for more information.
 ''')
@@ -694,11 +693,12 @@ See <https://quasar.dev/layout/page-sticky> for more information.
         async def page_layout():
             ui.label('CONTENT')
             [ui.label(f'Line {i}') for i in range(100)]
-            with ui.header().style('background-color: #3874c8').props('elevated'):
+            with ui.header(elevated=True).style('background-color: #3874c8').classes('items-center justify-between'):
                 ui.label('HEADER')
+                ui.button(on_click=lambda: right_drawer.toggle()).props('flat color=white icon=menu')
             with ui.left_drawer(top_corner=True, bottom_corner=True).style('background-color: #d7e3f4'):
                 ui.label('LEFT DRAWER')
-            with ui.right_drawer(fixed=False).style('background-color: #ebf1fa').props('bordered'):
+            with ui.right_drawer(fixed=False).style('background-color: #ebf1fa').props('bordered') as right_drawer:
                 ui.label('RIGHT DRAWER')
             with ui.footer().style('background-color: #3874c8'):
                 ui.label('FOOTER')
