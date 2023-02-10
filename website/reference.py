@@ -747,12 +747,7 @@ It also enables you to identify sessions using a [session middleware](https://ww
 
         ui.link('Visit session demo', session_demo)
 
-    @example('''#### JavaScript
-
-With `ui.run_javascript()` you can run arbitrary JavaScript code on a page that is executed in the browser.
-The asynchronous function will return after the command(s) are executed.
-You can also set `respond=False` to send a command without waiting for a response.
-''', menu)
+    @example(ui.run_javascript, menu)
     def javascript_example():
         async def alert():
             await ui.run_javascript('alert("Hello!")', respond=False)
@@ -761,8 +756,13 @@ You can also set `respond=False` to send a command without waiting for a respons
             time = await ui.run_javascript('Date()')
             ui.notify(f'Browser time: {time}')
 
+        async def access_elements():
+            await ui.run_javascript(f'getElement({label.id}).innerText += " Hello!"')
+
         ui.button('fire and forget', on_click=alert)
         ui.button('receive result', on_click=get_date)
+        ui.button('access elements', on_click=access_elements)
+        label = ui.label()
 
     h3('Routes')
 
