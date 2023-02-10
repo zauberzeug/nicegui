@@ -1,3 +1,4 @@
+import contextlib
 import inspect
 import re
 from typing import Callable, Optional, Union
@@ -28,9 +29,11 @@ class example:
 
     def __init__(self,
                  content: Union[Callable, type, str],
+                 menu: Optional[ui.element],
                  browser_title: Optional[str] = None,
                  immediate: bool = False) -> None:
         self.content = content
+        self.menu = menu
         self.browser_title = browser_title
         self.immediate = immediate
 
@@ -38,7 +41,7 @@ class example:
         with ui.column().classes('w-full mb-8'):
             if isinstance(self.content, str):
                 documentation = ui.markdown(self.content)
-                _add_markdown_anchor(documentation)
+                _add_markdown_anchor(documentation, self.menu)
             else:
                 doc = self.content.__doc__ or self.content.__init__.__doc__
                 html: str = docutils.core.publish_parts(doc, writer_name='html5_polyglot')['html_body']
@@ -47,7 +50,7 @@ class example:
                 html = html.replace('param ', '')
                 html = apply_tailwind(html)
                 documentation = ui.html(html)
-                _add_html_anchor(documentation.classes('documentation bold-links arrow-links'))
+                _add_html_anchor(documentation.classes('documentation bold-links arrow-links'), self.menu)
 
             with ui.column().classes('w-full items-stretch gap-8 no-wrap xl:flex-row'):
                 code = inspect.getsource(f).split('# END OF EXAMPLE')[0].strip().splitlines()
@@ -70,7 +73,7 @@ class example:
         return f
 
 
-def _add_markdown_anchor(element: ui.markdown) -> None:
+def _add_markdown_anchor(element: ui.markdown, menu: Optional[ui.element]) -> None:
     first_line, _ = element.content.split('\n', 1)
     assert first_line.startswith('#### ')
     headline = first_line[5:].strip()
@@ -81,8 +84,11 @@ def _add_markdown_anchor(element: ui.markdown) -> None:
     title = f'{target}<h4>{headline} {link}</h4>'
     element.content = title + '\n' + element.content.split('\n', 1)[1]
 
+    with menu or contextlib.nullcontext():
+        ui.link(headline, f'#{headline_id}')
 
-def _add_html_anchor(element: ui.html) -> None:
+
+def _add_html_anchor(element: ui.html, menu: Optional[ui.element]) -> None:
     html = element.content
     match = REGEX_H4.search(html)
     if not match:
@@ -98,6 +104,9 @@ def _add_html_anchor(element: ui.html) -> None:
     html = html.replace('<h4', f'{target}<h4', 1)
     html = html.replace('</h4>', f' {link}</h4>', 1)
     element.content = html
+
+    with menu or contextlib.nullcontext():
+        ui.link(headline, f'#{headline_id}')
 
 
 def _window_header(bgcolor: str) -> ui.row():
