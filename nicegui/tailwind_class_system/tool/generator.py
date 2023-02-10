@@ -1,164 +1,101 @@
 #!/usr/bin/env python3
-import pathlib
 import re
+from dataclasses import dataclass, field
+from pathlib import Path
 
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, ResultSet, Tag
 
 
-class GroupItem:
+@dataclass
+class Property:
     title: str
-    desc: str
+    description: str
     members: list
 
-    def __init__(self, title: str, desc: str, members: list):
-        self.title = title
-        self.desc = desc
-        self.members = members
 
-
-selector_item_title = "#header h1"
-selector_item_desc = "#header .mt-2"
-selector_item_members = ".mt-10 td[class*=text-sky-400]"
-
-
-class Group:
+@dataclass
+class Section:
     title: str
-    itens_raw: list
-    itens: list[GroupItem]
-    literals: list[str]
-    functions: list[str]
-
-    def __init__(self, title: str, itens_raw: list):
-        self.title = title
-        self.itens_raw = itens_raw
-        self.itens = []
-        self.literals = []
-        self.functions = []
+    links: ResultSet[Tag]
+    properties: list[Property] = field(default_factory=list)
+    literals: list[str] = field(default_factory=list)
+    functions: list[str] = field(default_factory=list)
 
 
-selector_groups = 'li[class="mt-12 lg:mt-8"]'
-selector_group_title = "h5"
-selector_group_itens_raw = "li a"
+def get_soup(url: str) -> BeautifulSoup:
+    path = Path('/tmp') / url.split('/')[-1]
+    if path.exists():
+        html = path.read_text()
+    else:
+        req = requests.get(url)
+        html = req.text
+        path.write_text(html)
+    return BeautifulSoup(html, 'html.parser')
 
 
-path = pathlib.Path('/tmp') / "index.html"
-if path.exists():
-    html = path.read_text()
-else:
-    req = requests.get("https://tailwindcss.com/docs")
-    html = req.text
-    path.write_text(html)
-soup = BeautifulSoup(html, "html.parser")
+def make_pascal_case(string: str) -> str:
+    return ''.join(word.capitalize() for word in re.sub(r'[-/ &]', ' ', string).split())
 
-groups: list[Group] = []
 
-groups_html = soup.select(selector_groups)
-for g in groups_html:
-    group_title = g.select_one(selector_group_title)
-    group_itens_raw = g.select(selector_group_itens_raw)
+def make_snake_case(string: str) -> str:
+    return '_'.join(word.lower() for word in re.sub(r'[-/ &]', ' ', string).split())
 
-    groups.append(Group(group_title.text, group_itens_raw))
 
-# Clear unwanted groups
-unwanted_groups = [
-    "Getting Started",
-    "Core Concepts",
-    "Customization",
-    "Base Styles",
-    "Official Plugins",
-]
-groups = [g for g in groups if g.title not in unwanted_groups]
+sections: list[Section] = []
+soup = get_soup('https://tailwindcss.com/docs')
+for li in soup.select('li[class="mt-12 lg:mt-8"]'):
+    title = li.select_one('h5').text
+    links = li.select('li a')
+    if title not in {'Getting Started', 'Core Concepts', 'Customization', 'Base Styles', 'Official Plugins'}:
+        sections.append(Section(title, links))
 
-# Get groups items info
-for g in groups:
-    print(f"{g.title}:")
-    for i in g.itens_raw:
-        print(f"\t{i.text}")
-        path = pathlib.Path('/tmp') / f'{i["href"].split("/")[-1]}.html'
-        if path.exists():
-            _html = path.read_text()
-        else:
-            _html = requests.get(f'https://tailwindcss.com{i["href"]}').text
-            path.write_text(_html)
-        _soup = BeautifulSoup(_html, "html.parser")
+for section in sections:
+    print(f'{section.title}:')
+    for a in section.links:
+        print(f'\t{a.text}')
+        soup = get_soup(f'https://tailwindcss.com{a["href"]}')
+        title = soup.select_one('#header h1').text
+        description = soup.select_one('#header .mt-2').text
+        properties = soup.select('.mt-10 td[class*=text-sky-400]')
+        section.properties.append(Property(title, description, [p.text.split(' ')[0] for p in properties]))
 
-        item_title = _soup.select_one(selector_item_title)
-        item_desc = _soup.select_one(selector_item_desc)
-        item_members = _soup.select(selector_item_members)
-
-        g.itens.append(
-            GroupItem(
-                item_title.text,
-                item_desc.text,
-                [f'"{i.text.split(" ")[0]}"' for i in item_members],
-            )
-        )
-    print()
-
-# Save groups info
-
-for g in groups:
-    print(f"{g.title}:")
-    for i in g.itens:
-        literal_title = i.title.replace(" ", "").replace("/", "").replace("-", "")
-        function_title = re.sub(
-            r"_{2,}",
-            "_",
-            i.title.replace(" ", "_").replace("/", "").replace("-", "_").lower(),
-        )
-        arg = "_" + i.title.split(" ").pop().replace("-", "_").lower()
-
-        g.literals.append(f'{literal_title} = Literal[{",".join(i.members)}]')
-        g.functions.append(
-            f"""
+for section in sections:
+    for property in section.properties:
+        literal_title = make_pascal_case(property.title)
+        function_title = make_snake_case(property.title)
+        arg = '_' + function_title
+        literals = ',\n    '.join(f"'{member}'" for member in property.members)
+        section.literals.append(f'{literal_title} = Literal[\n    {literals}\n]')
+        section.functions.append(f'''
     def {function_title}(self, {arg}: {literal_title}):
-        \"""
-        {i.desc}
-        \"""
+        """{property.description}"""
         self.__add({arg})
-        return self
-        """
-        )
-    print()
+        return self''')
 
-for g in groups:
-    title = g.title.replace(" ", "").replace("&", "")
-    print(f"{title}:")
-
-    with open(f"{title}.py", "w", encoding="utf-8") as f:
-        f.write(
-            """
+    filename = make_snake_case(section.title)
+    title = make_pascal_case(section.title)
+    Path(f'{filename}.py').write_text('''
 from typing import Literal
+
 from nicegui.element import Element
 
-"""
-            + "\n\n".join(g.literals)
-            + f"""
+''' + '\n\n'.join(section.literals) + f'''
 
 
 class {title}:
-    def __init__(self, element: Element = Element("")) -> None:
+
+    def __init__(self, element: Element = Element('')) -> None:
         self.element = element
 
     def __add(self, _class: str) -> None:
-        \"""
-        Internal
-        \"""
         self.element.classes(add=_class)
 
     def apply(self, ex_element: Element) -> Element:
-        \"""
-        Apply the Style to an outer element
+        """Apply the Style to an outer element.
 
-        Args:
-            ex_element (Element): External Element
-
-        Returns:
-            Element: External Element
-        \"""
-        return ex_element.classes(add=" ".join(self.element._classes))
-
-"""
-            + "\n".join(g.functions)
-        )
+        :param ex_element: External Element
+        :return: External Element
+        """
+        return ex_element.classes(add=' '.join(self.element._classes))
+''' + '\n'.join(section.functions) + '\n')
