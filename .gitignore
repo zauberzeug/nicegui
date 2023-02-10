@@ -8,3 +8,4 @@ tests/screenshots/
 
 # ignore local virtual environments
 venv
+.idea
