@@ -58,6 +58,7 @@ class Screen:
         while True:
             try:
                 self.selenium.get(f'http://localhost:{PORT}{path}')
+                self.selenium.find_element(By.XPATH, '//body')  # ensure page and JS are loaded
                 break
             except Exception as e:
                 if time.time() - start > 3:
