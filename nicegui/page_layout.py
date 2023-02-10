@@ -41,6 +41,18 @@ class Header(ValueElement):
         code[1] = 'H' if fixed else 'h'
         self.client.layout._props['view'] = ''.join(code)
 
+    def toggle(self):
+        '''Toggle the header'''
+        self.value = not self.value
+
+    def show(self):
+        '''Show the header'''
+        self.value = True
+
+    def hide(self):
+        '''Hide the header'''
+        self.value = False
+
 
 class Drawer(ValueElement):
 
@@ -79,12 +91,12 @@ class Drawer(ValueElement):
         '''Toggle the drawer'''
         self.value = not self.value
 
-    def open(self) -> None:
-        '''Open the drawer'''
+    def show(self) -> None:
+        '''Show the drawer'''
         self.value = True
 
-    def close(self) -> None:
-        '''Close the drawer'''
+    def hide(self) -> None:
+        '''Hide the drawer'''
         self.value = False
 
 
@@ -164,6 +176,18 @@ class Footer(ValueElement):
         code = list(self.client.layout._props['view'])
         code[9] = 'F' if fixed else 'f'
         self.client.layout._props['view'] = ''.join(code)
+
+    def toggle(self) -> None:
+        '''Toggle the footer'''
+        self.value = not self.value
+
+    def show(self) -> None:
+        '''Show the footer'''
+        self.value = True
+
+    def hide(self) -> None:
+        '''Hide the footer'''
+        self.value = False
 
 
 class PageSticky(Element):
