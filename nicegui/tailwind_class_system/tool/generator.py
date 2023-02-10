@@ -1,4 +1,7 @@
+#!/usr/bin/env python3
+import pathlib
 import re
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -39,8 +42,13 @@ selector_group_title = "h5"
 selector_group_itens_raw = "li a"
 
 
-req = requests.get("https://tailwindcss.com/docs")
-html = req.text
+path = pathlib.Path('/tmp') / "index.html"
+if path.exists():
+    html = path.read_text()
+else:
+    req = requests.get("https://tailwindcss.com/docs")
+    html = req.text
+    path.write_text(html)
 soup = BeautifulSoup(html, "html.parser")
 
 groups: list[Group] = []
@@ -67,8 +75,13 @@ for g in groups:
     print(f"{g.title}:")
     for i in g.itens_raw:
         print(f"\t{i.text}")
-        _html = requests.get(f'https://tailwindcss.com{i["href"]}')
-        _soup = BeautifulSoup(_html.text, "html.parser")
+        path = pathlib.Path('/tmp') / f'{i["href"].split("/")[-1]}.html'
+        if path.exists():
+            _html = path.read_text()
+        else:
+            _html = requests.get(f'https://tailwindcss.com{i["href"]}').text
+            path.write_text(_html)
+        _soup = BeautifulSoup(_html, "html.parser")
 
         item_title = _soup.select_one(selector_item_title)
         item_desc = _soup.select_one(selector_item_desc)
