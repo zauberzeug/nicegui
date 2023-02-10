@@ -76,7 +76,6 @@ class Drawer(ValueElement):
         '''
         with globals.get_client().layout:
             super().__init__(tag='q-drawer', value=value, on_value_change=None)
-        self._props['show-if-above'] = True
         self._props['side'] = side
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
