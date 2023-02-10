@@ -221,6 +221,7 @@ ui.run()
             example_link('Script Executor', 'executes scripts on selection and displays the output')
             example_link('Local File Picker', 'demonstrates a dialog for selecting files locally on the server')
             example_link('Search as you type', 'using public API of thecocktaildb.com to search for cocktails')
+            example_link('Menu and Tabs', 'uses Quasar to create foldable menu and tabs inside a header bar')
 
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
