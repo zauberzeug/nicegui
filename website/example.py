@@ -52,7 +52,7 @@ class example:
                 documentation = ui.html(html)
                 _add_html_anchor(documentation.classes('documentation bold-links arrow-links'), self.menu)
 
-            with ui.column().classes('w-full items-stretch gap-8 no-wrap xl:flex-row'):
+            with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
                 code = inspect.getsource(f).split('# END OF EXAMPLE')[0].strip().splitlines()
                 while not code[0].startswith(' ' * 8):
                     del code[0]
@@ -62,9 +62,10 @@ class example:
                     code.append('')
                     code.append('ui.run()')
                 code = isort.code('\n'.join(code), no_sections=True, lines_after_imports=1)
-                with python_window(classes='w-full max-w-[48rem]'):
+                with python_window(classes='w-full max-w-[44rem]'):
                     ui.markdown(f'```python\n{code}\n```')
-                with browser_window(self.browser_title, classes='w-full max-w-[48rem] xl:max-w-[20rem] min-h-[10rem] browser-window'):
+                with browser_window(self.browser_title,
+                                    classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
                     if self.immediate:
                         f()
                     else:
