@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Any, Callable, Dict, Optional
 
 from .icon import Icon
 from .mixins.value_element import ValueElement
@@ -13,7 +13,8 @@ class Input(ValueElement):
                  value: str = '',
                  password: bool = False,
                  password_toggle_button: bool = False,
-                 on_change: Optional[Callable] = None) -> None:
+                 on_change: Optional[Callable] = None,
+                 validation: Dict[str, Callable] = {}) -> None:
         """Text Input
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
@@ -28,6 +29,7 @@ class Input(ValueElement):
         :param password: whether to hide the input (default: False)
         :param password_toggle_button: whether to show a button to toggle the password visibility (default: False)
         :param on_change: callback to execute when the input is confirmed by leaving the focus
+        :param validation: dictionary of validation rules, e.g. ``{'Too short!': lambda value: len(value) < 3}``
         """
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
         if label is not None:
@@ -43,3 +45,14 @@ class Input(ValueElement):
                     icon.props(f'name={"visibility" if is_hidden else "visibility_off"}')
                     self.props(f'type={"text" if is_hidden else "password"}')
                 icon = Icon('visibility_off').classes('cursor-pointer').on('click', toggle_type)
+
+        self.validation = validation
+
+    def on_value_change(self, value: Any) -> None:
+        super().on_value_change(value)
+        for message, check in self.validation.items():
+            if check(value):
+                self.props(f'error error-message="{message}"')
+                break
+        else:
+            self.props(remove='error')
