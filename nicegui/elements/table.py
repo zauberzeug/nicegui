@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+from .. import globals
 from ..dependencies import register_component
 from ..element import Element
 
@@ -41,3 +42,23 @@ class Table(Element):
         :param args: arguments to pass to the method
         """
         self.run_method('call_api_method', name, *args)
+
+    async def get_selected_rows(self, single: bool = False) -> list[dict[str, any]] | None:
+        """Returns an unsorted list of selected rows (i.e. row data that you provided).
+
+        See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows>`_ for a doc of method.
+
+        :param single: return a single row (default: `False`)
+        """
+
+        selected_rows: list[dict] = await globals.get_client().run_javascript(
+            f'return getElement({self.id}).gridOptions.api.getSelectedRows();'
+        )
+
+        if len(selected_rows) == 0:
+            return None
+
+        if single:
+            return selected_rows[0]
+
+        return selected_rows
