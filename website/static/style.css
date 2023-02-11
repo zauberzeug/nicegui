@@ -113,6 +113,12 @@ dl.field-list p {
   }
 }
 
+@media only screen and (max-width: 600px) {
+  .q-drawer {
+    display: none;
+  }
+}
+
 /* google-webfonts-helper (https://gwfh.mranftl.com/fonts) */
 /* fira-sans-regular - latin */
 @font-face {
