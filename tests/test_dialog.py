@@ -16,6 +16,7 @@ def test_open_close_dialog(screen: Screen):
     screen.open('/')
     screen.should_not_contain('Content')
     screen.click('Open')
+    screen.wait(0.5)
     screen.should_contain('Content')
     screen.click('Close')
     screen.wait(0.5)

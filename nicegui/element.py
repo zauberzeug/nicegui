@@ -6,10 +6,9 @@ from abc import ABC
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
-from . import background_tasks, binding, globals
+from . import binding, events, globals, outbox
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
-from .events import handle_event
 from .slot import Slot
 from typing_extensions import Self
 
@@ -47,6 +46,10 @@ class Element(ABC, Visibility):
             self.parent_slot = slot_stack[-1]
             self.parent_slot.children.append(self)
 
+        outbox.enqueue_update(self)
+        if self.parent_slot:
+            outbox.enqueue_update(self.parent_slot.parent)
+
     def add_slot(self, name: str) -> Slot:
         self.slots[name] = Slot(self, name)
         return self.slots[name]
@@ -58,9 +61,8 @@ class Element(ABC, Visibility):
 
     def __exit__(self, *_):
         self.default_slot.__exit__(*_)
-
-    def to_dict(self):
-        """Get important attributes of an element as a dictionary."""
+        
+    def _collect_event_dict(self) -> Dict[str, Dict]:
         events: Dict[str, Dict] = {}
         for listener in self._event_listeners:
             words = listener.type.split('.')
@@ -77,16 +79,44 @@ class Element(ABC, Visibility):
                 'args': list(set(events.get(listener.type, {}).get('args', []) + listener.args)),
                 'throttle': min(events.get(listener.type, {}).get('throttle', float('inf')), listener.throttle),
             }
-        return {
-            'id': self.id,
-            'tag': self.tag,
-            'class': self._classes,
-            'style': self._style,
-            'props': self._props,
-            'events': events,
-            'text': self._text,
-            'slots': {name: [child.id for child in slot.children] for name, slot in self.slots.items()},
-        }
+        return events
+
+    def _collect_slot_dict(self) -> Dict[str, List[int]]:
+        return {name: [child.id for child in slot.children] for name, slot in self.slots.items()}
+
+    def to_dict(self, *keys: str) -> Dict:
+        if not keys:
+            return {
+                'id': self.id,
+                'tag': self.tag,
+                'class': self._classes,
+                'style': self._style,
+                'props': self._props,
+                'text': self._text,
+                'slots': self._collect_slot_dict(),
+                'events': self._collect_event_dict(),
+            }
+        dict_: Dict[str, Any] = {}
+        for key in keys:
+            if key == 'id':
+                dict_['id'] = self.id
+            elif key == 'tag':
+                dict_['tag'] = self.tag
+            elif key == 'class':
+                dict_['class'] = self._classes
+            elif key == 'style':
+                dict_['style'] = self._style
+            elif key == 'props':
+                dict_['props'] = self._props
+            elif key == 'text':
+                dict_['text'] = self._text
+            elif key == 'slots':
+                dict_['slots'] = self._collect_slot_dict()
+            elif key == 'events':
+                dict_['events'] = self._collect_event_dict()
+            else:
+                raise ValueError(f'Unknown key {key}')
+        return dict_
 
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
             -> Self:
@@ -210,7 +240,7 @@ class Element(ABC, Visibility):
     def handle_event(self, msg: Dict) -> None:
         for listener in self._event_listeners:
             if listener.type == msg['type']:
-                handle_event(listener.handler, msg, sender=self)
+                events.handle_event(listener.handler, msg, sender=self)
 
     def collect_descendant_ids(self) -> List[int]:
         """
@@ -225,17 +255,13 @@ class Element(ABC, Visibility):
         return ids
 
     def update(self) -> None:
-        if not globals.loop:
-            return
-        ids = self.collect_descendant_ids()
-        elements = {id: self.client.elements[id].to_dict() for id in ids}
-        background_tasks.create(globals.sio.emit('update', {'elements': elements}, room=self.client.id))
+        outbox.enqueue_update(self)
 
     def run_method(self, name: str, *args: Any) -> None:
         if not globals.loop:
             return
         data = {'id': self.id, 'name': name, 'args': args}
-        background_tasks.create(globals.sio.emit('run_method', data, room=globals._socket_id or self.client.id))
+        outbox.enqueue_message('run_method', data, globals._socket_id or self.client.id)
 
     def clear(self) -> None:
         """Remove all descendant (child) elements."""
