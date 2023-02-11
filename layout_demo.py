@@ -18,6 +18,7 @@ ui.markdown('''### Features
 - Layout.row() and Layout.column() should use a GroupLayout which provides arrangement of children (e.g. gap, align.children, ...)
 - Some mechanism to allow using Quasar columns
 - Some mechanism to allow Grid and Masonry Layouts
+- How does this affect header/footer/drawer and tabs?
 ''')
 
 ui.icon('star').layout.color('yellow', '8').size.medium().align.center()
