@@ -26,6 +26,8 @@ class Element(ABC, Visibility):
         self.client.next_element_id += 1
         self.tag = tag
         self.layout = Layout(self)
+        self._classes: List[str] = []
+        self._props: Dict[str, Any] = {}
         self._style: Dict[str, str] = {}
         self._event_listeners: List[EventListener] = []
         self._text: str = ''
@@ -70,9 +72,9 @@ class Element(ABC, Visibility):
         return {
             'id': self.id,
             'tag': self.tag,
-            'class': self.layout._classes + [f'opacity-{int(self.layout.bindables.opacity * 100)}'],
+            'class': self.layout._classes + [f'opacity-{int(self.layout.bindables.opacity * 100)}'] + self._classes,
             'style': self._style,
-            'props': self.layout._props,
+            'props': {**self.layout._props, **self._props},
             'events': events,
             'text': self._text,
             'slots': {name: [child.id for child in slot.children] for name, slot in self.slots.items()},
@@ -80,7 +82,7 @@ class Element(ABC, Visibility):
 
     def apply(self, look: 'Layout'):
         '''Apply a look to the element.'''
-        self.layout._classes.extend(look._classes)
+        self._classes.extend(look._classes)
         return self
 
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):
@@ -89,13 +91,13 @@ class Element(ABC, Visibility):
         Classes are separated with a blank space.
         This can be helpful if the predefined classes by NiceGUI are not wanted in a particular styling.
         '''
-        class_list = self.layout._classes if replace is None else []
+        class_list = self._classes if replace is None else []
         class_list = [c for c in class_list if c not in (remove or '').split()]
         class_list += (add or '').split()
         class_list += (replace or '').split()
         new_classes = list(dict.fromkeys(class_list))  # NOTE: remove duplicates while preserving order
-        if self.layout._classes != new_classes:
-            self.layout._classes = new_classes
+        if self._classes != new_classes:
+            self._classes = new_classes
             self.update()
         return self
 
@@ -138,13 +140,13 @@ class Element(ABC, Visibility):
         '''
         needs_update = False
         for key in self._parse_props(remove):
-            if key in self.layout._props:
+            if key in self._props:
                 needs_update = True
-                del self.layout._props[key]
+                del self._props[key]
         for key, value in self._parse_props(add).items():
-            if self.layout._props.get(key) != value:
+            if self._props.get(key) != value:
                 needs_update = True
-                self.layout._props[key] = value
+                self._props[key] = value
         if needs_update:
             self.update()
         return self

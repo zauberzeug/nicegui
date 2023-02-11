@@ -14,8 +14,8 @@ class ValueElement(Element):
     def __init__(self, *, value: Any, on_value_change: Optional[Callable], throttle: float = 0, **kwargs) -> None:
         super().__init__(**kwargs)
         self.set_value(value)
-        self.layout._props[self.VALUE_PROP] = self._value_to_model_value(value)
-        self.layout._props['loopback'] = self.LOOPBACK
+        self._props[self.VALUE_PROP] = self._value_to_model_value(value)
+        self._props['loopback'] = self.LOOPBACK
         self._send_update_on_value_change = True
         self.change_handler = on_value_change
 
@@ -42,7 +42,7 @@ class ValueElement(Element):
         self.value = value
 
     def on_value_change(self, value: Any) -> None:
-        self.layout._props[self.VALUE_PROP] = self._value_to_model_value(value)
+        self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         if self._send_update_on_value_change:
             self.update()
         args = ValueChangeEventArguments(sender=self, client=self.client, value=self._value_to_event_value(value))

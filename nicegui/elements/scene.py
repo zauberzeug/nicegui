@@ -66,8 +66,8 @@ class Scene(Element):
         :param on_click: callback to execute when a 3d object is clicked
         """
         super().__init__('scene')
-        self.layout._props['width'] = width
-        self.layout._props['height'] = height
+        self._props['width'] = width
+        self._props['height'] = height
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()

@@ -20,8 +20,8 @@ class Audio(Element):
         for a list of events you can subscribe to using the generic event subscription `on()`.
         """
         super().__init__('audio')
-        self.layout._props['src'] = src
-        self.layout._props['type'] = type
-        self.layout._props['controls'] = controls
-        self.layout._props['autoplay'] = autoplay
-        self.layout._props['muted'] = muted
+        self._props['src'] = src
+        self._props['type'] = type
+        self._props['controls'] = controls
+        self._props['autoplay'] = autoplay
+        self._props['muted'] = muted

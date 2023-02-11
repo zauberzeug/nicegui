@@ -19,8 +19,8 @@ class ChoiceElement(ValueElement):
         self._labels = self.options if isinstance(self.options, list) else list(self.options.values())
 
     def _update_options(self) -> None:
-        self.layout._props['options'] = [{'value': index, 'label': option}
-                                         for index, option in enumerate(self._labels)]
+        self._props['options'] = [{'value': index, 'label': option}
+                                  for index, option in enumerate(self._labels)]
 
     def update(self) -> None:
         self._update_values_and_labels()

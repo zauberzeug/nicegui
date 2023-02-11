@@ -15,8 +15,8 @@ class Expansion(ValueElement):
         :param value: whether the expansion should be opened on creation (default: `False`)
         '''
         super().__init__(tag='q-expansion-item', value=value, on_value_change=None)
-        self.layout._props['label'] = text
-        self.layout._props['icon'] = icon
+        self._props['label'] = text
+        self._props['icon'] = icon
 
     def open(self) -> None:
         self.value = True

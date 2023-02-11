@@ -18,13 +18,13 @@ class Table(Element):
         :param theme: AG Grid theme (default: 'balham')
         """
         super().__init__('table')
-        self.layout._props['options'] = options
-        self.layout._props['html_columns'] = html_columns
-        self.layout._classes = [f'ag-theme-{theme}', 'w-full', 'h-64']
+        self._props['options'] = options
+        self._props['html_columns'] = html_columns
+        self._classes = [f'ag-theme-{theme}', 'w-full', 'h-64']
 
     @property
     def options(self) -> Dict:
-        return self.layout._props['options']
+        return self._props['options']
 
     def update(self) -> None:
         super().update()

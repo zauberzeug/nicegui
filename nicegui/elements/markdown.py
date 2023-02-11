@@ -40,8 +40,8 @@ class Markdown(ContentElement):
 
     def on_content_change(self, content: str) -> None:
         html = prepare_content(content, extras=' '.join(self.extras))
-        if self.layout._props.get('innerHTML') != html:
-            self.layout._props['innerHTML'] = html
+        if self._props.get('innerHTML') != html:
+            self._props['innerHTML'] = html
             self.update()
 
 

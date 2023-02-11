@@ -31,15 +31,15 @@ class Input(ValueElement):
         """
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
         if label is not None:
-            self.layout._props['label'] = label
+            self._props['label'] = label
         if placeholder is not None:
-            self.layout._props['placeholder'] = placeholder
-        self.layout._props['type'] = 'password' if password else 'text'
+            self._props['placeholder'] = placeholder
+        self._props['type'] = 'password' if password else 'text'
 
         if password_toggle_button:
             with self.add_slot('append'):
                 def toggle_type(_):
-                    is_hidden = self.layout._props.get('type') == 'password'
+                    is_hidden = self._props.get('type') == 'password'
                     icon.props(f'name={"visibility" if is_hidden else "visibility_off"}')
                     self.props(f'type={"text" if is_hidden else "password"}')
                 icon = Icon('visibility_off').classes('cursor-pointer').on('click', toggle_type)
