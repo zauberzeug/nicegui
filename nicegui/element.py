@@ -123,8 +123,7 @@ class Element(ABC, Visibility):
 
     def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None)\
             -> Self:
-        """
-        Apply, remove, or replace CSS style sheet definitions to modify the look of the element.
+        """Apply, remove, or replace CSS style sheet definitions to modify the look of the element.
 
         .. note::
             Removing styles can be helpful if the predefined style sheet definitions by NiceGUI are not wanted
