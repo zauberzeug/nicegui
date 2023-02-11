@@ -10,6 +10,7 @@ class Mermaid(ContentElement):
         '''Mermaid Diagrams
 
         Renders diagrams and charts written in the Markdown-inspired `Mermaid <https://mermaid.js.org/>`_ language.
+        The mermaid syntax can also used inside markdown elements by providing the extension string 'mermaid' to the ``ui.markdown`` element.
 
         :param content: the Mermaid content to be displayed
         '''
