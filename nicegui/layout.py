@@ -14,8 +14,8 @@ ThemeColor = Literal[None, 'primary', 'secondary', 'accent', 'positive', 'negati
 
 class Topic():
 
-    def __init__(self, looks: Layout, prefix: str = '', prop: str = None):
-        self._looks: Layout = looks
+    def __init__(self, layout: Layout, prefix: str = '', prop: str = None):
+        self._layout: Layout = layout
         self._prefix: str = prefix
         self._prop: Optional[str] = prop
 
@@ -23,8 +23,8 @@ class Topic():
 class Shadow(Topic):
 
     def small(self) -> Layout:
-        self._looks._classes.append('shadow-4')
-        return self._looks
+        self._layout._classes.append('shadow-4')
+        return self._layout
 
 
 class Spacing(Topic):
@@ -34,69 +34,69 @@ class Spacing(Topic):
         self.prefix = prefix
 
     def small(self) -> Layout:
-        self._looks._classes.append(f'{self.prefix}-sm')
-        return self._looks
+        self._layout._classes.append(f'{self.prefix}-sm')
+        return self._layout
 
     def auto(self) -> Layout:
         if self.prefix[-2] != 'm':
             raise ValueError('auto spacing can only be used on margins')
         if not any(self.prefix.endswith(direction) for direction in ['l', 'r', 'x']):
             raise ValueError('auto spacing can only be used on x axis')
-        self._looks._classes.append(f'{self.prefix}-auto')
-        return self._looks
+        self._layout._classes.append(f'{self.prefix}-auto')
+        return self._layout
 
 
 class Padding(Topic):
 
     @property
     def y_axis(self) -> Spacing:
-        return Spacing(self._looks, 'q-py')
+        return Spacing(self._layout, 'q-py')
 
 
 class Margin(Topic):
 
     @property
     def x_axis(self) -> Spacing:
-        return Spacing(self._looks, 'q-mx')
+        return Spacing(self._layout, 'q-mx')
 
     @property
     def y_axis(self) -> Spacing:
-        return Spacing(self._looks, 'q-my')
+        return Spacing(self._layout, 'q-my')
 
     @property
     def all(self) -> Spacing:
-        return Spacing(self._looks, 'q-ma')
+        return Spacing(self._layout, 'q-ma')
 
     @property
     def left(self) -> Spacing:
-        return Spacing(self._looks, 'q-ml')
+        return Spacing(self._layout, 'q-ml')
 
 
 class Text(Topic):
 
     def red(self, level: float) -> Layout:
         level = int(level * 1000)
-        self._looks._classes.append(f'text-red-{level}')
-        return self._looks
+        self._layout._classes.append(f'text-red-{level}')
+        return self._layout
 
     def gray(self, level: float) -> Layout:
-        self._looks._classes.append(f'text-red-{level}')
-        return self._looks
+        self._layout._classes.append(f'text-red-{level}')
+        return self._layout
 
 
 class Gap(Topic):
 
     def none(self) -> Layout:
-        self._looks._classes.append('gap-0')
-        return self._looks
+        self._layout._classes.append('gap-0')
+        return self._layout
 
     def small(self) -> Layout:
-        self._looks._classes.append('gap-2')
-        return self._looks
+        self._layout._classes.append('gap-2')
+        return self._layout
 
     def medium(self) -> Layout:
-        self._looks._classes.append('gap-4')
-        return self._looks
+        self._layout._classes.append('gap-4')
+        return self._layout
 
 
 class Alignment(Topic):
@@ -107,14 +107,14 @@ class Alignment(Topic):
     def children(self, main_axis: ChildrenOnMainAxis = None, cross_axis: ChildrenOnCrossAxis = None) -> Layout:
         '''configure alignment'''
         if main_axis is not None:
-            self._looks._classes.append(f'justify-{main_axis}')
+            self._layout._classes.append(f'justify-{main_axis}')
         if cross_axis is not None:
-            self._looks._classes.append(f'items-{cross_axis}')
-        return self._looks
+            self._layout._classes.append(f'items-{cross_axis}')
+        return self._layout
 
     def center(self) -> Layout:
-        self._looks.margin.x_axis.auto()
-        return self._looks
+        self._layout.margin.x_axis.auto()
+        return self._layout
 
 
 @dataclass
@@ -190,8 +190,8 @@ class Layout:
         self.align.children(main_axis='start').gap.medium()
         return self
 
-    def on_hover(self, looks: Layout) -> Layout:
-        self._classes.extend([f'hover:{c}' for c in looks._classes])
+    def on_hover(self, layout: Layout) -> Layout:
+        self._classes.extend([f'hover:{c}' for c in layout._classes])
         return self
 
     def add(self, other: Layout) -> Layout:
@@ -243,16 +243,16 @@ class ButtonLayout(Layout):
 class IconSizing(Topic):
 
     def small(self) -> 'IconLayout':
-        self._looks._props['size'] = '1rem'
-        return self._looks
+        self._layout._props['size'] = '1rem'
+        return self._layout
 
     def medium(self) -> 'IconLayout':
-        self._looks._props['size'] = '3rem'
-        return self._looks
+        self._layout._props['size'] = '3rem'
+        return self._layout
 
     def large(self) -> 'IconLayout':
-        self._looks._props['size'] = '5rem'
-        return self._looks
+        self._layout._props['size'] = '5rem'
+        return self._layout
 
 
 class IconLayout(Layout):
