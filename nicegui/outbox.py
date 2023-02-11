@@ -30,12 +30,19 @@ async def loop() -> None:
             await asyncio.sleep(0.01)
             continue
         coros = []
-        for client_id, elements in update_queue.items():
-            elements = {element_id: element.to_dict() for element_id, element in elements.items()}
-            coros.append(globals.sio.emit('update', elements, room=client_id))
-        update_queue.clear()
-        for client_id, message_type, data in message_queue:
-            coros.append(globals.sio.emit(message_type, data, room=client_id))
-        message_queue.clear()
-        for coro in coros:
-            await coro
+        try:
+            for client_id, elements in update_queue.items():
+                elements = {element_id: element.to_dict() for element_id, element in elements.items()}
+                coros.append(globals.sio.emit('update', elements, room=client_id))
+            update_queue.clear()
+            for client_id, message_type, data in message_queue:
+                coros.append(globals.sio.emit(message_type, data, room=client_id))
+            message_queue.clear()
+            for coro in coros:
+                try:
+                    await coro
+                except Exception:
+                    globals.logger.exception('Error in outbox loop (awaiting coro)')
+        except Exception:
+            globals.logger.exception('Error in outbox loop')
+            await asyncio.sleep(0.1)
