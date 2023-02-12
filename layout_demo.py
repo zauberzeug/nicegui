@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-from nicegui import ButtonLayout, Layout, ui
+from nicegui import ButtonLayout, ui
 
 ui.icon('star').layout.color('yellow', '8').size.medium().align.center()
 
-shared_row = Layout().size(width='full').background('secondary').row()
+shared_row = ui.layout('horizontal').size(width='full').background('secondary')
 
 with shared_row.copy().padding.y_axis.small().align.children(main_axis='center'):
     for i in range(5):
@@ -11,7 +11,7 @@ with shared_row.copy().padding.y_axis.small().align.children(main_axis='center')
             ui.label(str(i))
 
 button_layout = ButtonLayout().rounded().background('teal', '9')
-hover = Layout().text.gray(0.6)
+hover = ui.layout().text.gray(0.6)
 
 with shared_row.copy().size(height='20').background('grey', '4').align.children(main_axis='evenly', cross_axis='center'):
     ui.button('12').layout.square().size(width='12').add(button_layout)
@@ -22,12 +22,17 @@ with shared_row.copy().gap.none():
     ui.image('https://picsum.photos/id/29/640/360').layout.size(width='1/2')
     ui.image('https://picsum.photos/id/565/640/360').layout.size(width='1/2')
 
-with ui.layout().row().size(width='full').align.children(cross_axis='center'):
+with ui.layout('horizontal').size(width='full').align.children(cross_axis='center'):
     progress = ui.element('div').layout.size(width='1/2', height='6')\
         .opacity(0.3).background('primary').element
     ui.label('transparency')
     ui.toggle([0.3, 0.5, 1.0], value=0.5, on_change=progress.update).\
         bind_value_to(progress.layout.bindables, 'opacity').layout.margin.left.auto()
 
+with ui.layout('horizontal', subdivision=2).size(width='full').gap.large().background('grey', '2').padding.all.small():
+    with ui.layout('horizontal', subdivision=2).background('white'):
+        [ui.label(letter) for letter in 'ABCD']
+    with ui.layout('vertical', subdivision=2).background('white'):
+        [ui.label(letter) for letter in 'ABCD']
 
 ui.run()

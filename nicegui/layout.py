@@ -9,7 +9,7 @@ from typing_extensions import Literal
 from .element import Element
 
 ElementSize = Literal[None, '0', '0.5', '1', '1.5', '6', '12', '64', '1/2', '1/6', '2/3', 'full']
-Color = Literal[None, 'primary', 'secondary', 'teal', 'grey', 'yellow']
+Color = Literal[None, 'teal', 'grey', 'yellow', 'orange']
 Tone = Literal[None, '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 ThemeColor = Literal[None, 'primary', 'secondary', 'accent', 'positive', 'negative', 'info', 'warning']
 
@@ -53,6 +53,10 @@ class Padding(Topic):
     @property
     def y_axis(self) -> Spacing:
         return Spacing(self._layout, 'q-py')
+
+    @property
+    def all(self) -> Spacing:
+        return Spacing(self._layout, 'q-pa')
 
 
 class Margin(Topic):
@@ -98,6 +102,10 @@ class Gap(Topic):
 
     def medium(self) -> Layout:
         self._layout._classes.append('gap-4')
+        return self._layout
+
+    def large(self) -> Layout:
+        self._layout._classes.append('gap-6')
         return self._layout
 
 
@@ -148,13 +156,8 @@ class Layout:
     def background(self, color: Color, tone: Tone) -> Layout:
         '''Pick a color and optional tone to specify the shade'''
 
-    def background(self, theme_color: ThemeColor = ..., color: Color = ...,  tone: Tone = ...) -> Layout:
-        if theme_color is not ...:
-            self._classes.append(f'bg-{theme_color}')
-        elif color is not ...:
-            if tone is ...:
-                self._classes.append(f'bg-{color}')
-            self._classes.append(f'bg-{color}-{tone}')
+    def background(self, color: Color,  tone: Tone = None) -> Layout:
+        self._classes.append(f'bg-{color}' if tone is None else f'bg-{color}-{tone}')
         return self
 
     @property
@@ -271,16 +274,27 @@ class IconLayout(Layout):
     def color(self, color: Color, tone: Tone) -> IconLayout:
         '''Pick a color by name and optional a tone to specify the shade'''
 
-    def color(self, theme_color: ThemeColor = ..., color: Color = ...,  tone: Tone = ...) -> IconLayout:
+    def color(self, color: str,  tone: Tone = None) -> IconLayout:
         '''Set the color of the icon'''
-        if theme_color is not ...:
-            self._props['color'] = theme_color
-        elif color is not ...:
-            if tone is ...:
-                self._props['color'] = f'bg-{color}'
-            self._props['color'] = f'bg-{color}-{tone}'
+        self._props['color'] = color if tone is None else f'{color}-{tone}'
         return self
 
 
-def layout():
-    return Layout()
+Direction = Literal['horizontal', 'vertical']
+
+
+def layout(direction: Direction = None, subdivision: Optional[int] = None) -> Layout:
+    l = Layout()
+    if direction is not None:
+        l.gap.small()
+        if subdivision is None:
+            if direction is 'horizontal':
+                l._classes.append('flex flex-row')
+            elif direction is 'vertical':
+                l._classes.append('flex flex-col')
+        else:
+            if direction is 'horizontal':
+                l._classes.append(f'grid grid-cols-{subdivision} grid-flow-row')
+            elif direction is 'vertical':
+                l._classes.append(f'grid grid-rows-{subdivision} grid-flow-col')
+    return l
