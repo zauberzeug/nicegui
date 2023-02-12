@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Dict, List, Literal, Optional, overload
+from typing import Any, Dict, List, Optional, overload
+
+from typing_extensions import Literal
 
 from .element import Element
 
