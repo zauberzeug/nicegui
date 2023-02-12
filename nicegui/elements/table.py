@@ -1,8 +1,8 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-from .. import globals
 from ..dependencies import register_component
 from ..element import Element
+from ..functions.javascript import run_javascript
 
 register_component('table', __file__, 'table.js', ['lib/ag-grid-community.min.js'])
 
@@ -43,22 +43,23 @@ class Table(Element):
         """
         self.run_method('call_api_method', name, *args)
 
-    async def get_selected_rows(self, single: bool = False) -> list[dict[str, any]] | None:
-        """Returns an unsorted list of selected rows (i.e. row data that you provided).
+    async def get_selected_rows(self) -> List[Dict]:
+        """Get the currently selected rows.
 
-        See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows>`_ for a doc of method.
+        This method is especially useful when the table is configured with ``rowSelection: 'multiple'``.
 
-        :param single: return a single row (default: `False`)
+        See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows>`_ for more information.
+
+        :return: list of selected row data
         """
+        return await run_javascript(f'return getElement({self.id}).gridOptions.api.getSelectedRows();')
 
-        selected_rows: list[dict] = await globals.get_client().run_javascript(
-            f'return getElement({self.id}).gridOptions.api.getSelectedRows();'
-        )
+    async def get_selected_row(self) -> Optional[Dict]:
+        """Get the single currently selected row.
 
-        if len(selected_rows) == 0:
-            return None
+        This method is especially useful when the table is configured with ``rowSelection: 'single'``.
 
-        if single:
-            return selected_rows[0]
-
-        return selected_rows
+        :return: row data of the first selection if any row is selected, otherwise `None`
+        """
+        rows = await self.get_selected_rows()
+        return rows[0] if rows else None
