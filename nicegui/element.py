@@ -81,7 +81,9 @@ class Element(ABC, Visibility):
         return {name: [child.id for child in slot.children] for name, slot in self.slots.items()}
 
     def to_dict(self, *keys: str) -> Dict:
-        all_classes = self.layout._classes + [f'opacity-{int(self.layout.bindables.opacity * 100)}'] + self._classes
+        opacity = self.layout.bindables.opacity
+        all_classes = self.layout._classes + ([f'opacity-{int(opacity * 100)}'] if opacity < 1.0 else []) + \
+            self._classes
         all_props = {**self.layout._props, **self._props}
         if not keys:
             return {
