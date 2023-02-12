@@ -66,4 +66,5 @@ from .run_with import run_with
 
 if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
     from .elements.line_plot import LinePlot as line_plot
-    from .elements.plot import Plot as plot
+    from .elements.pyplot import Pyplot as plot  # NOTE: deprecated
+    from .elements.pyplot import Pyplot as pyplot

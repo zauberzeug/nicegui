@@ -289,12 +289,12 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         ui.button('Update', on_click=update)
 
-    @example(ui.plot, menu)
+    @example(ui.pyplot, menu)
     def plot_example():
         import numpy as np
         from matplotlib import pyplot as plt
 
-        with ui.plot(figsize=(3, 2)):
+        with ui.pyplot(figsize=(3, 2)):
             x = np.linspace(0.0, 5.0)
             y = np.cos(2 * np.pi * x) * np.exp(-x)
             plt.plot(x, y, '-')
@@ -862,7 +862,7 @@ When NiceGUI is shut down or restarted, all tasks still in execution will be aut
 
 You can set the following environment variables to configure NiceGUI:
 
-- `MATPLOTLIB` (default: true) can be set to `false` to avoid the potentially costly import of Matplotlib. This will make `ui.plot` and `ui.line_plot` unavailable.
+- `MATPLOTLIB` (default: true) can be set to `false` to avoid the potentially costly import of Matplotlib. This will make `ui.pyplot` and `ui.line_plot` unavailable.
 - `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.
 ''', menu)
     def env_var_example():
