@@ -118,11 +118,6 @@ class Element(ABC, Visibility):
                 raise ValueError(f'Unknown key {key}')
         return dict_
 
-    def apply(self, look: 'Layout'):
-        '''Apply a look to the element.'''
-        self._classes.extend(look._classes)
-        return self
-
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):
         '''HTML classes to modify the look of the element.
         Every class in the `remove` parameter will be removed from the element.
