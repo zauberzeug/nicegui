@@ -1,26 +1,6 @@
 #!/usr/bin/env python3
 from nicegui import ButtonLayout, Layout, ui
 
-ui.markdown('''### Features
-- auto completion + documentation for simple to understand layout and styling aspects
-- using the builder pattern in combination with string literals for auto completion
-- logical grouping of layout aspects (e.g. `align.center` and `align.children` are fundamentally different in css but presented together)
-- the Layout of an existing element can be modify by accessing its layout property
-- Layouts can also be created independently because they are self contained classes
-- element.props and element.classes take precedence over element.layout definitions to allow customizations
-- Layouts can be used as contexts to create generic groups, rows, columns: `with ui.layout().row()`
-- specialized Layouts provide additional styling (e.g. `ButtonLayout` to configure shape etc.)
-- a Layout can be applied to (multiple) other Layouts via `add`
-- a Layout can be duplicated by calling `.copy()`
-- invalid layout aspects can raise error reports (e.g. `margin.top.auto()` is not possible with css)
-
-### ToDos / Ideas
-- Layout.row() and Layout.column() should use a GroupLayout which provides arrangement of children (e.g. gap, align.children, ...)
-- Some mechanism to allow using Quasar columns
-- Some mechanism to allow Grid and Masonry Layouts
-- How does this affect header/footer/drawer and tabs?
-''')
-
 ui.icon('star').layout.color('yellow', '8').size.medium().align.center()
 
 shared_row = Layout().size(width='full').background('secondary').row()
