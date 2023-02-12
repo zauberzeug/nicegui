@@ -6,26 +6,29 @@ from abc import ABC
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
+from typing_extensions import Self
+
 from . import binding, events, globals, outbox
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
-from typing_extensions import Self
 
 if TYPE_CHECKING:
     from .client import Client
-
 
 PROPS_PATTERN = re.compile(r'([\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
 
 
 class Element(ABC, Visibility):
-    """Define the base class for all html elements represented as Python objects.
-
-    :param tag: The html tag (e.g. div, p, etc. of the element.)
-    """
 
     def __init__(self, tag: str, *, _client: Optional[Client] = None) -> None:
+        """Generic Element
+
+        This class is also the base class for all other elements.
+
+        :param tag: HTML tag of the element
+        :param _client: client for this element (for internal use only)
+        """
         super().__init__()
         self.client = _client or globals.get_client()
         self.id = self.client.next_element_id
@@ -51,17 +54,21 @@ class Element(ABC, Visibility):
             outbox.enqueue_update(self.parent_slot.parent)
 
     def add_slot(self, name: str) -> Slot:
+        """Add a slot to the element.
+
+        :param name: name of the slot
+        :return: the slot
+        """
         self.slots[name] = Slot(self, name)
         return self.slots[name]
 
     def __enter__(self) -> Self:
-        """Allow element to be used as a context manager (with statement.)"""
         self.default_slot.__enter__()
         return self
 
     def __exit__(self, *_):
         self.default_slot.__exit__(*_)
-        
+
     def _collect_event_dict(self) -> Dict[str, Dict]:
         events: Dict[str, Dict] = {}
         for listener in self._event_listeners:
@@ -122,14 +129,13 @@ class Element(ABC, Visibility):
             -> Self:
         """Apply, remove, or replace HTML classes.
 
-        Generally, this is for the purpose of modifying the look of the element or its layout, based on the
-        Quasar framework.
+        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
 
-        .. note:: Removing classes can be helpful if default NiceGUI class-styling is not desired.
+        Removing or replacing classes can be helpful if predefined classes are not desired.
 
-        :param add: a white-space delimited string of classes
-        :param remove: A white-space delimited string of classes to remove from the element.
-        :param replace: A white-space delimited string of classes to use instead of existing.
+        :param add: whitespace-delimited string of classes
+        :param remove: whitespace-delimited string of classes to remove from the element
+        :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
         class_list = self._classes if replace is None else []
         class_list = [c for c in class_list if c not in (remove or '').split()]
@@ -151,21 +157,18 @@ class Element(ABC, Visibility):
                 result[key.strip()] = value.strip()
         return result
 
-    def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
-            -> Self:
-        """Apply, remove, or replace CSS style sheet definitions to modify the look of the element.
+    def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
+        """Apply, remove, or replace CSS definitions.
 
-        .. note::
-            Removing styles can be helpful if the predefined style sheet definitions by NiceGUI are not wanted
-            in a particular styling.
+        Removing or replacing styles can be helpful if the predefined style is not desired.
 
         .. codeblock:: python
 
-            my_btn=Button("MyButton).style("color: #6E93D6; font-size: 200%", remove="font-weight; background-color")
+            ui.button('Click me').style('color: #6E93D6; font-size: 200%', remove='font-weight; background-color')
 
-        :param add: A semicolon separated list of styles to add to the element.
-        :param remove: A semicolon separated list of styles to remove from the element.
-        :param replace: Like add, but existing styles will be replaced by given.
+        :param add: semicolon-separated list of styles to add to the element
+        :param remove: semicolon-separated list of styles to remove from the element
+        :param replace: semicolon-separated list of styles to use instead of existing ones
          """
         style_dict = deepcopy(self._style) if replace is None else {}
         for key in self._parse_style(remove):
@@ -190,18 +193,19 @@ class Element(ABC, Visibility):
         return dictionary
 
     def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
-        """Add or remove Quasar-specif properties to modify the look of the element.
+        """Add or remove props.
 
-        see https://quasar.dev/vue-components/button#design
+        This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
+        Since props are simply applied as HTML attributes, they can be used with any HTML element.
 
-        .. code:: python
+        .. codeblock:: python
 
-            by_btn = Button("my_btn").props("outline icon=volume_up")
+            ui.button('Open menu').props('outline icon=menu')
 
-        .. note:: Boolean properties are assumed True by their existence.
+        Boolean properties are assumed ``True`` if no value is specified.
 
-        :param add: A whitespace separated list of either boolean values or key=value pair to add
-        :param remove: A whitespace separated list of property keys to remove.
+        :param add: whitespace-delimited list of either boolean values or key=value pair to add
+        :param remove: whitespace-delimited list of property keys to remove
         """
         needs_update = False
         for key in self._parse_props(remove):
@@ -217,6 +221,10 @@ class Element(ABC, Visibility):
         return self
 
     def tooltip(self, text: str) -> Self:
+        """Add a tooltip to the element.
+
+        :param text: text of the tooltip
+        """
         with self:
             tooltip = Element('q-tooltip')
             tooltip._text = text
@@ -224,12 +232,12 @@ class Element(ABC, Visibility):
 
     def on(self, type: str, handler: Optional[Callable], args: Optional[List[str]] = None, *, throttle: float = 0.0) \
             -> Self:
-        """Subscribe to any web or Quasar events available to an element.
+        """Subscribe to an event.
 
-        :param type: The name of the event sans the "on" prefix, e.g. "click", "mousedown"
-        :param handler: The method that is called upon occurrence of the event.
-        :param args: Additional arguments that should be passed to the event definition.
-        :param throttle: Force a delay between events to limit frequency or bounce.
+        :param type: name of the event (without the "on" prefix, e.g. "click" or "mousedown")
+        :param handler: callback that is called upon occurrence of the event
+        :param args: arguments included in the event message sent to the event handler (default: `None` meaning all)
+        :param throttle: minimum time (in seconds) between event occurrences (default: 0.0)
         """
         if handler:
             args = args if args is not None else ['*']
@@ -243,10 +251,9 @@ class Element(ABC, Visibility):
                 events.handle_event(listener.handler, msg, sender=self)
 
     def collect_descendant_ids(self) -> List[int]:
-        """
-        Return a list of ids of the element and each of its descendents.
+        """Return a list of IDs of the element and each of its descendants.
 
-        .. note:: The first id in the list is that of the element.
+        The first ID in the list is that of the element itself.
         """
         ids: List[int] = [self.id]
         for slot in self.slots.values():
@@ -255,16 +262,22 @@ class Element(ABC, Visibility):
         return ids
 
     def update(self) -> None:
+        """Update the element on the client side."""
         outbox.enqueue_update(self)
 
     def run_method(self, name: str, *args: Any) -> None:
+        """Run a method on the client side.
+
+        :param name: name of the method
+        :param args: arguments to pass to the method
+        """
         if not globals.loop:
             return
         data = {'id': self.id, 'name': name, 'args': args}
         outbox.enqueue_message('run_method', data, globals._socket_id or self.client.id)
 
     def clear(self) -> None:
-        """Remove all descendant (child) elements."""
+        """Remove all child elements."""
         descendants = [self.client.elements[id] for id in self.collect_descendant_ids()[1:]]
         binding.remove(descendants, Element)
         for element in descendants:
@@ -274,10 +287,9 @@ class Element(ABC, Visibility):
         self.update()
 
     def remove(self, element: Union[Element, int]) -> None:
-        """
-        Remove a descendant (child) element.
+        """Remove a child element.
 
-        :param element: Either the element instance or its id.
+        :param element: either the element instance or its ID
         """
         if isinstance(element, int):
             children = [child for slot in self.slots.values() for child in slot.children]
