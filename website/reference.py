@@ -328,6 +328,14 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
                 ui.timer(10.0, turn_off, once=True)
         line_checkbox.on('update:model-value', handle_change)
 
+    @example(ui.plotly, menu)
+    def plotly_example():
+        import plotly.express as px
+
+        fig = px.scatter(x=[1, 2, 3, 4], y=[1, 2, 3, 2.5])
+        fig.update_layout(width=280, height=210, margin=dict(l=0, r=0, t=0, b=0))
+        ui.plotly(fig)
+
     @example(ui.linear_progress, menu)
     def linear_progress_example():
         slider = ui.slider(min=0, max=1, step=0.01, value=0.5)
