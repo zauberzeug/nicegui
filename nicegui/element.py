@@ -1,19 +1,21 @@
 from __future__ import annotations
 
-import shlex
+import json
+import re
 from abc import ABC
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
-from . import background_tasks, binding, globals
+from . import binding, events, globals, outbox
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
-from .events import handle_event
 from .slot import Slot
 
 if TYPE_CHECKING:
     from .client import Client
     from .layout import Layout
+
+PROPS_PATTERN = re.compile(r'([\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
 
 
 class Element(ABC, Visibility):
@@ -41,6 +43,10 @@ class Element(ABC, Visibility):
             self.parent_slot = slot_stack[-1]
             self.parent_slot.children.append(self)
 
+        outbox.enqueue_update(self)
+        if self.parent_slot:
+            outbox.enqueue_update(self.parent_slot.parent)
+
     def add_slot(self, name: str) -> Slot:
         self.slots[name] = Slot(self, name)
         return self.slots[name]
@@ -52,7 +58,7 @@ class Element(ABC, Visibility):
     def __exit__(self, *_):
         self.default_slot.__exit__(*_)
 
-    def to_dict(self) -> Dict:
+    def _collect_event_dict(self) -> Dict[str, Dict]:
         events: Dict[str, Dict] = {}
         for listener in self._event_listeners:
             words = listener.type.split('.')
@@ -69,16 +75,46 @@ class Element(ABC, Visibility):
                 'args': list(set(events.get(listener.type, {}).get('args', []) + listener.args)),
                 'throttle': min(events.get(listener.type, {}).get('throttle', float('inf')), listener.throttle),
             }
-        return {
-            'id': self.id,
-            'tag': self.tag,
-            'class': self.layout._classes + [f'opacity-{int(self.layout.bindables.opacity * 100)}'] + self._classes,
-            'style': self._style,
-            'props': {**self.layout._props, **self._props},
-            'events': events,
-            'text': self._text,
-            'slots': {name: [child.id for child in slot.children] for name, slot in self.slots.items()},
-        }
+        return events
+
+    def _collect_slot_dict(self) -> Dict[str, List[int]]:
+        return {name: [child.id for child in slot.children] for name, slot in self.slots.items()}
+
+    def to_dict(self, *keys: str) -> Dict:
+        all_classes = self.layout._classes + [f'opacity-{int(self.layout.bindables.opacity * 100)}'] + self._classes
+        all_props = {**self.layout._props, **self._props}
+        if not keys:
+            return {
+                'id': self.id,
+                'tag': self.tag,
+                'class': all_classes,
+                'style': self._style,
+                'props': all_props,
+                'text': self._text,
+                'slots': self._collect_slot_dict(),
+                'events': self._collect_event_dict(),
+            }
+        dict_: Dict[str, Any] = {}
+        for key in keys:
+            if key == 'id':
+                dict_['id'] = self.id
+            elif key == 'tag':
+                dict_['tag'] = self.tag
+            elif key == 'class':
+                dict_['class'] = all_classes
+            elif key == 'style':
+                dict_['style'] = self._style
+            elif key == 'props':
+                dict_['props'] = all_props
+            elif key == 'text':
+                dict_['text'] = self._text
+            elif key == 'slots':
+                dict_['slots'] = self._collect_slot_dict()
+            elif key == 'events':
+                dict_['events'] = self._collect_event_dict()
+            else:
+                raise ValueError(f'Unknown key {key}')
+        return dict_
 
     def apply(self, look: 'Layout'):
         '''Apply a look to the element.'''
@@ -103,7 +139,13 @@ class Element(ABC, Visibility):
 
     @staticmethod
     def _parse_style(text: Optional[str]) -> Dict[str, str]:
-        return dict(_split(part, ':') for part in text.strip('; ').split(';')) if text else {}
+        result = {}
+        for word in (text or '').split(';'):
+            word = word.strip()
+            if word:
+                key, value = word.split(':', 1)
+                result[key.strip()] = value.strip()
+        return result
 
     def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None):
         '''CSS style sheet definitions to modify the look of the element.
@@ -124,12 +166,14 @@ class Element(ABC, Visibility):
 
     @staticmethod
     def _parse_props(text: Optional[str]) -> Dict[str, Any]:
-        if not text:
-            return {}
-        lexer = shlex.shlex(text, posix=True)
-        lexer.whitespace = ' '
-        lexer.wordchars += '=-.%:/'
-        return dict(_split(word, '=') if '=' in word else (word, True) for word in lexer)
+        dictionary = {}
+        for match in PROPS_PATTERN.finditer(text or ''):
+            key = match.group(1)
+            value = match.group(2) or match.group(3)
+            if value and value.startswith('"') and value.endswith('"'):
+                value = json.loads(value)
+            dictionary[key] = value or True
+        return dictionary
 
     def props(self, add: Optional[str] = None, *, remove: Optional[str] = None):
         '''Quasar props https://quasar.dev/vue-components/button#design to modify the look of the element.
@@ -167,7 +211,7 @@ class Element(ABC, Visibility):
     def handle_event(self, msg: Dict) -> None:
         for listener in self._event_listeners:
             if listener.type == msg['type']:
-                handle_event(listener.handler, msg, sender=self)
+                events.handle_event(listener.handler, msg, sender=self)
 
     def collect_descendant_ids(self) -> List[int]:
         '''includes own ID as first element'''
@@ -178,17 +222,13 @@ class Element(ABC, Visibility):
         return ids
 
     def update(self) -> None:
-        if not globals.loop:
-            return
-        ids = self.collect_descendant_ids()
-        elements = {id: self.client.elements[id].to_dict() for id in ids}
-        background_tasks.create(globals.sio.emit('update', {'elements': elements}, room=self.client.id))
+        outbox.enqueue_update(self)
 
     def run_method(self, name: str, *args: Any) -> None:
         if not globals.loop:
             return
         data = {'id': self.id, 'name': name, 'args': args}
-        background_tasks.create(globals.sio.emit('run_method', data, room=globals._socket_id or self.client.id))
+        outbox.enqueue_message('run_method', data, globals._socket_id or self.client.id)
 
     def clear(self) -> None:
         descendants = [self.client.elements[id] for id in self.collect_descendant_ids()[1:]]
@@ -214,8 +254,3 @@ class Element(ABC, Visibility):
 
         Can be overridden to perform cleanup.
         """
-
-
-def _split(text: str, separator: str) -> Tuple[str, str]:
-    words = text.split(separator, 1)
-    return words[0].strip(), words[1].strip()

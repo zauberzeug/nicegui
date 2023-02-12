@@ -47,7 +47,7 @@ def run(*,
     :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`)
     :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
     :param exclude: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
-      (possible entries: audio, chart, colors, interactive_image, joystick, keyboard, log, scene, table, video)
+      (possible entries: audio, chart, colors, interactive_image, joystick, keyboard, log, mermaid, scene, table, video)
     :param tailwind: whether to use Tailwind (experimental, default: `True`)
     '''
     globals.ui_run_has_been_called = True

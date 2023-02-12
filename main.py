@@ -221,6 +221,7 @@ ui.run()
             example_link('Script Executor', 'executes scripts on selection and displays the output')
             example_link('Local File Picker', 'demonstrates a dialog for selecting files locally on the server')
             example_link('Search as you type', 'using public API of thecocktaildb.com to search for cocktails')
+            example_link('Menu and Tabs', 'uses Quasar to create foldable menu and tabs inside a header bar')
 
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
@@ -261,9 +262,11 @@ ui.run()
 
 
 @ui.page('/reference')
-def reference_page():
+async def reference_page(client: Client):
     add_head_html()
     add_header()
+    with ui.left_drawer().classes('bg-[#eee] mt-[-20px] px-8 py-20').style('height: calc(100% + 20px) !important'):
+        menu = ui.column().classes('gap-1')
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Documentation and Examples', '*API* Reference')
@@ -271,7 +274,18 @@ def reference_page():
             'This is the API reference for NiceGUI >= 1.0. '
             'Documentation for older versions can be found at [https://0.9.nicegui.io/](https://0.9.nicegui.io/reference).'
         ).classes('bold-links arrow-links')
-        reference.create_full()
-
+        reference.create_full(menu)
+    await client.connected()
+    await ui.run_javascript('''
+var fragment = window.location.hash;
+if (fragment) {
+  var targetElement = document.querySelector(fragment);
+  if (targetElement) {
+    targetElement.scrollIntoView({
+      behavior: 'smooth'
+    });
+  }
+}    
+    ''', respond=False)
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html')

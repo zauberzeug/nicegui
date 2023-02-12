@@ -30,6 +30,7 @@ from .elements.log import Log as log
 from .elements.markdown import Markdown as markdown
 from .elements.menu import Menu as menu
 from .elements.menu import MenuItem as menu_item
+from .elements.mermaid import Mermaid as mermaid
 from .elements.number import Number as number
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress

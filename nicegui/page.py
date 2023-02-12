@@ -6,7 +6,6 @@ from typing import Callable, Optional
 from fastapi import Request, Response
 
 from . import background_tasks, globals
-from .async_updater import AsyncUpdater
 from .client import Client
 from .favicon import create_favicon_route
 
@@ -65,7 +64,7 @@ class page:
             if inspect.isawaitable(result):
                 async def wait_for_result() -> None:
                     with client:
-                        await AsyncUpdater(result)
+                        await result
                 task = background_tasks.create(wait_for_result())
                 deadline = time.time() + self.response_timeout
                 while task and not client.is_waiting_for_connection and not task.done():

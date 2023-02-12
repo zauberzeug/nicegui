@@ -110,13 +110,13 @@ def test_adding_elements_from_different_tasks(screen: Screen):
 
     async def add_label1() -> None:
         with card1:
-            await asyncio.sleep(1.0)
+            await asyncio.sleep(0.5)
             ui.label('1')
 
     async def add_label2() -> None:
         with card2:
             ui.label('2')
-            await asyncio.sleep(1.0)
+            await asyncio.sleep(0.5)
 
     screen.open('/')
     background_tasks.create(add_label1())

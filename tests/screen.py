@@ -47,16 +47,21 @@ class Screen:
         globals.server.should_exit = True
         self.server_thread.join()
 
-    def open(self, path: str) -> None:
+    def open(self, path: str, timeout: float = 3.0) -> None:
+        '''Try to open the page until the server is ready or we time out.
+
+        If the server is not yet running, start it.
+        '''
         if self.server_thread is None:
             self.start_server()
-        start = time.time()
+        deadline = time.time() + timeout
         while True:
             try:
                 self.selenium.get(f'http://localhost:{PORT}{path}')
+                self.selenium.find_element(By.XPATH, '//body')  # ensure page and JS are loaded
                 break
             except Exception as e:
-                if time.time() - start > 3:
+                if time.time() > deadline:
                     raise
                 time.sleep(0.1)
                 if not self.server_thread.is_alive():

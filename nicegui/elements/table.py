@@ -13,6 +13,8 @@ class Table(Element):
 
         An element to create a table using `AG Grid <https://www.ag-grid.com/>`_.
 
+        The `call_api_method` method can be used to call an AG Grid API method.
+
         :param options: dictionary of AG Grid options
         :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
         :param theme: AG Grid theme (default: 'balham')
@@ -31,4 +33,11 @@ class Table(Element):
         self.run_method('update_grid')
 
     def call_api_method(self, name: str, *args) -> None:
+        """Call an AG Grid API method.
+
+        See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>`_ for a list of methods.
+
+        :param name: name of the method
+        :param args: arguments to pass to the method
+        """
         self.run_method('call_api_method', name, *args)
