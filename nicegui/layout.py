@@ -283,18 +283,23 @@ class IconLayout(Layout):
 Direction = Literal['horizontal', 'vertical']
 
 
-def layout(direction: Direction = None, subdivision: Optional[int] = None) -> Layout:
+def layout(flow: Direction = 'vertical', subdivision: Optional[int] = None) -> Layout:
+    '''Create a layout
+
+    :param flow: specify if child elements should be arranged 'horizontal' or 'vertical' (default: 'vertical')
+    :param subdivision: specify if the flow of elements should be divided into rows/columns (default: None, which means flex placement)
+    '''
     l = Layout()
-    if direction is not None:
+    if flow is not None:
         l.gap.small()
         if subdivision is None:
-            if direction is 'horizontal':
+            if flow is 'horizontal':
                 l._classes.append('flex flex-row')
-            elif direction is 'vertical':
+            elif flow is 'vertical':
                 l._classes.append('flex flex-col')
         else:
-            if direction is 'horizontal':
+            if flow is 'horizontal':
                 l._classes.append(f'grid grid-cols-{subdivision} grid-flow-row')
-            elif direction is 'vertical':
+            elif flow is 'vertical':
                 l._classes.append(f'grid grid-rows-{subdivision} grid-flow-col')
     return l

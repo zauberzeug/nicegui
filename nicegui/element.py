@@ -20,13 +20,13 @@ PROPS_PATTERN = re.compile(r'([\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%
 
 class Element(ABC, Visibility):
 
-    def __init__(self, tag: str, *, _client: Optional[Client] = None) -> None:
+    def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
         super().__init__()
         from .layout import Layout  # NOTE this breaks a otherwise circular import
         self.client = _client or globals.get_client()
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
-        self.tag = tag
+        self.tag = tag if tag is not None else 'div'
         self.layout = Layout(self)
         self._classes: List[str] = []
         self._props: Dict[str, Any] = {}

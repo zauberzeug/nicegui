@@ -29,10 +29,12 @@ with ui.layout('horizontal').size(width='full').align.children(cross_axis='cente
     ui.toggle([0.3, 0.5, 1.0], value=0.5, on_change=progress.update).\
         bind_value_to(progress.layout.bindables, 'opacity').layout.margin.left.auto()
 
-with ui.layout('horizontal', subdivision=2).size(width='full').gap.large().background('grey', '2').padding.all.small():
+with ui.layout('horizontal', subdivision=2).size(width='full').gap.large():
     with ui.layout('horizontal', subdivision=2).background('white'):
-        [ui.label(letter) for letter in 'ABCD']
+        [ui.element().layout.background('grey', str(shade)).size(height='6') for shade in range(2, 8)]
+        ui.element().classes('col-span-2').layout.background('grey', '9').size('full', '12')
     with ui.layout('vertical', subdivision=2).background('white'):
-        [ui.label(letter) for letter in 'ABCD']
+        [ui.element().layout.background('grey', str(shade)).size(height='full') for shade in range(2, 8)]
+        ui.element().classes('row-span-2').layout.background('grey', '9').size('full', 'full')
 
 ui.run()
