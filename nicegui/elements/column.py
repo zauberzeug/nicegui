@@ -9,4 +9,4 @@ class Column(Element):
         Provides a container which arranges its child in a row.
         '''
         super().__init__('div')
-        self.classes('column items-start gap-4')
+        self.classes('flex flex-column items-start gap-4')
