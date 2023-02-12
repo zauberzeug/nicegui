@@ -4,12 +4,12 @@ from .screen import Screen
 
 
 def test_markdown(screen: Screen):
-    m = ui.markdown('This is **markdown**')
+    m = ui.markdown('This is **Markdown**')
 
     screen.open('/')
     element = screen.find('This is')
-    assert element.text == 'This is markdown'
-    assert element.get_attribute('innerHTML') == 'This is <strong>markdown</strong>'
+    assert element.text == 'This is Markdown'
+    assert element.get_attribute('innerHTML') == 'This is <strong>Markdown</strong>'
 
     m.set_content('New **content**')
     element = screen.find('New')

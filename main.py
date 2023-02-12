@@ -122,7 +122,7 @@ async def index_page(client: Client):
             features('space_dashboard', 'Layout', [
                 'navigation bars, tabs, panels, ...',
                 'grouping with rows, columns and cards',
-                'HTML and markdown elements',
+                'HTML and Markdown elements',
                 'flex layout by default',
             ])
             features('insights', 'Visualization', [

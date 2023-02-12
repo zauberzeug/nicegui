@@ -860,4 +860,4 @@ You can set the following environment variables to configure NiceGUI:
     def env_var_example():
         from nicegui.elements import markdown
 
-        ui.label(f'markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
+        ui.label(f'Markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
