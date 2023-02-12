@@ -188,7 +188,7 @@ class Layout:
         return Shadow(self)
 
     def row(self) -> Layout:
-        self._classes.append('row')
+        self._classes.append('flex flex-row')
         self.align.children(main_axis='start').gap.medium()
         return self
 
