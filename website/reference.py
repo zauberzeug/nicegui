@@ -893,6 +893,10 @@ To avoid performance issues, you can use the `throttle` parameter to only call t
 The generic event handler can be synchronous or asynchronous and optionally takes an event dictionary as argument ("E").
 You can also specify which attributes of the JavaScript or Quasar event should be passed to the handler ("F").
 This can reduce the amount of data that needs to be transferred between the server and the client.
+
+You can also include [key modifiers](https://vuejs.org/guide/essentials/event-handling.html#key-modifiers) ("G"),
+modifier combinations ("H"),
+and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mouse-button-modifiers) ("I").
     ''', menu)
     def generic_events_example():
         with ui.row():
@@ -904,7 +908,10 @@ This can reduce the amount of data that needs to be transferred between the serv
         with ui.row():
             ui.button('E').on('mousedown', lambda e: ui.notify(str(e)))
             ui.button('F').on('mousedown', lambda e: ui.notify(str(e)), ['ctrlKey', 'shiftKey'])
-
+        with ui.row():
+            ui.input('G').classes('w-12').on('keydown.space', lambda: ui.notify('You pressed space.'))
+            ui.input('H').classes('w-12').on('keydown.y.shift', lambda: ui.notify('You pressed Shift+Y'))
+            ui.input('I').classes('w-12').on('keydown.once', lambda: ui.notify('You started typing.'))
     h3('Configuration')
 
     @example(ui.run, menu, browser_title='My App')
