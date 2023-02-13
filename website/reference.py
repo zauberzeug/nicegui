@@ -346,6 +346,13 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         slider = ui.slider(min=0, max=1, step=0.01, value=0.5)
         ui.circular_progress().bind_value_from(slider, 'value')
 
+    @example(ui.spinner, menu)
+    def spinner_example():
+        with ui.row().style('gap: 1em'):
+            ui.spinner(size='lg')
+            ui.spinner('audio', size='lg', color='green')
+            ui.spinner('dots', size='lg', color='red')
+
     @example(ui.scene, menu)
     def scene_example():
         with ui.scene(width=285, height=285) as scene:
