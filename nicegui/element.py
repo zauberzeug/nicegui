@@ -234,7 +234,7 @@ class Element(ABC, Visibility):
             -> Self:
         """Subscribe to an event.
 
-        :param type: name of the event (without the "on" prefix, e.g. "click" or "mousedown")
+        :param type: name of the event (e.g. "click", "mousedown", or "update:model-value")
         :param handler: callback that is called upon occurrence of the event
         :param args: arguments included in the event message sent to the event handler (default: `None` meaning all)
         :param throttle: minimum time (in seconds) between event occurrences (default: 0.0)

@@ -857,6 +857,54 @@ When NiceGUI is shut down or restarted, all tasks still in execution will be aut
         ui.button('shutdown', on_click=lambda: ui.notify(
             'Nah. We do not actually shutdown the documentation server. Try it in your own app!'))
 
+    h3('NiceGUI Fundamentals')
+
+    @example('''#### Auto-context
+
+In order to allow writing intuitive UI descriptions, NiceGUI automatically tracks the context in which elements are created.
+This means that there is no explicit `parent` parameter.
+Instead the parent context is defined using a `with` statement.
+It is also passed to event handlers and timers.
+
+In the example, the label "Card content" is added to the card.
+And because the `ui.button` is also added to the card, the label "Click!" will also be created in this context.
+The label "Tick!", which is added once after one second, is also added to the card.
+
+This design decision allows for easily creating modular components that keep working after moving them around in the UI.
+For example, you can move label and button somewhere else, maybe wrap them in another container, and the code will still work.
+''', menu)
+    def auto_context_example():
+        with ui.card():
+            ui.label('Card content')
+            ui.button('Add label', on_click=lambda: ui.label('Click!'))
+            ui.timer(1.0, lambda: ui.label('Tick!'), once=True)
+
+    @example('''#### Generic Events
+
+Most UI elements come with predefined events.
+For example, a `ui.button` like "A" in the example has an `on_click` parameter that expects a coroutine or function.
+But you can also use the `on` method to register a generic event handler like for "B".
+This allows you to register handlers for any event that is supported by JavaScript and Quasar.
+
+For example, you can register a handler for the `mousemove` event like for "C", even though there is no `on_mousemove` parameter for `ui.button`.
+Some events, like `mousemove`, are fired very often.
+To avoid performance issues, you can use the `throttle` parameter to only call the handler every `throttle` seconds ("D").
+
+The generic event handler can be synchronous or asynchronous and optionally takes an event dictionary as argument ("E").
+You can also specify which attributes of the JavaScript or Quasar event should be passed to the handler ("F").
+This can reduce the amount of data that needs to be transferred between the server and the client.
+    ''', menu)
+    def generic_events_example():
+        with ui.row():
+            ui.button('A', on_click=lambda: ui.notify('You clicked the button A.'))
+            ui.button('B').on('click', lambda: ui.notify('You clicked the button B.'))
+        with ui.row():
+            ui.button('C').on('mousemove', lambda: ui.notify('You moved on button C.'))
+            ui.button('D').on('mousemove', lambda: ui.notify('You moved on button D.'), throttle=0.5)
+        with ui.row():
+            ui.button('E').on('mousedown', lambda e: ui.notify(str(e)))
+            ui.button('F').on('mousedown', lambda e: ui.notify(str(e)), ['ctrlKey', 'shiftKey'])
+
     h3('Configuration')
 
     @example(ui.run, menu, browser_title='My App')
