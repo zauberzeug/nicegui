@@ -289,12 +289,12 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         ui.button('Update', on_click=update)
 
-    @example(ui.plot, menu)
+    @example(ui.pyplot, menu)
     def plot_example():
         import numpy as np
         from matplotlib import pyplot as plt
 
-        with ui.plot(figsize=(3, 2)):
+        with ui.pyplot(figsize=(3, 2)):
             x = np.linspace(0.0, 5.0)
             y = np.cos(2 * np.pi * x) * np.exp(-x)
             plt.plot(x, y, '-')
@@ -328,6 +328,14 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
                 ui.timer(10.0, turn_off, once=True)
         line_checkbox.on('update:model-value', handle_change)
 
+    @example(ui.plotly, menu)
+    def plotly_example():
+        import plotly.graph_objects as go
+
+        fig = go.Figure(go.Scatter(x=[1, 2, 3, 4], y=[1, 2, 3, 2.5]))
+        fig.update_layout(width=280, height=210, margin=dict(l=0, r=0, t=0, b=0))
+        ui.plotly(fig)
+
     @example(ui.linear_progress, menu)
     def linear_progress_example():
         slider = ui.slider(min=0, max=1, step=0.01, value=0.5)
@@ -337,6 +345,13 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
     def circular_progress_example():
         slider = ui.slider(min=0, max=1, step=0.01, value=0.5)
         ui.circular_progress().bind_value_from(slider, 'value')
+
+    @example(ui.spinner, menu)
+    def spinner_example():
+        with ui.row():
+            ui.spinner(size='lg')
+            ui.spinner('audio', size='lg', color='green')
+            ui.spinner('dots', size='lg', color='red')
 
     @example(ui.scene, menu)
     def scene_example():
@@ -842,6 +857,61 @@ When NiceGUI is shut down or restarted, all tasks still in execution will be aut
         ui.button('shutdown', on_click=lambda: ui.notify(
             'Nah. We do not actually shutdown the documentation server. Try it in your own app!'))
 
+    h3('NiceGUI Fundamentals')
+
+    @example('''#### Auto-context
+
+In order to allow writing intuitive UI descriptions, NiceGUI automatically tracks the context in which elements are created.
+This means that there is no explicit `parent` parameter.
+Instead the parent context is defined using a `with` statement.
+It is also passed to event handlers and timers.
+
+In the example, the label "Card content" is added to the card.
+And because the `ui.button` is also added to the card, the label "Click!" will also be created in this context.
+The label "Tick!", which is added once after one second, is also added to the card.
+
+This design decision allows for easily creating modular components that keep working after moving them around in the UI.
+For example, you can move label and button somewhere else, maybe wrap them in another container, and the code will still work.
+''', menu)
+    def auto_context_example():
+        with ui.card():
+            ui.label('Card content')
+            ui.button('Add label', on_click=lambda: ui.label('Click!'))
+            ui.timer(1.0, lambda: ui.label('Tick!'), once=True)
+
+    @example('''#### Generic Events
+
+Most UI elements come with predefined events.
+For example, a `ui.button` like "A" in the example has an `on_click` parameter that expects a coroutine or function.
+But you can also use the `on` method to register a generic event handler like for "B".
+This allows you to register handlers for any event that is supported by JavaScript and Quasar.
+
+For example, you can register a handler for the `mousemove` event like for "C", even though there is no `on_mousemove` parameter for `ui.button`.
+Some events, like `mousemove`, are fired very often.
+To avoid performance issues, you can use the `throttle` parameter to only call the handler every `throttle` seconds ("D").
+
+The generic event handler can be synchronous or asynchronous and optionally takes an event dictionary as argument ("E").
+You can also specify which attributes of the JavaScript or Quasar event should be passed to the handler ("F").
+This can reduce the amount of data that needs to be transferred between the server and the client.
+
+You can also include [key modifiers](https://vuejs.org/guide/essentials/event-handling.html#key-modifiers) ("G"),
+modifier combinations ("H"),
+and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mouse-button-modifiers) ("I").
+    ''', menu)
+    def generic_events_example():
+        with ui.row():
+            ui.button('A', on_click=lambda: ui.notify('You clicked the button A.'))
+            ui.button('B').on('click', lambda: ui.notify('You clicked the button B.'))
+        with ui.row():
+            ui.button('C').on('mousemove', lambda: ui.notify('You moved on button C.'))
+            ui.button('D').on('mousemove', lambda: ui.notify('You moved on button D.'), throttle=0.5)
+        with ui.row():
+            ui.button('E').on('mousedown', lambda e: ui.notify(str(e)))
+            ui.button('F').on('mousedown', lambda e: ui.notify(str(e)), ['ctrlKey', 'shiftKey'])
+        with ui.row():
+            ui.input('G').classes('w-12').on('keydown.space', lambda: ui.notify('You pressed space.'))
+            ui.input('H').classes('w-12').on('keydown.y.shift', lambda: ui.notify('You pressed Shift+Y'))
+            ui.input('I').classes('w-12').on('keydown.once', lambda: ui.notify('You started typing.'))
     h3('Configuration')
 
     @example(ui.run, menu, browser_title='My App')
@@ -854,10 +924,10 @@ When NiceGUI is shut down or restarted, all tasks still in execution will be aut
 
 You can set the following environment variables to configure NiceGUI:
 
-- `MATPLOTLIB` (default: true) can be set to `false` to avoid the potentially costly import of Matplotlib. This will make `ui.plot` and `ui.line_plot` unavailable.
+- `MATPLOTLIB` (default: true) can be set to `false` to avoid the potentially costly import of Matplotlib. This will make `ui.pyplot` and `ui.line_plot` unavailable.
 - `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.
 ''', menu)
     def env_var_example():
         from nicegui.elements import markdown
 
-        ui.label(f'markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
+        ui.label(f'Markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')

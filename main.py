@@ -122,7 +122,7 @@ async def index_page(client: Client):
             features('space_dashboard', 'Layout', [
                 'navigation bars, tabs, panels, ...',
                 'grouping with rows, columns and cards',
-                'HTML and markdown elements',
+                'HTML and Markdown elements',
                 'flex layout by default',
             ])
             features('insights', 'Visualization', [
@@ -262,7 +262,7 @@ ui.run()
 
 
 @ui.page('/reference')
-def reference_page():
+async def reference_page(client: Client):
     add_head_html()
     add_header()
     with ui.left_drawer().classes('bg-[#eee] mt-[-20px] px-8 py-20').style('height: calc(100% + 20px) !important'):
@@ -275,6 +275,17 @@ def reference_page():
             'Documentation for older versions can be found at [https://0.9.nicegui.io/](https://0.9.nicegui.io/reference).'
         ).classes('bold-links arrow-links')
         reference.create_full(menu)
-
+    await client.connected()
+    await ui.run_javascript('''
+var fragment = window.location.hash;
+if (fragment) {
+  var targetElement = document.querySelector(fragment);
+  if (targetElement) {
+    targetElement.scrollIntoView({
+      behavior: 'smooth'
+    });
+  }
+}    
+    ''', respond=False)
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html')

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from typing_extensions import Literal
 
 from . import globals
@@ -54,11 +56,11 @@ class Header(ValueElement):
         self.value = False
 
 
-class Drawer(ValueElement):
+class Drawer(Element):
 
     def __init__(self,
                  side: DrawerSides, *,
-                 value: bool = True,
+                 value: Optional[bool] = None,
                  fixed: bool = True,
                  bordered: bool = False,
                  elevated: bool = False,
@@ -67,7 +69,7 @@ class Drawer(ValueElement):
         '''Drawer
 
         :param side: side of the page where the drawer should be placed (`left` or `right`)
-        :param value: whether the drawer is already opened (default: `True`)
+        :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
         :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
         :param bordered: whether the drawer should have a border (default: `False`)
         :param elevated: whether the drawer should have a shadow (default: `False`)
@@ -75,7 +77,11 @@ class Drawer(ValueElement):
         :param bottom_corner: whether the drawer expands into the bottom corner (default: `False`)
         '''
         with globals.get_client().layout:
-            super().__init__(tag='q-drawer', value=value, on_value_change=None)
+            super().__init__('q-drawer')
+        if value is None:
+            self._props['show-if-above'] = True
+        else:
+            self._props['model-value'] = value
         self._props['side'] = side
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
@@ -88,21 +94,21 @@ class Drawer(ValueElement):
 
     def toggle(self) -> None:
         '''Toggle the drawer'''
-        self.value = not self.value
+        self.run_method('toggle')
 
     def show(self) -> None:
         '''Show the drawer'''
-        self.value = True
+        self.run_method('show')
 
     def hide(self) -> None:
         '''Hide the drawer'''
-        self.value = False
+        self.run_method('hide')
 
 
 class LeftDrawer(Drawer):
 
     def __init__(self, *,
-                 value: bool = True,
+                 value: Optional[bool] = None,
                  fixed: bool = True,
                  bordered: bool = False,
                  elevated: bool = False,
@@ -110,7 +116,7 @@ class LeftDrawer(Drawer):
                  bottom_corner: bool = False) -> None:
         '''Left drawer
 
-        :param value: whether the drawer is already opened (default: `True`)
+        :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
         :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
         :param bordered: whether the drawer should have a border (default: `False`)
         :param elevated: whether the drawer should have a shadow (default: `False`)
@@ -129,7 +135,7 @@ class LeftDrawer(Drawer):
 class RightDrawer(Drawer):
 
     def __init__(self, *,
-                 value: bool = True,
+                 value: Optional[bool] = None,
                  fixed: bool = True,
                  bordered: bool = False,
                  elevated: bool = False,
@@ -137,7 +143,7 @@ class RightDrawer(Drawer):
                  bottom_corner: bool = False) -> None:
         '''Right drawer
 
-        :param value: whether the drawer is already opened (default: `True`)
+        :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
         :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
         :param bordered: whether the drawer should have a border (default: `False`)
         :param elevated: whether the drawer should have a shadow (default: `False`)
