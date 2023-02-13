@@ -1,14 +1,15 @@
 from typing import List
 
-from .plot import Plot
+from .pyplot import Pyplot
 
 
-class LinePlot(Plot):
+class LinePlot(Pyplot):
 
     def __init__(self, *, n: int = 1, limit: int = 100, update_every: int = 1, close: bool = True, **kwargs) -> None:
         """Line Plot
 
-        Create a line plot. The `push` method provides live updating when utilized in combination with `ui.timer`.
+        Create a line plot using pyplot.
+        The `push` method provides live updating when utilized in combination with `ui.timer`.
 
         :param n: number of lines
         :param limit: maximum number of datapoints per line (new points will displace the oldest)

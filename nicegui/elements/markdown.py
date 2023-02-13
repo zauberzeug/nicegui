@@ -16,9 +16,9 @@ class Markdown(ContentElement):
     def __init__(self, content: str = '', *, extras: List[str] = ['fenced-code-blocks', 'tables']) -> None:
         """Markdown Element
 
-        Renders markdown onto the page.
+        Renders Markdown onto the page.
 
-        :param content: the markdown content to be displayed
+        :param content: the Markdown content to be displayed
         :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)
         """
         self.extras = extras
@@ -34,7 +34,7 @@ class Markdown(ContentElement):
 @lru_cache(maxsize=int(os.environ.get('MARKDOWN_CONTENT_CACHE_SIZE', '1000')))
 def prepare_content(content: str, extras: str) -> str:
     html = markdown2.markdown(content, extras=extras.split())
-    return apply_tailwind(html)  # we need explicit markdown styling because tailwind CSS removes all default styles
+    return apply_tailwind(html)  # we need explicit Markdown styling because tailwind CSS removes all default styles
 
 
 def apply_tailwind(html: str) -> str:
