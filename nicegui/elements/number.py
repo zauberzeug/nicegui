@@ -15,10 +15,15 @@ class Number(ValueElement):
                  validation: Dict[str, Callable] = {}) -> None:
         """Number Input
 
+        This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
+
+        You can use the `validation` parameter to define a dictionary of validation rules.
+        The key of the first rule that fails will be displayed as an error message.
+
         :param label: displayed name for the number input
         :param placeholder: text to show if no value is entered
         :param value: the initial value of the field
-        :param format: a string like '%.2f' to format the displayed value
+        :param format: a string like "%.2f" to format the displayed value
         :param on_change: callback to execute when the input is confirmed by leaving the focus
         :param validation: dictionary of validation rules, e.g. ``{'Too small!': lambda value: value < 3}``
         """

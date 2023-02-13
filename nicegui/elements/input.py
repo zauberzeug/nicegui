@@ -23,6 +23,9 @@ class Input(ValueElement):
         If you want to wait until the user confirms the input, you can register a custom event callback, e.g.
         `ui.input(...).on('keydown.enter', ...)` or `ui.input(...).on('blur', ...)`.
 
+        You can use the `validation` parameter to define a dictionary of validation rules.
+        The key of the first rule that fails will be displayed as an error message.
+
         :param label: displayed label for the text input
         :param placeholder: text to show if no value is entered
         :param value: the current value of the text input
