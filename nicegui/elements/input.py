@@ -51,7 +51,7 @@ class Input(ValueElement):
     def on_value_change(self, value: Any) -> None:
         super().on_value_change(value)
         for message, check in self.validation.items():
-            if check(value):
+            if not check(value):
                 self.props(f'error error-message="{message}"')
                 break
         else:
