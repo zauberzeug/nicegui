@@ -42,7 +42,7 @@ async def loop() -> None:
                 try:
                     await coro
                 except Exception:
-                    globals.logger.exception('Error in outbox loop (awaiting coro)')
+                    globals.log.exception('Error in outbox loop (awaiting coro)')
         except Exception:
-            globals.logger.exception('Error in outbox loop')
+            globals.log.exception('Error in outbox loop')
             await asyncio.sleep(0.1)
