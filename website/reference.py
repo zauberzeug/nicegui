@@ -438,6 +438,26 @@ Alternatively, you can remove individual elements with `remove(element)`, where 
         with ui.expansion('Expand!', icon='work').classes('w-full'):
             ui.label('inside the expansion')
 
+    @example('''#### Tabs
+
+The elements `ui.tabs`, `ui.tab`, `ui.tab_panels`, and `ui.tab_panel` resemble
+[Quasar's tabs](https://quasar.dev/vue-components/tabs)
+and [tab panels](https://quasar.dev/vue-components/tab-panels) API.
+
+`ui.tabs` creates a container for the tabs. This is could, e.g., be placed in a `ui.header`.
+`ui.tab_panels` creates a container for the tab panels with the actual content.
+''', menu)
+    def tabs_example():
+        with ui.tabs() as tabs:
+            ui.tab('Home', icon='home')
+            ui.tab('About', icon='info')
+
+        with ui.tab_panels(tabs, value='Home'):
+            with ui.tab_panel('Home'):
+                ui.label('This is the first tab')
+            with ui.tab_panel('About'):
+                ui.label('This is the second tab')
+
     @example(ui.menu, menu)
     def menu_example():
         choice = ui.label('Try the menu.')
