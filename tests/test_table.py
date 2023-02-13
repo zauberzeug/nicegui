@@ -1,3 +1,6 @@
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
+
 from nicegui import ui
 
 from .screen import Screen
@@ -82,3 +85,29 @@ def test_call_api_method_with_argument(screen: Screen):
     screen.should_contain('Alice')
     screen.should_not_contain('Bob')
     screen.should_not_contain('Carol')
+
+
+def test_get_selected_rows(screen: Screen):
+    table = ui.table({
+        'columnDefs': [{'field': 'name'}],
+        'rowData': [{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
+        'rowSelection': 'multiple',
+    })
+
+    async def get_selected_rows():
+        ui.label(str(await table.get_selected_rows()))
+    ui.button('Get selected rows', on_click=get_selected_rows)
+
+    async def get_selected_row():
+        ui.label(str(await table.get_selected_row()))
+    ui.button('Get selected row', on_click=get_selected_row)
+
+    screen.open('/')
+    screen.click('Alice')
+    screen.find('Bob')
+    ActionChains(screen.selenium).key_down(Keys.SHIFT).click(screen.find('Bob')).key_up(Keys.SHIFT).perform()
+    screen.click('Get selected rows')
+    screen.should_contain("[{'name': 'Alice'}, {'name': 'Bob'}]")
+
+    screen.click('Get selected row')
+    screen.should_contain("{'name': 'Alice'}")
