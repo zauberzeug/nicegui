@@ -330,9 +330,9 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
     @example(ui.plotly, menu)
     def plotly_example():
-        import plotly.express as px
+        import plotly.graph_objects as go
 
-        fig = px.scatter(x=[1, 2, 3, 4], y=[1, 2, 3, 2.5])
+        fig = go.Figure(go.Scatter(x=[1, 2, 3, 4], y=[1, 2, 3, 2.5]))
         fig.update_layout(width=280, height=210, margin=dict(l=0, r=0, t=0, b=0))
         ui.plotly(fig)
 
