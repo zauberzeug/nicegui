@@ -444,7 +444,7 @@ The elements `ui.tabs`, `ui.tab`, `ui.tab_panels`, and `ui.tab_panel` resemble
 [Quasar's tabs](https://quasar.dev/vue-components/tabs)
 and [tab panels](https://quasar.dev/vue-components/tab-panels) API.
 
-`ui.tabs` creates a container for the tabs. This is could, e.g., be placed in a `ui.header`.
+`ui.tabs` creates a container for the tabs. This could be placed in a `ui.header` for example.
 `ui.tab_panels` creates a container for the tab panels with the actual content.
 ''', menu)
     def tabs_example():
