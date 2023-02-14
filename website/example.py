@@ -7,7 +7,7 @@ import docutils.core
 import isort
 
 from nicegui import ui
-from nicegui.elements.markdown import apply_tailwind
+from nicegui.elements.markdown import apply_tailwind, prepare_content
 
 from .intersection_observer import IntersectionObserver as intersection_observer
 
@@ -40,8 +40,7 @@ class example:
     def __call__(self, f: Callable) -> Callable:
         with ui.column().classes('w-full mb-8'):
             if isinstance(self.content, str):
-                documentation = ui.markdown(self.content)
-                _add_markdown_anchor(documentation, self.menu)
+                html = prepare_content(self.content, 'fenced-code-blocks tables')
             else:
                 doc = self.content.__doc__ or self.content.__init__.__doc__
                 html: str = docutils.core.publish_parts(doc, writer_name='html5_polyglot')['html_body']
@@ -49,8 +48,19 @@ class example:
                 html = html.replace('</p>', '</h4>', 1)
                 html = html.replace('param ', '')
                 html = apply_tailwind(html)
-                documentation = ui.html(html)
-                _add_html_anchor(documentation.classes('documentation bold-links arrow-links'), self.menu)
+
+            match = REGEX_H4.search(html)
+            headline = match.groups()[0].strip()
+            headline_id = SPECIAL_CHARACTERS.sub('_', headline).lower()
+            icon = '<span class="material-icons">link</span>'
+            link = f'<a href="#{headline_id}" class="hover:text-black auto-link" style="color: #ddd">{icon}</a>'
+            target = f'<div id="{headline_id}" style="position: relative; top: -90px"></div>'
+            html = html.replace('<h4', f'{target}<h4', 1)
+            html = html.replace('</h4>', f' {link}</h4>', 1)
+
+            ui.html(html).classes('documentation bold-links arrow-links')
+            with self.menu or contextlib.nullcontext():
+                ui.link(headline, f'#{headline_id}')
 
             with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
                 code = inspect.getsource(f).split('# END OF EXAMPLE')[0].strip().splitlines()
@@ -72,42 +82,6 @@ class example:
                         intersection_observer(on_intersection=f)
 
         return f
-
-
-def _add_markdown_anchor(element: ui.markdown, menu: Optional[ui.element]) -> None:
-    first_line, _ = element.content.split('\n', 1)
-    assert first_line.startswith('#### ')
-    headline = first_line[5:].strip()
-    headline_id = SPECIAL_CHARACTERS.sub('_', headline).lower()
-    icon = '<span class="material-icons">link</span>'
-    link = f'<a href="#{headline_id}" class="hover:text-black auto-link" style="color: #ddd">{icon}</a>'
-    target = f'<div id="{headline_id}" style="position: relative; top: -90px"></div>'
-    title = f'{target}<h4>{headline} {link}</h4>'
-    element.content = title + '\n' + element.content.split('\n', 1)[1]
-
-    with menu or contextlib.nullcontext():
-        ui.link(headline, f'#{headline_id}')
-
-
-def _add_html_anchor(element: ui.html, menu: Optional[ui.element]) -> None:
-    html = element.content
-    match = REGEX_H4.search(html)
-    if not match:
-        return
-    headline = match.groups()[0].strip()
-    headline_id = SPECIAL_CHARACTERS.sub('_', headline).lower()
-    if not headline_id:
-        return
-
-    icon = '<span class="material-icons">link</span>'
-    link = f'<a href="#{headline_id}" class="hover:text-black auto-link" style="color: #ddd">{icon}</a>'
-    target = f'<div id="{headline_id}" style="position: relative; top: -90px"></div>'
-    html = html.replace('<h4', f'{target}<h4', 1)
-    html = html.replace('</h4>', f' {link}</h4>', 1)
-    element.content = html
-
-    with menu or contextlib.nullcontext():
-        ui.link(headline, f'#{headline_id}')
 
 
 def _window_header(bgcolor: str) -> ui.row():

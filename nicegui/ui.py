@@ -44,6 +44,10 @@ from .elements.slider import Slider as slider
 from .elements.spinner import Spinner as spinner
 from .elements.switch import Switch as switch
 from .elements.table import Table as table
+from .elements.tabs import Tab as tab
+from .elements.tabs import TabPanel as tab_panel
+from .elements.tabs import TabPanels as tab_panels
+from .elements.tabs import Tabs as tabs
 from .elements.time import Time as time
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
