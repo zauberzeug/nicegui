@@ -91,7 +91,7 @@ class Element(ABC, Visibility):
     def _collect_slot_dict(self) -> Dict[str, List[int]]:
         return {name: [child.id for child in slot.children] for name, slot in self.slots.items()}
 
-    def to_dict(self, *keys: str) -> Dict:
+    def _to_dict(self, *keys: str) -> Dict:
         if not keys:
             return {
                 'id': self.id,
@@ -245,21 +245,10 @@ class Element(ABC, Visibility):
             self._event_listeners.append(listener)
         return self
 
-    def handle_event(self, msg: Dict) -> None:
+    def _handle_event(self, msg: Dict) -> None:
         for listener in self._event_listeners:
             if listener.type == msg['type']:
                 events.handle_event(listener.handler, msg, sender=self)
-
-    def collect_descendant_ids(self) -> List[int]:
-        """Return a list of IDs of the element and each of its descendants.
-
-        The first ID in the list is that of the element itself.
-        """
-        ids: List[int] = [self.id]
-        for slot in self.slots.values():
-            for child in slot.children:
-                ids.extend(child.collect_descendant_ids())
-        return ids
 
     def update(self) -> None:
         """Update the element on the client side."""
@@ -276,9 +265,16 @@ class Element(ABC, Visibility):
         data = {'id': self.id, 'name': name, 'args': args}
         outbox.enqueue_message('run_method', data, globals._socket_id or self.client.id)
 
+    def _collect_descendant_ids(self) -> List[int]:
+        ids: List[int] = [self.id]
+        for slot in self.slots.values():
+            for child in slot.children:
+                ids.extend(child._collect_descendant_ids())
+        return ids
+
     def clear(self) -> None:
         """Remove all child elements."""
-        descendants = [self.client.elements[id] for id in self.collect_descendant_ids()[1:]]
+        descendants = [self.client.elements[id] for id in self._collect_descendant_ids()[1:]]
         binding.remove(descendants, Element)
         for element in descendants:
             del self.client.elements[element.id]
