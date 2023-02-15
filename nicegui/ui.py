@@ -61,6 +61,7 @@ from .functions.open import open
 from .functions.timer import Timer as timer
 from .functions.update import update
 from .page import page
+from .page_layout import Drawer as drawer
 from .page_layout import Footer as footer
 from .page_layout import Header as header
 from .page_layout import LeftDrawer as left_drawer

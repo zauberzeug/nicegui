@@ -29,7 +29,7 @@ class example:
 
     def __init__(self,
                  content: Union[Callable, type, str],
-                 menu: Optional[ui.element],
+                 menu: Optional[ui.drawer],
                  browser_title: Optional[str] = None,
                  immediate: bool = False) -> None:
         self.content = content
@@ -60,7 +60,11 @@ class example:
 
             ui.html(html).classes('documentation bold-links arrow-links')
             with self.menu or contextlib.nullcontext():
-                ui.link(headline, f'#{headline_id}')
+                async def click():
+                    if await ui.run_javascript(f'!!document.querySelector("div.q-drawer__backdrop")'):
+                        self.menu.hide()
+                        ui.open(f'#{headline_id}')
+                ui.link(headline, f'#{headline_id}').props('data-close-overlay').on('click', click)
 
             with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
                 code = inspect.getsource(f).split('# END OF EXAMPLE')[0].strip().splitlines()

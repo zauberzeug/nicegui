@@ -265,8 +265,8 @@ ui.run()
 async def reference_page(client: Client):
     add_head_html()
     add_header()
-    with ui.left_drawer().classes('bg-[#eee] mt-[-20px] px-8 py-20').style('height: calc(100% + 20px) !important'):
-        menu = ui.column().classes('gap-1')
+    menu = ui.left_drawer() \
+        .classes('column no-wrap gap-1 bg-[#eee] mt-[-20px] px-8 py-20').style('height: calc(100% + 20px) !important')
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Documentation and Examples', '*API* Reference')
