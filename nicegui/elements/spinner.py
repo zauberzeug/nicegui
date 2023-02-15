@@ -44,7 +44,7 @@ class Spinner(Element):
         :param color: color of the spinner (default: "primary")
         :param thickness: thickness of the spinner (applies to the "default" spinner only, default: 5.0)
         """
-        super().__init__('q-spinner' if type is 'default' else f'q-spinner-{type}')
+        super().__init__('q-spinner' if type == 'default' else f'q-spinner-{type}')
         self._props['size'] = size
         self._props['color'] = color
         self._props['thickness'] = thickness
