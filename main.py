@@ -262,7 +262,7 @@ ui.run()
 
 
 @ui.page('/reference')
-async def reference_page(client: Client):
+def reference_page():
     add_head_html()
     add_header()
     menu = ui.left_drawer() \
@@ -275,17 +275,6 @@ async def reference_page(client: Client):
             'Documentation for older versions can be found at [https://0.9.nicegui.io/](https://0.9.nicegui.io/reference).'
         ).classes('bold-links arrow-links')
         reference.create_full(menu)
-    await client.connected()
-    await ui.run_javascript('''
-var fragment = window.location.hash;
-if (fragment) {
-  var targetElement = document.querySelector(fragment);
-  if (targetElement) {
-    targetElement.scrollIntoView({
-      behavior: 'smooth'
-    });
-  }
-}    
-    ''', respond=False)
+
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html')
