@@ -134,6 +134,12 @@ def create_full(menu: ui.element) -> None:
                  validation={'Input too long': lambda value: len(value) < 20})
         result = ui.label()
 
+    @example(ui.textarea, menu)
+    def textarea_example():
+        ui.textarea(label='Text', placeholder='start typing',
+                    on_change=lambda e: result.set_text('you typed: ' + e.value))
+        result = ui.label()
+
     @example(ui.number, menu)
     def number_example():
         ui.number(label='Number', value=3.1415927, format='%.2f',
