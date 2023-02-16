@@ -24,7 +24,10 @@ matplotlib = [
     { version = "^3.5.0", markers = "python_version ~= '3.7'"},
     { version = "^3.6.0", markers = "python_version ~= '3.11.0'"},
 ]
-cryptography = "^38.0.3"
+cryptography = [
+    { version = "^37.0.4", markers = "python_version ~= '3.7'"},
+    { version = "^38.0.3", markers = "python_version ~= '3.11.0'"},
+]
 pillow = ">=9.3.0"
 
 [tool.poetry.dev-dependencies]
