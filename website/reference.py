@@ -130,7 +130,14 @@ def create_full(menu: ui.element) -> None:
     @example(ui.input, menu)
     def input_example():
         ui.input(label='Text', placeholder='start typing',
-                 on_change=lambda e: result.set_text('you typed: ' + e.value))
+                 on_change=lambda e: result.set_text('you typed: ' + e.value),
+                 validation={'Input too long': lambda value: len(value) < 20})
+        result = ui.label()
+
+    @example(ui.textarea, menu)
+    def textarea_example():
+        ui.textarea(label='Text', placeholder='start typing',
+                    on_change=lambda e: result.set_text('you typed: ' + e.value))
         result = ui.label()
 
     @example(ui.number, menu)
@@ -333,8 +340,8 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         import plotly.graph_objects as go
 
         fig = go.Figure(go.Scatter(x=[1, 2, 3, 4], y=[1, 2, 3, 2.5]))
-        fig.update_layout(width=280, height=210, margin=dict(l=0, r=0, t=0, b=0))
-        ui.plotly(fig)
+        fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+        ui.plotly(fig).classes('w-full h-40')
 
     @example(ui.linear_progress, menu)
     def linear_progress_example():
@@ -437,6 +444,26 @@ Alternatively, you can remove individual elements with `remove(element)`, where 
     def expansion_example():
         with ui.expansion('Expand!', icon='work').classes('w-full'):
             ui.label('inside the expansion')
+
+    @example('''#### Tabs
+
+The elements `ui.tabs`, `ui.tab`, `ui.tab_panels`, and `ui.tab_panel` resemble
+[Quasar's tabs](https://quasar.dev/vue-components/tabs)
+and [tab panels](https://quasar.dev/vue-components/tab-panels) API.
+
+`ui.tabs` creates a container for the tabs. This could be placed in a `ui.header` for example.
+`ui.tab_panels` creates a container for the tab panels with the actual content.
+''', menu)
+    def tabs_example():
+        with ui.tabs() as tabs:
+            ui.tab('Home', icon='home')
+            ui.tab('About', icon='info')
+
+        with ui.tab_panels(tabs, value='Home'):
+            with ui.tab_panel('Home'):
+                ui.label('This is the first tab')
+            with ui.tab_panel('About'):
+                ui.label('This is the second tab')
 
     @example(ui.menu, menu)
     def menu_example():

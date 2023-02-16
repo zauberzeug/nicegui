@@ -51,3 +51,17 @@ def test_toggle_button(screen: Screen):
     screen.click('visibility')
     screen.wait(0.5)
     assert element.get_attribute('type') == 'password'
+
+
+def test_input_validation(screen: Screen):
+    ui.input('Name', validation={'Too short': lambda value: len(value) >= 5})
+
+    screen.open('/')
+    screen.should_contain('Name')
+
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Name"]')
+    element.send_keys('John')
+    screen.should_contain('Too short')
+
+    element.send_keys(' Doe')
+    screen.should_not_contain('Too short')

@@ -46,12 +46,12 @@ strategy = "canary"
 
   [[services.http_checks]]
     interval = "20s"
-    grace_period = "30s"
+    grace_period = "60s"
     method = "get"
     path = "/"
     protocol = "http"
     restart_limit = 1
-    timeout = "2s"
+    timeout = "5s"
     tls_skip_verify = false
     [services.http_checks.headers]
 

@@ -67,7 +67,7 @@ class Client:
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         prefix = request.headers.get('X-Forwarded-Prefix', '')
         vue_html, vue_styles, vue_scripts = generate_vue_content()
-        elements = json.dumps({id: element.to_dict() for id, element in self.elements.items()})
+        elements = json.dumps({id: element._to_dict() for id, element in self.elements.items()})
         return templates.TemplateResponse('index.html', {
             'request': request,
             'client_id': str(self.id),

@@ -262,11 +262,11 @@ ui.run()
 
 
 @ui.page('/reference')
-async def reference_page(client: Client):
+def reference_page():
     add_head_html()
     add_header()
-    with ui.left_drawer().classes('bg-[#eee] mt-[-20px] px-8 py-20').style('height: calc(100% + 20px) !important'):
-        menu = ui.column().classes('gap-1')
+    menu = ui.left_drawer() \
+        .classes('column no-wrap gap-1 bg-[#eee] mt-[-20px] px-8 py-20').style('height: calc(100% + 20px) !important')
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Documentation and Examples', '*API* Reference')
@@ -275,17 +275,6 @@ async def reference_page(client: Client):
             'Documentation for older versions can be found at [https://0.9.nicegui.io/](https://0.9.nicegui.io/reference).'
         ).classes('bold-links arrow-links')
         reference.create_full(menu)
-    await client.connected()
-    await ui.run_javascript('''
-var fragment = window.location.hash;
-if (fragment) {
-  var targetElement = document.querySelector(fragment);
-  if (targetElement) {
-    targetElement.scrollIntoView({
-      behavior: 'smooth'
-    });
-  }
-}    
-    ''', respond=False)
+
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html')
