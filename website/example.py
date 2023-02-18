@@ -127,8 +127,8 @@ def window(color: str, bgcolor: str, *, title: str = '', tab: str = '', classes:
         return ui.column().classes('w-full h-full overflow-auto')
 
 
-def python_window(*, classes: str = '') -> ui.card:
-    return window(PYTHON_COLOR, PYTHON_BGCOLOR, title='main.py', classes=classes).classes('p-2 python-window')
+def python_window(title: Optional[str] = None, *, classes: str = '') -> ui.card:
+    return window(PYTHON_COLOR, PYTHON_BGCOLOR, title=title or 'main.py', classes=classes).classes('p-2 python-window')
 
 
 def bash_window(*, classes: str = '') -> ui.card:

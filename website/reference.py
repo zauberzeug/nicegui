@@ -4,7 +4,7 @@ from typing import Dict
 from nicegui import app, ui
 from nicegui.elements.markdown import prepare_content
 
-from .example import add_html_with_anchor_link, example
+from .example import add_html_with_anchor_link, bash_window, example, python_window
 
 CONSTANT_UUID = str(uuid.uuid4())
 
@@ -67,6 +67,9 @@ def create_full(menu: ui.element) -> None:
         ui.html(f'<em>{text}</em>').classes('mt-8 text-3xl font-weight-500')
         with menu:
             ui.label(text).classes('font-bold mt-4')
+
+    def add_markdown_with_headline(content: str):
+        add_html_with_anchor_link(prepare_content(content, 'fenced-code-blocks'), menu)
 
     h3('Basic Elements')
 
@@ -821,10 +824,10 @@ It also enables you to identify sessions using a [session middleware](https://ww
 
     @example('''#### API Responses
 
-NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/). 
-This means you can use all of FastAPI's features. 
+NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/).
+This means you can use all of FastAPI's features.
 For example, you can implement a RESTful API in addition to your graphical user interface.
-You simply import the `app` object from `nicegui`. 
+You simply import the `app` object from `nicegui`.
 Or you can run NiceGUI on top of your own FastAPI app by using `ui.run_with(app)` instead of starting a server automatically with `ui.run()`.
 
 You can also return any other FastAPI response object inside a page function.
@@ -962,39 +965,41 @@ You can set the following environment variables to configure NiceGUI:
 
     h3('Deployment')
 
-    with ui.column().classes('w-full mb-8'):
-        docker = '''#### Server Hosting
-      
+    with ui.column().classes('w-full mb-8 arrow-links'):
+        add_markdown_with_headline('''#### Server Hosting
+
 To deploy your NiceGUI app on a server, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your cloud infrastructure.
 You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/)
 or use our [pre-built multi-arch Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
 
-For example you can use this `docker run` command to start the script `main.py` in the current directory on port 80:
+For example you can use this command to start the script `main.py` in the current directory on port 80:
+''')
 
-```bash
-docker run -p 80:8080 -v $(pwd)/:/app/ -d --restart always zauberzeug/nicegui:latest
-```
+        with bash_window(classes='max-w-lg w-full h-52'):
+            ui.markdown('```bash\ndocker run -p 80:8080 -v $(pwd)/:/app/ \\\n-d --restart always zauberzeug/nicegui:latest\n```')
 
-The example assumes `main.py` uses the port 8080 in the `ui.run` command (which is the default).
-The `--restart always` makes sure the container is restarted if the app crashes or the server reboots.
+        ui.markdown(
+            '''The example assumes `main.py` uses the port 8080 in the `ui.run` command (which is the default).
+The `-d` tells docker to run in background and `--restart always` makes sure the container is restarted if the app crashes or the server reboots.
 Of course this can also be written in a Docker compose file:
-
-```yaml
-nicegui:
-  image: zauberzeug/nicegui:latest
-  restart: always
-  ports:
-    - 80:8080
-  volumes:
-    - ./:/app/
+''')
+        with python_window('docker-compose.yml', classes='max-w-lg w-full h-52'):
+            ui.markdown('''```yaml
+app:
+    image: zauberzeug/nicegui:latest
+    restart: always
+    ports:
+        - 80:8080
+    volumes:
+        - ./:/app/
 ```
+            ''')
 
+        ui.markdown('''
 You can provide SSL certificates directly using [FastAPI](https://fastapi.tiangolo.com/deployment/https/).
 In production we also like using reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/) to handle these details for us.
 See our [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
 
 You may also have look at [our example for using a custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
 This will allow you to do very flexible deployments as described in the [FastAPI documentation](https://fastapi.tiangolo.com/deployment/).
-        
-    '''
-        add_html_with_anchor_link(prepare_content(docker, 'fenced-code-blocks'), menu)
+''')
