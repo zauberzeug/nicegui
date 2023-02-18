@@ -12,6 +12,7 @@ from . import binding, events, globals, outbox
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
+from .tailwind import Tailwind
 
 if TYPE_CHECKING:
     from .client import Client
@@ -48,6 +49,8 @@ class Element(ABC, Visibility):
         if slot_stack:
             self.parent_slot = slot_stack[-1]
             self.parent_slot.children.append(self)
+
+        self.tailwind = Tailwind(self)
 
         outbox.enqueue_update(self)
         if self.parent_slot:
