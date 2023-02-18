@@ -1,8 +1,10 @@
 name: Publish Release
 
 on:
-  release:
-    types: [created]
+  workflow_dispatch:
+  push:
+    tags:
+      - v**
 
 jobs:
   pypi:
@@ -17,19 +19,29 @@ jobs:
       - name: set up Poetry
         uses: abatilo/actions-poetry@v2.0.0
         with:
-          poetry-version: "1.1.6"
+          poetry-version: "1.3.1"
       - name: get version
         id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        run: echo "VERSION=$(echo ${GITHUB_REF/refs\/tags\//})" >> $GITHUB_ENV
       - name: set version
-        run: poetry version ${{ steps.get_version.outputs.VERSION }}
+        run: poetry version ${{ env.VERSION }}
       - name: publish
         env:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
         run: poetry publish --build
+      - name: Create GitHub release entry
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
       - name: verify
         shell: bash
-        run: for i in {1..100}; do python -m pip install 'nicegui==${{ steps.get_version.outputs.VERSION }}' && break || sleep 2; done
+        run: for i in {1..100}; do python -m pip install 'nicegui==${{ env.VERSION }}' && break || sleep 2; done
 
   docker:
     needs: pypi
