@@ -962,14 +962,12 @@ You can set the following environment variables to configure NiceGUI:
 
     h3('Deployment')
 
-    ui.html(prepare_content('''
-To deploy your NiceGUI app, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your server infrastructure.
-You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server
-or use our [pre-built Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies (see above).
-    ''', ''))
-
     with ui.column().classes('w-full mb-8'):
-        docker = '''#### Docker
+        docker = '''#### Server Hosting
+      
+To deploy your NiceGUI app on a server, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your cloud infrastructure.
+You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/)
+or use our [pre-built multi-arch Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
 
 For example you can use this `docker run` command to start the script `main.py` in the current directory on port 80:
 
