@@ -175,6 +175,19 @@ ui.run()
                 ui.markdown('Enjoy!').classes('text-lg')
                 with browser_window(classes='w-full h-52'):
                     ui.label('Hello NiceGUI!')
+        with ui.expansion('Or use Docker to run your main.py').classes('w-full gap-2'):
+            with ui.row().classes('mt-8 w-full text-lg justify-center items-center gap-8'):
+                ui.markdown('''
+You can use our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui):
+
+This will start the server at http://localhost:8888 with the code from your current directory.
+The file containing your `ui.run(port=8080, ...)` command must be named `main.py`.
+Code modification triggers an automatic reload.
+''').classes('max-w-xl')
+                with bash_window(classes='max-w-lg w-full h-52'):
+                    ui.markdown('```bash\n'
+                                'docker run -it --rm -p 8000:8000 \\\n -v "$PWD":/app zauberzeug/nicegui\n'
+                                '```')
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
         link_target('examples', '-50px')

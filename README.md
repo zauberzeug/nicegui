@@ -92,15 +92,3 @@ We have built on top of [FastAPI](https://fastapi.tiangolo.com/),
 which itself is based on the ASGI framework [Starlette](https://www.starlette.io/)
 and the ASGI webserver [Uvicorn](https://www.uvicorn.org/)
 because of their great performance and ease of use.
-
-## Docker
-
-You can use our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui):
-
-```bash
-docker run --rm -p 8888:8080 -v $(pwd):/app/ -it zauberzeug/nicegui:latest
-```
-
-This will start the server at http://localhost:8888 with the code from your current directory.
-The file containing your `ui.run(port=8080, ...)` command must be named `main.py`.
-Code modification triggers an automatic reload.
