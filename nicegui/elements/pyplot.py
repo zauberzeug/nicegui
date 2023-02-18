@@ -7,10 +7,10 @@ from .. import background_tasks, globals
 from ..element import Element
 
 
-class Plot(Element):
+class Pyplot(Element):
 
     def __init__(self, *, close: bool = True, **kwargs) -> None:
-        """Plot Context
+        """Pyplot Context
 
         Create a context to configure a `Matplotlib <https://matplotlib.org/>`_ plot.
 

@@ -122,7 +122,7 @@ async def index_page(client: Client):
             features('space_dashboard', 'Layout', [
                 'navigation bars, tabs, panels, ...',
                 'grouping with rows, columns and cards',
-                'HTML and markdown elements',
+                'HTML and Markdown elements',
                 'flex layout by default',
             ])
             features('insights', 'Visualization', [
@@ -150,7 +150,7 @@ async def index_page(client: Client):
                 'Python 3.7+',
             ])
 
-    with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
+    with ui.column().classes('w-full text-lg p-8 lg:p-16 max-w-[1600px] mx-auto'):
         link_target('installation', '-50px')
         section_heading('Installation', 'Get *started*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8'):
@@ -175,6 +175,18 @@ ui.run()
                 ui.markdown('Enjoy!').classes('text-lg')
                 with browser_window(classes='w-full h-52'):
                     ui.label('Hello NiceGUI!')
+        with ui.expansion('...or use Docker to run your main.py').classes('w-full gap-2 bold-links arrow-links'):
+            with ui.row().classes('mt-8 w-full justify-center items-center gap-8'):
+                ui.markdown('''
+With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) 
+you can start the server without installing any packages.
+
+The command searches for `main.py` in in your current directory and makes the app available at http://localhost:8888.
+''').classes('max-w-xl')
+                with bash_window(classes='max-w-lg w-full h-52'):
+                    ui.markdown('```bash\n'
+                                'docker run -it --rm -p 8888:8080 \\\n -v "$PWD":/app zauberzeug/nicegui\n'
+                                '```')
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
         link_target('examples', '-50px')
@@ -265,8 +277,8 @@ ui.run()
 def reference_page():
     add_head_html()
     add_header()
-    with ui.left_drawer().classes('bg-[#eee] mt-[-20px] px-8 py-20').style('height: calc(100% + 20px) !important'):
-        menu = ui.column().classes('gap-1')
+    menu = ui.left_drawer() \
+        .classes('column no-wrap gap-1 bg-[#eee] mt-[-20px] px-8 py-20').style('height: calc(100% + 20px) !important')
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Documentation and Examples', '*API* Reference')

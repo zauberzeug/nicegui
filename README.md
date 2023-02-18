@@ -6,7 +6,7 @@
 # NiceGUI
 
 NiceGUI is an easy-to-use, Python-based UI framework, which shows up in your web browser.
-You can create buttons, dialogs, markdown, 3D scenes, plots and much more.
+You can create buttons, dialogs, Markdown, 3D scenes, plots and much more.
 
 It is great for micro web apps, dashboards, robotics projects, smart home solutions and similar use cases.
 You can also use it in development, for example when tweaking/configuring a machine learning algorithm or tuning motor controllers.
@@ -28,7 +28,7 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 - implicit reload on code change
 - standard GUI elements like label, button, checkbox, switch, slider, input, file upload, ...
 - simple grouping with rows, columns, cards and dialogs
-- general-purpose HTML and markdown elements
+- general-purpose HTML and Markdown elements
 - powerful high-level elements to
   - plot graphs and charts,
   - render 3D scenes,
@@ -92,47 +92,3 @@ We have built on top of [FastAPI](https://fastapi.tiangolo.com/),
 which itself is based on the ASGI framework [Starlette](https://www.starlette.io/)
 and the ASGI webserver [Uvicorn](https://www.uvicorn.org/)
 because of their great performance and ease of use.
-
-## Docker
-
-You can use our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui):
-
-```bash
-docker run --rm -p 8888:8080 -v $(pwd):/app/ -it zauberzeug/nicegui:latest
-```
-
-This will start the server at http://localhost:8888 with the code from your current directory.
-The file containing your `ui.run(port=8080, ...)` command must be named `main.py`.
-Code modification triggers an automatic reload.
-
-## Deployment
-
-To deploy your NiceGUI app, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your server infrastructure.
-You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) on the server
-or use our [pre-built Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies (see above).
-For example you can use this `docker run` command to start the script `main.py` in the current directory on port 80:
-
-```bash
-docker run -p 80:8080 -v $(pwd)/:/app/ -d --restart always zauberzeug/nicegui:latest
-```
-
-The example assumes `main.py` uses the port 8080 in the `ui.run` command (which is the default).
-The `--restart always` makes sure the container is restarted if the app crashes or the server reboots.
-Of course this can also be written in a Docker compose file:
-
-```yaml
-nicegui:
-  image: zauberzeug/nicegui:latest
-  restart: always
-  ports:
-    - 80:8080
-  volumes:
-    - ./:/app/
-```
-
-You can provide SSL certificates directly using [FastAPI](https://fastapi.tiangolo.com/deployment/https/).
-In production we also like using reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/) to handle these details for us.
-See our [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
-
-You may also have look at [our example for using a custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
-This will allow you to do very flexible deployments as described in the [FastAPI documentation](https://fastapi.tiangolo.com/deployment/).

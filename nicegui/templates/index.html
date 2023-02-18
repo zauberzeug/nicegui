@@ -147,8 +147,10 @@
 
       const dark = {{ dark }};
       Quasar.Dark.set(dark === None ? "auto" : dark);
+      {% if tailwind %}
       if (dark !== None) tailwind.config.darkMode = "class";
       if (dark === True) document.body.classList.add("dark");
+      {% endif %}
 
       app.mount("#app");
     </script>

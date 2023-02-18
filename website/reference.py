@@ -2,8 +2,9 @@ import uuid
 from typing import Dict
 
 from nicegui import app, ui
+from nicegui.elements.markdown import prepare_content
 
-from .example import example
+from .example import add_html_with_anchor_link, bash_window, example, python_window
 
 CONSTANT_UUID = str(uuid.uuid4())
 
@@ -66,6 +67,9 @@ def create_full(menu: ui.element) -> None:
         ui.html(f'<em>{text}</em>').classes('mt-8 text-3xl font-weight-500')
         with menu:
             ui.label(text).classes('font-bold mt-4')
+
+    def add_markdown_with_headline(content: str):
+        add_html_with_anchor_link(prepare_content(content, 'fenced-code-blocks'), menu)
 
     h3('Basic Elements')
 
@@ -130,7 +134,14 @@ def create_full(menu: ui.element) -> None:
     @example(ui.input, menu)
     def input_example():
         ui.input(label='Text', placeholder='start typing',
-                 on_change=lambda e: result.set_text('you typed: ' + e.value))
+                 on_change=lambda e: result.set_text('you typed: ' + e.value),
+                 validation={'Input too long': lambda value: len(value) < 20})
+        result = ui.label()
+
+    @example(ui.textarea, menu)
+    def textarea_example():
+        ui.textarea(label='Text', placeholder='start typing',
+                    on_change=lambda e: result.set_text('you typed: ' + e.value))
         result = ui.label()
 
     @example(ui.number, menu)
@@ -289,12 +300,12 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         ui.button('Update', on_click=update)
 
-    @example(ui.plot, menu)
+    @example(ui.pyplot, menu)
     def plot_example():
         import numpy as np
         from matplotlib import pyplot as plt
 
-        with ui.plot(figsize=(3, 2)):
+        with ui.pyplot(figsize=(3, 2)):
             x = np.linspace(0.0, 5.0)
             y = np.cos(2 * np.pi * x) * np.exp(-x)
             plt.plot(x, y, '-')
@@ -328,6 +339,14 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
                 ui.timer(10.0, turn_off, once=True)
         line_checkbox.on('update:model-value', handle_change)
 
+    @example(ui.plotly, menu)
+    def plotly_example():
+        import plotly.graph_objects as go
+
+        fig = go.Figure(go.Scatter(x=[1, 2, 3, 4], y=[1, 2, 3, 2.5]))
+        fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+        ui.plotly(fig).classes('w-full h-40')
+
     @example(ui.linear_progress, menu)
     def linear_progress_example():
         slider = ui.slider(min=0, max=1, step=0.01, value=0.5)
@@ -337,6 +356,13 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
     def circular_progress_example():
         slider = ui.slider(min=0, max=1, step=0.01, value=0.5)
         ui.circular_progress().bind_value_from(slider, 'value')
+
+    @example(ui.spinner, menu)
+    def spinner_example():
+        with ui.row():
+            ui.spinner(size='lg')
+            ui.spinner('audio', size='lg', color='green')
+            ui.spinner('dots', size='lg', color='red')
 
     @example(ui.scene, menu)
     def scene_example():
@@ -422,6 +448,26 @@ Alternatively, you can remove individual elements with `remove(element)`, where 
     def expansion_example():
         with ui.expansion('Expand!', icon='work').classes('w-full'):
             ui.label('inside the expansion')
+
+    @example('''#### Tabs
+
+The elements `ui.tabs`, `ui.tab`, `ui.tab_panels`, and `ui.tab_panel` resemble
+[Quasar's tabs](https://quasar.dev/vue-components/tabs)
+and [tab panels](https://quasar.dev/vue-components/tab-panels) API.
+
+`ui.tabs` creates a container for the tabs. This could be placed in a `ui.header` for example.
+`ui.tab_panels` creates a container for the tab panels with the actual content.
+''', menu)
+    def tabs_example():
+        with ui.tabs() as tabs:
+            ui.tab('Home', icon='home')
+            ui.tab('About', icon='info')
+
+        with ui.tab_panels(tabs, value='Home'):
+            with ui.tab_panel('Home'):
+                ui.label('This is the first tab')
+            with ui.tab_panel('About'):
+                ui.label('This is the second tab')
 
     @example(ui.menu, menu)
     def menu_example():
@@ -778,10 +824,10 @@ It also enables you to identify sessions using a [session middleware](https://ww
 
     @example('''#### API Responses
 
-NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/). 
-This means you can use all of FastAPI's features. 
+NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/).
+This means you can use all of FastAPI's features.
 For example, you can implement a RESTful API in addition to your graphical user interface.
-You simply import the `app` object from `nicegui`. 
+You simply import the `app` object from `nicegui`.
 Or you can run NiceGUI on top of your own FastAPI app by using `ui.run_with(app)` instead of starting a server automatically with `ui.run()`.
 
 You can also return any other FastAPI response object inside a page function.
@@ -842,6 +888,61 @@ When NiceGUI is shut down or restarted, all tasks still in execution will be aut
         ui.button('shutdown', on_click=lambda: ui.notify(
             'Nah. We do not actually shutdown the documentation server. Try it in your own app!'))
 
+    h3('NiceGUI Fundamentals')
+
+    @example('''#### Auto-context
+
+In order to allow writing intuitive UI descriptions, NiceGUI automatically tracks the context in which elements are created.
+This means that there is no explicit `parent` parameter.
+Instead the parent context is defined using a `with` statement.
+It is also passed to event handlers and timers.
+
+In the example, the label "Card content" is added to the card.
+And because the `ui.button` is also added to the card, the label "Click!" will also be created in this context.
+The label "Tick!", which is added once after one second, is also added to the card.
+
+This design decision allows for easily creating modular components that keep working after moving them around in the UI.
+For example, you can move label and button somewhere else, maybe wrap them in another container, and the code will still work.
+''', menu)
+    def auto_context_example():
+        with ui.card():
+            ui.label('Card content')
+            ui.button('Add label', on_click=lambda: ui.label('Click!'))
+            ui.timer(1.0, lambda: ui.label('Tick!'), once=True)
+
+    @example('''#### Generic Events
+
+Most UI elements come with predefined events.
+For example, a `ui.button` like "A" in the example has an `on_click` parameter that expects a coroutine or function.
+But you can also use the `on` method to register a generic event handler like for "B".
+This allows you to register handlers for any event that is supported by JavaScript and Quasar.
+
+For example, you can register a handler for the `mousemove` event like for "C", even though there is no `on_mousemove` parameter for `ui.button`.
+Some events, like `mousemove`, are fired very often.
+To avoid performance issues, you can use the `throttle` parameter to only call the handler every `throttle` seconds ("D").
+
+The generic event handler can be synchronous or asynchronous and optionally takes an event dictionary as argument ("E").
+You can also specify which attributes of the JavaScript or Quasar event should be passed to the handler ("F").
+This can reduce the amount of data that needs to be transferred between the server and the client.
+
+You can also include [key modifiers](https://vuejs.org/guide/essentials/event-handling.html#key-modifiers) ("G"),
+modifier combinations ("H"),
+and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mouse-button-modifiers) ("I").
+    ''', menu)
+    def generic_events_example():
+        with ui.row():
+            ui.button('A', on_click=lambda: ui.notify('You clicked the button A.'))
+            ui.button('B').on('click', lambda: ui.notify('You clicked the button B.'))
+        with ui.row():
+            ui.button('C').on('mousemove', lambda: ui.notify('You moved on button C.'))
+            ui.button('D').on('mousemove', lambda: ui.notify('You moved on button D.'), throttle=0.5)
+        with ui.row():
+            ui.button('E').on('mousedown', lambda e: ui.notify(str(e)))
+            ui.button('F').on('mousedown', lambda e: ui.notify(str(e)), ['ctrlKey', 'shiftKey'])
+        with ui.row():
+            ui.input('G').classes('w-12').on('keydown.space', lambda: ui.notify('You pressed space.'))
+            ui.input('H').classes('w-12').on('keydown.y.shift', lambda: ui.notify('You pressed Shift+Y'))
+            ui.input('I').classes('w-12').on('keydown.once', lambda: ui.notify('You started typing.'))
     h3('Configuration')
 
     @example(ui.run, menu, browser_title='My App')
@@ -854,10 +955,88 @@ When NiceGUI is shut down or restarted, all tasks still in execution will be aut
 
 You can set the following environment variables to configure NiceGUI:
 
-- `MATPLOTLIB` (default: true) can be set to `false` to avoid the potentially costly import of Matplotlib. This will make `ui.plot` and `ui.line_plot` unavailable.
+- `MATPLOTLIB` (default: true) can be set to `false` to avoid the potentially costly import of Matplotlib. This will make `ui.pyplot` and `ui.line_plot` unavailable.
 - `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.
 ''', menu)
     def env_var_example():
         from nicegui.elements import markdown
 
-        ui.label(f'markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
+        ui.label(f'Markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
+
+    h3('Deployment')
+
+    with ui.column().classes('w-full mb-8 bold-links arrow-links'):
+        add_markdown_with_headline('''#### Server Hosting
+
+To deploy your NiceGUI app on a server, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your cloud infrastructure.
+You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/)
+or use our [pre-built multi-arch Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
+
+For example you can use this command to start the script `main.py` in the current directory on port 80:
+''')
+
+        with bash_window(classes='max-w-lg w-full h-52'):
+            ui.markdown('```bash\ndocker run -p 80:8080 -v $(pwd)/:/app/ \\\n-d --restart always zauberzeug/nicegui:latest\n```')
+
+        ui.markdown(
+            '''The example assumes `main.py` uses the port 8080 in the `ui.run` command (which is the default).
+The `-d` tells docker to run in background and `--restart always` makes sure the container is restarted if the app crashes or the server reboots.
+Of course this can also be written in a Docker compose file:
+''')
+        with python_window('docker-compose.yml', classes='max-w-lg w-full h-52'):
+            ui.markdown('''```yaml
+app:
+    image: zauberzeug/nicegui:latest
+    restart: always
+    ports:
+        - 80:8080
+    volumes:
+        - ./:/app/
+```
+            ''')
+
+        ui.markdown('''
+You can provide SSL certificates directly using [FastAPI](https://fastapi.tiangolo.com/deployment/https/).
+In production we also like using reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/) to handle these details for us.
+See our [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
+
+You may also have a look at [our example for using a custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
+This will allow you to do very flexible deployments as described in the [FastAPI documentation](https://fastapi.tiangolo.com/deployment/).
+''')
+
+        with ui.column().classes('w-full mt-8 arrow-links'):
+            add_markdown_with_headline('''#### Package for Installation
+
+NiceGUI apps can also be bundled into an executable with [PyInstaller](https://www.pyinstaller.org/).
+This allows you to distribute your app as a single file that can be executed on any computer.
+
+Just take care your `ui.run` command does not use the `reload` argument.
+Running the `build.py` below will create an executable `myapp` in the `dist` folder:
+''')
+
+        with ui.row().classes('w-full'):
+            with python_window(classes='max-w-lg w-full h-64'):
+                ui.markdown('''```python
+from nicegui import ui
+
+ui.label('Hello from Pyinstaller')
+
+ui.run(reload=False)
+```''')
+            with python_window('build.py', classes='max-w-lg w-full h-64'):
+                ui.markdown('''```python
+import os
+import subprocess
+from pathlib import Path
+import nicegui
+
+static_dir = Path(nicegui.__file__).parent
+parameters = '--onefile main.py --name "myapp" ' + \\
+    f'--add-data="{static_dir}{os.pathsep}nicegui"'
+
+subprocess.call('pyinstaller ' + parameters, shell=True)
+        ```''')
+
+        ui.markdown('''
+
+        ''')

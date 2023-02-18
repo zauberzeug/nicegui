@@ -32,6 +32,7 @@ from .elements.menu import Menu as menu
 from .elements.menu import MenuItem as menu_item
 from .elements.mermaid import Mermaid as mermaid
 from .elements.number import Number as number
+from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
 from .elements.radio import Radio as radio
@@ -40,8 +41,14 @@ from .elements.scene import Scene as scene
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
 from .elements.slider import Slider as slider
+from .elements.spinner import Spinner as spinner
 from .elements.switch import Switch as switch
 from .elements.table import Table as table
+from .elements.tabs import Tab as tab
+from .elements.tabs import TabPanel as tab_panel
+from .elements.tabs import TabPanels as tab_panels
+from .elements.tabs import Tabs as tabs
+from .elements.textarea import Textarea as textarea
 from .elements.time import Time as time
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
@@ -55,6 +62,7 @@ from .functions.open import open
 from .functions.timer import Timer as timer
 from .functions.update import update
 from .page import page
+from .page_layout import Drawer as drawer
 from .page_layout import Footer as footer
 from .page_layout import Header as header
 from .page_layout import LeftDrawer as left_drawer
@@ -65,4 +73,5 @@ from .run_with import run_with
 
 if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
     from .elements.line_plot import LinePlot as line_plot
-    from .elements.plot import Plot as plot
+    from .elements.pyplot import Pyplot as plot  # NOTE: deprecated
+    from .elements.pyplot import Pyplot as pyplot

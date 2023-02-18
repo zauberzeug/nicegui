@@ -129,7 +129,7 @@ def handle_event(sid: str, msg: Dict) -> None:
     with client:
         sender = client.elements.get(msg['id'])
         if sender:
-            sender.handle_event(msg)
+            sender._handle_event(msg)
 
 
 @sio.on('javascript_response')

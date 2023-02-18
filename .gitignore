@@ -5,3 +5,7 @@ dist
 /test.py
 *.pickle
 tests/screenshots/
+
+# ignore local virtual environments
+venv
+.idea

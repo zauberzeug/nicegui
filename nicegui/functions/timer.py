@@ -78,7 +78,7 @@ class Timer:
         except Exception:
             traceback.print_exc()
 
-    async def _connected(self) -> bool:
+    async def _connected(self, timeout: float = 60.0) -> bool:
         '''Wait for the client connection before the timer callback can be allowed to manipulate the state.
         See https://github.com/zauberzeug/nicegui/issues/206 for details.
         Returns True if the client is connected, False if the client is not connected and the timer should be cancelled.
@@ -88,9 +88,10 @@ class Timer:
         else:
             # ignore served pages which do not reconnect to backend (eg. monitoring requests, scrapers etc.)
             try:
-                await self.slot.parent.client.connected()
+                await self.slot.parent.client.connected(timeout=timeout)
                 return True
             except TimeoutError:
+                globals.log.error(f'Timer cancelled because client is not connected after {timeout} seconds')
                 return False
 
     def cleanup(self) -> None:
