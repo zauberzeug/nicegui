@@ -13,7 +13,6 @@ python = "^3.7"
 typing-extensions = ">=3.10.0"
 markdown2 = "^2.4.7"
 Pygments = "^2.9.0"
-docutils = "^0.17.1"
 uvicorn = {extras = ["standard"], version = "^0.20.0"}
 matplotlib = [
     { version = "^3.5.0", markers = "python_version ~= '3.7'"},
@@ -36,6 +35,7 @@ pytest-asyncio = "^0.19.0"
 pytest = "6.2.5"
 itsdangerous = "^2.1.2" # required by SessionMiddleware (see https://fastapi.tiangolo.com/?h=itsdangerous#optional-dependencies)
 isort = "^5.11.4"
+docutils = "^0.19"
 
 [build-system]
 requires = [
