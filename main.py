@@ -150,7 +150,7 @@ async def index_page(client: Client):
                 'Python 3.7+',
             ])
 
-    with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
+    with ui.column().classes('w-full text-lg p-8 lg:p-16 max-w-[1600px] mx-auto'):
         link_target('installation', '-50px')
         section_heading('Installation', 'Get *started*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8'):
@@ -176,14 +176,16 @@ ui.run()
                 with browser_window(classes='w-full h-52'):
                     ui.label('Hello NiceGUI!')
         with ui.expansion('... or use Docker to run your main.py').classes('w-full gap-2 arrow-links'):
-            with ui.row().classes('mt-8 w-full text-lg justify-center items-center gap-8'):
+            with ui.row().classes('mt-8 w-full justify-center items-center gap-8'):
                 ui.markdown('''
-With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) you can start the server at http://localhost:8888.
-It searches for `main.py` in in your current directory.
+With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) 
+you can start the server without installing any packages.
+
+The command searches for `main.py` in in your current directory and makes the app available at http://localhost:8888.
 ''').classes('max-w-xl')
                 with bash_window(classes='max-w-lg w-full h-52'):
                     ui.markdown('```bash\n'
-                                'docker run -it --rm -p 8000:8000 \\\n -v "$PWD":/app zauberzeug/nicegui\n'
+                                'docker run -it --rm -p 8888:8080 \\\n -v "$PWD":/app zauberzeug/nicegui\n'
                                 '```')
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
