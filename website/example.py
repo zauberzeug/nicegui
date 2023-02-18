@@ -25,6 +25,25 @@ def remove_prefix(text: str, prefix: str) -> str:
     return text[len(prefix):] if text.startswith(prefix) else text
 
 
+def add_html_with_anchor_link(html: str, menu: Optional[ui.drawer]) -> str:
+    match = REGEX_H4.search(html)
+    headline = match.groups()[0].strip()
+    headline_id = SPECIAL_CHARACTERS.sub('_', headline).lower()
+    icon = '<span class="material-icons">link</span>'
+    link = f'<a href="#{headline_id}" class="hover:text-black auto-link" style="color: #ddd">{icon}</a>'
+    target = f'<div id="{headline_id}" style="position: relative; top: -90px"></div>'
+    html = html.replace('<h4', f'{target}<h4', 1)
+    html = html.replace('</h4>', f' {link}</h4>', 1)
+
+    ui.html(html).classes('documentation bold-links arrow-links')
+    with menu or contextlib.nullcontext():
+        async def click():
+            if await ui.run_javascript(f'!!document.querySelector("div.q-drawer__backdrop")'):
+                menu.hide()
+                ui.open(f'#{headline_id}')
+        ui.link(headline, f'#{headline_id}').props('data-close-overlay').on('click', click)
+
+
 class example:
 
     def __init__(self,
@@ -48,23 +67,7 @@ class example:
                 html = html.replace('</p>', '</h4>', 1)
                 html = html.replace('param ', '')
                 html = apply_tailwind(html)
-
-            match = REGEX_H4.search(html)
-            headline = match.groups()[0].strip()
-            headline_id = SPECIAL_CHARACTERS.sub('_', headline).lower()
-            icon = '<span class="material-icons">link</span>'
-            link = f'<a href="#{headline_id}" class="hover:text-black auto-link" style="color: #ddd">{icon}</a>'
-            target = f'<div id="{headline_id}" style="position: relative; top: -90px"></div>'
-            html = html.replace('<h4', f'{target}<h4', 1)
-            html = html.replace('</h4>', f' {link}</h4>', 1)
-
-            ui.html(html).classes('documentation bold-links arrow-links')
-            with self.menu or contextlib.nullcontext():
-                async def click():
-                    if await ui.run_javascript(f'!!document.querySelector("div.q-drawer__backdrop")'):
-                        self.menu.hide()
-                        ui.open(f'#{headline_id}')
-                ui.link(headline, f'#{headline_id}').props('data-close-overlay').on('click', click)
+            add_html_with_anchor_link(html, self.menu)
 
             with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
                 code = inspect.getsource(f).split('# END OF EXAMPLE')[0].strip().splitlines()
