@@ -107,8 +107,9 @@ with open(Path(__file__).parent / 'tailwind.py', 'w') as f:
     f.write('\n')
     f.write('    def __call__(self, *classes: TailwindClass) -> Tailwind:\n')
     f.write('        self.element.classes(*classes)\n')
+    f.write('        return self\n')
     f.write('\n')
-    f.write("    def apply(self, element: 'Element'):\n")
+    f.write("    def apply(self, element: 'Element') -> None:\n")
     f.write('        element._classes.extend(self.element._classes)\n')
     f.write('        element.update()\n')
     for property in properties:
