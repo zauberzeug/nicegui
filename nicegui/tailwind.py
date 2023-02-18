@@ -16089,8 +16089,9 @@ class Tailwind:
 
     def __call__(self, *classes: TailwindClass) -> Tailwind:
         self.element.classes(*classes)
+        return self
 
-    def apply(self, element: 'Element'):
+    def apply(self, element: 'Element') -> None:
         element._classes.extend(self.element._classes)
         element.update()
 
