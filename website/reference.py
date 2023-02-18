@@ -1003,3 +1003,40 @@ See our [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/doc
 You may also have look at [our example for using a custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
 This will allow you to do very flexible deployments as described in the [FastAPI documentation](https://fastapi.tiangolo.com/deployment/).
 ''')
+
+        with ui.column().classes('w-full mt-8 arrow-links'):
+            add_markdown_with_headline('''#### Package for Installation
+
+NiceGUI apps can also be bundled into an executable with [PyInstaller](https://www.pyinstaller.org/).
+This allows you to distribute your app as a single file that can be executed on any computer.
+
+Just take care your `ui.run` command does not use the `reload` argument.
+Running the `build.py` below will create an executable `myapp` in the `dist` folder:
+''')
+
+        with ui.row().classes('w-full'):
+            with python_window(classes='max-w-lg w-full h-64'):
+                ui.markdown('''```python
+from nicegui import ui
+
+ui.label('Hello from Pyinstaller')
+
+ui.run(reload=False)
+```''')
+            with python_window('build.py', classes='max-w-lg w-full h-64'):
+                ui.markdown('''```python
+import os
+import subprocess
+from pathlib import Path
+import nicegui
+
+static_dir = Path(nicegui.__file__).parent
+parameters = '--onefile main.py --name "myapp" ' + \\
+    f'--add-data="{static_dir}{os.pathsep}nicegui"'
+
+subprocess.call('pyinstaller ' + parameters, shell=True)
+        ```''')
+
+        ui.markdown('''
+
+        ''')
