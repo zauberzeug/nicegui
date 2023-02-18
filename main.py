@@ -175,7 +175,7 @@ ui.run()
                 ui.markdown('Enjoy!').classes('text-lg')
                 with browser_window(classes='w-full h-52'):
                     ui.label('Hello NiceGUI!')
-        with ui.expansion('... or use Docker to run your main.py').classes('w-full gap-2 arrow-links'):
+        with ui.expansion('...or use Docker to run your main.py').classes('w-full gap-2 bold-links arrow-links'):
             with ui.row().classes('mt-8 w-full justify-center items-center gap-8'):
                 ui.markdown('''
 With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) 
