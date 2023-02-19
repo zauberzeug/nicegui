@@ -779,7 +779,7 @@ It also enables you to identify sessions using a [session middleware](https://ww
 
         from nicegui import app
 
-        app.add_middleware(SessionMiddleware, secret_key='some_random_string')
+        # app.add_middleware(SessionMiddleware, secret_key='some_random_string')
 
         counter = Counter()
         start = datetime.now().strftime('%H:%M, %d %B %Y')

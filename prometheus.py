@@ -4,7 +4,6 @@ import uuid
 
 from fastapi import FastAPI, Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 
 EXCLUDED_USER_AGENTS = ('bot', 'spider', 'crawler', 'monitor', 'curl',
                         'wget', 'python-requests', 'kuma', 'health check')
@@ -34,6 +33,5 @@ def start_monitor(app: FastAPI) -> None:
             prometheus_client.start_http_server(9062)
 
         app.add_middleware(PrometheusMiddleware)
-        app.add_middleware(SessionMiddleware, secret_key='NiceGUI is awesome!')
     except ModuleNotFoundError:
         logging.info('Prometheus not installed, skipping monitoring')

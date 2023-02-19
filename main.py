@@ -11,6 +11,7 @@ from pathlib import Path
 
 from fastapi.responses import FileResponse
 from pygments.formatters import HtmlFormatter
+from starlette.middleware.sessions import SessionMiddleware
 
 import prometheus
 from nicegui import Client, app
@@ -22,6 +23,9 @@ from website.star import add_star
 from website.style import example_link, features, heading, link_target, section_heading, subtitle, title
 
 prometheus.start_monitor(app)
+
+# session middleware is required for demo in reference and prometheus
+app.add_middleware(SessionMiddleware, secret_key='NiceGUI is awesome!')
 
 app.add_static_files('/favicon', str(Path(__file__).parent / 'website' / 'favicon'))
 app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
