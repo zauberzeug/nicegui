@@ -73,6 +73,13 @@ def create_full(menu: ui.element) -> None:
     def label_example():
         ui.label('some label')
 
+    AVATAR_LINK = "img:https://github.com/zauberzeug/nicegui/raw/main/website/static/logo.png"
+
+    @example(ui.avatar, menu)
+    def avatar_example():
+        avatar = ui.avatar(icon=AVATAR_LINK)
+        avatar.qstyle.color("primary").size("5rem")
+
     @example(ui.icon, menu)
     def icon_example():
         ui.icon('thumb_up')
