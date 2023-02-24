@@ -73,19 +73,14 @@ def create_full(menu: ui.element) -> None:
     def label_example():
         ui.label('some label')
 
-    AVATAR_LINK = 'img:https://github.com/zauberzeug/nicegui/raw/main/website/static/logo.png'
-
-    @example(ui.avatar, menu)
-    def avatar_example():
-        avatar_icon = ui.avatar(
-            icon='favorite_border', shape='square',
-            color='teal-9', text_color='grey-11'
-        )
-        avatar_img = ui.avatar(icon=AVATAR_LINK)
-
     @example(ui.icon, menu)
     def icon_example():
         ui.icon('thumb_up')
+
+    @example(ui.avatar, menu)
+    def avatar_example():
+        ui.avatar('favorite_border', text_color='grey-11', square=True)
+        ui.avatar('img:https://nicegui.io/logo.png', color='blue-2')
 
     @example(ui.link, menu)
     def link_example():
