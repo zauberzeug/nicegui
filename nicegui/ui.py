@@ -23,6 +23,7 @@ from .elements.input import Input as input
 from .elements.interactive_image import InteractiveImage as interactive_image
 from .elements.joystick import Joystick as joystick
 from .elements.keyboard import Keyboard as keyboard
+from .elements.knob import Knob as knob
 from .elements.label import Label as label
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
