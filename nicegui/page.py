@@ -79,9 +79,11 @@ class page:
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']
         # NOTE adding request as a parameter so we can pass it to the client in the decorated function
         if 'request' not in {p.name for p in parameters}:
-            parameters.append(inspect.Parameter('request', inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request))
+            request = inspect.Parameter('request', inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request)
+            parameters.insert(0, request)
         decorated.__signature__ = inspect.Signature(parameters)
 
         globals.page_routes[decorated] = self.path
 
-        return globals.app.get(self.path)(decorated)
+        globals.app.get(self.path)(decorated)
+        return func
