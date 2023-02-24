@@ -83,7 +83,6 @@ class page:
             parameters.insert(0, request)
         decorated.__signature__ = inspect.Signature(parameters)
 
-        globals.page_routes[decorated] = self.path
-
         globals.app.get(self.path)(decorated)
+        globals.page_routes[func] = self.path
         return func
