@@ -29,7 +29,8 @@ You can then use the following command to install NiceGUI in editable mode:
 python3 -m pip install -e .
 ```
 
-This will install the `nicegui` package and all its dependencies, and link it to your local development environment so that changes you make to the code will be immediately reflected. Thereby enabling you to use your local version of NiceGUI in other projects.
+This will install the `nicegui` package and all its dependencies, and link it to your local development environment so that changes you make to the code will be immediately reflected.
+Thereby enabling you to use your local version of NiceGUI in other projects.
 
 ### Alternative: Docker
 
@@ -74,7 +75,6 @@ To run them all, use the following command in the root directory of NiceGUI:
 
 ```bash
 pytest
-
 ```
 
 ## Documentation
