@@ -542,6 +542,21 @@ All three functions also provide `remove` and `replace` parameters in case the p
         ui.button('Default', on_click=lambda: ui.colors())
         ui.button('Gray', on_click=lambda: ui.colors(primary='#555'))
 
+    @example(ui.background, menu)
+    def background_example():
+        # ui.background(color='red')
+
+        # ui.background(
+        #     image_src=IMAGE_LINK,
+        #     image_repeat="no-repeat",
+        # )
+
+        # ui.background(
+        #     video_src=VIDEO_LINK
+        # )
+
+        ui.label("Unfortunately, it is not possible to demonstrate here the operation of the element.")
+
     h3('Action')
 
     @example(ui.timer, menu)
