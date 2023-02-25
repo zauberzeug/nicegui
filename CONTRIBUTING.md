@@ -34,7 +34,8 @@ Thereby enabling you to use your local version of NiceGUI in other projects.
 
 ### Alternative: Docker
 
-You can also use Docker for development. Simply start the development container using the command:
+You can also use Docker for development.
+Simply start the development container using the command:
 
 ```bash
 ./docker.sh up app
