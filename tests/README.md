@@ -32,6 +32,8 @@ python3 -m pip install -r tests/requirements.txt
 
 Note: The above instructions assume that you have already installed Chocolatey (a package manager for Windows) on your system. If you haven't, you can follow the instructions on https://chocolatey.org/install to install it.
 
+### Linux
+
 ```bash
 cd nicegui # enter the project root dir
 sudo apt-get update
