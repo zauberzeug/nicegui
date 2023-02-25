@@ -32,7 +32,17 @@ This will install the package and its dependencies,
 and link it to your local development environment so that changes you make to the code will be immediately reflected.
 Thereby enabling you to use your local version of NiceGUI in other projects.
 
-### Code formatting
+### Alternative: Docker
+
+You can also use Docker for development.
+Simply start the development container with `./docker.sh up app`.
+The configuration is written in the `docker-compose.yml` file and automatically loads the `main.py` which is contains the website https://nicegui.io.
+Every code change will result in reloading the content.
+We use Python 3.7 as a base to ensure compatibility (see `development.dockerfile`).
+
+To see the log output use the command `./docker.sh log`.
+
+## Code formatting
 
 We use [autopep8](https://github.com/hhatto/autopep8) with a 120 character line length to format our code.
 Before submitting a pull request, please run
