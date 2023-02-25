@@ -1,6 +1,7 @@
 import asyncio
 import time
 import urllib.parse
+import webbrowser
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -67,6 +68,8 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     globals.state = globals.State.STARTED
     if with_welcome_message:
         print(f'NiceGUI ready to go on http://{globals.host}:{globals.port}')
+    if globals.show:
+        webbrowser.open(f'http://{globals.host if globals.host != "0.0.0.0" else "127.0.0.1"}:{globals.port}/')
 
 
 @app.on_event('shutdown')

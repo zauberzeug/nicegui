@@ -2,7 +2,6 @@ import logging
 import multiprocessing
 import os
 import sys
-import webbrowser
 from typing import List, Optional
 
 import uvicorn
@@ -53,6 +52,7 @@ def run(*,
     globals.ui_run_has_been_called = True
     globals.host = host
     globals.port = port
+    globals.show = show
     globals.reload = reload
     globals.title = title
     globals.viewport = viewport
@@ -64,9 +64,6 @@ def run(*,
 
     if multiprocessing.current_process().name != 'MainProcess':
         return
-
-    if show:
-        webbrowser.open(f'http://{host if host != "0.0.0.0" else "127.0.0.1"}:{port}/')
 
     def split_args(args: str) -> List[str]:
         return [a.strip() for a in args.split(',')]

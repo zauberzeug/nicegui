@@ -31,6 +31,7 @@ ui_run_has_been_called: bool = False
 
 host: str
 port: int
+show: bool
 reload: bool
 title: str
 viewport: str
