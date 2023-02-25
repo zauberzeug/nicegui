@@ -276,6 +276,31 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         ui.button('Update', on_click=update)
         ui.button('Select all', on_click=lambda: table.call_api_method('selectAll'))
 
+    @example(ui.qtable, menu)
+    def qtable_example():
+        data = [
+            {'name': 'Alice', 'age': {'deep': 18}},
+            {'name': 'Bob', 'age': {'deep': 21}},
+            {'name': 'Carol', 'age': {'deep': 42}},
+        ]
+
+        table = ui.qtable(
+            rows=data,
+            selection_mode='single',
+            selection_key='name',
+            title='QTable',
+            columns=[
+                ui.qtable.Column(name='name', field='name', label='Name'),
+                ui.qtable.Column(name='age', label='Age', field='row => row.age.deep')
+            ])
+
+        ui.input(placeholder='Search in table...', on_change=table.handle_filter)
+
+        ui.label('').bind_text_from(
+            table, 'selected',
+            lambda val: f'Current selection: {val.__repr__()}'
+        )
+
     @example(ui.chart, menu)
     def chart_example():
         from numpy.random import random
