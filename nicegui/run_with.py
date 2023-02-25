@@ -20,6 +20,7 @@ def run_with(
     globals.viewport = viewport
     globals.favicon = favicon
     globals.dark = dark
+    globals.show = False
     globals.binding_refresh_interval = binding_refresh_interval
     globals.excludes = [e.strip() for e in exclude.split(',')]
     globals.tailwind = True
