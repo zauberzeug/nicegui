@@ -16,17 +16,20 @@ By participating, you agree to abide by its terms.
 
 ## Contributing code
 
-If you'd like to contribute code to NiceGUI, we're always looking for bug fixes, performance improvements, and new features.
+We are excited that you want to contribute code to NiceGUI.
+We're always looking for bug fixes, performance improvements, and new features.
 
 ## Setup
 
-To set up a local development environment for NiceGUI, you'll need to have Python 3 and pip installed. You can then use the following command to install NiceGUI in editable mode:
+To set up a local development environment for NiceGUI, you'll need to have Python 3 and pip installed.
+You can then use the following command to install NiceGUI in editable mode:
 
 ```bash
 python3 -m pip install -e .
 ```
 
-This will install the package and its dependencies, and link it to your local development environment so that changes you make to the code will be immediately reflected.
+This will install the package and its dependencies,
+and link it to your local development environment so that changes you make to the code will be immediately reflected.
 Thereby enabling you to use your local version of NiceGUI in other projects.
 
 ### Code formatting
@@ -45,16 +48,15 @@ Then the formatting rules are applied whenever you save a file.
 ## Running tests
 
 Our tests are build with pytest and require python-selenium with Chrome driver.
+See [tests/README.md](https://github.com/zauberzeug/nicegui/blob/main/tests/README.md) for detailed installation instructions and more infos about the test infrastructure and tricks for daily usage.
 
-To run the tests, use the following command:
+Before submitting a pull request, please make sure that all tests are passing.
+To run them all, use the following command in the root directory of NiceGUI:
 
 ```bash
 pytest
 
 ```
-
-This will run all of the tests in the tests directory.
-Before submitting a pull request, please make sure that all tests are passing.
 
 ## Pull requests
 
