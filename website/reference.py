@@ -84,7 +84,7 @@ def create_full(menu: ui.element) -> None:
     @example(ui.avatar, menu)
     def avatar_example():
         ui.avatar('favorite_border', text_color='grey-11', square=True)
-        ui.avatar('img:https://nicegui.io/logo.png', color='blue-2')
+        ui.avatar('img:https://nicegui.io/logo_square.png', color='blue-2')
 
     @example(ui.link, menu)
     def link_example():
