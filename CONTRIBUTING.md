@@ -68,6 +68,12 @@ pytest
 
 ```
 
+## Documentation
+
+New features should be well documented in [website/reference.py](https://github.com/zauberzeug/nicegui/blob/main/website/reference.py).
+By calling the `example(...)` function with an element as a parameter the docstring is used as a description.
+The docstrings are written in restructured-text.
+
 ## Pull requests
 
 To get started, fork the repository on GitHub, make your changes, and open a pull request (PR) with a detailed description of the changes you've made.
