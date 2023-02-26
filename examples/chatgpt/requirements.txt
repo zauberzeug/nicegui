@@ -1,0 +1,3 @@
+nicegui>=1.0
+revChatGPT
+aiofiles

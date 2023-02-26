@@ -9,3 +9,4 @@ tests/screenshots/
 # ignore local virtual environments
 venv
 .idea
+.access_token.txt
