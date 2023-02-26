@@ -25,7 +25,7 @@ jobs:
           poetry config virtualenvs.create false
           poetry install
           # install packages to run the examples
-          pip install opencv-python opencv-contrib-python-headless httpx replicate
+          pip install opencv-python opencv-contrib-python-headless httpx replicate aiofiles revChatGPT
       - name: test startup
         run: ./test_startup.sh
       - name: setup chromedriver
