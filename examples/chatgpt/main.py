@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
+import asyncio
 import json
 import logging
 
 import aiofiles
-from icecream import ic
 from revChatGPT.V1 import AsyncChatbot
 
-from nicegui import app, ui
+from nicegui import ui
 
 
 @ui.page('/')
 async def main_page() -> None:
+
+    async def scroll_to_bottom() -> None:
+        await ui.run_javascript(f'window.scrollTo(0, getElement({content.id}).clientHeight)', respond=False)
 
     async def apply_config() -> None:
         async with aiofiles.open('.chatgpt_config.json', 'w') as file:
@@ -18,15 +21,23 @@ async def main_page() -> None:
         ui.open('/')
 
     async def ask() -> None:
-        async for data in chatbot.ask(prompt.value):
-            messages.set_content(data["message"])
+        question = prompt.value
+        prompt.value = ''
+        await scroll_to_bottom()
+        with content:
+            ui.label(question).classes('text-bold text-lg')
+            response = ui.markdown().classes('text-lg')
+            async for data in chatbot.ask(question):
+                response.set_content(data["message"])
+                await scroll_to_bottom()
 
-    with ui.column().classes('w-full max-w-3xl mx-auto'):
+    with ui.column().classes('w-full max-w-3xl mx-auto') as content:
+        with ui.element('q-page-scroller').props('reverse position="top-right" :scroll-offset="0" :offset="[0, 18]'):
+            ui.button().props('icon="keyboard_arrow_down" fab')
         try:
             async with aiofiles.open('.chatgpt_config.json', 'r') as file:
                 chatbot = AsyncChatbot(config=json.loads(await file.read()))
             await chatbot.get_conversations()  # NOTE: this is just to check if the token is valid
-            messages = ui.markdown().classes('h-full mb-auto')
             with ui.footer().classes('bg-white text-black'), ui.column().classes('w-full  max-w-3xl mx-auto my-6'):
                 prompt = ui.input().props('rounded outlined autofocus input-class="ml-3"') \
                     .classes('w-full self-center').on('keydown.enter', ask)
