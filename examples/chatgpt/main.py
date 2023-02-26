@@ -2,8 +2,7 @@
 import logging
 
 import aiofiles
-from icecream import ic
-from revChatGPT.V1 import Chatbot
+from revChatGPT.V1 import AsyncChatbot
 from starlette.middleware.sessions import SessionMiddleware
 
 from nicegui import app, ui
@@ -19,23 +18,20 @@ async def main_page() -> None:
             await file.write(token_input.value)
         ui.open('/')
 
+    async def ask() -> None:
+        async for data in chatbot.ask(prompt.value):
+            messages.set_content(data["message"])
+
     try:
         async with aiofiles.open('.access_token.txt', 'r') as file:
             access_token = await file.read()
-        chatbot = Chatbot(config={'access_token': access_token, 'payed': True})
-        chatbot.get_conversations()  # NOTE: this is just to check if the token is valid
-
-        def ask() -> None:
-            for data in chatbot.ask(prompt.value):
-                messages.set_content(data["message"])
-
-        ic(access_token)
+        chatbot = AsyncChatbot(config={'access_token': access_token, 'paid': True})
+        await chatbot.get_conversations()  # NOTE: this is just to check if the token is valid
         messages = ui.markdown()
         prompt = ui.input('promt').on('keydown.enter', ask)
     except Exception:
         logging.exception('error')
         token_input = ui.input('Access Token').on('keydown.enter', save_access_token)
         ui.markdown('copy & paste from <https://chat.openai.com/api/auth/session>')
-        ic()
 
 ui.run()
