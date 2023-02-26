@@ -31,6 +31,12 @@ python3 -m pip install -e .
 
 This will install the `nicegui` package and all its dependencies, and link it to your local development environment so that changes you make to the code will be immediately reflected.
 Thereby enabling you to use your local version of NiceGUI in other projects.
+To run the tests you need some additional setup which is described in [tests/README.md](https://github.com/zauberzeug/nicegui/blob/main/tests/README.md).
+
+There is no special Python version required for development. At Zauberzeug we mainly use 3.11.
+This means we sometimes miss some incompatibilities with 3.7.
+But these will hopefully uncovered by the GitHub Actions (see below).
+Also we use the 3.7 Docker container described below to verify compatibility in cases of uncertainty.
 
 ### Alternative: Docker
 
@@ -83,6 +89,8 @@ pytest
 New features should be well documented in [website/reference.py](https://github.com/zauberzeug/nicegui/blob/main/website/reference.py).
 By calling the `example(...)` function with an element as a parameter the docstring is used as a description.
 The docstrings are written in restructured-text.
+
+Because it has [numerous benefits](https://nick.groenen.me/notes/one-sentence-per-line/) we write each sentence in a new line.
 
 ## Pull requests
 
