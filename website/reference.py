@@ -278,6 +278,11 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
     @example(ui.qtable, menu)
     def qtable_example():
+        fields = [
+            {'name': 'name', 'field': 'name', 'label': 'Name', 'required': True},
+            {'name': 'age', 'label': 'Age', 'field': 'row => row.age.deep', 'sortable': True},
+        ]
+
         data = [
             {'name': 'Alice', 'age': {'deep': 18}},
             {'name': 'Bob', 'age': {'deep': 21}},
@@ -285,30 +290,16 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         ]
 
         table = ui.qtable(
+            columns=fields,
             rows=data,
             selection_mode='single',
             selection_key='name',
             title='QTable',
-            columns=[
-                ui.qtable.Column(name='name', field='name', label='Name'),
-                ui.qtable.Column(name='age', label='Age', field='row => row.age.deep')
-            ])
-
-        ui.input(placeholder='Search in table...', on_change=table.handle_filter)
+            filter_config={'label': 'Search...', 'icon': 'search', 'color': 'primary', 'dense': True})
 
         ui.label('').bind_text_from(
             table, 'selected',
             lambda val: f'Current selection: {val.__repr__()}'
-        )
-
-        ui.button('Change data', on_click=lambda: table.set_data([
-            {'name': '1', 'age': {'deep': 99}},
-            {'name': '2', 'age': {'deep': 88}}
-            ]))
-
-        ui.label("").bind_text_from(
-            table, '_data',
-            lambda val: f'Current data: {val.__repr__()}'
         )
 
     @example(ui.chart, menu)

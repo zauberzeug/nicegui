@@ -1,7 +1,22 @@
+function eval_fields(cols) {
+    // For each Field, Sort and Format field within the column definition,
+    // look for '=>' and if so, try to eval to run the function.
+
+    cols.forEach((col) => {
+        if (!col.field || !col.field.includes("=>")) return;
+        col.field = eval(col.field);
+
+        if (!col.sort || !col.sort.includes("=>")) return;
+        col.sort = eval(col.sort);
+
+        if (!col.format || !col.format.includes("=>")) return;
+        col.format = eval(col.format);
+    });
+}
+
 export default {
     template: `
         <q-table
-
             :rows="rows"
             :columns="columns"
 
@@ -10,7 +25,19 @@ export default {
 
             v-model:selected="selected"
             @selection="onSelection"
-        />
+
+            :filter="filter"
+        >
+
+        <template v-slot:top-right>
+            <q-input v-model="filter" type="search" :label=filter_config.label :placeholder=filter_config.placeholder :counter=filter_config.counter :filled=filter_config.filled :outlined=filter_config.outlined :standout=filter_config.standout :borderless=filter_config.borderless :color=filter_config.color :dense=filter_config.dense >
+                <template v-slot:append>
+                    <q-icon :name=filter_config.icon />
+                </template>
+            </q-input>
+        </template>
+
+      </q-table>
     `,
 
     setup() {
@@ -21,21 +48,7 @@ export default {
     },
 
     mounted() {
-        // For each Field, Sort and Format field within the column definition,
-        // look for '=>' and if so, try to eval to run the function.
-
-        console.info(this.$props.columns);
-
-        this.$props.columns.forEach((col) => {
-            if (!col.field || !col.field.includes("=>")) return;
-            col.field = eval(col.field);
-
-            if (!col.sort || !col.sort.includes("=>")) return;
-            col.sort = eval(col.sort);
-
-            if (!col.format || !col.format.includes("=>")) return;
-            col.format = eval(col.format);
-        });
+        eval_fields(this.$props.columns);
     },
 
     props: {
@@ -44,6 +57,8 @@ export default {
 
         selection_mode: String,
         selection_key: String,
+
+        filter_config: Object,
     },
 
     methods: {
@@ -54,16 +69,7 @@ export default {
         },
 
         evalFunction() {
-            this.$props.columns.forEach((col) => {
-                if (!col.field || !col.field.includes("=>")) return;
-                col.field = eval(col.field);
-
-                if (!col.sort || !col.sort.includes("=>")) return;
-                col.sort = eval(col.sort);
-
-                if (!col.format || !col.format.includes("=>")) return;
-                col.format = eval(col.format);
-            });
+            eval_fields(this.$props.columns);
         },
     },
 };
