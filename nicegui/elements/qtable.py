@@ -51,9 +51,15 @@ class QTable(Element):
         """
 
         super().__init__("qtable")
+        self.this = self
 
         self._props["columns"] = [col.__dict__ for col in columns]
+
+        # _props["rows"] is used for table view and _data is used
+        # to control the information, because the filter method
+        # needs to modify _props["rows"] to make filtering visible
         self._props["rows"] = rows
+        self._data = rows
 
         self._props["title"] = title
 
@@ -63,7 +69,15 @@ class QTable(Element):
         self.selected = []
         self.on("selected", handler=self.handle_selected_event)
 
-        self.saved_data = None
+    def get_data(self):
+        return self._data
+
+    def set_data(self, data):
+        self._data = data
+        self._props["rows"] = data
+
+        self.update()
+        self.run_method("evalFunction")
 
     def handle_selected_event(self, data):
         self.selected = data["args"]
@@ -71,17 +85,14 @@ class QTable(Element):
     def handle_filter(self, search_field):
         query_string = search_field.value
 
-        # save current data
-        if self.saved_data is None:
-            self.saved_data = self._props["rows"]
-
         filtered_data = [
             row
-            for row in self.saved_data
-            if row.__repr__().lower().find(query_string) is not -1
+            for row in self._data
+            if row.__repr__().lower().find(query_string) != -1
         ]
 
         self._props["rows"] = filtered_data
+
         self.update()
         self.run_method("evalFunction")
 

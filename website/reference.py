@@ -301,6 +301,16 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             lambda val: f'Current selection: {val.__repr__()}'
         )
 
+        ui.button('Change data', on_click=lambda: table.set_data([
+            {'name': '1', 'age': {'deep': 99}},
+            {'name': '2', 'age': {'deep': 88}}
+            ]))
+
+        ui.label("").bind_text_from(
+            table, '_data',
+            lambda val: f'Current data: {val.__repr__()}'
+        )
+
     @example(ui.chart, menu)
     def chart_example():
         from numpy.random import random
