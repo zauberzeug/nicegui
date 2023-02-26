@@ -45,11 +45,9 @@ async def main_page() -> None:
                     .classes('text-xs self-end mr-8 m-[-1em]')
         except Exception:
             logging.exception('error')
-            with ui.row():
-                paid_checkbox = ui.checkbox('paid')
-                token_input = ui.input('Access Token').on('keydown.enter', apply_config)
-                ui.markdown(
-                    'copy & paste from [session json](https://chat.openai.com/api/auth/session){:target="_blank"}')
-            ui.button('Apply', on_click=apply_config)
+            token_input = ui.input('Access Token').classes('w-96 self-center').on('keydown.enter', apply_config)
+            ui.markdown('copy & paste from <https://chat.openai.com/api/auth/session>').classes('self-center')
+            paid_checkbox = ui.checkbox('paid').classes('self-center')
+            ui.button('Apply', on_click=apply_config).classes('self-center mt-8')
 
 ui.run()
