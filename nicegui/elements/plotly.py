@@ -1,29 +1,54 @@
-import json
+from typing import Union
 
 import plotly.graph_objects as go
 
 from ..dependencies import js_dependencies, register_component
 from ..element import Element
 
-register_component('plotly', __file__, 'plotly.js', [], ['lib/plotly.min.js'])
+register_component('plotly', __file__, 'plotly.vue', [], ['lib/plotly.min.js'])
 
 
 class Plotly(Element):
 
-    def __init__(self, figure: go.Figure) -> None:
+    def __init__(self, figure: Union[dict, go.Figure]) -> None:
         """Plotly Element
 
-        Renders a plotly figure onto the page.
+        Renders a Plotly chart. There are two ways to pass a Plotly figure for rendering, see parameter `figure`:
 
-        See `plotly documentation <https://plotly.com/python/>`_ for more information.
+        * Pass a `go.Figure` object, see https://plotly.com/python/
 
-        :param figure: the plotly figure to be displayed
+        * Pass a Python `dict` object with keys `data`, `layout`, `config` (optional), see https://plotly.com/javascript/
+
+        For best performance, use the declarative `dict` approach for creating a Plotly chart.
+
+        :param figure: Plotly figure to be rendered. Can be either a `go.Figure` instance, or
+                       a `dict` object with keys `data`, `layout`, `config` (optional).
         """
         super().__init__('plotly')
+
         self.figure = figure
         self._props['lib'] = [d.import_path for d in js_dependencies.values() if d.path.name == 'plotly.min.js'][0]
         self.update()
 
+    def update_figure(self, figure: Union[dict, go.Figure]):
+        """
+        Overrides figure instance of this Plotly chart and updates chart on client side.
+        """
+        self.figure = figure
+        self.update()
+
     def update(self) -> None:
-        self._props['options'] = json.loads(self.figure.to_json())
+        self._props['options'] = self._get_figure_json()
         self.run_method('update', self._props['options'])
+
+    def _get_figure_json(self) -> dict:
+        if isinstance(self.figure, go.Figure):
+            # convert go.Figure to dict object which is directly JSON serializable
+            # orjson supports numpy array serialization
+            return self.figure.to_plotly_json()
+
+        if isinstance(self.figure, dict):
+            # already a dict object with keys: data, layout, config (optional)
+            return self.figure
+
+        raise ValueError(f"Plotly figure is of unknown type '{self.figure.__class__.__name__}'.")
