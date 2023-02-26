@@ -22,25 +22,36 @@ We're always looking for bug fixes, performance improvements, and new features.
 ## Setup
 
 To set up a local development environment for NiceGUI, you'll need to have Python 3 and pip installed.
+
 You can then use the following command to install NiceGUI in editable mode:
 
 ```bash
 python3 -m pip install -e .
 ```
 
-This will install the package and its dependencies,
-and link it to your local development environment so that changes you make to the code will be immediately reflected.
+This will install the `nicegui` package and all its dependencies, and link it to your local development environment so that changes you make to the code will be immediately reflected.
 Thereby enabling you to use your local version of NiceGUI in other projects.
 
 ### Alternative: Docker
 
 You can also use Docker for development.
-Simply start the development container with `./docker.sh up app`.
+Simply start the development container using the command:
+
+```bash
+./docker.sh up app
+```
+
+By default, the development server listens to http://localhost:80/.
+
 The configuration is written in the `docker-compose.yml` file and automatically loads the `main.py` which is contains the website https://nicegui.io.
 Every code change will result in reloading the content.
 We use Python 3.7 as a base to ensure compatibility (see `development.dockerfile`).
 
-To see the log output use the command `./docker.sh log`.
+To view the log output, use the command
+
+```bash
+./docker.sh log
+```
 
 ## Code formatting
 
@@ -65,7 +76,6 @@ To run them all, use the following command in the root directory of NiceGUI:
 
 ```bash
 pytest
-
 ```
 
 ## Documentation
