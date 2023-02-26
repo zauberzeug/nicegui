@@ -51,7 +51,6 @@ class QTable(Element):
         """
 
         super().__init__("qtable")
-        self.this = self
 
         self._props["columns"] = [col.__dict__ for col in columns]
 
