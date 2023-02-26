@@ -9,6 +9,8 @@ from fastapi import Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 
+from nicegui import json
+
 from . import globals, outbox
 from .dependencies import generate_js_imports, generate_vue_content
 from .element import Element

@@ -8,7 +8,9 @@ from fastapi import HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
-from fastapi_socketio import SocketManager
+
+from nicegui import json
+from nicegui.socket_manager import SocketManager
 
 from . import background_tasks, binding, globals, outbox
 from .app import App
@@ -19,8 +21,9 @@ from .error import error_content
 from .helpers import safe_invoke
 from .page import page
 
-globals.app = app = App()
-globals.sio = sio = SocketManager(app=app)._sio
+globals.app = app = App(default_response_class=json.NiceGUIJSONResponse)
+socket_manager = SocketManager(app=app, json=json)  # custom json module (wraps orjson)
+globals.sio = sio = app.sio
 
 app.add_middleware(GZipMiddleware)
 app.mount('/_nicegui/static', StaticFiles(directory=Path(__file__).parent / 'static'), name='static')
