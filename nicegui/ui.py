@@ -17,6 +17,7 @@ from .elements.date import Date as date
 from .elements.dialog import Dialog as dialog
 from .elements.expansion import Expansion as expansion
 from .elements.html import Html as html
+from .elements.html_table import HTMLTable as html_table
 from .elements.icon import Icon as icon
 from .elements.image import Image as image
 from .elements.input import Input as input

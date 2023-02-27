@@ -1,3 +1,4 @@
+import random
 import uuid
 from typing import Dict
 
@@ -275,6 +276,35 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         ui.button('Update', on_click=update)
         ui.button('Select all', on_click=lambda: table.call_api_method('selectAll'))
+
+    @example(ui.html_table, menu)
+    def html_table_example():
+        columns = ['Name', 'Age']
+
+        rows = [{'name': 'Alice', 'age': 18}, {'name': 'Bob', 'age': 21}, {'name': 'Carol', 'age': 42}]
+
+        style = {
+            "table": "border-collapse: collapse; margin: 25px 0; font-size: 0.9em; font-family: sans-serif;",
+            "tr": "background-color: #5898d4; color: #ffffff; text-align: left; border-bottom: 1px solid #dddddd;",
+            "th, td": "padding: 12px 15px;",
+        }
+
+        table = ui.html_table(columns, rows, style)
+
+        def update():
+            for row in rows:
+                row['age'] += random.randint(1, 10)
+            table.sync_config()
+
+        def add_person(person):
+            rows.append({'name': person['name'], 'age': person['age']})
+            table.sync_config()
+
+        ui.button('Update', on_click=update)
+
+        p_name = ui.input('Person name')
+        p_name.value = "Denis"
+        ui.button('Add person', on_click=lambda: add_person({'name': p_name.value, 'age': random.randint(18, 50)}))
 
     @example(ui.chart, menu)
     def chart_example():
