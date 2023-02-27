@@ -16,6 +16,7 @@ from .elements.column import Column as column
 from .elements.date import Date as date
 from .elements.dialog import Dialog as dialog
 from .elements.expansion import Expansion as expansion
+from .elements.file_picker import FilePicker as file_picker
 from .elements.html import Html as html
 from .elements.icon import Icon as icon
 from .elements.image import Image as image

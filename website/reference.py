@@ -171,6 +171,11 @@ def create_full(menu: ui.element) -> None:
     def upload_example():
         ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('max-w-full')
 
+    @example(ui.file_picker, menu)
+    def file_picker_example():
+        file = ui.file_picker(accept_types=[".jpg", ".png"])
+        img = ui.image().bind_source_from(file, "file", backward=lambda f: f["url"])
+
     h3('Markdown and HTML')
 
     @example(ui.markdown, menu)
