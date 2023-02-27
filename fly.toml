@@ -25,8 +25,8 @@ strategy = "canary"
   protocol = "tcp"
   script_checks = []
   [services.concurrency]
-    hard_limit = 20
-    soft_limit = 10
+    hard_limit = 30
+    soft_limit = 20
     type = "connections"
 
   [[services.ports]]
@@ -41,7 +41,7 @@ strategy = "canary"
   [[services.tcp_checks]]
     grace_period = "10s"
     interval = "5s"
-    restart_limit = 1
+    restart_limit = 2
     timeout = "1s"
 
   [[services.http_checks]]
@@ -50,7 +50,7 @@ strategy = "canary"
     method = "get"
     path = "/"
     protocol = "http"
-    restart_limit = 1
+    restart_limit = 2
     timeout = "5s"
     tls_skip_verify = false
     [services.http_checks.headers]

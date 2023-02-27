@@ -11,6 +11,7 @@ from pathlib import Path
 
 from fastapi.responses import FileResponse
 from pygments.formatters import HtmlFormatter
+from starlette.middleware.sessions import SessionMiddleware
 
 import prometheus
 from nicegui import Client, app
@@ -22,6 +23,9 @@ from website.star import add_star
 from website.style import example_link, features, heading, link_target, section_heading, subtitle, title
 
 prometheus.start_monitor(app)
+
+# session middleware is required for demo in reference and prometheus
+app.add_middleware(SessionMiddleware, secret_key='NiceGUI is awesome!')
 
 app.add_static_files('/favicon', str(Path(__file__).parent / 'website' / 'favicon'))
 app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
@@ -150,7 +154,7 @@ async def index_page(client: Client):
                 'Python 3.7+',
             ])
 
-    with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
+    with ui.column().classes('w-full text-lg p-8 lg:p-16 max-w-[1600px] mx-auto'):
         link_target('installation', '-50px')
         section_heading('Installation', 'Get *started*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8'):
@@ -175,6 +179,18 @@ ui.run()
                 ui.markdown('Enjoy!').classes('text-lg')
                 with browser_window(classes='w-full h-52'):
                     ui.label('Hello NiceGUI!')
+        with ui.expansion('...or use Docker to run your main.py').classes('w-full gap-2 bold-links arrow-links'):
+            with ui.row().classes('mt-8 w-full justify-center items-center gap-8'):
+                ui.markdown('''
+With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) 
+you can start the server without installing any packages.
+
+The command searches for `main.py` in in your current directory and makes the app available at http://localhost:8888.
+''').classes('max-w-xl')
+                with bash_window(classes='max-w-lg w-full h-52'):
+                    ui.markdown('```bash\n'
+                                'docker run -it --rm -p 8888:8080 \\\n -v "$PWD":/app zauberzeug/nicegui\n'
+                                '```')
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
         link_target('examples', '-50px')

@@ -2,8 +2,9 @@ import uuid
 from typing import Dict
 
 from nicegui import app, ui
+from nicegui.elements.markdown import prepare_content
 
-from .example import example
+from .example import add_html_with_anchor_link, bash_window, example, python_window
 
 CONSTANT_UUID = str(uuid.uuid4())
 
@@ -67,6 +68,9 @@ def create_full(menu: ui.element) -> None:
         with menu:
             ui.label(text).classes('font-bold mt-4')
 
+    def add_markdown_with_headline(content: str):
+        add_html_with_anchor_link(prepare_content(content, 'fenced-code-blocks'), menu)
+
     h3('Basic Elements')
 
     @example(ui.label, menu)
@@ -76,6 +80,11 @@ def create_full(menu: ui.element) -> None:
     @example(ui.icon, menu)
     def icon_example():
         ui.icon('thumb_up')
+
+    @example(ui.avatar, menu)
+    def avatar_example():
+        ui.avatar('favorite_border', text_color='grey-11', square=True)
+        ui.avatar('img:https://nicegui.io/logo_square.png', color='blue-2')
 
     @example(ui.link, menu)
     def link_example():
@@ -790,7 +799,7 @@ It also enables you to identify sessions using a [session middleware](https://ww
 
         from nicegui import app
 
-        app.add_middleware(SessionMiddleware, secret_key='some_random_string')
+        # app.add_middleware(SessionMiddleware, secret_key='some_random_string')
 
         counter = Counter()
         start = datetime.now().strftime('%H:%M, %d %B %Y')
@@ -835,10 +844,10 @@ It also enables you to identify sessions using a [session middleware](https://ww
 
     @example('''#### API Responses
 
-NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/). 
-This means you can use all of FastAPI's features. 
+NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/).
+This means you can use all of FastAPI's features.
 For example, you can implement a RESTful API in addition to your graphical user interface.
-You simply import the `app` object from `nicegui`. 
+You simply import the `app` object from `nicegui`.
 Or you can run NiceGUI on top of your own FastAPI app by using `ui.run_with(app)` instead of starting a server automatically with `ui.run()`.
 
 You can also return any other FastAPI response object inside a page function.
@@ -973,3 +982,81 @@ You can set the following environment variables to configure NiceGUI:
         from nicegui.elements import markdown
 
         ui.label(f'Markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
+
+    h3('Deployment')
+
+    with ui.column().classes('w-full mb-8 bold-links arrow-links'):
+        add_markdown_with_headline('''#### Server Hosting
+
+To deploy your NiceGUI app on a server, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your cloud infrastructure.
+You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/)
+or use our [pre-built multi-arch Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
+
+For example you can use this command to start the script `main.py` in the current directory on port 80:
+''')
+
+        with bash_window(classes='max-w-lg w-full h-52'):
+            ui.markdown('```bash\ndocker run -p 80:8080 -v $(pwd)/:/app/ \\\n-d --restart always zauberzeug/nicegui:latest\n```')
+
+        ui.markdown(
+            '''The example assumes `main.py` uses the port 8080 in the `ui.run` command (which is the default).
+The `-d` tells docker to run in background and `--restart always` makes sure the container is restarted if the app crashes or the server reboots.
+Of course this can also be written in a Docker compose file:
+''')
+        with python_window('docker-compose.yml', classes='max-w-lg w-full h-52'):
+            ui.markdown('''```yaml
+app:
+    image: zauberzeug/nicegui:latest
+    restart: always
+    ports:
+        - 80:8080
+    volumes:
+        - ./:/app/
+```
+            ''')
+
+        ui.markdown('''
+You can provide SSL certificates directly using [FastAPI](https://fastapi.tiangolo.com/deployment/https/).
+In production we also like using reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/) to handle these details for us.
+See our [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
+
+You may also have a look at [our example for using a custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
+This will allow you to do very flexible deployments as described in the [FastAPI documentation](https://fastapi.tiangolo.com/deployment/).
+''')
+
+        with ui.column().classes('w-full mt-8 arrow-links'):
+            add_markdown_with_headline('''#### Package for Installation
+
+NiceGUI apps can also be bundled into an executable with [PyInstaller](https://www.pyinstaller.org/).
+This allows you to distribute your app as a single file that can be executed on any computer.
+
+Just take care your `ui.run` command does not use the `reload` argument.
+Running the `build.py` below will create an executable `myapp` in the `dist` folder:
+''')
+
+        with ui.row().classes('w-full'):
+            with python_window(classes='max-w-lg w-full h-64'):
+                ui.markdown('''```python
+from nicegui import ui
+
+ui.label('Hello from Pyinstaller')
+
+ui.run(reload=False)
+```''')
+            with python_window('build.py', classes='max-w-lg w-full h-64'):
+                ui.markdown('''```python
+import os
+import subprocess
+from pathlib import Path
+import nicegui
+
+static_dir = Path(nicegui.__file__).parent
+parameters = '--onefile main.py --name "myapp" ' + \\
+    f'--add-data="{static_dir}{os.pathsep}nicegui"'
+
+subprocess.call('pyinstaller ' + parameters, shell=True)
+        ```''')
+
+        ui.markdown('''
+
+        ''')
