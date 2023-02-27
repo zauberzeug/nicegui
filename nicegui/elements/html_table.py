@@ -41,6 +41,16 @@ def parser_rows(table):
 class HTMLTable(Element):
     def __init__(self, columns=[], rows=[], style={}):
         """HTML Table
+
+        A simple HTML table that can be used to display a table of data.
+
+        :param columns: A list of column names. Exemple: ['Name', 'Age']
+        :param rows: A list of dicionaries of data for each column. Exemple: [{'name': 'John', 'age': '30'}, {'name': 'Mary', 'age': '40'}]
+        :param style: A dictionary of CSS styles. Exemple: {'table': 'width:100%', 'tr': 'background-color:red;'}
+
+        API to update data:
+
+        :method sync_config: passes the current columns, rows and style values ​​to the component and emits the update_dom event.
         """
         super().__init__("html_table")
 
