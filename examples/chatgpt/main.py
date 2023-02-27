@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-import asyncio
 import json
 import logging
 
 import aiofiles
+from pygments.formatters import HtmlFormatter
 from revChatGPT.V1 import AsyncChatbot
 
 from nicegui import ui
@@ -31,6 +31,7 @@ async def main_page() -> None:
                 response.set_content(data["message"])
                 await scroll_to_bottom()
 
+    ui.add_head_html(f'<style>{HtmlFormatter(nobackground=True).get_style_defs(".codehilite")}</style>')
     with ui.column().classes('w-full max-w-3xl mx-auto') as content:
         with ui.element('q-page-scroller').props('reverse position="top-right" :scroll-offset="0" :offset="[0, 18]'):
             ui.button().props('icon="keyboard_arrow_down" fab')
