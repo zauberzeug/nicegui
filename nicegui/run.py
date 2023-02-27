@@ -28,6 +28,7 @@ def run(*,
         uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
         exclude: str = '',
         tailwind: bool = True,
+        **kwargs,
         ) -> None:
     '''ui.run
 
@@ -49,6 +50,7 @@ def run(*,
     :param exclude: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
       (possible entries: audio, chart, colors, interactive_image, joystick, keyboard, log, markdown, mermaid, plotly, scene, table, video)
     :param tailwind: whether to use Tailwind (experimental, default: `True`)
+    :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     '''
     globals.ui_run_has_been_called = True
     globals.host = host
@@ -82,6 +84,7 @@ def run(*,
         reload_excludes=split_args(uvicorn_reload_excludes) if reload else None,
         reload_dirs=split_args(uvicorn_reload_dirs) if reload else None,
         log_level=uvicorn_logging_level,
+        **kwargs,
     )
     globals.server = uvicorn.Server(config=config)
 
