@@ -52,6 +52,12 @@ class MouseEventArguments(EventArguments):
     type: str
     image_x: float
     image_y: float
+    button: int
+    buttons: int
+    alt: bool
+    ctrl: bool
+    meta: bool
+    shift: bool
 
 
 @dataclass
