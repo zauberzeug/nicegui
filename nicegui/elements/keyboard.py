@@ -26,7 +26,6 @@ class Keyboard(Element):
         self.active = active
         self._props['events'] = ['keydown', 'keyup']
         self._props['repeating'] = repeating
-        self.style('display: none')
         self.on('key', self.handle_key)
 
     def handle_key(self, msg: Dict) -> None:

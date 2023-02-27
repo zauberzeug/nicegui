@@ -1,5 +1,4 @@
 export default {
-  template: "<span></span>",
   mounted() {
     for (const event of this.events) {
       document.addEventListener(event, (evt) => {
