@@ -8,7 +8,7 @@ Even if automated testing needs a lot of infrastructure and results in long exec
 
 ## Setup
 
-Please be aware that the below commands installs the latest version of the ChromeDriver binary, which is compatible with the version of Google Chrome installed on your system.
+Please be aware that the below commands install the latest version of the ChromeDriver binary, which is compatible with the version of Google Chrome installed on your system.
 If you have a different version of Chrome installed, you may need to install a different version of ChromeDriver or update your Chrome installation to be compatible with the installed ChromeDriver version.
 
 ### Mac
@@ -48,14 +48,14 @@ Please refer to the documentation for your distribution for more information.
 
 ## Usage
 
-Because selenium queries are quite cumbersome and lengthily, we introduced a `Screen` class.
+Because Selenium queries are quite cumbersome and lengthy, we introduced a `Screen` class.
 This provides a high-level interface to work with the currently displayed state of the web browser.
 The workflow is as follows:
 
-1. get the screen fixture by providing `screen: Screen` as an argument to the function
-2. write your NiceGUI code inside the function
-3. use `screen.open(...)` with the appropriate url path to start querying the website
-4. for example use `screen.should_contain(...)` with some text as parameter to ensure that the text is shown
+1. Get the `screen` fixture by providing `screen: Screen` as an argument to the function.
+2. Write your NiceGUI code inside the function.
+3. Use `screen.open(...)` with the appropriate URL path to start querying the website.
+4. For example, use `screen.should_contain(...)` with some text as parameter to ensure that the text is shown.
 
 Here is a very simple example:
 

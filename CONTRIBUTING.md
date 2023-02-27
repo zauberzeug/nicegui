@@ -33,9 +33,10 @@ This will install the `nicegui` package and all its dependencies, and link it to
 Thereby enabling you to use your local version of NiceGUI in other projects.
 To run the tests you need some additional setup which is described in [tests/README.md](https://github.com/zauberzeug/nicegui/blob/main/tests/README.md).
 
-There is no special Python version required for development. At Zauberzeug we mainly use 3.11.
+There is no special Python version required for development.
+At Zauberzeug we mainly use 3.11.
 This means we sometimes miss some incompatibilities with 3.7.
-But these will hopefully uncovered by the GitHub Actions (see below).
+But these will hopefully be uncovered by the GitHub Actions (see below).
 Also we use the 3.7 Docker container described below to verify compatibility in cases of uncertainty.
 
 ### Alternative: Docker
@@ -49,7 +50,7 @@ Simply start the development container using the command:
 
 By default, the development server listens to http://localhost:80/.
 
-The configuration is written in the `docker-compose.yml` file and automatically loads the `main.py` which is contains the website https://nicegui.io.
+The configuration is written in the `docker-compose.yml` file and automatically loads the `main.py` which contains the website https://nicegui.io.
 Every code change will result in reloading the content.
 We use Python 3.7 as a base to ensure compatibility (see `development.dockerfile`).
 
@@ -74,7 +75,7 @@ Then the formatting rules are applied whenever you save a file.
 
 ## Running tests
 
-Our tests are build with pytest and require python-selenium with Chrome driver.
+Our tests are built with pytest and require python-selenium with ChromeDriver.
 See [tests/README.md](https://github.com/zauberzeug/nicegui/blob/main/tests/README.md) for detailed installation instructions and more infos about the test infrastructure and tricks for daily usage.
 
 Before submitting a pull request, please make sure that all tests are passing.
