@@ -1,8 +1,9 @@
-from typing import Literal, Optional
+from typing import Optional
+
+from typing_extensions import Literal
 
 from ..dependencies import register_component
 from ..element import Element
-from ..functions.javascript import run_javascript
 
 register_component('q_table', __file__, 'qtable.js')
 
@@ -22,7 +23,23 @@ class QTable(Element):
             'dense': True,
         },
     ):
-        """QTable
+        """Quasar Table
+
+        A component that allows you to display data in a tabular manner.
+
+        :param columns: A list of column objects.
+        :param rows: A list of row objects.
+        :param title: The title of the table.
+        :param selection_mode: defines the selection behavior.
+            'single': only one cell can be selected at a time.
+            'multiple': more than one cell can be selected at a time.
+            'none': no cells can be selected.
+        :param selection_key: A unique key used to identify a row.
+        :param filter_config: A dict of config options for filter/search text-input.
+
+        API to get the selected data in the table:
+        :property selected: A list of selected rows.
+            Each row is represented by a dict.
         """
 
         super().__init__('q_table')
@@ -48,6 +65,3 @@ class QTable(Element):
 
     def handle_selected_event(self, data):
         self.selected = data['args']
-
-    async def __dump__(self):
-        await run_javascript(f'console.info(getElement({self.id}))', respond=False)
