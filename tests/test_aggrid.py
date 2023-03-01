@@ -7,7 +7,7 @@ from .screen import Screen
 
 
 def test_update_table(screen: Screen):
-    table = ui.table({
+    grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}, {'field': 'age'}],
         'rowData': [{'name': 'Alice', 'age': 18}],
     })
@@ -18,25 +18,25 @@ def test_update_table(screen: Screen):
     screen.should_contain('Alice')
     screen.should_contain('18')
 
-    table.options['rowData'][0]['age'] = 42
-    table.update()
+    grid.options['rowData'][0]['age'] = 42
+    grid.update()
     screen.should_contain('42')
 
 
 def test_add_row(screen: Screen):
-    table = ui.table({
+    grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}, {'field': 'age'}],
         'rowData': [],
     })
-    ui.button('Update', on_click=table.update)
+    ui.button('Update', on_click=grid.update)
 
     screen.open('/')
-    table.options['rowData'].append({'name': 'Alice', 'age': 18})
+    grid.options['rowData'].append({'name': 'Alice', 'age': 18})
     screen.click('Update')
     screen.wait(0.5)
     screen.should_contain('Alice')
     screen.should_contain('18')
-    table.options['rowData'].append({'name': 'Bob', 'age': 21})
+    grid.options['rowData'].append({'name': 'Bob', 'age': 21})
     screen.click('Update')
     screen.wait(0.5)
     screen.should_contain('Alice')
@@ -46,11 +46,11 @@ def test_add_row(screen: Screen):
 
 
 def test_click_cell(screen: Screen):
-    table = ui.table({
+    grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}, {'field': 'age'}],
         'rowData': [{'name': 'Alice', 'age': 18}],
     })
-    table.on('cellClicked', lambda msg: ui.label(f'{msg["args"]["data"]["name"]} has been clicked!'))
+    grid.on('cellClicked', lambda msg: ui.label(f'{msg["args"]["data"]["name"]} has been clicked!'))
 
     screen.open('/')
     screen.click('Alice')
@@ -58,7 +58,7 @@ def test_click_cell(screen: Screen):
 
 
 def test_html_columns(screen: Screen):
-    ui.table({
+    ui.aggrid({
         'columnDefs': [{'field': 'name'}, {'field': 'age'}],
         'rowData': [{'name': '<span class="text-bold">Alice</span>', 'age': 18}],
     }, html_columns=[0])
@@ -70,12 +70,12 @@ def test_html_columns(screen: Screen):
 
 
 def test_call_api_method_with_argument(screen: Screen):
-    table = ui.table({
+    grid = ui.aggrid({
         'columnDefs': [{'field': 'name', 'filter': True}],
         'rowData': [{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
     })
     filter = {'name': {'filterType': 'text', 'type': 'equals', 'filter': 'Alice'}}
-    ui.button('Filter', on_click=lambda: table.call_api_method('setFilterModel', filter))
+    ui.button('Filter', on_click=lambda: grid.call_api_method('setFilterModel', filter))
 
     screen.open('/')
     screen.should_contain('Alice')
@@ -88,18 +88,18 @@ def test_call_api_method_with_argument(screen: Screen):
 
 
 def test_get_selected_rows(screen: Screen):
-    table = ui.table({
+    grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}],
         'rowData': [{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
         'rowSelection': 'multiple',
     })
 
     async def get_selected_rows():
-        ui.label(str(await table.get_selected_rows()))
+        ui.label(str(await grid.get_selected_rows()))
     ui.button('Get selected rows', on_click=get_selected_rows)
 
     async def get_selected_row():
-        ui.label(str(await table.get_selected_row()))
+        ui.label(str(await grid.get_selected_row()))
     ui.button('Get selected row', on_click=get_selected_row)
 
     screen.open('/')

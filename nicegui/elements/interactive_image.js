@@ -55,6 +55,12 @@ export default {
           mouse_event_type: type,
           image_x: (e.offsetX * e.target.naturalWidth) / e.target.clientWidth,
           image_y: (e.offsetY * e.target.naturalHeight) / e.target.clientHeight,
+          button: e.button,
+          buttons: e.buttons,
+          altKey: e.altKey,
+          ctrlKey: e.ctrlKey,
+          metaKey: e.metaKey,
+          shiftKey: e.shiftKey,
         });
       });
     }

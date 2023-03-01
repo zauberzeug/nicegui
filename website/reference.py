@@ -263,9 +263,9 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
     h3('Data Elements')
 
-    @example(ui.table, menu)
+    @example(ui.aggrid, menu)
     def table_example():
-        table = ui.table({
+        grid = ui.aggrid({
             'columnDefs': [
                 {'headerName': 'Name', 'field': 'name'},
                 {'headerName': 'Age', 'field': 'age'},
@@ -279,11 +279,11 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         }).classes('max-h-40')
 
         def update():
-            table.options['rowData'][0]['age'] += 1
-            table.update()
+            grid.options['rowData'][0]['age'] += 1
+            grid.update()
 
         ui.button('Update', on_click=update)
-        ui.button('Select all', on_click=lambda: table.call_api_method('selectAll'))
+        ui.button('Select all', on_click=lambda: grid.call_api_method('selectAll'))
 
     @example(ui.chart, menu)
     def chart_example():

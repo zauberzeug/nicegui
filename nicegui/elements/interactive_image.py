@@ -43,6 +43,12 @@ class InteractiveImage(SourceElement, ContentElement):
                 type=msg['args'].get('mouse_event_type'),
                 image_x=msg['args'].get('image_x'),
                 image_y=msg['args'].get('image_y'),
+                button=msg['args'].get('button', 0),
+                buttons=msg['args'].get('buttons', 0),
+                alt=msg['args'].get('alt', False),
+                ctrl=msg['args'].get('ctrl', False),
+                meta=msg['args'].get('meta', False),
+                shift=msg['args'].get('shift', False),
             )
             return handle_event(on_mouse, arguments)
         self.on('mouse', handle_mouse)
