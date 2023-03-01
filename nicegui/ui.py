@@ -3,6 +3,7 @@ import os
 from .element import Element as element
 from .elements.audio import Audio as audio
 from .elements.avatar import Avatar as avatar
+from .elements.background import Background as background
 from .elements.badge import Badge as badge
 from .elements.button import Button as button
 from .elements.card import Card as card
