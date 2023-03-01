@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from nicegui import json
+from nicegui.json.fastapi import NiceGUIJSONResponse
 from nicegui.socket_manager import SocketManager
 
 from . import background_tasks, binding, globals, outbox
@@ -21,7 +22,7 @@ from .error import error_content
 from .helpers import safe_invoke
 from .page import page
 
-globals.app = app = App(default_response_class=json.NiceGUIJSONResponse)
+globals.app = app = App(default_response_class=NiceGUIJSONResponse)
 socket_manager = SocketManager(app=app, json=json)  # custom json module (wraps orjson)
 globals.sio = sio = app.sio
 

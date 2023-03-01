@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Dict, Union
 
 import plotly.graph_objects as go
 
@@ -10,10 +10,11 @@ register_component('plotly', __file__, 'plotly.vue', [], ['lib/plotly.min.js'])
 
 class Plotly(Element):
 
-    def __init__(self, figure: Union[dict, go.Figure]) -> None:
+    def __init__(self, figure: Union[Dict, go.Figure]) -> None:
         """Plotly Element
 
-        Renders a Plotly chart. There are two ways to pass a Plotly figure for rendering, see parameter `figure`:
+        Renders a Plotly chart.
+        There are two ways to pass a Plotly figure for rendering, see parameter `figure`:
 
         * Pass a `go.Figure` object, see https://plotly.com/python/
 
@@ -30,10 +31,8 @@ class Plotly(Element):
         self._props['lib'] = [d.import_path for d in js_dependencies.values() if d.path.name == 'plotly.min.js'][0]
         self.update()
 
-    def update_figure(self, figure: Union[dict, go.Figure]):
-        """
-        Overrides figure instance of this Plotly chart and updates chart on client side.
-        """
+    def update_figure(self, figure: Union[Dict, go.Figure]):
+        """Overrides figure instance of this Plotly chart and updates chart on client side."""
         self.figure = figure
         self.update()
 
@@ -41,7 +40,7 @@ class Plotly(Element):
         self._props['options'] = self._get_figure_json()
         self.run_method('update', self._props['options'])
 
-    def _get_figure_json(self) -> dict:
+    def _get_figure_json(self) -> Dict:
         if isinstance(self.figure, go.Figure):
             # convert go.Figure to dict object which is directly JSON serializable
             # orjson supports numpy array serialization
@@ -51,4 +50,4 @@ class Plotly(Element):
             # already a dict object with keys: data, layout, config (optional)
             return self.figure
 
-        raise ValueError(f"Plotly figure is of unknown type '{self.figure.__class__.__name__}'.")
+        raise ValueError(f'Plotly figure is of unknown type "{self.figure.__class__.__name__}".')

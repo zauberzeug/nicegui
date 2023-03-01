@@ -11,10 +11,9 @@ export default {
         Plotly.newPlot(this.$el.id, this.options.data, this.options.layout, this.options.config);
 
         // register resize observer on parent div to auto-resize Plotly chart
-        let doResize = () => {
+        const doResize = () => {
           // only call resize if actually visible, otherwise error in Plotly.js internals
           if (this.isHidden(this.$el)) return;
-          // console.log("Resize plot");
           Plotly.Plots.resize(this.$el);
         };
 
@@ -37,6 +36,8 @@ export default {
 
   methods: {
     isHidden(gd) {
+      // matches plotly's implementation, as it needs to in order
+      // to only resize the plot when plotly is rendering it.
       // https://github.com/plotly/plotly.js/blob/e1d94b7afad94152db004b3bd5e6060010fbcc28/src/lib/index.js#L1278
       var display = window.getComputedStyle(gd).display;
       return !display || display === "none";
@@ -48,7 +49,6 @@ export default {
     },
 
     update(options) {
-      console.log("UPDATE called");
       // ensure Plotly imported, otherwise first plot will fail in update call
       // because library not loaded yet
       this.ensureLibLoaded().then(() => {
