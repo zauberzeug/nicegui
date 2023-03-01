@@ -4,15 +4,15 @@ from ..dependencies import register_component
 from ..element import Element
 from ..functions.javascript import run_javascript
 
-register_component('table', __file__, 'table.js', ['lib/ag-grid-community.min.js'])
+register_component('aggrid', __file__, 'aggrid.js', ['lib/ag-grid-community.min.js'])
 
 
-class Table(Element):
+class AgGrid(Element):
 
     def __init__(self, options: Dict, *, html_columns: List[int] = [], theme: str = 'balham') -> None:
-        """Table
+        """AG Grid
 
-        An element to create a table using `AG Grid <https://www.ag-grid.com/>`_.
+        An element to create a grid using `AG Grid <https://www.ag-grid.com/>`_.
 
         The `call_api_method` method can be used to call an AG Grid API method.
 
@@ -20,7 +20,7 @@ class Table(Element):
         :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
         :param theme: AG Grid theme (default: 'balham')
         """
-        super().__init__('table')
+        super().__init__('aggrid')
         self._props['options'] = options
         self._props['html_columns'] = html_columns
         self._classes = [f'ag-theme-{theme}', 'w-full', 'h-64']
@@ -46,7 +46,7 @@ class Table(Element):
     async def get_selected_rows(self) -> List[Dict]:
         """Get the currently selected rows.
 
-        This method is especially useful when the table is configured with ``rowSelection: 'multiple'``.
+        This method is especially useful when the grid is configured with ``rowSelection: 'multiple'``.
 
         See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows>`_ for more information.
 
@@ -57,7 +57,7 @@ class Table(Element):
     async def get_selected_row(self) -> Optional[Dict]:
         """Get the single currently selected row.
 
-        This method is especially useful when the table is configured with ``rowSelection: 'single'``.
+        This method is especially useful when the grid is configured with ``rowSelection: 'single'``.
 
         :return: row data of the first selection if any row is selected, otherwise `None`
         """

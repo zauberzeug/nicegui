@@ -2,6 +2,7 @@ import os
 
 from .deprecation import deprecated
 from .element import Element as element
+from .elements.aggrid import AgGrid as aggrid
 from .elements.audio import Audio as audio
 from .elements.avatar import Avatar as avatar
 from .elements.badge import Badge as badge
@@ -45,7 +46,6 @@ from .elements.separator import Separator as separator
 from .elements.slider import Slider as slider
 from .elements.spinner import Spinner as spinner
 from .elements.switch import Switch as switch
-from .elements.table import Table as table
 from .elements.tabs import Tab as tab
 from .elements.tabs import TabPanel as tab_panel
 from .elements.tabs import TabPanels as tab_panels
@@ -73,7 +73,9 @@ from .page_layout import RightDrawer as right_drawer
 from .run import run
 from .run_with import run_with
 
+table = deprecated(aggrid, 'ui.table', 'ui.aggrid', 370)
+
 if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
     from .elements.line_plot import LinePlot as line_plot
     from .elements.pyplot import Pyplot as pyplot
-    plot = deprecated(pyplot, 'ui.plot', 'ui.pyplot', 370)
+    plot = deprecated(pyplot, 'ui.plot', 'ui.pyplot', 317)
