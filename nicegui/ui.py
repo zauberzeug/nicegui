@@ -1,5 +1,6 @@
 import os
 
+from .deprecation import deprecated
 from .element import Element as element
 from .elements.audio import Audio as audio
 from .elements.avatar import Avatar as avatar
@@ -74,5 +75,5 @@ from .run_with import run_with
 
 if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
     from .elements.line_plot import LinePlot as line_plot
-    from .elements.pyplot import Pyplot as plot  # NOTE: deprecated
     from .elements.pyplot import Pyplot as pyplot
+    plot = deprecated(pyplot, 'ui.plot', 'ui.pyplot', 370)
