@@ -1,9 +1,9 @@
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from .. import globals, outbox
 
 
-def notify(message: str, *,
+def notify(message: Any, *,
            position: str = 'bottom',
            closeBtn: Union[bool, str] = False,
            type: Optional[str] = None,
@@ -23,4 +23,5 @@ def notify(message: str, *,
     Note: You can pass additional keyword arguments according to `Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>`_.
     """
     options = {key: value for key, value in locals().items() if not key.startswith('_') and value is not None}
+    options['message'] = str(message)
     outbox.enqueue_message('notify', options, globals.get_client().id)
