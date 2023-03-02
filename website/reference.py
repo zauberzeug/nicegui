@@ -134,6 +134,12 @@ def create_full(menu: ui.element) -> None:
                  validation={'Input too long': lambda value: len(value) < 20})
         result = ui.label()
 
+    @example(ui.password, menu)
+    def password_example():
+        ui.password(label='Password', placeholder='start typing', validation={
+                    'Input too long': lambda value: len(value) < 20,
+                    'Input too short': lambda value: len(value) > 8, })
+
     @example(ui.textarea, menu)
     def textarea_example():
         ui.textarea(label='Text', placeholder='start typing',
