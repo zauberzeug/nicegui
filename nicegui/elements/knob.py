@@ -6,6 +6,7 @@ from ..ui import icon
 
 
 class Knob(Element):
+
     def __init__(
         self,
         color: str = "primary",
