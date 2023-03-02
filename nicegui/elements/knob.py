@@ -1,11 +1,12 @@
 from typing import Union
 
 from ..dependencies import register_component
-from ..element import Element
-from ..ui import icon
+from .icon import Icon
+from .label import Label
+from .mixins.value_element import ValueElement
 
 
-class Knob(Element):
+class Knob(ValueElement):
 
     def __init__(
         self,
@@ -13,6 +14,7 @@ class Knob(Element):
         center_color: str = 'white',
         track_color: str = 'secondary',
         size: str = '',
+        show_value: Union[bool, None] = False,
         icon_name: Union[str, None] = None,
         icon_color: str = 'black',
         icon_size: str = '1rem',
@@ -30,15 +32,19 @@ class Knob(Element):
         :param icon_color: color name for the icon in the center of the component, examples: primary, teal-10.
         :param icon_size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem.
         """
-        super().__init__('q-knob')
+        super().__init__(tag='q-knob', value=100, on_value_change=None)
 
         self._props['color'] = color
         self._props['center-color'] = center_color
         self._props['track-color'] = track_color
         self._props['size'] = size
 
-        if icon_name is not None:
-            self._props['show-value'] = True  # FIXME: make it possible to show numerical values, in addition to icons
-
+        if show_value:
+            self._props['show-value'] = True
             with self:
-                icon(icon_name)
+                Label('0').bind_text_from(self, 'value')
+
+        if icon_name:
+            self._props['show-value'] = True
+            with self:
+                self.icon = Icon(icon_name)
