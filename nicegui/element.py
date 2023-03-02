@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import json
 import re
 from abc import ABC
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Self
+
+from nicegui import json
 
 from . import binding, events, globals, outbox
 from .elements.mixins.visibility import Visibility
