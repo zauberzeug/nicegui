@@ -16,7 +16,7 @@ class Knob(Element):
         icon_name: Union[str, None] = None,
         icon_color: str = 'black',
         icon_size: str = '1rem',
-    ):
+    ) -> None:
         """Knob
 
         This element is based on Quasar's `QKnob <https://quasar.dev/vue-components/knob>`_ component.
