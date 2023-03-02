@@ -1,8 +1,8 @@
+from typing import Union
+
 from ..dependencies import register_component
 from ..element import Element
 from ..ui import icon
-
-# register_component("knob", __file__, "knob.js")
 
 
 class Knob(Element):
@@ -13,7 +13,7 @@ class Knob(Element):
         center_color: str = "white",
         track_color: str = "secondary",
         size: str = "",
-        icon_name: str | None = None,
+        icon_name: Union[str, None] = None,
         icon_color: str = "black",
         icon_size: str = "1rem",
     ):
