@@ -155,6 +155,13 @@ def create_full(menu: ui.element) -> None:
                   on_change=lambda e: result.set_text(f'you entered: {e.value}'))
         result = ui.label()
 
+    @example(ui.knob, menu)
+    def knob_example():
+        knob = ui.knob(0.3, show_value=True)
+
+        with ui.knob(color='orange', track_color='grey-2').bind_value(knob, 'value'):
+            ui.icon('volume_up')
+
     @example(ui.color_input, menu)
     def color_input_example():
         label = ui.label('Change my color!')
