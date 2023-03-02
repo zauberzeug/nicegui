@@ -148,7 +148,7 @@ def create_full(menu: ui.element) -> None:
 
     @example(ui.knob, menu)
     def knob_example():
-        primary = ui.knob()
+        primary = ui.knob(value=50)
 
         (
             ui.knob(show_value=True)
