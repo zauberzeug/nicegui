@@ -10,6 +10,7 @@ class Knob(ValueElement):
 
     def __init__(
         self,
+        value: float = 100.0,
         color: str = 'primary',
         center_color: str = 'white',
         track_color: str = 'secondary',
@@ -24,6 +25,7 @@ class Knob(ValueElement):
         This element is based on Quasar's `QKnob <https://quasar.dev/vue-components/knob>`_ component.
         The element is used to take a number input from the user through mouse/touch panning.
 
+        :param value: the initial value of the field (from 0.0 to 100.0)
         :param color: color name for component, examples: primary, teal-10.
         :param center_color: color name for the center part of the component, examples: primary, teal-10.
         :param track_color: color name for the track of the component, examples: primary, teal-10.
@@ -32,7 +34,7 @@ class Knob(ValueElement):
         :param icon_color: color name for the icon in the center of the component, examples: primary, teal-10.
         :param icon_size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem.
         """
-        super().__init__(tag='q-knob', value=100, on_value_change=None)
+        super().__init__(tag='q-knob', value=value, on_value_change=None)
 
         self._props['color'] = color
         self._props['center-color'] = center_color
@@ -42,9 +44,11 @@ class Knob(ValueElement):
         if show_value:
             self._props['show-value'] = True
             with self:
-                Label('0').bind_text_from(self, 'value')
+                self.label = Label('0').bind_text_from(self, 'value')
 
         if icon_name:
             self._props['show-value'] = True
             with self:
                 self.icon = Icon(icon_name)
+                self.icon._props['size'] = icon_size
+                self.icon._props['color'] = icon_color

@@ -148,9 +148,15 @@ def create_full(menu: ui.element) -> None:
 
     @example(ui.knob, menu)
     def knob_example():
-        ui.knob()
-        ui.knob(show_value=True)
-        ui.knob(icon_name="volume_up")
+        primary = ui.knob()
+
+        (
+            ui.knob(show_value=True)
+            .bind_value(primary, 'value')
+            .label.classes('text-teal')
+        )
+
+        ui.knob(icon_name="volume_up").bind_value(primary, 'value')
 
     @example(ui.color_input, menu)
     def color_input_example():
