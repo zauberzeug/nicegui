@@ -8,7 +8,7 @@ from . import globals
 
 T = TypeVar('T')
 
-name_supported = sys.version_info[1] >= 8
+name_supported = sys.version_info[1] >= 9
 
 logger = logging.getLogger(__name__)
 
