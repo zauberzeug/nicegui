@@ -19,7 +19,7 @@ matplotlib = [
     { version = "^3.6.0", markers = "python_version ~= '3.11.0'"},
 ]
 fastapi = "^0.92"
-fastapi-socketio = "^0.0.9"
+fastapi-socketio = "^0.0.10"
 vbuild = "^0.8.1"
 watchfiles = "^0.18.1"
 jinja2 = "^3.1.2"

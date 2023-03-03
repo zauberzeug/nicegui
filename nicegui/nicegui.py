@@ -8,10 +8,10 @@ from fastapi import HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
+from fastapi_socketio import SocketManager
 
 from nicegui import json
 from nicegui.json.fastapi import NiceGUIJSONResponse
-from nicegui.socket_manager import SocketManager
 
 from . import background_tasks, binding, globals, outbox
 from .app import App
