@@ -47,7 +47,7 @@ def apply_tailwind(html: str) -> str:
         '<a': '<a class="underline text-blue-600 hover:text-blue-800 visited:text-purple-600"',
         '<ul': '<ul class="list-disc ml-6"',
         '<p>': '<p class="mb-2">',
-        '<div\ class="codehilite">': '<div class="codehilite mb-2 p-2">',
+        r'<div\ class="codehilite">': '<div class="codehilite mb-2 p-2">',
         '<code': '<code style="background-color: transparent"',
     }
     pattern = re.compile('|'.join(rep.keys()))
