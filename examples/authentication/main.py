@@ -23,12 +23,17 @@ users = [('user1', 'pass1'), ('user2', 'pass2')]
 session_info: Dict[str, Dict] = {}
 
 
+def is_authenticated(request: Request) -> bool:
+    return session_info.get(request.session.get('id'), {}).get('authenticated', False)
+
+
 @ui.page('/')
 def main_page(request: Request) -> None:
     if is_authenticated(request):
         session = session_info[request.session['id']]
-        with ui.row().classes('absolute-center'):
+        with ui.column().classes('absolute-center items-center'):
             ui.label(f'Hello {session["username"]}!').classes('text-2xl')
+            ui.button('', on_click=lambda: ui.open('/logout')).props('outline round icon=logout')
     else:
         return RedirectResponse('/login')
 
@@ -44,14 +49,18 @@ def login(request: Request) -> None:
         ui.button('Log in', on_click=lambda: try_login(request.session['id'], username.value, password.value))
 
 
-def is_authenticated(request: Request) -> bool:
-    return session_info.get(request.session.get('id'), {}).get('authenticated', False)
-
-
 def try_login(session_id: str, username: str, password: str) -> None:
     if (username, password) in users:
         session_info[session_id] = {'username': username, 'authenticated': True}
     ui.open('/')
+
+
+@ui.page('/logout')
+def logout(request: Request) -> None:
+    if is_authenticated(request):
+        session_info.pop(request.session['id'])
+        return RedirectResponse('/login')
+    return RedirectResponse('/')
 
 
 ui.run()
