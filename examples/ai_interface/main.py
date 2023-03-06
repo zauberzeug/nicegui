@@ -18,7 +18,8 @@ async def io_bound(callback: Callable, *args: any, **kwargs: any):
 async def transcribe(e: UploadEventArguments):
     transcription.text = 'Transcribing...'
     model = replicate.models.get('openai/whisper')
-    prediction = await io_bound(model.predict, audio=io.BytesIO(e.content))
+    version = model.versions.get('30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed')
+    prediction = await io_bound(version.predict, audio=io.BytesIO(e.content))
     text = prediction.get('transcription', 'no transcription')
     transcription.set_text(f'result: "{text}"')
 
