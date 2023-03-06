@@ -3,8 +3,8 @@ export default {
   mounted() {
     this.map = L.map(this.$el);
     L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-      }).addTo(this.map);
+      attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+    }).addTo(this.map);
   },
   methods: {
     set_location(latitude, longitude) {
