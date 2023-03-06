@@ -23,7 +23,8 @@ from .helpers import safe_invoke
 from .page import page
 
 globals.app = app = App(default_response_class=NiceGUIJSONResponse)
-socket_manager = SocketManager(app=app, json=json)  # custom json module (wraps orjson)
+# NOTE we use custom json module which wraps orjson
+socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=json)
 globals.sio = sio = app.sio
 
 app.add_middleware(GZipMiddleware)

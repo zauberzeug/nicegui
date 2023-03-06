@@ -112,7 +112,7 @@
           const url = window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
           const extraHeaders = {{ socket_io_js_extra_headers | safe }};
           window.path_prefix = "{{ prefix | safe }}";
-          window.socket = io(url, { path: "{{ prefix | safe }}/ws/socket.io", query, extraHeaders });
+          window.socket = io(url, { path: "{{ prefix | safe }}/_nicegui_ws/socket.io", query, extraHeaders });
           window.socket.on("connect", () => {
             window.socket.emit("handshake", (ok) => {
               if (!ok) window.location.reload();
