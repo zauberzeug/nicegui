@@ -24,4 +24,5 @@ def notify(message: Any, *,
     """
     options = {key: value for key, value in locals().items() if not key.startswith('_') and value is not None}
     options['message'] = str(message)
+    options.update(kwargs)
     outbox.enqueue_message('notify', options, globals.get_client().id)
