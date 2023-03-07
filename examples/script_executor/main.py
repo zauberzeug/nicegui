@@ -7,19 +7,23 @@ from nicegui import background_tasks, ui
 
 
 async def run_command(command: str) -> None:
+    '''Run a command in the background and display the output in the pre-created dialog.'''
     dialog.open()
     result.content = ''
     process = await asyncio.create_subprocess_exec(
         *shlex.split(command),
         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT,
-        cwd=os.path.dirname(os.path.abspath(__file__)))
-    content = ''
+        cwd=os.path.dirname(os.path.abspath(__file__))
+    )
+    # NOTE we need to read the output in chunks, otherwise the process will block
+    output = ''
     while True:
         new = await process.stdout.read(4096)
         if not new:
             break
-        content += new.decode()
-        result.content = f'```\n{content}\n```'
+        output += new.decode()
+        # NOTE the content of the markdown element is replaced every time we have new output
+        result.content = f'```\n{output}\n```'
 
 with ui.dialog() as dialog, ui.card():
     result = ui.markdown()
