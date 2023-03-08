@@ -36,6 +36,11 @@ def logo():
     return FileResponse(svg.PATH / 'logo.png', media_type='image/png')
 
 
+@app.get('/logo_square.png')
+def logo():
+    return FileResponse(svg.PATH / 'logo_square.png', media_type='image/png')
+
+
 # NOTE in our global fly.io deployment we need to make sure that the websocket connects back to the same instance
 fly_instance_id = os.environ.get('FLY_ALLOC_ID', '').split('-')[0]
 if fly_instance_id:
