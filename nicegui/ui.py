@@ -47,14 +47,18 @@ from .elements.separator import Separator as separator
 from .elements.slider import Slider as slider
 from .elements.spinner import Spinner as spinner
 from .elements.switch import Switch as switch
+from .elements.table import Table as table
 from .elements.tabs import Tab as tab
 from .elements.tabs import TabPanel as tab_panel
 from .elements.tabs import TabPanels as tab_panels
 from .elements.tabs import Tabs as tabs
+from .elements.table import Td as td
 from .elements.textarea import Textarea as textarea
+from .elements.table import Th as th
 from .elements.time import Time as time
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
+from .elements.table import Tr as tr
 from .elements.tree import Tree as tree
 from .elements.upload import Upload as upload
 from .elements.video import Video as video
@@ -73,8 +77,6 @@ from .page_layout import PageSticky as page_sticky
 from .page_layout import RightDrawer as right_drawer
 from .run import run
 from .run_with import run_with
-
-table = deprecated(aggrid, 'ui.table', 'ui.aggrid', 370)
 
 if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
     from .elements.line_plot import LinePlot as line_plot
