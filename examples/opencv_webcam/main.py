@@ -8,22 +8,17 @@ from typing import Optional
 
 import cv2
 import numpy as np
-import psutil
 from fastapi import Response
 from icecream import ic
 
-from nicegui import app
-from nicegui import globals as nicegui_globals
-from nicegui import ui
+import nicegui.globals
+from nicegui import app, ui
 
-# we need two executors to schedule IO and CPU intensive tasks with loop.run_in_executor()
+# we need an executor to schedule CPU intensive tasks with loop.run_in_executor()
 process_pool_executor = concurrent.futures.ProcessPoolExecutor()
-thread_pool_executor = concurrent.futures.ThreadPoolExecutor()
-
 # in case you don't have a webcam, this will provide a black placeholder image
 black_1px = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjYGBg+A8AAQQBAHAgZQsAAAAASUVORK5CYII='
 placeholder = Response(content=base64.b64decode(black_1px.encode('ascii')), media_type='image/png')
-
 # OpenCV is used to access the webcam
 video_capture = cv2.VideoCapture(0)
 
@@ -43,8 +38,8 @@ async def grab_video_frame() -> Response:
     loop = asyncio.get_running_loop()
     if not video_capture.isOpened():
         return placeholder
-    # the video_capture.read call is a blocking function, so we run it in a separate thread it to avoid blocking the event loop
-    _, frame = await loop.run_in_executor(thread_pool_executor, video_capture.read)
+    # the video_capture.read call is a blocking function, so we run it in a separate thread (default executor) to avoid blocking the event loop
+    _, frame = await loop.run_in_executor(None, video_capture.read)
     if frame is None:
         return placeholder
     # "convert" is a cpu intensive function, so we run it in a separate process to avoid blocking the event loop and GIL
@@ -60,22 +55,32 @@ video_image = ui.interactive_image().classes('w-full h-full')
 frame_updater = ui.timer(interval=0.1, callback=lambda: video_image.set_source(f'/video/frame?{time.time()}'))
 
 
-def stop_updates(signum, frame):
-    frame_updater.active = False
+async def disconnect():
+    '''Disconnect all clients from current running server.'''
+    for client in nicegui.globals.clients.keys():
+        await app.sio.disconnect(client)
+
+
+def disconnect_clients(signum, frame):
+    # disconnect is async so it must be called from the event loop; we use ui.timer to do so
+    ui.timer(0.1, disconnect, once=True)
+    # delay the default handler to allow the disconnect to complete
     ui.timer(1, lambda: signal.default_int_handler(signum, frame), once=True)
 
 
 async def cleanup():
-    for client in nicegui_globals.clients.keys():
-        await app.sio.disconnect(client)
+    # this prevents ugly stack traces when auto-reloading on code change,
+    # because otherwise disconnected clients try to reconnect to the newly started server.
+    await disconnect()
+    # release the webcam hardware so it can be used by other applications again
     video_capture.release()
-    thread_pool_executor.shutdown()
     # the process pool executor must be shutdown when the app is closed, otherwise the process will not exit
     process_pool_executor.shutdown()
-    await asyncio.sleep(1)
+    # await asyncio.sleep(1)
 
 app.on_shutdown(cleanup)
-
-signal.signal(signal.SIGINT, stop_updates)
+# we also need to disconnect clients when the app is stopped with Ctrl+C,
+# because otherwise they will keep requesting images which lead to unfinished subprocesses blocking the shutdown
+signal.signal(signal.SIGINT, disconnect_clients)
 
 ui.run()
