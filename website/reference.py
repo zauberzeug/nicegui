@@ -271,7 +271,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
     h3('Data Elements')
 
     @example(ui.aggrid, menu)
-    def table_example():
+    def aggrid_example():
         grid = ui.aggrid({
             'columnDefs': [
                 {'headerName': 'Name', 'field': 'name'},
@@ -291,6 +291,22 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         ui.button('Update', on_click=update)
         ui.button('Select all', on_click=lambda: grid.call_api_method('selectAll'))
+
+    @example(ui.table, menu)
+    def table_example():
+
+        fields = [
+            {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
+            {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True, 'align': 'center'},
+        ]
+
+        data = [
+            {'name': 'Alice', 'age': 18},
+            {'name': 'Bob', 'age': 21},
+            {'name': 'Carol'},
+        ]
+
+        ui.table(columns=fields, rows=data, selection='none').props('hide-pagination').classes('w-full')
 
     @example(ui.chart, menu)
     def chart_example():
@@ -346,9 +362,11 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             def turn_off() -> None:
                 line_checkbox.set_value(False)
                 ui.notify('Turning off that line plot to save resources on our live demo server. 😎')
+
             line_checkbox.value = msg['args']
             if line_checkbox.value:
                 ui.timer(10.0, turn_off, once=True)
+
         line_checkbox.on('update:model-value', handle_change)
 
     @example(ui.plotly, menu)
@@ -450,6 +468,7 @@ Alternatively, you can remove individual elements with `remove(element)`, where 
         def add_face():
             with container:
                 ui.icon('face')
+
         add_face()
 
         ui.button('Add', on_click=add_face)
@@ -575,6 +594,7 @@ All three functions also provide `remove` and `replace` parameters in case the p
                 if lazy_clock.text[:8] == new_text[:8]:
                     return
                 lazy_clock.text = new_text
+
             lazy_clock = ui.label()
             ui.timer(interval=0.1, callback=lazy_update)
 
@@ -881,6 +901,7 @@ When NiceGUI is shut down or restarted, all tasks still in execution will be aut
         def handle_connection():
             global dt
             dt = datetime.now()
+
         app.on_connect(handle_connection)
 
         label = ui.label()
@@ -955,6 +976,7 @@ and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mou
             ui.input('G').classes('w-12').on('keydown.space', lambda: ui.notify('You pressed space.'))
             ui.input('H').classes('w-12').on('keydown.y.shift', lambda: ui.notify('You pressed Shift+Y'))
             ui.input('I').classes('w-12').on('keydown.once', lambda: ui.notify('You started typing.'))
+
     h3('Configuration')
 
     @example(ui.run, menu, browser_title='My App')
@@ -988,7 +1010,8 @@ For example you can use this command to start the script `main.py` in the curren
 ''')
 
         with bash_window(classes='max-w-lg w-full h-52'):
-            ui.markdown('```bash\ndocker run -p 80:8080 -v $(pwd)/:/app/ \\\n-d --restart always zauberzeug/nicegui:latest\n```')
+            ui.markdown(
+                '```bash\ndocker run -p 80:8080 -v $(pwd)/:/app/ \\\n-d --restart always zauberzeug/nicegui:latest\n```')
 
         ui.markdown(
             '''The example assumes `main.py` uses the port 8080 in the `ui.run` command (which is the default).
