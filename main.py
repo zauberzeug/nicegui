@@ -244,6 +244,7 @@ The command searches for `main.py` in in your current directory and makes the ap
             example_link('Search as you type', 'using public API of thecocktaildb.com to search for cocktails')
             example_link('Menu and Tabs', 'uses Quasar to create foldable menu and tabs inside a header bar')
             example_link('Trello Cards', 'shows Trello-like cards that can be dragged and dropped into columns')
+            example_link('Table and slots', 'shows how to use a component slot with the example of the QTable component')
 
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
