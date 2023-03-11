@@ -61,7 +61,7 @@ async def disconnect():
         await app.sio.disconnect(client)
 
 
-def disconnect_clients(signum, frame):
+def handle_sigint(signum, frame):
     # disconnect is async so it must be called from the event loop; we use ui.timer to do so
     ui.timer(0.1, disconnect, once=True)
     # delay the default handler to allow the disconnect to complete
@@ -81,6 +81,6 @@ async def cleanup():
 app.on_shutdown(cleanup)
 # we also need to disconnect clients when the app is stopped with Ctrl+C,
 # because otherwise they will keep requesting images which lead to unfinished subprocesses blocking the shutdown
-signal.signal(signal.SIGINT, disconnect_clients)
+signal.signal(signal.SIGINT, handle_sigint)
 
 ui.run()
