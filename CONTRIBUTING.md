@@ -93,6 +93,13 @@ The docstrings are written in restructured-text.
 
 Because it has [numerous benefits](https://nick.groenen.me/notes/one-sentence-per-line/) we write each sentence in a new line.
 
+### Demos
+
+Besides the documentation/reference (see above) we collect useful, but compact demonstrations.
+Each demo should be about one concept.
+Please try to make them as minimal as possible to show what is needed to get some kind of functionality.
+We are happy to merge pull requests with new demos which show new concepts, ideas or interesting use cases.
+
 ## Pull requests
 
 To get started, fork the repository on GitHub, make your changes, and open a pull request (PR) with a detailed description of the changes you've made.
