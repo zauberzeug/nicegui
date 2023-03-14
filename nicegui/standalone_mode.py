@@ -1,6 +1,7 @@
 import multiprocessing
 import os
 import signal
+import socket
 import tempfile
 import time
 from threading import Thread
@@ -26,3 +27,14 @@ def check_shutdown() -> None:
 def activate(fullscreen: bool = False) -> None:
     multiprocessing.Process(target=open_window, args=(shutdown, fullscreen), daemon=False).start()
     Thread(target=check_shutdown, daemon=True).start()
+
+
+def find_open_port(start_port=8000, end_port=9000):
+    for port in range(start_port, end_port+1):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('localhost', port))
+                return port
+        except OSError:
+            pass
+    raise OSError('No open port found')

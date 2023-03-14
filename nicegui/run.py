@@ -9,7 +9,7 @@ import uvicorn
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import desktop_mode, globals
+from . import globals, standalone_mode
 
 
 def run(*,
@@ -21,7 +21,7 @@ def run(*,
         dark: Optional[bool] = False,
         binding_refresh_interval: float = 0.1,
         show: bool = True,
-        desktop: bool = False,
+        standalone: bool = False,
         fullscreen: bool = False,
         reload: bool = True,
         uvicorn_logging_level: str = 'warning',
@@ -44,6 +44,8 @@ def run(*,
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param show: automatically open the UI in a browser tab (default: `True`)
+    :param standalone: open the UI in a standalone window (default: `False`, overrides `show`)
+    :param fullscreen: open the UI in a fullscreen, standalone window (default: `False`, overrides `show` and `standalone`)
     :param reload: automatically reload the UI on file changes (default: `True`)
     :param uvicorn_logging_level: logging level for uvicorn server (default: `'warning'`)
     :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only)
@@ -56,7 +58,8 @@ def run(*,
     '''
     globals.ui_run_has_been_called = True
     globals.host = host
-    globals.port = port
+    # NOTE when running standalone, we search for an open port to make sure we don't conflict with other apps
+    globals.port = standalone_mode.find_open_port() if standalone or fullscreen else port
     globals.reload = reload
     globals.title = title
     globals.viewport = viewport
@@ -69,8 +72,8 @@ def run(*,
     if multiprocessing.current_process().name != 'MainProcess':
         return
 
-    if desktop or fullscreen:
-        desktop_mode.activate(fullscreen)
+    if standalone or fullscreen:
+        standalone_mode.activate(fullscreen)
     elif show:
         webbrowser.open(f'http://{host if host != "0.0.0.0" else "127.0.0.1"}:{port}/')
 
