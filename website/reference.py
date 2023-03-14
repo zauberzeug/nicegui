@@ -981,10 +981,11 @@ You can set the following environment variables to configure NiceGUI:
         add_markdown_with_headline('''#### Server Hosting
 
 To deploy your NiceGUI app on a server, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your cloud infrastructure.
-You can either install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/)
-or use our [pre-built multi-arch Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
+You can for example just install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) and use systemd or similar service to start the main script.
+In most cases, you will set the port to 80 (or 443 if you want to use HTTPS) with the `ui.run` command to make it easy accessible from the outside.
 
-For example you can use this command to start the script `main.py` in the current directory on port 80:
+An convenient alternative is the use of our [pre-built multi-arch Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
+With this command you can launch the script `main.py` in the current directory on the public port 80:
 ''')
 
         with bash_window(classes='max-w-lg w-full h-52'):
