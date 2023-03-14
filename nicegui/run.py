@@ -44,7 +44,7 @@ def run(*,
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param show: automatically open the UI in a browser tab (default: `True`)
-    :param standalone: open the UI in a standalone window (default: `False`, accepts size as tuple or True (800, 600), overrules `show` parameter, automatically finds an open port)
+    :param standalone: open the UI in a standalone window (default: `False`, accepts size as tuple or True (800, 600), deactivates `show`, automatically finds an open port)
     :param fullscreen: open the UI in a fullscreen, standalone window (default: `False`, also activates `standalone`)
     :param reload: automatically reload the UI on file changes (default: `True`)
     :param uvicorn_logging_level: logging level for uvicorn server (default: `'warning'`)
@@ -57,9 +57,15 @@ def run(*,
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     '''
     globals.ui_run_has_been_called = True
+
+    if fullscreen:
+        standalone = True
+    if standalone:
+        port = standalone_mode.find_open_port()  # NOTE search for open port to avoid conflict with other apps
+        show = False
+
     globals.host = host
-    # NOTE when running standalone, we search for an open port to make sure we don't conflict with other apps
-    globals.port = standalone_mode.find_open_port() if standalone or fullscreen else port
+    globals.port = port
     globals.reload = reload
     globals.title = title
     globals.viewport = viewport
@@ -72,9 +78,11 @@ def run(*,
     if multiprocessing.current_process().name != 'MainProcess':
         return
 
-    if standalone or fullscreen:
-        standalone_mode.activate(fullscreen, standalone)
-    elif show:
+    if standalone:
+        width, height = (800, 600) if standalone is True else standalone
+        standalone_mode.activate(f'http://localhost:{port}', title, width, height, fullscreen)
+
+    if show:
         webbrowser.open(f'http://{host if host != "0.0.0.0" else "127.0.0.1"}:{port}/')
 
     def split_args(args: str) -> List[str]:
