@@ -46,7 +46,7 @@ strategy = "canary"
 
   [[services.http_checks]]
     interval = "20s"
-    grace_period = "60s"
+    grace_period = "2m"
     method = "get"
     path = "/"
     protocol = "http"
