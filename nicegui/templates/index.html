@@ -75,11 +75,11 @@
             const rendered = [];
             if (data.template) {
               rendered.push(Vue.h({
-                props: { props: { type: Object, default: {}} },
+                props: { props: { type: Object, default: {} } },
                 template: data.template,
               }, {
                 props: props
-              }))
+              }));
             }
             const ids = ('ids' in data) ? data.ids : data;
             const children = ids.map(id => renderRecursively(elements, id));

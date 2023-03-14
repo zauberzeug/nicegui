@@ -1,4 +1,6 @@
-from typing import Optional, TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
+
+from typing_extensions import Self
 
 from . import globals
 
@@ -11,13 +13,13 @@ class Slot:
     def __init__(self, parent: 'Element', name: str, template: Optional[str] = None) -> None:
         self.name = name
         self.parent = parent
+        self.template = template
         self.children: List['Element'] = []
-        self.template: str = template
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         globals.get_slot_stack().append(self)
         return self
 
-    def __exit__(self, *_):
+    def __exit__(self, *_) -> None:
         globals.get_slot_stack().pop()
         globals.prune_slot_stack()

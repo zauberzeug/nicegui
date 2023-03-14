@@ -58,7 +58,7 @@ class Element(ABC, Visibility):
         """Add a slot to the element.
 
         :param name: name of the slot
-        :param template: vueJS template of the slot
+        :param template: Vue template of the slot
         :return: the slot
         """
         self.slots[name] = Slot(self, name, template)
@@ -91,7 +91,10 @@ class Element(ABC, Visibility):
         return events
 
     def _collect_slot_dict(self) -> Dict[str, List[int]]:
-        return {name: {'template': slot.template, 'ids': [child.id for child in slot.children]} for name, slot in self.slots.items()}
+        return {
+            name: {'template': slot.template, 'ids': [child.id for child in slot.children]}
+            for name, slot in self.slots.items()
+        }
 
     def _to_dict(self, *keys: str) -> Dict:
         if not keys:

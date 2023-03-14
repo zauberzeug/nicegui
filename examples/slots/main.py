@@ -5,7 +5,7 @@ with ui.tree([
     {'id': 'numbers', 'icon': 'tag', 'children': [{'id': '1'}, {'id': '2'}]},
     {'id': 'letters', 'icon': 'text_fields', 'children': [{'id': 'A'}, {'id': 'B'}]},
 ], label_key='id', on_select=lambda e: ui.notify(e.value)) as tree:
-    tree.add_slot('default-header', '''
+    tree.add_slot('default-header', r'''
         <div class="row items-center">
             <q-icon :name="props.node.icon || 'share'" color="orange" size="28px" class="q-mr-sm" />
             <div class="text-weight-bold text-primary">{{ props.node.id }}</div>
