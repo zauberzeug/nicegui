@@ -70,12 +70,24 @@
           props[event_name] = handler;
         });
         const slots = {};
-        Object.entries(element.slots).forEach(([name, ids]) => {
-          const children = ids.map(id => renderRecursively(elements, id));
-          if (name == 'default' && element.text) {
-            children.unshift(element.text);
+        Object.entries(element.slots).forEach(([name, data]) => {
+          slots[name] = (props) => {
+            const rendered = [];
+            if (data.template) {
+              rendered.push(Vue.h({
+                props: { props: { type: Object, default: {}} },
+                template: data.template,
+              }, {
+                props: props
+              }))
+            }
+            const ids = ('ids' in data) ? data.ids : data;
+            const children = ids.map(id => renderRecursively(elements, id));
+            if (name === 'default' && element.text) {
+              children.unshift(element.text);
+            }
+            return [ ...rendered, ...children]
           }
-          slots[name] = () => children;
         });
         return Vue.h(Vue.resolveComponent(element.tag), props, slots);
       }

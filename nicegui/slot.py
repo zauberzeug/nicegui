@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List
+from typing import Optional, TYPE_CHECKING, List
 
 from . import globals
 
@@ -8,10 +8,11 @@ if TYPE_CHECKING:
 
 class Slot:
 
-    def __init__(self, parent: 'Element', name: str) -> None:
+    def __init__(self, parent: 'Element', name: str, template: Optional[str] = None) -> None:
         self.name = name
         self.parent = parent
         self.children: List['Element'] = []
+        self.template: str = template
 
     def __enter__(self):
         globals.get_slot_stack().append(self)

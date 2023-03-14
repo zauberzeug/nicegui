@@ -54,13 +54,14 @@ class Element(ABC, Visibility):
         if self.parent_slot:
             outbox.enqueue_update(self.parent_slot.parent)
 
-    def add_slot(self, name: str) -> Slot:
+    def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
 
         :param name: name of the slot
+        :param template: vueJS template of the slot
         :return: the slot
         """
-        self.slots[name] = Slot(self, name)
+        self.slots[name] = Slot(self, name, template)
         return self.slots[name]
 
     def __enter__(self) -> Self:
@@ -90,7 +91,7 @@ class Element(ABC, Visibility):
         return events
 
     def _collect_slot_dict(self) -> Dict[str, List[int]]:
-        return {name: [child.id for child in slot.children] for name, slot in self.slots.items()}
+        return {name: {'template': slot.template, 'ids': [child.id for child in slot.children]} for name, slot in self.slots.items()}
 
     def _to_dict(self, *keys: str) -> Dict:
         if not keys:
