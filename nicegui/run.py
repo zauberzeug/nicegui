@@ -9,7 +9,7 @@ import uvicorn
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import globals
+from . import desktop_mode, globals
 
 
 def run(*,
@@ -21,6 +21,8 @@ def run(*,
         dark: Optional[bool] = False,
         binding_refresh_interval: float = 0.1,
         show: bool = True,
+        desktop: bool = False,
+        fullscreen: bool = False,
         reload: bool = True,
         uvicorn_logging_level: str = 'warning',
         uvicorn_reload_dirs: str = '.',
@@ -67,7 +69,9 @@ def run(*,
     if multiprocessing.current_process().name != 'MainProcess':
         return
 
-    if show:
+    if desktop or fullscreen:
+        desktop_mode.activate(fullscreen)
+    elif show:
         webbrowser.open(f'http://{host if host != "0.0.0.0" else "127.0.0.1"}:{port}/')
 
     def split_args(args: str) -> List[str]:
