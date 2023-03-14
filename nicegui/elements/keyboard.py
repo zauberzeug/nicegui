@@ -1,4 +1,6 @@
-from typing import Callable, Dict
+from typing import Callable, Dict, List
+
+from typing_extensions import Literal
 
 from ..binding import BindableProperty
 from ..dependencies import register_component
@@ -11,21 +13,27 @@ register_component('keyboard', __file__, 'keyboard.js')
 class Keyboard(Element):
     active = BindableProperty()
 
-    def __init__(self, on_key: Callable, *, active: bool = True, repeating: bool = True) -> None:
-        """
-        Keyboard
+    def __init__(self,
+                 on_key: Callable, *,
+                 active: bool = True,
+                 repeating: bool = True,
+                 ignore: List[Literal['input', 'select', 'button', 'textarea']] = ['input', 'select', 'button', 'textarea'],
+                 ) -> None:
+        """Keyboard
 
         Adds global keyboard event tracking.
 
         :param on_key: callback to be executed when keyboard events occur.
         :param active: boolean flag indicating whether the callback should be executed or not (default: `True`)
         :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: `True`)
+        :param ignore: ignore keys when one of these element types is focussed (default: `['input', 'select', 'button', 'textarea']`)
         """
         super().__init__('keyboard')
         self.key_handler = on_key
         self.active = active
         self._props['events'] = ['keydown', 'keyup']
         self._props['repeating'] = repeating
+        self._props['ignore'] = ignore
         self.on('key', self.handle_key)
 
     def handle_key(self, msg: Dict) -> None:
