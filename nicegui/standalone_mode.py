@@ -5,14 +5,23 @@ import socket
 import tempfile
 import time
 from threading import Thread
+from typing import Tuple, Union
 
 import webview
 
 shutdown = multiprocessing.Event()
 
 
-def open_window(event, fullscreen) -> None:
-    window = webview.create_window('NiceGUI', url='http://localhost:8080', fullscreen=fullscreen)
+def open_window(event: multiprocessing.Event, fullscreen: bool, standalone: Union[bool, Tuple[int, int]]) -> None:
+    if standalone is True:
+        width, height = 800, 600
+    else:
+        width, height = standalone
+    window = webview.create_window(
+        'NiceGUI', url='http://localhost:8080',
+        fullscreen=fullscreen,
+        width=width, height=height
+    )
     window.events.closing += event.set  # signal that the program should be closed to the main process
     webview.start(storage_path=tempfile.mkdtemp())
 
@@ -24,8 +33,8 @@ def check_shutdown() -> None:
         time.sleep(0.1)
 
 
-def activate(fullscreen: bool = False) -> None:
-    multiprocessing.Process(target=open_window, args=(shutdown, fullscreen), daemon=False).start()
+def activate(fullscreen: bool, standalone: Union[bool, Tuple[int, int]] = False) -> None:
+    multiprocessing.Process(target=open_window, args=(shutdown, fullscreen, standalone), daemon=False).start()
     Thread(target=check_shutdown, daemon=True).start()
 
 
