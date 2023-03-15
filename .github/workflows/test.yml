@@ -22,7 +22,7 @@ jobs:
             arm32v7/python:3.9-slim-buster \
             /bin/bash -c "\
               apt-get update && \
-              apt-get install -y gfortran libopenblas-dev && \
+              apt-get install -y gfortran libopenblas-dev g++ && \
               cd /app && \
               python -m pip install --no-cache-dir . && \
               python main.py"
