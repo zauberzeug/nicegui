@@ -26,6 +26,11 @@ class Td(Element):
 class Table(ValueElement):
     VALUE_PROP = 'filter'
 
+    # Scope table element as Table class attributes.
+    row = Tr
+    header = Th
+    cell = Td
+
     def __init__(
             self,
             columns: Optional[list] = None,
@@ -66,3 +71,5 @@ class Table(ValueElement):
 
     def handle_selected_event(self, data):
         self.selected = data['args']
+        print(self.selected)
+        self.update()

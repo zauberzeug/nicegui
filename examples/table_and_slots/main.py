@@ -24,13 +24,13 @@ with ui.table(title='Table', columns=Demo.fields, rows=Demo.data, selection='sin
                 ui.icon('search')
 
     with table.add_slot('top-row'):
-        with ui.tr():
-            with ui.td().props('colspan="100%"'):
+        with table.row():
+            with table.cell().props('colspan="100%"'):
                 ui.label('This is a top row').classes('text-center')
 
     with table.add_slot('bottom-row'):
-        with ui.tr():
-            with ui.td().props('colspan="100%"'):
+        with table.row():
+            with table.cell().props('colspan="100%"'):
                 ui.label('This is a bottom row').classes('text-center')
 
     with table.add_slot('bottom'):
