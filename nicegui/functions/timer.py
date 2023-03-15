@@ -64,8 +64,8 @@ class Timer:
                         await asyncio.sleep(self.interval - dt)
                     except asyncio.CancelledError:
                         break
-                    except Exception:
-                        globals.log.exception('Exception in timer callback')
+                    except Exception as e:
+                        globals.handle_exception(e)
                         await asyncio.sleep(self.interval)
         finally:
             self.cleanup()
@@ -75,8 +75,8 @@ class Timer:
             result = self.callback()
             if is_coroutine(self.callback):
                 await result
-        except Exception:
-            traceback.print_exc()
+        except Exception as e:
+            globals.handle_exception(e)
 
     async def _connected(self, timeout: float = 60.0) -> bool:
         '''Wait for the client connection before the timer callback can be allowed to manipulate the state.
