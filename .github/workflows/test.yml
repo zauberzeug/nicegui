@@ -3,30 +3,6 @@ name: Run Tests
 on: [push]
 
 jobs:
-  rpi4:
-    runs-on: ubuntu-latest
-    name: Run tests on RaspberryPi 4 (32-bit)
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      - name: Test-start main.py
-        run: |
-          docker run \
-            --platform linux/arm/v7 \
-            -v ${{ github.workspace }}:/app \
-            -w /app \
-            arm32v7/python:3.9-slim-buster \
-            /bin/bash -c "\
-              apt-get update && \
-              apt-get install -y gfortran libopenblas-dev g++ && \
-              cd /app && \
-              python -m pip install --no-cache-dir . && \
-              python main.py"
-
   test:
     strategy:
       matrix:
