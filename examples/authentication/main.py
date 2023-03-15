@@ -34,6 +34,8 @@ def main_page(request: Request) -> None:
     session = session_info[request.session['id']]
     with ui.column().classes('absolute-center items-center'):
         ui.label(f'Hello {session["username"]}!').classes('text-2xl')
+        # NOTE we navigate to a new page here to be able to modify the session cookie (it is only editable while a request is en-route)
+        # see https://github.com/zauberzeug/nicegui/issues/527 for more details
         ui.button('', on_click=lambda: ui.open('/logout')).props('outline round icon=logout')
 
 
