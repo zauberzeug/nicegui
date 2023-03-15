@@ -49,5 +49,7 @@ def create_lazy(coroutine: Awaitable[T], *, name: str) -> 'asyncio.Task[T]':
 def _handle_task_result(task: asyncio.Task) -> None:
     try:
         task.result()
+    except asyncio.CancelledError:
+        pass
     except Exception as e:
         globals.handle_exception(e)
