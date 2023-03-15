@@ -1,7 +1,6 @@
 import multiprocessing
 import os
 import signal
-import socket
 import tempfile
 import time
 from threading import Thread

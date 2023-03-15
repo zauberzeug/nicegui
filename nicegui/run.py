@@ -57,7 +57,6 @@ def run(*,
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     '''
     globals.ui_run_has_been_called = True
-
     globals.host = host
     globals.port = port
     globals.reload = reload
