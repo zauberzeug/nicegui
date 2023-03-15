@@ -306,7 +306,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             {'name': 'Carol'},
         ]
 
-        ui.qtable(columns=fields, rows=data, selection='none').props('hide-pagination').classes('w-full')
+        ui.qtable(columns=fields, rows=data, key='name', selection='none').props('hide-pagination').classes('w-full')
 
     @example(ui.chart, menu)
     def chart_example():

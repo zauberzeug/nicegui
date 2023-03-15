@@ -35,6 +35,7 @@ class QTable(ValueElement):
             self,
             columns: list,
             rows: list,
+            key: str,
             title: Optional[str] = None,
             selection: Optional[Literal['single', 'multiple', 'none']] = 'none',
             on_filter_change: Optional[Callable] = None,
@@ -45,26 +46,30 @@ class QTable(ValueElement):
 
         :param columns: A list of column objects (see `column API <https://quasar.dev/vue-components/table#qtable-api>`_)
         :param rows: A list of row objects.
+        :param key: The name of the column containing unique data identifying the row.
         :param title: The title of the table.
         :param selection: defines the selection behavior.
             'single': only one cell can be selected at a time.
             'multiple': more than one cell can be selected at a time.
             'none': no cells can be selected.
+
+        If selection is passed to 'single' or 'multiple', then a `selected` property is accessible containing
+              the selected rows.
         """
 
         super().__init__(tag='q-table', value='', on_value_change=on_filter_change)
 
         self._props['columns'] = columns
         self._props['rows'] = rows
+        self._props['row-key'] = key
         self._props['title'] = title
-
 
         self.selected: list = []
         self._props['selected'] = self.selected
         self._props['selection'] = selection
-        self.on('selection', handler=self.handle_selected_event)
+        self.on('selection', handler=self.on_selection_change)
 
-    def handle_selected_event(self, data):
-        self.selected = data['args']
-        print(self.selected)
+    def on_selection_change(self, data):
+        self.selected = data['args']['rows']
+        self._props['selected'] = self.selected
         self.update()
