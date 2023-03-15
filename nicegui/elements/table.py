@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Optional
 
 from typing_extensions import Literal
 
@@ -24,8 +24,6 @@ class QTd(Element):
 
 
 class QTable(FilterElement):
-
-    # Scope table element as Table class attributes.
     row = QTr
     header = QTh
     cell = QTd
@@ -68,6 +66,6 @@ class QTable(FilterElement):
         self.on('selection', handler=self.on_selection_change)
 
     def on_selection_change(self, data):
-        self.selected = data['args']['rows']
-        self._props['selected'] = self.selected
+        self.selected = data['args']
+        self._props['selected'] = data['args']['rows']
         self.update()
