@@ -28,3 +28,10 @@ class Log(Element):
         self.lines.extend(line.splitlines())
         self._props['lines'] = '\n'.join(self.lines)
         self.run_method('push', line)
+
+    def clear(self) -> None:
+        """Clear the log"""
+        super().clear()
+        self._props['lines'] = ''
+        self.lines.clear()
+        self.run_method('clear')
