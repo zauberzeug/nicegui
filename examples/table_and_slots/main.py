@@ -17,7 +17,7 @@ class Demo:
 
 
 with ui.qtable(title='QTable', columns=Demo.fields, rows=Demo.data, key='name', selection='single') \
-        .bind_value(Demo, 'filter') as table:
+        .bind_filter(Demo, 'filter') as table:
     with table.add_slot('top-right'):
         with ui.input(placeholder='Search').props('type="search"').bind_value(Demo, 'filter') as search:
             with search.add_slot('append'):

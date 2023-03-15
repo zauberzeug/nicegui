@@ -2,7 +2,7 @@ from typing import Callable, Optional
 
 from typing_extensions import Literal
 
-from .mixins.value_element import ValueElement
+from .mixins.filter_element import FilterElement
 from ..element import Element
 
 
@@ -23,8 +23,7 @@ class QTd(Element):
             self._props['key'] = key
 
 
-class QTable(ValueElement):
-    VALUE_PROP = 'filter'
+class QTable(FilterElement):
 
     # Scope table element as Table class attributes.
     row = QTr
@@ -38,7 +37,6 @@ class QTable(ValueElement):
             key: str,
             title: Optional[str] = None,
             selection: Optional[Literal['single', 'multiple', 'none']] = 'none',
-            on_filter_change: Optional[Callable] = None,
     ) -> None:
         """QTable
 
@@ -57,7 +55,7 @@ class QTable(ValueElement):
               the selected rows.
         """
 
-        super().__init__(tag='q-table', value='', on_value_change=on_filter_change)
+        super().__init__(tag='q-table')
 
         self._props['columns'] = columns
         self._props['rows'] = rows
