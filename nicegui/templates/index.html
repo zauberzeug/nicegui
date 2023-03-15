@@ -81,8 +81,7 @@
                 props: props
               }));
             }
-            const ids = ('ids' in data) ? data.ids : data;
-            const children = ids.map(id => renderRecursively(elements, id));
+            const children = data.ids.map(id => renderRecursively(elements, id));
             if (name === 'default' && element.text) {
               children.unshift(element.text);
             }
