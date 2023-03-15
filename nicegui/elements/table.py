@@ -35,6 +35,7 @@ class QTable(FilterElement):
             key: str,
             title: Optional[str] = None,
             selection: Optional[Literal['single', 'multiple', 'none']] = 'none',
+            pagination: Optional[int] = 0,
     ) -> None:
         """QTable
 
@@ -44,10 +45,11 @@ class QTable(FilterElement):
         :param rows: A list of row objects.
         :param key: The name of the column containing unique data identifying the row.
         :param title: The title of the table.
-        :param selection: defines the selection behavior.
+        :param selection: defines the selection behavior (default= 'none').
             'single': only one cell can be selected at a time.
             'multiple': more than one cell can be selected at a time.
             'none': no cells can be selected.
+        :param pagination: defines the number of rows per page. Explicitly set to None to hide pagination (default = 0).
 
         If selection is passed to 'single' or 'multiple', then a `selected` property is accessible containing
               the selected rows.
@@ -59,6 +61,13 @@ class QTable(FilterElement):
         self._props['rows'] = rows
         self._props['row-key'] = key
         self._props['title'] = title
+
+        if pagination is None:
+            self._props['hide-pagination'] = True
+            pagination = 0
+        self._props['pagination'] = {
+            'rowsPerPage': pagination
+        }
 
         self.selected: list = []
         self._props['selected'] = self.selected

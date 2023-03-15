@@ -26,7 +26,7 @@ def remove_row(keys):
             del rows[i]
             table.update()
 
-with ui.qtable(title='QTable', columns=fields, rows=rows, key='id', selection='single') as table:
+with ui.qtable(title='QTable', columns=fields, rows=rows, key='id', selection='single', pagination=15) as table:
     with table.add_slot('top-right'):
         with ui.input(placeholder='Search').props('type="search"').bind_value(table, 'filter') as search:
             with search.add_slot('append'):
