@@ -42,6 +42,31 @@ jobs:
           name: pytest-screenshots
           path: tests/screenshots
 
+  rpi4:
+    runs-on: ubuntu-latest
+    name: Run tests on ARMv7 (32-bit); eg. RaspberryPi 4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
+      - name: set up Poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: "1.3.1"
+      - name: install dependencies
+        run: |
+          poetry config virtualenvs.create false
+          poetry install
+          # install packages to run the examples
+          pip install opencv-python opencv-contrib-python-headless httpx replicate
+          # try fix issue with importlib_resources
+          pip install importlib-resources
+      - name: test startup
+        run: ./test_startup.sh
+
   slack:
     needs:
       - test
