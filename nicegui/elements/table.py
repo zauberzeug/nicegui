@@ -33,8 +33,8 @@ class QTable(ValueElement):
 
     def __init__(
             self,
-            columns: Optional[list] = None,
-            rows: Optional[list] = None,
+            columns: list,
+            rows: list,
             title: Optional[str] = None,
             selection: Optional[Literal['single', 'multiple', 'none']] = 'none',
             on_filter_change: Optional[Callable] = None,
@@ -53,11 +53,6 @@ class QTable(ValueElement):
         """
 
         super().__init__(tag='q-table', value='', on_value_change=on_filter_change)
-
-        if columns is None:
-            columns = []
-        if rows is None:
-            rows = []
 
         self._props['columns'] = columns
         self._props['rows'] = rows
