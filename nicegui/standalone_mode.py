@@ -28,14 +28,3 @@ def activate(url: str, title: str, width: int, height: int, fullscreen: bool) ->
     args = url, title, width, height, fullscreen, shutdown
     multiprocessing.Process(target=open_window, args=args, daemon=False).start()
     Thread(target=check_shutdown, daemon=True).start()
-
-
-def find_open_port(start_port: int = 8000, end_port: int = 8999) -> int:
-    for port in range(start_port, end_port + 1):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.bind(('localhost', port))
-                return port
-        except OSError:
-            pass
-    raise OSError('No open port found')

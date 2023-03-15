@@ -58,12 +58,6 @@ def run(*,
     '''
     globals.ui_run_has_been_called = True
 
-    if fullscreen:
-        standalone = True
-    if standalone:
-        port = standalone_mode.find_open_port()  # NOTE search for open port to avoid conflict with other apps
-        show = False
-
     globals.host = host
     globals.port = port
     globals.reload = reload
@@ -78,7 +72,10 @@ def run(*,
     if multiprocessing.current_process().name != 'MainProcess':
         return
 
+    if fullscreen:
+        standalone = True
     if standalone:
+        show = False
         width, height = (800, 600) if standalone is True else standalone
         standalone_mode.activate(f'http://localhost:{port}', title, width, height, fullscreen)
 
