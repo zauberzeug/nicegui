@@ -1,8 +1,9 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from typing_extensions import Literal
 
 from .mixins.filter_element import FilterElement
+from .mixins.value_element import ValueElement
 from ..element import Element
 
 
@@ -23,11 +24,14 @@ class QTd(Element):
             self._props['key'] = key
 
 
-class QTable(FilterElement):
+class QTable(ValueElement, FilterElement):
     row = QTr
     header = QTh
     cell = QTd
 
+    VALUE_PROP = 'selected'
+    EVENT_ARGS = None
+    EVENT = 'selection'
     def __init__(
             self,
             columns: list,
@@ -55,7 +59,7 @@ class QTable(FilterElement):
               the selected rows.
         """
 
-        super().__init__(tag='q-table')
+        super().__init__(tag='q-table', value=[], on_value_change=None)
 
         self._props['columns'] = columns
         self._props['rows'] = rows
@@ -70,11 +74,8 @@ class QTable(FilterElement):
         }
 
         self.selected: list = []
-        self._props['selected'] = self.selected
         self._props['selection'] = selection
-        self.on('selection', handler=self.on_selection_change)
 
-    def on_selection_change(self, data):
-        self.selected = data['args']
-        self._props['selected'] = data['args']['rows']
-        self.update()
+    def _msg_to_value(self, msg: Dict) -> Any:
+        self.selected = msg['args']
+        return msg['args']['rows']

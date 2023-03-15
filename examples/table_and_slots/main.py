@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import time
+
 from nicegui import ui
 
 fields = [
@@ -24,7 +26,8 @@ def remove_row(keys):
     for i in range(len(rows)):
         if rows[i]['id'] in keys:
             del rows[i]
-            table.update()
+            break
+    table.update()
 
 with ui.qtable(title='QTable', columns=fields, rows=rows, key='id', selection='single', pagination=15) as table:
     with table.add_slot('top-right'):
@@ -42,7 +45,7 @@ with ui.qtable(title='QTable', columns=fields, rows=rows, key='id', selection='s
             with table.cell().props('colspan="2"'):
                 new_name = ui.input()
             with table.cell():
-                ui.button('add row', on_click=lambda: add_row({'id': len(rows), 'name': new_name.value, 'age': 10}))
+                ui.button('add row', on_click=lambda: add_row({'id': time.time(), 'name': new_name.value, 'age': 10}))
 
 ui.label('').bind_text_from(table, 'selected', lambda val: f'Current selection: {val.__repr__()}')
 ui.button('Remove selection', on_click=lambda: remove_row(table.selected['keys'])).bind_visibility(table, 'selected')
