@@ -6,30 +6,30 @@ from .mixins.value_element import ValueElement
 from ..element import Element
 
 
-class Tr(Element):
+class QTr(Element):
     def __init__(self) -> None:
         super().__init__('q-tr')
 
 
-class Th(Element):
+class QTh(Element):
     def __init__(self) -> None:
         super().__init__('q-th')
 
 
-class Td(Element):
+class QTd(Element):
     def __init__(self, key: str = '') -> None:
         super().__init__('q-td')
         if key:
             self._props['key'] = key
 
 
-class Table(ValueElement):
+class QTable(ValueElement):
     VALUE_PROP = 'filter'
 
     # Scope table element as Table class attributes.
-    row = Tr
-    header = Th
-    cell = Td
+    row = QTr
+    header = QTh
+    cell = QTd
 
     def __init__(
             self,
@@ -39,11 +39,11 @@ class Table(ValueElement):
             selection: Optional[Literal['single', 'multiple', 'none']] = 'none',
             on_filter_change: Optional[Callable] = None,
     ) -> None:
-        """Table
+        """QTable
 
-        A component that allows you to display using `QTable <https://quasar.dev/vue-components/table>` component.
+        A component that allows you to display using `QTable <https://quasar.dev/vue-components/table>`_ component.
 
-        :param columns: A list of column objects (see `column API <https://quasar.dev/vue-components/table#qtable-api>`)
+        :param columns: A list of column objects (see `column API <https://quasar.dev/vue-components/table#qtable-api>`_)
         :param rows: A list of row objects.
         :param title: The title of the table.
         :param selection: defines the selection behavior.
