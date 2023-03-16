@@ -11,11 +11,9 @@ to override Python's default json module.
 try:
     # orjson not available on all platforms, fallback to Python's json module if not available
     import orjson
-    raise ImportError()
     has_orjson = True
 except:
     has_orjson = False
-    print('Using Python json')
 
 
 if has_orjson:

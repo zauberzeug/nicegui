@@ -1,4 +1,5 @@
 import json
+from datetime import date, datetime
 from typing import Any, Optional, Tuple
 
 import numpy as np
@@ -18,7 +19,7 @@ def dumps(obj: Any, sort_keys: bool = False, separators: Optional[Tuple[str, str
         sort_keys=sort_keys,
         separators=separators,
         indent=None,
-        allow_nan=True,
+        allow_nan=False,
         ensure_ascii=False,
         cls=NumpyJsonEncoder)
 
@@ -40,7 +41,7 @@ class NiceGUIJSONResponse(Response):
 
 
 class NumpyJsonEncoder(json.JSONEncoder):
-    """Special json encoder that supporty numpy arrays."""
+    """Special json encoder that supports numpy arrays and date/datetime objects."""
 
     def default(self, obj):
         if isinstance(obj, np.integer):
@@ -49,4 +50,6 @@ class NumpyJsonEncoder(json.JSONEncoder):
             return float(obj)
         if isinstance(obj, np.ndarray):
             return obj.tolist()
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
         return json.JSONEncoder.default(self, obj)

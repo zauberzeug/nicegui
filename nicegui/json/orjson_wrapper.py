@@ -38,7 +38,10 @@ def loads(value: str) -> Any:
 
 
 class NiceGUIJSONResponse(Response):
-    """FastAPI response class to support our custom json serializer implementation."""
+    """FastAPI response class to support our custom json serializer implementation.
+
+    Uses package `orjson` internally.
+    """
     media_type = 'application/json'
 
     def render(self, content: Any) -> bytes:
