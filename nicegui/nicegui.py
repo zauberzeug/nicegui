@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
 from nicegui import json
-from nicegui.json.fastapi import NiceGUIJSONResponse
+from nicegui.json import NiceGUIJSONResponse
 
 from . import background_tasks, binding, globals, outbox
 from .app import App
