@@ -12,7 +12,7 @@ try:
     # orjson not available on all platforms, fallback to Python's json module if not available
     import orjson
     has_orjson = True
-except:
+except ImportError:
     has_orjson = False
 
 
