@@ -24,6 +24,11 @@ export default {
         this.num_lines -= 1;
       }
     },
+    clear() {
+      const textarea = this.$el;
+      textarea.innerHTML = "";
+      this.num_lines = 0;
+    },
   },
   props: {
     max_lines: Number,

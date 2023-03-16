@@ -3,13 +3,13 @@ import multiprocessing
 import os
 import sys
 import webbrowser
-from typing import List, Optional
+from typing import List, Optional, Tuple, Union
 
 import uvicorn
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import globals
+from . import globals, standalone_mode
 
 
 def run(*,
@@ -21,6 +21,8 @@ def run(*,
         dark: Optional[bool] = False,
         binding_refresh_interval: float = 0.1,
         show: bool = True,
+        standalone: bool = False,
+        fullscreen: Union[bool, Tuple[int, int]] = False,
         reload: bool = True,
         uvicorn_logging_level: str = 'warning',
         uvicorn_reload_dirs: str = '.',
@@ -42,6 +44,8 @@ def run(*,
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param show: automatically open the UI in a browser tab (default: `True`)
+    :param standalone: open the UI in a standalone window (default: `False`, accepts size as tuple or True (800, 600), deactivates `show`, automatically finds an open port)
+    :param fullscreen: open the UI in a fullscreen, standalone window (default: `False`, also activates `standalone`)
     :param reload: automatically reload the UI on file changes (default: `True`)
     :param uvicorn_logging_level: logging level for uvicorn server (default: `'warning'`)
     :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only)
@@ -66,6 +70,13 @@ def run(*,
 
     if multiprocessing.current_process().name != 'MainProcess':
         return
+
+    if fullscreen:
+        standalone = True
+    if standalone:
+        show = False
+        width, height = (800, 600) if standalone is True else standalone
+        standalone_mode.activate(f'http://localhost:{port}', title, width, height, fullscreen)
 
     if show:
         webbrowser.open(f'http://{host if host != "0.0.0.0" else "127.0.0.1"}:{port}/')

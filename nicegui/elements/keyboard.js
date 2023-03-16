@@ -3,9 +3,8 @@ export default {
     for (const event of this.events) {
       document.addEventListener(event, (evt) => {
         // https://stackoverflow.com/a/36469636/3419103
-        const ignored = ["input", "select", "button", "textarea"];
         const focus = document.activeElement;
-        if (focus && ignored.includes(focus.tagName.toLowerCase())) return;
+        if (focus && this.ignore.includes(focus.tagName.toLowerCase())) return;
         if (evt.repeat && !this.repeating) return;
         this.$emit("key", {
           action: event,
@@ -25,5 +24,6 @@ export default {
   props: {
     events: Array,
     repeating: Boolean,
+    ignore: Array,
   },
 };

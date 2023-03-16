@@ -21,7 +21,7 @@ class InteractiveImage(SourceElement, ContentElement):
         Create an image with an SVG overlay that handles mouse events and yields image coordinates.
         It is also the best choice for non-flickering image updates.
         If the source URL changes faster than images can be loaded by the browser, some images are simply skipped.
-        Thereby a stream of images automatically adapts to the available bandwidth.
+        Thereby repeatedly updating the image source will automatically adapt to the available bandwidth.
         See `OpenCV Webcam <https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam/main.py>`_ for an example.
 
         :param source: the source of the image; can be an URL or a base64 string
