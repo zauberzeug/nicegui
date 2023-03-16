@@ -1,81 +1,83 @@
-from typing import Any, Dict, Optional
+from typing import Callable, Dict, List, Optional
 
 from typing_extensions import Literal
 
-from .mixins.filter_element import FilterElement
-from .mixins.value_element import ValueElement
 from ..element import Element
+from ..events import TableSelectionEventArguments, handle_event
+from .mixins.filter_element import FilterElement
 
 
-class QTr(Element):
-    def __init__(self) -> None:
-        super().__init__('q-tr')
+class QTable(FilterElement):
 
-
-class QTh(Element):
-    def __init__(self) -> None:
-        super().__init__('q-th')
-
-
-class QTd(Element):
-    def __init__(self, key: str = '') -> None:
-        super().__init__('q-td')
-        if key:
-            self._props['key'] = key
-
-
-class QTable(ValueElement, FilterElement):
-    row = QTr
-    header = QTh
-    cell = QTd
-
-    VALUE_PROP = 'selected'
-    EVENT_ARGS = None
-    EVENT = 'selection'
-    def __init__(
-            self,
-            columns: list,
-            rows: list,
-            key: str,
-            title: Optional[str] = None,
-            selection: Optional[Literal['single', 'multiple', 'none']] = 'none',
-            pagination: Optional[int] = 0,
-    ) -> None:
+    def __init__(self,
+                 columns: List[Dict],
+                 rows: List[Dict],
+                 row_key: str = 'id',
+                 title: Optional[str] = None,
+                 selection: Optional[Literal['single', 'multiple']] = None,
+                 rows_per_page: Optional[int] = None,
+                 on_select: Optional[Callable] = None,
+                 ) -> None:
         """QTable
 
-        A component that allows you to display using `QTable <https://quasar.dev/vue-components/table>`_ component.
+        A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
 
-        :param columns: A list of column objects (see `column API <https://quasar.dev/vue-components/table#qtable-api>`_)
-        :param rows: A list of row objects.
-        :param key: The name of the column containing unique data identifying the row.
-        :param title: The title of the table.
-        :param selection: defines the selection behavior (default= 'none').
-            'single': only one cell can be selected at a time.
-            'multiple': more than one cell can be selected at a time.
-            'none': no cells can be selected.
-        :param pagination: defines the number of rows per page. Explicitly set to None to hide pagination (default = 0).
+        :param columns: list of column objects
+        :param rows: list of row objects
+        :param row_key: name of the column containing unique data identifying the row (default: "id")
+        :param title: title of the table
+        :param selection: selection type ("single" or "multiple"; default: `None`)
+        :param rows_per_page: number of rows per page (`None` hides the pagination, 0 means "infinite"; default: 0)
+        :param on_select: callback which is invoked when the selection changes
 
-        If selection is passed to 'single' or 'multiple', then a `selected` property is accessible containing
-              the selected rows.
+        If selection is 'single' or 'multiple', then a `selection` property is accessible containing the selected rows.
         """
+        super().__init__(tag='q-table')
 
-        super().__init__(tag='q-table', value=[], on_value_change=None)
+        self.rows = rows
+        self.row_key = row_key
+        self.selected: List[Dict] = []
 
         self._props['columns'] = columns
         self._props['rows'] = rows
-        self._props['row-key'] = key
+        self._props['row-key'] = row_key
         self._props['title'] = title
+        self._props['hide-pagination'] = rows_per_page is None
+        self._props['pagination'] = {'rowsPerPage': rows_per_page or 0}
+        self._props['selection'] = selection or 'none'
+        self._props['selected'] = self.selected
 
-        if pagination is None:
-            self._props['hide-pagination'] = True
-            pagination = 0
-        self._props['pagination'] = {
-            'rowsPerPage': pagination
-        }
+        def handle_selection(msg: Dict) -> None:
+            if msg['args']['added']:
+                self.selected.extend(msg['args']['rows'])
+            else:
+                self.selected[:] = [row for row in self.selected if row[row_key] not in msg['args']['keys']]
+            self.update()
+            arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
+            handle_event(on_select, arguments)
+        self.on('selection', handle_selection)
 
-        self.selected: list = []
-        self._props['selection'] = selection
+    def add_rows(self, *rows: Dict) -> None:
+        """Add rows to the table."""
+        self.rows.extend(rows)
+        self.update()
 
-    def _msg_to_value(self, msg: Dict) -> Any:
-        self.selected = msg['args']
-        return msg['args']['rows']
+    def remove_rows(self, *rows: Dict) -> None:
+        """Remove rows from the table."""
+        keys = [row[self.row_key] for row in rows]
+        self.rows[:] = [row for row in self.rows if row[self.row_key] not in keys]
+        self.update()
+
+    class row(Element):
+        def __init__(self) -> None:
+            super().__init__('q-tr')
+
+    class header(Element):
+        def __init__(self) -> None:
+            super().__init__('q-th')
+
+    class cell(Element):
+        def __init__(self, key: str = '') -> None:
+            super().__init__('q-td')
+            if key:
+                self._props['key'] = key

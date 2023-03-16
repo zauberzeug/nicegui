@@ -8,7 +8,6 @@ from ...events import ValueChangeEventArguments, handle_event
 class ValueElement(Element):
     VALUE_PROP = 'model-value'
     EVENT_ARGS = ['value']
-    EVENT = f'update:{VALUE_PROP}'
     LOOPBACK = True
     value = BindableProperty(on_change=lambda sender, value: sender.on_value_change(value))
 
@@ -24,7 +23,7 @@ class ValueElement(Element):
             self._send_update_on_value_change = self.LOOPBACK
             self.set_value(self._msg_to_value(msg))
             self._send_update_on_value_change = True
-        self.on(self.EVENT, handle_change, self.EVENT_ARGS, throttle=throttle)
+        self.on(f'update:{self.VALUE_PROP}', handle_change, self.EVENT_ARGS, throttle=throttle)
 
     def bind_value_to(self, target_object: Any, target_name: str = 'value', forward: Callable = lambda x: x):
         bind_to(self, 'value', target_object, target_name, forward)

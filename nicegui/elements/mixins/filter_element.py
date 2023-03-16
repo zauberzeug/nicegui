@@ -6,12 +6,12 @@ from ...element import Element
 
 class FilterElement(Element):
     FILTER_PROP = 'filter'
-    filter = BindableProperty(on_change=lambda sender, filter_by: sender.on_filter_change(filter_by))
+    filter = BindableProperty(on_change=lambda sender, filter: sender.on_filter_change(filter))
 
-    def __init__(self, *, filter_by: Optional[str] = '', **kwargs) -> None:
+    def __init__(self, *, filter: Optional[str] = None, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.filter = filter_by
-        self._props[self.FILTER_PROP] = filter_by
+        self.filter = filter
+        self._props[self.FILTER_PROP] = filter
 
     def bind_filter_to(self, target_object: Any, target_name: str = 'filter', forward: Callable = lambda x: x):
         bind_to(self, 'filter', target_object, target_name, forward)
@@ -26,9 +26,9 @@ class FilterElement(Element):
         bind(self, 'filter', target_object, target_name, forward=forward, backward=backward)
         return self
 
-    def set_filter(self, filter_by: str) -> None:
-        self.filter = filter_by
+    def set_filter(self, filter: str) -> None:
+        self.filter = filter
 
-    def on_filter_change(self, filter_by: str) -> None:
-        self._props[self.FILTER_PROP] = filter_by
+    def on_filter_change(self, filter: str) -> None:
+        self._props[self.FILTER_PROP] = filter
         self.update()

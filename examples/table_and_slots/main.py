@@ -3,11 +3,10 @@ import time
 
 from nicegui import ui
 
-fields = [
+columns = [
     {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True},
     {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
 ]
-
 rows = [
     {'id': 0, 'name': 'Alice', 'age': 18},
     {'id': 1, 'name': 'Bob', 'age': 21},
@@ -18,36 +17,25 @@ rows = [
     {'id': 6, 'name': 'Carol'},
 ]
 
-def add_row(item):
-    rows.append(item)
-    table.update()
-
-def remove_row(keys):
-    for i in range(len(rows)):
-        if rows[i]['id'] in keys:
-            del rows[i]
-            break
-    table.update()
-
-with ui.qtable(title='QTable', columns=fields, rows=rows, key='id', selection='single', pagination=15) as table:
+with ui.qtable(title='QTable', columns=columns, rows=rows, selection='multiple', rows_per_page=10).classes('w-96') as table:
     with table.add_slot('top-right'):
-        with ui.input(placeholder='Search').props('type="search"').bind_value(table, 'filter') as search:
-            with search.add_slot('append'):
-                ui.icon('search')
-
-    with table.add_slot('top-row'):
-        with table.row():
-            with table.cell().props('colspan="100%"'):
-                ui.label('This is a top row').classes('text-center')
-
+        with ui.input(placeholder='Search').props('type=search').bind_value(table, 'filter').add_slot('append'):
+            ui.icon('search')
     with table.add_slot('bottom-row'):
         with table.row():
-            with table.cell().props('colspan="2"'):
-                new_name = ui.input()
             with table.cell():
-                ui.button('add row', on_click=lambda: add_row({'id': time.time(), 'name': new_name.value, 'age': 10}))
+                ui.button(on_click=lambda: (
+                    table.add_rows({'id': time.time(), 'name': new_name.value, 'age': new_age.value}),
+                    new_name.set_value(None),
+                    new_age.set_value(None),
+                )).props('flat fab-mini icon=add')
+            with table.cell():
+                new_name = ui.input('Name')
+            with table.cell():
+                new_age = ui.number('Age')
 
-ui.label('').bind_text_from(table, 'selected', lambda val: f'Current selection: {val.__repr__()}')
-ui.button('Remove selection', on_click=lambda: remove_row(table.selected['keys'])).bind_visibility(table, 'selected')
+ui.label().bind_text_from(table, 'selected', lambda val: f'Current selection: {val}')
+ui.button('Remove', on_click=lambda: table.remove_rows(*table.selected)) \
+    .bind_visibility_from(table, 'selected', backward=lambda val: bool(val))
 
 ui.run()

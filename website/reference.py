@@ -294,19 +294,16 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
     @example(ui.qtable, menu)
     def qtable_example():
-
-        fields = [
+        columns = [
             {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
-            {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True, 'align': 'center'},
+            {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
         ]
-
-        data = [
+        rows = [
             {'name': 'Alice', 'age': 18},
             {'name': 'Bob', 'age': 21},
             {'name': 'Carol'},
         ]
-
-        ui.qtable(columns=fields, rows=data, key='name', pagination=None).classes('w-full')
+        ui.qtable(columns=columns, rows=rows, row_key='name')
 
     @example(ui.chart, menu)
     def chart_example():

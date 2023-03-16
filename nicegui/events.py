@@ -80,6 +80,11 @@ class ValueChangeEventArguments(EventArguments):
 
 
 @dataclass
+class TableSelectionEventArguments(EventArguments):
+    selection: List[Any]
+
+
+@dataclass
 class KeyboardAction:
     keydown: bool
     keyup: bool
