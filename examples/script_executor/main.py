@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import asyncio
 import os.path
+import platform
 import shlex
 
 from nicegui import background_tasks, ui
@@ -34,4 +35,5 @@ with ui.row():
         ui.button(command, on_click=lambda _, c=command: background_tasks.create(run_command(c))).props('no-caps')
 
 
-ui.run()
+# NOTE on windows reload must be disabled to make asyncio.create_subprocess_exec work (see https://github.com/zauberzeug/nicegui/issues/486)
+ui.run(reload=platform.system() != "Windows")
