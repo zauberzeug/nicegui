@@ -15,7 +15,7 @@ class Table(FilterElement):
                  row_key: str = 'id',
                  title: Optional[str] = None,
                  selection: Optional[Literal['single', 'multiple']] = None,
-                 rows_per_page: Optional[int] = None,
+                 pagination: Optional[int] = None,
                  on_select: Optional[Callable] = None,
                  ) -> None:
         """Table
@@ -27,7 +27,7 @@ class Table(FilterElement):
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
         :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param rows_per_page: number of rows per page (`None` hides the pagination, 0 means "infinite"; default: 0)
+        :param pagination: number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`)
         :param on_select: callback which is invoked when the selection changes
 
         If selection is 'single' or 'multiple', then a `selection` property is accessible containing the selected rows.
@@ -42,8 +42,8 @@ class Table(FilterElement):
         self._props['rows'] = rows
         self._props['row-key'] = row_key
         self._props['title'] = title
-        self._props['hide-pagination'] = rows_per_page is None
-        self._props['pagination'] = {'rowsPerPage': rows_per_page or 0}
+        self._props['hide-pagination'] = pagination is None
+        self._props['pagination'] = {'rowsPerPage': pagination or 0}
         self._props['selection'] = selection or 'none'
         self._props['selected'] = self.selected
 

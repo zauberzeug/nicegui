@@ -28,7 +28,7 @@ def test_table(screen: Screen):
 
 
 def test_pagination(screen: Screen):
-    ui.table(columns=columns, rows=rows, rows_per_page=2)
+    ui.table(columns=columns, rows=rows, pagination=2)
 
     screen.open('/')
     screen.should_contain('Alice')

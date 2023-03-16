@@ -17,7 +17,7 @@ rows = [
     {'id': 6, 'name': 'Carol'},
 ]
 
-with ui.table(title='My Team', columns=columns, rows=rows, selection='multiple', rows_per_page=10).classes('w-96') as table:
+with ui.table(title='My Team', columns=columns, rows=rows, selection='multiple', pagination=10).classes('w-96') as table:
     with table.add_slot('top-right'):
         with ui.input(placeholder='Search').props('type=search').bind_value(table, 'filter').add_slot('append'):
             ui.icon('search')
