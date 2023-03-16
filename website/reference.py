@@ -891,6 +891,7 @@ When NiceGUI is shut down or restarted, all tasks still in execution will be aut
         from nicegui import app
 
         # dt = datetime.now()
+
         def handle_connection():
             global dt
             dt = datetime.now()
