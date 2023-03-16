@@ -1,3 +1,4 @@
+import numpy as np
 import plotly.graph_objects as go
 
 from nicegui import ui
@@ -11,7 +12,8 @@ def test_plotly(screen: Screen):
     plot = ui.plotly(fig)
 
     ui.button('Add trace', on_click=lambda: (
-        fig.add_trace(go.Scatter(x=[0, 1, 2], y=[2, 1, 0], name='Trace 2')),
+        # test numpy array support for value arrays
+        fig.add_trace(go.Scatter(x=np.array([0, 1, 2]), y=np.array([2, 1, 0]), name='Trace 2')),
         plot.update()
     ))
 
