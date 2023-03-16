@@ -37,7 +37,7 @@ class NiceGUIJSONResponse(Response):
     media_type = 'application/json'
 
     def render(self, content: Any) -> bytes:
-        return dumps(content).encode("utf-8")
+        return dumps(content).encode('utf-8')
 
 
 class NumpyJsonEncoder(json.JSONEncoder):
