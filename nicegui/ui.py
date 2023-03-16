@@ -47,7 +47,7 @@ from .elements.separator import Separator as separator
 from .elements.slider import Slider as slider
 from .elements.spinner import Spinner as spinner
 from .elements.switch import Switch as switch
-from .elements.table import QTable as qtable
+from .elements.table import Table as table
 from .elements.tabs import Tab as tab
 from .elements.tabs import TabPanel as tab_panel
 from .elements.tabs import TabPanels as tab_panels
@@ -74,8 +74,6 @@ from .page_layout import PageSticky as page_sticky
 from .page_layout import RightDrawer as right_drawer
 from .run import run
 from .run_with import run_with
-
-table = deprecated(aggrid, 'ui.table', 'ui.aggrid', 370)
 
 if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
     from .elements.line_plot import LinePlot as line_plot

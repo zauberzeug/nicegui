@@ -7,7 +7,7 @@ from ..events import TableSelectionEventArguments, handle_event
 from .mixins.filter_element import FilterElement
 
 
-class QTable(FilterElement):
+class Table(FilterElement):
 
     def __init__(self,
                  columns: List[Dict],
@@ -18,7 +18,7 @@ class QTable(FilterElement):
                  rows_per_page: Optional[int] = None,
                  on_select: Optional[Callable] = None,
                  ) -> None:
-        """QTable
+        """Table
 
         A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
 
