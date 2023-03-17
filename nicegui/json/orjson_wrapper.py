@@ -1,6 +1,7 @@
 from typing import Any, Optional, Tuple
 
 import orjson
+from fastapi import Response
 
 ORJSON_OPTS = orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NON_STR_KEYS
 
@@ -34,3 +35,14 @@ def loads(value: str) -> Any:
     Uses package `orjson` internally.
     """
     return orjson.loads(value)
+
+
+class NiceGUIJSONResponse(Response):
+    """FastAPI response class to support our custom json serializer implementation.
+
+    Uses package `orjson` internally.
+    """
+    media_type = 'application/json'
+
+    def render(self, content: Any) -> bytes:
+        return orjson.dumps(content, option=ORJSON_OPTS)
