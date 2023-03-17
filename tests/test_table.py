@@ -74,10 +74,10 @@ def test_slots(screen: Screen):
                     ui.label('This is the top slot.')
         table.add_slot('body', '''
             <q-tr :props="props">
-            <q-td key="name" :props="props">overridden</q-td>
-            <q-td key="age" :props="props">
-                <q-badge color="green">{{ props.row.age }}</q-badge>
-            </q-td>
+                <q-td key="name" :props="props">overridden</q-td>
+                <q-td key="age" :props="props">
+                    <q-badge color="green">{{ props.row.age }}</q-badge>
+                </q-td>
             </q-tr>
         ''')
 
