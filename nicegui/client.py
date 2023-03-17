@@ -83,7 +83,9 @@ class Client:
             'dark': str(self.page.resolve_dark()),
             'prefix': prefix,
             'tailwind': globals.tailwind,
+            'production': globals.production,
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
+            'version': '1.2.0',
         }, status_code, {'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'})
 
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:

@@ -3,20 +3,16 @@
   <head>
     <title>{{ title }}</title>
     <meta name="viewport" content="{{ viewport }}" />
-    <script src="{{ prefix | safe }}/_nicegui/static/socket.io.min.js"></script>
     <link href="{{ favicon_url }}" rel="shortcut icon" />
-    <link href="{{ prefix | safe }}/_nicegui/static/fonts.css" rel="stylesheet" type="text/css" />
-    <link href="{{ prefix | safe }}/_nicegui/static/quasar.prod.css" rel="stylesheet" type="text/css" />
+    <link href="{{ prefix | safe }}/_nicegui/static/fonts.css?v={{ version }}" rel="stylesheet" type="text/css" />
+    <link href="{{ prefix | safe }}/_nicegui/static/nicegui.css?v={{ version }}" rel="stylesheet" type="text/css" />
     {% if tailwind %}
-    <script src="{{ prefix | safe }}/_nicegui/static/tailwind.min.js"></script>
+    <script src="{{ prefix | safe }}/_nicegui/static/tailwind.min.js?v={{ version }}"></script>
     {% endif %}
-    <link href="{{ prefix | safe }}/_nicegui/static/nicegui.css" rel="stylesheet" type="text/css" />
+    <link href="{{ prefix | safe }}/_nicegui/static/quasar.prod.css?v={{ version }}" rel="stylesheet" type="text/css" />
     {{ head_html | safe }}
   </head>
   <body>
-    <script src="{{ prefix | safe }}/_nicegui/static/vue.global.prod.js"></script>
-    <script src="{{ prefix | safe }}/_nicegui/static/quasar.umd.prod.js"></script>
-
     {{ body_html | safe }}
 
     <div id="app"></div>
@@ -24,6 +20,17 @@
       <span>Connection lost.</span>
       <span>Trying to reconnect...</span>
     </div>
+
+    {% if production %}
+    <script src="{{ prefix | safe }}/_nicegui/static/socket.io.min.js?v={{ version }}"></script>
+    <script src="{{ prefix | safe }}/_nicegui/static/vue.global.prod.js?v={{ version }}"></script>
+    <script src="{{ prefix | safe }}/_nicegui/static/quasar.umd.prod.js?v={{ version }}"></script>
+    {% else %}
+    <script src="{{ prefix | safe }}/_nicegui/static/socket.io.js?v={{ version }}"></script>
+    <script src="{{ prefix | safe }}/_nicegui/static/vue.global.js?v={{ version }}"></script>
+    <script src="{{ prefix | safe }}/_nicegui/static/quasar.umd.js?v={{ version }}"></script>
+    {% endif %}
+
     <script type="module">
       const True = true;
       const False = false;

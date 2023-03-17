@@ -970,6 +970,30 @@ and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mou
             ui.input('G').classes('w-12').on('keydown.space', lambda: ui.notify('You pressed space.'))
             ui.input('H').classes('w-12').on('keydown.y.shift', lambda: ui.notify('You pressed Shift+Y'))
             ui.input('I').classes('w-12').on('keydown.once', lambda: ui.notify('You started typing.'))
+
+    @example('''#### External libraries
+Nicegui exposes its UI as a website. Each page is built using external dependencies statically added to this repository.
+The current libraries and versions are:
+
+- [vue.js](https://vuejs.org/): version 3.2.47
+- [socket.io client](https://socket.io/fr/): version 4.6.1 
+- [Quasar](https://quasar.dev/): version 2.11.8
+- [Tailwid CSS](): version 3.2.6
+
+
+Some components also depends on external libraries: 
+
+- [AG Grid](https://nicegui.io/reference#ag_grid): uses [ag-grid community](https://www.ag-grid.com/) version 28.2.1
+- [Joystick](https://nicegui.io/reference#joystick): uses [nipple](https://yoannmoi.net/nipplejs/)
+- [Mermaid](https://nicegui.io/reference#mermaid): uses [mermaid](https://yoannmoi.net/nipplejs/)
+- [Plotly](https://nicegui.io/reference#plotly): uses [plotly](https://plotly.com/javascript/getting-started/) version 2.18.0
+- [Chart](https://nicegui.io/reference#chart): uses [Highcharts](https://www.highcharts.com/) version 10.3.2
+    ''', menu)
+    def ui_dependencies_example():
+        ui.label('Run in development mode')
+
+        # ui.run(production=False)
+
     h3('Configuration')
 
     @example(ui.run, menu, browser_title='My App')

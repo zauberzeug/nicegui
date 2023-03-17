@@ -14,6 +14,7 @@ def run_with(
     dark: Optional[bool] = False,
     binding_refresh_interval: float = 0.1,
     exclude: str = '',
+    production: bool = True
 ) -> None:
     globals.ui_run_has_been_called = True
     globals.title = title
@@ -23,6 +24,7 @@ def run_with(
     globals.binding_refresh_interval = binding_refresh_interval
     globals.excludes = [e.strip() for e in exclude.split(',')]
     globals.tailwind = True
+    globals.production = production
 
     app.on_event('startup')(lambda: handle_startup(with_welcome_message=False))
     app.on_event('shutdown')(lambda: handle_shutdown())

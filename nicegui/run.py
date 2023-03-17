@@ -30,6 +30,7 @@ def run(*,
         uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
         exclude: str = '',
         tailwind: bool = True,
+        production: bool = True,
         **kwargs,
         ) -> None:
     '''ui.run
@@ -54,6 +55,7 @@ def run(*,
     :param exclude: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
       (possible entries: aggrid, audio, chart, colors, interactive_image, joystick, keyboard, log, markdown, mermaid, plotly, scene, video)
     :param tailwind: whether to use Tailwind (experimental, default: `True`)
+    :param production: whether to use external libraries in minified production mode (default: `True`)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     '''
     globals.ui_run_has_been_called = True
@@ -67,6 +69,7 @@ def run(*,
     globals.binding_refresh_interval = binding_refresh_interval
     globals.excludes = [e.strip() for e in exclude.split(',')]
     globals.tailwind = tailwind
+    globals.production = production
 
     if multiprocessing.current_process().name != 'MainProcess':
         return
