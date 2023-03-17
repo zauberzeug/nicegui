@@ -34,12 +34,14 @@ def test_adding_elements_with_async_await(screen: Screen):
         await asyncio.sleep(0.1)
         ui.label('B')
 
+    ui.label('ready')
     with ui.card() as cardA:
         ui.timer(1.0, add_a, once=True)
     with ui.card() as cardB:
         ui.timer(1.1, add_b, once=True)
 
     screen.open('/')
+    screen.wait_for('ready')
     screen.should_contain('A')
     screen.should_contain('B')
     cA = screen.selenium.find_element(By.ID, cardA.id)
