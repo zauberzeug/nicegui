@@ -271,7 +271,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
     h3('Data Elements')
 
     @example(ui.aggrid, menu)
-    def table_example():
+    def aggrid_example():
         grid = ui.aggrid({
             'columnDefs': [
                 {'headerName': 'Name', 'field': 'name'},
@@ -291,6 +291,19 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         ui.button('Update', on_click=update)
         ui.button('Select all', on_click=lambda: grid.call_api_method('selectAll'))
+
+    @example(ui.table, menu)
+    def table_example():
+        columns = [
+            {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
+            {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
+        ]
+        rows = [
+            {'name': 'Alice', 'age': 18},
+            {'name': 'Bob', 'age': 21},
+            {'name': 'Carol'},
+        ]
+        ui.table(columns=columns, rows=rows, row_key='name')
 
     @example(ui.chart, menu)
     def chart_example():
