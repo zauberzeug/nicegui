@@ -52,6 +52,7 @@ class Scene(Element):
     from .scene_objects import Text as text
     from .scene_objects import Text3d as text3d
     from .scene_objects import Texture as texture
+    from .scene_objects import PointCloud as pointcloud
 
     def __init__(self, width: int = 400, height: int = 300, on_click: Optional[Callable] = None) -> None:
         """3D Scene
