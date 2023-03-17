@@ -64,3 +64,27 @@ def test_add_remove(screen: Screen):
 
     screen.click('Remove')
     screen.should_not_contain('Alice')
+
+
+def test_slot(screen: Screen):
+    with ui.table(columns=columns, rows=rows, pagination=None) as table:
+        with table.add_slot('top-row'):
+            with table.row():
+                with table.cell():
+                    ui.label('This is top slot.')
+        table.add_slot('body', '''
+        <q-tr :props="props">
+          <q-td key="name" :props="props">overriden</q-td>
+          <q-td key="age" :props="props">
+            <q-badge color="green">
+              {{ props.row.age }}
+            </q-badge>
+          </q-td>
+        </q-tr>
+        ''')
+
+    screen.open('/')
+    screen.should_contain('This is top slot.')
+    screen.should_not_contain('Alice')
+    screen.should_contain('overriden')
+    screen.should_contain('21')
