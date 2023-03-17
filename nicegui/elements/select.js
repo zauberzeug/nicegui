@@ -17,7 +17,9 @@ export default {
     filterFn(val, update, abort) {
       update(() => {
         const needle = val.toLocaleLowerCase();
-        this.filteredOptions = this.initialOptions.filter((v) => v.label.toLocaleLowerCase().indexOf(needle) > -1);
+        this.filteredOptions = needle
+          ? this.initialOptions.filter((v) => String(v.label).toLocaleLowerCase().indexOf(needle) > -1)
+          : this.initialOptions;
       });
     },
   },
