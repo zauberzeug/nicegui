@@ -2,7 +2,11 @@ import re
 from copy import deepcopy
 from typing import Any, Callable, Dict, List, Optional, Union
 
+from nicegui.dependencies import register_component
+
 from .choice_element import ChoiceElement
+
+register_component('select', __file__, 'select.js')
 
 
 class Select(ChoiceElement):
@@ -23,14 +27,14 @@ class Select(ChoiceElement):
         :param with_input: whether to show an input field to filter the options
         """
         self.with_input = with_input
-        super().__init__(tag='q-select', options=options, value=value, on_change=on_change)
+        super().__init__(tag='select', options=options, value=value, on_change=on_change)
         self._props['label'] = label
         if with_input:
             self.original_options = deepcopy(options)
             self._props['use-input'] = True
             self._props['hide-selected'] = True
             self._props['fill-input'] = True
-            self.on('input-value', self.on_filter)
+            self._props['input-debounce'] = 0
 
     def on_filter(self, event: Dict) -> None:
         self.options = [
@@ -41,21 +45,11 @@ class Select(ChoiceElement):
         self.update()
 
     def _msg_to_value(self, msg: Dict) -> Any:
-        if self.with_input:
-            return msg['args']['value']
         return self._values[msg['args']['value']]
 
     def _value_to_model_value(self, value: Any) -> Any:
-        if self.with_input:
-            return {'value': value, 'label': value}
         try:
             index = self._values.index(value)
             return {'value': index, 'label': self._labels[index]}
         except ValueError:
             return None
-
-    def _update_options(self) -> None:
-        if self.with_input:
-            self._props['options'] = [{'value': v, 'label': l} for v, l in zip(self._values, self._labels)]
-        else:
-            super()._update_options()
