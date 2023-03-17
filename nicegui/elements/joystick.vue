@@ -24,7 +24,6 @@ export default {
 <style scoped>
 :scope {
   background-color: AliceBlue;
-  position: relative;
   width: 10em;
   height: 10em;
 }
