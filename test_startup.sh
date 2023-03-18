@@ -33,7 +33,7 @@ check main.py || error=1
 for path in examples/*
 do
     if test -f $path/start.sh; then
-       check $path/start.sh dev || error=1 
+        check $path/start.sh dev || error=1 
     elif test -f $path/main.py; then
         check $path/main.py || error=1
     fi
