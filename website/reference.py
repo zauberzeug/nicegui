@@ -285,9 +285,12 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
             'rowSelection': 'multiple',
         }).classes('max-h-40')
 
-        def update():
-            grid.options['rowData'][0]['age'] += 1
-            grid.update()
+        async def update():
+            selected_rows = await grid.get_selected_rows()
+            for selected in selected_rows:
+                for row in grid.options["rowData"]:
+                    if selected["name"] == row["name"]:
+                        row["age"] += 1
 
         ui.button('Update', on_click=update)
         ui.button('Select all', on_click=lambda: grid.call_api_method('selectAll'))
