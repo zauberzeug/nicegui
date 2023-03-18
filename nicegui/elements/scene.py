@@ -44,6 +44,7 @@ class Scene(Element):
     from .scene_objects import Extrusion as extrusion
     from .scene_objects import Group as group
     from .scene_objects import Line as line
+    from .scene_objects import PointCloud as point_cloud
     from .scene_objects import QuadraticBezierTube as quadratic_bezier_tube
     from .scene_objects import Ring as ring
     from .scene_objects import Sphere as sphere
@@ -52,7 +53,6 @@ class Scene(Element):
     from .scene_objects import Text as text
     from .scene_objects import Text3d as text3d
     from .scene_objects import Texture as texture
-    from .scene_objects import PointCloud as pointcloud
 
     def __init__(self, width: int = 400, height: int = 300, on_click: Optional[Callable] = None) -> None:
         """3D Scene

@@ -174,8 +174,8 @@ class SpotLight(Object3D):
 class PointCloud(Object3D):
 
     def __init__(self,
-                points: List[List[float]],
-                color: List[List[float]],
-                point_size: float = 1.0,
-                ) -> None:
-        super().__init__('point_cloud', points, color, point_size)
+                 points: List[List[float]],
+                 colors: List[List[float]],
+                 point_size: float = 1.0,
+                 ) -> None:
+        super().__init__('point_cloud', points, colors, point_size)
