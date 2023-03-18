@@ -12,4 +12,7 @@ Just run
 docker-compose up
 ```
 
-Then you can access http://localhost/nicegui.
+Then you can access http://localhost/nicegui/.
+Note the trailing / in the url.
+It is important.
+We welcome suggestion on how to make it optional.
