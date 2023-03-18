@@ -12,6 +12,7 @@ class Menu(ValueElement):
         """Menu
 
         Creates a menu.
+        The menu should be placed inside the element where it should be shown.
 
         :param value: whether the menu is already opened (default: `False`)
         """

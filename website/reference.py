@@ -271,7 +271,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
     h3('Data Elements')
 
     @example(ui.aggrid, menu)
-    def table_example():
+    def aggrid_example():
         grid = ui.aggrid({
             'columnDefs': [
                 {'headerName': 'Name', 'field': 'name'},
@@ -291,6 +291,19 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
 
         ui.button('Update', on_click=update)
         ui.button('Select all', on_click=lambda: grid.call_api_method('selectAll'))
+
+    @example(ui.table, menu)
+    def table_example():
+        columns = [
+            {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
+            {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
+        ]
+        rows = [
+            {'name': 'Alice', 'age': 18},
+            {'name': 'Bob', 'age': 21},
+            {'name': 'Carol'},
+        ]
+        ui.table(columns=columns, rows=rows, row_key='name')
 
     @example(ui.chart, menu)
     def chart_example():
@@ -483,15 +496,16 @@ and [tab panels](https://quasar.dev/vue-components/tab-panels) API.
 
     @example(ui.menu, menu)
     def menu_example():
-        choice = ui.label('Try the menu.')
-        with ui.row():
-            with ui.menu() as menu:
-                ui.menu_item('Menu item 1', lambda: choice.set_text('Selected item 1.'))
-                ui.menu_item('Menu item 2', lambda: choice.set_text('Selected item 2.'))
-                ui.menu_item('Menu item 3 (keep open)', lambda: choice.set_text('Selected item 3.'), auto_close=False)
-                ui.separator()
-                ui.menu_item('Close', on_click=menu.close)
-            ui.button('Open menu', on_click=menu.open)
+        with ui.row().classes('w-full items-center'):
+            result = ui.label().classes('mr-auto')
+            with ui.button(on_click=lambda: menu.open()).props('icon=menu'):
+                with ui.menu() as menu:
+                    ui.menu_item('Menu item 1', lambda: result.set_text('Selected item 1'))
+                    ui.menu_item('Menu item 2', lambda: result.set_text('Selected item 2'))
+                    ui.menu_item('Menu item 3 (keep open)',
+                                 lambda: result.set_text('Selected item 3'), auto_close=False)
+                    ui.separator()
+                    ui.menu_item('Close', on_click=menu.close)
 
     @example('''#### Tooltips
 
@@ -1014,8 +1028,9 @@ You can provide SSL certificates directly using [FastAPI](https://fastapi.tiango
 In production we also like using reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/) to handle these details for us.
 See our [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
 
-You may also have a look at [our example for using a custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
+You may also have a look at [our demo for using a custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
 This will allow you to do very flexible deployments as described in the [FastAPI documentation](https://fastapi.tiangolo.com/deployment/).
+Note that there are additional steps required to allow multiple workers.
 ''')
 
         with ui.column().classes('w-full mt-8 arrow-links'):

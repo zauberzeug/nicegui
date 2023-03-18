@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import frontend
-import uvicorn
 from fastapi import FastAPI
 
 app = FastAPI()
@@ -14,4 +13,4 @@ def read_root():
 frontend.init(app)
 
 if __name__ == '__main__':
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+    print('Please start the app with the "uvicorn" command as shown in the start.sh script')

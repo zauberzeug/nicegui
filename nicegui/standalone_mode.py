@@ -3,9 +3,12 @@ import os
 import signal
 import tempfile
 import time
+import warnings
 from threading import Thread
 
-import webview
+with warnings.catch_warnings():  # webview depends on bottle which uses the deprecated cgi function (see https://github.com/bottlepy/bottle/issues/1403)
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    import webview
 
 shutdown = multiprocessing.Event()
 

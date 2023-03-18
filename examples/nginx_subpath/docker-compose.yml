@@ -2,12 +2,11 @@ version: "3.9"
 services:
   app:
     image: zauberzeug/nicegui:latest
-    ports:
-      - "3000:8080"
-
+    volumes:
+      - ./app:/app # mount local app directory
   proxy:
     image: nginx:1.16.0-alpine
     ports:
-      - "80:80"
+      - "80:80" # map internal port 80 to external port 80
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx.conf:/etc/nginx/nginx.conf # use custom nginx config
