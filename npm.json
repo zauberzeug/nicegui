@@ -1,0 +1,115 @@
+{
+  "aggrid": {
+    "package": "ag-grid-community",
+    "destination": "elements/lib",
+    "keep": [
+      "package/dist/ag-grid-community(\\.min)?\\.js"
+    ],
+    "rename": {
+      "package/dist/": ""
+    }
+  },
+  "highcharts": {
+    "destination": "elements/lib",
+    "keep": [
+      "package/highcharts(\\.min)?\\.js",
+      "package/highcharts-more(\\.min)?\\.js",
+      "package/highcharts-3d(\\.min)?\\.js",
+      "package/modules/[^\\.]*(\\.min)?\\.js"
+    ],
+    "rename": {
+      "package/": ""
+    }
+  },
+  "mermaid": {
+    "version": "9.4.3",
+    "destination": "elements/lib",
+    "keep": [
+      "package/dist/mermaid(\\.min)?\\.js"
+    ],
+    "rename": {
+      "package/dist/": ""
+    }
+  },
+  "nipplejs": {
+    "destination": "elements/lib",
+    "keep": [
+      "package/dist/nipplejs(\\.min)?\\.js"
+    ],
+    "rename": {
+      "package/dist/": ""
+    }
+  },
+  "plotly": {
+    "package": "plotly.js",
+    "destination": "elements/lib",
+    "keep": [
+      "package/dist/plotly(\\.min)?\\.js"
+    ],
+    "rename": {
+      "package/dist/": ""
+    }
+  },
+  "three": {
+    "destination": "elements/lib",
+    "keep": [
+      "package/build/three(\\.min)?\\.js",
+      "package/examples/jsm/renderers/CSS2DRenderer(\\.min)?\\.js",
+      "package/examples/jsm/renderers/CSS3DRenderer(\\.min)?\\.js",
+      "package/examples/jsm/controls/OrbitControls(\\.min)?\\.js",
+      "package/examples/jsm/loaders/STLLoader(\\.min)?\\.js",
+      "package/examples/jsm/libs/tween\\.module\\.min\\.js"
+    ],
+    "rename":  {
+      "package/build/": "",
+      "package/examples/jsm/renderers/": "modules/",
+      "package/examples/jsm/controls/": "modules/",
+      "package/examples/jsm/loaders/": "modules/",
+      "package/examples/jsm/libs/": "modules/"
+    }
+  },
+  "tween": {
+    "package": "@tweenjs/tween.js",
+    "destination": "elements/lib",
+    "keep": [
+      "package/dist/tween\\.umd(\\.min)?\\.js"
+    ],
+    "rename":  {
+      "package/dist/": ""
+    }
+  },
+
+  "vue": {
+      "destination": "static",
+      "keep": [
+        "package/dist/vue\\.global(\\.prod)?\\.js"
+      ],
+      "rename":  {
+        "package/dist": ".."
+      }
+    },
+  "quasar": {
+    "destination": "static",
+    "keep": [
+      "package/dist/quasar\\.umd(\\.prod)?\\.js",
+      "package/dist/quasar(\\.prod)?\\.css"
+    ],
+    "rename":  {
+      "package/dist": ".."
+    }
+  },
+  "socket.io": {
+    "destination": "static",
+    "keep": [
+      "package/client-dist/socket\\.io(\\.min)?\\.js"
+    ],
+    "rename":  {
+      "package/client-dist": ".."
+    }
+  },
+  "tailwind": {
+    "destination": "static",
+    "download": "https://cdn.tailwindcss.com/3.2.4",
+    "rename": "../tailwind.min.js"
+  }
+}
