@@ -9,14 +9,14 @@ from ..globals import socket_id
 from .scene_object3d import Object3D
 from .scene_objects import Scene as SceneObject
 
-register_component('scene', __file__, 'scene.js', [
-    'lib/three.min.js',
-    'lib/CSS2DRenderer.js',
-    'lib/CSS3DRenderer.js',
-    'lib/OrbitControls.js',
-    'lib/STLLoader.js',
-    'lib/tween.umd.min.js',
-])
+# register_component('scene', __file__, 'scene.js', [
+#     'lib/three/three.min.js',
+#     'lib/three/modules/CSS2DRenderer.js',
+#     'lib/three/modules/CSS3DRenderer.js',
+#     'lib/three/modules/OrbitControls.js',
+#     'lib/three/modules/STLLoader.js',
+#     'lib/tween/tween.umd.js',
+# ])
 
 
 @dataclass

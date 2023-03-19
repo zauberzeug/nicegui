@@ -8,7 +8,7 @@ import markdown2
 from ..dependencies import register_component
 from .mixins.content_element import ContentElement
 
-register_component('markdown', __file__, 'markdown.js', ['lib/mermaid.min.js'])
+register_component('markdown', __file__, 'markdown.js', ['lib/mermaid/mermaid.min.js'])
 
 
 class Markdown(ContentElement):

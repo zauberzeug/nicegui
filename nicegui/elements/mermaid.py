@@ -1,7 +1,7 @@
 from ..dependencies import register_component
 from .mixins.content_element import ContentElement
 
-register_component('mermaid', __file__, 'mermaid.js', ['lib/mermaid.min.js'])
+register_component('mermaid', __file__, 'mermaid.js', ['lib/mermaid/mermaid.min.js'])
 
 
 class Mermaid(ContentElement):
