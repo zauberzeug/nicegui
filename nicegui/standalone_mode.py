@@ -7,8 +7,9 @@ import time
 import warnings
 from threading import Thread
 
-with warnings.catch_warnings():  # webview depends on bottle which uses the deprecated cgi function (see https://github.com/bottlepy/bottle/issues/1403)
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
+with warnings.catch_warnings():
+    # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
+    warnings.filterwarnings('ignore', category=DeprecationWarning)
     import webview
 
 shutdown = multiprocessing.Event()
@@ -16,7 +17,7 @@ shutdown = multiprocessing.Event()
 
 def open_window(url: str, title: str, width: int, height: int, fullscreen: bool, shutdown: multiprocessing.Event) -> None:
     window = webview.create_window(title, url=url, width=width, height=height, fullscreen=fullscreen)
-    window.events.closing += shutdown.set  # signal that the program should be closed to the main process
+    window.events.closing += shutdown.set  # signal to the main process that the program should be closed
     webview.start(storage_path=tempfile.mkdtemp())
 
 
@@ -34,10 +35,10 @@ def activate(url: str, title: str, width: int, height: int, fullscreen: bool) ->
 
 
 def find_open_port(start_port: int = 8000, end_port: int = 8999) -> int:
-    '''Reliable finding of an open port in a given range.
+    '''Reliably find an open port in a given range.
 
-    It will actually try to open the port to ensure no firewall blocks it.
-    This is better than passing for port "0" to uvicorn for example.
+    This function will actually try to open the port to ensure no firewall blocks it.
+    This is better than, e.g., passing port=0 to uvicorn.
     '''
     for port in range(start_port, end_port + 1):
         try:

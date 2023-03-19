@@ -77,7 +77,7 @@ def run(*,
         width, height = (800, 600) if standalone is True else standalone
         standalone_mode.activate(f'http://localhost:{port}', title, width, height, fullscreen)
 
-    # NOTE we save the url in an environment variable so the subprocess started in reload mode can access it.
+    # NOTE: We save the URL in an environment variable so the subprocess started in reload mode can access it.
     os.environ['NICEGUI_URL'] = f'http://localhost:{port}'
 
     if show:
