@@ -4,8 +4,7 @@ from nicegui import ui
 @ui.page('/subpage')
 def subpage():
     ui.label('This is a subpage').classes('text-h5 mx-auto mt-12')
-    # TODO: this is not working properly yet
-    # ui.button('back', on_click=lambda: ui.open('/')).classes('mx-auto')
+    ui.button('back', on_click=lambda: ui.open('/')).classes('mx-auto')
 
 
 @ui.page('/')

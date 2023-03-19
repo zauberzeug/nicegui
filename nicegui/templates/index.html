@@ -139,7 +139,7 @@
           window.socket.on("update", (msg) => Object.entries(msg).forEach(([id, el]) => this.elements[el.id] = el));
           window.socket.on("run_method", (msg) => getElement(msg.id)?.[msg.name](...msg.args));
           window.socket.on("run_javascript", (msg) => runJavascript(msg['code'], msg['request_id']));
-          window.socket.on("open", (msg) => (location.href = msg));
+          window.socket.on("open", (msg) => (location.href = msg.startsWith('/') ? "{{ prefix | safe }}" + msg : msg));
           window.socket.on("notify", (msg) => Quasar.Notify.create(msg));
         },
       }).use(Quasar, {
