@@ -1,6 +1,10 @@
 import asyncio
 import functools
 import inspect
+import socket
+import threading
+import time
+import webbrowser
 from contextlib import nullcontext
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Union
 
@@ -33,3 +37,29 @@ def safe_invoke(func: Union[Callable, Awaitable], client: Optional['Client'] = N
                 background_tasks.create(result_with_client())
     except Exception as e:
         globals.handle_exception(e)
+
+
+def port_open_tcp(host: str, port: int) -> bool:
+    # Check if the port is open by checking if a TCP connection can be established.
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        sock.connect((host, port))
+    except ConnectionRefusedError:
+        return False
+    else:
+        return True
+    finally:
+        sock.close()
+
+
+def schedule_browser(host: str, port: int) -> None:
+    # This function has to be non blocking. Therefore, we'll launch a thread, s.th.
+    # the main thread can proceed with the actual startup.
+    # The thread will be launched as a daemon, s.th. it doesn't interfere with Ctrl+C.
+    def thread(host: str, port: int) -> None:
+        while not port_open_tcp(host, port):
+            time.sleep(0.1)
+        webbrowser.open(f'http://{host}:{port}/')
+
+    host = host if host != "0.0.0.0" else "127.0.0.1"
+    threading.Thread(target=thread, args=(host, port), daemon=True).start()
