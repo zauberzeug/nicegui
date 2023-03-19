@@ -9,7 +9,7 @@ class Card(Element):
         Provides a container with a dropped shadow.
         """
         super().__init__('q-card')
-        self.classes('column items-start q-pa-md gap-4')
+        self._classes = ['nicegui-card']
 
     def tight(self):
         self._classes.clear()

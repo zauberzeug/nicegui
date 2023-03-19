@@ -35,10 +35,10 @@ class Client:
         self.environ: Optional[Dict[str, Any]] = None
         self.shared = shared
 
-        with Element('q-layout', _client=self).props('view="HHH LpR FFF"').classes('outline-none') as self.layout:
+        with Element('q-layout', _client=self).props('view="HHH LpR FFF"').classes('nicegui-layout') as self.layout:
             with Element('q-page-container'):
                 with Element('q-page'):
-                    self.content = Element('div').classes('q-pa-md column items-start gap-4')
+                    self.content = Element('div').classes('nicegui-content')
 
         self.waiting_javascript_commands: Dict[str, str] = {}
 
