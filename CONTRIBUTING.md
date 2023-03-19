@@ -107,6 +107,21 @@ To get started, fork the repository on GitHub, make your changes, and open a pul
 When submitting a PR, please make sure that the code follows the existing coding style and that all tests are passing.
 If you're adding a new feature, please include tests that cover the new functionality.
 
+## YouTube
+
+We welcome and support video and tutorial contributions to the NiceGUI community!
+As recently [highlighted in a conversation on YouTube](https://www.youtube.com/watch?v=HiNNe4Q32U4&lc=UgyRcZCOZ9i5z6GuDcJ4AaABAg),
+creating and sharing tutorials or showcasing projects using NiceGUI can be an excellent way to help others learn and grow,
+while also spreading the word about our library.
+
+Please note that NiceGUI is pronounced like "nice guy," which might be helpful to know when creating any video content.
+
+If you decide to create YouTube content around NiceGUI,
+we kindly ask that you credit our repository, our YouTube channel, and any relevant videos or resources within the description.
+By doing so, you'll be contributing to the growth of our community and helping us receive more amazing pull requests and feature suggestions.
+
+We're thrilled to see your creations and look forward to watching your videos. Happy video-making!
+
 ## Thank you!
 
 Thank you for your interest in contributing to NiceGUI!
