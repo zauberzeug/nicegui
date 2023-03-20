@@ -198,6 +198,12 @@ export default {
         light.target.position.set(1, 0, 0);
         mesh.add(light);
         mesh.add(light.target);
+      } else if (type == "point_cloud") {
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.Float32BufferAttribute(args[0].flat(), 3));
+        geometry.setAttribute("color", new THREE.Float32BufferAttribute(args[1].flat(), 3));
+        const material = new THREE.PointsMaterial({ size: args[2], vertexColors: true });
+        mesh = new THREE.Points(geometry, material);
       } else {
         let geometry;
         const wireframe = args.pop();

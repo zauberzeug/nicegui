@@ -63,6 +63,7 @@ def test_add_remove(screen: Screen):
     screen.should_contain('Carol')
 
     screen.click('Remove')
+    screen.wait(0.5)
     screen.should_not_contain('Alice')
 
 
