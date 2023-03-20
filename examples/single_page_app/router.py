@@ -36,8 +36,5 @@ class Router():
         background_tasks.create(build())
 
     def frame(self) -> ui.element:
-        self.content = ui.element('router_frame').on('open', lambda msg: (
-            print(msg, flush=True),
-            self.open(msg['args']),
-        ))
+        self.content = ui.element('router_frame').on('open', lambda msg: self.open(msg['args']))
         return self.content
