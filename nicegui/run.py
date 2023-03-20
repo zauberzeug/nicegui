@@ -3,13 +3,13 @@ import multiprocessing
 import os
 import sys
 import webbrowser
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 import uvicorn
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import globals, standalone_mode
+from . import globals, native_mode
 
 
 def run(*,
@@ -21,8 +21,9 @@ def run(*,
         dark: Optional[bool] = False,
         binding_refresh_interval: float = 0.1,
         show: bool = True,
-        standalone: bool = False,
-        fullscreen: Union[bool, Tuple[int, int]] = False,
+        native: bool = False,
+        window_size: Optional[Tuple[int, int]] = None,
+        fullscreen: bool = False,
         reload: bool = True,
         uvicorn_logging_level: str = 'warning',
         uvicorn_reload_dirs: str = '.',
@@ -44,8 +45,9 @@ def run(*,
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param show: automatically open the UI in a browser tab (default: `True`)
-    :param standalone: open the UI in a standalone window (default: `False`, accepts size as tuple or True (800, 600), deactivates `show`, automatically finds an open port)
-    :param fullscreen: open the UI in a fullscreen, standalone window (default: `False`, also activates `standalone`)
+    :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
+    :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`)
+    :param fullscreen: open the UI in a fullscreen window (default: `False`, also activates `native`)
     :param reload: automatically reload the UI on file changes (default: `True`)
     :param uvicorn_logging_level: logging level for uvicorn server (default: `'warning'`)
     :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only)
@@ -70,12 +72,14 @@ def run(*,
         return
 
     if fullscreen:
-        standalone = True
-    if standalone:
+        native = True
+    if window_size:
+        native = True
+    if native:
         show = False
-        port = standalone_mode.find_open_port()
-        width, height = (800, 600) if standalone is True else standalone
-        standalone_mode.activate(f'http://localhost:{port}', title, width, height, fullscreen)
+        port = native_mode.find_open_port()
+        width, height = window_size or (800, 600)
+        native_mode.activate(f'http://localhost:{port}', title, width, height, fullscreen)
 
     # NOTE: We save the URL in an environment variable so the subprocess started in reload mode can access it.
     os.environ['NICEGUI_URL'] = f'http://localhost:{port}'
