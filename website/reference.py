@@ -870,7 +870,7 @@ This is used in our [authentication demo](https://github.com/zauberzeug/nicegui/
             return {'min': 0, 'max': max, 'value': random.randint(0, max)}
 
         max = ui.number('max', value=100)
-        ui.button('generate random number', on_click=lambda: ui.open(f'/random/{max.value}'))
+        ui.button('generate random number', on_click=lambda: ui.open(f'/random/{max.value:.0f}'))
 
     h3('Lifecycle')
 
@@ -1004,7 +1004,7 @@ With this command you can launch the script `main.py` in the current directory o
 ''')
 
         with bash_window(classes='max-w-lg w-full h-52'):
-            ui.markdown('```bash\ndocker run -p 80:8080 -v $(pwd)/:/app/ \\\n-d --restart always zauberzeug/nicegui:latest\n```')
+            ui.markdown('```bash\ndocker run -p 80:8080 -v $(pwd)/:/app/ \\\n    -d --restart always zauberzeug/nicegui:latest\n```')
 
         ui.markdown(
             '''The example assumes `main.py` uses the port 8080 in the `ui.run` command (which is the default).
