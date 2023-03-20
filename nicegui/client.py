@@ -10,7 +10,7 @@ from fastapi.templating import Jinja2Templates
 
 from nicegui import json
 
-from . import globals, outbox
+from . import __version__, globals, outbox
 from .dependencies import generate_js_imports, generate_vue_content
 from .element import Element
 from .favicon import get_favicon_url
@@ -71,6 +71,7 @@ class Client:
         elements = json.dumps({id: element._to_dict() for id, element in self.elements.items()})
         return templates.TemplateResponse('index.html', {
             'request': request,
+            'version': __version__,
             'client_id': str(self.id),
             'elements': elements,
             'head_html': self.head_html,
