@@ -6,7 +6,6 @@ import requests
 from bs4 import BeautifulSoup
 
 import nicegui.elements.chart as highcharts
-from nicegui import ui
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
 PATH = Path('/tmp/nicegui_dependencies')
@@ -159,10 +158,4 @@ js = request_buffered_str(url)
 Path('nicegui/elements/lib/three.min.js').write_text(js)
 print('Three.js:', version)
 # TODO: using script JS files is not supported after version 0.160.0 --> use ES module instead
-# TODO: CSS2DRenderer.js (requires ES modules)
-# TODO: CSS3DRenderer.js (requires ES modules)
-# TODO: OrbitControls.js (requires ES modules)
-# TODO: STLLoader.js (requires ES modules)
-
-
-ui.run()
+# TODO: CSS2DRenderer.js, CSS3DRenderer.js, OrbitControls.js, STLLoader.js (require ES modules)
