@@ -83,7 +83,7 @@ def add_header() -> None:
 
 @ui.page('/')
 async def index_page(client: Client):
-    client.content.classes(remove='q-pa-md gap-4')
+    client.content.classes('p-0 gap-0')
     add_head_html()
     add_header()
 
