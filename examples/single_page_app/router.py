@@ -36,6 +36,4 @@ class Router():
 
     def frame(self):
         self.content = ui.element('router_frame').on('open', lambda msg: self.open(msg['args']))
-        with self.content:
-            ui.label('Loading...').classes('text-2xl')
         return self.content
