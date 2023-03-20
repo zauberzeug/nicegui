@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Awaitable, Callable, Union
 
 from nicegui import background_tasks, ui
 from nicegui.dependencies import register_component
@@ -19,20 +19,23 @@ class Router():
             return func
         return decorator
 
-    def open(self, func: Callable):
-        path = {v: k for k, v in self.routes.items()}[func]
+    def open(self, target: Union[Callable, Awaitable, str]):
+        if isinstance(target, str):
+            path = target
+            builder = self.routes[target]
+        else:
+            path = {v: k for k, v in self.routes.items()}[target]
+            builder = target
         self.content.clear()
 
         async def build():
             with self.content:
-                cmd = f'history.pushState({{page: "{path}"}}, "", "{path}")'
-                print(cmd, flush=True)
-                await ui.run_javascript(cmd, respond=False)
-                await func()
+                await ui.run_javascript(f'history.pushState({{page: "{path}"}}, "", "{path}")', respond=False)
+                await builder()
         background_tasks.create(build())
 
     def frame(self):
-        self.content = ui.element('router_frame')
+        self.content = ui.element('router_frame').on('open', lambda msg: self.open(msg['args']))
         with self.content:
             ui.label('Loading...').classes('text-2xl')
         return self.content
