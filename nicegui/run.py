@@ -57,8 +57,6 @@ def run(*,
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     '''
     globals.ui_run_has_been_called = True
-    globals.host = host
-    globals.port = port
     globals.reload = reload
     globals.title = title
     globals.viewport = viewport
@@ -75,8 +73,12 @@ def run(*,
         standalone = True
     if standalone:
         show = False
+        port = standalone_mode.find_open_port()
         width, height = (800, 600) if standalone is True else standalone
         standalone_mode.activate(f'http://localhost:{port}', title, width, height, fullscreen)
+
+    # NOTE: We save the URL in an environment variable so the subprocess started in reload mode can access it.
+    os.environ['NICEGUI_URL'] = f'http://localhost:{port}'
 
     if show:
         webbrowser.open(f'http://{host if host != "0.0.0.0" else "127.0.0.1"}:{port}/')

@@ -1,4 +1,5 @@
 import asyncio
+import os
 import time
 import urllib.parse
 from pathlib import Path
@@ -71,7 +72,7 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     background_tasks.create(prune_slot_stacks())
     globals.state = globals.State.STARTED
     if with_welcome_message:
-        print(f'NiceGUI ready to go on http://{globals.host}:{globals.port}')
+        print(f'NiceGUI ready to go on {os.environ["NICEGUI_URL"]}')
 
 
 @app.on_event('shutdown')
