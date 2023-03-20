@@ -30,5 +30,4 @@ with ui.row():
 # this places the frame for the content which should be displayed
 router.frame().classes('w-full pt-8')
 
-
 ui.run()

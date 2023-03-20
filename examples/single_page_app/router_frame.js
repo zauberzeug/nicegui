@@ -1,5 +1,5 @@
 export default {
-  template: `<div>Test</div>`,
+  template: `<div><slot></slot></div>`,
   mounted() {
     window.addEventListener("popstate", (event) => {
       if (event.state && event.state.page) {
