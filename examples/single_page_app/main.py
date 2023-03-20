@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 from router import Router
 
 from nicegui import ui
@@ -32,6 +31,6 @@ async def main():
         ui.button('Three', on_click=lambda: router.open(show_three)).classes('w-32')
 
     # this places the content which should be displayed
-    router.frame().classes('w-full pt-8')
+    router.frame().classes('w-full p-4 bg-gray-100')
 
 ui.run()
