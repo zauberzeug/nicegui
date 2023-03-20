@@ -13,7 +13,7 @@ from . import globals, native_mode
 
 
 def run(*,
-        host: str = '0.0.0.0',
+        host: Optional[str] = None,
         port: int = 8080,
         title: str = 'NiceGUI',
         viewport: str = 'width=device-width, initial-scale=1',
@@ -37,7 +37,7 @@ def run(*,
 
     You can call `ui.run()` with optional arguments:
 
-    :param host: start server with this host (default: `'0.0.0.0'`)
+    :param host: start server with this host (defaults to `'127.0.0.1` in native mode, otherwise `'0.0.0.0'`)
     :param port: use this port (default: `8080`)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
     :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
@@ -77,12 +77,15 @@ def run(*,
         native = True
     if native:
         show = False
+        host = host or '127.0.0.1'
         port = native_mode.find_open_port()
         width, height = window_size or (800, 600)
-        native_mode.activate(f'http://localhost:{port}', title, width, height, fullscreen)
+        native_mode.activate(f'http://{host}:{port}', title, width, height, fullscreen)
+    else:
+        host = host or '0.0.0.0'
 
     # NOTE: We save the URL in an environment variable so the subprocess started in reload mode can access it.
-    os.environ['NICEGUI_URL'] = f'http://localhost:{port}'
+    os.environ['NICEGUI_URL'] = f'http://{host}:{port}'
 
     if show:
         webbrowser.open(f'http://{host if host != "0.0.0.0" else "127.0.0.1"}:{port}/')
