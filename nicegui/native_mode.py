@@ -12,9 +12,6 @@ with warnings.catch_warnings():
     warnings.filterwarnings('ignore', category=DeprecationWarning)
     import webview
 
-multiprocessing.freeze_support()
-shutdown = multiprocessing.Event()
-
 
 def open_window(url: str, title: str, width: int, height: int, fullscreen: bool, shutdown: multiprocessing.Event) -> None:
     window = webview.create_window(title, url=url, width=width, height=height, fullscreen=fullscreen)
@@ -22,14 +19,16 @@ def open_window(url: str, title: str, width: int, height: int, fullscreen: bool,
     webview.start(storage_path=tempfile.mkdtemp())
 
 
-def check_shutdown() -> None:
-    while True:
-        if shutdown.is_set():
-            os.kill(os.getpgid(os.getpid()), signal.SIGTERM)
-        time.sleep(0.1)
-
-
 def activate(url: str, title: str, width: int, height: int, fullscreen: bool) -> None:
+    multiprocessing.freeze_support()  # NOTE we need to activate freeze_support() before accessing multiprocessing.Event()
+    shutdown = multiprocessing.Event()
+
+    def check_shutdown() -> None:
+        while True:
+            if shutdown.is_set():
+                os.kill(os.getpgid(os.getpid()), signal.SIGTERM)
+            time.sleep(0.1)
+
     args = url, title, width, height, fullscreen, shutdown
     multiprocessing.Process(target=open_window, args=args, daemon=False).start()
     Thread(target=check_shutdown, daemon=True).start()
