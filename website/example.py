@@ -94,7 +94,6 @@ class example:
             if isinstance(self.content, type):
                 name = pascal_to_snake(self.content.__name__)
                 path = Path(__file__).parent / 'more_reference' / f'{name}_reference.py'
-                print(path)
                 if path.exists():
                     ui.markdown(f'[More examples...](reference/{name})').classes('bold-links')
 
