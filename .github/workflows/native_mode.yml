@@ -30,23 +30,26 @@ jobs:
           python -m pip install --upgrade pip
           pip install nicegui
 
-      - name: Install Xvfb (Linux)
+      - name: Setup Xvfb (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y xvfb
+        run: |
+          sudo apt-get update && sudo apt-get install -y xvfb
+          Xvfb :99 -screen 0 1024x768x24 &
+          echo "DISPLAY=:99" >> $GITHUB_ENV
 
       - name: Run Script (Linux and macOS)
         if: runner.os != 'Windows'
         run: |
           python test_native_mode.py &
-          firefox "https://localhost:8080/" &
+          firefox --disable-gpu "https://localhost:8080/" &
           sleep 10
         shell: bash
 
       - name: Run Script (Windows)
         if: runner.os == 'Windows'
         run: |
-          start /b python test_native_mode.py
-          start firefox "https://localhost:8080/"
+          Start-Job { python test_native_mode.py }
+          Start-Process -FilePath "firefox.exe" -ArgumentList "--disable-gpu", "https://localhost:8080/"
           TIMEOUT 10
         shell: pwsh
 
