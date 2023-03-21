@@ -109,7 +109,7 @@
   },
   "tailwind": {
     "destination": "static",
-    "download": "https://cdn.tailwindcss.com/3.2.4",
-    "rename": "../tailwind.min.js"
+    "download": "https://cdn.tailwindcss.com",
+    "rename": "../tailwindcss.min.js"
   }
 }
