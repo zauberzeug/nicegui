@@ -19,10 +19,24 @@ jobs:
         run: |
           choco install firefox
 
+      - name: Install Xvfb (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Install Xvfb (macOS)
+        if: runner.os == 'macOS'
+        run: brew install xvfb
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Start Xvfb and set DISPLAY
+        if: runner.os != 'Windows'
+        run: |
+          Xvfb :99 &
+          echo "DISPLAY=:99" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: |
@@ -34,11 +48,10 @@ jobs:
         run: |
           python test_native_mode.py &  # this creates the "result" file after browser connects
           if [[ "${{ runner.os }}" == "Windows" ]]; then
-            start firefox "https://localhost:8080/"
+            TIMEOUT 10
           else
-            firefox "https://localhost:8080/" &
+            sleep 10
           fi
-
       - name: Check output
         run: grep -q "Roundtrip works!" result
 
