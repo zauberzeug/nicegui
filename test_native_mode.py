@@ -9,4 +9,4 @@ async def page(client: Client):
     with open('result', 'w') as f:
         f.write(result)
 
-ui.run(reload=False)
+ui.run(reload=False, native=True)
