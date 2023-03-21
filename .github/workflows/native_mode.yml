@@ -34,10 +34,6 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
-      - name: Install Xvfb (macOS)
-        if: runner.os == 'macOS'
-        run: brew install xvfb
-
       - name: Run Script (Linux and macOS)
         if: runner.os != 'Windows'
         run: |
