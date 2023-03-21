@@ -28,7 +28,6 @@ function texture_geometry(coords) {
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
   geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geometry.computeVertexNormals();
-  geometry.computeFaceNormals();
   return geometry;
 }
 
@@ -38,6 +37,7 @@ function texture_material(texture) {
   return new THREE.MeshLambertMaterial({
     map: texture,
     side: THREE.DoubleSide,
+    transparent: true,
   });
 }
 
