@@ -25,17 +25,24 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Run Script
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install nicegui
+
+      - name: Setup Xvfb
+        if: runner.os != 'Windows'
         uses: coactions/setup-xvfb@v1
+
+      - name: Run Script
         id: run_script
-        with:
-          run: |
-            python test_native_mode.py &  # this creates the "result" file after browser connects
-            if [[ "${{ runner.os }}" == "Windows" ]]; then
-              TIMEOUT 10
-            else
-              sleep 10
-            fi
+        run: |
+          python test_native_mode.py &  # this creates the "result" file after browser connects
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            TIMEOUT 10
+          else
+            sleep 10
+          fi
 
       - name: Check output
         run: grep -q "Roundtrip works!" result
