@@ -38,21 +38,19 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install xvfb
 
-      - name: Setup Xvfb
-        if: runner.os == 'macOS' || runner.os == 'Linux'
+      - name: Run Script (Linux and macOS)
+        if: runner.os != 'Windows'
         run: |
-          export DISPLAY=:99
-          Xvfb :99 &
+          python test_native_mode.py &
+          sleep 10
+        shell: bash
 
-      - name: Run Script
-        id: run_script
+      - name: Run Script (Windows)
+        if: runner.os == 'Windows'
         run: |
-          python test_native_mode.py &  # this creates the "result" file after browser connects
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
-            TIMEOUT 10
-          else
-            sleep 10
-          fi
+          python test_native_mode.py &
+          TIMEOUT 10
+        shell: pwsh
 
       - name: Check output
         run: grep -q "Roundtrip works!" result
