@@ -33,26 +33,18 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Start Xvfb and set DISPLAY
-        if: runner.os != 'Windows'
-        run: |
-          Xvfb :99 &
-          echo "DISPLAY=:99" >> $GITHUB_ENV
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install .
-
       - name: Run Script
+        uses: coactions/setup-xvfb@v1
         id: run_script
-        run: |
-          python test_native_mode.py &  # this creates the "result" file after browser connects
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
-            TIMEOUT 10
-          else
-            sleep 10
-          fi
+        with:
+          run: |
+            python test_native_mode.py &  # this creates the "result" file after browser connects
+            if [[ "${{ runner.os }}" == "Windows" ]]; then
+              TIMEOUT 10
+            else
+              sleep 10
+            fi
+
       - name: Check output
         run: grep -q "Roundtrip works!" result
 
