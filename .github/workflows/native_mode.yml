@@ -14,6 +14,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
 
+      - name: Install browser (Windows) # it's preinstalled on macos and linux
+        if: runner.os == 'Windows'
+        run: |
+          choco install firefox
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -27,4 +32,17 @@ jobs:
       - name: Run Script
         id: run_script
         run: |
-          python -c 'print("it works")'
+          python test_native_mode.py &  # this creates the "result" file after browser connects
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            start firefox "https://localhost:8080/"
+          else
+            firefox "https://localhost:8080/" &
+          fi
+
+      - name: Check output
+        run: grep -q "Roundtrip works!" result
+
+      - name: Clean up
+        run: |
+          pkill -f test_native_mode.py
+          rm output.log
