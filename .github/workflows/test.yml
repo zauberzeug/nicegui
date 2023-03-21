@@ -1,6 +1,8 @@
 name: Run Tests
 
-on: [push]
+on:
+  push:
+    branches: [main]
 
 jobs:
   test:
