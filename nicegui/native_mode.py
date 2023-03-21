@@ -12,6 +12,7 @@ with warnings.catch_warnings():
     warnings.filterwarnings('ignore', category=DeprecationWarning)
     import webview
 
+multiprocessing.freeze_support()
 shutdown = multiprocessing.Event()
 
 
