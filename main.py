@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import importlib
 
 if True:
     # increasing max decode packets to be able to transfer images
@@ -20,7 +21,7 @@ from nicegui import ui
 from website import demo_card, reference, svg
 from website.example import bash_window, browser_window, python_window
 from website.star import add_star
-from website.style import example_link, features, heading, link_target, section_heading, subtitle, title
+from website.style import example_link, features, heading, link_target, section_heading, side_menu, subtitle, title
 
 prometheus.start_monitor(app)
 
@@ -290,8 +291,7 @@ The command searches for `main.py` in in your current directory and makes the ap
 def reference_page():
     add_head_html()
     add_header()
-    menu = ui.left_drawer() \
-        .classes('column no-wrap gap-1 bg-[#eee] mt-[-20px] px-8 py-20').style('height: calc(100% + 20px) !important')
+    menu = side_menu()
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Documentation and Examples', '*API* Reference')
@@ -300,6 +300,18 @@ def reference_page():
             'Documentation for older versions can be found at [https://0.9.nicegui.io/](https://0.9.nicegui.io/reference).'
         ).classes('bold-links arrow-links')
         reference.create_full(menu)
+
+
+@ui.page('/reference/{name}')
+def reference_page_more(name: str):
+    add_head_html()
+    add_header()
+    with side_menu():
+        ui.markdown('[← back](/reference)').classes('bold-links')
+    with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
+        section_heading('More Examples', f'ui.*{name}*')
+        module = importlib.import_module(f'website.more_reference.{name}')
+        getattr(module, 'more_examples')()
 
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html')

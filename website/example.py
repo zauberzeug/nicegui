@@ -50,11 +50,13 @@ class example:
                  content: Union[Callable, type, str],
                  menu: Optional[ui.drawer],
                  browser_title: Optional[str] = None,
-                 immediate: bool = False) -> None:
+                 immediate: bool = False,
+                 more: Optional[str] = None) -> None:
         self.content = content
         self.menu = menu
         self.browser_title = browser_title
         self.immediate = immediate
+        self.more = more
 
     def __call__(self, f: Callable) -> Callable:
         with ui.column().classes('w-full mb-8'):
@@ -87,6 +89,9 @@ class example:
                         f()
                     else:
                         intersection_observer(on_intersection=f)
+
+            if self.more:
+                ui.markdown(f'[More examples...](reference/{self.more})').classes('bold-links')
 
         return f
 
