@@ -4,6 +4,7 @@ from typing import Dict
 from nicegui import app, ui
 from nicegui.elements.markdown import prepare_content
 
+from . import more_reference
 from .example import add_html_with_anchor_link, bash_window, example, python_window
 
 CONSTANT_UUID = str(uuid.uuid4())
@@ -292,18 +293,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         ui.button('Update', on_click=update)
         ui.button('Select all', on_click=lambda: grid.call_api_method('selectAll'))
 
-    @example(ui.table, menu)
-    def table_example():
-        columns = [
-            {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
-            {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
-        ]
-        rows = [
-            {'name': 'Alice', 'age': 18},
-            {'name': 'Bob', 'age': 21},
-            {'name': 'Carol'},
-        ]
-        ui.table(columns=columns, rows=rows, row_key='name')
+    more_reference.table_reference.intro(menu)
 
     @example(ui.chart, menu)
     def chart_example():

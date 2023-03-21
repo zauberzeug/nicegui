@@ -19,7 +19,7 @@ from nicegui import Client, app
 from nicegui import globals as nicegui_globals
 from nicegui import ui
 from website import demo_card, reference, svg
-from website.example import bash_window, browser_window, python_window
+from website.example import bash_window, browser_window, create_anchor_name, python_window
 from website.star import add_star
 from website.style import example_link, features, heading, link_target, section_heading, side_menu, subtitle, title
 
@@ -307,11 +307,12 @@ def reference_page_more(name: str):
     add_head_html()
     add_header()
     with side_menu():
-        ui.markdown('[← back](/reference)').classes('bold-links')
+        ui.markdown(f'[← back](/reference#{create_anchor_name(name)})').classes('bold-links')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
-        section_heading('More Examples', f'ui.*{name}*')
+        section_heading('Reference', f'ui.*{name}*')
         module = importlib.import_module(f'website.more_reference.{name}_reference')
-        getattr(module, 'more_examples')()
+        getattr(module, 'intro')()
+        getattr(module, 'more')()
 
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html')

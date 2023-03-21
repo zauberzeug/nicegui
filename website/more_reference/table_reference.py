@@ -1,9 +1,26 @@
+from typing import Optional
+
 from nicegui import ui
 
 from ..example import example
 
 
-def more_examples():
+def intro(menu: Optional[ui.element] = None) -> None:
+    @example(ui.table, menu)
+    def table_example():
+        columns = [
+            {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
+            {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
+        ]
+        rows = [
+            {'name': 'Alice', 'age': 18},
+            {'name': 'Bob', 'age': 21},
+            {'name': 'Carol'},
+        ]
+        ui.table(columns=columns, rows=rows, row_key='name')
+
+
+def more() -> None:
     @example('''#### Table with expandable rows
 
 Scoped slots can be used to insert buttons that toggle the expand state of a table row.

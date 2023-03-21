@@ -25,10 +25,14 @@ def remove_prefix(text: str, prefix: str) -> str:
     return text[len(prefix):] if text.startswith(prefix) else text
 
 
+def create_anchor_name(text: str) -> str:
+    return SPECIAL_CHARACTERS.sub('_', text).lower()
+
+
 def add_html_with_anchor_link(html: str, menu: Optional[ui.drawer]) -> str:
     match = REGEX_H4.search(html)
     headline = match.groups()[0].strip()
-    headline_id = SPECIAL_CHARACTERS.sub('_', headline).lower()
+    headline_id = create_anchor_name(headline)
     icon = '<span class="material-icons">link</span>'
     link = f'<a href="#{headline_id}" class="hover:text-black auto-link" style="color: #ddd">{icon}</a>'
     target = f'<div id="{headline_id}" style="position: relative; top: -90px"></div>'
@@ -91,11 +95,11 @@ class example:
 
             def pascal_to_snake(name: str) -> str:
                 return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
-            if isinstance(self.content, type):
+            if isinstance(self.content, type) and self.menu:
                 name = pascal_to_snake(self.content.__name__)
                 path = Path(__file__).parent / 'more_reference' / f'{name}_reference.py'
                 if path.exists():
-                    ui.markdown(f'[More examples...](reference/{name})').classes('bold-links')
+                    ui.markdown(f'[More...](reference/{name})').classes('bold-links')
 
         return f
 
