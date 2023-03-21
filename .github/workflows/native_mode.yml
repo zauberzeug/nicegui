@@ -30,9 +30,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install nicegui
 
+      - name: Install Xvfb (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Install Xvfb (macOS)
+        if: runner.os == 'macOS'
+        run: brew install xvfb
+
       - name: Setup Xvfb
-        if: runner.os != 'Windows'
-        uses: coactions/setup-xvfb@v1
+        if: runner.os == 'macOS' || runner.os == 'Linux'
+        run: |
+          export DISPLAY=:99
+          Xvfb :99 &
 
       - name: Run Script
         id: run_script
