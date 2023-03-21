@@ -1,5 +1,6 @@
 import inspect
 import re
+from pathlib import Path
 from typing import Callable, Optional, Union
 
 import docutils.core
@@ -50,13 +51,11 @@ class example:
                  content: Union[Callable, type, str],
                  menu: Optional[ui.drawer],
                  browser_title: Optional[str] = None,
-                 immediate: bool = False,
-                 more: Optional[str] = None) -> None:
+                 immediate: bool = False) -> None:
         self.content = content
         self.menu = menu
         self.browser_title = browser_title
         self.immediate = immediate
-        self.more = more
 
     def __call__(self, f: Callable) -> Callable:
         with ui.column().classes('w-full mb-8'):
@@ -90,8 +89,14 @@ class example:
                     else:
                         intersection_observer(on_intersection=f)
 
-            if self.more:
-                ui.markdown(f'[More examples...](reference/{self.more})').classes('bold-links')
+            def pascal_to_snake(name: str) -> str:
+                return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
+            if isinstance(self.content, type):
+                name = pascal_to_snake(self.content.__name__)
+                path = Path(__file__).parent / 'more_reference' / f'{name}_reference.py'
+                print(path)
+                if path.exists():
+                    ui.markdown(f'[More examples...](reference/{name})').classes('bold-links')
 
         return f
 

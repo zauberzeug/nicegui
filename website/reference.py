@@ -292,7 +292,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         ui.button('Update', on_click=update)
         ui.button('Select all', on_click=lambda: grid.call_api_method('selectAll'))
 
-    @example(ui.table, menu, more='table')
+    @example(ui.table, menu)
     def table_example():
         columns = [
             {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},

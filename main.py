@@ -310,7 +310,7 @@ def reference_page_more(name: str):
         ui.markdown('[← back](/reference)').classes('bold-links')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('More Examples', f'ui.*{name}*')
-        module = importlib.import_module(f'website.more_reference.{name}')
+        module = importlib.import_module(f'website.more_reference.{name}_reference')
         getattr(module, 'more_examples')()
 
 
