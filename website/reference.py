@@ -1059,11 +1059,14 @@ import subprocess
 from pathlib import Path
 import nicegui
 
-static_dir = Path(nicegui.__file__).parent
-parameters = '--onefile main.py --name "myapp" ' + \\
-    f'--add-data="{static_dir}{os.pathsep}nicegui"'
-
-subprocess.call('pyinstaller ' + parameters, shell=True)
+cmd = [
+    'pyinstaller',
+    'main.py', # your main file with ui.run()
+    '--name', 'myapp', # name of your app
+    '--onefile',
+    '--add-data', f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui'       
+]
+subprocess.call(cmd)
         ```''')
 
         ui.markdown('''
