@@ -38,13 +38,15 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           python test_native_mode.py &
+          firefox "https://localhost:8080/" &
           sleep 10
         shell: bash
 
       - name: Run Script (Windows)
         if: runner.os == 'Windows'
         run: |
-          python test_native_mode.py &
+          start /b python test_native_mode.py
+          start firefox "https://localhost:8080/"
           TIMEOUT 10
         shell: pwsh
 
