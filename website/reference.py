@@ -1058,13 +1058,16 @@ import os
 import subprocess
 from pathlib import Path
 import nicegui
+import itsdangerous
 
 cmd = [
     'pyinstaller',
     'main.py', # your main file with ui.run()
     '--name', 'myapp', # name of your app
     '--onefile',
-    '--add-data', f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui'       
+    '--add-data', f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui',
+    # adding itsdangerous specifically seems only be required on windows
+    '--add-data', f'{Path(itsdangerous.__file__).parent}{os.pathsep}itsdangerous',
 ]
 subprocess.call(cmd)
         ```''')
