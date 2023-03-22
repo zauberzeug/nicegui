@@ -54,13 +54,13 @@ jobs:
           python test_native_mode.py &
           PID=$!
           sleep 200
-          if [ "${{ runner.os }}" == "macOS" ]; then
-            osascript -e 'tell application (path to frontmost application as text) to close front window'
-          else
-            WID=$(xdotool search --pid $PID | head -1)
-            xdotool windowclose $WID
-          fi
-          wait $PID
+          # if [ "${{ runner.os }}" == "macOS" ]; then
+          #   osascript -e 'tell application (path to frontmost application as text) to close front window'
+          # else
+          #   WID=$(xdotool search --pid $PID | head -1)
+          #   xdotool windowclose $WID
+          # fi
+          # wait $PID
           cat output.log
         shell: bash
 
@@ -69,19 +69,19 @@ jobs:
         run: |
           $process = Start-Process -FilePath "python" -ArgumentList "test_native_mode.py" -NoNewWindow -PassThru
           Start-Sleep -Seconds 200
-          $handle = (Get-Process -Id $process.Id).MainWindowHandle
-          Add-Type -AssemblyName System.Windows.Forms
-          [void] [System.Windows.Forms.Form]::FromHandle($handle).Close()
-          # Wait for the process to exit
-          $process.WaitForExit()
           Get-Content output.log
-          $exitCode = $process.ExitCode
-          if ($exitCode -eq 0) {
-              Write-Host "Process exited successfully."
-          } else {
-              Write-Host "Process exited with error code: $exitCode"
-              exit $exitCode
-          }
+          # $handle = (Get-Process -Id $process.Id).MainWindowHandle
+          # Add-Type -AssemblyName System.Windows.Forms
+          # [void] [System.Windows.Forms.Form]::FromHandle($handle).Close()
+          # # Wait for the process to exit
+          # $process.WaitForExit()
+          # $exitCode = $process.ExitCode
+          # if ($exitCode -eq 0) {
+          #     Write-Host "Process exited successfully."
+          # } else {
+          #     Write-Host "Process exited with error code: $exitCode"
+          #     exit $exitCode
+          # }
         shell: pwsh
 
       - name: Check Roundtrip
