@@ -30,7 +30,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install nicegui pyinstaller
+          pip install nicegui pyinstaller itsdangerous
 
       - name: Setup Linux dependencies
         if: runner.os == 'Linux'
@@ -114,6 +114,7 @@ jobs:
       - name: Test Frozen App (Windows)
         if: runner.os == 'Windows'
         run: |
+          pip install itsdangerous
           $NICEGUI_PATH = $(python -c 'import nicegui; import os.path; print(os.path.dirname(nicegui.__file__))')
           $ITSDANGEROUS_PATH = $(python -c 'import itsdangerous; import os.path; print(os.path.dirname(itsdangerous.__file__))')
           python -m PyInstaller --onefile --add-data "$NICEGUI_PATH;'nicegui')" --add-data "$ITSDANGEROUS_PATH;'itsdangerous')" --name myapp main.py
