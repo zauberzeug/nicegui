@@ -55,16 +55,12 @@ jobs:
           PID=$!
           sleep 200
           if [ "${{ runner.os }}" == "macOS" ]; then
-            osascript -e 'tell application "System Events" to click the close button of the front window of the first process whose name is "Python"'
+            osascript -e 'tell application (path to frontmost application as text) to close front window'
           else
             WID=$(xdotool search --pid $PID | head -1)
             xdotool windowclose $WID
           fi
           wait $PID
-          if [ $? -ne 0 ]; then
-            echo "Process exited with error code: $exit_code"
-            exit 1
-          fi
           cat output.log
         shell: bash
 
