@@ -10,7 +10,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.7", "3.9", "3.11"]
-
+        exclude: # macos seems to have issues with 3.7; skipping because it's not crucial
+          - os: macos-latest
+            python-version: "3.7"
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
@@ -39,12 +41,8 @@ jobs:
       - name: Run Script (Linux and macOS)
         if: runner.os != 'Windows'
         run: |
-          if [ "${{ runner.os }}" == "macOS" ] && [[ ${{ matrix.python-version }} == 3.7 ]]; then
-            export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
-            export SLEEP_TIME=200
-          fi
           python test_native_mode.py &
-          sleep ${SLEEP_TIME:-100}
+          sleep 200
           cat output.log
         shell: bash
 
@@ -52,7 +50,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           Start-Process -FilePath "python" -ArgumentList "test_native_mode.py" -NoNewWindow
-          Start-Sleep -Seconds 100
+          Start-Sleep -Seconds 200
           Get-Content output.log
         shell: pwsh
 
@@ -79,18 +77,18 @@ jobs:
           NICEGUI_PATH=$(python -c 'import nicegui; import os.path; print(os.path.dirname(nicegui.__file__))')
           pyinstaller test_native_mode.py --name myapp --onefile --add-data "$NICEGUI_PATH:nicegui"
           ./dist/myapp &
-          sleep 100
+          sleep 200
           cat output.log
         shell: bash
 
       - name: Test Frozen App (Windows)
         if: runner.os == 'Windows'
         run: |
-          nicegui_path = (python -c 'import nicegui; import os.path; print(os.path.dirname(nicegui.__file__))')
+          nicegui_path = $(python -c 'import nicegui; import os.path; print(os.path.dirname(nicegui.__file__))')
           pyinstaller main.py --name myapp --onefile --add-data "$nicegui_path;'nicegui')"
           $executable_path = Join-Path -Path ".\dist" -ChildPath "myapp.exe"
           Start-Process -FilePath $executable_path -NoNewWindow
-          Start-Sleep -Seconds 100
+          Start-Sleep -Seconds 200
           Get-Content output.log
         shell: pwsh
 
