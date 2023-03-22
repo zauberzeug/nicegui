@@ -23,7 +23,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install nicegui
+          pip install nicegui pyinstaller
 
       - name: Setup Linux dependencies
         if: runner.os == 'Linux'
@@ -39,6 +39,9 @@ jobs:
       - name: Run Script (Linux and macOS)
         if: runner.os != 'Windows'
         run: |
+          if [ "${{ runner.os }}" == "macOS" ] && [[ ${{ matrix.python-version }} == 3.7 ]]; then
+            export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+          fi
           python test_native_mode.py &
           sleep 100
           cat output.log
@@ -47,6 +50,41 @@ jobs:
       - name: Run Script (Windows)
         if: runner.os == 'Windows'
         run: |
+          Start-Process -FilePath "python" -ArgumentList "test_native_mode.py" -NoNewWindow
+          Start-Sleep -Seconds 100
+          Get-Content output.log
+        shell: pwsh
+
+      - name: Check Roundtrip
+        run: grep -q "Roundtrip works!" output.log
+
+      - name: Cleanup (Linux and macOS)
+        if: runner.os != 'Windows'
+        run: |
+          rm output.log
+          pkill -f test_native_mode.py
+        shell: bash
+
+      - name: Cleanup (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          Remove-Item output.log
+          Stop-Process -Name "python" -Force
+        shell: pwsh
+
+      - name: Test Application (Linux and macOS)
+        if: runner.os != 'Windows'
+        run: |
+          pyinstaller test_native_mode.py --name myapp --onefile --add-data "$(python -c 'import nicegui; import os.path; print(os.path.dirname(nicegui.__file__))'):nicegui"
+          python test_native_mode.py &
+          sleep 100
+          cat output.log
+        shell: bash
+
+      - name: Test Application (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          pyinstaller main.py --name myapp --onefile --add-data "$((python -c 'import nicegui; import os.path; print(os.path.dirname(nicegui.__file__))');'nicegui')"
           Start-Process -FilePath "python" -ArgumentList "test_native_mode.py" -NoNewWindow
           Start-Sleep -Seconds 100
           Get-Content output.log
