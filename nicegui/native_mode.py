@@ -25,10 +25,8 @@ def activate(url: str, title: str, width: int, height: int, fullscreen: bool) ->
     shutdown = multiprocessing.Event()
 
     def check_shutdown() -> None:
-        while True:
-            if shutdown.wait():
-                _thread.interrupt_main()
-            time.sleep(0.1)
+        if shutdown.wait() and shutdown.is_set():
+            _thread.interrupt_main()
 
     args = url, title, width, height, fullscreen, shutdown
     multiprocessing.Process(target=open_window, args=args, daemon=False).start()
