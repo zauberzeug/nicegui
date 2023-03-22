@@ -37,13 +37,15 @@ jobs:
         run: |
           python test_native_mode.py &
           sleep 10
+          cat output.log
         shell: bash
 
       - name: Run Script (Windows)
         if: runner.os == 'Windows'
         run: |
           Start-Process -FilePath "python" -ArgumentList "test_native_mode.py" -NoNewWindow
-          TIMEOUT 10
+          Start-Sleep -Seconds 10
+          Get-Content output.log
         shell: pwsh
 
       - name: Check output

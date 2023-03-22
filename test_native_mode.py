@@ -1,5 +1,5 @@
 
-from nicegui import Client, ui
+from nicegui import Client, app, ui
 
 
 def log(msg: str):
@@ -16,5 +16,7 @@ async def page(client: Client):
     result = await ui.run_javascript('return "Roundtrip works!"')
     log(result)
 
+log('script evaluated')
+app.startup(lambda: log('started'))
 
 ui.run(reload=False, native=True)
