@@ -1,12 +1,12 @@
 import _thread
 import multiprocessing
-import os
-import signal
 import socket
 import tempfile
 import time
 import warnings
 from threading import Thread
+
+from . import globals
 
 with warnings.catch_warnings():
     # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
@@ -14,22 +14,22 @@ with warnings.catch_warnings():
     import webview
 
 
-def open_window(url: str, title: str, width: int, height: int, fullscreen: bool, shutdown: multiprocessing.Event) -> None:
-    window = webview.create_window(title, url=url, width=width, height=height, fullscreen=fullscreen)
-    window.events.closing += shutdown.set  # signal to the main process that the program should be closed
+def open_window(url: str, title: str, width: int, height: int, fullscreen: bool) -> None:
+    webview.create_window(title, url=url, width=width, height=height, fullscreen=fullscreen)
     webview.start(storage_path=tempfile.mkdtemp())
 
 
 def activate(url: str, title: str, width: int, height: int, fullscreen: bool) -> None:
-    multiprocessing.freeze_support()  # NOTE we need to activate freeze_support() before accessing multiprocessing.Event()
-    shutdown = multiprocessing.Event()
-
     def check_shutdown() -> None:
-        if shutdown.wait() and shutdown.is_set():
-            _thread.interrupt_main()
+        while process.is_alive():
+            time.sleep(0.1)
+        globals.server.should_exit = True
+        while globals.state != globals.State.STOPPED:
+            time.sleep(0.1)
+        _thread.interrupt_main()
 
-    args = url, title, width, height, fullscreen, shutdown
-    multiprocessing.Process(target=open_window, args=args, daemon=False).start()
+    process = multiprocessing.Process(target=open_window, args=(url, title, width, height, fullscreen), daemon=False)
+    process.start()
     Thread(target=check_shutdown, daemon=True).start()
 
 
