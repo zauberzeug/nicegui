@@ -36,7 +36,7 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           python test_native_mode.py &
-          sleep 10
+          sleep 100
           cat output.log
         shell: bash
 
@@ -44,7 +44,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           Start-Process -FilePath "python" -ArgumentList "test_native_mode.py" -NoNewWindow
-          Start-Sleep -Seconds 10
+          Start-Sleep -Seconds 100
           Get-Content output.log
         shell: pwsh
 
