@@ -67,7 +67,7 @@ jobs:
       - name: Run Script (Windows)
         if: runner.os == 'Windows'
         run: |
-          $process = Start-Process -FilePath "python" -ArgumentList "test_native_mode.py" -NoNewWindow
+          $process = Start-Process -FilePath "python" -ArgumentList "test_native_mode.py" -NoNewWindow -PassThru
           Start-Sleep -Seconds 200
           $handle = (Get-Process -Id $process.Id).MainWindowHandle
           [void] [System.Windows.Forms.Form]::FromHandle($handle).Close()
