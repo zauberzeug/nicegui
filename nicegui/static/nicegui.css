@@ -6,6 +6,7 @@
 .nicegui-footer {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 1rem;
   padding: 16px;
@@ -16,6 +17,7 @@
 .nicegui-content {
   display: flex;
   flex-direction: column;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 1rem;
   padding: 16px;
@@ -23,21 +25,33 @@
 .nicegui-row {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 1rem;
 }
 .nicegui-column {
   display: flex;
   flex-direction: column;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 1rem;
 }
 .nicegui-card {
   display: flex;
   flex-direction: column;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 1rem;
   padding: 16px;
+}
+.nicegui-link:link,
+.nicegui-link:visited {
+  text-decoration-line: underline;
+  color: rgb(59 130 246);
+}
+.nicegui-link:hover,
+.nicegui-link:active {
+  opacity: 0.8;
 }
 .nicegui-separator {
   width: 100%;

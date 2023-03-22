@@ -5,7 +5,7 @@
 - Socket.io: 4.6.1
 - Tailwind CSS: 3.2.6
 - Tween.js: 18.6.4
-- Plotly.js: 2.18.2
+- Plotly.js: 2.20.0
 - AG Grid: 29.1.0
 - NippleJS: 0.10.1
 - Mermaid: 9.4.3

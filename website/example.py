@@ -1,4 +1,3 @@
-import contextlib
 import inspect
 import re
 from typing import Callable, Optional, Union
@@ -36,12 +35,13 @@ def add_html_with_anchor_link(html: str, menu: Optional[ui.drawer]) -> str:
     html = html.replace('</h4>', f' {link}</h4>', 1)
 
     ui.html(html).classes('documentation bold-links arrow-links')
-    with menu or contextlib.nullcontext():
-        async def click():
-            if await ui.run_javascript(f'!!document.querySelector("div.q-drawer__backdrop")'):
-                menu.hide()
-                ui.open(f'#{headline_id}')
-        ui.link(headline, f'#{headline_id}').props('data-close-overlay').on('click', click)
+    if menu:
+        with menu:
+            async def click():
+                if await ui.run_javascript(f'!!document.querySelector("div.q-drawer__backdrop")'):
+                    menu.hide()
+                    ui.open(f'#{headline_id}')
+            ui.link(headline, f'#{headline_id}').props('data-close-overlay').on('click', click)
 
 
 class example:

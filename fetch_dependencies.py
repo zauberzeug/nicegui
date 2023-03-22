@@ -90,11 +90,11 @@ Path('nicegui/elements/lib/tween.umd.min.js').write_text(js)
 print('Tween.js:', version)
 
 # plotly.js
-url = 'https://plotly.com/javascript/'
+url = 'https://cdnjs.com/libraries/plotly.js'
 html = request_buffered_str(url)
 soup = BeautifulSoup(html, 'html.parser')
-version = soup.find('a', class_='plotly_js').text.strip().removeprefix('Javascript (v').removesuffix(')')
-url = f'https://cdn.plot.ly/plotly-{version}.min.js'
+version = soup.find('span', class_='vs__selected').text.strip()
+url = f'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/{version}/plotly.min.js'
 js = request_buffered_str(url)
 Path('nicegui/elements/lib/plotly.min.js').write_text(js)
 print('Plotly.js:', version)
