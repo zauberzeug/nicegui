@@ -1033,8 +1033,8 @@ Just take care your `ui.run` command does not use the `reload` argument.
 Running the `build.py` below will create an executable `myapp` in the `dist` folder:
 ''')
 
-        with ui.row().classes('w-full'):
-            with python_window(classes='max-w-lg w-full h-64'):
+        with ui.row().classes('w-full items-stretch'):
+            with python_window(classes='max-w-lg w-full'):
                 ui.markdown('''```python
 from nicegui import ui
 
@@ -1042,7 +1042,7 @@ ui.label('Hello from Pyinstaller')
 
 ui.run(reload=False)
 ```''')
-            with python_window('build.py', classes='max-w-lg w-full h-64'):
+            with python_window('build.py', classes='max-w-lg w-full'):
                 ui.markdown('''```python
 import os
 import subprocess
