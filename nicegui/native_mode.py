@@ -28,6 +28,7 @@ def activate(url: str, title: str, width: int, height: int, fullscreen: bool) ->
             time.sleep(0.1)
         _thread.interrupt_main()
 
+    multiprocessing.freeze_support()
     process = multiprocessing.Process(target=open_window, args=(url, title, width, height, fullscreen), daemon=False)
     process.start()
     Thread(target=check_shutdown, daemon=True).start()
