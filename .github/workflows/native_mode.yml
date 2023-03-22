@@ -90,7 +90,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           $NICEGUI_PATH = $(python -c 'import nicegui; import os.path; print(os.path.dirname(nicegui.__file__))')
-          pyinstaller main.py --name myapp --onefile --add-data "$NICEGUI_PATH;'nicegui')"
+          pyinstaller main.py --name myapp --onefile --add-data "$NICEGUI_PATH;'nicegui')" --hidden-import itsdangerous
           $executable_path = Join-Path -Path ".\dist" -ChildPath "myapp.exe"
           Start-Process -FilePath $executable_path -NoNewWindow
           Start-Sleep -Seconds 200
