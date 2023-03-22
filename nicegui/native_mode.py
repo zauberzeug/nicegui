@@ -1,3 +1,4 @@
+import _thread
 import multiprocessing
 import os
 import signal
@@ -25,8 +26,8 @@ def activate(url: str, title: str, width: int, height: int, fullscreen: bool) ->
 
     def check_shutdown() -> None:
         while True:
-            if shutdown.is_set():
-                os.kill(os.getpgid(os.getpid()), signal.SIGTERM)
+            if shutdown.wait():
+                _thread.interrupt_main()
             time.sleep(0.1)
 
     args = url, title, width, height, fullscreen, shutdown
