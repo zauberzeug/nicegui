@@ -41,9 +41,10 @@ jobs:
         run: |
           if [ "${{ runner.os }}" == "macOS" ] && [[ ${{ matrix.python-version }} == 3.7 ]]; then
             export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+            export SLEEP_TIME=200
           fi
           python test_native_mode.py &
-          sleep 100
+          sleep ${SLEEP_TIME:-100}
           cat output.log
         shell: bash
 
@@ -69,10 +70,10 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           Remove-Item output.log
-          Stop-Process -Name "python" -Force
+          Get-Process -Name "python", "python.exe", "python3.exe" -ErrorAction SilentlyContinue | Stop-Process -Force
         shell: pwsh
 
-      - name: Test Application (Linux and macOS)
+      - name: Test Frozen App (Linux and macOS)
         if: runner.os != 'Windows'
         run: |
           pyinstaller test_native_mode.py --name myapp --onefile --add-data "$(python -c 'import nicegui; import os.path; print(os.path.dirname(nicegui.__file__))'):nicegui"
@@ -81,7 +82,7 @@ jobs:
           cat output.log
         shell: bash
 
-      - name: Test Application (Windows)
+      - name: Test Frozen App (Windows)
         if: runner.os == 'Windows'
         run: |
           pyinstaller main.py --name myapp --onefile --add-data "$((python -c 'import nicegui; import os.path; print(os.path.dirname(nicegui.__file__))');'nicegui')"
