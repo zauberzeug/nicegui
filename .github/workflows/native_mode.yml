@@ -55,12 +55,16 @@ jobs:
           PID=$!
           sleep 200
           if [ "${{ runner.os }}" == "macOS" ]; then
-            osascript -e 'tell application "System Events" to click the close button of the front window of the first process whose unix id is '"$PID"''
+            osascript -e 'tell application "System Events" to click the close button of the front window of the first process whose name is "Python"'
           else
             WID=$(xdotool search --pid $PID | head -1)
             xdotool windowclose $WID
           fi
-          fg
+          wait $PID
+          if [ $? -ne 0 ]; then
+            echo "Process exited with error code: $exit_code"
+            exit 1
+          fi
           cat output.log
         shell: bash
 
@@ -70,6 +74,7 @@ jobs:
           $process = Start-Process -FilePath "python" -ArgumentList "test_native_mode.py" -NoNewWindow -PassThru
           Start-Sleep -Seconds 200
           $handle = (Get-Process -Id $process.Id).MainWindowHandle
+          Add-Type -AssemblyName System.Windows.Forms
           [void] [System.Windows.Forms.Form]::FromHandle($handle).Close()
           # Wait for the process to exit
           $process.WaitForExit()
