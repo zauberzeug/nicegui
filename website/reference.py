@@ -1,5 +1,6 @@
+import re
 import uuid
-from typing import Dict
+from typing import Callable, Dict
 
 from nicegui import app, ui
 from nicegui.elements.markdown import prepare_content
@@ -9,12 +10,33 @@ from .example import add_html_with_anchor_link, bash_window, example, python_win
 
 CONSTANT_UUID = str(uuid.uuid4())
 
+SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
+
+
+def heading(text: str) -> None:
+    name = SPECIAL_CHARACTERS.sub('_', text).lower()
+    target = ui.link_target(name).style('position: relative; top: -90px')
+    with ui.row().classes('gap-2 items-center'):
+        ui.label(text).classes('text-2xl')
+        with ui.link(target=f'#{target.id}'):
+            ui.icon('link', size='sm').classes('text-gray-400 hover:text-gray-800')
+
+
+class intro_example:
+
+    def __init__(self, title: str, explanation: str) -> None:
+        self.title = title
+        self.explanation = explanation
+
+    def __call__(self, f: Callable) -> Callable:
+        heading(self.title)
+        ui.label(self.explanation)
+        return example(None, None)(f)
+
 
 def create_intro() -> None:
-    @example('''#### Styling
-
-While having reasonable defaults, you can still modify the look of your app with CSS as well as Tailwind and Quasar classes.
-''', None)
+    @intro_example('Styling',
+                   'While having reasonable defaults, you can still modify the look of your app with CSS as well as Tailwind and Quasar classes.')
     def formatting_example():
         ui.icon('thumb_up')
         ui.markdown('This is **Markdown**.')
@@ -25,10 +47,8 @@ While having reasonable defaults, you can still modify the look of your app with
             ui.label('Quasar').classes('q-ml-xl')
         ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
 
-    @example('''#### Common UI Elements
-
-NiceGUI comes with a collection of commonly used UI elements.
-''', None)
+    @intro_example('Common UI Elements',
+                   'NiceGUI comes with a collection of commonly used UI elements.')
     def common_elements_example():
         from nicegui.events import ValueChangeEventArguments
 
@@ -46,10 +66,8 @@ NiceGUI comes with a collection of commonly used UI elements.
             ui.select(['One', 'Two'], value='One', on_change=show)
         ui.link('And many more...', '/reference').classes('mt-8')
 
-    @example('''#### Value Binding
-
-Binding values between UI elements and data models is built into NiceGUI.
-''', None)
+    @intro_example('Value Binding',
+                   'Binding values between UI elements and data models is built into NiceGUI.')
     def binding_example():
         class Demo:
             def __init__(self):

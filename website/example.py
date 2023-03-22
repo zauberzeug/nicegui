@@ -53,7 +53,7 @@ class example:
 
     def __init__(self,
                  content: Union[Callable, type, str],
-                 menu: Optional[ui.drawer],
+                 menu: Optional[ui.drawer] = None,
                  browser_title: Optional[str] = None,
                  immediate: bool = False) -> None:
         self.content = content
@@ -62,44 +62,45 @@ class example:
         self.immediate = immediate
 
     def __call__(self, f: Callable) -> Callable:
-        with ui.column().classes('w-full mb-8'):
-            if isinstance(self.content, str):
-                html = prepare_content(self.content, 'fenced-code-blocks tables')
-            else:
-                doc = self.content.__doc__ or self.content.__init__.__doc__
-                html: str = docutils.core.publish_parts(doc, writer_name='html5_polyglot')['html_body']
-                html = html.replace('<p>', '<h4>', 1)
-                html = html.replace('</p>', '</h4>', 1)
-                html = html.replace('param ', '')
-                html = apply_tailwind(html)
-            add_html_with_anchor_link(html, self.menu)
+        # with ui.column().classes('w-full mb-8'):
+        # if isinstance(self.content, str):
+        #     html = prepare_content(self.content, 'fenced-code-blocks tables')
+        # else:
+        #     doc = self.content.__doc__ or self.content.__init__.__doc__
+        #     html: str = docutils.core.publish_parts(doc, writer_name='html5_polyglot')['html_body']
+        #     html = html.replace('<p>', '<h4>', 1)
+        #     html = html.replace('</p>', '</h4>', 1)
+        #     html = html.replace('param ', '')
+        #     html = apply_tailwind(html)
+        # add_html_with_anchor_link(html, self.menu)
 
-            with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
-                code = inspect.getsource(f).split('# END OF EXAMPLE')[0].strip().splitlines()
-                while not code[0].startswith(' ' * 8):
-                    del code[0]
-                code = ['from nicegui import ui'] + [remove_prefix(line[8:], '# ') for line in code]
-                code = ['' if line == '#' else line for line in code]
-                if not code[-1].startswith('ui.run('):
-                    code.append('')
-                    code.append('ui.run()')
-                code = isort.code('\n'.join(code), no_sections=True, lines_after_imports=1)
-                with python_window(classes='w-full max-w-[44rem]'):
-                    ui.markdown(f'```python\n{code}\n```')
-                with browser_window(self.browser_title,
-                                    classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
-                    if self.immediate:
-                        f()
-                    else:
-                        intersection_observer(on_intersection=f)
+        with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
+            code = inspect.getsource(f).split('# END OF EXAMPLE')[0].strip().splitlines()
+            while not code[0].strip().startswith('def'):
+                del code[0]
+            del code[0]
+            code = ['from nicegui import ui'] + [remove_prefix(line[8:], '# ') for line in code]
+            code = ['' if line == '#' else line for line in code]
+            if not code[-1].startswith('ui.run('):
+                code.append('')
+                code.append('ui.run()')
+            code = isort.code('\n'.join(code), no_sections=True, lines_after_imports=1)
+            with python_window(classes='w-full max-w-[44rem]'):
+                ui.markdown(f'```python\n{code}\n```')
+            with browser_window(self.browser_title,
+                                classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
+                if self.immediate:
+                    f()
+                else:
+                    intersection_observer(on_intersection=f)
 
-            def pascal_to_snake(name: str) -> str:
-                return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
-            if isinstance(self.content, type) and self.menu:
-                name = pascal_to_snake(self.content.__name__)
-                path = Path(__file__).parent / 'more_reference' / f'{name}_reference.py'
-                if path.exists():
-                    ui.markdown(f'[More...](reference/{name})').classes('bold-links')
+        # def pascal_to_snake(name: str) -> str:
+        #     return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
+        # if isinstance(self.content, type) and self.menu:
+        #     name = pascal_to_snake(self.content.__name__)
+        #     path = Path(__file__).parent / 'more_reference' / f'{name}_reference.py'
+        #     if path.exists():
+        #         ui.markdown(f'[More...](reference/{name})').classes('bold-links')
 
         return f
 
