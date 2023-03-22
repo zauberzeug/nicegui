@@ -76,8 +76,9 @@ jobs:
       - name: Test Frozen App (Linux and macOS)
         if: runner.os != 'Windows'
         run: |
-          pyinstaller test_native_mode.py --name myapp --onefile --add-data "$(python -c 'import nicegui; import os.path; print(os.path.dirname(nicegui.__file__))'):nicegui"
-          python test_native_mode.py &
+          NICEGUI_PATH=$(python -c 'import nicegui; import os.path; print(os.path.dirname(nicegui.__file__))')
+          pyinstaller test_native_mode.py --name myapp --onefile --add-data "$NICEGUI_PATH:nicegui"
+          ./dist/myapp &
           sleep 100
           cat output.log
         shell: bash
@@ -85,8 +86,10 @@ jobs:
       - name: Test Frozen App (Windows)
         if: runner.os == 'Windows'
         run: |
-          pyinstaller main.py --name myapp --onefile --add-data "$((python -c 'import nicegui; import os.path; print(os.path.dirname(nicegui.__file__))');'nicegui')"
-          Start-Process -FilePath "python" -ArgumentList "test_native_mode.py" -NoNewWindow
+          NICEGUI_PATH = (python -c 'import nicegui; import os.path; print(os.path.dirname(nicegui.__file__))')
+          pyinstaller main.py --name myapp --onefile --add-data "$NICEGUI_PATH;'nicegui')"
+          $executable_path = Join-Path -Path ".\dist" -ChildPath "myapp.exe"
+          Start-Process -FilePath $executable_path -NoNewWindow
           Start-Sleep -Seconds 100
           Get-Content output.log
         shell: pwsh
