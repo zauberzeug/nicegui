@@ -50,11 +50,16 @@ jobs:
       - name: Run Script (Linux and macOS)
         if: runner.os != 'Windows'
         run: |
+          export NO_AT_BRIDGE=1
           python test_native_mode.py &
           PID=$!
           sleep 200
-          WID=$(xdotool search --pid $PID | head -1)
-          xdotool windowclose $WID
+          if [ "${{ runner.os }}" == "macOS" ]; then
+            osascript -e 'tell application "System Events" to click the close button of the front window of the first process whose unix id is '"$PID"''
+          else
+            WID=$(xdotool search --pid $PID | head -1)
+            xdotool windowclose $WID
+          fi
           fg
           cat output.log
         shell: bash
