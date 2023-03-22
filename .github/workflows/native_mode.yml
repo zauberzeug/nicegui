@@ -15,11 +15,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
 
-      - name: Install browser (Windows) # it's preinstalled on macos and linux
-        if: runner.os == 'Windows'
-        run: |
-          choco install firefox
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -30,10 +25,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install nicegui
 
-      - name: Setup Xvfb (Linux)
+      - name: Setup Linux dependencies
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get update && sudo apt-get install -y xvfb
+          sudo apt-get update && sudo apt-get install -y xvfb python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.0
           Xvfb :99 -screen 0 1024x768x24 &
           echo "DISPLAY=:99" >> $GITHUB_ENV
 
@@ -41,20 +36,18 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           python test_native_mode.py &
-          firefox --disable-gpu "https://localhost:8080/" &
           sleep 10
         shell: bash
 
       - name: Run Script (Windows)
         if: runner.os == 'Windows'
         run: |
-          Start-Job { python test_native_mode.py }
-          Start-Process -FilePath "firefox.exe" -ArgumentList "--disable-gpu", "https://localhost:8080/"
+          Start-Process -FilePath "python" -ArgumentList "test_native_mode.py" -NoNewWindow
           TIMEOUT 10
         shell: pwsh
 
       - name: Check output
-        run: grep -q "Roundtrip works!" result
+        run: grep -q "Roundtrip works!" output.log
 
       - name: Clean up
         run: |
