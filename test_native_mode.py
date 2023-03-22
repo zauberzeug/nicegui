@@ -17,6 +17,6 @@ async def page(client: Client):
     log(result)
 
 log('script evaluated')
-app.startup(lambda: log('started'))
+app.on_startup(lambda: log('started'))
 
 ui.run(reload=False, native=True)
