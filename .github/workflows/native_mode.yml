@@ -1,6 +1,11 @@
 name: Test Native Mode
 
 on: [push]
+# on:
+#   schedule:
+#     - cron: '0 0 * * *' # Run nightly at midnight
+#   release:
+#     types: [published] # Run when a release is published
 
 jobs:
   run_script:
@@ -74,7 +79,7 @@ jobs:
       - name: Test Frozen App (Linux and macOS)
         if: runner.os != 'Windows'
         run: |
-          NICEGUI_PATH=$(python -c 'import nicegui; import os.path; print(os.path.dirname(nicegui.__file__))')
+          $NICEGUI_PATH = $(python -c 'import nicegui; import os.path; print(os.path.dirname(nicegui.__file__))')
           pyinstaller test_native_mode.py --name myapp --onefile --add-data "$NICEGUI_PATH:nicegui"
           ./dist/myapp &
           sleep 200
