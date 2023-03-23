@@ -109,3 +109,19 @@ def load_demo(element_class: type) -> None:
     name = pascal_to_snake(element_class.__name__)
     module = importlib.import_module(f'website.more_documentation.{name}_documentation')
     element_demo(element_class)(getattr(module, 'main_demo'), more_link=name)
+
+
+def generate_class_doc(class_obj: type) -> None:
+    class_name = pascal_to_snake(class_obj.__name__)
+    subheading('Methods')
+    for name, method in class_obj.__dict__.items():
+        if name.startswith('_'):
+            continue
+        if not method.__doc__:
+            continue
+        markdown(f'''
+            ```python
+            {class_name}.{name}()
+            ```
+        ''')
+        markdown(method.__doc__)

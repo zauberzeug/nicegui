@@ -21,7 +21,7 @@ from nicegui import globals as nicegui_globals
 from nicegui import ui
 from website import documentation, example_card, svg
 from website.demo import bash_window, browser_window, python_window
-from website.documentation_tools import create_anchor_name, element_demo
+from website.documentation_tools import create_anchor_name, element_demo, generate_class_doc
 from website.star import add_star
 from website.style import example_link, features, heading, link_target, section_heading, side_menu, subtitle, title
 
@@ -319,7 +319,9 @@ def documentation_page_more(name: str):
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Documentation', f'ui.*{name}*')
         module = importlib.import_module(f'website.more_documentation.{name}_documentation')
-        element_demo(getattr(ui, name))(getattr(module, 'main_demo'))
+        element_class = getattr(ui, name)
+        element_demo(element_class)(getattr(module, 'main_demo'))
+        generate_class_doc(element_class)
         if hasattr(module, 'more'):
             ui.markdown('## More examples').classes('mt-16')
             getattr(module, 'more')()
