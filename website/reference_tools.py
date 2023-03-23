@@ -1,5 +1,5 @@
 import re
-from typing import Callable
+from typing import Callable, Optional, Union
 
 import docutils.core
 
@@ -49,25 +49,38 @@ def subheading(text: str, *, make_menu_entry: bool = True) -> None:
             ui.link(text, target=f'#{target.id}').props('data-close-overlay').on('click', click)
 
 
-class intro_example:
+def markdown(text: str) -> None:
+    ui.markdown(remove_indentation(text))
+
+
+class text_example:
 
     def __init__(self, title: str, explanation: str) -> None:
         self.title = title
         self.explanation = explanation
+        self.make_menu_entry = True
 
     def __call__(self, f: Callable) -> Callable:
-        subheading(self.title, make_menu_entry=False)
-        ui.label(self.explanation)
+        subheading(self.title, make_menu_entry=self.make_menu_entry)
+        markdown(self.explanation)
         return example(None, None)(f)
+
+
+class intro_example(text_example):
+
+    def __init__(self, title: str, explanation: str) -> None:
+        super().__init__(title, explanation)
+        self.make_menu_entry = False
 
 
 class element_example:
 
-    def __init__(self, element_class: type) -> None:
+    def __init__(self, element_class: Union[Callable, type], browser_title: Optional[str] = None) -> None:
         self.element_class = element_class
+        self.browser_title = browser_title
 
     def __call__(self, f: Callable) -> Callable:
-        doc = self.element_class.__init__.__doc__
+        doc = self.element_class.__doc__ or self.element_class.__init__.__doc__
         title, documentation = doc.split('\n', 1)
         documentation = remove_indentation(documentation)
         documentation = documentation.replace('param ', '')
@@ -76,4 +89,4 @@ class element_example:
         with ui.column().classes('w-full mb-8 gap-2'):
             subheading(title)
             ui.html(html).classes('documentation bold-links arrow-links')
-            return example(None, None)(f)
+            return example(None, None, browser_title=self.browser_title)(f)
