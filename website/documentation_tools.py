@@ -1,5 +1,6 @@
 import importlib
 import re
+from pathlib import Path
 from typing import Callable, Optional, Union
 
 import docutils.core
@@ -21,6 +22,10 @@ def remove_indentation(text: str) -> str:
         return ''
     indentation = len(lines[0]) - len(lines[0].lstrip())
     return '\n'.join(line[indentation:] for line in lines)
+
+
+def pascal_to_snake(name: str) -> str:
+    return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
 
 
 def create_anchor_name(text: str) -> str:
@@ -56,6 +61,12 @@ def subheading(text: str, *, make_menu_entry: bool = True) -> None:
 
 def markdown(text: str) -> None:
     ui.markdown(remove_indentation(text))
+
+
+def more_link(element_class: type) -> None:
+    name = pascal_to_snake(element_class.__name__)
+    if (Path(__file__).parent / 'more_documentation' / f'{name}_documentation.py').exists():
+        ui.markdown(f'[More...](documentation/{name})').classes('bold-links')
 
 
 class text_demo:
@@ -94,12 +105,12 @@ class element_demo:
         with ui.column().classes('w-full mb-8 gap-2'):
             subheading(title)
             ui.html(html).classes('documentation bold-links arrow-links')
-            return demo(browser_title=self.browser_title)(f)
+            wrapped = demo(browser_title=self.browser_title)(f)
+            more_link(self.element_class)
+            return wrapped
 
 
 def load_demo(element_class: type) -> None:
-    def pascal_to_snake(name: str) -> str:
-        return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
     name = pascal_to_snake(element_class.__name__)
     module = importlib.import_module(f'website.more_documentation.{name}_documentation')
     element_demo(element_class)(getattr(module, 'main_demo'))
