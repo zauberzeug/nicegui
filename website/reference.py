@@ -6,7 +6,7 @@ from nicegui.elements.markdown import prepare_content
 
 from . import more_reference
 from .example import add_html_with_anchor_link, bash_window, example, python_window
-from .reference_tools import heading, intro_example
+from .reference_tools import element_example, heading, intro_example
 
 CONSTANT_UUID = str(uuid.uuid4())
 
@@ -64,127 +64,127 @@ def create_full(menu: ui.element) -> None:
 
     heading('Basic Elements')
 
-    @example(ui.label, menu)
+    @element_example(ui.label)
     def label_example():
         ui.label('some label')
 
-    @example(ui.icon, menu)
+    @element_example(ui.icon)
     def icon_example():
         ui.icon('thumb_up')
 
-    @example(ui.avatar, menu)
+    @element_example(ui.avatar)
     def avatar_example():
         ui.avatar('favorite_border', text_color='grey-11', square=True)
         ui.avatar('img:https://nicegui.io/logo_square.png', color='blue-2')
 
-    @example(ui.link, menu)
+    @element_example(ui.link)
     def link_example():
         ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
 
-    @example(ui.button, menu)
+    @element_example(ui.button)
     def button_example():
         ui.button('Click me!', on_click=lambda: ui.notify(f'You clicked me!'))
 
-    @example(ui.badge, menu)
+    @element_example(ui.badge)
     def badge_example():
         with ui.button('Click me!', on_click=lambda: badge.set_text(int(badge.text) + 1)):
             badge = ui.badge('0', color='red').props('floating')
 
-    @example(ui.toggle, menu)
+    @element_example(ui.toggle)
     def toggle_example():
         toggle1 = ui.toggle([1, 2, 3], value=1)
         toggle2 = ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(toggle1, 'value')
 
-    @example(ui.radio, menu)
+    @element_example(ui.radio)
     def radio_example():
         radio1 = ui.radio([1, 2, 3], value=1).props('inline')
         radio2 = ui.radio({1: 'A', 2: 'B', 3: 'C'}).props('inline').bind_value(radio1, 'value')
 
-    @example(ui.select, menu)
+    @element_example(ui.select)
     def select_example():
         select1 = ui.select([1, 2, 3], value=1)
         select2 = ui.select({1: 'One', 2: 'Two', 3: 'Three'}).bind_value(select1, 'value')
 
-    @example(ui.checkbox, menu)
+    @element_example(ui.checkbox)
     def checkbox_example():
         checkbox = ui.checkbox('check me')
         ui.label('Check!').bind_visibility_from(checkbox, 'value')
 
-    @example(ui.switch, menu)
+    @element_example(ui.switch)
     def switch_example():
         switch = ui.switch('switch me')
         ui.label('Switch!').bind_visibility_from(switch, 'value')
 
-    @example(ui.slider, menu)
+    @element_example(ui.slider)
     def slider_example():
         slider = ui.slider(min=0, max=100, value=50)
         ui.label().bind_text_from(slider, 'value')
 
-    @example(ui.joystick, menu)
+    @element_example(ui.joystick)
     def joystick_example():
         ui.joystick(color='blue', size=50,
                     on_move=lambda e: coordinates.set_text(f"{e.x:.3f}, {e.y:.3f}"),
                     on_end=lambda _: coordinates.set_text('0, 0'))
         coordinates = ui.label('0, 0')
 
-    @example(ui.input, menu)
+    @element_example(ui.input)
     def input_example():
         ui.input(label='Text', placeholder='start typing',
                  on_change=lambda e: result.set_text('you typed: ' + e.value),
                  validation={'Input too long': lambda value: len(value) < 20})
         result = ui.label()
 
-    @example(ui.textarea, menu)
+    @element_example(ui.textarea)
     def textarea_example():
         ui.textarea(label='Text', placeholder='start typing',
                     on_change=lambda e: result.set_text('you typed: ' + e.value))
         result = ui.label()
 
-    @example(ui.number, menu)
+    @element_example(ui.number)
     def number_example():
         ui.number(label='Number', value=3.1415927, format='%.2f',
                   on_change=lambda e: result.set_text(f'you entered: {e.value}'))
         result = ui.label()
 
-    @example(ui.knob, menu)
+    @element_example(ui.knob)
     def knob_example():
         knob = ui.knob(0.3, show_value=True)
 
         with ui.knob(color='orange', track_color='grey-2').bind_value(knob, 'value'):
             ui.icon('volume_up')
 
-    @example(ui.color_input, menu)
+    @element_example(ui.color_input)
     def color_input_example():
         label = ui.label('Change my color!')
         ui.color_input(label='Color', value='#000000',
                        on_change=lambda e: label.style(f'color:{e.value}'))
 
-    @example(ui.color_picker, menu)
+    @element_example(ui.color_picker)
     def color_picker_example():
         picker = ui.color_picker(on_pick=lambda e: button.style(f'background-color:{e.color}!important'))
         button = ui.button(on_click=picker.open).props('icon=colorize')
 
-    @example(ui.date, menu)
+    @element_example(ui.date)
     def date_example():
         ui.date(value='2023-01-01', on_change=lambda e: result.set_text(e.value))
         result = ui.label()
 
-    @example(ui.time, menu)
+    @element_example(ui.time)
     def time_example():
         ui.time(value='12:00', on_change=lambda e: result.set_text(e.value))
         result = ui.label()
 
-    @example(ui.upload, menu)
+    @element_example(ui.upload)
     def upload_example():
         ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('max-w-full')
 
     heading('Markdown and HTML')
 
-    @example(ui.markdown, menu)
+    @element_example(ui.markdown)
     def markdown_example():
         ui.markdown('''This is **Markdown**.''')
 
-    @example(ui.mermaid, menu)
+    @element_example(ui.mermaid)
     def mermaid_example():
         ui.mermaid('''
         graph LR;
@@ -192,7 +192,7 @@ def create_full(menu: ui.element) -> None:
             A --> C;
         ''')
 
-    @example(ui.html, menu)
+    @element_example(ui.html)
     def html_example():
         ui.html('This is <strong>HTML</strong>.')
 

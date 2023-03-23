@@ -51,6 +51,7 @@ def add_html_with_anchor_link(html: str, menu: Optional[ui.drawer]) -> str:
 
 class example:
 
+    # TODO: simplify API
     def __init__(self,
                  content: Union[Callable, type, str],
                  menu: Optional[ui.drawer] = None,
