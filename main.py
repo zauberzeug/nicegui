@@ -18,15 +18,15 @@ import prometheus
 from nicegui import Client, app
 from nicegui import globals as nicegui_globals
 from nicegui import ui
-from website import demo_card, reference, svg
+from website import demo_card, documentation, svg
+from website.documentation_tools import create_anchor_name, element_example
 from website.example import bash_window, browser_window, python_window
-from website.reference_tools import create_anchor_name, element_example
 from website.star import add_star
 from website.style import example_link, features, heading, link_target, section_heading, side_menu, subtitle, title
 
 prometheus.start_monitor(app)
 
-# session middleware is required for demo in reference and prometheus
+# session middleware is required for demo in documentation and prometheus
 app.add_middleware(SessionMiddleware, secret_key='NiceGUI is awesome!')
 
 app.add_static_files('/favicon', str(Path(__file__).parent / 'website' / 'favicon'))
@@ -60,7 +60,7 @@ def add_header() -> None:
         'Features': '/#features',
         'Installation': '/#installation',
         'Examples': '/#examples',
-        'API Reference': '/reference',
+        'Documentation': '/documentation',
         'Demos': '/#demos',
         'Why?': '/#why',
     }
@@ -203,7 +203,7 @@ The command searches for `main.py` in in your current directory and makes the ap
         link_target('examples', '-50px')
         section_heading('Examples', 'Try *this*')
         with ui.column().classes('w-full'):
-            reference.create_intro()
+            documentation.create_intro()
 
     with ui.column().classes('dark-box p-8 lg:p-16 my-16'):
         with ui.column().classes('mx-auto items-center gap-y-8 gap-x-32 lg:flex-row'):
@@ -212,7 +212,7 @@ The command searches for `main.py` in in your current directory and makes the ap
                     .classes('text-white text-2xl md:text-3xl font-medium')
                 ui.html('Fun-Fact: This whole website is also coded with NiceGUI.') \
                     .classes('text-white text-lg md:text-xl')
-            ui.link('API reference', '/reference') \
+            ui.link('Documentation', '/documentation') \
                 .classes('rounded-full mx-auto px-12 py-2 text-white bg-white font-medium text-lg md:text-xl')
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
@@ -288,30 +288,30 @@ The command searches for `main.py` in in your current directory and makes the ap
             svg.face().classes('stroke-white shrink-0 w-[200px] md:w-[300px] lg:w-[450px]')
 
 
-@ui.page('/reference')
-def reference_page():
+@ui.page('/documentation')
+def documentation_page():
     add_head_html()
     add_header()
     menu = side_menu()
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
-        section_heading('Documentation and Examples', '*API* Reference')
+        section_heading('API Reference and Examples', '*NiceGUI* Documentation')
         ui.markdown(
-            'This is the API reference for NiceGUI >= 1.0. '
+            'This is the documentation for NiceGUI >= 1.0. '
             'Documentation for older versions can be found at [https://0.9.nicegui.io/](https://0.9.nicegui.io/reference).'
         ).classes('bold-links arrow-links')
-        reference.create_full(menu)
+        documentation.create_full(menu)
 
 
-@ui.page('/reference/{name}')
-def reference_page_more(name: str):
+@ui.page('/documentation/{name}')
+def documentation_page_more(name: str):
     add_head_html()
     add_header()
     with side_menu():
-        ui.markdown(f'[← back](/reference#{create_anchor_name(name)})').classes('bold-links')
+        ui.markdown(f'[← back](/documentation#{create_anchor_name(name)})').classes('bold-links')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
-        section_heading('Reference', f'ui.*{name}*')
-        module = importlib.import_module(f'website.more_reference.{name}_reference')
+        section_heading('Documentation', f'ui.*{name}*')
+        module = importlib.import_module(f'website.more_documentation.{name}_documentation')
         element_example(getattr(ui, name))(getattr(module, 'main_example'))
         getattr(module, 'more')()
 

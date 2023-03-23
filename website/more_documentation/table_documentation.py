@@ -1,6 +1,6 @@
 from nicegui import ui
 
-from ..reference_tools import text_example
+from ..documentation_tools import text_example
 
 
 def main_example() -> None:

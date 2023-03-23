@@ -75,7 +75,7 @@ Note: NiceGUI will automatically reload the page when you modify the code.
 
 ## Documentation and Examples
 
-The API reference is hosted at [https://nicegui.io/reference](https://nicegui.io/reference) and provides plenty of live examples.
+The documentation is hosted at [https://nicegui.io/documentation](https://nicegui.io/documentation) and provides plenty of live examples.
 The whole content of [https://nicegui.io](https://nicegui.io) is [implemented with NiceGUI itself](https://github.com/zauberzeug/nicegui/blob/main/main.py).
 
 You may also have a look at [our in-depth demonstrations](https://github.com/zauberzeug/nicegui/tree/main/examples) of what you can do with NiceGUI.

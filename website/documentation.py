@@ -3,8 +3,9 @@ from typing import Dict
 
 from nicegui import app, ui
 
+from .documentation_tools import (element_example, heading, intro_example, load_example, markdown, subheading,
+                                  text_example)
 from .example import bash_window, python_window
-from .reference_tools import element_example, heading, intro_example, load_example, markdown, subheading, text_example
 
 CONSTANT_UUID = str(uuid.uuid4())
 
@@ -39,7 +40,7 @@ def create_intro() -> None:
         with ui.row():
             ui.input('Text input', on_change=show)
             ui.select(['One', 'Two'], value='One', on_change=show)
-        ui.link('And many more...', '/reference').classes('mt-8')
+        ui.link('And many more...', '/documentation').classes('mt-8')
 
     @intro_example('Value Binding',
                    'Binding values between UI elements and data models is built into NiceGUI.')
@@ -647,12 +648,12 @@ def create_full(menu: ui.element) -> None:
         @ui.page('/other_page')
         def other_page():
             ui.label('Welcome to the other side')
-            ui.link('Back to main page', '/reference#page')
+            ui.link('Back to main page', '/documentation#page')
 
         @ui.page('/dark_page', dark=True)
         def dark_page():
             ui.label('Welcome to the dark side')
-            ui.link('Back to main page', '/reference#page')
+            ui.link('Back to main page', '/documentation#page')
 
         ui.link('Visit other page', other_page)
         ui.link('Visit dark page', dark_page)
@@ -746,7 +747,7 @@ def create_full(menu: ui.element) -> None:
         @ui.page('/yet_another_page')
         def yet_another_page():
             ui.label('Welcome to yet another page')
-            ui.button('RETURN', on_click=lambda: ui.open('reference#open'))
+            ui.button('RETURN', on_click=lambda: ui.open('documentation#open'))
 
         ui.button('REDIRECT', on_click=lambda: ui.open(yet_another_page))
 
