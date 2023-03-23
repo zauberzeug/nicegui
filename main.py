@@ -320,7 +320,9 @@ def documentation_page_more(name: str):
         section_heading('Documentation', f'ui.*{name}*')
         module = importlib.import_module(f'website.more_documentation.{name}_documentation')
         element_demo(getattr(ui, name))(getattr(module, 'main_demo'))
-        getattr(module, 'more')()
+        if hasattr(module, 'more'):
+            ui.markdown('## More examples').classes('mt-16')
+            getattr(module, 'more')()
 
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html')

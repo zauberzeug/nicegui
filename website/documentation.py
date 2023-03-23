@@ -1,5 +1,4 @@
 import uuid
-from typing import Dict
 
 from nicegui import app, ui
 
@@ -58,138 +57,34 @@ def create_intro() -> None:
 
 def create_full(menu: ui.element) -> None:
     heading('Basic Elements')
-
-    @element_demo(ui.label)
-    def label_demo():
-        ui.label('some label')
-
-    @element_demo(ui.icon)
-    def icon_demo():
-        ui.icon('thumb_up')
-
-    @element_demo(ui.avatar)
-    def avatar_demo():
-        ui.avatar('favorite_border', text_color='grey-11', square=True)
-        ui.avatar('img:https://nicegui.io/logo_square.png', color='blue-2')
-
-    @element_demo(ui.link)
-    def link_demo():
-        ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
-
-    @element_demo(ui.button)
-    def button_demo():
-        ui.button('Click me!', on_click=lambda: ui.notify(f'You clicked me!'))
-
-    @element_demo(ui.badge)
-    def badge_demo():
-        with ui.button('Click me!', on_click=lambda: badge.set_text(int(badge.text) + 1)):
-            badge = ui.badge('0', color='red').props('floating')
-
-    @element_demo(ui.toggle)
-    def toggle_demo():
-        toggle1 = ui.toggle([1, 2, 3], value=1)
-        toggle2 = ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(toggle1, 'value')
-
-    @element_demo(ui.radio)
-    def radio_demo():
-        radio1 = ui.radio([1, 2, 3], value=1).props('inline')
-        radio2 = ui.radio({1: 'A', 2: 'B', 3: 'C'}).props('inline').bind_value(radio1, 'value')
-
-    @element_demo(ui.select)
-    def select_demo():
-        select1 = ui.select([1, 2, 3], value=1)
-        select2 = ui.select({1: 'One', 2: 'Two', 3: 'Three'}).bind_value(select1, 'value')
-
-    @element_demo(ui.checkbox)
-    def checkbox_demo():
-        checkbox = ui.checkbox('check me')
-        ui.label('Check!').bind_visibility_from(checkbox, 'value')
-
-    @element_demo(ui.switch)
-    def switch_demo():
-        switch = ui.switch('switch me')
-        ui.label('Switch!').bind_visibility_from(switch, 'value')
-
-    @element_demo(ui.slider)
-    def slider_demo():
-        slider = ui.slider(min=0, max=100, value=50)
-        ui.label().bind_text_from(slider, 'value')
-
-    @element_demo(ui.joystick)
-    def joystick_demo():
-        ui.joystick(color='blue', size=50,
-                    on_move=lambda e: coordinates.set_text(f"{e.x:.3f}, {e.y:.3f}"),
-                    on_end=lambda _: coordinates.set_text('0, 0'))
-        coordinates = ui.label('0, 0')
-
-    @element_demo(ui.input)
-    def input_demo():
-        ui.input(label='Text', placeholder='start typing',
-                 on_change=lambda e: result.set_text('you typed: ' + e.value),
-                 validation={'Input too long': lambda value: len(value) < 20})
-        result = ui.label()
-
-    @element_demo(ui.textarea)
-    def textarea_demo():
-        ui.textarea(label='Text', placeholder='start typing',
-                    on_change=lambda e: result.set_text('you typed: ' + e.value))
-        result = ui.label()
-
-    @element_demo(ui.number)
-    def number_demo():
-        ui.number(label='Number', value=3.1415927, format='%.2f',
-                  on_change=lambda e: result.set_text(f'you entered: {e.value}'))
-        result = ui.label()
-
-    @element_demo(ui.knob)
-    def knob_demo():
-        knob = ui.knob(0.3, show_value=True)
-
-        with ui.knob(color='orange', track_color='grey-2').bind_value(knob, 'value'):
-            ui.icon('volume_up')
-
-    @element_demo(ui.color_input)
-    def color_input_demo():
-        label = ui.label('Change my color!')
-        ui.color_input(label='Color', value='#000000',
-                       on_change=lambda e: label.style(f'color:{e.value}'))
-
-    @element_demo(ui.color_picker)
-    def color_picker_demo():
-        picker = ui.color_picker(on_pick=lambda e: button.style(f'background-color:{e.color}!important'))
-        button = ui.button(on_click=picker.open).props('icon=colorize')
-
-    @element_demo(ui.date)
-    def date_demo():
-        ui.date(value='2023-01-01', on_change=lambda e: result.set_text(e.value))
-        result = ui.label()
-
-    @element_demo(ui.time)
-    def time_demo():
-        ui.time(value='12:00', on_change=lambda e: result.set_text(e.value))
-        result = ui.label()
-
-    @element_demo(ui.upload)
-    def upload_demo():
-        ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('max-w-full')
+    load_demo(ui.label)
+    load_demo(ui.icon)
+    load_demo(ui.avatar)
+    load_demo(ui.link)
+    load_demo(ui.button)
+    load_demo(ui.badge)
+    load_demo(ui.toggle)
+    load_demo(ui.radio)
+    load_demo(ui.select)
+    load_demo(ui.checkbox)
+    load_demo(ui.switch)
+    load_demo(ui.slider)
+    load_demo(ui.joystick)
+    load_demo(ui.input)
+    load_demo(ui.textarea)
+    load_demo(ui.number)
+    load_demo(ui.knob)
+    load_demo(ui.color_input)
+    load_demo(ui.color_picker)
+    load_demo(ui.date)
+    load_demo(ui.time)
+    load_demo(ui.upload)
 
     heading('Markdown and HTML')
 
-    @element_demo(ui.markdown)
-    def markdown_demo():
-        ui.markdown('''This is **Markdown**.''')
-
-    @element_demo(ui.mermaid)
-    def mermaid_demo():
-        ui.mermaid('''
-        graph LR;
-            A --> B;
-            A --> C;
-        ''')
-
-    @element_demo(ui.html)
-    def html_demo():
-        ui.html('This is <strong>HTML</strong>.')
+    load_demo(ui.markdown)
+    load_demo(ui.mermaid)
+    load_demo(ui.html)
 
     @text_demo('SVG',
                'You can add Scalable Vector Graphics using the `ui.html` element.')
@@ -205,9 +100,7 @@ def create_full(menu: ui.element) -> None:
 
     heading('Images, Audio and Video')
 
-    @element_demo(ui.image)
-    def image_demo():
-        ui.image('https://picsum.photos/id/377/640/360')
+    load_demo(ui.image)
 
     @text_demo('Captions and Overlays', '''
         By nesting elements inside a `ui.image` you can create augmentations.
@@ -226,202 +119,30 @@ def create_full(menu: ui.element) -> None:
                 </svg>
             ''').classes('bg-transparent')
 
-    @element_demo(ui.interactive_image)
-    def interactive_image_demo():
-        from nicegui.events import MouseEventArguments
-
-        def mouse_handler(e: MouseEventArguments):
-            color = 'SkyBlue' if e.type == 'mousedown' else 'SteelBlue'
-            ii.content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="15" fill="none" stroke="{color}" stroke-width="4" />'
-            ui.notify(f'{e.type} at ({e.image_x:.1f}, {e.image_y:.1f})')
-
-        src = 'https://picsum.photos/id/565/640/360'
-        ii = ui.interactive_image(src, on_mouse=mouse_handler, events=['mousedown', 'mouseup'], cross=True)
-
-    @element_demo(ui.audio)
-    def image_demo():
-        a = ui.audio('https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab41b.mp3')
-        a.on('ended', lambda _: ui.notify('Audio playback completed'))
-
-        ui.button(on_click=lambda: a.props('muted')).props('outline icon=volume_off')
-        ui.button(on_click=lambda: a.props(remove='muted')).props('outline icon=volume_up')
-
-    @element_demo(ui.video)
-    def image_demo():
-        v = ui.video('https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4')
-        v.on('ended', lambda _: ui.notify('Video playback completed'))
+    load_demo(ui.interactive_image)
+    load_demo(ui.audio)
+    load_demo(ui.video)
 
     heading('Data Elements')
 
-    @element_demo(ui.aggrid)
-    def aggrid_demo():
-        grid = ui.aggrid({
-            'columnDefs': [
-                {'headerName': 'Name', 'field': 'name'},
-                {'headerName': 'Age', 'field': 'age'},
-            ],
-            'rowData': [
-                {'name': 'Alice', 'age': 18},
-                {'name': 'Bob', 'age': 21},
-                {'name': 'Carol', 'age': 42},
-            ],
-            'rowSelection': 'multiple',
-        }).classes('max-h-40')
-
-        def update():
-            grid.options['rowData'][0]['age'] += 1
-            grid.update()
-
-        ui.button('Update', on_click=update)
-        ui.button('Select all', on_click=lambda: grid.call_api_method('selectAll'))
-
+    load_demo(ui.aggrid)
     load_demo(ui.table)
-
-    @element_demo(ui.chart)
-    def chart_demo():
-        from numpy.random import random
-
-        chart = ui.chart({
-            'title': False,
-            'chart': {'type': 'bar'},
-            'xAxis': {'categories': ['A', 'B']},
-            'series': [
-                {'name': 'Alpha', 'data': [0.1, 0.2]},
-                {'name': 'Beta', 'data': [0.3, 0.4]},
-            ],
-        }).classes('w-full h-64')
-
-        def update():
-            chart.options['series'][0]['data'][:] = random(2)
-            chart.update()
-
-        ui.button('Update', on_click=update)
-
-    @element_demo(ui.pyplot)
-    def plot_demo():
-        import numpy as np
-        from matplotlib import pyplot as plt
-
-        with ui.pyplot(figsize=(3, 2)):
-            x = np.linspace(0.0, 5.0)
-            y = np.cos(2 * np.pi * x) * np.exp(-x)
-            plt.plot(x, y, '-')
-
-    @element_demo(ui.line_plot)
-    def line_plot_demo():
-        from datetime import datetime
-
-        import numpy as np
-
-        line_plot = ui.line_plot(n=2, limit=20, figsize=(3, 2), update_every=5) \
-            .with_legend(['sin', 'cos'], loc='upper center', ncol=2)
-
-        def update_line_plot() -> None:
-            now = datetime.now()
-            x = now.timestamp()
-            y1 = np.sin(x)
-            y2 = np.cos(x)
-            line_plot.push([now], [[y1], [y2]])
-
-        line_updates = ui.timer(0.1, update_line_plot, active=False)
-        line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')
-
-        # END OF DEMO
-        def handle_change(msg: Dict) -> None:
-            def turn_off() -> None:
-                line_checkbox.set_value(False)
-                ui.notify('Turning off that line plot to save resources on our live demo server. 😎')
-            line_checkbox.value = msg['args']
-            if line_checkbox.value:
-                ui.timer(10.0, turn_off, once=True)
-        line_checkbox.on('update:model-value', handle_change)
-
-    @element_demo(ui.plotly)
-    def plotly_demo():
-        import plotly.graph_objects as go
-
-        fig = go.Figure(go.Scatter(x=[1, 2, 3, 4], y=[1, 2, 3, 2.5]))
-        fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
-        ui.plotly(fig).classes('w-full h-40')
-
-    @element_demo(ui.linear_progress)
-    def linear_progress_demo():
-        slider = ui.slider(min=0, max=1, step=0.01, value=0.5)
-        ui.linear_progress().bind_value_from(slider, 'value')
-
-    @element_demo(ui.circular_progress)
-    def circular_progress_demo():
-        slider = ui.slider(min=0, max=1, step=0.01, value=0.5)
-        ui.circular_progress().bind_value_from(slider, 'value')
-
-    @element_demo(ui.spinner)
-    def spinner_demo():
-        with ui.row():
-            ui.spinner(size='lg')
-            ui.spinner('audio', size='lg', color='green')
-            ui.spinner('dots', size='lg', color='red')
-
-    @element_demo(ui.scene)
-    def scene_demo():
-        with ui.scene(width=285, height=285) as scene:
-            scene.sphere().material('#4488ff')
-            scene.cylinder(1, 0.5, 2, 20).material('#ff8800', opacity=0.5).move(-2, 1)
-            scene.extrusion([[0, 0], [0, 1], [1, 0.5]], 0.1).material('#ff8888').move(-2, -2)
-
-            with scene.group().move(z=2):
-                scene.box().move(x=2)
-                scene.box().move(y=2).rotate(0.25, 0.5, 0.75)
-                scene.box(wireframe=True).material('#888888').move(x=2, y=2)
-
-            scene.line([-4, 0, 0], [-4, 2, 0]).material('#ff0000')
-            scene.curve([-4, 0, 0], [-4, -1, 0], [-3, -1, 0], [-3, -2, 0]).material('#008800')
-
-            logo = 'https://avatars.githubusercontent.com/u/2843826'
-            scene.texture(logo, [[[0.5, 2, 0], [2.5, 2, 0]],
-                                 [[0.5, 0, 0], [2.5, 0, 0]]]).move(1, -2)
-
-            teapot = 'https://upload.wikimedia.org/wikipedia/commons/9/93/Utah_teapot_(solid).stl'
-            scene.stl(teapot).scale(0.2).move(-3, 4)
-
-            scene.text('2D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(z=2)
-            scene.text3d('3D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(y=-2).scale(.05)
-
-    @element_demo(ui.tree)
-    def tree_demo():
-        ui.tree([
-            {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
-            {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
-        ], label_key='id', on_select=lambda e: ui.notify(e.value))
-
-    @element_demo(ui.log)
-    def log_demo():
-        from datetime import datetime
-
-        log = ui.log(max_lines=10).classes('w-full h-20')
-        ui.button('Log time', on_click=lambda: log.push(datetime.now().strftime('%X.%f')[:-5]))
+    load_demo(ui.chart)
+    load_demo(ui.pyplot)
+    load_demo(ui.line_plot)
+    load_demo(ui.plotly)
+    load_demo(ui.linear_progress)
+    load_demo(ui.circular_progress)
+    load_demo(ui.spinner)
+    load_demo(ui.scene)
+    load_demo(ui.tree)
+    load_demo(ui.log)
 
     heading('Layout')
 
-    @element_demo(ui.card)
-    def card_demo():
-        with ui.card().tight() as card:
-            ui.image('https://picsum.photos/id/684/640/360')
-            with ui.card_section():
-                ui.label('Lorem ipsum dolor sit amet, consectetur adipiscing elit, ...')
-
-    @element_demo(ui.column)
-    def column_demo():
-        with ui.column():
-            ui.label('label 1')
-            ui.label('label 2')
-            ui.label('label 3')
-
-    @element_demo(ui.row)
-    def row_demo():
-        with ui.row():
-            ui.label('label 1')
-            ui.label('label 2')
-            ui.label('label 3')
+    load_demo(ui.card)
+    load_demo(ui.column)
+    load_demo(ui.row)
 
     @text_demo('Clear Containers', '''
         To remove all elements from a row, column or card container, use the `clear()` method.
@@ -440,10 +161,7 @@ def create_full(menu: ui.element) -> None:
         ui.button('Remove', on_click=lambda: container.remove(0))
         ui.button('Clear', on_click=container.clear)
 
-    @element_demo(ui.expansion)
-    def expansion_demo():
-        with ui.expansion('Expand!', icon='work').classes('w-full'):
-            ui.label('inside the expansion')
+    load_demo(ui.expansion)
 
     @text_demo('Tabs', '''
         The elements `ui.tabs`, `ui.tab`, `ui.tab_panels`, and `ui.tab_panel` resemble
@@ -464,18 +182,7 @@ def create_full(menu: ui.element) -> None:
             with ui.tab_panel('About'):
                 ui.label('This is the second tab')
 
-    @element_demo(ui.menu)
-    def menu_demo():
-        with ui.row().classes('w-full items-center'):
-            result = ui.label().classes('mr-auto')
-            with ui.button(on_click=lambda: menu.open()).props('icon=menu'):
-                with ui.menu() as menu:
-                    ui.menu_item('Menu item 1', lambda: result.set_text('Selected item 1'))
-                    ui.menu_item('Menu item 2', lambda: result.set_text('Selected item 2'))
-                    ui.menu_item('Menu item 3 (keep open)',
-                                 lambda: result.set_text('Selected item 3'), auto_close=False)
-                    ui.separator()
-                    ui.menu_item('Close', on_click=menu.close)
+    load_demo(ui.menu)
 
     @text_demo('Tooltips', '''
         Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
@@ -487,17 +194,8 @@ def create_full(menu: ui.element) -> None:
         with ui.button().props('icon=thumb_up'):
             ui.tooltip('I like this').classes('bg-green')
 
-    @element_demo(ui.notify)
-    def notify_demo():
-        ui.button('Say hi!', on_click=lambda: ui.notify('Hi!', close_button='OK'))
-
-    @element_demo(ui.dialog)
-    def dialog_demo():
-        with ui.dialog() as dialog, ui.card():
-            ui.label('Hello world!')
-            ui.button('Close', on_click=dialog.close)
-
-        ui.button('Open a dialog', on_click=dialog.open)
+    load_demo(ui.notify)
+    load_demo(ui.dialog)
 
     @text_demo('Awaitable dialog', '''
         Dialogs can be awaited.
@@ -534,54 +232,12 @@ def create_full(menu: ui.element) -> None:
         ui.button().props('icon=touch_app outline round').classes('shadow-lg')
         ui.label('Stylish!').style('color: #6E93D6; font-size: 200%; font-weight: 300')
 
-    @element_demo(ui.colors)
-    def colors_demo():
-        ui.button('Default', on_click=lambda: ui.colors())
-        ui.button('Gray', on_click=lambda: ui.colors(primary='#555'))
+    load_demo(ui.colors)
 
     heading('Action')
 
-    @element_demo(ui.timer)
-    def timer_demo():
-        from datetime import datetime
-
-        with ui.row().classes('items-center'):
-            clock = ui.label()
-            t = ui.timer(interval=0.1, callback=lambda: clock.set_text(datetime.now().strftime('%X.%f')[:-5]))
-            ui.checkbox('active').bind_value(t, 'active')
-
-        with ui.row():
-            def lazy_update() -> None:
-                new_text = datetime.now().strftime('%X.%f')[:-5]
-                if lazy_clock.text[:8] == new_text[:8]:
-                    return
-                lazy_clock.text = new_text
-            lazy_clock = ui.label()
-            ui.timer(interval=0.1, callback=lazy_update)
-
-    @element_demo(ui.keyboard)
-    def keyboard_demo():
-        from nicegui.events import KeyEventArguments
-
-        def handle_key(e: KeyEventArguments):
-            if e.key == 'f' and not e.action.repeat:
-                if e.action.keyup:
-                    ui.notify('f was just released')
-                elif e.action.keydown:
-                    ui.notify('f was just pressed')
-            if e.modifiers.shift and e.action.keydown:
-                if e.key.arrow_left:
-                    ui.notify('going left')
-                elif e.key.arrow_right:
-                    ui.notify('going right')
-                elif e.key.arrow_up:
-                    ui.notify('going up')
-                elif e.key.arrow_down:
-                    ui.notify('going down')
-
-        keyboard = ui.keyboard(on_key=handle_key)
-        ui.label('Key events can be caught globally by using the keyboard element.')
-        ui.checkbox('Track key events').bind_value_to(keyboard, 'active')
+    load_demo(ui.timer)
+    load_demo(ui.keyboard)
 
     @text_demo('Bindings', '''
         NiceGUI is able to directly bind UI elements to models.
@@ -642,20 +298,7 @@ def create_full(menu: ui.element) -> None:
 
     heading('Pages')
 
-    @element_demo(ui.page)
-    def page_demo():
-        @ui.page('/other_page')
-        def other_page():
-            ui.label('Welcome to the other side')
-            ui.link('Back to main page', '/documentation#page')
-
-        @ui.page('/dark_page', dark=True)
-        def dark_page():
-            ui.label('Welcome to the dark side')
-            ui.link('Back to main page', '/documentation#page')
-
-        ui.link('Visit other page', other_page)
-        ui.link('Visit dark page', dark_page)
+    load_demo(ui.page)
 
     @text_demo('Auto-index page', '''
         Pages created with the `@ui.page` decorator are "private".
@@ -741,14 +384,7 @@ def create_full(menu: ui.element) -> None:
 
         ui.link('show page with fancy layout', page_layout)
 
-    @element_demo(ui.open)
-    def ui_open_demo():
-        @ui.page('/yet_another_page')
-        def yet_another_page():
-            ui.label('Welcome to yet another page')
-            ui.button('RETURN', on_click=lambda: ui.open('documentation#open'))
-
-        ui.button('REDIRECT', on_click=lambda: ui.open(yet_another_page))
+    load_demo(ui.open)
 
     @text_demo('Sessions', '''
         The optional `request` argument provides insights about the client's URL parameters etc.
@@ -778,22 +414,7 @@ def create_full(menu: ui.element) -> None:
 
         ui.link('Visit session demo', session_demo)
 
-    @element_demo(ui.run_javascript)
-    def javascript_demo():
-        async def alert():
-            await ui.run_javascript('alert("Hello!")', respond=False)
-
-        async def get_date():
-            time = await ui.run_javascript('Date()')
-            ui.notify(f'Browser time: {time}')
-
-        async def access_elements():
-            await ui.run_javascript(f'getElement({label.id}).innerText += " Hello!"')
-
-        ui.button('fire and forget', on_click=alert)
-        ui.button('receive result', on_click=get_date)
-        ui.button('access elements', on_click=access_elements)
-        label = ui.label()
+    load_demo(ui.run_javascript)
 
     heading('Routes')
 

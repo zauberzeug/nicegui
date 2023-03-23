@@ -63,12 +63,6 @@ def markdown(text: str) -> None:
     ui.markdown(remove_indentation(text))
 
 
-def more_link(element_class: type) -> None:
-    name = pascal_to_snake(element_class.__name__)
-    if (Path(__file__).parent / 'more_documentation' / f'{name}_documentation.py').exists():
-        ui.markdown(f'[More...](documentation/{name})').classes('bold-links')
-
-
 class text_demo:
 
     def __init__(self, title: str, explanation: str) -> None:
@@ -95,7 +89,7 @@ class element_demo:
         self.element_class = element_class
         self.browser_title = browser_title
 
-    def __call__(self, f: Callable) -> Callable:
+    def __call__(self, f: Callable, *, more_link: Optional[str] = None) -> Callable:
         doc = self.element_class.__doc__ or self.element_class.__init__.__doc__
         title, documentation = doc.split('\n', 1)
         documentation = remove_indentation(documentation)
@@ -106,11 +100,12 @@ class element_demo:
             subheading(title)
             ui.html(html).classes('documentation bold-links arrow-links')
             wrapped = demo(browser_title=self.browser_title)(f)
-            more_link(self.element_class)
+            if more_link:
+                ui.markdown(f'[More...](documentation/{more_link})').classes('bold-links mt-2')
             return wrapped
 
 
 def load_demo(element_class: type) -> None:
     name = pascal_to_snake(element_class.__name__)
     module = importlib.import_module(f'website.more_documentation.{name}_documentation')
-    element_demo(element_class)(getattr(module, 'main_demo'))
+    element_demo(element_class)(getattr(module, 'main_demo'), more_link=name)
