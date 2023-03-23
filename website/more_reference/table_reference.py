@@ -1,21 +1,19 @@
 from nicegui import ui
 
-from ..reference_tools import element_example, text_example
+from ..reference_tools import text_example
 
 
-def intro() -> None:
-    @element_example(ui.table)
-    def table_example():
-        columns = [
-            {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
-            {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
-        ]
-        rows = [
-            {'name': 'Alice', 'age': 18},
-            {'name': 'Bob', 'age': 21},
-            {'name': 'Carol'},
-        ]
-        ui.table(columns=columns, rows=rows, row_key='name')
+def main_example() -> None:
+    columns = [
+        {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
+        {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
+    ]
+    rows = [
+        {'name': 'Alice', 'age': 18},
+        {'name': 'Bob', 'age': 21},
+        {'name': 'Carol'},
+    ]
+    ui.table(columns=columns, rows=rows, row_key='name')
 
 
 def more() -> None:

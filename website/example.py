@@ -30,7 +30,9 @@ class example:
             while not code[0].strip().startswith('def'):
                 del code[0]
             del code[0]
-            code = ['from nicegui import ui'] + [remove_prefix(line[8:], '# ') for line in code]
+            indentation = len(code[0]) - len(code[0].lstrip())
+            code = [line[indentation:] for line in code]
+            code = ['from nicegui import ui'] + [remove_prefix(line, '# ') for line in code]
             code = ['' if line == '#' else line for line in code]
             if not code[-1].startswith('ui.run('):
                 code.append('')

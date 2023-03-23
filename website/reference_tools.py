@@ -102,4 +102,4 @@ def load_example(element_class: type) -> None:
         return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
     name = pascal_to_snake(element_class.__name__)
     module = importlib.import_module(f'website.more_reference.{name}_reference')
-    getattr(module, 'intro')()
+    element_example(element_class)(getattr(module, 'main_example'))

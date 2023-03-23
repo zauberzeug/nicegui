@@ -20,7 +20,7 @@ from nicegui import globals as nicegui_globals
 from nicegui import ui
 from website import demo_card, reference, svg
 from website.example import bash_window, browser_window, python_window
-from website.reference_tools import create_anchor_name
+from website.reference_tools import create_anchor_name, element_example
 from website.star import add_star
 from website.style import example_link, features, heading, link_target, section_heading, side_menu, subtitle, title
 
@@ -312,7 +312,7 @@ def reference_page_more(name: str):
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Reference', f'ui.*{name}*')
         module = importlib.import_module(f'website.more_reference.{name}_reference')
-        getattr(module, 'intro')()
+        element_example(getattr(ui, name))(getattr(module, 'main_example'))
         getattr(module, 'more')()
 
 
