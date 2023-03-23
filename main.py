@@ -19,9 +19,9 @@ import prometheus
 from nicegui import Client, app
 from nicegui import globals as nicegui_globals
 from nicegui import ui
-from website import demo_card, documentation, svg
-from website.documentation_tools import create_anchor_name, element_example
-from website.example import bash_window, browser_window, python_window
+from website import documentation, example_card, svg
+from website.demo import bash_window, browser_window, python_window
+from website.documentation_tools import create_anchor_name, element_demo
 from website.star import add_star
 from website.style import example_link, features, heading, link_target, section_heading, side_menu, subtitle, title
 
@@ -66,9 +66,9 @@ def add_header() -> None:
     menu_items = {
         'Features': '/#features',
         'Installation': '/#installation',
-        'Examples': '/#examples',
-        'Documentation': '/documentation',
         'Demos': '/#demos',
+        'Documentation': '/documentation',
+        'Examples': '/#examples',
         'Why?': '/#why',
     }
     with ui.header() \
@@ -125,7 +125,7 @@ async def index_page(client: Client):
                     '[PyPI package](https://pypi.org/project/nicegui/), '
                     '[Docker image](https://hub.docker.com/r/zauberzeug/nicegui) and on '
                     '[GitHub](https://github.com/zauberzeug/nicegui).')
-        demo_card.create()
+        example_card.create()
 
     with ui.column().classes('w-full p-8 lg:p-16 bold-links arrow-links max-w-[1600px] mx-auto'):
         link_target('features', '-50px')
@@ -207,15 +207,15 @@ The command searches for `main.py` in in your current directory and makes the ap
                                 '```')
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
-        link_target('examples', '-50px')
-        section_heading('Examples', 'Try *this*')
+        link_target('demos', '-50px')
+        section_heading('Demos', 'Try *this*')
         with ui.column().classes('w-full'):
             documentation.create_intro()
 
     with ui.column().classes('dark-box p-8 lg:p-16 my-16'):
         with ui.column().classes('mx-auto items-center gap-y-8 gap-x-32 lg:flex-row'):
             with ui.column().classes('gap-1 max-lg:items-center max-lg:text-center'):
-                ui.markdown('Browse through plenty of live examples.') \
+                ui.markdown('Browse through plenty of live demos.') \
                     .classes('text-white text-2xl md:text-3xl font-medium')
                 ui.html('Fun-Fact: This whole website is also coded with NiceGUI.') \
                     .classes('text-white text-lg md:text-xl')
@@ -223,8 +223,8 @@ The command searches for `main.py` in in your current directory and makes the ap
                 .classes('rounded-full mx-auto px-12 py-2 text-white bg-white font-medium text-lg md:text-xl')
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
-        link_target('demos', '-50px')
-        section_heading('In-depth demonstrations', 'Pick your *solution*')
+        link_target('examples', '-50px')
+        section_heading('In-depth examples', 'Pick your *solution*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'):
             example_link('Slideshow', 'implements a keyboard-controlled image slideshow')
             example_link('Authentication', 'shows how to use sessions to build a login screen')
@@ -302,7 +302,7 @@ def documentation_page():
     menu = side_menu()
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
-        section_heading('API Reference and Examples', '*NiceGUI* Documentation')
+        section_heading('API Reference and Demos', '*NiceGUI* Documentation')
         ui.markdown(
             'This is the documentation for NiceGUI >= 1.0. '
             'Documentation for older versions can be found at [https://0.9.nicegui.io/](https://0.9.nicegui.io/reference).'
@@ -319,7 +319,7 @@ def documentation_page_more(name: str):
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Documentation', f'ui.*{name}*')
         module = importlib.import_module(f'website.more_documentation.{name}_documentation')
-        element_example(getattr(ui, name))(getattr(module, 'main_example'))
+        element_demo(getattr(ui, name))(getattr(module, 'main_demo'))
         getattr(module, 'more')()
 
 

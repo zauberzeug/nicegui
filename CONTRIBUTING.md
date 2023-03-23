@@ -88,17 +88,17 @@ pytest
 ## Documentation
 
 New features should be well documented in [website/documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/documentation.py).
-By calling the `element_example(...)` function with an element as a parameter the docstring is used as a description.
+By calling the `element_demo(...)` function with an element as a parameter the docstring is used as a description.
 The docstrings are written in restructured-text.
 
 Because it has [numerous benefits](https://nick.groenen.me/notes/one-sentence-per-line/) we write each sentence in a new line.
 
-### Demos
+### Examples
 
-Besides the documentation (see above) we collect useful, but compact demonstrations.
-Each demo should be about one concept.
+Besides the documentation (see above) we collect useful, but compact examples.
+Each example should be about one concept.
 Please try to make them as minimal as possible to show what is needed to get some kind of functionality.
-We are happy to merge pull requests with new demos which show new concepts, ideas or interesting use cases.
+We are happy to merge pull requests with new examples which show new concepts, ideas or interesting use cases.
 
 ## Pull requests
 

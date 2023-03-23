@@ -19,14 +19,14 @@ def remove_prefix(text: str, prefix: str) -> str:
     return text[len(prefix):] if text.startswith(prefix) else text
 
 
-class example:
+class demo:
 
     def __init__(self, browser_title: Optional[str] = None) -> None:
         self.browser_title = browser_title
 
     def __call__(self, f: Callable) -> Callable:
         with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
-            code = inspect.getsource(f).split('# END OF EXAMPLE')[0].strip().splitlines()
+            code = inspect.getsource(f).split('# END OF DEMO')[0].strip().splitlines()
             while not code[0].strip().startswith('def'):
                 del code[0]
             del code[0]

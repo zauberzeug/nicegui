@@ -7,7 +7,7 @@ import docutils.core
 from nicegui import globals, ui
 from nicegui.elements.markdown import apply_tailwind
 
-from .example import example
+from .demo import demo
 
 SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 
@@ -58,7 +58,7 @@ def markdown(text: str) -> None:
     ui.markdown(remove_indentation(text))
 
 
-class text_example:
+class text_demo:
 
     def __init__(self, title: str, explanation: str) -> None:
         self.title = title
@@ -68,17 +68,17 @@ class text_example:
     def __call__(self, f: Callable) -> Callable:
         subheading(self.title, make_menu_entry=self.make_menu_entry)
         markdown(self.explanation)
-        return example()(f)
+        return demo()(f)
 
 
-class intro_example(text_example):
+class intro_demo(text_demo):
 
     def __init__(self, title: str, explanation: str) -> None:
         super().__init__(title, explanation)
         self.make_menu_entry = False
 
 
-class element_example:
+class element_demo:
 
     def __init__(self, element_class: Union[Callable, type], browser_title: Optional[str] = None) -> None:
         self.element_class = element_class
@@ -94,12 +94,12 @@ class element_example:
         with ui.column().classes('w-full mb-8 gap-2'):
             subheading(title)
             ui.html(html).classes('documentation bold-links arrow-links')
-            return example(browser_title=self.browser_title)(f)
+            return demo(browser_title=self.browser_title)(f)
 
 
-def load_example(element_class: type) -> None:
+def load_demo(element_class: type) -> None:
     def pascal_to_snake(name: str) -> str:
         return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
     name = pascal_to_snake(element_class.__name__)
     module = importlib.import_module(f'website.more_documentation.{name}_documentation')
-    element_example(element_class)(getattr(module, 'main_example'))
+    element_demo(element_class)(getattr(module, 'main_demo'))

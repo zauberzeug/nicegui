@@ -1,9 +1,9 @@
 from nicegui import ui
 
-from ..documentation_tools import text_example
+from ..documentation_tools import text_demo
 
 
-def main_example() -> None:
+def main_demo() -> None:
     columns = [
         {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
         {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
@@ -17,7 +17,7 @@ def main_example() -> None:
 
 
 def more() -> None:
-    @text_example('Table with expandable rows', '''
+    @text_demo('Table with expandable rows', '''
         Scoped slots can be used to insert buttons that toggle the expand state of a table row.
         See the [Quasar documentation](https://quasar.dev/vue-components/table#expanding-rows) for more information.
     ''')

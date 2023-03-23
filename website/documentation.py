@@ -3,17 +3,16 @@ from typing import Dict
 
 from nicegui import app, ui
 
-from .documentation_tools import (element_example, heading, intro_example, load_example, markdown, subheading,
-                                  text_example)
-from .example import bash_window, python_window
+from .demo import bash_window, python_window
+from .documentation_tools import element_demo, heading, intro_demo, load_demo, markdown, subheading, text_demo
 
 CONSTANT_UUID = str(uuid.uuid4())
 
 
 def create_intro() -> None:
-    @intro_example('Styling',
-                   'While having reasonable defaults, you can still modify the look of your app with CSS as well as Tailwind and Quasar classes.')
-    def formatting_example():
+    @intro_demo('Styling',
+                'While having reasonable defaults, you can still modify the look of your app with CSS as well as Tailwind and Quasar classes.')
+    def formatting_demo():
         ui.icon('thumb_up')
         ui.markdown('This is **Markdown**.')
         ui.html('This is <strong>HTML</strong>.')
@@ -23,9 +22,9 @@ def create_intro() -> None:
             ui.label('Quasar').classes('q-ml-xl')
         ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
 
-    @intro_example('Common UI Elements',
-                   'NiceGUI comes with a collection of commonly used UI elements.')
-    def common_elements_example():
+    @intro_demo('Common UI Elements',
+                'NiceGUI comes with a collection of commonly used UI elements.')
+    def common_elements_demo():
         from nicegui.events import ValueChangeEventArguments
 
         def show(event: ValueChangeEventArguments):
@@ -42,9 +41,9 @@ def create_intro() -> None:
             ui.select(['One', 'Two'], value='One', on_change=show)
         ui.link('And many more...', '/documentation').classes('mt-8')
 
-    @intro_example('Value Binding',
-                   'Binding values between UI elements and data models is built into NiceGUI.')
-    def binding_example():
+    @intro_demo('Value Binding',
+                'Binding values between UI elements and data models is built into NiceGUI.')
+    def binding_demo():
         class Demo:
             def __init__(self):
                 self.number = 1
@@ -60,141 +59,141 @@ def create_intro() -> None:
 def create_full(menu: ui.element) -> None:
     heading('Basic Elements')
 
-    @element_example(ui.label)
-    def label_example():
+    @element_demo(ui.label)
+    def label_demo():
         ui.label('some label')
 
-    @element_example(ui.icon)
-    def icon_example():
+    @element_demo(ui.icon)
+    def icon_demo():
         ui.icon('thumb_up')
 
-    @element_example(ui.avatar)
-    def avatar_example():
+    @element_demo(ui.avatar)
+    def avatar_demo():
         ui.avatar('favorite_border', text_color='grey-11', square=True)
         ui.avatar('img:https://nicegui.io/logo_square.png', color='blue-2')
 
-    @element_example(ui.link)
-    def link_example():
+    @element_demo(ui.link)
+    def link_demo():
         ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
 
-    @element_example(ui.button)
-    def button_example():
+    @element_demo(ui.button)
+    def button_demo():
         ui.button('Click me!', on_click=lambda: ui.notify(f'You clicked me!'))
 
-    @element_example(ui.badge)
-    def badge_example():
+    @element_demo(ui.badge)
+    def badge_demo():
         with ui.button('Click me!', on_click=lambda: badge.set_text(int(badge.text) + 1)):
             badge = ui.badge('0', color='red').props('floating')
 
-    @element_example(ui.toggle)
-    def toggle_example():
+    @element_demo(ui.toggle)
+    def toggle_demo():
         toggle1 = ui.toggle([1, 2, 3], value=1)
         toggle2 = ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(toggle1, 'value')
 
-    @element_example(ui.radio)
-    def radio_example():
+    @element_demo(ui.radio)
+    def radio_demo():
         radio1 = ui.radio([1, 2, 3], value=1).props('inline')
         radio2 = ui.radio({1: 'A', 2: 'B', 3: 'C'}).props('inline').bind_value(radio1, 'value')
 
-    @element_example(ui.select)
-    def select_example():
+    @element_demo(ui.select)
+    def select_demo():
         select1 = ui.select([1, 2, 3], value=1)
         select2 = ui.select({1: 'One', 2: 'Two', 3: 'Three'}).bind_value(select1, 'value')
 
-    @element_example(ui.checkbox)
-    def checkbox_example():
+    @element_demo(ui.checkbox)
+    def checkbox_demo():
         checkbox = ui.checkbox('check me')
         ui.label('Check!').bind_visibility_from(checkbox, 'value')
 
-    @element_example(ui.switch)
-    def switch_example():
+    @element_demo(ui.switch)
+    def switch_demo():
         switch = ui.switch('switch me')
         ui.label('Switch!').bind_visibility_from(switch, 'value')
 
-    @element_example(ui.slider)
-    def slider_example():
+    @element_demo(ui.slider)
+    def slider_demo():
         slider = ui.slider(min=0, max=100, value=50)
         ui.label().bind_text_from(slider, 'value')
 
-    @element_example(ui.joystick)
-    def joystick_example():
+    @element_demo(ui.joystick)
+    def joystick_demo():
         ui.joystick(color='blue', size=50,
                     on_move=lambda e: coordinates.set_text(f"{e.x:.3f}, {e.y:.3f}"),
                     on_end=lambda _: coordinates.set_text('0, 0'))
         coordinates = ui.label('0, 0')
 
-    @element_example(ui.input)
-    def input_example():
+    @element_demo(ui.input)
+    def input_demo():
         ui.input(label='Text', placeholder='start typing',
                  on_change=lambda e: result.set_text('you typed: ' + e.value),
                  validation={'Input too long': lambda value: len(value) < 20})
         result = ui.label()
 
-    @element_example(ui.textarea)
-    def textarea_example():
+    @element_demo(ui.textarea)
+    def textarea_demo():
         ui.textarea(label='Text', placeholder='start typing',
                     on_change=lambda e: result.set_text('you typed: ' + e.value))
         result = ui.label()
 
-    @element_example(ui.number)
-    def number_example():
+    @element_demo(ui.number)
+    def number_demo():
         ui.number(label='Number', value=3.1415927, format='%.2f',
                   on_change=lambda e: result.set_text(f'you entered: {e.value}'))
         result = ui.label()
 
-    @element_example(ui.knob)
-    def knob_example():
+    @element_demo(ui.knob)
+    def knob_demo():
         knob = ui.knob(0.3, show_value=True)
 
         with ui.knob(color='orange', track_color='grey-2').bind_value(knob, 'value'):
             ui.icon('volume_up')
 
-    @element_example(ui.color_input)
-    def color_input_example():
+    @element_demo(ui.color_input)
+    def color_input_demo():
         label = ui.label('Change my color!')
         ui.color_input(label='Color', value='#000000',
                        on_change=lambda e: label.style(f'color:{e.value}'))
 
-    @element_example(ui.color_picker)
-    def color_picker_example():
+    @element_demo(ui.color_picker)
+    def color_picker_demo():
         picker = ui.color_picker(on_pick=lambda e: button.style(f'background-color:{e.color}!important'))
         button = ui.button(on_click=picker.open).props('icon=colorize')
 
-    @element_example(ui.date)
-    def date_example():
+    @element_demo(ui.date)
+    def date_demo():
         ui.date(value='2023-01-01', on_change=lambda e: result.set_text(e.value))
         result = ui.label()
 
-    @element_example(ui.time)
-    def time_example():
+    @element_demo(ui.time)
+    def time_demo():
         ui.time(value='12:00', on_change=lambda e: result.set_text(e.value))
         result = ui.label()
 
-    @element_example(ui.upload)
-    def upload_example():
+    @element_demo(ui.upload)
+    def upload_demo():
         ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('max-w-full')
 
     heading('Markdown and HTML')
 
-    @element_example(ui.markdown)
-    def markdown_example():
+    @element_demo(ui.markdown)
+    def markdown_demo():
         ui.markdown('''This is **Markdown**.''')
 
-    @element_example(ui.mermaid)
-    def mermaid_example():
+    @element_demo(ui.mermaid)
+    def mermaid_demo():
         ui.mermaid('''
         graph LR;
             A --> B;
             A --> C;
         ''')
 
-    @element_example(ui.html)
-    def html_example():
+    @element_demo(ui.html)
+    def html_demo():
         ui.html('This is <strong>HTML</strong>.')
 
-    @text_example('SVG',
-                  'You can add Scalable Vector Graphics using the `ui.html` element.')
-    def svg_example():
+    @text_demo('SVG',
+               'You can add Scalable Vector Graphics using the `ui.html` element.')
+    def svg_demo():
         content = '''
             <svg viewBox="0 0 200 200" width="100" height="100" xmlns="http://www.w3.org/2000/svg">
             <circle cx="100" cy="100" r="78" fill="#ffde34" stroke="black" stroke-width="3" />
@@ -206,17 +205,17 @@ def create_full(menu: ui.element) -> None:
 
     heading('Images, Audio and Video')
 
-    @element_example(ui.image)
-    def image_example():
+    @element_demo(ui.image)
+    def image_demo():
         ui.image('https://picsum.photos/id/377/640/360')
 
-    @text_example('Captions and Overlays', '''
+    @text_demo('Captions and Overlays', '''
         By nesting elements inside a `ui.image` you can create augmentations.
 
         Use [Quasar classes](https://quasar.dev/vue-components/img) for positioning and styling captions.
         To overlay an SVG, make the `viewBox` exactly the size of the image and provide `100%` width/height to match the actual rendered size.
     ''')
-    def captions_and_overlays_example():
+    def captions_and_overlays_demo():
         with ui.image('https://picsum.photos/id/29/640/360'):
             ui.label('Nice!').classes('absolute-bottom text-subtitle2 text-center')
 
@@ -227,8 +226,8 @@ def create_full(menu: ui.element) -> None:
                 </svg>
             ''').classes('bg-transparent')
 
-    @element_example(ui.interactive_image)
-    def interactive_image_example():
+    @element_demo(ui.interactive_image)
+    def interactive_image_demo():
         from nicegui.events import MouseEventArguments
 
         def mouse_handler(e: MouseEventArguments):
@@ -239,23 +238,23 @@ def create_full(menu: ui.element) -> None:
         src = 'https://picsum.photos/id/565/640/360'
         ii = ui.interactive_image(src, on_mouse=mouse_handler, events=['mousedown', 'mouseup'], cross=True)
 
-    @element_example(ui.audio)
-    def image_example():
+    @element_demo(ui.audio)
+    def image_demo():
         a = ui.audio('https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab41b.mp3')
         a.on('ended', lambda _: ui.notify('Audio playback completed'))
 
         ui.button(on_click=lambda: a.props('muted')).props('outline icon=volume_off')
         ui.button(on_click=lambda: a.props(remove='muted')).props('outline icon=volume_up')
 
-    @element_example(ui.video)
-    def image_example():
+    @element_demo(ui.video)
+    def image_demo():
         v = ui.video('https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4')
         v.on('ended', lambda _: ui.notify('Video playback completed'))
 
     heading('Data Elements')
 
-    @element_example(ui.aggrid)
-    def aggrid_example():
+    @element_demo(ui.aggrid)
+    def aggrid_demo():
         grid = ui.aggrid({
             'columnDefs': [
                 {'headerName': 'Name', 'field': 'name'},
@@ -276,10 +275,10 @@ def create_full(menu: ui.element) -> None:
         ui.button('Update', on_click=update)
         ui.button('Select all', on_click=lambda: grid.call_api_method('selectAll'))
 
-    load_example(ui.table)
+    load_demo(ui.table)
 
-    @element_example(ui.chart)
-    def chart_example():
+    @element_demo(ui.chart)
+    def chart_demo():
         from numpy.random import random
 
         chart = ui.chart({
@@ -298,8 +297,8 @@ def create_full(menu: ui.element) -> None:
 
         ui.button('Update', on_click=update)
 
-    @element_example(ui.pyplot)
-    def plot_example():
+    @element_demo(ui.pyplot)
+    def plot_demo():
         import numpy as np
         from matplotlib import pyplot as plt
 
@@ -308,8 +307,8 @@ def create_full(menu: ui.element) -> None:
             y = np.cos(2 * np.pi * x) * np.exp(-x)
             plt.plot(x, y, '-')
 
-    @element_example(ui.line_plot)
-    def line_plot_example():
+    @element_demo(ui.line_plot)
+    def line_plot_demo():
         from datetime import datetime
 
         import numpy as np
@@ -327,7 +326,7 @@ def create_full(menu: ui.element) -> None:
         line_updates = ui.timer(0.1, update_line_plot, active=False)
         line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')
 
-        # END OF EXAMPLE
+        # END OF DEMO
         def handle_change(msg: Dict) -> None:
             def turn_off() -> None:
                 line_checkbox.set_value(False)
@@ -337,33 +336,33 @@ def create_full(menu: ui.element) -> None:
                 ui.timer(10.0, turn_off, once=True)
         line_checkbox.on('update:model-value', handle_change)
 
-    @element_example(ui.plotly)
-    def plotly_example():
+    @element_demo(ui.plotly)
+    def plotly_demo():
         import plotly.graph_objects as go
 
         fig = go.Figure(go.Scatter(x=[1, 2, 3, 4], y=[1, 2, 3, 2.5]))
         fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
         ui.plotly(fig).classes('w-full h-40')
 
-    @element_example(ui.linear_progress)
-    def linear_progress_example():
+    @element_demo(ui.linear_progress)
+    def linear_progress_demo():
         slider = ui.slider(min=0, max=1, step=0.01, value=0.5)
         ui.linear_progress().bind_value_from(slider, 'value')
 
-    @element_example(ui.circular_progress)
-    def circular_progress_example():
+    @element_demo(ui.circular_progress)
+    def circular_progress_demo():
         slider = ui.slider(min=0, max=1, step=0.01, value=0.5)
         ui.circular_progress().bind_value_from(slider, 'value')
 
-    @element_example(ui.spinner)
-    def spinner_example():
+    @element_demo(ui.spinner)
+    def spinner_demo():
         with ui.row():
             ui.spinner(size='lg')
             ui.spinner('audio', size='lg', color='green')
             ui.spinner('dots', size='lg', color='red')
 
-    @element_example(ui.scene)
-    def scene_example():
+    @element_demo(ui.scene)
+    def scene_demo():
         with ui.scene(width=285, height=285) as scene:
             scene.sphere().material('#4488ff')
             scene.cylinder(1, 0.5, 2, 20).material('#ff8800', opacity=0.5).move(-2, 1)
@@ -387,15 +386,15 @@ def create_full(menu: ui.element) -> None:
             scene.text('2D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(z=2)
             scene.text3d('3D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(y=-2).scale(.05)
 
-    @element_example(ui.tree)
-    def tree_example():
+    @element_demo(ui.tree)
+    def tree_demo():
         ui.tree([
             {'id': 'numbers', 'children': [{'id': '1'}, {'id': '2'}]},
             {'id': 'letters', 'children': [{'id': 'A'}, {'id': 'B'}]},
         ], label_key='id', on_select=lambda e: ui.notify(e.value))
 
-    @element_example(ui.log)
-    def log_example():
+    @element_demo(ui.log)
+    def log_demo():
         from datetime import datetime
 
         log = ui.log(max_lines=10).classes('w-full h-20')
@@ -403,33 +402,33 @@ def create_full(menu: ui.element) -> None:
 
     heading('Layout')
 
-    @element_example(ui.card)
-    def card_example():
+    @element_demo(ui.card)
+    def card_demo():
         with ui.card().tight() as card:
             ui.image('https://picsum.photos/id/684/640/360')
             with ui.card_section():
                 ui.label('Lorem ipsum dolor sit amet, consectetur adipiscing elit, ...')
 
-    @element_example(ui.column)
-    def column_example():
+    @element_demo(ui.column)
+    def column_demo():
         with ui.column():
             ui.label('label 1')
             ui.label('label 2')
             ui.label('label 3')
 
-    @element_example(ui.row)
-    def row_example():
+    @element_demo(ui.row)
+    def row_demo():
         with ui.row():
             ui.label('label 1')
             ui.label('label 2')
             ui.label('label 3')
 
-    @text_example('Clear Containers', '''
+    @text_demo('Clear Containers', '''
         To remove all elements from a row, column or card container, use the `clear()` method.
 
         Alternatively, you can remove individual elements with `remove(element)`, where `element` is an Element or an index.
     ''')
-    def clear_containers_example():
+    def clear_containers_demo():
         container = ui.row()
 
         def add_face():
@@ -441,12 +440,12 @@ def create_full(menu: ui.element) -> None:
         ui.button('Remove', on_click=lambda: container.remove(0))
         ui.button('Clear', on_click=container.clear)
 
-    @element_example(ui.expansion)
-    def expansion_example():
+    @element_demo(ui.expansion)
+    def expansion_demo():
         with ui.expansion('Expand!', icon='work').classes('w-full'):
             ui.label('inside the expansion')
 
-    @text_example('Tabs', '''
+    @text_demo('Tabs', '''
         The elements `ui.tabs`, `ui.tab`, `ui.tab_panels`, and `ui.tab_panel` resemble
         [Quasar's tabs](https://quasar.dev/vue-components/tabs)
         and [tab panels](https://quasar.dev/vue-components/tab-panels) API.
@@ -454,7 +453,7 @@ def create_full(menu: ui.element) -> None:
         `ui.tabs` creates a container for the tabs. This could be placed in a `ui.header` for example.
         `ui.tab_panels` creates a container for the tab panels with the actual content.
     ''')
-    def tabs_example():
+    def tabs_demo():
         with ui.tabs() as tabs:
             ui.tab('Home', icon='home')
             ui.tab('About', icon='info')
@@ -465,8 +464,8 @@ def create_full(menu: ui.element) -> None:
             with ui.tab_panel('About'):
                 ui.label('This is the second tab')
 
-    @element_example(ui.menu)
-    def menu_example():
+    @element_demo(ui.menu)
+    def menu_demo():
         with ui.row().classes('w-full items-center'):
             result = ui.label().classes('mr-auto')
             with ui.button(on_click=lambda: menu.open()).props('icon=menu'):
@@ -478,34 +477,34 @@ def create_full(menu: ui.element) -> None:
                     ui.separator()
                     ui.menu_item('Close', on_click=menu.close)
 
-    @text_example('Tooltips', '''
+    @text_demo('Tooltips', '''
         Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
 
         For more artistic control you can nest tooltip elements and apply props, classes and styles.
     ''')
-    def tooltips_example():
+    def tooltips_demo():
         ui.label('Tooltips...').tooltip('...are shown on mouse over')
         with ui.button().props('icon=thumb_up'):
             ui.tooltip('I like this').classes('bg-green')
 
-    @element_example(ui.notify)
-    def notify_example():
+    @element_demo(ui.notify)
+    def notify_demo():
         ui.button('Say hi!', on_click=lambda: ui.notify('Hi!', close_button='OK'))
 
-    @element_example(ui.dialog)
-    def dialog_example():
+    @element_demo(ui.dialog)
+    def dialog_demo():
         with ui.dialog() as dialog, ui.card():
             ui.label('Hello world!')
             ui.button('Close', on_click=dialog.close)
 
         ui.button('Open a dialog', on_click=dialog.open)
 
-    @text_example('Awaitable dialog', '''
+    @text_demo('Awaitable dialog', '''
         Dialogs can be awaited.
         Use the `submit` method to close the dialog and return a result.
         Canceling the dialog by clicking in the background or pressing the escape key yields `None`.
     ''')
-    def async_dialog_example():
+    def async_dialog_demo():
         with ui.dialog() as dialog, ui.card():
             ui.label('Are you sure?')
             with ui.row():
@@ -520,7 +519,7 @@ def create_full(menu: ui.element) -> None:
 
     heading('Appearance')
 
-    @text_example('Styling', '''
+    @text_demo('Styling', '''
         NiceGUI uses the [Quasar Framework](https://quasar.dev/) version 1.0 and hence has its full design power.
         Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
         Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
@@ -530,20 +529,20 @@ def create_full(menu: ui.element) -> None:
 
         All three functions also provide `remove` and `replace` parameters in case the predefined look is not wanted in a particular styling.
     ''')
-    def design_example():
+    def design_demo():
         ui.radio(['x', 'y', 'z'], value='x').props('inline color=green')
         ui.button().props('icon=touch_app outline round').classes('shadow-lg')
         ui.label('Stylish!').style('color: #6E93D6; font-size: 200%; font-weight: 300')
 
-    @element_example(ui.colors)
-    def colors_example():
+    @element_demo(ui.colors)
+    def colors_demo():
         ui.button('Default', on_click=lambda: ui.colors())
         ui.button('Gray', on_click=lambda: ui.colors(primary='#555'))
 
     heading('Action')
 
-    @element_example(ui.timer)
-    def timer_example():
+    @element_demo(ui.timer)
+    def timer_demo():
         from datetime import datetime
 
         with ui.row().classes('items-center'):
@@ -560,8 +559,8 @@ def create_full(menu: ui.element) -> None:
             lazy_clock = ui.label()
             ui.timer(interval=0.1, callback=lazy_update)
 
-    @element_example(ui.keyboard)
-    def keyboard_example():
+    @element_demo(ui.keyboard)
+    def keyboard_demo():
         from nicegui.events import KeyEventArguments
 
         def handle_key(e: KeyEventArguments):
@@ -584,7 +583,7 @@ def create_full(menu: ui.element) -> None:
         ui.label('Key events can be caught globally by using the keyboard element.')
         ui.checkbox('Track key events').bind_value_to(keyboard, 'active')
 
-    @text_example('Bindings', '''
+    @text_demo('Bindings', '''
         NiceGUI is able to directly bind UI elements to models.
         Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes.
 
@@ -592,7 +591,7 @@ def create_full(menu: ui.element) -> None:
         To define a one-way binding use the `_from` and `_to` variants of these methods.
         Just pass a property of the model as parameter to these methods to create the binding.
     ''')
-    def bindings_example():
+    def bindings_demo():
         class Demo:
             def __init__(self):
                 self.number = 1
@@ -604,12 +603,12 @@ def create_full(menu: ui.element) -> None:
             ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
             ui.number().bind_value(demo, 'number')
 
-    @text_example('UI Updates', '''
+    @text_demo('UI Updates', '''
         NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed.
         In other cases, you can explicitly call `element.update()` or `ui.update(*elements)` to update.
-        The example code shows both methods for a `ui.chart`, where it is difficult to automatically detect changes in the `options` dictionary.
+        The demo code shows both methods for a `ui.chart`, where it is difficult to automatically detect changes in the `options` dictionary.
     ''')
-    def ui_updates_example():
+    def ui_updates_demo():
         from random import randint
 
         chart = ui.chart({'title': False, 'series': [{'data': [1, 2]}]}).classes('w-full h-64')
@@ -626,12 +625,12 @@ def create_full(menu: ui.element) -> None:
             ui.button('Add', on_click=add)
             ui.button('Clear', on_click=clear)
 
-    @text_example('Async event handlers', '''
+    @text_demo('Async event handlers', '''
         Most elements also support asynchronous event handlers.
 
         Note: You can also pass a `functools.partial` into the `on_click` property to wrap async functions with parameters.
     ''')
-    def async_handlers_example():
+    def async_handlers_demo():
         import asyncio
 
         async def async_task():
@@ -643,8 +642,8 @@ def create_full(menu: ui.element) -> None:
 
     heading('Pages')
 
-    @element_example(ui.page)
-    def page_example():
+    @element_demo(ui.page)
+    def page_demo():
         @ui.page('/other_page')
         def other_page():
             ui.label('Welcome to the other side')
@@ -658,15 +657,15 @@ def create_full(menu: ui.element) -> None:
         ui.link('Visit other page', other_page)
         ui.link('Visit dark page', dark_page)
 
-    @text_example('Auto-index page', '''
+    @text_demo('Auto-index page', '''
         Pages created with the `@ui.page` decorator are "private".
         Their content is re-created for each client.
-        Thus, in the example to the right, the displayed ID on the private page changes when the browser reloads the page.
+        Thus, in the demo to the right, the displayed ID on the private page changes when the browser reloads the page.
 
         UI elements that are not wrapped in a decorated page function are placed on an automatically generated index page at route "/".
         This auto-index page is created once on startup and *shared* across all clients that might connect.
         Thus, each connected client will see the *same* elements.
-        In the example to the right, the displayed ID on the auto-index page remains constant when the browser reloads the page.
+        In the demo to the right, the displayed ID on the auto-index page remains constant when the browser reloads the page.
     ''')
     def auto_index_page():
         from uuid import uuid4
@@ -677,24 +676,24 @@ def create_full(menu: ui.element) -> None:
 
         # ui.label(f'shared auto-index page with ID {uuid4()}')
         # ui.link('private page', private_page)
-        # END OF EXAMPLE
+        # END OF DEMO
         ui.label(f'shared auto-index page with ID {CONSTANT_UUID}')
         ui.link('private page', private_page)
 
-    @text_example('Pages with Path Parameters', '''
+    @text_demo('Pages with Path Parameters', '''
         Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/>).
         If type-annotated, they are automatically converted to bool, int, float and complex values.
         If the page function expects a `request` argument, the request object is automatically provided.
         The `client` argument provides access to the websocket connection, layout, etc.
     ''')
-    def page_with_path_parameters_example():
+    def page_with_path_parameters_demo():
         @ui.page('/repeat/{word}/{count}')
         def page(word: str, count: int):
             ui.label(word * count)
 
         ui.link('Say hi to Santa!', 'repeat/Ho! /3')
 
-    @text_example('Wait for Client Connection', '''
+    @text_demo('Wait for Client Connection', '''
         To wait for a client connection, you can add a `client` argument to the decorated page function
         and await `client.connected()`.
         All code below that statement is executed after the websocket connection between server and client has been established.
@@ -702,7 +701,7 @@ def create_full(menu: ui.element) -> None:
         For example, this allows you to run JavaScript commands; which is only possible with a client connection (see [#112](https://github.com/zauberzeug/nicegui/issues/112)).
         Also it is possible to do async stuff while the user already sees some content.
     ''')
-    def wait_for_connected_example():
+    def wait_for_connected_demo():
         import asyncio
 
         from nicegui import Client
@@ -717,7 +716,7 @@ def create_full(menu: ui.element) -> None:
 
         ui.link('wait for connection', wait_for_connection)
 
-    @text_example('Page Layout', '''
+    @text_demo('Page Layout', '''
         With `ui.header`, `ui.footer`, `ui.left_drawer` and `ui.right_drawer` you can add additional layout elements to a page.
         The `fixed` argument controls whether the element should scroll or stay fixed on the screen.
         The `top_corner` and `bottom_corner` arguments indicate whether a drawer should expand to the top or bottom of the page.
@@ -725,7 +724,7 @@ def create_full(menu: ui.element) -> None:
         With `ui.page_sticky` you can place an element "sticky" on the screen.
         See <https://quasar.dev/layout/page-sticky> for more information.
     ''')
-    def page_layout_example():
+    def page_layout_demo():
         @ui.page('/page_layout')
         async def page_layout():
             ui.label('CONTENT')
@@ -742,8 +741,8 @@ def create_full(menu: ui.element) -> None:
 
         ui.link('show page with fancy layout', page_layout)
 
-    @element_example(ui.open)
-    def ui_open_example():
+    @element_demo(ui.open)
+    def ui_open_demo():
         @ui.page('/yet_another_page')
         def yet_another_page():
             ui.label('Welcome to yet another page')
@@ -751,11 +750,11 @@ def create_full(menu: ui.element) -> None:
 
         ui.button('REDIRECT', on_click=lambda: ui.open(yet_another_page))
 
-    @text_example('Sessions', '''
+    @text_demo('Sessions', '''
         The optional `request` argument provides insights about the client's URL parameters etc.
         It also enables you to identify sessions using a [session middleware](https://www.starlette.io/middleware/#sessionmiddleware).
     ''')
-    def sessions_example():
+    def sessions_demo():
         import uuid
         from collections import Counter
         from datetime import datetime
@@ -779,8 +778,8 @@ def create_full(menu: ui.element) -> None:
 
         ui.link('Visit session demo', session_demo)
 
-    @element_example(ui.run_javascript)
-    def javascript_example():
+    @element_demo(ui.run_javascript)
+    def javascript_demo():
         async def alert():
             await ui.run_javascript('alert("Hello!")', respond=False)
 
@@ -798,8 +797,8 @@ def create_full(menu: ui.element) -> None:
 
     heading('Routes')
 
-    @element_example(app.add_static_files)
-    def add_static_files_example():
+    @element_demo(app.add_static_files)
+    def add_static_files_demo():
         from nicegui import app
 
         app.add_static_files('/examples', 'examples')
@@ -808,7 +807,7 @@ def create_full(menu: ui.element) -> None:
         ui.link('Custom FastAPI app', '/examples/fastapi/main.py')
         ui.link('Authentication', '/examples/authentication/main.py')
 
-    @text_example('API Responses', '''
+    @text_demo('API Responses', '''
         NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/).
         This means you can use all of FastAPI's features.
         For example, you can implement a RESTful API in addition to your graphical user interface.
@@ -819,7 +818,7 @@ def create_full(menu: ui.element) -> None:
         For example, you can return a `RedirectResponse` to redirect the user to another page if certain conditions are met.
         This is used in our [authentication demo](https://github.com/zauberzeug/nicegui/tree/main/examples/authentication/main.py).
     ''')
-    def fastapi_example():
+    def fastapi_demo():
         import random
 
         from nicegui import app
@@ -833,7 +832,7 @@ def create_full(menu: ui.element) -> None:
 
     heading('Lifecycle')
 
-    @text_example('Events', '''
+    @text_demo('Events', '''
         You can register coroutines or functions to be called for the following events:
 
         - `app.on_startup`: called when NiceGUI is started or restarted
@@ -844,7 +843,7 @@ def create_full(menu: ui.element) -> None:
 
         When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.
     ''')
-    def lifecycle_example():
+    def lifecycle_demo():
         from datetime import datetime
 
         from nicegui import app
@@ -858,45 +857,45 @@ def create_full(menu: ui.element) -> None:
 
         label = ui.label()
         ui.timer(1, lambda: label.set_text(f'Last new connection: {dt:%H:%M:%S}'))
-        # END OF EXAMPLE
+        # END OF DEMO
         global dt
         dt = datetime.now()
 
-    @element_example(app.shutdown)
-    def shutdown_example():
+    @element_demo(app.shutdown)
+    def shutdown_demo():
         from nicegui import app
 
         # ui.button('shutdown', on_click=app.shutdown)
         #
         # ui.run(reload=False)
-        # END OF EXAMPLE
+        # END OF DEMO
         ui.button('shutdown', on_click=lambda: ui.notify(
             'Nah. We do not actually shutdown the documentation server. Try it in your own app!'))
 
     heading('NiceGUI Fundamentals')
 
-    @text_example('Auto-context', '''
+    @text_demo('Auto-context', '''
         In order to allow writing intuitive UI descriptions, NiceGUI automatically tracks the context in which elements are created.
         This means that there is no explicit `parent` parameter.
         Instead the parent context is defined using a `with` statement.
         It is also passed to event handlers and timers.
 
-        In the example, the label "Card content" is added to the card.
+        In the demo, the label "Card content" is added to the card.
         And because the `ui.button` is also added to the card, the label "Click!" will also be created in this context.
         The label "Tick!", which is added once after one second, is also added to the card.
 
         This design decision allows for easily creating modular components that keep working after moving them around in the UI.
         For example, you can move label and button somewhere else, maybe wrap them in another container, and the code will still work.
     ''')
-    def auto_context_example():
+    def auto_context_demo():
         with ui.card():
             ui.label('Card content')
             ui.button('Add label', on_click=lambda: ui.label('Click!'))
             ui.timer(1.0, lambda: ui.label('Tick!'), once=True)
 
-    @text_example('Generic Events', '''
+    @text_demo('Generic Events', '''
         Most UI elements come with predefined events.
-        For example, a `ui.button` like "A" in the example has an `on_click` parameter that expects a coroutine or function.
+        For example, a `ui.button` like "A" in the demo has an `on_click` parameter that expects a coroutine or function.
         But you can also use the `on` method to register a generic event handler like for "B".
         This allows you to register handlers for any event that is supported by JavaScript and Quasar.
 
@@ -912,7 +911,7 @@ def create_full(menu: ui.element) -> None:
         modifier combinations ("H"),
         and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mouse-button-modifiers) ("I").
     ''')
-    def generic_events_example():
+    def generic_events_demo():
         with ui.row():
             ui.button('A', on_click=lambda: ui.notify('You clicked the button A.'))
             ui.button('B').on('click', lambda: ui.notify('You clicked the button B.'))
@@ -928,19 +927,19 @@ def create_full(menu: ui.element) -> None:
             ui.input('I').classes('w-12').on('keydown.once', lambda: ui.notify('You started typing.'))
     heading('Configuration')
 
-    @element_example(ui.run, browser_title='My App')
-    def ui_run_example():
+    @element_demo(ui.run, browser_title='My App')
+    def ui_run_demo():
         ui.label('page with custom title')
 
         # ui.run(title='My App')
 
-    @text_example('Environment Variables', '''
+    @text_demo('Environment Variables', '''
         You can set the following environment variables to configure NiceGUI:
 
         - `MATPLOTLIB` (default: true) can be set to `false` to avoid the potentially costly import of Matplotlib. This will make `ui.pyplot` and `ui.line_plot` unavailable.
         - `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.
     ''')
-    def env_var_example():
+    def env_var_demo():
         from nicegui.elements import markdown
 
         ui.label(f'Markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
@@ -948,6 +947,7 @@ def create_full(menu: ui.element) -> None:
     heading('Deployment')
 
     subheading('Server Hosting')
+
     markdown('''
         To deploy your NiceGUI app on a server, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your cloud infrastructure.
         You can, for example, just install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) and use systemd or similar service to start the main script.
@@ -964,7 +964,7 @@ def create_full(menu: ui.element) -> None:
             ```
         ''')
     markdown('''
-        The example assumes `main.py` uses the port 8080 in the `ui.run` command (which is the default).
+        The demo assumes `main.py` uses the port 8080 in the `ui.run` command (which is the default).
         The `-d` tells docker to run in background and `--restart always` makes sure the container is restarted if the app crashes or the server reboots.
         Of course this can also be written in a Docker compose file:
     ''')
