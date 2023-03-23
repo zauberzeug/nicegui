@@ -10,7 +10,8 @@ if True:
 import os
 from pathlib import Path
 
-from fastapi.responses import FileResponse
+from fastapi import Request
+from fastapi.responses import FileResponse, RedirectResponse
 from pygments.formatters import HtmlFormatter
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -42,6 +43,12 @@ def logo():
 def logo():
     return FileResponse(svg.PATH / 'logo_square.png', media_type='image/png')
 
+
+@app.middleware('http')
+async def redirect_reference_to_documentation(request: Request, call_next):
+    if request.url.path == '/reference':
+        return RedirectResponse('/documentation')
+    return await call_next(request)
 
 # NOTE in our global fly.io deployment we need to make sure that the websocket connects back to the same instance
 fly_instance_id = os.environ.get('FLY_ALLOC_ID', '').split('-')[0]
