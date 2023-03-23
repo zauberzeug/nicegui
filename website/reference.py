@@ -1,37 +1,14 @@
-import re
 import uuid
-from typing import Callable, Dict
+from typing import Dict
 
 from nicegui import app, ui
 from nicegui.elements.markdown import prepare_content
 
 from . import more_reference
 from .example import add_html_with_anchor_link, bash_window, example, python_window
+from .reference_tools import heading, intro_example
 
 CONSTANT_UUID = str(uuid.uuid4())
-
-SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
-
-
-def heading(text: str) -> None:
-    name = SPECIAL_CHARACTERS.sub('_', text).lower()
-    target = ui.link_target(name).style('position: relative; top: -90px')
-    with ui.row().classes('gap-2 items-center'):
-        ui.label(text).classes('text-2xl')
-        with ui.link(target=f'#{target.id}'):
-            ui.icon('link', size='sm').classes('text-gray-400 hover:text-gray-800')
-
-
-class intro_example:
-
-    def __init__(self, title: str, explanation: str) -> None:
-        self.title = title
-        self.explanation = explanation
-
-    def __call__(self, f: Callable) -> Callable:
-        heading(self.title)
-        ui.label(self.explanation)
-        return example(None, None)(f)
 
 
 def create_intro() -> None:
@@ -82,15 +59,10 @@ def create_intro() -> None:
 
 
 def create_full(menu: ui.element) -> None:
-    def h3(text: str) -> None:
-        ui.html(f'<em>{text}</em>').classes('mt-8 text-3xl font-weight-500')
-        with menu:
-            ui.label(text).classes('font-bold mt-4')
-
     def add_markdown_with_headline(content: str):
         add_html_with_anchor_link(prepare_content(content, 'fenced-code-blocks'), menu)
 
-    h3('Basic Elements')
+    heading('Basic Elements')
 
     @example(ui.label, menu)
     def label_example():
@@ -206,7 +178,7 @@ def create_full(menu: ui.element) -> None:
     def upload_example():
         ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('max-w-full')
 
-    h3('Markdown and HTML')
+    heading('Markdown and HTML')
 
     @example(ui.markdown, menu)
     def markdown_example():
@@ -238,7 +210,7 @@ You can add Scalable Vector Graphics using the `ui.html` element.
             </svg>'''
         ui.html(content)
 
-    h3('Images, Audio and Video')
+    heading('Images, Audio and Video')
 
     @example(ui.image, menu)
     def image_example():
@@ -287,7 +259,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         v = ui.video('https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4')
         v.on('ended', lambda _: ui.notify('Video playback completed'))
 
-    h3('Data Elements')
+    heading('Data Elements')
 
     @example(ui.aggrid, menu)
     def aggrid_example():
@@ -436,7 +408,7 @@ To overlay an SVG, make the `viewBox` exactly the size of the image and provide 
         log = ui.log(max_lines=10).classes('w-full h-20')
         ui.button('Log time', on_click=lambda: log.push(datetime.now().strftime('%X.%f')[:-5]))
 
-    h3('Layout')
+    heading('Layout')
 
     @example(ui.card, menu)
     def card_example():
@@ -557,7 +529,7 @@ Canceling the dialog by clicking in the background or pressing the escape key yi
 
         ui.button('Await a dialog', on_click=show)
 
-    h3('Appearance')
+    heading('Appearance')
 
     @example('''#### Styling
 
@@ -580,7 +552,7 @@ All three functions also provide `remove` and `replace` parameters in case the p
         ui.button('Default', on_click=lambda: ui.colors())
         ui.button('Gray', on_click=lambda: ui.colors(primary='#555'))
 
-    h3('Action')
+    heading('Action')
 
     @example(ui.timer, menu)
     def timer_example():
@@ -684,7 +656,7 @@ Note: You can also pass a `functools.partial` into the `on_click` property to wr
 
         ui.button('start async task', on_click=async_task)
 
-    h3('Pages')
+    heading('Pages')
 
     @example(ui.page, menu)
     def page_example():
@@ -844,7 +816,7 @@ It also enables you to identify sessions using a [session middleware](https://ww
         ui.button('access elements', on_click=access_elements)
         label = ui.label()
 
-    h3('Routes')
+    heading('Routes')
 
     @example(app.add_static_files, menu)
     def add_static_files_example():
@@ -880,7 +852,7 @@ This is used in our [authentication demo](https://github.com/zauberzeug/nicegui/
         max = ui.number('max', value=100)
         ui.button('generate random number', on_click=lambda: ui.open(f'/random/{max.value:.0f}'))
 
-    h3('Lifecycle')
+    heading('Lifecycle')
 
     @example('''#### Events
 
@@ -923,7 +895,7 @@ When NiceGUI is shut down or restarted, all tasks still in execution will be aut
         ui.button('shutdown', on_click=lambda: ui.notify(
             'Nah. We do not actually shutdown the documentation server. Try it in your own app!'))
 
-    h3('NiceGUI Fundamentals')
+    heading('NiceGUI Fundamentals')
 
     @example('''#### Auto-context
 
@@ -978,7 +950,7 @@ and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mou
             ui.input('G').classes('w-12').on('keydown.space', lambda: ui.notify('You pressed space.'))
             ui.input('H').classes('w-12').on('keydown.y.shift', lambda: ui.notify('You pressed Shift+Y'))
             ui.input('I').classes('w-12').on('keydown.once', lambda: ui.notify('You started typing.'))
-    h3('Configuration')
+    heading('Configuration')
 
     @example(ui.run, menu, browser_title='My App')
     def ui_run_example():
@@ -998,7 +970,7 @@ You can set the following environment variables to configure NiceGUI:
 
         ui.label(f'Markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
 
-    h3('Deployment')
+    heading('Deployment')
 
     with ui.column().classes('w-full mb-8 bold-links arrow-links'):
         add_markdown_with_headline('''#### Server Hosting
