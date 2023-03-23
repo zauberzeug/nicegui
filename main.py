@@ -19,7 +19,8 @@ from nicegui import Client, app
 from nicegui import globals as nicegui_globals
 from nicegui import ui
 from website import demo_card, reference, svg
-from website.example import bash_window, browser_window, create_anchor_name, python_window
+from website.example import bash_window, browser_window, python_window
+from website.reference_tools import create_anchor_name
 from website.star import add_star
 from website.style import example_link, features, heading, link_target, section_heading, side_menu, subtitle, title
 

@@ -23,6 +23,10 @@ def remove_indentation(text: str) -> str:
     return '\n'.join(line[indentation:] for line in lines)
 
 
+def create_anchor_name(text: str) -> str:
+    return SPECIAL_CHARACTERS.sub('_', text).lower()
+
+
 def get_menu() -> ui.left_drawer:
     return [element for element in globals.get_client().elements.values() if isinstance(element, ui.left_drawer)][0]
 
@@ -35,19 +39,19 @@ def heading(text: str, *, make_menu_entry: bool = True) -> None:
 
 
 def subheading(text: str, *, make_menu_entry: bool = True) -> None:
-    name = SPECIAL_CHARACTERS.sub('_', text).lower()
-    target = ui.link_target(name).style('position: relative; top: -90px')
+    name = create_anchor_name(text)
+    ui.html(f'<div id="{name}"></div>').style('position: relative; top: -90px')
     with ui.row().classes('gap-2 items-center'):
         ui.label(text).classes('text-2xl')
-        with ui.link(target=f'#{target.id}'):
+        with ui.link(target=f'#{name}'):
             ui.icon('link', size='sm').classes('text-gray-400 hover:text-gray-800')
     if make_menu_entry:
         with get_menu() as menu:
             async def click():
                 if await ui.run_javascript(f'!!document.querySelector("div.q-drawer__backdrop")'):
                     menu.hide()
-                    ui.open(f'#{target.id}')
-            ui.link(text, target=f'#{target.id}').props('data-close-overlay').on('click', click)
+                    ui.open(f'#{name}')
+            ui.link(text, target=f'#{name}').props('data-close-overlay').on('click', click)
 
 
 def markdown(text: str) -> None:
@@ -64,7 +68,7 @@ class text_example:
     def __call__(self, f: Callable) -> Callable:
         subheading(self.title, make_menu_entry=self.make_menu_entry)
         markdown(self.explanation)
-        return example(None, None)(f)
+        return example()(f)
 
 
 class intro_example(text_example):
@@ -90,7 +94,7 @@ class element_example:
         with ui.column().classes('w-full mb-8 gap-2'):
             subheading(title)
             ui.html(html).classes('documentation bold-links arrow-links')
-            return example(None, None, browser_title=self.browser_title)(f)
+            return example(browser_title=self.browser_title)(f)
 
 
 def load_example(element_class: type) -> None:

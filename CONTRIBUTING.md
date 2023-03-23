@@ -88,7 +88,7 @@ pytest
 ## Documentation
 
 New features should be well documented in [website/reference.py](https://github.com/zauberzeug/nicegui/blob/main/website/reference.py).
-By calling the `example(...)` function with an element as a parameter the docstring is used as a description.
+By calling the `element_example(...)` function with an element as a parameter the docstring is used as a description.
 The docstrings are written in restructured-text.
 
 Because it has [numerous benefits](https://nick.groenen.me/notes/one-sentence-per-line/) we write each sentence in a new line.

@@ -1,18 +1,12 @@
 import inspect
-import re
-from pathlib import Path
-from typing import Callable, Optional, Union
+from typing import Callable, Optional
 
-import docutils.core
 import isort
 
 from nicegui import ui
-from nicegui.elements.markdown import apply_tailwind, prepare_content
 
 from .intersection_observer import IntersectionObserver as intersection_observer
 
-REGEX_H4 = re.compile(r'<h4.*?>(.*?)</h4>')
-SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 PYTHON_BGCOLOR = '#00000010'
 PYTHON_COLOR = '#eef5fb'
 BASH_BGCOLOR = '#00000010'
@@ -25,56 +19,12 @@ def remove_prefix(text: str, prefix: str) -> str:
     return text[len(prefix):] if text.startswith(prefix) else text
 
 
-def create_anchor_name(text: str) -> str:
-    return SPECIAL_CHARACTERS.sub('_', text).lower()
-
-
-def add_html_with_anchor_link(html: str, menu: Optional[ui.drawer]) -> str:
-    match = REGEX_H4.search(html)
-    headline = match.groups()[0].strip()
-    headline_id = create_anchor_name(headline)
-    icon = '<span class="material-icons">link</span>'
-    link = f'<a href="#{headline_id}" class="hover:text-black auto-link" style="color: #ddd">{icon}</a>'
-    target = f'<div id="{headline_id}" style="position: relative; top: -90px"></div>'
-    html = html.replace('<h4', f'{target}<h4', 1)
-    html = html.replace('</h4>', f' {link}</h4>', 1)
-
-    ui.html(html).classes('documentation bold-links arrow-links')
-    if menu:
-        with menu:
-            async def click():
-                if await ui.run_javascript(f'!!document.querySelector("div.q-drawer__backdrop")'):
-                    menu.hide()
-                    ui.open(f'#{headline_id}')
-            ui.link(headline, f'#{headline_id}').props('data-close-overlay').on('click', click)
-
-
 class example:
 
-    # TODO: simplify API
-    def __init__(self,
-                 content: Union[Callable, type, str],
-                 menu: Optional[ui.drawer] = None,
-                 browser_title: Optional[str] = None,
-                 immediate: bool = False) -> None:
-        self.content = content
-        self.menu = menu
+    def __init__(self, browser_title: Optional[str] = None) -> None:
         self.browser_title = browser_title
-        self.immediate = immediate
 
     def __call__(self, f: Callable) -> Callable:
-        # with ui.column().classes('w-full mb-8'):
-        # if isinstance(self.content, str):
-        #     html = prepare_content(self.content, 'fenced-code-blocks tables')
-        # else:
-        #     doc = self.content.__doc__ or self.content.__init__.__doc__
-        #     html: str = docutils.core.publish_parts(doc, writer_name='html5_polyglot')['html_body']
-        #     html = html.replace('<p>', '<h4>', 1)
-        #     html = html.replace('</p>', '</h4>', 1)
-        #     html = html.replace('param ', '')
-        #     html = apply_tailwind(html)
-        # add_html_with_anchor_link(html, self.menu)
-
         with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
             code = inspect.getsource(f).split('# END OF EXAMPLE')[0].strip().splitlines()
             while not code[0].strip().startswith('def'):
@@ -90,19 +40,7 @@ class example:
                 ui.markdown(f'```python\n{code}\n```')
             with browser_window(self.browser_title,
                                 classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
-                if self.immediate:
-                    f()
-                else:
-                    intersection_observer(on_intersection=f)
-
-        # def pascal_to_snake(name: str) -> str:
-        #     return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
-        # if isinstance(self.content, type) and self.menu:
-        #     name = pascal_to_snake(self.content.__name__)
-        #     path = Path(__file__).parent / 'more_reference' / f'{name}_reference.py'
-        #     if path.exists():
-        #         ui.markdown(f'[More...](reference/{name})').classes('bold-links')
-
+                intersection_observer(on_intersection=f)
         return f
 
 
