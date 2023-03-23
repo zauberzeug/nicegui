@@ -1,12 +1,10 @@
-from typing import Optional
-
 from nicegui import ui
 
-from ..example import example
+from ..reference_tools import element_example, text_example
 
 
-def intro(menu: Optional[ui.element] = None) -> None:
-    @example(ui.table, menu)
+def intro() -> None:
+    @element_example(ui.table)
     def table_example():
         columns = [
             {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
@@ -21,11 +19,10 @@ def intro(menu: Optional[ui.element] = None) -> None:
 
 
 def more() -> None:
-    @example('''#### Table with expandable rows
-
-Scoped slots can be used to insert buttons that toggle the expand state of a table row.
-See the [Quasar documentation](https://quasar.dev/vue-components/table#expanding-rows) for more information.
-''', None)
+    @text_example('Table with expandable rows', '''
+        Scoped slots can be used to insert buttons that toggle the expand state of a table row.
+        See the [Quasar documentation](https://quasar.dev/vue-components/table#expanding-rows) for more information.
+    ''')
     def table_with_expandable_rows():
         columns = [
             {'name': 'name', 'label': 'Name', 'field': 'name'},

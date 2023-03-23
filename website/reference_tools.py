@@ -1,3 +1,4 @@
+import importlib
 import re
 from typing import Callable, Optional, Union
 
@@ -90,3 +91,11 @@ class element_example:
             subheading(title)
             ui.html(html).classes('documentation bold-links arrow-links')
             return example(None, None, browser_title=self.browser_title)(f)
+
+
+def load_example(element_class: type) -> None:
+    def pascal_to_snake(name: str) -> str:
+        return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
+    name = pascal_to_snake(element_class.__name__)
+    module = importlib.import_module(f'website.more_reference.{name}_reference')
+    getattr(module, 'intro')()

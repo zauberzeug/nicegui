@@ -3,9 +3,8 @@ from typing import Dict
 
 from nicegui import app, ui
 
-from . import more_reference
 from .example import bash_window, python_window
-from .reference_tools import element_example, heading, intro_example, markdown, subheading, text_example
+from .reference_tools import element_example, heading, intro_example, load_example, markdown, subheading, text_example
 
 CONSTANT_UUID = str(uuid.uuid4())
 
@@ -276,7 +275,7 @@ def create_full(menu: ui.element) -> None:
         ui.button('Update', on_click=update)
         ui.button('Select all', on_click=lambda: grid.call_api_method('selectAll'))
 
-    more_reference.table_reference.intro(menu)
+    load_example(ui.table)
 
     @element_example(ui.chart)
     def chart_example():
