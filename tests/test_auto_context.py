@@ -40,10 +40,9 @@ def test_adding_elements_with_async_await(screen: Screen):
         ui.timer(1.5, add_b, once=True)
 
     screen.open('/')
-    screen.selenium.implicitly_wait(10.0)
-    screen.should_contain('A')
-    screen.should_contain('B')
-    screen.selenium.implicitly_wait(Screen.IMPLICIT_WAIT)
+    with screen.implicitly_wait(10.0):
+        screen.should_contain('A')
+        screen.should_contain('B')
     cA = screen.selenium.find_element(By.ID, cardA.id)
     cA.find_element(By.XPATH, './/*[contains(text(), "A")]')
     cB = screen.selenium.find_element(By.ID, cardB.id)
@@ -120,7 +119,11 @@ def test_adding_elements_from_different_tasks(screen: Screen):
             ui.label('2')
             await asyncio.sleep(0.5)
 
+    ui.timer(0, lambda: ui.label('connection established'), once=True)  # HACK: allow waiting for client connection
+
     screen.open('/')
+    with screen.implicitly_wait(10.0):
+        screen.wait_for('connection established')
     background_tasks.create(add_label1())
     background_tasks.create(add_label2())
     screen.should_contain('1')
