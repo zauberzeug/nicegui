@@ -129,6 +129,12 @@ def generate_class_doc(class_obj: type) -> None:
                 ui.markdown(f'`{class_name}.`**`{method.__name__}`**`{generate_method_signature_description(method)}`')
                 if method.__doc__:
                     render_docstring(method.__doc__).classes('ml-8')
+    bases = [base for base in class_obj.__mro__[1:-1] if base.__module__.startswith('nicegui.')]
+    if bases:
+        subheading('Inherited from')
+        with ui.column().classes('gap-2'):
+            for base in bases:
+                ui.markdown(f'- `{base.__name__}`')
 
 
 def generate_method_signature_description(method: Callable) -> str:
