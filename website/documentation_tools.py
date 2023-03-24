@@ -175,8 +175,7 @@ def generate_method_signature_description(method: Callable) -> str:
     return_annotation = inspect.signature(method).return_annotation
     if return_annotation != inspect.Parameter.empty:
         return_type = inspect.formatannotation(return_annotation)
-        return_description = f''' -> {return_type.strip("'")}'''
-        description += return_description
+        description += f''' -> {return_type.strip("'").replace("typing_extensions.", "").replace("typing.", "")}'''
     return description
 
 
@@ -186,8 +185,7 @@ def generate_property_signature_description(property: property) -> str:
         return_annotation = inspect.signature(property.fget).return_annotation
         if return_annotation != inspect.Parameter.empty:
             return_type = inspect.formatannotation(return_annotation)
-            return_description = f': {return_type}'
-            description += return_description
+            description += f': {return_type}'
     if property.fset:
         description += ' (settable)'
     if property.fdel:
