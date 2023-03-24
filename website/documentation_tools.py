@@ -108,7 +108,10 @@ class element_demo:
 
 def load_demo(element_class: type) -> None:
     name = pascal_to_snake(element_class.__name__)
-    module = importlib.import_module(f'website.more_documentation.{name}_documentation')
+    try:
+        module = importlib.import_module(f'website.more_documentation.{name}_documentation')
+    except ModuleNotFoundError:
+        module = importlib.import_module(f'website.more_documentation.{name.replace("_", "")}_documentation')
     element_demo(element_class)(getattr(module, 'main_demo'), more_link=name)
 
 

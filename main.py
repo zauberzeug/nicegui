@@ -317,6 +317,8 @@ def documentation_page_more(name: str):
     with side_menu():
         ui.markdown(f'[← back](/documentation#{create_anchor_name(name)})').classes('bold-links')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
+        if not hasattr(ui, name):
+            name = name.replace('_', '')  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
         section_heading('Documentation', f'ui.*{name}*')
         module = importlib.import_module(f'website.more_documentation.{name}_documentation')
         element_class = getattr(ui, name)
