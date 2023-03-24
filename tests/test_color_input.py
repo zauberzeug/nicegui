@@ -1,3 +1,4 @@
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
@@ -18,6 +19,16 @@ def test_picking_color(screen: Screen):
     ui.color_input(label='Color', on_change=lambda e: ui.label(f'content: {e.value}'))
 
     screen.open('/')
-    picker = screen.click('colorize')
-    screen.click_at_position(picker, x=40, y=120)
-    screen.should_contain('content: #de8383')
+    screen.click('colorize')
+    screen.click_at_position(screen.find('HEX'), x=0, y=60)
+    content = screen.selenium.find_element(By.CLASS_NAME, 'q-color-picker__header-content')
+    assert content.value_of_css_property('background-color') == 'rgba(245, 186, 186, 1)'
+    screen.should_contain('content: #f5baba')
+
+    screen.type(Keys.ESCAPE)
+    screen.wait(0.5)
+    screen.should_not_contain('HEX')
+
+    screen.click('colorize')
+    content = screen.selenium.find_element(By.CLASS_NAME, 'q-color-picker__header-content')
+    assert content.value_of_css_property('background-color') == 'rgba(245, 186, 186, 1)'
