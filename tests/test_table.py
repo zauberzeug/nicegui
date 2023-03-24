@@ -4,12 +4,14 @@ from nicegui import ui
 
 from .screen import Screen
 
-columns = [
+
+def columns(): return [
     {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True},
     {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
 ]
 
-rows = [
+
+def rows(): return [
     {'id': 0, 'name': 'Alice', 'age': 18},
     {'id': 1, 'name': 'Bob', 'age': 21},
     {'id': 2, 'name': 'Lionel', 'age': 19},
@@ -17,7 +19,7 @@ rows = [
 
 
 def test_table(screen: Screen):
-    ui.table(title='My Team', columns=columns, rows=rows)
+    ui.table(title='My Team', columns=columns(), rows=rows())
 
     screen.open('/')
     screen.should_contain('My Team')
@@ -28,7 +30,7 @@ def test_table(screen: Screen):
 
 
 def test_pagination(screen: Screen):
-    ui.table(columns=columns, rows=rows, pagination=2)
+    ui.table(columns=columns(), rows=rows(), pagination=2)
 
     screen.open('/')
     screen.should_contain('Alice')
@@ -38,7 +40,7 @@ def test_pagination(screen: Screen):
 
 
 def test_filter(screen: Screen):
-    table = ui.table(columns=columns, rows=rows)
+    table = ui.table(columns=columns(), rows=rows())
     ui.input('Search by name').bind_value(table, 'filter')
 
     screen.open('/')
@@ -54,7 +56,7 @@ def test_filter(screen: Screen):
 
 
 def test_add_remove(screen: Screen):
-    table = ui.table(columns=columns, rows=rows)
+    table = ui.table(columns=columns(), rows=rows())
     ui.button('Add', on_click=lambda: table.add_rows({'id': 3, 'name': 'Carol', 'age': 32}))
     ui.button('Remove', on_click=lambda: table.remove_rows(table.rows[0]))
 
@@ -68,7 +70,7 @@ def test_add_remove(screen: Screen):
 
 
 def test_slots(screen: Screen):
-    with ui.table(columns=columns, rows=rows) as table:
+    with ui.table(columns=columns(), rows=rows()) as table:
         with table.add_slot('top-row'):
             with table.row():
                 with table.cell():
@@ -90,7 +92,7 @@ def test_slots(screen: Screen):
 
 
 def test_single_selection(screen: Screen):
-    ui.table(columns=columns, rows=rows, selection='single')
+    ui.table(columns=columns(), rows=rows(), selection='single')
 
     screen.open('/')
     screen.find('Alice').find_element(By.XPATH, 'preceding-sibling::td').click()
