@@ -27,22 +27,23 @@ def test_adding_element_to_private_page(screen: Screen):
 
 def test_adding_elements_with_async_await(screen: Screen):
     async def add_a():
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(1.0)
         ui.label('A')
 
     async def add_b():
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(1.0)
         ui.label('B')
 
     with ui.card() as cardA:
         ui.timer(1.0, add_a, once=True)
     with ui.card() as cardB:
-        ui.timer(1.1, add_b, once=True)
+        ui.timer(1.5, add_b, once=True)
 
     screen.open('/')
-    screen.wait(2.0)
+    screen.selenium.implicitly_wait(10.0)
     screen.should_contain('A')
     screen.should_contain('B')
+    screen.selenium.implicitly_wait(Screen.IMPLICIT_WAIT)
     cA = screen.selenium.find_element(By.ID, cardA.id)
     cA.find_element(By.XPATH, './/*[contains(text(), "A")]')
     cB = screen.selenium.find_element(By.ID, cardB.id)
