@@ -87,3 +87,16 @@ def test_slots(screen: Screen):
     screen.should_not_contain('Alice')
     screen.should_contain('overridden')
     screen.should_contain('21')
+
+
+def test_single_selection(screen: Screen):
+    ui.table(columns=columns, rows=rows, selection='single')
+
+    screen.open('/')
+    screen.find('Alice').find_element(By.XPATH, 'preceding-sibling::td').click()
+    screen.wait(0.5)
+    screen.should_contain('1 record selected.')
+
+    screen.find('Bob').find_element(By.XPATH, 'preceding-sibling::td').click()
+    screen.wait(0.5)
+    screen.should_contain('1 record selected.')
