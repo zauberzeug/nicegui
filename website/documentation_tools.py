@@ -121,29 +121,31 @@ def load_demo(element_class: type) -> None:
 
 def is_method(cls: type, attribute_name: str) -> bool:
     attribute = cls.__dict__.get(attribute_name, None)
-    return inspect.isfunction(attribute) or inspect.ismethod(attribute)
+    return inspect.isfunction(attribute) or inspect.ismethod(attribute) or isinstance(attribute, property)
 
 
 def generate_class_doc(class_obj: type) -> None:
-    class_name = pascal_to_snake(class_obj.__name__)
-    bases = [base for base in class_obj.__mro__[1:-1] if base.__module__.startswith('nicegui.')]
-    methods_names = []
+    bases = [base for base in class_obj.__mro__[:-1] if base.__module__.startswith('nicegui.')][::-1]
+    attributes = {}
     for base in bases:
         for name in dir(base):
             if not name.startswith('_') and is_method(base, name):
-                methods_names.append(name)
-    if methods_names:
-        subheading('Methods')
+                attributes[name] = getattr(base, name)
+    if attributes:
+        subheading('Attributes')
         with ui.column().classes('gap-2'):
-            for method_name in sorted(methods_names):
-                method = getattr(class_obj, method_name)
-                ui.markdown(f'`{class_name}.`**`{method_name}`**`{generate_method_signature_description(method)}`')
-                if method.__doc__:
-                    render_docstring(method.__doc__).classes('ml-8')
-    if bases:
+            for name, attribute in sorted(attributes.items()):
+                if callable(attribute):
+                    ui.markdown(f'**`{name}`**`{generate_method_signature_description(attribute)}`')
+                else:
+                    ui.markdown('`@property`').classes('opacity-70 mb-[-1rem] text-xs')
+                    ui.markdown(f'**`{name}`**`{generate_property_signature_description(attribute)}`')
+                if attribute.__doc__:
+                    render_docstring(attribute.__doc__).classes('ml-8')
+    if len(bases) > 1:
         subheading('Inherited from')
         with ui.column().classes('gap-2'):
-            for base in bases:
+            for base in bases[:-1]:
                 ui.markdown(f'- `{base.__name__}`')
 
 
@@ -168,4 +170,19 @@ def generate_method_signature_description(method: Callable) -> str:
         return_type = inspect.formatannotation(return_annotation)
         return_description = f''' -> {return_type.strip("'")}'''
         description += return_description
+    return description
+
+
+def generate_property_signature_description(property: property) -> str:
+    description = ''
+    if property.fget:
+        return_annotation = inspect.signature(property.fget).return_annotation
+        if return_annotation != inspect.Parameter.empty:
+            return_type = inspect.formatannotation(return_annotation)
+            return_description = f': {return_type}'
+            description += return_description
+    if property.fset:
+        description += ' (settable)'
+    if property.fdel:
+        description += ' (deletable)'
     return description
