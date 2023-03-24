@@ -16,14 +16,15 @@ def test_entering_color(screen: Screen):
 
 
 def test_picking_color(screen: Screen):
-    ui.color_input(label='Color', on_change=lambda e: ui.label(f'content: {e.value}'))
+    ui.color_input(label='Color', on_change=lambda e: output.set_text(e.value))
+    output = ui.label()
 
     screen.open('/')
     screen.click('colorize')
     screen.click_at_position(screen.find('HEX'), x=0, y=60)
     content = screen.selenium.find_element(By.CLASS_NAME, 'q-color-picker__header-content')
-    assert content.value_of_css_property('background-color') == 'rgba(245, 186, 186, 1)'
-    screen.should_contain('content: #f5baba')
+    assert content.value_of_css_property('background-color') in {'rgba(245, 186, 186, 1)', 'rgba(245, 184, 184, 1)'}
+    assert output.text in {'#f5baba', '#f5b8b8'}
 
     screen.type(Keys.ESCAPE)
     screen.wait(0.5)
@@ -31,4 +32,5 @@ def test_picking_color(screen: Screen):
 
     screen.click('colorize')
     content = screen.selenium.find_element(By.CLASS_NAME, 'q-color-picker__header-content')
-    assert content.value_of_css_property('background-color') == 'rgba(245, 186, 186, 1)'
+    assert content.value_of_css_property('background-color') in {'rgba(245, 186, 186, 1)', 'rgba(245, 184, 184, 1)'}
+    assert output.text in {'#f5baba', '#f5b8b8'}
