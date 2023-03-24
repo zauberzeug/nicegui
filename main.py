@@ -325,7 +325,7 @@ def documentation_page_more(name: str):
         element_demo(element_class)(getattr(module, 'main_demo'))
         generate_class_doc(element_class)
         if hasattr(module, 'more'):
-            ui.markdown('## More examples').classes('mt-16')
+            ui.markdown('## More demos').classes('mt-16')
             getattr(module, 'more')()
 
 
