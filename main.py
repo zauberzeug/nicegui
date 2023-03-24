@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import inspect
 import importlib
 
 if True:
@@ -323,7 +324,7 @@ def documentation_page_more(name: str):
         module = importlib.import_module(f'website.more_documentation.{name}_documentation')
         element_class = getattr(ui, name)
         element_demo(element_class)(getattr(module, 'main_demo'))
-        if not callable(element_class):
+        if inspect.isclass(element_class):
             generate_class_doc(element_class)
         if hasattr(module, 'more'):
             ui.markdown('## More demos').classes('mt-16')
