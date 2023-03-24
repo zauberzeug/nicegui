@@ -3,7 +3,7 @@ import uuid
 from nicegui import app, ui
 
 from .demo import bash_window, python_window
-from .documentation_tools import element_demo, heading, intro_demo, load_demo, markdown, subheading, text_demo
+from .documentation_tools import element_demo, heading, intro_demo, load_demo, subheading, text_demo
 
 CONSTANT_UUID = str(uuid.uuid4())
 
@@ -570,7 +570,7 @@ def create_full(menu: ui.element) -> None:
 
     subheading('Server Hosting')
 
-    markdown('''
+    ui.markdown('''
         To deploy your NiceGUI app on a server, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your cloud infrastructure.
         You can, for example, just install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) and use systemd or similar service to start the main script.
         In most cases, you will set the port to 80 (or 443 if you want to use HTTPS) with the `ui.run` command to make it easily accessible from the outside.
@@ -579,19 +579,19 @@ def create_full(menu: ui.element) -> None:
         With this command you can launch the script `main.py` in the current directory on the public port 80:
     ''')
     with bash_window(classes='max-w-lg w-full h-52'):
-        markdown('''
+        ui.markdown('''
             ```bash
             docker run -p 80:8080 -v $(pwd)/:/app/ \\
                 -d --restart always zauberzeug/nicegui:latest
             ```
         ''')
-    markdown('''
+    ui.markdown('''
         The demo assumes `main.py` uses the port 8080 in the `ui.run` command (which is the default).
         The `-d` tells docker to run in background and `--restart always` makes sure the container is restarted if the app crashes or the server reboots.
         Of course this can also be written in a Docker compose file:
     ''')
     with python_window('docker-compose.yml', classes='max-w-lg w-full h-52'):
-        markdown('''
+        ui.markdown('''
             ```yaml
             app:
                 image: zauberzeug/nicegui:latest
@@ -603,7 +603,7 @@ def create_full(menu: ui.element) -> None:
             ```
         ''')
 
-    markdown('''
+    ui.markdown('''
         You can provide SSL certificates directly using [FastAPI](https://fastapi.tiangolo.com/deployment/https/).
         In production we also like using reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/) to handle these details for us.
         See our [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
@@ -615,7 +615,7 @@ def create_full(menu: ui.element) -> None:
 
     subheading('Package for Installation')
 
-    markdown('''
+    ui.markdown('''
         NiceGUI apps can also be bundled into an executable with [PyInstaller](https://www.pyinstaller.org/).
         This allows you to distribute your app as a single file that can be executed on any computer.
 
@@ -625,7 +625,7 @@ def create_full(menu: ui.element) -> None:
 
     with ui.row().classes('w-full items-stretch'):
         with python_window(classes='max-w-lg w-full'):
-            markdown('''
+            ui.markdown('''
                 ```python
                 from nicegui import ui
 
@@ -635,7 +635,7 @@ def create_full(menu: ui.element) -> None:
                 ```
             ''')
         with python_window('build.py', classes='max-w-lg w-full'):
-            markdown('''
+            ui.markdown('''
                 ```python
                 import os
                 import subprocess

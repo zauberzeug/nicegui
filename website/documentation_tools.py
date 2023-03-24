@@ -7,22 +7,11 @@ import docutils.core
 
 from nicegui import globals, ui
 from nicegui.binding import BindableProperty
-from nicegui.elements.markdown import apply_tailwind
+from nicegui.elements.markdown import apply_tailwind, remove_indentation
 
 from .demo import demo
 
 SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
-
-
-def remove_indentation(text: str) -> str:
-    """Remove indentation from a multi-line string based on the indentation of the first line."""
-    lines = text.splitlines()
-    while lines and not lines[0].strip():
-        lines.pop(0)
-    if not lines:
-        return ''
-    indentation = len(lines[0]) - len(lines[0].lstrip())
-    return '\n'.join(line[indentation:] for line in lines)
 
 
 def pascal_to_snake(name: str) -> str:
@@ -64,10 +53,6 @@ def subheading(text: str, *, make_menu_entry: bool = True, more_link: Optional[s
             ui.link(text, target=f'#{name}').props('data-close-overlay').on('click', click)
 
 
-def markdown(text: str) -> ui.markdown:
-    return ui.markdown(remove_indentation(text))
-
-
 def render_docstring(doc: str, with_params: bool = True) -> ui.html:
     doc = remove_indentation(doc)
     doc = doc.replace('param ', '')
@@ -87,7 +72,7 @@ class text_demo:
 
     def __call__(self, f: Callable) -> Callable:
         subheading(self.title, make_menu_entry=self.make_menu_entry)
-        markdown(self.explanation)
+        ui.markdown(self.explanation)
         return demo()(f)
 
 

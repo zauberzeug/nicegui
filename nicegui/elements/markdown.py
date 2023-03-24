@@ -33,7 +33,7 @@ class Markdown(ContentElement):
 
 @lru_cache(maxsize=int(os.environ.get('MARKDOWN_CONTENT_CACHE_SIZE', '1000')))
 def prepare_content(content: str, extras: str) -> str:
-    html = markdown2.markdown(content, extras=extras.split())
+    html = markdown2.markdown(remove_indentation(content), extras=extras.split())
     return apply_tailwind(html)  # we need explicit Markdown styling because tailwind CSS removes all default styles
 
 
@@ -52,3 +52,14 @@ def apply_tailwind(html: str) -> str:
     }
     pattern = re.compile('|'.join(rep.keys()))
     return pattern.sub(lambda m: rep[re.escape(m.group(0))], html)
+
+
+def remove_indentation(text: str) -> str:
+    """Remove indentation from a multi-line string based on the indentation of the first non-empty line."""
+    lines = text.splitlines()
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    if not lines:
+        return ''
+    indentation = len(lines[0]) - len(lines[0].lstrip())
+    return '\n'.join(line[indentation:] for line in lines)
