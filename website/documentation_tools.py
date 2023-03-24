@@ -64,6 +64,14 @@ def markdown(text: str) -> ui.markdown:
     return ui.markdown(remove_indentation(text))
 
 
+def render_docstring(doc: str) -> ui.html:
+    doc = remove_indentation(doc)
+    doc = doc.replace('param ', '')
+    html = docutils.core.publish_parts(doc, writer_name='html5_polyglot')['html_body']
+    html = apply_tailwind(html)
+    return ui.html(html).classes('documentation bold-links arrow-links')
+
+
 class text_demo:
 
     def __init__(self, title: str, explanation: str) -> None:
@@ -93,13 +101,9 @@ class element_demo:
     def __call__(self, f: Callable, *, more_link: Optional[str] = None) -> Callable:
         doc = self.element_class.__doc__ or self.element_class.__init__.__doc__
         title, documentation = doc.split('\n', 1)
-        documentation = remove_indentation(documentation)
-        documentation = documentation.replace('param ', '')
-        html = docutils.core.publish_parts(documentation, writer_name='html5_polyglot')['html_body']
-        html = apply_tailwind(html)
         with ui.column().classes('w-full mb-8 gap-2'):
             subheading(title)
-            ui.html(html).classes('documentation bold-links arrow-links')
+            render_docstring(documentation)
             wrapped = demo(browser_title=self.browser_title)(f)
             if more_link:
                 ui.markdown(f'[More...](documentation/{more_link})').classes('bold-links mt-2')
@@ -124,7 +128,7 @@ def generate_class_doc(class_obj: type) -> None:
             for method in methods:
                 ui.markdown(f'`{class_name}.`**`{method.__name__}`**`{generate_method_signature_description(method)}`')
                 if method.__doc__:
-                    markdown(method.__doc__).classes('ml-4')
+                    render_docstring(method.__doc__).classes('ml-8')
 
 
 def generate_method_signature_description(method: Callable) -> str:
@@ -137,7 +141,7 @@ def generate_method_signature_description(method: Callable) -> str:
             param_type = inspect.formatannotation(param.annotation)
             param_string += f': {param_type}'
         if param.default != inspect.Parameter.empty:
-            param_string += f' = {param.default}'
+            param_string += f' = {repr(param.default)}'
         if param.kind == inspect.Parameter.VAR_POSITIONAL:
             param_string = f'*{param_string}'
         param_strings.append(param_string)
