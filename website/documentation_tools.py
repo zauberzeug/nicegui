@@ -1,4 +1,5 @@
 import importlib
+import inspect
 import re
 from pathlib import Path
 from typing import Callable, Optional, Union
@@ -59,8 +60,8 @@ def subheading(text: str, *, make_menu_entry: bool = True) -> None:
             ui.link(text, target=f'#{name}').props('data-close-overlay').on('click', click)
 
 
-def markdown(text: str) -> None:
-    ui.markdown(remove_indentation(text))
+def markdown(text: str) -> ui.markdown:
+    return ui.markdown(remove_indentation(text))
 
 
 class text_demo:
@@ -113,15 +114,35 @@ def load_demo(element_class: type) -> None:
 
 def generate_class_doc(class_obj: type) -> None:
     class_name = pascal_to_snake(class_obj.__name__)
-    subheading('Methods')
-    for name, method in class_obj.__dict__.items():
-        if name.startswith('_'):
+    methods = [method for name, method in class_obj.__dict__.items() if not name.startswith('_') and callable(method)]
+    if methods:
+        subheading('Methods')
+        with ui.column().classes('gap-2'):
+            for method in methods:
+                ui.markdown(f'`{class_name}.`**`{method.__name__}`**`{generate_method_signature_description(method)}`')
+                if method.__doc__:
+                    markdown(method.__doc__).classes('ml-4')
+
+
+def generate_method_signature_description(method: Callable) -> str:
+    param_strings = []
+    for param in inspect.signature(method).parameters.values():
+        param_string = param.name
+        if param_string == 'self':
             continue
-        if not method.__doc__:
-            continue
-        markdown(f'''
-            ```python
-            {class_name}.{name}()
-            ```
-        ''')
-        markdown(method.__doc__)
+        if param.annotation != inspect.Parameter.empty:
+            param_type = inspect.formatannotation(param.annotation)
+            param_string += f': {param_type}'
+        if param.default != inspect.Parameter.empty:
+            param_string += f' = {param.default}'
+        if param.kind == inspect.Parameter.VAR_POSITIONAL:
+            param_string = f'*{param_string}'
+        param_strings.append(param_string)
+    method_signature = ', '.join(param_strings)
+    description = f'({method_signature})'
+    return_annotation = inspect.signature(method).return_annotation
+    if return_annotation != inspect.Parameter.empty:
+        return_type = inspect.formatannotation(return_annotation)
+        return_description = f' -> {return_type}'
+        description += return_description
+    return description
