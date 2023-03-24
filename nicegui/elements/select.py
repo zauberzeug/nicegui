@@ -26,7 +26,6 @@ class Select(ChoiceElement):
         :param on_change: callback to execute when selection changes
         :param with_input: whether to show an input field to filter the options
         """
-        self.with_input = with_input
         super().__init__(tag='select', options=options, value=value, on_change=on_change)
         self._props['label'] = label
         if with_input:
