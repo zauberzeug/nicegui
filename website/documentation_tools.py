@@ -44,13 +44,17 @@ def heading(text: str, *, make_menu_entry: bool = True) -> None:
             ui.label(text).classes('font-bold mt-4')
 
 
-def subheading(text: str, *, make_menu_entry: bool = True) -> None:
+def subheading(text: str, *, make_menu_entry: bool = True, more_link: Optional[str] = None) -> None:
     name = create_anchor_name(text)
     ui.html(f'<div id="{name}"></div>').style('position: relative; top: -90px')
-    with ui.row().classes('gap-2 items-center'):
-        ui.label(text).classes('text-2xl')
-        with ui.link(target=f'#{name}'):
-            ui.icon('link', size='sm').classes('text-gray-400 hover:text-gray-800')
+    with ui.row().classes('gap-2 items-center relative'):
+        if more_link:
+            with ui.link(text, f'documentation/{more_link}').classes('text-2xl'):
+                ui.icon('open_in_new', size='0.75em').classes('mb-1 ml-2')
+        else:
+            ui.label(text).classes('text-2xl')
+        with ui.link(target=f'#{name}').classes('absolute').style('transform: translateX(-150%)'):
+            ui.icon('link', size='sm').classes('opacity-10 hover:opacity-80')
     if make_menu_entry:
         with get_menu() as menu:
             async def click():
@@ -64,11 +68,13 @@ def markdown(text: str) -> ui.markdown:
     return ui.markdown(remove_indentation(text))
 
 
-def render_docstring(doc: str) -> ui.html:
+def render_docstring(doc: str, with_params: bool = True) -> ui.html:
     doc = remove_indentation(doc)
     doc = doc.replace('param ', '')
     html = docutils.core.publish_parts(doc, writer_name='html5_polyglot')['html_body']
     html = apply_tailwind(html)
+    if not with_params:
+        html = re.sub(r'<dl class=".* simple">.*?</dl>', '', html, flags=re.DOTALL)
     return ui.html(html).classes('documentation bold-links arrow-links')
 
 
@@ -102,12 +108,9 @@ class element_demo:
         doc = self.element_class.__doc__ or self.element_class.__init__.__doc__
         title, documentation = doc.split('\n', 1)
         with ui.column().classes('w-full mb-8 gap-2'):
-            subheading(title)
-            render_docstring(documentation)
-            wrapped = demo(browser_title=self.browser_title)(f)
-            if more_link:
-                ui.markdown(f'[More...](documentation/{more_link})').classes('bold-links mt-2')
-            return wrapped
+            subheading(title, more_link=more_link)
+            render_docstring(documentation, with_params=more_link is None)
+            return demo(browser_title=self.browser_title)(f)
 
 
 def load_demo(element_class: type) -> None:
