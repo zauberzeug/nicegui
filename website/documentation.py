@@ -125,8 +125,8 @@ def create_full(menu: ui.element) -> None:
 
     heading('Data Elements')
 
-    load_demo(ui.aggrid)
     load_demo(ui.table)
+    load_demo(ui.aggrid)
     load_demo(ui.chart)
     load_demo(ui.pyplot)
     load_demo(ui.line_plot)
