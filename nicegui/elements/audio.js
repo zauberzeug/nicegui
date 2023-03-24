@@ -1,9 +1,5 @@
 export default {
-  template: `
-    <audio :controls="this.controls" :autoplay="this.autoplay" :muted="this.muted">
-      <source :src="this.src" :type="this.type">
-    </audio>
-  `,
+  template: `<audio :controls="controls" :autoplay="autoplay" :muted="muted" :src="src" :type="type"/>`,
   props: {
     controls: Boolean,
     autoplay: Boolean,
