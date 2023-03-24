@@ -119,17 +119,27 @@ def load_demo(element_class: type) -> None:
     element_demo(element_class)(getattr(module, 'main_demo'), more_link=name)
 
 
+def is_method(cls: type, attribute_name: str) -> bool:
+    attribute = cls.__dict__.get(attribute_name, None)
+    return inspect.isfunction(attribute) or inspect.ismethod(attribute)
+
+
 def generate_class_doc(class_obj: type) -> None:
     class_name = pascal_to_snake(class_obj.__name__)
-    methods = [method for name, method in class_obj.__dict__.items() if not name.startswith('_') and callable(method)]
-    if methods:
+    bases = [base for base in class_obj.__mro__[1:-1] if base.__module__.startswith('nicegui.')]
+    methods_names = []
+    for base in bases:
+        for name in dir(base):
+            if not name.startswith('_') and is_method(base, name):
+                methods_names.append(name)
+    if methods_names:
         subheading('Methods')
         with ui.column().classes('gap-2'):
-            for method in methods:
-                ui.markdown(f'`{class_name}.`**`{method.__name__}`**`{generate_method_signature_description(method)}`')
+            for method_name in sorted(methods_names):
+                method = getattr(class_obj, method_name)
+                ui.markdown(f'`{class_name}.`**`{method_name}`**`{generate_method_signature_description(method)}`')
                 if method.__doc__:
                     render_docstring(method.__doc__).classes('ml-8')
-    bases = [base for base in class_obj.__mro__[1:-1] if base.__module__.startswith('nicegui.')]
     if bases:
         subheading('Inherited from')
         with ui.column().classes('gap-2'):
@@ -145,9 +155,9 @@ def generate_method_signature_description(method: Callable) -> str:
             continue
         if param.annotation != inspect.Parameter.empty:
             param_type = inspect.formatannotation(param.annotation)
-            param_string += f': {param_type}'
+            param_string += f''': {param_type.strip("'")}'''
         if param.default != inspect.Parameter.empty:
-            param_string += f' = {repr(param.default)}'
+            param_string += f' = [...]' if callable(param.default) else f' = {repr(param.default)}'
         if param.kind == inspect.Parameter.VAR_POSITIONAL:
             param_string = f'*{param_string}'
         param_strings.append(param_string)
@@ -156,6 +166,6 @@ def generate_method_signature_description(method: Callable) -> str:
     return_annotation = inspect.signature(method).return_annotation
     if return_annotation != inspect.Parameter.empty:
         return_type = inspect.formatannotation(return_annotation)
-        return_description = f' -> {return_type}'
+        return_description = f''' -> {return_type.strip("'")}'''
         description += return_description
     return description
