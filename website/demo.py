@@ -39,7 +39,13 @@ class demo:
                 code.append('ui.run()')
             code = isort.code('\n'.join(code), no_sections=True, lines_after_imports=1)
             with python_window(classes='w-full max-w-[44rem]'):
+                async def copy_code():
+                    await ui.run_javascript('navigator.clipboard.writeText(`' + code + '`)', respond=False)
+                    ui.notify('Copied to clipboard', type='positive', color='primary')
                 ui.markdown(f'```python\n{code}\n```')
+                ui.icon('content_copy', size='xs') \
+                    .classes('absolute right-2 top-10 opacity-10 hover:opacity-80 cursor-pointer') \
+                    .on('click', copy_code)
             with browser_window(self.browser_title,
                                 classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
                 intersection_observer(on_intersection=f)
