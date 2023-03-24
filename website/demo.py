@@ -42,7 +42,7 @@ class demo:
                 async def copy_code():
                     await ui.run_javascript('navigator.clipboard.writeText(`' + code + '`)', respond=False)
                     ui.notify('Copied to clipboard', type='positive', color='primary')
-                ui.markdown(f'```python\n{code}\n```')
+                ui.markdown(f'````python\n{code}\n````')
                 ui.icon('content_copy', size='xs') \
                     .classes('absolute right-2 top-10 opacity-10 hover:opacity-80 cursor-pointer') \
                     .on('click', copy_code)

@@ -4,6 +4,7 @@ from functools import lru_cache
 from typing import List
 
 import markdown2
+from pygments.formatters import HtmlFormatter
 
 from ..dependencies import register_component
 from .mixins.content_element import ContentElement
@@ -23,6 +24,7 @@ class Markdown(ContentElement):
         """
         self.extras = extras
         super().__init__(tag='markdown', content=content)
+        self._props['codehilite_css'] = HtmlFormatter(nobackground=True).get_style_defs('.codehilite')
 
     def on_content_change(self, content: str) -> None:
         html = prepare_content(content, extras=' '.join(self.extras))

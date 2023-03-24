@@ -13,7 +13,6 @@ from pathlib import Path
 
 from fastapi import Request
 from fastapi.responses import FileResponse, RedirectResponse
-from pygments.formatters import HtmlFormatter
 from starlette.middleware.sessions import SessionMiddleware
 
 import prometheus
@@ -59,7 +58,6 @@ if fly_instance_id:
 
 def add_head_html() -> None:
     ui.add_head_html((Path(__file__).parent / 'website' / 'static' / 'header.html').read_text())
-    ui.add_head_html(f'<style>{HtmlFormatter(nobackground=True).get_style_defs(".codehilite")}</style>')
     ui.add_head_html(f"<style>{(Path(__file__).parent / 'website' / 'static' / 'style.css').read_text()}</style>")
 
 

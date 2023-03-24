@@ -72,7 +72,7 @@ class text_demo:
 
     def __call__(self, f: Callable) -> Callable:
         subheading(self.title, make_menu_entry=self.make_menu_entry)
-        ui.markdown(self.explanation)
+        ui.markdown(self.explanation).classes('bold-links arrow-links')
         return demo()(f)
 
 
