@@ -125,28 +125,35 @@ def is_method(cls: type, attribute_name: str) -> bool:
 
 
 def generate_class_doc(class_obj: type) -> None:
-    bases = [base for base in class_obj.__mro__[:-1] if base.__module__.startswith('nicegui.')][::-1]
+    mro = [base for base in class_obj.__mro__ if base.__module__.startswith('nicegui.')]
+    ancestors = mro[1:]
     attributes = {}
-    for base in bases:
+    for base in reversed(mro):
         for name in dir(base):
             if not name.startswith('_') and is_method(base, name):
                 attributes[name] = getattr(base, name)
-    if attributes:
-        subheading('Attributes')
+    properties = {name: attribute for name, attribute in attributes.items() if not callable(attribute)}
+    methods = {name: attribute for name, attribute in attributes.items() if callable(attribute)}
+
+    if properties:
+        subheading('Properties')
         with ui.column().classes('gap-2'):
-            for name, attribute in sorted(attributes.items()):
-                if callable(attribute):
-                    ui.markdown(f'**`{name}`**`{generate_method_signature_description(attribute)}`')
-                else:
-                    ui.markdown('`@property`').classes('opacity-70 mb-[-1rem] text-xs')
-                    ui.markdown(f'**`{name}`**`{generate_property_signature_description(attribute)}`')
-                if attribute.__doc__:
-                    render_docstring(attribute.__doc__).classes('ml-8')
-    if len(bases) > 1:
+            for name, property in sorted(properties.items()):
+                ui.markdown(f'**`{name}`**`{generate_property_signature_description(property)}`')
+                if property.__doc__:
+                    render_docstring(property.__doc__).classes('ml-8')
+    if methods:
+        subheading('Methods')
+        with ui.column().classes('gap-2'):
+            for name, method in sorted(methods.items()):
+                ui.markdown(f'**`{name}`**`{generate_method_signature_description(method)}`')
+                if method.__doc__:
+                    render_docstring(method.__doc__).classes('ml-8')
+    if ancestors:
         subheading('Inherited from')
         with ui.column().classes('gap-2'):
-            for base in bases[:-1]:
-                ui.markdown(f'- `{base.__name__}`')
+            for ancestor in ancestors:
+                ui.markdown(f'- `{ancestor.__name__}`')
 
 
 def generate_method_signature_description(method: Callable) -> str:
