@@ -1,12 +1,12 @@
 import importlib
 import inspect
 import re
-from pathlib import Path
 from typing import Callable, Optional, Union
 
 import docutils.core
 
 from nicegui import globals, ui
+from nicegui.binding import BindableProperty
 from nicegui.elements.markdown import apply_tailwind
 
 from .demo import demo
@@ -119,9 +119,14 @@ def load_demo(element_class: type) -> None:
     element_demo(element_class)(getattr(module, 'main_demo'), more_link=name)
 
 
-def is_method(cls: type, attribute_name: str) -> bool:
+def is_method_or_property(cls: type, attribute_name: str) -> bool:
     attribute = cls.__dict__.get(attribute_name, None)
-    return inspect.isfunction(attribute) or inspect.ismethod(attribute) or isinstance(attribute, property)
+    return (
+        inspect.isfunction(attribute) or
+        inspect.ismethod(attribute) or
+        isinstance(attribute, property) or
+        isinstance(attribute, BindableProperty)
+    )
 
 
 def generate_class_doc(class_obj: type) -> None:
@@ -130,8 +135,8 @@ def generate_class_doc(class_obj: type) -> None:
     attributes = {}
     for base in reversed(mro):
         for name in dir(base):
-            if not name.startswith('_') and is_method(base, name):
-                attributes[name] = getattr(base, name)
+            if not name.startswith('_') and is_method_or_property(base, name):
+                attributes[name] = getattr(base, name, None)
     properties = {name: attribute for name, attribute in attributes.items() if not callable(attribute)}
     methods = {name: attribute for name, attribute in attributes.items() if callable(attribute)}
 
@@ -179,8 +184,10 @@ def generate_method_signature_description(method: Callable) -> str:
     return description
 
 
-def generate_property_signature_description(property: property) -> str:
+def generate_property_signature_description(property: Optional[property]) -> str:
     description = ''
+    if property is None:
+        return ': BindableProperty'
     if property.fget:
         return_annotation = inspect.signature(property.fget).return_annotation
         if return_annotation != inspect.Parameter.empty:
