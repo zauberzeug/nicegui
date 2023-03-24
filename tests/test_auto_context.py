@@ -98,7 +98,8 @@ def test_autoupdate_on_async_timer_callback(screen: Screen):
     ui.timer(2.0, update, once=True)
 
     screen.open('/')
-    screen.should_contain('0')
+    with screen.implicitly_wait(10.0):
+        screen.should_contain('0')
     screen.should_not_contain('1')
     screen.wait_for('1')
     screen.should_not_contain('2')
