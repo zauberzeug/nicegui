@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from abc import ABC
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
@@ -20,12 +19,13 @@ if TYPE_CHECKING:
 PROPS_PATTERN = re.compile(r'([\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
 
 
-class Element(ABC, Visibility):
+class Element(Visibility):
 
     def __init__(self, tag: str, *, _client: Optional[Client] = None) -> None:
         """Generic Element
 
-        This class is also the base class for all other elements.
+        This class is the base class for all other UI elements.
+        But you can use it to create elements with arbitrary HTML tags.
 
         :param tag: HTML tag of the element
         :param _client: client for this element (for internal use only)
