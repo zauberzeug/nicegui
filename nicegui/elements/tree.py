@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from nicegui.events import ValueChangeEventArguments, handle_event
 
@@ -7,7 +7,7 @@ from ..element import Element
 
 class Tree(Element):
 
-    def __init__(self, nodes: list, *,
+    def __init__(self, nodes: List, *,
                  node_key: str = 'id',
                  label_key: str = 'label',
                  children_key: str = 'children',

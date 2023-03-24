@@ -16,4 +16,4 @@ def index_page() -> None:
 # this call shows that you can also move the whole page creation into a separate file
 example_pages.create()
 
-ui.run(title='Modularization Demo')
+ui.run(title='Modularization Example')

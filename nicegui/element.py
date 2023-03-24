@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from abc import ABC
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
@@ -20,12 +19,13 @@ if TYPE_CHECKING:
 PROPS_PATTERN = re.compile(r'([\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
 
 
-class Element(ABC, Visibility):
+class Element(Visibility):
 
     def __init__(self, tag: str, *, _client: Optional[Client] = None) -> None:
         """Generic Element
 
-        This class is also the base class for all other elements.
+        This class is the base class for all other UI elements.
+        But you can use it to create elements with arbitrary HTML tags.
 
         :param tag: HTML tag of the element
         :param _client: client for this element (for internal use only)
@@ -167,10 +167,6 @@ class Element(ABC, Visibility):
 
         Removing or replacing styles can be helpful if the predefined style is not desired.
 
-        .. codeblock:: python
-
-            ui.button('Click me').style('color: #6E93D6; font-size: 200%', remove='font-weight; background-color')
-
         :param add: semicolon-separated list of styles to add to the element
         :param remove: semicolon-separated list of styles to remove from the element
         :param replace: semicolon-separated list of styles to use instead of existing ones
@@ -202,10 +198,6 @@ class Element(ABC, Visibility):
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
         Since props are simply applied as HTML attributes, they can be used with any HTML element.
-
-        .. codeblock:: python
-
-            ui.button('Open menu').props('outline icon=menu')
 
         Boolean properties are assumed ``True`` if no value is specified.
 

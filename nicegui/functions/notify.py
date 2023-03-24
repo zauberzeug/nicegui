@@ -1,12 +1,14 @@
 from typing import Any, Optional, Union
 
+from typing_extensions import Literal
+
 from .. import globals, outbox
 
 
 def notify(message: Any, *,
-           position: str = 'bottom',
+           position: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right', 'top', 'bottom', 'left', 'right', 'center'] = 'bottom',
            closeBtn: Union[bool, str] = False,
-           type: Optional[str] = None,
+           type: Optional[Literal['positive', 'negative', 'warning', 'info', 'ongoing']] = None,
            color: Optional[str] = None,
            **kwargs,
            ) -> None:
@@ -15,7 +17,7 @@ def notify(message: Any, *,
     Displays a notification on the screen.
 
     :param message: content of the notification
-    :param position: position on the screen ("top-left", "top-right", "bottom-left", "bottom-right, "top", "bottom", "left", "right" or "center", default: "bottom")
+    :param position: position on the screen ("top-left", "top-right", "bottom-left", "bottom-right", "top", "bottom", "left", "right" or "center", default: "bottom")
     :param closeBtn: optional label of a button to dismiss the notification (default: `False`)
     :param type: optional type ("positive", "negative", "warning", "info" or "ongoing")
     :param color: optional color name

@@ -1,4 +1,3 @@
-import traceback
 from dataclasses import dataclass
 from inspect import signature
 from typing import TYPE_CHECKING, Any, BinaryIO, Callable, List, Optional, Union
@@ -77,6 +76,11 @@ class UploadEventArguments(EventArguments):
 @dataclass
 class ValueChangeEventArguments(EventArguments):
     value: Any
+
+
+@dataclass
+class TableSelectionEventArguments(EventArguments):
+    selection: List[Any]
 
 
 @dataclass

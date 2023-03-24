@@ -64,4 +64,5 @@ def test_input_validation(screen: Screen):
     screen.should_contain('Too short')
 
     element.send_keys(' Doe')
+    screen.wait(0.5)
     screen.should_not_contain('Too short')
