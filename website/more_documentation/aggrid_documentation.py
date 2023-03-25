@@ -26,10 +26,17 @@ def main_demo() -> None:
 
 
 def more() -> None:
-    @text_demo('Select AGgrid Rows', '''
-        Selection checkboxes can be added to rows, allowing for retrieval of user selection.\n
-        Note that the on click for the buttons receive the callable function (no parentheses) and that they are not lambda functions.\n
-        See the [AGgrid documentation](https://www.ag-grid.com/javascript-data-grid/row-selection/#example-single-row-selection) for more information.
+    @text_demo('Select AG Grid Rows', '''
+        You can add checkboxes to grid cells to allow the user to select single or multiple rows.
+
+        To retrieve the currently selected rows, use the `get_selected_rows` method.
+        This method returns a list of rows as dictionaries.
+
+        If `rowSelection` is set to `'single'` or to get the first selected row,
+        you can also use the `get_selected_row` method.
+        This method returns a single row as a dictionary or `None` if no row is selected.
+
+        See the [AG Grid documentation](https://www.ag-grid.com/javascript-data-grid/row-selection/#example-single-row-selection) for more information.
     ''')
     def aggrid_with_selectable_rows():
         grid = ui.aggrid({
@@ -45,40 +52,20 @@ def more() -> None:
             'rowSelection': 'multiple',
         }).classes('max-h-40')
 
-        async def get_rows():
-            # This function grabs all selected rows (use when rowSelection is multiple)
-
-            # Obtain rows
+        async def output_selected_rows():
             rows = await grid.get_selected_rows()
+            if rows:
+                for row in rows:
+                    ui.notify(f"{row['name']}, {row['age']}")
+            else:
+                ui.notify('No rows selected.')
 
-            # Check if empty
-            if rows == []:
-                ui.notify("None selected!")
-                return
-
-            # Process as desired
-            for row in rows:
-                row_name = row["name"]
-                row_age = row["age"]
-                ui.notify(f"{row_name}, {row_age}")
-
-        async def get_row():
-            # This function grabs the row you selected (use when rowSelection is single)
-
-            # Obtain row
+        async def output_selected_row():
             row = await grid.get_selected_row()
+            if row:
+                ui.notify(f"{row['name']}, {row['age']}")
+            else:
+                ui.notify('No row selected!')
 
-            # Check if None
-            if row is None:
-                ui.notify("None selected!")
-                return
-
-            # Process as desired
-            row_name = row["name"]
-            row_age = row["age"]
-            ui.notify(f"{row_name}, {row_age}")
-
-        ui.button('Get Rows', on_click=get_rows)
-        ui.button('Get Row', on_click=get_row)
-
-        ui.run()
+        ui.button('Output selected rows', on_click=output_selected_rows)
+        ui.button('Output selected row', on_click=output_selected_row)
