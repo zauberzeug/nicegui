@@ -39,8 +39,8 @@ def safe_invoke(func: Union[Callable, Awaitable], client: Optional['Client'] = N
         globals.handle_exception(e)
 
 
-def port_open_tcp(host: str, port: int) -> bool:
-    # Check if the port is open by checking if a TCP connection can be established.
+def is_port_open(host: str, port: int) -> bool:
+    """Check if the port is open by checking if a TCP connection can be established."""
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         sock.connect((host, port))
@@ -53,11 +53,16 @@ def port_open_tcp(host: str, port: int) -> bool:
 
 
 def schedule_browser(host: str, port: int) -> None:
-    # This function has to be non blocking. Therefore, we'll launch a thread, s.th.
-    # the main thread can proceed with the actual startup.
-    # The thread will be launched as a daemon, s.th. it doesn't interfere with Ctrl+C.
+    """Wait non-blockingly for the port to be open, then start a webbrowser.
+
+    This function launches a thread in order to be non-blocking. This thread then uses
+    `is_port_open` to check when the port opens. When connectivity is confirmed, the
+    webbrowser is launched using `webbrowser.open`
+
+    The thread is created as a daemon thread, in order to not interfere with Ctrl+C.
+    """
     def thread(host: str, port: int) -> None:
-        while not port_open_tcp(host, port):
+        while not is_port_open(host, port):
             time.sleep(0.1)
         webbrowser.open(f'http://{host}:{port}/')
 
