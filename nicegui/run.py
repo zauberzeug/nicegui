@@ -31,6 +31,7 @@ def run(*,
         uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
         exclude: str = '',
         tailwind: bool = True,
+        icon_dir = None,
         **kwargs,
         ) -> None:
     '''ui.run
@@ -80,7 +81,7 @@ def run(*,
         host = host or '127.0.0.1'
         port = native_mode.find_open_port()
         width, height = window_size or (800, 600)
-        native_mode.activate(f'http://{host}:{port}', title, width, height, fullscreen)
+        native_mode.activate(f'http://{host}:{port}', title, width, height, fullscreen, icon_dir)
     else:
         host = host or '0.0.0.0'
 
