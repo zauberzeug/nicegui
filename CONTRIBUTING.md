@@ -87,18 +87,37 @@ pytest
 
 ## Documentation
 
-New features should be well documented in [website/reference.py](https://github.com/zauberzeug/nicegui/blob/main/website/reference.py).
-By calling the `example(...)` function with an element as a parameter the docstring is used as a description.
+### Features
+
+New features should be well documented in [website/documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/documentation.py).
+By calling the `element_demo(...)` function with an element as a parameter the docstring is used as a description.
 The docstrings are written in restructured-text.
+
+### Additional Demos
+
+There is a separate page for each feature and element where multiple interactive demos can be listed.
+Please help us grow the number of insightful demos by following these easy steps:
+
+1. clone the NiceGUI repo and launch `main.py` in the root dir
+2. in the newly opened browser window you can navigate to the documentation page you want to change something
+3. open the code in your editor (for example [website/more_documentation/table_documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/more_documentation/table_documentation.py))
+4. in the `more()` function insert an inner function containing your demo code
+5. add the `@text_demo` decorator to explain the demo
+6. make sure the result looks as you expect in the rendered documentation
+7. create a pull-request (see below)
+
+Your contributions are much appreciated.
+
+### Formatting
 
 Because it has [numerous benefits](https://nick.groenen.me/notes/one-sentence-per-line/) we write each sentence in a new line.
 
-### Demos
+### Examples
 
-Besides the documentation/reference (see above) we collect useful, but compact demonstrations.
-Each demo should be about one concept.
+Besides the documentation with interactive demos (see above) we collect useful, compact stand-alone examples.
+Each example should be about one concept.
 Please try to make them as minimal as possible to show what is needed to get some kind of functionality.
-We are happy to merge pull requests with new demos which show new concepts, ideas or interesting use cases.
+We are happy to merge pull requests with new examples which show new concepts, ideas or interesting use cases.
 
 ## Pull requests
 

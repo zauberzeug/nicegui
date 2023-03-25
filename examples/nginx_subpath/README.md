@@ -1,8 +1,8 @@
 # Serving an App Behind a Reverse Proxy Subpath
 
-This demo shows how to serve NiceGUI on a subpath behind a reverse proxy.
+This example shows how to serve NiceGUI on a subpath behind a reverse proxy.
 Here we use Nginx.
-For a Traeffic demo have a look at https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml.
+For a Traeffic example have a look at https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml.
 
 ## Try Out
 

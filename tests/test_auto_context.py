@@ -27,23 +27,22 @@ def test_adding_element_to_private_page(screen: Screen):
 
 def test_adding_elements_with_async_await(screen: Screen):
     async def add_a():
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(1.0)
         ui.label('A')
 
     async def add_b():
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(1.0)
         ui.label('B')
 
-    ui.label('ready')
     with ui.card() as cardA:
         ui.timer(1.0, add_a, once=True)
     with ui.card() as cardB:
-        ui.timer(1.1, add_b, once=True)
+        ui.timer(1.5, add_b, once=True)
 
     screen.open('/')
-    screen.wait_for('ready')
-    screen.should_contain('A')
-    screen.should_contain('B')
+    with screen.implicitly_wait(10.0):
+        screen.should_contain('A')
+        screen.should_contain('B')
     cA = screen.selenium.find_element(By.ID, cardA.id)
     cA.find_element(By.XPATH, './/*[contains(text(), "A")]')
     cB = screen.selenium.find_element(By.ID, cardB.id)
@@ -98,7 +97,11 @@ def test_autoupdate_on_async_timer_callback(screen: Screen):
     ui.label('0')
     ui.timer(2.0, update, once=True)
 
+    ui.timer(0, lambda: ui.label('connection established'), once=True)  # HACK: allow waiting for client connection
+
     screen.open('/')
+    with screen.implicitly_wait(10.0):
+        screen.wait_for('connection established')
     screen.should_contain('0')
     screen.should_not_contain('1')
     screen.wait_for('1')
@@ -120,7 +123,11 @@ def test_adding_elements_from_different_tasks(screen: Screen):
             ui.label('2')
             await asyncio.sleep(0.5)
 
+    ui.timer(0, lambda: ui.label('connection established'), once=True)  # HACK: allow waiting for client connection
+
     screen.open('/')
+    with screen.implicitly_wait(10.0):
+        screen.wait_for('connection established')
     background_tasks.create(add_label1())
     background_tasks.create(add_label2())
     screen.should_contain('1')
