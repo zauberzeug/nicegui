@@ -23,20 +23,16 @@ def on_shown(icon_dir):
         return
     # Set the window icon file dir
     icon = icon_dir
-
     # set up ctypes needed variables
     EnumWindows = cdll.user32.EnumWindows
     EnumWindowsProc = CFUNCTYPE(c_bool, POINTER(c_int), POINTER(c_int))
     IsWindowVisible = cdll.user32.IsWindowVisible
     IsWindowEnabled = cdll.user32.IsWindowEnabled
     GetWindowThreadProcessId = cdll.user32.GetWindowThreadProcessId
-
     # List of matching window handles
     hwnds = []
-
     # Get current process id / commented out within native_mode integration, get it from activate func
     pid = os.getpid()
-
     # Callback function that EnumWindows will be called while enumerating all windows, passing the hwnd and an empty arg
     def callback(hwnd, lParam_arg):
         if IsWindowVisible(hwnd) and IsWindowEnabled(hwnd):
@@ -47,21 +43,18 @@ def on_shown(icon_dir):
                 hwnds.append(hwnd)
 
     EnumWindows(EnumWindowsProc(callback), None)
-
     # hwnds[0] should be the window we want, and the only hwnd in the list.
     hwnd = hwnds[0]
-
     # Constants for Win32 API calls
     ICON_SMALL = 0
     ICON_BIG = 1
     WM_SETICON = 0x0080
-
     # Load the icon file
     hIcon = windll.user32.LoadImageW(None, icon, 1, 0, 0, 0x00000010)
-
     # Set the window icon using WM_SETICON message
     windll.user32.SendMessageW(hwnd, WM_SETICON, ICON_SMALL, hIcon)
     windll.user32.SendMessageW(hwnd, WM_SETICON, ICON_BIG, hIcon)
+
 
 def open_window(url: str, title: str, width: int, height: int, fullscreen: bool, icon_dir = None) -> None:
     def icon_callback():
@@ -71,7 +64,6 @@ def open_window(url: str, title: str, width: int, height: int, fullscreen: bool,
         window.events.shown += icon_callback
     webview.start(storage_path=tempfile.mkdtemp())
     
-
 
 def activate(url: str, title: str, width: int, height: int, fullscreen: bool, icon_dir) -> None:
     def check_shutdown() -> None:
