@@ -5,9 +5,6 @@ import pathlib
 import shlex
 import shutil
 import subprocess
-from concurrent.futures import ProcessPoolExecutor
-
-from icecream import ic
 
 from nicegui import app, events, ui
 
@@ -17,7 +14,6 @@ def extract(source: str):
 
 
 async def handle_upload(args: events.UploadEventArguments):
-    ic()
     if 'video' in args.type:
         shutil.rmtree('data', ignore_errors=True)
         os.makedirs('data', exist_ok=True)
