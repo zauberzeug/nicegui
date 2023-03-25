@@ -17,7 +17,6 @@ export default {
         const style = document.createElement("style");
         style.setAttribute("data-codehilite-css", "");
         style.innerHTML = this.codehilite_css;
-        console.log(style);
         document.head.appendChild(style);
       }
     },
