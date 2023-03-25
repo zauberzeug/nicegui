@@ -66,7 +66,6 @@ def on_shown(icon_dir):
 def open_window(url: str, title: str, width: int, height: int, fullscreen: bool, icon_dir = None) -> None:
     def icon_callback():
         on_shown(icon_dir)
-
     window = webview.create_window(title, url=url, width=width, height=height, fullscreen=fullscreen)
     if sys.platform.startswith('win'):
         window.events.shown += icon_callback
