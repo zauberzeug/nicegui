@@ -33,7 +33,7 @@ async def handle_upload(args: events.UploadEventArguments):
         ui.notify('Please upload a video file')
     upload.run_method('reset')
 
-
+os.makedirs('data', exist_ok=True)
 app.add_static_files('/data', 'data')
 
 with ui.column().classes('w-full items-center'):
