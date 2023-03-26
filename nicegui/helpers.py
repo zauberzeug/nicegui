@@ -6,7 +6,7 @@ import threading
 import time
 import webbrowser
 from contextlib import nullcontext
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Tuple, Union
 
 from . import background_tasks, globals
 
@@ -52,7 +52,7 @@ def is_port_open(host: str, port: int) -> bool:
         sock.close()
 
 
-def schedule_browser(host: str, port: int) -> None:
+def schedule_browser(host: str, port: int) -> Tuple[threading.Thread, threading.Event]:
     """Wait non-blockingly for the port to be open, then start a webbrowser.
 
     This function launches a thread in order to be non-blocking. This thread then uses
@@ -60,11 +60,23 @@ def schedule_browser(host: str, port: int) -> None:
     webbrowser is launched using `webbrowser.open`
 
     The thread is created as a daemon thread, in order to not interfere with Ctrl+C.
+
+    If you need to stop this thread, you can do this by setting the Event, that gets
+    returned. The thread will stop with the next loop without opening the browser.
+
+    :return: A tuple consisting of the actual thread object and an event for stopping
+        the thread.
     """
-    def thread(host: str, port: int) -> None:
-        while not is_port_open(host, port):
+    cancel = threading.Event()
+
+    def in_thread(host: str, port: int) -> None:
+        while not is_port_open(host, port) and not cancel.is_set():
             time.sleep(0.1)
+        if cancel.is_set():
+            return
         webbrowser.open(f'http://{host}:{port}/')
 
     host = host if host != "0.0.0.0" else "127.0.0.1"
-    threading.Thread(target=thread, args=(host, port), daemon=True).start()
+    thread = threading.Thread(target=in_thread, args=(host, port), daemon=True)
+    thread.start()
+    return thread, cancel
