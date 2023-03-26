@@ -54,7 +54,6 @@
         Object.values(element.events).forEach((event) => {
           let event_name = 'on' + event.type[0].toLocaleUpperCase() + event.type.substring(1);
           event.specials.forEach(s => event_name += s[0].toLocaleUpperCase() + s.substring(1));
-          const throttler = {active: false};
           let handler = (e) => {
             const all = typeof e !== 'object' || event.args.includes('*');
             const args = all ? e : Object.fromEntries(event.args.map(a => [a, e[a]]));
