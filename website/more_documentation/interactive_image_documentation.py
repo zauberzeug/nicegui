@@ -1,4 +1,5 @@
 from nicegui import ui
+
 from ..documentation_tools import text_demo
 
 
@@ -16,11 +17,12 @@ def main_demo() -> None:
 
 def more() -> None:
     @text_demo('Nesting elements', '''
-        Use tailwind classes like "absolute top-0 left-0" to position the label absolutely with respect to the image.
+        You can nest elements inside an interactive image.
+        Use Tailwind classes like "absolute top-0 left-0" to position the label absolutely with respect to the image.
         Of course this can be done with plain CSS as well.
     ''')
     def nesting_elements():
         with ui.interactive_image('https://picsum.photos/id/147/640/360'):
             ui.button(on_click=lambda: ui.notify('thumbs up')) \
-                .props('icon=thumb_up flat color=white') \
-                .classes('absolute bottom-0 left-0 p-4')
+                .props('icon=thumb_up flat fab color=white') \
+                .classes('absolute bottom-0 left-0 m-2')

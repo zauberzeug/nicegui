@@ -644,8 +644,7 @@ def create_full(menu: ui.element) -> None:
 
                 cmd = [
                     'python',
-                    '-m',
-                    'PyInstaller',
+                    '-m', 'PyInstaller',
                     'main.py', # your main file with ui.run()
                     '--name', 'myapp', # name of your app
                     '--onefile',
@@ -657,39 +656,44 @@ def create_full(menu: ui.element) -> None:
             ''')
 
     ui.markdown('''
-        **Packaging Tips:**
+        **Packaging Tips**
 
-        - When building a pyinstaller app, your main script can use a native window 
-          (rather than a browser window) by using `ui.run(reload=False, native=True)`. 
-          The `native` parameter can be `True` or `False` depending on whether 
-          you want a native window or to launch a page in the user's browser - 
-          either will work in the pyinstaller generated app.
-        - Specifying `--windowed` to pyinstaller will prevent a terminal console from appearing.
+        - When building a PyInstaller app, your main script can use a native window (rather than a browser window) by
+          using `ui.run(reload=False, native=True)`.
+          The `native` parameter can be `True` or `False` depending on whether you want a native window or to launch a
+          page in the user's browser - either will work in the PyInstaller generated app.
+
+        - Specifying `--windowed` to PyInstaller will prevent a terminal console from appearing.
           However you should only use this option if you have also specified `native=True` in your `ui.run` command.
-          Without a terminal console the user won't be able to exit the app with `^C`.
-          However with the `native=True` option, the app will automatically close when the window is closed, as expected.
-        - Specifying `--windowed` to pyinstaller will create an `.app` file on Mac which may be more convenient to distribute.
-          When you double click the app to run it, it will not show any console output.
+          Without a terminal console the user won't be able to exit the app by pressing Ctrl-C.
+          With the `native=True` option, the app will automatically close when the window is closed, as expected.
+
+        - Specifying `--windowed` to PyInstaller will create an `.app` file on Mac which may be more convenient to distribute.
+          When you double-click the app to run it, it will not show any console output.
           You can also run the app from the command line with `./myapp.app/Contents/MacOS/myapp` to see the console output.
-        - Specifying `--onefile` to pyinstaller will create a single executable file which, whilst convenient for distribution, will be slower to start up. 
-          This is not NiceGUI's fault but just the way Pyinstaller zips things into a single file, then unzips everything into a temporary directory before running.
-          You can mitigate this by removing `--onefile` from the pyinstaller command, 
-          and zip up the generated `dist` directory yourself, distribute it, 
-          and your end users can unzip once and be good to go, without the constant expansion of files due to the --onefile' flag.          
+
+        - Specifying `--onefile` to PyInstaller will create a single executable file.
+          Whilst convenient for distribution, it will be slower to start up.
+          This is not NiceGUI's fault but just the way Pyinstaller zips things into a single file, then unzips everything
+          into a temporary directory before running.
+          You can mitigate this by removing `--onefile` from the PyInstaller command,
+          and zip up the generated `dist` directory yourself, distribute it,
+          and your end users can unzip once and be good to go,
+          without the constant expansion of files due to the `--onefile` flag.
+          
         - Summary of user experience for different options:
-            | PyInstaller | app.run() | Explanation |
-            | :--- | :--- | :--- |
-            | onefile | `native=False` | Single executable generated in `dist/`, runs in browser |
-            | onefile | `native=True` | Single executable generated in `dist/`, runs in popup window |
-            | onefile and windowed | `native=True` | Single executable generated in `dist/` (on Mac a proper `dist/myapp.app` generated incl. icon), runs in popup window, no console appears |
-            | onefile and windowed | `native=False` | Avoid (no way to exit the app) |
-            | Specify neither |  | A `dist/myapp` directory created which can be zipped manually and distributed. Run with `dist/myapp/myapp` |
-        - If you are using a Python virtual environment, ensure you `pip install
-          pyinstaller` within your virtual environment so that the correct
-          pyinstaller is used, or you may get broken apps due to the wrong
-          version of pyinstaller being picked up. That is why the build script
-          invokes pyinstaller using `python -m PyInstaller` rather than just
-          `pyinstaller`.
+
+            | PyInstaller              | `ui.run(...)`  | Explanation |
+            | :---                     | :---           | :---        |
+            | `onefile`                | `native=False` | Single executable generated in `dist/`, runs in browser |
+            | `onefile`                | `native=True`  | Single executable generated in `dist/`, runs in popup window |
+            | `onefile` and `windowed` | `native=True`  | Single executable generated in `dist/` (on Mac a proper `dist/myapp.app` generated incl. icon), runs in popup window, no console appears |
+            | `onefile` and `windowed` | `native=False` | Avoid (no way to exit the app) |
+            | Specify neither          |                | A `dist/myapp` directory created which can be zipped manually and distributed; run with `dist/myapp/myapp` |
+
+        - If you are using a Python virtual environment, ensure you `pip install pyinstaller` within your virtual environment
+          so that the correct PyInstaller is used, or you may get broken apps due to the wrong version of PyInstaller being picked up.
+          That is why the build script invokes PyInstaller using `python -m PyInstaller` rather than just `pyinstaller`.
     ''')
 
     with bash_window(classes='max-w-lg w-full h-42 self-center'):
