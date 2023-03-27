@@ -72,65 +72,23 @@ class Element(Visibility):
     def __exit__(self, *_):
         self.default_slot.__exit__(*_)
 
-    def _collect_events(self) -> List[Dict]:
-        events: List[Dict] = []
-        for listener in self._event_listeners.values():
-            words = listener.type.split('.')
-            type = words.pop(0)
-            specials = [w for w in words if w in {'capture', 'once', 'passive'}]
-            modifiers = [w for w in words if w in {'stop', 'prevent', 'self', 'ctrl', 'shift', 'alt', 'meta'}]
-            keys = [w for w in words if w not in specials + modifiers]
-            events.append({
-                'listener_id': listener.id,
-                'listener_type': listener.type,
-                'type': type,
-                'specials': specials,
-                'modifiers': modifiers,
-                'keys': keys,
-                'args': listener.args,
-                'throttle': listener.throttle,
-            })
-        return events
-
     def _collect_slot_dict(self) -> Dict[str, List[int]]:
         return {
             name: {'template': slot.template, 'ids': [child.id for child in slot.children]}
             for name, slot in self.slots.items()
         }
 
-    def _to_dict(self, *keys: str) -> Dict:
-        if not keys:
-            return {
-                'id': self.id,
-                'tag': self.tag,
-                'class': self._classes,
-                'style': self._style,
-                'props': self._props,
-                'text': self._text,
-                'slots': self._collect_slot_dict(),
-                'events': self._collect_events(),
-            }
-        dict_: Dict[str, Any] = {}
-        for key in keys:
-            if key == 'id':
-                dict_['id'] = self.id
-            elif key == 'tag':
-                dict_['tag'] = self.tag
-            elif key == 'class':
-                dict_['class'] = self._classes
-            elif key == 'style':
-                dict_['style'] = self._style
-            elif key == 'props':
-                dict_['props'] = self._props
-            elif key == 'text':
-                dict_['text'] = self._text
-            elif key == 'slots':
-                dict_['slots'] = self._collect_slot_dict()
-            elif key == 'events':
-                dict_['events'] = self._collect_events()
-            else:
-                raise ValueError(f'Unknown key {key}')
-        return dict_
+    def _to_dict(self) -> Dict[str, Any]:
+        return {
+            'id': self.id,
+            'tag': self.tag,
+            'class': self._classes,
+            'style': self._style,
+            'props': self._props,
+            'text': self._text,
+            'slots': self._collect_slot_dict(),
+            'events': [listener.to_dict() for listener in self._event_listeners.values()],
+        }
 
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
             -> Self:
