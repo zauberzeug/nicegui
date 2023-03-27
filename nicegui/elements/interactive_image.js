@@ -9,6 +9,7 @@ export default {
         </g>
         <g v-html="content"></g>
       </svg>
+      <slot></slot>
     </div>
   `,
   data() {
