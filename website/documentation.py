@@ -558,7 +558,8 @@ def create_full(menu: ui.element) -> None:
     @text_demo('Environment Variables', '''
         You can set the following environment variables to configure NiceGUI:
 
-        - `MATPLOTLIB` (default: true) can be set to `false` to avoid the potentially costly import of Matplotlib. This will make `ui.pyplot` and `ui.line_plot` unavailable.
+        - `MATPLOTLIB` (default: true) can be set to `false` to avoid the potentially costly import of Matplotlib.
+            This will make `ui.pyplot` and `ui.line_plot` unavailable.
         - `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.
     ''')
     def env_var_demo():
@@ -577,7 +578,7 @@ def create_full(menu: ui.element) -> None:
 
         A convenient alternative is the use of our [pre-built multi-arch Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
         With this command you can launch the script `main.py` in the current directory on the public port 80:
-    ''')
+    ''').classes('bold-links arrow-links')
     with bash_window(classes='max-w-lg w-full h-52'):
         ui.markdown('''
             ```bash
@@ -611,7 +612,7 @@ def create_full(menu: ui.element) -> None:
         You may also have a look at [our demo for using a custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
         This will allow you to do very flexible deployments as described in the [FastAPI documentation](https://fastapi.tiangolo.com/deployment/).
         Note that there are additional steps required to allow multiple workers.
-    ''')
+    ''').classes('bold-links arrow-links')
 
     subheading('Package for Installation')
 
@@ -621,7 +622,7 @@ def create_full(menu: ui.element) -> None:
 
         Just take care your `ui.run` command does not use the `reload` argument.
         Running the `build.py` below will create an executable `myapp` in the `dist` folder:
-    ''')
+    ''').classes('bold-links arrow-links')
 
     with ui.row().classes('w-full items-stretch'):
         with python_window(classes='max-w-lg w-full'):
@@ -694,7 +695,7 @@ def create_full(menu: ui.element) -> None:
         - If you are using a Python virtual environment, ensure you `pip install pyinstaller` within your virtual environment
           so that the correct PyInstaller is used, or you may get broken apps due to the wrong version of PyInstaller being picked up.
           That is why the build script invokes PyInstaller using `python -m PyInstaller` rather than just `pyinstaller`.
-    ''')
+    ''').classes('bold-links arrow-links')
 
     with bash_window(classes='max-w-lg w-full h-42 self-center'):
         ui.markdown('''
