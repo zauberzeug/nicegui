@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import inspect
 import importlib
+import inspect
 
 if True:
     # increasing max decode packets to be able to transfer images
@@ -313,7 +313,7 @@ def documentation_page():
 def documentation_page_more(name: str):
     add_head_html()
     add_header()
-    with side_menu():
+    with side_menu() as menu:
         ui.markdown(f'[← back](/documentation#{create_anchor_name(name)})').classes('bold-links')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         if not hasattr(ui, name):
@@ -321,12 +321,17 @@ def documentation_page_more(name: str):
         section_heading('Documentation', f'ui.*{name}*')
         module = importlib.import_module(f'website.more_documentation.{name}_documentation')
         element_class = getattr(ui, name)
+        more = getattr(module, 'more', None)
+        with menu:
+            ui.markdown('**Demos**' if more else '**Demo**').classes('mt-4')
         element_demo(element_class)(getattr(module, 'main_demo'))
+        if more:
+            more()
         if inspect.isclass(element_class):
+            with menu:
+                ui.markdown('**Reference**').classes('mt-4')
+            ui.markdown('## Reference').classes('mt-16')
             generate_class_doc(element_class)
-        if hasattr(module, 'more'):
-            ui.markdown('## More demos').classes('mt-16')
-            getattr(module, 'more')()
 
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html')
