@@ -2,8 +2,8 @@ export default {
   template: `
     <div style="position:relative">
       <img :src="src" style="width:100%; height:100%;" v-on="onEvents" draggable="false" />
-      <svg v-if="cross" style="position:absolute;top:0;left:0;pointer-events:none" :viewBox="viewBox">
-        <g :style="{ display: cssDisplay }">
+      <svg style="position:absolute;top:0;left:0;pointer-events:none" :viewBox="viewBox">
+        <g v-if="cross" :style="{ display: cssDisplay }">
           <line :x1="x" y1="0" :x2="x" y2="100%" stroke="black" />
           <line x1="0" :y1="y" x2="100%" :y2="y" stroke="black" />
         </g>
