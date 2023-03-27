@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import warnings
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
@@ -38,7 +39,7 @@ class Element(Visibility):
         self._classes: List[str] = []
         self._style: Dict[str, str] = {}
         self._props: Dict[str, Any] = {}
-        self._event_listeners: List[EventListener] = []
+        self._event_listeners: Dict[str, EventListener] = {}
         self._text: str = ''
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
@@ -71,23 +72,24 @@ class Element(Visibility):
     def __exit__(self, *_):
         self.default_slot.__exit__(*_)
 
-    def _collect_event_dict(self) -> Dict[str, Dict]:
-        events: Dict[str, Dict] = {}
-        for listener in self._event_listeners:
+    def _collect_events(self) -> List[Dict]:
+        events: List[Dict] = []
+        for listener in self._event_listeners.values():
             words = listener.type.split('.')
             type = words.pop(0)
             specials = [w for w in words if w in {'capture', 'once', 'passive'}]
             modifiers = [w for w in words if w in {'stop', 'prevent', 'self', 'ctrl', 'shift', 'alt', 'meta'}]
             keys = [w for w in words if w not in specials + modifiers]
-            events[listener.type] = {
+            events.append({
+                'listener_id': listener.id,
                 'listener_type': listener.type,
                 'type': type,
                 'specials': specials,
                 'modifiers': modifiers,
                 'keys': keys,
-                'args': list(set(events.get(listener.type, {}).get('args', []) + listener.args)),
-                'throttle': min(events.get(listener.type, {}).get('throttle', float('inf')), listener.throttle),
-            }
+                'args': listener.args,
+                'throttle': listener.throttle,
+            })
         return events
 
     def _collect_slot_dict(self) -> Dict[str, List[int]]:
@@ -106,7 +108,7 @@ class Element(Visibility):
                 'props': self._props,
                 'text': self._text,
                 'slots': self._collect_slot_dict(),
-                'events': self._collect_event_dict(),
+                'events': self._collect_events(),
             }
         dict_: Dict[str, Any] = {}
         for key in keys:
@@ -125,7 +127,7 @@ class Element(Visibility):
             elif key == 'slots':
                 dict_['slots'] = self._collect_slot_dict()
             elif key == 'events':
-                dict_['events'] = self._collect_event_dict()
+                dict_['events'] = self._collect_events()
             else:
                 raise ValueError(f'Unknown key {key}')
         return dict_
@@ -237,15 +239,17 @@ class Element(Visibility):
         :param throttle: minimum time (in seconds) between event occurrences (default: 0.0)
         """
         if handler:
-            args = args if args is not None else ['*']
+            if args and '*' in args:
+                url = f'https://github.com/zauberzeug/nicegui/issues/644'
+                warnings.warn(DeprecationWarning(f'Event args "*" is deprecated, omit this parameter instead ({url})'))
+                args = None
             listener = EventListener(element_id=self.id, type=type, args=args, handler=handler, throttle=throttle)
-            self._event_listeners.append(listener)
+            self._event_listeners[listener.id] = listener
         return self
 
     def _handle_event(self, msg: Dict) -> None:
-        for listener in self._event_listeners:
-            if listener.type == msg['type']:
-                events.handle_event(listener.handler, msg, sender=self)
+        listener = self._event_listeners[msg['listener_id']]
+        events.handle_event(listener.handler, msg, sender=self)
 
     def update(self) -> None:
         """Update the element on the client side."""
