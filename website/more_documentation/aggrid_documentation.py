@@ -69,3 +69,23 @@ def more() -> None:
 
         ui.button('Output selected rows', on_click=output_selected_rows)
         ui.button('Output selected row', on_click=output_selected_row)
+
+    @text_demo('Filter Rows using Mini Filters', '''
+        You can add [mini filters](https://ag-grid.com/javascript-data-grid/filter-set-mini-filter/)
+        to the header of each column to filter the rows.
+        
+        Note how the "agTextColumnFilter" matches individual characters, like "a" in "Alice" and "Carol",
+        while the "agNumberColumnFilter" matches the entire number, like "18" and "21", but not "1".
+    ''')
+    def aggrid_with_minifilters():
+        ui.aggrid({
+            'columnDefs': [
+                {'headerName': 'Name', 'field': 'name', 'filter': 'agTextColumnFilter', 'floatingFilter': True},
+                {'headerName': 'Age', 'field': 'age', 'filter': 'agNumberColumnFilter', 'floatingFilter': True},
+            ],
+            'rowData': [
+                {'name': 'Alice', 'age': 18},
+                {'name': 'Bob', 'age': 21},
+                {'name': 'Carol', 'age': 42},
+            ],
+        }).classes('max-h-40')
