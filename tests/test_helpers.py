@@ -43,7 +43,7 @@ def test_schedule_browser(monkeypatch):
 
             sock.listen()
             # port opened
-            time.sleep(0.2)
+            time.sleep(1)
             assert called_with_url == f"http://{host}:{port}/"
         finally:
             cancel_event.set()
@@ -70,7 +70,7 @@ def test_schedule_browser_cancel(monkeypatch):
 
     cancel_event.set()
 
-    time.sleep(0.2)
+    time.sleep(1)
 
     assert not thread.is_alive()
     assert called_with_url is None

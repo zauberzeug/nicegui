@@ -44,7 +44,7 @@ def is_port_open(host: str, port: int) -> bool:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         sock.connect((host, port))
-    except ConnectionRefusedError, TimeoutError:
+    except (ConnectionRefusedError, TimeoutError):
         return False
     else:
         return True
