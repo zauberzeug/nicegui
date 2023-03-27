@@ -51,8 +51,8 @@ export default {
         allEvents["mouseenter"] = () => (this.cssDisplay = "block");
         allEvents["mouseleave"] = () => (this.cssDisplay = "none");
         allEvents["mousemove"] = (event) => this.updateCrossHair(event);
-        allEvents["load"] = (event) => this.onImageLoaded(event);
       }
+      allEvents["load"] = (event) => this.onImageLoaded(event);
       return allEvents;
     },
   },
