@@ -1,11 +1,10 @@
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
-from .. import binding
+from .. import binding, globals
 from ..dependencies import register_component
 from ..element import Element
 from ..events import SceneClickEventArguments, SceneClickHit, handle_event
-from ..globals import socket_id
 from .scene_object3d import Object3D
 from .scene_objects import Scene as SceneObject
 
@@ -73,14 +72,21 @@ class Scene(Element):
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
         self.on_click = on_click
+        self.is_initialized = False
         self.on('init', self.handle_init)
         self.on('click3d', self.handle_click)
 
     def handle_init(self, msg: Dict) -> None:
-        with socket_id(msg['args']):
+        self.is_initialized = True
+        with globals.socket_id(msg['args']):
             self.move_camera(duration=0)
             for object in self.objects.values():
                 object.send()
+
+    def run_method(self, name: str, *args: Any) -> None:
+        if not self.is_initialized:
+            return
+        super().run_method(name, *args)
 
     def handle_click(self, msg: Dict) -> None:
         arguments = SceneClickEventArguments(
