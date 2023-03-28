@@ -49,7 +49,7 @@ def test_schedule_browser(monkeypatch):
             cancel_event.set()
 
 
-def test_schedule_browser_cancel(monkeypatch):
+def test_canceling_schedule_browser(monkeypatch):
 
     called_with_url = None
 
@@ -59,18 +59,17 @@ def test_schedule_browser_cancel(monkeypatch):
 
     monkeypatch.setattr(webbrowser, "open", mock_webbrowser_open)
 
-    # This test doesn't need to open a port, but it binds a socket, s.th. we can be sure
-    # it is NOT open.
-
+    # find a free port ...
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(('127.0.0.1', 0))
+    sock.listen(1)
     host, port = sock.getsockname()
+    # ... and close it so schedule_browser does not launch the browser
+    sock.close()
 
     thread, cancel_event = helpers.schedule_browser(host, port)
-
+    time.sleep(0.2)
     cancel_event.set()
-
-    time.sleep(1)
-
+    time.sleep(0.2)
     assert not thread.is_alive()
     assert called_with_url is None
