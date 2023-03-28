@@ -68,7 +68,7 @@ class Client:
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         prefix = request.headers.get('X-Forwarded-Prefix', '')
         elements = json.dumps({id: element._to_dict() for id, element in self.elements.items()})
-        (vue_html, vue_styles, vue_scripts, es5_exposes, js_imports) = generate_resources(prefix, self.elements.values())
+        (vue_html, vue_styles, vue_scripts, import_maps, js_imports) = generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse('index.html', {
             'request': request,
             'version': __version__,
@@ -77,6 +77,7 @@ class Client:
             'head_html': self.head_html,
             'body_html': f'{vue_styles}\n{self.body_html}\n{vue_html}',
             'vue_scripts': vue_scripts,
+            'import_maps': import_maps,
             'js_imports': js_imports,
             'title': self.page.resolve_title(),
             'viewport': self.page.resolve_viewport(),

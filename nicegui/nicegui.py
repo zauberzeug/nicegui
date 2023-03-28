@@ -56,14 +56,21 @@ def get_dependencies(id: int, name: str):
 
 @app.get(f'/_nicegui/{__version__}' + '/library/{name}')
 def get_dependencies(name: str):
+@app.get(f'/_nicegui/{__version__}' + '/library/{name}/{file}')
+def get_dependencies(name: str, file: str):
     if name in libraries and libraries[name]['path'].exists():
+        file = Path(libraries[name]['path'].parent, file)
+        if file.exists() and not file.is_dir():
+            return FileResponse(file, media_type='text/javascript')
         return FileResponse(libraries[name]['path'], media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'dependency "{name}" not found')
 
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{name}')
 def get_components(name: str):
-    return FileResponse(js_components[name].path, media_type='text/javascript')
+    if name in js_components and js_components[name].exists():
+        return FileResponse(js_components[name], media_type='text/javascript')
+    raise HTTPException(status_code=404, detail=f'library "{name}" not found')
 
 
 @app.on_event('startup')

@@ -1,3 +1,4 @@
+import json
 import warnings
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
@@ -20,7 +21,7 @@ def register_vue_component(name: str, path: Path) -> None:
         2. avoid building the component on every single requests
     """
     suffix = path.suffix.lower()
-    assert suffix in {'.vue', '.js'}, 'Only VUE and JS components are supported.'
+    assert suffix in {'.vue', '.js', '.mjs'}, 'Only VUE and JS components are supported.'
     if suffix == '.vue':
         assert name not in vue_components, f'Duplicate VUE component name {name}'
         vue_components[name] = vbuild.VBuild(name, path.read_text())
@@ -29,14 +30,15 @@ def register_vue_component(name: str, path: Path) -> None:
         js_components[name] = path
 
 
-def register_library(name: str, path: Path) -> None:
+def register_library(name: str, path: Path, expose: bool = False) -> None:
     """
     Register a  new external library.
     :param name: the library unique name (used in component `use_library`).
     :param path: the library local path.
+    :param expose: if True, this will be exposed as an ESM module but NOT imported.
     """
-    assert path.suffix == '.js', 'Only JS dependencies are supported.'
-    libraries[name] = {'path': path}
+    assert path.suffix == '.js' or path.suffix == '.mjs', 'Only JS dependencies are supported.'
+    libraries[name] = {'path': path, 'expose': expose}
 
 
 def register_component(name: str, py_filepath: str, component_filepath: str, dependencies: List[str] = [],
@@ -63,7 +65,7 @@ def generate_resources(prefix: str, elements) -> Tuple[str, str, str, str, str]:
     vue_html = ''
     vue_styles = ''
     js_imports = ''
-    es5_exposes = ''
+    import_maps = {'imports': {}}
 
     # Build the resources associated with the elements.
     for element in elements:
@@ -73,11 +75,16 @@ def generate_resources(prefix: str, elements) -> Tuple[str, str, str, str, str]:
                 vue_scripts += f'{vue_components[name].script.replace("Vue.component", "app.component", 1)}\n'
                 vue_styles += f'{vue_components[name].style}\n'
             if name in js_components:
-                js_imports += f'import {{ default as {name} }} "{prefix}{js_components[name]}";\n'
+                js_imports += f'import {{ default as {name} }} from "{prefix}/_nicegui/{__version__}/components/{name}";\n'
                 js_imports += f'app.component("{name}", {name});\n'
         for name in element.libraries:
             if name in libraries:
-                js_imports += f'import "{prefix}/_nicegui/{__version__}/library/{name}";\n'
+                if libraries[name]['expose']:
+                    import_maps['imports'][name] = f'{prefix}/_nicegui/{__version__}/library/{name}/include'
+                else:
+                    js_imports += f'import "{prefix}/_nicegui/{__version__}/library/{name}/include";\n'
+
 
     vue_styles = f'<style>{vue_styles}</style>'
-    return vue_html, vue_styles, vue_scripts, es5_exposes, js_imports
+    import_maps = f'<script type="importmap">{json.dumps(import_maps)}</script>'
+    return vue_html, vue_styles, vue_scripts, import_maps, js_imports

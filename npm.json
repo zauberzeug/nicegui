@@ -24,7 +24,7 @@
   "mermaid": {
     "destination": "elements/lib",
     "keep": [
-      "package/dist/mermaid(\\.min)?\\.js"
+      "package/dist/.*\\.m?js"
     ],
     "rename": {
       "package/dist/": ""

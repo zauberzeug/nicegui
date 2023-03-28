@@ -1,7 +1,10 @@
-from ..dependencies import register_component
+from pathlib import Path
+
+from ..dependencies import register_library, register_vue_component
 from .mixins.content_element import ContentElement
 
-register_component('mermaid', __file__, 'mermaid.js', ['lib/mermaid.min.js'])
+register_vue_component(name='mermaid', path=Path(__file__).parent.joinpath('mermaid.js'))
+register_library(name='mermaid', path=Path(__file__).parent.joinpath('lib', 'mermaid', 'mermaid.esm.min.mjs'), expose=True)
 
 
 class Mermaid(ContentElement):
@@ -16,6 +19,8 @@ class Mermaid(ContentElement):
         :param content: the Mermaid content to be displayed
         '''
         super().__init__(tag='mermaid', content=content)
+        self.use_component('mermaid')
+        self.use_library('mermaid')
 
     def on_content_change(self, content: str) -> None:
         self._props[self.CONTENT_PROP] = content.strip()

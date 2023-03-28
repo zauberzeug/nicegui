@@ -3,6 +3,8 @@
 </template>
 
 <script>
+import Plotly from 'plotly';
+
 export default {
   mounted() {
     // initial rendering of chart
