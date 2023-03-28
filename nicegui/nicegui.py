@@ -16,7 +16,7 @@ from nicegui.json import NiceGUIJSONResponse
 from . import __version__, background_tasks, binding, globals, outbox
 from .app import App
 from .client import Client
-from .dependencies import js_components, js_dependencies
+from .dependencies import js_components, js_dependencies, libraries
 from .element import Element
 from .error import error_content
 from .helpers import safe_invoke
@@ -52,6 +52,13 @@ def get_dependencies(id: int, name: str):
     if id in js_dependencies and js_dependencies[id].path.exists() and js_dependencies[id].path.name == name:
         return FileResponse(js_dependencies[id].path, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'dependency "{name}" with ID {id} not found')
+
+
+@app.get(f'/_nicegui/{__version__}' + '/library/{name}')
+def get_dependencies(name: str):
+    if name in libraries and libraries[name]['path'].exists():
+        return FileResponse(libraries[name]['path'], media_type='text/javascript')
+    raise HTTPException(status_code=404, detail=f'dependency "{name}" not found')
 
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{name}')

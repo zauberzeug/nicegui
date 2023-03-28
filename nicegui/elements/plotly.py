@@ -1,11 +1,14 @@
+from pathlib import Path
 from typing import Dict, Union
 
 import plotly.graph_objects as go
 
-from ..dependencies import js_dependencies, register_component
+from ..dependencies import register_vue_component, register_library
 from ..element import Element
 
-register_component('plotly', __file__, 'plotly.vue', [], ['lib/plotly.min.js'])
+
+register_vue_component(name='plotly', path=Path(__file__).parent.joinpath('plotly.vue'))
+register_library(name='plotly', path=Path(__file__).parent.joinpath('lib', 'plotly', 'plotly.min.js'))
 
 
 class Plotly(Element):
@@ -28,7 +31,8 @@ class Plotly(Element):
         super().__init__('plotly')
 
         self.figure = figure
-        self._props['lib'] = [d.import_path for d in js_dependencies.values() if d.path.name == 'plotly.min.js'][0]
+        self.use_component('plotly')
+        self.use_library('plotly')
         self.update()
 
     def update_figure(self, figure: Union[Dict, go.Figure]):

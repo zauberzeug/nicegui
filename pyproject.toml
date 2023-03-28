@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "0.1.0"
+version = "1.3.0"
 description = "Web User Interface with Buttons, Dialogs, Markdown, 3D Scences and Plots"
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"

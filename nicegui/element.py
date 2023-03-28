@@ -42,6 +42,8 @@ class Element(Visibility):
         self._props: Dict[str, Any] = {}
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: str = ''
+        self.components: List[str] = []
+        self.libraries: List[str] = []
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
 
@@ -268,3 +270,9 @@ class Element(Visibility):
 
         Can be overridden to perform cleanup.
         """
+
+    def use_component(self, name: str) -> None:
+        self.components.append(name)
+
+    def use_library(self, name: str) -> None:
+        self.libraries.append(name)

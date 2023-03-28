@@ -1,86 +1,83 @@
-from dataclasses import dataclass
+import warnings
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Any, Dict, List, Tuple
 
 import vbuild
 
-from . import __version__, globals
-from .ids import IncrementingStringIds
+from . import __version__
+
+js_dependencies: Dict[str, Any] = {}  # @todo remove when unused in elements.
+vue_components: Dict[str, Any] = {}
+js_components: Dict[str, Path] = {}
+libraries: Dict[str, Any] = {}
 
 
-@dataclass
-class Component:
-    name: str
-    path: Path
-
-    @property
-    def import_path(self) -> str:
-        return f'/_nicegui/{__version__}/components/{self.name}'
-
-
-@dataclass
-class Dependency:
-    id: int
-    path: Path
-    dependents: Set[str]
-    optional: bool
-
-    @property
-    def import_path(self) -> str:
-        return f'/_nicegui/{__version__}/dependencies/{self.id}/{self.path.name}'
+def register_vue_component(name: str, path: Path) -> None:
+    """
+    Register a .vue or .js vue component.
+    The component (in case of .vue) is built right away to:
+        1. delegate this 'long' process to the bootstrap phase
+        2. avoid building the component on every single requests
+    """
+    suffix = path.suffix.lower()
+    assert suffix in {'.vue', '.js'}, 'Only VUE and JS components are supported.'
+    if suffix == '.vue':
+        assert name not in vue_components, f'Duplicate VUE component name {name}'
+        vue_components[name] = vbuild.VBuild(name, path.read_text())
+    elif suffix == '.js':
+        assert name not in js_components, f'Duplicate JS component name {name}'
+        js_components[name] = path
 
 
-dependency_ids = IncrementingStringIds()
-
-vue_components: Dict[str, Component] = {}
-js_components: Dict[str, Component] = {}
-js_dependencies: Dict[int, Dependency] = {}
+def register_library(name: str, path: Path) -> None:
+    """
+    Register a  new external library.
+    :param name: the library unique name (used in component `use_library`).
+    :param path: the library local path.
+    """
+    assert path.suffix == '.js', 'Only JS dependencies are supported.'
+    libraries[name] = {'path': path}
 
 
 def register_component(name: str, py_filepath: str, component_filepath: str, dependencies: List[str] = [],
                        optional_dependencies: List[str] = []) -> None:
+    """
+    Deprecated method. Use `register_vue_component` or `register_library` library instead.
+    """
+
+    url = f'https://github.com/zauberzeug/nicegui/pull/xxx'  # @todo to be defined.
+    warnings.warn(DeprecationWarning(
+        f'This function is deprecated. Use either register_vue_component or register_library instead, along with `use_component` or `use_library` ({url}).'))
+
     suffix = Path(component_filepath).suffix.lower()
-    assert suffix in {'.vue', '.js'}, 'Only VUE and JS components are supported.'
-    if suffix == '.vue':
-        assert name not in vue_components, f'Duplicate VUE component name {name}'
-        vue_components[name] = Component(name=name, path=Path(py_filepath).parent / component_filepath)
-    elif suffix == '.js':
-        assert name not in js_components, f'Duplicate JS component name {name}'
-        js_components[name] = Component(name=name, path=Path(py_filepath).parent / component_filepath)
+    if suffix in {'.vue', '.js'}:
+        register_vue_component(name, Path(Path(py_filepath).parent, component_filepath).absolute())
+
     for dependency in dependencies + optional_dependencies:
-        path = Path(py_filepath).parent / dependency
-        assert path.suffix == '.js', 'Only JS dependencies are supported.'
-        id = dependency_ids.get(str(path.resolve()))
-        if id not in js_dependencies:
-            optional = dependency in optional_dependencies
-            js_dependencies[id] = Dependency(id=id, path=path, dependents=set(), optional=optional)
-        js_dependencies[id].dependents.add(name)
+        path = Path(Path(py_filepath).parent, dependency)
+        register_library(name, path)
 
 
-def generate_vue_content() -> Tuple[str, str, str]:
-    builds = [
-        vbuild.VBuild(name, component.path.read_text())
-        for name, component in vue_components.items()
-        if name not in globals.excludes
-    ]
-    return (
-        '\n'.join(v.html for v in builds),
-        '<style>' + '\n'.join(v.style for v in builds) + '</style>',
-        '\n'.join(v.script.replace('Vue.component', 'app.component', 1) for v in builds),
-    )
+def generate_resources(prefix: str, elements) -> Tuple[str, str, str, str, str]:
+    vue_scripts = ''
+    vue_html = ''
+    vue_styles = ''
+    js_imports = ''
+    es5_exposes = ''
 
+    # Build the resources associated with the elements.
+    for element in elements:
+        for name in element.components:
+            if name in vue_components:
+                vue_html += f'{vue_components[name].html}\n'
+                vue_scripts += f'{vue_components[name].script.replace("Vue.component", "app.component", 1)}\n'
+                vue_styles += f'{vue_components[name].style}\n'
+            if name in js_components:
+                js_imports += f'import {{ default as {name} }} "{prefix}{js_components[name]}";\n'
+                js_imports += f'app.component("{name}", {name});\n'
+        for name in element.libraries:
+            if name in libraries:
+                js_imports += f'import "{prefix}/_nicegui/{__version__}/library/{name}";\n'
 
-def generate_js_imports(prefix: str) -> str:
-    result = ''
-    for dependency in js_dependencies.values():
-        if dependency.optional:
-            continue
-        if not dependency.dependents.difference(globals.excludes):
-            continue
-        result += f'import "{prefix}{dependency.import_path}";\n'
-    for name, component in js_components.items():
-        if name in globals.excludes:
-            continue
-        result += f'import {{ default as {name} }} from "{prefix}{component.import_path}";\n'
-        result += f'app.component("{name}", {name});\n'
-    return result
+    vue_styles = f'<style>{vue_styles}</style>'
+    return vue_html, vue_styles, vue_scripts, es5_exposes, js_imports
