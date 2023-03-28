@@ -70,10 +70,10 @@ def schedule_browser(host: str, port: int) -> Tuple[threading.Thread, threading.
     cancel = threading.Event()
 
     def in_thread(host: str, port: int) -> None:
-        while not is_port_open(host, port) and not cancel.is_set():
+        while not is_port_open(host, port):
+            if cancel.is_set():
+                return
             time.sleep(0.1)
-        if cancel.is_set():
-            return
         webbrowser.open(f'http://{host}:{port}/')
 
     host = host if host != "0.0.0.0" else "127.0.0.1"
