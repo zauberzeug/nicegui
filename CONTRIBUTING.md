@@ -87,11 +87,20 @@ pytest
 
 ## Documentation
 
-### Features
+### New Elements
 
-New features should be well documented in [website/documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/documentation.py).
-By calling the `element_demo(...)` function with an element as a parameter the docstring is used as a description.
-The docstrings are written in restructured-text.
+If you plan to implement a new element you can follow these suggestions:
+
+1. clone the NiceGUI repo and launch `main.py` in the root dir
+2. run `python3 -m pip install -e .` in the repo as explained above
+3. create a `test.py` file or similar where you can experiment with your new element
+4. look at other similar elements and how they are implemented in `nicegui/elements`
+5. create a new file with your new element alongside the existing ones
+6. make sure your element works as expected
+7. add documentation in [website/documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/documentation.py).
+   By calling the `element_demo(...)` function with an element as a parameter the docstring is used as a description.
+   The docstrings are written in restructured-text.
+8. create a pull-request (see below)
 
 ### Additional Demos
 
@@ -99,12 +108,13 @@ There is a separate page for each feature and element where multiple interactive
 Please help us grow the number of insightful demos by following these easy steps:
 
 1. clone the NiceGUI repo and launch `main.py` in the root dir
-2. in the newly opened browser window you can navigate to the documentation page you want to change something
-3. open the code in your editor (for example [website/more_documentation/table_documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/more_documentation/table_documentation.py))
-4. in the `more()` function insert an inner function containing your demo code
-5. add the `@text_demo` decorator to explain the demo
-6. make sure the result looks as you expect in the rendered documentation
-7. create a pull-request (see below)
+2. run `python3 -m pip install -e .` in the repo as explained above
+3. in the newly opened browser window you can navigate to the documentation page you want to change something
+4. open the code in your editor (for example [website/more_documentation/table_documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/more_documentation/table_documentation.py))
+5. in the `more()` function insert an inner function containing your demo code
+6. add the `@text_demo` decorator to explain the demo
+7. make sure the result looks as you expect in the rendered documentation
+8. create a pull-request (see below)
 
 Your contributions are much appreciated.
 
