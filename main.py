@@ -255,6 +255,7 @@ The command searches for `main.py` in in your current directory and makes the ap
             example_link('Slots', 'shows how to use scoped slots to customize Quasar elements')
             example_link('Table and slots', 'shows how to use component slots in a table')
             example_link('Single Page App', 'navigate without reloading the page')
+            example_link('Chat App', 'a simple chat app')
 
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
