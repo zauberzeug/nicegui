@@ -91,16 +91,18 @@ pytest
 
 If you plan to implement a new element you can follow these suggestions:
 
-1. clone the NiceGUI repo and launch `main.py` in the root dir
-2. run `python3 -m pip install -e .` in the repo as explained above
-3. create a `test.py` file or similar where you can experiment with your new element
-4. look at other similar elements and how they are implemented in `nicegui/elements`
-5. create a new file with your new element alongside the existing ones
-6. make sure your element works as expected
-7. add documentation in [website/documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/documentation.py).
+1. ensure with the maintainers that the element is a good fit for NiceGUI core;
+   otherwise it may be better to create a separate git repository for it
+2. clone the NiceGUI repo and launch `main.py` in the root dir
+3. run `python3 -m pip install -e .` in the repo as explained above
+4. create a `test.py` file or similar where you can experiment with your new element
+5. look at other similar elements and how they are implemented in `nicegui/elements`
+6. create a new file with your new element alongside the existing ones
+7. make sure your element works as expected
+8. add documentation in [website/documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/documentation.py).
    By calling the `element_demo(...)` function with an element as a parameter the docstring is used as a description.
    The docstrings are written in restructured-text.
-8. create a pull-request (see below)
+9. create a pull-request (see below)
 
 ### Additional Demos
 
