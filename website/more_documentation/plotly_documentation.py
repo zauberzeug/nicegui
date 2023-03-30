@@ -17,40 +17,33 @@ def more() -> None:
     @text_demo('Dictionary interface', '''
         This demo shows how to use the declarative dictionary interface to create a plot.
         For plots with many traces and data points, this is more efficient than the object-oriented interface.
-        The definition corresponds to the JavaScript Plotly API, see [https://plotly.com/javascript/](https://plotly.com/javascript/).
+        The definition corresponds to the [JavaScript Plotly API](https://plotly.com/javascript/).
         Due to different defaults, the resulting plot may look slightly different from the same plot created with the object-oriented interface,
         but the functionality is the same.
     ''')
     def plot_dict_interface():
         fig = {
-            "data": [
+            'data': [
                 {
-                    "type": "scatter",
-                    "name": "Trace 1",
-                    "x": [1, 2, 3, 4],
-                    "y": [1, 2, 3, 2.5]
+                    'type': 'scatter',
+                    'name': 'Trace 1',
+                    'x': [1, 2, 3, 4],
+                    'y': [1, 2, 3, 2.5],
                 },
                 {
-                    "type": "scatter",
-                    "name": "Trace 2",
-                    "x": [1, 2, 3, 4],
-                    "y": np.array([1.4, 1.8, 3.8, 3.2]),
-                    "line": {
-                        "dash": 'dot',
-                        "width": 3
-                    }
-                }
+                    'type': 'scatter',
+                    'name': 'Trace 2',
+                    'x': [1, 2, 3, 4],
+                    'y': np.array([1.4, 1.8, 3.8, 3.2]),
+                    'line': {'dash': 'dot', 'width': 3},
+                },
             ],
-            "layout": {
-                "margin": {"l": 20, "r": 0, "t": 0, "b": 15},
-                "plot_bgcolor": "#E5ECF6",
-                "xaxis": {
-                    "gridcolor": "white",
-                },
-                "yaxis": {
-                    "gridcolor": "white",
-                }
-            }
+            'layout': {
+                'margin': {'l': 15, 'r': 0, 't': 0, 'b': 15},
+                'plot_bgcolor': '#E5ECF6',
+                'xaxis': {'gridcolor': 'white'},
+                'yaxis': {'gridcolor': 'white'},
+            },
         }
         ui.plotly(fig).classes('w-full h-40')
 

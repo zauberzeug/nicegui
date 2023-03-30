@@ -43,7 +43,7 @@ def test_json():
         np.array([1.0, 0]),
         np.array([0, False, np.pi]),
         np.array(['2010-10-17 07:15:30', '2011-05-13 08:20:35', '2013-01-15 09:09:09'], dtype=np.datetime64),
-        np.array([1.0, None, "test"], dtype=np.object_)
+        np.array([1.0, None, 'test'], dtype=np.object_)
     ]
 
     for test in tests:
