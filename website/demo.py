@@ -27,7 +27,7 @@ class demo:
     def __call__(self, f: Callable) -> Callable:
         with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
             code = inspect.getsource(f).split('# END OF DEMO')[0].strip().splitlines()
-            while not code[0].strip().startswith('def'):
+            while not code[0].strip().startswith('def') and not code[0].strip().startswith('async def'):
                 del code[0]
             del code[0]
             indentation = len(code[0]) - len(code[0].lstrip())
