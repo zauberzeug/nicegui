@@ -19,7 +19,7 @@ def more() -> None:
 
         ui.element('i').classes('eva eva-github').classes('text-5xl')
 
-    @text_demo('Lottie', '''
+    @text_demo('Lottie files', '''
         You can also use [Lottie files](https://lottiefiles.com/) with animations.
     ''')
     async def lottie():
