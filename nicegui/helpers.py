@@ -55,17 +55,16 @@ def is_port_open(host: str, port: int) -> bool:
 def schedule_browser(host: str, port: int) -> Tuple[threading.Thread, threading.Event]:
     """Wait non-blockingly for the port to be open, then start a webbrowser.
 
-    This function launches a thread in order to be non-blocking. This thread then uses
-    `is_port_open` to check when the port opens. When connectivity is confirmed, the
-    webbrowser is launched using `webbrowser.open`
+    This function launches a thread in order to be non-blocking.
+    This thread then uses `is_port_open` to check when the port opens.
+    When connectivity is confirmed, the webbrowser is launched using `webbrowser.open`.
 
     The thread is created as a daemon thread, in order to not interfere with Ctrl+C.
 
-    If you need to stop this thread, you can do this by setting the Event, that gets
-    returned. The thread will stop with the next loop without opening the browser.
+    If you need to stop this thread, you can do this by setting the Event, that gets returned.
+    The thread will stop with the next loop without opening the browser.
 
-    :return: A tuple consisting of the actual thread object and an event for stopping
-        the thread.
+    :return: A tuple consisting of the actual thread object and an event for stopping the thread.
     """
     cancel = threading.Event()
 
@@ -76,7 +75,7 @@ def schedule_browser(host: str, port: int) -> Tuple[threading.Thread, threading.
             time.sleep(0.1)
         webbrowser.open(f'http://{host}:{port}/')
 
-    host = host if host != "0.0.0.0" else "127.0.0.1"
+    host = host if host != '0.0.0.0' else '127.0.0.1'
     thread = threading.Thread(target=in_thread, args=(host, port), daemon=True)
     thread.start()
     return thread, cancel

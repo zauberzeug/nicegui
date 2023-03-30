@@ -29,7 +29,7 @@ def test_schedule_browser(monkeypatch):
         nonlocal called_with_url
         called_with_url = url
 
-    monkeypatch.setattr(webbrowser, "open", mock_webbrowser_open)
+    monkeypatch.setattr(webbrowser, 'open', mock_webbrowser_open)
 
     with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
 
@@ -45,7 +45,7 @@ def test_schedule_browser(monkeypatch):
             sock.listen()
             # port opened
             time.sleep(1)
-            assert called_with_url == f"http://{host}:{port}/"
+            assert called_with_url == f'http://{host}:{port}/'
         finally:
             cancel_event.set()
 
@@ -58,7 +58,7 @@ def test_canceling_schedule_browser(monkeypatch):
         nonlocal called_with_url
         called_with_url = url
 
-    monkeypatch.setattr(webbrowser, "open", mock_webbrowser_open)
+    monkeypatch.setattr(webbrowser, 'open', mock_webbrowser_open)
 
     # find a free port ...
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
