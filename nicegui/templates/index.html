@@ -51,21 +51,25 @@
           style: Object.entries(element.style).reduce((str, [p, val]) => `${str}${p}:${val};`, '') || undefined,
           ...element.props,
         };
-        Object.values(element.events).forEach((event) => {
+        element.events.forEach((event) => {
           let event_name = 'on' + event.type[0].toLocaleUpperCase() + event.type.substring(1);
           event.specials.forEach(s => event_name += s[0].toLocaleUpperCase() + s.substring(1));
           let handler = (e) => {
-            const all = typeof e !== 'object' || event.args.includes('*');
+            const all = typeof e !== 'object' || !event.args;
             const args = all ? e : Object.fromEntries(event.args.map(a => [a, e[a]]));
-            const emitter = () => window.socket.emit("event", {id: element.id, type: event.listener_type, args});
-            throttle(emitter, event.throttle, event.listener_type);
+            const emitter = () => window.socket.emit("event", {id: element.id, listener_id: event.listener_id, args});
+            throttle(emitter, event.throttle, event.listener_id);
             if (element.props["loopback"] === False && event.type == "update:model-value") {
               element.props["model-value"] = args;
             }
           };
           handler = Vue.withModifiers(handler, event.modifiers);
           handler = event.keys.length ? Vue.withKeys(handler, event.keys) : handler;
-          props[event_name] = handler;
+          if (props[event_name]) {
+            props[event_name].push(handler)
+          } else {
+            props[event_name] = [handler];
+          }
         });
         const slots = {};
         Object.entries(element.slots).forEach(([name, data]) => {
