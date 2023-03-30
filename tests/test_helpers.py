@@ -6,15 +6,13 @@ import webbrowser
 from nicegui import helpers
 
 
-def test_is_port_open_when_open():
+def test_is_port_open():
     with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
         sock.bind(('127.0.0.1', 0))  # port = 0 => the OS chooses a port for us
         sock.listen(1)
         host, port = sock.getsockname()
     assert not helpers.is_port_open(host, port), 'after closing the socket, the port should be free'
 
-
-def test_is_port_open_when_closed():
     with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
         sock.bind(('127.0.0.1', port))
         sock.listen(1)
