@@ -66,7 +66,7 @@ for li in soup.select('li[class="mt-12 lg:mt-8"]'):
         properties.append(Property(title, description, [p.text.split(' ')[0] for p in members]))
         print(f'\t{title} ({len(members)})')
 
-with open(Path(__file__).parent / 'tailwind.py', 'w') as f:
+with open(Path(__file__).parent / 'nicegui' / 'tailwind.py', 'w') as f:
     f.write('from __future__ import annotations\n')
     f.write('\n')
     f.write('from typing import TYPE_CHECKING, List, Optional\n')
