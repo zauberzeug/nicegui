@@ -69,6 +69,12 @@ def generate_resources(prefix: str, elements) -> Tuple[str, str, str, str, str]:
 
     # Build the resources associated with the elements.
     for element in elements:
+        for name in element.libraries:
+            if name in libraries:
+                if libraries[name]['expose']:
+                    import_maps['imports'][name] = f'{prefix}/_nicegui/{__version__}/library/{name}/include'
+                else:
+                    js_imports += f'import "{prefix}/_nicegui/{__version__}/library/{name}/include";\n'
         for name in element.components:
             if name in vue_components:
                 vue_html += f'{vue_components[name].html}\n'
@@ -77,13 +83,6 @@ def generate_resources(prefix: str, elements) -> Tuple[str, str, str, str, str]:
             if name in js_components:
                 js_imports += f'import {{ default as {name} }} from "{prefix}/_nicegui/{__version__}/components/{name}";\n'
                 js_imports += f'app.component("{name}", {name});\n'
-        for name in element.libraries:
-            if name in libraries:
-                if libraries[name]['expose']:
-                    import_maps['imports'][name] = f'{prefix}/_nicegui/{__version__}/library/{name}/include'
-                else:
-                    js_imports += f'import "{prefix}/_nicegui/{__version__}/library/{name}/include";\n'
-
 
     vue_styles = f'<style>{vue_styles}</style>'
     import_maps = f'<script type="importmap">{json.dumps(import_maps)}</script>'

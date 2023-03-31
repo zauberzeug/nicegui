@@ -157,8 +157,8 @@
         }
       });
 
-      {{ vue_scripts | safe }}
       {{ js_imports | safe }}
+      {{ vue_scripts | safe }}
 
       const dark = {{ dark }};
       Quasar.Dark.set(dark === None ? "auto" : dark);
