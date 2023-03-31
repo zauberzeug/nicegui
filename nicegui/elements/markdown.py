@@ -4,6 +4,7 @@ from functools import lru_cache
 from typing import List
 
 import markdown2
+from pygments.formatters import HtmlFormatter
 
 from ..dependencies import register_component
 from .mixins.content_element import ContentElement
@@ -23,6 +24,7 @@ class Markdown(ContentElement):
         """
         self.extras = extras
         super().__init__(tag='markdown', content=content)
+        self._props['codehilite_css'] = HtmlFormatter(nobackground=True).get_style_defs('.codehilite')
 
     def on_content_change(self, content: str) -> None:
         html = prepare_content(content, extras=' '.join(self.extras))
@@ -33,7 +35,7 @@ class Markdown(ContentElement):
 
 @lru_cache(maxsize=int(os.environ.get('MARKDOWN_CONTENT_CACHE_SIZE', '1000')))
 def prepare_content(content: str, extras: str) -> str:
-    html = markdown2.markdown(content, extras=extras.split())
+    html = markdown2.markdown(remove_indentation(content), extras=extras.split())
     return apply_tailwind(html)  # we need explicit Markdown styling because tailwind CSS removes all default styles
 
 
@@ -47,8 +49,19 @@ def apply_tailwind(html: str) -> str:
         '<a': '<a class="underline text-blue-600 hover:text-blue-800 visited:text-purple-600"',
         '<ul': '<ul class="list-disc ml-6"',
         '<p>': '<p class="mb-2">',
-        '<div\ class="codehilite">': '<div class="codehilite mb-2 p-2">',
+        r'<div\ class="codehilite">': '<div class="codehilite mb-2 p-2">',
         '<code': '<code style="background-color: transparent"',
     }
     pattern = re.compile('|'.join(rep.keys()))
     return pattern.sub(lambda m: rep[re.escape(m.group(0))], html)
+
+
+def remove_indentation(text: str) -> str:
+    """Remove indentation from a multi-line string based on the indentation of the first non-empty line."""
+    lines = text.splitlines()
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    if not lines:
+        return ''
+    indentation = len(lines[0]) - len(lines[0].lstrip())
+    return '\n'.join(line[indentation:] for line in lines)

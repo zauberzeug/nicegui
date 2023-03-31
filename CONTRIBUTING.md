@@ -87,11 +87,49 @@ pytest
 
 ## Documentation
 
-New features should be well documented in [website/reference.py](https://github.com/zauberzeug/nicegui/blob/main/website/reference.py).
-By calling the `example(...)` function with an element as a parameter the docstring is used as a description.
-The docstrings are written in restructured-text.
+### New Elements
+
+If you plan to implement a new element you can follow these suggestions:
+
+1. Ensure with the maintainers that the element is a good fit for NiceGUI core;
+   otherwise it may be better to create a separate git repository for it.
+2. Clone the NiceGUI repository and launch `main.py` in the root directory.
+3. Run `python3 -m pip install -e .` in the repository as explained above.
+4. Create a `test.py` file or similar where you can experiment with your new element.
+5. Look at other similar elements and how they are implemented in `nicegui/elements`.
+6. Create a new file with your new element alongside the existing ones.
+7. Make sure your element works as expected.
+8. Add documentation in [website/documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/documentation.py).
+   By calling the `element_demo(...)` function with an element as a parameter the docstring is used as a description.
+   The docstrings are written in restructured-text.
+9. Create a pull-request (see below).
+
+### Additional Demos
+
+There is a separate page for each element where multiple interactive demos can be listed.
+Please help us grow the number of insightful demos by following these easy steps:
+
+1. Clone the NiceGUI repository and launch `main.py` in the root directory.
+2. Run `python3 -m pip install -e .` in the repository as explained above.
+3. In the newly opened browser window you can navigate to the documentation page where you want to change something.
+4. Open the code in your editor (for example [website/more_documentation/table_documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/more_documentation/table_documentation.py)).
+5. In the `more()` function insert an inner function containing your demo code.
+6. Add the `@text_demo` decorator to explain the demo.
+7. Make sure the result looks as expected in the rendered documentation.
+8. Create a pull-request (see below).
+
+Your contributions are much appreciated.
+
+### Formatting
 
 Because it has [numerous benefits](https://nick.groenen.me/notes/one-sentence-per-line/) we write each sentence in a new line.
+
+### Examples
+
+Besides the documentation with interactive demos (see above) we collect useful, compact stand-alone examples.
+Each example should be about one concept.
+Please try to make them as minimal as possible to show what is needed to get some kind of functionality.
+We are happy to merge pull requests with new examples which show new concepts, ideas or interesting use cases.
 
 ## Pull requests
 
@@ -99,6 +137,21 @@ To get started, fork the repository on GitHub, make your changes, and open a pul
 
 When submitting a PR, please make sure that the code follows the existing coding style and that all tests are passing.
 If you're adding a new feature, please include tests that cover the new functionality.
+
+## YouTube
+
+We welcome and support video and tutorial contributions to the NiceGUI community!
+As recently [highlighted in a conversation on YouTube](https://www.youtube.com/watch?v=HiNNe4Q32U4&lc=UgyRcZCOZ9i5z6GuDcJ4AaABAg),
+creating and sharing tutorials or showcasing projects using NiceGUI can be an excellent way to help others learn and grow,
+while also spreading the word about our library.
+
+Please note that NiceGUI is pronounced like "nice guy," which might be helpful to know when creating any video content.
+
+If you decide to create YouTube content around NiceGUI,
+we kindly ask that you credit our repository, our YouTube channel, and any relevant videos or resources within the description.
+By doing so, you'll be contributing to the growth of our community and helping us receive more amazing pull requests and feature suggestions.
+
+We're thrilled to see your creations and look forward to watching your videos. Happy video-making!
 
 ## Thank you!
 

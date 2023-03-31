@@ -26,7 +26,7 @@ strategy = "canary"
   script_checks = []
   [services.concurrency]
     hard_limit = 30
-    soft_limit = 20
+    soft_limit = 15
     type = "connections"
 
   [[services.ports]]
@@ -46,7 +46,7 @@ strategy = "canary"
 
   [[services.http_checks]]
     interval = "20s"
-    grace_period = "60s"
+    grace_period = "2m"
     method = "get"
     path = "/"
     protocol = "http"
@@ -54,10 +54,6 @@ strategy = "canary"
     timeout = "5s"
     tls_skip_verify = false
     [services.http_checks.headers]
-
-  [[statics]]
-    guest_path = "/app/nicegui/static"
-    url_prefix = "/_nicegui/static"
 
   [metrics]
   port = 9062

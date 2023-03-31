@@ -1,6 +1,5 @@
 '''inspired from https://quantlane.com/blog/ensure-asyncio-task-exceptions-get-logged/'''
 import asyncio
-import logging
 import sys
 from typing import Awaitable, Dict, Set, TypeVar
 
@@ -10,8 +9,6 @@ T = TypeVar('T')
 
 name_supported = sys.version_info[1] >= 8
 
-logger = logging.getLogger(__name__)
-
 running_tasks: Set[asyncio.Task] = set()
 lazy_tasks_running: Dict[str, asyncio.Task] = {}
 lazy_tasks_waiting: Dict[str, Awaitable[T]] = {}
@@ -20,7 +17,7 @@ lazy_tasks_waiting: Dict[str, Awaitable[T]] = {}
 def create(coroutine: Awaitable[T], *, name: str = 'unnamed task') -> 'asyncio.Task[T]':
     '''Wraps a loop.create_task call and ensures there is an exception handler added to the task.
 
-    If the task raises an exception it is logged using a ``logger``.
+    If the task raises an exception, it is logged and handled by the global exception handlers.
     Also a reference to the task is kept until it is done, so that the task is not garbage collected mid-execution.
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
     '''
@@ -54,5 +51,5 @@ def _handle_task_result(task: asyncio.Task) -> None:
         task.result()
     except asyncio.CancelledError:
         pass
-    except Exception:
-        logger.exception('Task raised an exception')
+    except Exception as e:
+        globals.handle_exception(e)

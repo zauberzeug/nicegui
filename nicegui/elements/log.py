@@ -1,5 +1,5 @@
 from collections import deque
-from typing import Optional
+from typing import Any, Optional
 
 from ..dependencies import register_component
 from ..element import Element
@@ -19,11 +19,18 @@ class Log(Element):
         super().__init__('log')
         self._props['max_lines'] = max_lines
         self._props['lines'] = ''
-        self.classes('border whitespace-pre font-mono')
-        self.style('opacity: 1 !important; cursor: text !important')
+        self._classes = ['nicegui-log']
         self.lines: deque[str] = deque(maxlen=max_lines)
 
-    def push(self, line: str) -> None:
+    def push(self, line: Any) -> None:
+        line = str(line)
         self.lines.extend(line.splitlines())
         self._props['lines'] = '\n'.join(self.lines)
         self.run_method('push', line)
+
+    def clear(self) -> None:
+        """Clear the log"""
+        super().clear()
+        self._props['lines'] = ''
+        self.lines.clear()
+        self.run_method('clear')

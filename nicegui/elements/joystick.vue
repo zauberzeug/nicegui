@@ -1,12 +1,12 @@
 <template>
-  <div></div>
+  <div><div></div></div>
 </template>
 
 <script>
 export default {
   mounted() {
     const joystick = nipplejs.create({
-      zone: this.$el,
+      zone: this.$el.children[0],
       position: { left: "50%", top: "50%" },
       dynamicPage: true,
       ...this.options,
@@ -22,10 +22,10 @@ export default {
 </script>
 
 <style scoped>
-:scope {
+:scope > div {
   background-color: AliceBlue;
-  position: relative;
   width: 10em;
   height: 10em;
+  position: relative;
 }
 </style>

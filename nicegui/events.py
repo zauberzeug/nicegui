@@ -1,4 +1,3 @@
-import traceback
 from dataclasses import dataclass
 from inspect import signature
 from typing import TYPE_CHECKING, Any, BinaryIO, Callable, List, Optional, Union
@@ -77,6 +76,11 @@ class UploadEventArguments(EventArguments):
 @dataclass
 class ValueChangeEventArguments(EventArguments):
     value: Any
+
+
+@dataclass
+class TableSelectionEventArguments(EventArguments):
+    selection: List[Any]
 
 
 @dataclass
@@ -283,5 +287,5 @@ def handle_event(handler: Optional[Callable],
                 background_tasks.create(wait_for_result(), name=str(handler))
             else:
                 globals.app.on_startup(wait_for_result())
-    except Exception:
-        traceback.print_exc()
+    except Exception as e:
+        globals.handle_exception(e)

@@ -168,7 +168,7 @@ def test_exception_after_connected(screen: Screen):
 
     screen.open('/')
     screen.should_contain('this is shown')
-    screen.assert_py_logger('ERROR', 'Task raised an exception')
+    screen.assert_py_logger('ERROR', 'some exception')
 
 
 def test_page_with_args(screen: Screen):

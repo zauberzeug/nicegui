@@ -1,65 +1,85 @@
-from typing import Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
-from ..dependencies import register_component
+from typing_extensions import Literal
+
 from ..element import Element
-from ..functions.javascript import run_javascript
+from ..events import TableSelectionEventArguments, handle_event
+from .mixins.filter_element import FilterElement
 
-register_component('table', __file__, 'table.js', ['lib/ag-grid-community.min.js'])
 
+class Table(FilterElement):
 
-class Table(Element):
-
-    def __init__(self, options: Dict, *, html_columns: List[int] = [], theme: str = 'balham') -> None:
+    def __init__(self,
+                 columns: List[Dict],
+                 rows: List[Dict],
+                 row_key: str = 'id',
+                 title: Optional[str] = None,
+                 selection: Optional[Literal['single', 'multiple']] = None,
+                 pagination: Optional[int] = None,
+                 on_select: Optional[Callable] = None,
+                 ) -> None:
         """Table
 
-        An element to create a table using `AG Grid <https://www.ag-grid.com/>`_.
+        A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
 
-        The `call_api_method` method can be used to call an AG Grid API method.
+        :param columns: list of column objects
+        :param rows: list of row objects
+        :param row_key: name of the column containing unique data identifying the row (default: "id")
+        :param title: title of the table
+        :param selection: selection type ("single" or "multiple"; default: `None`)
+        :param pagination: number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`)
+        :param on_select: callback which is invoked when the selection changes
 
-        :param options: dictionary of AG Grid options
-        :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
-        :param theme: AG Grid theme (default: 'balham')
+        If selection is 'single' or 'multiple', then a `selection` property is accessible containing the selected rows.
         """
-        super().__init__('table')
-        self._props['options'] = options
-        self._props['html_columns'] = html_columns
-        self._classes = [f'ag-theme-{theme}', 'w-full', 'h-64']
+        super().__init__(tag='q-table')
 
-    @property
-    def options(self) -> Dict:
-        return self._props['options']
+        self.rows = rows
+        self.row_key = row_key
+        self.selected: List[Dict] = []
 
-    def update(self) -> None:
-        super().update()
-        self.run_method('update_grid')
+        self._props['columns'] = columns
+        self._props['rows'] = rows
+        self._props['row-key'] = row_key
+        self._props['title'] = title
+        self._props['hide-pagination'] = pagination is None
+        self._props['pagination'] = {'rowsPerPage': pagination or 0}
+        self._props['selection'] = selection or 'none'
+        self._props['selected'] = self.selected
 
-    def call_api_method(self, name: str, *args) -> None:
-        """Call an AG Grid API method.
+        def handle_selection(msg: Dict) -> None:
+            if msg['args']['added']:
+                if selection == 'single':
+                    self.selected.clear()
+                self.selected.extend(msg['args']['rows'])
+            else:
+                self.selected[:] = [row for row in self.selected if row[row_key] not in msg['args']['keys']]
+            self.update()
+            arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
+            handle_event(on_select, arguments)
+        self.on('selection', handle_selection)
 
-        See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>`_ for a list of methods.
+    def add_rows(self, *rows: Dict) -> None:
+        """Add rows to the table."""
+        self.rows.extend(rows)
+        self.update()
 
-        :param name: name of the method
-        :param args: arguments to pass to the method
-        """
-        self.run_method('call_api_method', name, *args)
+    def remove_rows(self, *rows: Dict) -> None:
+        """Remove rows from the table."""
+        keys = [row[self.row_key] for row in rows]
+        self.rows[:] = [row for row in self.rows if row[self.row_key] not in keys]
+        self.update()
 
-    async def get_selected_rows(self) -> List[Dict]:
-        """Get the currently selected rows.
+    class row(Element):
+        def __init__(self) -> None:
+            super().__init__('q-tr')
 
-        This method is especially useful when the table is configured with ``rowSelection: 'multiple'``.
+    class header(Element):
+        def __init__(self) -> None:
+            super().__init__('q-th')
 
-        See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows>`_ for more information.
-
-        :return: list of selected row data
-        """
-        return await run_javascript(f'return getElement({self.id}).gridOptions.api.getSelectedRows();')
-
-    async def get_selected_row(self) -> Optional[Dict]:
-        """Get the single currently selected row.
-
-        This method is especially useful when the table is configured with ``rowSelection: 'single'``.
-
-        :return: row data of the first selection if any row is selected, otherwise `None`
-        """
-        rows = await self.get_selected_rows()
-        return rows[0] if rows else None
+    class cell(Element):
+        def __init__(self, key: str = '') -> None:
+            super().__init__('q-td')
+            if key:
+                self._props['key'] = key

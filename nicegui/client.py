@@ -1,5 +1,4 @@
 import asyncio
-import json
 import time
 import uuid
 from pathlib import Path
@@ -9,7 +8,9 @@ from fastapi import Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 
-from . import globals, outbox
+from nicegui import json
+
+from . import __version__, globals, outbox
 from .dependencies import generate_js_imports, generate_vue_content
 from .element import Element
 from .favicon import get_favicon_url
@@ -34,10 +35,10 @@ class Client:
         self.environ: Optional[Dict[str, Any]] = None
         self.shared = shared
 
-        with Element('q-layout', _client=self).props('view="HHH LpR FFF"').classes('outline-none') as self.layout:
+        with Element('q-layout', _client=self).props('view="HHH LpR FFF"').classes('nicegui-layout') as self.layout:
             with Element('q-page-container'):
                 with Element('q-page'):
-                    self.content = Element('div').classes('q-pa-md column items-start gap-4')
+                    self.content = Element('div').classes('nicegui-content')
 
         self.waiting_javascript_commands: Dict[str, str] = {}
 
@@ -70,6 +71,7 @@ class Client:
         elements = json.dumps({id: element._to_dict() for id, element in self.elements.items()})
         return templates.TemplateResponse('index.html', {
             'request': request,
+            'version': __version__,
             'client_id': str(self.id),
             'elements': elements,
             'head_html': self.head_html,

@@ -26,6 +26,8 @@ jobs:
           poetry install
           # install packages to run the examples
           pip install opencv-python opencv-contrib-python-headless httpx replicate
+          # try fix issue with importlib_resources
+          pip install importlib-resources
       - name: test startup
         run: ./test_startup.sh
       - name: setup chromedriver
