@@ -2,14 +2,13 @@ import logging
 import multiprocessing
 import os
 import sys
-import webbrowser
 from typing import List, Optional, Tuple
 
 import uvicorn
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import globals, native_mode
+from . import globals, helpers, native_mode
 
 
 def run(*,
@@ -88,7 +87,7 @@ def run(*,
     os.environ['NICEGUI_URL'] = f'http://{host}:{port}'
 
     if show:
-        webbrowser.open(f'http://{host if host != "0.0.0.0" else "127.0.0.1"}:{port}/')
+        helpers.schedule_browser(host, port)
 
     def split_args(args: str) -> List[str]:
         return [a.strip() for a in args.split(',')]

@@ -84,6 +84,8 @@ def add_header() -> None:
         with ui.row().classes('max-lg:hidden'):
             for title, target in menu_items.items():
                 ui.link(title, target).classes(replace='text-lg text-white')
+        with ui.link(target='https://discord.gg/TEpFeAaF4f'):
+            svg.discord().classes('fill-white scale-125 m-1')
         with ui.link(target='https://github.com/zauberzeug/nicegui/'):
             svg.github().classes('fill-white scale-125 m-1')
         add_star()
