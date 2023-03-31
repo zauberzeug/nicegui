@@ -177,7 +177,7 @@ class PseudoElement:
 class Tailwind:
 
     def __init__(self, _element: Optional['Element'] = None) -> None:
-        self.element = _element or PseudoElement()
+        self.element = PseudoElement() if _element is None else _element
 
     @overload
     def __call__(self, Tailwind) -> Tailwind:
