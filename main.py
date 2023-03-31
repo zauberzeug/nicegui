@@ -301,7 +301,7 @@ The command searches for `main.py` in in your current directory and makes the ap
 def documentation_page():
     add_head_html()
     add_header()
-    menu = side_menu()
+    side_menu()
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Reference, Demos and more', '*NiceGUI* Documentation')
@@ -309,7 +309,7 @@ def documentation_page():
             'This is the documentation for NiceGUI >= 1.0. '
             'Documentation for older versions can be found at [https://0.9.nicegui.io/](https://0.9.nicegui.io/reference).'
         ).classes('bold-links arrow-links')
-        documentation.create_full(menu)
+        documentation.create_full()
 
 
 @ui.page('/documentation/{name}')
