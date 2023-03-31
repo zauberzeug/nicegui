@@ -5,7 +5,6 @@ from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
 from .elements.audio import Audio as audio
 from .elements.avatar import Avatar as avatar
-from .elements.background import Background as background
 from .elements.badge import Badge as badge
 from .elements.button import Button as button
 from .elements.card import Card as card
@@ -40,6 +39,7 @@ from .elements.number import Number as number
 from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
+from .elements.query import query
 from .elements.radio import Radio as radio
 from .elements.row import Row as row
 from .elements.scene import Scene as scene

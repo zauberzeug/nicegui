@@ -1,30 +1,19 @@
-from abc import ABCMeta
-from typing import Any, Dict, Optional, Tuple
+from typing import Optional
 
 from typing_extensions import Self
 
 from ..dependencies import register_component
 from ..element import Element
+from ..globals import get_client
 
-register_component('background', __file__, 'background.js')
-
-
-class AbstractSingleton(ABCMeta):
-
-    def __init__(cls, name: str, bases: Tuple, dict: Dict[str, Any]) -> None:
-        super().__init__(name, bases, dict)
-        cls.instance = None
-
-    def __call__(cls, *args: Any, **kwargs: Any) -> Any:
-        if cls.instance is None:
-            cls.instance = super().__call__(*args, **kwargs)
-        return cls.instance
+register_component('query', __file__, 'query.js')
 
 
-class Background(Element, metaclass=AbstractSingleton):
+class Query(Element):
 
-    def __init__(self) -> None:
-        super().__init__('background')
+    def __init__(self, selector: str) -> None:
+        super().__init__('query')
+        self._props['selector'] = selector
         self._props['classes'] = []
         self._props['style'] = {}
         self._props['props'] = {}
@@ -65,3 +54,10 @@ class Background(Element, metaclass=AbstractSingleton):
         if self._props['props']:
             self.run_method('add_props', self._props['props'])
         return self
+
+
+def query(selector: str) -> Query:
+    for element in get_client().elements.values():
+        if isinstance(element, Query) and element._props['selector'] == selector:
+            return element
+    return Query(selector)
