@@ -9,36 +9,40 @@ from . import __version__
 
 js_dependencies: Dict[str, Any] = {}  # @todo remove when unused in elements.
 vue_components: Dict[str, Any] = {}
-js_components: Dict[str, Path] = {}
+js_components: Dict[str, Any] = {}
 libraries: Dict[str, Any] = {}
 
 
 def register_vue_component(name: str, path: Path) -> None:
     """
     Register a .vue or .js vue component.
-    The component (in case of .vue) is built right away to:
-        1. delegate this 'long' process to the bootstrap phase
-        2. avoid building the component on every single requests
+    :param name: the component unique machine-name (used in component `use_library`): no space, no special characters.
+    :param path: the component local path.
     """
+    index = f'vue_{name}'
     suffix = path.suffix.lower()
     assert suffix in {'.vue', '.js', '.mjs'}, 'Only VUE and JS components are supported.'
     if suffix == '.vue':
-        assert name not in vue_components, f'Duplicate VUE component name {name}'
-        vue_components[name] = vbuild.VBuild(name, path.read_text())
+        assert index not in vue_components, f'Duplicate VUE component name {name}'
+        # The component (in case of .vue) is built right away to:
+        #         1. delegate this 'long' process to the bootstrap phase
+        #         2. avoid building the component on every single requests
+        vue_components[index] = vbuild.VBuild(name, path.read_text())
     elif suffix == '.js':
-        assert name not in js_components, f'Duplicate JS component name {name}'
-        js_components[name] = path
+        assert index not in js_components, f'Duplicate JS component name {name}'
+        js_components[index] = {'name': name, 'path': path}
 
 
 def register_library(name: str, path: Path, expose: bool = False) -> None:
     """
     Register a  new external library.
-    :param name: the library unique name (used in component `use_library`).
+    :param name: the library unique machine-name (used in component `use_library`): no space, no special characters.
     :param path: the library local path.
     :param expose: if True, this will be exposed as an ESM module but NOT imported.
     """
     assert path.suffix == '.js' or path.suffix == '.mjs', 'Only JS dependencies are supported.'
-    libraries[name] = {'path': path, 'expose': expose}
+    index = f'lib_{name}'
+    libraries[index] = {'name': name, 'path': path, 'expose': expose}
 
 
 def register_component(name: str, py_filepath: str, component_filepath: str, dependencies: List[str] = [],
@@ -61,6 +65,7 @@ def register_component(name: str, py_filepath: str, component_filepath: str, dep
 
 
 def generate_resources(prefix: str, elements) -> Tuple[str, str, str, str, str]:
+    done = []
     vue_scripts = ''
     vue_html = ''
     vue_styles = ''
@@ -69,20 +74,25 @@ def generate_resources(prefix: str, elements) -> Tuple[str, str, str, str, str]:
 
     # Build the resources associated with the elements.
     for element in elements:
-        for name in element.libraries:
-            if name in libraries:
-                if libraries[name]['expose']:
-                    import_maps['imports'][name] = f'{prefix}/_nicegui/{__version__}/library/{name}/include'
+        for index in element.libraries:
+            if index in libraries and index not in done:
+                if libraries[index]['expose']:
+                    name = libraries[index]['name']
+                    import_maps['imports'][name] = f'{prefix}/_nicegui/{__version__}/library/{index}/include'
                 else:
-                    js_imports += f'import "{prefix}/_nicegui/{__version__}/library/{name}/include";\n'
-        for name in element.components:
-            if name in vue_components:
-                vue_html += f'{vue_components[name].html}\n'
-                vue_scripts += f'{vue_components[name].script.replace("Vue.component", "app.component", 1)}\n'
-                vue_styles += f'{vue_components[name].style}\n'
-            if name in js_components:
-                js_imports += f'import {{ default as vue_{name} }} from "{prefix}/_nicegui/{__version__}/components/{name}";\n'
-                js_imports += f'app.component("{name}", vue_{name});\n'
+                    js_imports += f'import "{prefix}/_nicegui/{__version__}/library/{index}/include";\n'
+                done.append(index)
+        for index in element.components:
+            if index in vue_components and index not in done:
+                vue_html += f'{vue_components[index].html}\n'
+                vue_scripts += f'{vue_components[index].script.replace("Vue.component", "app.component", 1)}\n'
+                vue_styles += f'{vue_components[index].style}\n'
+                done.append(index)
+            if index in js_components and index not in done:
+                name = js_components[index]['name']
+                js_imports += f'import {{ default as {index} }} from "{prefix}/_nicegui/{__version__}/components/{index}";\n'
+                js_imports += f'app.component("{name}", {index});\n'
+                done.append(index)
 
     vue_styles = f'<style>{vue_styles}</style>'
     import_maps = f'<script type="importmap">{json.dumps(import_maps)}</script>'

@@ -272,7 +272,7 @@ class Element(Visibility):
         """
 
     def use_component(self, name: str) -> None:
-        self.components.append(name)
+        self.components.append(f'vue_{name}')
 
     def use_library(self, name: str) -> None:
-        self.libraries.append(name)
+        self.libraries.append(f'lib_{name}')
