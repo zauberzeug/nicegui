@@ -4,7 +4,7 @@ body:
   - type: textarea
     id: content
     attributes:
-      label: Describe the issue
+      label: Description
       description: |
         1. What are you trying to do?
           If possible, give a [minimal reproducible code example](https://en.wikipedia.org/wiki/Minimal_reproducible_example).

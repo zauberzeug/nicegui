@@ -2,7 +2,7 @@ body:
   - type: textarea
     id: content
     attributes:
-      label: Describe your question
+      label: Question
       description: |
         Search through [existing questions](https://github.com/zauberzeug/nicegui/discussions/categories/q-a) first.
         If possible, give a [minimal reproducible code example](https://en.wikipedia.org/wiki/Minimal_reproducible_example).
