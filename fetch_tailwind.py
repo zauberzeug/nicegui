@@ -76,29 +76,30 @@ for li in soup.select('li[class="mt-12 lg:mt-8"]'):
         properties.append(Property(title, description, [p.text.split(' ')[0] for p in members]))
         print(f'\t{title} ({len(members)})')
 
+for file in (Path(__file__).parent / 'nicegui' / 'tailwind_types').glob('*.py'):
+    file.unlink()
+for property in properties:
+    if not property.members:
+        continue
+    with open(Path(__file__).parent / 'nicegui' / 'tailwind_types' / f'{property.snake_title}.py', 'w') as f:
+        f.write('from typing_extensions import Literal\n')
+        f.write('\n')
+        f.write(f'{property.pascal_title} = Literal[\n')
+        for short_member in property.short_members:
+            f.write(f"    '{short_member}',\n")
+        f.write(']\n')
+
 with open(Path(__file__).parent / 'nicegui' / 'tailwind.py', 'w') as f:
     f.write('from __future__ import annotations\n')
     f.write('\n')
     f.write('from typing import TYPE_CHECKING, List, Optional, overload\n')
     f.write('\n')
-    f.write('from typing_extensions import Literal\n')
-    f.write('\n')
     f.write('if TYPE_CHECKING:\n')
     f.write('    from .element import Element\n')
-    f.write('\n')
-    for property in properties:
+    for property in sorted(properties, key=lambda p: p.title):
         if not property.members:
             continue
-        f.write(f'{property.pascal_title} = Literal[\n')
-        for short_member in property.short_members:
-            f.write(f"    '{short_member}',\n")
-        f.write(']\n')
-    f.write('\n')
-    f.write('TailwindClass = Literal[\n')
-    for property in properties:
-        for member in property.members:
-            f.write(f"    '{member}',\n")
-    f.write(']\n')
+        f.write(f'    from .tailwind_types.{property.snake_title} import {property.pascal_title}\n')
     f.write('\n')
     f.write('\n')
     f.write('class PseudoElement:\n')
@@ -120,7 +121,7 @@ with open(Path(__file__).parent / 'nicegui' / 'tailwind.py', 'w') as f:
     f.write('        ...\n')
     f.write('\n')
     f.write('    @overload\n')
-    f.write('    def __call__(self, *classes: TailwindClass) -> Tailwind:\n')
+    f.write('    def __call__(self, *classes: str) -> Tailwind:\n')
     f.write('        ...\n')
     f.write('\n')
     f.write('    def __call__(self, *args) -> Tailwind:\n')
