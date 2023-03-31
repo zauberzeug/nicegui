@@ -55,7 +55,7 @@ def create_intro() -> None:
             ui.number().bind_value(demo, 'number')
 
 
-def create_full(menu: ui.element) -> None:
+def create_full() -> None:
     heading('Basic Elements')
     load_demo(ui.label)
     load_demo(ui.icon)

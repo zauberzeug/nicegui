@@ -1,4 +1,4 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 contact_links:
   - name: Have an idea or a feature requests?
     url: https://github.com/zauberzeug/nicegui/discussions/categories/ideas-feature-requests
