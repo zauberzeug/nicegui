@@ -233,6 +233,17 @@ def create_full() -> None:
         ui.button().props('icon=touch_app outline round').classes('shadow-lg')
         ui.label('Stylish!').style('color: #6E93D6; font-size: 200%; font-weight: 300')
 
+    @text_demo('Query selector', '''
+        To manipulate elements like the document body, you can use the `ui.query` function.
+        You can add classes, styles, and attributes like with every other UI element.
+    ''')
+    def query_selector_demo():
+        # ui.button('Blue', on_click=lambda: ui.query('body').style('background-color: #ddeeff'))
+        # ui.button('Orange', on_click=lambda: ui.query('body').style('background-color: #ffeedd'))
+        # END OF DEMO
+        ui.button('Blue', on_click=lambda e: e.sender.parent_slot.parent.style('background-color: #ddeeff'))
+        ui.button('Orange', on_click=lambda e: e.sender.parent_slot.parent.style('background-color: #ffeedd'))
+
     load_demo(ui.colors)
 
     heading('Action')
