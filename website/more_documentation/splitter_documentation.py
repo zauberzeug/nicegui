@@ -32,9 +32,9 @@ def more() -> None:
         This demo shows how to use the splitter to display images side by side.
     ''')
     def image_fun() -> None:
-        with ui.splitter().classes('w-72') \
+        with ui.splitter().classes('w-72 h-48') \
                 .props('before-class=overflow-hidden after-class=overflow-hidden') as splitter:
             with splitter.before:
-                ui.image('https://cdn.quasar.dev/img/parallax1.jpg').classes('w-72')
+                ui.image('https://cdn.quasar.dev/img/parallax1.jpg').classes('w-72 absolute-top-left')
             with splitter.after:
                 ui.image('https://cdn.quasar.dev/img/parallax1-bw.jpg').classes('w-72 absolute-top-right')
