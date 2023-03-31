@@ -1,0 +1,15 @@
+name: Report an issue
+description: Report a bug or some other unexpected behavior.
+body:
+  - type: textarea
+    id: content
+    attributes:
+      label: Describe the issue
+      description: |
+        1. What are you trying to do?
+          If possible, give a [minimal reproducible code example](https://en.wikipedia.org/wiki/Minimal_reproducible_example).
+          Put source code in [fenced code blocks with syntax highlighting](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks#syntax-highlighting).
+        2. What do you expect to happen?
+        3. What happens instead?
+    validations:
+      required: true

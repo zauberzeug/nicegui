@@ -1,0 +1,7 @@
+body:
+  - type: textarea
+    id: content
+    attributes:
+      label: Your announcement
+    validations:
+      required: true

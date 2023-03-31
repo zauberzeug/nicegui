@@ -1,0 +1,9 @@
+body:
+  - type: textarea
+    id: content
+    attributes:
+      label: Describe your project
+      description: |
+        Please, put source code in [fenced code blocks with syntax highlighting](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks#syntax-highlighting).
+    validations:
+      required: true
