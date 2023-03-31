@@ -6,22 +6,26 @@ export default {
   },
   methods: {
     add_classes(classes) {
-      document.querySelector(this.selector).classList.add(...classes);
+      document.querySelectorAll(this.selector).forEach((e) => e.classList.add(...classes));
     },
     remove_classes(classes) {
-      document.querySelector(this.selector).classList.remove(...classes);
+      document.querySelectorAll(this.selector).forEach((e) => e.classList.remove(...classes));
     },
     add_style(style) {
-      Object.entries(style).forEach(([key, value]) => (document.querySelector(this.selector).style[key] = value));
+      Object.entries(style).forEach(([key, val]) =>
+        document.querySelectorAll(this.selector).forEach((e) => (e.style[key] = val))
+      );
     },
     remove_style(keys) {
-      keys.forEach((key) => document.querySelector(this.selector).style.removeProperty(key));
+      keys.forEach((key) => document.querySelectorAll(this.selector).forEach((e) => e.style.removeProperty(key)));
     },
     add_props(props) {
-      Object.entries(props).forEach(([key, value]) => document.querySelector(this.selector).setAttribute(key, value));
+      Object.entries(props).forEach(([key, val]) =>
+        document.querySelectorAll(this.selector).forEach((e) => e.setAttribute(key, val))
+      );
     },
     remove_props(keys) {
-      keys.forEach((key) => document.querySelector(this.selector).removeAttribute(key));
+      keys.forEach((key) => document.querySelectorAll(this.selector).forEach((e) => e.removeAttribute(key)));
     },
   },
   props: {
