@@ -33,6 +33,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add citation.cff
+          git add CITATION.cff
           git commit -m "Update citation.cff"
           git push

@@ -30,5 +30,5 @@ if __name__ == '__main__':
     with open('CITATION.cff', 'r') as file:
         citation = yaml.safe_load(file)
     citation['doi'], citation['version'],  citation['date-released'] = get_infos()
-    with open('citation.cff', 'w') as file:
+    with open('CITATION.cff', 'w') as file:
         yaml.dump(citation, file, sort_keys=False, default_flow_style=False)
