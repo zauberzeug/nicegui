@@ -163,6 +163,7 @@ def create_full(menu: ui.element) -> None:
         ui.button('Clear', on_click=container.clear)
 
     load_demo(ui.expansion)
+    load_demo(ui.splitter)
 
     @text_demo('Tabs', '''
         The elements `ui.tabs`, `ui.tab`, `ui.tab_panels`, and `ui.tab_panel` resemble
