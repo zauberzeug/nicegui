@@ -1,3 +1,4 @@
+import sys
 import yaml
 import os
 from datetime import datetime
@@ -14,8 +15,13 @@ def get_infos() -> str:
         'access_token': os.environ['ZENODO_TOKEN'],
         'q': 'nicegui', 'sort': 'mostrecent', 'status': 'published'
     }
-    response = requests.get('https://zenodo.org/api/records', params=params, headers=headers)
-    response.raise_for_status()
+    try:
+        response = requests.get('https://zenodo.org/api/records', params=params, headers=headers)
+        response.raise_for_status()
+    # Hide all error details to avoid leaking the token
+    except Exception:
+        print('Error while getting the Zenodo infos')
+        sys.exit(1)
     data = response.json()[0]['metadata']
     return data['doi'], data['version'], data['publication_date']
 
