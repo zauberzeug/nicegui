@@ -1978,6 +1978,9 @@ LineHeight = Literal[
     'relaxed',
     'loose',
 ]
+ListStyleImage = Literal[
+    'none',
+]
 ListStylePosition = Literal[
     'inside',
     'outside',
@@ -2599,6 +2602,9 @@ Hyphens = Literal[
     'none',
     'manual',
     'auto',
+]
+Content = Literal[
+    'none',
 ]
 BackgroundAttachment = Literal[
     'fixed',
@@ -8201,6 +8207,9 @@ AccentColor = Literal[
     'rose-950',
     'auto',
 ]
+Appearance = Literal[
+    'none',
+]
 Cursor = Literal[
     'auto',
     'default',
@@ -9692,7 +9701,6 @@ TailwindClass = Literal[
     'aspect-auto',
     'aspect-square',
     'aspect-video',
-    'container',
     'columns-1',
     'columns-2',
     'columns-3',
@@ -19407,9 +19415,9 @@ class Tailwind:
         self.element.classes('leading-' + value)
         return self
 
-    def list_style_image(self) -> 'Tailwind':
+    def list_style_image(self, value: ListStyleImage) -> 'Tailwind':
         """Utilities for controlling the marker images for list items."""
-        self.element.classes('list-image-none')
+        self.element.classes('list-image' + value)
         return self
 
     def list_style_position(self, value: ListStylePosition) -> 'Tailwind':
@@ -19492,9 +19500,9 @@ class Tailwind:
         self.element.classes('hyphens-' + value)
         return self
 
-    def content(self) -> 'Tailwind':
+    def content(self, value: Content) -> 'Tailwind':
         """Utilities for controlling the content of the before and after pseudo-elements."""
-        self.element.classes('content-none')
+        self.element.classes('content' + value)
         return self
 
     def background_attachment(self, value: BackgroundAttachment) -> 'Tailwind':
@@ -19807,9 +19815,9 @@ class Tailwind:
         self.element.classes('accent-' + value)
         return self
 
-    def appearance(self) -> 'Tailwind':
+    def appearance(self, value: Appearance) -> 'Tailwind':
         """Utilities for suppressing native form control styling."""
-        self.element.classes('appearance-none')
+        self.element.classes('appearance' + value)
         return self
 
     def cursor(self, value: Cursor) -> 'Tailwind':

@@ -27,6 +27,16 @@ class Property:
                 break
         self.short_members = ['-'.join(word[len(prefix):]) for word in words]
         self.common_prefix = '-'.join(prefix) + '-' if prefix else ''
+        if len(self.short_members) == 1:
+            if self.title == 'Container':
+                self.members.clear()
+                self.short_members.clear()
+                self.common_prefix = 'container'
+            elif self.title in {'List Style Image', 'Content', 'Appearance'}:
+                self.short_members = ['none']
+                self.common_prefix = self.members[0].removesuffix('-none')
+            else:
+                raise ValueError(f'Unknown single-value property "{self.title}"')
 
     @property
     def pascal_title(self) -> str:
@@ -77,7 +87,7 @@ with open(Path(__file__).parent / 'nicegui' / 'tailwind.py', 'w') as f:
     f.write('    from .element import Element\n')
     f.write('\n')
     for property in properties:
-        if len(property.members) == 1:
+        if not property.members:
             continue
         f.write(f'{property.pascal_title} = Literal[\n')
         for short_member in property.short_members:
@@ -125,13 +135,13 @@ with open(Path(__file__).parent / 'nicegui' / 'tailwind.py', 'w') as f:
     f.write('        element.update()\n')
     for property in properties:
         f.write('\n')
-        if len(property.members) == 1:
-            f.write(f"    def {property.snake_title}(self) -> 'Tailwind':\n")
-            f.write(f'        """{property.description}"""\n')
-            f.write(f"        self.element.classes('{property.members[0]}')\n")
-            f.write(f'        return self\n')
-        else:
+        if property.members:
             f.write(f"    def {property.snake_title}(self, value: {property.pascal_title}) -> 'Tailwind':\n")
             f.write(f'        """{property.description}"""\n')
             f.write(f"        self.element.classes('{property.common_prefix}' + value)\n")
+            f.write(f'        return self\n')
+        else:
+            f.write(f"    def {property.snake_title}(self) -> 'Tailwind':\n")
+            f.write(f'        """{property.description}"""\n')
+            f.write(f"        self.element.classes('{property.common_prefix}')\n")
             f.write(f'        return self\n')
