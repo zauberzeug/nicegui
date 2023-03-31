@@ -47,7 +47,7 @@ def register_component(name: str, py_filepath: str, component_filepath: str, dep
     Deprecated method. Use `register_vue_component` or `register_library` library instead.
     """
 
-    url = f'https://github.com/zauberzeug/nicegui/pull/xxx'  # @todo to be defined.
+    url = f'https://github.com/zauberzeug/nicegui/pull/658'
     warnings.warn(DeprecationWarning(
         f'This function is deprecated. Use either register_vue_component or register_library instead, along with `use_component` or `use_library` ({url}).'))
 
