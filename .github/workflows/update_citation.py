@@ -2,16 +2,27 @@ import yaml
 import os
 from datetime import datetime
 
-with open('CITATION.cff', 'r') as f:
-    citation = yaml.safe_load(f)
 
-citation['version'] = os.environ['GITHUB_REF'].split('/')[-1]
-citation['date-released'] = datetime.utcnow().strftime('%Y-%m-%d')
-# citation['doi'] = 'doi base (not ready yet)' + os.environ['GITHUB_REF'].split('/')[-1]
+import os
+import requests
+import yaml
 
-with open('CITATION.cff', 'w') as f:
-    yaml.dump(citation, f, sort_keys=False, default_flow_style=False)
 
-os.system('git add CITATION.cff')
-os.system('git commit -m "Update CITATION.cff for release"')
-os.system('git push')
+def get_infos() -> str:
+    headers = {'Accept': 'application/json'}
+    params = {
+        'access_token': os.environ['ZENODO_TOKEN'],
+        'q': 'nicegui', 'sort': 'mostrecent', 'status': 'published'
+    }
+    response = requests.get('https://zenodo.org/api/records', params=params, headers=headers)
+    response.raise_for_status()
+    data = response.json()[0]['metadata']
+    return data['doi'], data['version'], data['publication_date']
+
+
+if __name__ == '__main__':
+    with open('CITATION.cff', 'r') as file:
+        citation = yaml.safe_load(file)
+    citation['doi'], citation['version'],  citation['date-released'] = get_infos()
+    with open('citation.cff', 'w') as file:
+        yaml.dump(citation, file, sort_keys=False, default_flow_style=False)

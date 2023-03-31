@@ -23,10 +23,6 @@ jobs:
       - name: get version
         id: get_version
         run: echo "VERSION=$(echo ${GITHUB_REF/refs\/tags\//})" >> $GITHUB_ENV
-      - name: Update Citation
-        run: |
-          pip install PyYAML
-          python .github/workflows/update_citation.py
       - name: set version
         run: poetry version ${{ env.VERSION }}
       - name: publish
