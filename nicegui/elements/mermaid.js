@@ -1,13 +1,14 @@
 import mermaid from 'mermaid';
 export default {
-  template: `<div class="mermaid">{{ content }}</div>`,
+  template: `<div></div>`,
   mounted() {
-    mermaid.initialize({ startOnLoad: false, theme: 'default' });
-    this.update()
+    this.update(this.content)
   },
   methods: {
     async update(content) {
-      await mermaid.run({querySelector: '.mermaid'})
+      this.$el.innerHTML = content
+      this.$el.removeAttribute('data-processed');
+      await mermaid.run({nodes: [this.$el]});
     },
   },
   props: {

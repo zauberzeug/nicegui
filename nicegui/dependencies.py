@@ -81,8 +81,8 @@ def generate_resources(prefix: str, elements) -> Tuple[str, str, str, str, str]:
                 vue_scripts += f'{vue_components[name].script.replace("Vue.component", "app.component", 1)}\n'
                 vue_styles += f'{vue_components[name].style}\n'
             if name in js_components:
-                js_imports += f'import {{ default as {name} }} from "{prefix}/_nicegui/{__version__}/components/{name}";\n'
-                js_imports += f'app.component("{name}", {name});\n'
+                js_imports += f'import {{ default as vue_{name} }} from "{prefix}/_nicegui/{__version__}/components/{name}";\n'
+                js_imports += f'app.component("{name}", vue_{name});\n'
 
     vue_styles = f'<style>{vue_styles}</style>'
     import_maps = f'<script type="importmap">{json.dumps(import_maps)}</script>'

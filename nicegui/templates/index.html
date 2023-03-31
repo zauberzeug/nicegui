@@ -13,7 +13,8 @@
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/socket.io.min.js"></script>
     {% if tailwind %}
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
-    {% endif %} {{ head_html | safe }}
+    {% endif %}
+    {{ head_html | safe }}
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.prod.js"></script>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
     {{ import_maps | safe }}
@@ -119,7 +120,7 @@
           };
         },
         render() {
-          return renderRecursively(this.elements, 0);
+          return renderRecursively(this.elements, 'v0');
         },
         mounted() {
           window.app = this;
