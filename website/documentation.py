@@ -2,7 +2,7 @@ import uuid
 
 from nicegui import app, ui
 
-from .demo import bash_window, python_window
+from . import demo
 from .documentation_tools import element_demo, heading, intro_demo, load_demo, subheading, text_demo
 
 CONSTANT_UUID = str(uuid.uuid4())
@@ -547,6 +547,7 @@ def create_full() -> None:
             ui.input('G').classes('w-12').on('keydown.space', lambda: ui.notify('You pressed space.'))
             ui.input('H').classes('w-12').on('keydown.y.shift', lambda: ui.notify('You pressed Shift+Y'))
             ui.input('I').classes('w-12').on('keydown.once', lambda: ui.notify('You started typing.'))
+
     heading('Configuration')
 
     @element_demo(ui.run, browser_title='My App')
@@ -554,6 +555,28 @@ def create_full() -> None:
         ui.label('page with custom title')
 
         # ui.run(title='My App')
+
+    # HACK: switch color to white for the next demo
+    demo_BROWSER_BGCOLOR = demo.BROWSER_BGCOLOR
+    demo.BROWSER_BGCOLOR = '#ffffff'
+
+    @text_demo('Native Mode', '''
+        You can run NiceGUI in native mode by setting `native=True` in `ui.run`.
+        The parameters `window_size` and `fullscreen` can be used to configure the initial window size and whether the window should be fullscreen.
+        Apart from that, you can use `app.native` to define additional keyword arguments for the internally called `webview.create_window` and `webview.start` functions.
+        These keyword arguments overrule the `ui.run` parameters.
+    ''')
+    def native_mode_demo():
+        from nicegui import app
+
+        ui.label('app running in native mode')
+
+        app.native.window_args['resizable'] = False
+        app.native.start_args['debug'] = True
+
+        # ui.run(native=True, window_size=(400, 300), fullscreen=False)
+    # HACK: restore color
+    demo.BROWSER_BGCOLOR = demo_BROWSER_BGCOLOR
 
     @text_demo('Environment Variables', '''
         You can set the following environment variables to configure NiceGUI:
@@ -579,7 +602,7 @@ def create_full() -> None:
         A convenient alternative is the use of our [pre-built multi-arch Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
         With this command you can launch the script `main.py` in the current directory on the public port 80:
     ''').classes('bold-links arrow-links')
-    with bash_window(classes='max-w-lg w-full h-52'):
+    with demo.bash_window(classes='max-w-lg w-full h-52'):
         ui.markdown('''
             ```bash
             docker run -p 80:8080 -v $(pwd)/:/app/ \\
@@ -591,7 +614,7 @@ def create_full() -> None:
         The `-d` tells docker to run in background and `--restart always` makes sure the container is restarted if the app crashes or the server reboots.
         Of course this can also be written in a Docker compose file:
     ''')
-    with python_window('docker-compose.yml', classes='max-w-lg w-full h-52'):
+    with demo.python_window('docker-compose.yml', classes='max-w-lg w-full h-52'):
         ui.markdown('''
             ```yaml
             app:
@@ -625,7 +648,7 @@ def create_full() -> None:
     ''').classes('bold-links arrow-links')
 
     with ui.row().classes('w-full items-stretch'):
-        with python_window(classes='max-w-lg w-full'):
+        with demo.python_window(classes='max-w-lg w-full'):
             ui.markdown('''
                 ```python
                 from nicegui import ui
@@ -635,7 +658,7 @@ def create_full() -> None:
                 ui.run(reload=False)
                 ```
             ''')
-        with python_window('build.py', classes='max-w-lg w-full'):
+        with demo.python_window('build.py', classes='max-w-lg w-full'):
             ui.markdown('''
                 ```python
                 import os
@@ -697,7 +720,7 @@ def create_full() -> None:
           That is why the build script invokes PyInstaller using `python -m PyInstaller` rather than just `pyinstaller`.
     ''').classes('bold-links arrow-links')
 
-    with bash_window(classes='max-w-lg w-full h-42 self-center'):
+    with demo.bash_window(classes='max-w-lg w-full h-42 self-center'):
         ui.markdown('''
             ```bash
             python -m venv venv
