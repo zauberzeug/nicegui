@@ -27,7 +27,7 @@ jobs:
       - name: Update Citation.cff
         env:
           ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
-        run: python .github/update_citation.py
+        run: python .github/workflow/update_citation.py
 
       - name: Commit and push changes
         run: |
