@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List, Optional, overload
 
 from typing_extensions import Literal
 
@@ -19078,8 +19078,19 @@ class Tailwind:
     def __init__(self, _element: Optional['Element'] = None) -> None:
         self.element = _element or PseudoElement()
 
+    @overload
+    def __call__(self, Tailwind) -> Tailwind:
+        ...
+
+    @overload
     def __call__(self, *classes: TailwindClass) -> Tailwind:
-        self.element.classes(*classes)
+        ...
+
+    def __call__(self, *args) -> Tailwind:
+        if isinstance(args[0], Tailwind):
+            args[0].apply(self.element)
+        else:
+            self.element.classes(' '.join(args))
         return self
 
     def apply(self, element: 'Element') -> None:
