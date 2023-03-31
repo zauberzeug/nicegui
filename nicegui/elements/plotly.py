@@ -41,7 +41,9 @@ class Plotly(Element):
         self.update()
 
     def update(self) -> None:
-        self._props['options'] = self._get_figure_json()
+        options = self._get_figure_json()
+        options['config'] = {**options['config'], **{'responsive': True}} if 'config' in options else {'responsive': True}
+        self._props['options'] = options
         self.run_method('update', self._props['options'])
 
     def _get_figure_json(self) -> Dict:
