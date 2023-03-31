@@ -5,6 +5,7 @@ register_component('mermaid', __file__, 'mermaid.js', ['lib/mermaid.min.js'])
 
 
 class Mermaid(ContentElement):
+    CONTENT_PROP = 'content'
 
     def __init__(self, content: str) -> None:
         '''Mermaid Diagrams
@@ -17,5 +18,5 @@ class Mermaid(ContentElement):
         super().__init__(tag='mermaid', content=content)
 
     def on_content_change(self, content: str) -> None:
-        self._props['innerHTML'] = content
+        self._props[self.CONTENT_PROP] = content.strip()
         self.run_method('update', content)

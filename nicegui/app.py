@@ -38,6 +38,13 @@ class App(FastAPI):
         """
         globals.shutdown_handlers.append(handler)
 
+    def on_exception(self, handler: Union[Callable, Awaitable]) -> None:
+        """Called when an exception occurs.
+
+        The callback has an optional parameter of `Exception`.
+        """
+        globals.exception_handlers.append(handler)
+
     def shutdown(self) -> None:
         """Shut down NiceGUI.
 

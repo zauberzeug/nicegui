@@ -122,7 +122,7 @@
         // Check if each byte in query matches the corresponding byte from the current offset
 
         for (let i = 0, il = query.length; i < il; i++) {
-          if (query[i] !== reader.getUint8(offset + i, false)) return false;
+          if (query[i] !== reader.getUint8(offset + i)) return false;
         }
 
         return true;
@@ -193,14 +193,8 @@
             const componentIdx = face * 3 * 3 + (i - 1) * 3;
 
             vertices[componentIdx] = reader.getFloat32(vertexstart, true);
-            vertices[componentIdx + 1] = reader.getFloat32(
-              vertexstart + 4,
-              true
-            );
-            vertices[componentIdx + 2] = reader.getFloat32(
-              vertexstart + 8,
-              true
-            );
+            vertices[componentIdx + 1] = reader.getFloat32(vertexstart + 4, true);
+            vertices[componentIdx + 2] = reader.getFloat32(vertexstart + 8, true);
 
             normals[componentIdx] = normalX;
             normals[componentIdx + 1] = normalY;
@@ -214,10 +208,7 @@
           }
         }
 
-        geometry.setAttribute(
-          "position",
-          new THREE.BufferAttribute(vertices, 3)
-        );
+        geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
         geometry.setAttribute("normal", new THREE.BufferAttribute(normals, 3));
 
         if (hasColors) {
@@ -235,21 +226,14 @@
         const patternFace = /facet([\s\S]*?)endfacet/g;
         let faceCounter = 0;
 
-        const patternFloat = /[\s]+([+-]?(?:\d*)(?:\.\d*)?(?:[eE][+-]?\d+)?)/
-          .source;
-        const patternVertex = new RegExp(
-          "vertex" + patternFloat + patternFloat + patternFloat,
-          "g"
-        );
-        const patternNormal = new RegExp(
-          "normal" + patternFloat + patternFloat + patternFloat,
-          "g"
-        );
+        const patternFloat = /[\s]+([+-]?(?:\d*)(?:\.\d*)?(?:[eE][+-]?\d+)?)/.source;
+        const patternVertex = new RegExp("vertex" + patternFloat + patternFloat + patternFloat, "g");
+        const patternNormal = new RegExp("normal" + patternFloat + patternFloat + patternFloat, "g");
 
         const vertices = [];
         const normals = [];
 
-        const normal = new Vector3();
+        const normal = new THREE.Vector3();
 
         let result;
 
@@ -276,11 +260,7 @@
             }
 
             while ((result = patternVertex.exec(text)) !== null) {
-              vertices.push(
-                parseFloat(result[1]),
-                parseFloat(result[2]),
-                parseFloat(result[3])
-              );
+              vertices.push(parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3]));
               normals.push(normal.x, normal.y, normal.z);
               vertexCountPerFace++;
               endVertex++;
@@ -289,19 +269,13 @@
             // every face have to own ONE valid normal
 
             if (normalCountPerFace !== 1) {
-              console.error(
-                "THREE.STLLoader: Something isn't right with the normal of face number " +
-                  faceCounter
-              );
+              console.error("THREE.STLLoader: Something isn't right with the normal of face number " + faceCounter);
             }
 
             // each face have to own THREE valid vertices
 
             if (vertexCountPerFace !== 3) {
-              console.error(
-                "THREE.STLLoader: Something isn't right with the vertices of face number " +
-                  faceCounter
-              );
+              console.error("THREE.STLLoader: Something isn't right with the vertices of face number " + faceCounter);
             }
 
             faceCounter++;
@@ -314,21 +288,15 @@
           groupCount++;
         }
 
-        geometry.setAttribute(
-          "position",
-          new THREE.Float32BufferAttribute(vertices, 3)
-        );
-        geometry.setAttribute(
-          "normal",
-          new THREE.Float32BufferAttribute(normals, 3)
-        );
+        geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+        geometry.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
 
         return geometry;
       }
 
       function ensureString(buffer) {
         if (typeof buffer !== "string") {
-          return LoaderUtils.decodeText(new Uint8Array(buffer));
+          return new TextDecoder().decode(buffer);
         }
 
         return buffer;
@@ -351,9 +319,7 @@
 
       const binData = ensureBinary(data);
 
-      return isBinary(binData)
-        ? parseBinary(binData)
-        : parseASCII(ensureString(data));
+      return isBinary(binData) ? parseBinary(binData) : parseASCII(ensureString(data));
     }
   }
 

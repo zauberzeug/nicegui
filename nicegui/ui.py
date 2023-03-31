@@ -1,7 +1,10 @@
 import os
 
+from .deprecation import deprecated
 from .element import Element as element
+from .elements.aggrid import AgGrid as aggrid
 from .elements.audio import Audio as audio
+from .elements.avatar import Avatar as avatar
 from .elements.badge import Badge as badge
 from .elements.button import Button as button
 from .elements.card import Card as card
@@ -23,6 +26,7 @@ from .elements.input import Input as input
 from .elements.interactive_image import InteractiveImage as interactive_image
 from .elements.joystick import Joystick as joystick
 from .elements.keyboard import Keyboard as keyboard
+from .elements.knob import Knob as knob
 from .elements.label import Label as label
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
@@ -73,5 +77,5 @@ from .run_with import run_with
 
 if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
     from .elements.line_plot import LinePlot as line_plot
-    from .elements.pyplot import Pyplot as plot  # NOTE: deprecated
     from .elements.pyplot import Pyplot as pyplot
+    plot = deprecated(pyplot, 'ui.plot', 'ui.pyplot', 317)

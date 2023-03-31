@@ -15,7 +15,8 @@ class Button(TextElement):
         super().__init__(tag='q-btn', text=text)
         self._props['color'] = 'primary'
 
-        self.on('click', lambda _: handle_event(on_click, ClickEventArguments(sender=self, client=self.client)))
+        if on_click:
+            self.on('click', lambda _: handle_event(on_click, ClickEventArguments(sender=self, client=self.client)))
 
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text

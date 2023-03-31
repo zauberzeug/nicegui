@@ -1,0 +1,42 @@
+import pytest
+
+from nicegui import Client, ui
+
+from .screen import Screen
+
+
+def test_set_source_in_tab(screen: Screen):
+    """https://github.com/zauberzeug/nicegui/issues/488"""
+    @ui.page('/')
+    async def page(client: Client):
+        with ui.tabs() as tabs:
+            ui.tab('A')
+            ui.tab('B')
+        with ui.tab_panels(tabs, value='A'):
+            with ui.tab_panel('A'):
+                ui.label('Tab A')
+                img = ui.interactive_image()
+            with ui.tab_panel('B'):
+                ui.label('Tab B')
+        await client.connected()
+        img.set_source('https://nicegui.io/logo.png')
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert screen.find_by_tag('img').get_attribute('src') == 'https://nicegui.io/logo.png'
+    screen.click('B')
+    screen.wait(0.5)
+    screen.click('A')
+    assert screen.find_by_tag('img').get_attribute('src') == 'https://nicegui.io/logo.png'
+
+
+@pytest.mark.parametrize('cross, number_of_lines', [(True, 2), (False, 0)])
+def test_with_cross(screen: Screen, cross: bool, number_of_lines: int):
+    ii = ui.interactive_image('https://nicegui.io/logo.png', cross=cross)
+    ii.content = f'<circle cx="100" cy="100" r="15" fill="none" stroke="red" stroke-width="4" />'
+
+    screen.open('/')
+    screen.find_by_tag('svg')
+    with screen.implicitly_wait(0.5):
+        assert len(screen.find_all_by_tag('line')) == number_of_lines
+        assert len(screen.find_all_by_tag('circle')) == 1

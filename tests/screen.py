@@ -1,6 +1,7 @@
 import os
 import threading
 import time
+from contextlib import contextmanager
 from typing import List
 
 import pytest
@@ -164,3 +165,9 @@ class Screen:
             assert record.message.strip() == message, f'Expected "{message}" but got "{record.message}"'
         finally:
             self.caplog.records.clear()
+
+    @contextmanager
+    def implicitly_wait(self, t: float) -> None:
+        self.selenium.implicitly_wait(t)
+        yield
+        self.selenium.implicitly_wait(self.IMPLICIT_WAIT)

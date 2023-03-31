@@ -43,3 +43,13 @@ graph TD;
     screen.should_contain('New')
     assert screen.find('Node_C').get_attribute('class') == 'nodeLabel'
     screen.should_not_contain('Node_A')
+
+
+def test_strip_indentation(screen: Screen):
+    ui.markdown('''
+        **This is Markdown.**
+    ''')
+
+    screen.open('/')
+    screen.should_contain('This is Markdown.')
+    screen.should_not_contain('**This is Markdown.**')  # NOTE: '**' are translated to formatting and not visible

@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import logging
 from contextlib import contextmanager
 from enum import Enum
@@ -7,6 +8,7 @@ from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Optional, Uni
 from socketio import AsyncServer
 from uvicorn import Server
 
+from . import background_tasks
 from .app import App
 
 if TYPE_CHECKING:
@@ -29,8 +31,6 @@ log: logging.Logger = logging.getLogger('nicegui')
 state: State = State.STOPPED
 ui_run_has_been_called: bool = False
 
-host: str
-port: int
 reload: bool
 title: str
 viewport: str
@@ -52,6 +52,7 @@ startup_handlers: List[Union[Callable, Awaitable]] = []
 shutdown_handlers: List[Union[Callable, Awaitable]] = []
 connect_handlers: List[Union[Callable, Awaitable]] = []
 disconnect_handlers: List[Union[Callable, Awaitable]] = []
+exception_handlers: List[Callable] = [log.exception]
 
 
 def get_task_id() -> int:
@@ -88,3 +89,10 @@ def socket_id(id: str) -> None:
     _socket_id = id
     yield
     _socket_id = None
+
+
+def handle_exception(exception: Exception) -> None:
+    for handler in exception_handlers:
+        result = handler() if not inspect.signature(handler).parameters else handler(exception)
+        if isinstance(result, Awaitable):
+            background_tasks.create(result)

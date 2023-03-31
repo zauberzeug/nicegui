@@ -2,18 +2,17 @@ import logging
 import multiprocessing
 import os
 import sys
-import webbrowser
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import uvicorn
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import globals
+from . import globals, helpers, native_mode
 
 
 def run(*,
-        host: str = '0.0.0.0',
+        host: Optional[str] = None,
         port: int = 8080,
         title: str = 'NiceGUI',
         viewport: str = 'width=device-width, initial-scale=1',
@@ -21,6 +20,9 @@ def run(*,
         dark: Optional[bool] = False,
         binding_refresh_interval: float = 0.1,
         show: bool = True,
+        native: bool = False,
+        window_size: Optional[Tuple[int, int]] = None,
+        fullscreen: bool = False,
         reload: bool = True,
         uvicorn_logging_level: str = 'warning',
         uvicorn_reload_dirs: str = '.',
@@ -28,12 +30,13 @@ def run(*,
         uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
         exclude: str = '',
         tailwind: bool = True,
+        **kwargs,
         ) -> None:
     '''ui.run
 
     You can call `ui.run()` with optional arguments:
 
-    :param host: start server with this host (default: `'0.0.0.0'`)
+    :param host: start server with this host (defaults to `'127.0.0.1` in native mode, otherwise `'0.0.0.0'`)
     :param port: use this port (default: `8080`)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
     :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
@@ -41,18 +44,20 @@ def run(*,
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param show: automatically open the UI in a browser tab (default: `True`)
+    :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
+    :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`)
+    :param fullscreen: open the UI in a fullscreen window (default: `False`, also activates `native`)
     :param reload: automatically reload the UI on file changes (default: `True`)
     :param uvicorn_logging_level: logging level for uvicorn server (default: `'warning'`)
     :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only)
     :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`)
     :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
     :param exclude: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
-      (possible entries: audio, chart, colors, interactive_image, joystick, keyboard, log, markdown, mermaid, plotly, scene, table, video)
+      (possible entries: aggrid, audio, chart, colors, interactive_image, joystick, keyboard, log, markdown, mermaid, plotly, scene, video)
     :param tailwind: whether to use Tailwind (experimental, default: `True`)
+    :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     '''
     globals.ui_run_has_been_called = True
-    globals.host = host
-    globals.port = port
     globals.reload = reload
     globals.title = title
     globals.viewport = viewport
@@ -65,8 +70,24 @@ def run(*,
     if multiprocessing.current_process().name != 'MainProcess':
         return
 
+    if fullscreen:
+        native = True
+    if window_size:
+        native = True
+    if native:
+        show = False
+        host = host or '127.0.0.1'
+        port = native_mode.find_open_port()
+        width, height = window_size or (800, 600)
+        native_mode.activate(f'http://{host}:{port}', title, width, height, fullscreen)
+    else:
+        host = host or '0.0.0.0'
+
+    # NOTE: We save the URL in an environment variable so the subprocess started in reload mode can access it.
+    os.environ['NICEGUI_URL'] = f'http://{host}:{port}'
+
     if show:
-        webbrowser.open(f'http://{host if host != "0.0.0.0" else "127.0.0.1"}:{port}/')
+        helpers.schedule_browser(host, port)
 
     def split_args(args: str) -> List[str]:
         return [a.strip() for a in args.split(',')]
@@ -82,6 +103,7 @@ def run(*,
         reload_excludes=split_args(uvicorn_reload_excludes) if reload else None,
         reload_dirs=split_args(uvicorn_reload_dirs) if reload else None,
         log_level=uvicorn_logging_level,
+        **kwargs,
     )
     globals.server = uvicorn.Server(config=config)
 

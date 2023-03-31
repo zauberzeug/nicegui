@@ -1,5 +1,5 @@
 /*
- Highcharts JS v10.3.2 (2022-11-28)
+ Highcharts JS v10.3.3 (2023-01-20)
 
  Highcharts variwide module
 
@@ -17,5 +17,5 @@ f=e.extend,q=e.merge,l=e.pick;e=function(d){function c(){var a=null!==d&&d.apply
 !0,this.xAxis.zData=this.zData)};c.prototype.postTranslate=function(a,c,d){var b=this.xAxis,m=this.relZ;a=b.reversed?m.length-a:a;var f=b.reversed?-1:1,e=b.toPixels(b.reversed?(b.dataMax||0)+b.pointRange:b.dataMin||0),g=b.toPixels(b.reversed?b.dataMin||0:(b.dataMax||0)+b.pointRange),k=Math.abs(g-e),h=this.totalZ;b=this.chart.inverted?g-(this.chart.plotTop-f*b.minPixelPadding):e-this.chart.plotLeft-f*b.minPixelPadding;e=a/m.length*k;g=(a+f)/m.length*k;var n=l(m[a],h)/h*k;m=l(m[a+f],h)/h*k;d&&(d.crosshairWidth=
 m-n);return b+n+(c-(b+e))*(m-n)/(g-e)};c.prototype.translate=function(){var b=this.options.crisp,c=this.xAxis;this.options.crisp=!1;a.seriesTypes.column.prototype.translate.call(this);this.options.crisp=b;var d=this.chart.inverted,f=this.borderWidth%2/2;this.points.forEach(function(a,b){if(c.variwide){var e=this.postTranslate(b,a.shapeArgs.x,a);b=this.postTranslate(b,a.shapeArgs.x+a.shapeArgs.width)}else e=a.plotX,b=c.translate(a.x+a.z,0,0,0,1);this.options.crisp&&(e=Math.round(e)-f,b=Math.round(b)-
 f);a.shapeArgs.x=e;a.shapeArgs.width=Math.max(b-e,1);a.plotX=(e+b)/2;d?a.tooltipPos[1]=c.len-a.shapeArgs.x-a.shapeArgs.width/2:a.tooltipPos[0]=a.shapeArgs.x+a.shapeArgs.width/2},this);this.options.stacking&&this.correctStackLabels()};c.prototype.correctStackLabels=function(){for(var a=this.options,c=this.yAxis,d,e,f,g=0,h=this.points;g<h.length;g++){var l=h[g];f=l.x;e=l.shapeArgs.width;(d=c.stacking.stacks[(this.negStacks&&l.y<(a.startFromThreshold?0:a.threshold)?"-":"")+this.stackKey])&&(d=d[f])&&
-!l.isNull&&d.setOffset(-(e/2)||0,e||0,void 0,void 0,l.plotX)}};c.compose=g.compose;c.defaultOptions=q(p.defaultOptions,{pointPadding:0,groupPadding:0});return c}(p);f(e.prototype,{irregularWidths:!0,pointArrayMap:["y","z"],parallelArrays:["x","y","z"],pointClass:r});a.registerSeriesType("variwide",e);"";return e});g(a,"masters/modules/variwide.src.js",[a["Core/Globals.js"],a["Series/Variwide/VariwideSeries.js"]],function(a,g){g.compose(a.Axis,a.Tick)})});
+!l.isNull&&d.setOffset(this.chart.plotLeft-(e/2||0),e||0,void 0,void 0,l.plotX,this.xAxis)}};c.compose=g.compose;c.defaultOptions=q(p.defaultOptions,{pointPadding:0,groupPadding:0});return c}(p);f(e.prototype,{irregularWidths:!0,pointArrayMap:["y","z"],parallelArrays:["x","y","z"],pointClass:r});a.registerSeriesType("variwide",e);"";return e});g(a,"masters/modules/variwide.src.js",[a["Core/Globals.js"],a["Series/Variwide/VariwideSeries.js"]],function(a,g){g.compose(a.Axis,a.Tick)})});
 //# sourceMappingURL=variwide.js.map

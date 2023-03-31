@@ -84,20 +84,24 @@ a:active:not(.browser-window *) {
   }
 }
 
-dl.field-list {
+dl.field-list,
+dl.docinfo {
   display: grid;
   grid-template-columns: max-content auto;
   margin: 1em 0;
 }
-dl.field-list dt {
+dl.field-list dt,
+dl.docinfo dt {
   grid-column-start: 1;
   margin-right: 1em;
   font-weight: 500;
 }
-dl.field-list dd {
+dl.field-list dd,
+dl.docinfo dd {
   grid-column-start: 2;
 }
-dl.field-list p {
+dl.field-list p,
+dl.docinfo p {
   margin-bottom: 0;
 }
 

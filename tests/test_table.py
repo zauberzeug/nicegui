@@ -1,113 +1,104 @@
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
 
 from nicegui import ui
 
 from .screen import Screen
 
 
-def test_update_table(screen: Screen):
-    table = ui.table({
-        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
-        'rowData': [{'name': 'Alice', 'age': 18}],
-    })
+def columns(): return [
+    {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True},
+    {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
+]
+
+
+def rows(): return [
+    {'id': 0, 'name': 'Alice', 'age': 18},
+    {'id': 1, 'name': 'Bob', 'age': 21},
+    {'id': 2, 'name': 'Lionel', 'age': 19},
+]
+
+
+def test_table(screen: Screen):
+    ui.table(title='My Team', columns=columns(), rows=rows())
 
     screen.open('/')
+    screen.should_contain('My Team')
     screen.should_contain('Name')
-    screen.should_contain('Age')
     screen.should_contain('Alice')
-    screen.should_contain('18')
-
-    table.options['rowData'][0]['age'] = 42
-    table.update()
-    screen.should_contain('42')
+    screen.should_contain('Bob')
+    screen.should_contain('Lionel')
 
 
-def test_add_row(screen: Screen):
-    table = ui.table({
-        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
-        'rowData': [],
-    })
-    ui.button('Update', on_click=table.update)
+def test_pagination(screen: Screen):
+    ui.table(columns=columns(), rows=rows(), pagination=2)
 
     screen.open('/')
-    table.options['rowData'].append({'name': 'Alice', 'age': 18})
-    screen.click('Update')
-    screen.wait(0.5)
     screen.should_contain('Alice')
-    screen.should_contain('18')
-    table.options['rowData'].append({'name': 'Bob', 'age': 21})
-    screen.click('Update')
-    screen.wait(0.5)
-    screen.should_contain('Alice')
-    screen.should_contain('18')
     screen.should_contain('Bob')
+    screen.should_not_contain('Lionel')
+    screen.should_contain('1-2 of 3')
+
+
+def test_filter(screen: Screen):
+    table = ui.table(columns=columns(), rows=rows())
+    ui.input('Search by name').bind_value(table, 'filter')
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_contain('Lionel')
+
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Search by name"]')
+    element.send_keys('e')
+    screen.should_contain('Alice')
+    screen.should_not_contain('Bob')
+    screen.should_contain('Lionel')
+
+
+def test_add_remove(screen: Screen):
+    table = ui.table(columns=columns(), rows=rows())
+    ui.button('Add', on_click=lambda: table.add_rows({'id': 3, 'name': 'Carol', 'age': 32}))
+    ui.button('Remove', on_click=lambda: table.remove_rows(table.rows[0]))
+
+    screen.open('/')
+    screen.click('Add')
+    screen.should_contain('Carol')
+
+    screen.click('Remove')
+    screen.wait(0.5)
+    screen.should_not_contain('Alice')
+
+
+def test_slots(screen: Screen):
+    with ui.table(columns=columns(), rows=rows()) as table:
+        with table.add_slot('top-row'):
+            with table.row():
+                with table.cell():
+                    ui.label('This is the top slot.')
+        table.add_slot('body', '''
+            <q-tr :props="props">
+                <q-td key="name" :props="props">overridden</q-td>
+                <q-td key="age" :props="props">
+                    <q-badge color="green">{{ props.row.age }}</q-badge>
+                </q-td>
+            </q-tr>
+        ''')
+
+    screen.open('/')
+    screen.should_contain('This is the top slot.')
+    screen.should_not_contain('Alice')
+    screen.should_contain('overridden')
     screen.should_contain('21')
 
 
-def test_click_cell(screen: Screen):
-    table = ui.table({
-        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
-        'rowData': [{'name': 'Alice', 'age': 18}],
-    })
-    table.on('cellClicked', lambda msg: ui.label(f'{msg["args"]["data"]["name"]} has been clicked!'))
+def test_single_selection(screen: Screen):
+    ui.table(columns=columns(), rows=rows(), selection='single')
 
     screen.open('/')
-    screen.click('Alice')
-    screen.should_contain('Alice has been clicked!')
+    screen.find('Alice').find_element(By.XPATH, 'preceding-sibling::td').click()
+    screen.wait(0.5)
+    screen.should_contain('1 record selected.')
 
-
-def test_html_columns(screen: Screen):
-    ui.table({
-        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
-        'rowData': [{'name': '<span class="text-bold">Alice</span>', 'age': 18}],
-    }, html_columns=[0])
-
-    screen.open('/')
-    screen.should_contain('Alice')
-    screen.should_not_contain('<span')
-    assert 'text-bold' in screen.find('Alice').get_attribute('class')
-
-
-def test_call_api_method_with_argument(screen: Screen):
-    table = ui.table({
-        'columnDefs': [{'field': 'name', 'filter': True}],
-        'rowData': [{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
-    })
-    filter = {'name': {'filterType': 'text', 'type': 'equals', 'filter': 'Alice'}}
-    ui.button('Filter', on_click=lambda: table.call_api_method('setFilterModel', filter))
-
-    screen.open('/')
-    screen.should_contain('Alice')
-    screen.should_contain('Bob')
-    screen.should_contain('Carol')
-    screen.click('Filter')
-    screen.should_contain('Alice')
-    screen.should_not_contain('Bob')
-    screen.should_not_contain('Carol')
-
-
-def test_get_selected_rows(screen: Screen):
-    table = ui.table({
-        'columnDefs': [{'field': 'name'}],
-        'rowData': [{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
-        'rowSelection': 'multiple',
-    })
-
-    async def get_selected_rows():
-        ui.label(str(await table.get_selected_rows()))
-    ui.button('Get selected rows', on_click=get_selected_rows)
-
-    async def get_selected_row():
-        ui.label(str(await table.get_selected_row()))
-    ui.button('Get selected row', on_click=get_selected_row)
-
-    screen.open('/')
-    screen.click('Alice')
-    screen.find('Bob')
-    ActionChains(screen.selenium).key_down(Keys.SHIFT).click(screen.find('Bob')).key_up(Keys.SHIFT).perform()
-    screen.click('Get selected rows')
-    screen.should_contain("[{'name': 'Alice'}, {'name': 'Bob'}]")
-
-    screen.click('Get selected row')
-    screen.should_contain("{'name': 'Alice'}")
+    screen.find('Bob').find_element(By.XPATH, 'preceding-sibling::td').click()
+    screen.wait(0.5)
+    screen.should_contain('1 record selected.')

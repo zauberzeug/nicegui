@@ -18,7 +18,8 @@ async def io_bound(callback: Callable, *args: any, **kwargs: any):
 async def transcribe(e: UploadEventArguments):
     transcription.text = 'Transcribing...'
     model = replicate.models.get('openai/whisper')
-    prediction = await io_bound(model.predict, audio=io.BytesIO(e.content))
+    version = model.versions.get('30414ee7c4fffc37e260fcab7842b5be470b9b840f2b608f5baa9bbef9a259ed')
+    prediction = await io_bound(version.predict, audio=io.BytesIO(e.content))
     text = prediction.get('transcription', 'no transcription')
     transcription.set_text(f'result: "{text}"')
 
@@ -26,7 +27,8 @@ async def transcribe(e: UploadEventArguments):
 async def generate_image():
     image.source = 'https://dummyimage.com/600x400/ccc/000000.png&text=building+image...'
     model = replicate.models.get('stability-ai/stable-diffusion')
-    prediction = await io_bound(model.predict, prompt=prompt.value)
+    version = model.versions.get('db21e45d3f7023abc2a46ee38a23973f6dce16bb082a930b0c49861f96d1e5bf')
+    prediction = await io_bound(version.predict, prompt=prompt.value)
     image.source = prediction[0]
 
 # User Interface

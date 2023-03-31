@@ -18,4 +18,11 @@ class ColorPicker(Menu):
         with self:
             def handle_change(msg: Dict):
                 handle_event(on_pick, ColorPickEventArguments(sender=self, client=self.client, color=msg['args']))
-            Element('q-color').on('change', handle_change)
+            self.q_color = Element('q-color').on('change', handle_change)
+
+    def set_color(self, color: str) -> None:
+        """Set the color of the picker
+
+        :param color: the color to set
+        """
+        self.q_color.props(f'model-value="{color}"')
