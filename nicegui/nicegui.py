@@ -1,3 +1,4 @@
+from typing import Any
 import asyncio
 import os
 import time
@@ -103,24 +104,32 @@ async def exception_handler_500(request: Request, exception: Exception) -> Respo
 
 
 @sio.on('handshake')
-def handle_handshake(sid: str) -> bool:
+def on_handshake(sid: str) -> bool:
     client = get_client(sid)
     if not client:
         return False
     client.environ = sio.get_environ(sid)
     sio.enter_room(sid, client.id)
+    handle_handshake(client)
+    return True
+
+
+def handle_handshake(client: Client) -> None:
     for t in client.connect_handlers:
         safe_invoke(t, client)
     for t in globals.connect_handlers:
         safe_invoke(t, client)
-    return True
 
 
 @sio.on('disconnect')
-def handle_disconnect(sid: str) -> None:
+def on_disconnect(sid: str) -> None:
     client = get_client(sid)
     if not client:
         return
+    handle_disconnect(client)
+
+
+def handle_disconnect(client: Client) -> None:
     if not client.shared:
         delete_client(client.id)
     for t in client.disconnect_handlers:
@@ -130,10 +139,14 @@ def handle_disconnect(sid: str) -> None:
 
 
 @sio.on('event')
-def handle_event(sid: str, msg: Dict) -> None:
+def on_event(sid: str, msg: Dict) -> None:
     client = get_client(sid)
     if not client or not client.has_socket_connection:
         return
+    handle_event(client, msg)
+
+
+def handle_event(client: Client, msg: Dict) -> None:
     with client:
         sender = client.elements.get(msg['id'])
         if sender:
@@ -141,17 +154,25 @@ def handle_event(sid: str, msg: Dict) -> None:
 
 
 @sio.on('javascript_response')
-def handle_javascript_response(sid: str, msg: Dict) -> None:
+def on_javascript_response(sid: str, msg: Dict) -> None:
     client = get_client(sid)
     if not client:
         return
+    handle_javascript_response(client, msg)
+
+
+def handle_javascript_response(client: Client, msg: Dict) -> None:
     client.waiting_javascript_commands[msg['request_id']] = msg['result']
 
 
-def get_client(sid: str) -> Optional[Client]:
-    query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
+def get_client_id(environ: Dict[str, Any]) -> str:
+    query_bytes: bytearray = environ['asgi.scope']['query_string']
     query = urllib.parse.parse_qs(query_bytes.decode())
-    client_id = query['client_id'][0]
+    return query['client_id'][0]
+
+
+def get_client(sid: str) -> Optional[Client]:
+    client_id = get_client_id(sio.get_environ(sid))
     return globals.clients.get(client_id)
 
 
