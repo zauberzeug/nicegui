@@ -52,7 +52,7 @@ def get_components(name: str):
 
 
 @app.on_event('startup')
-def handle_startup(with_welcome_message: bool = True) -> None:
+async def handle_startup(with_welcome_message: bool = True) -> None:
     if not globals.ui_run_has_been_called:
         raise RuntimeError('\n\n'
                            'You must call ui.run() to start the server.\n'
@@ -73,6 +73,8 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     globals.state = globals.State.STARTED
     if with_welcome_message:
         print(f'NiceGUI ready to go on {os.environ["NICEGUI_URL"]}')
+    if globals.air:
+        await globals.air.connect()
 
 
 @app.on_event('shutdown')

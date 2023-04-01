@@ -9,6 +9,7 @@ from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from . import globals, helpers, native_mode
+from .air import Air
 
 
 def run(*,
@@ -20,6 +21,7 @@ def run(*,
         dark: Optional[bool] = False,
         binding_refresh_interval: float = 0.1,
         show: bool = True,
+        on_air: bool = False,
         native: bool = False,
         window_size: Optional[Tuple[int, int]] = None,
         fullscreen: bool = False,
@@ -44,6 +46,7 @@ def run(*,
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param show: automatically open the UI in a browser tab (default: `True`)
+    :param on_air: run with remote access (default: `False`)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
     :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`)
     :param fullscreen: open the UI in a fullscreen window (default: `False`, also activates `native`)
@@ -66,6 +69,9 @@ def run(*,
     globals.binding_refresh_interval = binding_refresh_interval
     globals.excludes = [e.strip() for e in exclude.split(',')]
     globals.tailwind = tailwind
+
+    if on_air:
+        globals.air = Air()
 
     if multiprocessing.current_process().name != 'MainProcess':
         return

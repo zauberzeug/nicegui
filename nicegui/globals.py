@@ -9,9 +9,10 @@ from socketio import AsyncServer
 from uvicorn import Server
 
 from . import background_tasks
-from .app import App
 
 if TYPE_CHECKING:
+    from .air import Air
+    from .app import App
     from .client import Client
     from .slot import Slot
 
@@ -23,7 +24,7 @@ class State(Enum):
     STOPPING = 3
 
 
-app: App
+app: 'App'
 sio: AsyncServer
 server: Server
 loop: Optional[asyncio.AbstractEventLoop] = None
@@ -39,6 +40,7 @@ dark: Optional[bool]
 binding_refresh_interval: float
 excludes: List[str]
 tailwind: bool
+air: Optional['Air'] = None
 socket_io_js_extra_headers: Dict = {}
 
 _socket_id: Optional[str] = None
