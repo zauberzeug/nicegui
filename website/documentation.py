@@ -561,10 +561,12 @@ def create_full() -> None:
     demo.BROWSER_BGCOLOR = '#ffffff'
 
     @text_demo('Native Mode', '''
-        You can run NiceGUI in native mode by setting `native=True` in `ui.run`.
-        The parameters `window_size` and `fullscreen` can be used to configure the initial window size and whether the window should be fullscreen.
-        Apart from that, you can use `app.native` to define additional keyword arguments for the internally called `webview.create_window` and `webview.start` functions.
-        These keyword arguments overrule the `ui.run` parameters.
+        You can enable native mode for NiceGUI by specifying `native=True` in the `ui.run` function. 
+        To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively. 
+        Additionally, you can provide extra keyword arguments via `app.native.window_args` and `app.native.start_args`.
+        Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html) 
+        for the `webview.create_window` and `webview.start` functions.
+        Note that these keyword arguments will take precedence over the parameters defined in ui.run.
     ''')
     def native_mode_demo():
         from nicegui import app
