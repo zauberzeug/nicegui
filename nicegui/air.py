@@ -1,3 +1,4 @@
+import gzip
 from typing import Any, Dict
 
 from fastapi.testclient import TestClient
@@ -16,13 +17,14 @@ class Air:
 
         @self.relay.on('get')
         def on_get(data: Dict[str, Any]) -> Dict[str, Any]:
-            print(f'get {data["path"]}', flush=True)
-            response = self.test_client.get(data['path'])
+            headers = headers = {'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']}
+            response = self.test_client.get(data['path'], headers=headers)
             return {
                 'status_code': response.status_code,
-                'content': response.content,
+                'headers': {'Content-Encoding': 'gzip'},
+                'content': gzip.compress(response.content),
                 'media_type': response.headers.get('content-type'),
             }
 
     async def connect(self) -> None:
-        await self.relay.connect(RELAY_HOST, socketio_path='/on_air/socket.io', headers={'NiceGUI': 'register_relay'})
+        await self.relay.connect(RELAY_HOST, socketio_path='/on_air/socket.io')
