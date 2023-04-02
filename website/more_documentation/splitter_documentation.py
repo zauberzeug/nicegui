@@ -6,10 +6,9 @@ from ..documentation_tools import text_demo
 def main_demo() -> None:
     with ui.splitter() as splitter:
         with splitter.before:
-            ui.label('This is some content on the left hand side.')
+            ui.label('This is some content on the left hand side.').classes('mr-2')
         with splitter.after:
-            ui.label('This is some content on the right hand side.')\
-                .classes('ml-2')
+            ui.label('This is some content on the right hand side.').classes('ml-2')
 
 
 def more() -> None:
@@ -21,10 +20,9 @@ def more() -> None:
                          on_change=lambda e: ui.notify(e.value)) as splitter:
             ui.tooltip('This is the default slot.').classes('bg-green')
             with splitter.before:
-                ui.label('This is the left hand side.')
+                ui.label('This is the left hand side.').classes('mr-2')
             with splitter.after:
-                ui.label('This is the right hand side.') \
-                    .classes('ml-2')
+                ui.label('This is the right hand side.').classes('ml-2')
             with splitter.separator:
                 ui.icon('lightbulb').classes('text-green')
 

@@ -1,8 +1,10 @@
 import asyncio
 from uuid import uuid4
 
-from nicegui import Client, background_tasks, ui
 from fastapi.responses import PlainTextResponse
+
+from nicegui import Client, background_tasks, ui
+
 from .screen import Screen
 
 
