@@ -12,7 +12,8 @@ RELAY_HOST = 'https://n6.zauberzeug.com'
 
 class Air:
 
-    def __init__(self) -> None:
+    def __init__(self, token: str) -> None:
+        self.token = token
         self.relay = AsyncClient()
         self.test_client = TestClient(globals.app)
 
@@ -38,7 +39,7 @@ class Air:
             handle_handshake(client)
             return True
 
-        @self.relay.on('disconnect')
+        @self.relay.on('client_disconnect')
         def on_disconnect(data: Dict[str, Any]) -> None:
             client_id = data['client_id']
             if client_id not in globals.clients:
@@ -63,7 +64,7 @@ class Air:
             handle_javascript_response(client, data['msg'])
 
     async def connect(self) -> None:
-        await self.relay.connect(RELAY_HOST, socketio_path='/on_air/socket.io')
+        await self.relay.connect(f'{RELAY_HOST}?device_token={self.token}', socketio_path='/on_air/socket.io')
 
     async def emit(self, message_type: str, data: Dict[str, Any], room: str) -> None:
         await self.relay.emit('forward', {'event': message_type, 'data': data, 'room': room})
