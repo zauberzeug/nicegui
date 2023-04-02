@@ -1,4 +1,3 @@
-from typing import Any
 import asyncio
 import os
 import time
@@ -165,14 +164,10 @@ def handle_javascript_response(client: Client, msg: Dict) -> None:
     client.waiting_javascript_commands[msg['request_id']] = msg['result']
 
 
-def get_client_id(environ: Dict[str, Any]) -> str:
-    query_bytes: bytearray = environ['asgi.scope']['query_string']
-    query = urllib.parse.parse_qs(query_bytes.decode())
-    return query['client_id'][0]
-
-
 def get_client(sid: str) -> Optional[Client]:
-    client_id = get_client_id(sio.get_environ(sid))
+    query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
+    query = urllib.parse.parse_qs(query_bytes.decode())
+    client_id = query['client_id'][0]
     return globals.clients.get(client_id)
 
 

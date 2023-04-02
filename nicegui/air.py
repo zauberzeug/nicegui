@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from socketio import AsyncClient
 
 from . import globals
-from .nicegui import get_client_id, handle_handshake
+from .nicegui import handle_handshake
 
 RELAY_HOST = 'https://n6.zauberzeug.com'
 
@@ -28,14 +28,26 @@ class Air:
             }
 
         @self.relay.on('handshake')
-        def on_handshake(environ: Dict[str, Any]) -> Dict[str, Any]:
-            client_id = get_client_id(environ)
+        def on_handshake(data: Dict[str, Any]) -> bool:
+            client_id = data['client_id']
             if client_id not in globals.clients:
                 return False
             client = globals.clients[client_id]
-            client.environ = environ
+            client.environ = data['environ']
             handle_handshake(client)
             return True
+
+        @self.relay.on('event')
+        def on_event(data: Dict[str, Any]) -> None:
+            client_id = data['client_id']
+            if client_id not in globals.clients:
+                return
+            client = globals.clients[client_id]
+            with client:
+                msg = data['msg']
+                sender = client.elements.get(msg['id'])
+                if sender:
+                    sender._handle_event(msg)
 
     async def connect(self) -> None:
         await self.relay.connect(RELAY_HOST, socketio_path='/on_air/socket.io')
