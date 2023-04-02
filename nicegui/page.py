@@ -23,6 +23,9 @@ class page:
         """Page
 
         Creates a new page at the given route.
+        Each user will see a new instance of the page.
+        Which means it is private to the user and not shared with others 
+        (as it is done `when placing elements outside of a page decorator <https://nicegui.io/documentation#auto-index_page>`_).)
 
         :param path: route of the new page (path must start with '/')
         :param title: optional page title
