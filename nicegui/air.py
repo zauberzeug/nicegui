@@ -51,3 +51,6 @@ class Air:
 
     async def connect(self) -> None:
         await self.relay.connect(RELAY_HOST, socketio_path='/on_air/socket.io')
+
+    async def emit(self, message_type: str, data: Dict[str, Any], room: str) -> None:
+        await self.relay.emit('forward', {'event': message_type, 'data': data, 'room': room})
