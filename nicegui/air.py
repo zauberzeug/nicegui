@@ -34,6 +34,7 @@ class Air:
                 return False
             client = globals.clients[client_id]
             client.environ = data['environ']
+            client.on_air = True
             handle_handshake(client)
             return True
 
