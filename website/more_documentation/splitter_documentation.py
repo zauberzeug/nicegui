@@ -8,7 +8,8 @@ def main_demo() -> None:
         with splitter.before:
             ui.label('This is some content on the left hand side.')
         with splitter.after:
-            ui.label('This is some content on the right hand side.')
+            ui.label('This is some content on the right hand side.')\
+                .classes('ml-2')
 
 
 def more() -> None:
@@ -22,7 +23,8 @@ def more() -> None:
             with splitter.before:
                 ui.label('This is the left hand side.')
             with splitter.after:
-                ui.label('This is the right hand side.')
+                ui.label('This is the right hand side.') \
+                    .classes('ml-2')
             with splitter.separator:
                 ui.icon('lightbulb').classes('text-green')
 

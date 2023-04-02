@@ -12,10 +12,14 @@ class Splitter(ValueElement):
                  on_change: Optional[Callable] = None) -> None:
         """Splitter
 
-        This element is based on Quasar's `Splitter <https://quasar.dev/vue-components/splitter>`_ component.
+        The `ui.splitter` element divides the screen space into resizable sections, 
+        allowing for flexible and responsive layouts in your applications.
 
-        It provides three additional slots: `before`, `after`, and `separator`.
-        They can be used to place other elements inside.
+        Based on Quasar's Splitter component:
+        `Splitter <https://quasar.dev/vue-components/splitter>`_
+
+        It provides three customizable slots: ``before``, ``after``, and ``separator``, which can be
+        used to embed other elements within the splitter.
 
         :param horizontal: Whether to split horizontally instead of vertically
         :param limits: Two numbers representing the minimum and maximum split size of the two panels
