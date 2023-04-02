@@ -67,7 +67,7 @@ class page:
             if inspect.isawaitable(result):
                 async def wait_for_result() -> None:
                     with client:
-                        await result
+                        return await result
                 task = background_tasks.create(wait_for_result())
                 deadline = time.time() + self.response_timeout
                 while task and not client.is_waiting_for_connection and not task.done():

@@ -247,3 +247,20 @@ def test_returning_custom_response(screen: Screen):
     screen.open('/?plain=true')
     screen.should_contain('custom response')
     screen.should_not_contain('normal NiceGUI page')
+
+
+def test_returning_custom_response_async(screen: Screen):
+    @ui.page('/')
+    async def page(plain: bool = False):
+        await asyncio.sleep(0.01)  # simulates a db request or similar
+        if plain:
+            return PlainTextResponse('custom response')
+        else:
+            ui.label('normal NiceGUI page')
+
+    screen.open('/')
+    screen.should_contain('normal NiceGUI page')
+    screen.should_not_contain('custom response')
+    screen.open('/?plain=true')
+    screen.should_contain('custom response')
+    screen.should_not_contain('normal NiceGUI page')
