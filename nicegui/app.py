@@ -4,9 +4,14 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from . import globals
+from .native import Native
 
 
 class App(FastAPI):
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.native = Native()
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
         """Called every time a new client connects to NiceGUI.

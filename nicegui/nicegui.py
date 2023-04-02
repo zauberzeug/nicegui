@@ -29,7 +29,8 @@ socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=jso
 globals.sio = sio = app.sio
 
 app.add_middleware(GZipMiddleware)
-app.mount(f'/_nicegui/{__version__}/static', StaticFiles(directory=Path(__file__).parent / 'static'), name='static')
+static_files = StaticFiles(directory=Path(__file__).parent / 'static', follow_symlink=True)
+app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
 
 globals.index_client = Client(page('/'), shared=True).__enter__()
 

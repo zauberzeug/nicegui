@@ -23,6 +23,9 @@ class page:
         """Page
 
         Creates a new page at the given route.
+        Each user will see a new instance of the page.
+        This means it is private to the user and not shared with others 
+        (as it is done `when placing elements outside of a page decorator <https://nicegui.io/documentation#auto-index_page>`_).
 
         :param path: route of the new page (path must start with '/')
         :param title: optional page title
@@ -64,7 +67,7 @@ class page:
             if inspect.isawaitable(result):
                 async def wait_for_result() -> None:
                     with client:
-                        await result
+                        return await result
                 task = background_tasks.create(wait_for_result())
                 deadline = time.time() + self.response_timeout
                 while task and not client.is_waiting_for_connection and not task.done():

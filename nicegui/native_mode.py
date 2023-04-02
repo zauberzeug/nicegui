@@ -15,8 +15,10 @@ with warnings.catch_warnings():
 
 
 def open_window(url: str, title: str, width: int, height: int, fullscreen: bool) -> None:
-    webview.create_window(title, url=url, width=width, height=height, fullscreen=fullscreen)
-    webview.start(storage_path=tempfile.mkdtemp())
+    window_kwargs = dict(url=url, title=title, width=width, height=height, fullscreen=fullscreen)
+    window_kwargs.update(globals.app.native.window_args)
+    webview.create_window(**window_kwargs)
+    webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
 
 
 def activate(url: str, title: str, width: int, height: int, fullscreen: bool) -> None:

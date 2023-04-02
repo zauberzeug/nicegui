@@ -47,6 +47,7 @@ from .elements.select import Select as select
 from .elements.separator import Separator as separator
 from .elements.slider import Slider as slider
 from .elements.spinner import Spinner as spinner
+from .elements.splitter import Splitter as splitter
 from .elements.switch import Switch as switch
 from .elements.table import Table as table
 from .elements.tabs import Tab as tab

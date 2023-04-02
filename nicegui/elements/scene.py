@@ -53,7 +53,7 @@ class Scene(Element):
     from .scene_objects import Text3d as text3d
     from .scene_objects import Texture as texture
 
-    def __init__(self, width: int = 400, height: int = 300, on_click: Optional[Callable] = None) -> None:
+    def __init__(self, width: int = 400, height: int = 300, grid: bool = True, on_click: Optional[Callable] = None) -> None:
         """3D Scene
 
         Display a 3d scene using `three.js <https://threejs.org/>`_.
@@ -63,11 +63,13 @@ class Scene(Element):
 
         :param width: width of the canvas
         :param height: height of the canvas
+        :param grid: whether to display a grid
         :param on_click: callback to execute when a 3d object is clicked
         """
         super().__init__('scene')
         self._props['width'] = width
         self._props['height'] = height
+        self._props['grid'] = grid
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
