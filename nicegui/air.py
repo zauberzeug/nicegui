@@ -7,7 +7,7 @@ from socketio import AsyncClient
 from . import globals
 from .nicegui import get_client_id, handle_handshake
 
-RELAY_HOST = 'http://192.168.0.111'
+RELAY_HOST = 'https://n6.zauberzeug.com'
 
 
 class Air:
@@ -29,9 +29,13 @@ class Air:
 
         @self.relay.on('handshake')
         def on_handshake(environ: Dict[str, Any]) -> Dict[str, Any]:
-            client = globals.clients[get_client_id(environ)]
+            client_id = get_client_id(environ)
+            if client_id not in globals.clients:
+                return False
+            client = globals.clients[client_id]
             client.environ = environ
-            return handle_handshake(client)
+            handle_handshake(client)
+            return True
 
     async def connect(self) -> None:
         await self.relay.connect(RELAY_HOST, socketio_path='/on_air/socket.io')
