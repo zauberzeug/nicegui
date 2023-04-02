@@ -2,7 +2,7 @@ import asyncio
 from uuid import uuid4
 
 from nicegui import Client, background_tasks, ui
-
+from fastapi.responses import PlainTextResponse
 from .screen import Screen
 
 
@@ -231,3 +231,19 @@ def test_dark_mode(screen: Screen):
     screen.open('/dark')
     assert screen.find('C').value_of_css_property('color') == red
     assert screen.find_by_tag('body').value_of_css_property('background-color') == black
+
+
+def test_returning_custom_response(screen: Screen):
+    @ui.page('/')
+    def page(plain: bool = False):
+        if plain:
+            return PlainTextResponse('custom response')
+        else:
+            ui.label('normal NiceGUI page')
+
+    screen.open('/')
+    screen.should_contain('normal NiceGUI page')
+    screen.should_not_contain('custom response')
+    screen.open('/?plain=true')
+    screen.should_contain('custom response')
+    screen.should_not_contain('normal NiceGUI page')
