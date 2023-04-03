@@ -1,5 +1,6 @@
 import asyncio
 import os
+import platform
 import time
 import urllib.parse
 from pathlib import Path
@@ -29,7 +30,10 @@ socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=jso
 globals.sio = sio = app.sio
 
 app.add_middleware(GZipMiddleware)
-static_files = StaticFiles(directory=Path(__file__).parent / 'static', follow_symlink=True)
+static_files = StaticFiles(
+    directory=Path(__file__).parent / 'static',
+    follow_symlink=platform.system().lower() != 'windows'
+)
 app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
 
 globals.index_client = Client(page('/'), shared=True).__enter__()
