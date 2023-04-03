@@ -61,7 +61,7 @@ def query(selector: str) -> Query:
 
     To manipulate elements like the document body, you can use the `ui.query` function.
     With the query result you can add classes, styles, and attributes like with every other UI element.
-    This can be useful for example to change the background color of the page (eg. `ui.query('body').classes('bg-green')`).
+    This can be useful for example to change the background color of the page (e.g. `ui.query('body').classes('bg-green')`).
     """
     for element in get_client().elements.values():
         if isinstance(element, Query) and element._props['selector'] == selector:
