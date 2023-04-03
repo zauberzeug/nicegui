@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import asyncio
 from typing import List, Tuple
-from nicegui import ui, Client
 
-messages: Tuple[str, str] = []
+from nicegui import Client, ui
+
+messages: List[Tuple[str, str]] = []
 contents: List[ui.column] = []
 
 
