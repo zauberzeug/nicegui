@@ -2,7 +2,7 @@ import uuid
 
 from nicegui import app, ui
 
-from . import demo
+from .demo import bash_window, python_window
 from .documentation_tools import element_demo, heading, intro_demo, load_demo, subheading, text_demo
 
 CONSTANT_UUID = str(uuid.uuid4())
@@ -163,7 +163,6 @@ def create_full() -> None:
         ui.button('Clear', on_click=container.clear)
 
     load_demo(ui.expansion)
-    load_demo(ui.splitter)
 
     @text_demo('Tabs', '''
         The elements `ui.tabs`, `ui.tab`, `ui.tab_panels`, and `ui.tab_panel` resemble
@@ -236,12 +235,12 @@ def create_full() -> None:
 
     @text_demo('TailwindCSS', '''
         [TailwindCSS](https://tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces.
-        NiceGUI provides a dedicated interface for adding Tailwind classes to UI elements.
+        NiceGUI provides a fluent, auto-complete friendly interface for adding Tailwind classes to UI elements.
         
         You can discover available classes by navigating the methods of the `tailwind` property.
-        The builder pattern allows you to chain multiple classes together (label A).
+        The builder pattern allows you to chain multiple classes together (as shown with "Label A").
+        You can also call the `tailwind` property with a list of classes (as shown with "Label B").
 
-        You can also call the `tailwind` property with a list of classes (label B).
         Although this is very similar to using the `classes` method, it is more convenient for Tailwind classes due to auto-completion.
 
         Last but not least, you can also predefine a style and apply it to multiple elements (labels C and D).
@@ -249,13 +248,11 @@ def create_full() -> None:
     def tailwind_demo():
         from nicegui import Tailwind
         ui.label('Label A').tailwind.font_weight('extrabold').text_color('blue-600').background_color('orange-200')
-
         ui.label('Label B').tailwind('drop-shadow', 'font-bold', 'text-green-600')
 
         red_style = Tailwind().text_color('red-600').font_weight('bold')
         label_c = ui.label('Label C')
         red_style.apply(label_c)
-
         ui.label('Label D').tailwind(red_style)
 
     load_demo(ui.colors)
@@ -572,7 +569,6 @@ def create_full() -> None:
             ui.input('G').classes('w-12').on('keydown.space', lambda: ui.notify('You pressed space.'))
             ui.input('H').classes('w-12').on('keydown.y.shift', lambda: ui.notify('You pressed Shift+Y'))
             ui.input('I').classes('w-12').on('keydown.once', lambda: ui.notify('You started typing.'))
-
     heading('Configuration')
 
     @element_demo(ui.run, browser_title='My App')
@@ -580,30 +576,6 @@ def create_full() -> None:
         ui.label('page with custom title')
 
         # ui.run(title='My App')
-
-    # HACK: switch color to white for the next demo
-    demo_BROWSER_BGCOLOR = demo.BROWSER_BGCOLOR
-    demo.BROWSER_BGCOLOR = '#ffffff'
-
-    @text_demo('Native Mode', '''
-        You can enable native mode for NiceGUI by specifying `native=True` in the `ui.run` function. 
-        To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively. 
-        Additionally, you can provide extra keyword arguments via `app.native.window_args` and `app.native.start_args`.
-        Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html) 
-        for the `webview.create_window` and `webview.start` functions.
-        Note that these keyword arguments will take precedence over the parameters defined in ui.run.
-    ''')
-    def native_mode_demo():
-        from nicegui import app
-
-        ui.label('app running in native mode')
-
-        app.native.window_args['resizable'] = False
-        app.native.start_args['debug'] = True
-
-        # ui.run(native=True, window_size=(400, 300), fullscreen=False)
-    # HACK: restore color
-    demo.BROWSER_BGCOLOR = demo_BROWSER_BGCOLOR
 
     @text_demo('Environment Variables', '''
         You can set the following environment variables to configure NiceGUI:
@@ -629,7 +601,7 @@ def create_full() -> None:
         A convenient alternative is the use of our [pre-built multi-arch Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
         With this command you can launch the script `main.py` in the current directory on the public port 80:
     ''').classes('bold-links arrow-links')
-    with demo.bash_window(classes='max-w-lg w-full h-52'):
+    with bash_window(classes='max-w-lg w-full h-52'):
         ui.markdown('''
             ```bash
             docker run -p 80:8080 -v $(pwd)/:/app/ \\
@@ -641,7 +613,7 @@ def create_full() -> None:
         The `-d` tells docker to run in background and `--restart always` makes sure the container is restarted if the app crashes or the server reboots.
         Of course this can also be written in a Docker compose file:
     ''')
-    with demo.python_window('docker-compose.yml', classes='max-w-lg w-full h-52'):
+    with python_window('docker-compose.yml', classes='max-w-lg w-full h-52'):
         ui.markdown('''
             ```yaml
             app:
@@ -675,7 +647,7 @@ def create_full() -> None:
     ''').classes('bold-links arrow-links')
 
     with ui.row().classes('w-full items-stretch'):
-        with demo.python_window(classes='max-w-lg w-full'):
+        with python_window(classes='max-w-lg w-full'):
             ui.markdown('''
                 ```python
                 from nicegui import ui
@@ -685,7 +657,7 @@ def create_full() -> None:
                 ui.run(reload=False)
                 ```
             ''')
-        with demo.python_window('build.py', classes='max-w-lg w-full'):
+        with python_window('build.py', classes='max-w-lg w-full'):
             ui.markdown('''
                 ```python
                 import os
@@ -747,7 +719,7 @@ def create_full() -> None:
           That is why the build script invokes PyInstaller using `python -m PyInstaller` rather than just `pyinstaller`.
     ''').classes('bold-links arrow-links')
 
-    with demo.bash_window(classes='max-w-lg w-full h-42 self-center'):
+    with bash_window(classes='max-w-lg w-full h-42 self-center'):
         ui.markdown('''
             ```bash
             python -m venv venv

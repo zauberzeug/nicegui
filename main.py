@@ -154,7 +154,7 @@ async def index_page(client: Client):
                 'customizable color themes',
                 'custom CSS and classes',
                 'modern look with material design',
-                'built-in [Tailwind](https://tailwindcss.com/) support',
+                '[Tailwind](https://tailwindcss.com/) auto-completion',
             ])
             features('source', 'Coding', [
                 'live-cycle events',
