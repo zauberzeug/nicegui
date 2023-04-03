@@ -314,27 +314,29 @@ def documentation_page():
 
 @ui.page('/documentation/{name}')
 def documentation_page_more(name: str):
+    if not hasattr(ui, name):
+        name = name.replace('_', '')  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
+    module = importlib.import_module(f'website.more_documentation.{name}_documentation')
+    api = getattr(ui, name)
+    more = getattr(module, 'more', None)
+    back_link_target = str(api.__doc__ or api.__init__.__doc__).splitlines()[0].strip()
+
     add_head_html()
     add_header()
     with side_menu() as menu:
-        ui.markdown(f'[← back](/documentation#{create_anchor_name(name)})').classes('bold-links')
+        ui.markdown(f'[← back](/documentation#{create_anchor_name(back_link_target)})').classes('bold-links')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
-        if not hasattr(ui, name):
-            name = name.replace('_', '')  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
         section_heading('Documentation', f'ui.*{name}*')
-        module = importlib.import_module(f'website.more_documentation.{name}_documentation')
-        element_class = getattr(ui, name)
-        more = getattr(module, 'more', None)
         with menu:
             ui.markdown('**Demos**' if more else '**Demo**').classes('mt-4')
-        element_demo(element_class)(getattr(module, 'main_demo'))
+        element_demo(api)(getattr(module, 'main_demo'))
         if more:
             more()
-        if inspect.isclass(element_class):
+        if inspect.isclass(api):
             with menu:
                 ui.markdown('**Reference**').classes('mt-4')
             ui.markdown('## Reference').classes('mt-16')
-            generate_class_doc(element_class)
+            generate_class_doc(api)
 
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html')

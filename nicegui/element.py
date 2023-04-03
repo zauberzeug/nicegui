@@ -93,6 +93,16 @@ class Element(Visibility):
             'events': [listener.to_dict() for listener in self._event_listeners.values()],
         }
 
+    @staticmethod
+    def _update_classes_list(
+            classes: List[str],
+            add: Optional[str] = None, remove: Optional[str] = None, replace: Optional[str] = None) -> List[str]:
+        class_list = classes if replace is None else []
+        class_list = [c for c in class_list if c not in (remove or '').split()]
+        class_list += (add or '').split()
+        class_list += (replace or '').split()
+        return list(dict.fromkeys(class_list))  # NOTE: remove duplicates while preserving order
+
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
             -> Self:
         """Apply, remove, or replace HTML classes.
@@ -105,11 +115,7 @@ class Element(Visibility):
         :param remove: whitespace-delimited string of classes to remove from the element
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
-        class_list = self._classes if replace is None else []
-        class_list = [c for c in class_list if c not in (remove or '').split()]
-        class_list += (add or '').split()
-        class_list += (replace or '').split()
-        new_classes = list(dict.fromkeys(class_list))  # NOTE: remove duplicates while preserving order
+        new_classes = self._update_classes_list(self._classes, add, remove, replace)
         if self._classes != new_classes:
             self._classes = new_classes
             self.update()
@@ -133,11 +139,10 @@ class Element(Visibility):
         :param add: semicolon-separated list of styles to add to the element
         :param remove: semicolon-separated list of styles to remove from the element
         :param replace: semicolon-separated list of styles to use instead of existing ones
-         """
+        """
         style_dict = deepcopy(self._style) if replace is None else {}
         for key in self._parse_style(remove):
-            if key in style_dict:
-                del style_dict[key]
+            style_dict.pop(key, None)
         style_dict.update(self._parse_style(add))
         style_dict.update(self._parse_style(replace))
         if self._style != style_dict:

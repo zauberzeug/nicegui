@@ -256,6 +256,7 @@ def create_full() -> None:
         red_style.apply(label_c)
         ui.label('Label D').tailwind(red_style)
 
+    load_demo(ui.query)
     load_demo(ui.colors)
 
     heading('Action')
