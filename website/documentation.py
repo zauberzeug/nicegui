@@ -223,7 +223,7 @@ def create_full() -> None:
         NiceGUI uses the [Quasar Framework](https://quasar.dev/) version 1.0 and hence has its full design power.
         Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
         Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
-        You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method.
+        You can also apply [TailwindCSS](https://tailwindcss.com/) utility classes with the `classes` method.
 
         If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
 
@@ -233,6 +233,30 @@ def create_full() -> None:
         ui.radio(['x', 'y', 'z'], value='x').props('inline color=green')
         ui.button().props('icon=touch_app outline round').classes('shadow-lg')
         ui.label('Stylish!').style('color: #6E93D6; font-size: 200%; font-weight: 300')
+
+    @text_demo('TailwindCSS', '''
+        [TailwindCSS](https://tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces.
+        NiceGUI provides a dedicated interface for adding Tailwind classes to UI elements.
+        
+        You can discover available classes by navigating the methods of the `tailwind` property.
+        The builder pattern allows you to chain multiple classes together (label A).
+
+        You can also call the `tailwind` property with a list of classes (label B).
+        Although this is very similar to using the `classes` method, it is more convenient for Tailwind classes due to auto-completion.
+
+        Last but not least, you can also predefine a style and apply it to multiple elements (labels C and D).
+    ''')
+    def tailwind_demo():
+        from nicegui import Tailwind
+        ui.label('Label A').tailwind.font_weight('extrabold').text_color('blue-600').background_color('orange-200')
+
+        ui.label('Label B').tailwind('drop-shadow', 'font-bold', 'text-green-600')
+
+        red_style = Tailwind().text_color('red-600').font_weight('bold')
+        label_c = ui.label('Label C')
+        red_style.apply(label_c)
+
+        ui.label('Label D').tailwind(red_style)
 
     load_demo(ui.colors)
 
