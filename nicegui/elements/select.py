@@ -27,7 +27,8 @@ class Select(ChoiceElement):
         :param with_input: whether to show an input field to filter the options
         """
         super().__init__(tag='select', options=options, value=value, on_change=on_change)
-        self._props['label'] = label
+        if label is not None:
+            self._props['label'] = label
         if with_input:
             self.original_options = deepcopy(options)
             self._props['use-input'] = True
