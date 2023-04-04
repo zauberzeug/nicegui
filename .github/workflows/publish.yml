@@ -30,12 +30,12 @@ jobs:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
         run: poetry publish --build
       - name: Create GitHub release entry
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         id: create_release
         with:
           draft: false
           prerelease: false
-          release_name: ${{ env.VERSION }}
+          name: ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
