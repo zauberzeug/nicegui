@@ -58,3 +58,32 @@ def more() -> None:
                     </q-td>
                 </q-tr>
             ''')
+
+    @text_demo('Show and hide columns', '''
+        Here is an example of how to show and hide columns in a table.
+    ''')
+    def show_and_hide_columns():
+        columns = [
+            {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
+            {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
+        ]
+        rows = [
+            {'name': 'Alice', 'age': 18},
+            {'name': 'Bob', 'age': 21},
+            {'name': 'Carol'},
+        ]
+        visible_columns = {column['name'] for column in columns}
+        table = ui.table(columns=columns, rows=rows, row_key='name')
+
+        def toggle(column: dict, visible: bool) -> None:
+            if visible:
+                visible_columns.add(column['name'])
+            else:
+                visible_columns.remove(column['name'])
+            table._props['columns'] = [column for column in columns if column['name'] in visible_columns]
+            table.update()
+
+        with ui.button(on_click=lambda: menu.open()).props('icon=menu'):
+            with ui.menu() as menu, ui.column().classes('gap-0 p-2'):
+                for column in columns:
+                    ui.switch(column['label'], value=True, on_change=lambda e, column=column: toggle(column, e.value))
