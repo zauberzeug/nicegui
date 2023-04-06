@@ -1,13 +1,13 @@
+from pathlib import Path
 from typing import Optional
 
 from typing_extensions import Self
 
-from ..dependencies import register_component
+from ..dependencies import register_vue_component
 from ..element import Element
 from ..globals import get_client
 
-register_component('query', __file__, 'query.js')
-
+register_vue_component(name='query', path=Path(__file__).parent.joinpath('query.js'))
 
 class Query(Element):
 
@@ -17,6 +17,7 @@ class Query(Element):
         self._props['classes'] = []
         self._props['style'] = {}
         self._props['props'] = {}
+        self.use_component('query')
 
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
             -> Self:

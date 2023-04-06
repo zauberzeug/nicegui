@@ -1,13 +1,14 @@
+from pathlib import Path
 from typing import Callable, Dict, List
 
 from typing_extensions import Literal
 
 from ..binding import BindableProperty
-from ..dependencies import register_component
+from ..dependencies import register_vue_component
 from ..element import Element
 from ..events import KeyboardAction, KeyboardKey, KeyboardModifiers, KeyEventArguments, handle_event
 
-register_component('keyboard', __file__, 'keyboard.js')
+register_vue_component(name='keyboard', path=Path(__file__).parent.joinpath('keyboard.js'))
 
 
 class Keyboard(Element):
@@ -35,6 +36,7 @@ class Keyboard(Element):
         self._props['repeating'] = repeating
         self._props['ignore'] = ignore
         self.on('key', self.handle_key)
+        self.use_component('keyboard')
 
     def handle_key(self, msg: Dict) -> None:
         if not self.active:

@@ -1,12 +1,13 @@
 import re
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from nicegui.dependencies import register_component
+from nicegui.dependencies import register_vue_component
 
 from .choice_element import ChoiceElement
 
-register_component('select', __file__, 'select.js')
+register_vue_component(name='select', path=Path(__file__).parent.joinpath('select.js'))
 
 
 class Select(ChoiceElement):
@@ -27,6 +28,7 @@ class Select(ChoiceElement):
         :param with_input: whether to show an input field to filter the options
         """
         super().__init__(tag='select', options=options, value=value, on_change=on_change)
+        self.use_component('select')
         if label is not None:
             self._props['label'] = label
         if with_input:

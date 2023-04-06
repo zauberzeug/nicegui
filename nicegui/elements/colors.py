@@ -1,7 +1,9 @@
-from ..dependencies import register_component
+from pathlib import Path
+
+from ..dependencies import register_vue_component
 from ..element import Element
 
-register_component('colors', __file__, 'colors.js')
+register_vue_component(name='colors', path=Path(__file__).parent.joinpath('colors.js'))
 
 
 class Colors(Element):
@@ -26,4 +28,5 @@ class Colors(Element):
         self._props['negative'] = negative
         self._props['info'] = info
         self._props['warning'] = warning
+        self.use_component('colors')
         self.update()

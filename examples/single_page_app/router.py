@@ -1,9 +1,10 @@
+from pathlib import Path
 from typing import Awaitable, Callable, Dict, Union
 
 from nicegui import background_tasks, ui
-from nicegui.dependencies import register_component
+from nicegui.dependencies import register_vue_component
 
-register_component('router_frame', __file__, 'router_frame.js')
+register_vue_component(name='router_frame', path=Path(__file__).parent.joinpath('router_frame.js'))
 
 
 class Router():
@@ -36,5 +37,5 @@ class Router():
         background_tasks.create(build())
 
     def frame(self) -> ui.element:
-        self.content = ui.element('router_frame').on('open', lambda msg: self.open(msg['args']))
+        self.content = ui.element('router_frame').on('open', lambda msg: self.open(msg['args'])).use_component('router_frame')
         return self.content

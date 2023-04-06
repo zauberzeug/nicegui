@@ -271,8 +271,10 @@ class Element(Visibility):
         Can be overridden to perform cleanup.
         """
 
-    def use_component(self, name: str) -> None:
+    def use_component(self, name: str) -> Self:
         self.components.append(f'vue_{name}')
+        return self
 
-    def use_library(self, name: str) -> None:
+    def use_library(self, name: str) -> Self:
         self.libraries.append(f'lib_{name}')
+        return self
