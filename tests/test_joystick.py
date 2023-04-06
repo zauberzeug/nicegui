@@ -1,5 +1,4 @@
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.by import By
 
 from nicegui import ui
 
@@ -12,7 +11,7 @@ def test_joystick(screen: Screen):
     coordinates = ui.label('start 0, 0')
 
     screen.open('/')
-    joystick = screen.selenium.find_element(By.ID, j.id)
+    joystick = screen.find_by_id(j.id)
     assert joystick
     screen.should_contain('start 0, 0')
 
@@ -36,6 +35,6 @@ def test_styling_joystick(screen: Screen):
     j = ui.joystick().style('background-color: gray;').classes('shadow-lg')
 
     screen.open('/')
-    joystick = screen.selenium.find_element(By.ID, j.id)
+    joystick = screen.find_by_id(j.id)
     assert 'background-color: gray;' in joystick.get_attribute('style')
     assert 'shadow-lg' in joystick.get_attribute('class')

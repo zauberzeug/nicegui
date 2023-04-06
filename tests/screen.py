@@ -134,6 +134,9 @@ class Screen:
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 
+    def find_by_id(self, id: str) -> WebElement:
+        return self.selenium.find_element(By.ID, id)
+
     def find_by_tag(self, name: str) -> WebElement:
         return self.selenium.find_element(By.TAG_NAME, name)
 
