@@ -7,6 +7,14 @@ import vbuild
 
 from . import __version__
 
+
+class Legacy():
+    """ @todo remove when register_component is removed. """
+    components: List[str] = []
+    libraries: List[str] = []
+
+
+legacy = Legacy()  # @todo remove when register_component is removed.
 js_dependencies: Dict[str, Any] = {}  # @todo remove when unused in elements.
 vue_components: Dict[str, Any] = {}
 js_components: Dict[str, Any] = {}
@@ -58,10 +66,12 @@ def register_component(name: str, py_filepath: str, component_filepath: str, dep
     suffix = Path(component_filepath).suffix.lower()
     if suffix in {'.vue', '.js'}:
         register_vue_component(name, Path(Path(py_filepath).parent, component_filepath).absolute())
+        legacy.components.append(f'vue_{name}')
 
-    for dependency in dependencies + optional_dependencies:
+    for idx, dependency in enumerate(dependencies + optional_dependencies):
         path = Path(Path(py_filepath).parent, dependency)
-        register_library(name, path)
+        register_library(name + str(idx), path)
+        legacy.libraries.append(f'lib_{name}{idx}')
 
 
 def generate_resources(prefix: str, elements) -> Tuple[str, str, str, str, str]:
@@ -73,7 +83,9 @@ def generate_resources(prefix: str, elements) -> Tuple[str, str, str, str, str]:
     import_maps = {'imports': {}}
 
     # Build the resources associated with the elements.
-    for element in elements:
+    all_elements = list(elements)  # @todo remove all_elements when legacy support is dropped.
+    all_elements.append(legacy)
+    for element in all_elements:  # @todo 'in elements' iteration when legacy support is dropped.
         for index in element.libraries:
             if index in libraries and index not in done:
                 if libraries[index]['expose']:
