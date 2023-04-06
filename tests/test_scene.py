@@ -58,3 +58,17 @@ def test_no_object_duplication_with_page_builder(screen: Screen):
     assert screen.selenium.execute_script(f'return scene_{scene.id}.children.length') == 5
     screen.switch_to(1)
     assert screen.selenium.execute_script(f'return scene_{scene.id}.children.length') == 5
+
+
+def test_deleting_group(screen: Screen):
+    with ui.scene() as scene:
+        with scene.group() as group:
+            scene.sphere()
+    ui.button('Delete group', on_click=group.delete)
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert len(scene.objects) == 2
+    screen.click('Delete group')
+    screen.wait(0.5)
+    assert len(scene.objects) == 0
