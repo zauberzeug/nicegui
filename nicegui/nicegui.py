@@ -54,8 +54,6 @@ def get_dependencies(id: int, name: str):
     raise HTTPException(status_code=404, detail=f'dependency "{name}" with ID {id} not found')
 
 
-@app.get(f'/_nicegui/{__version__}' + '/library/{name}')
-def get_dependencies(name: str):
 @app.get(f'/_nicegui/{__version__}' + '/library/{name}/{file}')
 def get_dependencies(name: str, file: str):
     if name in libraries and libraries[name]['path'].exists():
