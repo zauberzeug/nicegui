@@ -1,4 +1,6 @@
-from typing import Optional, get_args
+from typing import Optional
+
+from typing_extensions import get_args
 
 from .element import Element
 from .tailwind_types.background_color import BackgroundColor
