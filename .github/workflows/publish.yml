@@ -110,7 +110,7 @@ jobs:
           short_description: "Web Based User Interface für Python with Buttons, Dialogs, Markdown, 3D Scences and Plots"
 
   update_citation:
-    needs: pypi
+    needs: docker
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
