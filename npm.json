@@ -52,7 +52,7 @@
   "three": {
     "destination": "elements/lib",
     "keep": [
-      "package/build/three(\\.min)?\\.js",
+      "package/build/three\\.module\\.js",
       "package/examples/jsm/renderers/CSS2DRenderer(\\.min)?\\.js",
       "package/examples/jsm/renderers/CSS3DRenderer(\\.min)?\\.js",
       "package/examples/jsm/controls/OrbitControls(\\.min)?\\.js",

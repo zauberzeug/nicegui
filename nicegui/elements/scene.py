@@ -1,21 +1,21 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from .. import binding, globals
-from ..dependencies import register_component
+from ..dependencies import register_library, register_vue_component
 from ..element import Element
 from ..events import SceneClickEventArguments, SceneClickHit, handle_event
 from .scene_object3d import Object3D
 from .scene_objects import Scene as SceneObject
 
-register_component('scene', __file__, 'scene.js', [
-    'lib/three.min.js',
-    'lib/CSS2DRenderer.js',
-    'lib/CSS3DRenderer.js',
-    'lib/OrbitControls.js',
-    'lib/STLLoader.js',
-    'lib/tween.umd.min.js',
-])
+register_vue_component(name='scene', path=Path(__file__).parent.joinpath('scene.js'))
+register_library(name='three', path=Path(__file__).parent.joinpath('lib', 'three', 'three.module.js'), expose=True)
+register_library(name='CSS2DRenderer', path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'CSS2DRenderer.js'), expose=True)
+register_library(name='CSS3DRenderer', path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'CSS3DRenderer.js'), expose=True)
+register_library(name='OrbitControls', path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'OrbitControls.js'), expose=True)
+register_library(name='STLLoader', path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'STLLoader.js'), expose=True)
+register_library(name='tween', path=Path(__file__).parent.joinpath('lib', 'tween', 'tween.umd.js'))
 
 
 @dataclass
@@ -77,6 +77,13 @@ class Scene(Element):
         self.is_initialized = False
         self.on('init', self.handle_init)
         self.on('click3d', self.handle_click)
+        self.use_component('scene')
+        self.use_library('three')
+        self.use_library('CSS2DRenderer')
+        self.use_library('CSS3DRenderer')
+        self.use_library('OrbitControls')
+        self.use_library('STLLoader')
+        self.use_library('tween')
 
     def handle_init(self, msg: Dict) -> None:
         self.is_initialized = True

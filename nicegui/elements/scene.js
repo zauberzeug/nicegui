@@ -1,3 +1,9 @@
+import * as THREE from 'three';
+import { CSS2DRenderer } from 'CSS2DRenderer';
+import { CSS3DRenderer } from 'CSS3DRenderer';
+import { OrbitControls } from 'OrbitControls';
+import { STLLoader } from 'STLLoader';
+
 function texture_geometry(coords) {
   const geometry = new THREE.BufferGeometry();
   const nI = coords[0].length;
@@ -85,12 +91,12 @@ export default {
     renderer.setClearColor("#eee");
     renderer.setSize(this.width, this.height);
 
-    const text_renderer = new THREE.CSS2DRenderer({
+    const text_renderer = new CSS2DRenderer({
       element: this.$el.children[1],
     });
     text_renderer.setSize(this.width, this.height);
 
-    const text3d_renderer = new THREE.CSS3DRenderer({
+    const text3d_renderer = new CSS3DRenderer({
       element: this.$el.children[2],
     });
     text3d_renderer.setSize(this.width, this.height);
@@ -107,7 +113,7 @@ export default {
       grid.rotateX(Math.PI / 2);
       this.scene.add(grid);
     }
-    this.controls = new THREE.OrbitControls(this.camera, renderer.domElement);
+    this.controls = new OrbitControls(this.camera, renderer.domElement);
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
@@ -144,7 +150,7 @@ export default {
     this.$el.ondblclick = click_handler;
 
     this.texture_loader = new THREE.TextureLoader();
-    this.stl_loader = new THREE.STLLoader();
+    this.stl_loader = new STLLoader();
 
     const connectInterval = setInterval(async () => {
       if (window.socket.id === undefined) return;
