@@ -1,5 +1,6 @@
 from typing import Optional
 
+from ..colors import set_text_color
 from ..element import Element
 
 
@@ -19,7 +20,7 @@ class Icon(Element):
 
         :param name: name of the icon
         :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem
-        :param color: color name for component, examples: primary, teal-10
+        :param color: icon color (either a Quasar, Tailwind, or CSS color or `None`, default: `None`)
         """
         super().__init__('q-icon')
         self._props['name'] = name
@@ -27,5 +28,4 @@ class Icon(Element):
         if size:
             self._props['size'] = size
 
-        if color:
-            self._props['color'] = color
+        set_text_color(self, color)

@@ -26,5 +26,11 @@ class ColorInput(ValueElement):
 
         with self.add_slot('append'):
             self.picker = ColorPicker(on_pick=lambda e: self.set_value(e.color))
-            self.button = ui.button(on_click=self.picker.open) \
+            self.button = ui.button(on_click=self.open_picker) \
                 .props('icon=colorize flat round', remove='color').classes('cursor-pointer')
+
+    def open_picker(self) -> None:
+        """Open the color picker"""
+        if self.value:
+            self.picker.set_color(self.value)
+        self.picker.open()

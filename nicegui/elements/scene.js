@@ -28,7 +28,6 @@ function texture_geometry(coords) {
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
   geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geometry.computeVertexNormals();
-  geometry.computeFaceNormals();
   return geometry;
 }
 
@@ -38,6 +37,7 @@ function texture_material(texture) {
   return new THREE.MeshLambertMaterial({
     map: texture,
     side: THREE.DoubleSide,
+    transparent: true,
   });
 }
 
@@ -95,17 +95,18 @@ export default {
     });
     text3d_renderer.setSize(this.width, this.height);
 
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: "#eee" }));
-    ground.translateZ(-0.01);
-    ground.object_id = "ground";
-    this.scene.add(ground);
+    if (this.grid) {
+      const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: "#eee" }));
+      ground.translateZ(-0.01);
+      ground.object_id = "ground";
+      this.scene.add(ground);
 
-    const grid = new THREE.GridHelper(100, 100);
-    grid.material.transparent = true;
-    grid.material.opacity = 0.2;
-    grid.rotateX(Math.PI / 2);
-    this.scene.add(grid);
-
+      const grid = new THREE.GridHelper(100, 100);
+      grid.material.transparent = true;
+      grid.material.opacity = 0.2;
+      grid.rotateX(Math.PI / 2);
+      this.scene.add(grid);
+    }
     this.controls = new THREE.OrbitControls(this.camera, renderer.domElement);
 
     const render = () => {
@@ -198,6 +199,12 @@ export default {
         light.target.position.set(1, 0, 0);
         mesh.add(light);
         mesh.add(light.target);
+      } else if (type == "point_cloud") {
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.Float32BufferAttribute(args[0].flat(), 3));
+        geometry.setAttribute("color", new THREE.Float32BufferAttribute(args[1].flat(), 3));
+        const material = new THREE.PointsMaterial({ size: args[2], vertexColors: true });
+        mesh = new THREE.Points(geometry, material);
       } else {
         let geometry;
         const wireframe = args.pop();
@@ -342,5 +349,6 @@ export default {
   props: {
     width: Number,
     height: Number,
+    grid: Boolean,
   },
 };

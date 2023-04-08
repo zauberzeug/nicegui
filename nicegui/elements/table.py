@@ -49,6 +49,8 @@ class Table(FilterElement):
 
         def handle_selection(msg: Dict) -> None:
             if msg['args']['added']:
+                if selection == 'single':
+                    self.selected.clear()
                 self.selected.extend(msg['args']['rows'])
             else:
                 self.selected[:] = [row for row in self.selected if row[row_key] not in msg['args']['keys']]

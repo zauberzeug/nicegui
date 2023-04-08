@@ -1,4 +1,3 @@
-import traceback
 from dataclasses import dataclass
 from inspect import signature
 from typing import TYPE_CHECKING, Any, BinaryIO, Callable, List, Optional, Union

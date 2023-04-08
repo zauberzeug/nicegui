@@ -1,3 +1,5 @@
+import pytest
+
 from nicegui import Client, ui
 
 from .screen import Screen
@@ -26,3 +28,15 @@ def test_set_source_in_tab(screen: Screen):
     screen.wait(0.5)
     screen.click('A')
     assert screen.find_by_tag('img').get_attribute('src') == 'https://nicegui.io/logo.png'
+
+
+@pytest.mark.parametrize('cross, number_of_lines', [(True, 2), (False, 0)])
+def test_with_cross(screen: Screen, cross: bool, number_of_lines: int):
+    ii = ui.interactive_image('https://nicegui.io/logo.png', cross=cross)
+    ii.content = f'<circle cx="100" cy="100" r="15" fill="none" stroke="red" stroke-width="4" />'
+
+    screen.open('/')
+    screen.find_by_tag('svg')
+    with screen.implicitly_wait(0.5):
+        assert len(screen.find_all_by_tag('line')) == number_of_lines
+        assert len(screen.find_all_by_tag('circle')) == 1

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from abc import ABC
+import warnings
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
@@ -13,6 +13,7 @@ from . import binding, events, globals, outbox
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
+from .tailwind import Tailwind
 
 if TYPE_CHECKING:
     from .client import Client
@@ -20,12 +21,13 @@ if TYPE_CHECKING:
 PROPS_PATTERN = re.compile(r'([\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
 
 
-class Element(ABC, Visibility):
+class Element(Visibility):
 
     def __init__(self, tag: str, *, _client: Optional[Client] = None) -> None:
         """Generic Element
 
-        This class is also the base class for all other elements.
+        This class is the base class for all other UI elements.
+        But you can use it to create elements with arbitrary HTML tags.
 
         :param tag: HTML tag of the element
         :param _client: client for this element (for internal use only)
@@ -38,7 +40,7 @@ class Element(ABC, Visibility):
         self._classes: List[str] = []
         self._style: Dict[str, str] = {}
         self._props: Dict[str, Any] = {}
-        self._event_listeners: List[EventListener] = []
+        self._event_listeners: Dict[str, EventListener] = {}
         self._text: str = ''
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
@@ -49,6 +51,8 @@ class Element(ABC, Visibility):
         if slot_stack:
             self.parent_slot = slot_stack[-1]
             self.parent_slot.children.append(self)
+
+        self.tailwind = Tailwind(self)
 
         outbox.enqueue_update(self)
         if self.parent_slot:
@@ -71,64 +75,33 @@ class Element(ABC, Visibility):
     def __exit__(self, *_):
         self.default_slot.__exit__(*_)
 
-    def _collect_event_dict(self) -> Dict[str, Dict]:
-        events: Dict[str, Dict] = {}
-        for listener in self._event_listeners:
-            words = listener.type.split('.')
-            type = words.pop(0)
-            specials = [w for w in words if w in {'capture', 'once', 'passive'}]
-            modifiers = [w for w in words if w in {'stop', 'prevent', 'self', 'ctrl', 'shift', 'alt', 'meta'}]
-            keys = [w for w in words if w not in specials + modifiers]
-            events[listener.type] = {
-                'listener_type': listener.type,
-                'type': type,
-                'specials': specials,
-                'modifiers': modifiers,
-                'keys': keys,
-                'args': list(set(events.get(listener.type, {}).get('args', []) + listener.args)),
-                'throttle': min(events.get(listener.type, {}).get('throttle', float('inf')), listener.throttle),
-            }
-        return events
-
     def _collect_slot_dict(self) -> Dict[str, List[int]]:
         return {
             name: {'template': slot.template, 'ids': [child.id for child in slot.children]}
             for name, slot in self.slots.items()
         }
 
-    def _to_dict(self, *keys: str) -> Dict:
-        if not keys:
-            return {
-                'id': self.id,
-                'tag': self.tag,
-                'class': self._classes,
-                'style': self._style,
-                'props': self._props,
-                'text': self._text,
-                'slots': self._collect_slot_dict(),
-                'events': self._collect_event_dict(),
-            }
-        dict_: Dict[str, Any] = {}
-        for key in keys:
-            if key == 'id':
-                dict_['id'] = self.id
-            elif key == 'tag':
-                dict_['tag'] = self.tag
-            elif key == 'class':
-                dict_['class'] = self._classes
-            elif key == 'style':
-                dict_['style'] = self._style
-            elif key == 'props':
-                dict_['props'] = self._props
-            elif key == 'text':
-                dict_['text'] = self._text
-            elif key == 'slots':
-                dict_['slots'] = self._collect_slot_dict()
-            elif key == 'events':
-                dict_['events'] = self._collect_event_dict()
-            else:
-                raise ValueError(f'Unknown key {key}')
-        return dict_
+    def _to_dict(self) -> Dict[str, Any]:
+        return {
+            'id': self.id,
+            'tag': self.tag,
+            'class': self._classes,
+            'style': self._style,
+            'props': self._props,
+            'text': self._text,
+            'slots': self._collect_slot_dict(),
+            'events': [listener.to_dict() for listener in self._event_listeners.values()],
+        }
+
+    @staticmethod
+    def _update_classes_list(
+            classes: List[str],
+            add: Optional[str] = None, remove: Optional[str] = None, replace: Optional[str] = None) -> List[str]:
+        class_list = classes if replace is None else []
+        class_list = [c for c in class_list if c not in (remove or '').split()]
+        class_list += (add or '').split()
+        class_list += (replace or '').split()
+        return list(dict.fromkeys(class_list))  # NOTE: remove duplicates while preserving order
 
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
             -> Self:
@@ -142,11 +115,7 @@ class Element(ABC, Visibility):
         :param remove: whitespace-delimited string of classes to remove from the element
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
-        class_list = self._classes if replace is None else []
-        class_list = [c for c in class_list if c not in (remove or '').split()]
-        class_list += (add or '').split()
-        class_list += (replace or '').split()
-        new_classes = list(dict.fromkeys(class_list))  # NOTE: remove duplicates while preserving order
+        new_classes = self._update_classes_list(self._classes, add, remove, replace)
         if self._classes != new_classes:
             self._classes = new_classes
             self.update()
@@ -167,18 +136,13 @@ class Element(ABC, Visibility):
 
         Removing or replacing styles can be helpful if the predefined style is not desired.
 
-        .. codeblock:: python
-
-            ui.button('Click me').style('color: #6E93D6; font-size: 200%', remove='font-weight; background-color')
-
         :param add: semicolon-separated list of styles to add to the element
         :param remove: semicolon-separated list of styles to remove from the element
         :param replace: semicolon-separated list of styles to use instead of existing ones
-         """
+        """
         style_dict = deepcopy(self._style) if replace is None else {}
         for key in self._parse_style(remove):
-            if key in style_dict:
-                del style_dict[key]
+            style_dict.pop(key, None)
         style_dict.update(self._parse_style(add))
         style_dict.update(self._parse_style(replace))
         if self._style != style_dict:
@@ -202,10 +166,6 @@ class Element(ABC, Visibility):
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
         Since props are simply applied as HTML attributes, they can be used with any HTML element.
-
-        .. codeblock:: python
-
-            ui.button('Open menu').props('outline icon=menu')
 
         Boolean properties are assumed ``True`` if no value is specified.
 
@@ -245,15 +205,17 @@ class Element(ABC, Visibility):
         :param throttle: minimum time (in seconds) between event occurrences (default: 0.0)
         """
         if handler:
-            args = args if args is not None else ['*']
+            if args and '*' in args:
+                url = f'https://github.com/zauberzeug/nicegui/issues/644'
+                warnings.warn(DeprecationWarning(f'Event args "*" is deprecated, omit this parameter instead ({url})'))
+                args = None
             listener = EventListener(element_id=self.id, type=type, args=args, handler=handler, throttle=throttle)
-            self._event_listeners.append(listener)
+            self._event_listeners[listener.id] = listener
         return self
 
     def _handle_event(self, msg: Dict) -> None:
-        for listener in self._event_listeners:
-            if listener.type == msg['type']:
-                events.handle_event(listener.handler, msg, sender=self)
+        listener = self._event_listeners[msg['listener_id']]
+        events.handle_event(listener.handler, msg, sender=self)
 
     def update(self) -> None:
         """Update the element on the client side."""

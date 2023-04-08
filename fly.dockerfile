@@ -5,7 +5,7 @@ LABEL maintainer="Zauberzeug GmbH <info@zauberzeug.com>"
 WORKDIR /app
 
 ADD . .
-RUN pip install -e .
+RUN pip install .
 RUN pip install itsdangerous prometheus_client isort docutils
 
 EXPOSE 8080
