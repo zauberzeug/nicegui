@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable, Optional, Protocol
+from typing import Callable, Optional
 
 from nicegui import ui
 from typing_extensions import Protocol
