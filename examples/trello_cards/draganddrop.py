@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Callable, Optional, Protocol
 
 from nicegui import ui
+from typing_extensions import Protocol
 
 
 class Item(Protocol):
