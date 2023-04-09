@@ -9,10 +9,11 @@ dragged: Optional[card] = None
 
 class column(ui.column):
 
-    def __init__(self, name: str, on_drop: Callable = None) -> None:
+    def __init__(self, name: str, on_drop: Callable[[card, str]] = None) -> None:
         super().__init__()
         with self.classes('bg-grey-5 w-60 p-4 rounded shadow-2'):
             ui.label(name).classes('text-bold ml-1')
+        self.name = name
         self.on('dragover.prevent', self.highlight)
         self.on('dragleave', self.unhighlight)
         self.on('drop', self.move_card)
@@ -30,7 +31,7 @@ class column(ui.column):
         dragged.parent_slot.parent.remove(dragged)
         with self:
             card(dragged.text)
-        self.on_drop(dragged)
+        self.on_drop(dragged, self.name)
         dragged = None
 
 
