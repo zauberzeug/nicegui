@@ -1,15 +1,22 @@
 from __future__ import annotations
 
-from typing import Callable, Optional
+from typing import Callable, Optional, Protocol
 
 from nicegui import ui
+
+
+class Item(Protocol):
+    @property
+    def title(self) -> int:
+        pass
+
 
 dragged: Optional[card] = None
 
 
 class column(ui.column):
 
-    def __init__(self, name: str, on_drop: Callable[[card, str]] = None) -> None:
+    def __init__(self, name: str, on_drop: Callable[[Item, str]] = None) -> None:
         super().__init__()
         with self.classes('bg-grey-5 w-60 p-4 rounded shadow-2'):
             ui.label(name).classes('text-bold ml-1')
@@ -30,18 +37,18 @@ class column(ui.column):
         self.unhighlight()
         dragged.parent_slot.parent.remove(dragged)
         with self:
-            card(dragged.text)
-        self.on_drop(dragged, self.name)
+            card(dragged.item)
+        self.on_drop(dragged.item, self.name)
         dragged = None
 
 
 class card(ui.card):
 
-    def __init__(self, text: str) -> None:
+    def __init__(self, item: Item) -> None:
         super().__init__()
-        self.text = text
+        self.item = item
         with self.props('draggable').classes('w-full cursor-pointer bg-grey-1'):
-            ui.label(self.text)
+            ui.label(item.title)
         self.on('dragstart', self.handle_dragstart)
 
     def handle_dragstart(self) -> None:
