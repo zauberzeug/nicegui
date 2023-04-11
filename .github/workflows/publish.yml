@@ -138,3 +138,31 @@ jobs:
           git add CITATION.cff
           git commit -m "Update citation.cff"
           git push
+
+  verify:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull and Test Container
+        env:
+          DOCKER_IMAGE: zauberzeug/nicegui
+          VERSION: latest
+        run: |
+          docker pull ${DOCKER_IMAGE}:${VERSION}
+          docker run -d --name test_container ${DOCKER_IMAGE}:${VERSION}
+          sleep 10
+          CONTAINER_OUTPUT=$(docker logs test_container)
+          # Check if the container is still running
+          CONTAINER_STATUS=$(docker inspect -f '{{.State.Running}}' test_container)
+          if [ "${CONTAINER_STATUS}" != "true" ]; then
+            echo "The container is not running!"
+            exit 1
+          fi
+          # Check if the "Error" string is present in the container output
+          if echo "${CONTAINER_OUTPUT}" | grep -q "Error"; then
+            echo "Error found in container output!"
+            echo "${CONTAINER_OUTPUT}"
+            exit 1
+          fi
+          docker stop test_container
+          docker rm test_container
