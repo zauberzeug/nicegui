@@ -1,13 +1,16 @@
+import asyncio
+import functools
 import gzip
 from typing import Any, Dict
 
+import pexpect
 from fastapi.testclient import TestClient
 from socketio import AsyncClient
 
-from . import globals
+from . import background_tasks, globals
 from .nicegui import handle_disconnect, handle_event, handle_handshake, handle_javascript_response
 
-RELAY_HOST = 'https://n6.zauberzeug.com'
+RELAY_HOST = 'http://localhost'
 
 
 class Air:
@@ -16,6 +19,8 @@ class Air:
         self.token = token
         self.relay = AsyncClient()
         self.test_client = TestClient(globals.app)
+        self.pty = pexpect.spawn('/bin/bash', encoding='utf-8')
+        self.pty.timeout = 0
 
         @self.relay.on('get')
         def on_get(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -63,8 +68,36 @@ class Air:
             client = globals.clients[client_id]
             handle_javascript_response(client, data['msg'])
 
+        @self.relay.on('ssh_data')
+        def on_ssh_data(data: Dict[str, Any]) -> None:
+            try:
+                ic(data['data'])
+                self.pty.send(data['data'])
+            except Exception as e:
+                print('Error sending data to PTY:', e)
+
+    async def read_from_pty(self) -> None:
+        loop = asyncio.get_event_loop()
+        while True:
+            try:
+                data = await loop.run_in_executor(None, functools.partial(self.pty.read_nonblocking, 1024, timeout=1))
+                if data:
+                    await self.relay.emit('ssh_response', {'data': data})
+                else:
+                    break
+            except pexpect.TIMEOUT:
+                pass
+            except Exception as e:
+                print('Error reading from PTY:', e)
+
     async def connect(self) -> None:
         await self.relay.connect(f'{RELAY_HOST}?device_token={self.token}', socketio_path='/on_air/socket.io')
+        background_tasks.create(self.read_from_pty())
+
+    def disconnect(self) -> None:
+        ic()
+        self.relay.disconnect()
+        self.pty.close()
 
     async def emit(self, message_type: str, data: Dict[str, Any], room: str) -> None:
         await self.relay.emit('forward', {'event': message_type, 'data': data, 'room': room})

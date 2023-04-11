@@ -84,6 +84,8 @@ def handle_shutdown() -> None:
         for t in globals.shutdown_handlers:
             safe_invoke(t)
     globals.state = globals.State.STOPPED
+    if globals.air:
+        globals.air.disconnect()
 
 
 @app.exception_handler(404)
