@@ -3,11 +3,12 @@ import functools
 import gzip
 from typing import Any, Dict
 
+import asyncssh
 import pexpect
 from fastapi.testclient import TestClient
 from socketio import AsyncClient
 
-from . import background_tasks, globals
+from . import background_tasks, globals, ssh
 from .nicegui import handle_disconnect, handle_event, handle_handshake, handle_javascript_response
 
 RELAY_HOST = 'http://localhost'
@@ -19,8 +20,8 @@ class Air:
         self.token = token
         self.relay = AsyncClient()
         self.test_client = TestClient(globals.app)
-        self.pty = pexpect.spawn('/bin/bash', encoding='utf-8')
-        self.pty.timeout = 0
+        self.ssh_conn = None
+        self.ssh_chan = None
 
         @self.relay.on('get')
         def on_get(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -69,12 +70,18 @@ class Air:
             handle_javascript_response(client, data['msg'])
 
         @self.relay.on('ssh_data')
-        def on_ssh_data(data: Dict[str, Any]) -> None:
+        async def on_ssh_data(data: Dict[str, Any]) -> None:
             try:
+                if self.ssh_chan is None:
+                    await self.create_ssh_connection(data['client_key'])
                 ic(data['data'])
-                self.pty.send(data['data'])
+                self.ssh_chan.write(data['data'])
             except Exception as e:
-                print('Error sending data to PTY:', e)
+                print('Error sending data to SSH:', e)
+
+    async def create_ssh_connection(self, client_key):
+        self.ssh_conn = await asyncssh.connect('localhost', port=22, client_keys=[asyncssh.import_private_key(client_key)])
+        self.ssh_chan = await self.ssh_conn.create_session(lambda: ssh.Session(self.relay), term_type='xterm')
 
     async def read_from_pty(self) -> None:
         loop = asyncio.get_event_loop()
@@ -92,7 +99,6 @@ class Air:
 
     async def connect(self) -> None:
         await self.relay.connect(f'{RELAY_HOST}?device_token={self.token}', socketio_path='/on_air/socket.io')
-        background_tasks.create(self.read_from_pty())
 
     def disconnect(self) -> None:
         ic()
