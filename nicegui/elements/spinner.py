@@ -42,7 +42,7 @@ class Spinner(Element):
                  ) -> None:
         """Spinner
 
-        See `Quasar Spinner <https://quasar.dev/vue-components/spinner>`_ for more information.
+        See `Quasar Spinner <https://quasar.dev/vue-components/spinners>`_ for more information.
 
         :param type: type of spinner (e.g. "audio", "ball", "bars", ..., default: "default")
         :param size: size of the spinner (e.g. "3em", "10px", "xl", ..., default: "1em")
