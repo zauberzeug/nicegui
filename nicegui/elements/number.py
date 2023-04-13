@@ -35,6 +35,7 @@ class Number(ValueElement):
         if placeholder is not None:
             self._props['placeholder'] = placeholder
         self.validation = validation
+        self.on('blur', self.update)  # NOTE: to apply format (#736)
 
     def on_value_change(self, value: Any) -> None:
         super().on_value_change(value)
