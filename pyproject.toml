@@ -39,6 +39,10 @@ pytest = "6.2.5"
 itsdangerous = "^2.1.2" # required by SessionMiddleware (see https://fastapi.tiangolo.com/?h=itsdangerous#optional-dependencies)
 isort = "^5.11.4"
 docutils = "^0.19"
+pandas = [
+    { version = "^1.0.0", markers = "python_version ~= '3.7'" },
+    { version = "^2.0.0", markers = "python_version >= '3.8'" },
+]
 
 [build-system]
 requires = [
