@@ -17,7 +17,6 @@ class Menu(ValueElement):
         :param value: whether the menu is already opened (default: `False`)
         """
         super().__init__(tag='q-menu', value=value, on_value_change=None)
-        self._props['no-parent-event'] = True
 
     def open(self) -> None:
         self.value = True
