@@ -6,7 +6,7 @@ class Column(Element):
     def __init__(self) -> None:
         '''Column Element
 
-        Provides a container which arranges its child in a row.
+        Provides a container which arranges its child in a column.
         '''
         super().__init__('div')
-        self.classes('column items-start gap-4')
+        self._classes = ['nicegui-column']

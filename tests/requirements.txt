@@ -1,5 +1,6 @@
 pytest
 pytest-selenium
+pytest-asyncio
 selenium
 autopep8
 icecream

@@ -4,7 +4,7 @@ from typing import Dict, List, Set, Tuple
 
 import vbuild
 
-from . import globals
+from . import __version__, globals
 from .ids import IncrementingStringIds
 
 
@@ -15,7 +15,7 @@ class Component:
 
     @property
     def import_path(self) -> str:
-        return f'/_nicegui/components/{self.name}'
+        return f'/_nicegui/{__version__}/components/{self.name}'
 
 
 @dataclass
@@ -27,7 +27,7 @@ class Dependency:
 
     @property
     def import_path(self) -> str:
-        return f'/_nicegui/dependencies/{self.id}/{self.path.name}'
+        return f'/_nicegui/{__version__}/dependencies/{self.id}/{self.path.name}'
 
 
 dependency_ids = IncrementingStringIds()

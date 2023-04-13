@@ -1,6 +1,7 @@
 export default {
   template: `<div></div>`,
   mounted() {
+    this.ensure_codehilite_css();
     this.update(this.$el.innerHTML);
   },
   methods: {
@@ -11,6 +12,17 @@ export default {
         mermaid.render(`mermaid_${this.$el.id}_${i}`, code, (svg) => (pre.innerHTML = svg));
       });
     },
+    ensure_codehilite_css() {
+      if (!document.querySelector(`style[data-codehilite-css]`)) {
+        const style = document.createElement("style");
+        style.setAttribute("data-codehilite-css", "");
+        style.innerHTML = this.codehilite_css;
+        document.head.appendChild(style);
+      }
+    },
+  },
+  props: {
+    codehilite_css: String,
   },
 };
 

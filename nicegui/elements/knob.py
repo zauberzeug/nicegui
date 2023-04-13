@@ -1,5 +1,6 @@
 from typing import Optional
 
+from ..colors import set_text_color
 from .label import Label
 from .mixins.value_element import ValueElement
 
@@ -27,7 +28,7 @@ class Knob(ValueElement):
         :param min: the minimum value (default: 0.0)
         :param max: the maximum value (default: 1.0)
         :param step: the step size (default: 0.01)
-        :param color: color name for component, examples: primary, teal-10 (default: "primary")
+        :param color: knob color (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
         :param center_color: color name for the center part of the component, examples: primary, teal-10
         :param track_color: color name for the track of the component, examples: primary, teal-10
         :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem
@@ -38,7 +39,7 @@ class Knob(ValueElement):
         self._props['min'] = min
         self._props['max'] = max
         self._props['step'] = step
-        self._props['color'] = color
+        set_text_color(self, color)
         self._props['show-value'] = True  # NOTE: enable default slot, e.g. for nested icon
 
         if center_color:

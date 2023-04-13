@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# use path of this demo as working directory; enables starting this script from anywhere
+# use path of this example as working directory; enables starting this script from anywhere
 cd "$(dirname "$0")"
 
 if [ "$1" = "prod" ]; then

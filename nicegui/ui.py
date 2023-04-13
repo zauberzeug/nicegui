@@ -39,6 +39,7 @@ from .elements.number import Number as number
 from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
+from .elements.query import query
 from .elements.radio import Radio as radio
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
@@ -46,6 +47,7 @@ from .elements.select import Select as select
 from .elements.separator import Separator as separator
 from .elements.slider import Slider as slider
 from .elements.spinner import Spinner as spinner
+from .elements.splitter import Splitter as splitter
 from .elements.switch import Switch as switch
 from .elements.table import Table as table
 from .elements.tabs import Tab as tab

@@ -1,6 +1,5 @@
 import asyncio
 import time
-import traceback
 from typing import Callable
 
 from .. import background_tasks, globals

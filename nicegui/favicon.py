@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Optional
 
 from fastapi.responses import FileResponse
 
-from . import globals
+from . import __version__, globals
 
 if TYPE_CHECKING:
     from .page import page
@@ -23,7 +23,7 @@ def get_favicon_url(page: 'page', prefix: str) -> str:
     if favicon and is_remote_url(favicon):
         return favicon
     elif not favicon:
-        return f'{prefix}/_nicegui/static/favicon.ico'
+        return f'{prefix}/_nicegui/{__version__}/static/favicon.ico'
     elif page.path == '/':
         return f'{prefix}/favicon.ico'
     else:

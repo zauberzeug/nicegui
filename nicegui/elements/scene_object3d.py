@@ -124,5 +124,8 @@ class Object3D:
         return self
 
     def delete(self) -> None:
+        children = [object for object in self.scene.objects.values() if object.parent == self]
+        for child in children:
+            child.delete()
         del self.scene.objects[self.id]
         self._delete()
