@@ -4,7 +4,7 @@ import os
 import sys
 from typing import List, Optional, Tuple
 
-import __main__ as main
+import __main__
 import uvicorn
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
@@ -58,10 +58,6 @@ def run(*,
     :param tailwind: whether to use Tailwind (experimental, default: `True`)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     '''
-    if reload and not hasattr(main, '__file__'):
-        logging.warning('auto-reloading is only supported when running from a file')
-        reload = False
-
     globals.ui_run_has_been_called = True
     globals.reload = reload
     globals.title = title
@@ -74,6 +70,10 @@ def run(*,
 
     if multiprocessing.current_process().name != 'MainProcess':
         return
+
+    if reload and not hasattr(__main__, '__file__'):
+        logging.warning('auto-reloading is only supported when running from a file')
+        globals.reload = reload = False
 
     if fullscreen:
         native = True
