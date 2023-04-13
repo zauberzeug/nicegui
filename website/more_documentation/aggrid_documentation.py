@@ -89,3 +89,13 @@ def more() -> None:
                 {'name': 'Carol', 'age': 42},
             ],
         }).classes('max-h-40')
+
+    @text_demo('Create Grid from Pandas Dataframe', '''
+        You can create an AG Grid from a Pandas Dataframe using the `from_pandas` method.
+        This method takes a Pandas Dataframe as input and returns an AG Grid.
+    ''')
+    def aggrid_from_pandas():
+        import pandas as pd
+
+        df = pd.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
+        ui.aggrid.from_pandas(df).classes('max-h-40')
