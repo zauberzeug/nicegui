@@ -6,7 +6,7 @@ import time
 import warnings
 from threading import Thread
 
-from . import globals
+from . import globals, helpers
 
 with warnings.catch_warnings():
     # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
@@ -14,14 +14,23 @@ with warnings.catch_warnings():
     import webview
 
 
-def open_window(url: str, title: str, width: int, height: int, fullscreen: bool) -> None:
+def open_window(host: str, port: int, title: str, width: int, height: int, fullscreen: bool) -> None:
+    
+    def wait_for_server_is_alive():
+        while not helpers.is_port_open(host,port):
+            time.sleep(0.1)
+    
+    wait_for_server_is_alive()
+
+    url = f'http://{host}:{port}'
     window_kwargs = dict(url=url, title=title, width=width, height=height, fullscreen=fullscreen)
     window_kwargs.update(globals.app.native.window_args)
+
     webview.create_window(**window_kwargs)
     webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
+    
 
-
-def activate(url: str, title: str, width: int, height: int, fullscreen: bool) -> None:
+def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool) -> None:
     def check_shutdown() -> None:
         while process.is_alive():
             time.sleep(0.1)
@@ -31,7 +40,7 @@ def activate(url: str, title: str, width: int, height: int, fullscreen: bool) ->
         _thread.interrupt_main()
 
     multiprocessing.freeze_support()
-    process = multiprocessing.Process(target=open_window, args=(url, title, width, height, fullscreen), daemon=False)
+    process = multiprocessing.Process(target=open_window, args=(host, port, title, width, height, fullscreen), daemon=False)
     process.start()
     Thread(target=check_shutdown, daemon=True).start()
 
