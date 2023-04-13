@@ -607,11 +607,11 @@ def create_full() -> None:
     # Show a helpful workaround until issue is fixed upstream.
     # For more info see: https://github.com/r0x0r/pywebview/issues/1078
     ui.markdown('''
-        If webview has trouble finding required libraries, you may get an error relating to 'WebView2Loader.dll'.
-        To workaround around this issue, try moving the dll file up a directory.
+        If webview has trouble finding required libraries, you may get an error relating to "WebView2Loader.dll".
+        To work around this issue, try moving the DLL file up a directory, e.g.:
         
-        * From: `.venv/Lib/site-packages/webview/lib/x64/WebView2Loader.dll`
-        * To: `.venv/Lib/site-packages/webview/lib/WebView2Loader.dll`
+        * from `.venv/Lib/site-packages/webview/lib/x64/WebView2Loader.dll`
+        * to `.venv/Lib/site-packages/webview/lib/WebView2Loader.dll`
     ''')
 
     @text_demo('Environment Variables', '''
