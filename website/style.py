@@ -45,3 +45,9 @@ def features(icon: str, title: str, items: List[str]) -> None:
         ui.label(title).classes('font-bold mb-3')
         for item in items:
             ui.markdown(f'- {item}').classes('bold-links arrow-links')
+
+
+def side_menu() -> ui.left_drawer:
+    return ui.left_drawer() \
+        .classes('column no-wrap gap-1 bg-[#eee] mt-[-20px] px-8 py-20') \
+        .style('height: calc(100% + 20px) !important')

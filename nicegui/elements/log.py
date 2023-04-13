@@ -19,8 +19,7 @@ class Log(Element):
         super().__init__('log')
         self._props['max_lines'] = max_lines
         self._props['lines'] = ''
-        self.classes('border whitespace-pre font-mono')
-        self.style('opacity: 1 !important; cursor: text !important')
+        self._classes = ['nicegui-log']
         self.lines: deque[str] = deque(maxlen=max_lines)
 
     def push(self, line: Any) -> None:

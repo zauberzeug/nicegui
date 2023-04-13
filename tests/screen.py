@@ -1,6 +1,7 @@
 import os
 import threading
 import time
+from contextlib import contextmanager
 from typing import List
 
 import pytest
@@ -133,6 +134,9 @@ class Screen:
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 
+    def find_by_id(self, id: str) -> WebElement:
+        return self.selenium.find_element(By.ID, id)
+
     def find_by_tag(self, name: str) -> WebElement:
         return self.selenium.find_element(By.TAG_NAME, name)
 
@@ -164,3 +168,9 @@ class Screen:
             assert record.message.strip() == message, f'Expected "{message}" but got "{record.message}"'
         finally:
             self.caplog.records.clear()
+
+    @contextmanager
+    def implicitly_wait(self, t: float) -> None:
+        self.selenium.implicitly_wait(t)
+        yield
+        self.selenium.implicitly_wait(self.IMPLICIT_WAIT)

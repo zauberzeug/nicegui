@@ -1,11 +1,10 @@
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
-from .. import binding
+from .. import binding, globals
 from ..dependencies import register_component
 from ..element import Element
 from ..events import SceneClickEventArguments, SceneClickHit, handle_event
-from ..globals import socket_id
 from .scene_object3d import Object3D
 from .scene_objects import Scene as SceneObject
 
@@ -54,7 +53,7 @@ class Scene(Element):
     from .scene_objects import Text3d as text3d
     from .scene_objects import Texture as texture
 
-    def __init__(self, width: int = 400, height: int = 300, on_click: Optional[Callable] = None) -> None:
+    def __init__(self, width: int = 400, height: int = 300, grid: bool = True, on_click: Optional[Callable] = None) -> None:
         """3D Scene
 
         Display a 3d scene using `three.js <https://threejs.org/>`_.
@@ -64,23 +63,32 @@ class Scene(Element):
 
         :param width: width of the canvas
         :param height: height of the canvas
+        :param grid: whether to display a grid
         :param on_click: callback to execute when a 3d object is clicked
         """
         super().__init__('scene')
         self._props['width'] = width
         self._props['height'] = height
+        self._props['grid'] = grid
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
         self.on_click = on_click
+        self.is_initialized = False
         self.on('init', self.handle_init)
         self.on('click3d', self.handle_click)
 
     def handle_init(self, msg: Dict) -> None:
-        with socket_id(msg['args']):
+        self.is_initialized = True
+        with globals.socket_id(msg['args']):
             self.move_camera(duration=0)
             for object in self.objects.values():
                 object.send()
+
+    def run_method(self, name: str, *args: Any) -> None:
+        if not self.is_initialized:
+            return
+        super().run_method(name, *args)
 
     def handle_click(self, msg: Dict) -> None:
         arguments = SceneClickEventArguments(

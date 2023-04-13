@@ -1,5 +1,6 @@
 from typing import Any, Optional, Tuple
 
+import numpy as np
 import orjson
 from fastapi import Response
 
@@ -26,7 +27,7 @@ def dumps(obj: Any, sort_keys: bool = False, separators: Optional[Tuple[str, str
     if sort_keys:
         opts |= orjson.OPT_SORT_KEYS
 
-    return orjson.dumps(obj, option=opts).decode('utf-8')
+    return orjson.dumps(obj, option=opts, default=_orjson_converter).decode('utf-8')
 
 
 def loads(value: str) -> Any:
@@ -37,6 +38,12 @@ def loads(value: str) -> Any:
     return orjson.loads(value)
 
 
+def _orjson_converter(obj):
+    """Custom serializer/converter, e.g. for numpy object arrays."""
+    if isinstance(obj, np.ndarray) and obj.dtype == np.object_:
+        return obj.tolist()
+
+
 class NiceGUIJSONResponse(Response):
     """FastAPI response class to support our custom json serializer implementation.
 
@@ -45,4 +52,4 @@ class NiceGUIJSONResponse(Response):
     media_type = 'application/json'
 
     def render(self, content: Any) -> bytes:
-        return orjson.dumps(content, option=ORJSON_OPTS)
+        return orjson.dumps(content, option=ORJSON_OPTS, default=_orjson_converter)

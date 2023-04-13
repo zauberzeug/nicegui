@@ -90,3 +90,20 @@ def test_event_modifiers(screen: Screen):
     screen.selenium.find_element(By.XPATH, '//*[@aria-label="C"]').send_keys('xx')
     screen.selenium.find_element(By.XPATH, '//*[@aria-label="D"]').send_keys('Xx')
     assert events == ['A', 'B', 'C', 'D']
+
+
+def test_throttling(screen: Screen):
+    events = []
+    ui.button('Test', on_click=lambda: events.append(1)).on('click', lambda: events.append(2), throttle=1)
+
+    screen.open('/')
+    screen.click('Test')
+    screen.click('Test')
+    screen.click('Test')
+    assert events == [1, 2, 1, 1]
+
+    screen.wait(1.1)
+    screen.click('Test')
+    screen.click('Test')
+    screen.click('Test')
+    assert events == [1, 2, 1, 1, 1, 2, 1, 1]

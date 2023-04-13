@@ -1,4 +1,5 @@
 import asyncio
+import os
 import time
 import urllib.parse
 from pathlib import Path
@@ -7,13 +8,12 @@ from typing import Dict, Optional
 from fastapi import HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
-from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
 from nicegui import json
 from nicegui.json import NiceGUIJSONResponse
 
-from . import background_tasks, binding, globals, outbox
+from . import __version__, background_tasks, binding, globals, outbox
 from .app import App
 from .client import Client
 from .dependencies import js_components, js_dependencies
@@ -28,7 +28,6 @@ socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=jso
 globals.sio = sio = app.sio
 
 app.add_middleware(GZipMiddleware)
-app.mount('/_nicegui/static', StaticFiles(directory=Path(__file__).parent / 'static'), name='static')
 
 globals.index_client = Client(page('/'), shared=True).__enter__()
 
@@ -38,14 +37,24 @@ def index(request: Request) -> Response:
     return globals.index_client.build_response(request)
 
 
-@app.get('/_nicegui/dependencies/{id}/{name}')
+@app.get(f'/_nicegui/{__version__}' + '/static/{name}')
+def get_static(name: str):
+    return FileResponse(Path(__file__).parent / 'static' / name)
+
+
+@app.get(f'/_nicegui/{__version__}' + '/static/fonts/{name}')
+def get_static(name: str):
+    return FileResponse(Path(__file__).parent / 'static' / 'fonts' / name)
+
+
+@app.get(f'/_nicegui/{__version__}' + '/dependencies/{id}/{name}')
 def get_dependencies(id: int, name: str):
     if id in js_dependencies and js_dependencies[id].path.exists() and js_dependencies[id].path.name == name:
         return FileResponse(js_dependencies[id].path, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'dependency "{name}" with ID {id} not found')
 
 
-@app.get('/_nicegui/components/{name}')
+@app.get(f'/_nicegui/{__version__}' + '/components/{name}')
 def get_components(name: str):
     return FileResponse(js_components[name].path, media_type='text/javascript')
 
@@ -71,7 +80,7 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     background_tasks.create(prune_slot_stacks())
     globals.state = globals.State.STARTED
     if with_welcome_message:
-        print(f'NiceGUI ready to go on http://{globals.host}:{globals.port}')
+        print(f'NiceGUI ready to go on {os.environ["NICEGUI_URL"]}')
 
 
 @app.on_event('shutdown')
