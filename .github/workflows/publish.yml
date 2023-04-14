@@ -108,3 +108,61 @@ jobs:
           destination_container_repo: zauberzeug/nicegui
           provider: dockerhub
           short_description: "Web Based User Interface für Python with Buttons, Dialogs, Markdown, 3D Scences and Plots"
+
+  update_citation:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests PyYAML
+
+      - name: Update Citation.cff
+        env:
+          ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
+        run: python .github/workflows/update_citation.py
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CITATION.cff
+          git commit -m "Update citation.cff"
+          git push
+
+  verify:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull and Test Container
+        env:
+          DOCKER_IMAGE: zauberzeug/nicegui
+          VERSION: latest
+        run: |
+          docker pull ${DOCKER_IMAGE}:${VERSION}
+          docker run -d --name test_container ${DOCKER_IMAGE}:${VERSION}
+          sleep 10
+          CONTAINER_OUTPUT=$(docker logs test_container)
+          # Check if the container is still running
+          CONTAINER_STATUS=$(docker inspect -f '{{.State.Running}}' test_container)
+          if [ "${CONTAINER_STATUS}" != "true" ]; then
+            echo "The container is not running!"
+            exit 1
+          fi
+          # Check if the "Error" string is present in the container output
+          if echo "${CONTAINER_OUTPUT}" | grep -q "Error"; then
+            echo "Error found in container output!"
+            echo "${CONTAINER_OUTPUT}"
+            exit 1
+          fi
+          docker stop test_container
+          docker rm test_container

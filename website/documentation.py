@@ -604,6 +604,16 @@ def create_full() -> None:
     # HACK: restore color
     demo.BROWSER_BGCOLOR = demo_BROWSER_BGCOLOR
 
+    # Show a helpful workaround until issue is fixed upstream.
+    # For more info see: https://github.com/r0x0r/pywebview/issues/1078
+    ui.markdown('''
+        If webview has trouble finding required libraries, you may get an error relating to "WebView2Loader.dll".
+        To work around this issue, try moving the DLL file up a directory, e.g.:
+        
+        * from `.venv/Lib/site-packages/webview/lib/x64/WebView2Loader.dll`
+        * to `.venv/Lib/site-packages/webview/lib/WebView2Loader.dll`
+    ''')
+
     @text_demo('Environment Variables', '''
         You can set the following environment variables to configure NiceGUI:
 
@@ -755,5 +765,15 @@ def create_full() -> None:
             pip install pyinstaller
             ```
         ''')
+
+    ui.markdown('''
+        **Note:**
+        If you're getting an error "TypeError: a bytes-like object is required, not 'str'", try adding the following lines to the top of your `main.py` file:
+        ```py
+        import sys
+        sys.stdout = open('logs.txt', 'w')
+        ```
+        See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
+    ''')
 
     ui.element('div').classes('h-32')

@@ -3,7 +3,7 @@ ARG VERSION
 
 LABEL maintainer="Zauberzeug GmbH <info@zauberzeug.com>"
 
-RUN python -m pip install nicegui==$VERSION itsdangerous isort
+RUN python -m pip install nicegui==$VERSION itsdangerous isort docutils
 
 WORKDIR /app
 

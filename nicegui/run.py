@@ -4,6 +4,7 @@ import os
 import sys
 from typing import List, Optional, Tuple
 
+import __main__
 import uvicorn
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
@@ -69,6 +70,10 @@ def run(*,
 
     if multiprocessing.current_process().name != 'MainProcess':
         return
+
+    if reload and not hasattr(__main__, '__file__'):
+        logging.warning('auto-reloading is only supported when running from a file')
+        globals.reload = reload = False
 
     if fullscreen:
         native = True

@@ -32,32 +32,32 @@ def more() -> None:
             {'name': 'Carol'},
         ]
 
-        with ui.table(columns=columns, rows=rows, row_key='name').classes('w-72') as table:
-            table.add_slot('header', r'''
-                <q-tr :props="props">
-                    <q-th auto-width />
-                    <q-th v-for="col in props.cols" :key="col.name" :props="props">
-                        {{ col.label }}
-                    </q-th>
-                </q-tr>
-            ''')
-            table.add_slot('body', r'''
-                <q-tr :props="props">
-                    <q-td auto-width>
-                        <q-btn size="sm" color="accent" round dense
-                            @click="props.expand = !props.expand"
-                            :icon="props.expand ? 'remove' : 'add'" />
-                    </q-td>
-                    <q-td v-for="col in props.cols" :key="col.name" :props="props">
-                        {{ col.value }}
-                    </q-td>
-                </q-tr>
-                <q-tr v-show="props.expand" :props="props">
-                    <q-td colspan="100%">
-                        <div class="text-left">This is {{ props.row.name }}.</div>
-                    </q-td>
-                </q-tr>
-            ''')
+        table = ui.table(columns=columns, rows=rows, row_key='name').classes('w-72')
+        table.add_slot('header', r'''
+            <q-tr :props="props">
+                <q-th auto-width />
+                <q-th v-for="col in props.cols" :key="col.name" :props="props">
+                    {{ col.label }}
+                </q-th>
+            </q-tr>
+        ''')
+        table.add_slot('body', r'''
+            <q-tr :props="props">
+                <q-td auto-width>
+                    <q-btn size="sm" color="accent" round dense
+                        @click="props.expand = !props.expand"
+                        :icon="props.expand ? 'remove' : 'add'" />
+                </q-td>
+                <q-td v-for="col in props.cols" :key="col.name" :props="props">
+                    {{ col.value }}
+                </q-td>
+            </q-tr>
+            <q-tr v-show="props.expand" :props="props">
+                <q-td colspan="100%">
+                    <div class="text-left">This is {{ props.row.name }}.</div>
+                </q-td>
+            </q-tr>
+        ''')
 
     @text_demo('Show and hide columns', '''
         Here is an example of how to show and hide columns in a table.
@@ -87,3 +87,44 @@ def more() -> None:
             with ui.menu() as menu, ui.column().classes('gap-0 p-2'):
                 for column in columns:
                     ui.switch(column['label'], value=True, on_change=lambda e, column=column: toggle(column, e.value))
+
+    @text_demo('Table with drop down selection', '''
+        Here is an example of how to use a drop down selection in a table.
+        After emitting a `rename` event from the scoped slot, the `rename` function updates the table rows.
+    ''')
+    def table_with_drop_down_selection():
+        from typing import Dict
+
+        columns = [
+            {'name': 'name', 'label': 'Name', 'field': 'name'},
+            {'name': 'age', 'label': 'Age', 'field': 'age'},
+        ]
+        rows = [
+            {'id': 0, 'name': 'Alice', 'age': 18},
+            {'id': 1, 'name': 'Bob', 'age': 21},
+            {'id': 2, 'name': 'Carol'},
+        ]
+        name_options = ['Alice', 'Bob', 'Carol']
+
+        def rename(msg: Dict) -> None:
+            for row in rows:
+                if row['id'] == msg['args']['id']:
+                    row['name'] = msg['args']['name']
+            ui.notify(f'Table.rows is now: {table.rows}')
+
+        table = ui.table(columns=columns, rows=rows, row_key='name').classes('w-full')
+        table.add_slot('body', r'''
+            <q-tr :props="props">
+                <q-td key="name" :props="props">
+                    <q-select
+                        v-model="props.row.name"
+                        :options="''' + str(name_options) + r'''"
+                        @update:model-value="() => $parent.$emit('rename', props.row)"
+                    />
+                </q-td>
+                <q-td key="age" :props="props">
+                    {{ props.row.age }}
+                </q-td>
+            </q-tr>
+        ''')
+        table.on('rename', rename)

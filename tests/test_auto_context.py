@@ -43,9 +43,9 @@ def test_adding_elements_with_async_await(screen: Screen):
     with screen.implicitly_wait(10.0):
         screen.should_contain('A')
         screen.should_contain('B')
-    cA = screen.selenium.find_element(By.ID, cardA.id)
+    cA = screen.find_by_id(cardA.id)
     cA.find_element(By.XPATH, './/*[contains(text(), "A")]')
-    cB = screen.selenium.find_element(By.ID, cardB.id)
+    cB = screen.find_by_id(cardB.id)
     cB.find_element(By.XPATH, './/*[contains(text(), "B")]')
 
 
@@ -132,7 +132,7 @@ def test_adding_elements_from_different_tasks(screen: Screen):
     background_tasks.create(add_label2())
     screen.should_contain('1')
     screen.should_contain('2')
-    c1 = screen.selenium.find_element(By.ID, card1.id)
+    c1 = screen.find_by_id(card1.id)
     c1.find_element(By.XPATH, './/*[contains(text(), "1")]')
-    c2 = screen.selenium.find_element(By.ID, card2.id)
+    c2 = screen.find_by_id(card2.id)
     c2.find_element(By.XPATH, './/*[contains(text(), "2")]')
