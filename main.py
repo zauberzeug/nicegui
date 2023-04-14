@@ -63,8 +63,8 @@ def add_head_html() -> None:
 
 def add_header() -> None:
     menu_items = {
-        'Features': '/#features',
         'Installation': '/#installation',
+        'Features': '/#features',
         'Demos': '/#demos',
         'Documentation': '/documentation',
         'Examples': '/#examples',
@@ -128,6 +128,44 @@ async def index_page(client: Client):
                     '[GitHub](https://github.com/zauberzeug/nicegui).')
         example_card.create()
 
+    with ui.column().classes('w-full text-lg p-8 lg:p-16 max-w-[1600px] mx-auto'):
+        link_target('installation', '-50px')
+        section_heading('Installation', 'Get *started*')
+        with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8'):
+            with ui.column().classes('w-full max-w-md gap-2'):
+                ui.html('<em>1.</em>').classes('text-3xl font-bold')
+                ui.markdown('Create __main.py__').classes('text-lg')
+                with python_window(classes='w-full h-52'):
+                    ui.markdown('''```python\n
+from nicegui import ui
+
+ui.label('Hello NiceGUI!')
+
+ui.run()
+```''')
+            with ui.column().classes('w-full max-w-md gap-2'):
+                ui.html('<em>2.</em>').classes('text-3xl font-bold')
+                ui.markdown('Install and launch').classes('text-lg')
+                with bash_window(classes='w-full h-52'):
+                    ui.markdown('```bash\npip3 install nicegui\npython3 main.py\n```')
+            with ui.column().classes('w-full max-w-md gap-2'):
+                ui.html('<em>3.</em>').classes('text-3xl font-bold')
+                ui.markdown('Enjoy!').classes('text-lg')
+                with browser_window(classes='w-full h-52'):
+                    ui.label('Hello NiceGUI!')
+        with ui.expansion('...or use Docker to run your main.py').classes('w-full gap-2 bold-links arrow-links'):
+            with ui.row().classes('mt-8 w-full justify-center items-center gap-8'):
+                ui.markdown('''
+With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) 
+you can start the server without installing any packages.
+
+The command searches for `main.py` in in your current directory and makes the app available at http://localhost:8888.
+''').classes('max-w-xl')
+                with bash_window(classes='max-w-lg w-full h-52'):
+                    ui.markdown('```bash\n'
+                                'docker run -it --rm -p 8888:8080 \\\n -v "$PWD":/app zauberzeug/nicegui\n'
+                                '```')
+
     with ui.column().classes('w-full p-8 lg:p-16 bold-links arrow-links max-w-[1600px] mx-auto'):
         link_target('features', '-50px')
         section_heading('Features', 'Code *nicely*')
@@ -168,44 +206,6 @@ async def index_page(client: Client):
                 'content is served with [FastAPI](http://fastapi.tiangolo.com/)',
                 'Python 3.7+',
             ])
-
-    with ui.column().classes('w-full text-lg p-8 lg:p-16 max-w-[1600px] mx-auto'):
-        link_target('installation', '-50px')
-        section_heading('Installation', 'Get *started*')
-        with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8'):
-            with ui.column().classes('w-full max-w-md gap-2'):
-                ui.html('<em>1.</em>').classes('text-3xl font-bold')
-                ui.markdown('Create __main.py__').classes('text-lg')
-                with python_window(classes='w-full h-52'):
-                    ui.markdown('''```python\n
-from nicegui import ui
-
-ui.label('Hello NiceGUI!')
-
-ui.run()
-```''')
-            with ui.column().classes('w-full max-w-md gap-2'):
-                ui.html('<em>2.</em>').classes('text-3xl font-bold')
-                ui.markdown('Install and launch').classes('text-lg')
-                with bash_window(classes='w-full h-52'):
-                    ui.markdown('```bash\npip3 install nicegui\npython3 main.py\n```')
-            with ui.column().classes('w-full max-w-md gap-2'):
-                ui.html('<em>3.</em>').classes('text-3xl font-bold')
-                ui.markdown('Enjoy!').classes('text-lg')
-                with browser_window(classes='w-full h-52'):
-                    ui.label('Hello NiceGUI!')
-        with ui.expansion('...or use Docker to run your main.py').classes('w-full gap-2 bold-links arrow-links'):
-            with ui.row().classes('mt-8 w-full justify-center items-center gap-8'):
-                ui.markdown('''
-With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) 
-you can start the server without installing any packages.
-
-The command searches for `main.py` in in your current directory and makes the app available at http://localhost:8888.
-''').classes('max-w-xl')
-                with bash_window(classes='max-w-lg w-full h-52'):
-                    ui.markdown('```bash\n'
-                                'docker run -it --rm -p 8888:8080 \\\n -v "$PWD":/app zauberzeug/nicegui\n'
-                                '```')
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
         link_target('demos', '-50px')
