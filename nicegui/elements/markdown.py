@@ -7,7 +7,7 @@ from typing import List
 import markdown2
 from pygments.formatters import HtmlFormatter
 
-from ..dependencies import register_library, register_vue_component
+from ..dependencies import register_vue_component
 from .mixins.content_element import ContentElement
 
 register_vue_component(name='markdown', path=Path(__file__).parent.joinpath('markdown.js'))
