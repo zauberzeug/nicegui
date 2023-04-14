@@ -1,9 +1,6 @@
-import asyncio
-import functools
 import gzip
 from typing import Any, Dict
 
-import pexpect
 from fastapi.testclient import TestClient
 from socketio import AsyncClient
 
@@ -71,7 +68,6 @@ class Air:
 
     def disconnect(self) -> None:
         self.relay.disconnect()
-        self.pty.close()
 
     async def emit(self, message_type: str, data: Dict[str, Any], room: str) -> None:
         await self.relay.emit('forward', {'event': message_type, 'data': data, 'room': room})
