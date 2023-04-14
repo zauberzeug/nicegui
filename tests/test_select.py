@@ -31,3 +31,20 @@ def test_select_with_input(screen: Screen):
     screen.should_contain('A')
     screen.should_contain('AB')
     screen.should_not_contain('XYZ')
+
+
+def test_replace_select(screen: Screen):
+    with ui.row() as container:
+        ui.select(['A'], value='A')
+
+    def replace():
+        container.clear()
+        with container:
+            ui.select(['B'], value='B')
+    ui.button('Replace', on_click=replace)
+
+    screen.open('/')
+    screen.should_contain('A')
+    screen.click('Replace')
+    screen.should_contain('B')
+    screen.should_not_contain('A')

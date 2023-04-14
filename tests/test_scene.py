@@ -1,3 +1,4 @@
+import pytest
 from selenium.common.exceptions import JavascriptException
 
 from nicegui import ui
@@ -72,3 +73,24 @@ def test_deleting_group(screen: Screen):
     screen.click('Delete group')
     screen.wait(0.5)
     assert len(scene.objects) == 0
+
+
+@pytest.mark.skip(reason='issue #600')
+def test_replace_scene(screen: Screen):
+    with ui.row() as container:
+        with ui.scene() as scene:
+            scene.sphere().with_name('sphere')
+
+    def replace():
+        container.clear()
+        with container:
+            with ui.scene() as scene:
+                scene.box().with_name('box')
+    ui.button('Replace scene', on_click=replace)
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script(f'return scene_{scene.id}.children[4].name') == 'sphere'
+    screen.click('Replace scene')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script(f'return scene_{scene.id}.children[4].name') == 'box'
