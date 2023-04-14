@@ -1,10 +1,12 @@
+from pathlib import Path
 from typing import Dict, List, Optional
 
-from ..dependencies import register_component
+from ..dependencies import register_library, register_vue_component
 from ..element import Element
 from ..functions.javascript import run_javascript
 
-register_component('aggrid', __file__, 'aggrid.js', ['lib/ag-grid-community.min.js'])
+register_vue_component(name='aggrid', path=Path(__file__).parent.joinpath('aggrid.js'))
+register_library(name='aggrid', path=Path(__file__).parent.joinpath('lib', 'aggrid', 'ag-grid-community.min.js'))
 
 
 class AgGrid(Element):
@@ -24,6 +26,7 @@ class AgGrid(Element):
         self._props['options'] = options
         self._props['html_columns'] = html_columns
         self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']
+        self.use_component('aggrid').use_library('aggrid')
 
     @property
     def options(self) -> Dict:
