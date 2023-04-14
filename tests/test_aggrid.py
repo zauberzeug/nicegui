@@ -128,3 +128,15 @@ def test_replace_aggrid(screen: Screen):
     screen.click('Replace')
     screen.should_contain('Bob')
     screen.should_not_contain('Alice')
+
+
+def test_create_from_pandas(screen: Screen):
+    import pandas as pd
+    df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]})
+    ui.aggrid.from_pandas(df)
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_contain('18')
+    screen.should_contain('21')

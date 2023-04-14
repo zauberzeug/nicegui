@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Dict, List, Optional
 
 from ..dependencies import register_component
@@ -25,6 +27,19 @@ class AgGrid(Element):
         self._props['html_columns'] = html_columns
         self._props['key'] = self.id  # HACK: workaround for #600
         self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']
+
+    @staticmethod
+    def from_pandas(df: 'pandas.DataFrame', *, theme: str = 'balham') -> AgGrid:
+        """Create an AG Grid from a Pandas DataFrame.
+
+        :param df: Pandas DataFrame
+        :param theme: AG Grid theme (default: 'balham')
+        :return: AG Grid
+        """
+        return AgGrid({
+            'columnDefs': [{'field': col} for col in df.columns],
+            'rowData': df.to_dict('records'),
+        }, theme=theme)
 
     @property
     def options(self) -> Dict:
