@@ -44,6 +44,8 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 - capture keyboard input for global shortcuts etc.
 - customize look by defining primary, secondary and accent colors
 - live-cycle events and session data
+- runs in Jupyter Notebooks and allows Python's interactive mode
+- auto-complete support for Tailwind CSS
 
 ## Installation
 
