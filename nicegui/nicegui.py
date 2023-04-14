@@ -86,14 +86,14 @@ async def handle_startup(with_welcome_message: bool = True) -> None:
 
 
 @app.on_event('shutdown')
-def handle_shutdown() -> None:
+async def handle_shutdown() -> None:
     globals.state = globals.State.STOPPING
     with globals.index_client:
         for t in globals.shutdown_handlers:
             safe_invoke(t)
     globals.state = globals.State.STOPPED
     if globals.air:
-        globals.air.disconnect()
+        await globals.air.disconnect()
 
 
 @app.exception_handler(404)

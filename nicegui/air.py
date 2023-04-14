@@ -66,8 +66,8 @@ class Air:
     async def connect(self) -> None:
         await self.relay.connect(f'{RELAY_HOST}?device_token={self.token}', socketio_path='/on_air/socket.io')
 
-    def disconnect(self) -> None:
-        self.relay.disconnect()
+    async def disconnect(self) -> None:
+        await self.relay.disconnect()
 
     async def emit(self, message_type: str, data: Dict[str, Any], room: str) -> None:
         await self.relay.emit('forward', {'event': message_type, 'data': data, 'room': room})
