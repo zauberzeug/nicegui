@@ -15,20 +15,15 @@ with warnings.catch_warnings():
 
 
 def open_window(host: str, port: int, title: str, width: int, height: int, fullscreen: bool) -> None:
-    
-    def wait_for_server_is_alive():
-        while not helpers.is_port_open(host,port):
-            time.sleep(0.1)
-    
-    wait_for_server_is_alive()
+    while not helpers.is_port_open(host, port):
+        time.sleep(0.1)
 
-    url = f'http://{host}:{port}'
-    window_kwargs = dict(url=url, title=title, width=width, height=height, fullscreen=fullscreen)
+    window_kwargs = dict(url=f'http://{host}:{port}', title=title, width=width, height=height, fullscreen=fullscreen)
     window_kwargs.update(globals.app.native.window_args)
 
     webview.create_window(**window_kwargs)
     webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
-    
+
 
 def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool) -> None:
     def check_shutdown() -> None:
@@ -40,17 +35,18 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         _thread.interrupt_main()
 
     multiprocessing.freeze_support()
-    process = multiprocessing.Process(target=open_window, args=(host, port, title, width, height, fullscreen), daemon=False)
+    process = multiprocessing.Process(target=open_window, args=(host, port, title, width, height, fullscreen),
+                                      daemon=False)
     process.start()
     Thread(target=check_shutdown, daemon=True).start()
 
 
 def find_open_port(start_port: int = 8000, end_port: int = 8999) -> int:
-    '''Reliably find an open port in a given range.
+    """Reliably find an open port in a given range.
 
     This function will actually try to open the port to ensure no firewall blocks it.
     This is better than, e.g., passing port=0 to uvicorn.
-    '''
+    """
     for port in range(start_port, end_port + 1):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
