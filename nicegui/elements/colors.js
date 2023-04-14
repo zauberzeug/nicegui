@@ -8,6 +8,7 @@ export default {
     primary: String,
     secondary: String,
     accent: String,
+    dark: String,
     positive: String,
     negative: String,
     info: String,

@@ -98,13 +98,13 @@ class element_demo:
             return demo(browser_title=self.browser_title)(f)
 
 
-def load_demo(element_class: type) -> None:
-    name = pascal_to_snake(element_class.__name__)
+def load_demo(api: Union[type, Callable]) -> None:
+    name = pascal_to_snake(api.__name__)
     try:
         module = importlib.import_module(f'website.more_documentation.{name}_documentation')
     except ModuleNotFoundError:
         module = importlib.import_module(f'website.more_documentation.{name.replace("_", "")}_documentation')
-    element_demo(element_class)(getattr(module, 'main_demo'), more_link=name)
+    element_demo(api)(getattr(module, 'main_demo'), more_link=name)
 
 
 def is_method_or_property(cls: type, attribute_name: str) -> bool:

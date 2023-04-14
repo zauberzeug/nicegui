@@ -18,7 +18,7 @@ class Router():
             return func
         return decorator
 
-    def open(self, target: Union[Callable, str]):
+    def open(self, target: Union[Callable, str]) -> None:
         if isinstance(target, str):
             path = target
             builder = self.routes[target]
@@ -26,9 +26,13 @@ class Router():
             path = {v: k for k, v in self.routes.items()}[target]
             builder = target
 
-        async def build():
+        async def build() -> None:
             with self.content:
-                await ui.run_javascript(f'history.pushState({{page: "{path}"}}, "", "{path}")', respond=False)
+                await ui.run_javascript(f'''
+                    if (window.location.pathname !== "{path}") {{
+                        history.pushState({{page: "{path}"}}, "", "{path}");
+                    }}
+                ''', respond=False)
                 result = builder()
                 if isinstance(result, Awaitable):
                     await result

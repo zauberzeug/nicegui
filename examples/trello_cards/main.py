@@ -1,56 +1,30 @@
 #!/usr/bin/env python3
-from __future__ import annotations
+from dataclasses import dataclass
 
-from typing import Optional
+import draganddrop as dnd
 
 from nicegui import ui
 
 
-class Column(ui.column):
-
-    def __init__(self, name: str) -> None:
-        super().__init__()
-        with self.classes('bg-gray-200 w-48 p-4 rounded shadow'):
-            ui.label(name).classes('text-bold')
-        self.on('dragover.prevent', self.highlight)
-        self.on('dragleave', self.unhighlight)
-        self.on('drop', self.move_card)
-
-    def highlight(self) -> None:
-        self.classes(add='bg-gray-400')
-
-    def unhighlight(self) -> None:
-        self.classes(remove='bg-gray-400')
-
-    def move_card(self) -> None:
-        self.unhighlight()
-        Card.dragged.parent_slot.parent.remove(Card.dragged)
-        with self:
-            Card(Card.dragged.text)
+@dataclass
+class ToDo:
+    title: str
 
 
-class Card(ui.card):
-    dragged: Optional[Card] = None
-
-    def __init__(self, text: str) -> None:
-        super().__init__()
-        self.text = text
-        with self.props('draggable').classes('w-full cursor-pointer'):
-            ui.label(self.text)
-        self.on('dragstart', self.handle_dragstart)
-
-    def handle_dragstart(self) -> None:
-        Card.dragged = self
+def handle_drop(todo: ToDo, location: str):
+    ui.notify(f'"{todo.title}" is now in {location}')
 
 
 with ui.row():
-    with Column('Next'):
-        Card('Clean up the kitchen')
-        Card('Do the laundry')
-        Card('Go to the gym')
-    with Column('Doing'):
-        Card('Make dinner')
-    with Column('Done'):
-        Card('Buy groceries')
+    with dnd.column('Next', on_drop=handle_drop):
+        dnd.card(ToDo('Simplify Layouting'))
+        dnd.card(ToDo('Provide Deployment'))
+    with dnd.column('Doing', on_drop=handle_drop):
+        dnd.card(ToDo('Improve Documentation'))
+    with dnd.column('Done', on_drop=handle_drop):
+        dnd.card(ToDo('Invent NiceGUI'))
+        dnd.card(ToDo('Test in own Projects'))
+        dnd.card(ToDo('Publish as Open Source'))
+        dnd.card(ToDo('Release Native-Mode'))
 
 ui.run()

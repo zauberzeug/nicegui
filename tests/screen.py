@@ -124,7 +124,7 @@ class Screen:
 
     def find(self, text: str) -> WebElement:
         try:
-            query = f'//*[not(self::script) and not(self::style) and contains(text(), "{text}")]'
+            query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
             element = self.selenium.find_element(By.XPATH, query)
             if not element.is_displayed():
                 self.wait(0.1)  # HACK: repeat check after a short delay to avoid timing issue on fast machines
@@ -133,6 +133,9 @@ class Screen:
             return element
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
+
+    def find_by_id(self, id: str) -> WebElement:
+        return self.selenium.find_element(By.ID, id)
 
     def find_by_tag(self, name: str) -> WebElement:
         return self.selenium.find_element(By.TAG_NAME, name)

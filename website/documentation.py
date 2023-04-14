@@ -163,6 +163,7 @@ def create_full() -> None:
         ui.button('Clear', on_click=container.clear)
 
     load_demo(ui.expansion)
+    load_demo(ui.splitter)
 
     @text_demo('Tabs', '''
         The elements `ui.tabs`, `ui.tab`, `ui.tab_panels`, and `ui.tab_panel` resemble
@@ -222,7 +223,7 @@ def create_full() -> None:
         NiceGUI uses the [Quasar Framework](https://quasar.dev/) version 1.0 and hence has its full design power.
         Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
         Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
-        You can also apply [Tailwind](https://tailwindcss.com/) utility classes with the `classes` method.
+        You can also apply [Tailwind CSS](https://tailwindcss.com/) utility classes with the `classes` method.
 
         If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
 
@@ -233,6 +234,29 @@ def create_full() -> None:
         ui.button().props('icon=touch_app outline round').classes('shadow-lg')
         ui.label('Stylish!').style('color: #6E93D6; font-size: 200%; font-weight: 300')
 
+    @text_demo('Tailwind CSS', '''
+        [Tailwind CSS](https://tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces.
+        NiceGUI provides a fluent, auto-complete friendly interface for adding Tailwind classes to UI elements.
+        
+        You can discover available classes by navigating the methods of the `tailwind` property.
+        The builder pattern allows you to chain multiple classes together (as shown with "Label A").
+        You can also call the `tailwind` property with a list of classes (as shown with "Label B").
+
+        Although this is very similar to using the `classes` method, it is more convenient for Tailwind classes due to auto-completion.
+
+        Last but not least, you can also predefine a style and apply it to multiple elements (labels C and D).
+    ''')
+    def tailwind_demo():
+        from nicegui import Tailwind
+        ui.label('Label A').tailwind.font_weight('extrabold').text_color('blue-600').background_color('orange-200')
+        ui.label('Label B').tailwind('drop-shadow', 'font-bold', 'text-green-600')
+
+        red_style = Tailwind().text_color('red-600').font_weight('bold')
+        label_c = ui.label('Label C')
+        red_style.apply(label_c)
+        ui.label('Label D').tailwind(red_style)
+
+    load_demo(ui.query)
     load_demo(ui.colors)
 
     heading('Action')
@@ -386,6 +410,7 @@ def create_full() -> None:
         ui.link('show page with fancy layout', page_layout)
 
     load_demo(ui.open)
+    load_demo(ui.download)
 
     @text_demo('Sessions', '''
         The optional `request` argument provides insights about the client's URL parameters etc.
@@ -580,6 +605,16 @@ def create_full() -> None:
     # HACK: restore color
     demo.BROWSER_BGCOLOR = demo_BROWSER_BGCOLOR
 
+    # Show a helpful workaround until issue is fixed upstream.
+    # For more info see: https://github.com/r0x0r/pywebview/issues/1078
+    ui.markdown('''
+        If webview has trouble finding required libraries, you may get an error relating to "WebView2Loader.dll".
+        To work around this issue, try moving the DLL file up a directory, e.g.:
+        
+        * from `.venv/Lib/site-packages/webview/lib/x64/WebView2Loader.dll`
+        * to `.venv/Lib/site-packages/webview/lib/WebView2Loader.dll`
+    ''')
+
     @text_demo('Environment Variables', '''
         You can set the following environment variables to configure NiceGUI:
 
@@ -731,5 +766,15 @@ def create_full() -> None:
             pip install pyinstaller
             ```
         ''')
+
+    ui.markdown('''
+        **Note:**
+        If you're getting an error "TypeError: a bytes-like object is required, not 'str'", try adding the following lines to the top of your `main.py` file:
+        ```py
+        import sys
+        sys.stdout = open('logs.txt', 'w')
+        ```
+        See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
+    ''')
 
     ui.element('div').classes('h-32')

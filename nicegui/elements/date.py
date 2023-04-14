@@ -4,7 +4,7 @@ from .mixins.value_element import ValueElement
 
 
 class Date(ValueElement):
-    EVENT_ARGS = ['*']
+    EVENT_ARGS = None
 
     def __init__(self,
                  value: Optional[str] = None,

@@ -103,7 +103,50 @@ def test_throttling(screen: Screen):
     assert events == [1, 2, 1, 1]
 
     screen.wait(1.1)
+    assert events == [1, 2, 1, 1, 2]
+
     screen.click('Test')
     screen.click('Test')
     screen.click('Test')
-    assert events == [1, 2, 1, 1, 1, 2, 1, 1]
+    assert events == [1, 2, 1, 1, 2, 1, 2, 1, 1]
+
+
+def test_throttling_variants(screen: Screen):
+    events = []
+    value = 0
+    ui.button('Both').on('click', lambda: events.append(value), throttle=1)
+    ui.button('Leading').on('click', lambda: events.append(value), throttle=1, trailing_events=False)
+    ui.button('Trailing').on('click', lambda: events.append(value), throttle=1, leading_events=False)
+
+    screen.open('/')
+    value = 1
+    screen.click('Both')
+    value = 2
+    screen.click('Both')
+    value = 3
+    screen.click('Both')
+    assert events == [1]
+    screen.wait(1.1)
+    assert events == [1, 3]
+
+    events = []
+    value = 1
+    screen.click('Leading')
+    value = 2
+    screen.click('Leading')
+    value = 3
+    screen.click('Leading')
+    assert events == [1]
+    screen.wait(1.1)
+    assert events == [1]
+
+    events = []
+    value = 1
+    screen.click('Trailing')
+    value = 2
+    screen.click('Trailing')
+    value = 3
+    screen.click('Trailing')
+    assert events == []
+    screen.wait(1.1)
+    assert events == [3]

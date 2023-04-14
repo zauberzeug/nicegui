@@ -11,6 +11,8 @@ class EventListener:
     args: List[str]
     handler: Callable
     throttle: float
+    leading_events: bool
+    trailing_events: bool
 
     def __post_init__(self) -> None:
         self.id = str(uuid.uuid4())
@@ -29,4 +31,6 @@ class EventListener:
             'keys': keys,
             'args': self.args,
             'throttle': self.throttle,
+            'leading_events': self.leading_events,
+            'trailing_events': self.trailing_events,
         }

@@ -13,6 +13,7 @@ from . import binding, events, globals, outbox
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
+from .tailwind import Tailwind
 
 if TYPE_CHECKING:
     from .client import Client
@@ -50,6 +51,8 @@ class Element(Visibility):
         if slot_stack:
             self.parent_slot = slot_stack[-1]
             self.parent_slot.children.append(self)
+
+        self.tailwind = Tailwind(self)
 
         outbox.enqueue_update(self)
         if self.parent_slot:
@@ -90,6 +93,16 @@ class Element(Visibility):
             'events': [listener.to_dict() for listener in self._event_listeners.values()],
         }
 
+    @staticmethod
+    def _update_classes_list(
+            classes: List[str],
+            add: Optional[str] = None, remove: Optional[str] = None, replace: Optional[str] = None) -> List[str]:
+        class_list = classes if replace is None else []
+        class_list = [c for c in class_list if c not in (remove or '').split()]
+        class_list += (add or '').split()
+        class_list += (replace or '').split()
+        return list(dict.fromkeys(class_list))  # NOTE: remove duplicates while preserving order
+
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
             -> Self:
         """Apply, remove, or replace HTML classes.
@@ -102,11 +115,7 @@ class Element(Visibility):
         :param remove: whitespace-delimited string of classes to remove from the element
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
-        class_list = self._classes if replace is None else []
-        class_list = [c for c in class_list if c not in (remove or '').split()]
-        class_list += (add or '').split()
-        class_list += (replace or '').split()
-        new_classes = list(dict.fromkeys(class_list))  # NOTE: remove duplicates while preserving order
+        new_classes = self._update_classes_list(self._classes, add, remove, replace)
         if self._classes != new_classes:
             self._classes = new_classes
             self.update()
@@ -130,11 +139,10 @@ class Element(Visibility):
         :param add: semicolon-separated list of styles to add to the element
         :param remove: semicolon-separated list of styles to remove from the element
         :param replace: semicolon-separated list of styles to use instead of existing ones
-         """
+        """
         style_dict = deepcopy(self._style) if replace is None else {}
         for key in self._parse_style(remove):
-            if key in style_dict:
-                del style_dict[key]
+            style_dict.pop(key, None)
         style_dict.update(self._parse_style(add))
         style_dict.update(self._parse_style(replace))
         if self._style != style_dict:
@@ -187,21 +195,37 @@ class Element(Visibility):
             tooltip._text = text
         return self
 
-    def on(self, type: str, handler: Optional[Callable], args: Optional[List[str]] = None, *, throttle: float = 0.0) \
-            -> Self:
+    def on(self,
+           type: str,
+           handler: Optional[Callable],
+           args: Optional[List[str]] = None, *,
+           throttle: float = 0.0,
+           leading_events: bool = True,
+           trailing_events: bool = True,
+           ) -> Self:
         """Subscribe to an event.
 
         :param type: name of the event (e.g. "click", "mousedown", or "update:model-value")
         :param handler: callback that is called upon occurrence of the event
         :param args: arguments included in the event message sent to the event handler (default: `None` meaning all)
         :param throttle: minimum time (in seconds) between event occurrences (default: 0.0)
+        :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: `True`)
+        :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
         """
         if handler:
             if args and '*' in args:
                 url = f'https://github.com/zauberzeug/nicegui/issues/644'
                 warnings.warn(DeprecationWarning(f'Event args "*" is deprecated, omit this parameter instead ({url})'))
                 args = None
-            listener = EventListener(element_id=self.id, type=type, args=args, handler=handler, throttle=throttle)
+            listener = EventListener(
+                element_id=self.id,
+                type=type,
+                args=args,
+                handler=handler,
+                throttle=throttle,
+                leading_events=leading_events,
+                trailing_events=trailing_events,
+            )
             self._event_listeners[listener.id] = listener
         return self
 

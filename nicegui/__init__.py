@@ -8,3 +8,4 @@ __version__ = importlib_metadata.version('nicegui')
 from . import elements, globals, ui
 from .client import Client
 from .nicegui import app
+from .tailwind import Tailwind
