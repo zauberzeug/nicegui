@@ -198,7 +198,7 @@ The command searches for `main.py` in in your current directory and makes the ap
                 'live-cycle events',
                 'implicit reload on code change',
                 'straight-forward data binding',
-                'execute javascript from Python',
+                'Jupyter notebook compatibility',
             ])
             features('anchor', 'Foundation', [
                 'generic [Vue](https://vuejs.org/) to Python bridge',
