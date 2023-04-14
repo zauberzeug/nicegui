@@ -1,11 +1,7 @@
 version: "3.9"
 services:
   app:
-    # TODO replace build with image once the image is published
-    #image: zauberzeug/nicegui:1.2.?
-    build:
-      context: ./../../
-      dockerfile: fly.dockerfile
+    image: zauberzeug/nicegui:1.2.7
     volumes:
       - ./app:/app # mount local app directory
   proxy:
