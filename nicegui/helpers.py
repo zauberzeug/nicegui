@@ -46,6 +46,8 @@ def is_port_open(host: str, port: int) -> bool:
         sock.connect((host, port))
     except (ConnectionRefusedError, TimeoutError):
         return False
+    except Exception:
+        return False
     else:
         return True
     finally:
