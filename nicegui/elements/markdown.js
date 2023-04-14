@@ -1,15 +1,22 @@
 export default {
   template: `<div></div>`,
-  mounted() {
+  async mounted() {
     this.ensure_codehilite_css();
-    this.update(this.$el.innerHTML);
+    if (this.use_mermaid) {
+      this.mermaid = (await import('mermaid')).default;
+      this.update(this.$el.innerHTML);
+    }
+  },
+  data() {
+    return {
+      mermaid: null,
+    }
   },
   methods: {
     update(content) {
       this.$el.innerHTML = content;
-      this.$el.querySelectorAll(".mermaid-pre").forEach((pre, i) => {
-        const code = decodeHtml(pre.children[0].innerHTML);
-        mermaid.render(`mermaid_${this.$el.id}_${i}`, code, (svg) => (pre.innerHTML = svg));
+      this.$el.querySelectorAll(".mermaid-pre").forEach(async (pre, i) => {
+        await this.mermaid.run({nodes: [pre.children[0]]});
       });
     },
     ensure_codehilite_css() {
@@ -23,6 +30,11 @@ export default {
   },
   props: {
     codehilite_css: String,
+    use_mermaid: {
+      required: false,
+      default: false,
+      type: Boolean
+    }
   },
 };
 

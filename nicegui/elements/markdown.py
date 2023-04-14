@@ -1,15 +1,16 @@
 import os
 import re
 from functools import lru_cache
+from pathlib import Path
 from typing import List
 
 import markdown2
 from pygments.formatters import HtmlFormatter
 
-from ..dependencies import register_component
+from ..dependencies import register_library, register_vue_component
 from .mixins.content_element import ContentElement
 
-register_component('markdown', __file__, 'markdown.js', ['lib/mermaid.min.js'])
+register_vue_component(name='markdown', path=Path(__file__).parent.joinpath('markdown.js'))
 
 
 class Markdown(ContentElement):
@@ -25,6 +26,10 @@ class Markdown(ContentElement):
         self.extras = extras
         super().__init__(tag='markdown', content=content)
         self._props['codehilite_css'] = HtmlFormatter(nobackground=True).get_style_defs('.codehilite')
+        self.use_component('markdown')
+        if 'mermaid' in extras:
+            self._props['use_mermaid'] = True
+            self.use_library('mermaid')
 
     def on_content_change(self, content: str) -> None:
         html = prepare_content(content, extras=' '.join(self.extras))
