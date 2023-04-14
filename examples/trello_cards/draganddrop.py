@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from typing import Callable, Optional
 
-from nicegui import ui
 from typing_extensions import Protocol
+
+from nicegui import ui
 
 
 class Item(Protocol):
-    @property
-    def title(self) -> int:
-        pass
+    title: str
 
 
 dragged: Optional[card] = None
@@ -17,9 +16,9 @@ dragged: Optional[card] = None
 
 class column(ui.column):
 
-    def __init__(self, name: str, on_drop: Callable[[Item, str]] = None) -> None:
+    def __init__(self, name: str, on_drop: Optional[Callable[[Item, str], None]] = None) -> None:
         super().__init__()
-        with self.classes('bg-grey-5 w-60 p-4 rounded shadow-2'):
+        with self.classes('bg-blue-grey-2 w-60 p-4 rounded shadow-2'):
             ui.label(name).classes('text-bold ml-1')
         self.name = name
         self.on('dragover.prevent', self.highlight)
@@ -28,10 +27,10 @@ class column(ui.column):
         self.on_drop = on_drop
 
     def highlight(self) -> None:
-        self.classes(add='bg-grey-2')
+        self.classes(remove='bg-blue-grey-2', add='bg-blue-grey-3')
 
     def unhighlight(self) -> None:
-        self.classes(remove='bg-grey-2')
+        self.classes(remove='bg-blue-grey-3', add='bg-blue-grey-2')
 
     def move_card(self) -> None:
         global dragged
