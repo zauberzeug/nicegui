@@ -63,8 +63,8 @@ def add_head_html() -> None:
 
 def add_header() -> None:
     menu_items = {
-        'Features': '/#features',
         'Installation': '/#installation',
+        'Features': '/#features',
         'Demos': '/#demos',
         'Documentation': '/documentation',
         'Examples': '/#examples',
@@ -128,47 +128,6 @@ async def index_page(client: Client):
                     '[GitHub](https://github.com/zauberzeug/nicegui).')
         example_card.create()
 
-    with ui.column().classes('w-full p-8 lg:p-16 bold-links arrow-links max-w-[1600px] mx-auto'):
-        link_target('features', '-50px')
-        section_heading('Features', 'Code *nicely*')
-        with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8'):
-            features('swap_horiz', 'Interaction', [
-                'buttons, switches, sliders, inputs, ...',
-                'notifications, dialogs and menus',
-                'keyboard input',
-                'on-screen joystick',
-            ])
-            features('space_dashboard', 'Layout', [
-                'navigation bars, tabs, panels, ...',
-                'grouping with rows, columns and cards',
-                'HTML and Markdown elements',
-                'flex layout by default',
-            ])
-            features('insights', 'Visualization', [
-                'charts, diagrams and tables',
-                '3D scenes',
-                'progress bars',
-                'built-in timer for data refresh',
-            ])
-            features('brush', 'Styling', [
-                'customizable color themes',
-                'custom CSS and classes',
-                'modern look with material design',
-                '[Tailwind CSS](https://tailwindcss.com/) auto-completion',
-            ])
-            features('source', 'Coding', [
-                'live-cycle events',
-                'implicit reload on code change',
-                'straight-forward data binding',
-                'execute javascript from Python',
-            ])
-            features('anchor', 'Foundation', [
-                'generic [Vue](https://vuejs.org/) to Python bridge',
-                'dynamic GUI through [Quasar](https://quasar.dev/)',
-                'content is served with [FastAPI](http://fastapi.tiangolo.com/)',
-                'Python 3.7+',
-            ])
-
     with ui.column().classes('w-full text-lg p-8 lg:p-16 max-w-[1600px] mx-auto'):
         link_target('installation', '-50px')
         section_heading('Installation', 'Get *started*')
@@ -206,6 +165,47 @@ The command searches for `main.py` in in your current directory and makes the ap
                     ui.markdown('```bash\n'
                                 'docker run -it --rm -p 8888:8080 \\\n -v "$PWD":/app zauberzeug/nicegui\n'
                                 '```')
+
+    with ui.column().classes('w-full p-8 lg:p-16 bold-links arrow-links max-w-[1600px] mx-auto'):
+        link_target('features', '-50px')
+        section_heading('Features', 'Code *nicely*')
+        with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8'):
+            features('swap_horiz', 'Interaction', [
+                'buttons, switches, sliders, inputs, ...',
+                'notifications, dialogs and menus',
+                'keyboard input',
+                'on-screen joystick',
+            ])
+            features('space_dashboard', 'Layout', [
+                'navigation bars, tabs, panels, ...',
+                'grouping with rows, columns and cards',
+                'HTML and Markdown elements',
+                'flex layout by default',
+            ])
+            features('insights', 'Visualization', [
+                'charts, diagrams and tables',
+                '3D scenes',
+                'progress bars',
+                'built-in timer for data refresh',
+            ])
+            features('brush', 'Styling', [
+                'customizable color themes',
+                'custom CSS and classes',
+                'modern look with material design',
+                '[Tailwind CSS](https://tailwindcss.com/) auto-completion',
+            ])
+            features('source', 'Coding', [
+                'live-cycle events',
+                'implicit reload on code change',
+                'straight-forward data binding',
+                'Jupyter notebook compatibility',
+            ])
+            features('anchor', 'Foundation', [
+                'generic [Vue](https://vuejs.org/) to Python bridge',
+                'dynamic GUI through [Quasar](https://quasar.dev/)',
+                'content is served with [FastAPI](http://fastapi.tiangolo.com/)',
+                'Python 3.7+',
+            ])
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
         link_target('demos', '-50px')

@@ -92,3 +92,20 @@ def test_stock_chart(screen: Screen):
 
     screen.open('/')
     assert screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-range-selector-buttons')
+
+
+def test_replace_chart(screen: Screen):
+    with ui.row() as container:
+        ui.chart({'series': [{'name': 'A'}]})
+
+    def replace():
+        container.clear()
+        with container:
+            ui.chart({'series': [{'name': 'B'}]})
+    ui.button('Replace', on_click=replace)
+
+    screen.open('/')
+    screen.should_contain('A')
+    screen.click('Replace')
+    screen.should_contain('B')
+    screen.should_not_contain('A')

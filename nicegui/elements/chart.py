@@ -106,6 +106,7 @@ class Chart(Element):
             for dependency in js_dependencies.values()
             if dependency.optional and dependency.path.stem in extras and 'chart' in dependency.dependents
         ]
+        self._props['key'] = self.id  # HACK: workaround for #600
 
     @property
     def options(self) -> Dict:

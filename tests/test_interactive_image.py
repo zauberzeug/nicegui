@@ -40,3 +40,20 @@ def test_with_cross(screen: Screen, cross: bool, number_of_lines: int):
     with screen.implicitly_wait(0.5):
         assert len(screen.find_all_by_tag('line')) == number_of_lines
         assert len(screen.find_all_by_tag('circle')) == 1
+
+
+def test_replace_interactive_image(screen: Screen):
+    with ui.row() as container:
+        ui.interactive_image('https://picsum.photos/id/29/640/360')
+
+    def replace():
+        container.clear()
+        with container:
+            ui.interactive_image('https://picsum.photos/id/30/640/360')
+    ui.button('Replace', on_click=replace)
+
+    screen.open('/')
+    assert screen.find_by_tag('img').get_attribute('src').endswith('id/29/640/360')
+    screen.click('Replace')
+    screen.wait(0.5)
+    assert screen.find_by_tag('img').get_attribute('src').endswith('id/30/640/360')

@@ -1,6 +1,6 @@
 # Included Web Dependencies
 
-- Quasar: 2.11.8
+- Quasar: 2.11.10
 - Vue: 3.2.47
 - Socket.io: 4.6.1
 - Tailwind CSS: 3.2.6

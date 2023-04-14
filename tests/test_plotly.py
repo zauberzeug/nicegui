@@ -23,3 +23,20 @@ def test_plotly(screen: Screen):
     screen.click('Add trace')
     screen.should_contain('Trace 1')
     screen.should_contain('Trace 2')
+
+
+def test_replace_plotly(screen: Screen):
+    with ui.row() as container:
+        ui.plotly(go.Figure(go.Scatter(x=[1], y=[1], text=['A'], mode='text')))
+
+    def replace():
+        container.clear()
+        with container:
+            ui.plotly(go.Figure(go.Scatter(x=[1], y=[1], text=['B'], mode='text')))
+    ui.button('Replace', on_click=replace)
+
+    screen.open('/')
+    assert screen.find_by_tag('text').text == 'A'
+    screen.click('Replace')
+    screen.wait(0.5)
+    assert screen.find_by_tag('text').text == 'B'
