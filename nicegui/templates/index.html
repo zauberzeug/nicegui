@@ -130,6 +130,16 @@
         });
       }
 
+      function download(url, filename) {
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.target = "_blank";
+        anchor.download = filename || "";
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+      }
+
       const app = Vue.createApp({
         data() {
           return {
@@ -162,6 +172,7 @@
           window.socket.on("run_method", (msg) => getElement(msg.id)?.[msg.name](...msg.args));
           window.socket.on("run_javascript", (msg) => runJavascript(msg['code'], msg['request_id']));
           window.socket.on("open", (msg) => (location.href = msg));
+          window.socket.on("download", (msg) => download(msg.url, msg.filename));
           window.socket.on("notify", (msg) => Quasar.Notify.create(msg));
         },
       }).use(Quasar, {
