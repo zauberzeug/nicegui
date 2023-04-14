@@ -1,10 +1,12 @@
+from pathlib import Path
 from typing import Any, Callable, Optional
 
-from ..dependencies import register_component
+from ..dependencies import register_library, register_vue_component
 from ..element import Element
 from ..events import JoystickEventArguments, handle_event
 
-register_component('joystick', __file__, 'joystick.vue', ['lib/nipplejs.min.js'])
+register_vue_component(name='joystick', path=Path(__file__).parent.joinpath('joystick.vue'))
+register_library(name='joystick', path=Path(__file__).parent.joinpath('lib', 'nipplejs', 'nipplejs.js'))
 
 
 class Joystick(Element):
@@ -43,3 +45,5 @@ class Joystick(Element):
                                                                       client=self.client,
                                                                       action='end')))
         self._props['options'] = options
+        self.use_component('joystick')
+        self.use_library('joystick')
