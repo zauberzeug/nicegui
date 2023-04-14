@@ -410,6 +410,7 @@ def create_full() -> None:
         ui.link('show page with fancy layout', page_layout)
 
     load_demo(ui.open)
+    load_demo(ui.download)
 
     @text_demo('Sessions', '''
         The optional `request` argument provides insights about the client's URL parameters etc.
@@ -765,5 +766,15 @@ def create_full() -> None:
             pip install pyinstaller
             ```
         ''')
+
+    ui.markdown('''
+        **Note:**
+        If you're getting an error "TypeError: a bytes-like object is required, not 'str'", try adding the following lines to the top of your `main.py` file:
+        ```py
+        import sys
+        sys.stdout = open('logs.txt', 'w')
+        ```
+        See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
+    ''')
 
     ui.element('div').classes('h-32')

@@ -38,3 +38,20 @@ def test_mermaid_with_line_breaks(screen: Screen):
     screen.should_contain('Text: some test text')
     screen.should_contain('Risk: High')
     screen.should_contain('Verification: Test')
+
+
+def test_replace_mermaid(screen: Screen):
+    with ui.row() as container:
+        ui.mermaid('graph LR; Node_A')
+
+    def replace():
+        container.clear()
+        with container:
+            ui.mermaid('graph LR; Node_B')
+    ui.button('Replace', on_click=replace)
+
+    screen.open('/')
+    screen.should_contain('Node_A')
+    screen.click('Replace')
+    screen.should_contain('Node_B')
+    screen.should_not_contain('Node_A')

@@ -195,21 +195,37 @@ class Element(Visibility):
             tooltip._text = text
         return self
 
-    def on(self, type: str, handler: Optional[Callable], args: Optional[List[str]] = None, *, throttle: float = 0.0) \
-            -> Self:
+    def on(self,
+           type: str,
+           handler: Optional[Callable],
+           args: Optional[List[str]] = None, *,
+           throttle: float = 0.0,
+           leading_events: bool = True,
+           trailing_events: bool = True,
+           ) -> Self:
         """Subscribe to an event.
 
         :param type: name of the event (e.g. "click", "mousedown", or "update:model-value")
         :param handler: callback that is called upon occurrence of the event
         :param args: arguments included in the event message sent to the event handler (default: `None` meaning all)
         :param throttle: minimum time (in seconds) between event occurrences (default: 0.0)
+        :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: `True`)
+        :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
         """
         if handler:
             if args and '*' in args:
                 url = f'https://github.com/zauberzeug/nicegui/issues/644'
                 warnings.warn(DeprecationWarning(f'Event args "*" is deprecated, omit this parameter instead ({url})'))
                 args = None
-            listener = EventListener(element_id=self.id, type=type, args=args, handler=handler, throttle=throttle)
+            listener = EventListener(
+                element_id=self.id,
+                type=type,
+                args=args,
+                handler=handler,
+                throttle=throttle,
+                leading_events=leading_events,
+                trailing_events=trailing_events,
+            )
             self._event_listeners[listener.id] = listener
         return self
 

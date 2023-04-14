@@ -71,6 +71,8 @@ class App(FastAPI):
         :param path: string that starts with a slash "/"
         :param directory: folder with static files to serve under the given path
         """
+        if path == '/':
+            raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
         globals.app.mount(path, StaticFiles(directory=directory))
 
     def remove_route(self, path: str) -> None:

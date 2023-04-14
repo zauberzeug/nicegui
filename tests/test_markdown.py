@@ -53,3 +53,20 @@ def test_strip_indentation(screen: Screen):
     screen.open('/')
     screen.should_contain('This is Markdown.')
     screen.should_not_contain('**This is Markdown.**')  # NOTE: '**' are translated to formatting and not visible
+
+
+def test_replace_markdown(screen: Screen):
+    with ui.row() as container:
+        ui.markdown('A')
+
+    def replace():
+        container.clear()
+        with container:
+            ui.markdown('B')
+    ui.button('Replace', on_click=replace)
+
+    screen.open('/')
+    screen.should_contain('A')
+    screen.click('Replace')
+    screen.should_contain('B')
+    screen.should_not_contain('A')

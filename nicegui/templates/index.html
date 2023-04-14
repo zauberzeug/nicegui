@@ -30,18 +30,38 @@
 
       const elements = {{ elements | safe }};
 
-      const throttles = new Set();
-      function throttle(callback, time, id) {
+      const waitingCallbacks = new Map();
+      function throttle(callback, time, leading, trailing, id) {
         if (time <= 0) {
+          // execute callback immediately and return
           callback();
           return;
         }
-        if (throttles.has(id)) return;
-        throttles.add(id);
-        callback();
-        setTimeout(() => throttles.delete(id), 1000 * time);
+        if (waitingCallbacks.has(id)) {
+          if (trailing) {
+            // update trailing callback
+            waitingCallbacks.set(id, callback);
+          }
+        } else {
+          if (leading) {
+            // execute leading callback and set timeout to block more leading callbacks
+            callback();
+            waitingCallbacks.set(id, null);
+          }
+          else if (trailing) {
+            // set trailing callback and set timeout to execute it
+            waitingCallbacks.set(id, callback);
+          }
+          if (leading || trailing) {
+            // set timeout to remove block and to execute trailing callback
+            setTimeout(() => {
+              const trailingCallback = waitingCallbacks.get(id);
+              if (trailingCallback) trailingCallback();
+              waitingCallbacks.delete(id)
+            }, 1000 * time);
+          }
+        }
       }
-
       function renderRecursively(elements, id) {
         const element = elements[id];
         const props = {
@@ -58,7 +78,7 @@
             const all = typeof e !== 'object' || !event.args;
             const args = all ? e : Object.fromEntries(event.args.map(a => [a, e[a]]));
             const emitter = () => window.socket.emit("event", {id: element.id, listener_id: event.listener_id, args});
-            throttle(emitter, event.throttle, event.listener_id);
+            throttle(emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
             if (element.props["loopback"] === False && event.type == "update:model-value") {
               element.props["model-value"] = args;
             }
@@ -110,6 +130,16 @@
         });
       }
 
+      function download(url, filename) {
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.target = "_blank";
+        anchor.download = filename || "";
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+      }
+
       const app = Vue.createApp({
         data() {
           return {
@@ -142,6 +172,7 @@
           window.socket.on("run_method", (msg) => getElement(msg.id)?.[msg.name](...msg.args));
           window.socket.on("run_javascript", (msg) => runJavascript(msg['code'], msg['request_id']));
           window.socket.on("open", (msg) => (location.href = msg));
+          window.socket.on("download", (msg) => download(msg.url, msg.filename));
           window.socket.on("notify", (msg) => Quasar.Notify.create(msg));
         },
       }).use(Quasar, {
