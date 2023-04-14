@@ -1,4 +1,3 @@
-import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
@@ -95,7 +94,6 @@ def test_stock_chart(screen: Screen):
     assert screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-range-selector-buttons')
 
 
-@pytest.mark.skip(reason='issue #600')
 def test_replace_chart(screen: Screen):
     with ui.row() as container:
         ui.chart({'series': [{'name': 'A'}]})

@@ -1,4 +1,3 @@
-import pytest
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
@@ -114,7 +113,6 @@ def test_get_selected_rows(screen: Screen):
     screen.should_contain("{'name': 'Alice'}")
 
 
-@pytest.mark.skip(reason='issue #600')
 def test_replace_aggrid(screen: Screen):
     with ui.row().classes('w-full') as container:
         ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]})

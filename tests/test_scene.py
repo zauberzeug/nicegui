@@ -1,4 +1,3 @@
-import pytest
 from selenium.common.exceptions import JavascriptException
 
 from nicegui import ui
@@ -75,7 +74,6 @@ def test_deleting_group(screen: Screen):
     assert len(scene.objects) == 0
 
 
-@pytest.mark.skip(reason='issue #600')
 def test_replace_scene(screen: Screen):
     with ui.row() as container:
         with ui.scene() as scene:
@@ -84,6 +82,7 @@ def test_replace_scene(screen: Screen):
     def replace():
         container.clear()
         with container:
+            nonlocal scene
             with ui.scene() as scene:
                 scene.box().with_name('box')
     ui.button('Replace scene', on_click=replace)

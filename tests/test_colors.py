@@ -1,11 +1,8 @@
-import pytest
-
 from nicegui import ui
 
 from .screen import Screen
 
 
-@pytest.mark.skip(reason='issue #600')
 def test_replace_colors(screen: Screen):
     with ui.row() as container:
         ui.colors(primary='blue')
