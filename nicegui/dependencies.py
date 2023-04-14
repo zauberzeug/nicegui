@@ -15,7 +15,6 @@ class Legacy():
 
 
 legacy = Legacy()  # @todo remove when register_component is removed.
-js_dependencies: Dict[str, Any] = {}  # @todo remove when unused in elements.
 vue_components: Dict[str, Any] = {}
 js_components: Dict[str, Any] = {}
 libraries: Dict[str, Any] = {}
