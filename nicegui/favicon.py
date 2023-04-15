@@ -41,7 +41,7 @@ def is_char(favicon: str) -> bool:
     return len(favicon) == 1
 
 
-def char_to_data_url(char: str):
+def char_to_data_url(char: str) -> str:
     svg = f'''
         <svg viewBox="0 0 128 128" width="128" height="128" xmlns="http://www.w3.org/2000/svg" >
             <style>
