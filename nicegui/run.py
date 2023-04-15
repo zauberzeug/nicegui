@@ -41,7 +41,7 @@ def run(*,
     :param port: use this port (default: `8080`)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
     :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
-    :param favicon: relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
+    :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`)
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param show: automatically open the UI in a browser tab (default: `True`)
