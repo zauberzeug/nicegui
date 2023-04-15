@@ -410,6 +410,7 @@ def create_full() -> None:
         ui.link('show page with fancy layout', page_layout)
 
     load_demo(ui.open)
+    load_demo(ui.download)
 
     @text_demo('Sessions', '''
         The optional `request` argument provides insights about the client's URL parameters etc.

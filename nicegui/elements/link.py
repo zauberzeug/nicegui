@@ -1,8 +1,11 @@
 from typing import Callable, Union
 
 from .. import globals
+from ..dependencies import register_component
 from ..element import Element
 from .mixins.text_element import TextElement
+
+register_component('link', __file__, 'link.js')
 
 
 class Link(TextElement):
@@ -19,7 +22,7 @@ class Link(TextElement):
         :param target: page function or string that is a an absolute URL or relative path from base URL
         :param new_tab: open link in new tab (default: False)
         """
-        super().__init__(tag='a', text=text)
+        super().__init__(tag='link', text=text)
         self._props['href'] = target if isinstance(target, str) else globals.page_routes[target]
         self._props['target'] = '_blank' if new_tab else '_self'
         self._classes = ['nicegui-link']

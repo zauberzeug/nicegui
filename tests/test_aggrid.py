@@ -111,3 +111,32 @@ def test_get_selected_rows(screen: Screen):
 
     screen.click('Get selected row')
     screen.should_contain("{'name': 'Alice'}")
+
+
+def test_replace_aggrid(screen: Screen):
+    with ui.row().classes('w-full') as container:
+        ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]})
+
+    def replace():
+        container.clear()
+        with container:
+            ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Bob'}]})
+    ui.button('Replace', on_click=replace)
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.click('Replace')
+    screen.should_contain('Bob')
+    screen.should_not_contain('Alice')
+
+
+def test_create_from_pandas(screen: Screen):
+    import pandas as pd
+    df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]})
+    ui.aggrid.from_pandas(df)
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_contain('18')
+    screen.should_contain('21')
