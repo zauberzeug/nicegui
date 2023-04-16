@@ -19,6 +19,7 @@ class page:
                  favicon: Optional[str] = None,
                  dark: Optional[bool] = ...,
                  response_timeout: float = 3.0,
+                 **kwargs,
                  ) -> None:
         """Page
 
@@ -33,6 +34,7 @@ class page:
         :param favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0)
+        :param **kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
         self.path = path
         self.title = title
@@ -40,6 +42,7 @@ class page:
         self.favicon = favicon
         self.dark = dark
         self.response_timeout = response_timeout
+        self.kwargs = kwargs
 
         create_favicon_route(self.path, favicon)
 
@@ -86,6 +89,6 @@ class page:
             parameters.insert(0, request)
         decorated.__signature__ = inspect.Signature(parameters)
 
-        globals.app.get(self.path)(decorated)
+        globals.app.get(self.path, **self.kwargs)(decorated)
         globals.page_routes[func] = self.path
         return func
