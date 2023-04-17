@@ -10,6 +10,11 @@ class Number(ValueElement):
                  label: Optional[str] = None, *,
                  placeholder: Optional[str] = None,
                  value: Optional[float] = None,
+                 min: Optional[float] = None,
+                 max: Optional[float] = None,
+                 step: Optional[float] = None,
+                 prefix: Optional[str] = None,
+                 suffix: Optional[str] = None,
                  format: Optional[str] = None,
                  on_change: Optional[Callable] = None,
                  validation: Dict[str, Callable] = {}) -> None:
@@ -23,6 +28,11 @@ class Number(ValueElement):
         :param label: displayed name for the number input
         :param placeholder: text to show if no value is entered
         :param value: the initial value of the field
+        :param min: the minimum value allowed
+        :param max: the maximum value allowed
+        :param step: the step size for the stepper buttons
+        :param prefix: a prefix to prepend to the displayed value
+        :param suffix: a suffix to append to the displayed value
         :param format: a string like "%.2f" to format the displayed value
         :param on_change: callback to execute when the input is confirmed by leaving the focus
         :param validation: dictionary of validation rules, e.g. ``{'Too small!': lambda value: value < 3}``
@@ -34,6 +44,16 @@ class Number(ValueElement):
             self._props['label'] = label
         if placeholder is not None:
             self._props['placeholder'] = placeholder
+        if min is not None:
+            self._props['min'] = min
+        if max is not None:
+            self._props['max'] = max
+        if step is not None:
+            self._props['step'] = step
+        if prefix is not None:
+            self._props['prefix'] = prefix
+        if suffix is not None:
+            self._props['suffix'] = suffix
         self.validation = validation
         self.on('blur', self.update)  # NOTE: to apply format (#736)
 
