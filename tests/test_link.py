@@ -34,3 +34,19 @@ def test_opening_link_in_new_tab(screen: Screen):
     screen.switch_to(0)
     screen.should_not_contain('the sub-page')
     screen.should_contain('open sub-page')
+
+
+def test_replacing_link(screen: Screen):
+    def change():
+        content.clear()
+        with content:
+            ui.link('zauberzeug', 'https://zauberzeug.com')
+    with ui.row() as content:
+        ui.link('nicegui.io', 'https://nicegui.io')
+    ui.button('change link', on_click=change)
+
+    screen.open('/')
+    content.clear()
+    screen.should_not_contain('nicegui')
+    screen.click('change link')
+    assert screen.find('zauberzeug').get_attribute('href') == 'https://zauberzeug.com/'
