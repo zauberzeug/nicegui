@@ -25,8 +25,8 @@ class Link(TextElement):
         super().__init__(tag='link', text=text)
         self._props['href'] = target if isinstance(target, str) else globals.page_routes[target]
         self._props['target'] = '_blank' if new_tab else '_self'
-        self._classes = ['nicegui-link']
         self._props['key'] = self.id  # HACK: workaround for #600
+        self._classes = ['nicegui-link']
 
 
 class LinkTarget(Element):
