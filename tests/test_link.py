@@ -50,3 +50,13 @@ def test_replace_link(screen: Screen):
     assert screen.find('nicegui.io').get_attribute('href') == 'https://nicegui.io/'
     screen.click('Replace')
     assert screen.find('zauberzeug').get_attribute('href') == 'https://zauberzeug.com/'
+
+
+def test_updating_href_prop(screen: Screen):
+    l = ui.link('nicegui.io', 'https://nicegui.io')
+    ui.button('change href', on_click=lambda: l.props('href="https://github.com/zauberzeug/nicegui"'))
+
+    screen.open('/')
+    assert screen.find('nicegui.io').get_attribute('href') == 'https://nicegui.io/'
+    screen.click('change href')
+    assert screen.find('nicegui.io').get_attribute('href') == 'https://github.com/zauberzeug/nicegui'
