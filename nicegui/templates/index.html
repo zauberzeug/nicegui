@@ -189,11 +189,11 @@
       {{ vue_scripts | safe }}
       {{ js_imports | safe }}
 
-      const dark = {{ dark }};
-      Quasar.Dark.set(dark === None ? "auto" : dark);
+      const dark_mode = {{ dark }};
+      Quasar.Dark.set(dark_mode === None ? "auto" : dark);
       {% if tailwind %}
-      if (dark !== None) tailwind.config.darkMode = "class";
-      if (dark === True) document.body.classList.add("dark");
+      if (dark_mode !== None) tailwind.config.darkMode = "class";
+      if (dark_mode === True) document.body.classList.add("dark");
       {% endif %}
 
       app.mount("#app");
