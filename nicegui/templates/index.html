@@ -119,7 +119,7 @@
       }
 
       function getElement(id) {
-        return window.app.$refs['r' + id];
+        return (id instanceof HTMLElement) ? id : window.app.$refs['r' + id];
       }
 
       function runJavascript(code, request_id) {
