@@ -34,3 +34,29 @@ def test_opening_link_in_new_tab(screen: Screen):
     screen.switch_to(0)
     screen.should_not_contain('the sub-page')
     screen.should_contain('open sub-page')
+
+
+def test_replace_link(screen: Screen):
+    with ui.row() as container:
+        ui.link('nicegui.io', 'https://nicegui.io/')
+
+    def replace():
+        container.clear()
+        with container:
+            ui.link('zauberzeug', 'https://zauberzeug.com/')
+    ui.button('Replace', on_click=replace)
+
+    screen.open('/')
+    assert screen.find('nicegui.io').get_attribute('href') == 'https://nicegui.io/'
+    screen.click('Replace')
+    assert screen.find('zauberzeug').get_attribute('href') == 'https://zauberzeug.com/'
+
+
+def test_updating_href_prop(screen: Screen):
+    l = ui.link('nicegui.io', 'https://nicegui.io')
+    ui.button('change href', on_click=lambda: l.props('href="https://github.com/zauberzeug/nicegui"'))
+
+    screen.open('/')
+    assert screen.find('nicegui.io').get_attribute('href') == 'https://nicegui.io/'
+    screen.click('change href')
+    assert screen.find('nicegui.io').get_attribute('href') == 'https://github.com/zauberzeug/nicegui'
