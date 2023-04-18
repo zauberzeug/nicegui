@@ -55,7 +55,13 @@ class Number(ValueElement):
         if suffix is not None:
             self._props['suffix'] = suffix
         self.validation = validation
-        self.on('blur', self.update)  # NOTE: to apply format (#736)
+        self.on('blur', self.sanitize)
+
+    def sanitize(self) -> None:
+        value = float(self.value or 0)
+        value = max(value, self._props.get('min', -float('inf')))
+        value = min(value, self._props.get('max', float('inf')))
+        self.set_value(self.format % value if self.format else str(value))
 
     def on_value_change(self, value: Any) -> None:
         super().on_value_change(value)
