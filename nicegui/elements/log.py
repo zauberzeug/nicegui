@@ -7,6 +7,7 @@ from ..element import Element
 
 register_vue_component(name='log', path=Path(__file__).parent.joinpath('log.js'))
 
+
 class Log(Element):
 
     def __init__(self, max_lines: Optional[int] = None) -> None:

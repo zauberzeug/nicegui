@@ -6,7 +6,7 @@ from ..element import Element
 from ..events import JoystickEventArguments, handle_event
 
 register_vue_component(name='joystick', path=Path(__file__).parent.joinpath('joystick.vue'))
-register_library(name='joystick', path=Path(__file__).parent.joinpath('lib', 'nipplejs', 'nipplejs.js'))
+register_library(name='nipplejs', path=Path(__file__).parent.joinpath('lib', 'nipplejs', 'nipplejs.js'))
 
 
 class Joystick(Element):
@@ -46,4 +46,4 @@ class Joystick(Element):
                                                                       action='end')))
         self._props['options'] = options
         self.use_component('joystick')
-        self.use_library('joystick')
+        self.use_library('nipplejs')

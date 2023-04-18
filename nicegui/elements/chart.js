@@ -23,11 +23,11 @@ export default {
         this.chart.update(this.options);
       }
     },
-    destroyChart () {
+    destroyChart() {
       if (this.chart) {
-        this.chart.destroy()
+        this.chart.destroy();
       }
-    }
+    },
   },
   props: {
     type: String,

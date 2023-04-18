@@ -81,12 +81,10 @@ optional_dependencies = [
     'lib/highcharts/modules/cylinder.js',
 ]
 register_vue_component(name='chart', path=Path(__file__).parent.joinpath('chart.js'))
-for dependency in dependencies:
-    name = dependency[len('lib/highcharts/'): -len('.js')]
-    register_library(name=name, path=Path(__file__).parent.joinpath(dependency))
-for optional_dependency in optional_dependencies:
-    name = optional_dependency[len('lib/highcharts/modules/'): -len('.js')]
-    register_library(name=name, path=Path(__file__).parent.joinpath(optional_dependency))
+for path in dependencies:
+    register_library(name=Path(path).stem, path=Path(__file__).parent.joinpath(path))
+for path in optional_dependencies:
+    register_library(name=Path(path).stem, path=Path(__file__).parent.joinpath(path))
 
 
 class Chart(Element):
@@ -110,7 +108,9 @@ class Chart(Element):
         self._props['options'] = options
         self._props['extras'] = extras
         self.use_component('chart')
-        self.use_library('highcharts').use_library('highcharts-more').use_library('highcharts-3d')
+        self.use_library('highcharts')
+        self.use_library('highcharts-more')
+        self.use_library('highcharts-3d')
         for extra in extras:
             self.use_library(extra)
         self._props['key'] = self.id  # HACK: workaround for #600

@@ -5,7 +5,7 @@
 <script>
 export default {
   async mounted() {
-    await this.$nextTick()
+    await this.$nextTick();
     Plotly.newPlot(this.$el.id, this.options.data, this.options.layout, this.options.config);
   },
 

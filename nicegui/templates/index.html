@@ -14,11 +14,13 @@
     {% if tailwind %}
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
     {% endif %}
+    <!-- NOTE: force Prettier to keep the line break -->
     {{ head_html | safe }}
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.prod.js"></script>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
     {{ import_maps | safe }}
 
+    <!-- NOTE: force Prettier to keep the line break -->
     {{ body_html | safe }}
 
     <div id="app"></div>

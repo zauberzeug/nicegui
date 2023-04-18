@@ -3,9 +3,8 @@ from typing import Dict, Union
 
 import plotly.graph_objects as go
 
-from ..dependencies import register_vue_component, register_library
+from ..dependencies import register_library, register_vue_component
 from ..element import Element
-
 
 register_vue_component(name='plotly', path=Path(__file__).parent.joinpath('plotly.vue'))
 register_library(name='plotly', path=Path(__file__).parent.joinpath('lib', 'plotly', 'plotly.min.js'))
@@ -42,7 +41,8 @@ class Plotly(Element):
 
     def update(self) -> None:
         options = self._get_figure_json()
-        options['config'] = {**options['config'], **{'responsive': True}} if 'config' in options else {'responsive': True}
+        options['config'] = \
+            {**options['config'], **{'responsive': True}} if 'config' in options else {'responsive': True}
         self._props['options'] = options
         self.run_method('update', self._props['options'])
 

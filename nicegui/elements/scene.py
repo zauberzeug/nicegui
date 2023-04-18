@@ -10,12 +10,18 @@ from .scene_object3d import Object3D
 from .scene_objects import Scene as SceneObject
 
 register_vue_component(name='scene', path=Path(__file__).parent.joinpath('scene.js'))
-register_library(name='three', path=Path(__file__).parent.joinpath('lib', 'three', 'three.module.js'), expose=True)
-register_library(name='CSS2DRenderer', path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'CSS2DRenderer.js'), expose=True)
-register_library(name='CSS3DRenderer', path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'CSS3DRenderer.js'), expose=True)
-register_library(name='OrbitControls', path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'OrbitControls.js'), expose=True)
-register_library(name='STLLoader', path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'STLLoader.js'), expose=True)
-register_library(name='tween', path=Path(__file__).parent.joinpath('lib', 'tween', 'tween.umd.js'))
+register_library(name='three',
+                 path=Path(__file__).parent.joinpath('lib', 'three', 'three.module.js'), expose=True)
+register_library(name='CSS2DRenderer',
+                 path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'CSS2DRenderer.js'), expose=True)
+register_library(name='CSS3DRenderer',
+                 path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'CSS3DRenderer.js'), expose=True)
+register_library(name='OrbitControls',
+                 path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'OrbitControls.js'), expose=True)
+register_library(name='STLLoader',
+                 path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'STLLoader.js'), expose=True)
+register_library(name='tween',
+                 path=Path(__file__).parent.joinpath('lib', 'tween', 'tween.umd.js'))
 
 
 @dataclass

@@ -9,6 +9,7 @@ from ..globals import get_client
 
 register_vue_component(name='query', path=Path(__file__).parent.joinpath('query.js'))
 
+
 class Query(Element):
 
     def __init__(self, selector: str) -> None:

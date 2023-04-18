@@ -3,20 +3,20 @@ export default {
   async mounted() {
     this.ensure_codehilite_css();
     if (this.use_mermaid) {
-      this.mermaid = (await import('mermaid')).default;
+      this.mermaid = (await import("mermaid")).default;
       this.update(this.$el.innerHTML);
     }
   },
   data() {
     return {
       mermaid: null,
-    }
+    };
   },
   methods: {
     update(content) {
       this.$el.innerHTML = content;
       this.$el.querySelectorAll(".mermaid-pre").forEach(async (pre, i) => {
-        await this.mermaid.run({nodes: [pre.children[0]]});
+        await this.mermaid.run({ nodes: [pre.children[0]] });
       });
     },
     ensure_codehilite_css() {
@@ -33,8 +33,8 @@ export default {
     use_mermaid: {
       required: false,
       default: false,
-      type: Boolean
-    }
+      type: Boolean,
+    },
   },
 };
 

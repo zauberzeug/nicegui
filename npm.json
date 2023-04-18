@@ -2,9 +2,7 @@
   "aggrid": {
     "package": "ag-grid-community",
     "destination": "elements/lib",
-    "keep": [
-      "package/dist/ag-grid-community(\\.min)?\\.js"
-    ],
+    "keep": ["package/dist/ag-grid-community(\\.min)?\\.js"],
     "rename": {
       "package/dist/": ""
     }
@@ -23,18 +21,14 @@
   },
   "mermaid": {
     "destination": "elements/lib",
-    "keep": [
-      "package/dist/.*\\.m?js"
-    ],
+    "keep": ["package/dist/.*\\.m?js"],
     "rename": {
       "package/dist/": ""
     }
   },
   "nipplejs": {
     "destination": "elements/lib",
-    "keep": [
-      "package/dist/nipplejs(\\.min)?\\.js"
-    ],
+    "keep": ["package/dist/nipplejs(\\.min)?\\.js"],
     "rename": {
       "package/dist/": ""
     }
@@ -42,9 +36,7 @@
   "plotly": {
     "package": "plotly.js",
     "destination": "elements/lib",
-    "keep": [
-      "package/dist/plotly(\\.min)?\\.js"
-    ],
+    "keep": ["package/dist/plotly(\\.min)?\\.js"],
     "rename": {
       "package/dist/": ""
     }
@@ -59,7 +51,7 @@
       "package/examples/jsm/loaders/STLLoader(\\.min)?\\.js",
       "package/examples/jsm/libs/tween\\.module\\.min\\.js"
     ],
-    "rename":  {
+    "rename": {
       "package/build/": "",
       "package/examples/jsm/renderers/": "modules/",
       "package/examples/jsm/controls/": "modules/",
@@ -70,48 +62,37 @@
   "tween": {
     "package": "@tweenjs/tween.js",
     "destination": "elements/lib",
-    "keep": [
-      "package/dist/tween\\.umd(\\.min)?\\.js"
-    ],
-    "rename":  {
+    "keep": ["package/dist/tween\\.umd(\\.min)?\\.js"],
+    "rename": {
       "package/dist/": ""
     }
   },
 
   "vue": {
-      "destination": "static",
-      "keep": [
-        "package/dist/vue\\.global(\\.prod)?\\.js"
-      ],
-      "rename":  {
-        "package/dist": ".."
-      }
-    },
+    "destination": "static",
+    "keep": ["package/dist/vue\\.global(\\.prod)?\\.js"],
+    "rename": {
+      "package/dist": ".."
+    }
+  },
   "quasar": {
     "destination": "static",
-    "keep": [
-      "package/dist/quasar\\.umd(\\.prod)?\\.js",
-      "package/dist/quasar(\\.prod)?\\.css"
-    ],
-    "rename":  {
+    "keep": ["package/dist/quasar\\.umd(\\.prod)?\\.js", "package/dist/quasar(\\.prod)?\\.css"],
+    "rename": {
       "package/dist": ".."
     }
   },
   "socket.io": {
     "destination": "static",
-    "keep": [
-      "package/client-dist/socket\\.io(\\.min)?\\.js"
-    ],
-    "rename":  {
+    "keep": ["package/client-dist/socket\\.io(\\.min)?\\.js"],
+    "rename": {
       "package/client-dist": ".."
     }
   },
   "es-module-shims": {
     "destination": "static",
-    "keep": [
-      "package/dist/es-module-shims\\.js"
-    ],
-    "rename":  {
+    "keep": ["package/dist/es-module-shims\\.js"],
+    "rename": {
       "package/dist": ".."
     }
   },

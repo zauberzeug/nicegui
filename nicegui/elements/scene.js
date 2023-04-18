@@ -1,8 +1,8 @@
-import * as THREE from 'three';
-import { CSS2DRenderer } from 'CSS2DRenderer';
-import { CSS3DRenderer } from 'CSS3DRenderer';
-import { OrbitControls } from 'OrbitControls';
-import { STLLoader } from 'STLLoader';
+import * as THREE from "three";
+import { CSS2DRenderer } from "CSS2DRenderer";
+import { CSS3DRenderer } from "CSS3DRenderer";
+import { OrbitControls } from "OrbitControls";
+import { STLLoader } from "STLLoader";
 
 function texture_geometry(coords) {
   const geometry = new THREE.BufferGeometry();
