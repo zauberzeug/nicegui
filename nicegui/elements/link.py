@@ -1,11 +1,12 @@
+from pathlib import Path
 from typing import Callable, Union
 
 from .. import globals
-from ..dependencies import register_component
+from ..dependencies import register_vue_component
 from ..element import Element
 from .mixins.text_element import TextElement
 
-register_component('link', __file__, 'link.js')
+register_vue_component('link', Path(__file__).parent.joinpath('link.js'))
 
 
 class Link(TextElement):
@@ -26,6 +27,7 @@ class Link(TextElement):
         self._props['href'] = target if isinstance(target, str) else globals.page_routes[target]
         self._props['target'] = '_blank' if new_tab else '_self'
         self._classes = ['nicegui-link']
+        self.use_component('link')
 
 
 class LinkTarget(Element):
