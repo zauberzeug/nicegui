@@ -306,6 +306,8 @@ def create_full() -> None:
             ui.button('Add', on_click=add)
             ui.button('Clear', on_click=clear)
 
+    load_demo(ui.refreshable)
+
     @text_demo('Async event handlers', '''
         Most elements also support asynchronous event handlers.
 
