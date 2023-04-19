@@ -133,7 +133,7 @@ We are happy to merge pull requests with new examples which show new concepts, i
 
 ## Pull requests
 
-To get started, fork the repository on GitHub, clone it somewhere on your filesystem, commit your changes,
+To get started, fork the repository on GitHub, clone it somewhere on your filesystem, commit and push your changes,
 and then open a pull request (PR) with a detailed description of the changes you've made
 (the PR button is shown on the GitHub website of your forked repository).
 
