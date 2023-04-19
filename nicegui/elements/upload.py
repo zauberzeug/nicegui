@@ -2,12 +2,12 @@ from typing import Callable, Optional
 
 from fastapi import Request, Response
 
-from ..element import Element
 from ..events import EventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
+from .mixins.disableable_element import DisableableElement
 
 
-class Upload(Element):
+class Upload(DisableableElement):
 
     def __init__(self, *,
                  multiple: bool = False,

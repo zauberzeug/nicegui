@@ -1,9 +1,10 @@
 from typing import Any, Callable, Dict, Optional
 
+from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Number(ValueElement):
+class Number(ValueElement, DisableableElement):
     LOOPBACK = False
 
     def __init__(self,

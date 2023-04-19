@@ -1,7 +1,7 @@
 from typing import Any, Callable, Optional
 
 from .. import globals
-from ..element import Element
+from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
@@ -22,7 +22,7 @@ class Tabs(ValueElement):
         self.panels: Optional[TabPanels] = None
 
 
-class Tab(Element):
+class Tab(DisableableElement):
 
     def __init__(self, name: str, label: Optional[str] = None, icon: Optional[str] = None) -> None:
         """Tab
@@ -65,7 +65,7 @@ class TabPanels(ValueElement):
         self._props['animated'] = animated
 
 
-class TabPanel(Element):
+class TabPanel(DisableableElement):
 
     def __init__(self, name: str) -> None:
         """Tab Panel

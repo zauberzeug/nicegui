@@ -5,11 +5,12 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from nicegui.dependencies import register_component
 
 from .choice_element import ChoiceElement
+from .mixins.disableable_element import DisableableElement
 
 register_component('select', __file__, 'select.js')
 
 
-class Select(ChoiceElement):
+class Select(ChoiceElement, DisableableElement):
 
     def __init__(self, options: Union[List, Dict], *,
                  label: Optional[str] = None,

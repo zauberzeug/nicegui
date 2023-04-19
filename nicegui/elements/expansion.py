@@ -1,9 +1,10 @@
 from typing import Optional
 
+from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Expansion(ValueElement):
+class Expansion(ValueElement, DisableableElement):
 
     def __init__(self, text: Optional[str] = None, *, icon: Optional[str] = None, value: bool = False) -> None:
         '''Expansion Element
