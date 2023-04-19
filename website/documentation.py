@@ -255,11 +255,14 @@ def create_full() -> None:
 
     with ui.row().classes('w-full'):
         with demo.python_window().style('width:400px; height:400px;'):
-            input_classes = ui.input(label='.classes', on_change=add_classes).classes('mx-auto w-1/2')
-            input_props = ui.input(label='.props add', on_change=add_props).classes('mx-auto w-1/2')
-            input_props2 = ui.input(label='.props remove',
-                                    on_change=remove_props).classes('mx-auto w-1/2')
-            input_style = ui.input(label='.style', on_change=add_style).classes('mx-auto w-1/2')
+            input_classes = ui.input(on_change=add_classes).classes(
+                'p-1 w-full h-10').props('borderless ''prefix="ui.button.classes("'' ''suffix=")"''')
+            input_props = ui.input(on_change=add_props).classes(
+                'p-1 w-full h-10').props('borderless ''prefix="ui.button.props(add="'' ''suffix=")"''')
+            input_props2 = ui.input(on_change=remove_props).classes(
+                'p-1 w-full h-10').props('borderless ''prefix="ui.button.props(remove="'' ''suffix=")"''')
+            input_style = ui.input(on_change=add_style).classes(
+                'p-1 w-full h-10').props('borderless ''prefix="ui.button.style("'' ''suffix=")"''')
         with demo.browser_window().classes('px-0 py-0').style('width:600px; height:400px;'):
             test_element = ui.button('Button')
 
