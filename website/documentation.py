@@ -234,6 +234,35 @@ def create_full() -> None:
         ui.button().props('icon=touch_app outline round').classes('shadow-lg')
         ui.label('Stylish!').style('color: #6E93D6; font-size: 200%; font-weight: 300')
 
+    @text_demo('Try how to styling works', '''
+        Try writing the [classes](https://tailwindcss.com/), [props](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components), and styles you prefer and see in real time how they affect the final result.
+    ''')
+    def add_classes():
+        test_element.classes(replace=input_classes.value)
+        test_element.update()
+
+    def add_props():
+        test_element.props(add=input_props.value)
+        test_element.update()
+
+    def remove_props():
+        test_element.props(remove=input_props2.value)
+        test_element.update()
+
+    def add_style():
+        test_element.style(replace=input_style.value)
+        test_element.update()
+
+    with ui.row().classes('w-full'):
+        with demo.python_window().style('width:400px; height:400px;'):
+            input_classes = ui.input(label='.classes', on_change=add_classes).classes('mx-auto w-1/2')
+            input_props = ui.input(label='.props add', on_change=add_props).classes('mx-auto w-1/2')
+            input_props2 = ui.input(label='.props remove',
+                                    on_change=remove_props).classes('mx-auto w-1/2')
+            input_style = ui.input(label='.style', on_change=add_style).classes('mx-auto w-1/2')
+        with demo.browser_window().classes('px-0 py-0').style('width:600px; height:400px;'):
+            test_element = ui.button('Button')
+
     @text_demo('Tailwind CSS', '''
         [Tailwind CSS](https://tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces.
         NiceGUI provides a fluent, auto-complete friendly interface for adding Tailwind classes to UI elements.
