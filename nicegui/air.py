@@ -21,10 +21,14 @@ class Air:
         def on_get(data: Dict[str, Any]) -> Dict[str, Any]:
             headers = headers = {'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']}
             response = self.test_client.get(data['path'], headers=headers)
+            content = response.content.replace(
+                b'const extraHeaders = {};',
+                (f'const extraHeaders = {{ "fly-force-instance-id" : "{data["instance-id"]}" }};').encode(),
+            )
             return {
                 'status_code': response.status_code,
                 'headers': {'Content-Encoding': 'gzip'},
-                'content': gzip.compress(response.content),
+                'content': gzip.compress(content),
                 'media_type': response.headers.get('content-type'),
             }
 
