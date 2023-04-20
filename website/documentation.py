@@ -241,9 +241,9 @@ def create_full() -> None:
         [Quasar props](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components),
         and CSS styles affect NiceGUI elements.
     ''').classes('bold-links arrow-links')
-    with ui.row().classes('w-full'):
+    with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
         with demo.python_window(classes='w-full max-w-[44rem]'):
-            with ui.column().classes('w-full gap-2'):
+            with ui.column().classes('w-full gap-4'):
                 ui.markdown('''
                 ```py
                 button = ui.button('Button')
