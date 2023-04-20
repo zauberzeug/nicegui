@@ -258,6 +258,7 @@ def create_full() -> None:
 
     load_demo(ui.query)
     load_demo(ui.colors)
+    load_demo(ui.dark_mode)
 
     heading('Action')
 
