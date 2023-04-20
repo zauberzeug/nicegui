@@ -1,6 +1,6 @@
 import uuid
 
-from nicegui import app, ui
+from nicegui import app, events, ui
 
 from . import demo
 from .documentation_tools import element_demo, heading, intro_demo, load_demo, subheading, text_demo
@@ -234,37 +234,52 @@ def create_full() -> None:
         ui.button().props('icon=touch_app outline round').classes('shadow-lg')
         ui.label('Stylish!').style('color: #6E93D6; font-size: 200%; font-weight: 300')
 
-    @text_demo('Try how to styling works', '''
-        Try writing the [classes](https://tailwindcss.com/), [props](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components), and styles you prefer and see in real time how they affect the final result.
+    subheading('Try styling NiceGUI elements!')
+    ui.markdown('''
+        Try out how
+        [Tailwind CSS classes](https://tailwindcss.com/),
+        [Quasar props](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components),
+        and CSS styles affect NiceGUI elements.
     ''')
-    def add_classes():
-        test_element.classes(replace=input_classes.value)
-        test_element.update()
-
-    def add_props():
-        test_element.props(add=input_props.value)
-        test_element.update()
-
-    def remove_props():
-        test_element.props(remove=input_props2.value)
-        test_element.update()
-
-    def add_style():
-        test_element.style(replace=input_style.value)
-        test_element.update()
-
     with ui.row().classes('w-full'):
-        with demo.python_window().style('width:400px; height:400px;'):
-            input_classes = ui.input(on_change=add_classes).classes(
-                'p-1 w-full h-10').props('borderless ''prefix="ui.button.classes("'' ''suffix=")"''')
-            input_props = ui.input(on_change=add_props).classes(
-                'p-1 w-full h-10').props('borderless ''prefix="ui.button.props(add="'' ''suffix=")"''')
-            input_props2 = ui.input(on_change=remove_props).classes(
-                'p-1 w-full h-10').props('borderless ''prefix="ui.button.props(remove="'' ''suffix=")"''')
-            input_style = ui.input(on_change=add_style).classes(
-                'p-1 w-full h-10').props('borderless ''prefix="ui.button.style("'' ''suffix=")"''')
-        with demo.browser_window().classes('px-0 py-0').style('width:600px; height:400px;'):
-            test_element = ui.button('Button')
+        with demo.python_window(classes='w-full max-w-[44rem]'):
+            with ui.column().classes('w-full gap-2'):
+                ui.markdown('''
+                ```py
+                button = ui.button('Button')
+                ```
+                ''').classes('mb-[-0.25em]')
+                with ui.row().classes('items-center gap-0 w-full px-2'):
+                    def handle_classes(e: events.ValueChangeEventArguments):
+                        try:
+                            b.classes(replace=e.value)
+                        except ValueError:
+                            pass
+                    ui.markdown("`button.classes('`")
+                    ui.input(on_change=handle_classes).classes('mt-[-0.5em] text-mono grow').props('dense')
+                    ui.markdown("`')`")
+                with ui.row().classes('items-center gap-0 w-full px-2'):
+                    def handle_props(e: events.ValueChangeEventArguments):
+                        b._props = {'label': 'Button', 'color': 'primary'}
+                        try:
+                            b.props(e.value)
+                        except ValueError:
+                            pass
+                        b.update()
+                    ui.markdown("`button.props('`")
+                    ui.input(on_change=handle_props).classes('mt-[-0.5em] text-mono grow').props('dense')
+                    ui.markdown("`')`")
+                with ui.row().classes('items-center gap-0 w-full px-2'):
+                    def handle_style(e: events.ValueChangeEventArguments):
+                        try:
+                            b.style(replace=e.value)
+                        except ValueError:
+                            pass
+                    ui.markdown("`button.style('`")
+                    ui.input(on_change=handle_style).classes('mt-[-0.5em] text-mono grow').props('dense')
+                    ui.markdown("`')`")
+        with demo.browser_window(classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
+            b = ui.button('Button')
 
     @text_demo('Tailwind CSS', '''
         [Tailwind CSS](https://tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces.
