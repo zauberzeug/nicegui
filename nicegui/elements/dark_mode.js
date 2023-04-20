@@ -8,9 +8,11 @@ export default {
   methods: {
     update() {
       Quasar.Dark.set(this.value === null ? "auto" : this.value);
-      tailwind.config.darkMode = this.auto ? "media" : "class";
-      if (this.value) document.body.classList.add("dark");
-      else document.body.classList.remove("dark");
+      if (window.tailwind) {
+        tailwind.config.darkMode = this.auto ? "media" : "class";
+        if (this.value) document.body.classList.add("dark");
+        else document.body.classList.remove("dark");
+      }
     },
   },
   props: {
