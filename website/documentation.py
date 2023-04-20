@@ -240,7 +240,7 @@ def create_full() -> None:
         [Tailwind CSS classes](https://tailwindcss.com/),
         [Quasar props](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components),
         and CSS styles affect NiceGUI elements.
-    ''')
+    ''').classes('bold-links arrow-links')
     with ui.row().classes('w-full'):
         with demo.python_window(classes='w-full max-w-[44rem]'):
             with ui.column().classes('w-full gap-2'):
