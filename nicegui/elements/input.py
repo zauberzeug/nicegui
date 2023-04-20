@@ -1,10 +1,11 @@
 from typing import Any, Callable, Dict, Optional
 
 from .icon import Icon
+from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Input(ValueElement):
+class Input(ValueElement, DisableableElement):
     LOOPBACK = False
 
     def __init__(self,

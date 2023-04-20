@@ -2,12 +2,12 @@ from typing import Callable, Optional
 
 from fastapi import Request, Response
 
-from ..element import Element
 from ..events import EventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
+from .mixins.disableable_element import DisableableElement
 
 
-class Upload(Element):
+class Upload(DisableableElement):
 
     def __init__(self, *,
                  multiple: bool = False,
@@ -32,7 +32,7 @@ class Upload(Element):
         :param label: label for the uploader (default: `''`)
         :param auto_upload: automatically upload files when they are selected (default: `False`)
         """
-        super().__init__('q-uploader')
+        super().__init__(tag='q-uploader')
         self._props['multiple'] = multiple
         self._props['label'] = label
         self._props['auto-upload'] = auto_upload
