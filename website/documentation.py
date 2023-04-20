@@ -246,6 +246,8 @@ def create_full() -> None:
             with ui.column().classes('w-full gap-4'):
                 ui.markdown('''
                 ```py
+                from nicegui import ui
+
                 button = ui.button('Button')
                 ```
                 ''').classes('mb-[-0.25em]')
@@ -278,6 +280,11 @@ def create_full() -> None:
                     ui.markdown("`button.style('`")
                     ui.input(on_change=handle_style).classes('mt-[-0.5em] text-mono grow').props('dense')
                     ui.markdown("`')`")
+                ui.markdown('''
+                ```py
+                ui.run()
+                ```
+                ''')
         with demo.browser_window(classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
             b = ui.button('Button')
 
