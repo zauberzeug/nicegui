@@ -8,6 +8,7 @@ from typing import Dict, Optional
 from fastapi import HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
+from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
 from nicegui import json
@@ -28,6 +29,11 @@ socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=jso
 globals.sio = sio = app.sio
 
 app.add_middleware(GZipMiddleware)
+static_files = StaticFiles(
+    directory=(Path(__file__).parent / 'static').resolve(),
+    follow_symlink=True,
+)
+app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
 
 globals.index_client = Client(page('/'), shared=True).__enter__()
 
@@ -35,16 +41,6 @@ globals.index_client = Client(page('/'), shared=True).__enter__()
 @app.get('/')
 def index(request: Request) -> Response:
     return globals.index_client.build_response(request)
-
-
-@app.get(f'/_nicegui/{__version__}' + '/static/{name}')
-def get_static(name: str):
-    return FileResponse(Path(__file__).parent / 'static' / name)
-
-
-@app.get(f'/_nicegui/{__version__}' + '/static/fonts/{name}')
-def get_static(name: str):
-    return FileResponse(Path(__file__).parent / 'static' / 'fonts' / name)
 
 
 @app.get(f'/_nicegui/{__version__}' + '/dependencies/{id}/{name}')

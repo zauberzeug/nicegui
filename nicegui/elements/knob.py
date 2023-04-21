@@ -2,10 +2,11 @@ from typing import Optional
 
 from ..colors import set_text_color
 from .label import Label
+from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Knob(ValueElement):
+class Knob(ValueElement, DisableableElement):
 
     def __init__(self,
                  value: float = 0.0,

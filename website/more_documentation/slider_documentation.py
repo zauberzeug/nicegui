@@ -35,3 +35,13 @@ def more() -> None:
         ui.slider(min=0, max=10, step=0.1, value=5).props('label-always') \
             .on('update:model-value', lambda msg: ui.notify(f'{msg["args"]}'),
                 throttle=1.0, leading_events=False)
+
+    @text_demo('Disable slider', '''
+        You can disable a slider with the `disable()` method.
+        This will prevent the user from moving the slider.
+        The slider will also be grayed out.
+    ''')
+    def disable_slider():
+        slider = ui.slider(min=0, max=100, value=50)
+        ui.button('Disable slider', on_click=slider.disable)
+        ui.button('Enable slider', on_click=slider.enable)

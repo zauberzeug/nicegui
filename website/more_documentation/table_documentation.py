@@ -128,3 +128,15 @@ def more() -> None:
             </q-tr>
         ''')
         table.on('rename', rename)
+
+    @text_demo('Table from pandas dataframe', '''
+        Here is a demo of how to create a table from a pandas dataframe.
+    ''')
+    def table_from_pandas_demo():
+        import pandas as pd
+
+        df = pd.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
+        ui.table(
+            columns=[{'name': col, 'label': col, 'field': col} for col in df.columns],
+            rows=df.to_dict('records'),
+        )

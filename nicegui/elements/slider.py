@@ -1,9 +1,10 @@
 from typing import Callable, Optional
 
+from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Slider(ValueElement):
+class Slider(ValueElement, DisableableElement):
 
     def __init__(self, *,
                  min: float,

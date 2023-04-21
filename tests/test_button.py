@@ -16,3 +16,20 @@ def test_quasar_colors(screen: Screen):
     assert screen.find_by_id(b3.id).value_of_css_property('background-color') == 'rgba(239, 83, 80, 1)'
     assert screen.find_by_id(b4.id).value_of_css_property('background-color') == 'rgba(239, 68, 68, 1)'
     assert screen.find_by_id(b5.id).value_of_css_property('background-color') == 'rgba(255, 0, 0, 1)'
+
+
+def test_enable_disable(screen: Screen):
+    events = []
+    b = ui.button('Button', on_click=lambda: events.append(1))
+    ui.button('Enable', on_click=b.enable)
+    ui.button('Disable', on_click=b.disable)
+
+    screen.open('/')
+    screen.click('Button')
+    assert events == [1]
+    screen.click('Disable')
+    screen.click('Button')
+    assert events == [1]
+    screen.click('Enable')
+    screen.click('Button')
+    assert events == [1, 1]

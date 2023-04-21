@@ -1,10 +1,11 @@
 from typing import Callable, Optional
 
+from .mixins.disableable_element import DisableableElement
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
 
-class Checkbox(TextElement, ValueElement):
+class Checkbox(TextElement, ValueElement, DisableableElement):
 
     def __init__(self, text: str = '', *, value: bool = False, on_change: Optional[Callable] = None) -> None:
         """Checkbox
