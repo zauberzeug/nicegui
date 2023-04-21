@@ -632,11 +632,7 @@ def create_full() -> None:
 
     heading('Configuration')
 
-    @element_demo(ui.run, browser_title='My App')
-    def ui_run_demo():
-        ui.label('page with custom title')
-
-        # ui.run(title='My App')
+    load_demo(ui.run)
 
     # HACK: switch color to white for the next demo
     demo_BROWSER_BGCOLOR = demo.BROWSER_BGCOLOR
