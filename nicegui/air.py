@@ -32,6 +32,11 @@ class Air:
                 'media_type': response.headers.get('content-type'),
             }
 
+        @self.relay.on('connected')
+        def on_connected(data: Dict[str, Any]) -> None:
+            url = f'http://localhost/devices/{data["device_name"]}/'  # TODO: use correct protocol and domain
+            print(f'NiceGUI is on air at {url}', flush=True)
+
         @self.relay.on('handshake')
         def on_handshake(data: Dict[str, Any]) -> bool:
             client_id = data['client_id']
