@@ -2,10 +2,11 @@ import logging
 import multiprocessing
 import os
 import sys
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import __main__
 import uvicorn
+from typing_extensions import Literal
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
@@ -22,7 +23,7 @@ def run(*,
         dark: Optional[bool] = False,
         binding_refresh_interval: float = 0.1,
         show: bool = True,
-        on_air: Optional[str] = None,
+        on_air: Optional[Union[str, Literal[True]]] = None,
         native: bool = False,
         window_size: Optional[Tuple[int, int]] = None,
         fullscreen: bool = False,
@@ -47,7 +48,7 @@ def run(*,
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param show: automatically open the UI in a browser tab (default: `True`)
-    :param on_air: start remote access with this device token
+    :param on_air: start remote access with this device token (`None`, `True` or token string, default: `None`)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
     :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`)
     :param fullscreen: open the UI in a fullscreen window (default: `False`, also activates `native`)
@@ -72,7 +73,7 @@ def run(*,
     globals.tailwind = tailwind
 
     if on_air:
-        globals.air = Air(on_air)
+        globals.air = Air('' if on_air is True else on_air)
 
     if multiprocessing.current_process().name != 'MainProcess':
         return
