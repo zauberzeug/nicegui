@@ -73,6 +73,11 @@ class Air:
             client = globals.clients[client_id]
             handle_javascript_response(client, data['msg'])
 
+        @self.relay.on('move')
+        def on_move(data: Dict[str, Any]) -> None:
+            print('Sorry, you have reached the time limit of this on-air preview.', flush=True)
+            print(f'Your app is now available at the new URL {data["device_url"]}.', flush=True)
+
     async def connect(self) -> None:
         await self.relay.connect(f'{RELAY_HOST}?device_token={self.token}', socketio_path='/on_air/socket.io')
 
