@@ -37,6 +37,10 @@ class Air:
             url = f'http://localhost/devices/{data["device_name"]}/'  # TODO: use correct protocol and domain
             print(f'NiceGUI is on air at {url}', flush=True)
 
+        @self.relay.on('error')
+        def on_error(data: Dict[str, Any]) -> None:
+            print('Error:', data['message'], flush=True)
+
         @self.relay.on('handshake')
         def on_handshake(data: Dict[str, Any]) -> bool:
             client_id = data['client_id']
@@ -75,7 +79,10 @@ class Air:
             handle_javascript_response(client, data['msg'])
 
     async def connect(self) -> None:
-        await self.relay.connect(f'{RELAY_HOST}?device_token={self.token}', socketio_path='/on_air/socket.io')
+        try:
+            await self.relay.connect(f'{RELAY_HOST}?device_token={self.token}', socketio_path='/on_air/socket.io')
+        except:
+            print('Could not connect to NiceGUI on air server.', flush=True)
 
     async def disconnect(self) -> None:
         await self.relay.disconnect()
