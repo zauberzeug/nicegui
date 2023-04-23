@@ -1,6 +1,7 @@
 import _thread
 import multiprocessing
 import socket
+import sys
 import tempfile
 import time
 import warnings
@@ -8,10 +9,13 @@ from threading import Thread
 
 from . import globals, helpers
 
-with warnings.catch_warnings():
-    # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
-    warnings.filterwarnings('ignore', category=DeprecationWarning)
-    import webview
+try:
+    with warnings.catch_warnings():
+        # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
+        import webview
+except ModuleNotFoundError:
+    pass
 
 
 def open_window(host: str, port: int, title: str, width: int, height: int, fullscreen: bool) -> None:
@@ -21,8 +25,12 @@ def open_window(host: str, port: int, title: str, width: int, height: int, fulls
     window_kwargs = dict(url=f'http://{host}:{port}', title=title, width=width, height=height, fullscreen=fullscreen)
     window_kwargs.update(globals.app.native.window_args)
 
-    webview.create_window(**window_kwargs)
-    webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
+    try:
+        webview.create_window(**window_kwargs)
+        webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
+    except NameError:
+        print('Nave mode is not supported in this configuration. Please install pywebview to use it.')
+        sys.exit(1)
 
 
 def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool) -> None:
