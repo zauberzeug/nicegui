@@ -34,8 +34,7 @@ class Air:
 
         @self.relay.on('connected')
         def on_connected(data: Dict[str, Any]) -> None:
-            url = f'http://localhost/devices/{data["device_name"]}/'  # TODO: use correct protocol and domain
-            print(f'NiceGUI is on air at {url}', flush=True)
+            print(f'NiceGUI is on air at {data["device_url"]}', flush=True)
 
         @self.relay.on('handshake')
         def on_handshake(data: Dict[str, Any]) -> bool:
