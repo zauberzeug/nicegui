@@ -10,6 +10,7 @@ if True:
 
 import os
 from pathlib import Path
+from typing import Optional
 
 from fastapi import Request
 from fastapi.responses import FileResponse, RedirectResponse
@@ -61,7 +62,7 @@ def add_head_html() -> None:
     ui.add_head_html(f"<style>{(Path(__file__).parent / 'website' / 'static' / 'style.css').read_text()}</style>")
 
 
-def add_header() -> None:
+def add_header(menu: Optional[ui.left_drawer] = None) -> None:
     menu_items = {
         'Installation': '/#installation',
         'Features': '/#features',
@@ -73,6 +74,8 @@ def add_header() -> None:
     with ui.header() \
             .classes('items-center duration-200 p-0 px-4 no-wrap') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
+        if menu:
+            ui.button(on_click=menu.toggle).props('flat color=white icon=menu').classes('max-[405px]:hidden lg:hidden')
         with ui.link(target=index_page).classes('row gap-4 items-center no-wrap mr-auto'):
             svg.face().classes('w-8 stroke-white stroke-2')
             svg.word().classes('w-24')
@@ -88,7 +91,7 @@ def add_header() -> None:
             svg.discord().classes('fill-white scale-125 m-1')
         with ui.link(target='https://github.com/zauberzeug/nicegui/'):
             svg.github().classes('fill-white scale-125 m-1')
-        add_star()
+        add_star().classes('max-[460px]:hidden')
 
 
 @ui.page('/')
@@ -308,8 +311,8 @@ async def index_page(client: Client):
 @ui.page('/documentation')
 def documentation_page():
     add_head_html()
-    add_header()
-    side_menu()
+    menu = side_menu()
+    add_header(menu)
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Reference, Demos and more', '*NiceGUI* Documentation')
