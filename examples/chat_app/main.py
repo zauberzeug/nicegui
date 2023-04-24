@@ -13,7 +13,7 @@ async def update(content: ui.column) -> None:
     with content:  # use the context of each client to update their ui
         for name, text in messages:
             ui.markdown(f'**{name or "someone"}:** {text}').classes('text-lg m-2')
-            ui.chat_message(label='hest', text='sdfsd')
+            ui.chat_message(label='something', text='testing testing')
         await ui.run_javascript(f'window.scrollTo(0, document.body.scrollHeight)', respond=False)
 
 
@@ -26,16 +26,13 @@ async def main(client: Client):
 
     anchor_style = r'a:link, a:visited {color: inherit !important; text-decoration: none; font-weight: 500}'
     ui.add_head_html(f'<style>{anchor_style}</style>')
-    ui.chat_message(label='hest', text='sdfsd')
     with ui.footer().classes('bg-white'), ui.column().classes('w-full max-w-3xl mx-auto my-6'):
-        ui.chat_message(label='hest', text='sdfsd')
         with ui.row().classes('w-full no-wrap items-center'):
             name = ui.input(placeholder='name').props('rounded outlined autofocus input-class=mx-3')
             text = ui.input(placeholder='message').props('rounded outlined input-class=mx-3') \
                 .classes('w-full self-center').on('keydown.enter', send)
         ui.markdown('simple chat app built with [NiceGUI](https://nicegui.io)') \
             .classes('text-xs self-end mr-8 m-[-1em] text-primary')
-        ui.chat_message(label='hest', text='sdfsd')
 
     await client.connected()  # update(...) uses run_javascript which is only possible after connecting
     contents.append(ui.column().classes('w-full max-w-2xl mx-auto'))  # save ui context for updates
