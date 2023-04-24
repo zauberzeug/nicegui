@@ -77,10 +77,10 @@ def add_header() -> None:
             svg.face().classes('w-8 stroke-white stroke-2')
             svg.word().classes('w-24')
         with ui.row().classes('lg:hidden'):
-            with ui.menu().classes('bg-primary text-white text-lg') as menu:
-                for title, target in menu_items.items():
-                    ui.menu_item(title, on_click=lambda _, target=target: ui.open(target))
-            ui.button(on_click=menu.open).props('flat color=white icon=menu')
+            with ui.button().props('flat color=white icon=menu'):
+                with ui.menu().classes('bg-primary text-white text-lg').props(remove='no-parent-event'):
+                    for title, target in menu_items.items():
+                        ui.menu_item(title, on_click=lambda _, target=target: ui.open(target))
         with ui.row().classes('max-lg:hidden'):
             for title, target in menu_items.items():
                 ui.link(title, target).classes(replace='text-lg text-white')
@@ -136,18 +136,25 @@ async def index_page(client: Client):
                 ui.html('<em>1.</em>').classes('text-3xl font-bold')
                 ui.markdown('Create __main.py__').classes('text-lg')
                 with python_window(classes='w-full h-52'):
-                    ui.markdown('''```python\n
-from nicegui import ui
+                    ui.markdown('''
+                        ```python\n
+                        from nicegui import ui
 
-ui.label('Hello NiceGUI!')
+                        ui.label('Hello NiceGUI!')
 
-ui.run()
-```''')
+                        ui.run()
+                        ```
+                    ''')
             with ui.column().classes('w-full max-w-md gap-2'):
                 ui.html('<em>2.</em>').classes('text-3xl font-bold')
                 ui.markdown('Install and launch').classes('text-lg')
                 with bash_window(classes='w-full h-52'):
-                    ui.markdown('```bash\npip3 install nicegui\npython3 main.py\n```')
+                    ui.markdown('''
+                        ```bash
+                        pip3 install nicegui
+                        python3 main.py
+                        ```
+                    ''')
             with ui.column().classes('w-full max-w-md gap-2'):
                 ui.html('<em>3.</em>').classes('text-3xl font-bold')
                 ui.markdown('Enjoy!').classes('text-lg')
@@ -156,15 +163,18 @@ ui.run()
         with ui.expansion('...or use Docker to run your main.py').classes('w-full gap-2 bold-links arrow-links'):
             with ui.row().classes('mt-8 w-full justify-center items-center gap-8'):
                 ui.markdown('''
-With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) 
-you can start the server without installing any packages.
+                    With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) 
+                    you can start the server without installing any packages.
 
-The command searches for `main.py` in in your current directory and makes the app available at http://localhost:8888.
-''').classes('max-w-xl')
+                    The command searches for `main.py` in in your current directory and makes the app available at http://localhost:8888.
+                ''').classes('max-w-xl')
                 with bash_window(classes='max-w-lg w-full h-52'):
-                    ui.markdown('```bash\n'
-                                'docker run -it --rm -p 8888:8080 \\\n -v "$PWD":/app zauberzeug/nicegui\n'
-                                '```')
+                    ui.markdown('''
+                        ```bash
+                        docker run -it --rm -p 8888:8080 \\
+                            -v "$PWD":/app zauberzeug/nicegui
+                        ```
+                    ''')
 
     with ui.column().classes('w-full p-8 lg:p-16 bold-links arrow-links max-w-[1600px] mx-auto'):
         link_target('features', '-50px')
@@ -229,18 +239,16 @@ The command searches for `main.py` in in your current directory and makes the ap
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'):
             example_link('Slideshow', 'implements a keyboard-controlled image slideshow')
             example_link('Authentication', 'shows how to use sessions to build a login screen')
-            example_link(
-                'Modularization',
-                'provides an example of how to modularize your application into multiple files and reuse code')
-            example_link(
-                'FastAPI',
-                'illustrates the integration of NiceGUI with an existing FastAPI application')
-            example_link(
-                'Map',
-                'demonstrates wrapping the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations')
-            example_link(
-                'AI Interface',
-                'utilizes the [replicate](https://replicate.com) library to perform voice-to-text transcription and generate images from prompts with Stable Diffusion')
+            example_link('Modularization',
+                         'provides an example of how to modularize your application into multiple files and reuse code')
+            example_link('FastAPI',
+                         'illustrates the integration of NiceGUI with an existing FastAPI application')
+            example_link('Map',
+                         'demonstrates wrapping the JavaScript library [leaflet](https://leafletjs.com/) '
+                         'to display a map at specific locations')
+            example_link('AI Interface',
+                         'utilizes the [replicate](https://replicate.com) library to perform voice-to-text '
+                         'transcription and generate images from prompts with Stable Diffusion')
             example_link('3D Scene', 'creates a webGL view and loads an STL mesh illuminated with a spotlight')
             example_link('Custom Vue Component', 'shows how to write and integrate a custom Vue component')
             example_link('Image Mask Overlay', 'shows how to overlay an image with a mask')
@@ -305,10 +313,10 @@ def documentation_page():
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Reference, Demos and more', '*NiceGUI* Documentation')
-        ui.markdown(
-            'This is the documentation for NiceGUI >= 1.0. '
-            'Documentation for older versions can be found at [https://0.9.nicegui.io/](https://0.9.nicegui.io/reference).'
-        ).classes('bold-links arrow-links')
+        ui.markdown('''
+            This is the documentation for NiceGUI >= 1.0.
+            Documentation for older versions can be found at [https://0.9.nicegui.io/](https://0.9.nicegui.io/reference).
+        ''').classes('bold-links arrow-links')
         documentation.create_full()
 
 
