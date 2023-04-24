@@ -645,7 +645,7 @@ def create_full() -> None:
         Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html) 
         for the `webview.create_window` and `webview.start` functions.
         Note that these keyword arguments will take precedence over the parameters defined in ui.run.
-    ''')
+    ''', tab=lambda: ui.label('NiceGUI'))
     def native_mode_demo():
         from nicegui import app
 
