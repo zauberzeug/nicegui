@@ -33,7 +33,6 @@ class Input(ValueElement, DisableableElement):
         :param value: the current value of the text input
         :param password: whether to hide the input (default: False)
         :param password_toggle_button: whether to show a button to toggle the password visibility (default: False)
-        :param on_change: callback to execute when the input is confirmed by leaving the focus
         :param on_change: callback to execute when the value changes
         :param validation: dictionary of validation rules, e.g. ``{'Too short!': lambda value: len(value) < 3}``
         """
