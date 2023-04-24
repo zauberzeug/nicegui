@@ -1,4 +1,4 @@
-import urllib
+import urllib.parse
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
@@ -25,11 +25,11 @@ def get_favicon_url(page: 'page', prefix: str) -> str:
         return favicon
     elif not favicon:
         return f'{prefix}/_nicegui/{__version__}/static/favicon.ico'
-    if is_data_url(favicon):
+    elif is_data_url(favicon):
         return favicon
-    if is_svg(favicon):
+    elif is_svg(favicon):
         return svg_to_data_url(favicon)
-    if is_char(favicon):
+    elif is_char(favicon):
         return char_to_data_url(favicon)
     elif page.path == '/':
         return f'{prefix}/favicon.ico'
@@ -75,5 +75,4 @@ def char_to_data_url(char: str) -> str:
 
 def svg_to_data_url(svg: str) -> str:
     svg_urlencoded = urllib.parse.quote(svg)
-    data_url = f"data:image/svg+xml,{svg_urlencoded}"
-    return data_url
+    return f'data:image/svg+xml,{svg_urlencoded}'
