@@ -68,10 +68,9 @@
   cursor: text !important;
 }
 .nicegui-markdown blockquote {
-  font-style: italic;
-  border-left: 0.25rem solid #8888;
-  margin: 1.5rem 0.5rem;
-  padding: 0.5rem;
+  border-left: 0.25rem solid #8884;
+  padding: 1rem 1rem 0.5rem 1rem;
+  margin: 1rem 0;
 }
 
 #popup {
