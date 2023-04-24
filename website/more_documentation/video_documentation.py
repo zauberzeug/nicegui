@@ -9,11 +9,8 @@ def main_demo() -> None:
 
 def more() -> None:
     @text_demo('Video start position', '''
-        This demo shows how to use JavaScript to set the start position of a video.
+        This demo shows how to set the start position of a video.
     ''')
-    def advanced_usage() -> None:
-        async def set_time(_):
-            await ui.run_javascript(f'getElement({v.id}).$el.currentTime = 5;', respond=False)
-
+    def start_position_demo() -> None:
         v = ui.video('https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4')
-        v.on('loadedmetadata', set_time)
+        v.on('loadedmetadata', lambda: v.seek(5))
