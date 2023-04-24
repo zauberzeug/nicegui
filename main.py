@@ -75,7 +75,8 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
             .classes('items-center duration-200 p-0 px-4 no-wrap') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
         if menu:
-            ui.button(on_click=menu.toggle).props('flat color=white icon=menu').classes('max-[405px]:hidden lg:hidden')
+            ui.button(on_click=menu.toggle).props('flat color=white icon=menu_book dense size="1.5em"')\
+                .classes('max-[405px]:hidden lg:hidden')
         with ui.link(target=index_page).classes('row gap-4 items-center no-wrap mr-auto'):
             svg.face().classes('w-8 stroke-white stroke-2')
             svg.word().classes('w-24')
