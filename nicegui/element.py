@@ -41,7 +41,7 @@ class Element(Visibility):
         self._style: Dict[str, str] = {}
         self._props: Dict[str, Any] = {}
         self._event_listeners: Dict[str, EventListener] = {}
-        self._text: str = ''
+        self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
 

@@ -104,7 +104,7 @@
               }));
             }
             const children = data.ids.map(id => renderRecursively(elements, id));
-            if (name === 'default' && element.text) {
+            if (name === 'default' && element.text !== null) {
               children.unshift(element.text);
             }
             return [ ...rendered, ...children]

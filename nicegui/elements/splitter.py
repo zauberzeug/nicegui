@@ -1,9 +1,11 @@
 from typing import Callable, Optional, Tuple
 
+from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Splitter(ValueElement):
+class Splitter(ValueElement, DisableableElement):
+
     def __init__(self, *,
                  horizontal: Optional[bool] = False,
                  reverse: Optional[bool] = False,

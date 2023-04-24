@@ -1,10 +1,11 @@
 from typing import Any, Callable, Dict, Optional
 
 from .icon import Icon
+from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Input(ValueElement):
+class Input(ValueElement, DisableableElement):
     LOOPBACK = False
 
     def __init__(self,
@@ -33,7 +34,7 @@ class Input(ValueElement):
         :param password: whether to hide the input (default: False)
         :param password_toggle_button: whether to show a button to toggle the password visibility (default: False)
         :param on_change: callback to execute when the input is confirmed by leaving the focus
-        :param autocomplete: options
+        :param on_change: callback to execute when the value changes
         :param validation: dictionary of validation rules, e.g. ``{'Too short!': lambda value: len(value) < 3}``
         """
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
