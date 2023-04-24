@@ -29,7 +29,7 @@ def open_window(host: str, port: int, title: str, width: int, height: int, fulls
         webview.create_window(**window_kwargs)
         webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
     except NameError:
-        print('Nave mode is not supported in this configuration. Please install pywebview to use it.')
+        print('Native mode is not supported in this configuration. Please install pywebview to use it.')
         sys.exit(1)
 
 
