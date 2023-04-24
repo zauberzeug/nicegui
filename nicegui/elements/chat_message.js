@@ -10,5 +10,11 @@ export default {
   methods: {
   },
   props: {
+    sent: Boolean,
+    label: String,
+    text: String,
+    stamp: String,
+    name: String,
+    avatar: String,
   },
 };
