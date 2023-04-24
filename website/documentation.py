@@ -144,6 +144,7 @@ def create_full() -> None:
     load_demo(ui.card)
     load_demo(ui.column)
     load_demo(ui.row)
+    load_demo(ui.grid)
 
     @text_demo('Clear Containers', '''
         To remove all elements from a row, column or card container, use the `clear()` method.

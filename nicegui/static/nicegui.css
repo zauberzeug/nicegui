@@ -36,6 +36,10 @@
   align-items: flex-start;
   gap: 1rem;
 }
+.nicegui-grid {
+  display: grid;
+  gap: 1rem;
+}
 .nicegui-card {
   display: flex;
   flex-direction: column;
