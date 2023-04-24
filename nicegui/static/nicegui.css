@@ -67,6 +67,12 @@
   opacity: 1 !important;
   cursor: text !important;
 }
+.nicegui-markdown blockquote {
+  font-style: italic;
+  border-left: 0.25rem solid #888;
+  margin: 1.5rem 0.5rem;
+  padding: 0.5rem;
+}
 
 #popup {
   position: fixed;
