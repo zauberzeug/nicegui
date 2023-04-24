@@ -34,6 +34,7 @@ class Input(ValueElement, DisableableElement):
         :param password: whether to hide the input (default: False)
         :param password_toggle_button: whether to show a button to toggle the password visibility (default: False)
         :param on_change: callback to execute when the value changes
+        :param autocomplete: options for autocompletition
         :param validation: dictionary of validation rules, e.g. ``{'Too short!': lambda value: len(value) < 3}``
         """
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
