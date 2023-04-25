@@ -1,4 +1,4 @@
-import urllib
+import urllib.parse
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
@@ -25,7 +25,11 @@ def get_favicon_url(page: 'page', prefix: str) -> str:
         return favicon
     elif not favicon:
         return f'{prefix}/_nicegui/{__version__}/static/favicon.ico'
-    if is_char(favicon):
+    elif is_data_url(favicon):
+        return favicon
+    elif is_svg(favicon):
+        return svg_to_data_url(favicon)
+    elif is_char(favicon):
         return char_to_data_url(favicon)
     elif page.path == '/':
         return f'{prefix}/favicon.ico'
@@ -39,6 +43,14 @@ def is_remote_url(favicon: str) -> bool:
 
 def is_char(favicon: str) -> bool:
     return len(favicon) == 1
+
+
+def is_svg(favicon: str) -> bool:
+    return favicon.strip().startswith('<svg')
+
+
+def is_data_url(favicon: str) -> bool:
+    return favicon.startswith('data:')
 
 
 def char_to_data_url(char: str) -> str:
@@ -58,6 +70,9 @@ def char_to_data_url(char: str) -> str:
             <text y=".9em" font-size="128" font-family="Georgia, sans-serif">{char}</text>
         </svg>
     '''
+    return svg_to_data_url(svg)
+
+
+def svg_to_data_url(svg: str) -> str:
     svg_urlencoded = urllib.parse.quote(svg)
-    data_url = f"data:image/svg+xml,{svg_urlencoded}"
-    return data_url
+    return f'data:image/svg+xml,{svg_urlencoded}'

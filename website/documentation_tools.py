@@ -65,15 +65,17 @@ def render_docstring(doc: str, with_params: bool = True) -> ui.html:
 
 class text_demo:
 
-    def __init__(self, title: str, explanation: str) -> None:
+    def __init__(self, title: str, explanation: str, tab: Optional[Union[str, Callable]] = None) -> None:
         self.title = title
         self.explanation = explanation
         self.make_menu_entry = True
+        self.tab = tab
 
     def __call__(self, f: Callable) -> Callable:
         subheading(self.title, make_menu_entry=self.make_menu_entry)
         ui.markdown(self.explanation).classes('bold-links arrow-links')
-        return demo()(f)
+        f.tab = self.tab
+        return demo(f)
 
 
 class intro_demo(text_demo):
@@ -85,9 +87,8 @@ class intro_demo(text_demo):
 
 class element_demo:
 
-    def __init__(self, element_class: Union[Callable, type], browser_title: Optional[str] = None) -> None:
+    def __init__(self, element_class: Union[Callable, type]) -> None:
         self.element_class = element_class
-        self.browser_title = browser_title
 
     def __call__(self, f: Callable, *, more_link: Optional[str] = None) -> Callable:
         doc = self.element_class.__doc__ or self.element_class.__init__.__doc__
@@ -95,7 +96,7 @@ class element_demo:
         with ui.column().classes('w-full mb-8 gap-2'):
             subheading(title, more_link=more_link)
             render_docstring(documentation, with_params=more_link is None)
-            return demo(browser_title=self.browser_title)(f)
+            return demo(f)
 
 
 def load_demo(api: Union[type, Callable]) -> None:
