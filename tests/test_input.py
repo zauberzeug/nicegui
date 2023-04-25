@@ -66,3 +66,14 @@ def test_input_validation(screen: Screen):
     element.send_keys(' Doe')
     screen.wait(0.5)
     screen.should_not_contain('Too short')
+
+
+def test_input_with_multi_word_error_message(screen: Screen):
+    input = ui.input(label='some input')
+    ui.button('set error', on_click=lambda: input.props('error error-message="Some multi word error message"'))
+
+    screen.open('/')
+    screen.should_not_contain('Some multi word error message')
+
+    screen.click('set error')
+    screen.should_contain('Some multi word error message')

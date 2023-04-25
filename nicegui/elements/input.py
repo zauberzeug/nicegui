@@ -1,10 +1,11 @@
 from typing import Any, Callable, Dict, Optional
 
 from .icon import Icon
+from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Input(ValueElement):
+class Input(ValueElement, DisableableElement):
     LOOPBACK = False
 
     def __init__(self,
@@ -14,6 +15,7 @@ class Input(ValueElement):
                  password: bool = False,
                  password_toggle_button: bool = False,
                  on_change: Optional[Callable] = None,
+                 autocomplete: Optional[list] = None,
                  validation: Dict[str, Callable] = {}) -> None:
         """Text Input
 
@@ -31,7 +33,8 @@ class Input(ValueElement):
         :param value: the current value of the text input
         :param password: whether to hide the input (default: False)
         :param password_toggle_button: whether to show a button to toggle the password visibility (default: False)
-        :param on_change: callback to execute when the input is confirmed by leaving the focus
+        :param on_change: callback to execute when the value changes
+        :param autocomplete: options for autocompletition
         :param validation: dictionary of validation rules, e.g. ``{'Too short!': lambda value: len(value) < 3}``
         """
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
@@ -50,6 +53,25 @@ class Input(ValueElement):
                 icon = Icon('visibility_off').classes('cursor-pointer').on('click', toggle_type)
 
         self.validation = validation
+
+        if autocomplete is not None:
+            def AutoCompleteInput():
+                if len(self.value) > 0:
+                    for item in autocomplete:
+                        if item.startswith(self.value):
+                            self.props(f'shadow-text="{item[len(self.value):]}"')
+                            wordcomplete = item
+                            return wordcomplete
+                else:
+                    self.props(f'shadow-text=" "')
+
+            def CompleteInput():
+                word = AutoCompleteInput()
+                self.set_value(word)
+                self.props(f'shadow-text=" "')
+
+            self.on("keyup", AutoCompleteInput)
+            self.on("keydown.tab", CompleteInput)
 
     def on_value_change(self, value: Any) -> None:
         super().on_value_change(value)

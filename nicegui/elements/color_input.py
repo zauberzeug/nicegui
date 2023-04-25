@@ -3,10 +3,11 @@ from typing import Callable, Optional
 from nicegui import ui
 
 from .color_picker import ColorPicker
+from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class ColorInput(ValueElement):
+class ColorInput(ValueElement, DisableableElement):
     LOOPBACK = False
 
     def __init__(self, label: Optional[str] = None, *,

@@ -1,9 +1,10 @@
 from typing import Callable, Optional
 
+from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Time(ValueElement):
+class Time(ValueElement, DisableableElement):
 
     def __init__(self,
                  value: Optional[str] = None,

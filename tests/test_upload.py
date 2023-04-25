@@ -56,3 +56,40 @@ def test_uploading_from_two_tabs(screen: Screen):
     screen.should_contain(f'uploaded {test_path1.name}')
     screen.switch_to(0)
     screen.should_not_contain(f'uploaded {test_path1.name}')
+
+
+def test_upload_with_header_slot(screen: Screen):
+    with ui.upload().add_slot('header'):
+        ui.label('Header')
+
+    screen.open('/')
+    screen.should_contain('Header')
+
+
+def test_replace_upload(screen: Screen):
+    with ui.row() as container:
+        ui.upload(label='A')
+
+    def replace():
+        container.clear()
+        with container:
+            ui.upload(label='B')
+    ui.button('Replace', on_click=replace)
+
+    screen.open('/')
+    screen.should_contain('A')
+    screen.click('Replace')
+    screen.should_contain('B')
+    screen.should_not_contain('A')
+
+
+def test_reset_upload(screen: Screen):
+    upload = ui.upload()
+    ui.button('Reset', on_click=upload.reset)
+
+    screen.open('/')
+    screen.selenium.find_element(By.CLASS_NAME, 'q-uploader__input').send_keys(str(test_path1))
+    screen.should_contain(test_path1.name)
+    screen.click('Reset')
+    screen.wait(0.5)
+    screen.should_not_contain(test_path1.name)
