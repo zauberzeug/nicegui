@@ -2,6 +2,7 @@ export default {
   template: `
     <q-chat-message ref="chat_message"
         :name="name"
+        :label="label"
         :avatar="avatar"
         :text="[text]"
         :sent=sent
@@ -12,10 +13,10 @@ export default {
   },
   props: {
     sent: Boolean,
-    label: String,
     text: String,
     stamp: String,
     name: String,
     avatar: String,
+    label: String,
   },
 };
