@@ -66,11 +66,10 @@ def _tab(content: Union[str, Callable], color: str, bgcolor: str) -> None:
     with ui.row().classes('gap-0'):
         with ui.label().classes(f'w-2 h-[24px] bg-[{color}]'):
             ui.label().classes(f'w-full h-full bg-[{bgcolor}] rounded-br-[6px]')
-        with ui.row().classes(f'text-sm text-gray-600 px-4 py-1 h-[24px] rounded-t-[6px] bg-[{color}] items-center gap-2'):
+        with ui.row().classes(f'text-sm text-gray-600 px-6 py-1 h-[24px] rounded-t-[6px] bg-[{color}] items-center gap-2'):
             if callable(content):
                 content()
             else:
-                ui.image('/favicon/favicon.ico').classes('w-4 h-4')
                 ui.label(content)
         with ui.label().classes(f'w-2 h-[24px] bg-[{color}]'):
             ui.label().classes(f'w-full h-full bg-[{bgcolor}] rounded-bl-[6px]')
