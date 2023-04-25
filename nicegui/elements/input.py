@@ -56,7 +56,7 @@ class Input(ValueElement, DisableableElement):
 
         if autocomplete is not None:
             def AutoCompleteInput():
-                if len(self.value) > 1:
+                if len(self.value) > 0:
                     for item in autocomplete:
                         if item.startswith(self.value):
                             self.props(f'shadow-text="{item[len(self.value):]}"')
