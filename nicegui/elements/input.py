@@ -15,7 +15,7 @@ class Input(ValueElement, DisableableElement):
                  password: bool = False,
                  password_toggle_button: bool = False,
                  on_change: Optional[Callable] = None,
-                 autocomplete: list,
+                 autocomplete: Optional[list] = None,
                  validation: Dict[str, Callable] = {}) -> None:
         """Text Input
 
