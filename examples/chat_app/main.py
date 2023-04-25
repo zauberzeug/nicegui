@@ -23,7 +23,8 @@ async def update(content: ui.column) -> None:
     with content:  # use the context of each client to update their ui
         for name, text in messages:
             # A simple way to show a message:
-            # ui.markdown(f'**{name or "someone"}:** {text}').classes('text-lg m-2')
+            # ui.markdown(f'**{name or "someone"}:** {text}') \
+            #       .classes('text-lg m-2')
 
             # A more advanced example is using quasar chat_message:
             sent = not sent
@@ -31,15 +32,20 @@ async def update(content: ui.column) -> None:
                 ui.chat_message(text=text,
                                 name=name,
                                 sent=sent,
-                                stamp=datetime.utcnow().isoformat()).classes('w-full')
+                                stamp=datetime.utcnow().isoformat()) \
+                    .classes('w-full')
             else:
+                avatar = "https://cdn.quasar.dev/img/avatar3.jpg"
                 ui.chat_message(text=text,
                                 name=name,
                                 sent=sent,
-                                avatar="https://cdn.quasar.dev/img/avatar3.jpg",
-                                stamp=datetime.utcnow().isoformat()).classes('w-full')
+                                avatar=avatar,
+                                stamp=datetime.utcnow().isoformat()) \
+                    .classes('w-full')
 
-        await ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)', respond=False)
+        await ui.run_javascript(
+                  'window.scrollTo(0, document.body.scrollHeight)',
+                  respond=False)
 
 
 @ui.page('/')
