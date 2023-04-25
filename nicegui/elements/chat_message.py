@@ -1,10 +1,6 @@
-from typing import Callable, Optional
-
-from fastapi import Request, Response
+from typing import Optional
 
 from ..dependencies import register_component
-from ..events import EventArguments, UploadEventArguments, handle_event
-from ..nicegui import app
 from .mixins.disableable_element import DisableableElement
 
 register_component('chat_message', __file__, 'chat_message.js')
