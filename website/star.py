@@ -5,7 +5,7 @@ from website import svg
 STYLE = '''
 <style>
     @keyframes star-tumble {
-          0% { transform: translateX(2em) rotate(144deg); }
+          0% { transform: translateX(6em) rotate(432deg); }
         100% { transform: translateX(0)   rotate(0);      }
     }
     @keyframes star-pulse {
