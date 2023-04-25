@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import asyncio
+
+from datetime import datetime
 from typing import List, Tuple
 
 from nicegui import Client, ui
@@ -9,12 +11,28 @@ contents: List[ui.column] = []
 
 
 async def update(content: ui.column) -> None:
+    # Note: Messages should come from a database
+
+    sent = False
+    # 'sent' should be determined based on the current user
+    # which requires session/user auth - outside of scope
+    # of this example
+    # For now we just alternate for every new message
+
     content.clear()
     with content:  # use the context of each client to update their ui
         for name, text in messages:
-            ui.markdown(f'**{name or "someone"}:** {text}').classes('text-lg m-2')
-            ui.chat_message(label='something', text='testing testing')
-        await ui.run_javascript(f'window.scrollTo(0, document.body.scrollHeight)', respond=False)
+            # A simple way to show a message:
+            # ui.markdown(f'**{name or "someone"}:** {text}').classes('text-lg m-2')
+
+            # A more advanced example is using quasar chat_message:
+            sent = not sent
+            ui.chat_message(text=text,
+                            name=name,
+                            sent=sent,
+                            avatar="https://cdn.quasar.dev/img/avatar2.jpg",
+                            stamp=datetime.utcnow().isoformat()).classes('w-full')
+        await ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)', respond=False)
 
 
 @ui.page('/')
