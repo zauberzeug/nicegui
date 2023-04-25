@@ -20,9 +20,12 @@ class ChatMessage(DisableableElement):
 
         Based on Quasar's `Chat Message <https://quasar.dev/vue-components/chat/`_ component.
 
-        :param sent: Render as a sent message (so from current user)
-        :param max_file_size: maximum file size in bytes (default: `0`)
-        :param max_total_size: maximum total size of all files in bytes (default: `0`)
+        :param sent: Render as a sent message (so from current user) (default: False)
+        :param label: Adding a label adds a tiny headline between messages
+        :param name: The name of the message author
+        :param text: The message body
+        :param stamp: The time stamp of the message. (default: `None`))
+        :param avatar: URL to avatar. (default: `None`))
         """
         super().__init__(tag='chat_message')
         self._props['sent'] = sent
