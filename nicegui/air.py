@@ -32,8 +32,8 @@ class Air:
                 'media_type': response.headers.get('content-type'),
             }
 
-        @self.relay.on('connected')
-        def on_connected(data: Dict[str, Any]) -> None:
+        @self.relay.on('ready')
+        def on_ready(data: Dict[str, Any]) -> None:
             print(f'NiceGUI is on air at {data["device_url"]}', flush=True)
 
         @self.relay.on('error')
