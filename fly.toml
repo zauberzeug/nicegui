@@ -12,7 +12,7 @@ processes = []
 [deploy]
 # boot a single, new VM with the new release, verify its health, then
 # One by one, each running VM is taken down and replaced by the new release VM
-strategy = "canary" 
+strategy = "rolling" 
 
 
 [experimental]

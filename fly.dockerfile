@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 LABEL maintainer="Zauberzeug GmbH <nicegui@zauberzeug.com>"
 
-RUN pip install itsdangerous prometheus_client isort docutils
+RUN pip install itsdangerous prometheus_client isort docutils pandas
 
 WORKDIR /app
 
