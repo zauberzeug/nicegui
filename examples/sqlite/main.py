@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 import sqlite3
 import pathlib
 
@@ -9,7 +8,9 @@ from typing import Dict
 from nicegui import ui
 
 # initialize sqlite file
-DB_FILE = os.path.join(os.path.dirname(__file__), "db", "people.db")
+DB_FILE = pathlib.PurePath.joinpath(
+    pathlib.PurePosixPath(__file__).parent, "db", "people.db"
+)
 pathlib.Path(DB_FILE).touch()
 
 conn = sqlite3.connect(DB_FILE, check_same_thread=False)
@@ -19,23 +20,37 @@ cursor.execute(
 )
 conn.commit
 
-# UI starts here
-name = ui.input(label="username").classes("w-full")
-age = ui.number(label="your age").classes("w-full")
 
-get_id = ui.label()
+def all_users():
+    cursor.execute("SELECT * FROM users")
+    res = cursor.fetchall()
+    result = [
+        {
+            col[0]: row[i]
+            for i, col in enumerate(cursor.description)
+        }
+        for row in res
+    ]
+    return result
 
-list_alldata = ui.column()
 
-with ui.dialog() as editdialog:
-    with ui.card():
-        ui.label("Edit Data").classes("font-xl font-weight")
-        edit_name = ui.input().bind_value_from(name, "value")
-        edit_age = ui.input().bind_value_from(age, "value")
-
-        with ui.row().classes("justify-between"):
-            ui.button("save", on_click=lambda e: save_edit(e))
-            ui.button("close", on_click=editdialog.close).classes("bg-red")
+@ui.refreshable
+def users_ui():
+    users = all_users()
+    for x in users:
+        with ui.card():
+            with ui.column():
+                with ui.row().classes("justify-between w-full") as carddata:
+                    ui.label(x["id"])
+                    ui.label(x["name"])
+                    ui.label(x["age"])
+                with ui.row():
+                    ui.button("edit").on(
+                        "click", lambda e, carddata=carddata: editdata(carddata)
+                    )
+                    ui.button("delete").on(
+                        "click", lambda e, carddata=carddata: deletedata(carddata)
+                    ).classes("bg-red")
 
 
 def add_newdata():
@@ -48,39 +63,10 @@ def add_newdata():
         ui.notify(f"success add new user {name.value}", color="blue")
         name.value = ""
         age.value = ""
-        list_alldata.clear()
-        get_all_data()
+
+        users_ui.refresh()
     except Exception as e:
         ui.notify(f"failed to add new user {name.value}: {e}", color="red")
-
-
-def get_all_data():
-    cursor.execute("SELECT * FROM users")
-    res = cursor.fetchall()
-    result = []
-    for row in res:
-        data = {}
-        for i, col in enumerate(cursor.description):
-            data[col[0]] = row[i]
-        result.append(data)
-
-    print(result)
-
-    for x in result:
-        with list_alldata:
-            with ui.card():
-                with ui.column():
-                    with ui.row().classes("justify-between w-full") as carddata:
-                        ui.label(x["id"])
-                        ui.label(x["name"])
-                        ui.label(x["age"])
-                    with ui.row():
-                        ui.button("edit").on(
-                            "click", lambda e, carddata=carddata: editdata(carddata)
-                        )
-                        ui.button("delete").on(
-                            "click", lambda e, carddata=carddata: deletedata(carddata)
-                        ).classes("bg-red")
 
 
 def save_edit(data):
@@ -91,8 +77,8 @@ def save_edit(data):
         conn.commit()
         ui.notify("success edit user", color="green")
         editdialog.close()
-        list_alldata.clear()
-        get_all_data()
+
+        users_ui.refresh()
     except Exception as e:
         ui.notify(f"failed to edit user, {e}", color="red")
 
@@ -115,15 +101,34 @@ def deletedata(data):
         query = "DELETE from users WHERE id=?"
         cursor.execute(query, (get_id.text,))
         conn.commit()
-        list_alldata.clear()
-        get_all_data()
-        ui.notify("success delete user", color="green")
+
+        users_ui.refresh()
     except Exception as e:
         ui.notify(f"failed to delete user, {e}", color="red")
 
 
+##########################
+# main page UI starts here
+##########################
+name = ui.input(label="username").classes("w-full")
+age = ui.number(label="your age").classes("w-full")
+
+get_id = ui.label()
+
+list_alldata = ui.column()
+
+with ui.dialog() as editdialog:
+    with ui.card():
+        ui.label("Edit Data").classes("font-xl font-weight")
+        edit_name = ui.input().bind_value_from(name, "value")
+        edit_age = ui.input().bind_value_from(age, "value")
+
+        with ui.row().classes("justify-between"):
+            ui.button("save", on_click=save_edit)
+            ui.button("close", on_click=editdialog.close).classes("bg-red")
+
 ui.button("add new person", on_click=add_newdata)
-get_all_data()
+users_ui()
 
 # run GUI main
 ui.run()
