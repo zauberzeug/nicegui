@@ -237,16 +237,29 @@ def create_full() -> None:
 
     elements_list = ['ui.label', 'ui.checkbox', 'ui.switch', 'ui.input', 'ui.textarea', 'ui.button']
 
+    subheading('Try styling NiceGUI elements!')
+    ui.markdown('''
+        Try out how
+        [Tailwind CSS classes](https://tailwindcss.com/),
+        [Quasar props](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components),
+        and CSS styles affect NiceGUI elements.
+    ''').classes('bold-links arrow-links')
+    with ui.row():
+        ui.label('Choose your favorite element from those available and start having fun!').classes('mx-auto my-auto')
+        select_element = ui.select(options=elements_list, value='ui.button', on_change=lambda: elements_ui.refresh()) \
+            .props('dense hide-bottom-space')
+
     @ui.refreshable
     def elements_ui():
         with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
             with demo.python_window(classes='w-full max-w-[44rem] grow'):
                 with ui.column().classes('w-full gap-4'):
                     ui.markdown(f'''
-                    ```py
-                    from nicegui import ui
-                    element = {select_element.value}('element')
-                    ```
+                        ```py
+                        from nicegui import ui
+
+                        element = {select_element.value}('element')
+                        ```
                     ''').classes('mb-[-0.25em]')
                     with ui.row().classes('items-center gap-0 w-full px-2'):
                         def handle_classes(e: events.ValueChangeEventArguments):
@@ -283,20 +296,7 @@ def create_full() -> None:
                     ```
                     ''')
             with demo.browser_window(classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
-                b = eval(f'{select_element.value}("element")')
-
-    subheading('Try styling NiceGUI elements!')
-    ui.markdown('''
-            Try out how
-            [Tailwind CSS classes](https://tailwindcss.com/),
-            [Quasar props](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components),
-            and CSS styles affect NiceGUI elements.
-        ''').classes('bold-links arrow-links')
-    with ui.row():
-        ui.label('Choose your favorite element from those available and start having fun!').classes('mx-auto my-auto')
-        select_element = ui.select(options=elements_list, value='ui.button', on_change=elements_ui.refresh).props(
-            'dense hide-bottom-space')
-
+                b: ui.element = eval(f'{select_element.value}("element")')
     elements_ui()
 
     @text_demo('Tailwind CSS', '''
