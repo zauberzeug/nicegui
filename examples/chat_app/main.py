@@ -36,9 +36,7 @@ async def update(content: ui.column) -> None:
                             stamp=datetime.utcnow().isoformat()) \
                 .classes('w-full')
 
-        await ui.run_javascript(
-                  'window.scrollTo(0, document.body.scrollHeight)',
-                  respond=False)
+        await ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)', respond=False)
 
 
 @ui.page('/')
