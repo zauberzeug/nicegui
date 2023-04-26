@@ -62,7 +62,7 @@ class Number(ValueElement, DisableableElement):
         value = float(self.value or 0)
         value = max(value, self._props.get('min', -float('inf')))
         value = min(value, self._props.get('max', float('inf')))
-        self.set_value(self.format % value if self.format else str(value))
+        self.set_value(float(self.format % value) if self.format else value)
 
     def on_value_change(self, value: Any) -> None:
         super().on_value_change(value)

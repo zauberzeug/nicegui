@@ -144,6 +144,7 @@ def create_full() -> None:
     load_demo(ui.card)
     load_demo(ui.column)
     load_demo(ui.row)
+    load_demo(ui.grid)
 
     @text_demo('Clear Containers', '''
         To remove all elements from a row, column or card container, use the `clear()` method.
@@ -642,11 +643,7 @@ def create_full() -> None:
 
     heading('Configuration')
 
-    @element_demo(ui.run, browser_title='My App')
-    def ui_run_demo():
-        ui.label('page with custom title')
-
-        # ui.run(title='My App')
+    load_demo(ui.run)
 
     # HACK: switch color to white for the next demo
     demo_BROWSER_BGCOLOR = demo.BROWSER_BGCOLOR
@@ -659,7 +656,7 @@ def create_full() -> None:
         Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html) 
         for the `webview.create_window` and `webview.start` functions.
         Note that these keyword arguments will take precedence over the parameters defined in ui.run.
-    ''')
+    ''', tab=lambda: ui.label('NiceGUI'))
     def native_mode_demo():
         from nicegui import app
 

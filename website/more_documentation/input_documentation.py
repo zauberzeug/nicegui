@@ -12,7 +12,10 @@ def main_demo() -> None:
 
 def more() -> None:
 
-    @text_demo('Auto complete input', ' The `autocomplete` feature provides suggestions as you type, making input easier and faster. The parameter `options` is a list of strings that contains the available options that will appear.')
-    async def autocompleteinput():
+    @text_demo('Auto complete input', '''
+        The `autocomplete` feature provides suggestions as you type, making input easier and faster.
+        The parameter `options` is a list of strings that contains the available options that will appear.
+    ''')
+    async def autocomplete_demo():
         options = ['AutoComplete', 'NiceGUI', 'Awesome']
         ui.input(label='Text', placeholder='start typing', autocomplete=options)
