@@ -28,20 +28,13 @@ async def update(content: ui.column) -> None:
 
             # A more advanced example is using quasar chat_message:
             sent = not sent
-            if sent:
-                ui.chat_message(text=text,
-                                name=name,
-                                sent=sent,
-                                stamp=datetime.utcnow().isoformat()) \
-                    .classes('w-full')
-            else:
-                avatar = "https://cdn.quasar.dev/img/avatar3.jpg"
-                ui.chat_message(text=text,
-                                name=name,
-                                sent=sent,
-                                avatar=avatar,
-                                stamp=datetime.utcnow().isoformat()) \
-                    .classes('w-full')
+            avatar = f'https://robohash.org/{name}'
+            ui.chat_message(text=text,
+                            avatar=avatar,
+                            name=name,
+                            sent=sent,
+                            stamp=datetime.utcnow().isoformat()) \
+                .classes('w-full')
 
         await ui.run_javascript(
                   'window.scrollTo(0, document.body.scrollHeight)',
