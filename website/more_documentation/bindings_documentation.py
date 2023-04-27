@@ -11,7 +11,7 @@ def main_demo() -> None:
          ui.number().bind_value(demo, 'number')
 
 def more() -> None:
-    @text_demo('Bind to dictionary', '''description''')
+    @text_demo('Bind to dictionary')
     def bind_dictionary():
         dictionary = {'name': 'NiceGUI', 'age': 2}
 
@@ -27,7 +27,7 @@ def more() -> None:
 
         ui.button('Make NiceGUI older!', on_click=nicegui_older)
 
-    @text_demo('Bind to variable', '''description, include link to datepicker example''')
+    @text_demo('Bind to variable', '''Here we are binding the value from the datepicker to a bare variable. [Using official datepicker example](https://nicegui.io/documentation/date#input_element_with_date_picker)''')
     def bind_variable():
         today_date = '1970-01-01'
 
