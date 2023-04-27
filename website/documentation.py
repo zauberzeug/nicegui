@@ -242,52 +242,66 @@ def create_full() -> None:
         [Quasar props](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components),
         and CSS styles affect NiceGUI elements.
     ''').classes('bold-links arrow-links')
-    with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
-        with demo.python_window(classes='w-full max-w-[44rem]'):
-            with ui.column().classes('w-full gap-4'):
-                ui.markdown('''
-                ```py
-                from nicegui import ui
+    with ui.row():
+        ui.label('Choose your favorite element from those available and start having fun!').classes('mx-auto my-auto')
+        select_element = ui.select({
+            ui.label: 'ui.label',
+            ui.checkbox: 'ui.checkbox',
+            ui.switch: 'ui.switch',
+            ui.input: 'ui.input',
+            ui.textarea: 'ui.textarea',
+            ui.button: 'ui.button',
+        }, value=ui.button, on_change=lambda: live_demo_ui.refresh()).props('dense')
 
-                button = ui.button('Button')
-                ```
-                ''').classes('mb-[-0.25em]')
-                with ui.row().classes('items-center gap-0 w-full px-2'):
-                    def handle_classes(e: events.ValueChangeEventArguments):
-                        try:
-                            b.classes(replace=e.value)
-                        except ValueError:
-                            pass
-                    ui.markdown("`button.classes('`")
-                    ui.input(on_change=handle_classes).classes('mt-[-0.5em] text-mono grow').props('dense')
-                    ui.markdown("`')`")
-                with ui.row().classes('items-center gap-0 w-full px-2'):
-                    def handle_props(e: events.ValueChangeEventArguments):
-                        b._props = {'label': 'Button', 'color': 'primary'}
-                        try:
-                            b.props(e.value)
-                        except ValueError:
-                            pass
-                        b.update()
-                    ui.markdown("`button.props('`")
-                    ui.input(on_change=handle_props).classes('mt-[-0.5em] text-mono grow').props('dense')
-                    ui.markdown("`')`")
-                with ui.row().classes('items-center gap-0 w-full px-2'):
-                    def handle_style(e: events.ValueChangeEventArguments):
-                        try:
-                            b.style(replace=e.value)
-                        except ValueError:
-                            pass
-                    ui.markdown("`button.style('`")
-                    ui.input(on_change=handle_style).classes('mt-[-0.5em] text-mono grow').props('dense')
-                    ui.markdown("`')`")
-                ui.markdown('''
-                ```py
-                ui.run()
-                ```
-                ''')
-        with demo.browser_window(classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
-            b = ui.button('Button')
+    @ui.refreshable
+    def live_demo_ui():
+        with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
+            with demo.python_window(classes='w-full max-w-[44rem]'):
+                with ui.column().classes('w-full gap-4'):
+                    ui.markdown(f'''
+                        ```py
+                        from nicegui import ui
+
+                        element = {select_element.options[select_element.value]}('element')
+                        ```
+                    ''').classes('mb-[-0.25em]')
+                    with ui.row().classes('items-center gap-0 w-full px-2'):
+                        def handle_classes(e: events.ValueChangeEventArguments):
+                            try:
+                                element.classes(replace=e.value)
+                            except ValueError:
+                                pass
+                        ui.markdown("`element.classes('`")
+                        ui.input(on_change=handle_classes).classes('mt-[-0.5em] text-mono grow').props('dense')
+                        ui.markdown("`')`")
+                    with ui.row().classes('items-center gap-0 w-full px-2'):
+                        def handle_props(e: events.ValueChangeEventArguments):
+                            element._props = {'label': 'Button', 'color': 'primary'}
+                            try:
+                                element.props(e.value)
+                            except ValueError:
+                                pass
+                            element.update()
+                        ui.markdown("`element.props('`")
+                        ui.input(on_change=handle_props).classes('mt-[-0.5em] text-mono grow').props('dense')
+                        ui.markdown("`')`")
+                    with ui.row().classes('items-center gap-0 w-full px-2'):
+                        def handle_style(e: events.ValueChangeEventArguments):
+                            try:
+                                element.style(replace=e.value)
+                            except ValueError:
+                                pass
+                        ui.markdown("`element.style('`")
+                        ui.input(on_change=handle_style).classes('mt-[-0.5em] text-mono grow').props('dense')
+                        ui.markdown("`')`")
+                    ui.markdown('''
+                        ```py
+                        ui.run()
+                        ```
+                    ''')
+            with demo.browser_window(classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
+                element: ui.element = select_element.value("element")
+    live_demo_ui()
 
     @text_demo('Tailwind CSS', '''
         [Tailwind CSS](https://tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces.
