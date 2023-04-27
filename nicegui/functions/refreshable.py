@@ -2,7 +2,10 @@ from typing import Callable, List
 
 from typing_extensions import Self
 
+from ..dependencies import register_component
 from ..element import Element
+
+register_component('refreshable', __file__, 'refreshable.js')
 
 
 class refreshable:
@@ -10,7 +13,7 @@ class refreshable:
     def __init__(self, func: Callable) -> None:
         """Refreshable UI functions
 
-        The `@refreshable` decorator allows you to create functions that have a `refresh` method.
+        The `@ui.refreshable` decorator allows you to create functions that have a `refresh` method.
         This method will automatically delete all elements created by the function and recreate them.
         """
         self.func = func
@@ -22,7 +25,7 @@ class refreshable:
         return self
 
     def __call__(self) -> None:
-        with Element('div') as container:
+        with Element('refreshable') as container:
             self.func() if self.instance is None else self.func(self.instance)
         self.containers.append(container)
 

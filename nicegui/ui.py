@@ -21,6 +21,7 @@ from .elements.dark_mode import DarkMode as dark_mode
 from .elements.date import Date as date
 from .elements.dialog import Dialog as dialog
 from .elements.expansion import Expansion as expansion
+from .elements.grid import Grid as grid
 from .elements.html import Html as html
 from .elements.icon import Icon as icon
 from .elements.image import Image as image
