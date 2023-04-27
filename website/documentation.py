@@ -242,9 +242,9 @@ def create_full() -> None:
         [Tailwind CSS classes](https://tailwindcss.com/),
         [Quasar props](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components),
         and CSS styles affect NiceGUI elements.
-    ''').classes('bold-links arrow-links')
+    ''').classes('bold-links arrow-links mb-[-1rem]')
     with ui.row():
-        ui.label('Choose your favorite element from those available and start having fun!').classes('mx-auto my-auto')
+        ui.label('Select an element from those available and start styling it!').classes('mx-auto my-auto')
         select_element = ui.select({
             ui.label: 'ui.label',
             ui.checkbox: 'ui.checkbox',
