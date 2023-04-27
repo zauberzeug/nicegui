@@ -1,5 +1,6 @@
 from nicegui import ui
-from website.documentation_tools import text_demo
+
+from ..documentation_tools import text_demo
 
 
 def main_demo() -> None:

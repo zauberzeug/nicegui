@@ -201,24 +201,6 @@ def create_full() -> None:
     load_demo(ui.notify)
     load_demo(ui.dialog)
 
-    @text_demo('Awaitable dialog', '''
-        Dialogs can be awaited.
-        Use the `submit` method to close the dialog and return a result.
-        Canceling the dialog by clicking in the background or pressing the escape key yields `None`.
-    ''')
-    def async_dialog_demo():
-        with ui.dialog() as dialog, ui.card():
-            ui.label('Are you sure?')
-            with ui.row():
-                ui.button('Yes', on_click=lambda: dialog.submit('Yes'))
-                ui.button('No', on_click=lambda: dialog.submit('No'))
-
-        async def show():
-            result = await dialog
-            ui.notify(f'You chose {result}')
-
-        ui.button('Await a dialog', on_click=show)
-
     heading('Appearance')
 
     @text_demo('Styling', '''
