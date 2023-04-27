@@ -79,6 +79,7 @@ def create_full() -> None:
     load_demo(ui.date)
     load_demo(ui.time)
     load_demo(ui.upload)
+    load_demo(ui.chat_message)
     load_demo(ui.element)
 
     heading('Markdown and HTML')
