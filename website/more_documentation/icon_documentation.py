@@ -4,7 +4,7 @@ from ..documentation_tools import text_demo
 
 
 def main_demo() -> None:
-    ui.icon('thumb_up').classes('text-5xl')
+    ui.icon('thumb_up', color='primary').classes('text-5xl')
 
 
 def more() -> None:
