@@ -1,14 +1,17 @@
+from nicegui import ui
+from ..documentation_tools import text_demo
+
 def main_demo() -> None:
-  class Demo:
+    class Demo:
         def __init__(self):
             self.number = 1
 
-   demo = Demo()
-   v = ui.checkbox('visible', value=True)
-      with ui.column().bind_visibility_from(v, 'value'):
-         ui.slider(min=1, max=3).bind_value(demo, 'number')
-         ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
-         ui.number().bind_value(demo, 'number')
+    demo = Demo()
+    v = ui.checkbox('visible', value=True)
+    with ui.column().bind_visibility_from(v, 'value'):
+        ui.slider(min=1, max=3).bind_value(demo, 'number')
+        ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
+        ui.number().bind_value(demo, 'number')
 
 def more() -> None:
     @text_demo('Bind to dictionary')
