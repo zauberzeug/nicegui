@@ -15,12 +15,12 @@ class Air:
     def __init__(self, token: str) -> None:
         self.token = token
         self.relay = AsyncClient()
+        self.client = httpx.AsyncClient(app=globals.app, base_url="http://test")
 
         @self.relay.on('get')
         async def on_get(data: Dict[str, Any]) -> Dict[str, Any]:
             headers = {'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']}
-            async with httpx.AsyncClient(app=globals.app, base_url="http://test") as client:
-                response = await client.get(data['path'], headers=headers)
+            response = await self.client.get(data['path'], headers=headers)
             content = response.content.replace(
                 b'const extraHeaders = {};',
                 (f'const extraHeaders = {{ "fly-force-instance-id" : "{data["instance-id"]}" }};').encode(),
