@@ -25,10 +25,10 @@ def home():
                 ui.label(col.capitalize())
                 for r, row in enumerate(df.loc[:, col]):
                     with ui.row().classes("h-8 items-center"):
-                        if is_numeric_dtype(df[col].dtype):
-                            cls = ui.number
-                        elif is_bool_dtype(df[col].dtype):
+                        if is_bool_dtype(df[col].dtype):
                             cls = ui.checkbox
+                        elif is_numeric_dtype(df[col].dtype):
+                            cls = ui.number
                         else:
                             cls = ui.input
                         cls(value=row, on_change=lambda event, r=r, c=c: update(df=df, r=r, c=c, value=event.value))
