@@ -58,7 +58,7 @@ class Input(ValueElement, DisableableElement):
             def find_autocompletion() -> Optional[str]:
                 if self.value:
                     for item in autocomplete:
-                        if item.startswith(self.value):
+                        if item.lower().startswith(self.value.lower()):
                             return item
 
             def autocomplete_input() -> None:
