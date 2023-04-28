@@ -25,6 +25,7 @@ class Markdown(ContentElement):
         """
         self.extras = extras
         super().__init__(tag='markdown', content=content)
+        self._classes = ['nicegui-markdown']
         self._props['codehilite_css'] = HtmlFormatter(nobackground=True).get_style_defs('.codehilite')
         self.use_component('markdown')
         if 'mermaid' in extras:

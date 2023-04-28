@@ -38,3 +38,10 @@ class Video(Element):
         if type:
             url = f'https://github.com/zauberzeug/nicegui/pull/624'
             warnings.warn(DeprecationWarning(f'The type parameter for ui.video is deprecated and ineffective ({url}).'))
+
+    def seek(self, seconds: float) -> None:
+        """Seek to a specific position in the video.
+
+        :param seconds: the position in seconds
+        """
+        self.run_method('seek', seconds)

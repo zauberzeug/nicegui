@@ -2,10 +2,11 @@ from typing import Callable, Optional
 
 from ..colors import set_background_color
 from ..events import ClickEventArguments, handle_event
+from .mixins.disableable_element import DisableableElement
 from .mixins.text_element import TextElement
 
 
-class Button(TextElement):
+class Button(TextElement, DisableableElement):
 
     def __init__(self,
                  text: str = '', *,

@@ -1,9 +1,10 @@
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from .choice_element import ChoiceElement
+from .mixins.disableable_element import DisableableElement
 
 
-class Radio(ChoiceElement):
+class Radio(ChoiceElement, DisableableElement):
 
     def __init__(self, options: Union[List, Dict], *, value: Any = None, on_change: Optional[Callable] = None):
         """Radio Selection

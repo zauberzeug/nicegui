@@ -6,11 +6,12 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from nicegui.dependencies import register_vue_component
 
 from .choice_element import ChoiceElement
+from .mixins.disableable_element import DisableableElement
 
 register_vue_component(name='select', path=Path(__file__).parent.joinpath('select.js'))
 
 
-class Select(ChoiceElement):
+class Select(ChoiceElement, DisableableElement):
 
     def __init__(self, options: Union[List, Dict], *,
                  label: Optional[str] = None,

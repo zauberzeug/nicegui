@@ -1,6 +1,13 @@
-from typing import Callable, List
+from typing import Any, Callable, Dict, List, Tuple
 
+from typing_extensions import Self
+
+from .. import background_tasks, globals
+from ..dependencies import register_component
 from ..element import Element
+from ..helpers import is_coroutine
+
+register_component('refreshable', __file__, 'refreshable.js')
 
 
 class refreshable:
@@ -8,19 +15,48 @@ class refreshable:
     def __init__(self, func: Callable) -> None:
         """Refreshable UI functions
 
-        The `@refreshable` decorator allows you to create functions that have a `refresh` method.
+        The `@ui.refreshable` decorator allows you to create functions that have a `refresh` method.
         This method will automatically delete all elements created by the function and recreate them.
         """
         self.func = func
-        self.containers: List[Element] = []
+        self.instance = None
+        self.containers: List[Tuple[Element, List[Any], Dict[str, Any]]] = []
+
+    def __get__(self, instance, _) -> Self:
+        self.instance = instance
+        return self
 
     def __call__(self, *args, **kwargs) -> None:
-        with Element('div') as container:
-            self.func(*args, **kwargs)
-        self.containers.append(container)
+        self.prune()
+        with Element('refreshable') as container:
+            self.containers.append((container, args, kwargs))
+            return self.func(*args, **kwargs) if self.instance is None else self.func(self.instance, *args, **kwargs)
 
     def refresh(self) -> None:
-        for container in self.containers:
+        self.prune()
+        for container, args, kwargs in self.containers:
             container.clear()
-            with container:
-                self.func()
+            if is_coroutine(self.func):
+                async def wait_for_result(container: Element, args, kwargs):
+                    with container:
+                        if self.instance is None:
+                            await self.func(*args, **kwargs)
+                        else:
+                            await self.func(self.instance, *args, **kwargs)
+                if globals.loop and globals.loop.is_running():
+                    background_tasks.create(wait_for_result(container=container, args=args, kwargs=kwargs))
+                else:
+                    globals.app.on_startup(wait_for_result(container=container, args=args, kwargs=kwargs))
+            else:
+                with container:
+                    if self.instance is None:
+                        self.func(*args, **kwargs)
+                    else:
+                        self.func(self.instance, *args, **kwargs)
+
+    def prune(self) -> None:
+        self.containers = [
+            (container, args, kwargs)
+            for container, args, kwargs in self.containers
+            if container.client.id in globals.clients
+        ]
