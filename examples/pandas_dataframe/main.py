@@ -2,7 +2,7 @@ import random
 import string
 
 import pandas as pd
-from pandas.api.types import is_any_real_numeric_dtype, is_bool_dtype
+from pandas.api.types import is_bool_dtype, is_numeric_dtype
 
 from nicegui import ui
 
@@ -48,64 +48,29 @@ def generate_random_dataframe(*, range_columns=(5, 8), range_rows=(5, 10)):
     return pd.DataFrame(rows, columns=column_names)
 
 
-# Basic formatting
-row_height = "h-8"
-
-
-def update(*, df, coordinates, change):
-    """Updates the dataframe as changes are made to the UI's controls.
-    """
-    x, y = coordinates[change.sender]
-    df.iat[y, x] = change.value
-    ui.notify(f"Set ({x}, {y}) to {change.value}")
+def update(*, df: pd.DataFrame, r: int, c: int, value):
+    df.iat[r, c] = value
+    ui.notify(f"Set ({r}, {c}) to {value}")
 
 
 @ui.refreshable
 def home():
-    """Show the editable pandas dataframe in a nicgui UI. A new dataframe is generated
-    each time this function is refreshed (i.e.: each time it is called).
-    """
-
-    # Use a random dataframe each refresh
     df = generate_random_dataframe()
-
-    # To match controls with dataframe cells
-    coordinates = dict()
-
     with ui.header():
         ui.button("Randomize", on_click=home.refresh)
-
     with ui.row():
-        for i, col in enumerate(df.columns):
+        for c, col in enumerate(df.columns):
             with ui.column():
-                with ui.row():
-                    ui.label(col.capitalize())
-                for j, row in enumerate(df.loc[:, col]):
-                    with ui.row().classes(f"{row_height} items-center"):
-                        if is_any_real_numeric_dtype(df[col].dtype):
-                            coordinates[ui.number(
-                                value=row,
-                                on_change=lambda x: update(
-                                    df=df,
-                                    coordinates=coordinates,
-                                    change=x,
-                                ))] = (i, j)
+                ui.label(col.capitalize())
+                for r, row in enumerate(df.loc[:, col]):
+                    with ui.row().classes("h-8 items-center"):
+                        if is_numeric_dtype(df[col].dtype):
+                            cls = ui.number
                         elif is_bool_dtype(df[col].dtype):
-                            coordinates[ui.checkbox(
-                                value=row,
-                                on_change=lambda x: update(
-                                    df=df,
-                                    coordinates=coordinates,
-                                    change=x,
-                                ))] = (i, j)
+                            cls = ui.checkbox
                         else:
-                            coordinates[ui.input(
-                                value=row,
-                                on_change=lambda x: update(
-                                    df=df,
-                                    coordinates=coordinates,
-                                    change=x,
-                                ))] = (i, j)
+                            cls = ui.input
+                        cls(value=row, on_change=lambda event, r=r, c=c: update(df=df, r=r, c=c, value=event.value))
 
 
 home()
