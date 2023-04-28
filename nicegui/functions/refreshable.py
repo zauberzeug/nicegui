@@ -1,13 +1,14 @@
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Tuple
 
 from typing_extensions import Self
 
 from .. import background_tasks, globals
-from ..dependencies import register_component
+from ..dependencies import register_vue_component
 from ..element import Element
 from ..helpers import is_coroutine
 
-register_component('refreshable', __file__, 'refreshable.js')
+register_vue_component(name='refreshable', path=Path(__file__).parent.joinpath('refreshable.js'))
 
 
 class refreshable:
@@ -30,6 +31,7 @@ class refreshable:
         self.prune()
         with Element('refreshable') as container:
             self.containers.append((container, args, kwargs))
+            container.use_component('refreshable')
             return self.func(*args, **kwargs) if self.instance is None else self.func(self.instance, *args, **kwargs)
 
     def refresh(self) -> None:

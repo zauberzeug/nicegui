@@ -1,9 +1,10 @@
+from pathlib import Path
 from typing import Optional
 
-from ..dependencies import register_component
+from ..dependencies import register_vue_component
 from ..element import Element
 
-register_component('chat_message', __file__, 'chat_message.js')
+register_vue_component(name='chat_message', path=Path(__file__).parent.joinpath('chat_message.js'))
 
 
 class ChatMessage(Element):
@@ -38,3 +39,4 @@ class ChatMessage(Element):
         if avatar is not None:
             self._props['avatar'] = avatar
         self._props['sent'] = sent
+        self.use_component('chat_message')

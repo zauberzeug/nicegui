@@ -93,6 +93,8 @@ class Element(Visibility):
             'text': self._text,
             'slots': self._collect_slot_dict(),
             'events': [listener.to_dict() for listener in self._event_listeners.values()],
+            'libraries': self.libraries,
+            'components': self.components
         }
 
     @staticmethod
