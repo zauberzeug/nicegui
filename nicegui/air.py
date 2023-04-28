@@ -1,7 +1,7 @@
 import gzip
 from typing import Any, Dict
 
-from fastapi.testclient import TestClient
+import httpx
 from socketio import AsyncClient
 
 from . import globals
@@ -15,12 +15,12 @@ class Air:
     def __init__(self, token: str) -> None:
         self.token = token
         self.relay = AsyncClient()
-        self.test_client = TestClient(globals.app)
 
         @self.relay.on('get')
-        def on_get(data: Dict[str, Any]) -> Dict[str, Any]:
-            headers = headers = {'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']}
-            response = self.test_client.get(data['path'], headers=headers)
+        async def on_get(data: Dict[str, Any]) -> Dict[str, Any]:
+            headers = {'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']}
+            async with httpx.AsyncClient(app=globals.app, base_url="http://test") as client:
+                response = await client.get(data['path'], headers=headers)
             content = response.content.replace(
                 b'const extraHeaders = {};',
                 (f'const extraHeaders = {{ "fly-force-instance-id" : "{data["instance-id"]}" }};').encode(),
