@@ -1,5 +1,7 @@
 from typing import Any, Callable, Dict, List, Optional
 
+from nicegui import ui
+
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -55,6 +57,23 @@ class Input(ValueElement, DisableableElement):
         self.validation = validation
 
         if autocomplete:
+            ui.add_body_html('''
+            <style>
+                @media (min-width: 768px) {
+                input[list]::-webkit-calendar-picker-indicator {
+                    display: none;
+                    }
+                }
+            </style>
+            ''')
+            options = ""
+            for opt in autocomplete:
+                options = options + ("<option value='{0}'></option>".format(opt))
+            ui.html('''
+                <datalist id="ac-list">
+                    {0}
+                </datalist>'''.format(options))
+
             def find_autocompletion() -> Optional[str]:
                 if self.value:
                     for item in autocomplete:
@@ -72,7 +91,9 @@ class Input(ValueElement, DisableableElement):
                 self.props(f'shadow-text=""')
 
             self.on('keyup', autocomplete_input)
-            self.on('keydown.tab', complete_input)
+            self.on('update:model-value', autocomplete_input)  # prevent shadow-text on datalist selected item
+            self.on('keydown.enter', complete_input)
+            self.props(add='list="ac-list"')
 
     def on_value_change(self, value: Any) -> None:
         super().on_value_change(value)
