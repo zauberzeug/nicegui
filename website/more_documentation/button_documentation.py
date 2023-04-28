@@ -14,5 +14,10 @@ def more() -> None:
     async def await_button_click() -> None:
         # @ui.page('/')
         # async def index():
-            await ui.button('What comes next?').clicked()
-            ui.label('Bam! This is the future!')
+            b = ui.button('Step')
+            await b.clicked()
+            ui.label('One')
+            await b.clicked()
+            ui.label('Two')
+            await b.clicked()
+            ui.label('Three')
