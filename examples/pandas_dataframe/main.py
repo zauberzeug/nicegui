@@ -22,7 +22,7 @@ def home():
     with ui.row():
         for c, col in enumerate(df.columns):
             with ui.column():
-                ui.label(col.capitalize())
+                ui.label(col)
                 for r, row in enumerate(df.loc[:, col]):
                     with ui.row().classes("h-8 items-center"):
                         if is_bool_dtype(df[col].dtype):
