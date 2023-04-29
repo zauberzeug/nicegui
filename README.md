@@ -15,7 +15,7 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 
 [![PyPI version](https://badge.fury.io/py/nicegui.svg)](https://pypi.org/project/nicegui/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/nicegui)](https://pypi.org/project/nicegui/)
-[![Conda version](https://img.shields.io/conda/v/conda-forge/nicegui?color=green&label=conda-forge%20version)](https://anaconda.org/conda-forge/nicegui)
+[![Conda version](https://img.shields.io/conda/v/conda-forge/nicegui?color=green&label=conda-forge)](https://anaconda.org/conda-forge/nicegui)
 [![Conda downloads](https://img.shields.io/conda/dn/conda-forge/nicegui?color=green&label=downloads)](https://anaconda.org/conda-forge/nicegui)
 [![Docker pulls](https://img.shields.io/docker/pulls/zauberzeug/nicegui)](https://hub.docker.com/r/zauberzeug/nicegui)<br />
 [![GitHub license](https://img.shields.io/github/license/zauberzeug/nicegui?color=orange)](https://github.com/zauberzeug/nicegui/blob/main/LICENSE)
