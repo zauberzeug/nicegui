@@ -1,4 +1,5 @@
 import gzip
+import logging
 from typing import Any, Dict
 
 import httpx
@@ -88,6 +89,7 @@ class Air:
                 await self.relay.disconnect()
             await self.relay.connect(f'{RELAY_HOST}?device_token={self.token}', socketio_path='/on_air/socket.io')
         except:
+            logging.exception('Could not connect to NiceGUI on air server.')
             print('Could not connect to NiceGUI on air server.', flush=True)
 
     async def disconnect(self) -> None:
