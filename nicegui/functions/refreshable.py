@@ -30,7 +30,14 @@ class refreshable:
         self.prune()
         with Element('refreshable') as container:
             self.containers.append((container, args, kwargs))
-            return self.func(*args, **kwargs) if self.instance is None else self.func(self.instance, *args, **kwargs)
+        if is_coroutine(self.func):
+            async def wait_for_result():
+                with container:
+                    await self.func(*args, **kwargs) if self.instance is None else self.func(self.instance, *args, **kwargs)
+            return wait_for_result()
+        else:
+            with container:
+                self.func(*args, **kwargs) if self.instance is None else self.func(self.instance, *args, **kwargs)
 
     def refresh(self) -> None:
         self.prune()
