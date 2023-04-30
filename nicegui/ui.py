@@ -11,6 +11,7 @@ from .elements.card import Card as card
 from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section
 from .elements.chart import Chart as chart
+from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
 from .elements.color_input import ColorInput as color_input
 from .elements.color_picker import ColorPicker as color_picker
