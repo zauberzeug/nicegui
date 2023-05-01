@@ -1,4 +1,6 @@
-from typing import Any, Callable
+import time
+
+from typing import Any, Callable, Optional
 
 from typing_extensions import Self
 
@@ -61,11 +63,19 @@ class SourceElement(Element):
         bind(self, 'source', target_object, target_name, forward=forward, backward=backward)
         return self
 
-    def set_source(self, source: str) -> None:
+    def set_source(self, source: str, reload: bool = False, time_stamp: Optional[float] = None) -> None:
         """Set the source of this element.
 
         :param source: The new source.
+        :param reload: Update the time stamp of the source to force a reload.
+        :param time_stamp: Define a custom time stamp for an controlled reload of the source.
         """
+        if reload:
+            if time_stamp is None:
+                source = f'{source}?t={time.time()}'
+            else:
+                source = f'{source}?t={time_stamp}'
+
         self.source = source
 
     def on_source_change(self, source: str) -> None:
