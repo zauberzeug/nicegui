@@ -14,7 +14,6 @@ def run_with(
     dark: Optional[bool] = False,
     binding_refresh_interval: float = 0.1,
     exclude: str = '',
-    mount_path: str = '/',
 ) -> None:
     globals.ui_run_has_been_called = True
     globals.title = title
@@ -28,4 +27,4 @@ def run_with(
     app.on_event('startup')(lambda: handle_startup(with_welcome_message=False))
     app.on_event('shutdown')(lambda: handle_shutdown())
 
-    app.mount(mount_path, globals.app)
+    app.mount('/', globals.app)

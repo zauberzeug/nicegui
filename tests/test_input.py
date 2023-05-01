@@ -1,5 +1,4 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
 
@@ -78,29 +77,3 @@ def test_input_with_multi_word_error_message(screen: Screen):
 
     screen.click('set error')
     screen.should_contain('Some multi word error message')
-
-
-def test_autocompletion(screen: Screen):
-    ui.input('Input', autocomplete=['foo', 'bar', 'baz'])
-
-    screen.open('/')
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
-    element.send_keys('f')
-    screen.should_contain('oo')
-
-    element.send_keys('l')
-    screen.wait(0.5)
-    screen.should_not_contain('oo')
-
-    element.send_keys(Keys.BACKSPACE)
-    screen.should_contain('oo')
-
-    element.send_keys(Keys.TAB)
-    assert element.get_attribute('value') == 'foo'
-
-    element.send_keys(Keys.BACKSPACE)
-    element.send_keys(Keys.BACKSPACE)
-    element.send_keys('x')
-    element.send_keys(Keys.TAB)
-    screen.wait(0.5)
-    assert element.get_attribute('value') == 'fx'

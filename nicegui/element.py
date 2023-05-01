@@ -227,7 +227,6 @@ class Element(Visibility):
                 trailing_events=trailing_events,
             )
             self._event_listeners[listener.id] = listener
-            self.update()
         return self
 
     def _handle_event(self, msg: Dict) -> None:

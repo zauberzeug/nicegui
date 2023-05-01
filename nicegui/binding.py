@@ -2,7 +2,7 @@ import asyncio
 import logging
 import time
 from collections import defaultdict
-from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Tuple, Type
 
 from . import globals
 
@@ -11,29 +11,15 @@ bindable_properties: Dict[Tuple[int, str], Any] = {}
 active_links: List[Tuple[Any, str, Any, str, Callable]] = []
 
 
-def get_attribute(obj: Union[object, Dict], name: str) -> Any:
-    if isinstance(obj, dict):
-        return obj[name]
-    else:
-        return getattr(obj, name)
-
-
-def set_attribute(obj: Union[object, Dict], name: str, value: Any) -> None:
-    if isinstance(obj, dict):
-        obj[name] = value
-    else:
-        setattr(obj, name, value)
-
-
 async def loop():
     while True:
         visited: Set[Tuple[int, str]] = set()
         t = time.time()
         for link in active_links:
             (source_obj, source_name, target_obj, target_name, transform) = link
-            value = transform(get_attribute(source_obj, source_name))
-            if get_attribute(target_obj, target_name) != value:
-                set_attribute(target_obj, target_name, value)
+            value = transform(getattr(source_obj, source_name))
+            if getattr(target_obj, target_name) != value:
+                setattr(target_obj, target_name, value)
                 propagate(target_obj, target_name, visited)
             del link, source_obj, target_obj
         if time.time() - t > 0.01:
@@ -48,9 +34,9 @@ def propagate(source_obj: Any, source_name: str, visited: Optional[Set[Tuple[int
     for _, target_obj, target_name, transform in bindings.get((id(source_obj), source_name), []):
         if (id(target_obj), target_name) in visited:
             continue
-        target_value = transform(get_attribute(source_obj, source_name))
-        if get_attribute(target_obj, target_name) != target_value:
-            set_attribute(target_obj, target_name, target_value)
+        target_value = transform(getattr(source_obj, source_name))
+        if getattr(target_obj, target_name) != target_value:
+            setattr(target_obj, target_name, target_value)
             propagate(target_obj, target_name, visited)
 
 

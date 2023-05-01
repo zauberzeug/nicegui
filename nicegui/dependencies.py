@@ -20,14 +20,14 @@ class Component:
 
 @dataclass
 class Dependency:
-    name: str
+    id: int
     path: Path
     dependents: Set[str]
     optional: bool
 
     @property
     def import_path(self) -> str:
-        return f'/_nicegui/{__version__}/dependencies/{self.name}/{self.path.name}'
+        return f'/_nicegui/{__version__}/dependencies/{self.id}/{self.path.name}'
 
 
 dependency_ids = IncrementingStringIds()
@@ -53,7 +53,7 @@ def register_component(name: str, py_filepath: str, component_filepath: str, dep
         id = dependency_ids.get(str(path.resolve()))
         if id not in js_dependencies:
             optional = dependency in optional_dependencies
-            js_dependencies[id] = Dependency(name=name, path=path, dependents=set(), optional=optional)
+            js_dependencies[id] = Dependency(id=id, path=path, dependents=set(), optional=optional)
         js_dependencies[id].dependents.add(name)
 
 
