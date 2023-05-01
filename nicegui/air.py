@@ -26,11 +26,14 @@ class Air:
                 b'const extraHeaders = {};',
                 (f'const extraHeaders = {{ "fly-force-instance-id" : "{data["instance-id"]}" }};').encode(),
             )
+            headers = dict(response.headers)
+            headers['content-encoding'] = 'gzip'
+            compressed = gzip.compress(content)
+            headers['content-length'] = str(len(compressed))
             return {
                 'status_code': response.status_code,
-                'headers': {'Content-Encoding': 'gzip'},
-                'content': gzip.compress(content),
-                'media_type': response.headers.get('content-type'),
+                'headers': headers,
+                'content': compressed,
             }
 
         @self.relay.on('ready')
