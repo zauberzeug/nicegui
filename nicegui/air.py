@@ -90,7 +90,11 @@ class Air:
         try:
             if self.relay.connected:
                 await self.relay.disconnect()
-            await self.relay.connect(f'{RELAY_HOST}?device_token={self.token}', socketio_path='/on_air/socket.io')
+            await self.relay.connect(
+                f'{RELAY_HOST}?device_token={self.token}',
+                socketio_path='/on_air/socket.io',
+                transports=['websocket', 'polling'],
+            )
         except:
             logging.exception('Could not connect to NiceGUI on air server.')
             print('Could not connect to NiceGUI on air server.', flush=True)
