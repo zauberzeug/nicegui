@@ -43,11 +43,11 @@ def index(request: Request) -> Response:
     return globals.index_client.build_response(request)
 
 
-@app.get(f'/_nicegui/{__version__}' + '/dependencies/{component}/{name}')
-def get_dependencies(component: str, name: str):
-    if component in js_dependencies and js_dependencies[component].path.exists() and js_dependencies[component].path.name == name:
-        return FileResponse(js_dependencies[component].path, media_type='text/javascript')
-    raise HTTPException(status_code=404, detail=f'dependency "{name}" with ID {component} not found')
+@app.get(f'/_nicegui/{__version__}' + '/dependencies/{id}/{name}')
+def get_dependencies(id: int, name: str):
+    if id in js_dependencies and js_dependencies[id].path.exists() and js_dependencies[id].path.name == name:
+        return FileResponse(js_dependencies[id].path, media_type='text/javascript')
+    raise HTTPException(status_code=404, detail=f'dependency "{name}" with ID {id} not found')
 
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{name}')

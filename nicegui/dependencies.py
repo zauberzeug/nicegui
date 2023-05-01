@@ -34,7 +34,7 @@ dependency_ids = IncrementingStringIds()
 
 vue_components: Dict[str, Component] = {}
 js_components: Dict[str, Component] = {}
-js_dependencies: Dict[str, Dependency] = {}
+js_dependencies: Dict[int, Dependency] = {}
 
 
 def register_component(name: str, py_filepath: str, component_filepath: str, dependencies: List[str] = [],
@@ -50,10 +50,11 @@ def register_component(name: str, py_filepath: str, component_filepath: str, dep
     for dependency in dependencies + optional_dependencies:
         path = Path(py_filepath).parent / dependency
         assert path.suffix == '.js', 'Only JS dependencies are supported.'
-        if name not in js_dependencies:
+        id = dependency_ids.get(str(path.resolve()))
+        if id not in js_dependencies:
             optional = dependency in optional_dependencies
-            js_dependencies[name] = Dependency(name=name, path=path, dependents=set(), optional=optional)
-        js_dependencies[name].dependents.add(name)
+            js_dependencies[id] = Dependency(name=name, path=path, dependents=set(), optional=optional)
+        js_dependencies[id].dependents.add(name)
 
 
 def generate_vue_content() -> Tuple[str, str, str]:
