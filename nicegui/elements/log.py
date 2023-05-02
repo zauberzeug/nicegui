@@ -1,3 +1,4 @@
+import urllib.parse
 from collections import deque
 from typing import Any, Optional
 
@@ -24,17 +25,8 @@ class Log(Element):
         self.lines: deque[str] = deque(maxlen=max_lines)
 
     def push(self, line: Any) -> None:
-        escapes = [
-            ('&', '&amp;'),
-            ('<', '&lt;'),
-            ('>', '&gt;'),
-            ('"', '&quot;'),
-            ("'", '&#39;'),
-            ('%', '&#37;')
-        ]
-        for escape, replacement in escapes:
-            line = line.replace(escape, replacement)
         line = str(line)
+        line = urllib.parse.quote(line)
         self.lines.extend(line.splitlines())
         self._props['lines'] = '\n'.join(self.lines)
         self.run_method('push', line)
