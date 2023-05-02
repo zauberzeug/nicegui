@@ -25,9 +25,7 @@ class Log(Element):
         self.lines: deque[str] = deque(maxlen=max_lines)
 
     def push(self, line: Any) -> None:
-        line = str(line)
-        line = urllib.parse.quote(line)
-        self.lines.extend(line.splitlines())
+        self.lines.extend(map(urllib.parse.quote, str(line).splitlines()))
         self._props['lines'] = '\n'.join(self.lines)
         self.run_method('push', line)
 
