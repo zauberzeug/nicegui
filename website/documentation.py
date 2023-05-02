@@ -316,26 +316,7 @@ def create_full() -> None:
 
     load_demo(ui.timer)
     load_demo(ui.keyboard)
-
-    @text_demo('Bindings', '''
-        NiceGUI is able to directly bind UI elements to models.
-        Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes.
-
-        Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property.
-        To define a one-way binding use the `_from` and `_to` variants of these methods.
-        Just pass a property of the model as parameter to these methods to create the binding.
-    ''')
-    def bindings_demo():
-        class Demo:
-            def __init__(self):
-                self.number = 1
-
-        demo = Demo()
-        v = ui.checkbox('visible', value=True)
-        with ui.column().bind_visibility_from(v, 'value'):
-            ui.slider(min=1, max=3).bind_value(demo, 'number')
-            ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
-            ui.number().bind_value(demo, 'number')
+    load_demo('bindings')
 
     @text_demo('UI Updates', '''
         NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed.
