@@ -1,3 +1,4 @@
+import urllib.parse
 from collections import deque
 from typing import Any, Optional
 
@@ -25,6 +26,7 @@ class Log(Element):
 
     def push(self, line: Any) -> None:
         line = str(line)
+        line = urllib.parse.quote(line)
         self.lines.extend(line.splitlines())
         self._props['lines'] = '\n'.join(self.lines)
         self.run_method('push', line)
