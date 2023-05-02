@@ -15,6 +15,7 @@
   <body>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.prod.js"></script>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quasar@2/dist/lang/{{lang}}.umd.prod.js"></script>
 
     {{ body_html | safe }}
 
@@ -185,6 +186,9 @@
           },
         }
       });
+
+      var lang = "{{ lang }}";
+      Quasar.lang.set(Quasar.lang[lang]);
 
       {{ vue_scripts | safe }}
       {{ js_imports | safe }}

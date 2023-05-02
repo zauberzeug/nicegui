@@ -19,6 +19,7 @@ def run(*,
         viewport: str = 'width=device-width, initial-scale=1',
         favicon: Optional[str] = None,
         dark: Optional[bool] = False,
+        lang: Optional[str] = 'en-US',
         binding_refresh_interval: float = 0.1,
         show: bool = True,
         native: bool = False,
@@ -64,6 +65,7 @@ def run(*,
     globals.viewport = viewport
     globals.favicon = favicon
     globals.dark = dark
+    globals.lang = lang
     globals.binding_refresh_interval = binding_refresh_interval
     globals.excludes = [e.strip() for e in exclude.split(',')]
     globals.tailwind = tailwind

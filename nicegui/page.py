@@ -18,6 +18,7 @@ class page:
                  viewport: Optional[str] = None,
                  favicon: Optional[str] = None,
                  dark: Optional[bool] = ...,
+                 lang: Optional[str] = 'en-US',
                  response_timeout: float = 3.0,
                  **kwargs,
                  ) -> None:
@@ -41,6 +42,7 @@ class page:
         self.viewport = viewport
         self.favicon = favicon
         self.dark = dark
+        self.lang = lang
         self.response_timeout = response_timeout
         self.kwargs = kwargs
 
@@ -54,6 +56,9 @@ class page:
 
     def resolve_dark(self) -> Optional[bool]:
         return self.dark if self.dark is not ... else globals.dark
+
+    def resolve_lang(self) -> Optional[str]:
+        return self.lang if self.lang != 'en-US' else globals.lang
 
     def __call__(self, func: Callable) -> Callable:
         globals.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
