@@ -79,6 +79,7 @@ def create_full() -> None:
     load_demo(ui.date)
     load_demo(ui.time)
     load_demo(ui.upload)
+    load_demo(ui.chat_message)
     load_demo(ui.element)
 
     heading('Markdown and HTML')
@@ -200,24 +201,6 @@ def create_full() -> None:
     load_demo(ui.notify)
     load_demo(ui.dialog)
 
-    @text_demo('Awaitable dialog', '''
-        Dialogs can be awaited.
-        Use the `submit` method to close the dialog and return a result.
-        Canceling the dialog by clicking in the background or pressing the escape key yields `None`.
-    ''')
-    def async_dialog_demo():
-        with ui.dialog() as dialog, ui.card():
-            ui.label('Are you sure?')
-            with ui.row():
-                ui.button('Yes', on_click=lambda: dialog.submit('Yes'))
-                ui.button('No', on_click=lambda: dialog.submit('No'))
-
-        async def show():
-            result = await dialog
-            ui.notify(f'You chose {result}')
-
-        ui.button('Await a dialog', on_click=show)
-
     heading('Appearance')
 
     @text_demo('Styling', '''
@@ -241,9 +224,9 @@ def create_full() -> None:
         [Tailwind CSS classes](https://tailwindcss.com/),
         [Quasar props](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components),
         and CSS styles affect NiceGUI elements.
-    ''').classes('bold-links arrow-links')
+    ''').classes('bold-links arrow-links mb-[-1rem]')
     with ui.row():
-        ui.label('Choose your favorite element from those available and start having fun!').classes('mx-auto my-auto')
+        ui.label('Select an element from those available and start styling it!').classes('mx-auto my-auto')
         select_element = ui.select({
             ui.label: 'ui.label',
             ui.checkbox: 'ui.checkbox',

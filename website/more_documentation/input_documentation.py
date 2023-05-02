@@ -12,7 +12,7 @@ def main_demo() -> None:
 
 def more() -> None:
 
-    @text_demo('Auto complete input', '''
+    @text_demo('Autocompletion', '''
         The `autocomplete` feature provides suggestions as you type, making input easier and faster.
         The parameter `options` is a list of strings that contains the available options that will appear.
     ''')
