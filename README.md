@@ -13,7 +13,7 @@ You can also use it in development, for example when tweaking/configuring a mach
 
 NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Docker image](https://hub.docker.com/r/zauberzeug/nicegui) and on [conda-forge](https://anaconda.org/conda-forge/nicegui) as well as [GitHub](https://github.com/zauberzeug/nicegui).
 
-[![PyPI version](https://badge.fury.io/py/nicegui.svg?label=PyPI)](https://pypi.org/project/nicegui/)
+[![PyPI](https://img.shields.io/pypi/v/nicegui)](https://pypi.org/project/nicegui/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/nicegui)](https://pypi.org/project/nicegui/)
 [![Conda version](https://img.shields.io/conda/v/conda-forge/nicegui?color=green&label=conda-forge)](https://anaconda.org/conda-forge/nicegui)
 [![Conda downloads](https://img.shields.io/conda/dn/conda-forge/nicegui?color=green&label=downloads)](https://anaconda.org/conda-forge/nicegui)
