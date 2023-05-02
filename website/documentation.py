@@ -316,8 +316,7 @@ def create_full() -> None:
 
     load_demo(ui.timer)
     load_demo(ui.keyboard)
-
-    load_documentation(ui.bindings)
+    load_demo('bindings')
 
     @text_demo('UI Updates', '''
         NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed.

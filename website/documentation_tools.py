@@ -87,7 +87,10 @@ class intro_demo(text_demo):
 
 class element_demo:
 
-    def __init__(self, element_class: Union[Callable, type]) -> None:
+    def __init__(self, element_class: Union[Callable, type, str]) -> None:
+        if isinstance(element_class, str):
+            module = importlib.import_module(f'website.more_documentation.{element_class}_documentation')
+            element_class = getattr(module, 'main_demo')
         self.element_class = element_class
 
     def __call__(self, f: Callable, *, more_link: Optional[str] = None) -> Callable:
@@ -99,8 +102,8 @@ class element_demo:
             return demo(f)
 
 
-def load_demo(api: Union[type, Callable]) -> None:
-    name = pascal_to_snake(api.__name__)
+def load_demo(api: Union[type, Callable, str]) -> None:
+    name = pascal_to_snake(api if isinstance(api, str) else api.__name__)
     try:
         module = importlib.import_module(f'website.more_documentation.{name}_documentation')
     except ModuleNotFoundError:

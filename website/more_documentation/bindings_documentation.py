@@ -1,7 +1,17 @@
 from nicegui import ui
+
 from ..documentation_tools import text_demo
 
+
 def main_demo() -> None:
+    """Bindings
+
+    NiceGUI is able to directly bind UI elements to models.
+    Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes.
+    Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property.
+    To define a one-way binding use the `_from` and `_to` variants of these methods.
+    Just pass a property of the model as parameter to these methods to create the binding.
+    """
     class Demo:
         def __init__(self):
             self.number = 1
@@ -13,33 +23,32 @@ def main_demo() -> None:
         ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
         ui.number().bind_value(demo, 'number')
 
+
+date = '2023-01-01'
+
+
 def more() -> None:
-    @text_demo('Bind to dictionary')
+    @text_demo('Bind to dictionary', '''
+        Here we are binding the text of labels to a dictionary.
+    ''')
     def bind_dictionary():
-        dictionary = {'name': 'NiceGUI', 'age': 2}
+        data = {'name': 'Bob', 'age': 17}
 
-        with ui.grid(columns=2):
-            ui.label('Name:')
-            ui.label().bind_text_from(dictionary, 'name')
+        ui.label().bind_text_from(data, 'name', backward=lambda n: f'Name: {n}')
+        ui.label().bind_text_from(data, 'age', backward=lambda a: f'Age: {a}')
 
-            ui.label('Age:')
-            ui.label().bind_text_from(dictionary, 'age')
+        ui.button('Turn 18', on_click=lambda: data.update(age=18))
 
-        def nicegui_older():
-            dictionary['age'] += 1
-
-        ui.button('Make NiceGUI older!', on_click=nicegui_older)
-
-    @text_demo('Bind to variable', '''Here we are binding the value from the datepicker to a bare variable. [Using official datepicker example](https://nicegui.io/documentation/date#input_element_with_date_picker)''')
+    @text_demo('Bind to variable', '''
+        Here we are binding the value from the datepicker to a bare variable.
+        Therefore we use the dictionary `globals()` which contains all global variables.
+        This demo is based on the [official datepicker example](https://nicegui.io/documentation/date#input_element_with_date_picker).
+    ''')
     def bind_variable():
-        today_date = '1970-01-01'
+        # date = '2023-01-01'
 
-        def notify_date():
-            global today_date
-            ui.notify(f'Today is: {today_date}')
-            
-        with ui.input('Date') as date:
-            with date.add_slot('append'):
-                ui.icon('edit_calendar').on('click', lambda: menu.open()).classes('cursor-pointer')
+        with ui.input('Date').bind_value(globals(), 'date') as date_input:
             with ui.menu() as menu:
-                ui.date(on_change=notify_date).bind_value(date).bind_value(globals(), 'today_date')
+                ui.date(on_change=lambda: ui.notify(f'Date: {date}')).bind_value(date_input)
+            with date_input.add_slot('append'):
+                ui.icon('edit_calendar').on('click', menu.open).classes('cursor-pointer')

@@ -25,6 +25,10 @@ def demo(f: Callable) -> Callable:
         while not code[0].strip().startswith('def') and not code[0].strip().startswith('async def'):
             del code[0]
         del code[0]
+        if code[0].strip().startswith('"""'):
+            while code[0].strip() != '"""':
+                del code[0]
+            del code[0]
         indentation = len(code[0]) - len(code[0].lstrip())
         code = [line[indentation:] for line in code]
         code = ['from nicegui import ui'] + [remove_prefix(line, '# ') for line in code]
