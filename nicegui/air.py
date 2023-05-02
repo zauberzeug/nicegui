@@ -16,23 +16,25 @@ class Air:
     def __init__(self, token: str) -> None:
         self.token = token
         self.relay = AsyncClient()
-        self.client = httpx.AsyncClient(app=globals.app, base_url="http://test")
+        self.client = httpx.AsyncClient(app=globals.app)
 
-        @self.relay.on('get')
+        @self.relay.on('http')
         async def on_get(data: Dict[str, Any]) -> Dict[str, Any]:
-            headers = {'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']}
-            response = await self.client.get(data['path'], headers=headers)
+            headers = data['headers'] | {'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']}
+            url = 'http://test' + data['path']
+            request = self.client.build_request(data['method'], url, params=data['params'], headers=headers)
+            response = await self.client.send(request)
             content = response.content.replace(
                 b'const extraHeaders = {};',
                 (f'const extraHeaders = {{ "fly-force-instance-id" : "{data["instance-id"]}" }};').encode(),
             )
-            headers = dict(response.headers)
-            headers['content-encoding'] = 'gzip'
+            response_headers = dict(response.headers)
+            response_headers['content-encoding'] = 'gzip'
             compressed = gzip.compress(content)
-            headers['content-length'] = str(len(compressed))
+            response_headers['content-length'] = str(len(compressed))
             return {
                 'status_code': response.status_code,
-                'headers': headers,
+                'headers': response_headers,
                 'content': compressed,
             }
 
