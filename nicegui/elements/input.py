@@ -1,7 +1,5 @@
 from typing import Any, Callable, Dict, List, Optional
 
-from nicegui import ui
-
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -57,11 +55,11 @@ class Input(ValueElement, DisableableElement):
         self.validation = validation
 
         if autocomplete:
-
             def find_autocompletion() -> Optional[str]:
                 if self.value:
+                    needle = str(self.value).casefold()
                     for item in autocomplete:
-                        if item.lower().startswith(self.value.lower()):
+                        if item.casefold().startswith(needle):
                             return item
 
             def autocomplete_input() -> None:
@@ -75,8 +73,7 @@ class Input(ValueElement, DisableableElement):
                 self.props(f'shadow-text=""')
 
             self.on('keyup', autocomplete_input)
-            self.on('dblclick', complete_input)
-            self.on('keydown.right', complete_input)
+            self.on('keydown.tab', complete_input)
 
     def on_value_change(self, value: Any) -> None:
         super().on_value_change(value)
