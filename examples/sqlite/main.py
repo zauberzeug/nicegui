@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 
 import sqlite3
-import pathlib
-
+from pathlib import Path
 from typing import Dict
 
 from nicegui import ui
 
 # initialize sqlite file
-DB_FILE = pathlib.PurePath.joinpath(
-    pathlib.PurePath(__file__).parent, "db/people.db"
-)
-pathlib.Path(DB_FILE).touch()
+DB_FILE = Path(__file__).parent / "db/people.db"
+DB_FILE.touch()
 
 conn = sqlite3.connect(DB_FILE, check_same_thread=False)
 cursor = conn.cursor()
