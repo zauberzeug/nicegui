@@ -22,7 +22,13 @@ class Air:
         async def on_get(data: Dict[str, Any]) -> Dict[str, Any]:
             headers = data['headers'] | {'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']}
             url = 'http://test' + data['path']
-            request = self.client.build_request(data['method'], url, params=data['params'], headers=headers)
+            request = self.client.build_request(
+                data['method'],
+                url,
+                params=data['params'],
+                headers=headers,
+                content=data['body']
+            )
             response = await self.client.send(request)
             content = response.content.replace(
                 b'const extraHeaders = {};',
