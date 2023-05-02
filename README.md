@@ -11,9 +11,9 @@ You can create buttons, dialogs, Markdown, 3D scenes, plots and much more.
 It is great for micro web apps, dashboards, robotics projects, smart home solutions and similar use cases.
 You can also use it in development, for example when tweaking/configuring a machine learning algorithm or tuning motor controllers.
 
-NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Docker image](https://hub.docker.com/r/zauberzeug/nicegui) and on [conda-forge](https://anaconda.org/conda-forge/nicegui) + [GitHub](https://github.com/zauberzeug/nicegui).
+NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Docker image](https://hub.docker.com/r/zauberzeug/nicegui) and on [conda-forge](https://anaconda.org/conda-forge/nicegui) as well as [GitHub](https://github.com/zauberzeug/nicegui).
 
-[![PyPI version](https://badge.fury.io/py/nicegui.svg)](https://pypi.org/project/nicegui/)
+[![PyPI version](https://badge.fury.io/py/nicegui.svg?label=PyPI)](https://pypi.org/project/nicegui/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/nicegui)](https://pypi.org/project/nicegui/)
 [![Conda version](https://img.shields.io/conda/v/conda-forge/nicegui?color=green&label=conda-forge)](https://anaconda.org/conda-forge/nicegui)
 [![Conda downloads](https://img.shields.io/conda/dn/conda-forge/nicegui?color=green&label=downloads)](https://anaconda.org/conda-forge/nicegui)
@@ -40,7 +40,7 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
   - interact with tables
   - navigate foldable tree structures
 - built-in timer to refresh data in intervals (even every 10 ms)
-- straight-forward data binding and refeshable functions to write even less code
+- straight-forward data binding and refreshable functions to write even less code
 - notifications, dialogs and menus to provide state of the art user interaction
 - shared and individual web pages
 - ability to add custom routes and data responses
@@ -49,7 +49,7 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 - live-cycle events and session data
 - runs in Jupyter Notebooks and allows Python's interactive mode
 - auto-complete support for Tailwind CSS
-- svg, base64 and emoji favicon support
+- SVG, Base64 and emoji favicon support
 
 ## Installation
 

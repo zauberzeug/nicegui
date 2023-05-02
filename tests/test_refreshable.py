@@ -1,3 +1,5 @@
+import asyncio
+
 from nicegui import ui
 
 from .screen import Screen
@@ -34,6 +36,7 @@ async def test_async_refreshable(screen: Screen) -> None:
 
     @ui.refreshable
     async def number_ui() -> None:
+        await asyncio.sleep(0.1)
         ui.label('[' + ', '.join(str(n) for n in sorted(numbers)) + ']')
 
     @ui.page('/')
