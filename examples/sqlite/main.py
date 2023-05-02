@@ -9,7 +9,7 @@ from nicegui import ui
 
 # initialize sqlite file
 DB_FILE = pathlib.PurePath.joinpath(
-    pathlib.PurePosixPath(__file__).parent, "db", "people.db"
+    pathlib.PurePath(__file__).parent, "db/people.db"
 )
 pathlib.Path(DB_FILE).touch()
 
@@ -69,7 +69,7 @@ def add_newdata():
         ui.notify(f"failed to add new user {name.value}: {e}", color="red")
 
 
-def save_edit(data):
+def save_edit():
     """Callback when user data is saved in edit dialog"""
     try:
         query = "UPDATE users SET name=?, age=? WHERE id=?"
