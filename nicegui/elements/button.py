@@ -36,8 +36,8 @@ class Button(TextElement, DisableableElement):
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text
 
-    async def clicked(self):
-        '''Await this coroutine to delay execution until the button is clicked.'''
+    async def clicked(self) -> None:
+        """Wait until the button is clicked."""
         event = asyncio.Event()
         self.on('click', event.set)
         await self.client.connected()
