@@ -9,10 +9,10 @@ messages: List[Tuple[str, str]] = []
 
 @ui.refreshable
 async def chat_messages(name_input: ui.input) -> None:
-    for name, text in messages:
+    for name, text, stamp in messages:
         ui.chat_message(text=text,
                         name=name,
-                        stamp=datetime.utcnow().strftime('%X'),
+                        stamp=stamp,
                         avatar=f'https://robohash.org/{name or "anonymous"}?bgset=bg2',
                         sent=name == name_input.value)
     await ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)', respond=False)
@@ -21,7 +21,8 @@ async def chat_messages(name_input: ui.input) -> None:
 @ui.page('/')
 async def main(client: Client):
     def send() -> None:
-        messages.append((name.value, text.value))
+        stamp = datetime.utcnow().strftime('%X')
+        messages.append((name.value, text.value, stamp))
         text.value = ''
         chat_messages.refresh()
 
