@@ -1,3 +1,4 @@
+import html
 from typing import List, Optional, Union
 
 from ..dependencies import register_component
@@ -15,6 +16,7 @@ class ChatMessage(Element):
                  stamp: Optional[str] = None,
                  avatar: Optional[str] = None,
                  sent: bool = False,
+                 text_html: bool = False,
                  ) -> None:
         """Chat Message
 
@@ -26,9 +28,17 @@ class ChatMessage(Element):
         :param stamp: timestamp of the message
         :param avatar: URL to an avatar
         :param sent: render as a sent message (so from current user) (default: False)
+        :param text_html: render text as HTML (default: False)
         """
         super().__init__('chat_message')
-        self._props['text'] = [text] if isinstance(text, str) else text
+
+        if isinstance(text, str):
+            text = [text]
+        if not text_html:
+            text = [html.escape(part) for part in text]
+        self._props['text'] = ['<br />'.join(part.split('\n')) for part in text]
+        self._props['text-html'] = True
+
         if name is not None:
             self._props['name'] = name
         if label is not None:
