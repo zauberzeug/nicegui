@@ -136,3 +136,28 @@ def test_remove_and_clear(screen: Screen):
     screen.should_not_contain('Label A')
     screen.should_not_contain('Label B')
     screen.should_not_contain('Label C')
+
+
+def test_move(screen: Screen):
+    with ui.card() as a:
+        ui.label('A')
+        x = ui.label('X')
+
+    with ui.card() as b:
+        ui.label('B')
+
+    ui.button('Move X to A', on_click=lambda: x.move(a))
+    ui.button('Move X to B', on_click=lambda: x.move(b))
+    ui.button('Move X to top', on_click=lambda: x.move(target_index=0))
+
+    screen.open('/')
+    assert screen.find('A').location['y'] < screen.find('X').location['y'] < screen.find('B').location['y']
+    screen.click('Move X to B')
+    screen.wait(0.5)
+    assert screen.find('A').location['y'] < screen.find('B').location['y'] < screen.find('X').location['y']
+    screen.click('Move X to A')
+    screen.wait(0.5)
+    assert screen.find('A').location['y'] < screen.find('X').location['y'] < screen.find('B').location['y']
+    screen.click('Move X to top')
+    screen.wait(0.5)
+    assert screen.find('X').location['y'] < screen.find('A').location['y'] < screen.find('B').location['y']

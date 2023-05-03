@@ -266,6 +266,20 @@ class Element(Visibility):
             slot.children.clear()
         self.update()
 
+    def move(self, target_container: Optional[Element] = None, target_index: int = -1):
+        """Move the element to another container.
+
+        :param target_container: container to move the element to (default: the parent container)
+        :param target_index: index within the target slot (default: append to the end)
+        """
+        self.parent_slot.children.remove(self)
+        self.parent_slot.parent.update()
+        target_container = target_container or self.parent_slot.parent
+        target_index = target_index if target_index >= 0 else len(target_container.default_slot.children)
+        target_container.default_slot.children.insert(target_index, self)
+        self.parent_slot = target_container.default_slot
+        target_container.update()
+
     def remove(self, element: Union[Element, int]) -> None:
         """Remove a child element.
 
