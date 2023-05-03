@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 from nicegui import Client, ui
 
-messages: List[Tuple[str, str]] = []
+messages: List[Tuple[str, str, str]] = []
 
 
 @ui.refreshable
