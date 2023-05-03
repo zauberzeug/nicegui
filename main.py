@@ -270,7 +270,9 @@ async def index_page(client: Client):
             example_link('Table and slots', 'shows how to use component slots in a table')
             example_link('Single Page App', 'navigate without reloading the page')
             example_link('Chat App', 'a simple chat app')
-            example_link('Pandas DataFrame', 'shows how to display an editable [pandas](https://pandas.pydata.org) DataFrame')
+            example_link('Chat with AI App', 'a simple chat app with AI')
+            example_link('Pandas DataFrame',
+                         'shows how to display an editable [pandas](https://pandas.pydata.org) DataFrame')
 
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
