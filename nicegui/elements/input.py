@@ -1,5 +1,7 @@
 from typing import Any, Callable, Dict, List, Optional
 
+from nicegui import ui
+
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -55,6 +57,25 @@ class Input(ValueElement, DisableableElement):
         self.validation = validation
 
         if autocomplete:
+
+            async def isMobile():
+                result = await ui.run_javascript('''
+                    function isMobileDevice() {
+                        return (typeof window.orientation !== 'undefined') || (navigator.userAgent.indexOf('IEMobile') !== -1);
+                    }
+                    isMobileDevice();
+                ''')
+                if result:
+                    options = ""
+                    for opt in autocomplete:
+                        options = options + (f"<option value='{opt}'></option>")
+                    ui.html(f'''
+                        <datalist id="example-list">
+                            {options}
+                        </datalist>''')
+                    self.props('list="example-list"')
+            self.on('click', isMobile)
+
             def find_autocompletion() -> Optional[str]:
                 if self.value:
                     needle = str(self.value).casefold()
@@ -74,6 +95,7 @@ class Input(ValueElement, DisableableElement):
 
             self.on('keyup', autocomplete_input)
             self.on('keydown.tab', complete_input)
+            self.on('update:model-value', autocomplete_input)
 
     def on_value_change(self, value: Any) -> None:
         super().on_value_change(value)
