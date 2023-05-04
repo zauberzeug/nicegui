@@ -1,7 +1,7 @@
 export default {
   template: `
     <q-chat-message
-      :text="[text]"
+      :text="text"
       :name="name"
       :label="label"
       :stamp="stamp"
@@ -10,7 +10,7 @@ export default {
     />
   `,
   props: {
-    text: String,
+    text: Array,
     name: String,
     label: String,
     stamp: String,
