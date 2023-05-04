@@ -5,10 +5,11 @@ from typing import Dict, List, Set, Tuple
 import vbuild
 
 from . import __version__, globals
+from .helpers import KWONLY_SLOTS
 from .ids import IncrementingStringIds
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class Component:
     name: str
     path: Path
@@ -18,7 +19,7 @@ class Component:
         return f'/_nicegui/{__version__}/components/{self.name}'
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class Dependency:
     id: int
     path: Path

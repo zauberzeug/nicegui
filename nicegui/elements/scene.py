@@ -5,6 +5,7 @@ from .. import binding, globals
 from ..dependencies import register_component
 from ..element import Element
 from ..events import SceneClickEventArguments, SceneClickHit, handle_event
+from ..helpers import KWONLY_SLOTS
 from .scene_object3d import Object3D
 from .scene_objects import Scene as SceneObject
 
@@ -18,7 +19,7 @@ register_component('scene', __file__, 'scene.js', [
 ])
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class SceneCamera:
     x: float = 0
     y: float = -3
@@ -31,7 +32,7 @@ class SceneCamera:
     up_z: float = 1
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class SceneObject:
     id: str = 'scene'
 
