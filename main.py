@@ -245,8 +245,7 @@ async def index_page(client: Client):
             example_link('Authentication', 'shows how to use sessions to build a login screen')
             example_link('Modularization',
                          'provides an example of how to modularize your application into multiple files and reuse code')
-            example_link('FastAPI',
-                         'illustrates the integration of NiceGUI with an existing FastAPI application')
+            example_link('FastAPI', 'illustrates the integration of NiceGUI with an existing FastAPI application')
             example_link('Map',
                          'demonstrates wrapping the JavaScript library [leaflet](https://leafletjs.com/) '
                          'to display a map at specific locations')
@@ -270,9 +269,9 @@ async def index_page(client: Client):
             example_link('Table and slots', 'shows how to use component slots in a table')
             example_link('Single Page App', 'navigate without reloading the page')
             example_link('Chat App', 'a simple chat app')
+            example_link('Chat with AI', 'a simple chat app with AI')
             example_link('SQLite Database', 'CRUD operations on a SQLite database')
-            example_link('Pandas DataFrame',
-                         'shows how to display an editable [pandas](https://pandas.pydata.org) DataFrame')
+            example_link('Pandas DataFrame', 'displays an editable [pandas](https://pandas.pydata.org) DataFrame')
 
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
