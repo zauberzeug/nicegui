@@ -2,6 +2,7 @@ import asyncio
 import functools
 import inspect
 import socket
+import sys
 import threading
 import time
 import webbrowser
@@ -12,6 +13,8 @@ from . import background_tasks, globals
 
 if TYPE_CHECKING:
     from .client import Client
+
+KWONLY_SLOTS = {'kw_only': True, 'slots': True} if sys.version_info >= (3, 10) else {}
 
 
 def is_coroutine(object: Any) -> bool:
