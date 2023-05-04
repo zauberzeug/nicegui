@@ -154,7 +154,7 @@
           const query = { client_id: "{{ client_id }}" };
           const url = window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
           const extraHeaders = {{ socket_io_js_extra_headers | safe }};
-          const transports = ['websocket', 'polling']
+          const transports = ['websocket', 'polling'];
           window.path_prefix = "{{ prefix | safe }}";
           window.socket = io(url, { path: "{{ prefix | safe }}/_nicegui_ws/socket.io", query, extraHeaders, transports });
           window.socket.on("connect", () => {

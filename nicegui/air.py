@@ -19,15 +19,16 @@ class Air:
         self.client = httpx.AsyncClient(app=globals.app)
 
         @self.relay.on('http')
-        async def on_get(data: Dict[str, Any]) -> Dict[str, Any]:
-            headers = data['headers'] | {'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']}
+        async def on_http(data: Dict[str, Any]) -> Dict[str, Any]:
+            headers: Dict[str, Any] = data['headers']
+            headers.update({'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']})
             url = 'http://test' + data['path']
             request = self.client.build_request(
                 data['method'],
                 url,
                 params=data['params'],
                 headers=headers,
-                content=data['body']
+                content=data['body'],
             )
             response = await self.client.send(request)
             content = response.content.replace(
