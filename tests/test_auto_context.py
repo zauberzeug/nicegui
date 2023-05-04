@@ -92,7 +92,7 @@ def test_autoupdate_on_async_event_handler(screen: Screen):
 def test_autoupdate_on_async_timer_callback(screen: Screen):
     async def update():
         ui.label('1')
-        await asyncio.sleep(2.0)
+        await asyncio.sleep(3.0)
         ui.label('2')
     ui.label('0')
     ui.timer(2.0, update, once=True)
