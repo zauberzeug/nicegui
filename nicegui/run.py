@@ -19,7 +19,7 @@ def run(*,
         viewport: str = 'width=device-width, initial-scale=1',
         favicon: Optional[str] = None,
         dark: Optional[bool] = False,
-        lang: Optional[str] = 'en-US',
+        language: str = 'en-US',
         binding_refresh_interval: float = 0.1,
         show: bool = True,
         native: bool = False,
@@ -44,6 +44,7 @@ def run(*,
     :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
     :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers)
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
+    :param language: language for Quasar elements (default: `'en-US'`)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param show: automatically open the UI in a browser tab (default: `True`)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
@@ -65,7 +66,7 @@ def run(*,
     globals.viewport = viewport
     globals.favicon = favicon
     globals.dark = dark
-    globals.lang = lang
+    globals.language = language
     globals.binding_refresh_interval = binding_refresh_interval
     globals.excludes = [e.strip() for e in exclude.split(',')]
     globals.tailwind = tailwind

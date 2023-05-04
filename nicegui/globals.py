@@ -36,7 +36,7 @@ title: str
 viewport: str
 favicon: Optional[str]
 dark: Optional[bool]
-lang: Optional[str]
+language: str
 binding_refresh_interval: float
 excludes: List[str]
 tailwind: bool
