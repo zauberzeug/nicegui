@@ -1,2 +1,3 @@
-nicegui
 langchain
+nicegui
+openai
