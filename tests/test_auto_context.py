@@ -92,7 +92,7 @@ def test_autoupdate_on_async_event_handler(screen: Screen):
 def test_autoupdate_on_async_timer_callback(screen: Screen):
     async def update():
         ui.label('1')
-        await asyncio.sleep(2.0)
+        await asyncio.sleep(3.0)
         ui.label('2')
     ui.label('0')
     ui.timer(2.0, update, once=True)
@@ -100,7 +100,7 @@ def test_autoupdate_on_async_timer_callback(screen: Screen):
     app.on_startup(lambda: ui.label('connection established'))  # HACK: allow waiting for client connection
 
     screen.open('/')
-    with screen.implicitly_wait(20.0):
+    with screen.implicitly_wait(10.0):
         screen.wait_for('connection established')
     screen.should_contain('0')
     screen.should_not_contain('1')

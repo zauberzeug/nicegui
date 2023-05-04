@@ -271,6 +271,8 @@ async def index_page(client: Client):
             example_link('Single Page App', 'navigate without reloading the page')
             example_link('Chat App', 'a simple chat app')
             example_link('SQLite Database', 'CRUD operations on a SQLite database')
+            example_link('Pandas DataFrame',
+                         'shows how to display an editable [pandas](https://pandas.pydata.org) DataFrame')
 
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
@@ -330,9 +332,13 @@ def documentation_page_more(name: str):
     if not hasattr(ui, name):
         name = name.replace('_', '')  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
     module = importlib.import_module(f'website.more_documentation.{name}_documentation')
-    api = getattr(ui, name)
     more = getattr(module, 'more', None)
-    back_link_target = str(api.__doc__ or api.__init__.__doc__).splitlines()[0].strip()
+    if hasattr(ui, name):
+        api = getattr(ui, name)
+        back_link_target = str(api.__doc__ or api.__init__.__doc__).splitlines()[0].strip()
+    else:
+        api = name
+        back_link_target = name
 
     add_head_html()
     add_header()
