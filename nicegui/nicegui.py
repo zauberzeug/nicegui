@@ -86,7 +86,7 @@ def print_welcome_message():
     ips = ['localhost']
     if host == '0.0.0.0':
         ips += set(info[4][0] for info in socket.getaddrinfo(socket.gethostname(), None))
-    addresses = [f'http://{ip}:{port}'.replace(':80', '') for ip in ips]
+    addresses = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ips]
     if len(addresses) >= 2:
         addresses[-1] = 'and ' + addresses[-1]
     print(f'NiceGUI ready to go on {", ".join(addresses)}')
