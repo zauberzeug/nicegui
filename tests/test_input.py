@@ -96,11 +96,15 @@ def test_autocompletion(screen: Screen):
     screen.should_contain('oo')
 
     element.send_keys(Keys.TAB)
+    screen.wait(0.2)
     assert element.get_attribute('value') == 'foo'
 
     element.send_keys(Keys.BACKSPACE)
+    screen.wait(0.2)
     element.send_keys(Keys.BACKSPACE)
+    screen.wait(0.2)
     element.send_keys('x')
+    screen.wait(0.2)
     element.send_keys(Keys.TAB)
     screen.wait(0.5)
     assert element.get_attribute('value') == 'fx'

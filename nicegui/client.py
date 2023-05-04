@@ -53,7 +53,7 @@ class Client:
     @property
     def ip(self) -> Optional[str]:
         """Return the IP address of the client, or None if the client is not connected."""
-        return self.environ.get('REMOTE_ADDR') if self.environ else None
+        return self.environ['asgi.scope']['client'][0] if self.environ else None
 
     @property
     def has_socket_connection(self) -> bool:
@@ -68,7 +68,7 @@ class Client:
         self.content.__exit__()
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
-        prefix = request.headers.get('X-Forwarded-Prefix', '')
+        prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
         vue_html, vue_styles, vue_scripts = generate_vue_content()
         elements = json.dumps({id: element._to_dict() for id, element in self.elements.items()})
         return templates.TemplateResponse('index.html', {

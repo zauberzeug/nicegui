@@ -245,8 +245,7 @@ async def index_page(client: Client):
             example_link('Authentication', 'shows how to use sessions to build a login screen')
             example_link('Modularization',
                          'provides an example of how to modularize your application into multiple files and reuse code')
-            example_link('FastAPI',
-                         'illustrates the integration of NiceGUI with an existing FastAPI application')
+            example_link('FastAPI', 'illustrates the integration of NiceGUI with an existing FastAPI application')
             example_link('Map',
                          'demonstrates wrapping the JavaScript library [leaflet](https://leafletjs.com/) '
                          'to display a map at specific locations')
@@ -270,6 +269,9 @@ async def index_page(client: Client):
             example_link('Table and slots', 'shows how to use component slots in a table')
             example_link('Single Page App', 'navigate without reloading the page')
             example_link('Chat App', 'a simple chat app')
+            example_link('Chat with AI', 'a simple chat app with AI')
+            example_link('SQLite Database', 'CRUD operations on a SQLite database')
+            example_link('Pandas DataFrame', 'displays an editable [pandas](https://pandas.pydata.org) DataFrame')
 
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
@@ -329,9 +331,13 @@ def documentation_page_more(name: str):
     if not hasattr(ui, name):
         name = name.replace('_', '')  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
     module = importlib.import_module(f'website.more_documentation.{name}_documentation')
-    api = getattr(ui, name)
     more = getattr(module, 'more', None)
-    back_link_target = str(api.__doc__ or api.__init__.__doc__).splitlines()[0].strip()
+    if hasattr(ui, name):
+        api = getattr(ui, name)
+        back_link_target = str(api.__doc__ or api.__init__.__doc__).splitlines()[0].strip()
+    else:
+        api = name
+        back_link_target = name
 
     add_head_html()
     add_header()

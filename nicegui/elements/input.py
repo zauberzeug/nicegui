@@ -57,8 +57,9 @@ class Input(ValueElement, DisableableElement):
         if autocomplete:
             def find_autocompletion() -> Optional[str]:
                 if self.value:
+                    needle = str(self.value).casefold()
                     for item in autocomplete:
-                        if item.startswith(self.value):
+                        if item.casefold().startswith(needle):
                             return item
 
             def autocomplete_input() -> None:

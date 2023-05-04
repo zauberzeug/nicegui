@@ -316,26 +316,7 @@ def create_full() -> None:
 
     load_demo(ui.timer)
     load_demo(ui.keyboard)
-
-    @text_demo('Bindings', '''
-        NiceGUI is able to directly bind UI elements to models.
-        Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes.
-
-        Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property.
-        To define a one-way binding use the `_from` and `_to` variants of these methods.
-        Just pass a property of the model as parameter to these methods to create the binding.
-    ''')
-    def bindings_demo():
-        class Demo:
-            def __init__(self):
-                self.number = 1
-
-        demo = Demo()
-        v = ui.checkbox('visible', value=True)
-        with ui.column().bind_visibility_from(v, 'value'):
-            ui.slider(min=1, max=3).bind_value(demo, 'number')
-            ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
-            ui.number().bind_value(demo, 'number')
+    load_demo('bindings')
 
     @text_demo('UI Updates', '''
         NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed.
@@ -402,42 +383,6 @@ def create_full() -> None:
         # END OF DEMO
         ui.label(f'shared auto-index page with ID {CONSTANT_UUID}')
         ui.link('private page', private_page)
-
-    @text_demo('Pages with Path Parameters', '''
-        Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/>).
-        If type-annotated, they are automatically converted to bool, int, float and complex values.
-        If the page function expects a `request` argument, the request object is automatically provided.
-        The `client` argument provides access to the websocket connection, layout, etc.
-    ''')
-    def page_with_path_parameters_demo():
-        @ui.page('/repeat/{word}/{count}')
-        def page(word: str, count: int):
-            ui.label(word * count)
-
-        ui.link('Say hi to Santa!', 'repeat/Ho! /3')
-
-    @text_demo('Wait for Client Connection', '''
-        To wait for a client connection, you can add a `client` argument to the decorated page function
-        and await `client.connected()`.
-        All code below that statement is executed after the websocket connection between server and client has been established.
-
-        For example, this allows you to run JavaScript commands; which is only possible with a client connection (see [#112](https://github.com/zauberzeug/nicegui/issues/112)).
-        Also it is possible to do async stuff while the user already sees some content.
-    ''')
-    def wait_for_connected_demo():
-        import asyncio
-
-        from nicegui import Client
-
-        @ui.page('/wait_for_connection')
-        async def wait_for_connection(client: Client):
-            ui.label('This text is displayed immediately.')
-            await client.connected()
-            await asyncio.sleep(2)
-            ui.label('This text is displayed 2 seconds after the page has been fully loaded.')
-            ui.label(f'The IP address {client.ip} was obtained from the websocket.')
-
-        ui.link('wait for connection', wait_for_connection)
 
     @text_demo('Page Layout', '''
         With `ui.header`, `ui.footer`, `ui.left_drawer` and `ui.right_drawer` you can add additional layout elements to a page.
