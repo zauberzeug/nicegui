@@ -53,6 +53,7 @@ class Input(ValueElement, DisableableElement):
                 icon = Icon('visibility_off').classes('cursor-pointer').on('click', toggle_type)
 
         self.validation = validation or {}
+        self._error: Optional[str] = None
 
         if autocomplete:
             def find_autocompletion() -> Optional[str]:
@@ -79,7 +80,13 @@ class Input(ValueElement, DisableableElement):
         super().on_value_change(value)
         for message, check in self.validation.items():
             if not check(value):
+                self._error = message
                 self.props(f'error error-message="{message}"')
                 break
         else:
             self.props(remove='error')
+
+    @property
+    def error(self) -> Optional[str]:
+        """The latest error message from the validation functions."""
+        return self._error
