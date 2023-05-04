@@ -16,7 +16,7 @@ class Input(ValueElement, DisableableElement):
                  password_toggle_button: bool = False,
                  on_change: Optional[Callable] = None,
                  autocomplete: Optional[List[str]] = None,
-                 validation: Dict[str, Callable] = {}) -> None:
+                 validation: Optional[Dict[str, Callable[[Any], bool]]] = None) -> None:
         """Text Input
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
@@ -52,7 +52,7 @@ class Input(ValueElement, DisableableElement):
                     self.props(f'type={"text" if is_hidden else "password"}')
                 icon = Icon('visibility_off').classes('cursor-pointer').on('click', toggle_type)
 
-        self.validation = validation
+        self.validation = validation or {}
 
         if autocomplete:
             def find_autocompletion() -> Optional[str]:
