@@ -22,8 +22,6 @@ def test_html(screen: Screen):
 
 def test_newline(screen: Screen):
     ui.chat_message('Hello\nNiceGUI!')
-    ui.chat_message('Hi\nnice guy!', text_html=True)
 
     screen.open('/')
     assert screen.find('Hello').find_element(By.TAG_NAME, 'br')
-    assert screen.find('Hi').find_element(By.TAG_NAME, 'br')

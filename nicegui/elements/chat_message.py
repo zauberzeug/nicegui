@@ -36,7 +36,8 @@ class ChatMessage(Element):
             text = [text]
         if not text_html:
             text = [html.escape(part) for part in text]
-        self._props['text'] = ['<br />'.join(part.split('\n')) for part in text]
+            text = [part.replace('\n', '<br />') for part in text]
+        self._props['text'] = text
         self._props['text-html'] = True
 
         if name is not None:
