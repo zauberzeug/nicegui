@@ -36,7 +36,7 @@ def selenium(selenium: webdriver.Chrome) -> webdriver.Chrome:
 
 
 @pytest.fixture(autouse=True)
-def reset_globals() -> Generator[None, None, None]:
+def reset_globals() -> None:
     for path in {'/'}.union(globals.page_routes.values()):
         globals.app.remove_route(path)
     importlib.reload(globals)
