@@ -24,29 +24,36 @@ def users_ui() -> None:
                 ui.label(user['name'])
                 ui.label(user['age'])
             with ui.row():
-                ui.button('edit', on_click=lambda _, user=user: edit(user))
+                ui.button('edit', on_click=lambda _, user=user: open_dialog(user))
                 ui.button('delete', on_click=lambda _, user=user: delete(user), color='red')
 
 
-def add() -> None:
+def create() -> None:
     cursor.execute('INSERT INTO users (name, age) VALUES (?, ?)', (name.value, age.value))
     conn.commit()
-    ui.notify(f'Added new user {name.value}', type='positive')
+    ui.notify(f'Created new user {name.value}')
     name.value = ''
     age.value = None
     users_ui.refresh()
 
 
-def save() -> None:
+def update() -> None:
     query = 'UPDATE users SET name=?, age=? WHERE id=?'
     cursor.execute(query, (dialog_name.value, dialog_age.value, dialog_id))
     conn.commit()
-    ui.notify(f'Updated user {dialog_name.value}', type='positive')
+    ui.notify(f'Updated user {dialog_name.value}')
     dialog.close()
     users_ui.refresh()
 
 
-def edit(user: Dict[str, Any]) -> None:
+def delete(user: Dict[str, Any]) -> None:
+    cursor.execute('DELETE from users WHERE id=?', (user['id'],))
+    conn.commit()
+    ui.notify(f'Deleted user {user["name"]}')
+    users_ui.refresh()
+
+
+def open_dialog(user: Dict[str, Any]) -> None:
     global dialog_id
     dialog_id = user['id']
     dialog_name.value = user['name']
@@ -54,26 +61,19 @@ def edit(user: Dict[str, Any]) -> None:
     dialog.open()
 
 
-def delete(user: Dict[str, Any]) -> None:
-    cursor.execute('DELETE from users WHERE id=?', (user['id'],))
-    conn.commit()
-    users_ui.refresh()
-
-
 name = ui.input(label='Name')
 age = ui.number(label='Age', format='%.0f')
-ui.button('Add new user', on_click=add)
+ui.button('Add new user', on_click=create)
 
 users_ui()
 
 with ui.dialog() as dialog:
     with ui.card():
-        ui.label('Edit User').classes('font-xl font-bold')
         dialog_id = None
         dialog_name = ui.input('Name')
         dialog_age = ui.number('Age', format='%.0f')
         with ui.row():
-            ui.button('Save', on_click=save)
+            ui.button('Save', on_click=update)
             ui.button('Close', on_click=dialog.close).props('outline')
 
 ui.run()
