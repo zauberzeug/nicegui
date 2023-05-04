@@ -1,3 +1,4 @@
+import socket
 import asyncio
 import os
 import time
@@ -76,7 +77,19 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     background_tasks.create(prune_slot_stacks())
     globals.state = globals.State.STARTED
     if with_welcome_message:
-        print(f'NiceGUI ready to go on {os.environ["NICEGUI_URL"]}')
+        print_welcome_message()
+
+
+def print_welcome_message():
+    host = os.environ['NICEGUI_HOST']
+    port = os.environ['NICEGUI_PORT']
+    ips = ['localhost']
+    if host == '0.0.0.0':
+        ips += set(ip for _, _, _, _, (ip, _) in socket.getaddrinfo(socket.gethostname(), None))
+    addresses = [f'http://{ip}:{port}'.removesuffix(':80') for ip in ips]
+    if len(addresses) >= 2:
+        addresses[-1] = 'and ' + addresses[-1]
+    print(f'NiceGUI ready to go on {", ".join(addresses)}')
 
 
 @app.on_event('shutdown')

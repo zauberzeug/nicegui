@@ -88,8 +88,9 @@ def run(*,
     else:
         host = host or '0.0.0.0'
 
-    # NOTE: We save the URL in an environment variable so the subprocess started in reload mode can access it.
-    os.environ['NICEGUI_URL'] = f'http://{host}:{port}'
+    # NOTE: We save host and port in environment variables so the subprocess started in reload mode can access them.
+    os.environ['NICEGUI_HOST'] = host
+    os.environ['NICEGUI_PORT'] = str(port)
 
     if show:
         helpers.schedule_browser(host, port)
