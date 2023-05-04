@@ -1,6 +1,6 @@
-import socket
 import asyncio
 import os
+import socket
 import time
 import urllib.parse
 from pathlib import Path
@@ -86,7 +86,7 @@ def print_welcome_message():
     ips = ['localhost']
     if host == '0.0.0.0':
         ips += set(ip for _, _, _, _, (ip, _) in socket.getaddrinfo(socket.gethostname(), None))
-    addresses = [f'http://{ip}:{port}'.removesuffix(':80') for ip in ips]
+    addresses = [f'http://{ip}:{port}'.replace(':80', '') for ip in ips]
     if len(addresses) >= 2:
         addresses[-1] = 'and ' + addresses[-1]
     print(f'NiceGUI ready to go on {", ".join(addresses)}')
