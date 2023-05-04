@@ -85,7 +85,7 @@ def print_welcome_message():
     port = os.environ['NICEGUI_PORT']
     ips = ['localhost']
     if host == '0.0.0.0':
-        ips += set(info[4][0] for info in socket.getaddrinfo(socket.gethostname(), None))
+        ips += set(info[4][0] for info in socket.getaddrinfo(socket.gethostname(), None) if len(info[4]) == 2)
     addresses = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ips]
     if len(addresses) >= 2:
         addresses[-1] = 'and ' + addresses[-1]
