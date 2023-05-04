@@ -41,14 +41,13 @@ def more() -> None:
         ''')
 
     @text_demo('Markdown tables', '''
-        By activating the "tables" extra, you can use markdown tables.
+        By activating the "tables" extra, you can use Markdown tables.
         See the [markdown2 documentation](https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras) for a list of available extras.
     ''')
     def markdown_with_code_blocks():
         ui.markdown('''
-        | First name | Last name |
-        | ---------- | --------- |
-        | Max        | Planck    |
-        | Marie      | Curie     |
-
+            | First name | Last name |
+            | ---------- | --------- |
+            | Max        | Planck    |
+            | Marie      | Curie     |
         ''', extras=['tables'])
