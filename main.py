@@ -271,6 +271,7 @@ async def index_page(client: Client):
             example_link('Single Page App', 'navigate without reloading the page')
             example_link('Chat App', 'a simple chat app')
             example_link('Chat with AI App', 'a simple chat app with AI')
+            example_link('SQLite Database', 'CRUD operations on a SQLite database')
             example_link('Pandas DataFrame',
                          'shows how to display an editable [pandas](https://pandas.pydata.org) DataFrame')
 
