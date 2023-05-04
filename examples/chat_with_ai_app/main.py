@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 from typing import List, Tuple
 
-from langchain.llms import OpenAI
+from langchain.chains import ConversationChain
+from langchain.chat_models import ChatOpenAI
 
 from nicegui import Client, ui
 
 OPENAI_API_KEY = 'not-set'  # TODO: set your OpenAI API key here
 
-llm = OpenAI(model_name='gpt-3.5-turbo', openai_api_key=OPENAI_API_KEY)
+llm = ConversationChain(llm=ChatOpenAI(model_name='gpt-3.5-turbo', openai_api_key=OPENAI_API_KEY))
 
 messages: List[Tuple[str, str, str]] = []
 thinking: bool = False
@@ -32,8 +33,8 @@ async def main(client: Client):
         text.value = ''
         chat_messages.refresh()
 
-        response = await llm.agenerate([message])
-        messages.append(('Bot', response.generations[0][0].text))
+        response = await llm.arun(message)
+        messages.append(('Bot', response))
         thinking = False
         chat_messages.refresh()
 
