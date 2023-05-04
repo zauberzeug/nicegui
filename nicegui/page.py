@@ -8,6 +8,7 @@ from fastapi import Request, Response
 from . import background_tasks, globals
 from .client import Client
 from .favicon import create_favicon_route
+from .language import Language
 
 
 class page:
@@ -18,7 +19,7 @@ class page:
                  viewport: Optional[str] = None,
                  favicon: Optional[str] = None,
                  dark: Optional[bool] = ...,
-                 language: str = ...,
+                 language: Language = ...,
                  response_timeout: float = 3.0,
                  **kwargs,
                  ) -> None:

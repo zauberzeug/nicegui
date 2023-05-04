@@ -10,6 +10,7 @@ from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from . import globals, helpers, native_mode
+from .language import Language
 
 
 def run(*,
@@ -19,7 +20,7 @@ def run(*,
         viewport: str = 'width=device-width, initial-scale=1',
         favicon: Optional[str] = None,
         dark: Optional[bool] = False,
-        language: str = 'en-US',
+        language: Language = 'en-US',
         binding_refresh_interval: float = 0.1,
         show: bool = True,
         native: bool = False,
