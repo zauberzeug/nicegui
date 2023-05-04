@@ -53,7 +53,7 @@ class Client:
     @property
     def ip(self) -> Optional[str]:
         """Return the IP address of the client, or None if the client is not connected."""
-        return self.environ.get('REMOTE_ADDR') if self.environ else None
+        return self.environ['asgi.scope']['client'][0] if self.environ else None
 
     @property
     def has_socket_connection(self) -> bool:
