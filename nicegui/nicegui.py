@@ -83,10 +83,11 @@ def handle_startup(with_welcome_message: bool = True) -> None:
 def print_welcome_message():
     host = os.environ['NICEGUI_HOST']
     port = os.environ['NICEGUI_PORT']
-    ips = ['localhost']
+    ips = {'localhost'}
     if host == '0.0.0.0':
-        ips += set(ip for _, _, _, _, (ip, _) in socket.getaddrinfo(socket.gethostname(), None))
-    addresses = [f'http://{ip}:{port}'.replace(':80', '') for ip in ips]
+        ips.update(set(info[4][0] for info in socket.getaddrinfo(socket.gethostname(), None) if len(info[4]) == 2))
+    ips.discard('127.0.0.1')
+    addresses = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ips]
     if len(addresses) >= 2:
         addresses[-1] = 'and ' + addresses[-1]
     print(f'NiceGUI ready to go on {", ".join(addresses)}')
