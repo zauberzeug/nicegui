@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import c
+import example_c
 import example_pages
 import home_page
 import theme
@@ -17,6 +17,7 @@ def index_page() -> None:
 # this call shows that you can also move the whole page creation into a separate file
 example_pages.create()
 
-app.include_router(c.router)
+# we can also use the APIRouter as described in https://fastapi.tiangolo.com/tutorial/bigger-applications/?h=apirouter#apirouter
+app.include_router(example_c.router)
 
 ui.run(title='Modularization Example')
