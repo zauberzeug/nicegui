@@ -25,7 +25,6 @@ def start_monitor(app: FastAPI) -> None:
                     # ignore monitoring, web crawlers and the like
                     if not any(s in agent for s in EXCLUDED_USER_AGENTS):
                         origin_url = request.headers.get('referer', 'unknown')
-                        print(request.get('path'), agent, request.session['id'], origin_url, flush=True)
                         visits.labels(request.get('path'), request.session['id'], origin_url).inc()
                 return response
 
