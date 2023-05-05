@@ -85,7 +85,10 @@ def print_welcome_message():
     port = os.environ['NICEGUI_PORT']
     ips = set()
     if host == '0.0.0.0':
-        ips.update(set(info[4][0] for info in socket.getaddrinfo(socket.gethostname(), None) if len(info[4]) == 2))
+        try:
+            ips.update(set(info[4][0] for info in socket.getaddrinfo(socket.gethostname(), None) if len(info[4]) == 2))
+        except Exception:
+            pass  # NOTE: if we can't get the host's IP, we'll just use localhost
     ips.discard('127.0.0.1')
     addresses = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ['localhost'] + sorted(ips)]
     if len(addresses) >= 2:
