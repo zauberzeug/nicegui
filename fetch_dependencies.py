@@ -56,6 +56,23 @@ css = request_buffered_str(url)
 Path('nicegui/static/quasar.prod.css').write_text(css)
 print('Quasar:', version)
 
+# Quasar language packs
+url = 'https://cdn.jsdelivr.net/npm/quasar@2/dist/lang/'
+html = request_buffered_str(url)
+soup = BeautifulSoup(html, 'html.parser')
+languages = []
+for link in soup.find_all('a', href=re.compile(r'\.umd\.prod\.js$')):
+    name = link.get('href').split('/')[-1]
+    languages.append(name.split('.')[0])
+    js = request_buffered_str(url + name)
+    Path(f'nicegui/static/quasar.{name}').write_text(js)
+with open(Path(__file__).parent / 'nicegui' / 'language.py', 'w') as f:
+    f.write(f'from typing_extensions import Literal\n\n')
+    f.write(f'Language = Literal[\n')
+    for language in languages:
+        f.write(f"    '{language}',\n")
+    f.write(f']\n')
+
 # vue.js
 url = 'https://unpkg.com/vue@3/anything'
 info = request_buffered_str(url)
