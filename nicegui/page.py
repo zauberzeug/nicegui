@@ -1,13 +1,16 @@
 import asyncio
 import inspect
 import time
-from typing import Callable, Optional
+from typing import TYPE_CHECKING, Callable, Optional
 
 from fastapi import Request, Response
 
 from . import background_tasks, globals
 from .client import Client
 from .favicon import create_favicon_route
+
+if TYPE_CHECKING:
+    from .api_router import APIRouter
 
 
 class page:
@@ -19,6 +22,7 @@ class page:
                  favicon: Optional[str] = None,
                  dark: Optional[bool] = ...,
                  response_timeout: float = 3.0,
+                 api_router: Optional['APIRouter'] = None,
                  **kwargs,
                  ) -> None:
         """Page
@@ -43,6 +47,7 @@ class page:
         self.dark = dark
         self.response_timeout = response_timeout
         self.kwargs = kwargs
+        self.api_router = api_router or globals.app.router
 
         create_favicon_route(self.path, favicon)
 
@@ -89,6 +94,6 @@ class page:
             parameters.insert(0, request)
         decorated.__signature__ = inspect.Signature(parameters)
 
-        globals.app.get(self.path, **self.kwargs)(decorated)
+        self.api_router.get(self.path, **self.kwargs)(decorated)
         globals.page_routes[func] = self.path
         return func

@@ -14,8 +14,3 @@ def create() -> None:
     def example_page():
         with theme.frame('- Example B -'):
             ui.label('Example B').classes('text-h4 text-grey-8')
-
-    @ui.page('/c')
-    def example_page():
-        with theme.frame('- Example C -'):
-            ui.label('Example C').classes('text-h4 text-grey-8')

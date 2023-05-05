@@ -6,6 +6,7 @@ except ModuleNotFoundError:
 __version__ = importlib_metadata.version('nicegui')
 
 from . import elements, globals, ui
+from .api_router import APIRouter
 from .client import Client
 from .nicegui import app
 from .tailwind import Tailwind
