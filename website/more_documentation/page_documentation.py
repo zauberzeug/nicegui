@@ -54,3 +54,32 @@ def more() -> None:
             ui.label(f'The IP address {client.ip} was obtained from the websocket.')
 
         ui.link('wait for connection', wait_for_connection)
+
+    @text_demo('Modularize with APIRouter', '''
+        You can use the NiceGUI specialization of 
+        [FastAPI's APIRouter](https://fastapi.tiangolo.com/tutorial/bigger-applications/?h=apirouter#apirouter) 
+        to modularize your code by grouping pages and other routes together.
+        This is especially useful if you want to reuse the same prefix for multiple pages.
+        The router and its pages can be neatly tugged away in a separate module (eg. file) and 
+        the router simply imported and included in the main app. 
+        See our [modularization example](https://github.com/zauberzeug/nicegui/blob/main/examples/modularization/example_c.py) for a multi-file app structure.
+    ''', tab='/sub-path')
+    def api_router_demo():
+        # from nicegui import APIRouter, app
+        #
+        # router = APIRouter(prefix='/sub-path')
+        #
+        # @router.page('/')
+        # def page():
+        #     ui.label('This is content on /sub-path')
+        #
+        # @router.page('/sub-sub-path')
+        # def page():
+        #     ui.label('This is content on /sub-path/sub-sub-path')
+        #
+        # ui.link('Visit sub-path', '/sub-path')
+        # ui.link('Visit sub-sub-path', '/sub-path/sub-sub-path')
+        #
+        # app.include_router(router)
+        # END OF DEMO
+        ui.label('Shows up on /sub-path')

@@ -17,7 +17,7 @@ def index_page() -> None:
 # this call shows that you can also move the whole page creation into a separate file
 example_pages.create()
 
-# we can also use the APIRouter as described in https://fastapi.tiangolo.com/tutorial/bigger-applications/?h=apirouter#apirouter
+# we can also use the APIRouter as described in https://nicegui.io/documentation/page#modularize_with_apirouter
 app.include_router(example_c.router)
 
 ui.run(title='Modularization Example')
