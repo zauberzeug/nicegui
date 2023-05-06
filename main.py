@@ -120,12 +120,14 @@ async def index_page(client: Client):
             heading('Interact with Python through buttons, dialogs, 3D&nbsp;scenes, plots and much more.')
             with ui.column().classes('gap-2 bold-links arrow-links text-lg'):
                 ui.markdown(
-                    'NiceGUI handles all the web development details for you. '
-                    'So you can focus on writing Python code. '
-                    'Anything from short scripts and dashboards to full robotics projects, IoT solutions, '
-                    'smart home automations and machine learning projects can benefit from having all code in one place.'
-                )
-                ui.markdown(
+                    'NiceGUI manages web development details, letting you focus on Python code '
+                    'for diverse applications, including robotics, IoT solutions, smart home automation, and machine learning. '
+                    'Designed to work smoothly with connected peripherals like webcams and GPIO pins in IoT setups, '
+                    'NiceGUI streamlines the management of all your code in one place.'
+                    '<br><br>'
+                    'With a gentle learning curve, NiceGUI is user-friendly for beginners and offers advanced customization for experienced users, '
+                    'ensuring simplicity for basic tasks and feasibility for complex projects.'
+                    '<br><br><br>'
                     'Available as '
                     '[PyPI package](https://pypi.org/project/nicegui/), '
                     '[Docker image](https://hub.docker.com/r/zauberzeug/nicegui) and on '
@@ -187,12 +189,12 @@ async def index_page(client: Client):
             features('swap_horiz', 'Interaction', [
                 'buttons, switches, sliders, inputs, ...',
                 'notifications, dialogs and menus',
-                'keyboard input',
-                'on-screen joystick',
+                'interactive images with svg overlays',
+                'web pages and native window apps',
             ])
             features('space_dashboard', 'Layout', [
                 'navigation bars, tabs, panels, ...',
-                'grouping with rows, columns and cards',
+                'grouping with rows, columns, grids and cards',
                 'HTML and Markdown elements',
                 'flex layout by default',
             ])
@@ -209,8 +211,8 @@ async def index_page(client: Client):
                 '[Tailwind CSS](https://tailwindcss.com/) auto-completion',
             ])
             features('source', 'Coding', [
-                'live-cycle events',
-                'implicit reload on code change',
+                'routing for multiple pages',
+                'auto-reload on code change',
                 'straight-forward data binding',
                 'Jupyter notebook compatibility',
             ])
