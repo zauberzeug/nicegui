@@ -7,6 +7,7 @@ use the great `Authlib package <https://docs.authlib.org/en/v0.13/client/starlet
 Here we just demonstrate the NiceGUI integration.
 '''
 
+import os
 import uuid
 from typing import Dict
 
@@ -16,7 +17,8 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from nicegui import app, ui
 
-app.add_middleware(SessionMiddleware, secret_key='some_random_string')  # use your own secret key here
+# put your your own secret key in an environment variable MY_SECRET_KEY
+app.add_middleware(SessionMiddleware, secret_key=os.environ.get('MY_SECRET_KEY', ''))
 
 # in reality users and session_info would be persistent (e.g. database, file, ...) and passwords obviously hashed
 users = [('user1', 'pass1'), ('user2', 'pass2')]
