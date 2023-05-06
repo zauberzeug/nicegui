@@ -5,6 +5,7 @@ from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup
+from secure import SecurePath
 
 
 @dataclass
@@ -81,7 +82,7 @@ for file in (Path(__file__).parent / 'nicegui' / 'tailwind_types').glob('*.py'):
 for property in properties:
     if not property.members:
         continue
-    with open(Path(__file__).parent / 'nicegui' / 'tailwind_types' / f'{property.snake_title}.py', 'w') as f:
+    with SecurePath(open(Path(__file__).parent / 'nicegui' / 'tailwind_types' / f'{property.snake_title}.py', 'w')) as f:
         f.write('from typing_extensions import Literal\n')
         f.write('\n')
         f.write(f'{property.pascal_title} = Literal[\n')

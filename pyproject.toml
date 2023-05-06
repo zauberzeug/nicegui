@@ -43,6 +43,7 @@ pandas = [
     { version = "^1.0.0", markers = "python_version == '3.7'" },
     { version = "^2.0.0", markers = "python_version >= '3.8'" },
 ]
+secure = "^0.3.0"
 
 [build-system]
 requires = [
