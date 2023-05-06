@@ -29,7 +29,7 @@ from website.style import example_link, features, heading, link_target, section_
 prometheus.start_monitor(app)
 
 # session middleware is required for demo in documentation and prometheus
-app.add_middleware(SessionMiddleware, secret_key='NiceGUI is awesome!')
+app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_KEY', ''))
 
 app.add_static_files('/favicon', str(Path(__file__).parent / 'website' / 'favicon'))
 app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
