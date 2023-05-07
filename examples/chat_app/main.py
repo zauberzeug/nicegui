@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from nicegui import Client, ui
 
-messages: List[Tuple[str, str, str]] = []
+messages: List[Tuple[str, str, str, str]] = []
 
 
 @ui.refreshable
