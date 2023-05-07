@@ -7,7 +7,7 @@ from ..element import Element
 class Avatar(Element):
 
     def __init__(self,
-                 icon: str = 'none', *,
+                 icon: str = None, *,
                  color: Optional[str] = 'primary',
                  text_color: Optional[str] = None,
                  size: Optional[str] = None,
@@ -30,7 +30,8 @@ class Avatar(Element):
         """
         super().__init__('q-avatar')
 
-        self._props['icon'] = icon
+        if icon is not None:
+            self._props['icon'] = icon
         self._props['square'] = square
         self._props['rounded'] = rounded
 
