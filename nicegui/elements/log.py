@@ -27,7 +27,7 @@ class Log(Element):
     def push(self, line: Any) -> None:
         self.lines.extend(map(urllib.parse.quote, str(line).splitlines()))
         self._props['lines'] = '\n'.join(self.lines)
-        self.run_method('push', line)
+        self.run_method('push', urllib.parse.quote(str(line)))
 
     def clear(self) -> None:
         """Clear the log"""
