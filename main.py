@@ -119,19 +119,21 @@ async def index_page(client: Client):
         with ui.column().classes('text-white max-w-4xl'):
             heading('Interact with Python through buttons, dialogs, 3D&nbsp;scenes, plots and much more.')
             with ui.column().classes('gap-2 bold-links arrow-links text-lg'):
-                ui.markdown(
-                    'NiceGUI manages web development details, letting you focus on Python code '
-                    'for diverse applications, including robotics, IoT solutions, smart home automation, and machine learning. '
-                    'Designed to work smoothly with connected peripherals like webcams and GPIO pins in IoT setups, '
-                    'NiceGUI streamlines the management of all your code in one place.'
-                    '<br><br>'
-                    'With a gentle learning curve, NiceGUI is user-friendly for beginners and offers advanced customization for experienced users, '
-                    'ensuring simplicity for basic tasks and feasibility for complex projects.'
-                    '<br><br><br>'
-                    'Available as '
-                    '[PyPI package](https://pypi.org/project/nicegui/), '
-                    '[Docker image](https://hub.docker.com/r/zauberzeug/nicegui) and on '
-                    '[GitHub](https://github.com/zauberzeug/nicegui).')
+                ui.markdown('''
+                    NiceGUI manages web development details, letting you focus on Python code for diverse applications,
+                    including robotics, IoT solutions, smart home automation, and machine learning.
+                    Designed to work smoothly with connected peripherals like webcams and GPIO pins in IoT setups,
+                    NiceGUI streamlines the management of all your code in one place.
+                    <br><br>
+                    With a gentle learning curve, NiceGUI is user-friendly for beginners
+                    and offers advanced customization for experienced users,
+                    ensuring simplicity for basic tasks and feasibility for complex projects.
+                    <br><br><br>
+                    Available as
+                    [PyPI package](https://pypi.org/project/nicegui/),
+                    [Docker image](https://hub.docker.com/r/zauberzeug/nicegui) and on
+                    [GitHub](https://github.com/zauberzeug/nicegui).
+                ''')
         example_card.create()
 
     with ui.column().classes('w-full text-lg p-8 lg:p-16 max-w-[1600px] mx-auto'):
@@ -189,7 +191,7 @@ async def index_page(client: Client):
             features('swap_horiz', 'Interaction', [
                 'buttons, switches, sliders, inputs, ...',
                 'notifications, dialogs and menus',
-                'interactive images with svg overlays',
+                'interactive images with SVG overlays',
                 'web pages and native window apps',
             ])
             features('space_dashboard', 'Layout', [
