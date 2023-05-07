@@ -12,6 +12,6 @@ def more() -> None:
     @text_demo('Photos', '''
         To use a photo as an avatar, you can use `ui.image` within `ui.avatar`.
     ''')
-    async def photos() -> None:
+    def photos() -> None:
         with ui.avatar():
             ui.image('https://robohash.org/robot?bgset=bg2')

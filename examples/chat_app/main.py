@@ -19,12 +19,12 @@ async def chat_messages(own_id: str) -> None:
 async def main(client: Client):
     def send() -> None:
         stamp = datetime.utcnow().strftime('%X')
-        messages.append((user, avatar, text.value, stamp))
+        messages.append((user_id, avatar, text.value, stamp))
         text.value = ''
         chat_messages.refresh()
 
-    user = str(uuid4())
-    avatar = f'https://robohash.org/{user}?bgset=bg2'
+    user_id = str(uuid4())
+    avatar = f'https://robohash.org/{user_id}?bgset=bg2'
 
     anchor_style = r'a:link, a:visited {color: inherit !important; text-decoration: none; font-weight: 500}'
     ui.add_head_html(f'<style>{anchor_style}</style>')
@@ -39,6 +39,6 @@ async def main(client: Client):
 
     await client.connected()  # chat_messages(...) uses run_javascript which is only possible after connecting
     with ui.column().classes('w-full max-w-2xl mx-auto items-stretch'):
-        await chat_messages(user)
+        await chat_messages(user_id)
 
 ui.run()

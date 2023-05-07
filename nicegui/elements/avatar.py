@@ -7,7 +7,7 @@ from ..element import Element
 class Avatar(Element):
 
     def __init__(self,
-                 icon: str = None, *,
+                 icon: Optional[str] = None, *,
                  color: Optional[str] = 'primary',
                  text_color: Optional[str] = None,
                  size: Optional[str] = None,
