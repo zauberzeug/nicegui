@@ -20,7 +20,6 @@ class Log(Element):
         super().__init__('log')
         self._props['max_lines'] = max_lines
         self._props['lines'] = ''
-        self._props['key'] = self.id  # HACK: workaround for #600
         self._classes = ['nicegui-log']
         self.lines: deque[str] = deque(maxlen=max_lines)
 

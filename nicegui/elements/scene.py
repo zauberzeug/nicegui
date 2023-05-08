@@ -75,7 +75,6 @@ class Scene(Element):
         self._props['width'] = width
         self._props['height'] = height
         self._props['grid'] = grid
-        self._props['key'] = self.id  # HACK: workaround for #600
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()

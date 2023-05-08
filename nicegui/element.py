@@ -39,7 +39,7 @@ class Element(Visibility):
         self.tag = tag
         self._classes: List[str] = []
         self._style: Dict[str, str] = {}
-        self._props: Dict[str, Any] = {}
+        self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
