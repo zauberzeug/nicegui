@@ -143,7 +143,7 @@ def more() -> None:
             rows=df.to_dict('records'),
         )
 
-    @text_demo('Adding Rows', '''
+    @text_demo('Adding rows', '''
         It's simple to add new rows with the `add_rows(dict)` method.
     ''')
     def adding_rows():
@@ -152,11 +152,11 @@ def more() -> None:
 
         def add():
             item = os.urandom(10 // 2).hex()
-            table.add_rows({'item_id': item, 'count': random.randint(0, 100)})
+            table.add_rows({'id': item, 'count': random.randint(0, 100)})
 
         ui.button('add', on_click=add)
         columns = [
-            {'name': 'item_id', 'label': 'Id', 'field': 'item_id'},
+            {'name': 'id', 'label': 'ID', 'field': 'id'},
             {'name': 'count', 'label': 'Count', 'field': 'count'},
         ]
-        table = ui.table(columns=columns, rows=[], row_key='item_id').classes('w-full')
+        table = ui.table(columns=columns, rows=[], row_key='id').classes('w-full')
