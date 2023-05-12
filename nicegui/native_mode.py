@@ -1,5 +1,7 @@
 import _thread
+import logging
 import multiprocessing
+import queue
 import socket
 import sys
 import tempfile
@@ -7,7 +9,7 @@ import time
 import warnings
 from threading import Thread
 
-from . import globals, helpers
+from . import globals, helpers, native
 
 try:
     with warnings.catch_warnings():
@@ -18,7 +20,8 @@ except ModuleNotFoundError:
     pass
 
 
-def open_window(host: str, port: int, title: str, width: int, height: int, fullscreen: bool) -> None:
+def open_window(host: str, port: int, title: str, width: int, height: int, fullscreen: bool,
+                q_in: multiprocessing.Queue, q_out: multiprocessing.Queue) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
 
@@ -26,7 +29,24 @@ def open_window(host: str, port: int, title: str, width: int, height: int, fulls
     window_kwargs.update(globals.app.native.window_args)
 
     try:
-        webview.create_window(**window_kwargs)
+        window = webview.create_window(**window_kwargs)
+        print('--------------------starting thread', flush=True)
+
+        def process_bridge():
+            time.sleep(1)
+            while True:
+                print('getting', flush=True)
+                try:
+                    result = q_in.get(block=False)
+                    print(result, flush=True)
+                except queue.Empty:
+                    print('empty', flush=True)
+                    time.sleep(1)
+                # result = getattr(window, method_name)(*args, **kwargs)
+                # q_out.put(result)
+        t = Thread(target=process_bridge)
+        t.start()
+
         webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
     except NameError:
         print('Native mode is not supported in this configuration. Please install pywebview to use it.')
@@ -43,9 +63,14 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         _thread.interrupt_main()
 
     multiprocessing.freeze_support()
-    process = multiprocessing.Process(target=open_window, args=(host, port, title, width, height, fullscreen),
-                                      daemon=False)
+    process = multiprocessing.Process(
+        target=open_window,
+        args=(host, port, title, width, height, fullscreen, native.q_in, native.q_out),
+        daemon=False
+    )
     process.start()
+    native.q_in.put(('some_method', (42,), {}))
+
     Thread(target=check_shutdown, daemon=True).start()
 
 
