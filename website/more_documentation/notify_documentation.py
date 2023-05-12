@@ -20,7 +20,7 @@ def more() -> None:
         To allow a notification text to span multiple lines it's sufficient to pass the mutliLine keyword with True.
         If manual newline breaks are required (eg. `\n`) you need to define a css style and pass it to the notification as shown in the example.
     ''')
-    def notify_colors():
+    def multiline():
         ui.html('<style> .multi-line-notification{ white-space:pre-line; } </style>')
         ui.button('show', on_click=lambda: ui.notify(
             'Lorem ipsum dolor sit amet, consectetur adipisicing elit. \n'
