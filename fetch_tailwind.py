@@ -2,6 +2,7 @@
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import List
 
 import requests
 from bs4 import BeautifulSoup
@@ -12,8 +13,8 @@ from secure import SecurePath
 class Property:
     title: str
     description: str
-    members: list[str]
-    short_members: list[str] = field(init=False)
+    members: List[str]
+    short_members: List[str] = field(init=False)
     common_prefix: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -48,7 +49,7 @@ class Property:
         return '_'.join(word.lower() for word in re.sub(r'[-/ &]', ' ', self.title).split())
 
 
-properties: list[Property] = []
+properties: List[Property] = []
 
 
 def get_soup(url: str) -> BeautifulSoup:

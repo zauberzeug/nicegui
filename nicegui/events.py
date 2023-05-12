@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from inspect import signature
-from typing import TYPE_CHECKING, Any, BinaryIO, Callable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, BinaryIO, Callable, Dict, List, Optional, Union
 
 from . import background_tasks, globals
 from .helpers import KWONLY_SLOTS, is_coroutine
@@ -269,7 +269,7 @@ class KeyEventArguments(EventArguments):
 
 
 def handle_event(handler: Optional[Callable],
-                 arguments: Union[EventArguments, dict], *,
+                 arguments: Union[EventArguments, Dict], *,
                  sender: Optional['Element'] = None) -> None:
     try:
         if handler is None:

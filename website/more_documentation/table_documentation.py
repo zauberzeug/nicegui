@@ -1,3 +1,5 @@
+from typing import Dict
+
 from nicegui import ui
 
 from ..documentation_tools import text_demo
@@ -75,7 +77,7 @@ def more() -> None:
         visible_columns = {column['name'] for column in columns}
         table = ui.table(columns=columns, rows=rows, row_key='name')
 
-        def toggle(column: dict, visible: bool) -> None:
+        def toggle(column: Dict, visible: bool) -> None:
             if visible:
                 visible_columns.add(column['name'])
             else:
