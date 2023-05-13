@@ -20,8 +20,11 @@ except ModuleNotFoundError:
     pass
 
 
-def open_window(host: str, port: int, title: str, width: int, height: int, fullscreen: bool,
-                message_queue: multiprocessing.Queue) -> None:
+def open_window(
+    host: str, port: int, title: str, width: int, height: int, fullscreen: bool,
+    method_queue: multiprocessing.Queue,
+    response_queue: multiprocessing.Queue,
+) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
 
@@ -34,11 +37,13 @@ def open_window(host: str, port: int, title: str, width: int, height: int, fulls
         def process_bridge():
             while True:
                 try:
-                    method, args, kwargs = message_queue.get(block=False)
+                    method, args, kwargs = method_queue.get(block=False)
                     print(f'calling window.{method}{args}', flush=True)
                     attr = getattr(window, method)
                     if callable(attr):
-                        attr(*args, **kwargs)
+                        response = attr(*args, **kwargs)
+                        if response is not None:
+                            response_queue.put(response)
                     else:
                         logging.error(f'window.{method} is not callable')
                 except queue.Empty:
@@ -64,7 +69,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
     multiprocessing.freeze_support()
     process = multiprocessing.Process(
         target=open_window,
-        args=(host, port, title, width, height, fullscreen, native.queue),
+        args=(host, port, title, width, height, fullscreen, native.method_queue, native.response_queue),
         daemon=False
     )
     process.start()
