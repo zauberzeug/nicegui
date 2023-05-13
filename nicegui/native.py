@@ -28,18 +28,16 @@ def create_proxy(cls):
                 return
             print(f'set {name}: properties are not yet supported')
 
-    def mock_method(name):
+    def wrap_method(name):
         def wrapper(*args, **kwargs):
             method_queue.put((name, args[1:], kwargs))  # NOTE args[1:] to skip self
         return wrapper
 
-    def mock_coroutine(name):
+    def wrap_coroutine(name):
         def wrapper(*args, **kwargs):
             try:
                 method_queue.put((name, args[1:], kwargs))  # NOTE args[1:] to skip self
-                result = response_queue.get()  # wait for the method to be called and write its result to the queue
-                ic(result)
-                logging.info(f'got result: {result}')
+                result = response_queue.get()  # wait for the method to be called and write its result to response_queue
                 return result
             except Exception:
                 logging.exception(f'error in {name}')
@@ -52,6 +50,7 @@ def create_proxy(cls):
     def has_return_value(name):
         if get_type_hints(attr).get('return', None) is not None:
             return True
+        # NOTE we define the names of window.* methods that return a value here until https://github.com/r0x0r/pywebview/pull/1108 gets released
         if name == 'create_file_dialog':
             return True
         return False
@@ -61,7 +60,7 @@ def create_proxy(cls):
             continue
 
         if inspect.isfunction(attr) or inspect.ismethod(attr):
-            mock = mock_coroutine(name) if has_return_value(name) else mock_method(name)
+            mock = wrap_coroutine(name) if has_return_value(name) else wrap_method(name)
             setattr(Proxy, name, mock)
         else:
             print(f'skip {name}: only methods are supported', flush=True)
