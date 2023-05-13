@@ -30,14 +30,18 @@ def open_window(host: str, port: int, title: str, width: int, height: int, fulls
 
     try:
         window = webview.create_window(**window_kwargs)
-        print('--------------------starting thread', flush=True)
 
         def process_bridge():
             time.sleep(1)
             while True:
                 try:
-                    result = message_queue.get(block=False)
-                    print(f'received {result}', flush=True)
+                    method, args, kwargs = message_queue.get(block=False)
+                    print(f'calling window.{method}{args}', flush=True)
+                    attr = getattr(window, method)
+                    if callable(attr):
+                        attr(*args, **kwargs)
+                    else:
+                        logging.error(f'window.{method} is not callable')
                 except queue.Empty:
                     print('empty', flush=True)
                     time.sleep(1)

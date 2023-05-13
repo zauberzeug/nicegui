@@ -16,14 +16,13 @@ def create_proxy(cls):
         def __getattr__(self, name):
             if name.startswith('__'):
                 return super().__getattr__(name)
-
-            print(f"Attribute get: {name}")
+            print(f'get {name}: properties are not yet supported')
 
         def __setattr__(self, name, value):
             if name.startswith('__'):
                 super().__setattr__(name, value)
                 return
-            queue.put((name, (value,), {}))
+            print(f'set {name}: properties are not yet supported')
 
     def mock_method(name):
         def wrapper(*args, **kwargs):
