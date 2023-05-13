@@ -51,7 +51,7 @@ def create_proxy(cls):
         if get_type_hints(attr).get('return', None) is not None:
             return True
         # NOTE we define the names of window.* methods that return a value here until https://github.com/r0x0r/pywebview/pull/1108 gets released
-        if name == 'create_file_dialog':
+        if name in ['create_file_dialog', 'create_confirmation_dialog', 'get_cookies', 'get_elements', 'get_current_url']:
             return True
         return False
 
