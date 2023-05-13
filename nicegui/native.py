@@ -8,8 +8,7 @@ import webview
 
 from .helpers import KWONLY_SLOTS
 
-q_in = Queue()
-q_out = Queue()
+queue = Queue()
 
 
 def create_proxy(cls):
@@ -24,14 +23,11 @@ def create_proxy(cls):
             if name.startswith('__'):
                 super().__setattr__(name, value)
                 return
-
-            print(f"Attribute set: {name} = {value}")
-            q_in.put(('some_method', (42,), {}))
-            # result = q_out.get()
+            queue.put((name, (value,), {}))
 
     def mock_method(name):
         def wrapper(*args, **kwargs):
-            print(f"Method called: {name}")
+            queue.put((name, args[1:], kwargs))  # NOTE args[1:] to skip self
         return wrapper
 
     for name, attr in inspect.getmembers(cls):

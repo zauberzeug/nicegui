@@ -9,8 +9,20 @@ import uvicorn
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import globals, helpers, native_mode
+from . import globals, helpers
+from . import native as app_native
+from . import native_mode
 from .language import Language
+
+
+class Server(uvicorn.Server):
+    def __init__(self, config):
+        super().__init__(config)
+
+    def run(self, sockets=None):
+        globals.server = self
+        app_native.queue = self.config.native_queue
+        super().run(sockets=sockets)
 
 
 def run(*,
@@ -115,8 +127,8 @@ def run(*,
         log_level=uvicorn_logging_level,
         **kwargs,
     )
-    globals.server = uvicorn.Server(config=config)
-
+    config.native_queue = app_native.queue
+    globals.server = Server(config=config)
     if (reload or config.workers > 1) and not isinstance(config.app, str):
         logging.warning('You must pass the application as an import string to enable "reload" or "workers".')
         sys.exit(1)

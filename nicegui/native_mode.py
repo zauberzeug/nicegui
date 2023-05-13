@@ -21,7 +21,7 @@ except ModuleNotFoundError:
 
 
 def open_window(host: str, port: int, title: str, width: int, height: int, fullscreen: bool,
-                q_in: multiprocessing.Queue, q_out: multiprocessing.Queue) -> None:
+                message_queue: multiprocessing.Queue) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
 
@@ -35,15 +35,12 @@ def open_window(host: str, port: int, title: str, width: int, height: int, fulls
         def process_bridge():
             time.sleep(1)
             while True:
-                print('getting', flush=True)
                 try:
-                    result = q_in.get(block=False)
-                    print(result, flush=True)
+                    result = message_queue.get(block=False)
+                    print(f'received {result}', flush=True)
                 except queue.Empty:
                     print('empty', flush=True)
                     time.sleep(1)
-                # result = getattr(window, method_name)(*args, **kwargs)
-                # q_out.put(result)
         t = Thread(target=process_bridge)
         t.start()
 
@@ -65,11 +62,10 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
     multiprocessing.freeze_support()
     process = multiprocessing.Process(
         target=open_window,
-        args=(host, port, title, width, height, fullscreen, native.q_in, native.q_out),
+        args=(host, port, title, width, height, fullscreen, native.queue),
         daemon=False
     )
     process.start()
-    native.q_in.put(('some_method', (42,), {}))
 
     Thread(target=check_shutdown, daemon=True).start()
 
