@@ -331,7 +331,7 @@ def documentation_page():
 
 
 @ui.page('/documentation/{name}')
-def documentation_page_more(name: str):
+async def documentation_page_more(name: str, client: Client):
     if not hasattr(ui, name):
         name = name.replace('_', '')  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
     module = importlib.import_module(f'website.more_documentation.{name}_documentation')
@@ -359,6 +359,7 @@ def documentation_page_more(name: str):
                 ui.markdown('**Reference**').classes('mt-4')
             ui.markdown('## Reference').classes('mt-16')
             generate_class_doc(api)
-
+    await client.connected()
+    await ui.run_javascript(f'document.title = "{name} • NiceGUI";', respond=False)
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html')
