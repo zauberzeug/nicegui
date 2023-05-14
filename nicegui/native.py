@@ -8,7 +8,6 @@ from typing import Any, Dict, get_type_hints
 
 import webview
 
-from . import background_tasks
 from .helpers import KWONLY_SLOTS
 
 method_queue = Queue()
@@ -37,8 +36,7 @@ def create_proxy(cls):
         def wrapper(*args, **kwargs):
             try:
                 method_queue.put((name, args[1:], kwargs))  # NOTE args[1:] to skip self
-                result = response_queue.get()  # wait for the method to be called and write its result to response_queue
-                return result
+                return response_queue.get()  # wait for the method to be called and writing its result to the queue
             except Exception:
                 logging.exception(f'error in {name}')
 
