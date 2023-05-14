@@ -75,7 +75,6 @@ def run(*,
 
     if custom_ctrl_c_handler and sys.platform == "win32":
         import win32api
-        import os
         win32api.SetConsoleCtrlHandler(lambda a=None: os.kill(os.getpid(), 15)) # Enables ctrl+C to kill the terminal on Windows. 15 == signal.SIGTERM
 
     if multiprocessing.current_process().name != 'MainProcess':
