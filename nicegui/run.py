@@ -74,8 +74,7 @@ def run(*,
     globals.tailwind = tailwind
 
     if custom_ctrl_c_handler and sys.platform == "win32":
-        import win32api
-        import atexit
+        import win32api, atexit
         win32api.SetConsoleCtrlHandler(lambda a=None: (atexit._run_exitfuncs(), os.kill(os.getpid(), 15))) # Enables ctrl+C to kill the terminal on Windows. 15 == signal.SIGTERM
 
     if multiprocessing.current_process().name != 'MainProcess':
