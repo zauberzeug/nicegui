@@ -4,9 +4,10 @@ import logging
 from dataclasses import dataclass, field
 from functools import partial
 from multiprocessing import Queue
-from typing import Any, Dict, get_type_hints
+from typing import Any, Dict, Tuple
 
 import webview
+from webview.window import FixPoint
 
 from .helpers import KWONLY_SLOTS
 
@@ -14,25 +15,81 @@ method_queue = Queue()
 response_queue = Queue()
 
 
-def create_proxy(cls):
-    class Proxy:
-        def __getattr__(self, name):
-            if name.startswith('__'):
-                return super().__getattr__(name)
-            print(f'get {name}: properties are not yet supported')
+class WindowProxy(webview.Window):
+    def __init__(self):
+        pass  # NOTE we don't call super().__init__ here because this is just a proxy to the actual window
 
-        def __setattr__(self, name, value):
-            if name.startswith('__'):
-                super().__setattr__(name, value)
-                return
-            print(f'set {name}: properties are not yet supported')
+    def load_url(self, url: str) -> None:
+        self._send(url)
 
-    def wrap_method(name):
-        def wrapper(*args, **kwargs):
-            method_queue.put((name, args[1:], kwargs))  # NOTE args[1:] to skip self
-        return wrapper
+    def load_html(self, content: str, base_uri: str = ...) -> None:
+        self._send(content, base_uri)
 
-    def wrap_coroutine(name):
+    def load_css(self, stylesheet: str) -> None:
+        self._send(stylesheet)
+
+    def set_title(self, title: str) -> None:
+        self.send(title)
+
+    async def get_cookies(self) -> None:
+        return await self._send_async()
+
+    async def get_current_url(self) -> None:
+        return await self._send_async()
+
+    def destroy(self) -> None:
+        self._send()
+
+    def show(self) -> None:
+        self._send()
+
+    def hide(self) -> None:
+        self._send()
+
+    def set_window_size(self, width: int, height: int) -> None:
+        self._send(width, height)
+
+    def resize(self, width: int, height: int, fix_point=FixPoint.NORTH | FixPoint.WEST) -> None:
+        self._send(width, height, fix_point)
+
+    def minimize(self) -> None:
+        self._send()
+
+    def restore(self) -> None:
+        self._send()
+
+    def toggle_fullscreen(self) -> None:
+        self._send()
+
+    def move(self, x: int, y: int) -> None:
+        self._send(x, y)
+
+    def evaluate_js(self, script: str) -> Any:
+        return self._send(script)
+
+    async def create_confirmation_dialog(self, title: str, message: str) -> bool:
+        return await self._send_async(title, message)
+
+    async def create_file_dialog(
+        self,
+        dialog_type: int = webview.OPEN_DIALOG,
+        directory: str = '',
+        allow_multiple: bool = False,
+        save_filename: str = '',
+        file_types: Tuple[str, ...] = ...
+    ) -> Tuple[str, ...]:
+        return await self._send_async(dialog_type, directory, allow_multiple, save_filename, file_types)
+
+    def expose(self, function) -> None:
+        raise NotImplementedError(f'exposing "{function}" is not supported')
+
+    def _send(self, *args, **kwargs) -> Any:
+        name = inspect.currentframe().f_back.f_code.co_name
+        return method_queue.put((name, args, kwargs))
+
+    async def _send_async(self, *args, **kwargs) -> Any:
+        name = inspect.currentframe().f_back.f_code.co_name
+
         def wrapper(*args, **kwargs):
             try:
                 method_queue.put((name, args[1:], kwargs))  # NOTE args[1:] to skip self
@@ -40,35 +97,11 @@ def create_proxy(cls):
             except Exception:
                 logging.exception(f'error in {name}')
 
-        async def awaitable_wrapper(_, *args, **kwargs):
-            return await asyncio.get_event_loop().run_in_executor(None, partial(wrapper, *args, **kwargs))
-
-        return awaitable_wrapper
-
-    def has_return_value(name):
-        if get_type_hints(attr).get('return', None) is not None:
-            return True
-        # NOTE we define the names of window.* methods that return a value here until https://github.com/r0x0r/pywebview/pull/1108 gets released
-        if name in ['create_file_dialog', 'create_confirmation_dialog', 'get_cookies', 'get_elements', 'get_current_url']:
-            return True
-        return False
-
-    for name, attr in inspect.getmembers(cls):
-        if name.startswith('__'):
-            continue
-
-        if inspect.isfunction(attr) or inspect.ismethod(attr):
-            mock = wrap_coroutine(name) if has_return_value(name) else wrap_method(name)
-            setattr(Proxy, name, mock)
-        else:
-            print(f'skip {name}: only methods are supported', flush=True)
-
-    return Proxy
+        return await asyncio.get_event_loop().run_in_executor(None, partial(wrapper, *args, **kwargs))
 
 
-@ dataclass(**KWONLY_SLOTS)
+@dataclass(**KWONLY_SLOTS)
 class Native:
-
     start_args: Dict[str, Any] = field(default_factory=dict)
     window_args: Dict[str, Any] = field(default_factory=dict)
-    window: webview.Window = create_proxy(webview.Window)()
+    main_window: WindowProxy = WindowProxy()
