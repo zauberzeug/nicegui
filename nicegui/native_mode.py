@@ -1,13 +1,13 @@
 import _thread
 import logging
-import multiprocessing
+import multiprocessing as mp
 import queue
 import socket
 import sys
 import tempfile
 import time
 import warnings
-from threading import Thread
+from threading import Event, Thread
 
 from . import globals, helpers, native
 
@@ -22,8 +22,7 @@ except ModuleNotFoundError:
 
 def open_window(
     host: str, port: int, title: str, width: int, height: int, fullscreen: bool,
-    method_queue: multiprocessing.Queue,
-    response_queue: multiprocessing.Queue,
+    method_queue: mp.Queue, response_queue: mp.Queue,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -33,28 +32,35 @@ def open_window(
 
     try:
         window = webview.create_window(**window_kwargs)
-
-        def process_bridge():
-            while True:
-                try:
-                    method, args, kwargs = method_queue.get(block=False)
-                    print(f'calling window.{method}{args}', flush=True)
-                    attr = getattr(window, method)
-                    if callable(attr):
-                        response = attr(*args, **kwargs)
-                        if response is not None:
-                            response_queue.put(response)
-                    else:
-                        logging.error(f'window.{method} is not callable')
-                except queue.Empty:
-                    time.sleep(0.01)
-        t = Thread(target=process_bridge)
-        t.start()
-
+        closing = Event()
+        window.events.closing += lambda: closing.set()
+        start_window_method_executor(window, method_queue, response_queue, closing)
         webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
     except NameError:
         print('Native mode is not supported in this configuration. Please install pywebview to use it.')
         sys.exit(1)
+
+
+def start_window_method_executor(
+        window: webview.Window, method_queue: mp.Queue, response_queue: mp.Queue, closing: Event
+) -> None:
+    def window_method_executor():
+        while not closing.is_set():
+            try:
+                method, args, kwargs = method_queue.get(block=False)
+                attr = getattr(window, method)
+                if callable(attr):
+                    response = attr(*args, **kwargs)
+                    if response is not None:
+                        response_queue.put(response)
+                else:
+                    logging.error(f'window.{method} is not callable')
+            except queue.Empty:
+                time.sleep(0.01)
+            except:
+                logging.exception(f'error in window.{method}')
+    t = Thread(target=window_method_executor)
+    t.start()
 
 
 def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool) -> None:
@@ -66,8 +72,8 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
             time.sleep(0.1)
         _thread.interrupt_main()
 
-    multiprocessing.freeze_support()
-    process = multiprocessing.Process(
+    mp.freeze_support()
+    process = mp.Process(
         target=open_window,
         args=(host, port, title, width, height, fullscreen, native.method_queue, native.response_queue),
         daemon=False
