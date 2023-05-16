@@ -53,27 +53,36 @@ class Input(ValueElement, DisableableElement):
                 icon = Icon('visibility_off').classes('cursor-pointer').on('click', toggle_type)
 
         self.validation = validation
+        self._autocomplete: Optional[List[str]] = None
+        self.autocomplete = autocomplete
 
-        if autocomplete:
-            def find_autocompletion() -> Optional[str]:
-                if self.value:
-                    needle = str(self.value).casefold()
-                    for item in autocomplete:
-                        if item.casefold().startswith(needle):
-                            return item
+    @property
+    def autocomplete(self) -> Optional[List[str]]:
+        return self._autocomplete
 
-            def autocomplete_input() -> None:
-                match = find_autocompletion() or ''
-                self.props(f'shadow-text="{match[len(self.value):]}"')
+    @autocomplete.setter
+    def autocomplete(self, value: Optional[List[str]]):
+        self._autocomplete = value
+        if value:
+            self.on('keyup', self.autocomplete_input)
+            self.on('keydown.tab', self.complete_input)
 
-            def complete_input() -> None:
-                match = find_autocompletion()
-                if match:
-                    self.set_value(match)
-                self.props(f'shadow-text=""')
+    def find_autocompletion(self) -> Optional[str]:
+        if self.value and self.autocomplete:
+            needle = str(self.value).casefold()
+            for item in self.autocomplete:
+                if item.casefold().startswith(needle):
+                    return item
 
-            self.on('keyup', autocomplete_input)
-            self.on('keydown.tab', complete_input)
+    def autocomplete_input(self) -> None:
+        match = self.find_autocompletion() or ''
+        self.props(f'shadow-text="{match[len(self.value):]}"')
+
+    def complete_input(self) -> None:
+        match = self.find_autocompletion()
+        if match:
+            self.set_value(match)
+        self.props('shadow-text=""')
 
     def on_value_change(self, value: Any) -> None:
         super().on_value_change(value)
