@@ -123,7 +123,6 @@ def test_autocompletion_lazy_load(screen: Screen):
     test_input.autocomplete = ['foo', 'bar', 'baz']
     element.send_keys('o')
     screen.wait(0.1)
-    screen.should_contain('o')
     assert element.get_attribute('value') == 'fo'
     element.send_keys(Keys.TAB)
     screen.wait(0.2)

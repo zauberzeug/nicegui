@@ -53,19 +53,9 @@ class Input(ValueElement, DisableableElement):
                 icon = Icon('visibility_off').classes('cursor-pointer').on('click', toggle_type)
 
         self.validation = validation
-        self._autocomplete: Optional[List[str]] = None
         self.autocomplete = autocomplete
-
-    @property
-    def autocomplete(self) -> Optional[List[str]]:
-        return self._autocomplete
-
-    @autocomplete.setter
-    def autocomplete(self, value: Optional[List[str]]):
-        self._autocomplete = value
-        if value:
-            self.on('keyup', self.autocomplete_input)
-            self.on('keydown.tab', self.complete_input)
+        self.on('keyup', self.autocomplete_input)
+        self.on('keydown.tab', self.complete_input)
 
     def find_autocompletion(self) -> Optional[str]:
         if self.value and self.autocomplete:
@@ -75,14 +65,16 @@ class Input(ValueElement, DisableableElement):
                     return item
 
     def autocomplete_input(self) -> None:
-        match = self.find_autocompletion() or ''
-        self.props(f'shadow-text="{match[len(self.value):]}"')
+        if self.autocomplete:
+            match = self.find_autocompletion() or ''
+            self.props(f'shadow-text="{match[len(self.value):]}"')
 
     def complete_input(self) -> None:
-        match = self.find_autocompletion()
-        if match:
-            self.set_value(match)
-        self.props('shadow-text=""')
+        if self.autocomplete:
+            match = self.find_autocompletion()
+            if match:
+                self.set_value(match)
+            self.props('shadow-text=""')
 
     def on_value_change(self, value: Any) -> None:
         super().on_value_change(value)
