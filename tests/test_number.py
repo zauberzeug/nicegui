@@ -29,3 +29,13 @@ def test_max_value(screen: Screen):
     element.send_keys('6')
     screen.click('Button')
     screen.should_contain_input('10')
+
+
+def test_clearable_number(screen: Screen):
+    number = ui.number(value=42).props('clearable')
+    ui.label().bind_text_from(number, 'value', lambda value: f'value: {value}')
+
+    screen.open('/')
+    screen.should_contain('value: 42')
+    screen.click('cancel')
+    screen.should_contain('value: None')
