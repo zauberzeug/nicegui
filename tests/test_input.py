@@ -108,3 +108,37 @@ def test_autocompletion(screen: Screen):
     element.send_keys(Keys.TAB)
     screen.wait(0.5)
     assert element.get_attribute('value') == 'fx'
+
+
+def test_autocompletion_lazy_load(screen: Screen):
+    test_input = ui.input('InputLazy', autocomplete=None)
+
+    screen.open('/')
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="InputLazy"]')
+    element.send_keys('f')
+    element.send_keys(Keys.TAB)
+    screen.wait(0.2)
+    assert element.get_attribute('value') == 'f'
+
+    test_input.autocomplete = ['foo', 'bar', 'baz']
+    element.send_keys('o')
+    screen.wait(0.1)
+    screen.should_contain('foo')
+    assert element.get_attribute('value') == 'fo'
+    element.send_keys(Keys.TAB)
+    screen.wait(0.2)
+    assert element.get_attribute('value') == 'foo'
+
+    element.send_keys(Keys.BACKSPACE)
+    screen.wait(0.2)
+    element.send_keys(Keys.BACKSPACE)
+    screen.wait(0.2)
+    element.send_keys(Keys.BACKSPACE)
+    screen.wait(0.2)
+    assert element.get_attribute('value') == ''
+    test_input.autocomplete.append('nicegui')
+    element.send_keys('n')
+    screen.should_contain('icegui')
+    element.send_keys(Keys.TAB)
+    screen.wait(0.2)
+    assert element.get_attribute('value') == 'nicegui'
