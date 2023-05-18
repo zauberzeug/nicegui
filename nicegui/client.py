@@ -112,7 +112,7 @@ class Client:
         """Execute JavaScript on the client.
 
         The client connection must be established before this method is called.
-        You can do this by `await client.connected()` or register a callback with `client.on_connected(...)`.
+        You can do this by `await client.connected()` or register a callback with `client.on_connect(...)`.
         If respond is True, the javascript code must return a string.
         """
         request_id = str(uuid.uuid4())
