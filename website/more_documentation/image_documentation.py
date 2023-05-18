@@ -10,6 +10,13 @@ def main_demo() -> None:
 def more() -> None:
     ui.add_body_html('<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>')
 
+    @text_demo('base64 string', '''
+        You can also use [Lottie files](https://lottiefiles.com/) with animations.
+    ''')
+    async def base64():
+        base64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=='
+        ui.image(base64).classes('w-2 h-2 m-auto')
+
     @text_demo('Lottie files', '''
         You can also use [Lottie files](https://lottiefiles.com/) with animations.
     ''')
