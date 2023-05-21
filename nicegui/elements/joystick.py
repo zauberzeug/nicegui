@@ -45,5 +45,4 @@ class Joystick(Element):
                                                                       client=self.client,
                                                                       action='end')))
         self._props['options'] = options
-        self.use_component('joystick')
         self.use_library('nipplejs')

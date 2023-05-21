@@ -82,24 +82,30 @@ def generate_resources(prefix: str, elements: List[Element]) -> Tuple[str, str, 
     js_imports = ''
     import_maps = {'imports': {}}
 
+    # Build the importmap structure for exposed libraries.
+    for key in libraries:
+        if key not in done and libraries[key]['expose']:
+            name = libraries[key]['name']
+            import_maps['imports'][name] = f'{prefix}/_nicegui/{__version__}/library/{key}/include'
+            done.add(key)
+    # Build the none optimized component (ie, the vue component).
+    for key in vue_components:
+        if key not in done:
+            vue_html += f'{vue_components[key].html}\n'
+            vue_scripts += f'{vue_components[key].script.replace("Vue.component", "app.component", 1)}\n'
+            vue_styles += f'{vue_components[key].style}\n'
+            done.add(key)
+
     # Build the resources associated with the elements.
     all_elements = list(elements)  # @todo remove all_elements when legacy support is dropped.
     all_elements.append(legacy)
     for element in all_elements:  # @todo 'in elements' iteration when legacy support is dropped.
         for key in element.libraries:
             if key in libraries and key not in done:
-                if libraries[key]['expose']:
-                    name = libraries[key]['name']
-                    import_maps['imports'][name] = f'{prefix}/_nicegui/{__version__}/library/{key}/include'
-                else:
+                if not libraries[key]['expose']:
                     js_imports += f'import "{prefix}/_nicegui/{__version__}/library/{key}/include";\n'
                 done.add(key)
         for key in element.components:
-            if key in vue_components and key not in done:
-                vue_html += f'{vue_components[key].html}\n'
-                vue_scripts += f'{vue_components[key].script.replace("Vue.component", "app.component", 1)}\n'
-                vue_styles += f'{vue_components[key].style}\n'
-                done.add(key)
             if key in js_components and key not in done:
                 name = js_components[key]['name']
                 js_imports += f'import {{ default as {key} }} from "{prefix}/_nicegui/{__version__}/components/{key}";\n'

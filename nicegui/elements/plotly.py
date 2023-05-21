@@ -30,7 +30,6 @@ class Plotly(Element):
         super().__init__('plotly')
 
         self.figure = figure
-        self.use_component('plotly')
         self.use_library('plotly')
         self.update()
 

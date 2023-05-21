@@ -71,9 +71,16 @@
       }
       function renderRecursively(elements, id) {
         const element = elements[id];
+        if (element === undefined) {
+            return;
+        }
 
+        // @todo: Try avoid this with better handling of initial page load.
         for (const component of element['components']) {
           loaded.push(component);
+        }
+        for (const library of element['libraries']) {
+          loaded.push(library);
         }
 
         const props = {
@@ -183,9 +190,14 @@
           });
           window.socket.on("update", async (msg) => {
             for (const [id, element] of Object.entries(msg)) {
+              for (const library of element['libraries']) {
+                if (!loaded.includes(library)) {
+                  await import(`{{ prefix | safe }}/_nicegui/0.1.0/library/${library}/include`);
+                  loaded.push(library);
+                }
+              }
               for (const component of element['components']) {
                 if (!loaded.includes(component)) {
-                  console.log('TRY TO LOAD COMPONENT', component);
                   const { default: vue_component } = await import(`{{ prefix | safe }}/_nicegui/0.1.0/components/${component}`);
                   app = app.component(component.replace('vue_', ''), vue_component);
                   loaded.push(component);
