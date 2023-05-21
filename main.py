@@ -29,7 +29,7 @@ from website.style import example_link, features, heading, link_target, section_
 prometheus.start_monitor(app)
 
 # session middleware is required for demo in documentation and prometheus
-app.add_middleware(SessionMiddleware, secret_key='NiceGUI is awesome!')
+app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_KEY', ''))
 
 app.add_static_files('/favicon', str(Path(__file__).parent / 'website' / 'favicon'))
 app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
@@ -75,19 +75,20 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
             .classes('items-center duration-200 p-0 px-4 no-wrap') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
         if menu:
-            ui.button(on_click=menu.toggle).props('flat color=white icon=menu round') \
-                .classes('max-[405px]:hidden lg:hidden')
+            ui.button(on_click=menu.toggle).props('flat color=white icon=menu round').classes('lg:hidden')
         with ui.link(target=index_page).classes('row gap-4 items-center no-wrap mr-auto'):
             svg.face().classes('w-8 stroke-white stroke-2')
             svg.word().classes('w-24')
         with ui.row().classes('max-lg:hidden'):
             for title, target in menu_items.items():
                 ui.link(title, target).classes(replace='text-lg text-white')
-        with ui.link(target='https://discord.gg/TEpFeAaF4f'):
+        with ui.link(target='https://discord.gg/TEpFeAaF4f').classes('max-[435px]:hidden'):
             svg.discord().classes('fill-white scale-125 m-1')
+        with ui.link(target='https://www.reddit.com/r/nicegui/').classes('max-[385px]:hidden'):
+            svg.reddit().classes('fill-white scale-125 m-1')
         with ui.link(target='https://github.com/zauberzeug/nicegui/'):
             svg.github().classes('fill-white scale-125 m-1')
-        add_star().classes('max-[460px]:hidden')
+        add_star().classes('max-[480px]:hidden')
         with ui.row().classes('lg:hidden'):
             with ui.button().props('flat color=white icon=more_vert round'):
                 with ui.menu().classes('bg-primary text-white text-lg').props(remove='no-parent-event'):
@@ -119,17 +120,21 @@ async def index_page(client: Client):
         with ui.column().classes('text-white max-w-4xl'):
             heading('Interact with Python through buttons, dialogs, 3D&nbsp;scenes, plots and much more.')
             with ui.column().classes('gap-2 bold-links arrow-links text-lg'):
-                ui.markdown(
-                    'NiceGUI handles all the web development details for you. '
-                    'So you can focus on writing Python code. '
-                    'Anything from short scripts and dashboards to full robotics projects, IoT solutions, '
-                    'smart home automations and machine learning projects can benefit from having all code in one place.'
-                )
-                ui.markdown(
-                    'Available as '
-                    '[PyPI package](https://pypi.org/project/nicegui/), '
-                    '[Docker image](https://hub.docker.com/r/zauberzeug/nicegui) and on '
-                    '[GitHub](https://github.com/zauberzeug/nicegui).')
+                ui.markdown('''
+                    NiceGUI manages web development details, letting you focus on Python code for diverse applications,
+                    including robotics, IoT solutions, smart home automation, and machine learning.
+                    Designed to work smoothly with connected peripherals like webcams and GPIO pins in IoT setups,
+                    NiceGUI streamlines the management of all your code in one place.
+                    <br><br>
+                    With a gentle learning curve, NiceGUI is user-friendly for beginners
+                    and offers advanced customization for experienced users,
+                    ensuring simplicity for basic tasks and feasibility for complex projects.
+                    <br><br><br>
+                    Available as
+                    [PyPI package](https://pypi.org/project/nicegui/),
+                    [Docker image](https://hub.docker.com/r/zauberzeug/nicegui) and on
+                    [GitHub](https://github.com/zauberzeug/nicegui).
+                ''')
         example_card.create()
 
     with ui.column().classes('w-full text-lg p-8 lg:p-16 max-w-[1600px] mx-auto'):
@@ -187,12 +192,12 @@ async def index_page(client: Client):
             features('swap_horiz', 'Interaction', [
                 'buttons, switches, sliders, inputs, ...',
                 'notifications, dialogs and menus',
-                'keyboard input',
-                'on-screen joystick',
+                'interactive images with SVG overlays',
+                'web pages and native window apps',
             ])
             features('space_dashboard', 'Layout', [
                 'navigation bars, tabs, panels, ...',
-                'grouping with rows, columns and cards',
+                'grouping with rows, columns, grids and cards',
                 'HTML and Markdown elements',
                 'flex layout by default',
             ])
@@ -209,8 +214,8 @@ async def index_page(client: Client):
                 '[Tailwind CSS](https://tailwindcss.com/) auto-completion',
             ])
             features('source', 'Coding', [
-                'live-cycle events',
-                'implicit reload on code change',
+                'routing for multiple pages',
+                'auto-reload on code change',
                 'straight-forward data binding',
                 'Jupyter notebook compatibility',
             ])
@@ -245,8 +250,7 @@ async def index_page(client: Client):
             example_link('Authentication', 'shows how to use sessions to build a login screen')
             example_link('Modularization',
                          'provides an example of how to modularize your application into multiple files and reuse code')
-            example_link('FastAPI',
-                         'illustrates the integration of NiceGUI with an existing FastAPI application')
+            example_link('FastAPI', 'illustrates the integration of NiceGUI with an existing FastAPI application')
             example_link('Map',
                          'demonstrates wrapping the JavaScript library [leaflet](https://leafletjs.com/) '
                          'to display a map at specific locations')
@@ -270,6 +274,9 @@ async def index_page(client: Client):
             example_link('Table and slots', 'shows how to use component slots in a table')
             example_link('Single Page App', 'navigate without reloading the page')
             example_link('Chat App', 'a simple chat app')
+            example_link('Chat with AI', 'a simple chat app with AI')
+            example_link('SQLite Database', 'CRUD operations on a SQLite database')
+            example_link('Pandas DataFrame', 'displays an editable [pandas](https://pandas.pydata.org) DataFrame')
 
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
@@ -325,13 +332,17 @@ def documentation_page():
 
 
 @ui.page('/documentation/{name}')
-def documentation_page_more(name: str):
+async def documentation_page_more(name: str, client: Client):
     if not hasattr(ui, name):
         name = name.replace('_', '')  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
     module = importlib.import_module(f'website.more_documentation.{name}_documentation')
-    api = getattr(ui, name)
     more = getattr(module, 'more', None)
-    back_link_target = str(api.__doc__ or api.__init__.__doc__).splitlines()[0].strip()
+    if hasattr(ui, name):
+        api = getattr(ui, name)
+        back_link_target = str(api.__doc__ or api.__init__.__doc__).splitlines()[0].strip()
+    else:
+        api = name
+        back_link_target = name
 
     add_head_html()
     add_header()
@@ -349,6 +360,7 @@ def documentation_page_more(name: str):
                 ui.markdown('**Reference**').classes('mt-4')
             ui.markdown('## Reference').classes('mt-16')
             generate_class_doc(api)
-
+    await client.connected()
+    await ui.run_javascript(f'document.title = "{name} • NiceGUI";', respond=False)
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html')

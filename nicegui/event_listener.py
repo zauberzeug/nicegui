@@ -2,8 +2,10 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List
 
+from .helpers import KWONLY_SLOTS
 
-@dataclass
+
+@dataclass(**KWONLY_SLOTS)
 class EventListener:
     id: str = field(init=False)
     element_id: int

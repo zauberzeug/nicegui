@@ -38,23 +38,12 @@ class refreshable:
         self.prune()
         for container, args, kwargs in self.containers:
             container.clear()
+            result = self._run_in_container(container, *args, **kwargs)
             if is_coroutine(self.func):
-                async def wait_for_result(container: Element, args, kwargs):
-                    with container:
-                        if self.instance is None:
-                            await self.func(*args, **kwargs)
-                        else:
-                            await self.func(self.instance, *args, **kwargs)
                 if globals.loop and globals.loop.is_running():
-                    background_tasks.create(wait_for_result(container=container, args=args, kwargs=kwargs))
+                    background_tasks.create(result)
                 else:
-                    globals.app.on_startup(wait_for_result(container=container, args=args, kwargs=kwargs))
-            else:
-                with container:
-                    if self.instance is None:
-                        self.func(*args, **kwargs)
-                    else:
-                        self.func(self.instance, *args, **kwargs)
+                    globals.app.on_startup(result)
 
     def prune(self) -> None:
         self.containers = [
@@ -62,3 +51,19 @@ class refreshable:
             for container, args, kwargs in self.containers
             if container.client.id in globals.clients
         ]
+
+    def _run_in_container(self, container: Element, *args, **kwargs) -> None:
+        if is_coroutine(self.func):
+            async def wait_for_result() -> None:
+                with container:
+                    if self.instance is None:
+                        await self.func(*args, **kwargs)
+                    else:
+                        await self.func(self.instance, *args, **kwargs)
+            return wait_for_result()
+        else:
+            with container:
+                if self.instance is None:
+                    self.func(*args, **kwargs)
+                else:
+                    self.func(self.instance, *args, **kwargs)

@@ -10,6 +10,7 @@ from uvicorn import Server
 
 from . import background_tasks
 from .app import App
+from .language import Language
 
 if TYPE_CHECKING:
     from .client import Client
@@ -36,6 +37,7 @@ title: str
 viewport: str
 favicon: Optional[str]
 dark: Optional[bool]
+language: Language
 binding_refresh_interval: float
 excludes: List[str]
 tailwind: bool

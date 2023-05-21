@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11.3-slim
 ARG VERSION
 
 LABEL maintainer="Zauberzeug GmbH <info@zauberzeug.com>"

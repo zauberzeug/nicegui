@@ -5,11 +5,11 @@ from typing import Any, Dict, List, Set, Tuple
 
 import vbuild
 
-from . import __version__
 from .element import Element
+from . import __version__
 
 
-class Legacy():
+class Legacy:
     """ @todo remove when register_component is removed. """
     components: List[str] = []
     libraries: List[str] = []

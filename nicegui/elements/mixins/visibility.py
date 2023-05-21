@@ -70,7 +70,7 @@ class Visibility:
         bind(self, 'visible', target_object, target_name, forward=forward, backward=backward)
         return self
 
-    def set_visibility(self, visible: str) -> None:
+    def set_visibility(self, visible: bool) -> None:
         """Set the visibility of this element.
 
         :param visible: Whether the element should be visible.

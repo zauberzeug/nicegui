@@ -27,7 +27,6 @@ class AgGrid(Element):
         super().__init__('aggrid')
         self._props['options'] = options
         self._props['html_columns'] = html_columns
-        self._props['key'] = self.id  # HACK: workaround for #600
         self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']
         self.use_component('aggrid').use_library('aggrid')
 

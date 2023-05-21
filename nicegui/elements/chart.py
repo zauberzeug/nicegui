@@ -113,7 +113,6 @@ class Chart(Element):
         self.use_library('highcharts-3d')
         for extra in extras:
             self.use_library(extra)
-        self._props['key'] = self.id  # HACK: workaround for #600
 
     @property
     def options(self) -> Dict:

@@ -17,7 +17,7 @@ class ColorInput(ValueElement, DisableableElement):
         :param label: displayed label for the color input
         :param placeholder: text to show if no color is selected
         :param value: the current color value
-        :param on_change: callback to execute when the input is confirmed by leaving the focus
+        :param on_change: callback to execute when the value changes
         """
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
         if label is not None:

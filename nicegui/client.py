@@ -53,7 +53,7 @@ class Client:
     @property
     def ip(self) -> Optional[str]:
         """Return the IP address of the client, or None if the client is not connected."""
-        return self.environ.get('REMOTE_ADDR') if self.environ else None
+        return self.environ['asgi.scope']['client'][0] if self.environ else None
 
     @property
     def has_socket_connection(self) -> bool:
@@ -68,7 +68,7 @@ class Client:
         self.content.__exit__()
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
-        prefix = request.headers.get('X-Forwarded-Prefix', '')
+        prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
         elements = json.dumps({id: element._to_dict() for id, element in self.elements.items()})
         vue_html, vue_styles, vue_scripts, import_maps, js_imports = generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse('index.html', {
@@ -85,6 +85,7 @@ class Client:
             'viewport': self.page.resolve_viewport(),
             'favicon_url': get_favicon_url(self.page, prefix),
             'dark': str(self.page.resolve_dark()),
+            'language': self.page.resolve_language(),
             'prefix': prefix,
             'tailwind': globals.tailwind,
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
@@ -112,7 +113,7 @@ class Client:
         """Execute JavaScript on the client.
 
         The client connection must be established before this method is called.
-        You can do this by `await client.connected()` or register a callback with `client.on_connected(...)`.
+        You can do this by `await client.connected()` or register a callback with `client.on_connect(...)`.
         If respond is True, the javascript code must return a string.
         """
         request_id = str(uuid.uuid4())

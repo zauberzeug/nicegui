@@ -6,6 +6,7 @@ from .. import binding, globals
 from ..dependencies import register_library, register_vue_component
 from ..element import Element
 from ..events import SceneClickEventArguments, SceneClickHit, handle_event
+from ..helpers import KWONLY_SLOTS
 from .scene_object3d import Object3D
 from .scene_objects import Scene as SceneObject
 
@@ -24,7 +25,7 @@ register_library(name='tween',
                  path=Path(__file__).parent.joinpath('lib', 'tween', 'tween.umd.js'))
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class SceneCamera:
     x: float = 0
     y: float = -3
@@ -37,7 +38,7 @@ class SceneCamera:
     up_z: float = 1
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class SceneObject:
     id: str = 'scene'
 
@@ -80,7 +81,6 @@ class Scene(Element):
         self._props['width'] = width
         self._props['height'] = height
         self._props['grid'] = grid
-        self._props['key'] = self.id  # HACK: workaround for #600
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()

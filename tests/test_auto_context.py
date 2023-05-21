@@ -2,7 +2,7 @@ import asyncio
 
 from selenium.webdriver.common.by import By
 
-from nicegui import Client, background_tasks, ui
+from nicegui import Client, app, background_tasks, ui
 
 from .screen import Screen
 
@@ -92,16 +92,13 @@ def test_autoupdate_on_async_event_handler(screen: Screen):
 def test_autoupdate_on_async_timer_callback(screen: Screen):
     async def update():
         ui.label('1')
-        await asyncio.sleep(2.0)
+        await asyncio.sleep(1.0)
         ui.label('2')
     ui.label('0')
-    ui.timer(2.0, update, once=True)
-
-    ui.timer(0, lambda: ui.label('connection established'), once=True)  # HACK: allow waiting for client connection
+    ui.button('start', on_click=lambda: ui.timer(2.0, update, once=True))
 
     screen.open('/')
-    with screen.implicitly_wait(10.0):
-        screen.wait_for('connection established')
+    screen.click('start')
     screen.should_contain('0')
     screen.should_not_contain('1')
     screen.wait_for('1')

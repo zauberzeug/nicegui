@@ -39,7 +39,7 @@ class Element(Visibility):
         self.tag = tag
         self._classes: List[str] = []
         self._style: Dict[str, str] = {}
-        self._props: Dict[str, Any] = {}
+        self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
         self.components: List[str] = []
@@ -269,6 +269,20 @@ class Element(Visibility):
         for slot in self.slots.values():
             slot.children.clear()
         self.update()
+
+    def move(self, target_container: Optional[Element] = None, target_index: int = -1):
+        """Move the element to another container.
+
+        :param target_container: container to move the element to (default: the parent container)
+        :param target_index: index within the target slot (default: append to the end)
+        """
+        self.parent_slot.children.remove(self)
+        self.parent_slot.parent.update()
+        target_container = target_container or self.parent_slot.parent
+        target_index = target_index if target_index >= 0 else len(target_container.default_slot.children)
+        target_container.default_slot.children.insert(target_index, self)
+        self.parent_slot = target_container.default_slot
+        target_container.update()
 
     def remove(self, element: Union[Element, int]) -> None:
         """Remove a child element.

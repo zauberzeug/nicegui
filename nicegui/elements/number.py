@@ -35,7 +35,7 @@ class Number(ValueElement, DisableableElement):
         :param prefix: a prefix to prepend to the displayed value
         :param suffix: a suffix to append to the displayed value
         :param format: a string like "%.2f" to format the displayed value
-        :param on_change: callback to execute when the input is confirmed by leaving the focus
+        :param on_change: callback to execute when the value changes
         :param validation: dictionary of validation rules, e.g. ``{'Too small!': lambda value: value < 3}``
         """
         self.format = format
