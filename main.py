@@ -83,12 +83,12 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
             for title, target in menu_items.items():
                 ui.link(title, target).classes(replace='text-lg text-white')
         with ui.link(target='https://discord.gg/TEpFeAaF4f').classes('max-[435px]:hidden'):
-            svg.discord().classes('fill-white scale-125 m-1')
+            svg.discord().classes('fill-white scale-125 m-1').tooltip('Discord')
         with ui.link(target='https://www.reddit.com/r/nicegui/').classes('max-[385px]:hidden'):
-            svg.reddit().classes('fill-white scale-125 m-1')
+            svg.reddit().classes('fill-white scale-125 m-1').tooltip('Reddit')
         with ui.link(target='https://github.com/zauberzeug/nicegui/'):
-            svg.github().classes('fill-white scale-125 m-1')
-        add_star().classes('max-[480px]:hidden')
+            svg.github().classes('fill-white scale-125 m-1').tooltip('GitHub')
+        add_star().classes('max-[480px]:hidden').tooltip('Star us on GitHub')
         with ui.row().classes('lg:hidden'):
             with ui.button().props('flat color=white icon=more_vert round'):
                 with ui.menu().classes('bg-primary text-white text-lg').props(remove='no-parent-event'):
