@@ -1,14 +1,13 @@
-from pathlib import Path
 from typing import Callable, Optional
 
 from fastapi import Request, Response
 
-from ..dependencies import register_vue_component
+from ..dependencies import register_component
 from ..events import EventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
 from .mixins.disableable_element import DisableableElement
 
-register_vue_component(name='upload', path=Path(__file__).parent.joinpath('upload.js'))
+register_component('upload', __file__, 'upload.js')
 
 
 class Upload(DisableableElement):
@@ -41,7 +40,6 @@ class Upload(DisableableElement):
         self._props['label'] = label
         self._props['auto-upload'] = auto_upload
         self._props['url'] = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
-        self.use_component('upload')
 
         if max_file_size is not None:
             self._props['max-file-size'] = max_file_size
