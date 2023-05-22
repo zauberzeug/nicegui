@@ -8,6 +8,18 @@ def main_demo() -> None:
 
 
 def more() -> None:
+    @text_demo('Icons', '''
+        You can also add an icon to a button.
+    ''')
+    async def icons() -> None:
+        with ui.row():
+            ui.button('demo').props('icon=history')
+            ui.button().props('icon=thumb_up')
+            with ui.button():
+                ui.label('sub-elements')
+                ui.image('https://picsum.photos/id/377/640/360') \
+                    .classes('rounded-full w-16 h-16 ml-4')
+
     @text_demo('Await button click', '''
         Sometimes it is convenient to wait for a button click before continuing the execution.
     ''')
