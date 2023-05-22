@@ -12,16 +12,12 @@ def main_demo() -> None:
 
 def more() -> None:
     @text_demo('Masonry or Pinterest-Style Layout', '''
-        To create a masonry/pinterest layout, the normal ui.column can not be used.
-        But it can be archived with a few Tailwind CSS classes.
+        To create a masonry/Pinterest layout, the normal `ui.column` can not be used.
+        But it can be achieved with a few TailwindCSS classes.
     ''')
     def masonry() -> None:
-        from random import choice, randint
-
         with ui.element('div').classes('columns-3 w-full gap-2'):
-            for i in range(0, 9):
-                height = f'h-{choice([8, 12, 14, 16, 20])}'
-                color = f'bg-sky-{randint(1,5)}00'
-                classes = f'w-full mb-2 {height} {color} break-inside-avoid'
-                with ui.element('div').classes(classes):
-                    ui.label(f'Content #{i+1}')
+            for i, height in enumerate([50, 50, 50, 150, 100, 50]):
+                tailwind = f'mb-2 p-2 h-[{height}px] bg-blue-100 break-inside-avoid'
+                with ui.card().classes(tailwind):
+                    ui.label(f'Card #{i+1}')
