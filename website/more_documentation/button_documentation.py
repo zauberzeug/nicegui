@@ -18,7 +18,7 @@ def more() -> None:
             with ui.button():
                 ui.label('sub-elements')
                 ui.image('https://picsum.photos/id/377/640/360') \
-                    .classes('rounded-full w-16 h-16 ml-4 shadow-inner')
+                    .classes('rounded-full w-16 h-16 ml-4')
 
     @text_demo('Await button click', '''
         Sometimes it is convenient to wait for a button click before continuing the execution.
