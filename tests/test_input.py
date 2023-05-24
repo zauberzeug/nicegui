@@ -109,7 +109,6 @@ def test_autocompletion(screen: Screen):
     screen.wait(0.5)
     assert element.get_attribute('value') == 'fx'
 
-
 def test_autocompletion_lazy_load(screen: Screen):
     test_input = ui.input('InputLazy', autocomplete=None)
 
@@ -141,3 +140,12 @@ def test_autocompletion_lazy_load(screen: Screen):
     element.send_keys(Keys.TAB)
     screen.wait(0.2)
     assert element.get_attribute('value') == 'nicegui'
+
+def test_clearable_input(screen: Screen):
+    input = ui.input(value='foo').props('clearable')
+    ui.label().bind_text_from(input, 'value', lambda value: f'value: {value}')
+
+    screen.open('/')
+    screen.should_contain('value: foo')
+    screen.click('cancel')
+    screen.should_contain('value: None')

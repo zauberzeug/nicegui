@@ -76,7 +76,7 @@
           let event_name = 'on' + event.type[0].toLocaleUpperCase() + event.type.substring(1);
           event.specials.forEach(s => event_name += s[0].toLocaleUpperCase() + s.substring(1));
           let handler = (e) => {
-            const all = typeof e !== 'object' || !event.args;
+            const all = (typeof e !== 'object' || e === null) || !event.args;
             const args = all ? e : Object.fromEntries(event.args.map(a => [a, e[a]]));
             const emitter = () => window.socket.emit("event", {id: element.id, listener_id: event.listener_id, args});
             throttle(emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
