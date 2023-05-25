@@ -270,6 +270,7 @@ async def index_page(client: Client) -> None:
             example_link('Local File Picker', 'demonstrates a dialog for selecting files locally on the server')
             example_link('Search as you type', 'using public API of thecocktaildb.com to search for cocktails')
             example_link('Menu and Tabs', 'uses Quasar to create foldable menu and tabs inside a header bar')
+            example_link('Todo list', 'shows a simple todo list with checkboxes and text input')
             example_link('Trello Cards', 'shows Trello-like cards that can be dragged and dropped into columns')
             example_link('Slots', 'shows how to use scoped slots to customize Quasar elements')
             example_link('Table and slots', 'shows how to use component slots in a table')
