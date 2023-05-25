@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from dataclasses import dataclass
+from typing import List
 
 from nicegui import ui
 
@@ -10,7 +11,7 @@ class TodoItem:
     done: bool = False
 
 
-items: list[TodoItem] = [
+items: List[TodoItem] = [
     TodoItem('Buy milk', done=True),
     TodoItem('Clean the house'),
     TodoItem('Call mom'),
