@@ -276,7 +276,7 @@ def handle_event(handler: Optional[Callable],
             return
         no_arguments = not signature(handler).parameters
         sender = arguments.sender if isinstance(arguments, EventArguments) else sender
-        assert sender.parent_slot is not None
+        assert sender is not None and sender.parent_slot is not None
         with sender.parent_slot:
             result = handler() if no_arguments else handler(arguments)
         if is_coroutine(handler):

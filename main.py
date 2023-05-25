@@ -10,10 +10,10 @@ if True:
 
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Awaitable, Callable, Optional
 
 from fastapi import Request
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, Response
 from starlette.middleware.sessions import SessionMiddleware
 
 import prometheus
@@ -36,17 +36,18 @@ app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
 
 
 @app.get('/logo.png')
-def logo():
+def logo() -> FileResponse:
     return FileResponse(svg.PATH / 'logo.png', media_type='image/png')
 
 
 @app.get('/logo_square.png')
-def logo():
+def logo_square() -> FileResponse:
     return FileResponse(svg.PATH / 'logo_square.png', media_type='image/png')
 
 
 @app.middleware('http')
-async def redirect_reference_to_documentation(request: Request, call_next):
+async def redirect_reference_to_documentation(request: Request,
+                                              call_next: Callable[[Request], Awaitable[Response]]) -> Response:
     if request.url.path == '/reference':
         return RedirectResponse('/documentation')
     return await call_next(request)
@@ -97,7 +98,7 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
 
 
 @ui.page('/')
-async def index_page(client: Client):
+async def index_page(client: Client) -> None:
     client.content.classes('p-0 gap-0')
     add_head_html()
     add_header()
@@ -317,7 +318,7 @@ async def index_page(client: Client):
 
 
 @ui.page('/documentation')
-def documentation_page():
+def documentation_page() -> None:
     add_head_html()
     menu = side_menu()
     add_header(menu)
@@ -332,7 +333,7 @@ def documentation_page():
 
 
 @ui.page('/documentation/{name}')
-async def documentation_page_more(name: str, client: Client):
+async def documentation_page_more(name: str, client: Client) -> None:
     if not hasattr(ui, name):
         name = name.replace('_', '')  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
     module = importlib.import_module(f'website.more_documentation.{name}_documentation')
