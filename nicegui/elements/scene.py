@@ -7,7 +7,6 @@ from ..element import Element
 from ..events import SceneClickEventArguments, SceneClickHit, handle_event
 from ..helpers import KWONLY_SLOTS
 from .scene_object3d import Object3D
-from .scene_objects import Scene as SceneObject
 
 register_component('scene', __file__, 'scene.js', [
     'lib/three.min.js',
