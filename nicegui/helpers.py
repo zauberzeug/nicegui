@@ -23,7 +23,7 @@ def is_coroutine(object: Any) -> bool:
     return asyncio.iscoroutinefunction(object)
 
 
-def safe_invoke(func: Union[Callable, Awaitable], client: Optional['Client'] = None) -> None:
+def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional['Client'] = None) -> None:
     try:
         if isinstance(func, Awaitable):
             async def func_with_client():

@@ -197,7 +197,7 @@ class Element(Visibility):
 
     def on(self,
            type: str,
-           handler: Optional[Callable],
+           handler: Optional[Callable[..., Any]] = None,
            args: Optional[List[str]] = None, *,
            throttle: float = 0.0,
            leading_events: bool = True,

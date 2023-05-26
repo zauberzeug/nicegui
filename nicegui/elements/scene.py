@@ -57,7 +57,8 @@ class Scene(Element):
                  width: int = 400,
                  height: int = 300,
                  grid: bool = True,
-                 on_click: Optional[Callable] = None) -> None:
+                 on_click: Optional[Callable[..., Any]] = None,
+                 ) -> None:
         """3D Scene
 
         Display a 3d scene using `three.js <https://threejs.org/>`_.

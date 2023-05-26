@@ -1,7 +1,7 @@
 import asyncio
 import inspect
 import time
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from fastapi import Request, Response
 
@@ -62,7 +62,7 @@ class page:
     def resolve_language(self) -> Optional[str]:
         return self.language if self.language is not ... else globals.language
 
-    def __call__(self, func: Callable) -> Callable:
+    def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         globals.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
         parameters_of_decorated_func = list(inspect.signature(func).parameters.keys())
 

@@ -15,8 +15,9 @@ class Select(ChoiceElement, DisableableElement):
     def __init__(self, options: Union[List, Dict], *,
                  label: Optional[str] = None,
                  value: Any = None,
-                 on_change: Optional[Callable] = None,
-                 with_input: bool = False) -> None:
+                 on_change: Optional[Callable[..., Any]] = None,
+                 with_input: bool = False,
+                 ) -> None:
         """Dropdown Selection
 
         The options can be specified as a list of values, or as a dictionary mapping values to labels.

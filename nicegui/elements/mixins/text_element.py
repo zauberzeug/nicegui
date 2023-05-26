@@ -17,7 +17,8 @@ class TextElement(Element):
     def bind_text_to(self,
                      target_object: Any,
                      target_name: str = 'text',
-                     forward: Callable = lambda x: x) -> Self:
+                     forward: Callable[..., Any] = lambda x: x,
+                     ) -> Self:
         """Bind the text of this element to the target object's target_name property.
 
         The binding works one way only, from this element to the target.
@@ -32,7 +33,8 @@ class TextElement(Element):
     def bind_text_from(self,
                        target_object: Any,
                        target_name: str = 'text',
-                       backward: Callable = lambda x: x) -> Self:
+                       backward: Callable[..., Any] = lambda x: x,
+                       ) -> Self:
         """Bind the text of this element from the target object's target_name property.
 
         The binding works one way only, from the target to this element.
@@ -47,8 +49,9 @@ class TextElement(Element):
     def bind_text(self,
                   target_object: Any,
                   target_name: str = 'text', *,
-                  forward: Callable = lambda x: x,
-                  backward: Callable = lambda x: x) -> Self:
+                  forward: Callable[..., Any] = lambda x: x,
+                  backward: Callable[..., Any] = lambda x: x,
+                  ) -> Self:
         """Bind the text of this element to the target object's target_name property.
 
         The binding works both ways, from this element to the target and from the target to this element.

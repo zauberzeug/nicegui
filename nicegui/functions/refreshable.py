@@ -12,7 +12,7 @@ register_component('refreshable', __file__, 'refreshable.js')
 
 class refreshable:
 
-    def __init__(self, func: Callable) -> None:
+    def __init__(self, func: Callable[..., Any]) -> None:
         """Refreshable UI functions
 
         The `@ui.refreshable` decorator allows you to create functions that have a `refresh` method.

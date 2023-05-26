@@ -3,7 +3,7 @@ import inspect
 import logging
 from contextlib import contextmanager
 from enum import Enum
-from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from socketio import AsyncServer
 from uvicorn import Server
@@ -48,13 +48,13 @@ slot_stacks: Dict[int, List['Slot']] = {}
 clients: Dict[str, 'Client'] = {}
 index_client: 'Client'
 
-page_routes: Dict[Callable, str] = {}
+page_routes: Dict[Callable[..., Any], str] = {}
 
-startup_handlers: List[Union[Callable, Awaitable]] = []
-shutdown_handlers: List[Union[Callable, Awaitable]] = []
-connect_handlers: List[Union[Callable, Awaitable]] = []
-disconnect_handlers: List[Union[Callable, Awaitable]] = []
-exception_handlers: List[Callable] = [log.exception]
+startup_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+shutdown_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+exception_handlers: List[Callable[..., Any]] = [log.exception]
 
 
 def get_task_id() -> int:

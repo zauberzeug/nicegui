@@ -18,7 +18,8 @@ class Visibility:
     def bind_visibility_to(self,
                            target_object: Any,
                            target_name: str = 'visible',
-                           forward: Callable = lambda x: x) -> Self:
+                           forward: Callable[..., Any] = lambda x: x,
+                           ) -> Self:
         """Bind the visibility of this element to the target object's target_name property.
 
         The binding works one way only, from this element to the target.
@@ -33,7 +34,7 @@ class Visibility:
     def bind_visibility_from(self,
                              target_object: Any,
                              target_name: str = 'visible',
-                             backward: Callable = lambda x: x, *,
+                             backward: Callable[..., Any] = lambda x: x, *,
                              value: Any = None) -> Self:
         """Bind the visibility of this element from the target object's target_name property.
 
@@ -52,9 +53,10 @@ class Visibility:
     def bind_visibility(self,
                         target_object: Any,
                         target_name: str = 'visible', *,
-                        forward: Callable = lambda x: x,
-                        backward: Callable = lambda x: x,
-                        value: Any = None) -> Self:
+                        forward: Callable[..., Any] = lambda x: x,
+                        backward: Callable[..., Any] = lambda x: x,
+                        value: Any = None,
+                        ) -> Self:
         """Bind the visibility of this element to the target object's target_name property.
 
         The binding works both ways, from this element to the target and from the target to this element.
