@@ -60,6 +60,8 @@ class refreshable:
     def refresh(self) -> None:
         self.prune()
         for target in self.targets:
+            if target.instance != self.instance:
+                continue
             target.container.clear()
             result = target.run(self.func)
             if is_coroutine(self.func):
