@@ -1,6 +1,5 @@
-from pathlib import Path
-from typing import Optional
 import html
+from pathlib import Path
 from typing import List, Optional, Union
 
 from ..dependencies import register_vue_component
@@ -33,6 +32,7 @@ class ChatMessage(Element):
         :param text_html: render text as HTML (default: False)
         """
         super().__init__('chat_message')
+        self.use_component('chat_message')
 
         if isinstance(text, str):
             text = [text]
@@ -51,4 +51,3 @@ class ChatMessage(Element):
         if avatar is not None:
             self._props['avatar'] = avatar
         self._props['sent'] = sent
-        self.use_component('chat_message')

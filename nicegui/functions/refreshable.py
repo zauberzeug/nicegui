@@ -30,8 +30,8 @@ class refreshable:
     def __call__(self, *args, **kwargs) -> None:
         self.prune()
         with Element('refreshable') as container:
-            self.containers.append((container, args, kwargs))
             container.use_component('refreshable')
+            self.containers.append((container, args, kwargs))
             return self.func(*args, **kwargs) if self.instance is None else self.func(self.instance, *args, **kwargs)
 
     def refresh(self) -> None:

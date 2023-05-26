@@ -28,6 +28,7 @@ class Joystick(Element):
         :param options: arguments like `color` which should be passed to the `underlying nipple.js library <https://github.com/yoannmoinet/nipplejs#options>`_
         """
         super().__init__('joystick')
+        self.use_library('nipplejs')
         self.on('start',
                 lambda _: handle_event(on_start, JoystickEventArguments(sender=self,
                                                                         client=self.client,
@@ -45,4 +46,3 @@ class Joystick(Element):
                                                                       client=self.client,
                                                                       action='end')))
         self._props['options'] = options
-        self.use_library('nipplejs')

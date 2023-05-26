@@ -37,11 +37,11 @@ class Upload(DisableableElement):
         :param auto_upload: automatically upload files when they are selected (default: `False`)
         """
         super().__init__(tag='upload')
+        self.use_component('upload')
         self._props['multiple'] = multiple
         self._props['label'] = label
         self._props['auto-upload'] = auto_upload
         self._props['url'] = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
-        self.use_component('upload')
 
         if max_file_size is not None:
             self._props['max-file-size'] = max_file_size

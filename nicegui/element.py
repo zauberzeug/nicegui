@@ -94,7 +94,7 @@ class Element(Visibility):
             'slots': self._collect_slot_dict(),
             'events': [listener.to_dict() for listener in self._event_listeners.values()],
             'libraries': self.libraries,
-            'components': self.components
+            'components': self.components,
         }
 
     @staticmethod

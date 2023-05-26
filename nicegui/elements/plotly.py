@@ -28,9 +28,9 @@ class Plotly(Element):
                        a `dict` object with keys `data`, `layout`, `config` (optional).
         """
         super().__init__('plotly')
+        self.use_library('plotly')
 
         self.figure = figure
-        self.use_library('plotly')
         self.update()
 
     def update_figure(self, figure: Union[Dict, go.Figure]):

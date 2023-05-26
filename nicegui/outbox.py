@@ -33,13 +33,6 @@ async def loop() -> None:
         try:
             for client_id, elements in update_queue.items():
                 elements = {element_id: element._to_dict() for element_id, element in elements.items()}
-                loading = {
-                    'c': []     # vue components
-                }
-                for element_id, element in elements.items():
-                    for component in element['components']:
-                        loading['c'].append(component)
-                # coros.append(globals.sio.emit('loading', loading, room=client_id))
                 coros.append(globals.sio.emit('update', elements, room=client_id))
             update_queue.clear()
             for client_id, message_type, data in message_queue:

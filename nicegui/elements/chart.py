@@ -108,9 +108,8 @@ class Chart(Element):
         self._props['options'] = options
         self._props['extras'] = extras
         self.use_component('chart')
-        self.use_library('highcharts')
-        self.use_library('highcharts-more')
-        self.use_library('highcharts-3d')
+        for dependency in dependencies:
+            self.use_library(Path(dependency).stem)
         for extra in extras:
             self.use_library(extra)
 
