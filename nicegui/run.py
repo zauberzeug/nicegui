@@ -10,6 +10,7 @@ from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from . import globals, helpers, native_mode
+from .language import Language
 
 
 def run(*,
@@ -19,6 +20,7 @@ def run(*,
         viewport: str = 'width=device-width, initial-scale=1',
         favicon: Optional[str] = None,
         dark: Optional[bool] = False,
+        language: Language = 'en-US',
         binding_refresh_interval: float = 0.1,
         show: bool = True,
         native: bool = False,
@@ -41,8 +43,9 @@ def run(*,
     :param port: use this port (default: `8080`)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
     :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
-    :param favicon: relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
+    :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers)
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
+    :param language: language for Quasar elements (default: `'en-US'`)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param show: automatically open the UI in a browser tab (default: `True`)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
@@ -64,6 +67,7 @@ def run(*,
     globals.viewport = viewport
     globals.favicon = favicon
     globals.dark = dark
+    globals.language = language
     globals.binding_refresh_interval = binding_refresh_interval
     globals.excludes = [e.strip() for e in exclude.split(',')]
     globals.tailwind = tailwind
@@ -84,12 +88,13 @@ def run(*,
         host = host or '127.0.0.1'
         port = native_mode.find_open_port()
         width, height = window_size or (800, 600)
-        native_mode.activate(f'http://{host}:{port}', title, width, height, fullscreen)
+        native_mode.activate(host, port, title, width, height, fullscreen)
     else:
         host = host or '0.0.0.0'
 
-    # NOTE: We save the URL in an environment variable so the subprocess started in reload mode can access it.
-    os.environ['NICEGUI_URL'] = f'http://{host}:{port}'
+    # NOTE: We save host and port in environment variables so the subprocess started in reload mode can access them.
+    os.environ['NICEGUI_HOST'] = host
+    os.environ['NICEGUI_PORT'] = str(port)
 
     if show:
         helpers.schedule_browser(host, port)

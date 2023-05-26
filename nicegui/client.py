@@ -52,10 +52,12 @@ class Client:
 
     @property
     def ip(self) -> Optional[str]:
-        return self.environ.get('REMOTE_ADDR') if self.environ else None
+        """Return the IP address of the client, or None if the client is not connected."""
+        return self.environ['asgi.scope']['client'][0] if self.environ else None
 
     @property
     def has_socket_connection(self) -> bool:
+        """Return True if the client is connected, False otherwise."""
         return self.environ is not None
 
     def __enter__(self):
@@ -66,7 +68,7 @@ class Client:
         self.content.__exit__()
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
-        prefix = request.headers.get('X-Forwarded-Prefix', '')
+        prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
         vue_html, vue_styles, vue_scripts = generate_vue_content()
         elements = json.dumps({id: element._to_dict() for id, element in self.elements.items()})
         return templates.TemplateResponse('index.html', {
@@ -82,13 +84,14 @@ class Client:
             'viewport': self.page.resolve_viewport(),
             'favicon_url': get_favicon_url(self.page, prefix),
             'dark': str(self.page.resolve_dark()),
+            'language': self.page.resolve_language(),
             'prefix': prefix,
             'tailwind': globals.tailwind,
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
         }, status_code, {'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'})
 
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
-        '''Blocks execution until the client is connected.'''
+        """Block execution until the client is connected."""
         self.is_waiting_for_connection = True
         deadline = time.time() + timeout
         while not self.environ:
@@ -98,7 +101,7 @@ class Client:
         self.is_waiting_for_connection = False
 
     async def disconnected(self, check_interval: float = 0.1) -> None:
-        '''Blocks execution until the client disconnects.'''
+        """Block execution until the client disconnects."""
         self.is_waiting_for_disconnect = True
         while self.id in globals.clients:
             await asyncio.sleep(check_interval)
@@ -106,11 +109,12 @@ class Client:
 
     async def run_javascript(self, code: str, *,
                              respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Optional[str]:
-        '''Allows execution of javascript on the client.
+        """Execute JavaScript on the client.
 
         The client connection must be established before this method is called.
-        You can do this by `await client.connected()` or register a callback with `client.on_connected(...)`.
-        If respond is True, the javascript code must return a string.'''
+        You can do this by `await client.connected()` or register a callback with `client.on_connect(...)`.
+        If respond is True, the javascript code must return a string.
+        """
         request_id = str(uuid.uuid4())
         command = {
             'code': code,
@@ -127,11 +131,18 @@ class Client:
         return self.waiting_javascript_commands.pop(request_id)
 
     def open(self, target: Union[Callable, str]) -> None:
+        """Open a new page in the client."""
         path = target if isinstance(target, str) else globals.page_routes[target]
         outbox.enqueue_message('open', path, self.id)
 
+    def download(self, url: str, filename: Optional[str] = None) -> None:
+        """Download a file from the given URL."""
+        outbox.enqueue_message('download', {'url': url, 'filename': filename}, self.id)
+
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
+        """Register a callback to be called when the client connects."""
         self.connect_handlers.append(handler)
 
     def on_disconnect(self, handler: Union[Callable, Awaitable]) -> None:
+        """Register a callback to be called when the client disconnects."""
         self.disconnect_handlers.append(handler)

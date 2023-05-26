@@ -38,8 +38,7 @@ def subheading(text: str, *, make_menu_entry: bool = True, more_link: Optional[s
     ui.html(f'<div id="{name}"></div>').style('position: relative; top: -90px')
     with ui.row().classes('gap-2 items-center relative'):
         if more_link:
-            with ui.link(text, f'documentation/{more_link}').classes('text-2xl'):
-                ui.icon('open_in_new', size='0.75em').classes('mb-1 ml-2')
+            ui.link(text, f'documentation/{more_link}').classes('text-2xl')
         else:
             ui.label(text).classes('text-2xl')
         with ui.link(target=f'#{name}').classes('absolute').style('transform: translateX(-150%)'):
@@ -65,15 +64,17 @@ def render_docstring(doc: str, with_params: bool = True) -> ui.html:
 
 class text_demo:
 
-    def __init__(self, title: str, explanation: str) -> None:
+    def __init__(self, title: str, explanation: str, tab: Optional[Union[str, Callable]] = None) -> None:
         self.title = title
         self.explanation = explanation
         self.make_menu_entry = True
+        self.tab = tab
 
     def __call__(self, f: Callable) -> Callable:
         subheading(self.title, make_menu_entry=self.make_menu_entry)
         ui.markdown(self.explanation).classes('bold-links arrow-links')
-        return demo()(f)
+        f.tab = self.tab
+        return demo(f)
 
 
 class intro_demo(text_demo):
@@ -85,9 +86,11 @@ class intro_demo(text_demo):
 
 class element_demo:
 
-    def __init__(self, element_class: Union[Callable, type], browser_title: Optional[str] = None) -> None:
+    def __init__(self, element_class: Union[Callable, type, str]) -> None:
+        if isinstance(element_class, str):
+            module = importlib.import_module(f'website.more_documentation.{element_class}_documentation')
+            element_class = getattr(module, 'main_demo')
         self.element_class = element_class
-        self.browser_title = browser_title
 
     def __call__(self, f: Callable, *, more_link: Optional[str] = None) -> Callable:
         doc = self.element_class.__doc__ or self.element_class.__init__.__doc__
@@ -95,11 +98,14 @@ class element_demo:
         with ui.column().classes('w-full mb-8 gap-2'):
             subheading(title, more_link=more_link)
             render_docstring(documentation, with_params=more_link is None)
-            return demo(browser_title=self.browser_title)(f)
+            result = demo(f)
+            if more_link:
+                ui.markdown(f'See [more...](documentation/{more_link})').classes('bold-links arrow-links')
+        return result
 
 
-def load_demo(api: Union[type, Callable]) -> None:
-    name = pascal_to_snake(api.__name__)
+def load_demo(api: Union[type, Callable, str]) -> None:
+    name = pascal_to_snake(api if isinstance(api, str) else api.__name__)
     try:
         module = importlib.import_module(f'website.more_documentation.{name}_documentation')
     except ModuleNotFoundError:

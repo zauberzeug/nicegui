@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Any, Optional, Tuple
 
 import numpy as np
@@ -42,6 +43,8 @@ def _orjson_converter(obj):
     """Custom serializer/converter, e.g. for numpy object arrays."""
     if isinstance(obj, np.ndarray) and obj.dtype == np.object_:
         return obj.tolist()
+    if isinstance(obj, Decimal):
+        return float(obj)
 
 
 class NiceGUIJSONResponse(Response):

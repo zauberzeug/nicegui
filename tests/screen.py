@@ -6,7 +6,8 @@ from typing import List
 
 import pytest
 from selenium import webdriver
-from selenium.common.exceptions import ElementNotInteractableException, NoSuchElementException
+from selenium.common.exceptions import (ElementNotInteractableException, NoSuchElementException,
+                                        StaleElementReferenceException)
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
@@ -124,12 +125,15 @@ class Screen:
 
     def find(self, text: str) -> WebElement:
         try:
-            query = f'//*[not(self::script) and not(self::style) and contains(text(), "{text}")]'
+            query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
             element = self.selenium.find_element(By.XPATH, query)
-            if not element.is_displayed():
-                self.wait(0.1)  # HACK: repeat check after a short delay to avoid timing issue on fast machines
+            try:
                 if not element.is_displayed():
-                    raise AssertionError(f'Found "{text}" but it is hidden')
+                    self.wait(0.1)  # HACK: repeat check after a short delay to avoid timing issue on fast machines
+                    if not element.is_displayed():
+                        raise AssertionError(f'Found "{text}" but it is hidden')
+            except StaleElementReferenceException:
+                raise AssertionError(f'Found "{text}" but it is hidden')
             return element
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e

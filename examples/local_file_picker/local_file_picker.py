@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
 from nicegui import ui
 
@@ -58,7 +58,7 @@ class local_file_picker(ui.dialog):
             })
         self.grid.update()
 
-    async def handle_double_click(self, msg: dict) -> None:
+    async def handle_double_click(self, msg: Dict) -> None:
         self.path = Path(msg['args']['data']['path'])
         if self.path.is_dir():
             self.update_grid()

@@ -1,3 +1,5 @@
+from typing import Dict
+
 from nicegui import ui
 
 from ..documentation_tools import text_demo
@@ -75,7 +77,7 @@ def more() -> None:
         visible_columns = {column['name'] for column in columns}
         table = ui.table(columns=columns, rows=rows, row_key='name')
 
-        def toggle(column: dict, visible: bool) -> None:
+        def toggle(column: Dict, visible: bool) -> None:
             if visible:
                 visible_columns.add(column['name'])
             else:
@@ -128,3 +130,33 @@ def more() -> None:
             </q-tr>
         ''')
         table.on('rename', rename)
+
+    @text_demo('Table from pandas dataframe', '''
+        Here is a demo of how to create a table from a pandas dataframe.
+    ''')
+    def table_from_pandas_demo():
+        import pandas as pd
+
+        df = pd.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
+        ui.table(
+            columns=[{'name': col, 'label': col, 'field': col} for col in df.columns],
+            rows=df.to_dict('records'),
+        )
+
+    @text_demo('Adding rows', '''
+        It's simple to add new rows with the `add_rows(dict)` method.
+    ''')
+    def adding_rows():
+        import os
+        import random
+
+        def add():
+            item = os.urandom(10 // 2).hex()
+            table.add_rows({'id': item, 'count': random.randint(0, 100)})
+
+        ui.button('add', on_click=add)
+        columns = [
+            {'name': 'id', 'label': 'ID', 'field': 'id'},
+            {'name': 'count', 'label': 'Count', 'field': 'count'},
+        ]
+        table = ui.table(columns=columns, rows=[], row_key='id').classes('w-full')

@@ -1,5 +1,6 @@
 import asyncio
 import os
+import socket
 import time
 import urllib.parse
 from pathlib import Path
@@ -8,6 +9,7 @@ from typing import Dict, Optional
 from fastapi import HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
+from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
 from nicegui import json
@@ -28,6 +30,11 @@ socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=jso
 globals.sio = sio = app.sio
 
 app.add_middleware(GZipMiddleware)
+static_files = StaticFiles(
+    directory=(Path(__file__).parent / 'static').resolve(),
+    follow_symlink=True,
+)
+app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
 
 globals.index_client = Client(page('/'), shared=True).__enter__()
 
@@ -35,16 +42,6 @@ globals.index_client = Client(page('/'), shared=True).__enter__()
 @app.get('/')
 def index(request: Request) -> Response:
     return globals.index_client.build_response(request)
-
-
-@app.get(f'/_nicegui/{__version__}' + '/static/{name}')
-def get_static(name: str):
-    return FileResponse(Path(__file__).parent / 'static' / name)
-
-
-@app.get(f'/_nicegui/{__version__}' + '/static/fonts/{name}')
-def get_static(name: str):
-    return FileResponse(Path(__file__).parent / 'static' / 'fonts' / name)
 
 
 @app.get(f'/_nicegui/{__version__}' + '/dependencies/{id}/{name}')
@@ -80,7 +77,23 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     background_tasks.create(prune_slot_stacks())
     globals.state = globals.State.STARTED
     if with_welcome_message:
-        print(f'NiceGUI ready to go on {os.environ["NICEGUI_URL"]}')
+        print_welcome_message()
+
+
+def print_welcome_message():
+    host = os.environ['NICEGUI_HOST']
+    port = os.environ['NICEGUI_PORT']
+    ips = set()
+    if host == '0.0.0.0':
+        try:
+            ips.update(set(info[4][0] for info in socket.getaddrinfo(socket.gethostname(), None) if len(info[4]) == 2))
+        except Exception:
+            pass  # NOTE: if we can't get the host's IP, we'll just use localhost
+    ips.discard('127.0.0.1')
+    addresses = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ['localhost'] + sorted(ips)]
+    if len(addresses) >= 2:
+        addresses[-1] = 'and ' + addresses[-1]
+    print(f'NiceGUI ready to go on {", ".join(addresses)}')
 
 
 @app.on_event('shutdown')

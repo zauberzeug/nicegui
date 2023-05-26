@@ -1,5 +1,90 @@
 import os
 
+__all__ = [
+    'deprecated',
+    'element',
+    'aggrid',
+    'audio',
+    'avatar',
+    'badge',
+    'button',
+    'card',
+    'card_actions',
+    'card_section',
+    'chart',
+    'chat_message',
+    'checkbox',
+    'color_input',
+    'color_picker',
+    'colors',
+    'column',
+    'dark_mode',
+    'date',
+    'dialog',
+    'expansion',
+    'grid',
+    'html',
+    'icon',
+    'image',
+    'input',
+    'interactive_image',
+    'joystick',
+    'keyboard',
+    'knob',
+    'label',
+    'link',
+    'link_target',
+    'log',
+    'markdown',
+    'menu',
+    'menu_item',
+    'mermaid',
+    'number',
+    'plotly',
+    'circular_progress',
+    'linear_progress',
+    'query',
+    'radio',
+    'row',
+    'scene',
+    'select',
+    'separator',
+    'slider',
+    'spinner',
+    'splitter',
+    'switch',
+    'table',
+    'tab',
+    'tab_panel',
+    'tab_panels',
+    'tabs',
+    'textarea',
+    'time',
+    'toggle',
+    'tooltip',
+    'tree',
+    'upload',
+    'video',
+    'download',
+    'add_body_html',
+    'add_head_html',
+    'run_javascript',
+    'notify',
+    'open',
+    'refreshable',
+    'timer',
+    'update',
+    'page',
+    'drawer',
+    'footer',
+    'header',
+    'left_drawer',
+    'page_sticky',
+    'right_drawer',
+    'run',
+    'run_with',
+]
+
 from .deprecation import deprecated
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
@@ -11,14 +96,17 @@ from .elements.card import Card as card
 from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section
 from .elements.chart import Chart as chart
+from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
 from .elements.color_input import ColorInput as color_input
 from .elements.color_picker import ColorPicker as color_picker
 from .elements.colors import Colors as colors
 from .elements.column import Column as column
+from .elements.dark_mode import DarkMode as dark_mode
 from .elements.date import Date as date
 from .elements.dialog import Dialog as dialog
 from .elements.expansion import Expansion as expansion
+from .elements.grid import Grid as grid
 from .elements.html import Html as html
 from .elements.icon import Icon as icon
 from .elements.image import Image as image
@@ -61,10 +149,12 @@ from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
 from .elements.upload import Upload as upload
 from .elements.video import Video as video
+from .functions.download import download
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
 from .functions.notify import notify
 from .functions.open import open
+from .functions.refreshable import refreshable
 from .functions.timer import Timer as timer
 from .functions.update import update
 from .page import page
@@ -81,3 +171,4 @@ if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
     from .elements.line_plot import LinePlot as line_plot
     from .elements.pyplot import Pyplot as pyplot
     plot = deprecated(pyplot, 'ui.plot', 'ui.pyplot', 317)
+    __all__.extend(['line_plot', 'pyplot', 'plot'])

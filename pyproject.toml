@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "nicegui"
 version = "0.1.0"
-description = "Web User Interface with Buttons, Dialogs, Markdown, 3D Scences and Plots"
+description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
 readme = "README.md"
@@ -18,7 +18,7 @@ matplotlib = [
     { version = "^3.5.0", markers = "python_version ~= '3.7'"},
     { version = "^3.6.0", markers = "python_version ~= '3.11.0'"},
 ]
-fastapi = "^0.92"
+fastapi = ">=0.92,<1.0.0"
 fastapi-socketio = "^0.0.10"
 vbuild = "^0.8.1"
 watchfiles = "^0.18.1"
@@ -39,6 +39,11 @@ pytest = "6.2.5"
 itsdangerous = "^2.1.2" # required by SessionMiddleware (see https://fastapi.tiangolo.com/?h=itsdangerous#optional-dependencies)
 isort = "^5.11.4"
 docutils = "^0.19"
+pandas = [
+    { version = "^1.0.0", markers = "python_version == '3.7'" },
+    { version = "^2.0.0", markers = "python_version >= '3.8'" },
+]
+secure = "^0.3.0"
 
 [build-system]
 requires = [

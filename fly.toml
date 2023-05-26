@@ -12,7 +12,7 @@ processes = []
 [deploy]
 # boot a single, new VM with the new release, verify its health, then
 # One by one, each running VM is taken down and replaced by the new release VM
-strategy = "canary" 
+strategy = "rolling" 
 
 
 [experimental]
@@ -39,19 +39,19 @@ strategy = "canary"
     port = 443
 
   [[services.tcp_checks]]
-    grace_period = "10s"
-    interval = "5s"
-    restart_limit = 2
-    timeout = "1s"
+    interval = "10s"
+    grace_period = "2m"
+    restart_limit = 3
+    timeout = "5s"
 
   [[services.http_checks]]
     interval = "20s"
-    grace_period = "2m"
+    grace_period = "4m"
     method = "get"
     path = "/"
     protocol = "http"
-    restart_limit = 2
-    timeout = "5s"
+    restart_limit = 3
+    timeout = "10s"
     tls_skip_verify = false
     [services.http_checks.headers]
 

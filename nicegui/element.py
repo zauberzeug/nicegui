@@ -39,9 +39,9 @@ class Element(Visibility):
         self.tag = tag
         self._classes: List[str] = []
         self._style: Dict[str, str] = {}
-        self._props: Dict[str, Any] = {}
+        self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
         self._event_listeners: Dict[str, EventListener] = {}
-        self._text: str = ''
+        self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
 
@@ -195,22 +195,39 @@ class Element(Visibility):
             tooltip._text = text
         return self
 
-    def on(self, type: str, handler: Optional[Callable], args: Optional[List[str]] = None, *, throttle: float = 0.0) \
-            -> Self:
+    def on(self,
+           type: str,
+           handler: Optional[Callable],
+           args: Optional[List[str]] = None, *,
+           throttle: float = 0.0,
+           leading_events: bool = True,
+           trailing_events: bool = True,
+           ) -> Self:
         """Subscribe to an event.
 
         :param type: name of the event (e.g. "click", "mousedown", or "update:model-value")
         :param handler: callback that is called upon occurrence of the event
         :param args: arguments included in the event message sent to the event handler (default: `None` meaning all)
         :param throttle: minimum time (in seconds) between event occurrences (default: 0.0)
+        :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: `True`)
+        :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
         """
         if handler:
             if args and '*' in args:
                 url = f'https://github.com/zauberzeug/nicegui/issues/644'
                 warnings.warn(DeprecationWarning(f'Event args "*" is deprecated, omit this parameter instead ({url})'))
                 args = None
-            listener = EventListener(element_id=self.id, type=type, args=args, handler=handler, throttle=throttle)
+            listener = EventListener(
+                element_id=self.id,
+                type=type,
+                args=args,
+                handler=handler,
+                throttle=throttle,
+                leading_events=leading_events,
+                trailing_events=trailing_events,
+            )
             self._event_listeners[listener.id] = listener
+            self.update()
         return self
 
     def _handle_event(self, msg: Dict) -> None:
@@ -248,6 +265,20 @@ class Element(Visibility):
         for slot in self.slots.values():
             slot.children.clear()
         self.update()
+
+    def move(self, target_container: Optional[Element] = None, target_index: int = -1):
+        """Move the element to another container.
+
+        :param target_container: container to move the element to (default: the parent container)
+        :param target_index: index within the target slot (default: append to the end)
+        """
+        self.parent_slot.children.remove(self)
+        self.parent_slot.parent.update()
+        target_container = target_container or self.parent_slot.parent
+        target_index = target_index if target_index >= 0 else len(target_container.default_slot.children)
+        target_container.default_slot.children.insert(target_index, self)
+        self.parent_slot = target_container.default_slot
+        target_container.update()
 
     def remove(self, element: Union[Element, int]) -> None:
         """Remove a child element.

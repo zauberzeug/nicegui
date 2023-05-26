@@ -2,8 +2,10 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List
 
+from .helpers import KWONLY_SLOTS
 
-@dataclass
+
+@dataclass(**KWONLY_SLOTS)
 class EventListener:
     id: str = field(init=False)
     element_id: int
@@ -11,6 +13,8 @@ class EventListener:
     args: List[str]
     handler: Callable
     throttle: float
+    leading_events: bool
+    trailing_events: bool
 
     def __post_init__(self) -> None:
         self.id = str(uuid.uuid4())
@@ -29,4 +33,6 @@ class EventListener:
             'keys': keys,
             'args': self.args,
             'throttle': self.throttle,
+            'leading_events': self.leading_events,
+            'trailing_events': self.trailing_events,
         }

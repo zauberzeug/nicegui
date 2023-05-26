@@ -92,3 +92,42 @@ def test_stock_chart(screen: Screen):
 
     screen.open('/')
     assert screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-range-selector-buttons')
+
+
+def test_replace_chart(screen: Screen):
+    with ui.row() as container:
+        ui.chart({'series': [{'name': 'A'}]})
+
+    def replace():
+        container.clear()
+        with container:
+            ui.chart({'series': [{'name': 'B'}]})
+    ui.button('Replace', on_click=replace)
+
+    screen.open('/')
+    screen.should_contain('A')
+    screen.click('Replace')
+    screen.should_contain('B')
+    screen.should_not_contain('A')
+
+
+def test_stock_chart(screen: Screen):
+    """https://github.com/zauberzeug/nicegui/discussions/948"""
+    chart = ui.chart({'legend': {'enabled': True}, 'series': []}, type='stockChart', extras=['stock'])
+    ui.button('update', on_click=lambda: (
+        chart.options['series'].extend([{'name': 'alice'}, {'name': 'bob'}]),
+        chart.update(),
+    ))
+    ui.button('clear', on_click=lambda: (
+        chart.options['series'].clear(),
+        chart.update(),
+    ))
+
+    screen.open('/')
+    screen.click('update')
+    screen.should_contain('alice')
+    screen.should_contain('bob')
+    screen.click('clear')
+    screen.wait(0.5)
+    screen.should_not_contain('alice')
+    screen.should_not_contain('bob')

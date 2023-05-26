@@ -1,10 +1,11 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from .icon import Icon
+from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Input(ValueElement):
+class Input(ValueElement, DisableableElement):
     LOOPBACK = False
 
     def __init__(self,
@@ -14,6 +15,7 @@ class Input(ValueElement):
                  password: bool = False,
                  password_toggle_button: bool = False,
                  on_change: Optional[Callable] = None,
+                 autocomplete: Optional[List[str]] = None,
                  validation: Dict[str, Callable] = {}) -> None:
         """Text Input
 
@@ -31,7 +33,8 @@ class Input(ValueElement):
         :param value: the current value of the text input
         :param password: whether to hide the input (default: False)
         :param password_toggle_button: whether to show a button to toggle the password visibility (default: False)
-        :param on_change: callback to execute when the input is confirmed by leaving the focus
+        :param on_change: callback to execute when the value changes
+        :param autocomplete: optional list of strings for autocompletion
         :param validation: dictionary of validation rules, e.g. ``{'Too short!': lambda value: len(value) < 3}``
         """
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
@@ -50,6 +53,27 @@ class Input(ValueElement):
                 icon = Icon('visibility_off').classes('cursor-pointer').on('click', toggle_type)
 
         self.validation = validation
+
+        if autocomplete:
+            def find_autocompletion() -> Optional[str]:
+                if self.value:
+                    needle = str(self.value).casefold()
+                    for item in autocomplete:
+                        if item.casefold().startswith(needle):
+                            return item
+
+            def autocomplete_input() -> None:
+                match = find_autocompletion() or ''
+                self.props(f'shadow-text="{match[len(self.value):]}"')
+
+            def complete_input() -> None:
+                match = find_autocompletion()
+                if match:
+                    self.set_value(match)
+                self.props(f'shadow-text=""')
+
+            self.on('keyup', autocomplete_input)
+            self.on('keydown.tab', complete_input)
 
     def on_value_change(self, value: Any) -> None:
         super().on_value_change(value)

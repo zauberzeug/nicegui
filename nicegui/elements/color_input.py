@@ -3,10 +3,11 @@ from typing import Callable, Optional
 from nicegui import ui
 
 from .color_picker import ColorPicker
+from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class ColorInput(ValueElement):
+class ColorInput(ValueElement, DisableableElement):
     LOOPBACK = False
 
     def __init__(self, label: Optional[str] = None, *,
@@ -16,7 +17,7 @@ class ColorInput(ValueElement):
         :param label: displayed label for the color input
         :param placeholder: text to show if no color is selected
         :param value: the current color value
-        :param on_change: callback to execute when the input is confirmed by leaving the focus
+        :param on_change: callback to execute when the value changes
         """
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
         if label is not None:

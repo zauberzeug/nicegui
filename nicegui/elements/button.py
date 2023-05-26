@@ -1,11 +1,13 @@
+import asyncio
 from typing import Callable, Optional
 
 from ..colors import set_background_color
 from ..events import ClickEventArguments, handle_event
+from .mixins.disableable_element import DisableableElement
 from .mixins.text_element import TextElement
 
 
-class Button(TextElement):
+class Button(TextElement, DisableableElement):
 
     def __init__(self,
                  text: str = '', *,
@@ -16,7 +18,7 @@ class Button(TextElement):
 
         This element is based on Quasar's `QBtn <https://quasar.dev/vue-components/button>`_ component.
 
-        The ``color`` parameter excepts a Quasar color, a Tailwind color, or a CSS color.
+        The ``color`` parameter accepts a Quasar color, a Tailwind color, or a CSS color.
         If a Quasar color is used, the button will be styled according to the Quasar theme including the color of the text.
         Note that there are colors like "red" being both a Quasar color and a CSS color.
         In such cases the Quasar color will be used.
@@ -33,3 +35,10 @@ class Button(TextElement):
 
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text
+
+    async def clicked(self) -> None:
+        """Wait until the button is clicked."""
+        event = asyncio.Event()
+        self.on('click', event.set)
+        await self.client.connected()
+        await event.wait()
