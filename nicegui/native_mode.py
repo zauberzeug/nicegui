@@ -37,7 +37,7 @@ def open_window(
         start_window_method_executor(window, method_queue, response_queue, closing)
         webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
     except NameError:
-        print('Native mode is not supported in this configuration. Please install pywebview to use it.')
+        logging.error('Native mode is not supported in this configuration. Please install pywebview to use it.')
         sys.exit(1)
 
 
@@ -65,6 +65,7 @@ def start_window_method_executor(
                 time.sleep(0.01)
             except:
                 logging.exception(f'error in window.{method}')
+        ic()
     t = Thread(target=window_method_executor)
     t.start()
 
@@ -74,6 +75,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         while process.is_alive():
             time.sleep(0.1)
         globals.server.should_exit = True
+        ic()
         while globals.state != globals.State.STOPPED:
             time.sleep(0.1)
         _thread.interrupt_main()
