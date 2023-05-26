@@ -33,7 +33,7 @@ class LinePlot(Pyplot):
         self.push_counter = 0
 
     def with_legend(self, titles: List[str], **kwargs: Any):
-        self.fig.gca().legend(titles, **kwargs: Any)
+        self.fig.gca().legend(titles, **kwargs)
         self._convert_to_html()
         return self
 
