@@ -17,11 +17,11 @@ def clock(env):
 
 def traffic_light(env):
     while True:
-        lblColor.set_text('GREEN')
+        light.classes('bg-green-500', remove='bg-red-500')
         yield env.timeout(30)
-        lblColor.set_text('YELLOW')
+        light.classes('bg-yellow-500', remove='bg-green-500')
         yield env.timeout(5)
-        lblColor.set_text('RED')
+        light.classes('bg-red-500', remove='bg-yellow-500')
         yield env.timeout(20)
 
 
@@ -31,10 +31,13 @@ async def run_simpy():
     env.process(clock(env))
     await env.run(until=300)  # run until 300 seconds of simulation time have passed
     ui.notify('Simulation completed')
+    content.classes('opacity-0')  # fade out the content
 
-# create the UI
-clock_label = ui.label()
-lblColor = ui.label()
+# define the UI
+with ui.column().classes('w-full mt-[300px] items-center transition-opacity duration-500') as content:
+    ui.label('SimPy Traffic Light Demo').classes('text-2xl mb-6')
+    light = ui.element('div').classes('w-10 h-10 rounded-full shadow-lg transition')
+    clock_label = ui.label()
 
 # start the simpy simulation as async task in the background as soon as the UI is ready
 ui.timer(0, run_simpy, once=True)
