@@ -1,4 +1,4 @@
-from typing import Callable, Union
+from typing import Any, Callable, Union
 
 from .. import globals
 from ..dependencies import register_component
@@ -10,7 +10,7 @@ register_component('link', __file__, 'link.js')
 
 class Link(TextElement):
 
-    def __init__(self, text: str = '', target: Union[Callable, str] = '#', new_tab: bool = False) -> None:
+    def __init__(self, text: str = '', target: Union[Callable[..., Any], str] = '#', new_tab: bool = False) -> None:
         """Link
 
         Create a hyperlink.

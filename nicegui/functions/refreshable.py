@@ -12,7 +12,7 @@ register_component('refreshable', __file__, 'refreshable.js')
 
 class refreshable:
 
-    def __init__(self, func: Callable) -> None:
+    def __init__(self, func: Callable[..., Any]) -> None:
         """Refreshable UI functions
 
         The `@ui.refreshable` decorator allows you to create functions that have a `refresh` method.
@@ -26,7 +26,7 @@ class refreshable:
         self.instance = instance
         return self
 
-    def __call__(self, *args, **kwargs) -> None:
+    def __call__(self, *args: Any, **kwargs: Any) -> None:
         self.prune()
         with Element('refreshable') as container:
             self.containers.append((container, args, kwargs))
@@ -50,7 +50,7 @@ class refreshable:
             if container.client.id in globals.clients
         ]
 
-    def _run_in_container(self, container: Element, *args, **kwargs) -> None:
+    def _run_in_container(self, container: Element, *args: Any, **kwargs: Any) -> None:
         if is_coroutine(self.func):
             async def wait_for_result() -> None:
                 with container:

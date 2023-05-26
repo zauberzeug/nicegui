@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from typing_extensions import Literal
 
@@ -16,7 +16,7 @@ class Table(FilterElement):
                  title: Optional[str] = None,
                  selection: Optional[Literal['single', 'multiple']] = None,
                  pagination: Optional[int] = None,
-                 on_select: Optional[Callable] = None,
+                 on_select: Optional[Callable[..., Any]] = None,
                  ) -> None:
         """Table
 

@@ -2,7 +2,7 @@ import logging
 import multiprocessing
 import os
 import sys
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 import __main__
 import uvicorn
@@ -46,7 +46,7 @@ def run(*,
         uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
         exclude: str = '',
         tailwind: bool = True,
-        **kwargs,
+        **kwargs: Any,
         ) -> None:
     '''ui.run
 

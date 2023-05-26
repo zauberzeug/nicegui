@@ -1,6 +1,6 @@
 import asyncio
 import time
-from typing import Callable
+from typing import Any, Callable
 
 from .. import background_tasks, globals
 from ..binding import BindableProperty
@@ -11,7 +11,12 @@ class Timer:
     active = BindableProperty()
     interval = BindableProperty()
 
-    def __init__(self, interval: float, callback: Callable, *, active: bool = True, once: bool = False) -> None:
+    def __init__(self,
+                 interval: float,
+                 callback: Callable[..., Any], *,
+                 active: bool = True,
+                 once: bool = False,
+                 ) -> None:
         """Timer
 
         One major drive behind the creation of NiceGUI was the necessity to have a simple approach to update the interface in regular intervals,
@@ -78,10 +83,11 @@ class Timer:
             globals.handle_exception(e)
 
     async def _connected(self, timeout: float = 60.0) -> bool:
-        '''Wait for the client connection before the timer callback can be allowed to manipulate the state.
+        """Wait for the client connection before the timer callback can be allowed to manipulate the state.
+
         See https://github.com/zauberzeug/nicegui/issues/206 for details.
         Returns True if the client is connected, False if the client is not connected and the timer should be cancelled.
-        '''
+        """
         if self.slot.parent.client.shared:
             return True
         else:

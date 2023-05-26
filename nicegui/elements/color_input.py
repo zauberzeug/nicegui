@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from nicegui import ui
 
@@ -10,8 +10,12 @@ from .mixins.value_element import ValueElement
 class ColorInput(ValueElement, DisableableElement):
     LOOPBACK = False
 
-    def __init__(self, label: Optional[str] = None, *,
-                 placeholder: Optional[str] = None, value: str = '', on_change: Optional[Callable] = None) -> None:
+    def __init__(self,
+                 label: Optional[str] = None, *,
+                 placeholder: Optional[str] = None,
+                 value: str = '',
+                 on_change: Optional[Callable[..., Any]] = None,
+                 ) -> None:
         """Color Input
 
         :param label: displayed label for the color input

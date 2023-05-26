@@ -268,7 +268,7 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
-def handle_event(handler: Optional[Callable],
+def handle_event(handler: Optional[Callable[..., Any]],
                  arguments: Union[EventArguments, Dict], *,
                  sender: Optional['Element'] = None) -> None:
     try:

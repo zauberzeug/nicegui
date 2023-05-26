@@ -1,4 +1,4 @@
-from typing import Callable, Dict
+from typing import Any, Callable, Dict
 
 from nicegui.events import ColorPickEventArguments, handle_event
 
@@ -8,7 +8,7 @@ from .menu import Menu
 
 class ColorPicker(Menu):
 
-    def __init__(self, *, on_pick: Callable, value: bool = False) -> None:
+    def __init__(self, *, on_pick: Callable[..., Any], value: bool = False) -> None:
         """Color Picker
 
         :param on_pick: callback to execute when a color is picked

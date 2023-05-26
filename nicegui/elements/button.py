@@ -1,5 +1,5 @@
 import asyncio
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from ..colors import set_background_color
 from ..events import ClickEventArguments, handle_event
@@ -11,7 +11,7 @@ class Button(TextElement, DisableableElement):
 
     def __init__(self,
                  text: str = '', *,
-                 on_click: Optional[Callable] = None,
+                 on_click: Optional[Callable[..., Any]] = None,
                  color: Optional[str] = 'primary',
                  ) -> None:
         """Button

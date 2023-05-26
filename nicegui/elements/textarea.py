@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from .input import Input
 
@@ -9,8 +9,9 @@ class Textarea(Input):
                  label: Optional[str] = None, *,
                  placeholder: Optional[str] = None,
                  value: str = '',
-                 on_change: Optional[Callable] = None,
-                 validation: Dict[str, Callable] = {}) -> None:
+                 on_change: Optional[Callable[..., Any]] = None,
+                 validation: Dict[str, Callable[..., bool]] = {},
+                 ) -> None:
         """Textarea
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
