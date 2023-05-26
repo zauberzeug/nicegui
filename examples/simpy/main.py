@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import asyncio
 import datetime
 
 from async_realtime_environment import AsyncRealtimeEnvironment
@@ -29,7 +30,10 @@ async def run_simpy():
     env = AsyncRealtimeEnvironment(factor=0.1)  # fast forward simulation with 1/10th of realtime
     env.process(traffic_light(env))
     env.process(clock(env))
-    await env.run(until=300)  # run until 300 seconds of simulation time have passed
+    try:
+        await env.run(until=300)  # run until 300 seconds of simulation time have passed
+    except asyncio.CancelledError:
+        return
     ui.notify('Simulation completed')
     content.classes('opacity-0')  # fade out the content
 
