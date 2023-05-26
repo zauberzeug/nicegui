@@ -61,3 +61,40 @@ async def test_async_refreshable(screen: Screen) -> None:
     numbers.clear()
     screen.click('Refresh')
     screen.should_contain('[]')
+
+
+def test_multiple_targets(screen: Screen) -> None:
+    count = 0
+
+    class MyClass:
+
+        def __init__(self, name: str) -> None:
+            self.name = name
+            self.state = 1
+
+        @ui.refreshable
+        def create_ui(self) -> None:
+            nonlocal count
+            count += 1
+            ui.label(f'{self.name} = {self.state} ({count})')
+            ui.button(f'increment {self.name}', on_click=self.increment)
+
+        def increment(self) -> None:
+            self.state += 1
+            self.create_ui.refresh()
+
+    a = MyClass('A')
+    a.create_ui()
+
+    b = MyClass('B')
+    b.create_ui()
+
+    screen.open('/')
+    screen.should_contain('A = 1 (1)')
+    screen.should_contain('B = 1 (2)')
+    screen.click('increment A')
+    screen.should_contain('A = 2 (3)')
+    screen.should_contain('B = 1 (2)')
+    screen.click('increment B')
+    screen.should_contain('A = 2 (3)')
+    screen.should_contain('B = 2 (4)')

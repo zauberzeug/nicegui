@@ -55,7 +55,7 @@ class refreshable:
         self.prune()
         target = RefreshableTarget(container=Element('refreshable'), instance=self.instance, args=args, kwargs=kwargs)
         self.targets.append(target)
-        target.run(self.func)
+        return target.run(self.func)
 
     def refresh(self) -> None:
         self.prune()
