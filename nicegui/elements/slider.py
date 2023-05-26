@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -11,7 +11,8 @@ class Slider(ValueElement, DisableableElement):
                  max: float,
                  step: float = 1.0,
                  value: Optional[float] = None,
-                 on_change: Optional[Callable] = None) -> None:
+                 on_change: Optional[Callable[..., Any]] = None,
+                 ) -> None:
         """Slider
 
         :param min: lower bound of the slider

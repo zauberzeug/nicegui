@@ -10,7 +10,7 @@ def notify(message: Any, *,
            closeBtn: Union[bool, str] = False,
            type: Optional[Literal['positive', 'negative', 'warning', 'info', 'ongoing']] = None,
            color: Optional[str] = None,
-           **kwargs,
+           **kwargs: Any,
            ) -> None:
     """Notification
 

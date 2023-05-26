@@ -3,7 +3,7 @@ from nicegui import ui
 from . import svg
 
 
-def create():
+def create() -> None:
     with ui.row().style('filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'):
         with ui.card().style(r'clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%)') \
                 .classes('pb-16 no-shadow'), ui.row().classes('no-wrap'):
@@ -27,7 +27,7 @@ def create():
                 ui.radio(['A', 'B', 'C'], value='A', on_change=lambda e: output.set_text(e.value)).props('inline')
 
 
-def create_narrow():
+def create_narrow() -> None:
     with ui.row().style('filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'):
         with ui.card().style(r'clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%)') \
                 .classes('pb-16 no-shadow'), ui.row().classes('no-wrap'):

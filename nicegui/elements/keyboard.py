@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable, Dict, List
+from typing import Any, Callable, Dict, List
 
 from typing_extensions import Literal
 
@@ -15,7 +15,7 @@ class Keyboard(Element):
     active = BindableProperty()
 
     def __init__(self,
-                 on_key: Callable, *,
+                 on_key: Callable[..., Any], *,
                  active: bool = True,
                  repeating: bool = True,
                  ignore: List[Literal['input', 'select', 'button', 'textarea']] = ['input', 'select', 'button', 'textarea'],

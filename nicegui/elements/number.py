@@ -17,8 +17,9 @@ class Number(ValueElement, DisableableElement):
                  prefix: Optional[str] = None,
                  suffix: Optional[str] = None,
                  format: Optional[str] = None,
-                 on_change: Optional[Callable] = None,
-                 validation: Dict[str, Callable] = {}) -> None:
+                 on_change: Optional[Callable[..., Any]] = None,
+                 validation: Dict[str, Callable[..., bool]] = {},
+                 ) -> None:
         """Number Input
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.

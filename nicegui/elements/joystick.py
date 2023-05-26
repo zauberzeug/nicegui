@@ -12,9 +12,9 @@ register_library(name='nipplejs', path=Path(__file__).parent.joinpath('lib', 'ni
 class Joystick(Element):
 
     def __init__(self, *,
-                 on_start: Optional[Callable] = None,
-                 on_move: Optional[Callable] = None,
-                 on_end: Optional[Callable] = None,
+                 on_start: Optional[Callable[..., Any]] = None,
+                 on_move: Optional[Callable[..., Any]] = None,
+                 on_end: Optional[Callable[..., Any]] = None,
                  throttle: float = 0.05,
                  ** options: Any) -> None:
         """Joystick

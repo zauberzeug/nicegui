@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 import warnings
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Union
 
 from typing_extensions import Self
 
@@ -18,7 +18,7 @@ from .tailwind import Tailwind
 if TYPE_CHECKING:
     from .client import Client
 
-PROPS_PATTERN = re.compile(r'([\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
+PROPS_PATTERN = re.compile(r'([:\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
 
 
 class Element(Visibility):
@@ -77,9 +77,14 @@ class Element(Visibility):
     def __exit__(self, *_):
         self.default_slot.__exit__(*_)
 
+    def __iter__(self) -> Iterator[Element]:
+        for slot in self.slots.values():
+            for child in slot:
+                yield child
+
     def _collect_slot_dict(self) -> Dict[str, List[int]]:
         return {
-            name: {'template': slot.template, 'ids': [child.id for child in slot.children]}
+            name: {'template': slot.template, 'ids': [child.id for child in slot]}
             for name, slot in self.slots.items()
         }
 
@@ -201,7 +206,7 @@ class Element(Visibility):
 
     def on(self,
            type: str,
-           handler: Optional[Callable],
+           handler: Optional[Callable[..., Any]] = None,
            args: Optional[List[str]] = None, *,
            throttle: float = 0.0,
            leading_events: bool = True,
@@ -255,9 +260,8 @@ class Element(Visibility):
 
     def _collect_descendant_ids(self) -> List[int]:
         ids: List[int] = [self.id]
-        for slot in self.slots.values():
-            for child in slot.children:
-                ids.extend(child._collect_descendant_ids())
+        for child in self:
+            ids.extend(child._collect_descendant_ids())
         return ids
 
     def clear(self) -> None:
@@ -290,12 +294,12 @@ class Element(Visibility):
         :param element: either the element instance or its ID
         """
         if isinstance(element, int):
-            children = [child for slot in self.slots.values() for child in slot.children]
+            children = list(self)
             element = children[element]
         binding.remove([element], Element)
         del self.client.elements[element.id]
         for slot in self.slots.values():
-            slot.children[:] = [e for e in slot.children if e.id != element.id]
+            slot.children[:] = [e for e in slot if e.id != element.id]
         self.update()
 
     def delete(self) -> None:
