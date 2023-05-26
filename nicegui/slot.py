@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Iterator, List, Optional
 
 from typing_extensions import Self
 
@@ -23,3 +23,6 @@ class Slot:
     def __exit__(self, *_) -> None:
         globals.get_slot_stack().pop()
         globals.prune_slot_stack()
+
+    def __iter__(self) -> Iterator['Element']:
+        return iter(self.children)
