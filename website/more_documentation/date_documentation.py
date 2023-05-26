@@ -23,3 +23,11 @@ def more() -> None:
                 ui.icon('edit_calendar').on('click', lambda: menu.open()).classes('cursor-pointer')
             with ui.menu() as menu:
                 ui.date().bind_value(date)
+
+    @text_demo('Date filter', '''
+        This demo shows how to filter the dates in a date picker.
+        In order to pass a function to the date picker, we use the `:options` property.
+        The leading `:` tells NiceGUI that the value is a JavaScript expression.
+    ''')
+    def date_filter():
+        ui.date().props('''default-year-month=2023/01 :options="date => date <= '2023/01/15'"''')
