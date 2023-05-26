@@ -17,7 +17,7 @@ def more() -> None:
         ui.button('warning', on_click=lambda: ui.notify('warning', type='warning'))
 
     @text_demo('Multiline Notifications', '''
-        To allow a notification text to span multiple lines, it is sufficient to pass the `mutliLine` keyword with `True`.
+        To allow a notification text to span multiple lines, it is sufficient to set `multi_line=True`.
         If manual newline breaks are required (e.g. `\n`), you need to define a CSS style and pass it to the notification as shown in the example.
     ''')
     def multiline():
