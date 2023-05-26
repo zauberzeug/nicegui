@@ -19,5 +19,10 @@ def word() -> ui.html:
 def github() -> ui.html:
     return ui.html((PATH / 'github.svg').read_text())
 
+
 def discord() -> ui.html:
     return ui.html((PATH / 'discord.svg').read_text())
+
+
+def reddit() -> ui.html:
+    return ui.html((PATH / 'reddit.svg').read_text())

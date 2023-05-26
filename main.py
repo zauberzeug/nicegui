@@ -10,10 +10,10 @@ if True:
 
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Awaitable, Callable, Optional
 
 from fastapi import Request
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, Response
 from starlette.middleware.sessions import SessionMiddleware
 
 import prometheus
@@ -36,17 +36,18 @@ app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
 
 
 @app.get('/logo.png')
-def logo():
+def logo() -> FileResponse:
     return FileResponse(svg.PATH / 'logo.png', media_type='image/png')
 
 
 @app.get('/logo_square.png')
-def logo():
+def logo_square() -> FileResponse:
     return FileResponse(svg.PATH / 'logo_square.png', media_type='image/png')
 
 
 @app.middleware('http')
-async def redirect_reference_to_documentation(request: Request, call_next):
+async def redirect_reference_to_documentation(request: Request,
+                                              call_next: Callable[[Request], Awaitable[Response]]) -> Response:
     if request.url.path == '/reference':
         return RedirectResponse('/documentation')
     return await call_next(request)
@@ -75,19 +76,20 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
             .classes('items-center duration-200 p-0 px-4 no-wrap') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
         if menu:
-            ui.button(on_click=menu.toggle).props('flat color=white icon=menu round') \
-                .classes('max-[405px]:hidden lg:hidden')
+            ui.button(on_click=menu.toggle).props('flat color=white icon=menu round').classes('lg:hidden')
         with ui.link(target=index_page).classes('row gap-4 items-center no-wrap mr-auto'):
             svg.face().classes('w-8 stroke-white stroke-2')
             svg.word().classes('w-24')
         with ui.row().classes('max-lg:hidden'):
             for title, target in menu_items.items():
                 ui.link(title, target).classes(replace='text-lg text-white')
-        with ui.link(target='https://discord.gg/TEpFeAaF4f'):
+        with ui.link(target='https://discord.gg/TEpFeAaF4f').classes('max-[435px]:hidden').tooltip('Discord'):
             svg.discord().classes('fill-white scale-125 m-1')
-        with ui.link(target='https://github.com/zauberzeug/nicegui/'):
+        with ui.link(target='https://www.reddit.com/r/nicegui/').classes('max-[385px]:hidden').tooltip('Reddit'):
+            svg.reddit().classes('fill-white scale-125 m-1')
+        with ui.link(target='https://github.com/zauberzeug/nicegui/').tooltip('GitHub'):
             svg.github().classes('fill-white scale-125 m-1')
-        add_star().classes('max-[460px]:hidden')
+        add_star().classes('max-[480px]:hidden')
         with ui.row().classes('lg:hidden'):
             with ui.button().props('flat color=white icon=more_vert round'):
                 with ui.menu().classes('bg-primary text-white text-lg').props(remove='no-parent-event'):
@@ -96,7 +98,7 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
 
 
 @ui.page('/')
-async def index_page(client: Client):
+async def index_page(client: Client) -> None:
     client.content.classes('p-0 gap-0')
     add_head_html()
     add_header()
@@ -316,7 +318,7 @@ async def index_page(client: Client):
 
 
 @ui.page('/documentation')
-def documentation_page():
+def documentation_page() -> None:
     add_head_html()
     menu = side_menu()
     add_header(menu)
@@ -331,7 +333,7 @@ def documentation_page():
 
 
 @ui.page('/documentation/{name}')
-def documentation_page_more(name: str):
+async def documentation_page_more(name: str, client: Client) -> None:
     if not hasattr(ui, name):
         name = name.replace('_', '')  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
     module = importlib.import_module(f'website.more_documentation.{name}_documentation')
@@ -359,6 +361,7 @@ def documentation_page_more(name: str):
                 ui.markdown('**Reference**').classes('mt-4')
             ui.markdown('## Reference').classes('mt-16')
             generate_class_doc(api)
-
+    await client.connected()
+    await ui.run_javascript(f'document.title = "{name} • NiceGUI";', respond=False)
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html')

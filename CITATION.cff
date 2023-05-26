@@ -1,14 +1,14 @@
 cff-version: 1.2.0
 message: If you use this software, please cite it as below.
 authors:
-  - family-names: Schindler
-    given-names: Falko
-    orcid: https://orcid.org/0009-0003-5359-835X
-  - family-names: Trappe
-    given-names: Rodja
-    orcid: https://orcid.org/0009-0009-4735-6227
-title: "NiceGUI: Web-based user interfaces with Python. The nice way."
-version: v1.2.13
-date-released: "2023-05-05"
+- family-names: Schindler
+  given-names: Falko
+  orcid: https://orcid.org/0009-0003-5359-835X
+- family-names: Trappe
+  given-names: Rodja
+  orcid: https://orcid.org/0009-0009-4735-6227
+title: 'NiceGUI: Web-based user interfaces with Python. The nice way.'
+version: v1.2.14
+date-released: '2023-05-14'
 url: https://github.com/zauberzeug/nicegui
-doi: 10.5281/zenodo.7901074
+doi: 10.5281/zenodo.7933863
