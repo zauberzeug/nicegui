@@ -4,7 +4,7 @@ from ..documentation_tools import text_demo
 
 
 def main_demo() -> None:
-    ui.button('Say hi!', on_click=lambda: ui.notify('Hi!', closeBtn='OK'))
+    ui.button('Say hi!', on_click=lambda: ui.notify('Hi!', close_button='OK'))
 
 
 def more() -> None:
@@ -27,6 +27,6 @@ def more() -> None:
             'Hic quisquam non ad sit assumenda consequuntur esse inventore officia. \n'
             'Corrupti reiciendis impedit vel, '
             'fugit odit quisquam quae porro exercitationem eveniet quasi.',
-            multiLine=True,
+            multi_line=True,
             classes='multi-line-notification',
         ))
