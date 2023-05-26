@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 class Visibility:
     visible = BindableProperty(on_change=lambda sender, visible: sender.on_visibility_change(visible))
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.visible = True
 

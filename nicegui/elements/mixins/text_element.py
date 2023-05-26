@@ -9,7 +9,7 @@ from ...element import Element
 class TextElement(Element):
     text = BindableProperty(on_change=lambda sender, text: sender.on_text_change(text))
 
-    def __init__(self, *, text: str, **kwargs) -> None:
+    def __init__(self, *, text: str, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.text = text
         self._text_to_model_text(text)

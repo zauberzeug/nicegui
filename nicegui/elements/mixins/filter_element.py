@@ -10,7 +10,7 @@ class FilterElement(Element):
     FILTER_PROP = 'filter'
     filter = BindableProperty(on_change=lambda sender, filter: sender.on_filter_change(filter))
 
-    def __init__(self, *, filter: Optional[str] = None, **kwargs) -> None:
+    def __init__(self, *, filter: Optional[str] = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.filter = filter
         self._props[self.FILTER_PROP] = filter

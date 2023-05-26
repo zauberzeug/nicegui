@@ -10,7 +10,7 @@ class ContentElement(Element):
     CONTENT_PROP = 'innerHTML'
     content = BindableProperty(on_change=lambda sender, content: sender.on_content_change(content))
 
-    def __init__(self, *, content: str, **kwargs) -> None:
+    def __init__(self, *, content: str, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.content = content
         self.on_content_change(content)

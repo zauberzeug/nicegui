@@ -9,7 +9,7 @@ from ...element import Element
 class DisableableElement(Element):
     enabled = BindableProperty(on_change=lambda sender, value: sender.on_enabled_change(value))
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.enabled = True
 

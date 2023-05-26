@@ -17,7 +17,7 @@ class ValueElement(Element):
                  value: Any,
                  on_value_change: Optional[Callable[..., Any]],
                  throttle: float = 0,
-                 **kwargs,
+                 **kwargs: Any,
                  ) -> None:
         super().__init__(**kwargs)
         self.set_value(value)

@@ -21,7 +21,7 @@ class page:
                  dark: Optional[bool] = ...,
                  language: Language = ...,
                  response_timeout: float = 3.0,
-                 **kwargs,
+                 **kwargs: Any,
                  ) -> None:
         """Page
 
