@@ -4,7 +4,7 @@ from typing import Any, Optional, Union
 
 from numpy import Infinity
 from simpy.core import EmptySchedule, Environment, Infinity, SimTime, StopSimulation
-from simpy.events import NORMAL, URGENT, AllOf, AnyOf, Event, EventPriority, Process, ProcessGenerator, Timeout
+from simpy.events import URGENT, Event
 from simpy.rt import RealtimeEnvironment
 
 

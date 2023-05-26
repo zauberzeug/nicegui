@@ -11,7 +11,7 @@ start_time = datetime.datetime.now()
 def clock(env):
     while True:
         simulation_time = start_time + datetime.timedelta(seconds=env.now)
-        clock_label.set_text(simulation_time.strftime('%H:%M:%S'))
+        clock_label.text = simulation_time.strftime('%H:%M:%S')
         yield env.timeout(1)
 
 
@@ -34,11 +34,12 @@ async def run_simpy():
     content.classes('opacity-0')  # fade out the content
 
 # define the UI
-with ui.column().classes('w-full mt-[300px] items-center transition-opacity duration-500') as content:
+with ui.column().classes('absolute-center items-center transition-opacity duration-500') as content:
     ui.label('SimPy Traffic Light Demo').classes('text-2xl mb-6')
     light = ui.element('div').classes('w-10 h-10 rounded-full shadow-lg transition')
     clock_label = ui.label()
 
-# start the simpy simulation as async task in the background as soon as the UI is ready
+# start the simpy simulation as an async task in the background as soon as the UI is ready
 ui.timer(0, run_simpy, once=True)
+
 ui.run()
