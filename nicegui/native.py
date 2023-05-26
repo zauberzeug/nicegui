@@ -19,6 +19,12 @@ class WindowProxy(webview.Window):
     def __init__(self):
         pass  # NOTE we don't call super().__init__ here because this is just a proxy to the actual window
 
+    async def get_size(self) -> Tuple[int, int]:
+        return await self._send_async()
+
+    async def get_position(self) -> Tuple[int, int]:
+        return await self._send_async()
+
     def load_url(self, url: str) -> None:
         self._send(url)
 

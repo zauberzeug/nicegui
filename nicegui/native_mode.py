@@ -48,6 +48,12 @@ def start_window_method_executor(
         while not closing.is_set():
             try:
                 method, args, kwargs = method_queue.get(block=False)
+                if method == 'get_position':
+                    response_queue.put((int(window.x), int(window.y)))
+                    continue
+                if method == 'get_size':
+                    response_queue.put((int(window.width), int(window.height)))
+                    continue
                 attr = getattr(window, method)
                 if callable(attr):
                     response = attr(*args, **kwargs)
