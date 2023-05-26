@@ -18,7 +18,7 @@ from .tailwind import Tailwind
 if TYPE_CHECKING:
     from .client import Client
 
-PROPS_PATTERN = re.compile(r'([\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
+PROPS_PATTERN = re.compile(r'([:\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
 
 
 class Element(Visibility):
