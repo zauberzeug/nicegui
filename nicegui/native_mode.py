@@ -44,10 +44,22 @@ def open_window(
 def start_window_method_executor(
         window: webview.Window, method_queue: mp.Queue, response_queue: mp.Queue, closing: Event
 ) -> None:
+    def execute(attr, args, kwargs):
+        response = attr(*args, **kwargs)
+        if response is not None or 'dialog' in attr.__name__:
+            response_queue.put(response)
+
     def window_method_executor():
+        pending_executions = []
         while not closing.is_set():
             try:
                 method, args, kwargs = method_queue.get(block=False)
+                if method == 'signal_server_shutdown':
+                    if pending_executions:
+                        logging.warning('shutdown is possibly blocked by opened dialogs like a file picker')
+                        while pending_executions:
+                            pending_executions.pop().join()
+                    continue
                 if method == 'get_position':
                     response_queue.put((int(window.x), int(window.y)))
                     continue
@@ -56,18 +68,16 @@ def start_window_method_executor(
                     continue
                 attr = getattr(window, method)
                 if callable(attr):
-                    response = attr(*args, **kwargs)
-                    if response is not None:
-                        response_queue.put(response)
+                    pending_executions.append(Thread(target=execute, args=(attr, args, kwargs)))
+                    pending_executions[-1].start()
                 else:
                     logging.error(f'window.{method} is not callable')
             except queue.Empty:
                 time.sleep(0.01)
             except:
                 logging.exception(f'error in window.{method}')
-        ic()
-    t = Thread(target=window_method_executor)
-    t.start()
+
+    Thread(target=window_method_executor).start()
 
 
 def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool) -> None:
@@ -75,7 +85,6 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         while process.is_alive():
             time.sleep(0.1)
         globals.server.should_exit = True
-        ic()
         while globals.state != globals.State.STOPPED:
             time.sleep(0.1)
         _thread.interrupt_main()

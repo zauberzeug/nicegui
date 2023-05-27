@@ -105,6 +105,9 @@ class WindowProxy(webview.Window):
 
         return await asyncio.get_event_loop().run_in_executor(None, partial(wrapper, *args, **kwargs))
 
+    def signal_server_shutdown(self) -> None:
+        self._send()
+
 
 @dataclass(**KWONLY_SLOTS)
 class Native:
