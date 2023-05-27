@@ -45,9 +45,12 @@ def start_window_method_executor(
         window: webview.Window, method_queue: mp.Queue, response_queue: mp.Queue, closing: Event
 ) -> None:
     def execute(attr, args, kwargs):
-        response = attr(*args, **kwargs)
-        if response is not None or 'dialog' in attr.__name__:
-            response_queue.put(response)
+        try:
+            response = attr(*args, **kwargs)
+            if response is not None or 'dialog' in attr.__name__:
+                response_queue.put(response)
+        except Exception:
+            logging.exception(f'error in window.{attr.__name__}')
 
     def window_method_executor():
         pending_executions = []
