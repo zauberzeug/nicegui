@@ -60,6 +60,12 @@ def start_window_method_executor(
                         while pending_executions:
                             pending_executions.pop().join()
                     continue
+                if method == 'is_always_on_top':
+                    response_queue.put(window.on_top)
+                    continue
+                if method == 'set_always_on_top':
+                    window.on_top = args[0]
+                    continue
                 if method == 'get_position':
                     response_queue.put((int(window.x), int(window.y)))
                     continue

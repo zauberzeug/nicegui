@@ -19,6 +19,14 @@ class WindowProxy(webview.Window):
     def __init__(self):
         pass  # NOTE we don't call super().__init__ here because this is just a proxy to the actual window
 
+    async def is_always_on_top(self) -> bool:
+        """whether the window is always on top"""
+        return await self._send_async()
+
+    def set_always_on_top(self, on_top: bool) -> None:
+        """set whether the window is always on top"""
+        self._send(on_top)
+
     async def get_size(self) -> Tuple[int, int]:
         return await self._send_async()
 
