@@ -8,7 +8,7 @@ from . import globals
 
 bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
 bindable_properties: Dict[Tuple[int, str], Any] = {}
-active_links: List[Tuple[Any, str, Any, str, Callable]] = []
+active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
 
 
 def get_attribute(obj: Union[object, Dict], name: str) -> Any:
@@ -54,14 +54,14 @@ def propagate(source_obj: Any, source_name: str, visited: Optional[Set[Tuple[int
             propagate(target_obj, target_name, visited)
 
 
-def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forward: Callable) -> None:
+def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forward: Callable[[Any], Any]) -> None:
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
         active_links.append((self_obj, self_name, other_obj, other_name, forward))
     propagate(self_obj, self_name)
 
 
-def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, backward: Callable) -> None:
+def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, backward: Callable[[Any], Any]) -> None:
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
         active_links.append((other_obj, other_name, self_obj, self_name, backward))
@@ -69,14 +69,14 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, ba
 
 
 def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
-         forward: Callable = lambda x: x, backward: Callable = lambda x: x) -> None:
+         forward: Callable[[Any], Any] = lambda x: x, backward: Callable[[Any], Any] = lambda x: x) -> None:
     bind_from(self_obj, self_name, other_obj, other_name, backward=backward)
     bind_to(self_obj, self_name, other_obj, other_name, forward=forward)
 
 
 class BindableProperty:
 
-    def __init__(self, on_change: Optional[Callable] = None) -> None:
+    def __init__(self, on_change: Optional[Callable[..., Any]] = None) -> None:
         self.on_change = on_change
 
     def __set_name__(self, _, name: str) -> None:

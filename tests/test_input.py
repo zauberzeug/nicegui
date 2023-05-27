@@ -108,3 +108,13 @@ def test_autocompletion(screen: Screen):
     element.send_keys(Keys.TAB)
     screen.wait(0.5)
     assert element.get_attribute('value') == 'fx'
+
+
+def test_clearable_input(screen: Screen):
+    input = ui.input(value='foo').props('clearable')
+    ui.label().bind_text_from(input, 'value', lambda value: f'value: {value}')
+
+    screen.open('/')
+    screen.should_contain('value: foo')
+    screen.click('cancel')
+    screen.should_contain('value: None')

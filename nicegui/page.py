@@ -1,13 +1,14 @@
 import asyncio
 import inspect
 import time
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from fastapi import Request, Response
 
 from . import background_tasks, globals
 from .client import Client
 from .favicon import create_favicon_route
+from .language import Language
 
 if TYPE_CHECKING:
     from .api_router import APIRouter
@@ -21,9 +22,10 @@ class page:
                  viewport: Optional[str] = None,
                  favicon: Optional[str] = None,
                  dark: Optional[bool] = ...,
+                 language: Language = ...,
                  response_timeout: float = 3.0,
                  api_router: Optional['APIRouter'] = None,
-                 **kwargs,
+                 **kwargs: Any,
                  ) -> None:
         """Page
 
@@ -37,6 +39,7 @@ class page:
         :param viewport: optional viewport meta tag content
         :param favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
+        :param language: language of the page (defaults to `language` argument of `run` command)
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0)
         :param api_router: APIRouter instance to use, can be left `None` to use the default
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
@@ -46,6 +49,7 @@ class page:
         self.viewport = viewport
         self.favicon = favicon
         self.dark = dark
+        self.language = language
         self.response_timeout = response_timeout
         self.kwargs = kwargs
         self.api_router = api_router or globals.app.router
@@ -61,7 +65,10 @@ class page:
     def resolve_dark(self) -> Optional[bool]:
         return self.dark if self.dark is not ... else globals.dark
 
-    def __call__(self, func: Callable) -> Callable:
+    def resolve_language(self) -> Optional[str]:
+        return self.language if self.language is not ... else globals.language
+
+    def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         globals.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
         parameters_of_decorated_func = list(inspect.signature(func).parameters.keys())
 

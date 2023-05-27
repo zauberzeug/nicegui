@@ -1,0 +1,2 @@
+nicegui>=1.2
+simpy

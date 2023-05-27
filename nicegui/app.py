@@ -60,7 +60,7 @@ class App(FastAPI):
             raise Exception('calling shutdown() is not supported when auto-reload is enabled')
         globals.server.should_exit = True
 
-    def add_static_files(self, path: str, directory: str) -> None:
+    def add_static_files(self, url_path: str, local_directory: str) -> None:
         """Add static files.
 
         `add_static_files()` makes a local directory available at the specified endpoint, e.g. `'/static'`.
@@ -68,12 +68,12 @@ class App(FastAPI):
         Otherwise the browser would not be able to access the files.
         Do only put non-security-critical files in there, as they are accessible to everyone.
 
-        :param path: string that starts with a slash "/"
-        :param directory: folder with static files to serve under the given path
+        :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
+        :param local_directory: local folder with files to serve as static content
         """
-        if path == '/':
+        if url_path == '/':
             raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
-        globals.app.mount(path, StaticFiles(directory=directory))
+        globals.app.mount(url_path, StaticFiles(directory=local_directory))
 
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""

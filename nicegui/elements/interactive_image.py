@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from ..dependencies import register_component
 from ..events import MouseEventArguments, handle_event
@@ -13,9 +13,13 @@ register_component('interactive_image', __file__, 'interactive_image.js')
 class InteractiveImage(SourceElement, ContentElement):
     CONTENT_PROP = 'content'
 
-    def __init__(self, source: str = '', *,
+    def __init__(self,
+                 source: str = '', *,
                  content: str = '',
-                 on_mouse: Optional[Callable] = None, events: List[str] = ['click'], cross: bool = False) -> None:
+                 on_mouse: Optional[Callable[..., Any]] = None,
+                 events: List[str] = ['click'],
+                 cross: bool = False,
+                 ) -> None:
         """Interactive Image
 
         Create an image with an SVG overlay that handles mouse events and yields image coordinates.

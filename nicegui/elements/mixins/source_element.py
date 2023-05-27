@@ -9,7 +9,7 @@ from ...element import Element
 class SourceElement(Element):
     source = BindableProperty(on_change=lambda sender, source: sender.on_source_change(source))
 
-    def __init__(self, *, source: str, **kwargs) -> None:
+    def __init__(self, *, source: str, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.source = source
         self._props['src'] = source
@@ -17,7 +17,8 @@ class SourceElement(Element):
     def bind_source_to(self,
                        target_object: Any,
                        target_name: str = 'source',
-                       forward: Callable = lambda x: x) -> Self:
+                       forward: Callable[..., Any] = lambda x: x,
+                       ) -> Self:
         """Bind the source of this element to the target object's target_name property.
 
         The binding works one way only, from this element to the target.
@@ -32,7 +33,8 @@ class SourceElement(Element):
     def bind_source_from(self,
                          target_object: Any,
                          target_name: str = 'source',
-                         backward: Callable = lambda x: x) -> Self:
+                         backward: Callable[..., Any] = lambda x: x,
+                         ) -> Self:
         """Bind the source of this element from the target object's target_name property.
 
         The binding works one way only, from the target to this element.
@@ -47,8 +49,9 @@ class SourceElement(Element):
     def bind_source(self,
                     target_object: Any,
                     target_name: str = 'source', *,
-                    forward: Callable = lambda x: x,
-                    backward: Callable = lambda x: x) -> Self:
+                    forward: Callable[..., Any] = lambda x: x,
+                    backward: Callable[..., Any] = lambda x: x,
+                    ) -> Self:
         """Bind the source of this element to the target object's target_name property.
 
         The binding works both ways, from this element to the target and from the target to this element.

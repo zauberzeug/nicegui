@@ -17,8 +17,9 @@ class Number(ValueElement, DisableableElement):
                  prefix: Optional[str] = None,
                  suffix: Optional[str] = None,
                  format: Optional[str] = None,
-                 on_change: Optional[Callable] = None,
-                 validation: Dict[str, Callable] = {}) -> None:
+                 on_change: Optional[Callable[..., Any]] = None,
+                 validation: Dict[str, Callable[..., bool]] = {},
+                 ) -> None:
         """Number Input
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
@@ -35,7 +36,7 @@ class Number(ValueElement, DisableableElement):
         :param prefix: a prefix to prepend to the displayed value
         :param suffix: a suffix to append to the displayed value
         :param format: a string like "%.2f" to format the displayed value
-        :param on_change: callback to execute when the input is confirmed by leaving the focus
+        :param on_change: callback to execute when the value changes
         :param validation: dictionary of validation rules, e.g. ``{'Too small!': lambda value: value < 3}``
         """
         self.format = format

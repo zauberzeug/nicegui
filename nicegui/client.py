@@ -47,8 +47,8 @@ class Client:
 
         self.page = page
 
-        self.connect_handlers: List[Union[Callable, Awaitable]] = []
-        self.disconnect_handlers: List[Union[Callable, Awaitable]] = []
+        self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+        self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
 
     @property
     def ip(self) -> Optional[str]:
@@ -84,6 +84,7 @@ class Client:
             'viewport': self.page.resolve_viewport(),
             'favicon_url': get_favicon_url(self.page, prefix),
             'dark': str(self.page.resolve_dark()),
+            'language': self.page.resolve_language(),
             'prefix': prefix,
             'tailwind': globals.tailwind,
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
@@ -111,7 +112,7 @@ class Client:
         """Execute JavaScript on the client.
 
         The client connection must be established before this method is called.
-        You can do this by `await client.connected()` or register a callback with `client.on_connected(...)`.
+        You can do this by `await client.connected()` or register a callback with `client.on_connect(...)`.
         If respond is True, the javascript code must return a string.
         """
         request_id = str(uuid.uuid4())
@@ -129,7 +130,7 @@ class Client:
             await asyncio.sleep(check_interval)
         return self.waiting_javascript_commands.pop(request_id)
 
-    def open(self, target: Union[Callable, str]) -> None:
+    def open(self, target: Union[Callable[..., Any], str]) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else globals.page_routes[target]
         outbox.enqueue_message('open', path, self.id)
@@ -138,10 +139,10 @@ class Client:
         """Download a file from the given URL."""
         outbox.enqueue_message('download', {'url': url, 'filename': filename}, self.id)
 
-    def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
+    def on_connect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
         """Register a callback to be called when the client connects."""
         self.connect_handlers.append(handler)
 
-    def on_disconnect(self, handler: Union[Callable, Awaitable]) -> None:
+    def on_disconnect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
         """Register a callback to be called when the client disconnects."""
         self.disconnect_handlers.append(handler)

@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -11,7 +11,7 @@ class Date(ValueElement, DisableableElement):
                  value: Optional[str] = None,
                  *,
                  mask: str = 'YYYY-MM-DD',
-                 on_change: Optional[Callable] = None) -> None:
+                 on_change: Optional[Callable[..., Any]] = None) -> None:
         """Date Input
 
         This element is based on Quasar's `QDate <https://quasar.dev/vue-components/date>`_ component.

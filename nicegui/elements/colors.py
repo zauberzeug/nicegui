@@ -28,5 +28,4 @@ class Colors(Element):
         self._props['negative'] = negative
         self._props['info'] = info
         self._props['warning'] = warning
-        self._props['key'] = self.id  # HACK: workaround for #600
         self.update()
