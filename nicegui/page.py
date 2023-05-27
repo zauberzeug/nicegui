@@ -44,7 +44,7 @@ class page:
         :param api_router: APIRouter instance to use, can be left `None` to use the default
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
-        self.path = path
+        self._path = path
         self.title = title
         self.viewport = viewport
         self.favicon = favicon
@@ -55,6 +55,10 @@ class page:
         self.api_router = api_router or globals.app.router
 
         create_favicon_route(self.path, favicon)
+
+    @property
+    def path(self) -> str:
+        return self.api_router.prefix + self._path
 
     def resolve_title(self) -> str:
         return self.title if self.title is not None else globals.title
@@ -102,6 +106,6 @@ class page:
             parameters.insert(0, request)
         decorated.__signature__ = inspect.Signature(parameters)
 
-        self.api_router.get(self.path, **self.kwargs)(decorated)
+        self.api_router.get(self._path, **self.kwargs)(decorated)
         globals.page_routes[func] = self.path
         return func
