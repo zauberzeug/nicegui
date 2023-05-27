@@ -28,9 +28,11 @@ class WindowProxy(webview.Window):
         self._send(on_top)
 
     async def get_size(self) -> Tuple[int, int]:
+        """get the window size as tuple (width, height)"""
         return await self._send_async()
 
     async def get_position(self) -> Tuple[int, int]:
+        """get the window position as tuple (x, y)"""
         return await self._send_async()
 
     def load_url(self, url: str) -> None:
@@ -45,10 +47,10 @@ class WindowProxy(webview.Window):
     def set_title(self, title: str) -> None:
         self.send(title)
 
-    async def get_cookies(self) -> None:
+    async def get_cookies(self) -> Any:
         return await self._send_async()
 
-    async def get_current_url(self) -> None:
+    async def get_current_url(self) -> str:
         return await self._send_async()
 
     def destroy(self) -> None:
@@ -63,7 +65,7 @@ class WindowProxy(webview.Window):
     def set_window_size(self, width: int, height: int) -> None:
         self._send(width, height)
 
-    def resize(self, width: int, height: int, fix_point=FixPoint.NORTH | FixPoint.WEST) -> None:
+    def resize(self, width: int, height: int, fix_point: FixPoint = FixPoint.NORTH | FixPoint.WEST) -> None:
         self._send(width, height, fix_point)
 
     def minimize(self) -> None:
@@ -78,8 +80,8 @@ class WindowProxy(webview.Window):
     def move(self, x: int, y: int) -> None:
         self._send(x, y)
 
-    def evaluate_js(self, script: str) -> Any:
-        return self._send(script)
+    async def evaluate_js(self, script: str) -> str:
+        return await self._send_async(script)
 
     async def create_confirmation_dialog(self, title: str, message: str) -> bool:
         return await self._send_async(title, message)
@@ -90,9 +92,15 @@ class WindowProxy(webview.Window):
         directory: str = '',
         allow_multiple: bool = False,
         save_filename: str = '',
-        file_types: Tuple[str, ...] = ...
+        file_types: Tuple[str, ...] = ()
     ) -> Tuple[str, ...]:
-        return await self._send_async(dialog_type, directory, allow_multiple, save_filename, file_types)
+        return await self._send_async(
+            dialog_type=dialog_type,
+            directory=directory,
+            allow_multiple=allow_multiple,
+            save_filename=save_filename,
+            file_types=file_types
+        )
 
     def expose(self, function) -> None:
         raise NotImplementedError(f'exposing "{function}" is not supported')
@@ -106,7 +114,7 @@ class WindowProxy(webview.Window):
 
         def wrapper(*args, **kwargs):
             try:
-                method_queue.put((name, args[1:], kwargs))  # NOTE args[1:] to skip self
+                method_queue.put((name, args, kwargs))  # NOTE args[1:] to skip self
                 return response_queue.get()  # wait for the method to be called and writing its result to the queue
             except Exception:
                 logging.exception(f'error in {name}')

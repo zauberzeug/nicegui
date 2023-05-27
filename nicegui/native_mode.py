@@ -80,7 +80,7 @@ def start_window_method_executor(
                     logging.error(f'window.{method} is not callable')
             except queue.Empty:
                 time.sleep(0.01)
-            except:
+            except Exception:
                 logging.exception(f'error in window.{method}')
 
     Thread(target=window_method_executor).start()
