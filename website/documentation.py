@@ -582,22 +582,28 @@ def create_full() -> None:
     demo.BROWSER_BGCOLOR = '#ffffff'
 
     @text_demo('Native Mode', '''
-        You can enable native mode for NiceGUI by specifying `native=True` in the `ui.run` function. 
-        To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively. 
+        You can enable native mode for NiceGUI by specifying `native=True` in the `ui.run` function.
+        To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively.
         Additionally, you can provide extra keyword arguments via `app.native.window_args` and `app.native.start_args`.
-        Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html) 
-        for the `webview.create_window` and `webview.start` functions.
+        Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html)
+        for the `webview.create_window` and `webview.start` functions. 
         Note that these keyword arguments will take precedence over the parameters defined in ui.run.
+
+        In native mode the `app.native.main_window` object allows you to access the underlying window.
+        It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/guide/api.html#window-object).
     ''', tab=lambda: ui.label('NiceGUI'))
     def native_mode_demo():
         from nicegui import app
 
-        ui.label('app running in native mode')
-
         app.native.window_args['resizable'] = False
         app.native.start_args['debug'] = True
 
+        ui.label('app running in native mode')
+        # ui.button('enlarge', on_click=lambda: app.native.main_window.resize(1000, 700))
+        #
         # ui.run(native=True, window_size=(400, 300), fullscreen=False)
+        # END OF DEMO
+        ui.button('enlarge', on_click=lambda: ui.notify('window will be set to 1000x700 in native mode'))
     # HACK: restore color
     demo.BROWSER_BGCOLOR = demo_BROWSER_BGCOLOR
 
@@ -706,7 +712,7 @@ def create_full() -> None:
                     '--name', 'myapp', # name of your app
                     '--onefile',
                     #'--windowed', # prevent console appearing, only use with ui.run(native=True, ...)
-                    '--add-data', f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui'       
+                    '--add-data', f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui'
                 ]
                 subprocess.call(cmd)
                 ```
