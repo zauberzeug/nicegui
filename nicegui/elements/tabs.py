@@ -9,7 +9,8 @@ class Tabs(ValueElement):
 
     def __init__(self, *,
                  value: Any = None,
-                 on_change: Optional[Callable] = None) -> None:
+                 on_change: Optional[Callable[..., Any]] = None,
+                 ) -> None:
         """Tabs
 
         This element represents `Quasar's QTabs <https://quasar.dev/vue-components/tabs#qtabs-api>`_ component.
@@ -47,7 +48,7 @@ class TabPanels(ValueElement):
     def __init__(self,
                  tabs: Tabs, *,
                  value: Any = None,
-                 on_change: Optional[Callable] = None,
+                 on_change: Optional[Callable[..., Any]] = None,
                  animated: bool = True,
                  ) -> None:
         """Tab Panels

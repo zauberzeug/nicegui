@@ -46,7 +46,11 @@ def test_replace_log(screen: Screen):
 
 
 def test_special_characters(screen: Screen):
-    ui.log().push('100%')
+    log = ui.log()
+    log.push('50%')
+    ui.button('push', on_click=lambda: log.push('100%'))
 
     screen.open('/')
+    screen.should_contain('50%')
+    screen.click('push')
     screen.should_contain('100%')

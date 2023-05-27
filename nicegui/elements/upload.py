@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from fastapi import Request, Response
 
@@ -17,8 +17,8 @@ class Upload(DisableableElement):
                  max_file_size: Optional[int] = None,
                  max_total_size: Optional[int] = None,
                  max_files: Optional[int] = None,
-                 on_upload: Optional[Callable] = None,
-                 on_rejected: Optional[Callable] = None,
+                 on_upload: Optional[Callable[..., Any]] = None,
+                 on_rejected: Optional[Callable[..., Any]] = None,
                  label: str = '',
                  auto_upload: bool = False,
                  ) -> None:

@@ -22,3 +22,7 @@ def github() -> ui.html:
 
 def discord() -> ui.html:
     return ui.html((PATH / 'discord.svg').read_text())
+
+
+def reddit() -> ui.html:
+    return ui.html((PATH / 'reddit.svg').read_text())

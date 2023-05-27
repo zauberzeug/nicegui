@@ -15,6 +15,7 @@
   <body>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.prod.js"></script>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.{{ language }}.umd.prod.js"></script>
 
     {{ body_html | safe }}
 
@@ -71,11 +72,17 @@
           style: Object.entries(element.style).reduce((str, [p, val]) => `${str}${p}:${val};`, '') || undefined,
           ...element.props,
         };
+        Object.entries(props).forEach(([key, value]) => {
+          if (key.startsWith(':')) {
+            props[key.substring(1)] = eval(value);
+            delete props[key];
+          }
+        });
         element.events.forEach((event) => {
           let event_name = 'on' + event.type[0].toLocaleUpperCase() + event.type.substring(1);
           event.specials.forEach(s => event_name += s[0].toLocaleUpperCase() + s.substring(1));
           let handler = (e) => {
-            const all = typeof e !== 'object' || !event.args;
+            const all = (typeof e !== 'object' || e === null) || !event.args;
             const args = all ? e : Object.fromEntries(event.args.map(a => [a, e[a]]));
             const emitter = () => window.socket.emit("event", {id: element.id, listener_id: event.listener_id, args});
             throttle(emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
@@ -154,8 +161,9 @@
           const query = { client_id: "{{ client_id }}" };
           const url = window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
           const extraHeaders = {{ socket_io_js_extra_headers | safe }};
+          const transports = ['websocket', 'polling'];
           window.path_prefix = "{{ prefix | safe }}";
-          window.socket = io(url, { path: "{{ prefix | safe }}/_nicegui_ws/socket.io", query, extraHeaders });
+          window.socket = io(url, { path: "{{ prefix | safe }}/_nicegui_ws/socket.io", query, extraHeaders, transports });
           window.socket.on("connect", () => {
             window.socket.emit("handshake", (ok) => {
               if (!ok) window.location.reload();
@@ -185,6 +193,8 @@
           },
         }
       });
+
+      Quasar.lang.set(Quasar.lang["{{ language }}"]);
 
       {{ vue_scripts | safe }}
       {{ js_imports | safe }}

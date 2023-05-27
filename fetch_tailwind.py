@@ -2,17 +2,19 @@
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import List
 
 import requests
 from bs4 import BeautifulSoup
+from secure import SecurePath
 
 
 @dataclass
 class Property:
     title: str
     description: str
-    members: list[str]
-    short_members: list[str] = field(init=False)
+    members: List[str]
+    short_members: List[str] = field(init=False)
     common_prefix: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -47,7 +49,7 @@ class Property:
         return '_'.join(word.lower() for word in re.sub(r'[-/ &]', ' ', self.title).split())
 
 
-properties: list[Property] = []
+properties: List[Property] = []
 
 
 def get_soup(url: str) -> BeautifulSoup:
@@ -81,7 +83,7 @@ for file in (Path(__file__).parent / 'nicegui' / 'tailwind_types').glob('*.py'):
 for property in properties:
     if not property.members:
         continue
-    with open(Path(__file__).parent / 'nicegui' / 'tailwind_types' / f'{property.snake_title}.py', 'w') as f:
+    with SecurePath(open(Path(__file__).parent / 'nicegui' / 'tailwind_types' / f'{property.snake_title}.py', 'w')) as f:
         f.write('from typing_extensions import Literal\n')
         f.write('\n')
         f.write(f'{property.pascal_title} = Literal[\n')

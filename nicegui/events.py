@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from inspect import signature
-from typing import TYPE_CHECKING, Any, BinaryIO, Callable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, BinaryIO, Callable, Dict, List, Optional, Union
 
 from . import background_tasks, globals
 from .helpers import KWONLY_SLOTS, is_coroutine
@@ -268,15 +268,15 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
-def handle_event(handler: Optional[Callable],
-                 arguments: Union[EventArguments, dict], *,
+def handle_event(handler: Optional[Callable[..., Any]],
+                 arguments: Union[EventArguments, Dict], *,
                  sender: Optional['Element'] = None) -> None:
     try:
         if handler is None:
             return
         no_arguments = not signature(handler).parameters
         sender = arguments.sender if isinstance(arguments, EventArguments) else sender
-        assert sender.parent_slot is not None
+        assert sender is not None and sender.parent_slot is not None
         with sender.parent_slot:
             result = handler() if no_arguments else handler(arguments)
         if is_coroutine(handler):
