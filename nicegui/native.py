@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass, field
 from functools import partial
 from multiprocessing import Queue
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import webview
 from webview.window import FixPoint
@@ -113,4 +113,4 @@ class WindowProxy(webview.Window):
 class Native:
     start_args: Dict[str, Any] = field(default_factory=dict)
     window_args: Dict[str, Any] = field(default_factory=dict)
-    main_window: WindowProxy = WindowProxy()
+    main_window: Optional[WindowProxy] = None

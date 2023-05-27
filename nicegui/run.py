@@ -23,6 +23,8 @@ class Server(uvicorn.Server):
         globals.server = self
         app_native.method_queue = self.config.method_queue
         app_native.response_queue = self.config.response_queue
+        if app_native.method_queue is not None:
+            globals.app.native.main_window = app_native.WindowProxy()
         super().run(sockets=sockets)
 
 
@@ -128,8 +130,8 @@ def run(*,
         log_level=uvicorn_logging_level,
         **kwargs,
     )
-    config.method_queue = app_native.method_queue
-    config.response_queue = app_native.response_queue
+    config.method_queue = app_native.method_queue if native else None
+    config.response_queue = app_native.response_queue if native else None
     globals.server = Server(config=config)
     if (reload or config.workers > 1) and not isinstance(config.app, str):
         logging.warning('You must pass the application as an import string to enable "reload" or "workers".')
