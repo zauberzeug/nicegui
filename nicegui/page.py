@@ -68,7 +68,6 @@ class page:
 
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             request = dec_kwargs['request']
-            globals.requests[globals._socket_id] = request
             # NOTE cleaning up the keyword args so the signature is consistent with "func" again
             dec_kwargs = {k: v for k, v in dec_kwargs.items() if k in parameters_of_decorated_func}
             with Client(self) as client:
@@ -88,7 +87,6 @@ class page:
                 result = task.result() if task.done() else None
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
-            del globals.requests[globals._socket_id]
             return client.build_response(request)
 
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']

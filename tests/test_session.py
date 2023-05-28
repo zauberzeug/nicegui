@@ -1,13 +1,19 @@
-from nicegui import globals, ui
+import requests
 
-from .screen import Screen
+from nicegui import app, globals, ui
+
+from .screen import PORT, Screen
 
 
 def test_session_data_is_stored_in_the_browser(screen: Screen):
     @ui.page('/')
     def page():
-        globals.get_request().session['count'] = globals.get_request().session.get('count', 0) + 1
-        ui.label(globals.get_request().session['count'])
+        ui.session.get()['count'] = ui.session.get().get('count', 0) + 1
+        ui.label(ui.session.get()['count'] or 'no session')
+
+    @app.get('/session')
+    def session():
+        return 'count = ' + str(ui.session.get()['count'])
 
     screen.open('/')
     screen.should_contain('1')
@@ -15,3 +21,13 @@ def test_session_data_is_stored_in_the_browser(screen: Screen):
     screen.should_contain('2')
     screen.open('/')
     screen.should_contain('3')
+    screen.open('/session')
+    screen.should_contain('count = 3')
+    # assert screen.selenium.g(f'http://localhost:{PORT}/session').json() == 3
+
+    #     ui.input('name').bind_value(request.session, 'key')
+
+    # screen.open('/')
+    # screen.find('input').send_keys('some text')
+    # screen.open('/')
+    # screen.should_contain('some text')

@@ -12,11 +12,13 @@ from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from . import globals, helpers, native_mode
 from .language import Language
+from .session import RequestTrackingMiddleware
 
 
 class Server(uvicorn.Server):
 
     def run(self, sockets: List[Any] = None) -> None:
+        globals.app.add_middleware(RequestTrackingMiddleware)
         globals.app.add_middleware(SessionMiddleware, secret_key='some_random_string')  # TODO real random string
         super().run(sockets=sockets)
 

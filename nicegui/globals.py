@@ -87,10 +87,6 @@ def get_client() -> 'Client':
     return get_slot().parent.client
 
 
-def get_request() -> Request:
-    return requests[_socket_id]
-
-
 @contextmanager
 def socket_id(id: str) -> None:
     global _socket_id
