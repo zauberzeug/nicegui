@@ -6,11 +6,19 @@ from typing import Any, List, Optional, Tuple
 
 import __main__
 import uvicorn
+from starlette.middleware.sessions import SessionMiddleware
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from . import globals, helpers, native_mode
 from .language import Language
+
+
+class Server(uvicorn.Server):
+
+    def run(self, sockets: List[Any] = None) -> None:
+        globals.app.add_middleware(SessionMiddleware, secret_key='some_random_string')  # TODO real random string
+        super().run(sockets=sockets)
 
 
 def run(*,
@@ -115,7 +123,7 @@ def run(*,
         log_level=uvicorn_logging_level,
         **kwargs,
     )
-    globals.server = uvicorn.Server(config=config)
+    globals.server = Server(config=config)
 
     if (reload or config.workers > 1) and not isinstance(config.app, str):
         logging.warning('You must pass the application as an import string to enable "reload" or "workers".')
