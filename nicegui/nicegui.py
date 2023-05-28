@@ -66,6 +66,10 @@ def handle_startup(with_welcome_message: bool = True) -> None:
                            'remove the guard or replace it with\n'
                            '   if __name__ in {"__main__", "__mp_main__"}:\n'
                            'to allow for multiprocessing.')
+    if globals.favicon and Path(globals.favicon).exists():
+        globals.app.add_route('/favicon.ico', lambda _: FileResponse(globals.favicon))
+    else:
+        globals.app.add_route('/favicon.ico', lambda _: FileResponse(Path(__file__).parent / 'static' / 'favicon.ico'))
     globals.state = globals.State.STARTING
     globals.loop = asyncio.get_running_loop()
     with globals.index_client:

@@ -37,6 +37,8 @@ def selenium(selenium: webdriver.Chrome) -> webdriver.Chrome:
 
 @pytest.fixture(autouse=True)
 def reset_globals() -> Generator[None, None, None]:
+    # we need to remove
+    [globals.app.routes.remove(r) for r in globals.app.routes if 'favicon' in r.path]
     for path in {'/'}.union(globals.page_routes.values()):
         globals.app.remove_route(path)
     importlib.reload(globals)

@@ -11,16 +11,12 @@ if TYPE_CHECKING:
 
 
 def create_favicon_route(path: str, favicon: Optional[str]) -> None:
-    if favicon and (is_remote_url(favicon) or is_char(favicon)):
-        return
-    fallback = Path(__file__).parent / 'static' / 'favicon.ico'
-    path = f'{"" if path == "/" else path}/favicon.ico'
-    globals.app.remove_route(path)
-    globals.app.add_route(path, lambda _: FileResponse(favicon or globals.favicon or fallback))
+    if favicon and Path(favicon).exists():
+        globals.app.add_route(path, lambda _: FileResponse(favicon))
 
 
 def get_favicon_url(page: 'page', prefix: str) -> str:
-    favicon = page.favicon or globals.favicon
+    favicon = str(page.favicon or globals.favicon)
     if favicon and is_remote_url(favicon):
         return favicon
     elif not favicon:
