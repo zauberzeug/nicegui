@@ -736,7 +736,7 @@ requirements-deprecated-finder = ["pip-api", "pipreqs"]
 name = "itsdangerous"
 version = "2.1.2"
 description = "Safely pass data to untrusted environments and back."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -2446,4 +2446,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "3f3e2c9af9620c1fee0a06a67dfb8199ca91d7f64e51dfc8bda40cf15dc39ac8"
+content-hash = "b01fb0baf8b014fbe5a9f384573997ffa8dd81f29a1a3bd2baeb74478e5eeb33"
