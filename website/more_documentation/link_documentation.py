@@ -31,3 +31,15 @@ def more() -> None:
             ui.link('Goto A', '#target_A')
             # ui.link('Goto B', label_B)
             ui.link('Goto B', '#target_B')  # HIDE
+
+    @text_demo('Links to other pages', '''
+        You can link to other pages by providing the link target as path or function reference.
+    ''')
+    def link_to_other_page():
+        @ui.page('/some_other_page')
+        def my_page():
+            ui.label('This is another page')
+
+        ui.label('Go to other page')
+        ui.link('... with path', '/some_other_page')
+        ui.link('... with function reference', my_page)
