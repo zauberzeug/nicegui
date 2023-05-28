@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from inspect import signature
+from inspect import Parameter, signature
 from typing import TYPE_CHECKING, Any, BinaryIO, Callable, Dict, List, Optional, Union
 
 from . import background_tasks, globals
@@ -274,7 +274,7 @@ def handle_event(handler: Optional[Callable[..., Any]],
     try:
         if handler is None:
             return
-        no_arguments = not signature(handler).parameters
+        no_arguments = not any(p.default is Parameter.empty for p in signature(handler).parameters.values())
         sender = arguments.sender if isinstance(arguments, EventArguments) else sender
         assert sender is not None and sender.parent_slot is not None
         with sender.parent_slot:
