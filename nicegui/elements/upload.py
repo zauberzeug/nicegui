@@ -1,6 +1,7 @@
 from typing import Any, Callable, Dict, Optional
 
-from fastapi import Request, UploadFile
+from fastapi import Request
+from starlette.datastructures import UploadFile
 
 from ..dependencies import register_component
 from ..events import EventArguments, UploadEventArguments, handle_event
