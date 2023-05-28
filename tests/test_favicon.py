@@ -1,9 +1,10 @@
 from pathlib import Path
+from typing import Union
 
 import requests
 from bs4 import BeautifulSoup
 
-from nicegui import ui
+from nicegui import favicon, ui
 
 from .screen import PORT, Screen
 
@@ -17,10 +18,13 @@ def assert_favicon_url_starts_with(screen: Screen, content: str):
     assert icon_link['href'].startswith(content)
 
 
-def assert_favicon(file: Path, url_path: str = '/favicon.ico'):
+def assert_favicon(content: Union[Path, str], url_path: str = '/favicon.ico'):
     response = requests.get(f'http://localhost:{PORT}{url_path}')
     assert response.status_code == 200
-    assert file.read_bytes() == response.content
+    if isinstance(content, Path):
+        assert content.read_bytes() == response.content
+    else:
+        assert content == response.text
 
 
 def test_default(screen: Screen):
@@ -37,7 +41,7 @@ def test_emoji(screen: Screen):
     screen.open('/')
     assert_favicon_url_starts_with(screen, 'data:image/svg+xml')
     # the default favicon is still available (for example when accessing a plain FastAPI route with the browser)
-    assert_favicon(DEFAULT_FAVICON_PATH)
+    assert_favicon(favicon.char_to_svg('👋'))
 
 
 def test_custom_file(screen: Screen):
