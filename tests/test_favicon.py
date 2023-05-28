@@ -7,6 +7,9 @@ from nicegui import ui
 
 from .screen import PORT, Screen
 
+DEFAULT_FAVICON_PATH = Path(__file__).parent.parent / 'nicegui' / 'static' / 'favicon.ico'
+LOGO_FAVICON_PATH = Path(__file__).parent.parent / 'website' / 'static' / 'logo_square.png'
+
 
 def assert_favicon_url_starts_with(screen: Screen, content: str):
     soup = BeautifulSoup(screen.selenium.page_source, 'html.parser')
@@ -14,12 +17,17 @@ def assert_favicon_url_starts_with(screen: Screen, content: str):
     assert icon_link['href'].startswith(content)
 
 
+def assert_favicon(file: Path, url_path: str = '/favicon.ico'):
+    response = requests.get(f'http://localhost:{PORT}{url_path}')
+    assert response.status_code == 200
+    assert file.read_bytes() == response.content
+
+
 def test_default(screen: Screen):
     ui.label('Hello, world')
 
     screen.open('/')
-    response = requests.get(f'http://localhost:{PORT}/favicon.ico')
-    assert response.status_code == 200
+    assert_favicon(DEFAULT_FAVICON_PATH)
 
 
 def test_emoji(screen: Screen):
@@ -27,18 +35,40 @@ def test_emoji(screen: Screen):
 
     screen.ui_run_kwargs['favicon'] = '👋'
     screen.open('/')
-    response = requests.get(f'http://localhost:{PORT}/favicon.ico')
-    assert response.status_code == 200, 'default favicon should still be available for plain FastAPI requests running in the browser'
-    assert (Path(__file__).parent.parent / 'nicegui' / 'static' / 'favicon.ico').read_bytes() == response.content
     assert_favicon_url_starts_with(screen, 'data:image/svg+xml')
+    # the default favicon is still available (for example when accessing a plain FastAPI route with the browser)
+    assert_favicon(DEFAULT_FAVICON_PATH)
 
 
 def test_custom_file(screen: Screen):
     ui.label('Hello, world')
 
-    screen.ui_run_kwargs['favicon'] = Path(__file__).parent.parent / 'website' / 'static' / 'logo_square.png'
+    screen.ui_run_kwargs['favicon'] = LOGO_FAVICON_PATH
     screen.open('/')
     assert_favicon_url_starts_with(screen, '/favicon.ico')
-    response = requests.get(f'http://localhost:{PORT}/favicon.ico')
-    assert response.status_code == 200
-    assert screen.ui_run_kwargs['favicon'].read_bytes() == response.content
+    assert_favicon(screen.ui_run_kwargs['favicon'])
+
+
+def test_page_specific_icon(screen: Screen):
+    @ui.page('/subpage', favicon=LOGO_FAVICON_PATH)
+    def sub():
+        ui.label('Subpage')
+
+    ui.label('Main')
+
+    screen.open('/subpage')
+    assert_favicon(LOGO_FAVICON_PATH, url_path='/subpage/favicon.ico')
+    screen.open('/')
+
+
+def test_page_specific_emoji(screen: Screen):
+    @ui.page('/subpage', favicon='👋')
+    def sub():
+        ui.label('Subpage')
+
+    ui.label('Main')
+
+    screen.open('/subpage')
+    assert_favicon_url_starts_with(screen, 'data:image/svg+xml')
+    screen.open('/')
+    assert_favicon(DEFAULT_FAVICON_PATH)
