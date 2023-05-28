@@ -27,7 +27,7 @@ from .page import page
 globals.app = app = App(default_response_class=NiceGUIJSONResponse)
 # NOTE we use custom json module which wraps orjson
 socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=json)
-globals.sio = sio = app.sio
+globals.sio = sio = socket_manager._sio
 
 app.add_middleware(GZipMiddleware)
 static_files = StaticFiles(

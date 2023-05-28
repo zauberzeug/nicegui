@@ -80,7 +80,7 @@ class Element(Visibility):
             for child in slot:
                 yield child
 
-    def _collect_slot_dict(self) -> Dict[str, List[int]]:
+    def _collect_slot_dict(self) -> Dict[str, Any]:
         return {
             name: {'template': slot.template, 'ids': [child.id for child in slot]}
             for name, slot in self.slots.items()
@@ -276,6 +276,7 @@ class Element(Visibility):
         :param target_container: container to move the element to (default: the parent container)
         :param target_index: index within the target slot (default: append to the end)
         """
+        assert self.parent_slot is not None
         self.parent_slot.children.remove(self)
         self.parent_slot.parent.update()
         target_container = target_container or self.parent_slot.parent

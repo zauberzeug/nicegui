@@ -3,7 +3,7 @@ import inspect
 import logging
 from contextlib import contextmanager
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterator, List, Optional, Union
 
 from socketio import AsyncServer
 from uvicorn import Server
@@ -86,7 +86,7 @@ def get_client() -> 'Client':
 
 
 @contextmanager
-def socket_id(id: str) -> None:
+def socket_id(id: str) -> Iterator[None]:
     global _socket_id
     _socket_id = id
     yield

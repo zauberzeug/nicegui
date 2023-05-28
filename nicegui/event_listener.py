@@ -1,6 +1,6 @@
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 from .helpers import KWONLY_SLOTS
 
@@ -10,7 +10,7 @@ class EventListener:
     id: str = field(init=False)
     element_id: int
     type: str
-    args: List[str]
+    args: Optional[List[str]]
     handler: Callable
     throttle: float
     leading_events: bool

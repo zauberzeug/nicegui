@@ -1,5 +1,5 @@
 import uuid
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional, cast
 
 import numpy as np
 
@@ -15,7 +15,7 @@ class Object3D:
         self.type = type
         self.id = str(uuid.uuid4())
         self.name: Optional[str] = None
-        self.scene: 'Scene' = globals.get_slot().parent
+        self.scene: 'Scene' = cast(Scene, globals.get_slot().parent)
         self.scene.objects[self.id] = self
         self.parent: Object3D = self.scene.stack[-1]
         self.args: List = list(args)
