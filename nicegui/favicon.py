@@ -2,6 +2,7 @@ import urllib.parse
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
+from fastapi import Response
 from fastapi.responses import FileResponse
 
 from . import __version__, globals
@@ -26,11 +27,15 @@ def get_favicon_url(page: 'page', prefix: str) -> str:
     elif is_svg(favicon):
         return svg_to_data_url(favicon)
     elif is_char(favicon):
-        return char_to_data_url(favicon)
+        return svg_to_data_url(char_to_svg(favicon))
     elif page.path == '/':
         return f'{prefix}/favicon.ico'
     else:
         return f'{prefix}{page.path}/favicon.ico'
+
+
+def get_favicon_response() -> Response:
+    return Response(char_to_svg(globals.favicon), media_type='image/svg+xml')
 
 
 def is_remote_url(favicon: str) -> bool:
@@ -49,8 +54,8 @@ def is_data_url(favicon: str) -> bool:
     return favicon.startswith('data:')
 
 
-def char_to_data_url(char: str) -> str:
-    svg = f'''
+def char_to_svg(char: str) -> str:
+    return f'''
         <svg viewBox="0 0 128 128" width="128" height="128" xmlns="http://www.w3.org/2000/svg" >
             <style>
                 @supports (-moz-appearance:none) {{
@@ -66,7 +71,6 @@ def char_to_data_url(char: str) -> str:
             <text y=".9em" font-size="128" font-family="Georgia, sans-serif">{char}</text>
         </svg>
     '''
-    return svg_to_data_url(svg)
 
 
 def svg_to_data_url(svg: str) -> str:
