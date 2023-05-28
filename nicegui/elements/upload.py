@@ -1,6 +1,6 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, Optional
 
-from fastapi import Request, Response
+from fastapi import Request, UploadFile
 
 from ..dependencies import register_component
 from ..events import EventArguments, UploadEventArguments, handle_event
@@ -51,14 +51,15 @@ class Upload(DisableableElement):
             self._props['max-files'] = max_files
 
         @app.post(self._props['url'])
-        async def upload_route(request: Request) -> Response:
+        async def upload_route(request: Request) -> Dict[str, str]:
             for data in (await request.form()).values():
+                assert isinstance(data, UploadFile)
                 args = UploadEventArguments(
                     sender=self,
                     client=self.client,
                     content=data.file,
-                    name=data.filename,
-                    type=data.content_type,
+                    name=data.filename or '',
+                    type=data.content_type or '',
                 )
                 handle_event(on_upload, args)
             return {'upload': 'success'}

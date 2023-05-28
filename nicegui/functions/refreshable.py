@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List
+from typing import Any, Awaitable, Callable, Dict, List, Tuple, Union
 
 from typing_extensions import Self
 
@@ -15,10 +15,10 @@ register_component('refreshable', __file__, 'refreshable.js')
 class RefreshableTarget:
     container: Element
     instance: Any
-    args: List[Any]
+    args: Tuple[Any, ...]
     kwargs: Dict[str, Any]
 
-    def run(self, func: Callable[..., Any]) -> None:
+    def run(self, func: Callable[..., Any]) -> Union[None, Awaitable]:
         if is_coroutine(func):
             async def wait_for_result() -> None:
                 with self.container:
@@ -33,6 +33,7 @@ class RefreshableTarget:
                     func(*self.args, **self.kwargs)
                 else:
                     func(self.instance, *self.args, **self.kwargs)
+            return None  # required by mypy
 
 
 class refreshable:
@@ -51,7 +52,7 @@ class refreshable:
         self.instance = instance
         return self
 
-    def __call__(self, *args: Any, **kwargs: Any) -> None:
+    def __call__(self, *args: Any, **kwargs: Any) -> Union[None, Awaitable]:
         self.prune()
         target = RefreshableTarget(container=Element('refreshable'), instance=self.instance, args=args, kwargs=kwargs)
         self.targets.append(target)
@@ -65,6 +66,7 @@ class refreshable:
             target.container.clear()
             result = target.run(self.func)
             if is_coroutine(self.func):
+                assert result is not None
                 if globals.loop and globals.loop.is_running():
                     background_tasks.create(result)
                 else:

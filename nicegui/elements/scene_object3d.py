@@ -1,12 +1,12 @@
 import uuid
-from typing import TYPE_CHECKING, Any, List, Optional, cast
+from typing import TYPE_CHECKING, Any, List, Optional, Union, cast
 
 import numpy as np
 
 from .. import globals
 
 if TYPE_CHECKING:
-    from .scene import Scene
+    from .scene import Scene, SceneObject
 
 
 class Object3D:
@@ -17,7 +17,7 @@ class Object3D:
         self.name: Optional[str] = None
         self.scene: 'Scene' = cast('Scene', globals.get_slot().parent)
         self.scene.objects[self.id] = self
-        self.parent: Object3D = self.scene.stack[-1]
+        self.parent: Union[Object3D, SceneObject] = self.scene.stack[-1]
         self.args: List = list(args)
         self.color: str = '#ffffff'
         self.opacity: float = 1.0

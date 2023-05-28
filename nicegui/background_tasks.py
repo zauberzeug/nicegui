@@ -22,7 +22,8 @@ def create(coroutine: Awaitable[T], *, name: str = 'unnamed task') -> 'asyncio.T
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
     """
     assert globals.loop is not None
-    task = globals.loop.create_task(coroutine, name=name) if name_supported else globals.loop.create_task(coroutine)
+    task: asyncio.Task = \
+        globals.loop.create_task(coroutine, name=name) if name_supported else globals.loop.create_task(coroutine)
     task.add_done_callback(_handle_task_result)
     running_tasks.add(task)
     task.add_done_callback(running_tasks.discard)
