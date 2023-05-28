@@ -1,9 +1,10 @@
+import base64
+import io
 import urllib.parse
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Tuple
 
-from fastapi import Response
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response, StreamingResponse
 
 from . import __version__, globals
 
@@ -35,7 +36,13 @@ def get_favicon_url(page: 'page', prefix: str) -> str:
 
 
 def get_favicon_response() -> Response:
-    return Response(char_to_svg(globals.favicon), media_type='image/svg+xml')
+    if is_svg(globals.favicon):
+        return Response(globals.favicon, media_type='image/svg+xml')
+    elif is_data_url(globals.favicon):
+        media_type, bytes = data_url_to_bytes(globals.favicon)
+        return StreamingResponse(io.BytesIO(bytes), media_type=media_type)
+    elif is_char(globals.favicon):
+        return Response(char_to_svg(globals.favicon), media_type='image/svg+xml')
 
 
 def is_remote_url(favicon: str) -> bool:
@@ -76,3 +83,9 @@ def char_to_svg(char: str) -> str:
 def svg_to_data_url(svg: str) -> str:
     svg_urlencoded = urllib.parse.quote(svg)
     return f'data:image/svg+xml,{svg_urlencoded}'
+
+
+def data_url_to_bytes(data_url: str) -> Tuple[str, bytes]:
+    media_type, base64_image = data_url.split(",", 1)
+    media_type = media_type.split(":")[1].split(";")[0]
+    return media_type, base64.b64decode(base64_image)
