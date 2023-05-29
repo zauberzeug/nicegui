@@ -1,4 +1,3 @@
-import contextvars
 import os
 
 __all__ = [
@@ -167,8 +166,6 @@ from .page_layout import PageSticky as page_sticky
 from .page_layout import RightDrawer as right_drawer
 from .run import run
 from .run_with import run_with
-
-session = contextvars.ContextVar('session_var')
 
 if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
     from .elements.line_plot import LinePlot as line_plot

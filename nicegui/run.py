@@ -12,7 +12,7 @@ from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from . import globals, helpers, native_mode
 from .language import Language
-from .session import RequestTrackingMiddleware
+from .storage import RequestTrackingMiddleware
 
 
 class Server(uvicorn.Server):
