@@ -1,8 +1,9 @@
-import requests
+import asyncio
+from uuid import uuid4
 
-from nicegui import app, globals, ui
+from nicegui import Client, app, ui
 
-from .screen import PORT, Screen
+from .screen import Screen
 
 
 def test_session_data_is_stored_in_the_browser(screen: Screen):
@@ -40,9 +41,14 @@ def test_session_storage_supports_asyncio(screen: Screen):
     screen.open('/')
     screen.should_contain('3')
 
-    #     ui.input('name').bind_value(request.session, 'key')
 
-    # screen.open('/')
-    # screen.find('input').send_keys('some text')
-    # screen.open('/')
-    # screen.should_contain('some text')
+def test_session_modifications_after_page_load(screen: Screen):
+    random_data = str(uuid4())
+
+    @ui.page('/')
+    async def page(client: Client):
+        await client.connected()
+        ui.session.get()['test'] = random_data
+
+    screen.open('/')
+    screen.should_contain(random_data)
