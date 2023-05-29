@@ -1,6 +1,6 @@
 import asyncio
 
-from nicegui import Client, app, ui
+from nicegui import Client, app, background_tasks, ui
 
 from .screen import Screen
 
@@ -68,6 +68,48 @@ def test_individual_storage_modifications(screen: Screen):
     screen.should_contain('2')
     screen.open('/')
     screen.should_contain('3')
+
+
+async def test_access_individual_storage_on_interaction(screen: Screen):
+    @ui.page('/')
+    async def page():
+        if 'test_switch' not in app.storage.individual:
+            app.storage.individual['test_switch'] = False
+        ui.switch('switch').bind_value(app.storage.individual, 'test_switch')
+
+    screen.open('/')
+    screen.click('switch')
+    screen.wait(1)
+    await app.storage.backup()
+    assert '{"test_switch": true}' in app.storage._individuals.filename.read_text()
+
+
+def test_access_individual_storage_from_button_click_handler(screen: Screen):
+    @ui.page('/')
+    async def page():
+        async def inner():
+            app.storage.individual['inner_function'] = 'works'
+            await app.storage.backup()
+
+        ui.button('test', on_click=inner)
+
+    screen.open('/')
+    screen.click('test')
+    screen.wait(1)
+    assert '{"inner_function": "works"}' in app.storage._individuals.filename.read_text()
+
+
+async def test_access_individual_storage_from_background_task(screen: Screen):
+    @ui.page('/')
+    def page():
+        async def subtask():
+            await asyncio.sleep(0.1)
+            app.storage.individual['subtask'] = 'works'
+            await app.storage.backup()
+        background_tasks.create(subtask())
+
+    screen.open('/')
+    assert '{"subtask": "works"}' in app.storage._individuals.filename.read_text()
 
 
 def test_individual_and_general_storage_is_persisted(screen: Screen):

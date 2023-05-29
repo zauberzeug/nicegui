@@ -45,6 +45,8 @@ async def reset_globals() -> Generator[None, None, None]:
     globals.app.storage.general.clear()
     globals.app.storage._individuals.clear()
     await globals.app.storage.backup()
+    assert globals.app.storage._individuals.filename.read_text() == '{}'
+    assert globals.app.storage.general.filename.read_text() == '{}'
     globals.index_client = Client(page('/'), shared=True).__enter__()
     globals.app.get('/')(globals.index_client.build_response)
 

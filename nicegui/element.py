@@ -9,7 +9,7 @@ from typing_extensions import Self
 
 from nicegui import json
 
-from . import binding, events, globals, outbox
+from . import binding, events, globals, outbox, storage
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
@@ -230,6 +230,7 @@ class Element(Visibility):
                 throttle=throttle,
                 leading_events=leading_events,
                 trailing_events=trailing_events,
+                request=storage.request_contextvar.get()
             )
             self._event_listeners[listener.id] = listener
             self.update()
@@ -237,6 +238,7 @@ class Element(Visibility):
 
     def _handle_event(self, msg: Dict) -> None:
         listener = self._event_listeners[msg['listener_id']]
+        storage.request_contextvar.set(listener.request)
         events.handle_event(listener.handler, msg, sender=self)
 
     def update(self) -> None:

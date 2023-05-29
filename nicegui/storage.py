@@ -37,6 +37,7 @@ class PersistentDict(dict):
         self.lock = threading.Lock()
         self.load()
         self.update(*arg, **kw)
+        self.modified = bool(arg or kw)
 
     def load(self):
         with self.lock:
@@ -50,26 +51,32 @@ class PersistentDict(dict):
     def __setitem__(self, key, value):
         with self.lock:
             super().__setitem__(key, value)
+            self.modified = True
 
     def __delitem__(self, key):
         with self.lock:
             super().__delitem__(key)
+            self.modified = True
+
+    def clear(self):
+        with self.lock:
+            super().clear()
+            self.modified = True
 
     async def backup(self):
         data = dict(self)
-        if data:
+        if self.modified:
             async with aiofiles.open(self.filename, 'w') as f:
                 await f.write(json.dumps(data))
 
 
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        request_contextvar.set(request)
         if 'id' not in request.session:
             request.session['id'] = str(uuid.uuid4())
         request.state.responded = False
-        token = request_contextvar.set(request)
         response = await call_next(request)
-        request_contextvar.reset(token)
         request.state.responded = True
         return response
 
