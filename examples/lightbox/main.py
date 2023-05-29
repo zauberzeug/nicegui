@@ -7,8 +7,7 @@ from nicegui import events, ui
 
 
 class Lightbox:
-    """A lightbox is a dialog which can be opened to display an image in full screen.
-
+    """A thumbnail gallery where each image can be clicked to enlarge.
     Inspired by https://lokeshdhakar.com/projects/lightbox2/.
     """
 
