@@ -17,8 +17,8 @@ class Lightbox:
             self.large_image = ui.image().props('no-spinner')
         self.image_list: List[str] = []
 
-    def image(self, thumb_url: str, orig_url: str) -> ui.image:
-        """places a thumbnail image in the UI and makes it clickable to enlarge"""
+    def add_image(self, thumb_url: str, orig_url: str) -> ui.image:
+        """Place a thumbnail image in the UI and make it clickable to enlarge."""
         self.image_list.append(orig_url)
         with ui.button(on_click=lambda: self._open(orig_url)).props('flat dense square'):
             return ui.image(thumb_url)
@@ -26,12 +26,12 @@ class Lightbox:
     def _on_key(self, event_args: events.KeyEventArguments) -> None:
         if not event_args.action.keydown:
             return
-        if event_args.key == 'Escape':
+        if event_args.key.escape:
             self.dialog.close()
         image_index = self.image_list.index(self.large_image.source)
-        if event_args.key == 'ArrowLeft':
+        if event_args.key.arrow_left and image_index > 0:
             self._open(self.image_list[image_index - 1])
-        if event_args.key == 'ArrowRight':
+        if event_args.key.arrow_right and image_index < len(self.image_list) - 1:
             self._open(self.image_list[image_index + 1])
 
     def _open(self, url: str) -> None:
@@ -46,11 +46,12 @@ async def page():
         images = await client.get('https://picsum.photos/v2/list?page=4&limit=30')
     with ui.row().classes('w-full'):
         for image in images.json():  # picsum returns a list of images as json data
-            # we can use the image id to construct the image urls
+            # we can use the image ID to construct the image URLs
             image_base_url = f'https://picsum.photos/id/{image["id"]}'
             # the lightbox allows us to add images which can be opened in a full screen dialog
-            lightbox.image(
+            lightbox.add_image(
                 thumb_url=f'{image_base_url}/300/200',
                 orig_url=f'{image_base_url}/{image["width"]}/{image["height"]}',
             ).classes('w-[300px] h-[200px]')
+
 ui.run()
