@@ -5,7 +5,6 @@ from contextlib import contextmanager
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
-from fastapi import Request
 from socketio import AsyncServer
 from uvicorn import Server
 
@@ -46,7 +45,6 @@ socket_io_js_extra_headers: Dict = {}
 
 _socket_id: Optional[str] = None
 slot_stacks: Dict[int, List['Slot']] = {}
-requests: Dict[str, Request] = {}
 clients: Dict[str, 'Client'] = {}
 index_client: 'Client'
 

@@ -2,7 +2,6 @@ from typing import Awaitable, Callable, Union
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from pyparsing import Optional
 
 from . import globals
 from .native import Native
