@@ -43,12 +43,13 @@ def test_session_storage_supports_asyncio(screen: Screen):
 
 
 def test_session_modifications_after_page_load(screen: Screen):
-    random_data = str(uuid4())
-
     @ui.page('/')
     async def page(client: Client):
         await client.connected()
-        app.storage.session['test'] = random_data
+        try:
+            app.storage.session['test'] = 'data'
+        except TypeError as e:
+            ui.label(str(e))
 
     screen.open('/')
-    screen.should_contain(random_data)
+    screen.should_contain('response to the browser has already been build')
