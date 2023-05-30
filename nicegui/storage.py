@@ -96,6 +96,8 @@ class Storage:
         The data is shared between all browser tab and can only be modified before the initial request has been submitted.
         Normally it is better to use `app.storage.individual` instead to reduce payload, improved security and larger storage capacity)."""
         request: Request = request_contextvar.get()
+        if request is None:
+            raise RuntimeError('storage.browser needs a storage_secret passed in ui.run()')
         if request.state.responded:
             return ReadOnlyDict(
                 request.session,
@@ -105,19 +107,21 @@ class Storage:
 
     @property
     def individual(self) -> Dict:
-        """Individual user storage that is persisted on the server.
+        """Individual user storage that is persisted on the server (where NiceGUI is executed).
 
         The data is stored in a file on the server.
         It is shared between all browser tabs by identifying the user via session cookie id.
         """
         request: Request = request_contextvar.get()
+        if request is None:
+            raise RuntimeError('storage.individual needs a storage_secret passed in ui.run()')
         if request.session['id'] not in self._individuals:
             self._individuals[request.session['id']] = {}
         return self._individuals[request.session['id']]
 
     @property
     def general(self) -> Dict:
-        """General storage shared between all users that is persisted on the server."""
+        """General storage shared between all users that is persisted on the server (where NiceGUI is executed)."""
         return self._general
 
     async def backup(self):

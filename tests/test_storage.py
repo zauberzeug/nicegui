@@ -15,6 +15,7 @@ def test_browser_data_is_stored_in_the_browser(screen: Screen):
     def count():
         return 'count = ' + str(app.storage.browser['count'])
 
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.should_contain('1')
     screen.open('/')
@@ -32,6 +33,7 @@ def test_browser_storage_supports_asyncio(screen: Screen):
         await asyncio.sleep(0.5)
         ui.label(app.storage.browser['count'])
 
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.switch_to(1)
     screen.open('/')
@@ -50,6 +52,7 @@ def test_browser_storage_modifications_after_page_load_are_forbidden(screen: Scr
         except TypeError as e:
             ui.label(str(e))
 
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.should_contain('response to the browser has already been build')
 
@@ -62,6 +65,7 @@ def test_individual_storage_modifications(screen: Screen):
         app.storage.individual['count'] = app.storage.individual.get('count', 0) + 1
         ui.label().bind_text_from(app.storage.individual, 'count')
 
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.should_contain('1')
     screen.open('/?delayed=True')
@@ -77,6 +81,7 @@ async def test_access_individual_storage_on_interaction(screen: Screen):
             app.storage.individual['test_switch'] = False
         ui.switch('switch').bind_value(app.storage.individual, 'test_switch')
 
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.click('switch')
     screen.wait(1)
@@ -93,6 +98,7 @@ def test_access_individual_storage_from_button_click_handler(screen: Screen):
 
         ui.button('test', on_click=inner)
 
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.click('test')
     screen.wait(1)
@@ -108,6 +114,7 @@ async def test_access_individual_storage_from_background_task(screen: Screen):
             await app.storage.backup()
         background_tasks.create(subtask())
 
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     assert '{"subtask": "works"}' in app.storage._individuals.filename.read_text()
 
@@ -121,6 +128,7 @@ def test_individual_and_general_storage_is_persisted(screen: Screen):
         ui.label(f'general: {app.storage.general["count"]}')
         ui.button('backup', on_click=app.storage.backup)
 
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.open('/')
     screen.open('/')
