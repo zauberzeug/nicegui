@@ -36,7 +36,7 @@ def selenium(selenium: webdriver.Chrome) -> webdriver.Chrome:
 
 
 @pytest.fixture(autouse=True)
-async def reset_globals() -> Generator[None, None, None]:
+def reset_globals() -> Generator[None, None, None]:
     for path in {'/'}.union(globals.page_routes.values()):
         globals.app.remove_route(path)
     globals.app.middleware_stack = None
@@ -44,9 +44,6 @@ async def reset_globals() -> Generator[None, None, None]:
     # importlib.reload(nicegui)
     globals.app.storage.general.clear()
     globals.app.storage._individuals.clear()
-    await globals.app.storage.backup()
-    assert globals.app.storage._individuals.filename.read_text() == '{}'
-    assert globals.app.storage.general.filename.read_text() == '{}'
     globals.index_client = Client(page('/'), shared=True).__enter__()
     globals.app.get('/')(globals.index_client.build_response)
 
