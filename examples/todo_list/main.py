@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from dataclasses import dataclass
-from typing import Callable
+from dataclasses import dataclass, field
+from typing import Any, Callable, List
 
 from nicegui import ui
 
@@ -11,24 +11,20 @@ class TodoItem:
     on_change: Callable
     done: bool = False
 
-    def toggle(self) -> None:
-        self.done = not self.done
-
-    def set_name(self, new_name: str) -> None:
+    def rename(self, new_name: str) -> None:
         self.name = new_name
 
-    def __setattr__(self, name, value) -> None:
+    def __setattr__(self, name: str, value: Any) -> None:
         super().__setattr__(name, value)
         if hasattr(self, 'on_change'):
             self.on_change()
 
 
+@dataclass
 class ToDoList:
-
-    def __init__(self, title: str, on_change: Callable):
-        self.title = title
-        self.items = []
-        self.on_change: Callable = on_change
+    title: str
+    on_change: Callable
+    items: List[TodoItem] = field(default_factory=list)
 
     def add(self, name: str, done: bool = False) -> None:
         self.items.append(TodoItem(name, self.on_change, done))
@@ -50,14 +46,15 @@ def todo_ui():
         ui.label(f'Remaining: {sum(not item.done for item in todos.items)}')
     for item in todos.items:
         with ui.row().classes('items-center'):
-            ui.checkbox(value=item.done, on_change=lambda _, item=item: item.toggle())
+            ui.checkbox().bind_value(item, 'done')
             input = ui.input(value=item.name).classes('flex-grow')
-            input.on('keydown.enter', lambda _, item=item, input=input: item.set_name(input.value))
+            input.on('keydown.enter', lambda _, item=item, input=input: item.rename(input.value))
             ui.button(on_click=lambda _, item=item: todos.remove(item)).props('flat fab-mini icon=delete color=grey')
 
 
-todos = ToDoList('Shopping', on_change=todo_ui.refresh)
-todos.add('Buy milk', done=True)
+todos = ToDoList('My Weekend', on_change=todo_ui.refresh)
+todos.add('Order pizza', done=True)
+todos.add('New NiceGUI Release')
 todos.add('Clean the house')
 todos.add('Call mom')
 
