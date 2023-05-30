@@ -71,6 +71,7 @@ class PersistentDict(dict):
 
 
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
+
     async def dispatch(self, request: Request, call_next):
         request_contextvar.set(request)
         if 'id' not in request.session:
@@ -101,7 +102,7 @@ class Storage:
         if request.state.responded:
             return ReadOnlyDict(
                 request.session,
-                'the response to the browser has already been build so modifications can not be send back anymore'
+                'the response to the browser has already been built so modifications cannot be sent back anymore'
             )
         return request.session
 
@@ -124,11 +125,11 @@ class Storage:
         """General storage shared between all users that is persisted on the server (where NiceGUI is executed)."""
         return self._general
 
-    async def backup(self):
+    async def backup(self) -> None:
         await self._general.backup()
         await self._users.backup()
 
-    async def _loop(self):
+    async def _loop(self) -> None:
         while True:
             await self.backup()
             await asyncio.sleep(10)
