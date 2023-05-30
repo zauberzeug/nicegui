@@ -37,10 +37,10 @@ def selenium(selenium: webdriver.Chrome) -> webdriver.Chrome:
 
 @pytest.fixture(autouse=True)
 def reset_globals() -> Generator[None, None, None]:
-    # we need to remove
-    [globals.app.routes.remove(r) for r in globals.app.routes if 'favicon' in r.path]
     for path in {'/'}.union(globals.page_routes.values()):
         globals.app.remove_route(path)
+    # NOTE favicon routes must be removed seperately because they are not "pages"
+    [globals.app.routes.remove(r) for r in globals.app.routes if 'favicon' in r.path]
     importlib.reload(globals)
     globals.index_client = Client(page('/'), shared=True).__enter__()
     globals.app.get('/')(globals.index_client.build_response)
