@@ -18,11 +18,12 @@ def create_favicon_route(path: str, favicon: Optional[str]) -> None:
 
 
 def get_favicon_url(page: 'page', prefix: str) -> str:
-    favicon = str(page.favicon or globals.favicon)
-    if favicon and is_remote_url(favicon):
-        return favicon
-    elif not favicon:
+    favicon = page.favicon or globals.favicon
+    if not favicon:
         return f'{prefix}/_nicegui/{__version__}/static/favicon.ico'
+    favicon = str(favicon)
+    if is_remote_url(favicon):
+        return favicon
     elif is_data_url(favicon):
         return favicon
     elif is_svg(favicon):
@@ -43,6 +44,8 @@ def get_favicon_response() -> Response:
         return StreamingResponse(io.BytesIO(bytes), media_type=media_type)
     elif is_char(globals.favicon):
         return Response(char_to_svg(globals.favicon), media_type='image/svg+xml')
+    else:
+        raise ValueError(f'invalid favicon: {globals.favicon}')
 
 
 def is_remote_url(favicon: str) -> bool:
