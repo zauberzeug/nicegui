@@ -15,7 +15,7 @@ from fastapi_socketio import SocketManager
 from nicegui import json
 from nicegui.json import NiceGUIJSONResponse
 
-from . import __version__, background_tasks, binding, globals, outbox
+from . import __version__, background_tasks, binding, favicon, globals, outbox
 from .app import App
 from .client import Client
 from .dependencies import js_components, js_dependencies
@@ -66,6 +66,13 @@ def handle_startup(with_welcome_message: bool = True) -> None:
                            'remove the guard or replace it with\n'
                            '   if __name__ in {"__main__", "__mp_main__"}:\n'
                            'to allow for multiprocessing.')
+    if globals.favicon:
+        if Path(globals.favicon).exists():
+            globals.app.add_route('/favicon.ico', lambda _: FileResponse(globals.favicon))
+        else:
+            globals.app.add_route('/favicon.ico', lambda _: favicon.get_favicon_response())
+    else:
+        globals.app.add_route('/favicon.ico', lambda _: FileResponse(Path(__file__).parent / 'static' / 'favicon.ico'))
     globals.state = globals.State.STARTING
     globals.loop = asyncio.get_running_loop()
     with globals.index_client:
