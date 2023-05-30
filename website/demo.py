@@ -1,4 +1,5 @@
 import inspect
+import re
 from typing import Callable, Optional, Union
 
 import isort
@@ -15,9 +16,12 @@ BROWSER_BGCOLOR = '#00000010'
 BROWSER_COLOR = '#ffffff'
 
 
-def remove_comment(text: str) -> str:
+uncomment_pattern = re.compile(r'^(\s*)# ?')
+
+
+def uncomment(text: str) -> str:
     """non-executed lines should be shown in the code examples"""
-    return text.replace('# ', '')
+    return uncomment_pattern.sub(r'\1', text)
 
 
 def demo(f: Callable) -> Callable:
@@ -33,7 +37,7 @@ def demo(f: Callable) -> Callable:
             del code[0]
         indentation = len(code[0]) - len(code[0].lstrip())
         code = [line[indentation:] for line in code]
-        code = ['from nicegui import ui'] + [remove_comment(line) for line in code]
+        code = ['from nicegui import ui'] + [uncomment(line) for line in code]
         code = ['' if line == '#' else line for line in code]
         if not code[-1].startswith('ui.run('):
             code.append('')
