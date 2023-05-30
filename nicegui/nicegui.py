@@ -97,7 +97,9 @@ def print_welcome_message():
 
 
 @app.on_event('shutdown')
-def handle_shutdown() -> None:
+async def handle_shutdown() -> None:
+    if app.native.main_window:
+        app.native.main_window.signal_server_shutdown()
     globals.state = globals.State.STOPPING
     with globals.index_client:
         for t in globals.shutdown_handlers:
