@@ -1,6 +1,7 @@
 import logging
 import multiprocessing
 import os
+import socket
 import sys
 from typing import Any, List, Optional, Tuple
 
@@ -10,21 +11,19 @@ from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from . import globals, helpers
-from . import native as app_native
+from . import native as native_module
 from . import native_mode
 from .language import Language
 
 
 class Server(uvicorn.Server):
-    def __init__(self, config):
-        super().__init__(config)
 
-    def run(self, sockets=None):
+    def run(self, sockets: Optional[List[socket.socket]] = None) -> None:
         globals.server = self
-        app_native.method_queue = self.config.method_queue
-        app_native.response_queue = self.config.response_queue
-        if app_native.method_queue is not None:
-            globals.app.native.main_window = app_native.WindowProxy()
+        native_module.method_queue = self.config.method_queue
+        native_module.response_queue = self.config.response_queue
+        if native_module.method_queue is not None:
+            globals.app.native.main_window = native_module.WindowProxy()
         super().run(sockets=sockets)
 
 
@@ -130,8 +129,8 @@ def run(*,
         log_level=uvicorn_logging_level,
         **kwargs,
     )
-    config.method_queue = app_native.method_queue if native else None
-    config.response_queue = app_native.response_queue if native else None
+    config.method_queue = native_module.method_queue if native else None
+    config.response_queue = native_module.response_queue if native else None
     globals.server = Server(config=config)
     if (reload or config.workers > 1) and not isinstance(config.app, str):
         logging.warning('You must pass the application as an import string to enable "reload" or "workers".')

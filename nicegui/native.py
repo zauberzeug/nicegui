@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass, field
 from functools import partial
 from multiprocessing import Queue
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 import webview
 from webview.window import FixPoint
@@ -16,24 +16,25 @@ response_queue = Queue()
 
 
 class WindowProxy(webview.Window):
-    def __init__(self):
+
+    def __init__(self) -> None:
         pass  # NOTE we don't call super().__init__ here because this is just a proxy to the actual window
 
-    async def is_always_on_top(self) -> bool:
-        """whether the window is always on top"""
-        return await self._send_async()
+    async def get_always_on_top(self) -> bool:
+        """Get whether the window is always on top."""
+        return await self._request()
 
     def set_always_on_top(self, on_top: bool) -> None:
-        """set whether the window is always on top"""
+        """Set whether the window is always on top."""
         self._send(on_top)
 
     async def get_size(self) -> Tuple[int, int]:
-        """get the window size as tuple (width, height)"""
-        return await self._send_async()
+        """Get the window size as tuple (width, height)."""
+        return await self._request()
 
     async def get_position(self) -> Tuple[int, int]:
-        """get the window position as tuple (x, y)"""
-        return await self._send_async()
+        """Get the window position as tuple (x, y)."""
+        return await self._request()
 
     def load_url(self, url: str) -> None:
         self._send(url)
@@ -45,13 +46,13 @@ class WindowProxy(webview.Window):
         self._send(stylesheet)
 
     def set_title(self, title: str) -> None:
-        self.send(title)
+        self._send(title)
 
     async def get_cookies(self) -> Any:
-        return await self._send_async()
+        return await self._request()
 
     async def get_current_url(self) -> str:
-        return await self._send_async()
+        return await self._request()
 
     def destroy(self) -> None:
         self._send()
@@ -81,10 +82,10 @@ class WindowProxy(webview.Window):
         self._send(x, y)
 
     async def evaluate_js(self, script: str) -> str:
-        return await self._send_async(script)
+        return await self._request(script)
 
     async def create_confirmation_dialog(self, title: str, message: str) -> bool:
-        return await self._send_async(title, message)
+        return await self._request(title, message)
 
     async def create_file_dialog(
         self,
@@ -92,33 +93,31 @@ class WindowProxy(webview.Window):
         directory: str = '',
         allow_multiple: bool = False,
         save_filename: str = '',
-        file_types: Tuple[str, ...] = ()
+        file_types: Tuple[str, ...] = (),
     ) -> Tuple[str, ...]:
-        return await self._send_async(
+        return await self._request(
             dialog_type=dialog_type,
             directory=directory,
             allow_multiple=allow_multiple,
             save_filename=save_filename,
-            file_types=file_types
+            file_types=file_types,
         )
 
-    def expose(self, function) -> None:
+    def expose(self, function: Callable) -> None:
         raise NotImplementedError(f'exposing "{function}" is not supported')
 
-    def _send(self, *args, **kwargs) -> Any:
+    def _send(self, *args: Any, **kwargs: Any) -> None:
         name = inspect.currentframe().f_back.f_code.co_name
-        return method_queue.put((name, args, kwargs))
+        method_queue.put((name, args, kwargs))
 
-    async def _send_async(self, *args, **kwargs) -> Any:
-        name = inspect.currentframe().f_back.f_code.co_name
-
-        def wrapper(*args, **kwargs):
+    async def _request(self, *args: Any, **kwargs: Any) -> Any:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
-                method_queue.put((name, args, kwargs))  # NOTE args[1:] to skip self
+                method_queue.put((name, args, kwargs))
                 return response_queue.get()  # wait for the method to be called and writing its result to the queue
             except Exception:
                 logging.exception(f'error in {name}')
-
+        name = inspect.currentframe().f_back.f_code.co_name
         return await asyncio.get_event_loop().run_in_executor(None, partial(wrapper, *args, **kwargs))
 
     def signal_server_shutdown(self) -> None:

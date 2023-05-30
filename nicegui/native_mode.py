@@ -8,6 +8,7 @@ import tempfile
 import time
 import warnings
 from threading import Event, Thread
+from typing import Any, Callable, Dict, List, Tuple
 
 from . import globals, helpers, native
 
@@ -33,7 +34,7 @@ def open_window(
     try:
         window = webview.create_window(**window_kwargs)
         closing = Event()
-        window.events.closing += lambda: closing.set()
+        window.events.closing += closing.set
         start_window_method_executor(window, method_queue, response_queue, closing)
         webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
     except NameError:
@@ -44,47 +45,43 @@ def open_window(
 def start_window_method_executor(
         window: webview.Window, method_queue: mp.Queue, response_queue: mp.Queue, closing: Event
 ) -> None:
-    def execute(attr, args, kwargs):
+    def execute(method: Callable, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> None:
         try:
-            response = attr(*args, **kwargs)
-            if response is not None or 'dialog' in attr.__name__:
+            response = method(*args, **kwargs)
+            if response is not None or 'dialog' in method.__name__:
                 response_queue.put(response)
         except Exception:
-            logging.exception(f'error in window.{attr.__name__}')
+            logging.exception(f'error in window.{method.__name__}')
 
-    def window_method_executor():
-        pending_executions = []
+    def window_method_executor() -> None:
+        pending_executions: List[Thread] = []
         while not closing.is_set():
             try:
-                method, args, kwargs = method_queue.get(block=False)
-                if method == 'signal_server_shutdown':
+                method_name, args, kwargs = method_queue.get(block=False)
+                if method_name == 'signal_server_shutdown':
                     if pending_executions:
                         logging.warning('shutdown is possibly blocked by opened dialogs like a file picker')
                         while pending_executions:
                             pending_executions.pop().join()
-                    continue
-                if method == 'is_always_on_top':
+                elif method_name == 'get_always_on_top':
                     response_queue.put(window.on_top)
-                    continue
-                if method == 'set_always_on_top':
+                elif method_name == 'set_always_on_top':
                     window.on_top = args[0]
-                    continue
-                if method == 'get_position':
+                elif method_name == 'get_position':
                     response_queue.put((int(window.x), int(window.y)))
-                    continue
-                if method == 'get_size':
+                elif method_name == 'get_size':
                     response_queue.put((int(window.width), int(window.height)))
-                    continue
-                attr = getattr(window, method)
-                if callable(attr):
-                    pending_executions.append(Thread(target=execute, args=(attr, args, kwargs)))
-                    pending_executions[-1].start()
                 else:
-                    logging.error(f'window.{method} is not callable')
+                    method = getattr(window, method_name)
+                    if callable(method):
+                        pending_executions.append(Thread(target=execute, args=(method, args, kwargs)))
+                        pending_executions[-1].start()
+                    else:
+                        logging.error(f'window.{method_name} is not callable')
             except queue.Empty:
                 time.sleep(0.01)
             except Exception:
-                logging.exception(f'error in window.{method}')
+                logging.exception(f'error in window.{method_name}')
 
     Thread(target=window_method_executor).start()
 
@@ -99,11 +96,8 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         _thread.interrupt_main()
 
     mp.freeze_support()
-    process = mp.Process(
-        target=open_window,
-        args=(host, port, title, width, height, fullscreen, native.method_queue, native.response_queue),
-        daemon=False
-    )
+    args = host, port, title, width, height, fullscreen, native.method_queue, native.response_queue
+    process = mp.Process(target=open_window, args=args, daemon=False)
     process.start()
 
     Thread(target=check_shutdown, daemon=True).start()

@@ -586,8 +586,8 @@ def create_full() -> None:
         To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively.
         Additionally, you can provide extra keyword arguments via `app.native.window_args` and `app.native.start_args`.
         Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html)
-        for the `webview.create_window` and `webview.start` functions. 
-        Note that these keyword arguments will take precedence over the parameters defined in ui.run.
+        for the `webview.create_window` and `webview.start` functions.
+        Note that these keyword arguments will take precedence over the parameters defined in `ui.run`.
 
         In native mode the `app.native.main_window` object allows you to access the underlying window.
         It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/guide/api.html#window-object).
