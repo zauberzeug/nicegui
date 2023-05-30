@@ -1,7 +1,7 @@
 import asyncio
 import inspect
 import time
-from typing import Any, Callable, Optional
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from fastapi import Request, Response
 
@@ -9,6 +9,9 @@ from . import background_tasks, globals
 from .client import Client
 from .favicon import create_favicon_route
 from .language import Language
+
+if TYPE_CHECKING:
+    from .api_router import APIRouter
 
 
 class page:
@@ -21,6 +24,7 @@ class page:
                  dark: Optional[bool] = ...,
                  language: Language = ...,
                  response_timeout: float = 3.0,
+                 api_router: Optional['APIRouter'] = None,
                  **kwargs: Any,
                  ) -> None:
         """Page
@@ -37,9 +41,10 @@ class page:
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
         :param language: language of the page (defaults to `language` argument of `run` command)
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0)
+        :param api_router: APIRouter instance to use, can be left `None` to use the default
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
-        self.path = path
+        self._path = path
         self.title = title
         self.viewport = viewport
         self.favicon = favicon
@@ -47,8 +52,13 @@ class page:
         self.language = language
         self.response_timeout = response_timeout
         self.kwargs = kwargs
+        self.api_router = api_router or globals.app.router
 
         create_favicon_route(self.path, favicon)
+
+    @property
+    def path(self) -> str:
+        return self.api_router.prefix + self._path
 
     def resolve_title(self) -> str:
         return self.title if self.title is not None else globals.title
@@ -96,6 +106,6 @@ class page:
             parameters.insert(0, request)
         decorated.__signature__ = inspect.Signature(parameters)
 
-        globals.app.get(self.path, **self.kwargs)(decorated)
+        self.api_router.get(self._path, **self.kwargs)(decorated)
         globals.page_routes[func] = self.path
         return func

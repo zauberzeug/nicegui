@@ -14,5 +14,5 @@ def frame(navtitle: str):
         ui.label(navtitle)
         with ui.row():
             menu()
-    with ui.row().classes('absolute-center'):
+    with ui.column().classes('absolute-center items-center'):
         yield
