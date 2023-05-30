@@ -57,13 +57,13 @@ def test_browser_storage_modifications_after_page_load_are_forbidden(screen: Scr
     screen.should_contain('response to the browser has already been build')
 
 
-def test_individual_storage_modifications(screen: Screen):
+def test_user_storage_modifications(screen: Screen):
     @ui.page('/')
     async def page(client: Client, delayed: bool = False):
         if delayed:
             await client.connected()
-        app.storage.individual['count'] = app.storage.individual.get('count', 0) + 1
-        ui.label().bind_text_from(app.storage.individual, 'count')
+        app.storage.user['count'] = app.storage.user.get('count', 0) + 1
+        ui.label().bind_text_from(app.storage.user, 'count')
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
@@ -74,26 +74,26 @@ def test_individual_storage_modifications(screen: Screen):
     screen.should_contain('3')
 
 
-async def test_access_individual_storage_on_interaction(screen: Screen):
+async def test_access_user_storage_on_interaction(screen: Screen):
     @ui.page('/')
     async def page():
-        if 'test_switch' not in app.storage.individual:
-            app.storage.individual['test_switch'] = False
-        ui.switch('switch').bind_value(app.storage.individual, 'test_switch')
+        if 'test_switch' not in app.storage.user:
+            app.storage.user['test_switch'] = False
+        ui.switch('switch').bind_value(app.storage.user, 'test_switch')
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.click('switch')
     screen.wait(1)
     await app.storage.backup()
-    assert '{"test_switch": true}' in app.storage._individuals.filename.read_text()
+    assert '{"test_switch": true}' in app.storage._users.filename.read_text()
 
 
-def test_access_individual_storage_from_button_click_handler(screen: Screen):
+def test_access_user_storage_from_button_click_handler(screen: Screen):
     @ui.page('/')
     async def page():
         async def inner():
-            app.storage.individual['inner_function'] = 'works'
+            app.storage.user['inner_function'] = 'works'
             await app.storage.backup()
 
         ui.button('test', on_click=inner)
@@ -102,29 +102,29 @@ def test_access_individual_storage_from_button_click_handler(screen: Screen):
     screen.open('/')
     screen.click('test')
     screen.wait(1)
-    assert '{"inner_function": "works"}' in app.storage._individuals.filename.read_text()
+    assert '{"inner_function": "works"}' in app.storage._users.filename.read_text()
 
 
-async def test_access_individual_storage_from_background_task(screen: Screen):
+async def test_access_user_storage_from_background_task(screen: Screen):
     @ui.page('/')
     def page():
         async def subtask():
             await asyncio.sleep(0.1)
-            app.storage.individual['subtask'] = 'works'
+            app.storage.user['subtask'] = 'works'
             await app.storage.backup()
         background_tasks.create(subtask())
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
-    assert '{"subtask": "works"}' in app.storage._individuals.filename.read_text()
+    assert '{"subtask": "works"}' in app.storage._users.filename.read_text()
 
 
-def test_individual_and_general_storage_is_persisted(screen: Screen):
+def test_user_and_general_storage_is_persisted(screen: Screen):
     @ui.page('/')
     def page():
-        app.storage.individual['count'] = app.storage.individual.get('count', 0) + 1
+        app.storage.user['count'] = app.storage.user.get('count', 0) + 1
         app.storage.general['count'] = app.storage.general.get('count', 0) + 1
-        ui.label(f'individual: {app.storage.individual["count"]}')
+        ui.label(f'user: {app.storage.user["count"]}')
         ui.label(f'general: {app.storage.general["count"]}')
         ui.button('backup', on_click=app.storage.backup)
 
@@ -132,10 +132,10 @@ def test_individual_and_general_storage_is_persisted(screen: Screen):
     screen.open('/')
     screen.open('/')
     screen.open('/')
-    screen.should_contain('individual: 3')
+    screen.should_contain('user: 3')
     screen.should_contain('general: 3')
     screen.click('backup')
     screen.selenium.delete_all_cookies()
     screen.open('/')
-    screen.should_contain('individual: 1')
+    screen.should_contain('user: 1')
     screen.should_contain('general: 4')

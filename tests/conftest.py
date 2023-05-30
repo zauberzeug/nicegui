@@ -43,7 +43,7 @@ def reset_globals() -> Generator[None, None, None]:
     importlib.reload(globals)
     # importlib.reload(nicegui)
     globals.app.storage.general.clear()
-    globals.app.storage._individuals.clear()
+    globals.app.storage._users.clear()
     globals.index_client = Client(page('/'), shared=True).__enter__()
     globals.app.get('/')(globals.index_client.build_response)
 

@@ -87,14 +87,14 @@ class Storage:
         self.storage_dir = Path('.nicegui')
         self.storage_dir.mkdir(exist_ok=True)
         self._general = PersistentDict(self.storage_dir / 'storage_general.json')
-        self._individuals = PersistentDict(self.storage_dir / 'storage_individuals.json')
+        self._users = PersistentDict(self.storage_dir / 'storage_users.json')
 
     @property
     def browser(self) -> Dict:
         """Small storage that is saved directly within the user's browser (encrypted cookie).
 
         The data is shared between all browser tab and can only be modified before the initial request has been submitted.
-        Normally it is better to use `app.storage.individual` instead to reduce payload, improved security and larger storage capacity)."""
+        Normally it is better to use `app.storage.user` instead to reduce payload, improved security and larger storage capacity)."""
         request: Request = request_contextvar.get()
         if request is None:
             raise RuntimeError('storage.browser needs a storage_secret passed in ui.run()')
@@ -106,7 +106,7 @@ class Storage:
         return request.session
 
     @property
-    def individual(self) -> Dict:
+    def user(self) -> Dict:
         """Individual user storage that is persisted on the server (where NiceGUI is executed).
 
         The data is stored in a file on the server.
@@ -114,10 +114,10 @@ class Storage:
         """
         request: Request = request_contextvar.get()
         if request is None:
-            raise RuntimeError('storage.individual needs a storage_secret passed in ui.run()')
-        if request.session['id'] not in self._individuals:
-            self._individuals[request.session['id']] = {}
-        return self._individuals[request.session['id']]
+            raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
+        if request.session['id'] not in self._users:
+            self._users[request.session['id']] = {}
+        return self._users[request.session['id']]
 
     @property
     def general(self) -> Dict:
@@ -126,7 +126,7 @@ class Storage:
 
     async def backup(self):
         await self._general.backup()
-        await self._individuals.backup()
+        await self._users.backup()
 
     async def _loop(self):
         while True:
