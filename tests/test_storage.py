@@ -54,7 +54,7 @@ def test_browser_storage_modifications_after_page_load_are_forbidden(screen: Scr
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
-    screen.should_contain('response to the browser has already been build')
+    screen.should_contain('response to the browser has already been built')
 
 
 def test_user_storage_modifications(screen: Screen):
