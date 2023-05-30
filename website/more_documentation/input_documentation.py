@@ -19,3 +19,10 @@ def more() -> None:
     async def autocomplete_demo():
         options = ['AutoComplete', 'NiceGUI', 'Awesome']
         ui.input(label='Text', placeholder='start typing', autocomplete=options)
+
+    @text_demo('Clearable', '''
+        The `clearable` prop from [Quasar](https://quasar.dev/) adds a button to the input that clears the text.    
+    ''')
+    async def clearable():
+        i = ui.input(value='some text').props('clearable')
+        ui.label().bind_text_from(i, 'value')

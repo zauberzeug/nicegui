@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-'''This is only a very simple authentication example which stores session IDs in memory and does not do any password hashing.
+"""This is a very simple authentication example which stores session IDs in memory and does not do any password hashing.
 
 Please see the `OAuth2 example at FastAPI <https://fastapi.tiangolo.com/tutorial/security/simple-oauth2/>`_  or
-use the great `Authlib package <https://docs.authlib.org/en/v0.13/client/starlette.html#using-fastapi>`_ to implement a real authentication system.
+use the great `Authlib package <https://docs.authlib.org/en/v0.13/client/starlette.html#using-fastapi>`_
+to implement a real authentication system.
 
 Here we just demonstrate the NiceGUI integration.
-'''
+"""
 
 import os
 import uuid
@@ -38,7 +39,7 @@ def main_page(request: Request) -> None:
         ui.label(f'Hello {session["username"]}!').classes('text-2xl')
         # NOTE we navigate to a new page here to be able to modify the session cookie (it is only editable while a request is en-route)
         # see https://github.com/zauberzeug/nicegui/issues/527 for more details
-        ui.button('', on_click=lambda: ui.open('/logout')).props('outline round icon=logout')
+        ui.button(on_click=lambda: ui.open('/logout')).props('outline round icon=logout')
 
 
 @ui.page('/login')
@@ -55,12 +56,12 @@ def login(request: Request) -> None:
     request.session['id'] = str(uuid.uuid4())  # NOTE this stores a new session ID in the cookie of the client
     with ui.card().classes('absolute-center'):
         username = ui.input('Username').on('keydown.enter', try_login)
-        password = ui.input('Password').props('type=password').on('keydown.enter', try_login)
+        password = ui.input('Password').on('keydown.enter', try_login).props('type=password')
         ui.button('Log in', on_click=try_login)
 
 
 @ui.page('/logout')
-def logout(request: Request) -> None:
+def logout(request: Request) -> RedirectResponse:
     if is_authenticated(request):
         session_info.pop(request.session['id'])
         request.session['id'] = None

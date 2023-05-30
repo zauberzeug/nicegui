@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from typing_extensions import Self
 
@@ -8,9 +8,9 @@ from ...events import ValueChangeEventArguments, handle_event
 
 
 class ValueElement(Element):
-    VALUE_PROP = 'model-value'
-    EVENT_ARGS = ['value']
-    LOOPBACK = True
+    VALUE_PROP: str = 'model-value'
+    EVENT_ARGS: Optional[List[str]] = ['value']
+    LOOPBACK: bool = True
     value = BindableProperty(on_change=lambda sender, value: sender.on_value_change(value))
 
     def __init__(self, *,

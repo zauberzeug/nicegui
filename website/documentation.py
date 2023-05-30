@@ -207,6 +207,7 @@ def create_full() -> None:
         NiceGUI uses the [Quasar Framework](https://quasar.dev/) version 1.0 and hence has its full design power.
         Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
         Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
+        Props with a leading `:` can contain JavaScript expressions that are evaluated on the client.
         You can also apply [Tailwind CSS](https://tailwindcss.com/) utility classes with the `classes` method.
 
         If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, cast
 
 from typing_extensions import Self
 
@@ -79,11 +79,12 @@ class Visibility:
         """
         self.visible = visible
 
-    def on_visibility_change(self: 'Element', visible: str) -> None:
+    def on_visibility_change(self, visible: str) -> None:
         """Called when the visibility of this element changes.
 
         :param visible: Whether the element should be visible.
         """
+        self = cast('Element', self)
         if visible and 'hidden' in self._classes:
             self._classes.remove('hidden')
             self.update()

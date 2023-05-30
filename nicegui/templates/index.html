@@ -72,6 +72,12 @@
           style: Object.entries(element.style).reduce((str, [p, val]) => `${str}${p}:${val};`, '') || undefined,
           ...element.props,
         };
+        Object.entries(props).forEach(([key, value]) => {
+          if (key.startsWith(':')) {
+            props[key.substring(1)] = eval(value);
+            delete props[key];
+          }
+        });
         element.events.forEach((event) => {
           let event_name = 'on' + event.type[0].toLocaleUpperCase() + event.type.substring(1);
           event.specials.forEach(s => event_name += s[0].toLocaleUpperCase() + s.substring(1));

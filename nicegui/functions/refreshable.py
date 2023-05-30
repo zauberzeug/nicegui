@@ -1,13 +1,39 @@
-from typing import Any, Callable, Dict, List, Tuple
+from dataclasses import dataclass
+from typing import Any, Awaitable, Callable, Dict, List, Tuple, Union
 
 from typing_extensions import Self
 
 from .. import background_tasks, globals
 from ..dependencies import register_component
 from ..element import Element
-from ..helpers import is_coroutine
+from ..helpers import KWONLY_SLOTS, is_coroutine
 
 register_component('refreshable', __file__, 'refreshable.js')
+
+
+@dataclass(**KWONLY_SLOTS)
+class RefreshableTarget:
+    container: Element
+    instance: Any
+    args: Tuple[Any, ...]
+    kwargs: Dict[str, Any]
+
+    def run(self, func: Callable[..., Any]) -> Union[None, Awaitable]:
+        if is_coroutine(func):
+            async def wait_for_result() -> None:
+                with self.container:
+                    if self.instance is None:
+                        await func(*self.args, **self.kwargs)
+                    else:
+                        await func(self.instance, *self.args, **self.kwargs)
+            return wait_for_result()
+        else:
+            with self.container:
+                if self.instance is None:
+                    func(*self.args, **self.kwargs)
+                else:
+                    func(self.instance, *self.args, **self.kwargs)
+            return None  # required by mypy
 
 
 class refreshable:
@@ -20,48 +46,31 @@ class refreshable:
         """
         self.func = func
         self.instance = None
-        self.containers: List[Tuple[Element, List[Any], Dict[str, Any]]] = []
+        self.targets: List[RefreshableTarget] = []
 
     def __get__(self, instance, _) -> Self:
         self.instance = instance
         return self
 
-    def __call__(self, *args: Any, **kwargs: Any) -> None:
+    def __call__(self, *args: Any, **kwargs: Any) -> Union[None, Awaitable]:
         self.prune()
-        with Element('refreshable') as container:
-            self.containers.append((container, args, kwargs))
-        return self._run_in_container(container, *args, **kwargs)
+        target = RefreshableTarget(container=Element('refreshable'), instance=self.instance, args=args, kwargs=kwargs)
+        self.targets.append(target)
+        return target.run(self.func)
 
     def refresh(self) -> None:
         self.prune()
-        for container, args, kwargs in self.containers:
-            container.clear()
-            result = self._run_in_container(container, *args, **kwargs)
+        for target in self.targets:
+            if target.instance != self.instance:
+                continue
+            target.container.clear()
+            result = target.run(self.func)
             if is_coroutine(self.func):
+                assert result is not None
                 if globals.loop and globals.loop.is_running():
                     background_tasks.create(result)
                 else:
                     globals.app.on_startup(result)
 
     def prune(self) -> None:
-        self.containers = [
-            (container, args, kwargs)
-            for container, args, kwargs in self.containers
-            if container.client.id in globals.clients
-        ]
-
-    def _run_in_container(self, container: Element, *args: Any, **kwargs: Any) -> None:
-        if is_coroutine(self.func):
-            async def wait_for_result() -> None:
-                with container:
-                    if self.instance is None:
-                        await self.func(*args, **kwargs)
-                    else:
-                        await self.func(self.instance, *args, **kwargs)
-            return wait_for_result()
-        else:
-            with container:
-                if self.instance is None:
-                    self.func(*args, **kwargs)
-                else:
-                    self.func(self.instance, *args, **kwargs)
+        self.targets = [target for target in self.targets if target.container.client.id in globals.clients]
