@@ -43,6 +43,7 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 - straight-forward data binding and refreshable functions to write even less code
 - notifications, dialogs and menus to provide state of the art user interaction
 - shared and individual web pages
+- easy to use per-user and general persistence
 - ability to add custom routes and data responses
 - capture keyboard input for global shortcuts etc.
 - customize look by defining primary, secondary and accent colors
