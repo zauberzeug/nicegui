@@ -60,3 +60,21 @@ def test_updating_href_prop(screen: Screen):
     assert screen.find('nicegui.io').get_attribute('href') == 'https://nicegui.io/'
     screen.click('change href')
     assert screen.find('nicegui.io').get_attribute('href') == 'https://github.com/zauberzeug/nicegui'
+
+
+def test_link_to_elements(screen: Screen):
+    navigation = ui.row()
+    for i in range(100):
+        ui.label(f'label {i}')
+    link = ui.link('goto top', navigation)
+    with navigation:
+        ui.link('goto bottom', link)
+
+    screen.open('/')
+    assert screen.selenium.execute_script('return window.scrollY') == 0
+    screen.click('goto bottom')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script('return window.scrollY') > 100
+    screen.click('goto top')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script('return window.scrollY') < 100

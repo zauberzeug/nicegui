@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional, overload
+from typing import TYPE_CHECKING, List, Optional, Union, overload
 
 if TYPE_CHECKING:
     from .element import Element
@@ -177,10 +177,10 @@ class PseudoElement:
 class Tailwind:
 
     def __init__(self, _element: Optional['Element'] = None) -> None:
-        self.element = PseudoElement() if _element is None else _element
+        self.element: Union[PseudoElement, Element] = PseudoElement() if _element is None else _element
 
     @overload
-    def __call__(self, Tailwind) -> Tailwind:
+    def __call__(self, tailwind: Tailwind) -> Tailwind:
         ...
 
     @overload
@@ -188,6 +188,8 @@ class Tailwind:
         ...
 
     def __call__(self, *args) -> Tailwind:
+        if not args:
+            return self
         if isinstance(args[0], Tailwind):
             args[0].apply(self.element)
         else:

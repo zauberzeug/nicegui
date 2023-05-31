@@ -1,6 +1,7 @@
 import logging
 import multiprocessing
 import os
+import socket
 import sys
 from typing import Any, List, Optional, Tuple
 
@@ -10,7 +11,9 @@ from starlette.middleware.sessions import SessionMiddleware
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import globals, helpers, native_mode
+from . import globals, helpers
+from . import native as native_module
+from . import native_mode
 from .language import Language
 from .storage import RequestTrackingMiddleware
 
@@ -21,6 +24,17 @@ class Server(uvicorn.Server):
         if self.config.storage_secret is not None:
             globals.app.add_middleware(RequestTrackingMiddleware)
             globals.app.add_middleware(SessionMiddleware, secret_key=self.config.storage_secret)
+        super().run(sockets=sockets)
+
+
+class Server(uvicorn.Server):
+
+    def run(self, sockets: Optional[List[socket.socket]] = None) -> None:
+        globals.server = self
+        native_module.method_queue = self.config.method_queue
+        native_module.response_queue = self.config.response_queue
+        if native_module.method_queue is not None:
+            globals.app.native.main_window = native_module.WindowProxy()
         super().run(sockets=sockets)
 
 
@@ -129,6 +143,8 @@ def run(*,
         **kwargs,
     )
     config.storage_secret = storage_secret
+    config.method_queue = native_module.method_queue if native else None
+    config.response_queue = native_module.response_queue if native else None
     globals.server = Server(config=config)
 
     if (reload or config.workers > 1) and not isinstance(config.app, str):

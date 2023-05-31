@@ -3,9 +3,10 @@ try:
 except ModuleNotFoundError:
     import importlib_metadata
 
-__version__ = importlib_metadata.version('nicegui')
+__version__: str = importlib_metadata.version('nicegui')
 
 from . import elements, globals, ui
+from .api_router import APIRouter
 from .client import Client
 from .nicegui import app
 from .tailwind import Tailwind

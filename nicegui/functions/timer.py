@@ -1,10 +1,11 @@
 import asyncio
 import time
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from .. import background_tasks, globals
 from ..binding import BindableProperty
 from ..helpers import is_coroutine
+from ..slot import Slot
 
 
 class Timer:
@@ -29,9 +30,9 @@ class Timer:
         :param once: whether the callback is only executed once after a delay specified by `interval` (default: `False`)
         """
         self.interval = interval
-        self.callback = callback
+        self.callback: Optional[Callable[..., Any]] = callback
         self.active = active
-        self.slot = globals.get_slot()
+        self.slot: Optional[Slot] = globals.get_slot()
 
         coroutine = self._run_once if once else self._run_in_loop
         if globals.state == globals.State.STARTED:
@@ -43,6 +44,7 @@ class Timer:
         try:
             if not await self._connected():
                 return
+            assert self.slot is not None
             with self.slot:
                 await asyncio.sleep(self.interval)
                 if globals.state not in {globals.State.STOPPING, globals.State.STOPPED}:
@@ -54,6 +56,7 @@ class Timer:
         try:
             if not await self._connected():
                 return
+            assert self.slot is not None
             with self.slot:
                 while True:
                     if self.slot.parent.client.id not in globals.clients:
@@ -76,6 +79,7 @@ class Timer:
 
     async def _invoke_callback(self) -> None:
         try:
+            assert self.callback is not None
             result = self.callback()
             if is_coroutine(self.callback):
                 await result
@@ -88,6 +92,7 @@ class Timer:
         See https://github.com/zauberzeug/nicegui/issues/206 for details.
         Returns True if the client is connected, False if the client is not connected and the timer should be cancelled.
         """
+        assert self.slot is not None
         if self.slot.parent.client.shared:
             return True
         else:

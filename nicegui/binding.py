@@ -25,7 +25,7 @@ def set_attribute(obj: Union[object, Dict], name: str, value: Any) -> None:
         setattr(obj, name, value)
 
 
-async def loop():
+async def loop() -> None:
     while True:
         visited: Set[Tuple[int, str]] = set()
         t = time.time()

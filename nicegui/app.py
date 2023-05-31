@@ -45,7 +45,7 @@ class App(FastAPI):
         """
         globals.shutdown_handlers.append(handler)
 
-    def on_exception(self, handler: Union[Callable, Awaitable]) -> None:
+    def on_exception(self, handler: Callable) -> None:
         """Called when an exception occurs.
 
         The callback has an optional parameter of `Exception`.
