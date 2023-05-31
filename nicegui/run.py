@@ -20,21 +20,15 @@ from .storage import RequestTrackingMiddleware
 
 class Server(uvicorn.Server):
 
-    def run(self, sockets: List[Any] = None) -> None:
-        if self.config.storage_secret is not None:
-            globals.app.add_middleware(RequestTrackingMiddleware)
-            globals.app.add_middleware(SessionMiddleware, secret_key=self.config.storage_secret)
-        super().run(sockets=sockets)
-
-
-class Server(uvicorn.Server):
-
     def run(self, sockets: Optional[List[socket.socket]] = None) -> None:
         globals.server = self
         native_module.method_queue = self.config.method_queue
         native_module.response_queue = self.config.response_queue
         if native_module.method_queue is not None:
             globals.app.native.main_window = native_module.WindowProxy()
+        if self.config.storage_secret is not None:
+            globals.app.add_middleware(RequestTrackingMiddleware)
+            globals.app.add_middleware(SessionMiddleware, secret_key=self.config.storage_secret)
         super().run(sockets=sockets)
 
 
