@@ -1,4 +1,5 @@
-import logging
+from collections import Counter
+from datetime import datetime
 
 from nicegui import ui
 
@@ -13,6 +14,9 @@ def main_demo() -> None:
     - `app.storage.user`: Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie. Unique to each user, this storage is accessible across all their browser tabs.
     - app.storage.general`: Also stored server-side, this dictionary provides a shared storage space accessible to all users.
     - `app.storage.browser`: Unlike the previous types, this dictionary is stored directly as the browser session cookie, shared among all browser tabs for the same user. However, `app.storage.user` is generally preferred due to its advantages in reducing data payload, enhancing security, and offering larger storage capacity.
+
+    To use the user or browser storage, you must pass a `storage_secret` to `ui.run()`. 
+    This is a private key used to encrypt the browser session cookie.
     """
     from nicegui import app
 
@@ -31,6 +35,10 @@ def main_demo() -> None:
         ui.label().bind_text_from(app.storage.user, 'count')
 
 
+counter = Counter()
+start = datetime.now().strftime('%H:%M, %d %B %Y')
+
+
 def more() -> None:
     @text_demo('Counting page visits', '''
         Here we are using the automatically available browser stored session id to count the number of unique page visits.
@@ -41,12 +49,15 @@ def more() -> None:
 
         from nicegui import app
 
-        counter = Counter()
-        start = datetime.now().strftime('%H:%M, %d %B %Y')
-
-        @ui.page('/')
-        def index():
-            counter[app.storage.session.browser[id]] += 1
-            ui.label(f'{len(counter)} unique views ({sum(counter.values())} overall) since {start}')
-
+        # counter = Counter()
+        # start = datetime.now().strftime('%H:%M, %d %B %Y')
+        #
+        # @ui.page('/')
+        # def index():
+        #     counter[app.storage.session.browser[id]] += 1
+        #     ui.label(f'{len(counter)} unique views ({sum(counter.values())} overall) since {start}')
+        #
         # ui.run(storage_secret='private key to secure the browser session cookie')
+        # END OF DEMO
+        counter[app.storage.browser['id']] += 1
+        ui.label(f'{len(counter)} unique views ({sum(counter.values())} overall) since {start}')
