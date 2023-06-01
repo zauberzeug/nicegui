@@ -8,7 +8,6 @@ from nicegui import ui
 @dataclass
 class TodoItem:
     name: str
-    on_change: Callable
     done: bool = False
 
 
@@ -19,7 +18,7 @@ class ToDoList:
     items: List[TodoItem] = field(default_factory=list)
 
     def add(self, name: str, done: bool = False) -> None:
-        self.items.append(TodoItem(name, self.on_change, done))
+        self.items.append(TodoItem(name, done))
         self.on_change()
 
     def remove(self, item: TodoItem) -> None:
