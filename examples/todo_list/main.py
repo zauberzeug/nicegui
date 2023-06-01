@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from dataclasses import dataclass, field
-from typing import Any, Callable, List
+from typing import Callable, List
 
 from nicegui import ui
 
@@ -39,7 +39,7 @@ def todo_ui():
         with ui.row().classes('items-center'):
             ui.checkbox(value=item.done, on_change=todo_ui.refresh).bind_value(item, 'done')
             ui.input(value=item.name).classes('flex-grow').bind_value(item, 'name')
-            ui.button(on_click=lambda _, item=item: todos.remove(item)).props('flat fab-mini icon=delete color=grey')
+            ui.button(on_click=lambda item=item: todos.remove(item)).props('flat fab-mini icon=delete color=grey')
 
 
 todos = ToDoList('My Weekend', on_change=todo_ui.refresh)
