@@ -27,6 +27,11 @@ class ObservableDict(dict):
         super().clear()
         self.on_change()
 
+    def setdefault(self, __key: Any, __default: Any = None) -> Any:
+        item = super().setdefault(__key, make_observable(__default, self.on_change))
+        self.on_change()
+        return item
+
     def __setitem__(self, __key: Any, __value: Any) -> None:
         super().__setitem__(__key, make_observable(__value, self.on_change))
         self.on_change()
@@ -34,6 +39,11 @@ class ObservableDict(dict):
     def __delitem__(self, __key: Any) -> None:
         super().__delitem__(__key)
         self.on_change()
+
+    def __ior__(self, other: Any) -> Any:
+        super().__ior__(make_observable(other, self.on_change))
+        self.on_change()
+        return self
 
 
 class ObservableList(list):
@@ -69,6 +79,14 @@ class ObservableList(list):
         super().clear()
         self.on_change()
 
+    def sort(self, **kwargs: Any) -> None:
+        super().sort(**kwargs)
+        self.on_change()
+
+    def reverse(self) -> None:
+        super().reverse()
+        self.on_change()
+
     def __delitem__(self, key: int) -> None:
         super().__delitem__(key)
         self.on_change()
@@ -84,6 +102,11 @@ class ObservableList(list):
     def __delslice__(self, i: int, j: int) -> None:
         super().__delslice__(i, j)
         self.on_change()
+
+    def __iadd__(self, other: Any) -> Any:
+        super().__iadd__(make_observable(other, self.on_change))
+        self.on_change()
+        return self
 
 
 @overload

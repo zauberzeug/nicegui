@@ -28,6 +28,10 @@ def test_observable_dict():
     assert count == 5
     data.clear()
     assert count == 6
+    data.setdefault('a', 1)
+    assert count == 7
+    data |= {'b': 2}
+    assert count == 8
 
 
 def test_observable_list():
@@ -43,16 +47,22 @@ def test_observable_list():
     assert count == 4
     data.pop()
     assert count == 5
-    data[0] = 1
+    data.sort()
     assert count == 6
-    data[0:2] = [1, 2, 3]
+    data.reverse()
     assert count == 7
-    del data[0]
+    data[0] = 1
     assert count == 8
-    del data[0:1]
+    data[0:2] = [1, 2, 3]
     assert count == 9
-    data.clear()
+    del data[0]
     assert count == 10
+    del data[0:1]
+    assert count == 11
+    data.clear()
+    assert count == 12
+    data += [1, 2, 3]
+    assert count == 13
 
 
 def test_nested_observables():
