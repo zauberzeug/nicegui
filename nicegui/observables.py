@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Iterable, List, overload
+from typing import Any, Callable, Dict, Iterable, List, Set, SupportsIndex, Union, overload
 
 
 class ObservableDict(dict):
@@ -59,10 +59,10 @@ class ObservableList(list):
         self.on_change()
 
     def extend(self, iterable: Iterable) -> None:
-        super().extend(make_observable(iterable, self.on_change))
+        super().extend(make_observable(list(iterable), self.on_change))
         self.on_change()
 
-    def insert(self, index: int, object: Any) -> None:
+    def insert(self, index: SupportsIndex, object: Any) -> None:
         super().insert(index, make_observable(object, self.on_change))
         self.on_change()
 
@@ -70,7 +70,7 @@ class ObservableList(list):
         super().remove(value)
         self.on_change()
 
-    def pop(self, index: int = -1) -> Any:
+    def pop(self, index: SupportsIndex = -1) -> Any:
         item = super().pop(index)
         self.on_change()
         return item
@@ -87,20 +87,12 @@ class ObservableList(list):
         super().reverse()
         self.on_change()
 
-    def __delitem__(self, key: int) -> None:
+    def __delitem__(self, key: Union[SupportsIndex, slice]) -> None:
         super().__delitem__(key)
         self.on_change()
 
-    def __setitem__(self, key: int, value: Any) -> None:
+    def __setitem__(self, key: Union[SupportsIndex, slice], value: Any) -> None:
         super().__setitem__(key, make_observable(value, self.on_change))
-        self.on_change()
-
-    def __setslice__(self, i: int, j: int, sequence: Any) -> None:
-        super().__setslice__(i, j, make_observable(sequence, self.on_change))
-        self.on_change()
-
-    def __delslice__(self, i: int, j: int) -> None:
-        super().__delslice__(i, j)
         self.on_change()
 
     def __iadd__(self, other: Any) -> Any:
@@ -109,19 +101,92 @@ class ObservableList(list):
         return self
 
 
+class ObservableSet(set):
+
+    def __init__(self, on_change: Callable, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        for item in self:
+            super().add(make_observable(item, on_change))
+        self.on_change = on_change
+
+    def add(self, item: Any) -> None:
+        super().add(make_observable(item, self.on_change))
+        self.on_change()
+
+    def remove(self, item: Any) -> None:
+        super().remove(item)
+        self.on_change()
+
+    def discard(self, item: Any) -> None:
+        super().discard(item)
+        self.on_change()
+
+    def pop(self) -> Any:
+        item = super().pop()
+        self.on_change()
+        return item
+
+    def clear(self) -> None:
+        super().clear()
+        self.on_change()
+
+    def update(self, *s: Iterable[Any]) -> None:
+        super().update(make_observable(set(*s), self.on_change))
+        self.on_change()
+
+    def intersection_update(self, *s: Iterable[Any]) -> None:
+        super().intersection_update(*s)
+        self.on_change()
+
+    def difference_update(self, *s: Iterable[Any]) -> None:
+        super().difference_update(*s)
+        self.on_change()
+
+    def symmetric_difference_update(self, *s: Iterable[Any]) -> None:
+        super().symmetric_difference_update(*s)
+        self.on_change()
+
+    def __ior__(self, other: Any) -> Any:
+        super().__ior__(make_observable(other, self.on_change))
+        self.on_change()
+        return self
+
+    def __iand__(self, other: Any) -> Any:
+        super().__iand__(make_observable(other, self.on_change))
+        self.on_change()
+        return self
+
+    def __isub__(self, other: Any) -> Any:
+        super().__isub__(make_observable(other, self.on_change))
+        self.on_change()
+        return self
+
+    def __ixor__(self, other: Any) -> Any:
+        super().__ixor__(make_observable(other, self.on_change))
+        self.on_change()
+        return self
+
+
 @overload
-def make_observable(d: Dict, on_change: Callable) -> ObservableDict:
+def make_observable(object: Dict, on_change: Callable) -> ObservableDict:
     ...
 
 
 @overload
-def make_observable(d: List, on_change: Callable) -> ObservableList:
+def make_observable(object: List, on_change: Callable) -> ObservableList:
     ...
 
 
-def make_observable(a: Any, on_change: Callable) -> Any:
-    if isinstance(a, dict):
-        return ObservableDict(on_change, a)
-    if isinstance(a, list):
-        return ObservableList(on_change, a)
-    return a
+@overload
+def make_observable(object: Set, on_change: Callable) -> ObservableSet:
+    ...
+
+
+def make_observable(object: Any, on_change: Callable) -> Any:
+    if isinstance(object, dict):
+        return ObservableDict(on_change, object)
+    if isinstance(object, list):
+        return ObservableList(on_change, object)
+    if isinstance(object, set):
+        return ObservableSet(on_change, object)
+    return object

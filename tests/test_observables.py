@@ -65,12 +65,44 @@ def test_observable_list():
     assert count == 13
 
 
+def test_observable_set():
+    reset_counter()
+    data = make_observable({1, 2, 3, 4, 5}, increment_counter)
+    data.add(1)
+    assert count == 1
+    data.remove(1)
+    assert count == 2
+    data.discard(2)
+    assert count == 3
+    data.pop()
+    assert count == 4
+    data.clear()
+    assert count == 5
+    data.update({1, 2, 3})
+    assert count == 6
+    data.intersection_update({1, 2})
+    assert count == 7
+    data.difference_update({1})
+    assert count == 8
+    data.symmetric_difference_update({1, 2})
+    assert count == 9
+    data |= {1, 2, 3}
+    assert count == 10
+    data &= {1, 2}
+    assert count == 11
+    data -= {1}
+    assert count == 12
+    data ^= {1, 2}
+    assert count == 13
+
+
 def test_nested_observables():
     reset_counter()
     data = make_observable({
         'a': 1,
         'b': [1, 2, 3, {'x': 1, 'y': 2, 'z': 3}],
         'c': {'x': 1, 'y': 2, 'z': 3, 't': [1, 2, 3]},
+        'd': {1, 2, 3},
     }, increment_counter)
     data['a'] = 42
     assert count == 1
@@ -82,3 +114,5 @@ def test_nested_observables():
     assert count == 4
     data['c']['t'].append(4)
     assert count == 5
+    data['d'].add(4)
+    assert count == 6
