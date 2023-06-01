@@ -7,6 +7,7 @@ from typing import Any, List, Optional, Tuple
 
 import __main__
 import uvicorn
+from starlette.middleware import Middleware
 from starlette.middleware.sessions import SessionMiddleware
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
@@ -26,7 +27,11 @@ class Server(uvicorn.Server):
         native_module.response_queue = self.config.response_queue
         if native_module.method_queue is not None:
             globals.app.native.main_window = native_module.WindowProxy()
-        if self.config.storage_secret is not None:
+
+        if any(m.cls == SessionMiddleware for m in globals.app.user_middleware):
+            # NOTE not using "add_middleware" because it would be the wrong order
+            globals.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
+        elif self.config.storage_secret is not None:
             globals.app.add_middleware(RequestTrackingMiddleware)
             globals.app.add_middleware(SessionMiddleware, secret_key=self.config.storage_secret)
         super().run(sockets=sockets)

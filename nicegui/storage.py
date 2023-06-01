@@ -95,7 +95,7 @@ class Storage:
         """Small storage that is saved directly within the user's browser (encrypted cookie).
 
         The data is shared between all browser tab and can only be modified before the initial request has been submitted.
-        Normally it is better to use `app.storage.user` instead to reduce payload, improved security and larger storage capacity)."""
+        It is normally better to use `app.storage.user` instead to reduce payload, gain improved security and have larger storage capacity)."""
         request: Request = request_contextvar.get()
         if request is None:
             raise RuntimeError('storage.browser needs a storage_secret passed in ui.run()')

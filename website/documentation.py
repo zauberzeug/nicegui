@@ -413,6 +413,8 @@ def create_full() -> None:
     load_demo(ui.open)
     load_demo(ui.download)
 
+    load_demo('storage')
+
     @text_demo('Sessions', '''
         The optional `request` argument provides insights about the client's URL parameters etc.
         It also enables you to identify sessions using a [session middleware](https://www.starlette.io/middleware/#sessionmiddleware).
