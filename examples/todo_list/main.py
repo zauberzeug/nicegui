@@ -11,14 +11,6 @@ class TodoItem:
     on_change: Callable
     done: bool = False
 
-    def rename(self, new_name: str) -> None:
-        self.name = new_name
-
-    def __setattr__(self, name: str, value: Any) -> None:
-        super().__setattr__(name, value)
-        if hasattr(self, 'on_change'):
-            self.on_change()
-
 
 @dataclass
 class ToDoList:
@@ -46,9 +38,8 @@ def todo_ui():
         ui.label(f'Remaining: {sum(not item.done for item in todos.items)}')
     for item in todos.items:
         with ui.row().classes('items-center'):
-            ui.checkbox().bind_value(item, 'done')
-            input = ui.input(value=item.name).classes('flex-grow')
-            input.on('keydown.enter', lambda _, item=item, input=input: item.rename(input.value))
+            ui.checkbox(value=item.done, on_change=todo_ui.refresh).bind_value(item, 'done')
+            ui.input(value=item.name).classes('flex-grow').bind_value(item, 'name')
             ui.button(on_click=lambda _, item=item: todos.remove(item)).props('flat fab-mini icon=delete color=grey')
 
 
