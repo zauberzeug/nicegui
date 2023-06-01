@@ -7,14 +7,12 @@ from ..documentation_tools import text_demo
 
 def main_demo() -> None:
     """Storage
-    With `app.storage` you can easily persist data.
-    By default there are three types of storage. 
-    `app.storage.user` is a dictionary stored on the server and identified by a generated id in a browser session cookie.
-    That means each user gets their own storage which is shared between all browser tabs.
-    `app.storage.general` is a dictionary stored on the server and shared between all users.
+    NiceGUI offers a straightforward method for data persistence within your application. 
+    It features three built-in storage types:
 
-    Lastly `app.storage.browser` is a dictionary directly stored as the browser session cookie and shared between all browser tabs.
-    It is normally better to use `app.storage.user` instead to reduce payload, gain improved security and have larger storage capacity).
+    - `app.storage.user`: Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie. Unique to each user, this storage is accessible across all their browser tabs.
+    - app.storage.general`: Also stored server-side, this dictionary provides a shared storage space accessible to all users.
+    - `app.storage.browser`: Unlike the previous types, this dictionary is stored directly as the browser session cookie, shared among all browser tabs for the same user. However, `app.storage.user` is generally preferred due to its advantages in reducing data payload, enhancing security, and offering larger storage capacity.
     """
     from nicegui import app
 
