@@ -17,7 +17,7 @@ class EventListener:
     throttle: float
     leading_events: bool
     trailing_events: bool
-    request: Request
+    request: Optional[Request]
 
     def __post_init__(self) -> None:
         self.id = str(uuid.uuid4())

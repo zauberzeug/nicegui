@@ -8,12 +8,18 @@ from ..documentation_tools import text_demo
 
 def main_demo() -> None:
     """Storage
+
     NiceGUI offers a straightforward method for data persistence within your application. 
     It features three built-in storage types:
 
-    - `app.storage.user`: Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie. Unique to each user, this storage is accessible across all their browser tabs.
-    - app.storage.general`: Also stored server-side, this dictionary provides a shared storage space accessible to all users.
-    - `app.storage.browser`: Unlike the previous types, this dictionary is stored directly as the browser session cookie, shared among all browser tabs for the same user. However, `app.storage.user` is generally preferred due to its advantages in reducing data payload, enhancing security, and offering larger storage capacity.
+    - `app.storage.user`:
+        Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie.
+        Unique to each user, this storage is accessible across all their browser tabs.
+    - `app.storage.general`:
+        Also stored server-side, this dictionary provides a shared storage space accessible to all users.
+    - `app.storage.browser`:
+        Unlike the previous types, this dictionary is stored directly as the browser session cookie, shared among all browser tabs for the same user.
+        However, `app.storage.user` is generally preferred due to its advantages in reducing data payload, enhancing security, and offering larger storage capacity.
 
     To use the user or browser storage, you must pass a `storage_secret` to `ui.run()`. 
     This is a private key used to encrypt the browser session cookie.
@@ -41,7 +47,7 @@ start = datetime.now().strftime('%H:%M, %d %B %Y')
 
 def more() -> None:
     @text_demo('Counting page visits', '''
-        Here we are using the automatically available browser stored session id to count the number of unique page visits.
+        Here we are using the automatically available browser-stored session ID to count the number of unique page visits.
     ''')
     def page_visits():
         from collections import Counter

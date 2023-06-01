@@ -86,7 +86,7 @@ async def test_access_user_storage_on_interaction(screen: Screen):
     screen.click('switch')
     screen.wait(1)
     await app.storage.backup()
-    assert '{"test_switch": true}' in app.storage._users.filename.read_text()
+    assert '{"test_switch": true}' in app.storage._users.filepath.read_text()
 
 
 def test_access_user_storage_from_button_click_handler(screen: Screen):
@@ -102,7 +102,7 @@ def test_access_user_storage_from_button_click_handler(screen: Screen):
     screen.open('/')
     screen.click('test')
     screen.wait(1)
-    assert '{"inner_function": "works"}' in app.storage._users.filename.read_text()
+    assert '{"inner_function": "works"}' in app.storage._users.filepath.read_text()
 
 
 async def test_access_user_storage_from_background_task(screen: Screen):
@@ -116,7 +116,7 @@ async def test_access_user_storage_from_background_task(screen: Screen):
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
-    assert '{"subtask": "works"}' in app.storage._users.filename.read_text()
+    assert '{"subtask": "works"}' in app.storage._users.filepath.read_text()
 
 
 def test_user_and_general_storage_is_persisted(screen: Screen):

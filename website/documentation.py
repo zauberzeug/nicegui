@@ -416,11 +416,11 @@ def create_full() -> None:
     load_demo('storage')
 
     @text_demo('Parameter injection', '''
-        Thanks to FastAPI, a page function accepts optional parameters to 
-        provide [path parameters](https://fastapi.tiangolo.com/tutorial/path-params/), 
-        [query parameters](https://fastapi.tiangolo.com/tutorial/query-params/) or
-        the [the full incoming request](https://fastapi.tiangolo.com/advanced/using-request-directly/?h=request) for
-        access to the body payload, headers, cookies and more.
+        Thanks to FastAPI, a page function accepts optional parameters to provide
+        [path parameters](https://fastapi.tiangolo.com/tutorial/path-params/), 
+        [query parameters](https://fastapi.tiangolo.com/tutorial/query-params/) or the whole incoming
+        [request](https://fastapi.tiangolo.com/advanced/using-request-directly/) for accessing
+        the body payload, headers, cookies and more.
     ''')
     def parameter_demo():
         @ui.page('/icon/{icon}')

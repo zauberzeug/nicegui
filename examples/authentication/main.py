@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""This is a just very simple authentication example.
+"""This is just a very simple authentication example.
 
 Please see the `OAuth2 example at FastAPI <https://fastapi.tiangolo.com/tutorial/security/simple-oauth2/>`_  or
 use the great `Authlib package <https://docs.authlib.org/en/v0.13/client/starlette.html#using-fastapi>`_ to implement a classing real authentication system.

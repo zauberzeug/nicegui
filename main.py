@@ -352,7 +352,7 @@ async def documentation_page_more(name: str, client: Client) -> None:
     with side_menu() as menu:
         ui.markdown(f'[← back](/documentation#{create_anchor_name(back_link_target)})').classes('bold-links')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
-        section_heading('Documentation', f'ui.*{name}*')
+        section_heading('Documentation', f'ui.*{name}*' if hasattr(ui, name) else f'*{name.title()}*')
         with menu:
             ui.markdown('**Demos**' if more else '**Demo**').classes('mt-4')
         element_demo(api)(getattr(module, 'main_demo'))

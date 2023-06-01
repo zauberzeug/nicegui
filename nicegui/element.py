@@ -230,7 +230,7 @@ class Element(Visibility):
                 throttle=throttle,
                 leading_events=leading_events,
                 trailing_events=trailing_events,
-                request=storage.request_contextvar.get()
+                request=storage.request_contextvar.get(),
             )
             self._event_listeners[listener.id] = listener
             self.update()
