@@ -5,7 +5,7 @@ import threading
 import uuid
 from collections.abc import MutableMapping
 from pathlib import Path
-from typing import Any, Dict, Iterator
+from typing import Any, Dict, Iterator, Optional, Union
 
 import aiofiles
 from fastapi import Request
@@ -14,7 +14,7 @@ from starlette.responses import Response
 
 from . import globals
 
-request_contextvar = contextvars.ContextVar('request_var', default=None)
+request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
 
 class ReadOnlyDict(MutableMapping):
@@ -97,16 +97,16 @@ class Storage:
         self.storage_dir = Path('.nicegui')
         self.storage_dir.mkdir(exist_ok=True)
         self._general = PersistentDict(self.storage_dir / 'storage_general.json')
-        self._users = PersistentDict(self.storage_dir / 'storage_users.json')
+        self._users: Dict[str, PersistentDict] = {}
 
     @property
-    def browser(self) -> Dict:
+    def browser(self) -> Union[ReadOnlyDict, Dict]:
         """Small storage that is saved directly within the user's browser (encrypted cookie).
 
         The data is shared between all browser tabs and can only be modified before the initial request has been submitted.
         It is normally better to use `app.storage.user` instead to reduce payload, gain improved security and have larger storage capacity.
         """
-        request: Request = request_contextvar.get()
+        request: Optional[Request] = request_contextvar.get()
         if request is None:
             if globals.get_client() == globals.index_client:
                 raise RuntimeError('app.storage.browser can only be used with page builder functions '
@@ -127,16 +127,17 @@ class Storage:
         The data is stored in a file on the server.
         It is shared between all browser tabs by identifying the user via session cookie ID.
         """
-        request: Request = request_contextvar.get()
+        request: Optional[Request] = request_contextvar.get()
         if request is None:
             if globals.get_client() == globals.index_client:
                 raise RuntimeError('app.storage.user can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
             else:
                 raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
-        if request.session['id'] not in self._users:
-            self._users[request.session['id']] = {}
-        return self._users[request.session['id']]
+        id = request.session['id']
+        if id not in self._users:
+            self._users[id] = PersistentDict(self.storage_dir / f'storage_user_{id}.json')
+        return self._users[id]
 
     @property
     def general(self) -> Dict:
@@ -145,7 +146,8 @@ class Storage:
 
     async def backup(self) -> None:
         await self._general.backup()
-        await self._users.backup()
+        for user in self._users.values():
+            await user.backup()
 
     async def _loop(self) -> None:
         while True:
