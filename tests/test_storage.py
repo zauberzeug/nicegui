@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path
 
 from nicegui import Client, app, background_tasks, ui
 
@@ -84,25 +85,20 @@ async def test_access_user_storage_on_interaction(screen: Screen):
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.click('switch')
-    screen.wait(1)
-    await app.storage.backup()
-    assert '{"test_switch": true}' in list(app.storage._users.values())[0].filepath.read_text()
+    screen.wait(0.5)
+    assert '{"test_switch": true}' in next(Path('.nicegui').glob('storage_user_*.json')).read_text()
 
 
 def test_access_user_storage_from_button_click_handler(screen: Screen):
     @ui.page('/')
     async def page():
-        async def inner():
-            app.storage.user['inner_function'] = 'works'
-            await app.storage.backup()
-
-        ui.button('test', on_click=inner)
+        ui.button('test', on_click=app.storage.user.update(inner_function='works'))
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.click('test')
     screen.wait(1)
-    assert '{"inner_function": "works"}' in list(app.storage._users.values())[0].filepath.read_text()
+    assert '{"inner_function": "works"}' in next(Path('.nicegui').glob('storage_user_*.json')).read_text()
 
 
 async def test_access_user_storage_from_background_task(screen: Screen):
@@ -111,12 +107,11 @@ async def test_access_user_storage_from_background_task(screen: Screen):
         async def subtask():
             await asyncio.sleep(0.1)
             app.storage.user['subtask'] = 'works'
-            await app.storage.backup()
         background_tasks.create(subtask())
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
-    assert '{"subtask": "works"}' in list(app.storage._users.values())[0].filepath.read_text()
+    assert '{"subtask": "works"}' in next(Path('.nicegui').glob('storage_user_*.json')).read_text()
 
 
 def test_user_and_general_storage_is_persisted(screen: Screen):
@@ -126,7 +121,6 @@ def test_user_and_general_storage_is_persisted(screen: Screen):
         app.storage.general['count'] = app.storage.general.get('count', 0) + 1
         ui.label(f'user: {app.storage.user["count"]}')
         ui.label(f'general: {app.storage.general["count"]}')
-        ui.button('backup', on_click=app.storage.backup)
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
@@ -134,7 +128,6 @@ def test_user_and_general_storage_is_persisted(screen: Screen):
     screen.open('/')
     screen.should_contain('user: 3')
     screen.should_contain('general: 3')
-    screen.click('backup')
     screen.selenium.delete_all_cookies()
     screen.open('/')
     screen.should_contain('user: 1')
