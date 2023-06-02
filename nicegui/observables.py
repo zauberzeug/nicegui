@@ -42,8 +42,11 @@ class ObservableDict(dict):
         super().__delitem__(__key)
         self.on_change()
 
+    def __or__(self, other: Any) -> Any:
+        return super().__or__(other)
+
     def __ior__(self, other: Any) -> Any:
-        super().__ior__(make_observable(other, self.on_change))
+        super().__ior__(make_observable(dict(other), self.on_change))
         self.on_change()
         return self
 
@@ -97,6 +100,9 @@ class ObservableList(list):
         super().__setitem__(key, make_observable(value, self.on_change))
         self.on_change()
 
+    def __add__(self, other: Any) -> Any:
+        return super().__add__(other)
+
     def __iadd__(self, other: Any) -> Any:
         super().__iadd__(make_observable(other, self.on_change))
         self.on_change()
@@ -148,20 +154,32 @@ class ObservableSet(set):
         super().symmetric_difference_update(*s)
         self.on_change()
 
+    def __or__(self, other: Any) -> Any:
+        return super().__or__(other)
+
     def __ior__(self, other: Any) -> Any:
         super().__ior__(make_observable(other, self.on_change))
         self.on_change()
         return self
+
+    def __and__(self, other: Any) -> set:
+        return super().__and__(other)
 
     def __iand__(self, other: Any) -> Any:
         super().__iand__(make_observable(other, self.on_change))
         self.on_change()
         return self
 
+    def __sub__(self, other: Any) -> set:
+        return super().__sub__(other)
+
     def __isub__(self, other: Any) -> Any:
         super().__isub__(make_observable(other, self.on_change))
         self.on_change()
         return self
+
+    def __xor__(self, other: Any) -> set:
+        return super().__xor__(other)
 
     def __ixor__(self, other: Any) -> Any:
         super().__ixor__(make_observable(other, self.on_change))
