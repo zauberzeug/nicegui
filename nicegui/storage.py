@@ -5,11 +5,12 @@ from collections.abc import MutableMapping
 from pathlib import Path
 from typing import Any, Dict, Iterator, Optional, Union
 
+import aiofiles
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 
-from . import globals, observables
+from . import background_tasks, globals, observables
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
@@ -39,8 +40,18 @@ class ReadOnlyDict(MutableMapping):
 class PersistentDict(observables.ObservableDict):
 
     def __init__(self, filepath: Path) -> None:
+        self.filepath = filepath
         data = json.loads(filepath.read_text()) if filepath.exists() else {}
-        super().__init__(data, lambda: filepath.write_text(json.dumps(self)))
+        super().__init__(data, self.backup)
+
+    def backup(self) -> None:
+        async def backup() -> None:
+            async with aiofiles.open(self.filepath, 'w') as f:
+                await f.write(json.dumps(self))
+        if globals.loop:
+            background_tasks.create_lazy(backup(), name=self.filepath.stem)
+        else:
+            globals.app.on_startup(backup())
 
 
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
