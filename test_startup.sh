@@ -36,6 +36,10 @@ do
         # NOTE: chat_with_ai example is not working with python 3.7
         continue
     fi
+    if [[ $path == *"ai_interface"* ]] && [[ $(python3 --version) == *"3.7"* ]]; then
+        # NOTE: ai_interface example is not working with python 3.7
+        continue
+    fi
     if test -f $path/start.sh; then
         check $path/start.sh dev || error=1 
     elif test -f $path/main.py; then
