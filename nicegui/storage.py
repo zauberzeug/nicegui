@@ -1,18 +1,15 @@
-import asyncio
 import contextvars
 import json
-import threading
 import uuid
 from collections.abc import MutableMapping
 from pathlib import Path
 from typing import Any, Dict, Iterator, Optional, Union
 
-import aiofiles
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 
-from . import globals
+from . import globals, observables
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
@@ -39,44 +36,11 @@ class ReadOnlyDict(MutableMapping):
         return len(self._data)
 
 
-class PersistentDict(dict):
+class PersistentDict(observables.ObservableDict):
 
-    def __init__(self, filepath: Path, *args: Any, **kwargs: Any) -> None:
-        self.filepath = filepath
-        self.lock = threading.Lock()
-        self.load()
-        self.update(*args, **kwargs)
-        self.modified = bool(args or kwargs)
-
-    def clear(self) -> None:
-        with self.lock:
-            super().clear()
-            self.modified = True
-
-    def __setitem__(self, key: Any, value: Any) -> None:
-        with self.lock:
-            super().__setitem__(key, value)
-            self.modified = True
-
-    def __delitem__(self, key: Any) -> None:
-        with self.lock:
-            super().__delitem__(key)
-            self.modified = True
-
-    def load(self) -> None:
-        with self.lock:
-            if self.filepath.exists():
-                with open(self.filepath, 'r') as f:
-                    try:
-                        self.update(json.load(f))
-                    except json.JSONDecodeError:
-                        pass
-
-    async def backup(self) -> None:
-        data = dict(self)
-        if self.modified:
-            async with aiofiles.open(self.filepath, 'w') as f:
-                await f.write(json.dumps(data))
+    def __init__(self, filepath: Path) -> None:
+        data = json.loads(filepath.read_text()) if filepath.exists() else {}
+        super().__init__(data, lambda: filepath.write_text(json.dumps(self)))
 
 
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
@@ -144,12 +108,9 @@ class Storage:
         """General storage shared between all users that is persisted on the server (where NiceGUI is executed)."""
         return self._general
 
-    async def backup(self) -> None:
-        await self._general.backup()
-        for user in self._users.values():
-            await user.backup()
-
-    async def _loop(self) -> None:
-        while True:
-            await self.backup()
-            await asyncio.sleep(1.0)
+    def clear(self) -> None:
+        """Clears all storage."""
+        self._general.clear()
+        self._users.clear()
+        for filepath in self.storage_dir.glob('storage_*.json'):
+            filepath.unlink()

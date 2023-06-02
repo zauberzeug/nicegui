@@ -44,8 +44,7 @@ def reset_globals() -> Generator[None, None, None]:
     # NOTE favicon routes must be removed separately because they are not "pages"
     [globals.app.routes.remove(r) for r in globals.app.routes if r.path.endswith('/favicon.ico')]
     importlib.reload(globals)
-    globals.app.storage.general.clear()
-    globals.app.storage._users.clear()
+    globals.app.storage.clear()
     globals.index_client = Client(page('/'), shared=True).__enter__()
     globals.app.get('/')(globals.index_client.build_response)
 

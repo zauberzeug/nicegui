@@ -80,7 +80,6 @@ def handle_startup(with_welcome_message: bool = True) -> None:
             safe_invoke(t)
     background_tasks.create(binding.loop())
     background_tasks.create(outbox.loop())
-    background_tasks.create(app.storage._loop())
     background_tasks.create(prune_clients())
     background_tasks.create(prune_slot_stacks())
     globals.state = globals.State.STARTED
