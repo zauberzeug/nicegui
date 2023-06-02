@@ -7,6 +7,8 @@ from typing import Any, List, Optional, Tuple
 
 import __main__
 import uvicorn
+from starlette.middleware import Middleware
+from starlette.middleware.sessions import SessionMiddleware
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
@@ -14,6 +16,7 @@ from . import globals, helpers
 from . import native as native_module
 from . import native_mode
 from .language import Language
+from .storage import RequestTrackingMiddleware
 
 
 class Server(uvicorn.Server):
@@ -24,6 +27,13 @@ class Server(uvicorn.Server):
         native_module.response_queue = self.config.response_queue
         if native_module.method_queue is not None:
             globals.app.native.main_window = native_module.WindowProxy()
+
+        if any(m.cls == SessionMiddleware for m in globals.app.user_middleware):
+            # NOTE not using "add_middleware" because it would be the wrong order
+            globals.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
+        elif self.config.storage_secret is not None:
+            globals.app.add_middleware(RequestTrackingMiddleware)
+            globals.app.add_middleware(SessionMiddleware, secret_key=self.config.storage_secret)
         super().run(sockets=sockets)
 
 
@@ -47,6 +57,7 @@ def run(*,
         uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
         exclude: str = '',
         tailwind: bool = True,
+        storage_secret: Optional[str] = None,
         **kwargs: Any,
         ) -> None:
     '''ui.run
@@ -73,7 +84,8 @@ def run(*,
     :param exclude: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth
       (possible entries: aggrid, audio, chart, colors, interactive_image, joystick, keyboard, log, markdown, mermaid, plotly, scene, video)
     :param tailwind: whether to use Tailwind (experimental, default: `True`)
-    :param kwargs: additional keyword arguments are passed to `uvicorn.run`
+    :param storage_secret: secret key for browser based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
+    :param kwargs: additional keyword arguments are passed to `uvicorn.run`    
     '''
     globals.ui_run_has_been_called = True
     globals.reload = reload
@@ -129,9 +141,11 @@ def run(*,
         log_level=uvicorn_logging_level,
         **kwargs,
     )
+    config.storage_secret = storage_secret
     config.method_queue = native_module.method_queue if native else None
     config.response_queue = native_module.response_queue if native else None
     globals.server = Server(config=config)
+
     if (reload or config.workers > 1) and not isinstance(config.app, str):
         logging.warning('You must pass the application as an import string to enable "reload" or "workers".')
         sys.exit(1)

@@ -413,33 +413,24 @@ def create_full() -> None:
     load_demo(ui.open)
     load_demo(ui.download)
 
-    @text_demo('Sessions', '''
-        The optional `request` argument provides insights about the client's URL parameters etc.
-        It also enables you to identify sessions using a [session middleware](https://www.starlette.io/middleware/#sessionmiddleware).
+    load_demo('storage')
+
+    @text_demo('Parameter injection', '''
+        Thanks to FastAPI, a page function accepts optional parameters to provide
+        [path parameters](https://fastapi.tiangolo.com/tutorial/path-params/), 
+        [query parameters](https://fastapi.tiangolo.com/tutorial/query-params/) or the whole incoming
+        [request](https://fastapi.tiangolo.com/advanced/using-request-directly/) for accessing
+        the body payload, headers, cookies and more.
     ''')
-    def sessions_demo():
-        import uuid
-        from collections import Counter
-        from datetime import datetime
-
-        from starlette.middleware.sessions import SessionMiddleware
-        from starlette.requests import Request
-
-        from nicegui import app
-
-        # app.add_middleware(SessionMiddleware, secret_key='some_random_string')
-
-        counter = Counter()
-        start = datetime.now().strftime('%H:%M, %d %B %Y')
-
-        @ui.page('/session_demo')
-        def session_demo(request: Request):
-            if 'id' not in request.session:
-                request.session['id'] = str(uuid.uuid4())
-            counter[request.session['id']] += 1
-            ui.label(f'{len(counter)} unique views ({sum(counter.values())} overall) since {start}')
-
-        ui.link('Visit session demo', session_demo)
+    def parameter_demo():
+        @ui.page('/icon/{icon}')
+        def icons(icon: str, amount: int = 1):
+            ui.label(icon).classes('text-h3')
+            with ui.row():
+                [ui.icon(icon).classes('text-h3') for _ in range(amount)]
+        ui.link('Star', '/icon/star?amount=5')
+        ui.link('Home', '/icon/home')
+        ui.link('Water', '/icon/water_drop?amount=3')
 
     load_demo(ui.run_javascript)
 

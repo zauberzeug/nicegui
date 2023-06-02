@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import globals
 from .native import Native
+from .storage import Storage
 
 
 class App(FastAPI):
@@ -12,6 +13,7 @@ class App(FastAPI):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.native = Native()
+        self.storage = Storage()
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
         """Called every time a new client connects to NiceGUI.

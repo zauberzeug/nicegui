@@ -2,6 +2,8 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
+from fastapi import Request
+
 from .helpers import KWONLY_SLOTS
 
 
@@ -15,6 +17,7 @@ class EventListener:
     throttle: float
     leading_events: bool
     trailing_events: bool
+    request: Optional[Request]
 
     def __post_init__(self) -> None:
         self.id = str(uuid.uuid4())

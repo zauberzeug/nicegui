@@ -96,7 +96,8 @@ class element_demo:
         doc = self.element_class.__doc__ or self.element_class.__init__.__doc__
         title, documentation = doc.split('\n', 1)
         with ui.column().classes('w-full mb-8 gap-2'):
-            subheading(title, more_link=more_link)
+            if more_link:
+                subheading(title, more_link=more_link)
             render_docstring(documentation, with_params=more_link is None)
             result = demo(f)
             if more_link:
