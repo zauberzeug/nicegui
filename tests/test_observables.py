@@ -1,3 +1,5 @@
+import sys
+
 from nicegui.observables import make_observable
 
 count = 0
@@ -30,8 +32,9 @@ def test_observable_dict():
     assert count == 6
     data.setdefault('a', 1)
     assert count == 7
-    data |= {'b': 2}
-    assert count == 8
+    if sys.version_info >= (3, 9):
+        data |= {'b': 2}
+        assert count == 8
 
 
 def test_observable_list():
