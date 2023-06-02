@@ -25,7 +25,8 @@ jobs:
           poetry config virtualenvs.create false
           poetry install
           # install packages to run the examples
-          pip install opencv-python opencv-contrib-python-headless httpx replicate langchain openai simpy
+          # NOTE: replicate>=0.8.0 requires Python 3.8+, so we need to pin it to 0.7.0
+          pip install opencv-python opencv-contrib-python-headless httpx 'replicate==0.7.0' langchain openai simpy
           pip install -r tests/requirements.txt
           # try fix issue with importlib_resources
           pip install importlib-resources
