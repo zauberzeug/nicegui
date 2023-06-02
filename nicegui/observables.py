@@ -5,8 +5,8 @@ from typing_extensions import SupportsIndex
 
 class ObservableDict(dict):
 
-    def __init__(self, on_change: Callable, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, data: Dict, on_change: Callable) -> None:
+        super().__init__(data)
         for key, value in self.items():
             super().__setitem__(key, make_observable(value, on_change))
         self.on_change = on_change
@@ -53,8 +53,8 @@ class ObservableDict(dict):
 
 class ObservableList(list):
 
-    def __init__(self, on_change: Callable, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, data: List, on_change: Callable) -> None:
+        super().__init__(data)
         for i, item in enumerate(self):
             super().__setitem__(i, make_observable(item, on_change))
         self.on_change = on_change
@@ -111,8 +111,8 @@ class ObservableList(list):
 
 class ObservableSet(set):
 
-    def __init__(self, on_change: Callable, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, data: set, on_change: Callable) -> None:
+        super().__init__(data)
         for item in self:
             super().add(make_observable(item, on_change))
         self.on_change = on_change
@@ -188,25 +188,25 @@ class ObservableSet(set):
 
 
 @overload
-def make_observable(object: Dict, on_change: Callable) -> ObservableDict:
+def make_observable(data: Dict, on_change: Callable) -> ObservableDict:
     ...
 
 
 @overload
-def make_observable(object: List, on_change: Callable) -> ObservableList:
+def make_observable(data: List, on_change: Callable) -> ObservableList:
     ...
 
 
 @overload
-def make_observable(object: Set, on_change: Callable) -> ObservableSet:
+def make_observable(data: Set, on_change: Callable) -> ObservableSet:
     ...
 
 
-def make_observable(object: Any, on_change: Callable) -> Any:
-    if isinstance(object, dict):
-        return ObservableDict(on_change, object)
-    if isinstance(object, list):
-        return ObservableList(on_change, object)
-    if isinstance(object, set):
-        return ObservableSet(on_change, object)
-    return object
+def make_observable(data: Any, on_change: Callable) -> Any:
+    if isinstance(data, dict):
+        return ObservableDict(data, on_change)
+    if isinstance(data, list):
+        return ObservableList(data, on_change)
+    if isinstance(data, set):
+        return ObservableSet(data, on_change)
+    return data
