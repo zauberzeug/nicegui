@@ -2,6 +2,7 @@ import asyncio
 import logging
 import time
 from collections import defaultdict
+from collections.abc import Mapping
 from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Tuple, Type, Union
 
 from . import globals
@@ -11,21 +12,21 @@ bindable_properties: Dict[Tuple[int, str], Any] = {}
 active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
 
 
-def has_attribute(obj: Union[object, Dict], name: str) -> Any:
-    if isinstance(obj, dict):
+def has_attribute(obj: Union[object, Mapping], name: str) -> Any:
+    if isinstance(obj, Mapping):
         return name in obj
     else:
         return hasattr(obj, name)
 
 
-def get_attribute(obj: Union[object, Dict], name: str) -> Any:
-    if isinstance(obj, dict):
+def get_attribute(obj: Union[object, Mapping], name: str) -> Any:
+    if isinstance(obj, Mapping):
         return obj[name]
     else:
         return getattr(obj, name)
 
 
-def set_attribute(obj: Union[object, Dict], name: str, value: Any) -> None:
+def set_attribute(obj: Union[object, Mapping], name: str, value: Any) -> None:
     if isinstance(obj, dict):
         obj[name] = value
     else:
