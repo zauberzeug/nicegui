@@ -42,7 +42,7 @@ def more() -> None:
     @text_demo('Bind to variable', '''
         Here we are binding the value from the datepicker to a bare variable.
         Therefore we use the dictionary `globals()` which contains all global variables.
-        This demo is based on the [official datepicker example](https://nicegui.io/documentation/date#input_element_with_date_picker).
+        This demo is based on the [official datepicker example](/documentation/date#input_element_with_date_picker).
     ''')
     def bind_variable():
         # date = '2023-01-01'
