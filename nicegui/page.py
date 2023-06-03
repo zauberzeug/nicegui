@@ -29,8 +29,8 @@ class page:
                  ) -> None:
         """Page
 
-        Creates a new page at the given route.
-        Each user will see a new instance of the page.
+        This decorator marks a function to be a page-builder.
+        Each user accessing the given route will see a new instance of the page.
         This means it is private to the user and not shared with others 
         (as it is done `when placing elements outside of a page decorator <https://nicegui.io/documentation#auto-index_page>`_).
 
