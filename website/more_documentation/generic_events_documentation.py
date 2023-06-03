@@ -18,10 +18,6 @@ def main_demo() -> None:
     The generic event handler can be synchronous or asynchronous and optionally takes an event dictionary as argument ("E").
     You can also specify which attributes of the JavaScript or Quasar event should be passed to the handler ("F").
     This can reduce the amount of data that needs to be transferred between the server and the client.
-
-    You can also include `key modifiers <https://vuejs.org/guide/essentials/event-handling.html#key-modifiers>`_ (shown in input "G"),
-    modifier combinations (shown in input "H"),
-    and `event modifiers <https://vuejs.org/guide/essentials/event-handling.html#mouse-button-modifiers>`_ (shown in input "I").
 """
     with ui.row():
         ui.button('A', on_click=lambda: ui.notify('You clicked the button A.'))
@@ -32,17 +28,23 @@ def main_demo() -> None:
     with ui.row():
         ui.button('E').on('mousedown', lambda e: ui.notify(str(e)))
         ui.button('F').on('mousedown', lambda e: ui.notify(str(e)), ['ctrlKey', 'shiftKey'])
-    with ui.row():
-        ui.input('G').classes('w-12').on('keydown.space', lambda: ui.notify('You pressed space.'))
-        ui.input('H').classes('w-12').on('keydown.y.shift', lambda: ui.notify('You pressed Shift+Y'))
-        ui.input('I').classes('w-12').on('keydown.once', lambda: ui.notify('You started typing.'))
 
 
 def more() -> None:
+    @text_demo('Modifiers', '''
+        You can also include [key modifiers](https://vuejs.org/guide/essentials/event-handling.html#key-modifiers>) (shown in input "A"),
+        modifier combinations (shown in input "B"),
+        and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mouse-button-modifiers>) (shown in input "C").
+    ''')
+    def modifiers() -> None:
+        with ui.row():
+            ui.input('A').classes('w-12').on('keydown.space', lambda: ui.notify('You pressed space.'))
+            ui.input('B').classes('w-12').on('keydown.y.shift', lambda: ui.notify('You pressed Shift+Y'))
+            ui.input('C').classes('w-12').on('keydown.once', lambda: ui.notify('You started typing.'))
 
     @text_demo('Custom events', '''
-        It's fairly easy to emit custom events from javascript which can be listened to with `element.on(...)`.
-        This can be useful if you want to call Python code when something happens in javascript.
+        It's fairly easy to emit custom events from JavaScript which can be listened to with `element.on(...)`.
+        This can be useful if you want to call Python code when something happens in JavaScript.
         Like in this example where we are listening to the `visibilitychange` event of the browser tab.
     ''')
     async def custom_events() -> None:
