@@ -1,7 +1,7 @@
 from collections import Counter
 from datetime import datetime
 
-from nicegui import ui
+from nicegui import app, ui
 
 from ..documentation_tools import text_demo
 
@@ -21,8 +21,9 @@ def main_demo() -> None:
         Unlike the previous types, this dictionary is stored directly as the browser session cookie, shared among all browser tabs for the same user.
         However, `app.storage.user` is generally preferred due to its advantages in reducing data payload, enhancing security, and offering larger storage capacity.
 
-    To use the user or browser storage, you must pass a `storage_secret` to `ui.run()`. 
-    This is a private key used to encrypt the browser session cookie.
+    The user storage and browser storage are only available within `page-builder functions </documentation/page>`_
+    because they are accessing the underlying `Request` object from FastAPI.
+    Additionally these two types require the `storage_secret` parameter in`ui.run()` to encrypt the browser session cookie.
     """
     from nicegui import app
 
