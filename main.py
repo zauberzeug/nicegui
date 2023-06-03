@@ -205,7 +205,7 @@ async def index_page(client: Client) -> None:
             features('insights', 'Visualization', [
                 'charts, diagrams and tables',
                 '3D scenes',
-                'progress bars',
+                'straight-forward data binding',
                 'built-in timer for data refresh',
             ])
             features('brush', 'Styling', [
@@ -217,7 +217,7 @@ async def index_page(client: Client) -> None:
             features('source', 'Coding', [
                 'routing for multiple pages',
                 'auto-reload on code change',
-                'straight-forward data binding',
+                'persistent user sessions',
                 'Jupyter notebook compatibility',
             ])
             features('anchor', 'Foundation', [
