@@ -336,8 +336,8 @@ def documentation_page() -> None:
 
 @ui.page('/documentation/{name}')
 async def documentation_page_more(name: str, client: Client) -> None:
-    if not hasattr(ui, name):
-        name = name.replace('_', '')  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
+    if name == 'ag_grid':
+        name = 'aggrid'  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
     module = importlib.import_module(f'website.more_documentation.{name}_documentation')
     more = getattr(module, 'more', None)
     if hasattr(ui, name):
@@ -352,7 +352,7 @@ async def documentation_page_more(name: str, client: Client) -> None:
     with side_menu() as menu:
         ui.markdown(f'[← back](/documentation#{create_anchor_name(back_link_target)})').classes('bold-links')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
-        section_heading('Documentation', f'ui.*{name}*' if hasattr(ui, name) else f'*{name.title()}*')
+        section_heading('Documentation', f'ui.*{name}*' if hasattr(ui, name) else f'*{name.replace("_", " ").title()}*')
         with menu:
             ui.markdown('**Demos**' if more else '**Demo**').classes('mt-4')
         element_demo(api)(getattr(module, 'main_demo'))
