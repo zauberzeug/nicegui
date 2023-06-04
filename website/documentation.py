@@ -395,7 +395,7 @@ def create_full() -> None:
     ''')
     def page_layout_demo():
         @ui.page('/page_layout')
-        async def page_layout():
+        def page_layout():
             ui.label('CONTENT')
             [ui.label(f'Line {i}') for i in range(100)]
             with ui.header(elevated=True).style('background-color: #3874c8').classes('items-center justify-between'):
