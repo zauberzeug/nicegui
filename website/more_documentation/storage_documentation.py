@@ -1,7 +1,7 @@
 from collections import Counter
 from datetime import datetime
 
-from nicegui import app, ui
+from nicegui import ui
 
 from ..documentation_tools import text_demo
 
@@ -21,7 +21,7 @@ def main_demo() -> None:
         Unlike the previous types, this dictionary is stored directly as the browser session cookie, shared among all browser tabs for the same user.
         However, `app.storage.user` is generally preferred due to its advantages in reducing data payload, enhancing security, and offering larger storage capacity.
 
-    The user storage and browser storage are only available within `page-builder functions </documentation/page>`_
+    The user storage and browser storage are only available within `page builder functions </documentation/page>`_
     because they are accessing the underlying `Request` object from FastAPI.
     Additionally these two types require the `storage_secret` parameter in`ui.run()` to encrypt the browser session cookie.
     """
@@ -75,9 +75,11 @@ def more() -> None:
         The note is also shared between all tabs of the same user.
     ''')
     def ui_state():
+        from nicegui import app
+
         # @ui.page('/')
         # def index():
-        #    ui.textarea('This note is kept between visits') \
-        #       .classes('w-full').bind_value(app.storage.user, 'note')
+        #     ui.textarea('This note is kept between visits') \
+        #         .classes('w-full').bind_value(app.storage.user, 'note')
         # END OF DEMO
         ui.textarea('This note is kept between visits').classes('w-full').bind_value(app.storage.user, 'note')

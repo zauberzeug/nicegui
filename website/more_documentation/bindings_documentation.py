@@ -1,4 +1,4 @@
-from nicegui import app, ui
+from nicegui import ui
 
 from ..documentation_tools import text_demo
 
@@ -59,9 +59,11 @@ def more() -> None:
         The note is also shared between all tabs of the same user.
     ''')
     def ui_state():
+        from nicegui import app
+
         # @ui.page('/')
         # def index():
-        #    ui.textarea('This note is kept between visits') \
-        #       .classes('w-full').bind_value(app.storage.user, 'note')
+        #     ui.textarea('This note is kept between visits') \
+        #         .classes('w-full').bind_value(app.storage.user, 'note')
         # END OF DEMO
         ui.textarea('This note is kept between visits').classes('w-full').bind_value(app.storage.user, 'note')
