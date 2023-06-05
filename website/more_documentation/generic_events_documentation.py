@@ -54,7 +54,7 @@ def more() -> None:
             <script>
             document.addEventListener('visibilitychange', () => {{
                 if (document.visibilityState === 'visible')
-                    document.getElementById({tabwatch.id}).dispatchEvent(new CustomEvent('tabvisible'));
+                    getElement({tabwatch.id}).$emit('tabvisible');
             }});
             </script>
         ''')
@@ -63,6 +63,6 @@ def more() -> None:
         await ui.run_javascript(f'''
             document.addEventListener('visibilitychange', () => {{
                 if (document.visibilityState === 'visible')
-                    document.getElementById({tabwatch.id}).dispatchEvent(new CustomEvent('tabvisible'));
+                    getElement({tabwatch.id}).$emit('tabvisible');
             }});
         ''', respond=False)
