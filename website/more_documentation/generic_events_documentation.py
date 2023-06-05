@@ -18,7 +18,7 @@ def main_demo() -> None:
     The generic event handler can be synchronous or asynchronous and optionally takes an event dictionary as argument ("E").
     You can also specify which attributes of the JavaScript or Quasar event should be passed to the handler ("F").
     This can reduce the amount of data that needs to be transferred between the server and the client.
-"""
+    """
     with ui.row():
         ui.button('A', on_click=lambda: ui.notify('You clicked the button A.'))
         ui.button('B').on('click', lambda: ui.notify('You clicked the button B.'))
@@ -43,24 +43,26 @@ def more() -> None:
             ui.input('C').classes('w-12').on('keydown.once', lambda: ui.notify('You started typing.'))
 
     @text_demo('Custom events', '''
-        It's fairly easy to emit custom events from JavaScript which can be listened to with `element.on(...)`.
+        It is fairly easy to emit custom events from JavaScript which can be listened to with `element.on(...)`.
         This can be useful if you want to call Python code when something happens in JavaScript.
-        Like in this example where we are listening to the `visibilitychange` event of the browser tab.
+        In this example we are listening to the `visibilitychange` event of the browser tab.
     ''')
     async def custom_events() -> None:
         tabwatch = ui.checkbox('Watch browser tab re-entering') \
             .on('tabvisible', lambda: ui.notify('welcome back') if tabwatch.value else None)
-        ui.add_head_html(f'''<script>
-        document.addEventListener('visibilitychange', function() {{
-            if (document.visibilityState === 'visible')
-                document.getElementById({tabwatch.id}).dispatchEvent(new CustomEvent('tabvisible'))
-        }});
-        </script>''')
+        ui.add_head_html(f'''
+            <script>
+            document.addEventListener('visibilitychange', () => {{
+                if (document.visibilityState === 'visible')
+                    document.getElementById({tabwatch.id}).dispatchEvent(new CustomEvent('tabvisible'));
+            }});
+            </script>
+        ''')
         # END OF DEMO
         await globals.get_client().connected()
         await ui.run_javascript(f'''
-            document.addEventListener('visibilitychange', function() {{
+            document.addEventListener('visibilitychange', () => {{
                 if (document.visibilityState === 'visible')
-                    document.getElementById({tabwatch.id}).dispatchEvent(new CustomEvent('tabvisible'))
+                    document.getElementById({tabwatch.id}).dispatchEvent(new CustomEvent('tabvisible'));
             }});
         ''', respond=False)
