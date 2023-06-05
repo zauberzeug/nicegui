@@ -24,6 +24,11 @@
       <span>Connection lost.</span>
       <span>Trying to reconnect...</span>
     </div>
+    <script>
+      function getElement(id) {
+        return window.app.$refs["r" + id];
+      }
+    </script>
     <script type="module">
       const True = true;
       const False = false;
@@ -118,10 +123,6 @@
           }
         });
         return Vue.h(Vue.resolveComponent(element.tag), props, slots);
-      }
-
-      function getElement(id) {
-        return window.app.$refs['r' + id];
       }
 
       function runJavascript(code, request_id) {
