@@ -79,7 +79,8 @@ class Storage:
         """Small storage that is saved directly within the user's browser (encrypted cookie).
 
         The data is shared between all browser tabs and can only be modified before the initial request has been submitted.
-        It is normally better to use `app.storage.user` instead to reduce payload, gain improved security and have larger storage capacity.
+        Therefore is is normally better to use `app.storage.user` instead which can be modified anytime, 
+        reduces overall payload, improves security and has larger storage capacity.
         """
         request: Optional[Request] = request_contextvar.get()
         if request is None:
