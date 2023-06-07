@@ -12,11 +12,13 @@ register_component('select', __file__, 'select.js')
 
 class Select(ChoiceElement, DisableableElement):
 
-    def __init__(self, options: Union[List, Dict], *,
+    def __init__(self,
+                 options: Union[List, Dict], *,
                  label: Optional[str] = None,
                  value: Any = None,
                  on_change: Optional[Callable[..., Any]] = None,
                  with_input: bool = False,
+                 multiple: bool = False,
                  ) -> None:
         """Dropdown Selection
 
@@ -27,7 +29,15 @@ class Select(ChoiceElement, DisableableElement):
         :param value: the initial value
         :param on_change: callback to execute when selection changes
         :param with_input: whether to show an input field to filter the options
+        :param multiple: whether to allow multiple selections
         """
+        self.multiple = multiple
+        if multiple:
+            self.EVENT_ARGS = None
+            if value is None:
+                value = []
+            elif not isinstance(value, list):
+                value = [value]
         super().__init__(tag='select', options=options, value=value, on_change=on_change)
         if label is not None:
             self._props['label'] = label
@@ -37,6 +47,7 @@ class Select(ChoiceElement, DisableableElement):
             self._props['hide-selected'] = True
             self._props['fill-input'] = True
             self._props['input-debounce'] = 0
+        self._props['multiple'] = multiple
 
     def on_filter(self, event: Dict) -> None:
         self.options = [
@@ -47,11 +58,24 @@ class Select(ChoiceElement, DisableableElement):
         self.update()
 
     def _msg_to_value(self, msg: Dict) -> Any:
-        return self._values[msg['args']['value']]
+        if self.multiple:
+            return [self._values[arg['value']] for arg in msg['args']]
+        else:
+            return self._values[msg['args']['value']]
 
     def _value_to_model_value(self, value: Any) -> Any:
-        try:
-            index = self._values.index(value)
-            return {'value': index, 'label': self._labels[index]}
-        except ValueError:
-            return None
+        if self.multiple:
+            result = []
+            for item in value or []:
+                try:
+                    index = self._values.index(item)
+                    result.append({'value': index, 'label': self._labels[index]})
+                except ValueError:
+                    pass
+            return result
+        else:
+            try:
+                index = self._values.index(value)
+                return {'value': index, 'label': self._labels[index]}
+            except ValueError:
+                return None
