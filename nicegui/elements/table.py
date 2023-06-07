@@ -30,7 +30,7 @@ class Table(FilterElement):
         :param pagination: number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`)
         :param on_select: callback which is invoked when the selection changes
 
-        If selection is 'single' or 'multiple', then a `selection` property is accessible containing the selected rows.
+        If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
         """
         super().__init__(tag='q-table')
 
