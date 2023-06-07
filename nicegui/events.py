@@ -270,16 +270,6 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
-def run_coroutine(result: Awaitable, name: str, slot: Slot):
-    async def wait_for_result():
-        with slot:
-            await result
-    if globals.loop and globals.loop.is_running():
-        background_tasks.create(wait_for_result(), name=name)
-    else:
-        globals.app.on_startup(wait_for_result())
-
-
 def handle_event(handler: Optional[Callable[..., Any]],
                  arguments: Union[EventArguments, Dict], *,
                  sender: Optional['Element'] = None) -> None:
@@ -291,7 +281,14 @@ def handle_event(handler: Optional[Callable[..., Any]],
         assert sender is not None and sender.parent_slot is not None
         with sender.parent_slot:
             result = handler() if no_arguments else handler(arguments)
-        if is_coroutine(handler) or is_coroutine(result):
-            run_coroutine(result, str(handler), sender.parent_slot)
+        if is_coroutine(result):
+            async def wait_for_result():
+                with sender.parent_slot:
+                    await result
+            if globals.loop and globals.loop.is_running():
+                background_tasks.create(wait_for_result(), name=str(handler))
+            else:
+                globals.app.on_startup(wait_for_result())
+
     except Exception as e:
         globals.handle_exception(e)
