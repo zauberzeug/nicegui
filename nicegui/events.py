@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Any, BinaryIO, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Optional, Union
+
+from nicegui.slot import Slot
 
 from . import background_tasks, globals
 from .helpers import KWONLY_SLOTS, is_coroutine
@@ -268,24 +270,28 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
+def run_coroutine(result: Awaitable, name: str, slot: Slot):
+    async def wait_for_result():
+        with slot:
+            await result
+    if globals.loop and globals.loop.is_running():
+        background_tasks.create(wait_for_result(), name=name)
+    else:
+        globals.app.on_startup(wait_for_result())
+
+
 def handle_event(handler: Optional[Callable[..., Any]],
                  arguments: Union[EventArguments, Dict], *,
                  sender: Optional['Element'] = None) -> None:
+    if handler is None:
+        return
     try:
-        if handler is None:
-            return
         no_arguments = not any(p.default is Parameter.empty for p in signature(handler).parameters.values())
         sender = arguments.sender if isinstance(arguments, EventArguments) else sender
         assert sender is not None and sender.parent_slot is not None
         with sender.parent_slot:
             result = handler() if no_arguments else handler(arguments)
-        if is_coroutine(handler):
-            async def wait_for_result():
-                with sender.parent_slot:
-                    await result
-            if globals.loop and globals.loop.is_running():
-                background_tasks.create(wait_for_result(), name=str(handler))
-            else:
-                globals.app.on_startup(wait_for_result())
+        if is_coroutine(handler) or is_coroutine(result):
+            run_coroutine(result, str(handler), sender.parent_slot)
     except Exception as e:
         globals.handle_exception(e)

@@ -20,7 +20,7 @@ KWONLY_SLOTS = {'kw_only': True, 'slots': True} if sys.version_info >= (3, 10) e
 def is_coroutine(object: Any) -> bool:
     while isinstance(object, functools.partial):
         object = object.func
-    return asyncio.iscoroutinefunction(object)
+    return asyncio.iscoroutinefunction(object) or asyncio.iscoroutine(object)
 
 
 def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional['Client'] = None) -> None:

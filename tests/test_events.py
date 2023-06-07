@@ -26,21 +26,29 @@ async def click_async_with_args(_: ClickEventArguments):
     ui.label('click_async_with_args')
 
 
+async def click_lambda_with_async_and_parameters(msg: str):
+    await asyncio.sleep(0.1)
+    ui.label(f'click_lambda_with_async_and_parameters: {msg}')
+
+
 def test_click_events(screen: Screen):
     ui.button('click_sync_no_args', on_click=click_sync_no_args)
     ui.button('click_sync_with_args', on_click=click_sync_with_args)
     ui.button('click_async_no_args', on_click=click_async_no_args)
     ui.button('click_async_with_args', on_click=click_async_with_args)
+    ui.button('click_lambda_with_async_and_parameters', on_click=lambda: click_lambda_with_async_and_parameters('works'))
 
     screen.open('/')
     screen.click('click_sync_no_args')
     screen.click('click_sync_with_args')
     screen.click('click_async_no_args')
     screen.click('click_async_with_args')
+    screen.click('click_lambda_with_async_and_parameters')
     screen.should_contain('click_sync_no_args')
     screen.should_contain('click_sync_with_args')
     screen.should_contain('click_async_no_args')
     screen.should_contain('click_async_with_args')
+    screen.should_contain('click_lambda_with_async_and_parameters: works')
 
 
 def test_generic_events(screen: Screen):
