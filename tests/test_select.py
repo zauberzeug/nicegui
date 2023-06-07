@@ -48,3 +48,17 @@ def test_replace_select(screen: Screen):
     screen.click('Replace')
     screen.should_contain('B')
     screen.should_not_contain('A')
+
+
+def test_multi_select(screen: Screen):
+    s = ui.select(['Alice', 'Bob', 'Carol'], value='Alice', multiple=True).props('use-chips')
+    ui.label().bind_text_from(s, 'value', backward=str)
+
+    screen.open('/')
+    screen.should_contain("['Alice']")
+    screen.click('Alice')
+    screen.click('Bob')
+    screen.should_contain("['Alice', 'Bob']")
+
+    screen.click('cancel')  # remove icon
+    screen.should_contain("['Bob']")
