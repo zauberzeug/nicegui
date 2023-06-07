@@ -25,7 +25,7 @@ strategy = "rolling"
   protocol = "tcp"
   script_checks = []
   [services.concurrency]
-    hard_limit = 30
+    hard_limit = 20
     soft_limit = 12
     type = "connections"
 
