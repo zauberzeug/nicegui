@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Union
 
 from .. import globals
 from .mixins.disableable_element import DisableableElement
@@ -20,7 +20,11 @@ class Tabs(ValueElement):
         :param on_change: callback to be executed when the selected tab changes
         """
         super().__init__(tag='q-tabs', value=value, on_value_change=on_change)
-        self.panels: Optional[TabPanels] = None
+
+    def on_value_change(self, value: Any) -> None:
+        if isinstance(value, Tab):
+            value = value._props['name']
+        super().on_value_change(value)
 
 
 class Tab(DisableableElement):
@@ -68,13 +72,13 @@ class TabPanels(ValueElement):
 
 class TabPanel(DisableableElement):
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: Union[Tab, str]) -> None:
         """Tab Panel
 
         This element represents `Quasar's QTabPanel <https://quasar.dev/vue-components/tab-panels#qtabpanel-api>`_ component.
         It is a child of a `TabPanels` element.
 
-        :param name: name of the tab panel (the value of the `TabPanels` element)
+        :param name: a `ui.tab` object or the name of a `ui.tab` element as str
         """
         super().__init__(tag='q-tab-panel')
-        self._props['name'] = name
+        self._props['name'] = name if isinstance(name, str) else name._props['name']
