@@ -29,13 +29,13 @@ def more() -> None:
 
     @text_demo('Styling', '''
         Quasar has a lot of [props to change the appearance](https://quasar.dev/vue-components/input).
-        It's even possible to styling the underlying input with `input-style` and `input-class` props
+        It is even possible to style the underlying input with `input-style` and `input-class` props
         and use the provided slots to add custom elements.
     ''')
     async def styling():
         ui.input(placeholder='start typing').props('rounded outlined dense')
         ui.input('styling', value='some text') \
-            .props(f'input-style="color: blue" input-class="font-mono"')
+            .props('input-style="color: blue" input-class="font-mono"')
         with ui.input(value='custom clear button').classes('w-64') as i:
-            ui.button(color='orange-8', on_click=lambda: i.set_value('')) \
+            ui.button(color='orange-8', on_click=lambda: i.set_value(None)) \
                 .props('icon=delete flat dense').bind_visibility_from(i, 'value')
