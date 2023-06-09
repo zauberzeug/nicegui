@@ -53,13 +53,11 @@ def subheading(text: str, *, make_menu_entry: bool = True, more_link: Optional[s
 
 
 def render_docstring(doc: str, with_params: bool = True) -> ui.html:
-    doc = remove_indentation(doc)
-    doc = doc.replace('param ', '')
-    html = docutils.core.publish_parts(doc, writer_name='html5_polyglot')['html_body']
-    html = apply_tailwind(html)
     if not with_params:
-        html = re.sub(r'<dl class=".* simple">.*?</dl>', '', html, flags=re.DOTALL)
-    return ui.html(html).classes('documentation bold-links arrow-links')
+        doc = doc.split('###', 1)[0]
+    else:
+        doc = doc.replace('### Parameters', '')
+    return ui.markdown(doc).classes('bold-links arrow-links')
 
 
 class text_demo:

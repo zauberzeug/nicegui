@@ -14,13 +14,14 @@ class Icon(Element):
                  ) -> None:
         """Icon
 
-        This element is based on Quasar's `QIcon <https://quasar.dev/vue-components/icon>`_ component.
+        This element is based on Quasar's [QIcon](https://quasar.dev/vue-components/icon>) component.
 
-        `Here <https://material.io/icons/>`_ is a reference of possible names.
+        [Here](https://material.io/icons/>) is a reference of possible names.
 
-        :param name: name of the icon
-        :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem
-        :param color: icon color (either a Quasar, Tailwind, or CSS color or `None`, default: `None`)
+        ### Parameters
+        - `name`: name of the icon
+        - `size`: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem
+        - `color`: icon color (either a Quasar, Tailwind, or CSS color or `None`, default: `None`)
         """
         super().__init__('q-icon')
         self._props['name'] = name
