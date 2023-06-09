@@ -1,7 +1,7 @@
 <template>
-  <div class="q-pa-md position-relative">
-    <q-input v-model="query" color="white" placeholder="Search ..." />
-    <q-list class="search-results">
+  <div class="q-pa-md relative">
+    <q-input input-class="text-white" v-model="query" color="white" placeholder="Search ..." />
+    <q-list class="bg-primary absolute text-white w-full z-50 max-h-[200px] overflow-y-auto">
       <q-item clickable v-for="result in results" :key="result.item.title" @click="goTo(result.item.url)">
         <q-item-section>
           <q-item-label>{{ result.item.title }}</q-item-label>
@@ -10,22 +10,6 @@
     </q-list>
   </div>
 </template>
-
-<style>
-.position-relative {
-  position: relative;
-}
-
-.search-results {
-  position: absolute;
-  color: white;
-  width: 100%;
-  background: rgba(166, 222, 214, 0.519);
-  z-index: 9999;
-  max-height: 200px;
-  overflow-y: auto;
-}
-</style>
 
 <script>
 export default {
