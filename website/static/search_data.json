@@ -1,12 +1,288 @@
 [
   {
-    "title": "Introduction",
-    "content": "This is the introduction to our documentation...",
-    "url": "/docs/introduction"
+    "title": "Masonry or Pinterest-Style Layout",
+    "content": "To create a masonry/Pinterest layout, the normal `ui.column` can not be used. But it can be achieved with a few TailwindCSS classes.",
+    "url": "/docs/masonry"
   },
   {
-    "title": "Getting Started",
-    "content": "Here's how to get started with our project...",
-    "url": "/docs/getting_started"
+    "title": "Photos",
+    "content": "To use a photo as an avatar, you can use `ui.image` within `ui.avatar`.",
+    "url": "/docs/photos"
+  },
+  {
+    "title": "Upload restrictions",
+    "content": "In this demo, the upload is restricted to a maximum file size of 1 MB. When a file is rejected, a notification is shown.",
+    "url": "/docs/upload_restrictions"
+  },
+  {
+    "title": "Show file content",
+    "content": "In this demo, the uploaded markdown file is shown in a dialog.",
+    "url": "/docs/show_file_content"
+  },
+  {
+    "title": "Activate and deactivate a timer",
+    "content": "You can activate and deactivate a timer using the `active` property.",
+    "url": "/docs/activate_deactivate_demo"
+  },
+  {
+    "title": "Call a function after a delay",
+    "content": "You can call a function after a delay using a timer with the `once` parameter.",
+    "url": "/docs/call_after_delay_demo"
+  },
+  {
+    "title": "Select AG Grid Rows",
+    "content": "You can add checkboxes to grid cells to allow the user to select single or multiple rows.  To retrieve the currently selected rows, use the `get_selected_rows` method. This method returns a list of rows as dictionaries.  If `rowSelection` is set to `'single'` or to get the first selected row, you can also use the `get_selected_row` method. This method returns a single row as a dictionary or `None` if no row is selected.  See the [AG Grid documentation](https://www.ag-grid.com/javascript-data-grid/row-selection/#example-single-row-selection) for more information.",
+    "url": "/docs/aggrid_with_selectable_rows"
+  },
+  {
+    "title": "Filter Rows using Mini Filters",
+    "content": "You can add [mini filters](https://ag-grid.com/javascript-data-grid/filter-set-mini-filter/) to the header of each column to filter the rows.  Note how the \"agTextColumnFilter\" matches individual characters, like \"a\" in \"Alice\" and \"Carol\", while the \"agNumberColumnFilter\" matches the entire number, like \"18\" and \"21\", but not \"1\".",
+    "url": "/docs/aggrid_with_minifilters"
+  },
+  {
+    "title": "AG Grid with Conditional Cell Formatting",
+    "content": "This demo shows how to use [cellClassRules](https://www.ag-grid.com/javascript-grid-cell-styles/#cell-class-rules) to conditionally format cells based on their values. Since it is currently not possible to use the `cellClassRules` option in the `columnDefs` option, we use the `run_javascript` method to set the `cellClassRules` option after the grid has been created. The timer is used to delay the execution of the javascript code until the grid has been created. You can also use `app.on_connect` instead.",
+    "url": "/docs/aggrid_with_conditional_cell_formatting"
+  },
+  {
+    "title": "Create Grid from Pandas Dataframe",
+    "content": "You can create an AG Grid from a Pandas Dataframe using the `from_pandas` method. This method takes a Pandas Dataframe as input and returns an AG Grid.",
+    "url": "/docs/aggrid_from_pandas"
+  },
+  {
+    "title": "Throttle events with leading and trailing options",
+    "content": "By default the value change event of a slider is throttled to 0.05 seconds. This means that if you move the slider quickly, the value will only be updated every 0.05 seconds.  By default both \"leading\" and \"trailing\" events are activated. This means that the very first event is triggered immediately, and the last event is triggered after the throttle time.  This demo shows how disabling either of these options changes the behavior. To see the effect more clearly, the throttle time is set to 1 second. The first slider shows the default behavior, the second one only sends leading events, and the third only sends trailing events.",
+    "url": "/docs/throttle_events_with_leading_and_trailing_options"
+  },
+  {
+    "title": "Disable slider",
+    "content": "You can disable a slider with the `disable()` method. This will prevent the user from moving the slider. The slider will also be grayed out.",
+    "url": "/docs/disable_slider"
+  },
+  {
+    "title": "Change Appearance Depending on the Content",
+    "content": "You can overwrite the `on_text_change` method to update other attributes of a label depending on its content. This technique also works for bindings as shown in the example below.",
+    "url": "/docs/status"
+  },
+  {
+    "title": "Pages with Path Parameters",
+    "content": "Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/>). If type-annotated, they are automatically converted to bool, int, float and complex values. If the page function expects a `request` argument, the request object is automatically provided. The `client` argument provides access to the websocket connection, layout, etc.",
+    "url": "/docs/page_with_path_parameters_demo"
+  },
+  {
+    "title": "Wait for Client Connection",
+    "content": "To wait for a client connection, you can add a `client` argument to the decorated page function and await `client.connected()`. All code below that statement is executed after the websocket connection between server and client has been established.  For example, this allows you to run JavaScript commands; which is only possible with a client connection (see [#112](https://github.com/zauberzeug/nicegui/issues/112)). Also it is possible to do async stuff while the user already sees some content.",
+    "url": "/docs/wait_for_connected_demo"
+  },
+  {
+    "title": "Modularize with APIRouter",
+    "content": "You can use the NiceGUI specialization of [FastAPI's APIRouter](https://fastapi.tiangolo.com/tutorial/bigger-applications/?h=apirouter#apirouter) to modularize your code by grouping pages and other routes together. This is especially useful if you want to reuse the same prefix for multiple pages. The router and its pages can be neatly tugged away in a separate module (e.g. file) and the router is simply imported and included in the main app. See our [modularization example](https://github.com/zauberzeug/nicegui/blob/main/examples/modularization/example_c.py) for a multi-file app structure.",
+    "url": "/docs/api_router_demo"
+  },
+  {
+    "title": "Nesting elements",
+    "content": "You can nest elements inside an interactive image. Use Tailwind classes like \"absolute top-0 left-0\" to position the label absolutely with respect to the image. Of course this can be done with plain CSS as well.",
+    "url": "/docs/nesting_elements"
+  },
+  {
+    "title": "Expansion with Custom Header",
+    "content": "Instead of setting a plain-text title, you can fill the expansion header with UI elements by adding them to the \"header\" slot.",
+    "url": "/docs/expansion_with_custom_header"
+  },
+  {
+    "title": "Awaitable dialog",
+    "content": "Dialogs can be awaited. Use the `submit` method to close the dialog and return a result. Canceling the dialog by clicking in the background or pressing the escape key yields `None`.",
+    "url": "/docs/async_dialog_demo"
+  },
+  {
+    "title": "Replacing content",
+    "content": "The content of a dialog can be changed.",
+    "url": "/docs/replace_content"
+  },
+  {
+    "title": "Tree with custom header and body",
+    "content": "Scoped slots can be used to insert custom content into the header and body of a tree node. See the [Quasar documentation](https://quasar.dev/vue-components/tree#customize-content) for more information.",
+    "url": "/docs/tree_with_custom_header_and_body"
+  },
+  {
+    "title": "Table with expandable rows",
+    "content": "Scoped slots can be used to insert buttons that toggle the expand state of a table row. See the [Quasar documentation](https://quasar.dev/vue-components/table#expanding-rows) for more information.",
+    "url": "/docs/table_with_expandable_rows"
+  },
+  {
+    "title": "Show and hide columns",
+    "content": "Here is an example of how to show and hide columns in a table.",
+    "url": "/docs/show_and_hide_columns"
+  },
+  {
+    "title": "Table with drop down selection",
+    "content": "Here is an example of how to use a drop down selection in a table. After emitting a `rename` event from the scoped slot, the `rename` function updates the table rows.",
+    "url": "/docs/table_with_drop_down_selection"
+  },
+  {
+    "title": "Table from pandas dataframe",
+    "content": "Here is a demo of how to create a table from a pandas dataframe.",
+    "url": "/docs/table_from_pandas_demo"
+  },
+  {
+    "title": "Adding rows",
+    "content": "It's simple to add new rows with the `add_rows(dict)` method.",
+    "url": "/docs/adding_rows"
+  },
+  {
+    "title": "Notification Types",
+    "content": "There are different types that can be used to indicate the nature of the notification.",
+    "url": "/docs/notify_colors"
+  },
+  {
+    "title": "Multiline Notifications",
+    "content": "To allow a notification text to span multiple lines, it is sufficient to pass the `mutliLine` keyword with `True`. If manual newline breaks are required (e.g. ` `), you need to define a CSS style and pass it to the notification as shown in the example.",
+    "url": "/docs/multiline"
+  },
+  {
+    "title": "Counting page visits",
+    "content": "Here we are using the automatically available browser-stored session ID to count the number of unique page visits.",
+    "url": "/docs/page_visits"
+  },
+  {
+    "title": "Storing UI state",
+    "content": "Storage can also be used in combination with [`bindings`](/documentation/bindings). Here we are storing the value of a textarea between visits. The note is also shared between all tabs of the same user.",
+    "url": "/docs/ui_state"
+  },
+  {
+    "title": "Video start position",
+    "content": "This demo shows how to set the start position of a video.",
+    "url": "/docs/start_position_demo"
+  },
+  {
+    "title": "Input element with date picker",
+    "content": "This demo shows how to implement a date picker with an input element. We place an icon in the input element's append slot. When the icon is clicked, we open a menu with a date picker.  The date is bound to the input element's value. So both the input element and the date picker will stay in sync whenever the date is changed.",
+    "url": "/docs/date"
+  },
+  {
+    "title": "Date filter",
+    "content": "This demo shows how to filter the dates in a date picker. In order to pass a function to the date picker, we use the `:options` property. The leading `:` tells NiceGUI that the value is a JavaScript expression.",
+    "url": "/docs/date_filter"
+  },
+  {
+    "title": "The issue with nested borders",
+    "content": "The following example shows a table nested in a card. Cards have a default padding in NiceGUI, so the table is not flush with the card's border. The table has the `flat` and `bordered` props set, so it should have a border. However, due to the way QCard is designed, the border is not visible (first card). There are two ways to fix this:  - To get the original QCard behavior, use the `tight` method (second card). It removes the padding and the table border collapses with the card border.  - To preserve the padding _and_ the table border, move the table into another container like a `ui.row` (third card).  See https://github.com/zauberzeug/nicegui/issues/726 for more information.",
+    "url": "/docs/custom_context_menu"
+  },
+  {
+    "title": "Move elements",
+    "content": "This demo shows how to move elements between or within containers.",
+    "url": "/docs/move_elements"
+  },
+  {
+    "title": "Advanced usage",
+    "content": "This demo shows all the slots and parameters including a tooltip, a custom separator, and a callback.",
+    "url": "/docs/advanced_usage"
+  },
+  {
+    "title": "Image fun",
+    "content": "This demo shows how to use the splitter to display images side by side.",
+    "url": "/docs/image_fun"
+  },
+  {
+    "title": "Search-as-you-type",
+    "content": "You can activate `with_input` to get a text input with autocompletion. The options will be filtered as you type.",
+    "url": "/docs/search_as_you_type"
+  },
+  {
+    "title": "Multi selection",
+    "content": "You can activate `multiple` to allow the selection of more than one item.",
+    "url": "/docs/multi_select"
+  },
+  {
+    "title": "Dictionary interface",
+    "content": "This demo shows how to use the declarative dictionary interface to create a plot. For plots with many traces and data points, this is more efficient than the object-oriented interface. The definition corresponds to the [JavaScript Plotly API](https://plotly.com/javascript/). Due to different defaults, the resulting plot may look slightly different from the same plot created with the object-oriented interface, but the functionality is the same.",
+    "url": "/docs/plot_dict_interface"
+  },
+  {
+    "title": "Plot updates",
+    "content": "This demo shows how to update the plot in real time. Click the button to add a new trace to the plot. To send the new plot to the browser, make sure to explicitly call `plot.update()` or `ui.update(plot)`.",
+    "url": "/docs/plot_updates"
+  },
+  {
+    "title": "Markdown with indentation",
+    "content": "Common indentation is automatically stripped from the beginning of each line. So you can indent markdown elements, and they will still be rendered correctly.",
+    "url": "/docs/markdown_with_indentation"
+  },
+  {
+    "title": "Markdown with code blocks",
+    "content": "You can use code blocks to show code examples. If you specify the language after the opening triple backticks, the code will be syntax highlighted. See [the Pygments website](https://pygments.org/languages/) for a list of supported languages.",
+    "url": "/docs/markdown_with_code_blocks"
+  },
+  {
+    "title": "Markdown tables",
+    "content": "By activating the \"tables\" extra, you can use Markdown tables. See the [markdown2 documentation](https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras) for a list of available extras.",
+    "url": "/docs/markdown_with_code_blocks"
+  },
+  {
+    "title": "Modifiers",
+    "content": "You can also include [key modifiers](https://vuejs.org/guide/essentials/event-handling.html#key-modifiers>) (shown in input \"A\"), modifier combinations (shown in input \"B\"), and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mouse-button-modifiers>) (shown in input \"C\").",
+    "url": "/docs/modifiers"
+  },
+  {
+    "title": "Bind to dictionary",
+    "content": "Here we are binding the text of labels to a dictionary.",
+    "url": "/docs/bind_dictionary"
+  },
+  {
+    "title": "Bind to variable",
+    "content": "Here we are binding the value from the datepicker to a bare variable. Therefore we use the dictionary `globals()` which contains all global variables. This demo is based on the [official datepicker example](/documentation/date#input_element_with_date_picker).",
+    "url": "/docs/bind_variable"
+  },
+  {
+    "title": "Bind to storage",
+    "content": "Bindings also work with [`app.storage`](/documentation/storage). Here we are storing the value of a textarea between visits. The note is also shared between all tabs of the same user.",
+    "url": "/docs/ui_state"
+  },
+  {
+    "title": "Handling Click Events",
+    "content": "You can use the `on_click` argument to `ui.scene` to handle click events. The callback receives a `SceneClickEventArguments` object with the following attributes:  - `click_type`: the type of click (\"click\" or \"dblclick\"). - `button`: the button that was clicked (1, 2, or 3). - `alt`, `ctrl`, `meta`, `shift`: whether the alt, ctrl, meta, or shift key was pressed. - `hits`: a list of `SceneClickEventHit` objects, sorted by distance from the camera.  The `SceneClickEventHit` object has the following attributes:  - `object_id`: the id of the object that was clicked. - `object_name`: the name of the object that was clicked. - `x`, `y`, `z`: the x, y and z coordinates of the click.",
+    "url": "/docs/click_events"
+  },
+  {
+    "title": "Emoji favicon",
+    "content": "You can use an emoji as favicon. This works in Chrome, Firefox and Safari.",
+    "url": "/docs/emoji_favicon"
+  },
+  {
+    "title": "Base64 favicon",
+    "content": "You can also use an base64-encoded image as favicon.",
+    "url": "/docs/base64_favicon"
+  },
+  {
+    "title": "SVG favicon",
+    "content": "And directly use an SVG as favicon. Works in Chrome, Firefox and Safari.",
+    "url": "/docs/svg_favicon"
+  },
+  {
+    "title": "HTML text",
+    "content": "Using the `text_html` parameter, you can send HTML text to the chat.",
+    "url": "/docs/html_text"
+  },
+  { "title": "Newline", "content": "You can use newlines in the chat message.", "url": "/docs/newline" },
+  {
+    "title": "Multi-part messages",
+    "content": "You can send multiple message parts by passing a list of strings.",
+    "url": "/docs/multiple_messages"
+  },
+  {
+    "title": "Navigate on large pages",
+    "content": "To jump to a specific location within a page you can place linkable anchors with `ui.link_target('target_name')` or simply pass a NiceGUI element as link target.",
+    "url": "/docs/same_page_links"
+  },
+  {
+    "title": "Links to other pages",
+    "content": "You can link to other pages by providing the link target as path or function reference.",
+    "url": "/docs/link_to_other_page"
+  },
+  {
+    "title": "Set background gradient",
+    "content": "It's easy to set a background gradient, image or similar. See [w3schools.com](https://www.w3schools.com/cssref/pr_background-image.php) for more information about setting background with CSS.",
+    "url": "/docs/background_image"
   }
 ]
