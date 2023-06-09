@@ -34,6 +34,7 @@ app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_
 
 app.add_static_files('/favicon', str(Path(__file__).parent / 'website' / 'favicon'))
 app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
+app.add_static_files('/static', str(Path(__file__).parent / 'website' / 'static'))
 
 
 @app.get('/logo.png')

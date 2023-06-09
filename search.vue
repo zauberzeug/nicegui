@@ -17,19 +17,7 @@ export default {
     return {
       query: "",
       results: [],
-      documents: [
-        {
-          title: "Introduction",
-          content: "This is the introduction to our documentation...",
-          url: "/docs/introduction",
-        },
-        {
-          title: "Getting Started",
-          content: "Here's how to get started with our project...",
-          url: "/docs/getting_started",
-        },
-        // More documents...
-      ],
+      documents: [],
       fuse: null,
     };
   },
@@ -40,22 +28,24 @@ export default {
     },
   },
 
-  created() {
+  async created() {
+    let response = await fetch("/static/documentation_index.json");
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    this.documents = await response.json();
     let options = {
       keys: ["title", "content"],
     };
-
     this.fuse = new Fuse(this.documents, options);
   },
 
   methods: {
     search() {
       this.results = this.fuse.search(this.query);
-      console.log(this.results);
     },
-
     goTo(url) {
-      this.$router.push(url);
+      window.location.href = url;
     },
   },
 };

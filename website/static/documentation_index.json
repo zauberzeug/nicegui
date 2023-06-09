@@ -1,0 +1,12 @@
+[
+  {
+    "title": "Introduction",
+    "content": "This is the introduction to our documentation...",
+    "url": "/docs/introduction"
+  },
+  {
+    "title": "Getting Started",
+    "content": "Here's how to get started with our project...",
+    "url": "/docs/getting_started"
+  }
+]
