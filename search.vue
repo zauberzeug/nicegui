@@ -17,7 +17,7 @@ export default {
     return {
       query: "",
       results: [],
-      documents: [],
+      searchData: [],
       fuse: null,
     };
   },
@@ -29,15 +29,15 @@ export default {
   },
 
   async created() {
-    let response = await fetch("/static/documentation_index.json");
+    let response = await fetch("/static/search_data.json");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    this.documents = await response.json();
+    this.searchData = await response.json();
     let options = {
       keys: ["title", "content"],
     };
-    this.fuse = new Fuse(this.documents, options);
+    this.fuse = new Fuse(this.searchData, options);
   },
 
   methods: {
