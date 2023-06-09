@@ -20,6 +20,7 @@ import prometheus
 from nicegui import Client, app
 from nicegui import globals as nicegui_globals
 from nicegui import ui
+from search import search
 from website import documentation, example_card, svg
 from website.demo import bash_window, browser_window, python_window
 from website.documentation_tools import create_anchor_name, element_demo, generate_class_doc
@@ -83,6 +84,7 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
         with ui.row().classes('max-lg:hidden'):
             for title, target in menu_items.items():
                 ui.link(title, target).classes(replace='text-lg text-white')
+        search()
         with ui.link(target='https://discord.gg/TEpFeAaF4f').classes('max-[435px]:hidden').tooltip('Discord'):
             svg.discord().classes('fill-white scale-125 m-1')
         with ui.link(target='https://www.reddit.com/r/nicegui/').classes('max-[385px]:hidden').tooltip('Reddit'):
