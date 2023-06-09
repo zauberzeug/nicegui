@@ -166,26 +166,7 @@ def create_full() -> None:
 
     load_demo(ui.expansion)
     load_demo(ui.splitter)
-
-    @text_demo('Tabs', '''
-        The elements `ui.tabs`, `ui.tab`, `ui.tab_panels`, and `ui.tab_panel` resemble
-        [Quasar's tabs](https://quasar.dev/vue-components/tabs)
-        and [tab panels](https://quasar.dev/vue-components/tab-panels) API.
-
-        `ui.tabs` creates a container for the tabs. This could be placed in a `ui.header` for example.
-        `ui.tab_panels` creates a container for the tab panels with the actual content.
-    ''')
-    def tabs_demo():
-        with ui.tabs() as tabs:
-            ui.tab('Home', icon='home')
-            ui.tab('About', icon='info')
-
-        with ui.tab_panels(tabs, value='Home'):
-            with ui.tab_panel('Home'):
-                ui.label('This is the first tab')
-            with ui.tab_panel('About'):
-                ui.label('This is the second tab')
-
+    load_demo(ui.tabs)
     load_demo(ui.menu)
 
     @text_demo('Tooltips', '''
