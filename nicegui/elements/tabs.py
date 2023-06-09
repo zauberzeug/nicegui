@@ -65,7 +65,8 @@ class TabPanels(ValueElement):
         :param on_change: callback to be executed when the visible tab panel changes
         :param animated: whether the tab panels should be animated (default: `True`)
         """
-        super().__init__(tag='q-tab-panels', value=value, on_value_change=on_change)
+        value_str = value._props['name'] if isinstance(value, Tab) else value
+        super().__init__(tag='q-tab-panels', value=value_str, on_value_change=on_change)
         tabs.bind_value(self, 'value')
         self._props['animated'] = animated
 
