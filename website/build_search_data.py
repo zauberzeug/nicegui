@@ -2,8 +2,6 @@
 import ast
 import json
 import os
-import textwrap
-import urllib.parse
 from pathlib import Path
 
 from icecream import ic
@@ -24,12 +22,11 @@ class DemoVisitor(ast.NodeVisitor):
                 function = decorator.func
                 if isinstance(function, ast.Name) and function.id == 'text_demo':
                     title = decorator.args[0].s
-                    ic(self.topic, title)
                     content = ' '.join([l.strip() for l in decorator.args[1].s.splitlines()]).strip()
                     anchor = title.lower().replace(' ', '_')
                     url = f'/documentation/{self.topic}#{anchor}'
                     documents.append({
-                        'title': title,
+                        'title': f'{self.topic}: {title}',
                         'content': content,
                         'url': url
                     })
@@ -40,7 +37,7 @@ documents = []
 for file in Path('./more_documentation').glob('*.py'):
     with open(file, 'r') as source:
         tree = ast.parse(source.read())
-        DemoVisitor(file.stem.split('_')[0]).visit(tree)
+        DemoVisitor('_'.join(file.stem.split('_')[:-1])).visit(tree)
 
 with open('static/search_data.json', 'w') as f:
     json.dump(documents, f, indent=2)
