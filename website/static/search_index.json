@@ -310,6 +310,16 @@
     "url": "/documentation/icon"
   },
   {
+    "title": "Icon: Eva icons",
+    "content": "You can use Eva icons in your app.",
+    "url": "/documentation/icon#eva_icons"
+  },
+  {
+    "title": "Icon: Lottie files",
+    "content": "You can also use Lottie files with animations.",
+    "url": "/documentation/icon#lottie_files"
+  },
+  {
     "title": "Download",
     "content": "Function to trigger the download of a file.  :param url: target URL of the file to download :param filename: name of the file to download (default: name of the file on the server)",
     "url": "/documentation/download"
@@ -348,6 +358,16 @@
     "title": "Button",
     "content": "This element is based on Quasar's QBtn <https://quasar.dev/vue-components/button>_ component.  The `color parameter accepts a Quasar color, a Tailwind color, or a CSS color. If a Quasar color is used, the button will be styled according to the Quasar theme including the color of the text. Note that there are colors like \"red\" being both a Quasar color and a CSS color. In such cases the Quasar color will be used.  :param text: the label of the button :param on_click: callback which is invoked when button is pressed :param color: the color of the button (either a Quasar, Tailwind, or CSS color or None`, default: 'primary')",
     "url": "/documentation/button"
+  },
+  {
+    "title": "Button: Icons",
+    "content": "You can also add an icon to a button.",
+    "url": "/documentation/button#icons"
+  },
+  {
+    "title": "Button: Await button click",
+    "content": "Sometimes it is convenient to wait for a button click before continuing the execution.",
+    "url": "/documentation/button#await_button_click"
   },
   {
     "title": "Spinner",
@@ -478,6 +498,21 @@
     "title": "Text Input",
     "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  The on_change event is called on every keystroke and the value updates accordingly. If you want to wait until the user confirms the input, you can register a custom event callback, e.g. ui.input(...).on('keydown.enter', ...) or ui.input(...).on('blur', ...).  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed label for the text input :param placeholder: text to show if no value is entered :param value: the current value of the text input :param password: whether to hide the input (default: False) :param password_toggle_button: whether to show a button to toggle the password visibility (default: False) :param on_change: callback to execute when the value changes :param autocomplete: optional list of strings for autocompletion :param validation: dictionary of validation rules, e.g. `'Too short!': lambda value: len(value) < 3`",
     "url": "/documentation/input"
+  },
+  {
+    "title": "Input: Autocompletion",
+    "content": "The autocomplete feature provides suggestions as you type, making input easier and faster. The parameter options is a list of strings that contains the available options that will appear.",
+    "url": "/documentation/input#autocompletion"
+  },
+  {
+    "title": "Input: Clearable",
+    "content": "The clearable prop from Quasar adds a button to the input that clears the text.",
+    "url": "/documentation/input#clearable"
+  },
+  {
+    "title": "Input: Styling",
+    "content": "Quasar has a lot of props to change the appearance. It is even possible to style the underlying input with input-style and input-class props and use the provided slots to add custom elements.",
+    "url": "/documentation/input#styling"
   },
   {
     "title": "Chart",
@@ -650,6 +685,11 @@
     "url": "/documentation/textarea"
   },
   {
+    "title": "Textarea: Clearable",
+    "content": "The clearable prop from Quasar adds a button to the input that clears the text.",
+    "url": "/documentation/textarea#clearable"
+  },
+  {
     "title": "Video",
     "content": ":param src: URL of the video source :param controls: whether to show the video controls, like play, pause, and volume (default: True) :param autoplay: whether to start playing the video automatically (default: False) :param muted: whether the video should be initially muted (default: False) :param loop: whether the video should loop (default: False)  See here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events>_ for a list of events you can subscribe to using the generic event subscription on().",
     "url": "/documentation/video"
@@ -725,6 +765,11 @@
     "url": "/documentation/image"
   },
   {
+    "title": "Image: Lottie files",
+    "content": "You can also use Lottie files with animations.",
+    "url": "/documentation/image#lottie_files"
+  },
+  {
     "title": "Color Theming",
     "content": "Sets the main colors (primary, secondary, accent, ...) used by Quasar <https://quasar.dev/>_.",
     "url": "/documentation/colors"
@@ -733,6 +778,11 @@
     "title": "Number Input",
     "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed name for the number input :param placeholder: text to show if no value is entered :param value: the initial value of the field :param min: the minimum value allowed :param max: the maximum value allowed :param step: the step size for the stepper buttons :param prefix: a prefix to prepend to the displayed value :param suffix: a suffix to append to the displayed value :param format: a string like \"%.2f\" to format the displayed value :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. `'Too small!': lambda value: value < 3`",
     "url": "/documentation/number"
+  },
+  {
+    "title": "Number: Clearable",
+    "content": "The clearable prop from Quasar adds a button to the input that clears the text.",
+    "url": "/documentation/number#clearable"
   },
   {
     "title": "Dropdown Selection",
@@ -808,6 +858,11 @@
     "title": "Generic Events: Modifiers",
     "content": "You can also include key modifiers (shown in input \"A\"), modifier combinations (shown in input \"B\"), and event modifiers (shown in input \"C\").",
     "url": "/documentation/generic_events#modifiers"
+  },
+  {
+    "title": "Generic Events: Custom events",
+    "content": "It is fairly easy to emit custom events from JavaScript which can be listened to with element.on(...). This can be useful if you want to call Python code when something happens in JavaScript. In this example we are listening to the visibilitychange event of the browser tab.",
+    "url": "/documentation/generic_events#custom_events"
   },
   {
     "title": "Pyplot Context",

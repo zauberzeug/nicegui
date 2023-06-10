@@ -3,8 +3,9 @@ import ast
 import json
 import os
 import re
+from _ast import AsyncFunctionDef
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
 
 from icecream import ic
 
@@ -66,6 +67,9 @@ class DocVisitor(ast.NodeVisitor):
             self.add_to_search_index(self.current_title, self.current_content if self.current_content else 'Overview')
             self.current_content = []
 
+    def visit_AsyncFunctionDef(self, node: AsyncFunctionDef) -> None:
+        self.visit_FunctionDef(node)
+
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         if node.name == 'main_demo':
             docstring = ast.get_docstring(node)
@@ -77,11 +81,13 @@ class DocVisitor(ast.NodeVisitor):
 
         for decorator in node.decorator_list:
             if isinstance(decorator, ast.Call):
+                ic(decorator.func)
                 function = decorator.func
                 if isinstance(function, ast.Name) and function.id == 'text_demo':
                     title = decorator.args[0].s
                     content = cleanup(decorator.args[1].s).splitlines()
                     self.add_to_search_index(title, content)
+        ic(node.name)
         self.generic_visit(node)
 
     def add_to_search_index(self, title: str, content: Union[str, list], main: bool = False) -> None:
@@ -124,6 +130,7 @@ class MainVisitor(ast.NodeVisitor):
 
 def generate_for(file: Path, topic: Optional[str] = None) -> None:
     with open(file, 'r') as source:
+        ic(file)
         tree = ast.parse(source.read())
         doc_visitor = DocVisitor(topic)
         doc_visitor.visit(tree)
