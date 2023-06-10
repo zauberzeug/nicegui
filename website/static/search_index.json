@@ -140,6 +140,11 @@
     "url": "/documentation/notify#multiline_notifications"
   },
   {
+    "title": "Storage",
+    "content": "NiceGUI offers a straightforward method for data persistence within your application. It features three built-in storage types:  - `app.storage.user`: Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie. Unique to each user, this storage is accessible across all their browser tabs. - `app.storage.general`: Also stored server-side, this dictionary provides a shared storage space accessible to all users. - `app.storage.browser`: Unlike the previous types, this dictionary is stored directly as the browser session cookie, shared among all browser tabs for the same user. However, `app.storage.user` is generally preferred due to its advantages in reducing data payload, enhancing security, and offering larger storage capacity.  The user storage and browser storage are only available within `page builder functions </documentation/page>`_ because they are accessing the underlying `Request` object from FastAPI. Additionally these two types require the `storage_secret` parameter in`ui.run()` to encrypt the browser session cookie.",
+    "url": "/documentation/storage"
+  },
+  {
     "title": "Storage: Counting page visits",
     "content": "Here we are using the automatically available browser-stored session ID to count the number of unique page visits.",
     "url": "/documentation/storage#counting_page_visits"
@@ -220,9 +225,19 @@
     "url": "/documentation/markdown#markdown_tables"
   },
   {
+    "title": "Generic Events",
+    "content": "Most UI elements come with predefined events. For example, a `ui.button` like \"A\" in the demo has an `on_click` parameter that expects a coroutine or function. But you can also use the `on` method to register a generic event handler like for \"B\". This allows you to register handlers for any event that is supported by JavaScript and Quasar.  For example, you can register a handler for the `mousemove` event like for \"C\", even though there is no `on_mousemove` parameter for `ui.button`. Some events, like `mousemove`, are fired very often. To avoid performance issues, you can use the `throttle` parameter to only call the handler every `throttle` seconds (\"D\").  The generic event handler can be synchronous or asynchronous and optionally takes an event dictionary as argument (\"E\"). You can also specify which attributes of the JavaScript or Quasar event should be passed to the handler (\"F\"). This can reduce the amount of data that needs to be transferred between the server and the client.",
+    "url": "/documentation/generic_events"
+  },
+  {
     "title": "Generic Events: Modifiers",
     "content": "You can also include [key modifiers](https://vuejs.org/guide/essentials/event-handling.html#key-modifiers>) (shown in input \"A\"), modifier combinations (shown in input \"B\"), and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mouse-button-modifiers>) (shown in input \"C\").",
     "url": "/documentation/generic_events#modifiers"
+  },
+  {
+    "title": "Bindings",
+    "content": "NiceGUI is able to directly bind UI elements to models. Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes. Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property. To define a one-way binding use the `_from` and `_to` variants of these methods. Just pass a property of the model as parameter to these methods to create the binding.",
+    "url": "/documentation/bindings"
   },
   {
     "title": "Bindings: Bind to dictionary",
