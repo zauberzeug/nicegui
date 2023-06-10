@@ -39,5 +39,5 @@ for file in Path('./more_documentation').glob('*.py'):
         tree = ast.parse(source.read())
         DemoVisitor('_'.join(file.stem.split('_')[:-1])).visit(tree)
 
-with open('static/search_data.json', 'w') as f:
+with open('static/search_index.json', 'w') as f:
     json.dump(documents, f, indent=2)

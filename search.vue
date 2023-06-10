@@ -34,7 +34,7 @@ export default {
   },
 
   async created() {
-    let response = await fetch("/static/search_data.json");
+    let response = await fetch("/static/search_index.json");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
