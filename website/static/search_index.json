@@ -1,291 +1,291 @@
 [
   {
-    "title": "column: Masonry or Pinterest-Style Layout",
+    "title": "Column: Masonry or Pinterest-Style Layout",
     "content": "To create a masonry/Pinterest layout, the normal `ui.column` can not be used. But it can be achieved with a few TailwindCSS classes.",
     "url": "/documentation/column#masonry_or_pinterest-style_layout"
   },
   {
-    "title": "avatar: Photos",
+    "title": "Avatar: Photos",
     "content": "To use a photo as an avatar, you can use `ui.image` within `ui.avatar`.",
     "url": "/documentation/avatar#photos"
   },
   {
-    "title": "upload: Upload restrictions",
+    "title": "Upload: Upload restrictions",
     "content": "In this demo, the upload is restricted to a maximum file size of 1 MB. When a file is rejected, a notification is shown.",
     "url": "/documentation/upload#upload_restrictions"
   },
   {
-    "title": "upload: Show file content",
+    "title": "Upload: Show file content",
     "content": "In this demo, the uploaded markdown file is shown in a dialog.",
     "url": "/documentation/upload#show_file_content"
   },
   {
-    "title": "timer: Activate and deactivate a timer",
+    "title": "Timer: Activate and deactivate a timer",
     "content": "You can activate and deactivate a timer using the `active` property.",
     "url": "/documentation/timer#activate_and_deactivate_a_timer"
   },
   {
-    "title": "timer: Call a function after a delay",
+    "title": "Timer: Call a function after a delay",
     "content": "You can call a function after a delay using a timer with the `once` parameter.",
     "url": "/documentation/timer#call_a_function_after_a_delay"
   },
   {
-    "title": "aggrid: Select AG Grid Rows",
+    "title": "Aggrid: Select AG Grid Rows",
     "content": "You can add checkboxes to grid cells to allow the user to select single or multiple rows.  To retrieve the currently selected rows, use the `get_selected_rows` method. This method returns a list of rows as dictionaries.  If `rowSelection` is set to `'single'` or to get the first selected row, you can also use the `get_selected_row` method. This method returns a single row as a dictionary or `None` if no row is selected.  See the [AG Grid documentation](https://www.ag-grid.com/javascript-data-grid/row-selection/#example-single-row-selection) for more information.",
     "url": "/documentation/aggrid#select_ag_grid_rows"
   },
   {
-    "title": "aggrid: Filter Rows using Mini Filters",
+    "title": "Aggrid: Filter Rows using Mini Filters",
     "content": "You can add [mini filters](https://ag-grid.com/javascript-data-grid/filter-set-mini-filter/) to the header of each column to filter the rows.  Note how the \"agTextColumnFilter\" matches individual characters, like \"a\" in \"Alice\" and \"Carol\", while the \"agNumberColumnFilter\" matches the entire number, like \"18\" and \"21\", but not \"1\".",
     "url": "/documentation/aggrid#filter_rows_using_mini_filters"
   },
   {
-    "title": "aggrid: AG Grid with Conditional Cell Formatting",
+    "title": "Aggrid: AG Grid with Conditional Cell Formatting",
     "content": "This demo shows how to use [cellClassRules](https://www.ag-grid.com/javascript-grid-cell-styles/#cell-class-rules) to conditionally format cells based on their values. Since it is currently not possible to use the `cellClassRules` option in the `columnDefs` option, we use the `run_javascript` method to set the `cellClassRules` option after the grid has been created. The timer is used to delay the execution of the javascript code until the grid has been created. You can also use `app.on_connect` instead.",
     "url": "/documentation/aggrid#ag_grid_with_conditional_cell_formatting"
   },
   {
-    "title": "aggrid: Create Grid from Pandas Dataframe",
+    "title": "Aggrid: Create Grid from Pandas Dataframe",
     "content": "You can create an AG Grid from a Pandas Dataframe using the `from_pandas` method. This method takes a Pandas Dataframe as input and returns an AG Grid.",
     "url": "/documentation/aggrid#create_grid_from_pandas_dataframe"
   },
   {
-    "title": "slider: Throttle events with leading and trailing options",
+    "title": "Slider: Throttle events with leading and trailing options",
     "content": "By default the value change event of a slider is throttled to 0.05 seconds. This means that if you move the slider quickly, the value will only be updated every 0.05 seconds.  By default both \"leading\" and \"trailing\" events are activated. This means that the very first event is triggered immediately, and the last event is triggered after the throttle time.  This demo shows how disabling either of these options changes the behavior. To see the effect more clearly, the throttle time is set to 1 second. The first slider shows the default behavior, the second one only sends leading events, and the third only sends trailing events.",
     "url": "/documentation/slider#throttle_events_with_leading_and_trailing_options"
   },
   {
-    "title": "slider: Disable slider",
+    "title": "Slider: Disable slider",
     "content": "You can disable a slider with the `disable()` method. This will prevent the user from moving the slider. The slider will also be grayed out.",
     "url": "/documentation/slider#disable_slider"
   },
   {
-    "title": "label: Change Appearance Depending on the Content",
+    "title": "Label: Change Appearance Depending on the Content",
     "content": "You can overwrite the `on_text_change` method to update other attributes of a label depending on its content. This technique also works for bindings as shown in the example below.",
     "url": "/documentation/label#change_appearance_depending_on_the_content"
   },
   {
-    "title": "page: Pages with Path Parameters",
+    "title": "Page: Pages with Path Parameters",
     "content": "Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/>). If type-annotated, they are automatically converted to bool, int, float and complex values. If the page function expects a `request` argument, the request object is automatically provided. The `client` argument provides access to the websocket connection, layout, etc.",
     "url": "/documentation/page#pages_with_path_parameters"
   },
   {
-    "title": "page: Wait for Client Connection",
+    "title": "Page: Wait for Client Connection",
     "content": "To wait for a client connection, you can add a `client` argument to the decorated page function and await `client.connected()`. All code below that statement is executed after the websocket connection between server and client has been established.  For example, this allows you to run JavaScript commands; which is only possible with a client connection (see [#112](https://github.com/zauberzeug/nicegui/issues/112)). Also it is possible to do async stuff while the user already sees some content.",
     "url": "/documentation/page#wait_for_client_connection"
   },
   {
-    "title": "page: Modularize with APIRouter",
+    "title": "Page: Modularize with APIRouter",
     "content": "You can use the NiceGUI specialization of [FastAPI's APIRouter](https://fastapi.tiangolo.com/tutorial/bigger-applications/?h=apirouter#apirouter) to modularize your code by grouping pages and other routes together. This is especially useful if you want to reuse the same prefix for multiple pages. The router and its pages can be neatly tugged away in a separate module (e.g. file) and the router is simply imported and included in the main app. See our [modularization example](https://github.com/zauberzeug/nicegui/blob/main/examples/modularization/example_c.py) for a multi-file app structure.",
     "url": "/documentation/page#modularize_with_apirouter"
   },
   {
-    "title": "interactive_image: Nesting elements",
+    "title": "Interactive Image: Nesting elements",
     "content": "You can nest elements inside an interactive image. Use Tailwind classes like \"absolute top-0 left-0\" to position the label absolutely with respect to the image. Of course this can be done with plain CSS as well.",
     "url": "/documentation/interactive_image#nesting_elements"
   },
   {
-    "title": "expansion: Expansion with Custom Header",
+    "title": "Expansion: Expansion with Custom Header",
     "content": "Instead of setting a plain-text title, you can fill the expansion header with UI elements by adding them to the \"header\" slot.",
     "url": "/documentation/expansion#expansion_with_custom_header"
   },
   {
-    "title": "dialog: Awaitable dialog",
+    "title": "Dialog: Awaitable dialog",
     "content": "Dialogs can be awaited. Use the `submit` method to close the dialog and return a result. Canceling the dialog by clicking in the background or pressing the escape key yields `None`.",
     "url": "/documentation/dialog#awaitable_dialog"
   },
   {
-    "title": "dialog: Replacing content",
+    "title": "Dialog: Replacing content",
     "content": "The content of a dialog can be changed.",
     "url": "/documentation/dialog#replacing_content"
   },
   {
-    "title": "tree: Tree with custom header and body",
+    "title": "Tree: Tree with custom header and body",
     "content": "Scoped slots can be used to insert custom content into the header and body of a tree node. See the [Quasar documentation](https://quasar.dev/vue-components/tree#customize-content) for more information.",
     "url": "/documentation/tree#tree_with_custom_header_and_body"
   },
   {
-    "title": "table: Table with expandable rows",
+    "title": "Table: Table with expandable rows",
     "content": "Scoped slots can be used to insert buttons that toggle the expand state of a table row. See the [Quasar documentation](https://quasar.dev/vue-components/table#expanding-rows) for more information.",
     "url": "/documentation/table#table_with_expandable_rows"
   },
   {
-    "title": "table: Show and hide columns",
+    "title": "Table: Show and hide columns",
     "content": "Here is an example of how to show and hide columns in a table.",
     "url": "/documentation/table#show_and_hide_columns"
   },
   {
-    "title": "table: Table with drop down selection",
+    "title": "Table: Table with drop down selection",
     "content": "Here is an example of how to use a drop down selection in a table. After emitting a `rename` event from the scoped slot, the `rename` function updates the table rows.",
     "url": "/documentation/table#table_with_drop_down_selection"
   },
   {
-    "title": "table: Table from pandas dataframe",
+    "title": "Table: Table from pandas dataframe",
     "content": "Here is a demo of how to create a table from a pandas dataframe.",
     "url": "/documentation/table#table_from_pandas_dataframe"
   },
   {
-    "title": "table: Adding rows",
+    "title": "Table: Adding rows",
     "content": "It's simple to add new rows with the `add_rows(dict)` method.",
     "url": "/documentation/table#adding_rows"
   },
   {
-    "title": "notify: Notification Types",
+    "title": "Notify: Notification Types",
     "content": "There are different types that can be used to indicate the nature of the notification.",
     "url": "/documentation/notify#notification_types"
   },
   {
-    "title": "notify: Multiline Notifications",
+    "title": "Notify: Multiline Notifications",
     "content": "To allow a notification text to span multiple lines, it is sufficient to pass the `mutliLine` keyword with `True`. If manual newline breaks are required (e.g. ` `), you need to define a CSS style and pass it to the notification as shown in the example.",
     "url": "/documentation/notify#multiline_notifications"
   },
   {
-    "title": "storage: Counting page visits",
+    "title": "Storage: Counting page visits",
     "content": "Here we are using the automatically available browser-stored session ID to count the number of unique page visits.",
     "url": "/documentation/storage#counting_page_visits"
   },
   {
-    "title": "storage: Storing UI state",
+    "title": "Storage: Storing UI state",
     "content": "Storage can also be used in combination with [`bindings`](/documentation/bindings). Here we are storing the value of a textarea between visits. The note is also shared between all tabs of the same user.",
     "url": "/documentation/storage#storing_ui_state"
   },
   {
-    "title": "video: Video start position",
+    "title": "Video: Video start position",
     "content": "This demo shows how to set the start position of a video.",
     "url": "/documentation/video#video_start_position"
   },
   {
-    "title": "date: Input element with date picker",
+    "title": "Date: Input element with date picker",
     "content": "This demo shows how to implement a date picker with an input element. We place an icon in the input element's append slot. When the icon is clicked, we open a menu with a date picker.  The date is bound to the input element's value. So both the input element and the date picker will stay in sync whenever the date is changed.",
     "url": "/documentation/date#input_element_with_date_picker"
   },
   {
-    "title": "date: Date filter",
+    "title": "Date: Date filter",
     "content": "This demo shows how to filter the dates in a date picker. In order to pass a function to the date picker, we use the `:options` property. The leading `:` tells NiceGUI that the value is a JavaScript expression.",
     "url": "/documentation/date#date_filter"
   },
   {
-    "title": "card: The issue with nested borders",
+    "title": "Card: The issue with nested borders",
     "content": "The following example shows a table nested in a card. Cards have a default padding in NiceGUI, so the table is not flush with the card's border. The table has the `flat` and `bordered` props set, so it should have a border. However, due to the way QCard is designed, the border is not visible (first card). There are two ways to fix this:  - To get the original QCard behavior, use the `tight` method (second card). It removes the padding and the table border collapses with the card border.  - To preserve the padding _and_ the table border, move the table into another container like a `ui.row` (third card).  See https://github.com/zauberzeug/nicegui/issues/726 for more information.",
     "url": "/documentation/card#the_issue_with_nested_borders"
   },
   {
-    "title": "element: Move elements",
+    "title": "Element: Move elements",
     "content": "This demo shows how to move elements between or within containers.",
     "url": "/documentation/element#move_elements"
   },
   {
-    "title": "splitter: Advanced usage",
+    "title": "Splitter: Advanced usage",
     "content": "This demo shows all the slots and parameters including a tooltip, a custom separator, and a callback.",
     "url": "/documentation/splitter#advanced_usage"
   },
   {
-    "title": "splitter: Image fun",
+    "title": "Splitter: Image fun",
     "content": "This demo shows how to use the splitter to display images side by side.",
     "url": "/documentation/splitter#image_fun"
   },
   {
-    "title": "select: Search-as-you-type",
+    "title": "Select: Search-as-you-type",
     "content": "You can activate `with_input` to get a text input with autocompletion. The options will be filtered as you type.",
     "url": "/documentation/select#search-as-you-type"
   },
   {
-    "title": "select: Multi selection",
+    "title": "Select: Multi selection",
     "content": "You can activate `multiple` to allow the selection of more than one item.",
     "url": "/documentation/select#multi_selection"
   },
   {
-    "title": "plotly: Dictionary interface",
+    "title": "Plotly: Dictionary interface",
     "content": "This demo shows how to use the declarative dictionary interface to create a plot. For plots with many traces and data points, this is more efficient than the object-oriented interface. The definition corresponds to the [JavaScript Plotly API](https://plotly.com/javascript/). Due to different defaults, the resulting plot may look slightly different from the same plot created with the object-oriented interface, but the functionality is the same.",
     "url": "/documentation/plotly#dictionary_interface"
   },
   {
-    "title": "plotly: Plot updates",
+    "title": "Plotly: Plot updates",
     "content": "This demo shows how to update the plot in real time. Click the button to add a new trace to the plot. To send the new plot to the browser, make sure to explicitly call `plot.update()` or `ui.update(plot)`.",
     "url": "/documentation/plotly#plot_updates"
   },
   {
-    "title": "markdown: Markdown with indentation",
+    "title": "Markdown: Markdown with indentation",
     "content": "Common indentation is automatically stripped from the beginning of each line. So you can indent markdown elements, and they will still be rendered correctly.",
     "url": "/documentation/markdown#markdown_with_indentation"
   },
   {
-    "title": "markdown: Markdown with code blocks",
+    "title": "Markdown: Markdown with code blocks",
     "content": "You can use code blocks to show code examples. If you specify the language after the opening triple backticks, the code will be syntax highlighted. See [the Pygments website](https://pygments.org/languages/) for a list of supported languages.",
     "url": "/documentation/markdown#markdown_with_code_blocks"
   },
   {
-    "title": "markdown: Markdown tables",
+    "title": "Markdown: Markdown tables",
     "content": "By activating the \"tables\" extra, you can use Markdown tables. See the [markdown2 documentation](https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras) for a list of available extras.",
     "url": "/documentation/markdown#markdown_tables"
   },
   {
-    "title": "generic_events: Modifiers",
+    "title": "Generic Events: Modifiers",
     "content": "You can also include [key modifiers](https://vuejs.org/guide/essentials/event-handling.html#key-modifiers>) (shown in input \"A\"), modifier combinations (shown in input \"B\"), and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mouse-button-modifiers>) (shown in input \"C\").",
     "url": "/documentation/generic_events#modifiers"
   },
   {
-    "title": "bindings: Bind to dictionary",
+    "title": "Bindings: Bind to dictionary",
     "content": "Here we are binding the text of labels to a dictionary.",
     "url": "/documentation/bindings#bind_to_dictionary"
   },
   {
-    "title": "bindings: Bind to variable",
+    "title": "Bindings: Bind to variable",
     "content": "Here we are binding the value from the datepicker to a bare variable. Therefore we use the dictionary `globals()` which contains all global variables. This demo is based on the [official datepicker example](/documentation/date#input_element_with_date_picker).",
     "url": "/documentation/bindings#bind_to_variable"
   },
   {
-    "title": "bindings: Bind to storage",
+    "title": "Bindings: Bind to storage",
     "content": "Bindings also work with [`app.storage`](/documentation/storage). Here we are storing the value of a textarea between visits. The note is also shared between all tabs of the same user.",
     "url": "/documentation/bindings#bind_to_storage"
   },
   {
-    "title": "scene: Handling Click Events",
+    "title": "Scene: Handling Click Events",
     "content": "You can use the `on_click` argument to `ui.scene` to handle click events. The callback receives a `SceneClickEventArguments` object with the following attributes:  - `click_type`: the type of click (\"click\" or \"dblclick\"). - `button`: the button that was clicked (1, 2, or 3). - `alt`, `ctrl`, `meta`, `shift`: whether the alt, ctrl, meta, or shift key was pressed. - `hits`: a list of `SceneClickEventHit` objects, sorted by distance from the camera.  The `SceneClickEventHit` object has the following attributes:  - `object_id`: the id of the object that was clicked. - `object_name`: the name of the object that was clicked. - `x`, `y`, `z`: the x, y and z coordinates of the click.",
     "url": "/documentation/scene#handling_click_events"
   },
   {
-    "title": "run: Emoji favicon",
+    "title": "Run: Emoji favicon",
     "content": "You can use an emoji as favicon. This works in Chrome, Firefox and Safari.",
     "url": "/documentation/run#emoji_favicon"
   },
   {
-    "title": "run: Base64 favicon",
+    "title": "Run: Base64 favicon",
     "content": "You can also use an base64-encoded image as favicon.",
     "url": "/documentation/run#base64_favicon"
   },
   {
-    "title": "run: SVG favicon",
+    "title": "Run: SVG favicon",
     "content": "And directly use an SVG as favicon. Works in Chrome, Firefox and Safari.",
     "url": "/documentation/run#svg_favicon"
   },
   {
-    "title": "chat_message: HTML text",
+    "title": "Chat Message: HTML text",
     "content": "Using the `text_html` parameter, you can send HTML text to the chat.",
     "url": "/documentation/chat_message#html_text"
   },
   {
-    "title": "chat_message: Newline",
+    "title": "Chat Message: Newline",
     "content": "You can use newlines in the chat message.",
     "url": "/documentation/chat_message#newline"
   },
   {
-    "title": "chat_message: Multi-part messages",
+    "title": "Chat Message: Multi-part messages",
     "content": "You can send multiple message parts by passing a list of strings.",
     "url": "/documentation/chat_message#multi-part_messages"
   },
   {
-    "title": "link: Navigate on large pages",
+    "title": "Link: Navigate on large pages",
     "content": "To jump to a specific location within a page you can place linkable anchors with `ui.link_target('target_name')` or simply pass a NiceGUI element as link target.",
     "url": "/documentation/link#navigate_on_large_pages"
   },
   {
-    "title": "link: Links to other pages",
+    "title": "Link: Links to other pages",
     "content": "You can link to other pages by providing the link target as path or function reference.",
     "url": "/documentation/link#links_to_other_pages"
   },
   {
-    "title": "query: Set background gradient",
+    "title": "Query: Set background gradient",
     "content": "It's easy to set a background gradient, image or similar. See [w3schools.com](https://www.w3schools.com/cssref/pr_background-image.php) for more information about setting background with CSS.",
     "url": "/documentation/query#set_background_gradient"
   }

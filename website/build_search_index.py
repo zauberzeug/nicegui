@@ -26,7 +26,7 @@ class DemoVisitor(ast.NodeVisitor):
                     anchor = title.lower().replace(' ', '_')
                     url = f'/documentation/{self.topic}#{anchor}'
                     documents.append({
-                        'title': f'{self.topic}: {title}',
+                        'title': f'{self.topic.replace("_", " ").title()}: {title}',
                         'content': content,
                         'url': url
                     })
@@ -37,7 +37,7 @@ documents = []
 for file in Path('./more_documentation').glob('*.py'):
     with open(file, 'r') as source:
         tree = ast.parse(source.read())
-        DemoVisitor('_'.join(file.stem.split('_')[:-1])).visit(tree)
+        DemoVisitor(file.stem.removesuffix('_documentation')).visit(tree)
 
 with open('static/search_index.json', 'w') as f:
     json.dump(documents, f, indent=2)
