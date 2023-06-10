@@ -80,7 +80,7 @@ class DocVisitor(ast.NodeVisitor):
                 function = decorator.func
                 if isinstance(function, ast.Name) and function.id == 'text_demo':
                     title = decorator.args[0].s
-                    content = decorator.args[1].s.splitlines()
+                    content = cleanup(decorator.args[1].s).splitlines()
                     self.add_to_search_index(title, content)
         self.generic_visit(node)
 

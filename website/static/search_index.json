@@ -146,7 +146,7 @@
   },
   {
     "title": "SVG",
-    "content": "You can add Scalable Vector Graphics using the `ui.html` element.",
+    "content": "You can add Scalable Vector Graphics using the ui.html element.",
     "url": "/documentation/#svg"
   },
   {
@@ -156,7 +156,7 @@
   },
   {
     "title": "Captions and Overlays",
-    "content": "By nesting elements inside a `ui.image` you can create augmentations.  Use [Quasar classes](https://quasar.dev/vue-components/img) for positioning and styling captions. To overlay an SVG, make the `viewBox` exactly the size of the image and provide `100%` width/height to match the actual rendered size.",
+    "content": "By nesting elements inside a ui.image you can create augmentations.  Use Quasar classes for positioning and styling captions. To overlay an SVG, make the viewBox exactly the size of the image and provide 100% width/height to match the actual rendered size.",
     "url": "/documentation/#captions_and_overlays"
   },
   {
@@ -171,17 +171,17 @@
   },
   {
     "title": "Clear Containers",
-    "content": "To remove all elements from a row, column or card container, use the `clear()` method.  Alternatively, you can remove individual elements with `remove(element)`, where `element` is an Element or an index.",
+    "content": "To remove all elements from a row, column or card container, use the clear() method.  Alternatively, you can remove individual elements with remove(element), where element is an Element or an index.",
     "url": "/documentation/#clear_containers"
   },
   {
     "title": "Tabs",
-    "content": "The elements `ui.tabs`, `ui.tab`, `ui.tab_panels`, and `ui.tab_panel` resemble [Quasar's tabs](https://quasar.dev/vue-components/tabs) and [tab panels](https://quasar.dev/vue-components/tab-panels) API.  `ui.tabs` creates a container for the tabs. This could be placed in a `ui.header` for example. `ui.tab_panels` creates a container for the tab panels with the actual content.",
+    "content": "The elements ui.tabs, ui.tab, ui.tab_panels, and ui.tab_panel resemble Quasar's tabs and tab panels API.  ui.tabs creates a container for the tabs. This could be placed in a ui.header for example. ui.tab_panels creates a container for the tab panels with the actual content.",
     "url": "/documentation/#tabs"
   },
   {
     "title": "Tooltips",
-    "content": "Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.  For more artistic control you can nest tooltip elements and apply props, classes and styles.",
+    "content": "Simply call the tooltip(text:str) method on UI elements to provide a tooltip.  For more artistic control you can nest tooltip elements and apply props, classes and styles.",
     "url": "/documentation/#tooltips"
   },
   {
@@ -191,7 +191,7 @@
   },
   {
     "title": "Styling",
-    "content": "NiceGUI uses the [Quasar Framework](https://quasar.dev/) version 1.0 and hence has its full design power. Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components): Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props. Props with a leading `:` can contain JavaScript expressions that are evaluated on the client. You can also apply [Tailwind CSS](https://tailwindcss.com/) utility classes with the `classes` method.  If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.  All three functions also provide `remove` and `replace` parameters in case the predefined look is not wanted in a particular styling.",
+    "content": "NiceGUI uses the Quasar Framework version 1.0 and hence has its full design power. Each NiceGUI element provides a props method whose content is passed to the Quasar component: Have a look at the Quasar documentation for all styling props. Props with a leading : can contain JavaScript expressions that are evaluated on the client. You can also apply Tailwind CSS utility classes with the classes method.  If you really need to apply CSS, you can use the styles method. Here the delimiter is ; instead of a blank space.  All three functions also provide remove and replace parameters in case the predefined look is not wanted in a particular styling.",
     "url": "/documentation/#styling"
   },
   {
@@ -201,7 +201,7 @@
   },
   {
     "title": "Tailwind CSS",
-    "content": "[Tailwind CSS](https://tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces. NiceGUI provides a fluent, auto-complete friendly interface for adding Tailwind classes to UI elements.  You can discover available classes by navigating the methods of the `tailwind` property. The builder pattern allows you to chain multiple classes together (as shown with \"Label A\"). You can also call the `tailwind` property with a list of classes (as shown with \"Label B\").  Although this is very similar to using the `classes` method, it is more convenient for Tailwind classes due to auto-completion.  Last but not least, you can also predefine a style and apply it to multiple elements (labels C and D).",
+    "content": "Tailwind CSS is a CSS framework for rapidly building custom user interfaces. NiceGUI provides a fluent, auto-complete friendly interface for adding Tailwind classes to UI elements.  You can discover available classes by navigating the methods of the tailwind property. The builder pattern allows you to chain multiple classes together (as shown with \"Label A\"). You can also call the tailwind property with a list of classes (as shown with \"Label B\").  Although this is very similar to using the classes method, it is more convenient for Tailwind classes due to auto-completion.  Last but not least, you can also predefine a style and apply it to multiple elements (labels C and D).",
     "url": "/documentation/#tailwind_css"
   },
   {
@@ -211,12 +211,12 @@
   },
   {
     "title": "UI Updates",
-    "content": "NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed. In other cases, you can explicitly call `element.update()` or `ui.update(*elements)` to update. The demo code shows both methods for a `ui.chart`, where it is difficult to automatically detect changes in the `options` dictionary.",
+    "content": "NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed. In other cases, you can explicitly call element.update() or ui.update(*elements) to update. The demo code shows both methods for a ui.chart, where it is difficult to automatically detect changes in the options dictionary.",
     "url": "/documentation/#ui_updates"
   },
   {
     "title": "Async event handlers",
-    "content": "Most elements also support asynchronous event handlers.  Note: You can also pass a `functools.partial` into the `on_click` property to wrap async functions with parameters.",
+    "content": "Most elements also support asynchronous event handlers.  Note: You can also pass a functools.partial into the on_click property to wrap async functions with parameters.",
     "url": "/documentation/#async_event_handlers"
   },
   {
@@ -226,17 +226,17 @@
   },
   {
     "title": "Auto-index page",
-    "content": "Pages created with the `@ui.page` decorator are \"private\". Their content is re-created for each client. Thus, in the demo to the right, the displayed ID on the private page changes when the browser reloads the page.  UI elements that are not wrapped in a decorated page function are placed on an automatically generated index page at route \"/\". This auto-index page is created once on startup and *shared* across all clients that might connect. Thus, each connected client will see the *same* elements. In the demo to the right, the displayed ID on the auto-index page remains constant when the browser reloads the page.",
+    "content": "Pages created with the @ui.page decorator are \"private\". Their content is re-created for each client. Thus, in the demo to the right, the displayed ID on the private page changes when the browser reloads the page.  UI elements that are not wrapped in a decorated page function are placed on an automatically generated index page at route \"/\". This auto-index page is created once on startup and *shared* across all clients that might connect. Thus, each connected client will see the *same* elements. In the demo to the right, the displayed ID on the auto-index page remains constant when the browser reloads the page.",
     "url": "/documentation/#auto-index_page"
   },
   {
     "title": "Page Layout",
-    "content": "With `ui.header`, `ui.footer`, `ui.left_drawer` and `ui.right_drawer` you can add additional layout elements to a page. The `fixed` argument controls whether the element should scroll or stay fixed on the screen. The `top_corner` and `bottom_corner` arguments indicate whether a drawer should expand to the top or bottom of the page. See <https://quasar.dev/layout/header-and-footer> and <https://quasar.dev/layout/drawer> for more information about possible props. With `ui.page_sticky` you can place an element \"sticky\" on the screen. See <https://quasar.dev/layout/page-sticky> for more information.",
+    "content": "With ui.header, ui.footer, ui.left_drawer and ui.right_drawer you can add additional layout elements to a page. The fixed argument controls whether the element should scroll or stay fixed on the screen. The top_corner and bottom_corner arguments indicate whether a drawer should expand to the top or bottom of the page. See <https://quasar.dev/layout/header-and-footer> and <https://quasar.dev/layout/drawer> for more information about possible props. With ui.page_sticky you can place an element \"sticky\" on the screen. See <https://quasar.dev/layout/page-sticky> for more information.",
     "url": "/documentation/#page_layout"
   },
   {
     "title": "Parameter injection",
-    "content": "Thanks to FastAPI, a page function accepts optional parameters to provide [path parameters](https://fastapi.tiangolo.com/tutorial/path-params/), [query parameters](https://fastapi.tiangolo.com/tutorial/query-params/) or the whole incoming [request](https://fastapi.tiangolo.com/advanced/using-request-directly/) for accessing the body payload, headers, cookies and more.",
+    "content": "Thanks to FastAPI, a page function accepts optional parameters to provide path parameters, query parameters or the whole incoming request for accessing the body payload, headers, cookies and more.",
     "url": "/documentation/#parameter_injection"
   },
   {
@@ -246,7 +246,7 @@
   },
   {
     "title": "API Responses",
-    "content": "NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/). This means you can use all of FastAPI's features. For example, you can implement a RESTful API in addition to your graphical user interface. You simply import the `app` object from `nicegui`. Or you can run NiceGUI on top of your own FastAPI app by using `ui.run_with(app)` instead of starting a server automatically with `ui.run()`.  You can also return any other FastAPI response object inside a page function. For example, you can return a `RedirectResponse` to redirect the user to another page if certain conditions are met. This is used in our [authentication demo](https://github.com/zauberzeug/nicegui/tree/main/examples/authentication/main.py).",
+    "content": "NiceGUI is based on FastAPI. This means you can use all of FastAPI's features. For example, you can implement a RESTful API in addition to your graphical user interface. You simply import the app object from nicegui. Or you can run NiceGUI on top of your own FastAPI app by using ui.run_with(app) instead of starting a server automatically with ui.run().  You can also return any other FastAPI response object inside a page function. For example, you can return a RedirectResponse to redirect the user to another page if certain conditions are met. This is used in our authentication demo.",
     "url": "/documentation/#api_responses"
   },
   {
@@ -256,7 +256,7 @@
   },
   {
     "title": "Events",
-    "content": "You can register coroutines or functions to be called for the following events:  - `app.on_startup`: called when NiceGUI is started or restarted - `app.on_shutdown`: called when NiceGUI is shut down or restarted - `app.on_connect`: called for each client which connects (optional argument: nicegui.Client) - `app.on_disconnect`: called for each client which disconnects (optional argument: nicegui.Client) - `app.on_exception`: called when an exception occurs (optional argument: exception)  When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.",
+    "content": "You can register coroutines or functions to be called for the following events:  - app.on_startup: called when NiceGUI is started or restarted - app.on_shutdown: called when NiceGUI is shut down or restarted - app.on_connect: called for each client which connects (optional argument: nicegui.Client) - app.on_disconnect: called for each client which disconnects (optional argument: nicegui.Client) - app.on_exception: called when an exception occurs (optional argument: exception)  When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.",
     "url": "/documentation/#events"
   },
   {
@@ -266,7 +266,7 @@
   },
   {
     "title": "Auto-context",
-    "content": "In order to allow writing intuitive UI descriptions, NiceGUI automatically tracks the context in which elements are created. This means that there is no explicit `parent` parameter. Instead the parent context is defined using a `with` statement. It is also passed to event handlers and timers.  In the demo, the label \"Card content\" is added to the card. And because the `ui.button` is also added to the card, the label \"Click!\" will also be created in this context. The label \"Tick!\", which is added once after one second, is also added to the card.  This design decision allows for easily creating modular components that keep working after moving them around in the UI. For example, you can move label and button somewhere else, maybe wrap them in another container, and the code will still work.",
+    "content": "In order to allow writing intuitive UI descriptions, NiceGUI automatically tracks the context in which elements are created. This means that there is no explicit parent parameter. Instead the parent context is defined using a with statement. It is also passed to event handlers and timers.  In the demo, the label \"Card content\" is added to the card. And because the ui.button is also added to the card, the label \"Click!\" will also be created in this context. The label \"Tick!\", which is added once after one second, is also added to the card.  This design decision allows for easily creating modular components that keep working after moving them around in the UI. For example, you can move label and button somewhere else, maybe wrap them in another container, and the code will still work.",
     "url": "/documentation/#auto-context"
   },
   {
@@ -276,12 +276,12 @@
   },
   {
     "title": "Native Mode",
-    "content": "You can enable native mode for NiceGUI by specifying `native=True` in the `ui.run` function. To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively. Additionally, you can provide extra keyword arguments via `app.native.window_args` and `app.native.start_args`. Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html) for the `webview.create_window` and `webview.start` functions. Note that these keyword arguments will take precedence over the parameters defined in `ui.run`.  In native mode the `app.native.main_window` object allows you to access the underlying window. It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/guide/api.html#window-object).",
+    "content": "You can enable native mode for NiceGUI by specifying native=True in the ui.run function. To customize the initial window size and display mode, use the window_size and fullscreen parameters respectively. Additionally, you can provide extra keyword arguments via app.native.window_args and app.native.start_args. Pick any parameter as it is defined by the internally used pywebview module for the webview.create_window and webview.start functions. Note that these keyword arguments will take precedence over the parameters defined in ui.run.  In native mode the app.native.main_window object allows you to access the underlying window. It is an async version of Window from pywebview.",
     "url": "/documentation/#native_mode"
   },
   {
     "title": "Environment Variables",
-    "content": "You can set the following environment variables to configure NiceGUI:  - `MATPLOTLIB` (default: true) can be set to `false` to avoid the potentially costly import of Matplotlib. This will make `ui.pyplot` and `ui.line_plot` unavailable. - `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.",
+    "content": "You can set the following environment variables to configure NiceGUI:  - MATPLOTLIB (default: true) can be set to false to avoid the potentially costly import of Matplotlib. This will make ui.pyplot and ui.line_plot unavailable. - MARKDOWN_CONTENT_CACHE_SIZE (default: 1000): The maximum number of Markdown content snippets that are cached in memory.",
     "url": "/documentation/#environment_variables"
   },
   {
@@ -331,7 +331,7 @@
   },
   {
     "title": "Column: Masonry or Pinterest-Style Layout",
-    "content": "To create a masonry/Pinterest layout, the normal `ui.column` can not be used. But it can be achieved with a few TailwindCSS classes.",
+    "content": "To create a masonry/Pinterest layout, the normal ui.column can not be used. But it can be achieved with a few TailwindCSS classes.",
     "url": "/documentation/column#masonry_or_pinterest-style_layout"
   },
   {
@@ -341,7 +341,7 @@
   },
   {
     "title": "Avatar: Photos",
-    "content": "To use a photo as an avatar, you can use `ui.image` within `ui.avatar`.",
+    "content": "To use a photo as an avatar, you can use ui.image within ui.avatar.",
     "url": "/documentation/avatar#photos"
   },
   {
@@ -376,12 +376,12 @@
   },
   {
     "title": "Timer: Activate and deactivate a timer",
-    "content": "You can activate and deactivate a timer using the `active` property.",
+    "content": "You can activate and deactivate a timer using the active property.",
     "url": "/documentation/timer#activate_and_deactivate_a_timer"
   },
   {
     "title": "Timer: Call a function after a delay",
-    "content": "You can call a function after a delay using a timer with the `once` parameter.",
+    "content": "You can call a function after a delay using a timer with the once parameter.",
     "url": "/documentation/timer#call_a_function_after_a_delay"
   },
   {
@@ -401,22 +401,22 @@
   },
   {
     "title": "Aggrid: Select AG Grid Rows",
-    "content": "You can add checkboxes to grid cells to allow the user to select single or multiple rows.  To retrieve the currently selected rows, use the `get_selected_rows` method. This method returns a list of rows as dictionaries.  If `rowSelection` is set to `'single'` or to get the first selected row, you can also use the `get_selected_row` method. This method returns a single row as a dictionary or `None` if no row is selected.  See the [AG Grid documentation](https://www.ag-grid.com/javascript-data-grid/row-selection/#example-single-row-selection) for more information.",
+    "content": "You can add checkboxes to grid cells to allow the user to select single or multiple rows.  To retrieve the currently selected rows, use the get_selected_rows method. This method returns a list of rows as dictionaries.  If rowSelection is set to 'single' or to get the first selected row, you can also use the get_selected_row method. This method returns a single row as a dictionary or None if no row is selected.  See the AG Grid documentation for more information.",
     "url": "/documentation/aggrid#select_ag_grid_rows"
   },
   {
     "title": "Aggrid: Filter Rows using Mini Filters",
-    "content": "You can add [mini filters](https://ag-grid.com/javascript-data-grid/filter-set-mini-filter/) to the header of each column to filter the rows.  Note how the \"agTextColumnFilter\" matches individual characters, like \"a\" in \"Alice\" and \"Carol\", while the \"agNumberColumnFilter\" matches the entire number, like \"18\" and \"21\", but not \"1\".",
+    "content": "You can add mini filters to the header of each column to filter the rows.  Note how the \"agTextColumnFilter\" matches individual characters, like \"a\" in \"Alice\" and \"Carol\", while the \"agNumberColumnFilter\" matches the entire number, like \"18\" and \"21\", but not \"1\".",
     "url": "/documentation/aggrid#filter_rows_using_mini_filters"
   },
   {
     "title": "Aggrid: AG Grid with Conditional Cell Formatting",
-    "content": "This demo shows how to use [cellClassRules](https://www.ag-grid.com/javascript-grid-cell-styles/#cell-class-rules) to conditionally format cells based on their values. Since it is currently not possible to use the `cellClassRules` option in the `columnDefs` option, we use the `run_javascript` method to set the `cellClassRules` option after the grid has been created. The timer is used to delay the execution of the javascript code until the grid has been created. You can also use `app.on_connect` instead.",
+    "content": "This demo shows how to use cellClassRules to conditionally format cells based on their values. Since it is currently not possible to use the cellClassRules option in the columnDefs option, we use the run_javascript method to set the cellClassRules option after the grid has been created. The timer is used to delay the execution of the javascript code until the grid has been created. You can also use app.on_connect instead.",
     "url": "/documentation/aggrid#ag_grid_with_conditional_cell_formatting"
   },
   {
     "title": "Aggrid: Create Grid from Pandas Dataframe",
-    "content": "You can create an AG Grid from a Pandas Dataframe using the `from_pandas` method. This method takes a Pandas Dataframe as input and returns an AG Grid.",
+    "content": "You can create an AG Grid from a Pandas Dataframe using the from_pandas method. This method takes a Pandas Dataframe as input and returns an AG Grid.",
     "url": "/documentation/aggrid#create_grid_from_pandas_dataframe"
   },
   {
@@ -431,7 +431,7 @@
   },
   {
     "title": "Slider: Disable slider",
-    "content": "You can disable a slider with the `disable()` method. This will prevent the user from moving the slider. The slider will also be grayed out.",
+    "content": "You can disable a slider with the disable() method. This will prevent the user from moving the slider. The slider will also be grayed out.",
     "url": "/documentation/slider#disable_slider"
   },
   {
@@ -446,7 +446,7 @@
   },
   {
     "title": "Label: Change Appearance Depending on the Content",
-    "content": "You can overwrite the `on_text_change` method to update other attributes of a label depending on its content. This technique also works for bindings as shown in the example below.",
+    "content": "You can overwrite the on_text_change method to update other attributes of a label depending on its content. This technique also works for bindings as shown in the example below.",
     "url": "/documentation/label#change_appearance_depending_on_the_content"
   },
   {
@@ -461,17 +461,17 @@
   },
   {
     "title": "Page: Pages with Path Parameters",
-    "content": "Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/>). If type-annotated, they are automatically converted to bool, int, float and complex values. If the page function expects a `request` argument, the request object is automatically provided. The `client` argument provides access to the websocket connection, layout, etc.",
+    "content": "Page routes can contain parameters like FastAPI. If type-annotated, they are automatically converted to bool, int, float and complex values. If the page function expects a request argument, the request object is automatically provided. The client argument provides access to the websocket connection, layout, etc.",
     "url": "/documentation/page#pages_with_path_parameters"
   },
   {
     "title": "Page: Wait for Client Connection",
-    "content": "To wait for a client connection, you can add a `client` argument to the decorated page function and await `client.connected()`. All code below that statement is executed after the websocket connection between server and client has been established.  For example, this allows you to run JavaScript commands; which is only possible with a client connection (see [#112](https://github.com/zauberzeug/nicegui/issues/112)). Also it is possible to do async stuff while the user already sees some content.",
+    "content": "To wait for a client connection, you can add a client argument to the decorated page function and await client.connected(). All code below that statement is executed after the websocket connection between server and client has been established.  For example, this allows you to run JavaScript commands; which is only possible with a client connection (see #112). Also it is possible to do async stuff while the user already sees some content.",
     "url": "/documentation/page#wait_for_client_connection"
   },
   {
     "title": "Page: Modularize with APIRouter",
-    "content": "You can use the NiceGUI specialization of [FastAPI's APIRouter](https://fastapi.tiangolo.com/tutorial/bigger-applications/?h=apirouter#apirouter) to modularize your code by grouping pages and other routes together. This is especially useful if you want to reuse the same prefix for multiple pages. The router and its pages can be neatly tugged away in a separate module (e.g. file) and the router is simply imported and included in the main app. See our [modularization example](https://github.com/zauberzeug/nicegui/blob/main/examples/modularization/example_c.py) for a multi-file app structure.",
+    "content": "You can use the NiceGUI specialization of FastAPI's APIRouter to modularize your code by grouping pages and other routes together. This is especially useful if you want to reuse the same prefix for multiple pages. The router and its pages can be neatly tugged away in a separate module (e.g. file) and the router is simply imported and included in the main app. See our modularization example for a multi-file app structure.",
     "url": "/documentation/page#modularize_with_apirouter"
   },
   {
@@ -551,7 +551,7 @@
   },
   {
     "title": "Dialog: Awaitable dialog",
-    "content": "Dialogs can be awaited. Use the `submit` method to close the dialog and return a result. Canceling the dialog by clicking in the background or pressing the escape key yields `None`.",
+    "content": "Dialogs can be awaited. Use the submit method to close the dialog and return a result. Canceling the dialog by clicking in the background or pressing the escape key yields None.",
     "url": "/documentation/dialog#awaitable_dialog"
   },
   {
@@ -566,7 +566,7 @@
   },
   {
     "title": "Tree: Tree with custom header and body",
-    "content": "Scoped slots can be used to insert custom content into the header and body of a tree node. See the [Quasar documentation](https://quasar.dev/vue-components/tree#customize-content) for more information.",
+    "content": "Scoped slots can be used to insert custom content into the header and body of a tree node. See the Quasar documentation for more information.",
     "url": "/documentation/tree#tree_with_custom_header_and_body"
   },
   {
@@ -581,7 +581,7 @@
   },
   {
     "title": "Table: Table with expandable rows",
-    "content": "Scoped slots can be used to insert buttons that toggle the expand state of a table row. See the [Quasar documentation](https://quasar.dev/vue-components/table#expanding-rows) for more information.",
+    "content": "Scoped slots can be used to insert buttons that toggle the expand state of a table row. See the Quasar documentation for more information.",
     "url": "/documentation/table#table_with_expandable_rows"
   },
   {
@@ -591,7 +591,7 @@
   },
   {
     "title": "Table: Table with drop down selection",
-    "content": "Here is an example of how to use a drop down selection in a table. After emitting a `rename` event from the scoped slot, the `rename` function updates the table rows.",
+    "content": "Here is an example of how to use a drop down selection in a table. After emitting a rename event from the scoped slot, the rename function updates the table rows.",
     "url": "/documentation/table#table_with_drop_down_selection"
   },
   {
@@ -601,7 +601,7 @@
   },
   {
     "title": "Table: Adding rows",
-    "content": "It's simple to add new rows with the `add_rows(dict)` method.",
+    "content": "It's simple to add new rows with the add_rows(dict) method.",
     "url": "/documentation/table#adding_rows"
   },
   {
@@ -616,7 +616,7 @@
   },
   {
     "title": "Notify: Multiline Notifications",
-    "content": "To allow a notification text to span multiple lines, it is sufficient to pass the `mutliLine` keyword with `True`. If manual newline breaks are required (e.g. ` `), you need to define a CSS style and pass it to the notification as shown in the example.",
+    "content": "To allow a notification text to span multiple lines, it is sufficient to pass the mutliLine keyword with True. If manual newline breaks are required (e.g. ), you need to define a CSS style and pass it to the notification as shown in the example.",
     "url": "/documentation/notify#multiline_notifications"
   },
   {
@@ -631,7 +631,7 @@
   },
   {
     "title": "Storage: Storing UI state",
-    "content": "Storage can also be used in combination with [`bindings`](/documentation/bindings). Here we are storing the value of a textarea between visits. The note is also shared between all tabs of the same user.",
+    "content": "Storage can also be used in combination with bindings. Here we are storing the value of a textarea between visits. The note is also shared between all tabs of the same user.",
     "url": "/documentation/storage#storing_ui_state"
   },
   {
@@ -671,7 +671,7 @@
   },
   {
     "title": "Date: Date filter",
-    "content": "This demo shows how to filter the dates in a date picker. In order to pass a function to the date picker, we use the `:options` property. The leading `:` tells NiceGUI that the value is a JavaScript expression.",
+    "content": "This demo shows how to filter the dates in a date picker. In order to pass a function to the date picker, we use the :options property. The leading : tells NiceGUI that the value is a JavaScript expression.",
     "url": "/documentation/date#date_filter"
   },
   {
@@ -681,7 +681,7 @@
   },
   {
     "title": "Card: The issue with nested borders",
-    "content": "The following example shows a table nested in a card. Cards have a default padding in NiceGUI, so the table is not flush with the card's border. The table has the `flat` and `bordered` props set, so it should have a border. However, due to the way QCard is designed, the border is not visible (first card). There are two ways to fix this:  - To get the original QCard behavior, use the `tight` method (second card). It removes the padding and the table border collapses with the card border.  - To preserve the padding _and_ the table border, move the table into another container like a `ui.row` (third card).  See https://github.com/zauberzeug/nicegui/issues/726 for more information.",
+    "content": "The following example shows a table nested in a card. Cards have a default padding in NiceGUI, so the table is not flush with the card's border. The table has the flat and bordered props set, so it should have a border. However, due to the way QCard is designed, the border is not visible (first card). There are two ways to fix this:  - To get the original QCard behavior, use the tight method (second card). It removes the padding and the table border collapses with the card border.  - To preserve the padding _and_ the table border, move the table into another container like a ui.row (third card).  See https://github.com/zauberzeug/nicegui/issues/726 for more information.",
     "url": "/documentation/card#the_issue_with_nested_borders"
   },
   {
@@ -741,12 +741,12 @@
   },
   {
     "title": "Select: Search-as-you-type",
-    "content": "You can activate `with_input` to get a text input with autocompletion. The options will be filtered as you type.",
+    "content": "You can activate with_input to get a text input with autocompletion. The options will be filtered as you type.",
     "url": "/documentation/select#search-as-you-type"
   },
   {
     "title": "Select: Multi selection",
-    "content": "You can activate `multiple` to allow the selection of more than one item.",
+    "content": "You can activate multiple to allow the selection of more than one item.",
     "url": "/documentation/select#multi_selection"
   },
   {
@@ -761,12 +761,12 @@
   },
   {
     "title": "Plotly: Dictionary interface",
-    "content": "This demo shows how to use the declarative dictionary interface to create a plot. For plots with many traces and data points, this is more efficient than the object-oriented interface. The definition corresponds to the [JavaScript Plotly API](https://plotly.com/javascript/). Due to different defaults, the resulting plot may look slightly different from the same plot created with the object-oriented interface, but the functionality is the same.",
+    "content": "This demo shows how to use the declarative dictionary interface to create a plot. For plots with many traces and data points, this is more efficient than the object-oriented interface. The definition corresponds to the JavaScript Plotly API. Due to different defaults, the resulting plot may look slightly different from the same plot created with the object-oriented interface, but the functionality is the same.",
     "url": "/documentation/plotly#dictionary_interface"
   },
   {
     "title": "Plotly: Plot updates",
-    "content": "This demo shows how to update the plot in real time. Click the button to add a new trace to the plot. To send the new plot to the browser, make sure to explicitly call `plot.update()` or `ui.update(plot)`.",
+    "content": "This demo shows how to update the plot in real time. Click the button to add a new trace to the plot. To send the new plot to the browser, make sure to explicitly call plot.update() or ui.update(plot).",
     "url": "/documentation/plotly#plot_updates"
   },
   {
@@ -791,12 +791,12 @@
   },
   {
     "title": "Markdown: Markdown with code blocks",
-    "content": "You can use code blocks to show code examples. If you specify the language after the opening triple backticks, the code will be syntax highlighted. See [the Pygments website](https://pygments.org/languages/) for a list of supported languages.",
+    "content": "You can use code blocks to show code examples. If you specify the language after the opening triple backticks, the code will be syntax highlighted. See the Pygments website for a list of supported languages.",
     "url": "/documentation/markdown#markdown_with_code_blocks"
   },
   {
     "title": "Markdown: Markdown tables",
-    "content": "By activating the \"tables\" extra, you can use Markdown tables. See the [markdown2 documentation](https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras) for a list of available extras.",
+    "content": "By activating the \"tables\" extra, you can use Markdown tables. See the markdown2 documentation for a list of available extras.",
     "url": "/documentation/markdown#markdown_tables"
   },
   {
@@ -806,7 +806,7 @@
   },
   {
     "title": "Generic Events: Modifiers",
-    "content": "You can also include [key modifiers](https://vuejs.org/guide/essentials/event-handling.html#key-modifiers>) (shown in input \"A\"), modifier combinations (shown in input \"B\"), and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mouse-button-modifiers>) (shown in input \"C\").",
+    "content": "You can also include key modifiers (shown in input \"A\"), modifier combinations (shown in input \"B\"), and event modifiers (shown in input \"C\").",
     "url": "/documentation/generic_events#modifiers"
   },
   {
@@ -826,12 +826,12 @@
   },
   {
     "title": "Bindings: Bind to variable",
-    "content": "Here we are binding the value from the datepicker to a bare variable. Therefore we use the dictionary `globals()` which contains all global variables. This demo is based on the [official datepicker example](/documentation/date#input_element_with_date_picker).",
+    "content": "Here we are binding the value from the datepicker to a bare variable. Therefore we use the dictionary globals() which contains all global variables. This demo is based on the official datepicker example.",
     "url": "/documentation/bindings#bind_to_variable"
   },
   {
     "title": "Bindings: Bind to storage",
-    "content": "Bindings also work with [`app.storage`](/documentation/storage). Here we are storing the value of a textarea between visits. The note is also shared between all tabs of the same user.",
+    "content": "Bindings also work with app.storage. Here we are storing the value of a textarea between visits. The note is also shared between all tabs of the same user.",
     "url": "/documentation/bindings#bind_to_storage"
   },
   {
@@ -841,7 +841,7 @@
   },
   {
     "title": "Scene: Handling Click Events",
-    "content": "You can use the `on_click` argument to `ui.scene` to handle click events. The callback receives a `SceneClickEventArguments` object with the following attributes:  - `click_type`: the type of click (\"click\" or \"dblclick\"). - `button`: the button that was clicked (1, 2, or 3). - `alt`, `ctrl`, `meta`, `shift`: whether the alt, ctrl, meta, or shift key was pressed. - `hits`: a list of `SceneClickEventHit` objects, sorted by distance from the camera.  The `SceneClickEventHit` object has the following attributes:  - `object_id`: the id of the object that was clicked. - `object_name`: the name of the object that was clicked. - `x`, `y`, `z`: the x, y and z coordinates of the click.",
+    "content": "You can use the on_click argument to ui.scene to handle click events. The callback receives a SceneClickEventArguments object with the following attributes:  - click_type: the type of click (\"click\" or \"dblclick\"). - button: the button that was clicked (1, 2, or 3). - alt, ctrl, meta, shift: whether the alt, ctrl, meta, or shift key was pressed. - hits: a list of SceneClickEventHit objects, sorted by distance from the camera.  The SceneClickEventHit object has the following attributes:  - object_id: the id of the object that was clicked. - object_name: the name of the object that was clicked. - x, y, z: the x, y and z coordinates of the click.",
     "url": "/documentation/scene#handling_click_events"
   },
   {
@@ -876,7 +876,7 @@
   },
   {
     "title": "Chat Message: HTML text",
-    "content": "Using the `text_html` parameter, you can send HTML text to the chat.",
+    "content": "Using the text_html parameter, you can send HTML text to the chat.",
     "url": "/documentation/chat_message#html_text"
   },
   {
@@ -901,7 +901,7 @@
   },
   {
     "title": "Link: Navigate on large pages",
-    "content": "To jump to a specific location within a page you can place linkable anchors with `ui.link_target('target_name')` or simply pass a NiceGUI element as link target.",
+    "content": "To jump to a specific location within a page you can place linkable anchors with ui.link_target('target_name') or simply pass a NiceGUI element as link target.",
     "url": "/documentation/link#navigate_on_large_pages"
   },
   {
@@ -931,7 +931,7 @@
   },
   {
     "title": "Query: Set background gradient",
-    "content": "It's easy to set a background gradient, image or similar. See [w3schools.com](https://www.w3schools.com/cssref/pr_background-image.php) for more information about setting background with CSS.",
+    "content": "It's easy to set a background gradient, image or similar. See w3schools.com for more information about setting background with CSS.",
     "url": "/documentation/query#set_background_gradient"
   }
 ]
