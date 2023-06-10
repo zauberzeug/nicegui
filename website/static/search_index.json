@@ -1,13 +1,58 @@
 [
   {
+    "title": "Icon",
+    "content": "This element is based on Quasar's `QIcon <https://quasar.dev/vue-components/icon>`_ component.  `Here <https://material.io/icons/>`_ is a reference of possible names.  :param name: name of the icon :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem :param color: icon color (either a Quasar, Tailwind, or CSS color or `None`, default: `None`)",
+    "url": "/documentation/icon"
+  },
+  {
+    "title": "Download",
+    "content": "Function to trigger the download of a file.  :param url: target URL of the file to download :param filename: name of the file to download (default: name of the file on the server)",
+    "url": "/documentation/download"
+  },
+  {
+    "title": "Open",
+    "content": "Can be used to programmatically trigger redirects for a specific client.  Note that *all* clients (i.e. browsers) connected to the page will open the target URL *unless* a socket is specified. User events like button clicks provide such a socket.  :param target: page function or string that is a an absolute URL or relative path from base URL :param socket: optional WebSocket defining the target client",
+    "url": "/documentation/open"
+  },
+  {
+    "title": "Checkbox",
+    "content": ":param text: the label to display next to the checkbox :param value: whether it should be checked initially (default: `False`) :param on_change: callback to execute when value changes",
+    "url": "/documentation/checkbox"
+  },
+  {
+    "title": "Column Element",
+    "content": "Provides a container which arranges its child in a column.",
+    "url": "/documentation/column"
+  },
+  {
     "title": "Column: Masonry or Pinterest-Style Layout",
     "content": "To create a masonry/Pinterest layout, the normal `ui.column` can not be used. But it can be achieved with a few TailwindCSS classes.",
     "url": "/documentation/column#masonry_or_pinterest-style_layout"
   },
   {
+    "title": "Avatar",
+    "content": "A avatar element wrapping Quasar's `QAvatar <https://quasar.dev/vue-components/avatar>`_ component.  :param icon: name of the icon or image path with \"img:\" prefix (e.g. \"map\", \"img:path/to/image.png\") :param color: background color (either a Quasar, Tailwind, or CSS color or `None`, default: \"primary\") :param text_color: color name from the Quasar Color Palette (e.g. \"primary\", \"teal-10\") :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl) (e.g. \"16px\", \"2rem\") :param font_size: size in CSS units, including unit name, of the content (icon, text) (e.g. \"18px\", \"2rem\") :param square: removes border-radius so borders are squared (default: False) :param rounded: applies a small standard border-radius for a squared shape of the component (default: False)",
+    "url": "/documentation/avatar"
+  },
+  {
     "title": "Avatar: Photos",
     "content": "To use a photo as an avatar, you can use `ui.image` within `ui.avatar`.",
     "url": "/documentation/avatar#photos"
+  },
+  {
+    "title": "Button",
+    "content": "This element is based on Quasar's `QBtn <https://quasar.dev/vue-components/button>`_ component.  The ``color`` parameter accepts a Quasar color, a Tailwind color, or a CSS color. If a Quasar color is used, the button will be styled according to the Quasar theme including the color of the text. Note that there are colors like \"red\" being both a Quasar color and a CSS color. In such cases the Quasar color will be used.  :param text: the label of the button :param on_click: callback which is invoked when button is pressed :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')",
+    "url": "/documentation/button"
+  },
+  {
+    "title": "Spinner",
+    "content": "See `Quasar Spinner <https://quasar.dev/vue-components/spinners>`_ for more information.  :param type: type of spinner (e.g. \"audio\", \"ball\", \"bars\", ..., default: \"default\") :param size: size of the spinner (e.g. \"3em\", \"10px\", \"xl\", ..., default: \"1em\") :param color: color of the spinner (either a Quasar, Tailwind, or CSS color or `None`, default: \"primary\") :param thickness: thickness of the spinner (applies to the \"default\" spinner only, default: 5.0)",
+    "url": "/documentation/spinner"
+  },
+  {
+    "title": "File Upload",
+    "content": "Based on Quasar's `QUploader <https://quasar.dev/vue-components/uploader>`_ component.  :param multiple: allow uploading multiple files at once (default: `False`) :param max_file_size: maximum file size in bytes (default: `0`) :param max_total_size: maximum total size of all files in bytes (default: `0`) :param max_files: maximum number of files (default: `0`) :param on_upload: callback to execute for each uploaded file (type: nicegui.events.UploadEventArguments) :param on_rejected: callback to execute for each rejected file :param label: label for the uploader (default: `''`) :param auto_upload: automatically upload files when they are selected (default: `False`)",
+    "url": "/documentation/upload"
   },
   {
     "title": "Upload: Upload restrictions",
@@ -20,6 +65,11 @@
     "url": "/documentation/upload#show_file_content"
   },
   {
+    "title": "Timer",
+    "content": "One major drive behind the creation of NiceGUI was the necessity to have a simple approach to update the interface in regular intervals, for example to show a graph with incoming measurements. A timer will execute a callback repeatedly with a given interval.  :param interval: the interval in which the timer is called (can be changed during runtime) :param callback: function or coroutine to execute when interval elapses :param active: whether the callback should be executed or not (can be changed during runtime) :param once: whether the callback is only executed once after a delay specified by `interval` (default: `False`)",
+    "url": "/documentation/timer"
+  },
+  {
     "title": "Timer: Activate and deactivate a timer",
     "content": "You can activate and deactivate a timer using the `active` property.",
     "url": "/documentation/timer#activate_and_deactivate_a_timer"
@@ -28,6 +78,21 @@
     "title": "Timer: Call a function after a delay",
     "content": "You can call a function after a delay using a timer with the `once` parameter.",
     "url": "/documentation/timer#call_a_function_after_a_delay"
+  },
+  {
+    "title": "Linear Progress",
+    "content": "A linear progress bar wrapping Quasar's `QLinearProgress <https://quasar.dev/vue-components/linear-progress>`_ component.  :param value: the initial value of the field (from 0.0 to 1.0) :param size: the height of the progress bar (default: \"20px\" with value label and \"4px\" without) :param show_value: whether to show a value label in the center (default: `True`) :param color: color (either a Quasar, Tailwind, or CSS color or `None`, default: \"primary\")",
+    "url": "/documentation/linear_progress"
+  },
+  {
+    "title": "Run JavaScript",
+    "content": "This function runs arbitrary JavaScript code on a page that is executed in the browser. The asynchronous function will return after the command(s) are executed. The client must be connected before this function is called. To access a client-side object by ID, use the JavaScript function `getElement()`.  :param code: JavaScript code to run :param respond: whether to wait for a response (default: `True`) :param timeout: timeout in seconds (default: `1.0`) :param check_interval: interval in seconds to check for a response (default: `0.01`)  :return: response from the browser, or `None` if `respond` is `False`",
+    "url": "/documentation/run_javascript"
+  },
+  {
+    "title": "AG Grid",
+    "content": "An element to create a grid using `AG Grid <https://www.ag-grid.com/>`_.  The `call_api_method` method can be used to call an AG Grid API method.  :param options: dictionary of AG Grid options :param html_columns: list of columns that should be rendered as HTML (default: `[]`) :param theme: AG Grid theme (default: 'balham')",
+    "url": "/documentation/aggrid"
   },
   {
     "title": "Aggrid: Select AG Grid Rows",
@@ -50,6 +115,11 @@
     "url": "/documentation/aggrid#create_grid_from_pandas_dataframe"
   },
   {
+    "title": "Slider",
+    "content": ":param min: lower bound of the slider :param max: upper bound of the slider :param step: step size :param value: initial value to set position of the slider :param on_change: callback which is invoked when the user releases the slider",
+    "url": "/documentation/slider"
+  },
+  {
     "title": "Slider: Throttle events with leading and trailing options",
     "content": "By default the value change event of a slider is throttled to 0.05 seconds. This means that if you move the slider quickly, the value will only be updated every 0.05 seconds.  By default both \"leading\" and \"trailing\" events are activated. This means that the very first event is triggered immediately, and the last event is triggered after the throttle time.  This demo shows how disabling either of these options changes the behavior. To see the effect more clearly, the throttle time is set to 1 second. The first slider shows the default behavior, the second one only sends leading events, and the third only sends trailing events.",
     "url": "/documentation/slider#throttle_events_with_leading_and_trailing_options"
@@ -60,9 +130,29 @@
     "url": "/documentation/slider#disable_slider"
   },
   {
+    "title": "Grid Element",
+    "content": "Provides a container which arranges its child in a grid.  :param rows: number of rows in the grid :param columns: number of columns in the grid",
+    "url": "/documentation/grid"
+  },
+  {
+    "title": "Label",
+    "content": "Displays some text.  :param text: the content of the label",
+    "url": "/documentation/label"
+  },
+  {
     "title": "Label: Change Appearance Depending on the Content",
     "content": "You can overwrite the `on_text_change` method to update other attributes of a label depending on its content. This technique also works for bindings as shown in the example below.",
     "url": "/documentation/label#change_appearance_depending_on_the_content"
+  },
+  {
+    "title": "Radio Selection",
+    "content": "The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call `update()` to update the options in the UI.  :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options :param value: the initial value :param on_change: callback to execute when selection changes",
+    "url": "/documentation/radio"
+  },
+  {
+    "title": "Page",
+    "content": "This decorator marks a function to be a page builder. Each user accessing the given route will see a new instance of the page. This means it is private to the user and not shared with others (as it is done `when placing elements outside of a page decorator <https://nicegui.io/documentation#auto-index_page>`_).  :param path: route of the new page (path must start with '/') :param title: optional page title :param viewport: optional viewport meta tag content :param favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used) :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command) :param language: language of the page (defaults to `language` argument of `run` command) :param response_timeout: maximum time for the decorated function to build the page (default: 3.0) :param api_router: APIRouter instance to use, can be left `None` to use the default :param kwargs: additional keyword arguments passed to FastAPI's @app.get method",
+    "url": "/documentation/page"
   },
   {
     "title": "Page: Pages with Path Parameters",
@@ -80,14 +170,79 @@
     "url": "/documentation/page#modularize_with_apirouter"
   },
   {
+    "title": "Text Input",
+    "content": "This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.  The `on_change` event is called on every keystroke and the value updates accordingly. If you want to wait until the user confirms the input, you can register a custom event callback, e.g. `ui.input(...).on('keydown.enter', ...)` or `ui.input(...).on('blur', ...)`.  You can use the `validation` parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed label for the text input :param placeholder: text to show if no value is entered :param value: the current value of the text input :param password: whether to hide the input (default: False) :param password_toggle_button: whether to show a button to toggle the password visibility (default: False) :param on_change: callback to execute when the value changes :param autocomplete: optional list of strings for autocompletion :param validation: dictionary of validation rules, e.g. ``{'Too short!': lambda value: len(value) < 3}``",
+    "url": "/documentation/input"
+  },
+  {
+    "title": "Chart",
+    "content": "An element to create a chart using `Highcharts <https://www.highcharts.com/>`_. Updates can be pushed to the chart by changing the `options` property. After data has changed, call the `update` method to refresh the chart.  By default, a `Highcharts.chart` is created. To use, e.g., `Highcharts.stockChart` instead, set the `type` property to \"stockChart\".  :param options: dictionary of Highcharts options :param type: chart type (e.g. \"chart\", \"stockChart\", \"mapChart\", ...; default: \"chart\") :param extras: list of extra dependencies to include (e.g. \"annotations\", \"arc-diagram\", \"solid-gauge\", ...)",
+    "url": "/documentation/chart"
+  },
+  {
+    "title": "Menu",
+    "content": "Creates a menu. The menu should be placed inside the element where it should be shown.  :param value: whether the menu is already opened (default: `False`)",
+    "url": "/documentation/menu"
+  },
+  {
+    "title": "Joystick",
+    "content": "Create a joystick based on `nipple.js <https://yoannmoi.net/nipplejs/>`_.  :param on_start: callback for when the user touches the joystick :param on_move: callback for when the user moves the joystick :param on_end: callback for when the user releases the joystick :param throttle: throttle interval in seconds for the move event (default: 0.05) :param options: arguments like `color` which should be passed to the `underlying nipple.js library <https://github.com/yoannmoinet/nipplejs#options>`_",
+    "url": "/documentation/joystick"
+  },
+  {
+    "title": "Circular Progress",
+    "content": "A circular progress bar wrapping Quasar's `QCircularProgress <https://quasar.dev/vue-components/circular-progress>`_.  :param value: the initial value of the field :param min: the minimum value (default: 0.0) :param max: the maximum value (default: 1.0) :param size: the size of the progress circle (default: \"xl\") :param show_value: whether to show a value label in the center (default: `True`) :param color: color (either a Quasar, Tailwind, or CSS color or `None`, default: \"primary\")",
+    "url": "/documentation/circular_progress"
+  },
+  {
+    "title": "Toggle",
+    "content": "The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call `update()` to update the options in the UI.  :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options :param value: the initial value :param on_change: callback to execute when selection changes",
+    "url": "/documentation/toggle"
+  },
+  {
+    "title": "Keyboard",
+    "content": "Adds global keyboard event tracking.  :param on_key: callback to be executed when keyboard events occur. :param active: boolean flag indicating whether the callback should be executed or not (default: `True`) :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: `True`) :param ignore: ignore keys when one of these element types is focussed (default: `['input', 'select', 'button', 'textarea']`)",
+    "url": "/documentation/keyboard"
+  },
+  {
+    "title": "Row Element",
+    "content": "Provides a container which arranges its child in a row.",
+    "url": "/documentation/row"
+  },
+  {
+    "title": "Mermaid Diagrams",
+    "content": "Renders diagrams and charts written in the Markdown-inspired `Mermaid <https://mermaid.js.org/>`_ language. The mermaid syntax can also be used inside Markdown elements by providing the extension string 'mermaid' to the ``ui.markdown`` element.  :param content: the Mermaid content to be displayed",
+    "url": "/documentation/mermaid"
+  },
+  {
+    "title": "Shut down NiceGUI.",
+    "content": "This will programmatically stop the server. Only possible when auto-reload is disabled.",
+    "url": "/documentation/shutdown"
+  },
+  {
+    "title": "Interactive Image",
+    "content": "Create an image with an SVG overlay that handles mouse events and yields image coordinates. It is also the best choice for non-flickering image updates. If the source URL changes faster than images can be loaded by the browser, some images are simply skipped. Thereby repeatedly updating the image source will automatically adapt to the available bandwidth. See `OpenCV Webcam <https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam/main.py>`_ for an example.  :param source: the source of the image; can be an URL or a base64 string :param content: SVG content which should be overlayed; viewport has the same dimensions as the image :param on_mouse: callback for mouse events (yields `type`, `image_x` and `image_y`) :param events: list of JavaScript events to subscribe to (default: `['click']`) :param cross: whether to show crosshairs (default: `False`)",
+    "url": "/documentation/interactive_image"
+  },
+  {
     "title": "Interactive Image: Nesting elements",
     "content": "You can nest elements inside an interactive image. Use Tailwind classes like \"absolute top-0 left-0\" to position the label absolutely with respect to the image. Of course this can be done with plain CSS as well.",
     "url": "/documentation/interactive_image#nesting_elements"
   },
   {
+    "title": "Expansion Element",
+    "content": "Provides an expandable container.  :param text: title text :param icon: optional icon (default: None) :param value: whether the expansion should be opened on creation (default: `False`)",
+    "url": "/documentation/expansion"
+  },
+  {
     "title": "Expansion: Expansion with Custom Header",
     "content": "Instead of setting a plain-text title, you can fill the expansion header with UI elements by adding them to the \"header\" slot.",
     "url": "/documentation/expansion#expansion_with_custom_header"
+  },
+  {
+    "title": "Dialog",
+    "content": "Creates a dialog. By default it is dismissible by clicking or pressing ESC. To make it persistent, set `.props('persistent')` on the dialog element.  :param value: whether the dialog should be opened on creation (default: `False`)",
+    "url": "/documentation/dialog"
   },
   {
     "title": "Dialog: Awaitable dialog",
@@ -100,9 +255,24 @@
     "url": "/documentation/dialog#replacing_content"
   },
   {
+    "title": "Tree",
+    "content": "Display hierarchical data using Quasar's `QTree <https://quasar.dev/vue-components/tree>`_ component.  If using IDs, make sure they are unique within the whole tree.  :param nodes: hierarchical list of node objects :param node_key: property name of each node object that holds its unique id (default: \"id\") :param label_key: property name of each node object that holds its label (default: \"label\") :param children_key: property name of each node object that holds its list of children (default: \"children\") :param on_select: callback which is invoked when the node selection changes :param on_expand: callback which is invoked when the node expansion changes :param on_tick: callback which is invoked when a node is ticked or unticked",
+    "url": "/documentation/tree"
+  },
+  {
     "title": "Tree: Tree with custom header and body",
     "content": "Scoped slots can be used to insert custom content into the header and body of a tree node. See the [Quasar documentation](https://quasar.dev/vue-components/tree#customize-content) for more information.",
     "url": "/documentation/tree#tree_with_custom_header_and_body"
+  },
+  {
+    "title": "Switch",
+    "content": ":param text: the label to display next to the switch :param value: whether it should be active initially (default: `False`) :param on_change: callback which is invoked when state is changed by the user",
+    "url": "/documentation/switch"
+  },
+  {
+    "title": "Table",
+    "content": "A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.  :param columns: list of column objects :param rows: list of row objects :param row_key: name of the column containing unique data identifying the row (default: \"id\") :param title: title of the table :param selection: selection type (\"single\" or \"multiple\"; default: `None`) :param pagination: number of rows per page (`None` hides the pagination, 0 means \"infinite\"; default: `None`) :param on_select: callback which is invoked when the selection changes  If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.",
+    "url": "/documentation/table"
   },
   {
     "title": "Table: Table with expandable rows",
@@ -130,6 +300,11 @@
     "url": "/documentation/table#adding_rows"
   },
   {
+    "title": "Notification",
+    "content": "Displays a notification on the screen.  :param message: content of the notification :param position: position on the screen (\"top-left\", \"top-right\", \"bottom-left\", \"bottom-right\", \"top\", \"bottom\", \"left\", \"right\" or \"center\", default: \"bottom\") :param closeBtn: optional label of a button to dismiss the notification (default: `False`) :param type: optional type (\"positive\", \"negative\", \"warning\", \"info\" or \"ongoing\") :param color: optional color name  Note: You can pass additional keyword arguments according to `Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>`_.",
+    "url": "/documentation/notify"
+  },
+  {
     "title": "Notify: Notification Types",
     "content": "There are different types that can be used to indicate the nature of the notification.",
     "url": "/documentation/notify#notification_types"
@@ -155,9 +330,34 @@
     "url": "/documentation/storage#storing_ui_state"
   },
   {
+    "title": "Refreshable UI functions",
+    "content": "The `@ui.refreshable` decorator allows you to create functions that have a `refresh` method. This method will automatically delete all elements created by the function and recreate them.",
+    "url": "/documentation/refreshable"
+  },
+  {
+    "title": "Color Input",
+    "content": ":param label: displayed label for the color input :param placeholder: text to show if no color is selected :param value: the current color value :param on_change: callback to execute when the value changes",
+    "url": "/documentation/color_input"
+  },
+  {
+    "title": "Textarea",
+    "content": "This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component. The ``type`` is set to ``textarea`` to create a multi-line text input.  :param label: displayed name for the textarea :param placeholder: text to show if no value is entered :param value: the initial value of the field :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. ``{'Too short!': lambda value: len(value) < 3}``",
+    "url": "/documentation/textarea"
+  },
+  {
+    "title": "Video",
+    "content": ":param src: URL of the video source :param controls: whether to show the video controls, like play, pause, and volume (default: `True`) :param autoplay: whether to start playing the video automatically (default: `False`) :param muted: whether the video should be initially muted (default: `False`) :param loop: whether the video should loop (default: `False`)  See `here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events>`_ for a list of events you can subscribe to using the generic event subscription `on()`.",
+    "url": "/documentation/video"
+  },
+  {
     "title": "Video: Video start position",
     "content": "This demo shows how to set the start position of a video.",
     "url": "/documentation/video#video_start_position"
+  },
+  {
+    "title": "Date Input",
+    "content": "This element is based on Quasar's `QDate <https://quasar.dev/vue-components/date>`_ component. The date is a string in the format defined by the `mask` parameter.  You can also use the `range` or `multiple` props to select a range of dates or multiple dates::  ui.date({'from': '2023-01-01', 'to': '2023-01-05'}).props('range') ui.date(['2023-01-01', '2023-01-02', '2023-01-03']).props('multiple') ui.date([{'from': '2023-01-01', 'to': '2023-01-05'}, '2023-01-07']).props('multiple range')  :param value: the initial date :param mask: the format of the date string (default: 'YYYY-MM-DD') :param on_change: callback to execute when changing the date",
+    "url": "/documentation/date"
   },
   {
     "title": "Date: Input element with date picker",
@@ -170,14 +370,39 @@
     "url": "/documentation/date#date_filter"
   },
   {
+    "title": "Card",
+    "content": "This element is based on Quasar's `QCard <https://quasar.dev/vue-components/card>`_ component. It provides a container with a dropped shadow.  Note: There are subtle differences between the Quasar component and this element. In contrast to this element, the original QCard has no padding by default and hides outer borders of nested elements. If you want the original behavior, use the `tight` method. If you want the padding and borders for nested children, move the children into another container.",
+    "url": "/documentation/card"
+  },
+  {
     "title": "Card: The issue with nested borders",
     "content": "The following example shows a table nested in a card. Cards have a default padding in NiceGUI, so the table is not flush with the card's border. The table has the `flat` and `bordered` props set, so it should have a border. However, due to the way QCard is designed, the border is not visible (first card). There are two ways to fix this:  - To get the original QCard behavior, use the `tight` method (second card). It removes the padding and the table border collapses with the card border.  - To preserve the padding _and_ the table border, move the table into another container like a `ui.row` (third card).  See https://github.com/zauberzeug/nicegui/issues/726 for more information.",
     "url": "/documentation/card#the_issue_with_nested_borders"
   },
   {
+    "title": "Dark mode",
+    "content": "You can use this element to enable, disable or toggle dark mode on the page. The value `None` represents auto mode, which uses the client's system preference.  Note that this element overrides the `dark` parameter of the `ui.run` function and page decorators.  :param value: Whether dark mode is enabled. If None, dark mode is set to auto.",
+    "url": "/documentation/dark_mode"
+  },
+  {
+    "title": "Generic Element",
+    "content": "This class is the base class for all other UI elements. But you can use it to create elements with arbitrary HTML tags.  :param tag: HTML tag of the element :param _client: client for this element (for internal use only)",
+    "url": "/documentation/element"
+  },
+  {
     "title": "Element: Move elements",
     "content": "This demo shows how to move elements between or within containers.",
     "url": "/documentation/element#move_elements"
+  },
+  {
+    "title": "Time Input",
+    "content": "This element is based on Quasar's `QTime <https://quasar.dev/vue-components/date>`_ component. The time is a string in the format defined by the `mask` parameter.  :param value: the initial time :param mask: the format of the time string (default: 'HH:mm') :param on_change: callback to execute when changing the time",
+    "url": "/documentation/time"
+  },
+  {
+    "title": "Splitter",
+    "content": "The `ui.splitter` element divides the screen space into resizable sections, allowing for flexible and responsive layouts in your application.  Based on Quasar's Splitter component: `Splitter <https://quasar.dev/vue-components/splitter>`_  It provides three customizable slots, ``before``, ``after``, and ``separator``, which can be used to embed other elements within the splitter.  :param horizontal: Whether to split horizontally instead of vertically :param limits: Two numbers representing the minimum and maximum split size of the two panels :param value: Size of the first panel (or second if using reverse) :param reverse: Whether to apply the model size to the second panel instead of the first :param on_change: callback which is invoked when the user releases the splitter",
+    "url": "/documentation/splitter"
   },
   {
     "title": "Splitter: Advanced usage",
@@ -190,6 +415,26 @@
     "url": "/documentation/splitter#image_fun"
   },
   {
+    "title": "Image",
+    "content": "Displays an image.  :param source: the source of the image; can be a URL or a base64 string",
+    "url": "/documentation/image"
+  },
+  {
+    "title": "Color Theming",
+    "content": "Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/>`_.",
+    "url": "/documentation/colors"
+  },
+  {
+    "title": "Number Input",
+    "content": "This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.  You can use the `validation` parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed name for the number input :param placeholder: text to show if no value is entered :param value: the initial value of the field :param min: the minimum value allowed :param max: the maximum value allowed :param step: the step size for the stepper buttons :param prefix: a prefix to prepend to the displayed value :param suffix: a suffix to append to the displayed value :param format: a string like \"%.2f\" to format the displayed value :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. ``{'Too small!': lambda value: value < 3}``",
+    "url": "/documentation/number"
+  },
+  {
+    "title": "Dropdown Selection",
+    "content": "The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call `update()` to update the options in the UI.  :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options :param value: the initial value :param on_change: callback to execute when selection changes :param with_input: whether to show an input field to filter the options :param multiple: whether to allow multiple selections",
+    "url": "/documentation/select"
+  },
+  {
     "title": "Select: Search-as-you-type",
     "content": "You can activate `with_input` to get a text input with autocompletion. The options will be filtered as you type.",
     "url": "/documentation/select#search-as-you-type"
@@ -200,6 +445,16 @@
     "url": "/documentation/select#multi_selection"
   },
   {
+    "title": "Badge",
+    "content": "A badge element wrapping Quasar's `QBadge <https://quasar.dev/vue-components/badge>`_ component.  :param text: the initial value of the text field :param color: the color name for component (either a Quasar, Tailwind, or CSS color or `None`, default: \"primary\") :param text_color: text color (either a Quasar, Tailwind, or CSS color or `None`, default: `None`) :param outline: use 'outline' design (colored text and borders only) (default: False)",
+    "url": "/documentation/badge"
+  },
+  {
+    "title": "Plotly Element",
+    "content": "Renders a Plotly chart. There are two ways to pass a Plotly figure for rendering, see parameter `figure`:  * Pass a `go.Figure` object, see https://plotly.com/python/  * Pass a Python `dict` object with keys `data`, `layout`, `config` (optional), see https://plotly.com/javascript/  For best performance, use the declarative `dict` approach for creating a Plotly chart.  :param figure: Plotly figure to be rendered. Can be either a `go.Figure` instance, or a `dict` object with keys `data`, `layout`, `config` (optional).",
+    "url": "/documentation/plotly"
+  },
+  {
     "title": "Plotly: Dictionary interface",
     "content": "This demo shows how to use the declarative dictionary interface to create a plot. For plots with many traces and data points, this is more efficient than the object-oriented interface. The definition corresponds to the [JavaScript Plotly API](https://plotly.com/javascript/). Due to different defaults, the resulting plot may look slightly different from the same plot created with the object-oriented interface, but the functionality is the same.",
     "url": "/documentation/plotly#dictionary_interface"
@@ -208,6 +463,21 @@
     "title": "Plotly: Plot updates",
     "content": "This demo shows how to update the plot in real time. Click the button to add a new trace to the plot. To send the new plot to the browser, make sure to explicitly call `plot.update()` or `ui.update(plot)`.",
     "url": "/documentation/plotly#plot_updates"
+  },
+  {
+    "title": "HTML Element",
+    "content": "Renders arbitrary HTML onto the page. `Tailwind <https://tailwindcss.com/>`_ can be used for styling. You can also use `ui.add_head_html` to add html code into the head of the document and `ui.add_body_html` to add it into the body.  :param content: the HTML code to be displayed",
+    "url": "/documentation/html"
+  },
+  {
+    "title": "Color Picker",
+    "content": ":param on_pick: callback to execute when a color is picked :param value: whether the menu is already opened (default: `False`)",
+    "url": "/documentation/color_picker"
+  },
+  {
+    "title": "Markdown Element",
+    "content": "Renders Markdown onto the page.  :param content: the Markdown content to be displayed :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)",
+    "url": "/documentation/markdown"
   },
   {
     "title": "Markdown: Markdown with indentation",
@@ -235,6 +505,11 @@
     "url": "/documentation/generic_events#modifiers"
   },
   {
+    "title": "Pyplot Context",
+    "content": "Create a context to configure a `Matplotlib <https://matplotlib.org/>`_ plot.  :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later (default: `True`) :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_",
+    "url": "/documentation/pyplot"
+  },
+  {
     "title": "Bindings",
     "content": "NiceGUI is able to directly bind UI elements to models. Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes. Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property. To define a one-way binding use the `_from` and `_to` variants of these methods. Just pass a property of the model as parameter to these methods to create the binding.",
     "url": "/documentation/bindings"
@@ -255,9 +530,19 @@
     "url": "/documentation/bindings#bind_to_storage"
   },
   {
+    "title": "3D Scene",
+    "content": "Display a 3d scene using `three.js <https://threejs.org/>`_. Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes. Objects can be translated, rotated and displayed with different color, opacity or as wireframes. They can also be grouped to apply joint movements.  :param width: width of the canvas :param height: height of the canvas :param grid: whether to display a grid :param on_click: callback to execute when a 3d object is clicked",
+    "url": "/documentation/scene"
+  },
+  {
     "title": "Scene: Handling Click Events",
     "content": "You can use the `on_click` argument to `ui.scene` to handle click events. The callback receives a `SceneClickEventArguments` object with the following attributes:  - `click_type`: the type of click (\"click\" or \"dblclick\"). - `button`: the button that was clicked (1, 2, or 3). - `alt`, `ctrl`, `meta`, `shift`: whether the alt, ctrl, meta, or shift key was pressed. - `hits`: a list of `SceneClickEventHit` objects, sorted by distance from the camera.  The `SceneClickEventHit` object has the following attributes:  - `object_id`: the id of the object that was clicked. - `object_name`: the name of the object that was clicked. - `x`, `y`, `z`: the x, y and z coordinates of the click.",
     "url": "/documentation/scene#handling_click_events"
+  },
+  {
+    "title": "ui.run",
+    "content": "You can call `ui.run()` with optional arguments:  :param host: start server with this host (defaults to `'127.0.0.1` in native mode, otherwise `'0.0.0.0'`) :param port: use this port (default: `8080`) :param title: page title (default: `'NiceGUI'`, can be overwritten per page) :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page) :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'\ud83d\ude80'`, works for most browsers) :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for \"auto\" mode) :param language: language for Quasar elements (default: `'en-US'`) :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly) :param show: automatically open the UI in a browser tab (default: `True`) :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port) :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`) :param fullscreen: open the UI in a fullscreen window (default: `False`, also activates `native`) :param reload: automatically reload the UI on file changes (default: `True`) :param uvicorn_logging_level: logging level for uvicorn server (default: `'warning'`) :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only) :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`) :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`) :param exclude: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth (possible entries: aggrid, audio, chart, colors, interactive_image, joystick, keyboard, log, markdown, mermaid, plotly, scene, video) :param tailwind: whether to use Tailwind (experimental, default: `True`) :param storage_secret: secret key for browser based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser) :param kwargs: additional keyword arguments are passed to `uvicorn.run`",
+    "url": "/documentation/run"
   },
   {
     "title": "Run: Emoji favicon",
@@ -275,6 +560,16 @@
     "url": "/documentation/run#svg_favicon"
   },
   {
+    "title": "Audio",
+    "content": ":param src: URL of the audio source :param controls: whether to show the audio controls, like play, pause, and volume (default: `True`) :param autoplay: whether to start playing the audio automatically (default: `False`) :param muted: whether the audio should be initially muted (default: `False`) :param loop: whether the audio should loop (default: `False`)  See `here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#events>`_ for a list of events you can subscribe to using the generic event subscription `on()`.",
+    "url": "/documentation/audio"
+  },
+  {
+    "title": "Chat Message",
+    "content": "Based on Quasar's `Chat Message <https://quasar.dev/vue-components/chat/>`_ component.  :param text: the message body (can be a list of strings for multiple message parts) :param name: the name of the message author :param label: renders a label header/section only :param stamp: timestamp of the message :param avatar: URL to an avatar :param sent: render as a sent message (so from current user) (default: False) :param text_html: render text as HTML (default: False)",
+    "url": "/documentation/chat_message"
+  },
+  {
     "title": "Chat Message: HTML text",
     "content": "Using the `text_html` parameter, you can send HTML text to the chat.",
     "url": "/documentation/chat_message#html_text"
@@ -290,6 +585,16 @@
     "url": "/documentation/chat_message#multi-part_messages"
   },
   {
+    "title": "Knob",
+    "content": "This element is based on Quasar's `QKnob <https://quasar.dev/vue-components/knob>`_ component. The element is used to take a number input from the user through mouse/touch panning.  :param value: the initial value (default: 0.0) :param min: the minimum value (default: 0.0) :param max: the maximum value (default: 1.0) :param step: the step size (default: 0.01) :param color: knob color (either a Quasar, Tailwind, or CSS color or `None`, default: \"primary\") :param center_color: color name for the center part of the component, examples: primary, teal-10 :param track_color: color name for the track of the component, examples: primary, teal-10 :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem :param show_value: whether to show the value as text",
+    "url": "/documentation/knob"
+  },
+  {
+    "title": "Link",
+    "content": "Create a hyperlink.  To jump to a specific location within a page you can place linkable anchors with `ui.link_target(\"name\")` and link to it with `ui.link(target=\"#name\")`.  :param text: display text :param target: page function, NiceGUI element on the same page or string that is a an absolute URL or relative path from base URL :param new_tab: open link in new tab (default: False)",
+    "url": "/documentation/link"
+  },
+  {
     "title": "Link: Navigate on large pages",
     "content": "To jump to a specific location within a page you can place linkable anchors with `ui.link_target('target_name')` or simply pass a NiceGUI element as link target.",
     "url": "/documentation/link#navigate_on_large_pages"
@@ -298,6 +603,26 @@
     "title": "Link: Links to other pages",
     "content": "You can link to other pages by providing the link target as path or function reference.",
     "url": "/documentation/link#links_to_other_pages"
+  },
+  {
+    "title": "Log view",
+    "content": "Create a log view that allows to add new lines without re-transmitting the whole history to the client.  :param max_lines: maximum number of lines before dropping oldest ones (default: `None`)",
+    "url": "/documentation/log"
+  },
+  {
+    "title": "Line Plot",
+    "content": "Create a line plot using pyplot. The `push` method provides live updating when utilized in combination with `ui.timer`.  :param n: number of lines :param limit: maximum number of datapoints per line (new points will displace the oldest) :param update_every: update plot only after pushing new data multiple times to save CPU and bandwidth :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later (default: `True`) :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_",
+    "url": "/documentation/line_plot"
+  },
+  {
+    "title": "Add static files.",
+    "content": "`add_static_files()` makes a local directory available at the specified endpoint, e.g. `'/static'`. This is useful for providing local data like images to the frontend. Otherwise the browser would not be able to access the files. Do only put non-security-critical files in there, as they are accessible to everyone.  :param url_path: string that starts with a slash \"/\" and identifies the path at which the files should be served :param local_directory: local folder with files to serve as static content",
+    "url": "/documentation/add_static_files"
+  },
+  {
+    "title": "Query Selector",
+    "content": "To manipulate elements like the document body, you can use the `ui.query` function. With the query result you can add classes, styles, and attributes like with every other UI element. This can be useful for example to change the background color of the page (e.g. `ui.query('body').classes('bg-green')`).",
+    "url": "/documentation/query"
   },
   {
     "title": "Query: Set background gradient",
