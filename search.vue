@@ -78,6 +78,7 @@ export default {
       } else {
         window.location.href = url;
       }
+      this.query = "";
     },
   },
 };
