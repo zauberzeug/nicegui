@@ -2,8 +2,9 @@
 import ast
 import json
 import os
+import re
 from pathlib import Path
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 from icecream import ic
 
@@ -13,11 +14,52 @@ dir_path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(dir_path)
 
 
-class DemoVisitor(ast.NodeVisitor):
+def ast_string_node_to_string(node):
+    if isinstance(node, ast.Str):
+        return node.s
+    elif isinstance(node, ast.JoinedStr):
+        return ''.join(ast_string_node_to_string(part) for part in node.values)
+    else:
+        return str(ast.unparse(node))
+
+
+def markdown_to_text(markdown_string):
+    # Remove link URLs but keep the description
+    markdown_string = re.sub(r'\[([^\[]+)\]\([^\)]+\)', r'\1', markdown_string)
+    # Remove inline code ticks
+    markdown_string = re.sub(r'`([^`]+)`', r'\1', markdown_string)
+    return markdown_string
+
+
+class DocVisitor(ast.NodeVisitor):
 
     def __init__(self, topic: Optional[str] = None) -> None:
         super().__init__()
         self.topic = topic
+        self.current_title = None
+        self.current_content: List[str] = []
+
+    def visit_Call(self, node: ast.Call):
+        if isinstance(node.func, ast.Name):
+            function_name = node.func.id
+        elif isinstance(node.func, ast.Attribute):
+            function_name = node.func.attr
+        else:
+            raise NotImplementedError(f'Unknown function type: {node.func}')
+        if function_name in ['heading', 'subheading']:
+            self.on_new_heading()
+            self.current_title = node.args[0].s
+        elif function_name == 'markdown':
+            if node.args:
+                raw = ast_string_node_to_string(node.args[0]).splitlines()
+                raw = ' '.join([l.strip() for l in raw]).strip()
+                self.current_content.append(markdown_to_text(raw))
+        self.generic_visit(node)
+
+    def on_new_heading(self) -> None:
+        if self.current_title:
+            self.add_to_search_index(self.current_title, self.current_content if self.current_content else 'Overview')
+            self.current_content = []
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         if node.name == 'main_demo':
@@ -59,7 +101,10 @@ class DemoVisitor(ast.NodeVisitor):
 def generate_for(file: Path, topic: Optional[str] = None) -> None:
     with open(file, 'r') as source:
         tree = ast.parse(source.read())
-        DemoVisitor(topic).visit(tree)
+        doc_visitor = DocVisitor(topic)
+        doc_visitor.visit(tree)
+        if doc_visitor.current_title:
+            doc_visitor.on_new_heading()  # to finalize the last heading
 
 
 documents = []

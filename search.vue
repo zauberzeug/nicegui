@@ -59,6 +59,10 @@ export default {
         { name: "title", weight: 0.7 },
         { name: "content", weight: 0.3 },
       ],
+      tokenize: true, // each word is ranked individually
+      threshold: 0.3,
+      location: 0,
+      distance: 10000,
     };
 
     this.fuse = new Fuse(this.searchData, options);
