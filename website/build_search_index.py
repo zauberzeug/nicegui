@@ -23,11 +23,16 @@ def ast_string_node_to_string(node):
         return str(ast.unparse(node))
 
 
-def markdown_to_text(markdown_string):
+def cleanup(markdown_string):
     # Remove link URLs but keep the description
     markdown_string = re.sub(r'\[([^\[]+)\]\([^\)]+\)', r'\1', markdown_string)
     # Remove inline code ticks
     markdown_string = re.sub(r'`([^`]+)`', r'\1', markdown_string)
+    # Remove code blocks
+    markdown_string = re.sub(r'```([^`]+)```', r'\1', markdown_string)
+    markdown_string = re.sub(r'``([^`]+)``', r'\1', markdown_string)
+    # Remove braces
+    markdown_string = re.sub(r'\{([^\}]+)\}', r'\1', markdown_string)
     return markdown_string
 
 
@@ -53,7 +58,7 @@ class DocVisitor(ast.NodeVisitor):
             if node.args:
                 raw = ast_string_node_to_string(node.args[0]).splitlines()
                 raw = ' '.join([l.strip() for l in raw]).strip()
-                self.current_content.append(markdown_to_text(raw))
+                self.current_content.append(cleanup(raw))
         self.generic_visit(node)
 
     def on_new_heading(self) -> None:
@@ -67,7 +72,7 @@ class DocVisitor(ast.NodeVisitor):
             if docstring is None:
                 api = getattr(ui, self.topic) if hasattr(ui, self.topic) else getattr(app, self.topic)
                 docstring = api.__doc__ or api.__init__.__doc__
-            lines = docstring.splitlines()
+            lines = cleanup(docstring).splitlines()
             self.add_to_search_index(lines[0], lines[1:], main=True)
 
         for decorator in node.decorator_list:

@@ -66,7 +66,7 @@
   },
   {
     "title": "Try styling NiceGUI elements!",
-    "content": "Try out how Tailwind CSS classes, Quasar props, and CSS styles affect NiceGUI elements. ``py from nicegui import ui  element = {select_element.options[select_element.value]}('element') `` element.classes(' ') element.props(' ') element.style(' ') ``py ui.run() ``",
+    "content": "Try out how Tailwind CSS classes, Quasar props, and CSS styles affect NiceGUI elements. py from nicegui import ui  element = select_element.options[select_element.value]('element') element.classes(' ') element.props(' ') element.style(' ') py ui.run()",
     "url": "/documentation/#try_styling_nicegui_elements!"
   },
   {
@@ -156,17 +156,17 @@
   },
   {
     "title": "Server Hosting",
-    "content": "To deploy your NiceGUI app on a server, you will need to execute your main.py (or whichever file contains your ui.run(...)) on your cloud infrastructure. You can, for example, just install the NiceGUI python package via pip and use systemd or similar service to start the main script. In most cases, you will set the port to 80 (or 443 if you want to use HTTPS) with the ui.run command to make it easily accessible from the outside.  A convenient alternative is the use of our pre-built multi-arch Docker image which contains all necessary dependencies. With this command you can launch the script main.py in the current directory on the public port 80: ``bash docker run -p 80:8080 -v $(pwd)/:/app/ \\ -d --restart always zauberzeug/nicegui:latest `` The demo assumes main.py uses the port 8080 in the ui.run command (which is the default). The -d tells docker to run in background and --restart always makes sure the container is restarted if the app crashes or the server reboots. Of course this can also be written in a Docker compose file: ``yaml app: image: zauberzeug/nicegui:latest restart: always ports: - 80:8080 volumes: - ./:/app/ `` You can provide SSL certificates directly using FastAPI. In production we also like using reverse proxies like Traefik or NGINX to handle these details for us. See our docker-compose.yml as an example.  You may also have a look at our demo for using a custom FastAPI app. This will allow you to do very flexible deployments as described in the FastAPI documentation. Note that there are additional steps required to allow multiple workers.",
+    "content": "To deploy your NiceGUI app on a server, you will need to execute your main.py (or whichever file contains your ui.run(...)) on your cloud infrastructure. You can, for example, just install the NiceGUI python package via pip and use systemd or similar service to start the main script. In most cases, you will set the port to 80 (or 443 if you want to use HTTPS) with the ui.run command to make it easily accessible from the outside.  A convenient alternative is the use of our pre-built multi-arch Docker image which contains all necessary dependencies. With this command you can launch the script main.py in the current directory on the public port 80: bash docker run -p 80:8080 -v $(pwd)/:/app/ \\ -d --restart always zauberzeug/nicegui:latest The demo assumes main.py uses the port 8080 in the ui.run command (which is the default). The -d tells docker to run in background and --restart always makes sure the container is restarted if the app crashes or the server reboots. Of course this can also be written in a Docker compose file: yaml app: image: zauberzeug/nicegui:latest restart: always ports: - 80:8080 volumes: - ./:/app/ You can provide SSL certificates directly using FastAPI. In production we also like using reverse proxies like Traefik or NGINX to handle these details for us. See our docker-compose.yml as an example.  You may also have a look at our demo for using a custom FastAPI app. This will allow you to do very flexible deployments as described in the FastAPI documentation. Note that there are additional steps required to allow multiple workers.",
     "url": "/documentation/#server_hosting"
   },
   {
     "title": "Package for Installation",
-    "content": "NiceGUI apps can also be bundled into an executable with PyInstaller. This allows you to distribute your app as a single file that can be executed on any computer.  Just take care your ui.run command does not use the reload argument. Running the build.py below will create an executable myapp in the dist folder: ``python from nicegui import ui  ui.label('Hello from PyInstaller')  ui.run(reload=False) `` ``python import os import subprocess from pathlib import Path import nicegui  cmd = [ 'python', '-m', 'PyInstaller', 'main.py', # your main file with ui.run() '--name', 'myapp', # name of your app '--onefile', #'--windowed', # prevent console appearing, only use with ui.run(native=True, ...) '--add-data', f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui' ] subprocess.call(cmd) `` **Packaging Tips**  - When building a PyInstaller app, your main script can use a native window (rather than a browser window) by using ui.run(reload=False, native=True). The native parameter can be True or False depending on whether you want a native window or to launch a page in the user's browser - either will work in the PyInstaller generated app.  - Specifying --windowed to PyInstaller will prevent a terminal console from appearing. However you should only use this option if you have also specified native=True in your ui.run command. Without a terminal console the user won't be able to exit the app by pressing Ctrl-C. With the native=True option, the app will automatically close when the window is closed, as expected.  - Specifying --windowed to PyInstaller will create an .app file on Mac which may be more convenient to distribute. When you double-click the app to run it, it will not show any console output. You can also run the app from the command line with ./myapp.app/Contents/MacOS/myapp to see the console output.  - Specifying --onefile to PyInstaller will create a single executable file. Whilst convenient for distribution, it will be slower to start up. This is not NiceGUI's fault but just the way Pyinstaller zips things into a single file, then unzips everything into a temporary directory before running. You can mitigate this by removing --onefile from the PyInstaller command, and zip up the generated dist directory yourself, distribute it, and your end users can unzip once and be good to go, without the constant expansion of files due to the --onefile flag.  - Summary of user experience for different options:  | PyInstaller              | ui.run(...)  | Explanation | | :---                     | :---           | :---        | | onefile                | native=False | Single executable generated in dist/, runs in browser | | onefile                | native=True  | Single executable generated in dist/, runs in popup window | | onefile and windowed | native=True  | Single executable generated in dist/ (on Mac a proper dist/myapp.app generated incl. icon), runs in popup window, no console appears | | onefile and windowed | native=False | Avoid (no way to exit the app) | | Specify neither          |                | A dist/myapp directory created which can be zipped manually and distributed; run with dist/myapp/myapp |  - If you are using a Python virtual environment, ensure you pip install pyinstaller within your virtual environment so that the correct PyInstaller is used, or you may get broken apps due to the wrong version of PyInstaller being picked up. That is why the build script invokes PyInstaller using python -m PyInstaller rather than just pyinstaller. ``bash python -m venv venv source venv/bin/activate pip install nicegui pip install pyinstaller `` **Note:** If you're getting an error \"TypeError: a bytes-like object is required, not 'str'\", try adding the following lines to the top of your main.py file: ``py import sys sys.stdout = open('logs.txt', 'w') `` See <https://github.com/zauberzeug/nicegui/issues/681> for more information.",
+    "content": "NiceGUI apps can also be bundled into an executable with PyInstaller. This allows you to distribute your app as a single file that can be executed on any computer.  Just take care your ui.run command does not use the reload argument. Running the build.py below will create an executable myapp in the dist folder: python from nicegui import ui  ui.label('Hello from PyInstaller')  ui.run(reload=False) python import os import subprocess from pathlib import Path import nicegui  cmd = [ 'python', '-m', 'PyInstaller', 'main.py', # your main file with ui.run() '--name', 'myapp', # name of your app '--onefile', #'--windowed', # prevent console appearing, only use with ui.run(native=True, ...) '--add-data', f'Path(nicegui.__file__).parentos.pathsepnicegui' ] subprocess.call(cmd) **Packaging Tips**  - When building a PyInstaller app, your main script can use a native window (rather than a browser window) by using ui.run(reload=False, native=True). The native parameter can be True or False depending on whether you want a native window or to launch a page in the user's browser - either will work in the PyInstaller generated app.  - Specifying --windowed to PyInstaller will prevent a terminal console from appearing. However you should only use this option if you have also specified native=True in your ui.run command. Without a terminal console the user won't be able to exit the app by pressing Ctrl-C. With the native=True option, the app will automatically close when the window is closed, as expected.  - Specifying --windowed to PyInstaller will create an .app file on Mac which may be more convenient to distribute. When you double-click the app to run it, it will not show any console output. You can also run the app from the command line with ./myapp.app/Contents/MacOS/myapp to see the console output.  - Specifying --onefile to PyInstaller will create a single executable file. Whilst convenient for distribution, it will be slower to start up. This is not NiceGUI's fault but just the way Pyinstaller zips things into a single file, then unzips everything into a temporary directory before running. You can mitigate this by removing --onefile from the PyInstaller command, and zip up the generated dist directory yourself, distribute it, and your end users can unzip once and be good to go, without the constant expansion of files due to the --onefile flag.  - Summary of user experience for different options:  | PyInstaller              | ui.run(...)  | Explanation | | :---                     | :---           | :---        | | onefile                | native=False | Single executable generated in dist/, runs in browser | | onefile                | native=True  | Single executable generated in dist/, runs in popup window | | onefile and windowed | native=True  | Single executable generated in dist/ (on Mac a proper dist/myapp.app generated incl. icon), runs in popup window, no console appears | | onefile and windowed | native=False | Avoid (no way to exit the app) | | Specify neither          |                | A dist/myapp directory created which can be zipped manually and distributed; run with dist/myapp/myapp |  - If you are using a Python virtual environment, ensure you pip install pyinstaller within your virtual environment so that the correct PyInstaller is used, or you may get broken apps due to the wrong version of PyInstaller being picked up. That is why the build script invokes PyInstaller using python -m PyInstaller rather than just pyinstaller. bash python -m venv venv source venv/bin/activate pip install nicegui pip install pyinstaller **Note:** If you're getting an error \"TypeError: a bytes-like object is required, not 'str'\", try adding the following lines to the top of your main.py file: py import sys sys.stdout = open('logs.txt', 'w')  See <https://github.com/zauberzeug/nicegui/issues/681> for more information.",
     "url": "/documentation/#package_for_installation"
   },
   {
     "title": "Icon",
-    "content": "This element is based on Quasar's `QIcon <https://quasar.dev/vue-components/icon>`_ component.  `Here <https://material.io/icons/>`_ is a reference of possible names.  :param name: name of the icon :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem :param color: icon color (either a Quasar, Tailwind, or CSS color or `None`, default: `None`)",
+    "content": "This element is based on Quasar's QIcon <https://quasar.dev/vue-components/icon>_ component.  Here <https://material.io/icons/>_ is a reference of possible names.  :param name: name of the icon :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem :param color: icon color (either a Quasar, Tailwind, or CSS color or None, default: None)",
     "url": "/documentation/icon"
   },
   {
@@ -181,7 +181,7 @@
   },
   {
     "title": "Checkbox",
-    "content": ":param text: the label to display next to the checkbox :param value: whether it should be checked initially (default: `False`) :param on_change: callback to execute when value changes",
+    "content": ":param text: the label to display next to the checkbox :param value: whether it should be checked initially (default: False) :param on_change: callback to execute when value changes",
     "url": "/documentation/checkbox"
   },
   {
@@ -196,7 +196,7 @@
   },
   {
     "title": "Avatar",
-    "content": "A avatar element wrapping Quasar's `QAvatar <https://quasar.dev/vue-components/avatar>`_ component.  :param icon: name of the icon or image path with \"img:\" prefix (e.g. \"map\", \"img:path/to/image.png\") :param color: background color (either a Quasar, Tailwind, or CSS color or `None`, default: \"primary\") :param text_color: color name from the Quasar Color Palette (e.g. \"primary\", \"teal-10\") :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl) (e.g. \"16px\", \"2rem\") :param font_size: size in CSS units, including unit name, of the content (icon, text) (e.g. \"18px\", \"2rem\") :param square: removes border-radius so borders are squared (default: False) :param rounded: applies a small standard border-radius for a squared shape of the component (default: False)",
+    "content": "A avatar element wrapping Quasar's QAvatar <https://quasar.dev/vue-components/avatar>_ component.  :param icon: name of the icon or image path with \"img:\" prefix (e.g. \"map\", \"img:path/to/image.png\") :param color: background color (either a Quasar, Tailwind, or CSS color or None, default: \"primary\") :param text_color: color name from the Quasar Color Palette (e.g. \"primary\", \"teal-10\") :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl) (e.g. \"16px\", \"2rem\") :param font_size: size in CSS units, including unit name, of the content (icon, text) (e.g. \"18px\", \"2rem\") :param square: removes border-radius so borders are squared (default: False) :param rounded: applies a small standard border-radius for a squared shape of the component (default: False)",
     "url": "/documentation/avatar"
   },
   {
@@ -206,17 +206,17 @@
   },
   {
     "title": "Button",
-    "content": "This element is based on Quasar's `QBtn <https://quasar.dev/vue-components/button>`_ component.  The ``color`` parameter accepts a Quasar color, a Tailwind color, or a CSS color. If a Quasar color is used, the button will be styled according to the Quasar theme including the color of the text. Note that there are colors like \"red\" being both a Quasar color and a CSS color. In such cases the Quasar color will be used.  :param text: the label of the button :param on_click: callback which is invoked when button is pressed :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')",
+    "content": "This element is based on Quasar's QBtn <https://quasar.dev/vue-components/button>_ component.  The `color parameter accepts a Quasar color, a Tailwind color, or a CSS color. If a Quasar color is used, the button will be styled according to the Quasar theme including the color of the text. Note that there are colors like \"red\" being both a Quasar color and a CSS color. In such cases the Quasar color will be used.  :param text: the label of the button :param on_click: callback which is invoked when button is pressed :param color: the color of the button (either a Quasar, Tailwind, or CSS color or None`, default: 'primary')",
     "url": "/documentation/button"
   },
   {
     "title": "Spinner",
-    "content": "See `Quasar Spinner <https://quasar.dev/vue-components/spinners>`_ for more information.  :param type: type of spinner (e.g. \"audio\", \"ball\", \"bars\", ..., default: \"default\") :param size: size of the spinner (e.g. \"3em\", \"10px\", \"xl\", ..., default: \"1em\") :param color: color of the spinner (either a Quasar, Tailwind, or CSS color or `None`, default: \"primary\") :param thickness: thickness of the spinner (applies to the \"default\" spinner only, default: 5.0)",
+    "content": "See Quasar Spinner <https://quasar.dev/vue-components/spinners>_ for more information.  :param type: type of spinner (e.g. \"audio\", \"ball\", \"bars\", ..., default: \"default\") :param size: size of the spinner (e.g. \"3em\", \"10px\", \"xl\", ..., default: \"1em\") :param color: color of the spinner (either a Quasar, Tailwind, or CSS color or None, default: \"primary\") :param thickness: thickness of the spinner (applies to the \"default\" spinner only, default: 5.0)",
     "url": "/documentation/spinner"
   },
   {
     "title": "File Upload",
-    "content": "Based on Quasar's `QUploader <https://quasar.dev/vue-components/uploader>`_ component.  :param multiple: allow uploading multiple files at once (default: `False`) :param max_file_size: maximum file size in bytes (default: `0`) :param max_total_size: maximum total size of all files in bytes (default: `0`) :param max_files: maximum number of files (default: `0`) :param on_upload: callback to execute for each uploaded file (type: nicegui.events.UploadEventArguments) :param on_rejected: callback to execute for each rejected file :param label: label for the uploader (default: `''`) :param auto_upload: automatically upload files when they are selected (default: `False`)",
+    "content": "Based on Quasar's QUploader <https://quasar.dev/vue-components/uploader>_ component.  :param multiple: allow uploading multiple files at once (default: False) :param max_file_size: maximum file size in bytes (default: 0) :param max_total_size: maximum total size of all files in bytes (default: 0) :param max_files: maximum number of files (default: 0) :param on_upload: callback to execute for each uploaded file (type: nicegui.events.UploadEventArguments) :param on_rejected: callback to execute for each rejected file :param label: label for the uploader (default: '') :param auto_upload: automatically upload files when they are selected (default: False)",
     "url": "/documentation/upload"
   },
   {
@@ -231,7 +231,7 @@
   },
   {
     "title": "Timer",
-    "content": "One major drive behind the creation of NiceGUI was the necessity to have a simple approach to update the interface in regular intervals, for example to show a graph with incoming measurements. A timer will execute a callback repeatedly with a given interval.  :param interval: the interval in which the timer is called (can be changed during runtime) :param callback: function or coroutine to execute when interval elapses :param active: whether the callback should be executed or not (can be changed during runtime) :param once: whether the callback is only executed once after a delay specified by `interval` (default: `False`)",
+    "content": "One major drive behind the creation of NiceGUI was the necessity to have a simple approach to update the interface in regular intervals, for example to show a graph with incoming measurements. A timer will execute a callback repeatedly with a given interval.  :param interval: the interval in which the timer is called (can be changed during runtime) :param callback: function or coroutine to execute when interval elapses :param active: whether the callback should be executed or not (can be changed during runtime) :param once: whether the callback is only executed once after a delay specified by interval (default: False)",
     "url": "/documentation/timer"
   },
   {
@@ -246,17 +246,17 @@
   },
   {
     "title": "Linear Progress",
-    "content": "A linear progress bar wrapping Quasar's `QLinearProgress <https://quasar.dev/vue-components/linear-progress>`_ component.  :param value: the initial value of the field (from 0.0 to 1.0) :param size: the height of the progress bar (default: \"20px\" with value label and \"4px\" without) :param show_value: whether to show a value label in the center (default: `True`) :param color: color (either a Quasar, Tailwind, or CSS color or `None`, default: \"primary\")",
+    "content": "A linear progress bar wrapping Quasar's QLinearProgress <https://quasar.dev/vue-components/linear-progress>_ component.  :param value: the initial value of the field (from 0.0 to 1.0) :param size: the height of the progress bar (default: \"20px\" with value label and \"4px\" without) :param show_value: whether to show a value label in the center (default: True) :param color: color (either a Quasar, Tailwind, or CSS color or None, default: \"primary\")",
     "url": "/documentation/linear_progress"
   },
   {
     "title": "Run JavaScript",
-    "content": "This function runs arbitrary JavaScript code on a page that is executed in the browser. The asynchronous function will return after the command(s) are executed. The client must be connected before this function is called. To access a client-side object by ID, use the JavaScript function `getElement()`.  :param code: JavaScript code to run :param respond: whether to wait for a response (default: `True`) :param timeout: timeout in seconds (default: `1.0`) :param check_interval: interval in seconds to check for a response (default: `0.01`)  :return: response from the browser, or `None` if `respond` is `False`",
+    "content": "This function runs arbitrary JavaScript code on a page that is executed in the browser. The asynchronous function will return after the command(s) are executed. The client must be connected before this function is called. To access a client-side object by ID, use the JavaScript function getElement().  :param code: JavaScript code to run :param respond: whether to wait for a response (default: True) :param timeout: timeout in seconds (default: 1.0) :param check_interval: interval in seconds to check for a response (default: 0.01)  :return: response from the browser, or None if respond is False",
     "url": "/documentation/run_javascript"
   },
   {
     "title": "AG Grid",
-    "content": "An element to create a grid using `AG Grid <https://www.ag-grid.com/>`_.  The `call_api_method` method can be used to call an AG Grid API method.  :param options: dictionary of AG Grid options :param html_columns: list of columns that should be rendered as HTML (default: `[]`) :param theme: AG Grid theme (default: 'balham')",
+    "content": "An element to create a grid using AG Grid <https://www.ag-grid.com/>_.  The call_api_method method can be used to call an AG Grid API method.  :param options: dictionary of AG Grid options :param html_columns: list of columns that should be rendered as HTML (default: []) :param theme: AG Grid theme (default: 'balham')",
     "url": "/documentation/aggrid"
   },
   {
@@ -311,12 +311,12 @@
   },
   {
     "title": "Radio Selection",
-    "content": "The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call `update()` to update the options in the UI.  :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options :param value: the initial value :param on_change: callback to execute when selection changes",
+    "content": "The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call update() to update the options in the UI.  :param options: a list ['value1', ...] or dictionary 'value1':'label1', ... specifying the options :param value: the initial value :param on_change: callback to execute when selection changes",
     "url": "/documentation/radio"
   },
   {
     "title": "Page",
-    "content": "This decorator marks a function to be a page builder. Each user accessing the given route will see a new instance of the page. This means it is private to the user and not shared with others (as it is done `when placing elements outside of a page decorator <https://nicegui.io/documentation#auto-index_page>`_).  :param path: route of the new page (path must start with '/') :param title: optional page title :param viewport: optional viewport meta tag content :param favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used) :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command) :param language: language of the page (defaults to `language` argument of `run` command) :param response_timeout: maximum time for the decorated function to build the page (default: 3.0) :param api_router: APIRouter instance to use, can be left `None` to use the default :param kwargs: additional keyword arguments passed to FastAPI's @app.get method",
+    "content": "This decorator marks a function to be a page builder. Each user accessing the given route will see a new instance of the page. This means it is private to the user and not shared with others (as it is done when placing elements outside of a page decorator <https://nicegui.io/documentation#auto-index_page>_).  :param path: route of the new page (path must start with '/') :param title: optional page title :param viewport: optional viewport meta tag content :param favicon: optional relative filepath or absolute URL to a favicon (default: None, NiceGUI icon will be used) :param dark: whether to use Quasar's dark mode (defaults to dark argument of run command) :param language: language of the page (defaults to language argument of run command) :param response_timeout: maximum time for the decorated function to build the page (default: 3.0) :param api_router: APIRouter instance to use, can be left None to use the default :param kwargs: additional keyword arguments passed to FastAPI's @app.get method",
     "url": "/documentation/page"
   },
   {
@@ -336,37 +336,37 @@
   },
   {
     "title": "Text Input",
-    "content": "This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.  The `on_change` event is called on every keystroke and the value updates accordingly. If you want to wait until the user confirms the input, you can register a custom event callback, e.g. `ui.input(...).on('keydown.enter', ...)` or `ui.input(...).on('blur', ...)`.  You can use the `validation` parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed label for the text input :param placeholder: text to show if no value is entered :param value: the current value of the text input :param password: whether to hide the input (default: False) :param password_toggle_button: whether to show a button to toggle the password visibility (default: False) :param on_change: callback to execute when the value changes :param autocomplete: optional list of strings for autocompletion :param validation: dictionary of validation rules, e.g. ``{'Too short!': lambda value: len(value) < 3}``",
+    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  The on_change event is called on every keystroke and the value updates accordingly. If you want to wait until the user confirms the input, you can register a custom event callback, e.g. ui.input(...).on('keydown.enter', ...) or ui.input(...).on('blur', ...).  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed label for the text input :param placeholder: text to show if no value is entered :param value: the current value of the text input :param password: whether to hide the input (default: False) :param password_toggle_button: whether to show a button to toggle the password visibility (default: False) :param on_change: callback to execute when the value changes :param autocomplete: optional list of strings for autocompletion :param validation: dictionary of validation rules, e.g. `'Too short!': lambda value: len(value) < 3`",
     "url": "/documentation/input"
   },
   {
     "title": "Chart",
-    "content": "An element to create a chart using `Highcharts <https://www.highcharts.com/>`_. Updates can be pushed to the chart by changing the `options` property. After data has changed, call the `update` method to refresh the chart.  By default, a `Highcharts.chart` is created. To use, e.g., `Highcharts.stockChart` instead, set the `type` property to \"stockChart\".  :param options: dictionary of Highcharts options :param type: chart type (e.g. \"chart\", \"stockChart\", \"mapChart\", ...; default: \"chart\") :param extras: list of extra dependencies to include (e.g. \"annotations\", \"arc-diagram\", \"solid-gauge\", ...)",
+    "content": "An element to create a chart using Highcharts <https://www.highcharts.com/>_. Updates can be pushed to the chart by changing the options property. After data has changed, call the update method to refresh the chart.  By default, a Highcharts.chart is created. To use, e.g., Highcharts.stockChart instead, set the type property to \"stockChart\".  :param options: dictionary of Highcharts options :param type: chart type (e.g. \"chart\", \"stockChart\", \"mapChart\", ...; default: \"chart\") :param extras: list of extra dependencies to include (e.g. \"annotations\", \"arc-diagram\", \"solid-gauge\", ...)",
     "url": "/documentation/chart"
   },
   {
     "title": "Menu",
-    "content": "Creates a menu. The menu should be placed inside the element where it should be shown.  :param value: whether the menu is already opened (default: `False`)",
+    "content": "Creates a menu. The menu should be placed inside the element where it should be shown.  :param value: whether the menu is already opened (default: False)",
     "url": "/documentation/menu"
   },
   {
     "title": "Joystick",
-    "content": "Create a joystick based on `nipple.js <https://yoannmoi.net/nipplejs/>`_.  :param on_start: callback for when the user touches the joystick :param on_move: callback for when the user moves the joystick :param on_end: callback for when the user releases the joystick :param throttle: throttle interval in seconds for the move event (default: 0.05) :param options: arguments like `color` which should be passed to the `underlying nipple.js library <https://github.com/yoannmoinet/nipplejs#options>`_",
+    "content": "Create a joystick based on nipple.js <https://yoannmoi.net/nipplejs/>_.  :param on_start: callback for when the user touches the joystick :param on_move: callback for when the user moves the joystick :param on_end: callback for when the user releases the joystick :param throttle: throttle interval in seconds for the move event (default: 0.05) :param options: arguments like color which should be passed to the underlying nipple.js library <https://github.com/yoannmoinet/nipplejs#options>_",
     "url": "/documentation/joystick"
   },
   {
     "title": "Circular Progress",
-    "content": "A circular progress bar wrapping Quasar's `QCircularProgress <https://quasar.dev/vue-components/circular-progress>`_.  :param value: the initial value of the field :param min: the minimum value (default: 0.0) :param max: the maximum value (default: 1.0) :param size: the size of the progress circle (default: \"xl\") :param show_value: whether to show a value label in the center (default: `True`) :param color: color (either a Quasar, Tailwind, or CSS color or `None`, default: \"primary\")",
+    "content": "A circular progress bar wrapping Quasar's QCircularProgress <https://quasar.dev/vue-components/circular-progress>_.  :param value: the initial value of the field :param min: the minimum value (default: 0.0) :param max: the maximum value (default: 1.0) :param size: the size of the progress circle (default: \"xl\") :param show_value: whether to show a value label in the center (default: True) :param color: color (either a Quasar, Tailwind, or CSS color or None, default: \"primary\")",
     "url": "/documentation/circular_progress"
   },
   {
     "title": "Toggle",
-    "content": "The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call `update()` to update the options in the UI.  :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options :param value: the initial value :param on_change: callback to execute when selection changes",
+    "content": "The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call update() to update the options in the UI.  :param options: a list ['value1', ...] or dictionary 'value1':'label1', ... specifying the options :param value: the initial value :param on_change: callback to execute when selection changes",
     "url": "/documentation/toggle"
   },
   {
     "title": "Keyboard",
-    "content": "Adds global keyboard event tracking.  :param on_key: callback to be executed when keyboard events occur. :param active: boolean flag indicating whether the callback should be executed or not (default: `True`) :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: `True`) :param ignore: ignore keys when one of these element types is focussed (default: `['input', 'select', 'button', 'textarea']`)",
+    "content": "Adds global keyboard event tracking.  :param on_key: callback to be executed when keyboard events occur. :param active: boolean flag indicating whether the callback should be executed or not (default: True) :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: True) :param ignore: ignore keys when one of these element types is focussed (default: ['input', 'select', 'button', 'textarea'])",
     "url": "/documentation/keyboard"
   },
   {
@@ -376,7 +376,7 @@
   },
   {
     "title": "Mermaid Diagrams",
-    "content": "Renders diagrams and charts written in the Markdown-inspired `Mermaid <https://mermaid.js.org/>`_ language. The mermaid syntax can also be used inside Markdown elements by providing the extension string 'mermaid' to the ``ui.markdown`` element.  :param content: the Mermaid content to be displayed",
+    "content": "Renders diagrams and charts written in the Markdown-inspired Mermaid <https://mermaid.js.org/>_ language. The mermaid syntax can also be used inside Markdown elements by providing the extension string 'mermaid' to the `ui.markdown` element.  :param content: the Mermaid content to be displayed",
     "url": "/documentation/mermaid"
   },
   {
@@ -386,7 +386,7 @@
   },
   {
     "title": "Interactive Image",
-    "content": "Create an image with an SVG overlay that handles mouse events and yields image coordinates. It is also the best choice for non-flickering image updates. If the source URL changes faster than images can be loaded by the browser, some images are simply skipped. Thereby repeatedly updating the image source will automatically adapt to the available bandwidth. See `OpenCV Webcam <https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam/main.py>`_ for an example.  :param source: the source of the image; can be an URL or a base64 string :param content: SVG content which should be overlayed; viewport has the same dimensions as the image :param on_mouse: callback for mouse events (yields `type`, `image_x` and `image_y`) :param events: list of JavaScript events to subscribe to (default: `['click']`) :param cross: whether to show crosshairs (default: `False`)",
+    "content": "Create an image with an SVG overlay that handles mouse events and yields image coordinates. It is also the best choice for non-flickering image updates. If the source URL changes faster than images can be loaded by the browser, some images are simply skipped. Thereby repeatedly updating the image source will automatically adapt to the available bandwidth. See OpenCV Webcam <https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam/main.py>_ for an example.  :param source: the source of the image; can be an URL or a base64 string :param content: SVG content which should be overlayed; viewport has the same dimensions as the image :param on_mouse: callback for mouse events (yields type, image_x and image_y) :param events: list of JavaScript events to subscribe to (default: ['click']) :param cross: whether to show crosshairs (default: False)",
     "url": "/documentation/interactive_image"
   },
   {
@@ -396,7 +396,7 @@
   },
   {
     "title": "Expansion Element",
-    "content": "Provides an expandable container.  :param text: title text :param icon: optional icon (default: None) :param value: whether the expansion should be opened on creation (default: `False`)",
+    "content": "Provides an expandable container.  :param text: title text :param icon: optional icon (default: None) :param value: whether the expansion should be opened on creation (default: False)",
     "url": "/documentation/expansion"
   },
   {
@@ -406,7 +406,7 @@
   },
   {
     "title": "Dialog",
-    "content": "Creates a dialog. By default it is dismissible by clicking or pressing ESC. To make it persistent, set `.props('persistent')` on the dialog element.  :param value: whether the dialog should be opened on creation (default: `False`)",
+    "content": "Creates a dialog. By default it is dismissible by clicking or pressing ESC. To make it persistent, set .props('persistent') on the dialog element.  :param value: whether the dialog should be opened on creation (default: False)",
     "url": "/documentation/dialog"
   },
   {
@@ -421,7 +421,7 @@
   },
   {
     "title": "Tree",
-    "content": "Display hierarchical data using Quasar's `QTree <https://quasar.dev/vue-components/tree>`_ component.  If using IDs, make sure they are unique within the whole tree.  :param nodes: hierarchical list of node objects :param node_key: property name of each node object that holds its unique id (default: \"id\") :param label_key: property name of each node object that holds its label (default: \"label\") :param children_key: property name of each node object that holds its list of children (default: \"children\") :param on_select: callback which is invoked when the node selection changes :param on_expand: callback which is invoked when the node expansion changes :param on_tick: callback which is invoked when a node is ticked or unticked",
+    "content": "Display hierarchical data using Quasar's QTree <https://quasar.dev/vue-components/tree>_ component.  If using IDs, make sure they are unique within the whole tree.  :param nodes: hierarchical list of node objects :param node_key: property name of each node object that holds its unique id (default: \"id\") :param label_key: property name of each node object that holds its label (default: \"label\") :param children_key: property name of each node object that holds its list of children (default: \"children\") :param on_select: callback which is invoked when the node selection changes :param on_expand: callback which is invoked when the node expansion changes :param on_tick: callback which is invoked when a node is ticked or unticked",
     "url": "/documentation/tree"
   },
   {
@@ -431,12 +431,12 @@
   },
   {
     "title": "Switch",
-    "content": ":param text: the label to display next to the switch :param value: whether it should be active initially (default: `False`) :param on_change: callback which is invoked when state is changed by the user",
+    "content": ":param text: the label to display next to the switch :param value: whether it should be active initially (default: False) :param on_change: callback which is invoked when state is changed by the user",
     "url": "/documentation/switch"
   },
   {
     "title": "Table",
-    "content": "A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.  :param columns: list of column objects :param rows: list of row objects :param row_key: name of the column containing unique data identifying the row (default: \"id\") :param title: title of the table :param selection: selection type (\"single\" or \"multiple\"; default: `None`) :param pagination: number of rows per page (`None` hides the pagination, 0 means \"infinite\"; default: `None`) :param on_select: callback which is invoked when the selection changes  If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.",
+    "content": "A table based on Quasar's QTable <https://quasar.dev/vue-components/table>_ component.  :param columns: list of column objects :param rows: list of row objects :param row_key: name of the column containing unique data identifying the row (default: \"id\") :param title: title of the table :param selection: selection type (\"single\" or \"multiple\"; default: None) :param pagination: number of rows per page (None hides the pagination, 0 means \"infinite\"; default: None) :param on_select: callback which is invoked when the selection changes  If selection is 'single' or 'multiple', then a selected property is accessible containing the selected rows.",
     "url": "/documentation/table"
   },
   {
@@ -466,7 +466,7 @@
   },
   {
     "title": "Notification",
-    "content": "Displays a notification on the screen.  :param message: content of the notification :param position: position on the screen (\"top-left\", \"top-right\", \"bottom-left\", \"bottom-right\", \"top\", \"bottom\", \"left\", \"right\" or \"center\", default: \"bottom\") :param closeBtn: optional label of a button to dismiss the notification (default: `False`) :param type: optional type (\"positive\", \"negative\", \"warning\", \"info\" or \"ongoing\") :param color: optional color name  Note: You can pass additional keyword arguments according to `Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>`_.",
+    "content": "Displays a notification on the screen.  :param message: content of the notification :param position: position on the screen (\"top-left\", \"top-right\", \"bottom-left\", \"bottom-right\", \"top\", \"bottom\", \"left\", \"right\" or \"center\", default: \"bottom\") :param closeBtn: optional label of a button to dismiss the notification (default: False) :param type: optional type (\"positive\", \"negative\", \"warning\", \"info\" or \"ongoing\") :param color: optional color name  Note: You can pass additional keyword arguments according to Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>_.",
     "url": "/documentation/notify"
   },
   {
@@ -481,7 +481,7 @@
   },
   {
     "title": "Storage",
-    "content": "NiceGUI offers a straightforward method for data persistence within your application. It features three built-in storage types:  - `app.storage.user`: Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie. Unique to each user, this storage is accessible across all their browser tabs. - `app.storage.general`: Also stored server-side, this dictionary provides a shared storage space accessible to all users. - `app.storage.browser`: Unlike the previous types, this dictionary is stored directly as the browser session cookie, shared among all browser tabs for the same user. However, `app.storage.user` is generally preferred due to its advantages in reducing data payload, enhancing security, and offering larger storage capacity.  The user storage and browser storage are only available within `page builder functions </documentation/page>`_ because they are accessing the underlying `Request` object from FastAPI. Additionally these two types require the `storage_secret` parameter in`ui.run()` to encrypt the browser session cookie.",
+    "content": "NiceGUI offers a straightforward method for data persistence within your application. It features three built-in storage types:  - app.storage.user: Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie. Unique to each user, this storage is accessible across all their browser tabs. - app.storage.general: Also stored server-side, this dictionary provides a shared storage space accessible to all users. - app.storage.browser: Unlike the previous types, this dictionary is stored directly as the browser session cookie, shared among all browser tabs for the same user. However, app.storage.user is generally preferred due to its advantages in reducing data payload, enhancing security, and offering larger storage capacity.  The user storage and browser storage are only available within page builder functions </documentation/page>_ because they are accessing the underlying Request object from FastAPI. Additionally these two types require the storage_secret parameter inui.run() to encrypt the browser session cookie.",
     "url": "/documentation/storage"
   },
   {
@@ -496,7 +496,7 @@
   },
   {
     "title": "Refreshable UI functions",
-    "content": "The `@ui.refreshable` decorator allows you to create functions that have a `refresh` method. This method will automatically delete all elements created by the function and recreate them.",
+    "content": "The @ui.refreshable decorator allows you to create functions that have a refresh method. This method will automatically delete all elements created by the function and recreate them.",
     "url": "/documentation/refreshable"
   },
   {
@@ -506,12 +506,12 @@
   },
   {
     "title": "Textarea",
-    "content": "This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component. The ``type`` is set to ``textarea`` to create a multi-line text input.  :param label: displayed name for the textarea :param placeholder: text to show if no value is entered :param value: the initial value of the field :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. ``{'Too short!': lambda value: len(value) < 3}``",
+    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component. The `type is set to textarea to create a multi-line text input.  :param label: displayed name for the textarea :param placeholder: text to show if no value is entered :param value: the initial value of the field :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. 'Too short!': lambda value: len(value) < 3`",
     "url": "/documentation/textarea"
   },
   {
     "title": "Video",
-    "content": ":param src: URL of the video source :param controls: whether to show the video controls, like play, pause, and volume (default: `True`) :param autoplay: whether to start playing the video automatically (default: `False`) :param muted: whether the video should be initially muted (default: `False`) :param loop: whether the video should loop (default: `False`)  See `here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events>`_ for a list of events you can subscribe to using the generic event subscription `on()`.",
+    "content": ":param src: URL of the video source :param controls: whether to show the video controls, like play, pause, and volume (default: True) :param autoplay: whether to start playing the video automatically (default: False) :param muted: whether the video should be initially muted (default: False) :param loop: whether the video should loop (default: False)  See here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events>_ for a list of events you can subscribe to using the generic event subscription on().",
     "url": "/documentation/video"
   },
   {
@@ -521,7 +521,7 @@
   },
   {
     "title": "Date Input",
-    "content": "This element is based on Quasar's `QDate <https://quasar.dev/vue-components/date>`_ component. The date is a string in the format defined by the `mask` parameter.  You can also use the `range` or `multiple` props to select a range of dates or multiple dates::  ui.date({'from': '2023-01-01', 'to': '2023-01-05'}).props('range') ui.date(['2023-01-01', '2023-01-02', '2023-01-03']).props('multiple') ui.date([{'from': '2023-01-01', 'to': '2023-01-05'}, '2023-01-07']).props('multiple range')  :param value: the initial date :param mask: the format of the date string (default: 'YYYY-MM-DD') :param on_change: callback to execute when changing the date",
+    "content": "This element is based on Quasar's QDate <https://quasar.dev/vue-components/date>_ component. The date is a string in the format defined by the mask parameter.  You can also use the range or multiple props to select a range of dates or multiple dates::  ui.date('from': '2023-01-01', 'to': '2023-01-05').props('range') ui.date(['2023-01-01', '2023-01-02', '2023-01-03']).props('multiple') ui.date(['from': '2023-01-01', 'to': '2023-01-05', '2023-01-07']).props('multiple range')  :param value: the initial date :param mask: the format of the date string (default: 'YYYY-MM-DD') :param on_change: callback to execute when changing the date",
     "url": "/documentation/date"
   },
   {
@@ -536,7 +536,7 @@
   },
   {
     "title": "Card",
-    "content": "This element is based on Quasar's `QCard <https://quasar.dev/vue-components/card>`_ component. It provides a container with a dropped shadow.  Note: There are subtle differences between the Quasar component and this element. In contrast to this element, the original QCard has no padding by default and hides outer borders of nested elements. If you want the original behavior, use the `tight` method. If you want the padding and borders for nested children, move the children into another container.",
+    "content": "This element is based on Quasar's QCard <https://quasar.dev/vue-components/card>_ component. It provides a container with a dropped shadow.  Note: There are subtle differences between the Quasar component and this element. In contrast to this element, the original QCard has no padding by default and hides outer borders of nested elements. If you want the original behavior, use the tight method. If you want the padding and borders for nested children, move the children into another container.",
     "url": "/documentation/card"
   },
   {
@@ -546,7 +546,7 @@
   },
   {
     "title": "Dark mode",
-    "content": "You can use this element to enable, disable or toggle dark mode on the page. The value `None` represents auto mode, which uses the client's system preference.  Note that this element overrides the `dark` parameter of the `ui.run` function and page decorators.  :param value: Whether dark mode is enabled. If None, dark mode is set to auto.",
+    "content": "You can use this element to enable, disable or toggle dark mode on the page. The value None represents auto mode, which uses the client's system preference.  Note that this element overrides the dark parameter of the ui.run function and page decorators.  :param value: Whether dark mode is enabled. If None, dark mode is set to auto.",
     "url": "/documentation/dark_mode"
   },
   {
@@ -561,12 +561,12 @@
   },
   {
     "title": "Time Input",
-    "content": "This element is based on Quasar's `QTime <https://quasar.dev/vue-components/date>`_ component. The time is a string in the format defined by the `mask` parameter.  :param value: the initial time :param mask: the format of the time string (default: 'HH:mm') :param on_change: callback to execute when changing the time",
+    "content": "This element is based on Quasar's QTime <https://quasar.dev/vue-components/date>_ component. The time is a string in the format defined by the mask parameter.  :param value: the initial time :param mask: the format of the time string (default: 'HH:mm') :param on_change: callback to execute when changing the time",
     "url": "/documentation/time"
   },
   {
     "title": "Splitter",
-    "content": "The `ui.splitter` element divides the screen space into resizable sections, allowing for flexible and responsive layouts in your application.  Based on Quasar's Splitter component: `Splitter <https://quasar.dev/vue-components/splitter>`_  It provides three customizable slots, ``before``, ``after``, and ``separator``, which can be used to embed other elements within the splitter.  :param horizontal: Whether to split horizontally instead of vertically :param limits: Two numbers representing the minimum and maximum split size of the two panels :param value: Size of the first panel (or second if using reverse) :param reverse: Whether to apply the model size to the second panel instead of the first :param on_change: callback which is invoked when the user releases the splitter",
+    "content": "The ui.splitter element divides the screen space into resizable sections, allowing for flexible and responsive layouts in your application.  Based on Quasar's Splitter component: Splitter <https://quasar.dev/vue-components/splitter>_  It provides three customizable slots, `before, after, and separator`, which can be used to embed other elements within the splitter.  :param horizontal: Whether to split horizontally instead of vertically :param limits: Two numbers representing the minimum and maximum split size of the two panels :param value: Size of the first panel (or second if using reverse) :param reverse: Whether to apply the model size to the second panel instead of the first :param on_change: callback which is invoked when the user releases the splitter",
     "url": "/documentation/splitter"
   },
   {
@@ -586,17 +586,17 @@
   },
   {
     "title": "Color Theming",
-    "content": "Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/>`_.",
+    "content": "Sets the main colors (primary, secondary, accent, ...) used by Quasar <https://quasar.dev/>_.",
     "url": "/documentation/colors"
   },
   {
     "title": "Number Input",
-    "content": "This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.  You can use the `validation` parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed name for the number input :param placeholder: text to show if no value is entered :param value: the initial value of the field :param min: the minimum value allowed :param max: the maximum value allowed :param step: the step size for the stepper buttons :param prefix: a prefix to prepend to the displayed value :param suffix: a suffix to append to the displayed value :param format: a string like \"%.2f\" to format the displayed value :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. ``{'Too small!': lambda value: value < 3}``",
+    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed name for the number input :param placeholder: text to show if no value is entered :param value: the initial value of the field :param min: the minimum value allowed :param max: the maximum value allowed :param step: the step size for the stepper buttons :param prefix: a prefix to prepend to the displayed value :param suffix: a suffix to append to the displayed value :param format: a string like \"%.2f\" to format the displayed value :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. `'Too small!': lambda value: value < 3`",
     "url": "/documentation/number"
   },
   {
     "title": "Dropdown Selection",
-    "content": "The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call `update()` to update the options in the UI.  :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options :param value: the initial value :param on_change: callback to execute when selection changes :param with_input: whether to show an input field to filter the options :param multiple: whether to allow multiple selections",
+    "content": "The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call update() to update the options in the UI.  :param options: a list ['value1', ...] or dictionary 'value1':'label1', ... specifying the options :param value: the initial value :param on_change: callback to execute when selection changes :param with_input: whether to show an input field to filter the options :param multiple: whether to allow multiple selections",
     "url": "/documentation/select"
   },
   {
@@ -611,12 +611,12 @@
   },
   {
     "title": "Badge",
-    "content": "A badge element wrapping Quasar's `QBadge <https://quasar.dev/vue-components/badge>`_ component.  :param text: the initial value of the text field :param color: the color name for component (either a Quasar, Tailwind, or CSS color or `None`, default: \"primary\") :param text_color: text color (either a Quasar, Tailwind, or CSS color or `None`, default: `None`) :param outline: use 'outline' design (colored text and borders only) (default: False)",
+    "content": "A badge element wrapping Quasar's QBadge <https://quasar.dev/vue-components/badge>_ component.  :param text: the initial value of the text field :param color: the color name for component (either a Quasar, Tailwind, or CSS color or None, default: \"primary\") :param text_color: text color (either a Quasar, Tailwind, or CSS color or None, default: None) :param outline: use 'outline' design (colored text and borders only) (default: False)",
     "url": "/documentation/badge"
   },
   {
     "title": "Plotly Element",
-    "content": "Renders a Plotly chart. There are two ways to pass a Plotly figure for rendering, see parameter `figure`:  * Pass a `go.Figure` object, see https://plotly.com/python/  * Pass a Python `dict` object with keys `data`, `layout`, `config` (optional), see https://plotly.com/javascript/  For best performance, use the declarative `dict` approach for creating a Plotly chart.  :param figure: Plotly figure to be rendered. Can be either a `go.Figure` instance, or a `dict` object with keys `data`, `layout`, `config` (optional).",
+    "content": "Renders a Plotly chart. There are two ways to pass a Plotly figure for rendering, see parameter figure:  * Pass a go.Figure object, see https://plotly.com/python/  * Pass a Python dict object with keys data, layout, config (optional), see https://plotly.com/javascript/  For best performance, use the declarative dict approach for creating a Plotly chart.  :param figure: Plotly figure to be rendered. Can be either a go.Figure instance, or a dict object with keys data, layout, config (optional).",
     "url": "/documentation/plotly"
   },
   {
@@ -631,17 +631,17 @@
   },
   {
     "title": "HTML Element",
-    "content": "Renders arbitrary HTML onto the page. `Tailwind <https://tailwindcss.com/>`_ can be used for styling. You can also use `ui.add_head_html` to add html code into the head of the document and `ui.add_body_html` to add it into the body.  :param content: the HTML code to be displayed",
+    "content": "Renders arbitrary HTML onto the page. Tailwind <https://tailwindcss.com/>_ can be used for styling. You can also use ui.add_head_html to add html code into the head of the document and ui.add_body_html to add it into the body.  :param content: the HTML code to be displayed",
     "url": "/documentation/html"
   },
   {
     "title": "Color Picker",
-    "content": ":param on_pick: callback to execute when a color is picked :param value: whether the menu is already opened (default: `False`)",
+    "content": ":param on_pick: callback to execute when a color is picked :param value: whether the menu is already opened (default: False)",
     "url": "/documentation/color_picker"
   },
   {
     "title": "Markdown Element",
-    "content": "Renders Markdown onto the page.  :param content: the Markdown content to be displayed :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)",
+    "content": "Renders Markdown onto the page.  :param content: the Markdown content to be displayed :param extras: list of markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>_ (default: ['fenced-code-blocks', 'tables'])",
     "url": "/documentation/markdown"
   },
   {
@@ -661,7 +661,7 @@
   },
   {
     "title": "Generic Events",
-    "content": "Most UI elements come with predefined events. For example, a `ui.button` like \"A\" in the demo has an `on_click` parameter that expects a coroutine or function. But you can also use the `on` method to register a generic event handler like for \"B\". This allows you to register handlers for any event that is supported by JavaScript and Quasar.  For example, you can register a handler for the `mousemove` event like for \"C\", even though there is no `on_mousemove` parameter for `ui.button`. Some events, like `mousemove`, are fired very often. To avoid performance issues, you can use the `throttle` parameter to only call the handler every `throttle` seconds (\"D\").  The generic event handler can be synchronous or asynchronous and optionally takes an event dictionary as argument (\"E\"). You can also specify which attributes of the JavaScript or Quasar event should be passed to the handler (\"F\"). This can reduce the amount of data that needs to be transferred between the server and the client.",
+    "content": "Most UI elements come with predefined events. For example, a ui.button like \"A\" in the demo has an on_click parameter that expects a coroutine or function. But you can also use the on method to register a generic event handler like for \"B\". This allows you to register handlers for any event that is supported by JavaScript and Quasar.  For example, you can register a handler for the mousemove event like for \"C\", even though there is no on_mousemove parameter for ui.button. Some events, like mousemove, are fired very often. To avoid performance issues, you can use the throttle parameter to only call the handler every throttle seconds (\"D\").  The generic event handler can be synchronous or asynchronous and optionally takes an event dictionary as argument (\"E\"). You can also specify which attributes of the JavaScript or Quasar event should be passed to the handler (\"F\"). This can reduce the amount of data that needs to be transferred between the server and the client.",
     "url": "/documentation/generic_events"
   },
   {
@@ -671,12 +671,12 @@
   },
   {
     "title": "Pyplot Context",
-    "content": "Create a context to configure a `Matplotlib <https://matplotlib.org/>`_ plot.  :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later (default: `True`) :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_",
+    "content": "Create a context to configure a Matplotlib <https://matplotlib.org/>_ plot.  :param close: whether the figure should be closed after exiting the context; set to False if you want to update it later (default: True) :param kwargs: arguments like figsize which should be passed to pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>_",
     "url": "/documentation/pyplot"
   },
   {
     "title": "Bindings",
-    "content": "NiceGUI is able to directly bind UI elements to models. Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes. Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property. To define a one-way binding use the `_from` and `_to` variants of these methods. Just pass a property of the model as parameter to these methods to create the binding.",
+    "content": "NiceGUI is able to directly bind UI elements to models. Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes. Each element provides methods like bind_value and bind_visibility to create a two-way binding with the corresponding property. To define a one-way binding use the _from and _to variants of these methods. Just pass a property of the model as parameter to these methods to create the binding.",
     "url": "/documentation/bindings"
   },
   {
@@ -696,7 +696,7 @@
   },
   {
     "title": "3D Scene",
-    "content": "Display a 3d scene using `three.js <https://threejs.org/>`_. Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes. Objects can be translated, rotated and displayed with different color, opacity or as wireframes. They can also be grouped to apply joint movements.  :param width: width of the canvas :param height: height of the canvas :param grid: whether to display a grid :param on_click: callback to execute when a 3d object is clicked",
+    "content": "Display a 3d scene using three.js <https://threejs.org/>_. Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes. Objects can be translated, rotated and displayed with different color, opacity or as wireframes. They can also be grouped to apply joint movements.  :param width: width of the canvas :param height: height of the canvas :param grid: whether to display a grid :param on_click: callback to execute when a 3d object is clicked",
     "url": "/documentation/scene"
   },
   {
@@ -706,7 +706,7 @@
   },
   {
     "title": "ui.run",
-    "content": "You can call `ui.run()` with optional arguments:  :param host: start server with this host (defaults to `'127.0.0.1` in native mode, otherwise `'0.0.0.0'`) :param port: use this port (default: `8080`) :param title: page title (default: `'NiceGUI'`, can be overwritten per page) :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page) :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'\ud83d\ude80'`, works for most browsers) :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for \"auto\" mode) :param language: language for Quasar elements (default: `'en-US'`) :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly) :param show: automatically open the UI in a browser tab (default: `True`) :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port) :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`) :param fullscreen: open the UI in a fullscreen window (default: `False`, also activates `native`) :param reload: automatically reload the UI on file changes (default: `True`) :param uvicorn_logging_level: logging level for uvicorn server (default: `'warning'`) :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only) :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`) :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`) :param exclude: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth (possible entries: aggrid, audio, chart, colors, interactive_image, joystick, keyboard, log, markdown, mermaid, plotly, scene, video) :param tailwind: whether to use Tailwind (experimental, default: `True`) :param storage_secret: secret key for browser based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser) :param kwargs: additional keyword arguments are passed to `uvicorn.run`",
+    "content": "You can call ui.run() with optional arguments:  :param host: start server with this host (defaults to '127.0.0.1 in native mode, otherwise '0.0.0.0') :param port: use this port (default: 8080) :param title: page title (default: 'NiceGUI', can be overwritten per page) :param viewport: page meta viewport content (default: 'width=device-width, initial-scale=1', can be overwritten per page) :param favicon: relative filepath, absolute URL to a favicon (default: None, NiceGUI icon will be used) or emoji (e.g. '\ud83d\ude80', works for most browsers) :param dark: whether to use Quasar's dark mode (default: False, use None for \"auto\" mode) :param language: language for Quasar elements (default: 'en-US') :param binding_refresh_interval: time between binding updates (default: 0.1 seconds, bigger is more CPU friendly) :param show: automatically open the UI in a browser tab (default: True) :param native: open the UI in a native window of size 800x600 (default: False, deactivates show, automatically finds an open port) :param window_size: open the UI in a native window with the provided size (e.g. (1024, 786), default: None, also activates native) :param fullscreen: open the UI in a fullscreen window (default: False, also activates native) :param reload: automatically reload the UI on file changes (default: True) :param uvicorn_logging_level: logging level for uvicorn server (default: 'warning') :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only) :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: '.py') :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: '.*, .py[cod], .sw.*, ~*') :param exclude: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth (possible entries: aggrid, audio, chart, colors, interactive_image, joystick, keyboard, log, markdown, mermaid, plotly, scene, video) :param tailwind: whether to use Tailwind (experimental, default: True) :param storage_secret: secret key for browser based storage (default: None, a value is required to enable ui.storage.individual and ui.storage.browser) :param kwargs: additional keyword arguments are passed to uvicorn.run",
     "url": "/documentation/run"
   },
   {
@@ -726,12 +726,12 @@
   },
   {
     "title": "Audio",
-    "content": ":param src: URL of the audio source :param controls: whether to show the audio controls, like play, pause, and volume (default: `True`) :param autoplay: whether to start playing the audio automatically (default: `False`) :param muted: whether the audio should be initially muted (default: `False`) :param loop: whether the audio should loop (default: `False`)  See `here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#events>`_ for a list of events you can subscribe to using the generic event subscription `on()`.",
+    "content": ":param src: URL of the audio source :param controls: whether to show the audio controls, like play, pause, and volume (default: True) :param autoplay: whether to start playing the audio automatically (default: False) :param muted: whether the audio should be initially muted (default: False) :param loop: whether the audio should loop (default: False)  See here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#events>_ for a list of events you can subscribe to using the generic event subscription on().",
     "url": "/documentation/audio"
   },
   {
     "title": "Chat Message",
-    "content": "Based on Quasar's `Chat Message <https://quasar.dev/vue-components/chat/>`_ component.  :param text: the message body (can be a list of strings for multiple message parts) :param name: the name of the message author :param label: renders a label header/section only :param stamp: timestamp of the message :param avatar: URL to an avatar :param sent: render as a sent message (so from current user) (default: False) :param text_html: render text as HTML (default: False)",
+    "content": "Based on Quasar's Chat Message <https://quasar.dev/vue-components/chat/>_ component.  :param text: the message body (can be a list of strings for multiple message parts) :param name: the name of the message author :param label: renders a label header/section only :param stamp: timestamp of the message :param avatar: URL to an avatar :param sent: render as a sent message (so from current user) (default: False) :param text_html: render text as HTML (default: False)",
     "url": "/documentation/chat_message"
   },
   {
@@ -751,12 +751,12 @@
   },
   {
     "title": "Knob",
-    "content": "This element is based on Quasar's `QKnob <https://quasar.dev/vue-components/knob>`_ component. The element is used to take a number input from the user through mouse/touch panning.  :param value: the initial value (default: 0.0) :param min: the minimum value (default: 0.0) :param max: the maximum value (default: 1.0) :param step: the step size (default: 0.01) :param color: knob color (either a Quasar, Tailwind, or CSS color or `None`, default: \"primary\") :param center_color: color name for the center part of the component, examples: primary, teal-10 :param track_color: color name for the track of the component, examples: primary, teal-10 :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem :param show_value: whether to show the value as text",
+    "content": "This element is based on Quasar's QKnob <https://quasar.dev/vue-components/knob>_ component. The element is used to take a number input from the user through mouse/touch panning.  :param value: the initial value (default: 0.0) :param min: the minimum value (default: 0.0) :param max: the maximum value (default: 1.0) :param step: the step size (default: 0.01) :param color: knob color (either a Quasar, Tailwind, or CSS color or None, default: \"primary\") :param center_color: color name for the center part of the component, examples: primary, teal-10 :param track_color: color name for the track of the component, examples: primary, teal-10 :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem :param show_value: whether to show the value as text",
     "url": "/documentation/knob"
   },
   {
     "title": "Link",
-    "content": "Create a hyperlink.  To jump to a specific location within a page you can place linkable anchors with `ui.link_target(\"name\")` and link to it with `ui.link(target=\"#name\")`.  :param text: display text :param target: page function, NiceGUI element on the same page or string that is a an absolute URL or relative path from base URL :param new_tab: open link in new tab (default: False)",
+    "content": "Create a hyperlink.  To jump to a specific location within a page you can place linkable anchors with ui.link_target(\"name\") and link to it with ui.link(target=\"#name\").  :param text: display text :param target: page function, NiceGUI element on the same page or string that is a an absolute URL or relative path from base URL :param new_tab: open link in new tab (default: False)",
     "url": "/documentation/link"
   },
   {
@@ -771,22 +771,22 @@
   },
   {
     "title": "Log view",
-    "content": "Create a log view that allows to add new lines without re-transmitting the whole history to the client.  :param max_lines: maximum number of lines before dropping oldest ones (default: `None`)",
+    "content": "Create a log view that allows to add new lines without re-transmitting the whole history to the client.  :param max_lines: maximum number of lines before dropping oldest ones (default: None)",
     "url": "/documentation/log"
   },
   {
     "title": "Line Plot",
-    "content": "Create a line plot using pyplot. The `push` method provides live updating when utilized in combination with `ui.timer`.  :param n: number of lines :param limit: maximum number of datapoints per line (new points will displace the oldest) :param update_every: update plot only after pushing new data multiple times to save CPU and bandwidth :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later (default: `True`) :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_",
+    "content": "Create a line plot using pyplot. The push method provides live updating when utilized in combination with ui.timer.  :param n: number of lines :param limit: maximum number of datapoints per line (new points will displace the oldest) :param update_every: update plot only after pushing new data multiple times to save CPU and bandwidth :param close: whether the figure should be closed after exiting the context; set to False if you want to update it later (default: True) :param kwargs: arguments like figsize which should be passed to pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>_",
     "url": "/documentation/line_plot"
   },
   {
     "title": "Add static files.",
-    "content": "`add_static_files()` makes a local directory available at the specified endpoint, e.g. `'/static'`. This is useful for providing local data like images to the frontend. Otherwise the browser would not be able to access the files. Do only put non-security-critical files in there, as they are accessible to everyone.  :param url_path: string that starts with a slash \"/\" and identifies the path at which the files should be served :param local_directory: local folder with files to serve as static content",
+    "content": "add_static_files() makes a local directory available at the specified endpoint, e.g. '/static'. This is useful for providing local data like images to the frontend. Otherwise the browser would not be able to access the files. Do only put non-security-critical files in there, as they are accessible to everyone.  :param url_path: string that starts with a slash \"/\" and identifies the path at which the files should be served :param local_directory: local folder with files to serve as static content",
     "url": "/documentation/add_static_files"
   },
   {
     "title": "Query Selector",
-    "content": "To manipulate elements like the document body, you can use the `ui.query` function. With the query result you can add classes, styles, and attributes like with every other UI element. This can be useful for example to change the background color of the page (e.g. `ui.query('body').classes('bg-green')`).",
+    "content": "To manipulate elements like the document body, you can use the ui.query function. With the query result you can add classes, styles, and attributes like with every other UI element. This can be useful for example to change the background color of the page (e.g. ui.query('body').classes('bg-green')).",
     "url": "/documentation/query"
   },
   {
