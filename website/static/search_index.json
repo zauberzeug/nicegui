@@ -1,5 +1,145 @@
 [
   {
+    "title": "Example: Slideshow",
+    "content": "implements a keyboard-controlled image slideshow",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/slideshow/main.py"
+  },
+  {
+    "title": "Example: Authentication",
+    "content": "shows how to use sessions to build a login screen",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/authentication/main.py"
+  },
+  {
+    "title": "Example: Modularization",
+    "content": "provides an example of how to modularize your application into multiple files and reuse code",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/modularization/main.py"
+  },
+  {
+    "title": "Example: FastAPI",
+    "content": "illustrates the integration of NiceGUI with an existing FastAPI application",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi/main.py"
+  },
+  {
+    "title": "Example: Map",
+    "content": "demonstrates wrapping the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/map/main.py"
+  },
+  {
+    "title": "Example: AI Interface",
+    "content": "utilizes the [replicate](https://replicate.com) library to perform voice-to-text transcription and generate images from prompts with Stable Diffusion",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/ai_interface/main.py"
+  },
+  {
+    "title": "Example: 3D Scene",
+    "content": "creates a webGL view and loads an STL mesh illuminated with a spotlight",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/3d_scene/main.py"
+  },
+  {
+    "title": "Example: Custom Vue Component",
+    "content": "shows how to write and integrate a custom Vue component",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/custom_vue_component/main.py"
+  },
+  {
+    "title": "Example: Image Mask Overlay",
+    "content": "shows how to overlay an image with a mask",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/image_mask_overlay/main.py"
+  },
+  {
+    "title": "Example: Infinite Scroll",
+    "content": "presents an infinitely scrolling image gallery",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/infinite_scroll/main.py"
+  },
+  {
+    "title": "Example: OpenCV Webcam",
+    "content": "uses OpenCV to capture images from a webcam",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam/main.py"
+  },
+  {
+    "title": "Example: SVG Clock",
+    "content": "displays an analog clock by updating an SVG with `ui.timer`",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/svg_clock/main.py"
+  },
+  {
+    "title": "Example: Progress",
+    "content": "demonstrates a progress bar for heavy computations",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/progress/main.py"
+  },
+  {
+    "title": "Example: NGINX Subpath",
+    "content": "shows the setup to serve an app behind a reverse proxy subpath",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/nginx_subpath/main.py"
+  },
+  {
+    "title": "Example: Script Executor",
+    "content": "executes scripts on selection and displays the output",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/script_executor/main.py"
+  },
+  {
+    "title": "Example: Local File Picker",
+    "content": "demonstrates a dialog for selecting files locally on the server",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/local_file_picker/main.py"
+  },
+  {
+    "title": "Example: Search as you type",
+    "content": "using public API of thecocktaildb.com to search for cocktails",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/search_as_you_type/main.py"
+  },
+  {
+    "title": "Example: Menu and Tabs",
+    "content": "uses Quasar to create foldable menu and tabs inside a header bar",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/menu_and_tabs/main.py"
+  },
+  {
+    "title": "Example: Todo list",
+    "content": "shows a simple todo list with checkboxes and text input",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/todo_list/main.py"
+  },
+  {
+    "title": "Example: Trello Cards",
+    "content": "shows Trello-like cards that can be dragged and dropped into columns",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/trello_cards/main.py"
+  },
+  {
+    "title": "Example: Slots",
+    "content": "shows how to use scoped slots to customize Quasar elements",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/slots/main.py"
+  },
+  {
+    "title": "Example: Table and slots",
+    "content": "shows how to use component slots in a table",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/table_and_slots/main.py"
+  },
+  {
+    "title": "Example: Single Page App",
+    "content": "navigate without reloading the page",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/single_page_app/main.py"
+  },
+  {
+    "title": "Example: Chat App",
+    "content": "a simple chat app",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/chat_app/main.py"
+  },
+  {
+    "title": "Example: Chat with AI",
+    "content": "a simple chat app with AI",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/chat_with_ai/main.py"
+  },
+  {
+    "title": "Example: SQLite Database",
+    "content": "CRUD operations on a SQLite database",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/sqlite_database/main.py"
+  },
+  {
+    "title": "Example: Pandas DataFrame",
+    "content": "displays an editable [pandas](https://pandas.pydata.org) DataFrame",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/pandas_dataframe/main.py"
+  },
+  {
+    "title": "Example: Lightbox",
+    "content": "A thumbnail gallery where each image can be clicked to enlarge",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/lightbox/main.py"
+  },
+  {
     "title": "Basic Elements",
     "content": "This is **Markdown**.",
     "url": "/documentation/#basic_elements"

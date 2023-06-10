@@ -73,7 +73,11 @@ export default {
       this.results = this.fuse.search(this.query);
     },
     goTo(url) {
-      window.location.href = url;
+      if (url.startsWith("http")) {
+        window.open(url, "_blank");
+      } else {
+        window.location.href = url;
+      }
     },
   },
 };

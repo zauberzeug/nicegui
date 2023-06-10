@@ -103,6 +103,25 @@ class DocVisitor(ast.NodeVisitor):
         })
 
 
+class MainVisitor(ast.NodeVisitor):
+
+    def visit_Call(self, node: ast.Call):
+        if isinstance(node.func, ast.Name):
+            function_name = node.func.id
+        elif isinstance(node.func, ast.Attribute):
+            function_name = node.func.attr
+        else:
+            return
+        if function_name == 'example_link':
+            title = ast_string_node_to_string(node.args[0])
+            name = name = title.lower().replace(' ', '_')
+            documents.append({
+                'title': 'Example: ' + title,
+                'content': ast_string_node_to_string(node.args[1]),
+                'url': f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/main.py'
+            })
+
+
 def generate_for(file: Path, topic: Optional[str] = None) -> None:
     with open(file, 'r') as source:
         tree = ast.parse(source.read())
@@ -113,6 +132,10 @@ def generate_for(file: Path, topic: Optional[str] = None) -> None:
 
 
 documents = []
+with open(Path('../main.py'), 'r') as source:
+    tree = ast.parse(source.read())
+    MainVisitor().visit(tree)
+
 generate_for(Path('./documentation.py'))
 for file in Path('./more_documentation').glob('*.py'):
     generate_for(file, file.stem.removesuffix('_documentation'))
