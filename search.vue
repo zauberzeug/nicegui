@@ -35,8 +35,12 @@ export default {
     }
     this.searchData = await response.json();
     let options = {
-      keys: ["title", "content"],
+      keys: [
+        { name: "title", weight: 0.7 },
+        { name: "content", weight: 0.3 },
+      ],
     };
+
     this.fuse = new Fuse(this.searchData, options);
   },
 
