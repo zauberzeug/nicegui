@@ -1,5 +1,90 @@
 [
   {
+    "title": "SVG",
+    "content": "You can add Scalable Vector Graphics using the `ui.html` element.",
+    "url": "/documentation/#svg"
+  },
+  {
+    "title": "Captions and Overlays",
+    "content": "By nesting elements inside a `ui.image` you can create augmentations.  Use [Quasar classes](https://quasar.dev/vue-components/img) for positioning and styling captions. To overlay an SVG, make the `viewBox` exactly the size of the image and provide `100%` width/height to match the actual rendered size.",
+    "url": "/documentation/#captions_and_overlays"
+  },
+  {
+    "title": "Clear Containers",
+    "content": "To remove all elements from a row, column or card container, use the `clear()` method.  Alternatively, you can remove individual elements with `remove(element)`, where `element` is an Element or an index.",
+    "url": "/documentation/#clear_containers"
+  },
+  {
+    "title": "Tabs",
+    "content": "The elements `ui.tabs`, `ui.tab`, `ui.tab_panels`, and `ui.tab_panel` resemble [Quasar's tabs](https://quasar.dev/vue-components/tabs) and [tab panels](https://quasar.dev/vue-components/tab-panels) API.  `ui.tabs` creates a container for the tabs. This could be placed in a `ui.header` for example. `ui.tab_panels` creates a container for the tab panels with the actual content.",
+    "url": "/documentation/#tabs"
+  },
+  {
+    "title": "Tooltips",
+    "content": "Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.  For more artistic control you can nest tooltip elements and apply props, classes and styles.",
+    "url": "/documentation/#tooltips"
+  },
+  {
+    "title": "Styling",
+    "content": "NiceGUI uses the [Quasar Framework](https://quasar.dev/) version 1.0 and hence has its full design power. Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components): Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props. Props with a leading `:` can contain JavaScript expressions that are evaluated on the client. You can also apply [Tailwind CSS](https://tailwindcss.com/) utility classes with the `classes` method.  If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.  All three functions also provide `remove` and `replace` parameters in case the predefined look is not wanted in a particular styling.",
+    "url": "/documentation/#styling"
+  },
+  {
+    "title": "Tailwind CSS",
+    "content": "[Tailwind CSS](https://tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces. NiceGUI provides a fluent, auto-complete friendly interface for adding Tailwind classes to UI elements.  You can discover available classes by navigating the methods of the `tailwind` property. The builder pattern allows you to chain multiple classes together (as shown with \"Label A\"). You can also call the `tailwind` property with a list of classes (as shown with \"Label B\").  Although this is very similar to using the `classes` method, it is more convenient for Tailwind classes due to auto-completion.  Last but not least, you can also predefine a style and apply it to multiple elements (labels C and D).",
+    "url": "/documentation/#tailwind_css"
+  },
+  {
+    "title": "UI Updates",
+    "content": "NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed. In other cases, you can explicitly call `element.update()` or `ui.update(*elements)` to update. The demo code shows both methods for a `ui.chart`, where it is difficult to automatically detect changes in the `options` dictionary.",
+    "url": "/documentation/#ui_updates"
+  },
+  {
+    "title": "Async event handlers",
+    "content": "Most elements also support asynchronous event handlers.  Note: You can also pass a `functools.partial` into the `on_click` property to wrap async functions with parameters.",
+    "url": "/documentation/#async_event_handlers"
+  },
+  {
+    "title": "Auto-index page",
+    "content": "Pages created with the `@ui.page` decorator are \"private\". Their content is re-created for each client. Thus, in the demo to the right, the displayed ID on the private page changes when the browser reloads the page.  UI elements that are not wrapped in a decorated page function are placed on an automatically generated index page at route \"/\". This auto-index page is created once on startup and *shared* across all clients that might connect. Thus, each connected client will see the *same* elements. In the demo to the right, the displayed ID on the auto-index page remains constant when the browser reloads the page.",
+    "url": "/documentation/#auto-index_page"
+  },
+  {
+    "title": "Page Layout",
+    "content": "With `ui.header`, `ui.footer`, `ui.left_drawer` and `ui.right_drawer` you can add additional layout elements to a page. The `fixed` argument controls whether the element should scroll or stay fixed on the screen. The `top_corner` and `bottom_corner` arguments indicate whether a drawer should expand to the top or bottom of the page. See <https://quasar.dev/layout/header-and-footer> and <https://quasar.dev/layout/drawer> for more information about possible props. With `ui.page_sticky` you can place an element \"sticky\" on the screen. See <https://quasar.dev/layout/page-sticky> for more information.",
+    "url": "/documentation/#page_layout"
+  },
+  {
+    "title": "Parameter injection",
+    "content": "Thanks to FastAPI, a page function accepts optional parameters to provide [path parameters](https://fastapi.tiangolo.com/tutorial/path-params/), [query parameters](https://fastapi.tiangolo.com/tutorial/query-params/) or the whole incoming [request](https://fastapi.tiangolo.com/advanced/using-request-directly/) for accessing the body payload, headers, cookies and more.",
+    "url": "/documentation/#parameter_injection"
+  },
+  {
+    "title": "API Responses",
+    "content": "NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/). This means you can use all of FastAPI's features. For example, you can implement a RESTful API in addition to your graphical user interface. You simply import the `app` object from `nicegui`. Or you can run NiceGUI on top of your own FastAPI app by using `ui.run_with(app)` instead of starting a server automatically with `ui.run()`.  You can also return any other FastAPI response object inside a page function. For example, you can return a `RedirectResponse` to redirect the user to another page if certain conditions are met. This is used in our [authentication demo](https://github.com/zauberzeug/nicegui/tree/main/examples/authentication/main.py).",
+    "url": "/documentation/#api_responses"
+  },
+  {
+    "title": "Events",
+    "content": "You can register coroutines or functions to be called for the following events:  - `app.on_startup`: called when NiceGUI is started or restarted - `app.on_shutdown`: called when NiceGUI is shut down or restarted - `app.on_connect`: called for each client which connects (optional argument: nicegui.Client) - `app.on_disconnect`: called for each client which disconnects (optional argument: nicegui.Client) - `app.on_exception`: called when an exception occurs (optional argument: exception)  When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.",
+    "url": "/documentation/#events"
+  },
+  {
+    "title": "Auto-context",
+    "content": "In order to allow writing intuitive UI descriptions, NiceGUI automatically tracks the context in which elements are created. This means that there is no explicit `parent` parameter. Instead the parent context is defined using a `with` statement. It is also passed to event handlers and timers.  In the demo, the label \"Card content\" is added to the card. And because the `ui.button` is also added to the card, the label \"Click!\" will also be created in this context. The label \"Tick!\", which is added once after one second, is also added to the card.  This design decision allows for easily creating modular components that keep working after moving them around in the UI. For example, you can move label and button somewhere else, maybe wrap them in another container, and the code will still work.",
+    "url": "/documentation/#auto-context"
+  },
+  {
+    "title": "Native Mode",
+    "content": "You can enable native mode for NiceGUI by specifying `native=True` in the `ui.run` function. To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively. Additionally, you can provide extra keyword arguments via `app.native.window_args` and `app.native.start_args`. Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html) for the `webview.create_window` and `webview.start` functions. Note that these keyword arguments will take precedence over the parameters defined in `ui.run`.  In native mode the `app.native.main_window` object allows you to access the underlying window. It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/guide/api.html#window-object).",
+    "url": "/documentation/#native_mode"
+  },
+  {
+    "title": "Environment Variables",
+    "content": "You can set the following environment variables to configure NiceGUI:  - `MATPLOTLIB` (default: true) can be set to `false` to avoid the potentially costly import of Matplotlib. This will make `ui.pyplot` and `ui.line_plot` unavailable. - `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.",
+    "url": "/documentation/#environment_variables"
+  },
+  {
     "title": "Icon",
     "content": "This element is based on Quasar's `QIcon <https://quasar.dev/vue-components/icon>`_ component.  `Here <https://material.io/icons/>`_ is a reference of possible names.  :param name: name of the icon :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem :param color: icon color (either a Quasar, Tailwind, or CSS color or `None`, default: `None`)",
     "url": "/documentation/icon"

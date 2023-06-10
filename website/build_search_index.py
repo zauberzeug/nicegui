@@ -3,7 +3,7 @@ import ast
 import json
 import os
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 from icecream import ic
 
@@ -15,7 +15,7 @@ os.chdir(dir_path)
 
 class DemoVisitor(ast.NodeVisitor):
 
-    def __init__(self, topic: str) -> None:
+    def __init__(self, topic: Optional[str] = None) -> None:
         super().__init__()
         self.topic = topic
 
@@ -44,10 +44,11 @@ class DemoVisitor(ast.NodeVisitor):
             content_str = content
 
         anchor = title.lower().replace(' ', '_')
-        url = f'/documentation/{self.topic}'
+        url = f'/documentation/{self.topic or ""}'
         if not main:
             url += f'#{anchor}'
-            title = f'{self.topic.replace("_", " ").title()}: {title}'
+            if self.topic:
+                title = f'{self.topic.replace("_", " ").title()}: {title}'
         documents.append({
             'title': title,
             'content': content_str,
@@ -55,11 +56,16 @@ class DemoVisitor(ast.NodeVisitor):
         })
 
 
-documents = []
-for file in Path('./more_documentation').glob('*.py'):
+def generate_for(file: Path, topic: Optional[str] = None) -> None:
     with open(file, 'r') as source:
         tree = ast.parse(source.read())
-        DemoVisitor(file.stem.removesuffix('_documentation')).visit(tree)
+        DemoVisitor(topic).visit(tree)
+
+
+documents = []
+generate_for(Path('./documentation.py'))
+for file in Path('./more_documentation').glob('*.py'):
+    generate_for(file, file.stem.removesuffix('_documentation'))
 
 with open('static/search_index.json', 'w') as f:
     json.dump(documents, f, indent=2)
