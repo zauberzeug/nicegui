@@ -33,15 +33,6 @@ class DemoVisitor(ast.NodeVisitor):
                         'content': content,
                         'url': url
                     })
-                elif isinstance(function, ast.Attribute) and function.attr == 'text_demo':
-                    title = decorator.args[0].s
-                    content = textwrap.dedent(decorator.args[1].s)
-                    url = '/docs/' + node.name
-                    documents.append({
-                        'title': title,
-                        'content': content,
-                        'url': url
-                    })
         self.generic_visit(node)
 
 
