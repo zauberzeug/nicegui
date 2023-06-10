@@ -1,12 +1,20 @@
 <template>
   <div class="q-pa-md relative">
-    <q-input v-model="query" dense dark standout>
+    <q-input
+      v-model="query"
+      dense
+      dark
+      standout
+      :input-class="inputClass"
+      @focus="focused = true"
+      @blur="focused = false"
+    >
       <template v-slot:append>
-        <q-icon v-if="query === ''" name="search" />
-        <q-icon v-else name="clear" class="cursor-pointer" @click="query = ''" />
+        <q-icon v-if="query === ''" name="search" :class="{ 'text-primary': focused }" />
+        <q-icon v-else name="clear" class="cursor-pointer" @click="query = ''" :class="{ 'text-primary': focused }" />
       </template>
     </q-input>
-    <q-list class="bg-primary rounded mt-2 w-64 absolute text-white z-50 max-h-[200px] overflow-y-auto">
+    <q-list class="bg-primary shadow-lg rounded mt-5 w-64 absolute text-white z-50 max-h-[200px] overflow-y-auto">
       <q-item clickable v-for="result in results" :key="result.item.title" @click="goTo(result.item.url)">
         <q-item-section>
           <q-item-label>{{ result.item.title }}</q-item-label>
@@ -21,6 +29,7 @@ export default {
   data() {
     return {
       query: "",
+      focused: false,
       results: [],
       searchData: [],
       fuse: null,
@@ -30,6 +39,12 @@ export default {
   watch: {
     query() {
       this.search();
+    },
+  },
+
+  computed: {
+    inputClass() {
+      return this.focused ? "text-primary" : "";
     },
   },
 
