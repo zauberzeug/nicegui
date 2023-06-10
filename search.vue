@@ -1,7 +1,12 @@
 <template>
   <div class="q-pa-md relative">
-    <q-input input-class="text-white" v-model="query" color="white" placeholder="Search ..." />
-    <q-list class="bg-primary absolute text-white w-full z-50 max-h-[200px] overflow-y-auto">
+    <q-input v-model="query" dense dark standout>
+      <template v-slot:append>
+        <q-icon v-if="query === ''" name="search" />
+        <q-icon v-else name="clear" class="cursor-pointer" @click="query = ''" />
+      </template>
+    </q-input>
+    <q-list class="bg-primary rounded mt-2 w-64 absolute text-white z-50 max-h-[200px] overflow-y-auto">
       <q-item clickable v-for="result in results" :key="result.item.title" @click="goTo(result.item.url)">
         <q-item-section>
           <q-item-label>{{ result.item.title }}</q-item-label>
