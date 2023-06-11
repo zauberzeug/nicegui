@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Awaitable, Callable, Union
+from typing import Awaitable, Callable, Optional, Union
+from uuid import uuid4
 
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
@@ -81,7 +82,7 @@ class App(FastAPI):
             raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
         globals.app.mount(url_path, StaticFiles(directory=local_directory))
 
-    def add_media_files(self, url_path: str, local_directory: str) -> None:
+    def add_media_files(self, url_path: str, local_directory: Union[str, Path]) -> None:
         """Add media files.
 
         `add_media_files()` allows a local files to be streamed from a specified endpoint, e.g. `'/media'`.
@@ -89,9 +90,24 @@ class App(FastAPI):
         @self.get(f'{url_path}/' + '{filename}')
         async def read_item(request: Request, filename: str) -> StreamingResponse:
             filepath = Path(local_directory) / filename
+            ic(filepath)
             if not filepath.is_file():
                 return {"detail": "Not Found"}, 404
+            ic(filepath)
             return helpers.get_streaming_response(filepath, request)
+
+    def add_media_file(self, local_file: str, url_path: Optional[str] = None) -> None:
+        file = Path(local_file)
+        if not file.is_file():
+            raise ValueError(f'File not found: {local_file}')
+        if url_path is None:
+            url_path = '/_nicegui/auto/media/' + uuid4().hex
+
+        @self.get(url_path)
+        async def read_item(request: Request) -> StreamingResponse:
+            return helpers.get_streaming_response(file, request)
+
+        return url_path
 
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""
