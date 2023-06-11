@@ -1,5 +1,8 @@
 import warnings
+from pathlib import Path
+from typing import Union
 
+from .. import globals
 from ..dependencies import register_component
 from ..element import Element
 
@@ -8,7 +11,7 @@ register_component('video', __file__, 'video.js')
 
 class Video(Element):
 
-    def __init__(self, src: str, *,
+    def __init__(self, src: Union[str, Path], *,
                  controls: bool = True,
                  autoplay: bool = False,
                  muted: bool = False,
@@ -17,7 +20,7 @@ class Video(Element):
                  ) -> None:
         """Video
 
-        :param src: URL of the video source
+        :param src: URL or local file path of the video source
         :param controls: whether to show the video controls, like play, pause, and volume (default: `True`)
         :param autoplay: whether to start playing the video automatically (default: `False`)
         :param muted: whether the video should be initially muted (default: `False`)
@@ -27,6 +30,8 @@ class Video(Element):
         for a list of events you can subscribe to using the generic event subscription `on()`.
         """
         super().__init__('video')
+        if Path(src).is_file():
+            src = globals.app.add_media_file(src)
         self._props['src'] = src
         self._props['controls'] = controls
         self._props['autoplay'] = autoplay

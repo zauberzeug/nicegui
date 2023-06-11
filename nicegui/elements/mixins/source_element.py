@@ -1,7 +1,9 @@
+from pathlib import Path
 from typing import Any, Callable
 
 from typing_extensions import Self
 
+from ... import globals
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
 
@@ -11,6 +13,8 @@ class SourceElement(Element):
 
     def __init__(self, *, source: str, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        if Path(source).is_file():
+            source = globals.app.add_static_file(source)
         self.source = source
         self._props['src'] = source
 
