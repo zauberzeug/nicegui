@@ -1,11 +1,11 @@
-import os
 from pathlib import Path
 from typing import Awaitable, Callable, Union
 
-import magic
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
+
+from nicegui import helpers
 
 from . import globals
 from .native import Native
@@ -87,43 +87,11 @@ class App(FastAPI):
         `add_media_files()` allows a local files to be streamed from a specified endpoint, e.g. `'/media'`.
         """
         @self.get(f'{url_path}/' + '{filename}')
-        async def read_item(request: Request, filename: str):
-            video_path = Path(local_directory) / filename
-            if not video_path.is_file():
+        async def read_item(request: Request, filename: str) -> StreamingResponse:
+            filepath = Path(local_directory) / filename
+            if not filepath.is_file():
                 return {"detail": "Not Found"}, 404
-            file_size = video_path.stat().st_size
-            start, end = 0, file_size - 1
-            range_header = request.headers.get('Range', None)
-            if range_header:
-                byte1, byte2 = range_header.split('=')[1].split('-')
-                start = int(byte1)
-                if byte2:
-                    end = int(byte2)
-            content_length = (end - start) + 1
-
-            def content_reader(file, start, end, chunk_size=8192):
-                with open(file, 'rb') as data:
-                    data.seek(start)
-                    remaining_bytes = end - start + 1
-                    while remaining_bytes > 0:
-                        chunk = data.read(min(chunk_size, remaining_bytes))
-                        if not chunk:
-                            break
-                        yield chunk
-                        remaining_bytes -= len(chunk)
-
-            headers = {
-                'Content-Range': f'bytes {start}-{end}/{file_size}',
-                'Content-Length': str(content_length),
-                'Accept-Ranges': 'bytes',
-            }
-
-            return StreamingResponse(
-                content_reader(video_path, start, end),
-                media_type=magic.from_file(str(video_path), mime=True),
-                headers=headers,
-                status_code=206,
-            )
+            return helpers.get_streaming_response(filepath, request)
 
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""
