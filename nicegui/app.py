@@ -1,8 +1,8 @@
-import magic
 import os
 from pathlib import Path
 from typing import Awaitable, Callable, Union
 
+import magic
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -86,7 +86,7 @@ class App(FastAPI):
 
         `add_media_files()` allows a local files to be streamed from a specified endpoint, e.g. `'/media'`.
         """
-        @self.get(f'/{url_path}/' + '{filename}')
+        @self.get(f'{url_path}/' + '{filename}')
         async def read_item(request: Request, filename: str):
             video_path = Path(local_directory) / filename
             if not video_path.is_file():
@@ -101,24 +101,29 @@ class App(FastAPI):
                     end = int(byte2)
             content_length = (end - start) + 1
 
-            def content_reader(file, chunk_size=8192):
+            def content_reader(file, start, end, chunk_size=8192):
                 with open(file, 'rb') as data:
                     data.seek(start)
-                    while True:
-                        bytes = data.read(chunk_size)
-                        if not bytes:
+                    remaining_bytes = end - start + 1
+                    while remaining_bytes > 0:
+                        chunk = data.read(min(chunk_size, remaining_bytes))
+                        if not chunk:
                             break
-                        yield bytes
+                        yield chunk
+                        remaining_bytes -= len(chunk)
+
             headers = {
                 'Content-Range': f'bytes {start}-{end}/{file_size}',
                 'Content-Length': str(content_length),
                 'Accept-Ranges': 'bytes',
             }
 
-            return StreamingResponse(content_reader(video_path),
-                                     media_type=magic.from_file(str(video_path), mime=True),
-                                     headers=headers,
-                                     status_code=206)
+            return StreamingResponse(
+                content_reader(video_path, start, end),
+                media_type=magic.from_file(str(video_path), mime=True),
+                headers=headers,
+                status_code=206,
+            )
 
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""

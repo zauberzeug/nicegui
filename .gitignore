@@ -5,6 +5,7 @@ dist
 /test.py
 *.pickle
 tests/screenshots/
+tests/media/
 venv
 .idea
 .nicegui/
