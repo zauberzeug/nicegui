@@ -3,7 +3,7 @@ from typing import Awaitable, Callable, Optional, Union
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from nicegui import helpers
@@ -82,6 +82,21 @@ class App(FastAPI):
             raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
         globals.app.mount(url_path, StaticFiles(directory=local_directory))
 
+    def add_static_file(self, local_file: Union[str, Path], url_path: Optional[str] = None) -> None:
+        file = Path(local_file)
+        if not file.is_file():
+            raise ValueError(f'File not found: {file}')
+        if url_path is None:
+            url_path = '/_nicegui/auto/static/' + uuid4().hex
+
+        @self.get(url_path)
+        async def read_item() -> StreamingResponse:
+            return FileResponse(file, headers={
+                "Cache-Control": "public, max-age=3600",
+            })
+
+        return url_path
+
     def add_media_files(self, url_path: str, local_directory: Union[str, Path]) -> None:
         """Add media files.
 
@@ -90,13 +105,11 @@ class App(FastAPI):
         @self.get(f'{url_path}/' + '{filename}')
         async def read_item(request: Request, filename: str) -> StreamingResponse:
             filepath = Path(local_directory) / filename
-            ic(filepath)
             if not filepath.is_file():
                 return {"detail": "Not Found"}, 404
-            ic(filepath)
             return helpers.get_streaming_response(filepath, request)
 
-    def add_media_file(self, local_file: str, url_path: Optional[str] = None) -> None:
+    def add_media_file(self, local_file: Union[str, Path], url_path: Optional[str] = None) -> None:
         file = Path(local_file)
         if not file.is_file():
             raise ValueError(f'File not found: {local_file}')

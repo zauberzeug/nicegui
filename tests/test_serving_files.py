@@ -44,3 +44,13 @@ def test_adding_single_media_file(screen: Screen):
 
     screen.open('/')
     assert_video_file_streaming(url_path)
+
+
+def test_adding_single_static_file(screen: Screen):
+    url_path = app.add_static_file(Path(TEST_DIR).parent / 'examples' / 'slideshow' / 'slides' / 'slide1.jpg')
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        r = http_client.get(f'http://localhost:{PORT}{url_path}')
+        assert r.status_code == 200
+        assert 'max-age=' in r.headers['Cache-Control']
