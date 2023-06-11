@@ -1,12 +1,11 @@
 from typing import Optional
 
 from fastapi import FastAPI
-from starlette.middleware.sessions import SessionMiddleware
 
 from nicegui import globals
+from nicegui.helpers import set_storage_secret
 from nicegui.language import Language
 from nicegui.nicegui import handle_shutdown, handle_startup
-from nicegui.storage import RequestTrackingMiddleware
 
 
 def run_with(
@@ -31,9 +30,7 @@ def run_with(
     globals.excludes = [e.strip() for e in exclude.split(',')]
     globals.tailwind = True
 
-    app.add_middleware(RequestTrackingMiddleware)
-    app.add_middleware(SessionMiddleware, secret_key=storage_secret)
-
+    set_storage_secret(storage_secret)
     app.on_event('startup')(lambda: handle_startup(with_welcome_message=False))
     app.on_event('shutdown')(lambda: handle_shutdown())
 
