@@ -6,7 +6,7 @@ from typing_extensions import Self
 from .. import background_tasks, globals
 from ..dependencies import register_component
 from ..element import Element
-from ..helpers import KWONLY_SLOTS, is_coroutine
+from ..helpers import KWONLY_SLOTS, is_coroutine_function
 
 register_component('refreshable', __file__, 'refreshable.js')
 
@@ -19,7 +19,7 @@ class RefreshableTarget:
     kwargs: Dict[str, Any]
 
     def run(self, func: Callable[..., Any]) -> Union[None, Awaitable]:
-        if is_coroutine(func):
+        if is_coroutine_function(func):
             async def wait_for_result() -> None:
                 with self.container:
                     if self.instance is None:
@@ -65,7 +65,7 @@ class refreshable:
                 continue
             target.container.clear()
             result = target.run(self.func)
-            if is_coroutine(self.func):
+            if is_coroutine_function(self.func):
                 assert result is not None
                 if globals.loop and globals.loop.is_running():
                     background_tasks.create(result)
