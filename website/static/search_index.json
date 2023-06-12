@@ -175,11 +175,6 @@
     "url": "/documentation/#clear_containers"
   },
   {
-    "title": "Tabs",
-    "content": "The elements ui.tabs, ui.tab, ui.tab_panels, and ui.tab_panel resemble Quasar's tabs and tab panels API.  ui.tabs creates a container for the tabs. This could be placed in a ui.header for example. ui.tab_panels creates a container for the tab panels with the actual content.",
-    "url": "/documentation/#tabs"
-  },
-  {
     "title": "Tooltips",
     "content": "Simply call the tooltip(text:str) method on UI elements to provide a tooltip.  For more artistic control you can nest tooltip elements and apply props, classes and styles.",
     "url": "/documentation/#tooltips"
@@ -415,6 +410,11 @@
     "url": "/documentation/run_javascript"
   },
   {
+    "title": "Run Javascript: Run async JavaScript",
+    "content": "Using run_javascript you can also run asynchronous code in the browser. The following demo shows how to get the current location of the user.",
+    "url": "/documentation/run_javascript#run_async_javascript"
+  },
+  {
     "title": "AG Grid",
     "content": "An element to create a grid using AG Grid <https://www.ag-grid.com/>_.  The call_api_method method can be used to call an AG Grid API method.  :param options: dictionary of AG Grid options :param html_columns: list of columns that should be rendered as HTML (default: []) :param theme: AG Grid theme (default: 'balham')",
     "url": "/documentation/aggrid"
@@ -561,7 +561,7 @@
   },
   {
     "title": "Interactive Image",
-    "content": "Create an image with an SVG overlay that handles mouse events and yields image coordinates. It is also the best choice for non-flickering image updates. If the source URL changes faster than images can be loaded by the browser, some images are simply skipped. Thereby repeatedly updating the image source will automatically adapt to the available bandwidth. See OpenCV Webcam <https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam/main.py>_ for an example.  :param source: the source of the image; can be an URL or a base64 string :param content: SVG content which should be overlayed; viewport has the same dimensions as the image :param on_mouse: callback for mouse events (yields type, image_x and image_y) :param events: list of JavaScript events to subscribe to (default: ['click']) :param cross: whether to show crosshairs (default: False)",
+    "content": "Create an image with an SVG overlay that handles mouse events and yields image coordinates. It is also the best choice for non-flickering image updates. If the source URL changes faster than images can be loaded by the browser, some images are simply skipped. Thereby repeatedly updating the image source will automatically adapt to the available bandwidth. See OpenCV Webcam <https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam/main.py>_ for an example.  :param source: the source of the image; can be an URL, local file path or a base64 string :param content: SVG content which should be overlayed; viewport has the same dimensions as the image :param on_mouse: callback for mouse events (yields type, image_x and image_y) :param events: list of JavaScript events to subscribe to (default: ['click']) :param cross: whether to show crosshairs (default: False)",
     "url": "/documentation/interactive_image"
   },
   {
@@ -691,7 +691,7 @@
   },
   {
     "title": "Video",
-    "content": ":param src: URL of the video source :param controls: whether to show the video controls, like play, pause, and volume (default: True) :param autoplay: whether to start playing the video automatically (default: False) :param muted: whether the video should be initially muted (default: False) :param loop: whether the video should loop (default: False)  See here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events>_ for a list of events you can subscribe to using the generic event subscription on().",
+    "content": ":param src: URL or local file path of the video source :param controls: whether to show the video controls, like play, pause, and volume (default: True) :param autoplay: whether to start playing the video automatically (default: False) :param muted: whether the video should be initially muted (default: False) :param loop: whether the video should loop (default: False)  See here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events>_ for a list of events you can subscribe to using the generic event subscription on().",
     "url": "/documentation/video"
   },
   {
@@ -761,7 +761,7 @@
   },
   {
     "title": "Image",
-    "content": "Displays an image.  :param source: the source of the image; can be a URL or a base64 string",
+    "content": "Displays an image.  :param source: the source of the image; can be a URL, local file path or a base64 string",
     "url": "/documentation/image"
   },
   {
@@ -870,6 +870,21 @@
     "url": "/documentation/pyplot"
   },
   {
+    "title": "Tabs",
+    "content": "The elements ui.tabs, ui.tab, ui.tab_panels, and ui.tab_panel resemble Quasar's tabs <https://quasar.dev/vue-components/tabs>_ and tab panels <https://quasar.dev/vue-components/tab-panels>_ API.  ui.tabs creates a container for the tabs. This could be placed in a ui.header for example. ui.tab_panels creates a container for the tab panels with the actual content. Each ui.tab_panel is associated with a ui.tab element.",
+    "url": "/documentation/tabs"
+  },
+  {
+    "title": "Tabs: Name, label, icon",
+    "content": "The ui.tab element has a label property that can be used to display a different text than the name. The name can also be used instead of the ui.tab objects to associate a ui.tab with a ui.tab_panel. Additionally each tab can have an icon.",
+    "url": "/documentation/tabs#name,_label,_icon"
+  },
+  {
+    "title": "Tabs: Switch tabs programmatically",
+    "content": "The ui.tabs and ui.tab_panels elements are derived from ValueElement which has a set_value method. That can be used to switch tabs programmatically.",
+    "url": "/documentation/tabs#switch_tabs_programmatically"
+  },
+  {
     "title": "Bindings",
     "content": "NiceGUI is able to directly bind UI elements to models. Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes. Each element provides methods like bind_value and bind_visibility to create a two-way binding with the corresponding property. To define a one-way binding use the _from and _to variants of these methods. Just pass a property of the model as parameter to these methods to create the binding.",
     "url": "/documentation/bindings"
@@ -921,7 +936,7 @@
   },
   {
     "title": "Audio",
-    "content": ":param src: URL of the audio source :param controls: whether to show the audio controls, like play, pause, and volume (default: True) :param autoplay: whether to start playing the audio automatically (default: False) :param muted: whether the audio should be initially muted (default: False) :param loop: whether the audio should loop (default: False)  See here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#events>_ for a list of events you can subscribe to using the generic event subscription on().",
+    "content": ":param src: URL or local file path of the audio source :param controls: whether to show the audio controls, like play, pause, and volume (default: True) :param autoplay: whether to start playing the audio automatically (default: False) :param muted: whether the audio should be initially muted (default: False) :param loop: whether the audio should loop (default: False)  See here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#events>_ for a list of events you can subscribe to using the generic event subscription on().",
     "url": "/documentation/audio"
   },
   {
@@ -975,8 +990,8 @@
     "url": "/documentation/line_plot"
   },
   {
-    "title": "Add static files.",
-    "content": "add_static_files() makes a local directory available at the specified endpoint, e.g. '/static'. This is useful for providing local data like images to the frontend. Otherwise the browser would not be able to access the files. Do only put non-security-critical files in there, as they are accessible to everyone.  :param url_path: string that starts with a slash \"/\" and identifies the path at which the files should be served :param local_directory: local folder with files to serve as static content",
+    "title": "Add a directory of static files.",
+    "content": "add_static_files() makes a local directory available at the specified endpoint, e.g. '/static'. This is useful for providing local data like images to the frontend. Otherwise the browser would not be able to access the files. Do only put non-security-critical files in there, as they are accessible to everyone.  To make a single file accessible, you can use add_static_file(). For media files which should be streamed, you can use add_media_files() or add_media_file() instead.  :param url_path: string that starts with a slash \"/\" and identifies the path at which the files should be served :param local_directory: local folder with files to serve as static content",
     "url": "/documentation/add_static_files"
   },
   {
