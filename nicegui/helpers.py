@@ -12,8 +12,8 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Tuple, Uni
 from starlette.middleware import Middleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from nicegui.storage import RequestTrackingMiddleware
 from . import background_tasks, globals
+from .storage import RequestTrackingMiddleware
 
 if TYPE_CHECKING:
     from .client import Client
@@ -91,7 +91,7 @@ def schedule_browser(host: str, port: int) -> Tuple[threading.Thread, threading.
 
 
 def set_storage_secret(storage_secret: Optional[str] = None) -> None:
-    """Set storage_secret for ui.run() and run_with."""
+    """Set storage_secret and add request tracking middleware."""
     if any(m.cls == SessionMiddleware for m in globals.app.user_middleware):
         # NOTE not using "add_middleware" because it would be the wrong order
         globals.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
