@@ -446,6 +446,23 @@ def create_full() -> None:
         ui.link('Custom FastAPI app', '/examples/fastapi/main.py')
         ui.link('Authentication', '/examples/authentication/main.py')
 
+    @element_demo(app.add_media_files)
+    def add_media_files_demo():
+        from pathlib import Path
+
+        import requests
+
+        from nicegui import app
+
+        media = Path('media')
+        # media.mkdir(exist_ok=True)
+        # r = requests.get('https://cdn.coverr.co/videos/coverr-cloudy-sky-2765/1080p.mp4')
+        # (media  / 'clouds.mp4').write_bytes(r.content)
+        # app.add_media_files('/my_videos', media)
+        # ui.video('/my_videos/clouds.mp4')
+        # END OF DEMO
+        ui.video('https://cdn.coverr.co/videos/coverr-cloudy-sky-2765/1080p.mp4')
+
     @text_demo('API Responses', '''
         NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/).
         This means you can use all of FastAPI's features.
