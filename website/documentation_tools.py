@@ -27,6 +27,7 @@ def get_menu() -> ui.left_drawer:
 
 
 def heading(text: str, *, make_menu_entry: bool = True) -> None:
+    ui.link_target(create_anchor_name(text))
     ui.html(f'<em>{text}</em>').classes('mt-8 text-3xl font-weight-500')
     if make_menu_entry:
         with get_menu():
