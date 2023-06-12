@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any, Callable, Optional, Union
 
 from .. import globals
@@ -8,7 +10,7 @@ from .mixins.value_element import ValueElement
 class Tabs(ValueElement):
 
     def __init__(self, *,
-                 value: Any = None,
+                 value: Union[Tab, TabPanel, None] = None,
                  on_change: Optional[Callable[..., Any]] = None,
                  ) -> None:
         """Tabs
@@ -16,15 +18,13 @@ class Tabs(ValueElement):
         This element represents `Quasar's QTabs <https://quasar.dev/vue-components/tabs#qtabs-api>`_ component.
         It contains individual tabs.
 
-        :param value: name of the tab to be initially selected
+        :param value: `ui.tab`, `ui.tab_panel`, or name of the tab to be initially selected
         :param on_change: callback to be executed when the selected tab changes
         """
         super().__init__(tag='q-tabs', value=value, on_value_change=on_change)
 
-    def on_value_change(self, value: Any) -> None:
-        if isinstance(value, Tab):
-            value = value._props['name']
-        super().on_value_change(value)
+    def _value_to_model_value(self, value: Any) -> Any:
+        return value._props['name'] if isinstance(value, Tab) or isinstance(value, TabPanel) else value
 
 
 class Tab(DisableableElement):
@@ -33,9 +33,9 @@ class Tab(DisableableElement):
         """Tab
 
         This element represents `Quasar's QTab <https://quasar.dev/vue-components/tabs#qtab-api>`_ component.
-        It is a child of a `Tabs` element.
+        It is a child of a `ui.tabs` element.
 
-        :param name: name of the tab (the value of the `Tabs` element)
+        :param name: name of the tab (will be the value of the `ui.tabs` element)
         :param label: label of the tab (default: `None`, meaning the same as `name`)
         :param icon: icon of the tab (default: `None`)
         """
@@ -51,7 +51,7 @@ class TabPanels(ValueElement):
 
     def __init__(self,
                  tabs: Tabs, *,
-                 value: Any = None,
+                 value: Union[Tab, TabPanel, None] = None,
                  on_change: Optional[Callable[..., Any]] = None,
                  animated: bool = True,
                  ) -> None:
@@ -60,15 +60,17 @@ class TabPanels(ValueElement):
         This element represents `Quasar's QTabPanels <https://quasar.dev/vue-components/tab-panels#qtabpanels-api>`_ component.
         It contains individual tab panels.
 
-        :param tabs: the `Tabs` element that controls this element
-        :param value: name of the tab panel to be initially visible
+        :param tabs: the `ui.tabs` element that controls this element
+        :param value: `ui.tab`, `ui.tab_panel`, or name of the tab panel to be initially visible
         :param on_change: callback to be executed when the visible tab panel changes
         :param animated: whether the tab panels should be animated (default: `True`)
         """
-        value_str = value._props['name'] if isinstance(value, Tab) else value
-        super().__init__(tag='q-tab-panels', value=value_str, on_value_change=on_change)
+        super().__init__(tag='q-tab-panels', value=value, on_value_change=on_change)
         tabs.bind_value(self, 'value')
         self._props['animated'] = animated
+
+    def _value_to_model_value(self, value: Any) -> Any:
+        return value._props['name'] if isinstance(value, Tab) or isinstance(value, TabPanel) else value
 
 
 class TabPanel(DisableableElement):
@@ -79,7 +81,7 @@ class TabPanel(DisableableElement):
         This element represents `Quasar's QTabPanel <https://quasar.dev/vue-components/tab-panels#qtabpanel-api>`_ component.
         It is a child of a `TabPanels` element.
 
-        :param name: a `ui.tab` object or the name of a `ui.tab` element as str
+        :param name: `ui.tab` or the name of a tab element
         """
         super().__init__(tag='q-tab-panel')
-        self._props['name'] = name if isinstance(name, str) else name._props['name']
+        self._props['name'] = name._props['name'] if isinstance(name, Tab) else name

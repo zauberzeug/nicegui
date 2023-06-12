@@ -17,7 +17,6 @@ BROWSER_COLOR = '#ffffff'
 
 
 uncomment_pattern = re.compile(r'^(\s*)# ?')
-docstring_pattern = re.compile(r'\"\"\".*?\"\"\"', flags=re.DOTALL)
 
 
 def uncomment(text: str) -> str:
@@ -27,7 +26,7 @@ def uncomment(text: str) -> str:
 
 def demo(f: Callable) -> Callable:
     with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
-        code = docstring_pattern.sub('', inspect.getsource(f)).split('# END OF DEMO')[0].strip().splitlines()
+        code = inspect.getsource(f).split('# END OF DEMO')[0].strip().splitlines()
         code = [line for line in code if not line.endswith("# HIDE")]
         while not code[0].strip().startswith('def') and not code[0].strip().startswith('async def'):
             del code[0]

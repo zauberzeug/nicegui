@@ -6,13 +6,13 @@ from ..documentation_tools import text_demo
 def main_demo() -> None:
     """Tabs
 
-        The elements `ui.tabs`, `ui.tab`, `ui.tab_panels`, and `ui.tab_panel` resemble
-        `Quasar's tabs <https://quasar.dev/vue-components/tabs>`_
-        and `tab panels <https://quasar.dev/vue-components/tab-panels>`_ API.
+    The elements `ui.tabs`, `ui.tab`, `ui.tab_panels`, and `ui.tab_panel` resemble
+    `Quasar's tabs <https://quasar.dev/vue-components/tabs>`_
+    and `tab panels <https://quasar.dev/vue-components/tab-panels>`_ API.
 
-        `ui.tabs` creates a container for the tabs. This could be placed in a `ui.header` for example.
-        `ui.tab_panels` creates a container for the tab panels with the actual content.
-        Each `ui.tab_panel` is associated with a `ui.tab` element.
+    `ui.tabs` creates a container for the tabs. This could be placed in a `ui.header` for example.
+    `ui.tab_panels` creates a container for the tab panels with the actual content.
+    Each `ui.tab_panel` is associated with a `ui.tab` element.
     """
     with ui.tabs().classes('w-full') as tabs:
         one = ui.tab('One')
@@ -47,7 +47,8 @@ def more() -> None:
     def switch_tabs():
         content = {'Tab 1': 'Content 1', 'Tab 2': 'Content 2', 'Tab 3': 'Content 3'}
         with ui.tabs() as tabs:
-            [ui.tab(title) for title in content.keys()]
+            for title in content:
+                ui.tab(title)
         with ui.tab_panels(tabs).classes('w-full') as panels:
             for title, text in content.items():
                 with ui.tab_panel(title):

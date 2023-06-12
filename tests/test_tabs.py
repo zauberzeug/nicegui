@@ -8,7 +8,7 @@ def test_with_strings(screen: Screen):
         ui.tab('One')
         ui.tab('Two')
 
-    with ui.tab_panels(tabs, value='One') as panels:
+    with ui.tab_panels(tabs, value='One'):
         with ui.tab_panel('One'):
             ui.label('First tab')
         with ui.tab_panel('Two'):
@@ -34,7 +34,6 @@ def test_with_tab_objects(screen: Screen):
     screen.open('/')
     screen.should_contain('One')
     screen.should_contain('Two')
-    # TODO initial value selects tab but does not show its content
-    # screen.should_contain('Second tab')
+    screen.should_contain('Second tab')
     screen.click('One')
     screen.should_contain('First tab')
