@@ -1,6 +1,5 @@
 from pathlib import Path
 from typing import Awaitable, Callable, Optional, Union
-from uuid import uuid4
 
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, StreamingResponse
@@ -102,7 +101,7 @@ class App(FastAPI):
         if not file.is_file():
             raise ValueError(f'File not found: {file}')
         if url_path is None:
-            url_path = '/_nicegui/auto/static/' + uuid4().hex
+            url_path = '/_nicegui/auto/static/' + file.name
 
         @self.get(url_path)
         async def read_item() -> StreamingResponse:
@@ -150,7 +149,7 @@ class App(FastAPI):
         if not file.is_file():
             raise ValueError(f'File not found: {local_file}')
         if url_path is None:
-            url_path = '/_nicegui/auto/media/' + uuid4().hex
+            url_path = '/_nicegui/auto/media/' + file.name
 
         @self.get(url_path)
         async def read_item(request: Request) -> StreamingResponse:
