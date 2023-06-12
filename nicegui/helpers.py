@@ -8,7 +8,7 @@ import time
 import webbrowser
 from contextlib import nullcontext
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generator, Optional, Tuple, Union
 
 import magic
 from fastapi import Request
@@ -107,21 +107,22 @@ def set_storage_secret(storage_secret: Optional[str] = None) -> None:
 
 def get_streaming_response(file: Path, request: Request) -> StreamingResponse:
     file_size = file.stat().st_size
-    start, end = 0, file_size - 1
-    range_header = request.headers.get('Range', None)
+    start = 0
+    end = file_size - 1
+    range_header = request.headers.get('Range')
     if range_header:
         byte1, byte2 = range_header.split('=')[1].split('-')
         start = int(byte1)
         if byte2:
             end = int(byte2)
-    content_length = (end - start) + 1
+    content_length = end - start + 1
     headers = {
         'Content-Range': f'bytes {start}-{end}/{file_size}',
         'Content-Length': str(content_length),
         'Accept-Ranges': 'bytes',
     }
 
-    def content_reader(file, start, end, chunk_size=8192):
+    def content_reader(file: Path, start: int, end: int, chunk_size: int = 8192) -> Generator[bytes, None, None]:
         with open(file, 'rb') as data:
             data.seek(start)
             remaining_bytes = end - start + 1

@@ -1,5 +1,4 @@
 
-import os
 from pathlib import Path
 
 import httpx
@@ -29,7 +28,7 @@ def assert_video_file_streaming(path: str) -> None:
     with httpx.Client() as http_client:
         r = http_client.get(
             path if 'http' in path else f'http://localhost:{PORT}{path}',
-            headers={'Range': 'bytes=0-1000'}
+            headers={'Range': 'bytes=0-1000'},
         )
         assert r.status_code == 206
         assert r.headers['Accept-Ranges'] == 'bytes'
@@ -40,19 +39,20 @@ def assert_video_file_streaming(path: str) -> None:
 
 def test_media_files_can_be_streamed(screen: Screen):
     app.add_media_files('/media', Path(TEST_DIR) / 'media')
+
     screen.open('/')
     assert_video_file_streaming('/media/test.mp4')
 
 
 def test_adding_single_media_file(screen: Screen):
-    url_path = app.add_media_file(VIDEO_FILE)
+    url_path = app.add_media_file(local_file=VIDEO_FILE)
 
     screen.open('/')
     assert_video_file_streaming(url_path)
 
 
 def test_adding_single_static_file(screen: Screen):
-    url_path = app.add_static_file(IMAGE_FILE)
+    url_path = app.add_static_file(local_file=IMAGE_FILE)
 
     screen.open('/')
     with httpx.Client() as http_client:
@@ -70,7 +70,8 @@ def test_auto_serving_file_from_image_source(screen: Screen):
     assert screen.selenium.execute_script("""
     return arguments[0].complete && 
         typeof arguments[0].naturalWidth != "undefined" && 
-        arguments[0].naturalWidth > 0""", img), 'image should load successfully'
+        arguments[0].naturalWidth > 0
+    """, img), 'image should load successfully'
 
 
 def test_auto_serving_file_from_video_source(screen: Screen):
@@ -79,5 +80,4 @@ def test_auto_serving_file_from_video_source(screen: Screen):
     screen.open('/')
     video = screen.find_by_tag('video')
     assert '/_nicegui/auto/media/' in video.get_attribute('src')
-    ic(video.get_attribute('src'))
     assert_video_file_streaming(video.get_attribute('src'))

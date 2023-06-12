@@ -31,7 +31,7 @@ class Audio(Element):
         """
         super().__init__('audio')
         if Path(src).is_file():
-            src = globals.app.add_media_file(src)
+            src = globals.app.add_media_file(local_file=src)
         self._props['src'] = src
         self._props['controls'] = controls
         self._props['autoplay'] = autoplay

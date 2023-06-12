@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Union
 
 from typing_extensions import Self
 
@@ -11,10 +11,10 @@ from ...element import Element
 class SourceElement(Element):
     source = BindableProperty(on_change=lambda sender, source: sender.on_source_change(source))
 
-    def __init__(self, *, source: str, **kwargs: Any) -> None:
+    def __init__(self, *, source: Union[str, Path], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if Path(source).is_file():
-            source = globals.app.add_static_file(source)
+            source = globals.app.add_static_file(local_file=source)
         self.source = source
         self._props['src'] = source
 
@@ -68,14 +68,14 @@ class SourceElement(Element):
         bind(self, 'source', target_object, target_name, forward=forward, backward=backward)
         return self
 
-    def set_source(self, source: str) -> None:
+    def set_source(self, source: Union[str, Path]) -> None:
         """Set the source of this element.
 
         :param source: The new source.
         """
         self.source = source
 
-    def on_source_change(self, source: str) -> None:
+    def on_source_change(self, source: Union[str, Path]) -> None:
         """Called when the source of this element changes.
 
         :param source: The new source.

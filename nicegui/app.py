@@ -1,3 +1,4 @@
+import hashlib
 from pathlib import Path
 from typing import Awaitable, Callable, Optional, Union
 
@@ -5,11 +6,13 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from nicegui import helpers
-
-from . import globals
+from . import globals, helpers
 from .native import Native
 from .storage import Storage
+
+
+def hash_file_path(path: Path) -> str:
+    return hashlib.sha256(str(path.resolve()).encode()).hexdigest()[:32]
 
 
 class App(FastAPI):
@@ -66,8 +69,8 @@ class App(FastAPI):
             raise Exception('calling shutdown() is not supported when auto-reload is enabled')
         globals.server.should_exit = True
 
-    def add_static_files(self, url_path: str, local_directory: str) -> None:
-        """Add directory of static files.
+    def add_static_files(self, url_path: str, local_directory: Union[str, Path]) -> None:
+        """Add a directory of static files.
 
         `add_static_files()` makes a local directory available at the specified endpoint, e.g. `'/static'`.
         This is useful for providing local data like images to the frontend.
@@ -82,33 +85,30 @@ class App(FastAPI):
         """
         if url_path == '/':
             raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
-        globals.app.mount(url_path, StaticFiles(directory=local_directory))
+        globals.app.mount(url_path, StaticFiles(directory=str(local_directory)))
 
-    def add_static_file(self, local_file: Union[str, Path], url_path: Optional[str] = None) -> None:
-        """Add single static file.
+    def add_static_file(self, *, local_file: Union[str, Path], url_path: Optional[str] = None) -> str:
+        """Add a single static file.
 
-        Allows a local file to be accessed online with enabled caching. 
+        Allows a local file to be accessed online with enabled caching.
         If `url_path` is not specified, a path will be generated.
-        Note that all used filenames must be unique.
 
         To make a whole folder of files accessible, use `add_static_files()` instead.
         For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
 
-        :param local_file: local file to serve as media content
-        :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> random path)
-        :return: url_path which can be used to access the file      
+        :param local_file: local file to serve as static content
+        :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
+        :return: URL path which can be used to access the file
         """
         file = Path(local_file)
         if not file.is_file():
             raise ValueError(f'File not found: {file}')
         if url_path is None:
-            url_path = '/_nicegui/auto/static/' + file.name
+            url_path = f'/_nicegui/auto/static/{hash_file_path(file)}/{file.name}'
 
         @self.get(url_path)
-        async def read_item() -> StreamingResponse:
-            return FileResponse(file, headers={
-                "Cache-Control": "public, max-age=3600",
-            })
+        async def read_item() -> FileResponse:
+            return FileResponse(file, headers={'Cache-Control': 'public, max-age=3600'})
 
         return url_path
 
@@ -126,32 +126,31 @@ class App(FastAPI):
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as media content
         """
-        @self.get(f'{url_path}/' + '{filename}')
+        @self.get(url_path + '/{filename}')
         async def read_item(request: Request, filename: str) -> StreamingResponse:
             filepath = Path(local_directory) / filename
             if not filepath.is_file():
-                return {"detail": "Not Found"}, 404
+                return {'detail': 'Not Found'}, 404
             return helpers.get_streaming_response(filepath, request)
 
-    def add_media_file(self, local_file: Union[str, Path], url_path: Optional[str] = None) -> None:
+    def add_media_file(self, *, local_file: Union[str, Path], url_path: Optional[str] = None) -> None:
         """Add a single media file.
 
-        Allows a local file to be streamed. 
+        Allows a local file to be streamed.
         If `url_path` is not specified, a path will be generated.
-        Note that all used filenames must be unique.
 
         To make a whole folder of media files accessible via streaming, use `add_media_files()` instead.
         For small static files, you can use `add_static_files()` or `add_static_file()` instead.
 
         :param local_file: local file to serve as media content
-        :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> random path)
-        :return: url_path which can be used to access the file
+        :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
+        :return: URL path which can be used to access the file
         """
         file = Path(local_file)
         if not file.is_file():
             raise ValueError(f'File not found: {local_file}')
         if url_path is None:
-            url_path = '/_nicegui/auto/media/' + file.name
+            url_path = f'/_nicegui/auto/media/{hash_file_path(file)}/{file.name}'
 
         @self.get(url_path)
         async def read_item(request: Request) -> StreamingResponse:
