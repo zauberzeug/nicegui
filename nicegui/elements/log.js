@@ -3,15 +3,19 @@ export default {
   data() {
     return {
       num_lines: 0,
+      total_count: 0,
     };
   },
   mounted() {
     const text = decodeURIComponent(this.lines);
     this.$el.innerHTML = text;
     this.num_lines = text ? text.split("\n").length : 0;
+    this.total_count = this.num_lines;
   },
   methods: {
-    push(line) {
+    push(line, total_count) {
+      if (total_count === this.total_count) return;
+      this.total_count = total_count;
       const decoded = decodeURIComponent(line);
       const textarea = this.$el;
       textarea.innerHTML += (this.num_lines ? "\n" : "") + decoded;

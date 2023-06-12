@@ -9,7 +9,11 @@ import webbrowser
 from contextlib import nullcontext
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Tuple, Union
 
+from starlette.middleware import Middleware
+from starlette.middleware.sessions import SessionMiddleware
+
 from . import background_tasks, globals
+from .storage import RequestTrackingMiddleware
 
 if TYPE_CHECKING:
     from .client import Client
@@ -84,3 +88,13 @@ def schedule_browser(host: str, port: int) -> Tuple[threading.Thread, threading.
     thread = threading.Thread(target=in_thread, args=(host, port), daemon=True)
     thread.start()
     return thread, cancel
+
+
+def set_storage_secret(storage_secret: Optional[str] = None) -> None:
+    """Set storage_secret and add request tracking middleware."""
+    if any(m.cls == SessionMiddleware for m in globals.app.user_middleware):
+        # NOTE not using "add_middleware" because it would be the wrong order
+        globals.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
+    elif storage_secret is not None:
+        globals.app.add_middleware(RequestTrackingMiddleware)
+        globals.app.add_middleware(SessionMiddleware, secret_key=storage_secret)
