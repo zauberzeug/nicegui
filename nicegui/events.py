@@ -2,10 +2,8 @@ from dataclasses import dataclass
 from inspect import Parameter, signature
 from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Optional, Union
 
-from nicegui.slot import Slot
-
 from . import background_tasks, globals
-from .helpers import KWONLY_SLOTS, is_coroutine
+from .helpers import KWONLY_SLOTS
 
 if TYPE_CHECKING:
     from .client import Client
@@ -281,7 +279,7 @@ def handle_event(handler: Optional[Callable[..., Any]],
         assert sender is not None and sender.parent_slot is not None
         with sender.parent_slot:
             result = handler() if no_arguments else handler(arguments)
-        if is_coroutine(result):
+        if isinstance(result, Awaitable):
             async def wait_for_result():
                 with sender.parent_slot:
                     await result
@@ -289,6 +287,5 @@ def handle_event(handler: Optional[Callable[..., Any]],
                 background_tasks.create(wait_for_result(), name=str(handler))
             else:
                 globals.app.on_startup(wait_for_result())
-
     except Exception as e:
         globals.handle_exception(e)

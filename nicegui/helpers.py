@@ -21,10 +21,15 @@ if TYPE_CHECKING:
 KWONLY_SLOTS = {'kw_only': True, 'slots': True} if sys.version_info >= (3, 10) else {}
 
 
-def is_coroutine(object: Any) -> bool:
+def is_coroutine_function(object: Any) -> bool:
+    """Check if the object is a coroutine function.
+
+    This function is needed because functools.partial is not a coroutine function, but its func attribute is.
+    Note: It will return false for coroutine objects.
+    """
     while isinstance(object, functools.partial):
         object = object.func
-    return asyncio.iscoroutinefunction(object) or asyncio.iscoroutine(object)
+    return asyncio.iscoroutinefunction(object)
 
 
 def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional['Client'] = None) -> None:

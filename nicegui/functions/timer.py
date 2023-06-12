@@ -4,7 +4,7 @@ from typing import Any, Callable, Optional
 
 from .. import background_tasks, globals
 from ..binding import BindableProperty
-from ..helpers import is_coroutine
+from ..helpers import is_coroutine_function
 from ..slot import Slot
 
 
@@ -81,7 +81,7 @@ class Timer:
         try:
             assert self.callback is not None
             result = self.callback()
-            if is_coroutine(self.callback):
+            if is_coroutine_function(self.callback):
                 await result
         except Exception as e:
             globals.handle_exception(e)
