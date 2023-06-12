@@ -75,6 +75,9 @@ class App(FastAPI):
         Otherwise the browser would not be able to access the files.
         Do only put non-security-critical files in there, as they are accessible to everyone.
 
+        To make a single file accessible, you can use `add_static_file()`.
+        For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
+
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as static content
         """
@@ -87,6 +90,9 @@ class App(FastAPI):
 
         Allows a local file to be accessed online with enabled caching. 
         If `url_path` is not specified, a random path will be generated.
+
+        To make a whole folder of files accessible, use `add_static_files()` instead.
+        For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
 
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> random path)
@@ -114,6 +120,9 @@ class App(FastAPI):
         Otherwise the browser would not be able to access and load the the files incrementally or jump to different positions in the stream.
         Do only put non-security-critical files in there, as they are accessible to everyone.
 
+        To make a single file accessible via streaming, you can use `add_media_file()`.
+        For small static files, you can use `add_static_files()` or `add_static_file()` instead.
+
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as media content
         """
@@ -129,6 +138,9 @@ class App(FastAPI):
 
         Allows a local file to be streamed. 
         If `url_path` is not specified, a random path will be generated.
+
+        To make a whole folder of media files accessible via streaming, use `add_media_files()` instead.
+        For small static files, you can use `add_static_files()` or `add_static_file()` instead.
 
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> random path)
