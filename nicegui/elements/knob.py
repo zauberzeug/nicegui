@@ -1,12 +1,12 @@
 from typing import Optional
 
-from ..colors import set_text_color
 from .label import Label
+from .mixins.color_elements import TextColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Knob(ValueElement, DisableableElement):
+class Knob(ValueElement, DisableableElement, TextColorElement):
 
     def __init__(self,
                  value: float = 0.0,
@@ -35,12 +35,11 @@ class Knob(ValueElement, DisableableElement):
         :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem
         :param show_value: whether to show the value as text
         """
-        super().__init__(tag='q-knob', value=value, on_value_change=None, throttle=0.05)
+        super().__init__(tag='q-knob', value=value, on_value_change=None, throttle=0.05, text_color=color)
 
         self._props['min'] = min
         self._props['max'] = max
         self._props['step'] = step
-        set_text_color(self, color)
         self._props['show-value'] = True  # NOTE: enable default slot, e.g. for nested icon
 
         if center_color:
