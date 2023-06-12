@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import inspect
+import mimetypes
 import socket
 import sys
 import threading
@@ -10,7 +11,6 @@ from contextlib import nullcontext
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generator, Optional, Tuple, Union
 
-import magic
 from fastapi import Request
 from fastapi.responses import StreamingResponse
 from starlette.middleware import Middleware
@@ -18,6 +18,8 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from . import background_tasks, globals
 from .storage import RequestTrackingMiddleware
+
+mimetypes.init()
 
 if TYPE_CHECKING:
     from .client import Client
@@ -139,7 +141,7 @@ def get_streaming_response(file: Path, request: Request) -> StreamingResponse:
 
     return StreamingResponse(
         content_reader(file, start, end),
-        media_type=magic.from_file(str(file), mime=True),
+        media_type=mimetypes.guess_type(str(file))[0] or 'application/octet-stream',
         headers=headers,
         status_code=206,
     )

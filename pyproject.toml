@@ -30,7 +30,6 @@ pywebview = "^4.0.2"
 importlib_metadata = { version = "^6.0.0", markers = "python_version ~= '3.7'" } # Python 3.7 has no importlib.metadata
 itsdangerous = "^2.1.2"
 aiofiles = "^23.1.0"
-python-magic = "^0.4.27"
 
 [tool.poetry.group.dev.dependencies]
 icecream = "^2.1.0"
