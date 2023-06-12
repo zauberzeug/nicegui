@@ -54,20 +54,27 @@ class TabPanels(ValueElement):
                  value: Union[Tab, TabPanel, None] = None,
                  on_change: Optional[Callable[..., Any]] = None,
                  animated: bool = True,
+                 keep_alive: bool = True,
                  ) -> None:
         """Tab Panels
 
         This element represents `Quasar's QTabPanels <https://quasar.dev/vue-components/tab-panels#qtabpanels-api>`_ component.
         It contains individual tab panels.
 
+        To avoid issues with dynamic elements when switching tabs,
+        this element uses Vue's `keep-alive <https://vuejs.org/guide/built-ins/keep-alive.html>`_ component.
+        If client-side performance is an issue, you can disable this feature.
+
         :param tabs: the `ui.tabs` element that controls this element
         :param value: `ui.tab`, `ui.tab_panel`, or name of the tab panel to be initially visible
         :param on_change: callback to be executed when the visible tab panel changes
         :param animated: whether the tab panels should be animated (default: `True`)
+        :param keep_alive: whether to use Vue's keep-alive component on the content (default: `True`)
         """
         super().__init__(tag='q-tab-panels', value=value, on_value_change=on_change)
         tabs.bind_value(self, 'value')
         self._props['animated'] = animated
+        self._props['keep-alive'] = keep_alive
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value._props['name'] if isinstance(value, Tab) or isinstance(value, TabPanel) else value
