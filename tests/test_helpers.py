@@ -2,8 +2,11 @@ import contextlib
 import socket
 import time
 import webbrowser
+from pathlib import Path
 
 from nicegui import helpers
+
+TEST_DIR = Path(__file__).parent
 
 
 def test_is_port_open():

@@ -14,13 +14,15 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from nicegui import globals, ui
 
+from .test_helpers import TEST_DIR
+
 PORT = 3392
 IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-input']
 
 
 class Screen:
     IMPLICIT_WAIT = 4
-    SCREENSHOT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshots')
+    SCREENSHOT_DIR = TEST_DIR / 'screenshots'
 
     def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture) -> None:
         self.selenium = selenium
