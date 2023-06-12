@@ -23,6 +23,7 @@ from nicegui import ui
 from website import documentation, example_card, svg
 from website.demo import bash_window, browser_window, python_window
 from website.documentation_tools import create_anchor_name, element_demo, generate_class_doc
+from website.search import Search
 from website.star import add_star
 from website.style import example_link, features, heading, link_target, section_heading, side_menu, subtitle, title
 
@@ -33,6 +34,7 @@ app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_
 
 app.add_static_files('/favicon', str(Path(__file__).parent / 'website' / 'favicon'))
 app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
+app.add_static_files('/static', str(Path(__file__).parent / 'website' / 'static'))
 
 
 @app.get('/logo.png')
@@ -78,18 +80,20 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
         if menu:
             ui.button(on_click=menu.toggle).props('flat color=white icon=menu round').classes('lg:hidden')
         with ui.link(target=index_page).classes('row gap-4 items-center no-wrap mr-auto'):
-            svg.face().classes('w-8 stroke-white stroke-2')
+            svg.face().classes('w-8 stroke-white stroke-2 max-[550px]:hidden')
             svg.word().classes('w-24')
         with ui.row().classes('max-lg:hidden'):
             for title, target in menu_items.items():
                 ui.link(title, target).classes(replace='text-lg text-white')
-        with ui.link(target='https://discord.gg/TEpFeAaF4f').classes('max-[435px]:hidden').tooltip('Discord'):
+        search = Search()
+        search.create_button()
+        with ui.link(target='https://discord.gg/TEpFeAaF4f').classes('max-[445px]:hidden').tooltip('Discord'):
             svg.discord().classes('fill-white scale-125 m-1')
-        with ui.link(target='https://www.reddit.com/r/nicegui/').classes('max-[385px]:hidden').tooltip('Reddit'):
+        with ui.link(target='https://www.reddit.com/r/nicegui/').classes('max-[395px]:hidden').tooltip('Reddit'):
             svg.reddit().classes('fill-white scale-125 m-1')
         with ui.link(target='https://github.com/zauberzeug/nicegui/').tooltip('GitHub'):
             svg.github().classes('fill-white scale-125 m-1')
-        add_star().classes('max-[480px]:hidden')
+        add_star().classes('max-[490px]:hidden')
         with ui.row().classes('lg:hidden'):
             with ui.button().props('flat color=white icon=more_vert round'):
                 with ui.menu().classes('bg-primary text-white text-lg').props(remove='no-parent-event'):

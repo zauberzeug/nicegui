@@ -14,5 +14,5 @@ def init(fastapi_app: FastAPI) -> None:
 
     ui.run_with(
         fastapi_app,
-        storage_secret='pick your private secret here'  # NOTE setting a secret is optional but allows for persistent storage per user
+        storage_secret='pick your private secret here',  # NOTE setting a secret is optional but allows for persistent storage per user
     )

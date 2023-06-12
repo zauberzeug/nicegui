@@ -16,9 +16,8 @@ from fastapi.responses import StreamingResponse
 from starlette.middleware import Middleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from nicegui.storage import RequestTrackingMiddleware
-
 from . import background_tasks, globals
+from .storage import RequestTrackingMiddleware
 
 if TYPE_CHECKING:
     from .client import Client
@@ -26,7 +25,12 @@ if TYPE_CHECKING:
 KWONLY_SLOTS = {'kw_only': True, 'slots': True} if sys.version_info >= (3, 10) else {}
 
 
-def is_coroutine(object: Any) -> bool:
+def is_coroutine_function(object: Any) -> bool:
+    """Check if the object is a coroutine function.
+
+    This function is needed because functools.partial is not a coroutine function, but its func attribute is.
+    Note: It will return false for coroutine objects.
+    """
     while isinstance(object, functools.partial):
         object = object.func
     return asyncio.iscoroutinefunction(object)
@@ -96,7 +100,7 @@ def schedule_browser(host: str, port: int) -> Tuple[threading.Thread, threading.
 
 
 def set_storage_secret(storage_secret: Optional[str] = None) -> None:
-    """Set storage_secret for ui.run() and run_with."""
+    """Set storage_secret and add request tracking middleware."""
     if any(m.cls == SessionMiddleware for m in globals.app.user_middleware):
         # NOTE not using "add_middleware" because it would be the wrong order
         globals.app.user_middleware.append(Middleware(RequestTrackingMiddleware))

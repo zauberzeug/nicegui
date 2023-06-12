@@ -27,6 +27,7 @@ def get_menu() -> ui.left_drawer:
 
 
 def heading(text: str, *, make_menu_entry: bool = True) -> None:
+    ui.link_target(create_anchor_name(text))
     ui.html(f'<em>{text}</em>').classes('mt-8 text-3xl font-weight-500')
     if make_menu_entry:
         with get_menu():
@@ -93,7 +94,7 @@ class element_demo:
         self.element_class = element_class
 
     def __call__(self, f: Callable, *, more_link: Optional[str] = None) -> Callable:
-        doc = self.element_class.__doc__ or self.element_class.__init__.__doc__
+        doc = f.__doc__ or self.element_class.__doc__ or self.element_class.__init__.__doc__
         title, documentation = doc.split('\n', 1)
         with ui.column().classes('w-full mb-8 gap-2'):
             if more_link:
