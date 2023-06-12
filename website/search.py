@@ -1,5 +1,3 @@
-from typing import Any, Callable, Optional
-
 from nicegui.dependencies import register_component
 from nicegui.element import Element
 

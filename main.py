@@ -20,10 +20,10 @@ import prometheus
 from nicegui import Client, app
 from nicegui import globals as nicegui_globals
 from nicegui import ui
-from search import search
 from website import documentation, example_card, svg
 from website.demo import bash_window, browser_window, python_window
 from website.documentation_tools import create_anchor_name, element_demo, generate_class_doc
+from website.search import search
 from website.star import add_star
 from website.style import example_link, features, heading, link_target, section_heading, side_menu, subtitle, title
 

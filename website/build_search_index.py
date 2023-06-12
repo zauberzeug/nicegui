@@ -5,13 +5,11 @@ import os
 import re
 from _ast import AsyncFunctionDef
 from pathlib import Path
-from typing import Any, List, Optional, Union
-
-from icecream import ic
+from typing import List, Optional, Union
 
 from nicegui import app, ui
 
-dir_path = os.path.dirname(os.path.abspath(__file__))
+dir_path = Path(__file__).parent
 os.chdir(dir_path)
 
 
@@ -24,7 +22,7 @@ def ast_string_node_to_string(node):
         return str(ast.unparse(node))
 
 
-def cleanup(markdown_string):
+def cleanup(markdown_string: str) -> str:
     # Remove link URLs but keep the description
     markdown_string = re.sub(r'\[([^\[]+)\]\([^\)]+\)', r'\1', markdown_string)
     # Remove inline code ticks
@@ -58,7 +56,7 @@ class DocVisitor(ast.NodeVisitor):
         elif function_name == 'markdown':
             if node.args:
                 raw = ast_string_node_to_string(node.args[0]).splitlines()
-                raw = ' '.join([l.strip() for l in raw]).strip()
+                raw = ' '.join(l.strip() for l in raw).strip()
                 self.current_content.append(cleanup(raw))
         self.generic_visit(node)
 
@@ -81,18 +79,16 @@ class DocVisitor(ast.NodeVisitor):
 
         for decorator in node.decorator_list:
             if isinstance(decorator, ast.Call):
-                ic(decorator.func)
                 function = decorator.func
                 if isinstance(function, ast.Name) and function.id == 'text_demo':
                     title = decorator.args[0].s
                     content = cleanup(decorator.args[1].s).splitlines()
                     self.add_to_search_index(title, content)
-        ic(node.name)
         self.generic_visit(node)
 
     def add_to_search_index(self, title: str, content: Union[str, list], main: bool = False) -> None:
         if isinstance(content, list):
-            content_str = ' '.join([l.strip() for l in content]).strip()
+            content_str = ' '.join(l.strip() for l in content).strip()
         else:
             content_str = content
 
@@ -105,7 +101,7 @@ class DocVisitor(ast.NodeVisitor):
         documents.append({
             'title': title,
             'content': content_str,
-            'url': url
+            'url': url,
         })
 
 
@@ -124,24 +120,21 @@ class MainVisitor(ast.NodeVisitor):
             documents.append({
                 'title': 'Example: ' + title,
                 'content': ast_string_node_to_string(node.args[1]),
-                'url': f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/main.py'
+                'url': f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/main.py',
             })
 
 
 def generate_for(file: Path, topic: Optional[str] = None) -> None:
-    with open(file, 'r') as source:
-        ic(file)
-        tree = ast.parse(source.read())
-        doc_visitor = DocVisitor(topic)
-        doc_visitor.visit(tree)
-        if doc_visitor.current_title:
-            doc_visitor.on_new_heading()  # to finalize the last heading
+    tree = ast.parse(file.read_text())
+    doc_visitor = DocVisitor(topic)
+    doc_visitor.visit(tree)
+    if doc_visitor.current_title:
+        doc_visitor.on_new_heading()  # to finalize the last heading
 
 
 documents = []
-with open(Path('../main.py'), 'r') as source:
-    tree = ast.parse(source.read())
-    MainVisitor().visit(tree)
+tree = ast.parse(Path('../main.py').read_text())
+MainVisitor().visit(tree)
 
 generate_for(Path('./documentation.py'))
 for file in Path('./more_documentation').glob('*.py'):
