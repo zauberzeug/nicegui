@@ -88,7 +88,8 @@ class App(FastAPI):
         """Add single static file.
 
         Allows a local file to be accessed online with enabled caching. 
-        If `url_path` is not specified, a random path will be generated.
+        If `url_path` is not specified, a path will be generated.
+        Note that all used filenames must be unique.
 
         To make a whole folder of files accessible, use `add_static_files()` instead.
         For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
@@ -136,7 +137,8 @@ class App(FastAPI):
         """Add a single media file.
 
         Allows a local file to be streamed. 
-        If `url_path` is not specified, a random path will be generated.
+        If `url_path` is not specified, a path will be generated.
+        Note that all used filenames must be unique.
 
         To make a whole folder of media files accessible via streaming, use `add_media_files()` instead.
         For small static files, you can use `add_static_files()` or `add_static_file()` instead.
