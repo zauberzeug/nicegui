@@ -19,7 +19,7 @@ def main_page() -> None:
         return RedirectResponse('/login')
     with ui.column().classes('absolute-center items-center'):
         ui.label(f'Hello {app.storage.user["username"]}!').classes('text-2xl')
-        ui.button(on_click=lambda: (app.storage.user.clear(), ui.open('/login'))).props('outline round icon=logout')
+        ui.button(on_click=lambda: (app.storage.user.clear(), ui.open('/login')), icon='logout').props('outline round')
 
 
 @ui.page('/login')

@@ -13,6 +13,7 @@ class Button(TextElement, DisableableElement, BackgroundColorElement):
                  text: str = '', *,
                  on_click: Optional[Callable[..., Any]] = None,
                  color: Optional[str] = 'primary',
+                 icon: Optional[str] = None,
                  ) -> None:
         """Button
 
@@ -26,8 +27,12 @@ class Button(TextElement, DisableableElement, BackgroundColorElement):
         :param text: the label of the button
         :param on_click: callback which is invoked when button is pressed
         :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
+        :param icon: the name of an icon to be displayed on the button (default: `None`)
         """
         super().__init__(tag='q-btn', text=text, background_color=color)
+
+        if icon:
+            self._props['icon'] = icon
 
         if on_click:
             self.on('click', lambda _: handle_event(on_click, ClickEventArguments(sender=self, client=self.client)))

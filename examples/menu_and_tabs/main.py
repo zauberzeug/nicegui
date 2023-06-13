@@ -15,7 +15,7 @@ with ui.left_drawer().classes('bg-blue-100') as left_drawer:
     ui.label('Side menu')
 
 with ui.page_sticky(position='bottom-right', x_offset=20, y_offset=20):
-    ui.button(on_click=footer.toggle).props('fab icon=contact_support')
+    ui.button(on_click=footer.toggle, icon='contact_support').props('fab')
 
 with ui.tab_panels(tabs, value='A').classes('w-full'):
     with ui.tab_panel('A'):

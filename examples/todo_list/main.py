@@ -39,7 +39,7 @@ def todo_ui():
         with ui.row().classes('items-center'):
             ui.checkbox(value=item.done, on_change=todo_ui.refresh).bind_value(item, 'done')
             ui.input(value=item.name).classes('flex-grow').bind_value(item, 'name')
-            ui.button(on_click=lambda item=item: todos.remove(item)).props('flat fab-mini icon=delete color=grey')
+            ui.button(on_click=lambda item=item: todos.remove(item), icon='delete').props('flat fab-mini color=grey')
 
 
 todos = ToDoList('My Weekend', on_change=todo_ui.refresh)

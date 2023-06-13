@@ -13,8 +13,8 @@ def more() -> None:
     ''')
     async def icons() -> None:
         with ui.row():
-            ui.button('demo').props('icon=history')
-            ui.button().props('icon=thumb_up')
+            ui.button('demo', icon='history')
+            ui.button(icon='thumb_up')
             with ui.button():
                 ui.label('sub-elements')
                 ui.image('https://picsum.photos/id/377/640/360') \
