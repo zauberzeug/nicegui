@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 def create_favicon_route(path: str, favicon: Optional[str]) -> None:
-    if favicon and Path(favicon).exists():
+    if favicon and not favicon.startswith('data:') and Path(favicon).exists():
         globals.app.add_route(f'{path}/favicon.ico', lambda _: FileResponse(favicon))
 
 
