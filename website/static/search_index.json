@@ -266,8 +266,13 @@
   },
   {
     "title": "Lifecycle",
-    "content": "Shut down NiceGUI.  This will programmatically stop the server. Only possible when auto-reload is disabled.",
+    "content": "Overview",
     "url": "/documentation/#lifecycle"
+  },
+  {
+    "title": "Shutdown",
+    "content": "Shut down NiceGUI.  This will programmatically stop the server. Only possible when auto-reload is disabled.",
+    "url": "/documentation/#shutdown"
   },
   {
     "title": "Auto-context",
