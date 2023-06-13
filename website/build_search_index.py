@@ -84,6 +84,15 @@ class DocVisitor(ast.NodeVisitor):
                     title = decorator.args[0].s
                     content = cleanup(decorator.args[1].s).splitlines()
                     self.add_to_search_index(title, content)
+                if isinstance(function, ast.Name) and function.id == 'element_demo':
+                    attr_name = decorator.args[0].attr
+                    obj_name = decorator.args[0].value.id
+                    if obj_name == 'app':
+                        docstring: str = getattr(app, attr_name).__doc__
+                        docstring = ' '.join(l.strip() for l in docstring.splitlines()).strip()
+                        self.current_content.append(cleanup(docstring))
+                    else:
+                        print(f'Unknown object: {obj_name} for element_demo', flush=True)
         self.generic_visit(node)
 
     def add_to_search_index(self, title: str, content: Union[str, list], main: bool = False) -> None:

@@ -417,6 +417,8 @@ def create_full() -> None:
 
     heading('Routes')
 
+    subheading('Static files')
+
     @element_demo(app.add_static_files)
     def add_static_files_demo():
         from nicegui import app
@@ -426,6 +428,8 @@ def create_full() -> None:
         ui.link('AI interface', '/examples/ai_interface/main.py')
         ui.link('Custom FastAPI app', '/examples/fastapi/main.py')
         ui.link('Authentication', '/examples/authentication/main.py')
+
+    subheading('Media files')
 
     @element_demo(app.add_media_files)
     def add_media_files_demo():
@@ -497,6 +501,8 @@ def create_full() -> None:
         # END OF DEMO
         global dt
         dt = datetime.now()
+
+    subheading('Shutdown')
 
     @element_demo(app.shutdown)
     def shutdown_demo():

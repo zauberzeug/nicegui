@@ -240,14 +240,24 @@
     "url": "/documentation/#pages"
   },
   {
+    "title": "Routes",
+    "content": "Overview",
+    "url": "/documentation/#routes"
+  },
+  {
+    "title": "Static files",
+    "content": "Add a directory of static files.  add_static_files() makes a local directory available at the specified endpoint, e.g. '/static'. This is useful for providing local data like images to the frontend. Otherwise the browser would not be able to access the files. Do only put non-security-critical files in there, as they are accessible to everyone.  To make a single file accessible, you can use add_static_file(). For media files which should be streamed, you can use add_media_files() or add_media_file() instead.  :param url_path: string that starts with a slash \"/\" and identifies the path at which the files should be served :param local_directory: local folder with files to serve as static content",
+    "url": "/documentation/#static_files"
+  },
+  {
     "title": "API Responses",
     "content": "NiceGUI is based on FastAPI. This means you can use all of FastAPI's features. For example, you can implement a RESTful API in addition to your graphical user interface. You simply import the app object from nicegui. Or you can run NiceGUI on top of your own FastAPI app by using ui.run_with(app) instead of starting a server automatically with ui.run().  You can also return any other FastAPI response object inside a page function. For example, you can return a RedirectResponse to redirect the user to another page if certain conditions are met. This is used in our authentication demo.",
     "url": "/documentation/#api_responses"
   },
   {
-    "title": "Routes",
-    "content": "Overview",
-    "url": "/documentation/#routes"
+    "title": "Media files",
+    "content": "Add directory of media files.  add_media_files() allows a local files to be streamed from a specified endpoint, e.g. '/media'. This should be used for media files to support proper streaming. Otherwise the browser would not be able to access and load the the files incrementally or jump to different positions in the stream. Do only put non-security-critical files in there, as they are accessible to everyone.  To make a single file accessible via streaming, you can use add_media_file(). For small static files, you can use add_static_files() or add_static_file() instead.  :param url_path: string that starts with a slash \"/\" and identifies the path at which the files should be served :param local_directory: local folder with files to serve as media content",
+    "url": "/documentation/#media_files"
   },
   {
     "title": "Events",
@@ -256,7 +266,7 @@
   },
   {
     "title": "Lifecycle",
-    "content": "Overview",
+    "content": "Shut down NiceGUI.  This will programmatically stop the server. Only possible when auto-reload is disabled.",
     "url": "/documentation/#lifecycle"
   },
   {
