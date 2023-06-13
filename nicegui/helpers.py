@@ -19,10 +19,10 @@ from starlette.middleware.sessions import SessionMiddleware
 from . import background_tasks, globals
 from .storage import RequestTrackingMiddleware
 
-mimetypes.init()
-
 if TYPE_CHECKING:
     from .client import Client
+
+mimetypes.init()
 
 KWONLY_SLOTS = {'kw_only': True, 'slots': True} if sys.version_info >= (3, 10) else {}
 

@@ -53,17 +53,16 @@ class Search:
         with self.results:
             for result in await ui.run_javascript(f'return window.fuse.search("{e.value}").slice(0, 50)'):
                 href: str = result['item']['url']
-                with ui.element('q-item').props(f'clickable').on('click', lambda href=href: self.clicked(href)):
+                with ui.element('q-item').props(f'clickable').on('click', lambda href=href: self.open_url(href)):
                     with ui.element('q-item-section'):
                         ui.label(result['item']['title'])
 
-    async def clicked(self, url: str) -> None:
+    async def open_url(self, url: str) -> None:
         await ui.run_javascript(f'''
             const url = "{url}"
             if (url.startsWith("http"))
                 window.open(url, "_blank");
             else
                 window.location.href = url;
-      ''', respond=False)
+        ''', respond=False)
         self.dialog.close()
-        print(url, flush=True)
