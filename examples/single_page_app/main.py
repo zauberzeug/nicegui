@@ -4,21 +4,21 @@ from router import Router
 from nicegui import ui
 
 
-@ui.page('/')  # normal index page (eg. the entry point of the app)
+@ui.page('/')  # normal index page (e.g. the entry point of the app)
 @ui.page('/{_:path}')  # all other pages will be handled by the router but must be registered to also show the SPA index page
-async def main():
+def main():
     router = Router()
 
     @router.add('/')
-    async def show_one():
+    def show_one():
         ui.label('Content One').classes('text-2xl')
 
     @router.add('/two')
-    async def show_two():
+    def show_two():
         ui.label('Content Two').classes('text-2xl')
 
     @router.add('/three')
-    async def show_three():
+    def show_three():
         ui.label('Content Three').classes('text-2xl')
 
     # adding some navigation buttons to switch between the different pages
@@ -29,5 +29,6 @@ async def main():
 
     # this places the content which should be displayed
     router.frame().classes('w-full p-4 bg-gray-100')
+
 
 ui.run()

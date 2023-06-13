@@ -98,7 +98,7 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
             with ui.button().props('flat color=white icon=more_vert round'):
                 with ui.menu().classes('bg-primary text-white text-lg').props(remove='no-parent-event'):
                     for title, target in menu_items.items():
-                        ui.menu_item(title, on_click=lambda _, target=target: ui.open(target))
+                        ui.menu_item(title, on_click=lambda target=target: ui.open(target))
 
 
 @ui.page('/')
