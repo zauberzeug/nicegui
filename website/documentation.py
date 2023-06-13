@@ -176,7 +176,7 @@ def create_full() -> None:
     ''')
     def tooltips_demo():
         ui.label('Tooltips...').tooltip('...are shown on mouse over')
-        with ui.button().props('icon=thumb_up'):
+        with ui.button(icon='thumb_up'):
             ui.tooltip('I like this').classes('bg-green')
 
     load_demo(ui.notify)
@@ -197,7 +197,7 @@ def create_full() -> None:
     ''')
     def design_demo():
         ui.radio(['x', 'y', 'z'], value='x').props('inline color=green')
-        ui.button().props('icon=touch_app outline round').classes('shadow-lg')
+        ui.button(icon='touch_app').props('outline round').classes('shadow-lg')
         ui.label('Stylish!').style('color: #6E93D6; font-size: 200%; font-weight: 300')
 
     subheading('Try styling NiceGUI elements!')
@@ -381,7 +381,7 @@ def create_full() -> None:
             [ui.label(f'Line {i}') for i in range(100)]
             with ui.header(elevated=True).style('background-color: #3874c8').classes('items-center justify-between'):
                 ui.label('HEADER')
-                ui.button(on_click=lambda: right_drawer.toggle()).props('flat color=white icon=menu')
+                ui.button(on_click=lambda: right_drawer.toggle(), icon='menu').props('flat color=white')
             with ui.left_drawer(top_corner=True, bottom_corner=True).style('background-color: #d7e3f4'):
                 ui.label('LEFT DRAWER')
             with ui.right_drawer(fixed=False).style('background-color: #ebf1fa').props('bordered') as right_drawer:

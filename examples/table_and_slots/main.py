@@ -28,7 +28,7 @@ with ui.table(title='My Team', columns=columns, rows=rows, selection='multiple',
                     table.add_rows({'id': time.time(), 'name': new_name.value, 'age': new_age.value}),
                     new_name.set_value(None),
                     new_age.set_value(None),
-                )).props('flat fab-mini icon=add')
+                ), icon='add').props('flat fab-mini')
             with table.cell():
                 new_name = ui.input('Name')
             with table.cell():

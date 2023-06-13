@@ -23,6 +23,6 @@ def more() -> None:
     ''')
     def nesting_elements():
         with ui.interactive_image('https://picsum.photos/id/147/640/360'):
-            ui.button(on_click=lambda: ui.notify('thumbs up')) \
-                .props('icon=thumb_up flat fab color=white') \
+            ui.button(on_click=lambda: ui.notify('thumbs up'), icon='thumb_up') \
+                .props('flat fab color=white') \
                 .classes('absolute bottom-0 left-0 m-2')

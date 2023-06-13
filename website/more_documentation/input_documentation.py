@@ -37,5 +37,5 @@ def more() -> None:
         ui.input('styling', value='some text') \
             .props('input-style="color: blue" input-class="font-mono"')
         with ui.input(value='custom clear button').classes('w-64') as i:
-            ui.button(color='orange-8', on_click=lambda: i.set_value(None)) \
-                .props('icon=delete flat dense').bind_visibility_from(i, 'value')
+            ui.button(color='orange-8', on_click=lambda: i.set_value(None), icon='delete') \
+                .props('flat dense').bind_visibility_from(i, 'value')

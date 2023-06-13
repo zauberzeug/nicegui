@@ -1,5 +1,3 @@
-from typing import Dict
-
 from nicegui import ui
 
 from ..documentation_tools import text_demo
@@ -65,6 +63,8 @@ def more() -> None:
         Here is an example of how to show and hide columns in a table.
     ''')
     def show_and_hide_columns():
+        from typing import Dict
+
         columns = [
             {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
             {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
@@ -85,8 +85,8 @@ def more() -> None:
             table._props['columns'] = [column for column in columns if column['name'] in visible_columns]
             table.update()
 
-        with ui.button(on_click=lambda: menu.open()).props('icon=menu'):
-            with ui.menu() as menu, ui.column().classes('gap-0 p-2'):
+        with ui.button(icon='menu'):
+            with ui.menu().props(remove='no-parent-event'), ui.column().classes('gap-0 p-2'):
                 for column in columns:
                     ui.switch(column['label'], value=True, on_change=lambda e, column=column: toggle(column, e.value))
 
