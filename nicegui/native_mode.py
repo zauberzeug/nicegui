@@ -18,6 +18,9 @@ try:
         warnings.filterwarnings('ignore', category=DeprecationWarning)
         import webview
 except ModuleNotFoundError:
+    class webview:
+        class Window:
+            pass
     pass
 
 
