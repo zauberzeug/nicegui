@@ -1,7 +1,8 @@
 import asyncio
 import inspect
 import time
-from typing import TYPE_CHECKING, Any, Callable, Optional
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from fastapi import Request, Response
 
@@ -20,7 +21,7 @@ class page:
                  path: str, *,
                  title: Optional[str] = None,
                  viewport: Optional[str] = None,
-                 favicon: Optional[str] = None,
+                 favicon: Optional[Union[str, Path]] = None,
                  dark: Optional[bool] = ...,
                  language: Language = ...,
                  response_timeout: float = 3.0,

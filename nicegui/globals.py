@@ -3,6 +3,7 @@ import inspect
 import logging
 from contextlib import contextmanager
 from enum import Enum
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterator, List, Optional, Union
 
 from socketio import AsyncServer
@@ -35,7 +36,7 @@ ui_run_has_been_called: bool = False
 reload: bool
 title: str
 viewport: str
-favicon: Optional[str]
+favicon: Optional[Union[str, Path]]
 dark: Optional[bool]
 language: Language
 binding_refresh_interval: float

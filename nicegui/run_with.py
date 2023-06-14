@@ -1,4 +1,5 @@
-from typing import Optional
+from pathlib import Path
+from typing import Optional, Union
 
 from fastapi import FastAPI
 
@@ -12,7 +13,7 @@ def run_with(
     app: FastAPI, *,
     title: str = 'NiceGUI',
     viewport: str = 'width=device-width, initial-scale=1',
-    favicon: Optional[str] = None,
+    favicon: Optional[Union[str, Path]] = None,
     dark: Optional[bool] = False,
     language: Language = 'en-US',
     binding_refresh_interval: float = 0.1,

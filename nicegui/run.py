@@ -3,7 +3,8 @@ import multiprocessing
 import os
 import socket
 import sys
-from typing import Any, List, Optional, Tuple
+from pathlib import Path
+from typing import Any, List, Optional, Tuple, Union
 
 import __main__
 import uvicorn
@@ -34,7 +35,7 @@ def run(*,
         port: int = 8080,
         title: str = 'NiceGUI',
         viewport: str = 'width=device-width, initial-scale=1',
-        favicon: Optional[str] = None,
+        favicon: Optional[Union[str, Path]] = None,
         dark: Optional[bool] = False,
         language: Language = 'en-US',
         binding_refresh_interval: float = 0.1,

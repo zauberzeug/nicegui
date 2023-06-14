@@ -2,7 +2,7 @@ import base64
 import io
 import urllib.parse
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple, Union
 
 from fastapi.responses import FileResponse, Response, StreamingResponse
 
@@ -12,8 +12,8 @@ if TYPE_CHECKING:
     from .page import page
 
 
-def create_favicon_route(path: str, favicon: Optional[str]) -> None:
-    if favicon and not favicon.startswith('data:') and Path(favicon).exists():
+def create_favicon_route(path: str, favicon: Optional[Union[str, Path]]) -> None:
+    if favicon and not str(favicon).strip().startswith('data:') and Path(favicon).exists():
         globals.app.add_route(f'{path}/favicon.ico', lambda _: FileResponse(favicon))
 
 
@@ -21,7 +21,7 @@ def get_favicon_url(page: 'page', prefix: str) -> str:
     favicon = page.favicon or globals.favicon
     if not favicon:
         return f'{prefix}/_nicegui/{__version__}/static/favicon.ico'
-    favicon = str(favicon)
+    favicon = str(favicon).strip()
     if is_remote_url(favicon):
         return favicon
     elif is_data_url(favicon):
@@ -37,15 +37,18 @@ def get_favicon_url(page: 'page', prefix: str) -> str:
 
 
 def get_favicon_response() -> Response:
-    if is_svg(globals.favicon):
-        return Response(globals.favicon, media_type='image/svg+xml')
-    elif is_data_url(globals.favicon):
-        media_type, bytes = data_url_to_bytes(globals.favicon)
-        return StreamingResponse(io.BytesIO(bytes), media_type=media_type)
-    elif is_char(globals.favicon):
-        return Response(char_to_svg(globals.favicon), media_type='image/svg+xml')
-    else:
+    if not globals.favicon:
         raise ValueError(f'invalid favicon: {globals.favicon}')
+    favicon = str(globals.favicon).strip()
+    if is_svg(favicon):
+        return Response(favicon, media_type='image/svg+xml')
+    elif is_data_url(favicon):
+        media_type, bytes = data_url_to_bytes(favicon)
+        return StreamingResponse(io.BytesIO(bytes), media_type=media_type)
+    elif is_char(favicon):
+        return Response(char_to_svg(favicon), media_type='image/svg+xml')
+    else:
+        raise ValueError(f'invalid favicon: {favicon}')
 
 
 def is_remote_url(favicon: str) -> bool:
@@ -89,6 +92,6 @@ def svg_to_data_url(svg: str) -> str:
 
 
 def data_url_to_bytes(data_url: str) -> Tuple[str, bytes]:
-    media_type, base64_image = data_url.split(",", 1)
-    media_type = media_type.split(":")[1].split(";")[0]
+    media_type, base64_image = data_url.split(',', 1)
+    media_type = media_type.split(':')[1].split(';')[0]
     return media_type, base64.b64decode(base64_image)

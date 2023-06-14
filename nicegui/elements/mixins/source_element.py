@@ -13,7 +13,7 @@ class SourceElement(Element):
 
     def __init__(self, *, source: Union[str, Path], **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if not source.startswith('data:') and Path(source).is_file():
+        if not str(source).strip().startswith('data:') and Path(source).is_file():
             source = globals.app.add_static_file(local_file=source)
         self.source = source
         self._props['src'] = source
