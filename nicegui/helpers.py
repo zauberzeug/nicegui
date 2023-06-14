@@ -38,6 +38,15 @@ def is_coroutine_function(object: Any) -> bool:
     return asyncio.iscoroutinefunction(object)
 
 
+def is_file(path: Optional[Union[str, Path]]) -> bool:
+    """Check if the path is a file that exists."""
+    if not path:
+        return False
+    elif isinstance(path, str) and path.strip().startswith('data:'):
+        return False  # NOTE: avoid passing data URLs to Path
+    return Path(path).is_file()
+
+
 def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional['Client'] = None) -> None:
     try:
         if isinstance(func, Awaitable):

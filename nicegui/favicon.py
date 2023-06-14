@@ -7,13 +7,14 @@ from typing import TYPE_CHECKING, Optional, Tuple, Union
 from fastapi.responses import FileResponse, Response, StreamingResponse
 
 from . import __version__, globals
+from .helpers import is_file
 
 if TYPE_CHECKING:
     from .page import page
 
 
 def create_favicon_route(path: str, favicon: Optional[Union[str, Path]]) -> None:
-    if favicon and not str(favicon).strip().startswith('data:') and Path(favicon).exists():
+    if is_file(favicon):
         globals.app.add_route(f'{path}/favicon.ico', lambda _: FileResponse(favicon))
 
 
