@@ -14,6 +14,12 @@ class Visibility:
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.visible = True
+        self.ignores_events_when_hidden = True
+
+    @property
+    def is_ignoring_events(self) -> bool:
+        """Return whether the element is currently ignoring events."""
+        return
 
     def bind_visibility_to(self,
                            target_object: Any,

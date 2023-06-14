@@ -277,6 +277,8 @@ def handle_event(handler: Optional[Callable[..., Any]],
         no_arguments = not any(p.default is Parameter.empty for p in signature(handler).parameters.values())
         sender = arguments.sender if isinstance(arguments, EventArguments) else sender
         assert sender is not None and sender.parent_slot is not None
+        if sender.is_ignoring_events:
+            return
         with sender.parent_slot:
             result = handler() if no_arguments else handler(arguments)
         if isinstance(result, Awaitable):

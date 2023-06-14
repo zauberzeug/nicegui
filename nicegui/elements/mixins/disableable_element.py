@@ -12,6 +12,14 @@ class DisableableElement(Element):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.enabled = True
+        self.ignores_events_when_disabled = True
+
+    @property
+    def is_ignoring_events(self) -> bool:
+        """Return whether the element is currently ignoring events."""
+        if super().is_ignoring_events:
+            return True
+        return not self.enabled and self.ignores_events_when_disabled
 
     def enable(self) -> None:
         """Enable the element."""
