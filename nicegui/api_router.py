@@ -1,4 +1,5 @@
-from typing import Callable, Optional
+from pathlib import Path
+from typing import Callable, Optional, Union
 
 import fastapi
 
@@ -11,7 +12,7 @@ class APIRouter(fastapi.APIRouter):
              path: str, *,
              title: Optional[str] = None,
              viewport: Optional[str] = None,
-             favicon: Optional[str] = None,
+             favicon: Optional[Union[str, Path]] = None,
              dark: Optional[bool] = ...,
              response_timeout: float = 3.0,
              **kwargs,

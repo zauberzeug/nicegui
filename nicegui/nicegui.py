@@ -21,7 +21,7 @@ from .client import Client
 from .dependencies import js_components, js_dependencies
 from .element import Element
 from .error import error_content
-from .helpers import safe_invoke
+from .helpers import is_file, safe_invoke
 from .page import page
 
 globals.app = app = App(default_response_class=NiceGUIJSONResponse)
@@ -67,7 +67,7 @@ def handle_startup(with_welcome_message: bool = True) -> None:
                            '   if __name__ in {"__main__", "__mp_main__"}:\n'
                            'to allow for multiprocessing.')
     if globals.favicon:
-        if Path(globals.favicon).exists():
+        if is_file(globals.favicon):
             globals.app.add_route('/favicon.ico', lambda _: FileResponse(globals.favicon))
         else:
             globals.app.add_route('/favicon.ico', lambda _: favicon.get_favicon_response())

@@ -6,6 +6,7 @@ from typing_extensions import Self
 from ... import globals
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
+from ...helpers import is_file
 
 
 class SourceElement(Element):
@@ -13,7 +14,7 @@ class SourceElement(Element):
 
     def __init__(self, *, source: Union[str, Path], **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if Path(source).is_file():
+        if is_file(source):
             source = globals.app.add_static_file(local_file=source)
         self.source = source
         self._props['src'] = source
