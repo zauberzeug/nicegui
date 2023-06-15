@@ -8,6 +8,6 @@ async def pick_file() -> None:
     result = await local_file_picker('~', multiple=True)
     ui.notify(f'You chose {result}')
 
-ui.button('Choose file', on_click=pick_file).props('icon=folder')
+ui.button('Choose file', on_click=pick_file, icon='folder')
 
 ui.run()

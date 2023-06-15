@@ -29,3 +29,19 @@ def more() -> None:
             ui.notify(f'You chose {result}')
 
         ui.button('Await a dialog', on_click=show)
+
+    @text_demo('Replacing content', '''
+        The content of a dialog can be changed.
+    ''')
+    def replace_content():
+        def replace():
+            dialog.clear()
+            with dialog, ui.card().classes('w-64 h-64'):
+                ui.label('New Content')
+            dialog.open()
+
+        with ui.dialog() as dialog, ui.card():
+            ui.label('Hello world!')
+
+        ui.button('Open', on_click=dialog.open)
+        ui.button('Replace', on_click=replace)

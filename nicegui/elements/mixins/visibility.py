@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, cast
 
 from typing_extensions import Self
 
@@ -14,6 +14,12 @@ class Visibility:
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.visible = True
+        self.ignores_events_when_hidden = True
+
+    @property
+    def is_ignoring_events(self) -> bool:
+        """Return whether the element is currently ignoring events."""
+        return not self.visible and self.ignores_events_when_hidden
 
     def bind_visibility_to(self,
                            target_object: Any,
@@ -79,11 +85,12 @@ class Visibility:
         """
         self.visible = visible
 
-    def on_visibility_change(self: 'Element', visible: str) -> None:
+    def on_visibility_change(self, visible: str) -> None:
         """Called when the visibility of this element changes.
 
         :param visible: Whether the element should be visible.
         """
+        self = cast('Element', self)
         if visible and 'hidden' in self._classes:
             self._classes.remove('hidden')
             self.update()

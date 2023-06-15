@@ -4,11 +4,11 @@ import os.path
 import platform
 import shlex
 
-from nicegui import background_tasks, ui
+from nicegui import ui
 
 
 async def run_command(command: str) -> None:
-    '''Run a command in the background and display the output in the pre-created dialog.'''
+    """Run a command in the background and display the output in the pre-created dialog."""
     dialog.open()
     result.content = ''
     process = await asyncio.create_subprocess_exec(
@@ -32,7 +32,7 @@ with ui.dialog() as dialog, ui.card():
 commands = ['python3 hello.py', 'python3 hello.py NiceGUI', 'python3 slow.py']
 with ui.row():
     for command in commands:
-        ui.button(command, on_click=lambda _, c=command: background_tasks.create(run_command(c))).props('no-caps')
+        ui.button(command, on_click=lambda command=command: run_command(command)).props('no-caps')
 
 
 # NOTE on windows reload must be disabled to make asyncio.create_subprocess_exec work (see https://github.com/zauberzeug/nicegui/issues/486)

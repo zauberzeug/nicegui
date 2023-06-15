@@ -24,8 +24,8 @@ def users_ui() -> None:
                 ui.label(user['name'])
                 ui.label(user['age'])
             with ui.row():
-                ui.button('edit', on_click=lambda _, user=user: open_dialog(user))
-                ui.button('delete', on_click=lambda _, user=user: delete(user), color='red')
+                ui.button('edit', on_click=lambda user=user: open_dialog(user))
+                ui.button('delete', on_click=lambda user=user: delete(user), color='red')
 
 
 def create() -> None:

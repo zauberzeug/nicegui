@@ -2,8 +2,7 @@ from typing import Optional
 
 from typing_extensions import Literal
 
-from ..colors import set_text_color
-from ..element import Element
+from .mixins.color_elements import TextColorElement
 
 SpinnerTypes = Literal[
     'default',
@@ -32,7 +31,7 @@ SpinnerTypes = Literal[
 ]
 
 
-class Spinner(Element):
+class Spinner(TextColorElement):
 
     def __init__(self,
                  type: Optional[SpinnerTypes] = 'default', *,
@@ -49,7 +48,6 @@ class Spinner(Element):
         :param color: color of the spinner (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
         :param thickness: thickness of the spinner (applies to the "default" spinner only, default: 5.0)
         """
-        super().__init__('q-spinner' if type == 'default' else f'q-spinner-{type}')
+        super().__init__(tag='q-spinner' if type == 'default' else f'q-spinner-{type}', text_color=color)
         self._props['size'] = size
-        set_text_color(self, color)
         self._props['thickness'] = thickness

@@ -1,10 +1,10 @@
-from typing import Optional
+from typing import Any, Optional
 
 from .. import globals
 
 
 async def run_javascript(code: str, *,
-                         respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Optional[str]:
+                         respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Optional[Any]:
     """Run JavaScript
 
     This function runs arbitrary JavaScript code on a page that is executed in the browser.
