@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Callable, Optional, Union, cast
 
 from .. import globals
+from ..element import Element
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
@@ -60,3 +61,9 @@ class Step(DisableableElement):
         self.stepper = cast(ValueElement, globals.get_slot().parent)
         if self.stepper.value is None:
             self.stepper.value = name
+
+
+class StepperNavigation(Element):
+
+    def __init__(self) -> None:
+        super().__init__('q-stepper-navigation')
