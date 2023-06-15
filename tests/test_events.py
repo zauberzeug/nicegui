@@ -1,6 +1,8 @@
 import asyncio
 
+import pytest
 from selenium.webdriver.common.by import By
+from typing_extensions import Literal
 
 from nicegui import ui
 from nicegui.events import ClickEventArguments
@@ -158,3 +160,17 @@ def test_throttling_variants(screen: Screen):
     assert events == []
     screen.wait(1.1)
     assert events == [3]
+
+
+@pytest.mark.parametrize('attribute', ['disabled', 'hidden'])
+def test_server_side_validation(screen: Screen, attribute: Literal['disabled', 'hidden']):
+    b = ui.button('Button', on_click=lambda: ui.label('Success'))
+    b.disable() if attribute == 'disabled' else b.set_visibility(False)
+    ui.button('Hack', on_click=lambda: ui.run_javascript(f'''
+        getElement({b.id}).$emit("click", {{"id": {b.id}, "listener_id": "{list(b._event_listeners.keys())[0]}"}});
+    ''', respond=False))
+
+    screen.open('/')
+    screen.click('Hack')
+    screen.wait(0.5)
+    screen.should_not_contain('Success')
