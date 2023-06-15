@@ -19,7 +19,7 @@ class Visibility:
     @property
     def is_ignoring_events(self) -> bool:
         """Return whether the element is currently ignoring events."""
-        return
+        return not self.visible and self.ignores_events_when_hidden
 
     def bind_visibility_to(self,
                            target_object: Any,
