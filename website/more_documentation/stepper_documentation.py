@@ -2,7 +2,7 @@ from nicegui import ui
 
 
 def main_demo() -> None:
-    with ui.stepper(value='Preheat').props('vertical').classes('w-full') as stepper:
+    with ui.stepper().props('vertical').classes('w-full') as stepper:
         with ui.step('Preheat'):
             ui.label('Preheat the oven to 350 degrees')
             with ui.stepper_navigation():
