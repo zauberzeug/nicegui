@@ -9,19 +9,19 @@ from ..events import SceneClickEventArguments, SceneClickHit, handle_event
 from ..helpers import KWONLY_SLOTS
 from .scene_object3d import Object3D
 
-register_vue_component(name='scene', path=Path(__file__).parent.joinpath('scene.js'))
+register_vue_component(name='scene', path=Path(__file__).parent / 'scene.js')
 register_library(name='three',
-                 path=Path(__file__).parent.joinpath('lib', 'three', 'three.module.js'), expose=True)
+                 path=Path(__file__).parent / 'lib' / 'three' / 'three.module.js', expose=True)
 register_library(name='CSS2DRenderer',
-                 path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'CSS2DRenderer.js'), expose=True)
+                 path=Path(__file__).parent / 'lib' / 'three' / 'modules' / 'CSS2DRenderer.js', expose=True)
 register_library(name='CSS3DRenderer',
-                 path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'CSS3DRenderer.js'), expose=True)
+                 path=Path(__file__).parent / 'lib' / 'three' / 'modules' / 'CSS3DRenderer.js', expose=True)
 register_library(name='OrbitControls',
-                 path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'OrbitControls.js'), expose=True)
+                 path=Path(__file__).parent / 'lib' / 'three' / 'modules' / 'OrbitControls.js', expose=True)
 register_library(name='STLLoader',
-                 path=Path(__file__).parent.joinpath('lib', 'three', 'modules', 'STLLoader.js'), expose=True)
+                 path=Path(__file__).parent / 'lib' / 'three' / 'modules' / 'STLLoader.js', expose=True)
 register_library(name='tween',
-                 path=Path(__file__).parent.joinpath('lib', 'tween', 'tween.umd.js'))
+                 path=Path(__file__).parent / 'lib' / 'tween' / 'tween.umd.js')
 
 
 @dataclass(**KWONLY_SLOTS)

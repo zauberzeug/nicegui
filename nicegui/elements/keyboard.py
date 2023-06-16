@@ -8,7 +8,7 @@ from ..dependencies import register_vue_component
 from ..element import Element
 from ..events import KeyboardAction, KeyboardKey, KeyboardModifiers, KeyEventArguments, handle_event
 
-register_vue_component(name='keyboard', path=Path(__file__).parent.joinpath('keyboard.js'))
+register_vue_component(name='keyboard', path=Path(__file__).parent / 'keyboard.js')
 
 
 class Keyboard(Element):

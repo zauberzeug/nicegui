@@ -9,7 +9,7 @@ from ..dependencies import register_vue_component
 from ..element import Element
 from ..helpers import KWONLY_SLOTS, is_coroutine_function
 
-register_vue_component(name='refreshable', path=Path(__file__).parent.joinpath('refreshable.js'))
+register_vue_component(name='refreshable', path=Path(__file__).parent / 'refreshable.js')
 
 
 @dataclass(**KWONLY_SLOTS)

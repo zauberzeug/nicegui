@@ -3,9 +3,8 @@ from pathlib import Path
 from ..dependencies import register_library, register_vue_component
 from .mixins.content_element import ContentElement
 
-register_vue_component(name='mermaid', path=Path(__file__).parent.joinpath('mermaid.js'))
-register_library(name='mermaid', path=Path(__file__).parent.joinpath('lib', 'mermaid', 'mermaid.esm.min.mjs'),
-                 expose=True)
+register_vue_component(name='mermaid', path=Path(__file__).parent / 'mermaid.js')
+register_library(name='mermaid', path=Path(__file__).parent / 'lib' / 'mermaid' / 'mermaid.esm.min.mjs', expose=True)
 
 
 class Mermaid(ContentElement):

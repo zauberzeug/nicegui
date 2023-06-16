@@ -6,7 +6,7 @@ from .. import globals
 from ..dependencies import register_vue_component
 from ..element import Element
 
-register_vue_component(name='video', path=Path(__file__).parent.joinpath('video.js'))
+register_vue_component(name='video', path=Path(__file__).parent / 'video.js')
 
 
 class Video(Element):

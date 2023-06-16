@@ -6,7 +6,7 @@ from ..dependencies import register_vue_component
 from ..element import Element
 from .mixins.text_element import TextElement
 
-register_vue_component('link', Path(__file__).parent.joinpath('link.js'))
+register_vue_component('link', Path(__file__).parent / 'link.js')
 
 
 class Link(TextElement):

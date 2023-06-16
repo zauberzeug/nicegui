@@ -3,7 +3,7 @@ from pathlib import Path
 from ..dependencies import register_vue_component
 from ..element import Element
 
-register_vue_component(name='colors', path=Path(__file__).parent.joinpath('colors.js'))
+register_vue_component(name='colors', path=Path(__file__).parent / 'colors.js')
 
 
 class Colors(Element):

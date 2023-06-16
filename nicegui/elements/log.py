@@ -6,7 +6,7 @@ from typing import Any, Optional
 from ..dependencies import register_vue_component
 from ..element import Element
 
-register_vue_component(name='log', path=Path(__file__).parent.joinpath('log.js'))
+register_vue_component(name='log', path=Path(__file__).parent / 'log.js')
 
 
 class Log(Element):

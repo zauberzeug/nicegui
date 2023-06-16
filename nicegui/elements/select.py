@@ -8,7 +8,7 @@ from nicegui.dependencies import register_vue_component
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
 
-register_vue_component(name='select', path=Path(__file__).parent.joinpath('select.js'))
+register_vue_component(name='select', path=Path(__file__).parent / 'select.js')
 
 
 class Select(ChoiceElement, DisableableElement):

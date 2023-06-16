@@ -80,11 +80,11 @@ optional_dependencies = [
     'lib/highcharts/modules/pyramid3d.js',
     'lib/highcharts/modules/cylinder.js',
 ]
-register_vue_component(name='chart', path=Path(__file__).parent.joinpath('chart.js'))
+register_vue_component(name='chart', path=Path(__file__).parent / 'chart.js')
 for path in dependencies:
-    register_library(name=Path(path).stem, path=Path(__file__).parent.joinpath(path))
+    register_library(name=Path(path).stem, path=Path(__file__).parent / path)
 for path in optional_dependencies:
-    register_library(name=Path(path).stem, path=Path(__file__).parent.joinpath(path))
+    register_library(name=Path(path).stem, path=Path(__file__).parent / path)
 
 
 class Chart(Element):

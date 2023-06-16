@@ -7,8 +7,8 @@ from ..dependencies import register_library, register_vue_component
 from ..element import Element
 from ..functions.javascript import run_javascript
 
-register_vue_component(name='aggrid', path=Path(__file__).parent.joinpath('aggrid.js'))
-register_library(name='aggrid', path=Path(__file__).parent.joinpath('lib', 'aggrid', 'ag-grid-community.min.js'))
+register_vue_component(name='aggrid', path=Path(__file__).parent / 'aggrid.js')
+register_library(name='aggrid', path=Path(__file__).parent / 'lib' / 'aggrid' / 'ag-grid-community.min.js')
 
 
 class AgGrid(Element):

@@ -31,7 +31,7 @@ def register_vue_component(name: str, path: Path) -> None:
         js_components[name] = {'name': name, 'path': path}
 
 
-def register_library(name: str, path: Path, expose: bool = False) -> None:
+def register_library(name: str, path: Path, *, expose: bool = False) -> None:
     """Register a new external library.
 
     :param name: unique machine-name (used in element's `use_library`): no space, no special characters
