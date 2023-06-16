@@ -200,13 +200,13 @@
             for (const [id, element] of Object.entries(msg)) {
               for (const library of element['libraries']) {
                 if (!loaded.includes(library)) {
-                  await import(`{{ prefix | safe }}/_nicegui/0.1.0/library/${library}/include`);
+                  await import(`{{ prefix | safe }}/_nicegui/{{version}}/library/${library}/include`);
                   loaded.push(library);
                 }
               }
               for (const component of element['components']) {
                 if (!loaded.includes(component)) {
-                  const { default: vue_component } = await import(`{{ prefix | safe }}/_nicegui/0.1.0/components/${component}`);
+                  const { default: vue_component } = await import(`{{ prefix | safe }}/_nicegui/{{version}}/components/${component}`);
                   app = app.component(component.replace('vue_', ''), vue_component);
                   loaded.push(component);
                 }
