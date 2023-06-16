@@ -10,7 +10,7 @@ from pygments.formatters import HtmlFormatter
 from ..dependencies import register_vue_component
 from .mixins.content_element import ContentElement
 
-register_vue_component(name='markdown', path=Path(__file__).parent / 'markdown.js')
+register_vue_component('markdown', Path(__file__).parent / 'markdown.js')
 
 
 class Markdown(ContentElement):

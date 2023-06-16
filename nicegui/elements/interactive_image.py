@@ -8,7 +8,7 @@ from ..events import MouseEventArguments, handle_event
 from .mixins.content_element import ContentElement
 from .mixins.source_element import SourceElement
 
-register_vue_component(name='interactive_image', path=Path(__file__).parent / 'interactive_image.js')
+register_vue_component('interactive_image', Path(__file__).parent / 'interactive_image.js')
 
 
 class InteractiveImage(SourceElement, ContentElement):

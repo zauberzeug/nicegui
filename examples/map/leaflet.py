@@ -5,7 +5,7 @@ from nicegui import ui
 from nicegui.dependencies import register_vue_component
 from nicegui.element import Element
 
-register_vue_component(name='leaflet', path=Path(__file__).parent / 'leaflet.js')
+register_vue_component('leaflet', Path(__file__).parent / 'leaflet.js')
 
 
 class leaflet(Element):

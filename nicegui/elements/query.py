@@ -7,7 +7,7 @@ from ..dependencies import register_vue_component
 from ..element import Element
 from ..globals import get_client
 
-register_vue_component(name='query', path=Path(__file__).parent / 'query.js')
+register_vue_component('query', Path(__file__).parent / 'query.js')
 
 
 class Query(Element):

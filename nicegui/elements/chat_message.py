@@ -5,7 +5,7 @@ from typing import List, Optional, Union
 from ..dependencies import register_vue_component
 from ..element import Element
 
-register_vue_component(name='chat_message', path=Path(__file__).parent / 'chat_message.js')
+register_vue_component('chat_message', Path(__file__).parent / 'chat_message.js')
 
 
 class ChatMessage(Element):

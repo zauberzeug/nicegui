@@ -9,7 +9,7 @@ from ..events import EventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
 from .mixins.disableable_element import DisableableElement
 
-register_vue_component(name='upload', path=Path(__file__).parent / 'upload.js')
+register_vue_component('upload', Path(__file__).parent / 'upload.js')
 
 
 class Upload(DisableableElement):

@@ -5,7 +5,7 @@ from nicegui.dependencies import register_vue_component
 from nicegui.element import Element
 from nicegui.events import EventArguments, handle_event
 
-register_vue_component(name='intersection_observer', path=Path(__file__).parent / 'intersection_observer.js')
+register_vue_component('intersection_observer', Path(__file__).parent / 'intersection_observer.js')
 
 
 class IntersectionObserver(Element):

@@ -4,7 +4,7 @@ from typing import Callable, Optional
 from nicegui.dependencies import register_vue_component
 from nicegui.element import Element
 
-register_vue_component(name='counter', path=Path(__file__).parent / 'counter.js')
+register_vue_component('counter', Path(__file__).parent / 'counter.js')
 
 
 class Counter(Element):

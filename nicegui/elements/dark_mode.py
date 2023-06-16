@@ -4,7 +4,7 @@ from typing import Optional
 from ..dependencies import register_vue_component
 from .mixins.value_element import ValueElement
 
-register_vue_component(name='dark_mode', path=Path(__file__).parent / 'dark_mode.js')
+register_vue_component('dark_mode', Path(__file__).parent / 'dark_mode.js')
 
 
 class DarkMode(ValueElement):

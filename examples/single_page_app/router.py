@@ -4,7 +4,7 @@ from typing import Awaitable, Callable, Dict, Union
 from nicegui import background_tasks, ui
 from nicegui.dependencies import register_vue_component
 
-register_vue_component(name='router_frame', path=Path(__file__).parent / 'router_frame.js')
+register_vue_component('router_frame', Path(__file__).parent / 'router_frame.js')
 
 
 class Router():

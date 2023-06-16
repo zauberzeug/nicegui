@@ -6,7 +6,7 @@ from .. import globals
 from ..dependencies import register_vue_component
 from ..element import Element
 
-register_vue_component(name='audio', path=Path(__file__).parent / 'audio.js')
+register_vue_component('audio', Path(__file__).parent / 'audio.js')
 
 
 class Audio(Element):

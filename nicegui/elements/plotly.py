@@ -6,8 +6,8 @@ import plotly.graph_objects as go
 from ..dependencies import register_library, register_vue_component
 from ..element import Element
 
-register_vue_component(name='plotly', path=Path(__file__).parent / 'plotly.vue')
-register_library(name='plotly', path=Path(__file__).parent / 'lib' / 'plotly' / 'plotly.min.js')
+register_vue_component('plotly', Path(__file__).parent / 'plotly.vue')
+register_library('plotly', Path(__file__).parent / 'lib' / 'plotly' / 'plotly.min.js')
 
 
 class Plotly(Element):
