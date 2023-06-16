@@ -90,7 +90,7 @@
         }
 
         const props = {
-          id: element.id,
+          id: 'c' + element.id,
           ref: 'r' + element.id,
           class: element.class.join(' ') || undefined,
           style: Object.entries(element.style).reduce((str, [p, val]) => `${str}${p}:${val};`, '') || undefined,
@@ -174,7 +174,7 @@
           };
         },
         render() {
-          return renderRecursively(this.elements, 'c0');
+          return renderRecursively(this.elements, 0);
         },
         mounted() {
           window.app = this;
