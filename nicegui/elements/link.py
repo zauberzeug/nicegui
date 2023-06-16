@@ -32,7 +32,7 @@ class Link(TextElement):
             self._props['href'] = target
         elif isinstance(target, Element):
             self._props['href'] = f'#{target.id}'
-        elif isinstance(target, Callable):
+        elif callable(target):
             self._props['href'] = globals.page_routes[target]
         self._props['target'] = '_blank' if new_tab else '_self'
         self._classes = ['nicegui-link']
