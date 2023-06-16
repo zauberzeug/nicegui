@@ -311,10 +311,10 @@ class Element(Visibility):
         Can be overridden to perform cleanup.
         """
 
-    def use_component(self, name: str) -> Self:
+    def use_component(self, name: str) -> None:
+        """Register a Vue component to be used by this element."""
         self.components.append(f'vue_{name}')
-        return self
 
-    def use_library(self, name: str) -> Self:
+    def use_library(self, name: str) -> None:
+        """Register a JavaScript library to be used by this element."""
         self.libraries.append(f'lib_{name}')
-        return self

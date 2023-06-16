@@ -28,7 +28,8 @@ class AgGrid(Element):
         self._props['options'] = options
         self._props['html_columns'] = html_columns
         self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']
-        self.use_component('aggrid').use_library('aggrid')
+        self.use_component('aggrid')
+        self.use_library('aggrid')
 
     @staticmethod
     def from_pandas(df: 'pandas.DataFrame', *, theme: str = 'balham') -> AgGrid:
