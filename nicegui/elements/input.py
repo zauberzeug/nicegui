@@ -14,9 +14,9 @@ class Input(ValueElement, DisableableElement):
                  value: str = '',
                  password: bool = False,
                  password_toggle_button: bool = False,
-                 on_change: Optional[Callable] = None,
+                 on_change: Optional[Callable[..., Any]] = None,
                  autocomplete: Optional[List[str]] = None,
-                 validation: Dict[str, Callable] = {}) -> None:
+                 validation: Dict[str, Callable[..., bool]] = {}) -> None:
         """Text Input
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
@@ -58,9 +58,10 @@ class Input(ValueElement, DisableableElement):
             def find_autocompletion() -> Optional[str]:
                 if self.value:
                     needle = str(self.value).casefold()
-                    for item in autocomplete:
+                    for item in autocomplete or []:
                         if item.casefold().startswith(needle):
                             return item
+                return None  # required by mypy
 
             def autocomplete_input() -> None:
                 match = find_autocompletion() or ''

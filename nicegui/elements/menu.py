@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from .. import globals
 from ..events import ClickEventArguments, handle_event
@@ -28,7 +28,11 @@ class Menu(ValueElement):
 
 class MenuItem(TextElement):
 
-    def __init__(self, text: str = '', on_click: Optional[Callable] = None, *, auto_close: bool = True) -> None:
+    def __init__(self,
+                 text: str = '',
+                 on_click: Optional[Callable[..., Any]] = None, *,
+                 auto_close: bool = True,
+                 ) -> None:
         """Menu Item
 
         A menu item to be added to a menu.

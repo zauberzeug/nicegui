@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -7,10 +7,10 @@ from .mixins.value_element import ValueElement
 class Time(ValueElement, DisableableElement):
 
     def __init__(self,
-                 value: Optional[str] = None,
-                 *,
+                 value: Optional[str] = None, *,
                  mask: str = 'HH:mm',
-                 on_change: Optional[Callable] = None) -> None:
+                 on_change: Optional[Callable[..., Any]] = None,
+                 ) -> None:
         """Time Input
 
         This element is based on Quasar's `QTime <https://quasar.dev/vue-components/date>`_ component.

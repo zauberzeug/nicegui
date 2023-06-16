@@ -39,7 +39,12 @@ def selenium(selenium: webdriver.Chrome) -> webdriver.Chrome:
 def reset_globals() -> Generator[None, None, None]:
     for path in {'/'}.union(globals.page_routes.values()):
         globals.app.remove_route(path)
+    globals.app.middleware_stack = None
+    globals.app.user_middleware.clear()
+    # NOTE favicon routes must be removed separately because they are not "pages"
+    [globals.app.routes.remove(r) for r in globals.app.routes if r.path.endswith('/favicon.ico')]
     importlib.reload(globals)
+    globals.app.storage.clear()
     globals.index_client = Client(page('/'), shared=True).__enter__()
     globals.app.get('/')(globals.index_client.build_response)
 

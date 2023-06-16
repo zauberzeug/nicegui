@@ -166,26 +166,7 @@ def create_full() -> None:
 
     load_demo(ui.expansion)
     load_demo(ui.splitter)
-
-    @text_demo('Tabs', '''
-        The elements `ui.tabs`, `ui.tab`, `ui.tab_panels`, and `ui.tab_panel` resemble
-        [Quasar's tabs](https://quasar.dev/vue-components/tabs)
-        and [tab panels](https://quasar.dev/vue-components/tab-panels) API.
-
-        `ui.tabs` creates a container for the tabs. This could be placed in a `ui.header` for example.
-        `ui.tab_panels` creates a container for the tab panels with the actual content.
-    ''')
-    def tabs_demo():
-        with ui.tabs() as tabs:
-            ui.tab('Home', icon='home')
-            ui.tab('About', icon='info')
-
-        with ui.tab_panels(tabs, value='Home'):
-            with ui.tab_panel('Home'):
-                ui.label('This is the first tab')
-            with ui.tab_panel('About'):
-                ui.label('This is the second tab')
-
+    load_demo('tabs')
     load_demo(ui.menu)
 
     @text_demo('Tooltips', '''
@@ -195,7 +176,7 @@ def create_full() -> None:
     ''')
     def tooltips_demo():
         ui.label('Tooltips...').tooltip('...are shown on mouse over')
-        with ui.button().props('icon=thumb_up'):
+        with ui.button(icon='thumb_up'):
             ui.tooltip('I like this').classes('bg-green')
 
     load_demo(ui.notify)
@@ -207,6 +188,7 @@ def create_full() -> None:
         NiceGUI uses the [Quasar Framework](https://quasar.dev/) version 1.0 and hence has its full design power.
         Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
         Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
+        Props with a leading `:` can contain JavaScript expressions that are evaluated on the client.
         You can also apply [Tailwind CSS](https://tailwindcss.com/) utility classes with the `classes` method.
 
         If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
@@ -215,7 +197,7 @@ def create_full() -> None:
     ''')
     def design_demo():
         ui.radio(['x', 'y', 'z'], value='x').props('inline color=green')
-        ui.button().props('icon=touch_app outline round').classes('shadow-lg')
+        ui.button(icon='touch_app').props('outline round').classes('shadow-lg')
         ui.label('Stylish!').style('color: #6E93D6; font-size: 200%; font-weight: 300')
 
     subheading('Try styling NiceGUI elements!')
@@ -394,12 +376,12 @@ def create_full() -> None:
     ''')
     def page_layout_demo():
         @ui.page('/page_layout')
-        async def page_layout():
+        def page_layout():
             ui.label('CONTENT')
             [ui.label(f'Line {i}') for i in range(100)]
             with ui.header(elevated=True).style('background-color: #3874c8').classes('items-center justify-between'):
                 ui.label('HEADER')
-                ui.button(on_click=lambda: right_drawer.toggle()).props('flat color=white icon=menu')
+                ui.button(on_click=lambda: right_drawer.toggle(), icon='menu').props('flat color=white')
             with ui.left_drawer(top_corner=True, bottom_corner=True).style('background-color: #d7e3f4'):
                 ui.label('LEFT DRAWER')
             with ui.right_drawer(fixed=False).style('background-color: #ebf1fa').props('bordered') as right_drawer:
@@ -412,37 +394,30 @@ def create_full() -> None:
     load_demo(ui.open)
     load_demo(ui.download)
 
-    @text_demo('Sessions', '''
-        The optional `request` argument provides insights about the client's URL parameters etc.
-        It also enables you to identify sessions using a [session middleware](https://www.starlette.io/middleware/#sessionmiddleware).
+    load_demo('storage')
+
+    @text_demo('Parameter injection', '''
+        Thanks to FastAPI, a page function accepts optional parameters to provide
+        [path parameters](https://fastapi.tiangolo.com/tutorial/path-params/), 
+        [query parameters](https://fastapi.tiangolo.com/tutorial/query-params/) or the whole incoming
+        [request](https://fastapi.tiangolo.com/advanced/using-request-directly/) for accessing
+        the body payload, headers, cookies and more.
     ''')
-    def sessions_demo():
-        import uuid
-        from collections import Counter
-        from datetime import datetime
-
-        from starlette.middleware.sessions import SessionMiddleware
-        from starlette.requests import Request
-
-        from nicegui import app
-
-        # app.add_middleware(SessionMiddleware, secret_key='some_random_string')
-
-        counter = Counter()
-        start = datetime.now().strftime('%H:%M, %d %B %Y')
-
-        @ui.page('/session_demo')
-        def session_demo(request: Request):
-            if 'id' not in request.session:
-                request.session['id'] = str(uuid.uuid4())
-            counter[request.session['id']] += 1
-            ui.label(f'{len(counter)} unique views ({sum(counter.values())} overall) since {start}')
-
-        ui.link('Visit session demo', session_demo)
+    def parameter_demo():
+        @ui.page('/icon/{icon}')
+        def icons(icon: str, amount: int = 1):
+            ui.label(icon).classes('text-h3')
+            with ui.row():
+                [ui.icon(icon).classes('text-h3') for _ in range(amount)]
+        ui.link('Star', '/icon/star?amount=5')
+        ui.link('Home', '/icon/home')
+        ui.link('Water', '/icon/water_drop?amount=3')
 
     load_demo(ui.run_javascript)
 
     heading('Routes')
+
+    subheading('Static files')
 
     @element_demo(app.add_static_files)
     def add_static_files_demo():
@@ -453,6 +428,25 @@ def create_full() -> None:
         ui.link('AI interface', '/examples/ai_interface/main.py')
         ui.link('Custom FastAPI app', '/examples/fastapi/main.py')
         ui.link('Authentication', '/examples/authentication/main.py')
+
+    subheading('Media files')
+
+    @element_demo(app.add_media_files)
+    def add_media_files_demo():
+        from pathlib import Path
+
+        import requests
+
+        from nicegui import app
+
+        media = Path('media')
+        # media.mkdir(exist_ok=True)
+        # r = requests.get('https://cdn.coverr.co/videos/coverr-cloudy-sky-2765/1080p.mp4')
+        # (media  / 'clouds.mp4').write_bytes(r.content)
+        # app.add_media_files('/my_videos', media)
+        # ui.video('/my_videos/clouds.mp4')
+        # END OF DEMO
+        ui.video('https://cdn.coverr.co/videos/coverr-cloudy-sky-2765/1080p.mp4')
 
     @text_demo('API Responses', '''
         NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/).
@@ -508,6 +502,8 @@ def create_full() -> None:
         global dt
         dt = datetime.now()
 
+    subheading('Shutdown')
+
     @element_demo(app.shutdown)
     def shutdown_demo():
         from nicegui import app
@@ -540,38 +536,7 @@ def create_full() -> None:
             ui.button('Add label', on_click=lambda: ui.label('Click!'))
             ui.timer(1.0, lambda: ui.label('Tick!'), once=True)
 
-    @text_demo('Generic Events', '''
-        Most UI elements come with predefined events.
-        For example, a `ui.button` like "A" in the demo has an `on_click` parameter that expects a coroutine or function.
-        But you can also use the `on` method to register a generic event handler like for "B".
-        This allows you to register handlers for any event that is supported by JavaScript and Quasar.
-
-        For example, you can register a handler for the `mousemove` event like for "C", even though there is no `on_mousemove` parameter for `ui.button`.
-        Some events, like `mousemove`, are fired very often.
-        To avoid performance issues, you can use the `throttle` parameter to only call the handler every `throttle` seconds ("D").
-
-        The generic event handler can be synchronous or asynchronous and optionally takes an event dictionary as argument ("E").
-        You can also specify which attributes of the JavaScript or Quasar event should be passed to the handler ("F").
-        This can reduce the amount of data that needs to be transferred between the server and the client.
-
-        You can also include [key modifiers](https://vuejs.org/guide/essentials/event-handling.html#key-modifiers) ("G"),
-        modifier combinations ("H"),
-        and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mouse-button-modifiers) ("I").
-    ''')
-    def generic_events_demo():
-        with ui.row():
-            ui.button('A', on_click=lambda: ui.notify('You clicked the button A.'))
-            ui.button('B').on('click', lambda: ui.notify('You clicked the button B.'))
-        with ui.row():
-            ui.button('C').on('mousemove', lambda: ui.notify('You moved on button C.'))
-            ui.button('D').on('mousemove', lambda: ui.notify('You moved on button D.'), throttle=0.5)
-        with ui.row():
-            ui.button('E').on('mousedown', lambda e: ui.notify(str(e)))
-            ui.button('F').on('mousedown', lambda e: ui.notify(str(e)), ['ctrlKey', 'shiftKey'])
-        with ui.row():
-            ui.input('G').classes('w-12').on('keydown.space', lambda: ui.notify('You pressed space.'))
-            ui.input('H').classes('w-12').on('keydown.y.shift', lambda: ui.notify('You pressed Shift+Y'))
-            ui.input('I').classes('w-12').on('keydown.once', lambda: ui.notify('You started typing.'))
+    load_demo('generic_events')
 
     heading('Configuration')
 
@@ -582,22 +547,28 @@ def create_full() -> None:
     demo.BROWSER_BGCOLOR = '#ffffff'
 
     @text_demo('Native Mode', '''
-        You can enable native mode for NiceGUI by specifying `native=True` in the `ui.run` function. 
-        To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively. 
+        You can enable native mode for NiceGUI by specifying `native=True` in the `ui.run` function.
+        To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively.
         Additionally, you can provide extra keyword arguments via `app.native.window_args` and `app.native.start_args`.
-        Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html) 
+        Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html)
         for the `webview.create_window` and `webview.start` functions.
-        Note that these keyword arguments will take precedence over the parameters defined in ui.run.
+        Note that these keyword arguments will take precedence over the parameters defined in `ui.run`.
+
+        In native mode the `app.native.main_window` object allows you to access the underlying window.
+        It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/guide/api.html#window-object).
     ''', tab=lambda: ui.label('NiceGUI'))
     def native_mode_demo():
         from nicegui import app
 
-        ui.label('app running in native mode')
-
         app.native.window_args['resizable'] = False
         app.native.start_args['debug'] = True
 
+        ui.label('app running in native mode')
+        # ui.button('enlarge', on_click=lambda: app.native.main_window.resize(1000, 700))
+        #
         # ui.run(native=True, window_size=(400, 300), fullscreen=False)
+        # END OF DEMO
+        ui.button('enlarge', on_click=lambda: ui.notify('window will be set to 1000x700 in native mode'))
     # HACK: restore color
     demo.BROWSER_BGCOLOR = demo_BROWSER_BGCOLOR
 
@@ -706,7 +677,7 @@ def create_full() -> None:
                     '--name', 'myapp', # name of your app
                     '--onefile',
                     #'--windowed', # prevent console appearing, only use with ui.run(native=True, ...)
-                    '--add-data', f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui'       
+                    '--add-data', f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui'
                 ]
                 subprocess.call(cmd)
                 ```

@@ -10,6 +10,12 @@ def main_demo() -> None:
 def more() -> None:
     ui.add_body_html('<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>')
 
+    @text_demo('Local files', '''
+        You can use local images as well by passing a path to the image file.
+    ''')
+    def local():
+        ui.image('website/static/logo.png').classes('w-16')
+
     @text_demo('Base64 string', '''
         You can also use a Base64 string as image source.
     ''')

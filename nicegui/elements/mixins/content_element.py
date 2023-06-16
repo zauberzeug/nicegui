@@ -10,7 +10,7 @@ class ContentElement(Element):
     CONTENT_PROP = 'innerHTML'
     content = BindableProperty(on_change=lambda sender, content: sender.on_content_change(content))
 
-    def __init__(self, *, content: str, **kwargs) -> None:
+    def __init__(self, *, content: str, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.content = content
         self.on_content_change(content)
@@ -18,7 +18,8 @@ class ContentElement(Element):
     def bind_content_to(self,
                         target_object: Any,
                         target_name: str = 'content',
-                        forward: Callable = lambda x: x) -> Self:
+                        forward: Callable[..., Any] = lambda x: x,
+                        ) -> Self:
         """Bind the content of this element to the target object's target_name property.
 
         The binding works one way only, from this element to the target.
@@ -33,7 +34,8 @@ class ContentElement(Element):
     def bind_content_from(self,
                           target_object: Any,
                           target_name: str = 'content',
-                          backward: Callable = lambda x: x) -> Self:
+                          backward: Callable[..., Any] = lambda x: x,
+                          ) -> Self:
         """Bind the content of this element from the target object's target_name property.
 
         The binding works one way only, from the target to this element.
@@ -48,8 +50,9 @@ class ContentElement(Element):
     def bind_content(self,
                      target_object: Any,
                      target_name: str = 'content', *,
-                     forward: Callable = lambda x: x,
-                     backward: Callable = lambda x: x) -> Self:
+                     forward: Callable[..., Any] = lambda x: x,
+                     backward: Callable[..., Any] = lambda x: x,
+                     ) -> Self:
         """Bind the content of this element to the target object's target_name property.
 
         The binding works both ways, from this element to the target and from the target to this element.

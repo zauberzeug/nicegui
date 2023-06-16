@@ -9,9 +9,17 @@ from ...element import Element
 class DisableableElement(Element):
     enabled = BindableProperty(on_change=lambda sender, value: sender.on_enabled_change(value))
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.enabled = True
+        self.ignores_events_when_disabled = True
+
+    @property
+    def is_ignoring_events(self) -> bool:
+        """Return whether the element is currently ignoring events."""
+        if super().is_ignoring_events:
+            return True
+        return not self.enabled and self.ignores_events_when_disabled
 
     def enable(self) -> None:
         """Enable the element."""
@@ -24,7 +32,8 @@ class DisableableElement(Element):
     def bind_enabled_to(self,
                         target_object: Any,
                         target_name: str = 'enabled',
-                        forward: Callable = lambda x: x) -> Self:
+                        forward: Callable[..., Any] = lambda x: x,
+                        ) -> Self:
         """Bind the enabled state of this element to the target object's target_name property.
 
         The binding works one way only, from this element to the target.
@@ -39,7 +48,8 @@ class DisableableElement(Element):
     def bind_enabled_from(self,
                           target_object: Any,
                           target_name: str = 'enabled',
-                          backward: Callable = lambda x: x) -> Self:
+                          backward: Callable[..., Any] = lambda x: x,
+                          ) -> Self:
         """Bind the enabled state of this element from the target object's target_name property.
 
         The binding works one way only, from the target to this element.
@@ -54,8 +64,9 @@ class DisableableElement(Element):
     def bind_enabled(self,
                      target_object: Any,
                      target_name: str = 'enabled', *,
-                     forward: Callable = lambda x: x,
-                     backward: Callable = lambda x: x) -> Self:
+                     forward: Callable[..., Any] = lambda x: x,
+                     backward: Callable[..., Any] = lambda x: x,
+                     ) -> Self:
         """Bind the enabled state of this element to the target object's target_name property.
 
         The binding works both ways, from this element to the target and from the target to this element.

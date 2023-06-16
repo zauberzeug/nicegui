@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from inspect import signature
-from typing import TYPE_CHECKING, Any, BinaryIO, Callable, Dict, List, Optional, Union
+from inspect import Parameter, signature
+from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Optional, Union
 
 from . import background_tasks, globals
-from .helpers import KWONLY_SLOTS, is_coroutine
+from .helpers import KWONLY_SLOTS
 
 if TYPE_CHECKING:
     from .client import Client
@@ -268,18 +268,20 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
-def handle_event(handler: Optional[Callable],
+def handle_event(handler: Optional[Callable[..., Any]],
                  arguments: Union[EventArguments, Dict], *,
                  sender: Optional['Element'] = None) -> None:
+    if handler is None:
+        return
     try:
-        if handler is None:
-            return
-        no_arguments = not signature(handler).parameters
+        no_arguments = not any(p.default is Parameter.empty for p in signature(handler).parameters.values())
         sender = arguments.sender if isinstance(arguments, EventArguments) else sender
-        assert sender.parent_slot is not None
+        assert sender is not None and sender.parent_slot is not None
+        if sender.is_ignoring_events:
+            return
         with sender.parent_slot:
             result = handler() if no_arguments else handler(arguments)
-        if is_coroutine(handler):
+        if isinstance(result, Awaitable):
             async def wait_for_result():
                 with sender.parent_slot:
                     await result

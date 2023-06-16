@@ -19,3 +19,23 @@ def more() -> None:
     async def autocomplete_demo():
         options = ['AutoComplete', 'NiceGUI', 'Awesome']
         ui.input(label='Text', placeholder='start typing', autocomplete=options)
+
+    @text_demo('Clearable', '''
+        The `clearable` prop from [Quasar](https://quasar.dev/) adds a button to the input that clears the text.    
+    ''')
+    async def clearable():
+        i = ui.input(value='some text').props('clearable')
+        ui.label().bind_text_from(i, 'value')
+
+    @text_demo('Styling', '''
+        Quasar has a lot of [props to change the appearance](https://quasar.dev/vue-components/input).
+        It is even possible to style the underlying input with `input-style` and `input-class` props
+        and use the provided slots to add custom elements.
+    ''')
+    async def styling():
+        ui.input(placeholder='start typing').props('rounded outlined dense')
+        ui.input('styling', value='some text') \
+            .props('input-style="color: blue" input-class="font-mono"')
+        with ui.input(value='custom clear button').classes('w-64') as i:
+            ui.button(color='orange-8', on_click=lambda: i.set_value(None), icon='delete') \
+                .props('flat dense').bind_visibility_from(i, 'value')
