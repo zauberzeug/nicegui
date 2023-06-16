@@ -133,7 +133,7 @@ class App(FastAPI):
                 return {'detail': 'Not Found'}, 404
             return helpers.get_streaming_response(filepath, request)
 
-    def add_media_file(self, *, local_file: Union[str, Path], url_path: Optional[str] = None) -> None:
+    def add_media_file(self, *, local_file: Union[str, Path], url_path: Optional[str] = None) -> str:
         """Add a single media file.
 
         Allows a local file to be streamed.
