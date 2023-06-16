@@ -31,7 +31,7 @@ class Link(TextElement):
         if isinstance(target, str):
             self._props['href'] = target
         elif isinstance(target, Element):
-            self._props['href'] = f'#{target.id}'
+            self._props['href'] = f'#c{target.id}'
         elif callable(target):
             self._props['href'] = globals.page_routes[target]
         self._props['target'] = '_blank' if new_tab else '_self'
