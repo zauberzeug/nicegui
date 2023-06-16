@@ -40,7 +40,7 @@ class Client:
                 with Element('q-page'):
                     self.content = Element('div').classes('nicegui-content')
 
-        self.waiting_javascript_commands: Dict[str, str] = {}
+        self.waiting_javascript_commands: Dict[str, Any] = {}
 
         self.head_html = ''
         self.body_html = ''
@@ -109,7 +109,7 @@ class Client:
         self.is_waiting_for_disconnect = False
 
     async def run_javascript(self, code: str, *,
-                             respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Optional[str]:
+                             respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Optional[Any]:
         """Execute JavaScript on the client.
 
         The client connection must be established before this method is called.

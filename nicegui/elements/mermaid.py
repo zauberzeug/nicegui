@@ -25,4 +25,4 @@ class Mermaid(ContentElement):
 
     def on_content_change(self, content: str) -> None:
         self._props[self.CONTENT_PROP] = content.strip()
-        self.run_method('update', content)
+        self.run_method('update', content.strip())

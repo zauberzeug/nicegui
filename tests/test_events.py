@@ -1,6 +1,8 @@
 import asyncio
 
+import pytest
 from selenium.webdriver.common.by import By
+from typing_extensions import Literal
 
 from nicegui import ui
 from nicegui.events import ClickEventArguments
@@ -26,21 +28,29 @@ async def click_async_with_args(_: ClickEventArguments):
     ui.label('click_async_with_args')
 
 
+async def click_lambda_with_async_and_parameters(msg: str):
+    await asyncio.sleep(0.1)
+    ui.label(f'click_lambda_with_async_and_parameters: {msg}')
+
+
 def test_click_events(screen: Screen):
     ui.button('click_sync_no_args', on_click=click_sync_no_args)
     ui.button('click_sync_with_args', on_click=click_sync_with_args)
     ui.button('click_async_no_args', on_click=click_async_no_args)
     ui.button('click_async_with_args', on_click=click_async_with_args)
+    ui.button('click_lambda_with_async_and_parameters', on_click=lambda: click_lambda_with_async_and_parameters('works'))
 
     screen.open('/')
     screen.click('click_sync_no_args')
     screen.click('click_sync_with_args')
     screen.click('click_async_no_args')
     screen.click('click_async_with_args')
+    screen.click('click_lambda_with_async_and_parameters')
     screen.should_contain('click_sync_no_args')
     screen.should_contain('click_sync_with_args')
     screen.should_contain('click_async_no_args')
     screen.should_contain('click_async_with_args')
+    screen.should_contain('click_lambda_with_async_and_parameters: works')
 
 
 def test_generic_events(screen: Screen):
@@ -150,3 +160,17 @@ def test_throttling_variants(screen: Screen):
     assert events == []
     screen.wait(1.1)
     assert events == [3]
+
+
+@pytest.mark.parametrize('attribute', ['disabled', 'hidden'])
+def test_server_side_validation(screen: Screen, attribute: Literal['disabled', 'hidden']):
+    b = ui.button('Button', on_click=lambda: ui.label('Success'))
+    b.disable() if attribute == 'disabled' else b.set_visibility(False)
+    ui.button('Hack', on_click=lambda: ui.run_javascript(f'''
+        getElement({b.id}).$emit("click", {{"id": {b.id}, "listener_id": "{list(b._event_listeners.keys())[0]}"}});
+    ''', respond=False))
+
+    screen.open('/')
+    screen.click('Hack')
+    screen.wait(0.5)
+    screen.should_not_contain('Success')

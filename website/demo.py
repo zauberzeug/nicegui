@@ -1,4 +1,5 @@
 import inspect
+import re
 from typing import Callable, Optional, Union
 
 import isort
@@ -15,13 +16,18 @@ BROWSER_BGCOLOR = '#00000010'
 BROWSER_COLOR = '#ffffff'
 
 
-def remove_prefix(text: str, prefix: str) -> str:
-    return text[len(prefix):] if text.startswith(prefix) else text
+uncomment_pattern = re.compile(r'^(\s*)# ?')
+
+
+def uncomment(text: str) -> str:
+    """non-executed lines should be shown in the code examples"""
+    return uncomment_pattern.sub(r'\1', text)
 
 
 def demo(f: Callable) -> Callable:
     with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
         code = inspect.getsource(f).split('# END OF DEMO')[0].strip().splitlines()
+        code = [line for line in code if not line.endswith("# HIDE")]
         while not code[0].strip().startswith('def') and not code[0].strip().startswith('async def'):
             del code[0]
         del code[0]
@@ -31,7 +37,7 @@ def demo(f: Callable) -> Callable:
             del code[0]
         indentation = len(code[0]) - len(code[0].lstrip())
         code = [line[indentation:] for line in code]
-        code = ['from nicegui import ui'] + [remove_prefix(line, '# ') for line in code]
+        code = ['from nicegui import ui'] + [uncomment(line) for line in code]
         code = ['' if line == '#' else line for line in code]
         if not code[-1].startswith('ui.run('):
             code.append('')

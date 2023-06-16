@@ -25,3 +25,13 @@ def more() -> None:
         ]
         ui.select(options=continents, with_input=True,
                   on_change=lambda e: ui.notify(e.value)).classes('w-40')
+
+    @text_demo('Multi selection', '''
+        You can activate `multiple` to allow the selection of more than one item.
+    ''')
+    def multi_select():
+        names = ['Alice', 'Bob', 'Carol']
+        ui.select(names, multiple=True, value=names[:2],  label='comma-separated') \
+            .classes('w-64')
+        ui.select(names, multiple=True, value=names[:2], label='with chips') \
+            .props('use-chips').classes('w-64')

@@ -52,6 +52,9 @@ __all__ = [
     'slider',
     'spinner',
     'splitter',
+    'step',
+    'stepper',
+    'stepper_navigation',
     'switch',
     'table',
     'tab',
@@ -136,6 +139,9 @@ from .elements.separator import Separator as separator
 from .elements.slider import Slider as slider
 from .elements.spinner import Spinner as spinner
 from .elements.splitter import Splitter as splitter
+from .elements.stepper import Step as step
+from .elements.stepper import Stepper as stepper
+from .elements.stepper import StepperNavigation as stepper_navigation
 from .elements.switch import Switch as switch
 from .elements.table import Table as table
 from .elements.tabs import Tab as tab

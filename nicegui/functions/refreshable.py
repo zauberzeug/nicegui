@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Awaitable, Callable, Dict, List, Tuple, Union
 
 from typing_extensions import Self
 
 from .. import background_tasks, globals
 from ..dependencies import register_vue_component
 from ..element import Element
-from ..helpers import KWONLY_SLOTS, is_coroutine
+from ..helpers import KWONLY_SLOTS, is_coroutine_function
 
 register_vue_component(name='refreshable', path=Path(__file__).parent.joinpath('refreshable.js'))
 
@@ -16,11 +16,11 @@ register_vue_component(name='refreshable', path=Path(__file__).parent.joinpath('
 class RefreshableTarget:
     container: Element
     instance: Any
-    args: List[Any]
+    args: Tuple[Any, ...]
     kwargs: Dict[str, Any]
 
-    def run(self, func: Callable[..., Any]) -> None:
-        if is_coroutine(func):
+    def run(self, func: Callable[..., Any]) -> Union[None, Awaitable]:
+        if is_coroutine_function(func):
             async def wait_for_result() -> None:
                 with self.container:
                     if self.instance is None:
@@ -34,6 +34,7 @@ class RefreshableTarget:
                     func(*self.args, **self.kwargs)
                 else:
                     func(self.instance, *self.args, **self.kwargs)
+            return None  # required by mypy
 
 
 class refreshable:
@@ -52,7 +53,7 @@ class refreshable:
         self.instance = instance
         return self
 
-    def __call__(self, *args: Any, **kwargs: Any) -> None:
+    def __call__(self, *args: Any, **kwargs: Any) -> Union[None, Awaitable]:
         self.prune()
         container = Element('refreshable')
         container.use_component('refreshable')
@@ -67,7 +68,8 @@ class refreshable:
                 continue
             target.container.clear()
             result = target.run(self.func)
-            if is_coroutine(self.func):
+            if is_coroutine_function(self.func):
+                assert result is not None
                 if globals.loop and globals.loop.is_running():
                     background_tasks.create(result)
                 else:

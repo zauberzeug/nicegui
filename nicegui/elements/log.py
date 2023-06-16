@@ -24,11 +24,14 @@ class Log(Element):
         self._classes = ['nicegui-log']
         self.lines: deque[str] = deque(maxlen=max_lines)
         self.use_component('log')
+        self.total_count: int = 0
 
     def push(self, line: Any) -> None:
-        self.lines.extend(map(urllib.parse.quote, str(line).splitlines()))
+        new_lines = [urllib.parse.quote(line) for line in str(line).splitlines()]
+        self.lines.extend(new_lines)
         self._props['lines'] = '\n'.join(self.lines)
-        self.run_method('push', urllib.parse.quote(str(line)))
+        self.total_count += len(new_lines)
+        self.run_method('push', urllib.parse.quote(str(line)), self.total_count)
 
     def clear(self) -> None:
         """Clear the log"""

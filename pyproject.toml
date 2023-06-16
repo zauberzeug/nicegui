@@ -28,6 +28,8 @@ plotly = "^5.13.0"
 orjson = {version = "^3.8.6", markers = "platform_machine != 'i386' and platform_machine != 'i686'"} # orjson does not support 32bit
 pywebview = "^4.0.2"
 importlib_metadata = { version = "^6.0.0", markers = "python_version ~= '3.7'" } # Python 3.7 has no importlib.metadata
+itsdangerous = "^2.1.2"
+aiofiles = "^23.1.0"
 
 [tool.poetry.group.dev.dependencies]
 icecream = "^2.1.0"

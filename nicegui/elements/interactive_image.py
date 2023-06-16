@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from ..dependencies import register_vue_component
 from ..events import MouseEventArguments, handle_event
@@ -15,7 +15,7 @@ class InteractiveImage(SourceElement, ContentElement):
     CONTENT_PROP = 'content'
 
     def __init__(self,
-                 source: str = '', *,
+                 source: Union[str, Path] = '', *,
                  content: str = '',
                  on_mouse: Optional[Callable[..., Any]] = None,
                  events: List[str] = ['click'],
@@ -29,7 +29,7 @@ class InteractiveImage(SourceElement, ContentElement):
         Thereby repeatedly updating the image source will automatically adapt to the available bandwidth.
         See `OpenCV Webcam <https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam/main.py>`_ for an example.
 
-        :param source: the source of the image; can be an URL or a base64 string
+        :param source: the source of the image; can be an URL, local file path or a base64 string
         :param content: SVG content which should be overlayed; viewport has the same dimensions as the image
         :param on_mouse: callback for mouse events (yields `type`, `image_x` and `image_y`)
         :param events: list of JavaScript events to subscribe to (default: `['click']`)

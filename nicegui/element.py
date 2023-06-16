@@ -9,7 +9,7 @@ from typing_extensions import Self
 
 from nicegui import json
 
-from . import binding, events, globals, outbox
+from . import binding, events, globals, outbox, storage
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
@@ -82,7 +82,7 @@ class Element(Visibility):
             for child in slot:
                 yield child
 
-    def _collect_slot_dict(self) -> Dict[str, List[int]]:
+    def _collect_slot_dict(self) -> Dict[str, Any]:
         return {
             name: {'template': slot.template, 'ids': [child.id for child in slot]}
             for name, slot in self.slots.items()
@@ -234,6 +234,7 @@ class Element(Visibility):
                 throttle=throttle,
                 leading_events=leading_events,
                 trailing_events=trailing_events,
+                request=storage.request_contextvar.get(),
             )
             self._event_listeners[listener.id] = listener
             self.update()
@@ -241,6 +242,7 @@ class Element(Visibility):
 
     def _handle_event(self, msg: Dict) -> None:
         listener = self._event_listeners[msg['listener_id']]
+        storage.request_contextvar.set(listener.request)
         events.handle_event(listener.handler, msg, sender=self)
 
     def update(self) -> None:
@@ -280,6 +282,7 @@ class Element(Visibility):
         :param target_container: container to move the element to (default: the parent container)
         :param target_index: index within the target slot (default: append to the end)
         """
+        assert self.parent_slot is not None
         self.parent_slot.children.remove(self)
         self.parent_slot.parent.update()
         target_container = target_container or self.parent_slot.parent
