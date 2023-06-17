@@ -8,7 +8,7 @@ export default {
   },
   data: function () {
     return {
-      computed_src: this.src,
+      computed_src: undefined,
     };
   },
   mounted() {

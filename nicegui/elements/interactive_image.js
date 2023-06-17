@@ -18,7 +18,7 @@ export default {
       x: 100,
       y: 100,
       cssDisplay: "none",
-      computed_src: this.src,
+      computed_src: undefined,
     };
   },
   mounted() {
