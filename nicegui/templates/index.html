@@ -40,8 +40,8 @@
       const False = false;
       const None = undefined;
 
-      const loaded_libraries = [];
-      const loaded_components = [];
+      const loaded_libraries = new Set();
+      const loaded_components = new Set();
       const elements = {{ elements | safe }};
 
       const waitingCallbacks = new Map();
@@ -83,8 +83,8 @@
         }
 
         // @todo: Try avoid this with better handling of initial page load.
-        loaded_components.push(...element['components']);
-        loaded_libraries.push(...element['libraries']);
+        element['components'].forEach((component) => loaded_components.add(component));
+        element['libraries'].forEach((library) => loaded_libraries.add(library));
 
         const props = {
           id: 'c' + element.id,
@@ -164,6 +164,20 @@
         document.body.removeChild(anchor);
       }
 
+      async function loadDependencies(element) {
+        for (const name of element['libraries']) {
+          if (loaded_libraries.has(name)) continue;
+          await import(`{{ prefix | safe }}/_nicegui/{{version}}/library/${name}/include`);
+          loaded_libraries.add(name);
+        }
+        for (const name of element['components']) {
+          if (loaded_components.has(name)) continue;
+          const component = (await import(`{{ prefix | safe }}/_nicegui/{{version}}/components/${name}`)).default;
+          app = app.component(name, component);
+          loaded_components.add(name);
+        }
+      }
+
       let app = Vue.createApp({
         data() {
           return {
@@ -195,17 +209,7 @@
           });
           window.socket.on("update", async (msg) => {
             for (const [id, element] of Object.entries(msg)) {
-              for (const name of element['libraries']) {
-                if (loaded_libraries.includes(name)) continue;
-                await import(`{{ prefix | safe }}/_nicegui/{{version}}/library/${name}/include`);
-                loaded_libraries.push(name);
-              }
-              for (const name of element['components']) {
-                if (loaded_components.includes(name)) continue;
-                const component = (await import(`{{ prefix | safe }}/_nicegui/{{version}}/components/${name}`)).default;
-                app = app.component(name, component);
-                loaded_components.push(name);
-              }
+              await loadDependencies(element);
               this.elements[element.id] = element;
             }
           });
