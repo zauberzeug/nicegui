@@ -84,10 +84,10 @@ async def handle_startup(with_welcome_message: bool = True) -> None:
     background_tasks.create(prune_slot_stacks())
     globals.state = globals.State.STARTED
     if with_welcome_message:
-        await print_welcome_message()
+        print_welcome_message()
 
 
-async def print_welcome_message():
+def print_welcome_message():
     host = os.environ['NICEGUI_HOST']
     port = os.environ['NICEGUI_PORT']
     ips = set()
@@ -102,7 +102,7 @@ async def print_welcome_message():
         addresses[-1] = 'and ' + addresses[-1]
     print(f'NiceGUI ready to go on {", ".join(addresses)}')
     if globals.air:
-        await globals.air.connect()
+        background_tasks.create(globals.air.connect())
 
 
 @app.on_event('shutdown')
