@@ -22,7 +22,7 @@ export default {
     };
   },
   mounted() {
-    setTimeout(() => compute_src, 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
+    setTimeout(() => this.compute_src(), 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
   },
   updated() {
     this.compute_src();
