@@ -1,5 +1,93 @@
 import os
 
+__all__ = [
+    'deprecated',
+    'element',
+    'aggrid',
+    'audio',
+    'avatar',
+    'badge',
+    'button',
+    'card',
+    'card_actions',
+    'card_section',
+    'chart',
+    'chat_message',
+    'checkbox',
+    'color_input',
+    'color_picker',
+    'colors',
+    'column',
+    'dark_mode',
+    'date',
+    'dialog',
+    'expansion',
+    'grid',
+    'html',
+    'icon',
+    'image',
+    'input',
+    'interactive_image',
+    'joystick',
+    'keyboard',
+    'knob',
+    'label',
+    'link',
+    'link_target',
+    'log',
+    'markdown',
+    'menu',
+    'menu_item',
+    'mermaid',
+    'number',
+    'plotly',
+    'circular_progress',
+    'linear_progress',
+    'query',
+    'radio',
+    'row',
+    'scene',
+    'select',
+    'separator',
+    'slider',
+    'spinner',
+    'splitter',
+    'step',
+    'stepper',
+    'stepper_navigation',
+    'switch',
+    'table',
+    'tab',
+    'tab_panel',
+    'tab_panels',
+    'tabs',
+    'textarea',
+    'time',
+    'toggle',
+    'tooltip',
+    'tree',
+    'upload',
+    'video',
+    'download',
+    'add_body_html',
+    'add_head_html',
+    'run_javascript',
+    'notify',
+    'open',
+    'refreshable',
+    'timer',
+    'update',
+    'page',
+    'drawer',
+    'footer',
+    'header',
+    'left_drawer',
+    'page_sticky',
+    'right_drawer',
+    'run',
+    'run_with',
+]
+
 from .deprecation import deprecated
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
@@ -11,6 +99,7 @@ from .elements.card import Card as card
 from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section
 from .elements.chart import Chart as chart
+from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
 from .elements.color_input import ColorInput as color_input
 from .elements.color_picker import ColorPicker as color_picker
@@ -50,6 +139,9 @@ from .elements.separator import Separator as separator
 from .elements.slider import Slider as slider
 from .elements.spinner import Spinner as spinner
 from .elements.splitter import Splitter as splitter
+from .elements.stepper import Step as step
+from .elements.stepper import Stepper as stepper
+from .elements.stepper import StepperNavigation as stepper_navigation
 from .elements.switch import Switch as switch
 from .elements.table import Table as table
 from .elements.tabs import Tab as tab
@@ -85,3 +177,4 @@ if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
     from .elements.line_plot import LinePlot as line_plot
     from .elements.pyplot import Pyplot as pyplot
     plot = deprecated(pyplot, 'ui.plot', 'ui.pyplot', 317)
+    __all__.extend(['line_plot', 'pyplot', 'plot'])

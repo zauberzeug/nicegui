@@ -63,6 +63,8 @@ def more() -> None:
         Here is an example of how to show and hide columns in a table.
     ''')
     def show_and_hide_columns():
+        from typing import Dict
+
         columns = [
             {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
             {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
@@ -75,7 +77,7 @@ def more() -> None:
         visible_columns = {column['name'] for column in columns}
         table = ui.table(columns=columns, rows=rows, row_key='name')
 
-        def toggle(column: dict, visible: bool) -> None:
+        def toggle(column: Dict, visible: bool) -> None:
             if visible:
                 visible_columns.add(column['name'])
             else:
@@ -83,8 +85,8 @@ def more() -> None:
             table._props['columns'] = [column for column in columns if column['name'] in visible_columns]
             table.update()
 
-        with ui.button(on_click=lambda: menu.open()).props('icon=menu'):
-            with ui.menu() as menu, ui.column().classes('gap-0 p-2'):
+        with ui.button(icon='menu'):
+            with ui.menu().props(remove='no-parent-event'), ui.column().classes('gap-0 p-2'):
                 for column in columns:
                     ui.switch(column['label'], value=True, on_change=lambda e, column=column: toggle(column, e.value))
 
@@ -140,3 +142,21 @@ def more() -> None:
             columns=[{'name': col, 'label': col, 'field': col} for col in df.columns],
             rows=df.to_dict('records'),
         )
+
+    @text_demo('Adding rows', '''
+        It's simple to add new rows with the `add_rows(dict)` method.
+    ''')
+    def adding_rows():
+        import os
+        import random
+
+        def add():
+            item = os.urandom(10 // 2).hex()
+            table.add_rows({'id': item, 'count': random.randint(0, 100)})
+
+        ui.button('add', on_click=add)
+        columns = [
+            {'name': 'id', 'label': 'ID', 'field': 'id'},
+            {'name': 'count', 'label': 'Count', 'field': 'count'},
+        ]
+        table = ui.table(columns=columns, rows=[], row_key='id').classes('w-full')

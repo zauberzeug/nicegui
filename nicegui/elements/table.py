@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from typing_extensions import Literal
 
@@ -16,7 +16,7 @@ class Table(FilterElement):
                  title: Optional[str] = None,
                  selection: Optional[Literal['single', 'multiple']] = None,
                  pagination: Optional[int] = None,
-                 on_select: Optional[Callable] = None,
+                 on_select: Optional[Callable[..., Any]] = None,
                  ) -> None:
         """Table
 
@@ -30,7 +30,7 @@ class Table(FilterElement):
         :param pagination: number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`)
         :param on_select: callback which is invoked when the selection changes
 
-        If selection is 'single' or 'multiple', then a `selection` property is accessible containing the selected rows.
+        If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
         """
         super().__init__(tag='q-table')
 

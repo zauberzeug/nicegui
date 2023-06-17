@@ -11,9 +11,10 @@ class Tree(Element):
                  node_key: str = 'id',
                  label_key: str = 'label',
                  children_key: str = 'children',
-                 on_select: Optional[Callable] = None,
-                 on_expand: Optional[Callable] = None,
-                 on_tick: Optional[Callable] = None) -> None:
+                 on_select: Optional[Callable[..., Any]] = None,
+                 on_expand: Optional[Callable[..., Any]] = None,
+                 on_tick: Optional[Callable[..., Any]] = None,
+                 ) -> None:
         """Tree
 
         Display hierarchical data using Quasar's `QTree <https://quasar.dev/vue-components/tree>`_ component.

@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
@@ -14,8 +14,9 @@ class Input(ValueElement, DisableableElement):
                  value: str = '',
                  password: bool = False,
                  password_toggle_button: bool = False,
-                 on_change: Optional[Callable] = None,
-                 validation: Dict[str, Callable] = {}) -> None:
+                 on_change: Optional[Callable[..., Any]] = None,
+                 autocomplete: Optional[List[str]] = None,
+                 validation: Dict[str, Callable[..., bool]] = {}) -> None:
         """Text Input
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
@@ -51,6 +52,28 @@ class Input(ValueElement, DisableableElement):
                 icon = Icon('visibility_off').classes('cursor-pointer').on('click', toggle_type)
 
         self.validation = validation
+
+        if autocomplete:
+            def find_autocompletion() -> Optional[str]:
+                if self.value:
+                    needle = str(self.value).casefold()
+                    for item in autocomplete or []:
+                        if item.casefold().startswith(needle):
+                            return item
+                return None  # required by mypy
+
+            def autocomplete_input() -> None:
+                match = find_autocompletion() or ''
+                self.props(f'shadow-text="{match[len(self.value):]}"')
+
+            def complete_input() -> None:
+                match = find_autocompletion()
+                if match:
+                    self.set_value(match)
+                self.props(f'shadow-text=""')
+
+            self.on('keyup', autocomplete_input)
+            self.on('keydown.tab', complete_input)
 
     def on_value_change(self, value: Any) -> None:
         super().on_value_change(value)

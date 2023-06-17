@@ -1,27 +1,27 @@
 from dataclasses import dataclass
-from inspect import signature
-from typing import TYPE_CHECKING, Any, BinaryIO, Callable, List, Optional, Union
+from inspect import Parameter, signature
+from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Optional, Union
 
 from . import background_tasks, globals
-from .helpers import is_coroutine
+from .helpers import KWONLY_SLOTS
 
 if TYPE_CHECKING:
     from .client import Client
     from .element import Element
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class EventArguments:
     sender: 'Element'
     client: 'Client'
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class ClickEventArguments(EventArguments):
     pass
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class SceneClickHit:
     object_id: str
     object_name: str
@@ -30,7 +30,7 @@ class SceneClickHit:
     z: float
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class SceneClickEventArguments(ClickEventArguments):
     click_type: str
     button: int
@@ -41,12 +41,12 @@ class SceneClickEventArguments(ClickEventArguments):
     hits: List[SceneClickHit]
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class ColorPickEventArguments(EventArguments):
     color: str
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class MouseEventArguments(EventArguments):
     type: str
     image_x: float
@@ -59,38 +59,38 @@ class MouseEventArguments(EventArguments):
     shift: bool
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class JoystickEventArguments(EventArguments):
     action: str
     x: Optional[float] = None
     y: Optional[float] = None
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class UploadEventArguments(EventArguments):
     content: BinaryIO
     name: str
     type: str
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class ValueChangeEventArguments(EventArguments):
     value: Any
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class TableSelectionEventArguments(EventArguments):
     selection: List[Any]
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class KeyboardAction:
     keydown: bool
     keyup: bool
     repeat: bool
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class KeyboardModifiers:
     alt: bool
     ctrl: bool
@@ -98,7 +98,7 @@ class KeyboardModifiers:
     shift: bool
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class KeyboardKey:
     name: str
     code: str
@@ -261,25 +261,27 @@ class KeyboardKey:
         return self.name == 'F12'
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class KeyEventArguments(EventArguments):
     action: KeyboardAction
     key: KeyboardKey
     modifiers: KeyboardModifiers
 
 
-def handle_event(handler: Optional[Callable],
-                 arguments: Union[EventArguments, dict], *,
+def handle_event(handler: Optional[Callable[..., Any]],
+                 arguments: Union[EventArguments, Dict], *,
                  sender: Optional['Element'] = None) -> None:
+    if handler is None:
+        return
     try:
-        if handler is None:
-            return
-        no_arguments = not signature(handler).parameters
+        no_arguments = not any(p.default is Parameter.empty for p in signature(handler).parameters.values())
         sender = arguments.sender if isinstance(arguments, EventArguments) else sender
-        assert sender.parent_slot is not None
+        assert sender is not None and sender.parent_slot is not None
+        if sender.is_ignoring_events:
+            return
         with sender.parent_slot:
             result = handler() if no_arguments else handler(arguments)
-        if is_coroutine(handler):
+        if isinstance(result, Awaitable):
             async def wait_for_result():
                 with sender.parent_slot:
                     await result

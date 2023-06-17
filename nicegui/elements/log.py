@@ -1,3 +1,4 @@
+import urllib.parse
 from collections import deque
 from typing import Any, Optional
 
@@ -19,15 +20,16 @@ class Log(Element):
         super().__init__('log')
         self._props['max_lines'] = max_lines
         self._props['lines'] = ''
-        self._props['key'] = self.id  # HACK: workaround for #600
         self._classes = ['nicegui-log']
         self.lines: deque[str] = deque(maxlen=max_lines)
+        self.total_count: int = 0
 
     def push(self, line: Any) -> None:
-        line = str(line)
-        self.lines.extend(line.splitlines())
+        new_lines = [urllib.parse.quote(line) for line in str(line).splitlines()]
+        self.lines.extend(new_lines)
         self._props['lines'] = '\n'.join(self.lines)
-        self.run_method('push', line)
+        self.total_count += len(new_lines)
+        self.run_method('push', urllib.parse.quote(str(line)), self.total_count)
 
     def clear(self) -> None:
         """Clear the log"""

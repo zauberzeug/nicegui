@@ -2,17 +2,19 @@
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import List
 
 import requests
 from bs4 import BeautifulSoup
+from secure import SecurePath
 
 
 @dataclass
 class Property:
     title: str
     description: str
-    members: list[str]
-    short_members: list[str] = field(init=False)
+    members: List[str]
+    short_members: List[str] = field(init=False)
     common_prefix: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -47,7 +49,7 @@ class Property:
         return '_'.join(word.lower() for word in re.sub(r'[-/ &]', ' ', self.title).split())
 
 
-properties: list[Property] = []
+properties: List[Property] = []
 
 
 def get_soup(url: str) -> BeautifulSoup:
@@ -81,7 +83,7 @@ for file in (Path(__file__).parent / 'nicegui' / 'tailwind_types').glob('*.py'):
 for property in properties:
     if not property.members:
         continue
-    with open(Path(__file__).parent / 'nicegui' / 'tailwind_types' / f'{property.snake_title}.py', 'w') as f:
+    with SecurePath(open(Path(__file__).parent / 'nicegui' / 'tailwind_types' / f'{property.snake_title}.py', 'w')) as f:
         f.write('from typing_extensions import Literal\n')
         f.write('\n')
         f.write(f'{property.pascal_title} = Literal[\n')
@@ -92,7 +94,7 @@ for property in properties:
 with open(Path(__file__).parent / 'nicegui' / 'tailwind.py', 'w') as f:
     f.write('from __future__ import annotations\n')
     f.write('\n')
-    f.write('from typing import TYPE_CHECKING, List, Optional, overload\n')
+    f.write('from typing import TYPE_CHECKING, List, Optional, Union, overload\n')
     f.write('\n')
     f.write('if TYPE_CHECKING:\n')
     f.write('    from .element import Element\n')
@@ -114,10 +116,10 @@ with open(Path(__file__).parent / 'nicegui' / 'tailwind.py', 'w') as f:
     f.write('class Tailwind:\n')
     f.write('\n')
     f.write("    def __init__(self, _element: Optional['Element'] = None) -> None:\n")
-    f.write('        self.element = _element or PseudoElement()\n')
+    f.write('        self.element: Union[PseudoElement, Element] = PseudoElement() if _element is None else _element\n')
     f.write('\n')
     f.write('    @overload\n')
-    f.write('    def __call__(self, Tailwind) -> Tailwind:\n')
+    f.write('    def __call__(self, tailwind: Tailwind) -> Tailwind:\n')
     f.write('        ...\n')
     f.write('\n')
     f.write('    @overload\n')
@@ -125,6 +127,8 @@ with open(Path(__file__).parent / 'nicegui' / 'tailwind.py', 'w') as f:
     f.write('        ...\n')
     f.write('\n')
     f.write('    def __call__(self, *args) -> Tailwind:\n')
+    f.write('        if not args:\n')
+    f.write('           return self\n')
     f.write('        if isinstance(args[0], Tailwind):\n')
     f.write('            args[0].apply(self.element)\n')
     f.write('        else:\n')

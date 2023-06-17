@@ -1,5 +1,6 @@
 import asyncio
 import io
+from typing import Any
 
 import matplotlib.pyplot as plt
 
@@ -9,7 +10,7 @@ from ..element import Element
 
 class Pyplot(Element):
 
-    def __init__(self, *, close: bool = True, **kwargs) -> None:
+    def __init__(self, *, close: bool = True, **kwargs: Any) -> None:
         """Pyplot Context
 
         Create a context to configure a `Matplotlib <https://matplotlib.org/>`_ plot.

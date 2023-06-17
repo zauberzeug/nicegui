@@ -6,7 +6,11 @@ from .mixins.disableable_element import DisableableElement
 
 class Radio(ChoiceElement, DisableableElement):
 
-    def __init__(self, options: Union[List, Dict], *, value: Any = None, on_change: Optional[Callable] = None):
+    def __init__(self,
+                 options: Union[List, Dict], *,
+                 value: Any = None,
+                 on_change: Optional[Callable[..., Any]] = None,
+                 ) -> None:
         """Radio Selection
 
         The options can be specified as a list of values, or as a dictionary mapping values to labels.

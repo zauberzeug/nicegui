@@ -1,4 +1,4 @@
-from typing import Callable, Union
+from typing import Any, Callable, Union
 
 from .. import globals
 from ..dependencies import register_component
@@ -10,7 +10,11 @@ register_component('link', __file__, 'link.js')
 
 class Link(TextElement):
 
-    def __init__(self, text: str = '', target: Union[Callable, str] = '#', new_tab: bool = False) -> None:
+    def __init__(self,
+                 text: str = '',
+                 target: Union[Callable[..., Any], str, Element] = '#',
+                 new_tab: bool = False,
+                 ) -> None:
         """Link
 
         Create a hyperlink.
@@ -19,13 +23,17 @@ class Link(TextElement):
         and link to it with `ui.link(target="#name")`.
 
         :param text: display text
-        :param target: page function or string that is a an absolute URL or relative path from base URL
+        :param target: page function, NiceGUI element on the same page or string that is a an absolute URL or relative path from base URL
         :param new_tab: open link in new tab (default: False)
         """
         super().__init__(tag='link', text=text)
-        self._props['href'] = target if isinstance(target, str) else globals.page_routes[target]
+        if isinstance(target, str):
+            self._props['href'] = target
+        elif isinstance(target, Element):
+            self._props['href'] = f'#{target.id}'
+        elif callable(target):
+            self._props['href'] = globals.page_routes[target]
         self._props['target'] = '_blank' if new_tab else '_self'
-        self._props['key'] = self.id  # HACK: workaround for #600
         self._classes = ['nicegui-link']
 
 

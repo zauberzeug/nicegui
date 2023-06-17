@@ -5,8 +5,8 @@ from .. import binding, globals
 from ..dependencies import register_component
 from ..element import Element
 from ..events import SceneClickEventArguments, SceneClickHit, handle_event
+from ..helpers import KWONLY_SLOTS
 from .scene_object3d import Object3D
-from .scene_objects import Scene as SceneObject
 
 register_component('scene', __file__, 'scene.js', [
     'lib/three.min.js',
@@ -18,7 +18,7 @@ register_component('scene', __file__, 'scene.js', [
 ])
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class SceneCamera:
     x: float = 0
     y: float = -3
@@ -31,7 +31,7 @@ class SceneCamera:
     up_z: float = 1
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class SceneObject:
     id: str = 'scene'
 
@@ -57,7 +57,8 @@ class Scene(Element):
                  width: int = 400,
                  height: int = 300,
                  grid: bool = True,
-                 on_click: Optional[Callable] = None) -> None:
+                 on_click: Optional[Callable[..., Any]] = None,
+                 ) -> None:
         """3D Scene
 
         Display a 3d scene using `three.js <https://threejs.org/>`_.
@@ -74,7 +75,6 @@ class Scene(Element):
         self._props['width'] = width
         self._props['height'] = height
         self._props['grid'] = grid
-        self._props['key'] = self.id  # HACK: workaround for #600
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()

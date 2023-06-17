@@ -65,6 +65,7 @@
   height: 16rem;
 }
 .nicegui-log {
+  padding: 0.25rem;
   border-width: 1px;
   white-space: pre;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -75,6 +76,14 @@
   border-left: 0.25rem solid #8884;
   padding: 1rem 1rem 0.5rem 1rem;
   margin: 1rem 0;
+}
+.nicegui-markdown th {
+  padding: 0.5rem;
+  border: 1px solid #8884;
+}
+.nicegui-markdown td {
+  padding: 0.5rem;
+  border: 1px solid #8884;
 }
 
 #popup {

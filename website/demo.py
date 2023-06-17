@@ -1,5 +1,6 @@
 import inspect
-from typing import Callable, Optional
+import re
+from typing import Callable, Optional, Union
 
 import isort
 
@@ -15,41 +16,45 @@ BROWSER_BGCOLOR = '#00000010'
 BROWSER_COLOR = '#ffffff'
 
 
-def remove_prefix(text: str, prefix: str) -> str:
-    return text[len(prefix):] if text.startswith(prefix) else text
+uncomment_pattern = re.compile(r'^(\s*)# ?')
 
 
-class demo:
+def uncomment(text: str) -> str:
+    """non-executed lines should be shown in the code examples"""
+    return uncomment_pattern.sub(r'\1', text)
 
-    def __init__(self, browser_title: Optional[str] = None) -> None:
-        self.browser_title = browser_title
 
-    def __call__(self, f: Callable) -> Callable:
-        with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
-            code = inspect.getsource(f).split('# END OF DEMO')[0].strip().splitlines()
-            while not code[0].strip().startswith('def') and not code[0].strip().startswith('async def'):
+def demo(f: Callable) -> Callable:
+    with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
+        code = inspect.getsource(f).split('# END OF DEMO')[0].strip().splitlines()
+        code = [line for line in code if not line.endswith("# HIDE")]
+        while not code[0].strip().startswith('def') and not code[0].strip().startswith('async def'):
+            del code[0]
+        del code[0]
+        if code[0].strip().startswith('"""'):
+            while code[0].strip() != '"""':
                 del code[0]
             del code[0]
-            indentation = len(code[0]) - len(code[0].lstrip())
-            code = [line[indentation:] for line in code]
-            code = ['from nicegui import ui'] + [remove_prefix(line, '# ') for line in code]
-            code = ['' if line == '#' else line for line in code]
-            if not code[-1].startswith('ui.run('):
-                code.append('')
-                code.append('ui.run()')
-            code = isort.code('\n'.join(code), no_sections=True, lines_after_imports=1)
-            with python_window(classes='w-full max-w-[44rem]'):
-                async def copy_code():
-                    await ui.run_javascript('navigator.clipboard.writeText(`' + code + '`)', respond=False)
-                    ui.notify('Copied to clipboard', type='positive', color='primary')
-                ui.markdown(f'````python\n{code}\n````')
-                ui.icon('content_copy', size='xs') \
-                    .classes('absolute right-2 top-10 opacity-10 hover:opacity-80 cursor-pointer') \
-                    .on('click', copy_code)
-            with browser_window(self.browser_title,
-                                classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
-                intersection_observer(on_intersection=f)
-        return f
+        indentation = len(code[0]) - len(code[0].lstrip())
+        code = [line[indentation:] for line in code]
+        code = ['from nicegui import ui'] + [uncomment(line) for line in code]
+        code = ['' if line == '#' else line for line in code]
+        if not code[-1].startswith('ui.run('):
+            code.append('')
+            code.append('ui.run()')
+        code = isort.code('\n'.join(code), no_sections=True, lines_after_imports=1)
+        with python_window(classes='w-full max-w-[44rem]'):
+            async def copy_code():
+                await ui.run_javascript('navigator.clipboard.writeText(`' + code + '`)', respond=False)
+                ui.notify('Copied to clipboard', type='positive', color='primary')
+            ui.markdown(f'````python\n{code}\n````')
+            ui.icon('content_copy', size='xs') \
+                .classes('absolute right-2 top-10 opacity-10 hover:opacity-80 cursor-pointer') \
+                .on('click', copy_code)
+        with browser_window(title=getattr(f, 'tab', None),
+                            classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
+            intersection_observer(on_intersection=f)
+    return f
 
 
 def _window_header(bgcolor: str) -> ui.row():

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, cast
 
 from ..dependencies import register_component
 from ..element import Element
@@ -25,7 +25,6 @@ class AgGrid(Element):
         super().__init__('aggrid')
         self._props['options'] = options
         self._props['html_columns'] = html_columns
-        self._props['key'] = self.id  # HACK: workaround for #600
         self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']
 
     @staticmethod
@@ -68,7 +67,8 @@ class AgGrid(Element):
 
         :return: list of selected row data
         """
-        return await run_javascript(f'return getElement({self.id}).gridOptions.api.getSelectedRows();')
+        result = await run_javascript(f'return getElement({self.id}).gridOptions.api.getSelectedRows();')
+        return cast(List[Dict], result)
 
     async def get_selected_row(self) -> Optional[Dict]:
         """Get the single currently selected row.

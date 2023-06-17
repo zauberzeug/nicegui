@@ -1,6 +1,7 @@
-from typing import Callable, Optional
+from typing import Any, Callable, Dict, Optional
 
-from fastapi import Request, Response
+from fastapi import Request
+from starlette.datastructures import UploadFile
 
 from ..dependencies import register_component
 from ..events import EventArguments, UploadEventArguments, handle_event
@@ -17,8 +18,8 @@ class Upload(DisableableElement):
                  max_file_size: Optional[int] = None,
                  max_total_size: Optional[int] = None,
                  max_files: Optional[int] = None,
-                 on_upload: Optional[Callable] = None,
-                 on_rejected: Optional[Callable] = None,
+                 on_upload: Optional[Callable[..., Any]] = None,
+                 on_rejected: Optional[Callable[..., Any]] = None,
                  label: str = '',
                  auto_upload: bool = False,
                  ) -> None:
@@ -51,14 +52,15 @@ class Upload(DisableableElement):
             self._props['max-files'] = max_files
 
         @app.post(self._props['url'])
-        async def upload_route(request: Request) -> Response:
+        async def upload_route(request: Request) -> Dict[str, str]:
             for data in (await request.form()).values():
+                assert isinstance(data, UploadFile)
                 args = UploadEventArguments(
                     sender=self,
                     client=self.client,
                     content=data.file,
-                    name=data.filename,
-                    type=data.content_type,
+                    name=data.filename or '',
+                    type=data.content_type or '',
                 )
                 handle_event(on_upload, args)
             return {'upload': 'success'}
