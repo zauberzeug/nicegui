@@ -130,6 +130,9 @@ Besides the documentation with interactive demos (see above) we collect useful, 
 Each example should be about one concept.
 Please try to make them as minimal as possible to show what is needed to get some kind of functionality.
 We are happy to merge pull requests with new examples which show new concepts, ideas or interesting use cases.
+To list your addition on the website itself, you can use the `example_link` function below the
+["In-depth examples" section heading](https://github.com/zauberzeug/nicegui/blob/8a86d2064f8f4464f3819ac5c6763a2cb2d0e990/main.py#L242).
+The title should match the example folder name when [snake case converted](https://github.com/zauberzeug/nicegui/blob/8a86d2064f8f4464f3819ac5c6763a2cb2d0e990/website/style.py#L31).
 
 ## Pull requests
 

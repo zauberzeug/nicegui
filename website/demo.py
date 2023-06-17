@@ -72,16 +72,21 @@ def _title(title: str) -> None:
     ui.label(title).classes('text-sm text-gray-600 absolute left-1/2 top-[6px]').style('transform: translateX(-50%)')
 
 
-def _tab(name: str, color: str, bgcolor: str) -> None:
+def _tab(content: Union[str, Callable], color: str, bgcolor: str) -> None:
     with ui.row().classes('gap-0'):
         with ui.label().classes(f'w-2 h-[24px] bg-[{color}]'):
             ui.label().classes(f'w-full h-full bg-[{bgcolor}] rounded-br-[6px]')
-        ui.label(name).classes(f'text-sm text-gray-600 px-6 py-1 h-[24px] rounded-t-[6px] bg-[{color}]')
+        with ui.row().classes(f'text-sm text-gray-600 px-6 py-1 h-[24px] rounded-t-[6px] bg-[{color}] items-center gap-2'):
+            if callable(content):
+                content()
+            else:
+                ui.label(content)
         with ui.label().classes(f'w-2 h-[24px] bg-[{color}]'):
             ui.label().classes(f'w-full h-full bg-[{bgcolor}] rounded-bl-[6px]')
 
 
-def window(color: str, bgcolor: str, *, title: str = '', tab: str = '', classes: str = '') -> ui.column:
+def window(color: str, bgcolor: str, *,
+           title: str = '', tab: Union[str, Callable] = '', classes: str = '') -> ui.column:
     with ui.card().classes(f'no-wrap bg-[{color}] rounded-xl p-0 gap-0 {classes}') \
             .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
         with _window_header(bgcolor):
@@ -101,5 +106,5 @@ def bash_window(*, classes: str = '') -> ui.card:
     return window(BASH_COLOR, BASH_BGCOLOR, title='bash', classes=classes).classes('p-2 bash-window')
 
 
-def browser_window(title: Optional[str] = None, *, classes: str = '') -> ui.card:
+def browser_window(title: Optional[Union[str, Callable]] = None, *, classes: str = '') -> ui.card:
     return window(BROWSER_COLOR, BROWSER_BGCOLOR, tab=title or 'NiceGUI', classes=classes).classes('p-4 browser-window')

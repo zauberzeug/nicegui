@@ -1,5 +1,7 @@
 from nicegui import ui
 
+from ..documentation_tools import text_demo
+
 
 def main_demo() -> None:
     ui.input(label='Text', placeholder='start typing',

@@ -1,5 +1,7 @@
 from nicegui import ui
 
+from ..documentation_tools import text_demo
+
 
 def main_demo() -> None:
     with ui.dialog() as dialog, ui.card():

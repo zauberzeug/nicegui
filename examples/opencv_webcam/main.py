@@ -41,6 +41,7 @@ async def grab_video_frame() -> Response:
     jpeg = await loop.run_in_executor(process_pool_executor, convert, frame)
     return Response(content=jpeg, media_type='image/jpeg')
 
+ui.label('Webcam')
 # For non-flickering image updates an interactive image is much better than `ui.image()`.
 video_image = ui.interactive_image().classes('w-full h-full')
 # A timer constantly updates the source of the image.

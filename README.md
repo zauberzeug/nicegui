@@ -23,12 +23,12 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 [![GitHub issues](https://img.shields.io/github/issues/zauberzeug/nicegui?color=blue)](https://github.com/zauberzeug/nicegui/issues)
 [![GitHub forks](https://img.shields.io/github/forks/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/network)
 [![GitHub stars](https://img.shields.io/github/stars/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/stargazers)
-[![GitHub license](https://img.shields.io/github/license/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/blob/main/LICENSE)
 
 ## Features
 
 - browser-based graphical user interface
 - implicit reload on code change
+- acts as webserver (accessed by the browser) or in native mode (eg. desktop window)
 - standard GUI elements like label, button, checkbox, switch, slider, input, file upload, ...
 - simple grouping with rows, columns, cards and dialogs
 - general-purpose HTML and Markdown elements
