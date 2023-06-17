@@ -43,7 +43,8 @@ def register_library(name: str, path: Path, *, expose: bool = False) -> None:
 
 
 def generate_resources(prefix: str, elements: List[Element]) -> Tuple[str, str, str, str, str]:
-    done: Set[str] = set()
+    done_libraries: Set[str] = set()
+    done_components: Set[str] = set()
     vue_scripts = ''
     vue_html = ''
     vue_styles = ''
@@ -52,31 +53,31 @@ def generate_resources(prefix: str, elements: List[Element]) -> Tuple[str, str, 
 
     # Build the importmap structure for exposed libraries.
     for key in libraries:
-        if key not in done and libraries[key]['expose']:
+        if key not in done_libraries and libraries[key]['expose']:
             name = libraries[key]['name']
             import_maps['imports'][name] = f'{prefix}/_nicegui/{__version__}/library/{key}/include'
-            done.add(key)
+            done_libraries.add(key)
     # Build the none optimized component (ie, the vue component).
     for key in vue_components:
-        if key not in done:
+        if key not in done_components:
             vue_html += f'{vue_components[key].html}\n'
             vue_scripts += f'{vue_components[key].script.replace("Vue.component", "app.component", 1)}\n'
             vue_styles += f'{vue_components[key].style}\n'
-            done.add(key)
+            done_components.add(key)
 
     # Build the resources associated with the elements.
     for element in elements:
         for key in element.libraries:
-            if key in libraries and key not in done:
+            if key in libraries and key not in done_libraries:
                 if not libraries[key]['expose']:
                     js_imports += f'import "{prefix}/_nicegui/{__version__}/library/{key}/include";\n'
-                done.add(key)
+                done_libraries.add(key)
         for key in element.components:
-            if key in js_components and key not in done:
+            if key in js_components and key not in done_components:
                 name = js_components[key]['name']
                 js_imports += f'import {{ default as {key} }} from "{prefix}/_nicegui/{__version__}/components/{key}";\n'
                 js_imports += f'app.component("{name}", {key});\n'
-                done.add(key)
+                done_components.add(key)
 
     vue_styles = f'<style>{vue_styles}</style>'
     import_maps = f'<script type="importmap">{json.dumps(import_maps)}</script>'
