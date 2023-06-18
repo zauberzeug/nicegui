@@ -80,16 +80,16 @@ def test_user_storage_modifications(screen: Screen):
 async def test_access_user_storage_from_fastapi(screen: Screen):
     @app.get('/api')
     def api():
-        return {'id': app.storage.user['id']}
+        app.storage.user['msg'] = 'yes'
+        return 'OK'
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     async with httpx.AsyncClient() as http_client:
         response = await http_client.get(f'http://localhost:{PORT}/api')
         assert response.status_code == 200
-        session_id = response.json()['id']
-        storage_file = next(Path('.nicegui').glob('storage_user_*.json'))
-        assert session_id in str(storage_file)
+        assert response.text == '"OK"'
+        assert next(Path('.nicegui').glob('storage_user_*.json')).read_text() == '{"msg": "yes"}'
 
 
 def test_access_user_storage_on_interaction(screen: Screen):
