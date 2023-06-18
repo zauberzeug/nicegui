@@ -165,6 +165,7 @@ def create_full() -> None:
         ui.button('Clear', on_click=container.clear)
 
     load_demo(ui.expansion)
+    load_demo(ui.scroll_area)
     load_demo(ui.splitter)
     load_demo('tabs')
     load_demo(ui.stepper)
