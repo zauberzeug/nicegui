@@ -35,7 +35,7 @@ def login() -> None:
         return RedirectResponse('/')
     with ui.card().classes('absolute-center'):
         username = ui.input('Username').on('keydown.enter', try_login)
-        password = ui.input('Password').on('keydown.enter', try_login).props('type=password')
+        password = ui.input('Password', password=True, password_toggle_button=True).on('keydown.enter', try_login)
         ui.button('Log in', on_click=try_login)
 
 
