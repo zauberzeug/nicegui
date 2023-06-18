@@ -366,7 +366,7 @@
   },
   {
     "title": "Button",
-    "content": "This element is based on Quasar's QBtn <https://quasar.dev/vue-components/button>_ component.  The `color parameter accepts a Quasar color, a Tailwind color, or a CSS color. If a Quasar color is used, the button will be styled according to the Quasar theme including the color of the text. Note that there are colors like \"red\" being both a Quasar color and a CSS color. In such cases the Quasar color will be used.  :param text: the label of the button :param on_click: callback which is invoked when button is pressed :param color: the color of the button (either a Quasar, Tailwind, or CSS color or None`, default: 'primary')",
+    "content": "This element is based on Quasar's QBtn <https://quasar.dev/vue-components/button>_ component.  The `color parameter accepts a Quasar color, a Tailwind color, or a CSS color. If a Quasar color is used, the button will be styled according to the Quasar theme including the color of the text. Note that there are colors like \"red\" being both a Quasar color and a CSS color. In such cases the Quasar color will be used.  :param text: the label of the button :param on_click: callback which is invoked when button is pressed :param color: the color of the button (either a Quasar, Tailwind, or CSS color or None, default: 'primary') :param icon: the name of an icon to be displayed on the button (default: None`)",
     "url": "/documentation/button"
   },
   {
@@ -560,6 +560,11 @@
     "url": "/documentation/keyboard"
   },
   {
+    "title": "Stepper",
+    "content": "This element represents Quasar's QStepper <https://quasar.dev/vue-components/stepper#qstepper-api>_ component. It contains individual steps.  :param value: ui.step or name of the step to be initially selected (default: None meaning the first step) :param on_value_change: callback to be executed when the selected step changes",
+    "url": "/documentation/stepper"
+  },
+  {
     "title": "Row Element",
     "content": "Provides a container which arranges its child in a row.",
     "url": "/documentation/row"
@@ -690,6 +695,11 @@
     "url": "/documentation/refreshable"
   },
   {
+    "title": "Refreshable: Refreshable UI for input validation",
+    "content": "Here is a demo of how to use the refreshable decorator to give feedback about the validity of user input.",
+    "url": "/documentation/refreshable#refreshable_ui_for_input_validation"
+  },
+  {
     "title": "Color Input",
     "content": ":param label: displayed label for the color input :param placeholder: text to show if no color is selected :param value: the current color value :param on_change: callback to execute when the value changes",
     "url": "/documentation/color_input"
@@ -778,6 +788,16 @@
     "title": "Image",
     "content": "Displays an image.  :param source: the source of the image; can be a URL, local file path or a base64 string",
     "url": "/documentation/image"
+  },
+  {
+    "title": "Image: Local files",
+    "content": "You can use local images as well by passing a path to the image file.",
+    "url": "/documentation/image#local_files"
+  },
+  {
+    "title": "Image: Base64 string",
+    "content": "You can also use a Base64 string as image source.",
+    "url": "/documentation/image#base64_string"
   },
   {
     "title": "Image: Lottie files",

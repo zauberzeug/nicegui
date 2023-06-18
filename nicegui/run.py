@@ -18,6 +18,8 @@ from . import native as native_module
 from . import native_mode
 from .language import Language
 
+APP_IMPORT_STRING = 'nicegui:app'
+
 
 class Server(uvicorn.Server):
 
@@ -131,7 +133,7 @@ def run(*,
     # NOTE: The following lines are basically a copy of `uvicorn.run`, but keep a reference to the `server`.
 
     config = uvicorn.Config(
-        'nicegui:app' if reload else globals.app,
+        APP_IMPORT_STRING if reload else globals.app,
         host=host,
         port=port,
         reload=reload,

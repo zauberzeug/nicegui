@@ -1,9 +1,12 @@
 export default {
-  template: `<audio :controls="controls" :autoplay="autoplay" :muted="muted" :src="computed_src" />`,
+  template: `
+    <q-img v-bind="$attrs" :src="computed_src">
+      <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
+        <slot :name="slot" v-bind="slotProps || {}" />
+      </template>
+    </q-img>
+  `,
   props: {
-    controls: Boolean,
-    autoplay: Boolean,
-    muted: Boolean,
     src: String,
   },
   data: function () {
