@@ -64,6 +64,10 @@
   width: 100%;
   height: 16rem;
 }
+.nicegui-scroll {
+  width: 200px;
+  height: 200px;
+}
 .nicegui-log {
   padding: 0.25rem;
   border-width: 1px;
