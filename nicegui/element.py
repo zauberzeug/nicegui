@@ -233,6 +233,7 @@ class Element(Visibility):
                 request=storage.request_contextvar.get(),
             )
             self._event_listeners[listener.id] = listener
+            self.update()
         return self
 
     def _handle_event(self, msg: Dict) -> None:
