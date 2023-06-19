@@ -55,7 +55,7 @@ def test_toggle_button(screen: Screen):
 
 
 def test_input_validation(screen: Screen):
-    ui.input('Name', validation={'Too short': lambda value: len(value) >= 5})
+    input = ui.input('Name', validation={'Too short': lambda value: len(value) >= 5})
 
     screen.open('/')
     screen.should_contain('Name')
@@ -63,10 +63,12 @@ def test_input_validation(screen: Screen):
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Name"]')
     element.send_keys('John')
     screen.should_contain('Too short')
+    assert input.error == 'Too short'
 
     element.send_keys(' Doe')
     screen.wait(0.5)
     screen.should_not_contain('Too short')
+    assert input.error is None
 
 
 def test_input_with_multi_word_error_message(screen: Screen):

@@ -1,10 +1,10 @@
 from typing import Any, Callable, Dict, Optional
 
 from .mixins.disableable_element import DisableableElement
-from .mixins.value_element import ValueElement
+from .mixins.validation_element import ValidationElement
 
 
-class Number(ValueElement, DisableableElement):
+class Number(ValidationElement, DisableableElement):
     LOOPBACK = False
 
     def __init__(self,
@@ -37,10 +37,10 @@ class Number(ValueElement, DisableableElement):
         :param suffix: a suffix to append to the displayed value
         :param format: a string like "%.2f" to format the displayed value
         :param on_change: callback to execute when the value changes
-        :param validation: dictionary of validation rules, e.g. ``{'Too small!': lambda value: value < 3}``
+        :param validation: dictionary of validation rules, e.g. ``{'Too large!': lambda value: value < 3}``
         """
         self.format = format
-        super().__init__(tag='q-input', value=value, on_value_change=on_change)
+        super().__init__(tag='q-input', value=value, on_value_change=on_change, validation=validation)
         self._props['type'] = 'number'
         if label is not None:
             self._props['label'] = label
@@ -56,7 +56,6 @@ class Number(ValueElement, DisableableElement):
             self._props['prefix'] = prefix
         if suffix is not None:
             self._props['suffix'] = suffix
-        self.validation = validation
         self.on('blur', self.sanitize)
 
     def sanitize(self) -> None:
@@ -64,15 +63,6 @@ class Number(ValueElement, DisableableElement):
         value = max(value, self._props.get('min', -float('inf')))
         value = min(value, self._props.get('max', float('inf')))
         self.set_value(float(self.format % value) if self.format else value)
-
-    def on_value_change(self, value: Any) -> None:
-        super().on_value_change(value)
-        for message, check in self.validation.items():
-            if not check(value):
-                self.props(f'error error-message="{message}"')
-                break
-        else:
-            self.props(remove='error')
 
     def _msg_to_value(self, msg: Dict) -> Any:
         return float(msg['args']) if msg['args'] else None
