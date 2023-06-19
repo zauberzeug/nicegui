@@ -58,10 +58,35 @@ class Number(ValidationElement, DisableableElement):
             self._props['suffix'] = suffix
         self.on('blur', self.sanitize)
 
+    @property
+    def min(self) -> float:
+        """The minimum value allowed."""
+        return self._props.get('min', -float('inf'))
+
+    @min.setter
+    def min(self, value: float) -> None:
+        self._props['min'] = value
+        self.sanitize()
+
+    @property
+    def max(self) -> float:
+        """The maximum value allowed."""
+        return self._props.get('max', float('inf'))
+
+    @max.setter
+    def max(self, value: float) -> None:
+        self._props['max'] = value
+        self.sanitize()
+
+    @property
+    def out_of_limits(self) -> bool:
+        """Whether the current value is out of the allowed limits."""
+        return not self.min <= self.value <= self.max
+
     def sanitize(self) -> None:
         value = float(self.value or 0)
-        value = max(value, self._props.get('min', -float('inf')))
-        value = min(value, self._props.get('max', float('inf')))
+        value = max(value, self.min)
+        value = min(value, self.max)
         self.set_value(float(self.format % value) if self.format else value)
 
     def _msg_to_value(self, msg: Dict) -> Any:
