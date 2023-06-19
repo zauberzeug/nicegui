@@ -43,7 +43,7 @@ def test_clearable_number(screen: Screen):
 
 def test_out_of_limits(screen: Screen):
     number = ui.number('Number', min=0, max=10, value=5)
-    ui.label().bind_text_from('Number', 'out_of_limits', lambda value: f'out_of_limits: {value}')
+    ui.label().bind_text_from(number, 'out_of_limits', lambda value: f'out_of_limits: {value}')
 
     screen.open('/')
     screen.should_contain('out_of_limits: False')
