@@ -15,7 +15,6 @@ from .language import Language
 
 if TYPE_CHECKING:
     from .air import Air
-    from .app import App
     from .client import Client
     from .slot import Slot
 
@@ -27,7 +26,7 @@ class State(Enum):
     STOPPING = 3
 
 
-app: 'App'
+app: App
 sio: AsyncServer
 server: Server
 loop: Optional[asyncio.AbstractEventLoop] = None

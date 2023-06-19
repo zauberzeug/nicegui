@@ -57,7 +57,7 @@ def get_components(name: str):
 
 
 @app.on_event('startup')
-async def handle_startup(with_welcome_message: bool = True) -> None:
+def handle_startup(with_welcome_message: bool = True) -> None:
     if not globals.ui_run_has_been_called:
         raise RuntimeError('\n\n'
                            'You must call ui.run() to start the server.\n'
@@ -85,6 +85,8 @@ async def handle_startup(with_welcome_message: bool = True) -> None:
     globals.state = globals.State.STARTED
     if with_welcome_message:
         print_welcome_message()
+    if globals.air:
+        background_tasks.create(globals.air.connect())
 
 
 def print_welcome_message():
@@ -101,8 +103,6 @@ def print_welcome_message():
     if len(addresses) >= 2:
         addresses[-1] = 'and ' + addresses[-1]
     print(f'NiceGUI ready to go on {", ".join(addresses)}')
-    if globals.air:
-        background_tasks.create(globals.air.connect())
 
 
 @app.on_event('shutdown')

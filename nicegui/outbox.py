@@ -32,10 +32,10 @@ async def loop() -> None:
         coros = []
         try:
             for client_id, elements in update_queue.items():
-                elements = {element_id: element._to_dict() for element_id, element in elements.items()}
-                coros.append(globals.sio.emit('update', elements, room=client_id))
+                data = {element_id: element._to_dict() for element_id, element in elements.items()}
+                coros.append(globals.sio.emit('update', data, room=client_id))
                 if is_target_on_air(client_id):
-                    coros.append(globals.air.emit('update', elements, room=client_id))
+                    coros.append(globals.air.emit('update', data, room=client_id))
 
             update_queue.clear()
             for target_id, message_type, data in message_queue:
