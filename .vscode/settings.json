@@ -4,15 +4,25 @@
   "editor.minimap.enabled": false,
   "isort.args": ["--line-length", "120"],
   "prettier.printWidth": 120,
-  "python.formatting.provider": "autopep8",
+  "python.formatting.provider": "none",
   "python.formatting.autopep8Args": ["--max-line-length=120", "--experimental"],
   "python.testing.pytestArgs": ["."],
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.git": true,
+    "**/.venv": true
+  },
   "[python]": {
-    "editor.defaultFormatter": "ms-python.python",
+    "editor.defaultFormatter": "ms-python.autopep8",
     "editor.codeActionsOnSave": {
       "source.organizeImports": true
     }
+  },
+  "files.associations": {
+    "*.html": "jinja-html"
   }
 }
