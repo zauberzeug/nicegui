@@ -16,7 +16,7 @@ from nicegui import globals, ui
 
 from .test_helpers import TEST_DIR
 
-PORT = 3392
+PORT = 4444
 IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-input']
 
 
@@ -133,11 +133,14 @@ class Screen:
                 if not element.is_displayed():
                     self.wait(0.1)  # HACK: repeat check after a short delay to avoid timing issue on fast machines
                     if not element.is_displayed():
+                        self.close()
                         raise AssertionError(f'Found "{text}" but it is hidden')
             except StaleElementReferenceException:
+                self.close()
                 raise AssertionError(f'Found "{text}" but it is hidden')
             return element
         except NoSuchElementException as e:
+            self.close()
             raise AssertionError(f'Could not find "{text}"') from e
 
     def find_by_id(self, id: str) -> WebElement:

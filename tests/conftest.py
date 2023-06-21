@@ -16,9 +16,11 @@ icecream.install()
 
 @pytest.fixture
 def chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeOptions:
-    chrome_options.add_argument('headless')
-    chrome_options.add_argument('disable-gpu')
-    chrome_options.add_argument('window-size=600x600')
+    chrome_options.add_argument('--disable-dev-shm-using')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--window-size=600x600')
     return chrome_options
 
 
@@ -57,8 +59,15 @@ def remove_all_screenshots() -> None:
 
 
 @pytest.fixture
-def screen(selenium: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture) \
+def screen(request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture) \
         -> Generator[Screen, None, None]:
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--disable-dev-shm-using')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--window-size=600x600')
+    selenium = webdriver.Chrome(options=chrome_options)
     screen = Screen(selenium, caplog)
     yield screen
     if screen.is_open:
