@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from nicegui import ui
 
 # define a list of URLs to be used as the image source in the UI
