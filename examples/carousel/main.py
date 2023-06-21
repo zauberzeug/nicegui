@@ -1,4 +1,3 @@
-# import nicegui library
 from nicegui import ui
 
 # define a list of URLs to be used as the image source in the UI
