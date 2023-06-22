@@ -6,7 +6,8 @@
     // Sets the run context to one level up instead of the .devcontainer folder.
     "context": "..",
     // Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
-    "dockerfile": "../Dockerfile"
+    "dockerfile": "../Dockerfile",
+    "target": "development"
   },
 
   // Features to add to the dev container. More info: https://containers.dev/features.
@@ -30,7 +31,8 @@
         "samuelcolvin.jinjahtml",
         "ms-python.isort",
         "Vue.volar",
-        "ms-azuretools.vscode-docker"
+        "ms-azuretools.vscode-docker",
+        "GitHub.copilot"
       ]
     }
   }
