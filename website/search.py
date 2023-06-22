@@ -49,9 +49,10 @@ class Search:
             self.dialog.open()
 
     async def handle_input(self, e: events.ValueChangeEventArguments) -> None:
+        results = await ui.run_javascript(f'return window.fuse.search("{e.value}").slice(0, 50)')
         self.results.clear()
         with self.results:
-            for result in await ui.run_javascript(f'return window.fuse.search("{e.value}").slice(0, 50)'):
+            for result in results:
                 href: str = result['item']['url']
                 with ui.element('q-item').props(f'clickable').on('click', lambda href=href: self.open_url(href)):
                     with ui.element('q-item-section'):
