@@ -1,11 +1,12 @@
 FROM python:3.7.16 as base
 
 ENV POETRY_VERSION=1.4.0 \
-    PATH="/root/.local/bin:$PATH" 
+    PATH="/root/.local/bin:$PATH" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=true \
+    POETRY_INSTALLER_MAX_WORKERS=10
 
 RUN curl -sSL https://install.python-poetry.org | python - && \
-    poetry config virtualenvs.in-project true && \
-    poetry config installer.max-workers 10 && \
     poetry completions bash >> ~/.bash_completion
 
 COPY pyproject.toml poetry.lock /
