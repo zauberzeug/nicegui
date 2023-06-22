@@ -107,6 +107,18 @@ try:
                 file_types=file_types,
             )
 
+        async def create_folder_dialog(
+            self,
+            dialog_type: int = webview.FOLDER_DIALOG,
+            directory: str = '',
+            allow_multiple: bool = False
+        ) -> Tuple[str, ...]:
+            return await self._request(
+                dialog_type=dialog_type,
+                directory=directory,
+                allow_multiple=allow_multiple
+            )
+
         def expose(self, function: Callable) -> None:
             raise NotImplementedError(f'exposing "{function}" is not supported')
 
