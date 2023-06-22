@@ -14,14 +14,14 @@ class MinimalPublisher(Node):
     https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Py-Publisher-And-Subscriber.html
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__('minimal_publisher')
         self.publisher_ = self.create_publisher(String, 'topic', 10)
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
 
-    def timer_callback(self):
+    def timer_callback(self) -> None:
         msg = String()
         msg.data = 'Hello World: %d' % self.i
         self.publisher_.publish(msg)
