@@ -1,4 +1,4 @@
-from nicegui import events, ui
+from nicegui import background_tasks, events, ui
 
 
 class Search:
@@ -48,15 +48,17 @@ class Search:
         if e.key == 'k' and (e.modifiers.ctrl or e.modifiers.meta):
             self.dialog.open()
 
-    async def handle_input(self, e: events.ValueChangeEventArguments) -> None:
-        results = await ui.run_javascript(f'return window.fuse.search("{e.value}").slice(0, 50)')
-        self.results.clear()
-        with self.results:
-            for result in results:
-                href: str = result['item']['url']
-                with ui.element('q-item').props(f'clickable').on('click', lambda href=href: self.open_url(href)):
-                    with ui.element('q-item-section'):
-                        ui.label(result['item']['title'])
+    def handle_input(self, e: events.ValueChangeEventArguments) -> None:
+        async def handle_input():
+            with self.results:
+                results = await ui.run_javascript(f'return window.fuse.search("{e.value}").slice(0, 50)')
+                self.results.clear()
+                for result in results:
+                    href: str = result['item']['url']
+                    with ui.element('q-item').props(f'clickable').on('click', lambda href=href: self.open_url(href)):
+                        with ui.element('q-item-section'):
+                            ui.label(result['item']['title'])
+        background_tasks.create_lazy(handle_input(), name='handle_search_input')
 
     async def open_url(self, url: str) -> None:
         await ui.run_javascript(f'''
