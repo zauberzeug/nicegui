@@ -102,3 +102,11 @@ def test_single_selection(screen: Screen):
     screen.find('Bob').find_element(By.XPATH, 'preceding-sibling::td').click()
     screen.wait(0.5)
     screen.should_contain('1 record selected.')
+
+
+def test_dynamic_column_attributes(screen: Screen):
+    ui.table(columns=[{'name': 'age', 'label': 'Age', 'field': 'age', ':format': 'value => value + " years"'}],
+             rows=[{'name': 'Alice', 'age': 18}])
+
+    screen.open('/')
+    screen.should_contain('18 years')

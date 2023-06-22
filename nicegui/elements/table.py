@@ -2,9 +2,12 @@ from typing import Any, Callable, Dict, List, Optional
 
 from typing_extensions import Literal
 
+from ..dependencies import register_component
 from ..element import Element
 from ..events import TableSelectionEventArguments, handle_event
 from .mixins.filter_element import FilterElement
+
+register_component('ng_table', __file__, 'table.js')
 
 
 class Table(FilterElement):
@@ -32,7 +35,7 @@ class Table(FilterElement):
 
         If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
         """
-        super().__init__(tag='q-table')
+        super().__init__(tag='ng_table')
 
         self.rows = rows
         self.row_key = row_key
