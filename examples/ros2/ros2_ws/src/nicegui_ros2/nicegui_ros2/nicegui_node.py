@@ -55,7 +55,7 @@ def page() -> None:
             ''')
 
         with ui.card():
-            ui.markdown('### Turtlebot3 Joystick')
+            ui.markdown('### Turtlesim Joystick')
 
             # NOTE: Joystick will be reworked in the future, so this is a temporary workaround for the size.
             ui.add_head_html('<style>.my-joystick > div { width: 20em !important; height: 20em !important; }</style>')
