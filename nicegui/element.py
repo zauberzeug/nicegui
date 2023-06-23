@@ -312,7 +312,7 @@ class Element(Visibility):
         """
 
     def use_component(self, name: str) -> None:
-        """Register a *.js Vue component to be used by this element."""
+        """Register a ``*.js`` Vue component to be used by this element."""
         self.components.append(name)
 
     def use_library(self, name: str) -> None:

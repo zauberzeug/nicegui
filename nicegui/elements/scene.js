@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { CSS2DRenderer } from "CSS2DRenderer";
-import { CSS3DRenderer } from "CSS3DRenderer";
+import { CSS2DRenderer, CSS2DObject } from "CSS2DRenderer";
+import { CSS3DRenderer, CSS3DObject } from "CSS3DRenderer";
 import { OrbitControls } from "OrbitControls";
 import { STLLoader } from "STLLoader";
 
@@ -185,12 +185,12 @@ export default {
         const div = document.createElement("div");
         div.textContent = args[0];
         div.style.cssText = args[1];
-        mesh = new THREE.CSS2DObject(div);
+        mesh = new CSS2DObject(div);
       } else if (type == "text3d") {
         const div = document.createElement("div");
         div.textContent = args[0];
         div.style.cssText = "userSelect:none;" + args[1];
-        mesh = new THREE.CSS3DObject(div);
+        mesh = new CSS3DObject(div);
       } else if (type == "texture") {
         const url = args[0];
         const coords = args[1];

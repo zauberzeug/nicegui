@@ -47,8 +47,8 @@ def index(request: Request) -> Response:
 @app.get(f'/_nicegui/{__version__}' + '/library/{name}/{file}')
 def get_dependencies(name: str, file: str):
     if name in libraries and libraries[name]['path'].exists():
-        file = Path(libraries[name]['path'].parent, file)
-        if file.exists() and not file.is_dir():
+        filepath = Path(libraries[name]['path']).parent / file
+        if filepath.exists() and not filepath.is_dir():
             return FileResponse(file, media_type='text/javascript')
         return FileResponse(libraries[name]['path'], media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'dependency "{name}" not found')
