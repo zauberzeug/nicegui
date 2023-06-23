@@ -46,7 +46,7 @@ class Select(ChoiceElement, DisableableElement):
         if with_input:
             self.original_options = deepcopy(options)
             self._props['use-input'] = True
-            self._props['hide-selected'] = True
+            self._props['hide-selected'] = not multiple
             self._props['fill-input'] = True
             self._props['input-debounce'] = 0
         self._props['multiple'] = multiple

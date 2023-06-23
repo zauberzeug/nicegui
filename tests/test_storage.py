@@ -1,9 +1,11 @@
 import asyncio
 from pathlib import Path
 
+import httpx
+
 from nicegui import Client, app, background_tasks, ui
 
-from .screen import Screen
+from .screen import PORT, Screen
 
 
 def test_browser_data_is_stored_in_the_browser(screen: Screen):
@@ -75,7 +77,22 @@ def test_user_storage_modifications(screen: Screen):
     screen.should_contain('3')
 
 
-async def test_access_user_storage_on_interaction(screen: Screen):
+async def test_access_user_storage_from_fastapi(screen: Screen):
+    @app.get('/api')
+    def api():
+        app.storage.user['msg'] = 'yes'
+        return 'OK'
+
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
+    screen.open('/')
+    async with httpx.AsyncClient() as http_client:
+        response = await http_client.get(f'http://localhost:{PORT}/api')
+        assert response.status_code == 200
+        assert response.text == '"OK"'
+        assert next(Path('.nicegui').glob('storage_user_*.json')).read_text() == '{"msg": "yes"}'
+
+
+def test_access_user_storage_on_interaction(screen: Screen):
     @ui.page('/')
     async def page():
         if 'test_switch' not in app.storage.user:

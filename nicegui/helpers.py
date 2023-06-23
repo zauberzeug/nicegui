@@ -44,7 +44,10 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return False
     elif isinstance(path, str) and path.strip().startswith('data:'):
         return False  # NOTE: avoid passing data URLs to Path
-    return Path(path).is_file()
+    try:
+        return Path(path).is_file()
+    except OSError:
+        return False
 
 
 def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional['Client'] = None) -> None:

@@ -1,7 +1,11 @@
 from pathlib import Path
 from typing import Union
 
+from nicegui.dependencies import register_component
+
 from .mixins.source_element import SourceElement
+
+register_component('image', __file__, 'image.js')
 
 
 class Image(SourceElement):
@@ -13,4 +17,4 @@ class Image(SourceElement):
 
         :param source: the source of the image; can be a URL, local file path or a base64 string
         """
-        super().__init__(tag='q-img', source=source)
+        super().__init__(tag='image', source=source)
