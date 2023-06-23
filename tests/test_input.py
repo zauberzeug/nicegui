@@ -83,7 +83,7 @@ def test_input_with_multi_word_error_message(screen: Screen):
 
 
 def test_autocompletion(screen: Screen):
-    ui.input('Input', autocomplete=['foo', 'bar', 'baz'])
+    input = ui.input('Input', autocomplete=['foo', 'bar', 'baz'])
 
     screen.open('/')
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
@@ -100,16 +100,21 @@ def test_autocompletion(screen: Screen):
     element.send_keys(Keys.TAB)
     screen.wait(0.2)
     assert element.get_attribute('value') == 'foo'
+    assert input.value == 'foo'
 
     element.send_keys(Keys.BACKSPACE)
-    screen.wait(0.2)
     element.send_keys(Keys.BACKSPACE)
-    screen.wait(0.2)
     element.send_keys('x')
-    screen.wait(0.2)
     element.send_keys(Keys.TAB)
     screen.wait(0.5)
     assert element.get_attribute('value') == 'fx'
+    assert input.value == 'fx'
+
+    input.set_autocomplete(['one', 'two'])
+    element.send_keys(Keys.BACKSPACE)
+    element.send_keys(Keys.BACKSPACE)
+    element.send_keys('o')
+    screen.should_contain('ne')
 
 
 def test_clearable_input(screen: Screen):
