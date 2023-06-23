@@ -7,7 +7,7 @@ from ..element import Element
 from ..events import TableSelectionEventArguments, handle_event
 from .mixins.filter_element import FilterElement
 
-register_component('ng_table', __file__, 'table.js')
+register_component('nicegui-table', __file__, 'table.js')
 
 
 class Table(FilterElement):
@@ -35,7 +35,7 @@ class Table(FilterElement):
 
         If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
         """
-        super().__init__(tag='ng_table')
+        super().__init__(tag='nicegui-table')
 
         self.rows = rows
         self.row_key = row_key
