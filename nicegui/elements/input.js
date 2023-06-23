@@ -26,6 +26,9 @@ export default {
     };
   },
   watch: {
+    value(newValue) {
+      this.inputValue = newValue;
+    },
     inputValue(newValue) {
       this.$emit("update:value", newValue);
     },
