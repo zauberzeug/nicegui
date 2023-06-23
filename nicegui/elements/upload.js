@@ -7,7 +7,7 @@ export default {
     </q-uploader>
   `,
   mounted() {
-    setTimeout(() => compute_url, 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
+    setTimeout(() => this.compute_url(), 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
   },
   updated() {
     this.compute_url();
