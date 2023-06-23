@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>nicegui_ros2</name>
+  <version>1.0.0</version>
+  <description>This is an example of NiceGUI in a ROS2 node based that uses a joystick to control turtlesim.</description>
+  <maintainer email="jens.ogorek@gmail.com">jens</maintainer>
+  <license>TODO: License declaration</license>
+  
+  <depend> rclpy </depend>
+  <depend> geometry_msgs </depend>
+  <depend> nicegui </depend>
+  
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
