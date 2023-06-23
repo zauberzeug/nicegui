@@ -160,3 +160,33 @@ def more() -> None:
             {'name': 'count', 'label': 'Count', 'field': 'count'},
         ]
         table = ui.table(columns=columns, rows=[], row_key='id').classes('w-full')
+
+    @text_demo('Custom sorting and formatting', '''
+        You can define dynamic column attributes using a `:` prefix.
+        This way you can define custom sorting and formatting functions.
+
+        The following example allows sorting the `name` column by length.
+        The `age` column is formatted to show the age in years.
+    ''')
+    def custom_formatting():
+        columns = [
+            {
+                'name': 'name',
+                'label': 'Name',
+                'field': 'name',
+                'sortable': True,
+                ':sort': '(a, b, rowA, rowB) => b.length - a.length',
+            },
+            {
+                'name': 'age',
+                'label': 'Age',
+                'field': 'age',
+                ':format': 'value => value + " years"',
+            },
+        ]
+        rows = [
+            {'name': 'Alice', 'age': 18},
+            {'name': 'Bob', 'age': 21},
+            {'name': 'Carl', 'age': 42},
+        ]
+        ui.table(columns=columns, rows=rows, row_key='name')

@@ -1,10 +1,14 @@
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 from typing_extensions import Literal
 
+from ..dependencies import register_vue_component
 from ..element import Element
 from ..events import TableSelectionEventArguments, handle_event
 from .mixins.filter_element import FilterElement
+
+register_vue_component('nicegui-table', Path(__file__).parent / 'table.js')
 
 
 class Table(FilterElement):
@@ -32,7 +36,7 @@ class Table(FilterElement):
 
         If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
         """
-        super().__init__(tag='q-table')
+        super().__init__(tag='nicegui-table')
 
         self.rows = rows
         self.row_key = row_key
@@ -58,6 +62,8 @@ class Table(FilterElement):
             arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
             handle_event(on_select, arguments)
         self.on('selection', handle_selection)
+
+        self.use_component('nicegui-table')
 
     def add_rows(self, *rows: Dict) -> None:
         """Add rows to the table."""

@@ -75,8 +75,9 @@ def generate_resources(prefix: str, elements: List[Element]) -> Tuple[str, str, 
         for key in element.components:
             if key in js_components and key not in done_components:
                 name = js_components[key]['name']
-                js_imports += f'import {{ default as {key} }} from "{prefix}/_nicegui/{__version__}/components/{key}";\n'
-                js_imports += f'app.component("{name}", {key});\n'
+                var = key.replace('-', '_')
+                js_imports += f'import {{ default as {var} }} from "{prefix}/_nicegui/{__version__}/components/{key}";\n'
+                js_imports += f'app.component("{name}", {var});\n'
                 done_components.add(key)
 
     vue_styles = f'<style>{vue_styles}</style>'
