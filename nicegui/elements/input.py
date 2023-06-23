@@ -57,3 +57,8 @@ class Input(ValidationElement, DisableableElement):
                 icon = Icon('visibility_off').classes('cursor-pointer').on('click', toggle_type)
 
         self._props['autocomplete'] = autocomplete or []
+
+    def set_autocomplete(self, autocomplete: Optional[List[str]]) -> None:
+        """Set the autocomplete list."""
+        self._props['autocomplete'] = autocomplete
+        self.update()
