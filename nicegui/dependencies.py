@@ -82,6 +82,7 @@ def generate_js_imports(prefix: str) -> str:
     for name, component in js_components.items():
         if name in globals.excludes:
             continue
-        result += f'import {{ default as {name} }} from "{prefix}{component.import_path}";\n'
-        result += f'app.component("{name}", {name});\n'
+        var_name = name.replace('-', '_')
+        result += f'import {{ default as {var_name} }} from "{prefix}{component.import_path}";\n'
+        result += f'app.component("{name}", {var_name});\n'
     return result
