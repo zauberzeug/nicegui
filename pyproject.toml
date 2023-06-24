@@ -53,3 +53,10 @@ requires = [
     "poetry-core>=1.0.0"
 ]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+addopts = "--driver Chrome"
+asyncio_mode = "auto"
+
+[tool.mypy]
+ignore_missing_imports = true

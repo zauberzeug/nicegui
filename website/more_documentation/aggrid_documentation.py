@@ -138,3 +138,18 @@ def more() -> None:
 
         df = pd.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
         ui.aggrid.from_pandas(df).classes('max-h-40')
+
+    @text_demo('Render columns as HTML', '''
+        You can render columns as HTML by passing a list of column indices to the `html_columns` argument.
+    ''')
+    def aggrid_with_html_columns():
+        ui.aggrid({
+            'columnDefs': [
+                {'headerName': 'Name', 'field': 'name'},
+                {'headerName': 'URL', 'field': 'url'},
+            ],
+            'rowData': [
+                {'name': 'Google', 'url': '<a href="https://google.com">https://google.com</a>'},
+                {'name': 'Facebook', 'url': '<a href="https://facebook.com">https://facebook.com</a>'},
+            ],
+        }, html_columns=[1])

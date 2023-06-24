@@ -39,3 +39,17 @@ def test_clearable_number(screen: Screen):
     screen.should_contain('value: 42')
     screen.click('cancel')
     screen.should_contain('value: None')
+
+
+def test_out_of_limits(screen: Screen):
+    number = ui.number('Number', min=0, max=10, value=5)
+    ui.label().bind_text_from(number, 'out_of_limits', lambda value: f'out_of_limits: {value}')
+
+    screen.open('/')
+    screen.should_contain('out_of_limits: False')
+
+    number.value = 11
+    screen.should_contain('out_of_limits: True')
+
+    number.max = 15
+    screen.should_contain('out_of_limits: False')
