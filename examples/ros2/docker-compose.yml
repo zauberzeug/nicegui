@@ -1,21 +1,20 @@
-version: '3'
+version: "3"
 services:
-  joystick_example:
+  nicegui:
     build:
       context: .
-      dockerfile: Dockerfile
     ports:
       - 8000:8000
     volumes:
       - ./ros2_ws/src:/ros2_ws/src
     command: ros2 run nicegui_ros2 nicegui_node
 
-  turtle_sim:
+  turtlesim:
     image: osrf/ros:humble-desktop
-    environment: 
+    environment:
       - DISPLAY
-    volumes: 
+    volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
     command: ros2 run turtlesim turtlesim_node
     depends_on:
-      - joystick_example
+      - nicegui
