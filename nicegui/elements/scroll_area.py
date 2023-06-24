@@ -4,7 +4,7 @@ from ..element import Element
 class ScrollArea(Element):
 
     def __init__(self) -> None:
-        """ScrollArea
+        """Scroll Area
 
         A way of customizing the scrollbars by encapsulating your content.
         """
