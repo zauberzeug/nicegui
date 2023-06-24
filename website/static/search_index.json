@@ -665,6 +665,11 @@
     "url": "/documentation/table#adding_rows"
   },
   {
+    "title": "Table: Custom sorting and formatting",
+    "content": "You can define dynamic column attributes using a : prefix. This way you can define custom sorting and formatting functions.  The following example allows sorting the name column by length. The age column is formatted to show the age in years.",
+    "url": "/documentation/table#custom_sorting_and_formatting"
+  },
+  {
     "title": "Notification",
     "content": "Displays a notification on the screen.  :param message: content of the notification :param position: position on the screen (\"top-left\", \"top-right\", \"bottom-left\", \"bottom-right\", \"top\", \"bottom\", \"left\", \"right\" or \"center\", default: \"bottom\") :param closeBtn: optional label of a button to dismiss the notification (default: False) :param type: optional type (\"positive\", \"negative\", \"warning\", \"info\" or \"ongoing\") :param color: optional color name  Note: You can pass additional keyword arguments according to Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>_.",
     "url": "/documentation/notify"
