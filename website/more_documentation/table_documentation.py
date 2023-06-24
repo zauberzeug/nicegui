@@ -74,15 +74,11 @@ def more() -> None:
             {'name': 'Bob', 'age': 21},
             {'name': 'Carol'},
         ]
-        visible_columns = {column['name'] for column in columns}
         table = ui.table(columns=columns, rows=rows, row_key='name')
 
         def toggle(column: Dict, visible: bool) -> None:
-            if visible:
-                visible_columns.add(column['name'])
-            else:
-                visible_columns.remove(column['name'])
-            table._props['columns'] = [column for column in columns if column['name'] in visible_columns]
+            column['classes'] = '' if visible else 'hidden'
+            column['headerClasses'] = '' if visible else 'hidden'
             table.update()
 
         with ui.button(icon='menu'):

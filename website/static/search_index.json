@@ -366,7 +366,7 @@
   },
   {
     "title": "Button",
-    "content": "This element is based on Quasar's QBtn <https://quasar.dev/vue-components/button>_ component.  The `color parameter accepts a Quasar color, a Tailwind color, or a CSS color. If a Quasar color is used, the button will be styled according to the Quasar theme including the color of the text. Note that there are colors like \"red\" being both a Quasar color and a CSS color. In such cases the Quasar color will be used.  :param text: the label of the button :param on_click: callback which is invoked when button is pressed :param color: the color of the button (either a Quasar, Tailwind, or CSS color or None, default: 'primary') :param icon: the name of an icon to be displayed on the button (default: None`)",
+    "content": "This element is based on Quasar's QBtn <https://quasar.dev/vue-components/button>_ component.  The `color parameter accepts a Quasar color, a Tailwind color, or a CSS color. If a Quasar color is used, the button will be styled according to the Quasar theme including the color of the text. Note that there are colors like \"red\" being both a Quasar color and a CSS color. In such cases the Quasar color will be used.  :param text: the label of the button :param on_click: callback which is invoked when button is pressed :param color: the color of the button (either a Quasar, Tailwind, or CSS color or None, default: 'primary') :param icon: the name of an icon to be displayed on the button (default: None`) clicked Wait until the button is clicked.",
     "url": "/documentation/button"
   },
   {
@@ -386,7 +386,7 @@
   },
   {
     "title": "File Upload",
-    "content": "Based on Quasar's QUploader <https://quasar.dev/vue-components/uploader>_ component.  :param multiple: allow uploading multiple files at once (default: False) :param max_file_size: maximum file size in bytes (default: 0) :param max_total_size: maximum total size of all files in bytes (default: 0) :param max_files: maximum number of files (default: 0) :param on_upload: callback to execute for each uploaded file (type: nicegui.events.UploadEventArguments) :param on_rejected: callback to execute for each rejected file :param label: label for the uploader (default: '') :param auto_upload: automatically upload files when they are selected (default: False)",
+    "content": "Based on Quasar's QUploader <https://quasar.dev/vue-components/uploader>_ component.  :param multiple: allow uploading multiple files at once (default: False) :param max_file_size: maximum file size in bytes (default: 0) :param max_total_size: maximum total size of all files in bytes (default: 0) :param max_files: maximum number of files (default: 0) :param on_upload: callback to execute for each uploaded file (type: nicegui.events.UploadEventArguments) :param on_rejected: callback to execute for each rejected file :param label: label for the uploader (default: '') :param auto_upload: automatically upload files when they are selected (default: False) reset delete",
     "url": "/documentation/upload"
   },
   {
@@ -401,7 +401,7 @@
   },
   {
     "title": "Timer",
-    "content": "One major drive behind the creation of NiceGUI was the necessity to have a simple approach to update the interface in regular intervals, for example to show a graph with incoming measurements. A timer will execute a callback repeatedly with a given interval.  :param interval: the interval in which the timer is called (can be changed during runtime) :param callback: function or coroutine to execute when interval elapses :param active: whether the callback should be executed or not (can be changed during runtime) :param once: whether the callback is only executed once after a delay specified by interval (default: False)",
+    "content": "One major drive behind the creation of NiceGUI was the necessity to have a simple approach to update the interface in regular intervals, for example to show a graph with incoming measurements. A timer will execute a callback repeatedly with a given interval.  :param interval: the interval in which the timer is called (can be changed during runtime) :param callback: function or coroutine to execute when interval elapses :param active: whether the callback should be executed or not (can be changed during runtime) :param once: whether the callback is only executed once after a delay specified by interval (default: False) activate Activate the timer.deactivate Deactivate the timer.",
     "url": "/documentation/timer"
   },
   {
@@ -431,7 +431,7 @@
   },
   {
     "title": "AG Grid",
-    "content": "An element to create a grid using AG Grid <https://www.ag-grid.com/>_.  The call_api_method method can be used to call an AG Grid API method.  :param options: dictionary of AG Grid options :param html_columns: list of columns that should be rendered as HTML (default: []) :param theme: AG Grid theme (default: 'balham')",
+    "content": "An element to create a grid using AG Grid <https://www.ag-grid.com/>_.  The call_api_method method can be used to call an AG Grid API method.  :param options: dictionary of AG Grid options :param html_columns: list of columns that should be rendered as HTML (default: []) :param theme: AG Grid theme (default: 'balham') update call_api_method Call an AG Grid API method.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>_ for a list of methods.  :param name: name of the method :param args: arguments to pass to the method get_selected_rows Get the currently selected rows.  This method is especially useful when the grid is configured with `rowSelection: 'multiple'.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows>_ for more information.  :return: list of selected row data get_selected_row Get the single currently selected row.  This method is especially useful when the grid is configured with rowSelection: 'single'.  :return: row data of the first selection if any row is selected, otherwise None`",
     "url": "/documentation/aggrid"
   },
   {
@@ -453,6 +453,11 @@
     "title": "Aggrid: Create Grid from Pandas Dataframe",
     "content": "You can create an AG Grid from a Pandas Dataframe using the from_pandas method. This method takes a Pandas Dataframe as input and returns an AG Grid.",
     "url": "/documentation/aggrid#create_grid_from_pandas_dataframe"
+  },
+  {
+    "title": "Aggrid: Render columns as HTML",
+    "content": "You can render columns as HTML by passing a list of column indices to the html_columns argument.",
+    "url": "/documentation/aggrid#render_columns_as_html"
   },
   {
     "title": "Slider",
@@ -491,7 +496,7 @@
   },
   {
     "title": "Page",
-    "content": "This decorator marks a function to be a page builder. Each user accessing the given route will see a new instance of the page. This means it is private to the user and not shared with others (as it is done when placing elements outside of a page decorator <https://nicegui.io/documentation#auto-index_page>_).  :param path: route of the new page (path must start with '/') :param title: optional page title :param viewport: optional viewport meta tag content :param favicon: optional relative filepath or absolute URL to a favicon (default: None, NiceGUI icon will be used) :param dark: whether to use Quasar's dark mode (defaults to dark argument of run command) :param language: language of the page (defaults to language argument of run command) :param response_timeout: maximum time for the decorated function to build the page (default: 3.0) :param api_router: APIRouter instance to use, can be left None to use the default :param kwargs: additional keyword arguments passed to FastAPI's @app.get method",
+    "content": "This decorator marks a function to be a page builder. Each user accessing the given route will see a new instance of the page. This means it is private to the user and not shared with others (as it is done when placing elements outside of a page decorator <https://nicegui.io/documentation#auto-index_page>_).  :param path: route of the new page (path must start with '/') :param title: optional page title :param viewport: optional viewport meta tag content :param favicon: optional relative filepath or absolute URL to a favicon (default: None, NiceGUI icon will be used) :param dark: whether to use Quasar's dark mode (defaults to dark argument of run command) :param language: language of the page (defaults to language argument of run command) :param response_timeout: maximum time for the decorated function to build the page (default: 3.0) :param api_router: APIRouter instance to use, can be left None to use the default :param kwargs: additional keyword arguments passed to FastAPI's @app.get method resolve_title resolve_viewport resolve_dark resolve_language",
     "url": "/documentation/page"
   },
   {
@@ -511,7 +516,7 @@
   },
   {
     "title": "Text Input",
-    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  The on_change event is called on every keystroke and the value updates accordingly. If you want to wait until the user confirms the input, you can register a custom event callback, e.g. ui.input(...).on('keydown.enter', ...) or ui.input(...).on('blur', ...).  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed label for the text input :param placeholder: text to show if no value is entered :param value: the current value of the text input :param password: whether to hide the input (default: False) :param password_toggle_button: whether to show a button to toggle the password visibility (default: False) :param on_change: callback to execute when the value changes :param autocomplete: optional list of strings for autocompletion :param validation: dictionary of validation rules, e.g. `'Too short!': lambda value: len(value) < 3`",
+    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  The on_change event is called on every keystroke and the value updates accordingly. If you want to wait until the user confirms the input, you can register a custom event callback, e.g. ui.input(...).on('keydown.enter', ...) or ui.input(...).on('blur', ...).  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed label for the text input :param placeholder: text to show if no value is entered :param value: the current value of the text input :param password: whether to hide the input (default: False) :param password_toggle_button: whether to show a button to toggle the password visibility (default: False) :param on_change: callback to execute when the value changes :param autocomplete: optional list of strings for autocompletion :param validation: dictionary of validation rules, e.g. `'Too long!': lambda value: len(value) < 3` set_autocomplete Set the autocomplete list.",
     "url": "/documentation/input"
   },
   {
@@ -531,12 +536,12 @@
   },
   {
     "title": "Chart",
-    "content": "An element to create a chart using Highcharts <https://www.highcharts.com/>_. Updates can be pushed to the chart by changing the options property. After data has changed, call the update method to refresh the chart.  By default, a Highcharts.chart is created. To use, e.g., Highcharts.stockChart instead, set the type property to \"stockChart\".  :param options: dictionary of Highcharts options :param type: chart type (e.g. \"chart\", \"stockChart\", \"mapChart\", ...; default: \"chart\") :param extras: list of extra dependencies to include (e.g. \"annotations\", \"arc-diagram\", \"solid-gauge\", ...)",
+    "content": "An element to create a chart using Highcharts <https://www.highcharts.com/>_. Updates can be pushed to the chart by changing the options property. After data has changed, call the update method to refresh the chart.  By default, a Highcharts.chart is created. To use, e.g., Highcharts.stockChart instead, set the type property to \"stockChart\".  :param options: dictionary of Highcharts options :param type: chart type (e.g. \"chart\", \"stockChart\", \"mapChart\", ...; default: \"chart\") :param extras: list of extra dependencies to include (e.g. \"annotations\", \"arc-diagram\", \"solid-gauge\", ...) update",
     "url": "/documentation/chart"
   },
   {
     "title": "Menu",
-    "content": "Creates a menu. The menu should be placed inside the element where it should be shown.  :param value: whether the menu is already opened (default: False)",
+    "content": "Creates a menu. The menu should be placed inside the element where it should be shown.  :param value: whether the menu is already opened (default: False) open close",
     "url": "/documentation/menu"
   },
   {
@@ -556,12 +561,12 @@
   },
   {
     "title": "Keyboard",
-    "content": "Adds global keyboard event tracking.  :param on_key: callback to be executed when keyboard events occur. :param active: boolean flag indicating whether the callback should be executed or not (default: True) :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: True) :param ignore: ignore keys when one of these element types is focussed (default: ['input', 'select', 'button', 'textarea'])",
+    "content": "Adds global keyboard event tracking.  :param on_key: callback to be executed when keyboard events occur. :param active: boolean flag indicating whether the callback should be executed or not (default: True) :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: True) :param ignore: ignore keys when one of these element types is focussed (default: ['input', 'select', 'button', 'textarea']) handle_key",
     "url": "/documentation/keyboard"
   },
   {
     "title": "Stepper",
-    "content": "This element represents Quasar's QStepper <https://quasar.dev/vue-components/stepper#qstepper-api>_ component. It contains individual steps.  :param value: ui.step or name of the step to be initially selected (default: None meaning the first step) :param on_value_change: callback to be executed when the selected step changes",
+    "content": "This element represents Quasar's QStepper <https://quasar.dev/vue-components/stepper#qstepper-api>_ component. It contains individual steps.  :param value: ui.step or name of the step to be initially selected (default: None meaning the first step) :param on_value_change: callback to be executed when the selected step changes on_value_change next previous",
     "url": "/documentation/stepper"
   },
   {
@@ -571,7 +576,7 @@
   },
   {
     "title": "Mermaid Diagrams",
-    "content": "Renders diagrams and charts written in the Markdown-inspired Mermaid <https://mermaid.js.org/>_ language. The mermaid syntax can also be used inside Markdown elements by providing the extension string 'mermaid' to the `ui.markdown` element.  :param content: the Mermaid content to be displayed",
+    "content": "Renders diagrams and charts written in the Markdown-inspired Mermaid <https://mermaid.js.org/>_ language. The mermaid syntax can also be used inside Markdown elements by providing the extension string 'mermaid' to the `ui.markdown` element.  :param content: the Mermaid content to be displayed on_content_change",
     "url": "/documentation/mermaid"
   },
   {
@@ -591,7 +596,7 @@
   },
   {
     "title": "Expansion Element",
-    "content": "Provides an expandable container.  :param text: title text :param icon: optional icon (default: None) :param value: whether the expansion should be opened on creation (default: False)",
+    "content": "Provides an expandable container.  :param text: title text :param icon: optional icon (default: None) :param value: whether the expansion should be opened on creation (default: False) open close",
     "url": "/documentation/expansion"
   },
   {
@@ -601,7 +606,7 @@
   },
   {
     "title": "Dialog",
-    "content": "Creates a dialog. By default it is dismissible by clicking or pressing ESC. To make it persistent, set .props('persistent') on the dialog element.  :param value: whether the dialog should be opened on creation (default: False)",
+    "content": "Creates a dialog. By default it is dismissible by clicking or pressing ESC. To make it persistent, set .props('persistent') on the dialog element.  :param value: whether the dialog should be opened on creation (default: False) open close submit on_value_change",
     "url": "/documentation/dialog"
   },
   {
@@ -631,7 +636,7 @@
   },
   {
     "title": "Table",
-    "content": "A table based on Quasar's QTable <https://quasar.dev/vue-components/table>_ component.  :param columns: list of column objects :param rows: list of row objects :param row_key: name of the column containing unique data identifying the row (default: \"id\") :param title: title of the table :param selection: selection type (\"single\" or \"multiple\"; default: None) :param pagination: number of rows per page (None hides the pagination, 0 means \"infinite\"; default: None) :param on_select: callback which is invoked when the selection changes  If selection is 'single' or 'multiple', then a selected property is accessible containing the selected rows.",
+    "content": "A table based on Quasar's QTable <https://quasar.dev/vue-components/table>_ component.  :param columns: list of column objects :param rows: list of row objects :param row_key: name of the column containing unique data identifying the row (default: \"id\") :param title: title of the table :param selection: selection type (\"single\" or \"multiple\"; default: None) :param pagination: number of rows per page (None hides the pagination, 0 means \"infinite\"; default: None) :param on_select: callback which is invoked when the selection changes  If selection is 'single' or 'multiple', then a selected property is accessible containing the selected rows. add_rows Add rows to the table.remove_rows Remove rows from the table.",
     "url": "/documentation/table"
   },
   {
@@ -658,6 +663,11 @@
     "title": "Table: Adding rows",
     "content": "It's simple to add new rows with the add_rows(dict) method.",
     "url": "/documentation/table#adding_rows"
+  },
+  {
+    "title": "Table: Custom sorting and formatting",
+    "content": "You can define dynamic column attributes using a : prefix. This way you can define custom sorting and formatting functions.  The following example allows sorting the name column by length. The age column is formatted to show the age in years.",
+    "url": "/documentation/table#custom_sorting_and_formatting"
   },
   {
     "title": "Notification",
@@ -691,7 +701,7 @@
   },
   {
     "title": "Refreshable UI functions",
-    "content": "The @ui.refreshable decorator allows you to create functions that have a refresh method. This method will automatically delete all elements created by the function and recreate them.",
+    "content": "The @ui.refreshable decorator allows you to create functions that have a refresh method. This method will automatically delete all elements created by the function and recreate them. refresh prune",
     "url": "/documentation/refreshable"
   },
   {
@@ -701,12 +711,12 @@
   },
   {
     "title": "Color Input",
-    "content": ":param label: displayed label for the color input :param placeholder: text to show if no color is selected :param value: the current color value :param on_change: callback to execute when the value changes",
+    "content": ":param label: displayed label for the color input :param placeholder: text to show if no color is selected :param value: the current color value :param on_change: callback to execute when the value changes open_picker Open the color picker",
     "url": "/documentation/color_input"
   },
   {
     "title": "Textarea",
-    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component. The `type is set to textarea to create a multi-line text input.  :param label: displayed name for the textarea :param placeholder: text to show if no value is entered :param value: the initial value of the field :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. 'Too short!': lambda value: len(value) < 3`",
+    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component. The `type is set to textarea to create a multi-line text input.  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed name for the textarea :param placeholder: text to show if no value is entered :param value: the initial value of the field :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. 'Too long!': lambda value: len(value) < 3`",
     "url": "/documentation/textarea"
   },
   {
@@ -716,7 +726,7 @@
   },
   {
     "title": "Video",
-    "content": ":param src: URL or local file path of the video source :param controls: whether to show the video controls, like play, pause, and volume (default: True) :param autoplay: whether to start playing the video automatically (default: False) :param muted: whether the video should be initially muted (default: False) :param loop: whether the video should loop (default: False)  See here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events>_ for a list of events you can subscribe to using the generic event subscription on().",
+    "content": ":param src: URL or local file path of the video source :param controls: whether to show the video controls, like play, pause, and volume (default: True) :param autoplay: whether to start playing the video automatically (default: False) :param muted: whether the video should be initially muted (default: False) :param loop: whether the video should loop (default: False)  See here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events>_ for a list of events you can subscribe to using the generic event subscription on(). seek Seek to a specific position in the video.  :param seconds: the position in seconds",
     "url": "/documentation/video"
   },
   {
@@ -741,7 +751,7 @@
   },
   {
     "title": "Card",
-    "content": "This element is based on Quasar's QCard <https://quasar.dev/vue-components/card>_ component. It provides a container with a dropped shadow.  Note: There are subtle differences between the Quasar component and this element. In contrast to this element, the original QCard has no padding by default and hides outer borders of nested elements. If you want the original behavior, use the tight method. If you want the padding and borders for nested children, move the children into another container.",
+    "content": "This element is based on Quasar's QCard <https://quasar.dev/vue-components/card>_ component. It provides a container with a dropped shadow.  Note: There are subtle differences between the Quasar component and this element. In contrast to this element, the original QCard has no padding by default and hides outer borders of nested elements. If you want the original behavior, use the tight method. If you want the padding and borders for nested children, move the children into another container. tight Removes padding and gaps between nested elements.",
     "url": "/documentation/card"
   },
   {
@@ -751,12 +761,12 @@
   },
   {
     "title": "Dark mode",
-    "content": "You can use this element to enable, disable or toggle dark mode on the page. The value None represents auto mode, which uses the client's system preference.  Note that this element overrides the dark parameter of the ui.run function and page decorators.  :param value: Whether dark mode is enabled. If None, dark mode is set to auto.",
+    "content": "You can use this element to enable, disable or toggle dark mode on the page. The value None represents auto mode, which uses the client's system preference.  Note that this element overrides the dark parameter of the ui.run function and page decorators.  :param value: Whether dark mode is enabled. If None, dark mode is set to auto. enable Enable dark mode.disable Disable dark mode.toggle Toggle dark mode.  This method will raise a ValueError if dark mode is set to auto. auto Set dark mode to auto.  This will use the client's system preference.",
     "url": "/documentation/dark_mode"
   },
   {
     "title": "Generic Element",
-    "content": "This class is the base class for all other UI elements. But you can use it to create elements with arbitrary HTML tags.  :param tag: HTML tag of the element :param _client: client for this element (for internal use only)",
+    "content": "This class is the base class for all other UI elements. But you can use it to create elements with arbitrary HTML tags.  :param tag: HTML tag of the element :param _client: client for this element (for internal use only) add_slot Add a slot to the element.  :param name: name of the slot :param template: Vue template of the slot :return: the slot classes Apply, remove, or replace HTML classes.  This allows modifying the look of the element or its layout using Tailwind <https://tailwindcss.com/>_ or Quasar <https://quasar.dev/>_ classes.  Removing or replacing classes can be helpful if predefined classes are not desired.  :param add: whitespace-delimited string of classes :param remove: whitespace-delimited string of classes to remove from the element :param replace: whitespace-delimited string of classes to use instead of existing ones style Apply, remove, or replace CSS definitions.  Removing or replacing styles can be helpful if the predefined style is not desired.  :param add: semicolon-separated list of styles to add to the element :param remove: semicolon-separated list of styles to remove from the element :param replace: semicolon-separated list of styles to use instead of existing ones props Add or remove props.  This allows modifying the look of the element or its layout using Quasar <https://quasar.dev/>_ props. Since props are simply applied as HTML attributes, they can be used with any HTML element.  Boolean properties are assumed `True if no value is specified.  :param add: whitespace-delimited list of either boolean values or key=value pair to add :param remove: whitespace-delimited list of property keys to remove tooltip Add a tooltip to the element.  :param text: text of the tooltip on Subscribe to an event.  :param type: name of the event (e.g. \"click\", \"mousedown\", or \"update:model-value\") :param handler: callback that is called upon occurrence of the event :param args: arguments included in the event message sent to the event handler (default: None meaning all) :param throttle: minimum time (in seconds) between event occurrences (default: 0.0) :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: True) :param trailing_events: whether to trigger the event handler after the last event occurrence (default: True`) update Update the element on the client side.run_method Run a method on the client side.  :param name: name of the method :param args: arguments to pass to the method clear Remove all child elements.move Move the element to another container.  :param target_container: container to move the element to (default: the parent container) :param target_index: index within the target slot (default: append to the end) remove Remove a child element.  :param element: either the element instance or its ID delete Called when the corresponding client is deleted.  Can be overridden to perform cleanup.",
     "url": "/documentation/element"
   },
   {
@@ -811,7 +821,7 @@
   },
   {
     "title": "Number Input",
-    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed name for the number input :param placeholder: text to show if no value is entered :param value: the initial value of the field :param min: the minimum value allowed :param max: the maximum value allowed :param step: the step size for the stepper buttons :param prefix: a prefix to prepend to the displayed value :param suffix: a suffix to append to the displayed value :param format: a string like \"%.2f\" to format the displayed value :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. `'Too small!': lambda value: value < 3`",
+    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed name for the number input :param placeholder: text to show if no value is entered :param value: the initial value of the field :param min: the minimum value allowed :param max: the maximum value allowed :param step: the step size for the stepper buttons :param prefix: a prefix to prepend to the displayed value :param suffix: a suffix to append to the displayed value :param format: a string like \"%.2f\" to format the displayed value :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. `'Too large!': lambda value: value < 3` sanitize",
     "url": "/documentation/number"
   },
   {
@@ -821,7 +831,7 @@
   },
   {
     "title": "Dropdown Selection",
-    "content": "The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call update() to update the options in the UI.  :param options: a list ['value1', ...] or dictionary 'value1':'label1', ... specifying the options :param value: the initial value :param on_change: callback to execute when selection changes :param with_input: whether to show an input field to filter the options :param multiple: whether to allow multiple selections",
+    "content": "The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call update() to update the options in the UI.  :param options: a list ['value1', ...] or dictionary 'value1':'label1', ... specifying the options :param value: the initial value :param on_change: callback to execute when selection changes :param with_input: whether to show an input field to filter the options :param multiple: whether to allow multiple selections on_filter",
     "url": "/documentation/select"
   },
   {
@@ -841,7 +851,7 @@
   },
   {
     "title": "Plotly Element",
-    "content": "Renders a Plotly chart. There are two ways to pass a Plotly figure for rendering, see parameter figure:  * Pass a go.Figure object, see https://plotly.com/python/  * Pass a Python dict object with keys data, layout, config (optional), see https://plotly.com/javascript/  For best performance, use the declarative dict approach for creating a Plotly chart.  :param figure: Plotly figure to be rendered. Can be either a go.Figure instance, or a dict object with keys data, layout, config (optional).",
+    "content": "Renders a Plotly chart. There are two ways to pass a Plotly figure for rendering, see parameter figure:  * Pass a go.Figure object, see https://plotly.com/python/  * Pass a Python dict object with keys data, layout, config (optional), see https://plotly.com/javascript/  For best performance, use the declarative dict approach for creating a Plotly chart.  :param figure: Plotly figure to be rendered. Can be either a go.Figure instance, or a dict object with keys data, layout, config (optional). update_figure Overrides figure instance of this Plotly chart and updates chart on client side.update",
     "url": "/documentation/plotly"
   },
   {
@@ -861,12 +871,12 @@
   },
   {
     "title": "Color Picker",
-    "content": ":param on_pick: callback to execute when a color is picked :param value: whether the menu is already opened (default: False)",
+    "content": ":param on_pick: callback to execute when a color is picked :param value: whether the menu is already opened (default: False) set_color Set the color of the picker  :param color: the color to set",
     "url": "/documentation/color_picker"
   },
   {
     "title": "Markdown Element",
-    "content": "Renders Markdown onto the page.  :param content: the Markdown content to be displayed :param extras: list of markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>_ (default: ['fenced-code-blocks', 'tables'])",
+    "content": "Renders Markdown onto the page.  :param content: the Markdown content to be displayed :param extras: list of markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>_ (default: ['fenced-code-blocks', 'tables']) on_content_change",
     "url": "/documentation/markdown"
   },
   {
@@ -941,7 +951,7 @@
   },
   {
     "title": "3D Scene",
-    "content": "Display a 3d scene using three.js <https://threejs.org/>_. Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes. Objects can be translated, rotated and displayed with different color, opacity or as wireframes. They can also be grouped to apply joint movements.  :param width: width of the canvas :param height: height of the canvas :param grid: whether to display a grid :param on_click: callback to execute when a 3d object is clicked",
+    "content": "Display a 3d scene using three.js <https://threejs.org/>_. Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes. Objects can be translated, rotated and displayed with different color, opacity or as wireframes. They can also be grouped to apply joint movements.  :param width: width of the canvas :param height: height of the canvas :param grid: whether to display a grid :param on_click: callback to execute when a 3d object is clicked handle_init run_method handle_click move_camera delete",
     "url": "/documentation/scene"
   },
   {
@@ -1016,12 +1026,12 @@
   },
   {
     "title": "Log view",
-    "content": "Create a log view that allows to add new lines without re-transmitting the whole history to the client.  :param max_lines: maximum number of lines before dropping oldest ones (default: None)",
+    "content": "Create a log view that allows to add new lines without re-transmitting the whole history to the client.  :param max_lines: maximum number of lines before dropping oldest ones (default: None) push clear Clear the log",
     "url": "/documentation/log"
   },
   {
     "title": "Line Plot",
-    "content": "Create a line plot using pyplot. The push method provides live updating when utilized in combination with ui.timer.  :param n: number of lines :param limit: maximum number of datapoints per line (new points will displace the oldest) :param update_every: update plot only after pushing new data multiple times to save CPU and bandwidth :param close: whether the figure should be closed after exiting the context; set to False if you want to update it later (default: True) :param kwargs: arguments like figsize which should be passed to pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>_",
+    "content": "Create a line plot using pyplot. The push method provides live updating when utilized in combination with ui.timer.  :param n: number of lines :param limit: maximum number of datapoints per line (new points will displace the oldest) :param update_every: update plot only after pushing new data multiple times to save CPU and bandwidth :param close: whether the figure should be closed after exiting the context; set to False if you want to update it later (default: True) :param kwargs: arguments like figsize which should be passed to pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>_ with_legend push",
     "url": "/documentation/line_plot"
   },
   {

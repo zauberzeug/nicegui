@@ -39,6 +39,7 @@ class Plotly(Element):
         self.update()
 
     def update(self) -> None:
+        super().update()
         options = self._get_figure_json()
         options['config'] = \
             {**options['config'], **{'responsive': True}} if 'config' in options else {'responsive': True}
