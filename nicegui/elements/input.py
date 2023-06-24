@@ -62,3 +62,8 @@ class Input(ValidationElement, DisableableElement):
         """Set the autocomplete list."""
         self._props['autocomplete'] = autocomplete
         self.update()
+
+    def on_value_change(self, value: Any) -> None:
+        super().on_value_change(value)
+        if self._send_update_on_value_change:
+            self.run_method('updateValue')
