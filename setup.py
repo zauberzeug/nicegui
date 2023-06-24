@@ -7,5 +7,5 @@ setup(
     author='Zauberzeug',
     author_email='info@zauberzeug.com',
     url='https://github.com/zauberzeug/nicegui/',
-    packages=['nicegui'],
+    packages=['gui'],
 )

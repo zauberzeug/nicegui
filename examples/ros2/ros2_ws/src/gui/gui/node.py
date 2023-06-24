@@ -1,10 +1,13 @@
+import threading
+from pathlib import Path
+
 import rclpy
+from geometry_msgs.msg import Twist
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
-import threading
-from nicegui import ui, app, run
-from pathlib import Path
+
+from nicegui import app, run, ui
+
 
 class TurtleTwistNode(Node):
     def __init__(self) -> None:
@@ -12,7 +15,7 @@ class TurtleTwistNode(Node):
         self.linear = 0.0
         self.angular = 0.0
         self.publisher_ = self.create_publisher(Twist, 'turtle1/cmd_vel', 1)
-        timer_period = 0.15 # seconds
+        timer_period = 0.15  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
     def timer_callback(self) -> None:
@@ -26,17 +29,20 @@ class TurtleTwistNode(Node):
         self.linear = x
         self.angular = y
 
+
 def node_spin(node: Node) -> None:
     try:
         rclpy.spin(node)
     except ExternalShutdownException:
         print('ROS2 was shutdown by NiceGUI.')
 
+
 def ros_main() -> TurtleTwistNode:
     rclpy.init()
     turtle_twist_node = TurtleTwistNode()
     threading.Thread(target=node_spin, args=(turtle_twist_node,), daemon=True).start()
     return turtle_twist_node
+
 
 @ui.page('/')
 def page() -> None:
@@ -73,8 +79,10 @@ def page() -> None:
             ui.label('angular speed')
             ui.label().bind_text_from(active_node, 'angular', backward=lambda value: f'{value:.3f}')
 
+
 def main() -> None:
     pass  # NOTE: This is originally used as the ROS entry point, but we give the control of the node to NiceGUI.
+
 
 run.APP_IMPORT_STRING = f'{__name__}:app'
 ui.run(port=8000, uvicorn_reload_dirs=str(Path(__file__).parent.resolve()))

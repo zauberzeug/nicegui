@@ -40,5 +40,5 @@ If you want to run the Nodes locally in your ROS2 environment, you can copy the 
 To run it, just use the normal ros2 run:
 
 ```bash
-ros2 run nicegui_ros2 joystick_nicegui
+ros2 run nicegui joystick_nicegui
 ```

@@ -9,9 +9,7 @@ SHELL ["/bin/bash", "-c"]
 
 RUN pip3 install nicegui
 
-EXPOSE 8000
-
-COPY ros2_ws ros2_ws/
+ADD ros2_ws ros2_ws/
 
 RUN cd ros2_ws && \
     source /opt/ros/humble/setup.bash && \
@@ -19,7 +17,7 @@ RUN cd ros2_ws && \
 
 COPY ros_entrypoint.sh /
 
+EXPOSE 8080
 ENTRYPOINT ["/ros_entrypoint.sh"]
-
 CMD ["bash"]
 
