@@ -455,6 +455,11 @@
     "url": "/documentation/aggrid#create_grid_from_pandas_dataframe"
   },
   {
+    "title": "Aggrid: Render columns as HTML",
+    "content": "You can render columns as HTML by passing a list of column indices to the html_columns argument.",
+    "url": "/documentation/aggrid#render_columns_as_html"
+  },
+  {
     "title": "Slider",
     "content": ":param min: lower bound of the slider :param max: upper bound of the slider :param step: step size :param value: initial value to set position of the slider :param on_change: callback which is invoked when the user releases the slider",
     "url": "/documentation/slider"
@@ -511,7 +516,7 @@
   },
   {
     "title": "Text Input",
-    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  The on_change event is called on every keystroke and the value updates accordingly. If you want to wait until the user confirms the input, you can register a custom event callback, e.g. ui.input(...).on('keydown.enter', ...) or ui.input(...).on('blur', ...).  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed label for the text input :param placeholder: text to show if no value is entered :param value: the current value of the text input :param password: whether to hide the input (default: False) :param password_toggle_button: whether to show a button to toggle the password visibility (default: False) :param on_change: callback to execute when the value changes :param autocomplete: optional list of strings for autocompletion :param validation: dictionary of validation rules, e.g. `'Too short!': lambda value: len(value) < 3`",
+    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  The on_change event is called on every keystroke and the value updates accordingly. If you want to wait until the user confirms the input, you can register a custom event callback, e.g. ui.input(...).on('keydown.enter', ...) or ui.input(...).on('blur', ...).  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed label for the text input :param placeholder: text to show if no value is entered :param value: the current value of the text input :param password: whether to hide the input (default: False) :param password_toggle_button: whether to show a button to toggle the password visibility (default: False) :param on_change: callback to execute when the value changes :param autocomplete: optional list of strings for autocompletion :param validation: dictionary of validation rules, e.g. `'Too long!': lambda value: len(value) < 3`",
     "url": "/documentation/input"
   },
   {
@@ -706,7 +711,7 @@
   },
   {
     "title": "Textarea",
-    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component. The `type is set to textarea to create a multi-line text input.  :param label: displayed name for the textarea :param placeholder: text to show if no value is entered :param value: the initial value of the field :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. 'Too short!': lambda value: len(value) < 3`",
+    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component. The `type is set to textarea to create a multi-line text input.  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed name for the textarea :param placeholder: text to show if no value is entered :param value: the initial value of the field :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. 'Too long!': lambda value: len(value) < 3`",
     "url": "/documentation/textarea"
   },
   {
@@ -811,7 +816,7 @@
   },
   {
     "title": "Number Input",
-    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed name for the number input :param placeholder: text to show if no value is entered :param value: the initial value of the field :param min: the minimum value allowed :param max: the maximum value allowed :param step: the step size for the stepper buttons :param prefix: a prefix to prepend to the displayed value :param suffix: a suffix to append to the displayed value :param format: a string like \"%.2f\" to format the displayed value :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. `'Too small!': lambda value: value < 3`",
+    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed name for the number input :param placeholder: text to show if no value is entered :param value: the initial value of the field :param min: the minimum value allowed :param max: the maximum value allowed :param step: the step size for the stepper buttons :param prefix: a prefix to prepend to the displayed value :param suffix: a suffix to append to the displayed value :param format: a string like \"%.2f\" to format the displayed value :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. `'Too large!': lambda value: value < 3`",
     "url": "/documentation/number"
   },
   {
