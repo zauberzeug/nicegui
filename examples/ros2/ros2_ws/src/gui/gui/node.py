@@ -30,6 +30,9 @@ class TurtleTwistNode(Node):
         self.angular = y
 
 
+active_node: TurtleTwistNode = None
+
+
 def node_spin(node: Node) -> None:
     try:
         rclpy.spin(node)
@@ -37,17 +40,8 @@ def node_spin(node: Node) -> None:
         print('ROS2 was shutdown by NiceGUI.')
 
 
-def ros_main() -> TurtleTwistNode:
-    rclpy.init()
-    turtle_twist_node = TurtleTwistNode()
-    threading.Thread(target=node_spin, args=(turtle_twist_node,), daemon=True).start()
-    return turtle_twist_node
-
-
 @ui.page('/')
 def page() -> None:
-
-    active_node = ros_main()
 
     with ui.row().classes('items-stretch'):
         with ui.card():
@@ -84,5 +78,13 @@ def main() -> None:
     pass  # NOTE: This is originally used as the ROS entry point, but we give the control of the node to NiceGUI.
 
 
+def ros_main() -> None:
+    global active_node
+    rclpy.init()
+    active_node = TurtleTwistNode()
+    threading.Thread(target=node_spin, args=(active_node,), daemon=True).start()
+
+
+app.on_startup(lambda: threading.Thread(target=ros_main).start())
 run.APP_IMPORT_STRING = f'{__name__}:app'
 ui.run(uvicorn_reload_dirs=str(Path(__file__).parent.resolve()))
