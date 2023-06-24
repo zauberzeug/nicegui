@@ -85,4 +85,4 @@ def main() -> None:
 
 
 run.APP_IMPORT_STRING = f'{__name__}:app'
-ui.run(port=8000, uvicorn_reload_dirs=str(Path(__file__).parent.resolve()))
+ui.run(uvicorn_reload_dirs=str(Path(__file__).parent.resolve()))

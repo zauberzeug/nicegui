@@ -4,7 +4,7 @@ services:
     build:
       context: .
     ports:
-      - 8000:8000
+      - 8080:8080
     volumes:
       - ./ros2_ws/src:/ros2_ws/src
     command: ros2 run gui nicegui_node
