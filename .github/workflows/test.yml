@@ -29,6 +29,7 @@ jobs:
           pip install -r tests/requirements.txt
           # try fix issue with importlib_resources
           pip install importlib-resources
+          pip install -r examples/carousel/requirements.txt
       - name: test startup
         run: ./test_startup.sh
       - name: setup chromedriver
