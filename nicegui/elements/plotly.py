@@ -37,6 +37,7 @@ class Plotly(Element):
         self.update()
 
     def update(self) -> None:
+        super().update()
         self._props['options'] = self._get_figure_json()
         self.run_method('update', self._props['options'])
 

@@ -63,7 +63,7 @@ def more() -> None:
 
         # @ui.page('/')
         # def index():
-        #     ui.textarea('This note is kept between visits') \
+        #     ui.textarea('This note is kept between visits') 
         #         .classes('w-full').bind_value(app.storage.user, 'note')
         # END OF DEMO
         ui.textarea('This note is kept between visits').classes('w-full').bind_value(app.storage.user, 'note')
