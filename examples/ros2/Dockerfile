@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
 
 SHELL ["/bin/bash", "-c"]
 
-RUN pip3 install nicegui
+RUN pip3 install nicegui pyquaternion
 
 ADD ros2_ws ros2_ws/
 
