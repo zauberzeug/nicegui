@@ -7,4 +7,4 @@ services:
       - 8080:8080
     volumes:
       - ./ros2_ws/src:/ros2_ws/src
-    command: ros2 run gui nicegui_node
+    command: ros2 launch gui main_launch.py
