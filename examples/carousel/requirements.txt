@@ -1,0 +1,2 @@
+sklearn~=0.0.post5
+scikit-learn~=1.2.2
