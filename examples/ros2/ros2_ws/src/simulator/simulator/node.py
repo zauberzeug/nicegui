@@ -6,20 +6,19 @@ from rclpy.node import Node
 class Simulator(Node):
 
     def __init__(self):
-        super().__init__('simple_simulator')
-        self.pose_publisher_ = self.create_publisher(Pose, 'pose', 10)
+        super().__init__('simulator')
+        self.pose_publisher_ = self.create_publisher(Pose, 'pose', 1)
         self.subscription = self.create_subscription(
             Twist,
             'cmd_vel',
             self.listener_callback,
             10)
+        self.pose = Pose()
 
     def listener_callback(self, msg):
-        pose = Pose()
-        pose.position.x += msg.linear.x
-        pose.position.y += 0
-        pose.orientation.z += msg.angular.z
-        self.pose_publisher_.publish(pose)
+        self.pose.position.x += msg.linear.x
+        self.pose.orientation.z += msg.angular.z
+        self.pose_publisher_.publish(self.pose)
 
 
 def main(args=None):

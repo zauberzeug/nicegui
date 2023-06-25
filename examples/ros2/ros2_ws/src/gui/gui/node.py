@@ -2,21 +2,22 @@ import threading
 from pathlib import Path
 
 import rclpy
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Pose, Twist
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 
 from nicegui import app, run, ui
 
 
-class TurtleTwistNode(Node):
+class NiceGuiNode(Node):
     def __init__(self) -> None:
         super().__init__('nicegui')
         self.linear = 0.0
         self.angular = 0.0
-        self.publisher_ = self.create_publisher(Twist, 'turtle1/cmd_vel', 1)
+        self.publisher_ = self.create_publisher(Twist, 'cmd_vel', 1)
         timer_period = 0.15  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
+        self.subscription = self.create_subscription(Pose, 'pose', self.on_pose, 1)
 
     def timer_callback(self) -> None:
         msg = Twist()
@@ -28,49 +29,44 @@ class TurtleTwistNode(Node):
         self.linear = x
         self.angular = y
 
+    def on_pose(self, msg: Pose) -> None:
+        print(f'pose: {msg}')
 
-active_node: TurtleTwistNode = None
+
+active_node: NiceGuiNode = None
 
 
 def node_spin(node: Node) -> None:
     try:
+        print('starting node')
         rclpy.spin(node)
     except ExternalShutdownException:
-        print('ROS2 was shutdown by NiceGUI.')
+        print('stopped node')
 
 
 @ui.page('/')
-def page() -> None:
-
+def index() -> None:
     with ui.row().classes('items-stretch'):
-        with ui.card():
+        with ui.card().classes('w-44'):
             ui.markdown('''
-                ## Guide
+                ## Control
 
-                This is a simple virtual joystick <br>
-                that sends twist commands to turtlesim.<br><br>
-                To control the turtle, just klick inside the blue <br>
-                field and drag your mouse around.
+                Publish steering commands by dragging your mouse around in the blue field
             ''')
-
-        with ui.card():
-            ui.markdown('### Turtlesim Joystick')
-
-            # NOTE: Joystick will be reworked in the future, so this is a temporary workaround for the size.
-            ui.add_head_html('<style>.my-joystick > div { width: 20em !important; height: 20em !important; }</style>')
             ui.joystick(
                 color='blue',
                 size=50,
                 on_move=lambda e: active_node.update_speeds(e.y, e.x),
                 on_end=lambda _: active_node.update_speeds(0.0, 0.0),
             ).classes('my-joystick')
-
         with ui.card():
             ui.markdown('### Status')
             ui.label('linear speed')
             ui.label().bind_text_from(active_node, 'linear', backward=lambda value: f'{value:.3f}')
             ui.label('angular speed')
             ui.label().bind_text_from(active_node, 'angular', backward=lambda value: f'{value:.3f}')
+        with ui.card().classes('w-96'):
+            map = ui.html()
 
 
 def main() -> None:
@@ -80,7 +76,7 @@ def main() -> None:
 def ros_main() -> None:
     global active_node
     rclpy.init()
-    active_node = TurtleTwistNode()
+    active_node = NiceGuiNode()
     threading.Thread(target=node_spin, args=(active_node,), daemon=True).start()
 
 
