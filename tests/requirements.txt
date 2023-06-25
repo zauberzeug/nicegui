@@ -5,4 +5,4 @@ selenium
 autopep8
 icecream
 beautifulsoup4
-sklearn
+scikit-learn
