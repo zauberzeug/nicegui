@@ -8,14 +8,10 @@ class Simulator(Node):
     def __init__(self):
         super().__init__('simulator')
         self.pose_publisher_ = self.create_publisher(Pose, 'pose', 1)
-        self.subscription = self.create_subscription(
-            Twist,
-            'cmd_vel',
-            self.listener_callback,
-            10)
+        self.subscription = self.create_subscription(Twist, 'cmd_vel', self.on_steering, 1)
         self.pose = Pose()
 
-    def listener_callback(self, msg):
+    def on_steering(self, msg):
         self.pose.position.x += msg.linear.x
         self.pose.orientation.z += msg.angular.z
         self.pose_publisher_.publish(self.pose)
