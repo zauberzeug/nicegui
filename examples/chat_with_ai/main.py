@@ -6,7 +6,7 @@ from langchain.chat_models import ChatOpenAI
 
 from nicegui import Client, ui
 
-OPENAI_API_KEY = 'not-set'  # TODO: set your OpenAI API key here
+OPENAI_API_KEY = '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'  # TODO: set your OpenAI API key here
 
 llm = ConversationChain(llm=ChatOpenAI(model_name='gpt-3.5-turbo', openai_api_key=OPENAI_API_KEY))
 
