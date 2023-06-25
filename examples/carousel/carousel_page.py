@@ -6,13 +6,13 @@ from nicegui import ui
 import sqlite3
 import recommend as r
 
+
 def get_cocktails(cocktail_ids):
     # Create a connection to your database.
     conn = sqlite3.connect('db.sqlite3')
     cursor = conn.cursor()
 
     id_list = ','.join(map(str, cocktail_ids))
-
 
     # Execute the query.
     cursor.execute(f'SELECT * FROM cocktail WHERE id IN ({id_list})')
@@ -26,14 +26,12 @@ def get_cocktails(cocktail_ids):
     return data
 
 
-
 def get_carousel_img(cocktail_ids):
     # Create a connection to your database.
     conn = sqlite3.connect('db.sqlite3')
     cursor = conn.cursor()
 
     id_list = ','.join(map(str, cocktail_ids))
-
 
     # Execute the query.
     cursor.execute(
@@ -47,11 +45,11 @@ def get_carousel_img(cocktail_ids):
     # Return the fetched data.
     return data
 
+
 def get_all_cocktails():
     # Create a connection to your database.
     conn = sqlite3.connect('db.sqlite3')
     cursor = conn.cursor()
-
 
     # Execute the query.
     cursor.execute('SELECT * FROM cocktail')
@@ -97,7 +95,6 @@ def action(cocktail_id, rating):
         print(f"Cocktail {cocktail_id} liked")
 
 
-
 messages: List[Tuple[str, str, str, str]] = []
 
 user_id = 1
@@ -109,8 +106,10 @@ all_cocktails = get_all_cocktails()
 
 tabs = {}
 
+
 def switch_tab(value):
     tabs['panels'].value = value
+
 
 tab_bar = ui.tabs()
 
@@ -118,7 +117,7 @@ with ui.tab_panels(tab_bar, value=1).classes('w-full') as panels:
     tabs['panels'] = panels
 
     for i, img in enumerate(liquor_img):
-        with ui.tab_panel(i) :
+        with ui.tab_panel(i):
             with ui.card().classes('m-4 p-4 shadow-lg w-128 h-64 relative'):
                 with ui.card().classes('w-full h-full absolute'):
                     ui.image(img[0]).classes('w-full h-full')
@@ -149,7 +148,6 @@ with ui.row():
             with ui.row().classes('justify-between mt-2'):
                 ui.button(on_click=lambda i=i: action(cocktail_id, 5), icon='thumb_up').classes('fab')
                 ui.button(on_click=lambda i=i: action(cocktail_id, 1), icon='thumb_down').classes('fab')
-
 
 
 with ui.footer(value=False) as footer:

@@ -61,4 +61,3 @@ def test_fetch_cocktail_data_from_database():
     )
     cursor.close()
     conn.close()
-

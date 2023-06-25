@@ -4,7 +4,6 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
-import scipy.sparse as sp
 
 
 # Function to connect to the SQLite database
@@ -144,7 +143,7 @@ def generate_recommendations(user_id, cursor, N):
     # Compute the cosine similarity between the user's preferences and cocktail descriptions
     cocktail_user_similarity_pref = cosine_similarity(user_description_matrix, cocktail_description_matrix) * 0.5
     cocktail_user_ratings = ratings_scaler.fit_transform(cocktail_user_ratings.reshape(-1, 1)).flatten() * 0.5
-    event_total_similarity = cocktail_user_similarity_pref.flatten() +  cocktail_user_ratings
+    event_total_similarity = cocktail_user_similarity_pref.flatten() + cocktail_user_ratings
 
     # Get the top N cocktail indices based on total similarity score
     top_n_cocktail_indices = np.argsort(event_total_similarity)[::-1][:N]
@@ -178,4 +177,3 @@ def m(user_id):
 if __name__ == '__main__':
     r = m(1)
     print(r)
-
