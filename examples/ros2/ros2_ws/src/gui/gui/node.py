@@ -11,7 +11,7 @@ from nicegui import app, run, ui
 
 class TurtleTwistNode(Node):
     def __init__(self) -> None:
-        super().__init__('turtlesim_joystick')
+        super().__init__('nicegui')
         self.linear = 0.0
         self.angular = 0.0
         self.publisher_ = self.create_publisher(Twist, 'turtle1/cmd_vel', 1)
@@ -20,7 +20,6 @@ class TurtleTwistNode(Node):
 
     def timer_callback(self) -> None:
         msg = Twist()
-        self.get_logger().info('Publishing-> linear: "%f", angular: "%f"' % (self.linear, self.angular))
         msg.linear.x = float(self.linear)
         msg.angular.z = float(-self.angular)
         self.publisher_.publish(msg)
