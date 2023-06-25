@@ -57,7 +57,7 @@ jobs:
           needs_context: ${{ toJson(needs) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Slack workflow notification
-        if: steps.should_notify.outputs.should_send_message == 'yes'
+        if: steps.should_notify.outputs.should_send_message == 'yes' && secrets.SLACK_ROBOTICS_CI_WEBHOOK != ''
         uses: Gamesight/slack-workflow-status@master
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
