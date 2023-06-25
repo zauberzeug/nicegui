@@ -1,8 +1,7 @@
 from unittest.mock import patch, MagicMock
 import sqlite3
 
-from examples.carousel.recommend import connect_to_database, fetch_user_preferences_from_database, \
-    fetch_user_ratings_from_database, fetch_cocktail_data_from_database, generate_recommendations
+from examples.carousel.recommend import connect_to_database, fetch_user_preferences_from_database, fetch_cocktail_data_from_database
 
 
 def setup_module():
