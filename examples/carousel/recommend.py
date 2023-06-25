@@ -1,4 +1,4 @@
-# Import the necessary libraries
+# Import necessary libraries
 import sqlite3
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -7,21 +7,24 @@ from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 import scipy.sparse as sp
 
 
-# Connect to the SQLite database
+# Function to connect to the SQLite database
 def connect_to_database():
     return sqlite3.connect('db.sqlite3')
 
 
-# Fetch user preferences from the database for the specified user
+# Function to fetch user liquor preferences from the database for a specified user
 def fetch_user_preferences_from_database(cursor, user_id):
+    # Execute SQL command to get the user's liquor preferences
     cursor.execute("""
         SELECT main.user_liquor.liquor_id
         FROM user_liquor
         WHERE main.user_liquor.user_id = ?
         """, (user_id,))
+    # Fetch the query results
     preferences_data = cursor.fetchall()
     user_preferences = []
 
+    # Loop over the results to fetch the corresponding liquor names
     for preference in preferences_data:
         cursor.execute("""
             SELECT main.liquor.name
@@ -35,18 +38,21 @@ def fetch_user_preferences_from_database(cursor, user_id):
     return user_preferences
 
 
-# Fetch event data from the database
+# Function to fetch cocktail data from the database
 def fetch_cocktail_data_from_database(cursor, ev_ids):
+    # Execute SQL command to get all cocktails and their descriptions
     cursor.execute("""
         SELECT main.cocktail.id, desc
         FROM cocktail
     """)
+    # Fetch the query results
     cocktail_data = cursor.fetchall()
 
     cocktail_ids = []
     cocktail_descriptions = []
     cocktail_categories = []
 
+    # Loop over the results to fetch the liquor types for each cocktail
     for cocktail in cocktail_data:
         if cocktail[0] not in ev_ids:
             cocktail_ids.append(cocktail[0])
@@ -73,43 +79,49 @@ def fetch_cocktail_data_from_database(cursor, ev_ids):
     return cocktail_ids, cocktail_descriptions, cocktail_categories
 
 
-
-# Fetch user ratings from the database for the specified user
+# Function to fetch user ratings from the database for the specified user
 def fetch_user_ratings_from_database(user_id):
+    # Connect to the database
     conn = connect_to_database()
     cursor = conn.cursor()
 
+    # Execute SQL command to get the user's cocktail ratings
     cursor.execute("""
         SELECT main.user_cocktail.cocktail_id, main.user_cocktail.rating 
         FROM user_cocktail 
         WHERE main.user_cocktail.user_id = ?
     """, (user_id,))
 
+    # Fetch the query results
     ratings_data = cursor.fetchall()
 
+    # Convert the results to a dictionary of {cocktail_id: rating}
     if ratings_data:
         user_ratings = {rating[0]: rating[1] for rating in ratings_data}
     else:
         user_ratings = {}
 
+    # Also collect all cocktail_ids that user has rated as 1
     cocktail_ids = []
     for i in range(len(ratings_data)):
         if ratings_data[i][1] == 1:
             cocktail_ids.append(ratings_data[i][0])
 
+    # Close database connection
     cursor.close()
     conn.close()
 
     return user_ratings, cocktail_ids
 
-# Generate recommendations for the specified user
-def generate_recommendations(user_id, cursor, N):
 
+# Function to generate recommendations for the specified user
+def generate_recommendations(user_id, cursor, N):
+    # Fetch the user's liquor preferences, ratings and all cocktail data from the database
     user_preferences = fetch_user_preferences_from_database(cursor, user_id)
     user_ratings, ev_ids = fetch_user_ratings_from_database(user_id)
     cocktail_ids, cocktail_descriptions, cocktail_categories = fetch_cocktail_data_from_database(cursor, ev_ids)
 
-    # TF-IDF vectorization of event descriptions and user preferences
+    # Vectorize the cocktail descriptions and user preferences using TF-IDF
     cocktail_descriptions = [desc + ' ' + cat for desc, cat in zip(cocktail_descriptions, cocktail_categories)]
     tfidf_vectorizer = TfidfVectorizer(ngram_range=(1, 2), min_df=2)
     cocktail_description_matrix = tfidf_vectorizer.fit_transform(cocktail_descriptions)
@@ -117,26 +129,27 @@ def generate_recommendations(user_id, cursor, N):
     user_descriptions = ' '.join(user_preferences)
     user_description_matrix = tfidf_vectorizer.transform([user_descriptions])
 
-    # Ratings
+    # Initialize a zero vector for cocktail ratings
     cocktail_user_ratings = np.zeros(len(cocktail_ids))
 
+    # Update the ratings vector with the user's ratings
     for cocktail_id in user_ratings.keys():
         if cocktail_id in cocktail_ids:
             cocktail_index = cocktail_ids.index(cocktail_id)
             cocktail_user_ratings[cocktail_index] = user_ratings[cocktail_id]
 
+    # Scale the ratings between 0 and 1
     ratings_scaler = MinMaxScaler()
 
-    # Calculate cosine similarity
+    # Compute the cosine similarity between the user's preferences and cocktail descriptions
     cocktail_user_similarity_pref = cosine_similarity(user_description_matrix, cocktail_description_matrix) * 0.5
     cocktail_user_ratings = ratings_scaler.fit_transform(cocktail_user_ratings.reshape(-1, 1)).flatten() * 0.5
     event_total_similarity = cocktail_user_similarity_pref.flatten() +  cocktail_user_ratings
 
-
-    # Get the top N event indices based on total similarity score
+    # Get the top N cocktail indices based on total similarity score
     top_n_cocktail_indices = np.argsort(event_total_similarity)[::-1][:N]
 
-    # Get the top N recommended event ids
+    # Get the top N recommended cocktail ids
     recommended_events = [cocktail_ids[i] for i in top_n_cocktail_indices]
 
     return recommended_events
@@ -144,7 +157,7 @@ def generate_recommendations(user_id, cursor, N):
 
 # Entry point of the script
 def m(user_id):
-
+    # Connect to the database
     conn = connect_to_database()
     cursor = conn.cursor()
 
@@ -161,6 +174,7 @@ def m(user_id):
     return recommended_cocktails
 
 
+# Call the main function if this script is being run as the main program
 if __name__ == '__main__':
     r = m(1)
     print(r)
