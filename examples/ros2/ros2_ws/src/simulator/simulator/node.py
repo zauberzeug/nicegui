@@ -21,7 +21,6 @@ class Simulator(Node):
     def on_steering(self, msg):
         self.linear_velocity = msg.linear.x
         self.angular_velocity = msg.angular.z
-        self.get_logger().info(f'linear: {self.linear_velocity}, angular: {self.angular_velocity}')
 
     def update_pose(self):
         quaternion = Quaternion(self.pose.orientation.w, self.pose.orientation.x,
@@ -30,7 +29,6 @@ class Simulator(Node):
 
         self.pose.position.x += self.linear_velocity * math.cos(theta) * self.step_size
         self.pose.position.y += self.linear_velocity * math.sin(theta) * self.step_size
-        self.get_logger().info(f'x: {self.pose.position.x}, y: {self.pose.position.y}')
         theta += self.angular_velocity * self.step_size
 
         quaternion = Quaternion(axis=[0.0, 0.0, 1.0], radians=theta)
