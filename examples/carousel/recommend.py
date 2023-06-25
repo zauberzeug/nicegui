@@ -36,27 +36,27 @@ def fetch_user_preferences_from_database(cursor, user_id):
 
 
 # Fetch event data from the database
-def fetch_event_data_from_database(cursor, ev_ids):
+def fetch_cocktail_data_from_database(cursor, ev_ids):
     cursor.execute("""
         SELECT main.cocktail.id, desc
         FROM cocktail
     """)
-    event_data = cursor.fetchall()
+    cocktail_data = cursor.fetchall()
 
-    event_ids = []
-    event_descriptions = []
-    event_categories = []
+    cocktail_ids = []
+    cocktail_descriptions = []
+    cocktail_categories = []
 
-    for event in event_data:
-        if event[0] not in ev_ids:
-            event_ids.append(event[0])
-            event_descriptions.append(event[1])
+    for cocktail in cocktail_data:
+        if cocktail[0] not in ev_ids:
+            cocktail_ids.append(cocktail[0])
+            cocktail_descriptions.append(cocktail[1])
 
             cursor.execute("""
                 SELECT main.cocktail_liquor.liquor_id
                 FROM cocktail_liquor
                 WHERE main.cocktail_liquor.cocktail_id = ?
-            """, (event[0],))
+            """, (cocktail[0],))
 
             category_ids = cursor.fetchall()
 
@@ -68,9 +68,9 @@ def fetch_event_data_from_database(cursor, ev_ids):
                 """, (category_id[0],))
                 category_name = cursor.fetchone()
                 if category_name:
-                    event_categories.append(category_name[0])
+                    cocktail_categories.append(category_name[0])
 
-    return event_ids, event_descriptions, event_categories
+    return cocktail_ids, cocktail_descriptions, cocktail_categories
 
 
 
@@ -92,52 +92,52 @@ def fetch_user_ratings_from_database(user_id):
     else:
         user_ratings = {}
 
-    event_ids = []
+    cocktail_ids = []
     for i in range(len(ratings_data)):
         if ratings_data[i][1] == 1:
-            event_ids.append(ratings_data[i][0])
+            cocktail_ids.append(ratings_data[i][0])
 
     cursor.close()
     conn.close()
 
-    return user_ratings, event_ids
+    return user_ratings, cocktail_ids
 
 # Generate recommendations for the specified user
 def generate_recommendations(user_id, cursor, N):
 
     user_preferences = fetch_user_preferences_from_database(cursor, user_id)
     user_ratings, ev_ids = fetch_user_ratings_from_database(user_id)
-    event_ids, event_descriptions, event_categories = fetch_event_data_from_database(cursor, ev_ids)
+    cocktail_ids, cocktail_descriptions, cocktail_categories = fetch_cocktail_data_from_database(cursor, ev_ids)
 
     # TF-IDF vectorization of event descriptions and user preferences
-    event_descriptions = [desc + ' ' + cat for desc, cat in zip(event_descriptions, event_categories)]
+    cocktail_descriptions = [desc + ' ' + cat for desc, cat in zip(cocktail_descriptions, cocktail_categories)]
     tfidf_vectorizer = TfidfVectorizer(ngram_range=(1, 2), min_df=2)
-    event_description_matrix = tfidf_vectorizer.fit_transform(event_descriptions)
+    cocktail_description_matrix = tfidf_vectorizer.fit_transform(cocktail_descriptions)
 
     user_descriptions = ' '.join(user_preferences)
     user_description_matrix = tfidf_vectorizer.transform([user_descriptions])
 
     # Ratings
-    event_user_ratings = np.zeros(len(event_ids))
+    cocktail_user_ratings = np.zeros(len(cocktail_ids))
 
-    for event_id in user_ratings.keys():
-        if event_id in event_ids:
-            event_index = event_ids.index(event_id)
-            event_user_ratings[event_index] = user_ratings[event_id]
+    for cocktail_id in user_ratings.keys():
+        if cocktail_id in cocktail_ids:
+            cocktail_index = cocktail_ids.index(cocktail_id)
+            cocktail_user_ratings[cocktail_index] = user_ratings[cocktail_id]
 
     ratings_scaler = MinMaxScaler()
 
     # Calculate cosine similarity
-    event_user_similarity_pref = cosine_similarity(user_description_matrix, event_description_matrix) * 0.5
-    event_user_ratings = ratings_scaler.fit_transform(event_user_ratings.reshape(-1, 1)).flatten() * 0.5
-    event_total_similarity = event_user_similarity_pref.flatten() +  event_user_ratings
+    cocktail_user_similarity_pref = cosine_similarity(user_description_matrix, cocktail_description_matrix) * 0.5
+    cocktail_user_ratings = ratings_scaler.fit_transform(cocktail_user_ratings.reshape(-1, 1)).flatten() * 0.5
+    event_total_similarity = cocktail_user_similarity_pref.flatten() +  cocktail_user_ratings
 
 
     # Get the top N event indices based on total similarity score
-    top_n_event_indices = np.argsort(event_total_similarity)[::-1][:N]
+    top_n_cocktail_indices = np.argsort(event_total_similarity)[::-1][:N]
 
     # Get the top N recommended event ids
-    recommended_events = [event_ids[i] for i in top_n_event_indices]
+    recommended_events = [cocktail_ids[i] for i in top_n_cocktail_indices]
 
     return recommended_events
 
@@ -152,13 +152,13 @@ def m(user_id):
     N = 3
 
     # Generate recommendations for the specified user
-    recommended_events = generate_recommendations(user_id, cursor, N)
+    recommended_cocktails = generate_recommendations(user_id, cursor, N)
 
     # Close the database connection
     cursor.close()
     conn.close()
 
-    return recommended_events
+    return recommended_cocktails
 
 
 if __name__ == '__main__':
