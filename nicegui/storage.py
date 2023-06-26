@@ -45,6 +45,11 @@ class PersistentDict(observables.ObservableDict):
         super().__init__(data, self.backup)
 
     def backup(self) -> None:
+        if not self.filepath.exists():
+            if not self:
+                return
+            self.filepath.parent.mkdir(exist_ok=True)
+
         async def backup() -> None:
             async with aiofiles.open(self.filepath, 'w') as f:
                 await f.write(json.dumps(self))
@@ -70,7 +75,6 @@ class Storage:
 
     def __init__(self) -> None:
         self.storage_dir = Path('.nicegui')
-        self.storage_dir.mkdir(exist_ok=True)
         self._general = PersistentDict(self.storage_dir / 'storage_general.json')
         self._users: Dict[str, PersistentDict] = {}
 
