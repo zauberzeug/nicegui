@@ -70,8 +70,8 @@ def main() -> None:
 def ros_main() -> None:
     rclpy.init()
     node = NiceGuiNode()
-    threading.Thread(target=node_spin, args=(node,), daemon=True).start()
-
+    node_spin(node)
+    
 
 app.on_startup(lambda: threading.Thread(target=ros_main).start())
 run.APP_IMPORT_STRING = f'{__name__}:app'  # ROS2 uses a non-standard module name, so we need to specify it here
