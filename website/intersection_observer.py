@@ -1,10 +1,11 @@
+from pathlib import Path
 from typing import Callable
 
-from nicegui.dependencies import register_component
+from nicegui.dependencies import register_vue_component
 from nicegui.element import Element
 from nicegui.events import EventArguments, handle_event
 
-register_component('intersection_observer', __file__, 'intersection_observer.js')
+register_vue_component('intersection_observer', Path(__file__).parent / 'intersection_observer.js')
 
 
 class IntersectionObserver(Element):
@@ -14,6 +15,7 @@ class IntersectionObserver(Element):
         self.on_intersection = on_intersection
         self.active = True
         self.on('intersection', self.handle_intersection)
+        self.use_component('intersection_observer')
 
     def handle_intersection(self, _) -> None:
         self.run_method('stop')

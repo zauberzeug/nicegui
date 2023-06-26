@@ -1,13 +1,14 @@
 import re
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from nicegui.dependencies import register_component
+from nicegui.dependencies import register_vue_component
 
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
 
-register_component('select', __file__, 'select.js')
+register_vue_component('select', Path(__file__).parent / 'select.js')
 
 
 class Select(ChoiceElement, DisableableElement):
@@ -41,6 +42,7 @@ class Select(ChoiceElement, DisableableElement):
             elif not isinstance(value, list):
                 value = [value]
         super().__init__(tag='select', options=options, value=value, on_change=on_change)
+        self.use_component('select')
         if label is not None:
             self._props['label'] = label
         if with_input:

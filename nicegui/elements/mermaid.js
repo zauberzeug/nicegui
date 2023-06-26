@@ -1,11 +1,14 @@
+import mermaid from "mermaid";
 export default {
   template: `<div></div>`,
   mounted() {
     this.update(this.content);
   },
   methods: {
-    update(content) {
-      mermaid.render("mermaid" + this.$el.id, content, (svg) => (this.$el.innerHTML = svg));
+    async update(content) {
+      this.$el.innerHTML = content;
+      this.$el.removeAttribute("data-processed");
+      await mermaid.run({ nodes: [this.$el] });
     },
   },
   props: {

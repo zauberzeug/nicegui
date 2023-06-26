@@ -19,27 +19,27 @@ def test_markdown(screen: Screen):
 
 def test_markdown_with_mermaid(screen: Screen):
     m = ui.markdown('''
-Mermaid:
+        Mermaid:
 
-```mermaid
-graph TD;
-    Node_A --> Node_B;
-```
-''', extras=['mermaid', 'fenced-code-blocks'])
+        ```mermaid
+        graph TD;
+            Node_A --> Node_B;
+        ```
+    ''', extras=['mermaid', 'fenced-code-blocks'])
 
     screen.open('/')
     screen.should_contain('Mermaid')
-    assert screen.find_by_tag('svg').get_attribute('id') == f'mermaid_{m.id}_0'
+    assert screen.find_by_tag('svg').get_attribute('id').startswith('mermaid-')
     assert screen.find('Node_A').get_attribute('class') == 'nodeLabel'
 
     m.set_content('''
-New:
-    
-```mermaid
-graph TD;
-    Node_C --> Node_D;
-```
-''')
+        New:
+        
+        ```mermaid
+        graph TD;
+            Node_C --> Node_D;
+        ```
+    ''')
     screen.should_contain('New')
     assert screen.find('Node_C').get_attribute('class') == 'nodeLabel'
     screen.should_not_contain('Node_A')

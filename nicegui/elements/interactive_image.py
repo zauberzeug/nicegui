@@ -3,12 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from ..dependencies import register_component
+from ..dependencies import register_vue_component
 from ..events import MouseEventArguments, handle_event
 from .mixins.content_element import ContentElement
 from .mixins.source_element import SourceElement
 
-register_component('interactive_image', __file__, 'interactive_image.js')
+register_vue_component('interactive_image', Path(__file__).parent / 'interactive_image.js')
 
 
 class InteractiveImage(SourceElement, ContentElement):
@@ -38,6 +38,7 @@ class InteractiveImage(SourceElement, ContentElement):
         super().__init__(tag='interactive_image', source=source, content=content)
         self._props['events'] = events
         self._props['cross'] = cross
+        self.use_component('interactive_image')
 
         def handle_mouse(msg: Dict) -> None:
             if on_mouse is None:

@@ -15,7 +15,7 @@ def test_moving_sphere_with_timer(screen: Screen):
     def position() -> None:
         for _ in range(3):
             try:
-                pos = screen.selenium.execute_script(f'return scene_{scene.id}.getObjectByName("sphere").position.z')
+                pos = screen.selenium.execute_script(f'return scene_c{scene.id}.getObjectByName("sphere").position.z')
                 if pos is not None:
                     return pos
             except JavascriptException as e:
@@ -38,7 +38,7 @@ def test_no_object_duplication_on_index_client(screen: Screen):
     screen.open('/')
     screen.switch_to(0)
     screen.wait(0.2)
-    assert screen.selenium.execute_script(f'return scene_{scene.id}.children.length') == 5
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5
 
 
 def test_no_object_duplication_with_page_builder(screen: Screen):
@@ -55,9 +55,9 @@ def test_no_object_duplication_with_page_builder(screen: Screen):
     screen.open('/')
     screen.switch_to(0)
     screen.wait(0.2)
-    assert screen.selenium.execute_script(f'return scene_{scene.id}.children.length') == 5
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5
     screen.switch_to(1)
-    assert screen.selenium.execute_script(f'return scene_{scene.id}.children.length') == 5
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5
 
 
 def test_deleting_group(screen: Screen):
@@ -89,7 +89,7 @@ def test_replace_scene(screen: Screen):
 
     screen.open('/')
     screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_{scene.id}.children[4].name') == 'sphere'
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'sphere'
     screen.click('Replace scene')
     screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_{scene.id}.children[4].name') == 'box'
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'box'

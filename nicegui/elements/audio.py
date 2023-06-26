@@ -3,10 +3,10 @@ from pathlib import Path
 from typing import Union
 
 from .. import globals
-from ..dependencies import register_component
+from ..dependencies import register_vue_component
 from ..element import Element
 
-register_component('audio', __file__, 'audio.js')
+register_vue_component('audio', Path(__file__).parent / 'audio.js')
 
 
 class Audio(Element):
@@ -37,6 +37,7 @@ class Audio(Element):
         self._props['autoplay'] = autoplay
         self._props['muted'] = muted
         self._props['loop'] = loop
+        self.use_component('audio')
 
         if type:
             url = f'https://github.com/zauberzeug/nicegui/pull/624'

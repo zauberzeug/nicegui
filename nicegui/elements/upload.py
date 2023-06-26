@@ -1,14 +1,15 @@
+from pathlib import Path
 from typing import Any, Callable, Dict, Optional
 
 from fastapi import Request
 from starlette.datastructures import UploadFile
 
-from ..dependencies import register_component
+from ..dependencies import register_vue_component
 from ..events import EventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
 from .mixins.disableable_element import DisableableElement
 
-register_component('upload', __file__, 'upload.js')
+register_vue_component('upload', Path(__file__).parent / 'upload.js')
 
 
 class Upload(DisableableElement):
@@ -37,6 +38,7 @@ class Upload(DisableableElement):
         :param auto_upload: automatically upload files when they are selected (default: `False`)
         """
         super().__init__(tag='upload')
+        self.use_component('upload')
         self._props['multiple'] = multiple
         self._props['label'] = label
         self._props['auto-upload'] = auto_upload
