@@ -1,44 +1,21 @@
 # ROS2 Example
 
 This example is a basic ROS2 implementation with NiceGUI.
-It starts up a virtual joystick on a local webpage (127.0.0.1:8000),
-that publishes messages on the /turtle1/twist topic for an instance of turtlesim_node to be controlled.
-ROS2 and NiceGUI are fully functional in this example, changes to the code will trigger a restart of the full ROS2 Node.
+It starts up a user interface with virtual joystick and pose visualization reachable through http://127.0.0.1:8080.
+The joystick publishes twist messages which are consumed by a simple simulator node which itself publishes the new pose of a virtual mobile robot.
+ROS2 and NiceGUI are fully functional in this example.
 
-## Run
+Over all it's a bit more complex than a super minimal example to allow auto-reloading of the NiceGUI ROS2 Node on code change and multi-user web interface (each user has it's own view).
 
-Note: Keep in mind that the provided Docker composition is for usage within an Ubuntu system.
-If you are running it somewhere else, you might have to change the .yml file.
-These changes are related to the visualization of the turtlesim_node.
+## Usage
 
-Before Running the Docker, you have to configure your xhost like this:
+Change into the `examples/ros2` folder and run:
 
 ```bash
-xhost local:root
+docker compose up --build
 ```
 
-Starting from the `ros2` folder:
+Afterwards you can access the user interface at http://127.0.0.1:8080.
 
-```bash
-docker compose up
-```
-
-If you want just want run the joystick from Docker:
-
-```bash
-docker compose up joystick_example
-```
-
-## Run information
-
-The parameter `uvicorn_reload_dirs` will define which files trigger a reload on change.
-The path is automatically detected.
-
-## Without Docker
-
-If you want to run the Nodes locally in your ROS2 environment, you can copy the Nodes from the ros2_ws/src folder.
-To run it, just use the normal ros2 run:
-
-```bash
-ros2 run nicegui joystick_nicegui
-```
+If you want to run the NiceGUI node locally or in your own own ROS2 project, you can simply copy the code from the `ros2_ws/src/gui` folder.
+The code is provided with no warranties under the MIT License.
