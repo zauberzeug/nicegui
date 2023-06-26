@@ -82,10 +82,6 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
         with ui.link(target=index_page).classes('row gap-4 items-center no-wrap mr-auto'):
             svg.face().classes('w-8 stroke-white stroke-2 max-[550px]:hidden')
             svg.word().classes('w-24')
-        with ui.button(on_click=lambda: menu.open()).props('flat color=white icon=menu').classes('lg:hidden'):
-            with ui.menu().classes('bg-primary text-white text-lg') as menu:
-                for title, target in menu_items.items():
-                    ui.menu_item(title, on_click=lambda _, target=target: ui.open(target))
         with ui.row().classes('max-lg:hidden'):
             for title, target in menu_items.items():
                 ui.link(title, target).classes(replace='text-lg text-white')
