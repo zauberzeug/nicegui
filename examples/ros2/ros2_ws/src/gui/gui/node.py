@@ -22,7 +22,7 @@ class NiceGuiNode(Node):
                 with ui.card().classes('w-44 text-center items-center'):
                     ui.label('Control').classes('text-2xl')
                     ui.joystick(color='blue', size=50,
-                                on_move=lambda e: self.send_speed(e.y, e.x),
+                                on_move=lambda e: self.send_speed(float(e.y), float(e.x)),
                                 on_end=lambda _: self.send_speed(0.0, 0.0))
                     ui.label('Publish steering commands by dragging your mouse around in the blue field').classes('mt-6')
                 with ui.card().classes('w-44 text-center items-center'):
@@ -55,13 +55,6 @@ class NiceGuiNode(Node):
         self.robot_3d.rotate(0, 0, 2 * math.atan2(msg.orientation.z, msg.orientation.w))
 
 
-def node_spin(node: Node) -> None:
-    try:
-        rclpy.spin(node)
-    except ExternalShutdownException:
-        pass
-
-
 def main() -> None:
     # NOTE: This function is defined as the ROS entry point in setup.py, but it's empty to enable NiceGUI auto-reloading
     pass
@@ -70,7 +63,10 @@ def main() -> None:
 def ros_main() -> None:
     rclpy.init()
     node = NiceGuiNode()
-    node_spin(node)
+    try:
+        rclpy.spin(node)
+    except ExternalShutdownException:
+        pass
     
 
 app.on_startup(lambda: threading.Thread(target=ros_main).start())
