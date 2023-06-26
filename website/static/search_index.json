@@ -140,6 +140,11 @@
     "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/lightbox/main.py"
   },
   {
+    "title": "Example: ROS2",
+    "content": "Using NiceGUI as web interface for a ROS2 robot",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/ros2/"
+  },
+  {
     "title": "Basic Elements",
     "content": "This is **Markdown**.",
     "url": "/documentation/#basic_elements"
@@ -516,7 +521,7 @@
   },
   {
     "title": "Text Input",
-    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  The on_change event is called on every keystroke and the value updates accordingly. If you want to wait until the user confirms the input, you can register a custom event callback, e.g. ui.input(...).on('keydown.enter', ...) or ui.input(...).on('blur', ...).  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed label for the text input :param placeholder: text to show if no value is entered :param value: the current value of the text input :param password: whether to hide the input (default: False) :param password_toggle_button: whether to show a button to toggle the password visibility (default: False) :param on_change: callback to execute when the value changes :param autocomplete: optional list of strings for autocompletion :param validation: dictionary of validation rules, e.g. `'Too long!': lambda value: len(value) < 3` set_autocomplete Set the autocomplete list.",
+    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  The on_change event is called on every keystroke and the value updates accordingly. If you want to wait until the user confirms the input, you can register a custom event callback, e.g. ui.input(...).on('keydown.enter', ...) or ui.input(...).on('blur', ...).  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed label for the text input :param placeholder: text to show if no value is entered :param value: the current value of the text input :param password: whether to hide the input (default: False) :param password_toggle_button: whether to show a button to toggle the password visibility (default: False) :param on_change: callback to execute when the value changes :param autocomplete: optional list of strings for autocompletion :param validation: dictionary of validation rules, e.g. `'Too long!': lambda value: len(value) < 3` set_autocomplete Set the autocomplete list.on_value_change",
     "url": "/documentation/input"
   },
   {
@@ -541,7 +546,7 @@
   },
   {
     "title": "Menu",
-    "content": "Creates a menu. The menu should be placed inside the element where it should be shown.  :param value: whether the menu is already opened (default: False) open close",
+    "content": "Creates a menu. The menu should be placed inside the element where it should be shown.  :param value: whether the menu is already opened (default: False) open Open the menu.close Close the menu.toggle Toggle the menu.",
     "url": "/documentation/menu"
   },
   {
@@ -831,7 +836,7 @@
   },
   {
     "title": "Dropdown Selection",
-    "content": "The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call update() to update the options in the UI.  :param options: a list ['value1', ...] or dictionary 'value1':'label1', ... specifying the options :param value: the initial value :param on_change: callback to execute when selection changes :param with_input: whether to show an input field to filter the options :param multiple: whether to allow multiple selections on_filter",
+    "content": "The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call update() to update the options in the UI.  :param options: a list ['value1', ...] or dictionary 'value1':'label1', ... specifying the options :param value: the initial value :param on_change: callback to execute when selection changes :param with_input: whether to show an input field to filter the options :param multiple: whether to allow multiple selections :param clearable: whether to add a button to clear the selection on_filter",
     "url": "/documentation/select"
   },
   {
@@ -843,6 +848,11 @@
     "title": "Select: Multi selection",
     "content": "You can activate multiple to allow the selection of more than one item.",
     "url": "/documentation/select#multi_selection"
+  },
+  {
+    "title": "Separator",
+    "content": "A separator for cards, menus and other component containers. Similar to HTML's <hr> tag.",
+    "url": "/documentation/separator"
   },
   {
     "title": "Badge",
@@ -1028,6 +1038,11 @@
     "title": "Log view",
     "content": "Create a log view that allows to add new lines without re-transmitting the whole history to the client.  :param max_lines: maximum number of lines before dropping oldest ones (default: None) push clear Clear the log",
     "url": "/documentation/log"
+  },
+  {
+    "title": "Log: Attach to a logger",
+    "content": "You can attach a ui.log element to a Python logger object so that log messages are pushed to the log element.",
+    "url": "/documentation/log#attach_to_a_logger"
   },
   {
     "title": "Line Plot",
