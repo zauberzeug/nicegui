@@ -29,7 +29,6 @@ jobs:
           pip install -r tests/requirements.txt
           # try fix issue with importlib_resources
           pip install importlib-resources
-          pip install -r examples/carousel/requirements.txt
       - name: test startup
         run: ./test_startup.sh
       - name: setup chromedriver
@@ -65,6 +64,7 @@ jobs:
             echo "slack_webhook_exists=false" >> $GITHUB_ENV
           else
             echo "slack_webhook_exists=true" >> $GITHUB_ENV
+          fi
       - name: Slack workflow notification
         if: steps.should_notify.outputs.should_send_message == 'yes' && env.slack_webhook_exists == 'true'
         uses: Gamesight/slack-workflow-status@master
@@ -73,4 +73,3 @@ jobs:
           slack_webhook_url: ${{ secrets.SLACK_ROBOTICS_CI_WEBHOOK }}
           channel: "robotik-ci"
           name: "NiceGUI"
-
