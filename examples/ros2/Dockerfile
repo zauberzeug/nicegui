@@ -8,8 +8,7 @@ RUN apt-get update && apt-get install -y \
 
 SHELL ["/bin/bash", "-c"]
 
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+RUN pip3 install nicegui
 
 ADD ros2_ws /ros2_ws
 
@@ -19,7 +18,6 @@ RUN source /opt/ros/humble/setup.bash && \
     colcon build --symlink-install
 
 COPY ros_entrypoint.sh /
-
 
 EXPOSE 8080
 
