@@ -46,7 +46,7 @@ jobs:
   slack:
     needs:
       - test
-    if: always() # also execute when test fails
+    if: always() # also execute when test fail
     runs-on: ubuntu-latest
     steps:
       - name: Determine if we need to notify
