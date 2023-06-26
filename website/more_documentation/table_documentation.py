@@ -74,15 +74,11 @@ def more() -> None:
             {'name': 'Bob', 'age': 21},
             {'name': 'Carol'},
         ]
-        visible_columns = {column['name'] for column in columns}
         table = ui.table(columns=columns, rows=rows, row_key='name')
 
         def toggle(column: Dict, visible: bool) -> None:
-            if visible:
-                visible_columns.add(column['name'])
-            else:
-                visible_columns.remove(column['name'])
-            table._props['columns'] = [column for column in columns if column['name'] in visible_columns]
+            column['classes'] = '' if visible else 'hidden'
+            column['headerClasses'] = '' if visible else 'hidden'
             table.update()
 
         with ui.button(icon='menu'):
@@ -160,3 +156,33 @@ def more() -> None:
             {'name': 'count', 'label': 'Count', 'field': 'count'},
         ]
         table = ui.table(columns=columns, rows=[], row_key='id').classes('w-full')
+
+    @text_demo('Custom sorting and formatting', '''
+        You can define dynamic column attributes using a `:` prefix.
+        This way you can define custom sorting and formatting functions.
+
+        The following example allows sorting the `name` column by length.
+        The `age` column is formatted to show the age in years.
+    ''')
+    def custom_formatting():
+        columns = [
+            {
+                'name': 'name',
+                'label': 'Name',
+                'field': 'name',
+                'sortable': True,
+                ':sort': '(a, b, rowA, rowB) => b.length - a.length',
+            },
+            {
+                'name': 'age',
+                'label': 'Age',
+                'field': 'age',
+                ':format': 'value => value + " years"',
+            },
+        ]
+        rows = [
+            {'name': 'Alice', 'age': 18},
+            {'name': 'Bob', 'age': 21},
+            {'name': 'Carl', 'age': 42},
+        ]
+        ui.table(columns=columns, rows=rows, row_key='name')
