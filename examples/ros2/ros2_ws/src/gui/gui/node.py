@@ -72,8 +72,7 @@ class NiceGuiNode(Node):
             user.position.text = f'x: {msg.position.x:.2f}, y: {msg.position.y:.2f}'
             user.position.update()
             user.robot_3d.move(msg.position.x, msg.position.y)
-            quaternion = Quaternion(msg.orientation.w, msg.orientation.x,
-                                    msg.orientation.y, msg.orientation.z)
+            quaternion = Quaternion(msg.orientation.w, msg.orientation.x, msg.orientation.y, msg.orientation.z)
             user.robot_3d.rotate(0, 0, quaternion.yaw_pitch_roll[0])
 
 
