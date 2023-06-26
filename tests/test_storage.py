@@ -89,6 +89,7 @@ async def test_access_user_storage_from_fastapi(screen: Screen):
         response = await http_client.get(f'http://localhost:{PORT}/api')
         assert response.status_code == 200
         assert response.text == '"OK"'
+        await asyncio.sleep(0.5)  # wait for storage to be written
         assert next(Path('.nicegui').glob('storage_user_*.json')).read_text() == '{"msg": "yes"}'
 
 
