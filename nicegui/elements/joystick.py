@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, Optional
 
 from ..dependencies import register_component
 from ..element import Element
@@ -29,21 +29,21 @@ class Joystick(Element):
         self._props['options'] = options
         self.active = False
 
-        def handle_start(msg):
+        def handle_start() -> None:
             self.active = True
             handle_event(on_start, JoystickEventArguments(sender=self,
                                                           client=self.client,
                                                           action='start'))
 
-        def handle_move(msg):
+        def handle_move(msg: Dict) -> None:
             if self.active:
                 handle_event(on_move, JoystickEventArguments(sender=self,
                                                              client=self.client,
                                                              action='move',
                                                              x=msg['args']['data']['vector']['x'],
-                                                             y=msg['args']['data']['vector']['y'])),
+                                                             y=msg['args']['data']['vector']['y']))
 
-        def handle_end(msg):
+        def handle_end() -> None:
             self.active = False
             handle_event(on_end, JoystickEventArguments(sender=self,
                                                         client=self.client,
