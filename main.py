@@ -284,6 +284,7 @@ async def index_page(client: Client) -> None:
             example_link('SQLite Database', 'CRUD operations on a SQLite database')
             example_link('Pandas DataFrame', 'displays an editable [pandas](https://pandas.pydata.org) DataFrame')
             example_link('Lightbox', 'A thumbnail gallery where each image can be clicked to enlarge')
+            example_link('ROS2', 'Using NiceGUI as web interface for a ROS2 robot')
 
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
