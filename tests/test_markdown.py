@@ -28,6 +28,7 @@ def test_markdown_with_mermaid(screen: Screen):
     ''', extras=['mermaid', 'fenced-code-blocks'])
 
     screen.open('/')
+    screen.wait(0.5)  # wait for Mermaid to render
     screen.should_contain('Mermaid')
     assert screen.find_by_tag('svg').get_attribute('id').startswith('mermaid-')
     assert screen.find('Node_A').get_attribute('class') == 'nodeLabel'
