@@ -1,6 +1,7 @@
 import threading
 from dataclasses import dataclass
 from pathlib import Path
+from typing import List
 
 import rclpy
 from geometry_msgs.msg import Pose, Twist
@@ -11,8 +12,9 @@ from rclpy.node import Node
 from nicegui import app, run, ui
 
 
-@dataclass(kw_only=True)
+@dataclass()
 class User():
+    '''Hold ui elements for a specific user for later updating'''
     linear: ui.slider = None
     angular: ui.slider = None
     position: ui.label = None
@@ -24,11 +26,12 @@ class NiceGuiNode(Node):
         super().__init__('nicegui')
         self.cmd_vel_publisher = self.create_publisher(Twist, 'cmd_vel', 1)
         self.subscription = self.create_subscription(Pose, 'pose', self.on_pose, 1)
-        self.users = []
+        # keep track of all users which see the web page to update their ui elements according to the ROS messages
+        self.users: List[User] = []
 
         @ui.page('/')
         def index() -> None:
-            user = User()
+            user = User()  # each user has it's own index page
             with ui.row().classes('items-stretch'):
                 with ui.card().classes('w-44 text-center items-center'):
                     ui.label('Control').classes('text-2xl')
@@ -56,7 +59,7 @@ class NiceGuiNode(Node):
                             self.robot_object = scene.extrusion(outline, 0.4)
                             self.robot_object.material('#4488ff', 0.5)
             self.users.append(user)
-            app.on_disconnect(lambda: self.users.remove(user))
+            app.on_disconnect(lambda: self.users.remove(user) if user in self.users else None)
 
     def send_speed(self, x, y) -> None:
         msg = Twist()
@@ -84,7 +87,8 @@ def node_spin(node: Node) -> None:
 
 
 def main() -> None:
-    pass  # NOTE: This is originally used as the ROS entry point, but we give the control of the node to NiceGUI.
+    # NOTE: This function is defined as the ROS entry point in setup.py, but it's empty to enable NiceGUI auto-reloading
+    pass
 
 
 def ros_main() -> None:
@@ -94,5 +98,5 @@ def ros_main() -> None:
 
 
 app.on_startup(lambda: threading.Thread(target=ros_main).start())
-run.APP_IMPORT_STRING = f'{__name__}:app'
+run.APP_IMPORT_STRING = f'{__name__}:app'  # ROS2 uses a non-standard module name, so we need to specify it here
 ui.run(uvicorn_reload_dirs=str(Path(__file__).parent.resolve()), favicon='🤖')

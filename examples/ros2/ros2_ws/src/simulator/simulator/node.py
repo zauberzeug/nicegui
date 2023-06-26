@@ -30,7 +30,10 @@ class Simulator(Node):
         self.pose.position.y += self.linear_velocity * math.sin(theta) * self.step_size
         theta += self.angular_velocity * self.step_size
         quaternion = Quaternion(axis=[0.0, 0.0, 1.0], radians=theta)
-        self.pose.orientation.x, self.pose.orientation.y, self.pose.orientation.z, self.pose.orientation.w = quaternion.elements
+        self.pose.orientation.x = quaternion.x
+        self.pose.orientation.y = quaternion.y
+        self.pose.orientation.z = quaternion.z
+        self.pose.orientation.w = quaternion.w
         self.pose_publisher_.publish(self.pose)
 
 
