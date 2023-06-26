@@ -126,7 +126,7 @@ class App(FastAPI):
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as media content
         """
-        @self.get(url_path + '/{filename}')
+        @self.get(url_path + '/{filename:path}')
         async def read_item(request: Request, filename: str) -> StreamingResponse:
             filepath = Path(local_directory) / filename
             if not filepath.is_file():

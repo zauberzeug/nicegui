@@ -7,6 +7,7 @@ class Separator(Element):
         """Separator
 
         A separator for cards, menus and other component containers.
+        Similar to HTML's <hr> tag.
         """
         super().__init__('q-separator')
         self._classes = ['nicegui-separator']
