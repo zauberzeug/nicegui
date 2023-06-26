@@ -20,6 +20,7 @@ class Select(ChoiceElement, DisableableElement):
                  on_change: Optional[Callable[..., Any]] = None,
                  with_input: bool = False,
                  multiple: bool = False,
+                 clearable: bool = False,
                  ) -> None:
         """Dropdown Selection
 
@@ -31,6 +32,7 @@ class Select(ChoiceElement, DisableableElement):
         :param on_change: callback to execute when selection changes
         :param with_input: whether to show an input field to filter the options
         :param multiple: whether to allow multiple selections
+        :param clearable: whether to add a button to clear the selection
         """
         self.multiple = multiple
         if multiple:
@@ -50,6 +52,7 @@ class Select(ChoiceElement, DisableableElement):
             self._props['fill-input'] = True
             self._props['input-debounce'] = 0
         self._props['multiple'] = multiple
+        self._props['clearable'] = clearable
 
     def on_filter(self, event: Dict) -> None:
         self.options = [
@@ -61,9 +64,15 @@ class Select(ChoiceElement, DisableableElement):
 
     def _msg_to_value(self, msg: Dict) -> Any:
         if self.multiple:
-            return [self._values[arg['value']] for arg in msg['args']]
+            if msg['args'] is None:
+                return []
+            else:
+                return [self._values[arg['value']] for arg in msg['args']]
         else:
-            return self._values[msg['args']['value']]
+            if msg['args'] is None:
+                return None
+            else:
+                return self._values[msg['args']['value']]
 
     def _value_to_model_value(self, value: Any) -> Any:
         if self.multiple:

@@ -105,7 +105,7 @@ def print_welcome_message():
     addresses = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ['localhost'] + sorted(ips)]
     if len(addresses) >= 2:
         addresses[-1] = 'and ' + addresses[-1]
-    print(f'NiceGUI ready to go on {", ".join(addresses)}')
+    print(f'NiceGUI ready to go on {", ".join(addresses)}', flush=True)
 
 
 @app.on_event('shutdown')

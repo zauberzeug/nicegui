@@ -125,3 +125,19 @@ def test_clearable_input(screen: Screen):
     screen.should_contain('value: foo')
     screen.click('cancel')
     screen.should_contain('value: None')
+
+
+def test_update_input(screen: Screen):
+    input = ui.input('Name', value='Pete')
+
+    screen.open('/')
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Name"]')
+    assert element.get_attribute('value') == 'Pete'
+
+    element.send_keys('r')
+    screen.wait(0.5)
+    assert element.get_attribute('value') == 'Peter'
+
+    input.value = 'Pete'
+    screen.wait(0.5)
+    assert element.get_attribute('value') == 'Pete'

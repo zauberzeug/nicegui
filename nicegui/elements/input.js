@@ -47,6 +47,9 @@ export default {
     },
   },
   methods: {
+    updateValue() {
+      this.inputValue = this.value;
+    },
     perform_autocomplete(e) {
       if (this.shadowText) {
         this.inputValue += this.shadowText;
