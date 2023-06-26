@@ -2,8 +2,11 @@ import contextlib
 import socket
 import time
 import webbrowser
+from pathlib import Path
 
 from nicegui import helpers
+
+TEST_DIR = Path(__file__).parent
 
 
 def test_is_port_open():
@@ -76,3 +79,14 @@ def test_canceling_schedule_browser(monkeypatch):
     time.sleep(0.2)
     assert not thread.is_alive()
     assert called_with_url is None
+
+
+def test_is_file():
+    assert helpers.is_file(TEST_DIR / 'test_helpers.py')
+    assert helpers.is_file(str(TEST_DIR / 'test_helpers.py'))
+    assert not helpers.is_file(TEST_DIR / 'nonexistent_file')
+    assert not helpers.is_file(str(TEST_DIR / 'nonexistent_file'))
+    assert not helpers.is_file('data:image/png;base64,...')
+    assert not helpers.is_file(None)
+    assert not helpers.is_file('x' * 100_000), 'a very long filepath should not lead to OSError 63'
+    assert not helpers.is_file('http://nicegui.io/logo.png')

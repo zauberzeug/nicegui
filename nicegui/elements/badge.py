@@ -1,10 +1,11 @@
 from typing import Optional
 
-from ..colors import set_background_color, set_text_color
+from .mixins.color_elements import BackgroundColorElement, TextColorElement
 from .mixins.text_element import TextElement
 
 
-class Badge(TextElement):
+class Badge(TextElement, BackgroundColorElement, TextColorElement):
+    TEXT_COLOR_PROP = 'text-color'
 
     def __init__(self,
                  text: str = '', *,
@@ -21,7 +22,5 @@ class Badge(TextElement):
         :param text_color: text color (either a Quasar, Tailwind, or CSS color or `None`, default: `None`)
         :param outline: use 'outline' design (colored text and borders only) (default: False)
         """
-        super().__init__(tag='q-badge', text=text)
-        set_background_color(self, color)
-        set_text_color(self, text_color, prop_name='text-color')
+        super().__init__(tag='q-badge', text=text, text_color=text_color, background_color=color)
         self._props['outline'] = outline

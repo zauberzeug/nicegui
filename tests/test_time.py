@@ -9,12 +9,12 @@ def test_time(screen: Screen):
 
     screen.open('/')
     screen.should_contain('01:23')
-
+    screen.wait(0.2)
     screen.click('8')
     screen.should_contain('08:23')
-
+    screen.wait(0.2)
     screen.click('45')
     screen.should_contain('08:45')
-
+    screen.wait(0.2)
     screen.click('PM')
     screen.should_contain('20:45')

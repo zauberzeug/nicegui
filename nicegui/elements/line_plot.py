@@ -1,11 +1,17 @@
-from typing import List
+from typing import Any, List
 
 from .pyplot import Pyplot
 
 
 class LinePlot(Pyplot):
 
-    def __init__(self, *, n: int = 1, limit: int = 100, update_every: int = 1, close: bool = True, **kwargs) -> None:
+    def __init__(self, *,
+                 n: int = 1,
+                 limit: int = 100,
+                 update_every: int = 1,
+                 close: bool = True,
+                 **kwargs: Any,
+                 ) -> None:
         """Line Plot
 
         Create a line plot using pyplot.
@@ -26,7 +32,7 @@ class LinePlot(Pyplot):
         self.update_every = update_every
         self.push_counter = 0
 
-    def with_legend(self, titles: List[str], **kwargs):
+    def with_legend(self, titles: List[str], **kwargs: Any):
         self.fig.gca().legend(titles, **kwargs)
         self._convert_to_html()
         return self

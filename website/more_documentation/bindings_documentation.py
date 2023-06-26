@@ -42,7 +42,7 @@ def more() -> None:
     @text_demo('Bind to variable', '''
         Here we are binding the value from the datepicker to a bare variable.
         Therefore we use the dictionary `globals()` which contains all global variables.
-        This demo is based on the [official datepicker example](https://nicegui.io/documentation/date#input_element_with_date_picker).
+        This demo is based on the [official datepicker example](/documentation/date#input_element_with_date_picker).
     ''')
     def bind_variable():
         # date = '2023-01-01'
@@ -52,3 +52,18 @@ def more() -> None:
                 ui.date(on_change=lambda: ui.notify(f'Date: {date}')).bind_value(date_input)
             with date_input.add_slot('append'):
                 ui.icon('edit_calendar').on('click', menu.open).classes('cursor-pointer')
+
+    @text_demo('Bind to storage', '''
+        Bindings also work with [`app.storage`](/documentation/storage).
+        Here we are storing the value of a textarea between visits.
+        The note is also shared between all tabs of the same user.
+    ''')
+    def ui_state():
+        from nicegui import app
+
+        # @ui.page('/')
+        # def index():
+        #     ui.textarea('This note is kept between visits') 
+        #         .classes('w-full').bind_value(app.storage.user, 'note')
+        # END OF DEMO
+        ui.textarea('This note is kept between visits').classes('w-full').bind_value(app.storage.user, 'note')

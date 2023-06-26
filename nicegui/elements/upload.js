@@ -7,11 +7,15 @@ export default {
     </q-uploader>
   `,
   mounted() {
-    setTimeout(() => {
-      this.computed_url = (window.path_prefix || "") + this.url;
-    }, 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
+    setTimeout(() => this.compute_url(), 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
+  },
+  updated() {
+    this.compute_url();
   },
   methods: {
+    compute_url() {
+      this.computed_url = (this.url.startsWith("/") ? window.path_prefix : "") + this.url;
+    },
     reset() {
       this.$refs.uploader.reset();
     },

@@ -1,9 +1,9 @@
-from typing import Callable, Union
+from typing import Any, Callable, Union
 
 from .. import globals
 
 
-def open(target: Union[Callable, str]) -> None:
+def open(target: Union[Callable[..., Any], str]) -> None:
     """Open
 
     Can be used to programmatically trigger redirects for a specific client.

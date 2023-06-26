@@ -1,17 +1,23 @@
 import asyncio
 import time
-from typing import Callable
+from typing import Any, Callable, Optional
 
 from .. import background_tasks, globals
 from ..binding import BindableProperty
-from ..helpers import is_coroutine
+from ..helpers import is_coroutine_function
+from ..slot import Slot
 
 
 class Timer:
     active = BindableProperty()
     interval = BindableProperty()
 
-    def __init__(self, interval: float, callback: Callable, *, active: bool = True, once: bool = False) -> None:
+    def __init__(self,
+                 interval: float,
+                 callback: Callable[..., Any], *,
+                 active: bool = True,
+                 once: bool = False,
+                 ) -> None:
         """Timer
 
         One major drive behind the creation of NiceGUI was the necessity to have a simple approach to update the interface in regular intervals,
@@ -24,9 +30,9 @@ class Timer:
         :param once: whether the callback is only executed once after a delay specified by `interval` (default: `False`)
         """
         self.interval = interval
-        self.callback = callback
+        self.callback: Optional[Callable[..., Any]] = callback
         self.active = active
-        self.slot = globals.get_slot()
+        self.slot: Optional[Slot] = globals.get_slot()
 
         coroutine = self._run_once if once else self._run_in_loop
         if globals.state == globals.State.STARTED:
@@ -34,21 +40,31 @@ class Timer:
         else:
             globals.app.on_startup(coroutine)
 
+    def activate(self) -> None:
+        """Activate the timer."""
+        self.active = True
+
+    def deactivate(self) -> None:
+        """Deactivate the timer."""
+        self.active = False
+
     async def _run_once(self) -> None:
         try:
             if not await self._connected():
                 return
+            assert self.slot is not None
             with self.slot:
                 await asyncio.sleep(self.interval)
                 if globals.state not in {globals.State.STOPPING, globals.State.STOPPED}:
                     await self._invoke_callback()
         finally:
-            self.cleanup()
+            self._cleanup()
 
     async def _run_in_loop(self) -> None:
         try:
             if not await self._connected():
                 return
+            assert self.slot is not None
             with self.slot:
                 while True:
                     if self.slot.parent.client.id not in globals.clients:
@@ -67,21 +83,24 @@ class Timer:
                         globals.handle_exception(e)
                         await asyncio.sleep(self.interval)
         finally:
-            self.cleanup()
+            self._cleanup()
 
     async def _invoke_callback(self) -> None:
         try:
+            assert self.callback is not None
             result = self.callback()
-            if is_coroutine(self.callback):
+            if is_coroutine_function(self.callback):
                 await result
         except Exception as e:
             globals.handle_exception(e)
 
     async def _connected(self, timeout: float = 60.0) -> bool:
-        '''Wait for the client connection before the timer callback can be allowed to manipulate the state.
+        """Wait for the client connection before the timer callback can be allowed to manipulate the state.
+
         See https://github.com/zauberzeug/nicegui/issues/206 for details.
         Returns True if the client is connected, False if the client is not connected and the timer should be cancelled.
-        '''
+        """
+        assert self.slot is not None
         if self.slot.parent.client.shared:
             return True
         else:
@@ -93,6 +112,6 @@ class Timer:
                 globals.log.error(f'Timer cancelled because client is not connected after {timeout} seconds')
                 return False
 
-    def cleanup(self) -> None:
+    def _cleanup(self) -> None:
         self.slot = None
         self.callback = None

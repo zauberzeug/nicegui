@@ -7,7 +7,7 @@ from . import globals
 if TYPE_CHECKING:
     from .element import Element
 
-ClientId = int
+ClientId = str
 ElementId = int
 MessageType = str
 Message = Tuple[ClientId, MessageType, Any]
@@ -32,8 +32,8 @@ async def loop() -> None:
         coros = []
         try:
             for client_id, elements in update_queue.items():
-                elements = {element_id: element._to_dict() for element_id, element in elements.items()}
-                coros.append(globals.sio.emit('update', elements, room=client_id))
+                data = {element_id: element._to_dict() for element_id, element in elements.items()}
+                coros.append(globals.sio.emit('update', data, room=client_id))
             update_queue.clear()
             for client_id, message_type, data in message_queue:
                 coros.append(globals.sio.emit(message_type, data, room=client_id))

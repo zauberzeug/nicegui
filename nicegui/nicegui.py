@@ -15,19 +15,19 @@ from fastapi_socketio import SocketManager
 from nicegui import json
 from nicegui.json import NiceGUIJSONResponse
 
-from . import __version__, background_tasks, binding, globals, outbox
+from . import __version__, background_tasks, binding, favicon, globals, outbox
 from .app import App
 from .client import Client
 from .dependencies import js_components, js_dependencies
 from .element import Element
 from .error import error_content
-from .helpers import safe_invoke
+from .helpers import is_file, safe_invoke
 from .page import page
 
 globals.app = app = App(default_response_class=NiceGUIJSONResponse)
 # NOTE we use custom json module which wraps orjson
 socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=json)
-globals.sio = sio = app.sio
+globals.sio = sio = socket_manager._sio
 
 app.add_middleware(GZipMiddleware)
 static_files = StaticFiles(
@@ -66,6 +66,13 @@ def handle_startup(with_welcome_message: bool = True) -> None:
                            'remove the guard or replace it with\n'
                            '   if __name__ in {"__main__", "__mp_main__"}:\n'
                            'to allow for multiprocessing.')
+    if globals.favicon:
+        if is_file(globals.favicon):
+            globals.app.add_route('/favicon.ico', lambda _: FileResponse(globals.favicon))
+        else:
+            globals.app.add_route('/favicon.ico', lambda _: favicon.get_favicon_response())
+    else:
+        globals.app.add_route('/favicon.ico', lambda _: FileResponse(Path(__file__).parent / 'static' / 'favicon.ico'))
     globals.state = globals.State.STARTING
     globals.loop = asyncio.get_running_loop()
     with globals.index_client:
@@ -93,11 +100,13 @@ def print_welcome_message():
     addresses = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ['localhost'] + sorted(ips)]
     if len(addresses) >= 2:
         addresses[-1] = 'and ' + addresses[-1]
-    print(f'NiceGUI ready to go on {", ".join(addresses)}')
+    print(f'NiceGUI ready to go on {", ".join(addresses)}', flush=True)
 
 
 @app.on_event('shutdown')
-def handle_shutdown() -> None:
+async def handle_shutdown() -> None:
+    if app.native.main_window:
+        app.native.main_window.signal_server_shutdown()
     globals.state = globals.State.STOPPING
     with globals.index_client:
         for t in globals.shutdown_handlers:

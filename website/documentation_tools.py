@@ -27,6 +27,7 @@ def get_menu() -> ui.left_drawer:
 
 
 def heading(text: str, *, make_menu_entry: bool = True) -> None:
+    ui.link_target(create_anchor_name(text))
     ui.html(f'<em>{text}</em>').classes('mt-8 text-3xl font-weight-500')
     if make_menu_entry:
         with get_menu():
@@ -93,10 +94,11 @@ class element_demo:
         self.element_class = element_class
 
     def __call__(self, f: Callable, *, more_link: Optional[str] = None) -> Callable:
-        doc = self.element_class.__doc__ or self.element_class.__init__.__doc__
+        doc = f.__doc__ or self.element_class.__doc__ or self.element_class.__init__.__doc__
         title, documentation = doc.split('\n', 1)
         with ui.column().classes('w-full mb-8 gap-2'):
-            subheading(title, more_link=more_link)
+            if more_link:
+                subheading(title, more_link=more_link)
             render_docstring(documentation, with_params=more_link is None)
             result = demo(f)
             if more_link:
@@ -105,7 +107,7 @@ class element_demo:
 
 
 def load_demo(api: Union[type, Callable, str]) -> None:
-    name = pascal_to_snake(api if isinstance(api, str) else api.__name__)
+    name = api if isinstance(api, str) else pascal_to_snake(api.__name__)
     try:
         module = importlib.import_module(f'website.more_documentation.{name}_documentation')
     except ModuleNotFoundError:

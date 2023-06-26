@@ -14,23 +14,25 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from nicegui import globals, ui
 
+from .test_helpers import TEST_DIR
+
 PORT = 3392
 IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-input']
 
 
 class Screen:
     IMPLICIT_WAIT = 4
-    SCREENSHOT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshots')
-    UI_RUN_KWARGS = {'port': PORT, 'show': False, 'reload': False}
+    SCREENSHOT_DIR = TEST_DIR / 'screenshots'
 
     def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture) -> None:
         self.selenium = selenium
         self.caplog = caplog
         self.server_thread = None
+        self.ui_run_kwargs = {'port': PORT, 'show': False, 'reload': False}
 
     def start_server(self) -> None:
         '''Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script.'''
-        self.server_thread = threading.Thread(target=ui.run, kwargs=self.UI_RUN_KWARGS)
+        self.server_thread = threading.Thread(target=ui.run, kwargs=self.ui_run_kwargs)
         self.server_thread.start()
 
     @property

@@ -16,7 +16,7 @@ def notify(message: Any, *,
            type: Optional[Literal['positive', 'negative', 'warning', 'info', 'ongoing']] = None,
            color: Optional[str] = None,
            multi_line: bool = False,
-           **kwargs,
+           **kwargs: Any,
            ) -> None:
     """Notification
 

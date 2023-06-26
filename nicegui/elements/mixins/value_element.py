@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from typing_extensions import Self
 
@@ -8,12 +8,17 @@ from ...events import ValueChangeEventArguments, handle_event
 
 
 class ValueElement(Element):
-    VALUE_PROP = 'model-value'
-    EVENT_ARGS = ['value']
-    LOOPBACK = True
+    VALUE_PROP: str = 'model-value'
+    EVENT_ARGS: Optional[List[str]] = ['value']
+    LOOPBACK: bool = True
     value = BindableProperty(on_change=lambda sender, value: sender.on_value_change(value))
 
-    def __init__(self, *, value: Any, on_value_change: Optional[Callable], throttle: float = 0, **kwargs) -> None:
+    def __init__(self, *,
+                 value: Any,
+                 on_value_change: Optional[Callable[..., Any]],
+                 throttle: float = 0,
+                 **kwargs: Any,
+                 ) -> None:
         super().__init__(**kwargs)
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
@@ -30,7 +35,8 @@ class ValueElement(Element):
     def bind_value_to(self,
                       target_object: Any,
                       target_name: str = 'value',
-                      forward: Callable = lambda x: x) -> Self:
+                      forward: Callable[..., Any] = lambda x: x,
+                      ) -> Self:
         """Bind the value of this element to the target object's target_name property.
 
         The binding works one way only, from this element to the target.
@@ -45,7 +51,8 @@ class ValueElement(Element):
     def bind_value_from(self,
                         target_object: Any,
                         target_name: str = 'value',
-                        backward: Callable = lambda x: x) -> Self:
+                        backward: Callable[..., Any] = lambda x: x,
+                        ) -> Self:
         """Bind the value of this element from the target object's target_name property.
 
         The binding works one way only, from the target to this element.
@@ -60,8 +67,9 @@ class ValueElement(Element):
     def bind_value(self,
                    target_object: Any,
                    target_name: str = 'value', *,
-                   forward: Callable = lambda x: x,
-                   backward: Callable = lambda x: x) -> Self:
+                   forward: Callable[..., Any] = lambda x: x,
+                   backward: Callable[..., Any] = lambda x: x,
+                   ) -> Self:
         """Bind the value of this element to the target object's target_name property.
 
         The binding works both ways, from this element to the target and from the target to this element.

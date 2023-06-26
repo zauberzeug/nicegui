@@ -2,11 +2,11 @@ from typing import Optional
 
 from nicegui import ui
 
-from ..colors import set_text_color
+from .mixins.color_elements import TextColorElement
 from .mixins.value_element import ValueElement
 
 
-class LinearProgress(ValueElement):
+class LinearProgress(ValueElement, TextColorElement):
     VALUE_PROP = 'value'
 
     def __init__(self,
@@ -25,16 +25,15 @@ class LinearProgress(ValueElement):
         :param show_value: whether to show a value label in the center (default: `True`)
         :param color: color (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
         """
-        super().__init__(tag='q-linear-progress', value=value, on_value_change=None)
+        super().__init__(tag='q-linear-progress', value=value, on_value_change=None, text_color=color)
         self._props['size'] = size if size is not None else '20px' if show_value else '4px'
-        set_text_color(self, color)
 
         if show_value:
             with self:
                 ui.label().classes('absolute-center text-sm text-white').bind_text_from(self, 'value')
 
 
-class CircularProgress(ValueElement):
+class CircularProgress(ValueElement, TextColorElement):
     VALUE_PROP = 'value'
 
     def __init__(self,
@@ -57,12 +56,11 @@ class CircularProgress(ValueElement):
         :param show_value: whether to show a value label in the center (default: `True`)
         :param color: color (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
         """
-        super().__init__(tag='q-circular-progress', value=value, on_value_change=None)
+        super().__init__(tag='q-circular-progress', value=value, on_value_change=None, text_color=color)
         self._props['min'] = min
         self._props['max'] = max
         self._props['size'] = size
         self._props['show-value'] = show_value
-        set_text_color(self, color)
         self._props['track-color'] = 'grey-4'
 
         if show_value:

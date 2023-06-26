@@ -24,6 +24,11 @@
       <span>Connection lost.</span>
       <span>Trying to reconnect...</span>
     </div>
+    <script>
+      function getElement(id) {
+        return window.app.$refs["r" + id];
+      }
+    </script>
     <script type="module">
       const True = true;
       const False = false;
@@ -72,6 +77,12 @@
           style: Object.entries(element.style).reduce((str, [p, val]) => `${str}${p}:${val};`, '') || undefined,
           ...element.props,
         };
+        Object.entries(props).forEach(([key, value]) => {
+          if (key.startsWith(':')) {
+            props[key.substring(1)] = eval(value);
+            delete props[key];
+          }
+        });
         element.events.forEach((event) => {
           let event_name = 'on' + event.type[0].toLocaleUpperCase() + event.type.substring(1);
           event.specials.forEach(s => event_name += s[0].toLocaleUpperCase() + s.substring(1));
@@ -114,10 +125,6 @@
         return Vue.h(Vue.resolveComponent(element.tag), props, slots);
       }
 
-      function getElement(id) {
-        return window.app.$refs['r' + id];
-      }
-
       function runJavascript(code, request_id) {
         (new Promise((resolve) =>resolve(eval(code)))).catch((reason) => {
           if(reason instanceof SyntaxError)
@@ -155,8 +162,9 @@
           const query = { client_id: "{{ client_id }}" };
           const url = window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
           const extraHeaders = {{ socket_io_js_extra_headers | safe }};
+          const transports = ['websocket', 'polling'];
           window.path_prefix = "{{ prefix | safe }}";
-          window.socket = io(url, { path: "{{ prefix | safe }}/_nicegui_ws/socket.io", query, extraHeaders });
+          window.socket = io(url, { path: "{{ prefix | safe }}/_nicegui_ws/socket.io", query, extraHeaders, transports });
           window.socket.on("connect", () => {
             window.socket.emit("handshake", (ok) => {
               if (!ok) window.location.reload();
