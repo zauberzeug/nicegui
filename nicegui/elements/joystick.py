@@ -40,8 +40,8 @@ class Joystick(Element):
                 handle_event(on_move, JoystickEventArguments(sender=self,
                                                              client=self.client,
                                                              action='move',
-                                                             x=msg['args']['data']['vector']['x'],
-                                                             y=msg['args']['data']['vector']['y']))
+                                                             x=float(msg['args']['data']['vector']['x']),
+                                                             y=float(msg['args']['data']['vector']['y'])))
 
         def handle_end() -> None:
             self.active = False
