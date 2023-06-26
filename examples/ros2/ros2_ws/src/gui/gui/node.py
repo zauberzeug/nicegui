@@ -9,16 +9,7 @@ from pyquaternion import Quaternion
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 
-from nicegui import app, run, ui
-
-
-@dataclass()
-class User():
-    '''Hold ui elements for a specific user for later updating'''
-    linear: ui.slider = None
-    angular: ui.slider = None
-    position: ui.label = None
-    robot_3d: ui.scene.group = None
+from nicegui import app, globals, run, ui
 
 
 class NiceGuiNode(Node):
@@ -26,12 +17,8 @@ class NiceGuiNode(Node):
         super().__init__('nicegui')
         self.cmd_vel_publisher = self.create_publisher(Twist, 'cmd_vel', 1)
         self.subscription = self.create_subscription(Pose, 'pose', self.on_pose, 1)
-        # keep track of all users which see the web page to update their ui elements according to the ROS messages
-        self.users: List[User] = []
 
-        @ui.page('/')
-        def index() -> None:
-            user = User()  # each user has it's own index page
+        with globals.index_client:
             with ui.row().classes('items-stretch'):
                 with ui.card().classes('w-44 text-center items-center'):
                     ui.label('Control').classes('text-2xl')
@@ -45,38 +32,34 @@ class NiceGuiNode(Node):
                     ui.label('Data').classes('text-2xl')
                     ui.label('linear velocity').classes('text-xs mb-[-1.8em]')
                     slider_props = 'readonly selection-color="transparent"'
-                    user.linear = ui.slider(min=-1, max=1, step=0.05, value=0).props(slider_props)
+                    self.linear = ui.slider(min=-1, max=1, step=0.05, value=0).props(slider_props)
                     ui.label('angular velocity').classes('text-xs mb-[-1.8em]')
-                    user.angular = ui.slider(min=-1, max=1, step=0.05, value=0).props(slider_props)
+                    self.angular = ui.slider(min=-1, max=1, step=0.05, value=0).props(slider_props)
                     ui.label('position').classes('text-xs mb-[-1.4em]')
-                    user.position = ui.label('---')
+                    self.position = ui.label('---')
                 with ui.card().classes('w-96 h-96 items-center'):
                     ui.label('Visualization').classes('text-2xl')
                     with ui.scene(350, 300) as scene:
-                        with scene.group() as user.robot_3d:
+                        with scene.group() as self.robot_3d:
                             prism = [(-0.5, -0.5), (0.5, -0.5), (0.75, 0), (0.5, 0.5), (-0.5, 0.5)]
                             outline = list(map(list, prism))
                             self.robot_object = scene.extrusion(outline, 0.4)
                             self.robot_object.material('#4488ff', 0.5)
-            self.users.append(user)
-            app.on_disconnect(lambda: self.users.remove(user) if user in self.users else None)
 
     def send_speed(self, x, y) -> None:
         msg = Twist()
         msg.linear.x = x
         msg.angular.z = -y
-        for user in self.users:
-            user.linear.value = x
-            user.angular.value = y
+        self.linear.value = x
+        self.angular.value = y
         self.cmd_vel_publisher.publish(msg)
 
     def on_pose(self, msg: Pose) -> None:
-        for user in self.users:
-            user.position.text = f'x: {msg.position.x:.2f}, y: {msg.position.y:.2f}'
-            user.position.update()
-            user.robot_3d.move(msg.position.x, msg.position.y)
-            quaternion = Quaternion(msg.orientation.w, msg.orientation.x, msg.orientation.y, msg.orientation.z)
-            user.robot_3d.rotate(0, 0, quaternion.yaw_pitch_roll[0])
+        self.position.text = f'x: {msg.position.x:.2f}, y: {msg.position.y:.2f}'
+        self.position.update()
+        self.robot_3d.move(msg.position.x, msg.position.y)
+        quaternion = Quaternion(msg.orientation.w, msg.orientation.x, msg.orientation.y, msg.orientation.z)
+        self.robot_3d.rotate(0, 0, quaternion.yaw_pitch_roll[0])
 
 
 def node_spin(node: Node) -> None:
