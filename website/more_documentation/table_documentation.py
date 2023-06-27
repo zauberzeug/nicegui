@@ -82,7 +82,7 @@ def more() -> None:
             table.update()
 
         with ui.button(icon='menu'):
-            with ui.menu().props(remove='no-parent-event'), ui.column().classes('gap-0 p-2'):
+            with ui.menu(), ui.column().classes('gap-0 p-2'):
                 for column in columns:
                     ui.switch(column['label'], value=True, on_change=lambda e, column=column: toggle(column, e.value))
 

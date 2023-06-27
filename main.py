@@ -96,7 +96,7 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
         add_star().classes('max-[490px]:hidden')
         with ui.row().classes('lg:hidden'):
             with ui.button(icon='more_vert').props('flat color=white round'):
-                with ui.menu().classes('bg-primary text-white text-lg').props(remove='no-parent-event'):
+                with ui.menu().classes('bg-primary text-white text-lg'):
                     for title, target in menu_items.items():
                         ui.menu_item(title, on_click=lambda target=target: ui.open(target))
 
