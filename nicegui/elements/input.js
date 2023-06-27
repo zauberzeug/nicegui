@@ -1,7 +1,7 @@
 export default {
   template: `
     <q-input
-      ref="inputRef"
+      ref="qRef"
       v-bind="$attrs"
       v-model="inputValue"
       :shadow-text="shadowText"
@@ -60,21 +60,6 @@ export default {
         this.inputValue += this.shadowText;
         e.preventDefault();
       }
-    },
-    resetValidation() {
-      this.$refs.inputRef.resetValidation();
-    },
-    validate(value) {
-      return this.$refs.inputRef.validate(value);
-    },
-    focus() {
-      this.$refs.inputRef.focus();
-    },
-    blur() {
-      this.$refs.inputRef.blur();
-    },
-    select() {
-      this.$refs.inputRef.select();
     },
   },
 };
