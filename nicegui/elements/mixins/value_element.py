@@ -4,7 +4,7 @@ from typing_extensions import Self
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
-from ...events import ValueChangeEventArguments, handle_event
+from ...events import GenericEventArguments, ValueChangeEventArguments, handle_event
 
 
 class ValueElement(Element):
@@ -100,8 +100,8 @@ class ValueElement(Element):
         args = ValueChangeEventArguments(sender=self, client=self.client, value=self._value_to_event_value(value))
         handle_event(self.change_handler, args)
 
-    def _msg_to_value(self, msg: Dict) -> Any:
-        return msg['args']
+    def _msg_to_value(self, e: GenericEventArguments) -> Any:
+        return e.args
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value

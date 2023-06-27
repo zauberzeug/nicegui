@@ -1,5 +1,6 @@
 from typing import Any, Callable, Dict, Optional
 
+from ..events import GenericEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.validation_element import ValidationElement
 
@@ -89,8 +90,8 @@ class Number(ValidationElement, DisableableElement):
         value = min(value, self.max)
         self.set_value(float(self.format % value) if self.format else value)
 
-    def _msg_to_value(self, msg: Dict) -> Any:
-        return float(msg['args']) if msg['args'] else None
+    def _msg_to_value(self, e: GenericEventArguments) -> Any:
+        return float(e.args) if e.args is not None else None
 
     def _value_to_model_value(self, value: Any) -> Any:
         if value is None:

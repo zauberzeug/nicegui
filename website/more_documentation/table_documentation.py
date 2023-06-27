@@ -91,7 +91,7 @@ def more() -> None:
         After emitting a `rename` event from the scoped slot, the `rename` function updates the table rows.
     ''')
     def table_with_drop_down_selection():
-        from typing import Dict
+        from nicegui import events
 
         columns = [
             {'name': 'name', 'label': 'Name', 'field': 'name'},
@@ -104,10 +104,10 @@ def more() -> None:
         ]
         name_options = ['Alice', 'Bob', 'Carol']
 
-        def rename(msg: Dict) -> None:
+        def rename(e: events.GenericEventArguments) -> None:
             for row in rows:
-                if row['id'] == msg['args']['id']:
-                    row['name'] = msg['args']['name']
+                if row['id'] == e.args['id']:
+                    row['name'] = e.args['name']
             ui.notify(f'Table.rows is now: {table.rows}')
 
         table = ui.table(columns=columns, rows=rows, row_key='name').classes('w-full')

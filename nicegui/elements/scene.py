@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from .. import binding, globals
 from ..dependencies import register_library, register_vue_component
 from ..element import Element
-from ..events import SceneClickEventArguments, SceneClickHit, handle_event
+from ..events import GenericEventArguments, SceneClickEventArguments, SceneClickHit, handle_event
 from ..helpers import KWONLY_SLOTS
 from .scene_object3d import Object3D
 
@@ -90,9 +90,9 @@ class Scene(Element):
         self.use_library('STLLoader')
         self.use_library('tween')
 
-    def handle_init(self, msg: Dict) -> None:
+    def handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True
-        with globals.socket_id(msg['args']):
+        with globals.socket_id(e.args):
             self.move_camera(duration=0)
             for object in self.objects.values():
                 object.send()
@@ -102,23 +102,23 @@ class Scene(Element):
             return
         super().run_method(name, *args)
 
-    def handle_click(self, msg: Dict) -> None:
+    def handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
             sender=self,
             client=self.client,
-            click_type=msg['args']['click_type'],
-            button=msg['args']['button'],
-            alt=msg['args']['alt_key'],
-            ctrl=msg['args']['ctrl_key'],
-            meta=msg['args']['meta_key'],
-            shift=msg['args']['shift_key'],
+            click_type=e.args['click_type'],
+            button=e.args['button'],
+            alt=e.args['alt_key'],
+            ctrl=e.args['ctrl_key'],
+            meta=e.args['meta_key'],
+            shift=e.args['shift_key'],
             hits=[SceneClickHit(
                 object_id=hit['object_id'],
                 object_name=hit['object_name'],
                 x=hit['point']['x'],
                 y=hit['point']['y'],
                 z=hit['point']['z'],
-            ) for hit in msg['args']['hits']],
+            ) for hit in e.args['hits']],
         )
         handle_event(self.on_click, arguments)
 

@@ -1,8 +1,7 @@
-from typing import Any, Callable, Dict
-
-from nicegui.events import ColorPickEventArguments, handle_event
+from typing import Any, Callable
 
 from ..element import Element
+from ..events import ColorPickEventArguments, GenericEventArguments, handle_event
 from .menu import Menu
 
 
@@ -16,8 +15,8 @@ class ColorPicker(Menu):
         """
         super().__init__(value=value)
         with self:
-            def handle_change(msg: Dict):
-                handle_event(on_pick, ColorPickEventArguments(sender=self, client=self.client, color=msg['args']))
+            def handle_change(e: GenericEventArguments):
+                handle_event(on_pick, ColorPickEventArguments(sender=self, client=self.client, color=e.args))
             self.q_color = Element('q-color').on('change', handle_change)
 
     def set_color(self, color: str) -> None:

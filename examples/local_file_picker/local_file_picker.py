@@ -1,8 +1,8 @@
 import platform
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional
 
-from nicegui import ui
+from nicegui import events, ui
 
 
 class local_file_picker(ui.dialog):
@@ -70,8 +70,8 @@ class local_file_picker(ui.dialog):
             })
         self.grid.update()
 
-    def handle_double_click(self, msg: Dict) -> None:
-        self.path = Path(msg['args']['data']['path'])
+    def handle_double_click(self, msg: events.GenericEventArguments) -> None:
+        self.path = Path(msg.args['data']['path'])
         if self.path.is_dir():
             self.update_grid()
         else:
