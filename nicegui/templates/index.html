@@ -113,12 +113,12 @@
         element.events.forEach((event) => {
           let event_name = 'on' + event.type[0].toLocaleUpperCase() + event.type.substring(1);
           event.specials.forEach(s => event_name += s[0].toLocaleUpperCase() + s.substring(1));
-          let handler = (e) => {
-            const args = stringifyEvent(event.args ? Object.fromEntries(event.args.map(a => [a, e[a]])) : e);
+          let handler = (...event_args) => {
+            const args = event_args.map(stringifyEvent);
             const emitter = () => window.socket.emit("event", {id: element.id, listener_id: event.listener_id, args});
             throttle(emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
             if (element.props["loopback"] === False && event.type == "update:model-value") {
-              element.props["model-value"] = e;
+              element.props["model-value"] = event_args;
             }
           };
           handler = Vue.withModifiers(handler, event.modifiers);
