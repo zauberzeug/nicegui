@@ -44,6 +44,12 @@
       const loaded_components = new Set();
       const elements = {{ elements | safe }};
 
+      function stringifyEvent(e) {
+        const obj = {};
+        for (let k in e) obj[k] = e[k];
+        return JSON.stringify(obj, (k, v) => v instanceof Node || v instanceof Window ? undefined : v);
+      }
+
       const waitingCallbacks = new Map();
       function throttle(callback, time, leading, trailing, id) {
         if (time <= 0) {
@@ -103,8 +109,7 @@
           let event_name = 'on' + event.type[0].toLocaleUpperCase() + event.type.substring(1);
           event.specials.forEach(s => event_name += s[0].toLocaleUpperCase() + s.substring(1));
           let handler = (e) => {
-            const all = (typeof e !== 'object' || e === null) || !event.args;
-            const args = all ? e : Object.fromEntries(event.args.map(a => [a, e[a]]));
+            const args = stringifyEvent(event.args ? Object.fromEntries(event.args.map(a => [a, e[a]])) : e);
             const emitter = () => window.socket.emit("event", {id: element.id, listener_id: event.listener_id, args});
             throttle(emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
             if (element.props["loopback"] === False && event.type == "update:model-value") {
