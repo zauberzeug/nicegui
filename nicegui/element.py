@@ -243,7 +243,8 @@ class Element(Visibility):
     def _handle_event(self, msg: Dict) -> None:
         listener = self._event_listeners[msg['listener_id']]
         storage.request_contextvar.set(listener.request)
-        events.handle_event(listener.handler, msg, sender=self)
+        args = events.GenericEventArguments(sender=self, client=self.client, args=msg['args'])
+        events.handle_event(listener.handler, args)
 
     def update(self) -> None:
         """Update the element on the client side."""
