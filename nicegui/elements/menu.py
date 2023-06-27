@@ -7,7 +7,6 @@ from .mixins.value_element import ValueElement
 
 
 class Menu(ValueElement):
-    LOOPBACK = False
 
     def __init__(self, *, value: bool = False) -> None:
         """Menu

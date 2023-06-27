@@ -70,8 +70,8 @@ class local_file_picker(ui.dialog):
             })
         self.grid.update()
 
-    def handle_double_click(self, msg: events.GenericEventArguments) -> None:
-        self.path = Path(msg.args['data']['path'])
+    def handle_double_click(self, e: events.GenericEventArguments) -> None:
+        self.path = Path(e.args['data']['path'])
         if self.path.is_dir():
             self.update_grid()
         else:

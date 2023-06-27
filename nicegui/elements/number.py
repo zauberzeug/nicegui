@@ -90,8 +90,8 @@ class Number(ValidationElement, DisableableElement):
         value = min(value, self.max)
         self.set_value(float(self.format % value) if self.format else value)
 
-    def _msg_to_value(self, e: GenericEventArguments) -> Any:
-        return float(e.args) if e.args is not None else None
+    def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+        return float(e.args) if e.args else None
 
     def _value_to_model_value(self, value: Any) -> Any:
         if value is None:

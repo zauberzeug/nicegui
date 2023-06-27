@@ -23,7 +23,7 @@ class Radio(ChoiceElement, DisableableElement):
         """
         super().__init__(tag='q-option-group', options=options, value=value, on_change=on_change)
 
-    def _msg_to_value(self, e: GenericEventArguments) -> Any:
+    def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         return self._values[e.args]
 
     def _value_to_model_value(self, value: Any) -> Any:

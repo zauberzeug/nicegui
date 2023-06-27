@@ -170,7 +170,7 @@ def handle_event(sid: str, msg: Dict) -> None:
     with client:
         sender = client.elements.get(msg['id'])
         if sender:
-            msg['args'] = json.loads(msg['args'])
+            msg['args'] = json.loads(msg.get('args', 'null'))
             sender._handle_event(msg)
 
 

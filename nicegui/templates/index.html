@@ -45,9 +45,14 @@
       const elements = {{ elements | safe }};
 
       function stringifyEvent(e) {
-        const obj = {};
-        for (let k in e) obj[k] = e[k];
-        return JSON.stringify(obj, (k, v) => v instanceof Node || v instanceof Window ? undefined : v);
+        if (e instanceof Event) {
+          const obj = {};
+          for (let k in e) obj[k] = e[k];
+          return JSON.stringify(obj, (k, v) => v instanceof Node || v instanceof Window ? undefined : v);
+        }
+        else {
+          return JSON.stringify(e);
+        }
       }
 
       const waitingCallbacks = new Map();

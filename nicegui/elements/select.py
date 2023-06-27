@@ -36,7 +36,6 @@ class Select(ChoiceElement, DisableableElement):
         """
         self.multiple = multiple
         if multiple:
-            self.EVENT_ARGS = None
             if value is None:
                 value = []
             elif not isinstance(value, list):
@@ -62,7 +61,7 @@ class Select(ChoiceElement, DisableableElement):
         ]
         self.update()
 
-    def _msg_to_value(self, e: GenericEventArguments) -> Any:
+    def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         if self.multiple:
             if e.args is None:
                 return []
