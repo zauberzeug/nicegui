@@ -1,6 +1,10 @@
 export default {
   template: `
-    <q-img v-bind="$attrs" :src="computed_src">
+    <q-img
+      ref="qRef"
+      v-bind="$attrs"
+      :src="computed_src"
+    >
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps || {}" />
       </template>

@@ -213,7 +213,15 @@
               this.elements[element.id] = element;
             }
           });
-          window.socket.on("run_method", (msg) => getElement(msg.id)?.[msg.name](...msg.args));
+          window.socket.on("run_method", (msg) => {
+            const element = getElement(msg.id);
+            if (element === null || element === undefined) return;
+            if (msg.name in element) {
+              element[msg.name](...msg.args);
+            } else {
+              element.$refs.qRef[msg.name](...msg.args);
+            }
+          });
           window.socket.on("run_javascript", (msg) => runJavascript(msg['code'], msg['request_id']));
           window.socket.on("open", (msg) => (location.href = msg.startsWith('/') ? "{{ prefix | safe }}" + msg : msg));
           window.socket.on("download", (msg) => download(msg.url, msg.filename));

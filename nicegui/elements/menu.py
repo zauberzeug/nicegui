@@ -20,10 +20,16 @@ class Menu(ValueElement):
         super().__init__(tag='q-menu', value=value, on_value_change=None)
 
     def open(self) -> None:
+        """Open the menu."""
         self.value = True
 
     def close(self) -> None:
+        """Close the menu."""
         self.value = False
+
+    def toggle(self) -> None:
+        """Toggle the menu."""
+        self.value = not self.value
 
 
 class MenuItem(TextElement):

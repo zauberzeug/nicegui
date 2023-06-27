@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>gui</name>
+  <version>1.0.0</version>
+  <description>This is an example of NiceGUI in a ROS2 node that uses a joystick to send geometry_msgs/Twist messages.</description>
+  <maintainer email="nicegui@zauberzeug.com">Zauberzeug GmbH</maintainer>
+  <license>MIT License</license>
+  
+  <depend>rclpy</depend>
+  <depend>geometry_msgs</depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

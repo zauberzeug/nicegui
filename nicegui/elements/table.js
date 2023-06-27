@@ -1,6 +1,10 @@
 export default {
   template: `
-    <q-table v-bind="$attrs" :columns="convertedColumns">
+    <q-table
+      ref="qRef"
+      v-bind="$attrs"
+      :columns="convertedColumns"
+    >
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps || {}" />
       </template>
