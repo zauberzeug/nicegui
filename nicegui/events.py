@@ -3,7 +3,7 @@ from inspect import Parameter, signature
 from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Optional
 
 from . import background_tasks, globals
-from .helpers import KWONLY_SLOTS
+from .helpers import KWONLY_SLOTS, is_pytest
 
 if TYPE_CHECKING:
     from .client import Client
@@ -22,8 +22,9 @@ class GenericEventArguments(EventArguments):
 
     def __getitem__(self, key: str) -> Any:
         if key == 'args':
-            globals.log.warning('msg["args"] is deprecated, use e.args instead '
-                                '(see https://github.com/zauberzeug/nicegui/pull/1095)')
+            if not is_pytest():  # TODO: remove this check after updating all demos and examples
+                globals.log.warning('msg["args"] is deprecated, use e.args instead '
+                                    '(see https://github.com/zauberzeug/nicegui/pull/1095)')
             return self.args
         raise KeyError(key)
 
