@@ -1,6 +1,7 @@
 export default {
   template: `
     <q-input
+      ref="qRef"
       v-bind="$attrs"
       v-model="inputValue"
       :shadow-text="shadowText"
