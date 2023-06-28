@@ -30,10 +30,10 @@ with ui.dialog() as dialog, ui.card():
     result = ui.markdown()
 
 commands = ['python3 hello.py', 'python3 hello.py NiceGUI', 'python3 slow.py']
-with ui.row():
+with ui.row().classes('items-center'):
     for command in commands:
         ui.button(command, on_click=lambda command=command: run_command(command)).props('no-caps')
-
+    message = ui.input('your message').on('keydown.enter', lambda: run_command(f'python3 hello.py {message.value}'))
 
 # NOTE on windows reload must be disabled to make asyncio.create_subprocess_exec work (see https://github.com/zauberzeug/nicegui/issues/486)
 ui.run(reload=platform.system() != "Windows")
