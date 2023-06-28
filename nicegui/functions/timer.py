@@ -1,6 +1,6 @@
 import asyncio
 import time
-from typing import Any, Callable, Optional
+from typing import Any, Awaitable, Callable, Optional
 
 from .. import background_tasks, globals
 from ..binding import BindableProperty
@@ -89,7 +89,7 @@ class Timer:
         try:
             assert self.callback is not None
             result = self.callback()
-            if is_coroutine_function(self.callback):
+            if isinstance(result, Awaitable):
                 await result
         except Exception as e:
             globals.handle_exception(e)

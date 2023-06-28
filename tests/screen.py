@@ -166,6 +166,7 @@ class Screen:
         self.selenium.get_screenshot_as_file(filename)
 
     def assert_py_logger(self, level: str, message: str) -> None:
+        '''Assert that the Python logger has received a message with the given level and text'''
         try:
             assert self.caplog.records, 'Expected a log message'
             record = self.caplog.records[0]
