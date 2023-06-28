@@ -57,7 +57,7 @@ class Number(ValidationElement, DisableableElement):
             self._props['prefix'] = prefix
         if suffix is not None:
             self._props['suffix'] = suffix
-        self.on('blur', self.sanitize)
+        self.on('blur', self.sanitize, [])
 
     @property
     def min(self) -> float:

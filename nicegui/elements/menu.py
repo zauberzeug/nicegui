@@ -55,4 +55,4 @@ class MenuItem(TextElement):
             if auto_close:
                 assert isinstance(self.menu, Menu)
                 self.menu.close()
-        self.on('click', handle_click)
+        self.on('click', handle_click, [])

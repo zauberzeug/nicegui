@@ -61,7 +61,7 @@ class Table(FilterElement):
             self.update()
             arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
             handle_event(on_select, arguments)
-        self.on('selection', handle_selection)
+        self.on('selection', handle_selection, ['added', 'rows', 'keys'])
 
         self.use_component('nicegui-table')
 

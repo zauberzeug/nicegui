@@ -14,7 +14,7 @@ class IntersectionObserver(Element):
         super().__init__('intersection_observer')
         self.on_intersection = on_intersection
         self.active = True
-        self.on('intersection', self.handle_intersection)
+        self.on('intersection', self.handle_intersection, [])
         self.use_component('intersection_observer')
 
     def handle_intersection(self, _) -> None:
