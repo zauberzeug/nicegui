@@ -224,7 +224,7 @@ class Element(Visibility):
             listener = EventListener(
                 element_id=self.id,
                 type=type,
-                args=[args] if args is None or args == [] or isinstance(args[0], str) else args,
+                args=[args] if args and isinstance(args[0], str) else args,
                 handler=handler,
                 throttle=throttle,
                 leading_events=leading_events,

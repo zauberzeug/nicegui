@@ -47,14 +47,14 @@
       function stringifyEventArgs(args, event_args) {
         const result = [];
         args.forEach((arg, i) => {
-          if (i >= event_args.length) return;
+          if (event_args !== null && i >= event_args.length) return;
           let filtered = {};
           if (typeof arg !== 'object' || arg === null || Array.isArray(arg)) {
             filtered = arg;
           }
           else {
             for (let k in arg) {
-              if (event_args[i] === null || event_args[i].includes(k)) {
+              if (event_args === null || event_args[i] === null || event_args[i].includes(k)) {
                 filtered[k] = arg[k];
               }
             }
