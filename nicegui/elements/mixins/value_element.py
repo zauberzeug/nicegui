@@ -29,7 +29,7 @@ class ValueElement(Element):
             self._send_update_on_value_change = self.LOOPBACK
             self.set_value(self._event_args_to_value(e))
             self._send_update_on_value_change = True
-        self.on(f'update:{self.VALUE_PROP}', handle_change, throttle=throttle)
+        self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
 
     def bind_value_to(self,
                       target_object: Any,

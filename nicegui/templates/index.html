@@ -45,25 +45,23 @@
       const elements = {{ elements | safe }};
 
       function stringifyEventArgs(args, event_args) {
-        return args.map((arg, i) => {
+        const result = [];
+        args.forEach((arg, i) => {
+          if (i >= event_args.length) return;
           let filtered = {};
           if (typeof arg !== 'object' || arg === null || Array.isArray(arg)) {
             filtered = arg;
           }
           else {
             for (let k in arg) {
-              if (event_args[i] === undefined || event_args[i] === null || event_args[i].includes(k)) {
+              if (event_args[i] === null || event_args[i].includes(k)) {
                 filtered[k] = arg[k];
               }
             }
           }
-          if (arg instanceof Event) {
-            return JSON.stringify(filtered, (k, v) => v instanceof Node || v instanceof Window ? undefined : v);
-          }
-          else {
-            return JSON.stringify(filtered);
-          }
+          result.push(JSON.stringify(filtered, (k, v) => v instanceof Node || v instanceof Window ? undefined : v));
         });
+        return result;
       }
 
       const waitingCallbacks = new Map();

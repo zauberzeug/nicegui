@@ -24,7 +24,7 @@ class Toggle(ChoiceElement, DisableableElement):
         super().__init__(tag='q-btn-toggle', options=options, value=value, on_change=on_change)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
-        return self._values[e.args[0]]
+        return self._values[e.args]
 
     def _value_to_model_value(self, value: Any) -> Any:
         return self._values.index(value) if value in self._values else None
