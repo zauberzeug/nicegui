@@ -44,15 +44,17 @@
       const loaded_components = new Set();
       const elements = {{ elements | safe }};
 
-      function stringifyEvent(e) {
-        if (e instanceof Event) {
-          const obj = {};
-          for (let k in e) obj[k] = e[k];
-          return JSON.stringify(obj, (k, v) => v instanceof Node || v instanceof Window ? undefined : v);
-        }
-        else {
-          return JSON.stringify(e);
-        }
+      function stringifyEventArgs(args) {
+        return args.map(arg => {
+          if (arg instanceof Event) {
+            const obj = {};
+            for (let k in arg) obj[k] = arg[k];
+            return JSON.stringify(obj, (k, v) => v instanceof Node || v instanceof Window ? undefined : v);
+          }
+          else {
+            return JSON.stringify(arg);
+          }
+        });
       }
 
       const waitingCallbacks = new Map();
@@ -113,12 +115,16 @@
         element.events.forEach((event) => {
           let event_name = 'on' + event.type[0].toLocaleUpperCase() + event.type.substring(1);
           event.specials.forEach(s => event_name += s[0].toLocaleUpperCase() + s.substring(1));
-          let handler = (...event_args) => {
-            const args = event_args.map(stringifyEvent);
-            const emitter = () => window.socket.emit("event", {id: element.id, listener_id: event.listener_id, args});
+          let handler = (...args) => {
+            const data = {
+              id: element.id,
+              listener_id: event.listener_id,
+              args: stringifyEventArgs(args),
+            };
+            const emitter = () => window.socket.emit("event", data);
             throttle(emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
             if (element.props["loopback"] === False && event.type == "update:model-value") {
-              element.props["model-value"] = event_args;
+              element.props["model-value"] = args;
             }
           };
           handler = Vue.withModifiers(handler, event.modifiers);
