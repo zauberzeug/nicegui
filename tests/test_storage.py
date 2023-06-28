@@ -1,4 +1,5 @@
 import asyncio
+import warnings
 from pathlib import Path
 
 import httpx
@@ -150,3 +151,19 @@ def test_user_and_general_storage_is_persisted(screen: Screen):
     screen.open('/')
     screen.should_contain('user: 1')
     screen.should_contain('general: 4')
+
+
+def test_rapid_storage(screen: Screen):
+    # https://github.com/zauberzeug/nicegui/issues/1099
+    warnings.simplefilter('error')
+
+    ui.button('test', on_click=lambda: (
+        app.storage.general.update(one=1),
+        app.storage.general.update(two=2),
+        app.storage.general.update(three=3),
+    ))
+
+    screen.open('/')
+    screen.click('test')
+    screen.wait(0.5)
+    assert '{"one": 1, "two": 2, "three": 3}' in Path('.nicegui', 'storage_general.json').read_text()
