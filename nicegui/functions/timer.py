@@ -4,7 +4,6 @@ from typing import Any, Awaitable, Callable, Optional
 
 from .. import background_tasks, globals
 from ..binding import BindableProperty
-from ..helpers import is_coroutine_function
 from ..slot import Slot
 
 

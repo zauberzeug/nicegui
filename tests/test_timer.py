@@ -63,7 +63,7 @@ def test_setting_visibility(screen: Screen, once: bool):
     screen.should_not_contain('Some Label')
 
 
-def test_awaiting_coroutine(screen: Screen, capfd):
+def test_awaiting_coroutine(screen: Screen):
     warnings.simplefilter('error')
 
     async def update_user():
