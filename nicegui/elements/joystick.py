@@ -52,6 +52,6 @@ class Joystick(Element):
                                                         client=self.client,
                                                         action='end'))
 
-        self.on('start', handle_start)
-        self.on('move', handle_move, args=['data'], throttle=throttle),
-        self.on('end', handle_end)
+        self.on('start', handle_start, [])
+        self.on('move', handle_move, ['data'], throttle=throttle),
+        self.on('end', handle_end, [])

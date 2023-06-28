@@ -12,7 +12,7 @@ class EventListener:
     id: str = field(init=False)
     element_id: int
     type: str
-    args: Optional[List[str]]
+    args: List[Optional[List[str]]]
     handler: Callable
     throttle: float
     leading_events: bool

@@ -44,15 +44,24 @@
       const loaded_components = new Set();
       const elements = {{ elements | safe }};
 
-      function stringifyEventArgs(args) {
-        return args.map(arg => {
-          if (arg instanceof Event) {
-            const obj = {};
-            for (let k in arg) obj[k] = arg[k];
-            return JSON.stringify(obj, (k, v) => v instanceof Node || v instanceof Window ? undefined : v);
+      function stringifyEventArgs(args, event_args) {
+        return args.map((arg, i) => {
+          let filtered = {};
+          if (typeof arg !== 'object' || arg === null || Array.isArray(arg)) {
+            filtered = arg;
           }
           else {
-            return JSON.stringify(arg);
+            for (let k in arg) {
+              if (event_args[i] === undefined || event_args[i] === null || event_args[i].includes(k)) {
+                filtered[k] = arg[k];
+              }
+            }
+          }
+          if (arg instanceof Event) {
+            return JSON.stringify(filtered, (k, v) => v instanceof Node || v instanceof Window ? undefined : v);
+          }
+          else {
+            return JSON.stringify(filtered);
           }
         });
       }
@@ -119,7 +128,7 @@
             const data = {
               id: element.id,
               listener_id: event.listener_id,
-              args: stringifyEventArgs(args),
+              args: stringifyEventArgs(args, event.args),
             };
             const emitter = () => window.socket.emit("event", data);
             throttle(emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
