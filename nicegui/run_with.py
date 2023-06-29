@@ -31,7 +31,7 @@ def run_with(
     globals.excludes = [e.strip() for e in exclude.split(',')]
     globals.tailwind = True
 
-    set_storage_secret(storage_secret)
+    set_storage_secret(app, storage_secret)
     app.on_event('startup')(lambda: handle_startup(with_welcome_message=False))
     app.on_event('shutdown')(lambda: handle_shutdown())
 

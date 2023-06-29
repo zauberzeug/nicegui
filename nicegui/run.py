@@ -28,7 +28,7 @@ class Server(uvicorn.Server):
         if native_module.method_queue is not None:
             globals.app.native.main_window = native_module.WindowProxy()
 
-        helpers.set_storage_secret(self.config.storage_secret)
+        helpers.set_storage_secret(globals.app, self.config.storage_secret)
         super().run(sockets=sockets)
 
 
