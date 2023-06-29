@@ -36,7 +36,7 @@ class Client:
         self.shared = shared
 
         with Element('q-layout', _client=self).props('view="HHH LpR FFF"').classes('nicegui-layout') as self.layout:
-            with Element('q-page-container') as self.page_container:
+            with Element('q-page-container'):
                 with Element('q-page'):
                     self.content = Element('div').classes('nicegui-content')
 

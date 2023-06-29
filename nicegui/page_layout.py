@@ -29,9 +29,6 @@ class Header(ValueElement):
                  elevated: bool = False) -> None:
         '''Header
 
-        Note: The header is automatically placed above other layout elements in the DOM to improve accessibility.
-        To change the order, use the `move` method.
-
         :param value: whether the header is already opened (default: `True`)
         :param fixed: whether the header should be fixed to the top of the page (default: `True`)
         :param bordered: whether the header should have a border (default: `False`)
@@ -45,8 +42,6 @@ class Header(ValueElement):
         code = list(self.client.layout._props['view'])
         code[1] = 'H' if fixed else 'h'
         self.client.layout._props['view'] = ''.join(code)
-
-        self.move(target_index=0)
 
     def toggle(self):
         '''Toggle the header'''
@@ -73,9 +68,6 @@ class Drawer(Element):
                  bottom_corner: bool = False) -> None:
         '''Drawer
 
-        Note: Depending on the side, the drawer is automatically placed above or below the main page container in the DOM to improve accessibility.
-        To change the order, use the `move` method.
-
         :param side: side of the page where the drawer should be placed (`left` or `right`)
         :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
         :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
@@ -100,9 +92,6 @@ class Drawer(Element):
         code[8 if side == 'left' else 10] = side[0].lower() if bottom_corner else 'f'
         self.client.layout._props['view'] = ''.join(code)
 
-        page_container_index = self.client.layout.default_slot.children.index(self.client.page_container)
-        self.move(target_index=page_container_index if side == 'left' else page_container_index + 1)
-
     def toggle(self) -> None:
         '''Toggle the drawer'''
         self.run_method('toggle')
@@ -126,9 +115,6 @@ class LeftDrawer(Drawer):
                  top_corner: bool = False,
                  bottom_corner: bool = False) -> None:
         '''Left drawer
-
-        Note: The left drawer is automatically placed above the main page container in the DOM to improve accessibility.
-        To change the order, use the `move` method.
 
         :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
         :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
@@ -157,9 +143,6 @@ class RightDrawer(Drawer):
                  bottom_corner: bool = False) -> None:
         '''Right drawer
 
-        Note: The right drawer is automatically placed below the main page container in the DOM to improve accessibility.
-        To change the order, use the `move` method.
-
         :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
         :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
         :param bordered: whether the drawer should have a border (default: `False`)
@@ -185,9 +168,6 @@ class Footer(ValueElement):
                  elevated: bool = False) -> None:
         '''Footer
 
-        Note: The footer is automatically placed below other layout elements in the DOM to improve accessibility.
-        To change the order, use the `move` method.
-
         :param value: whether the footer is already opened (default: `True`)
         :param fixed: whether the footer is fixed or scrolls with the content (default: `True`)
         :param bordered: whether the footer should have a border (default: `False`)
@@ -201,8 +181,6 @@ class Footer(ValueElement):
         code = list(self.client.layout._props['view'])
         code[9] = 'F' if fixed else 'f'
         self.client.layout._props['view'] = ''.join(code)
-
-        self.move(target_index=-1)
 
     def toggle(self) -> None:
         '''Toggle the footer'''
