@@ -105,7 +105,7 @@ def test_refresh_with_arguments(screen: Screen):
 
     @ui.refreshable
     def some_ui(*, b: int):
-        ui.label(f'{a=}, {b=}')
+        ui.label(f'a={a}, b={b}')
 
     some_ui(b=0)
     ui.button('Refresh 1', on_click=lambda: some_ui.refresh(b=1))
