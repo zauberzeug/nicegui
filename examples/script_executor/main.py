@@ -34,7 +34,7 @@ ui.button('python3 slow.py', on_click=lambda: run_command('python3 slow.py')).pr
 with ui.row().classes('items-center'):
     ui.button('python3 hello.py "<message>"', on_click=lambda: run_command(f'python3 hello.py "{message.value}"')) \
         .props('no-caps')
-    message = ui.input('message')
+    message = ui.input('message', value='NiceGUI')
 
 # NOTE on windows reload must be disabled to make asyncio.create_subprocess_exec work (see https://github.com/zauberzeug/nicegui/issues/486)
 ui.run(reload=platform.system() != "Windows")
