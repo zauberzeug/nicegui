@@ -30,13 +30,6 @@ def capabilities(capabilities: Dict) -> Dict:
     return capabilities
 
 
-@pytest.fixture
-def selenium(selenium: webdriver.Chrome) -> webdriver.Chrome:
-    selenium.implicitly_wait(Screen.IMPLICIT_WAIT)
-    selenium.set_page_load_timeout(4)
-    return selenium
-
-
 @pytest.fixture(autouse=True)
 def reset_globals() -> Generator[None, None, None]:
     for path in {'/'}.union(globals.page_routes.values()):
@@ -58,7 +51,7 @@ def remove_all_screenshots() -> None:
             os.remove(os.path.join(Screen.SCREENSHOT_DIR, name))
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope='function')
 def driver(chrome_options: webdriver.ChromeOptions) -> webdriver.Chrome:
     s = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=s, options=chrome_options)
