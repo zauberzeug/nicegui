@@ -44,6 +44,26 @@
       const loaded_components = new Set();
       const elements = {{ elements | safe }};
 
+      function stringifyEventArgs(args, event_args) {
+        const result = [];
+        args.forEach((arg, i) => {
+          if (event_args !== null && i >= event_args.length) return;
+          let filtered = {};
+          if (typeof arg !== 'object' || arg === null || Array.isArray(arg)) {
+            filtered = arg;
+          }
+          else {
+            for (let k in arg) {
+              if (event_args === null || event_args[i] === null || event_args[i].includes(k)) {
+                filtered[k] = arg[k];
+              }
+            }
+          }
+          result.push(JSON.stringify(filtered, (k, v) => v instanceof Node || v instanceof Window ? undefined : v));
+        });
+        return result;
+      }
+
       const waitingCallbacks = new Map();
       function throttle(callback, time, leading, trailing, id) {
         if (time <= 0) {
@@ -102,10 +122,13 @@
         element.events.forEach((event) => {
           let event_name = 'on' + event.type[0].toLocaleUpperCase() + event.type.substring(1);
           event.specials.forEach(s => event_name += s[0].toLocaleUpperCase() + s.substring(1));
-          let handler = (e) => {
-            const all = (typeof e !== 'object' || e === null) || !event.args;
-            const args = all ? e : Object.fromEntries(event.args.map(a => [a, e[a]]));
-            const emitter = () => window.socket.emit("event", {id: element.id, listener_id: event.listener_id, args});
+          let handler = (...args) => {
+            const data = {
+              id: element.id,
+              listener_id: event.listener_id,
+              args: stringifyEventArgs(args, event.args),
+            };
+            const emitter = () => window.socket.emit("event", data);
             throttle(emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
             if (element.props["loopback"] === False && event.type == "update:model-value") {
               element.props["model-value"] = args;

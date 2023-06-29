@@ -50,7 +50,7 @@ def demo(f: Callable) -> Callable:
             ui.markdown(f'````python\n{code}\n````')
             ui.icon('content_copy', size='xs') \
                 .classes('absolute right-2 top-10 opacity-10 hover:opacity-80 cursor-pointer') \
-                .on('click', copy_code)
+                .on('click', copy_code, [])
         with browser_window(title=getattr(f, 'tab', None),
                             classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
             intersection_observer(on_intersection=f)

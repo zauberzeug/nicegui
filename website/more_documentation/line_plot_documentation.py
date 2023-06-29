@@ -1,6 +1,4 @@
-from typing import Dict
-
-from nicegui import ui
+from nicegui import events, ui
 
 
 def main_demo() -> None:
@@ -22,11 +20,11 @@ def main_demo() -> None:
     line_checkbox = ui.checkbox('active').bind_value(line_updates, 'active')
 
     # END OF DEMO
-    def handle_change(msg: Dict) -> None:
+    def handle_change(e: events.GenericEventArguments) -> None:
         def turn_off() -> None:
             line_checkbox.set_value(False)
             ui.notify('Turning off that line plot to save resources on our live demo server. 😎')
-        line_checkbox.value = msg['args']
+        line_checkbox.value = e.args
         if line_checkbox.value:
             ui.timer(10.0, turn_off, once=True)
     line_checkbox.on('update:model-value', handle_change)

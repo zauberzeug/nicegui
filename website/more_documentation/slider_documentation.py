@@ -23,17 +23,17 @@ def more() -> None:
     def throttle_events_with_leading_and_trailing_options():
         ui.label('default')
         ui.slider(min=0, max=10, step=0.1, value=5).props('label-always') \
-            .on('update:model-value', lambda msg: ui.notify(f'{msg["args"]}'),
+            .on('update:model-value', lambda e: ui.notify(e.args),
                 throttle=1.0)
 
         ui.label('leading events only')
         ui.slider(min=0, max=10, step=0.1, value=5).props('label-always') \
-            .on('update:model-value', lambda msg: ui.notify(f'{msg["args"]}'),
+            .on('update:model-value', lambda e: ui.notify(e.args),
                 throttle=1.0, trailing_events=False)
 
         ui.label('trailing events only')
         ui.slider(min=0, max=10, step=0.1, value=5).props('label-always') \
-            .on('update:model-value', lambda msg: ui.notify(f'{msg["args"]}'),
+            .on('update:model-value', lambda e: ui.notify(e.args),
                 throttle=1.0, leading_events=False)
 
     @text_demo('Disable slider', '''

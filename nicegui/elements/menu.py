@@ -7,7 +7,6 @@ from .mixins.value_element import ValueElement
 
 
 class Menu(ValueElement):
-    LOOPBACK = False
 
     def __init__(self, *, value: bool = False) -> None:
         """Menu
@@ -56,4 +55,4 @@ class MenuItem(TextElement):
             if auto_close:
                 assert isinstance(self.menu, Menu)
                 self.menu.close()
-        self.on('click', handle_click)
+        self.on('click', handle_click, [])

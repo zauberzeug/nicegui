@@ -1,9 +1,9 @@
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Optional
 
 from ..dependencies import register_library, register_vue_component
 from ..element import Element
-from ..events import JoystickEventArguments, handle_event
+from ..events import GenericEventArguments, JoystickEventArguments, handle_event
 
 register_vue_component('joystick', Path(__file__).parent / 'joystick.vue')
 register_library('nipplejs', Path(__file__).parent / 'lib' / 'nipplejs' / 'nipplejs.js')
@@ -38,13 +38,13 @@ class Joystick(Element):
                                                           client=self.client,
                                                           action='start'))
 
-        def handle_move(msg: Dict) -> None:
+        def handle_move(e: GenericEventArguments) -> None:
             if self.active:
                 handle_event(on_move, JoystickEventArguments(sender=self,
                                                              client=self.client,
                                                              action='move',
-                                                             x=float(msg['args']['data']['vector']['x']),
-                                                             y=float(msg['args']['data']['vector']['y'])))
+                                                             x=float(e.args['data']['vector']['x']),
+                                                             y=float(e.args['data']['vector']['y'])))
 
         def handle_end() -> None:
             self.active = False
@@ -52,6 +52,6 @@ class Joystick(Element):
                                                         client=self.client,
                                                         action='end'))
 
-        self.on('start', handle_start)
-        self.on('move', handle_move, args=['data'], throttle=throttle),
-        self.on('end', handle_end)
+        self.on('start', handle_start, [])
+        self.on('move', handle_move, ['data'], throttle=throttle),
+        self.on('end', handle_end, [])

@@ -54,10 +54,10 @@ def test_click_events(screen: Screen):
 
 
 def test_generic_events(screen: Screen):
-    ui.label('click_sync_no_args').on('click', click_sync_no_args)
-    ui.label('click_sync_with_args').on('click', click_sync_with_args)
-    ui.label('click_async_no_args').on('click', click_async_no_args)
-    ui.label('click_async_with_args').on('click', click_async_with_args)
+    ui.label('click_sync_no_args').on('click', click_sync_no_args, [])
+    ui.label('click_sync_with_args').on('click', click_sync_with_args, [])
+    ui.label('click_async_no_args').on('click', click_async_no_args, [])
+    ui.label('click_async_with_args').on('click', click_async_with_args, [])
 
     screen.open('/')
     screen.click('click_sync_no_args')
@@ -89,10 +89,10 @@ def test_event_with_update_before_await(screen: Screen):
 
 def test_event_modifiers(screen: Screen):
     events = []
-    ui.input('A').on('keydown', lambda _: events.append('A'))
-    ui.input('B').on('keydown.x', lambda _: events.append('B'))
-    ui.input('C').on('keydown.once', lambda _: events.append('C'))
-    ui.input('D').on('keydown.shift.x', lambda _: events.append('D'))
+    ui.input('A').on('keydown', lambda _: events.append('A'), [])
+    ui.input('B').on('keydown.x', lambda _: events.append('B'), [])
+    ui.input('C').on('keydown.once', lambda _: events.append('C'), [])
+    ui.input('D').on('keydown.shift.x', lambda _: events.append('D'), [])
 
     screen.open('/')
     screen.selenium.find_element(By.XPATH, '//*[@aria-label="A"]').send_keys('x')
@@ -104,7 +104,7 @@ def test_event_modifiers(screen: Screen):
 
 def test_throttling(screen: Screen):
     events = []
-    ui.button('Test', on_click=lambda: events.append(1)).on('click', lambda: events.append(2), throttle=1)
+    ui.button('Test', on_click=lambda: events.append(1)).on('click', lambda: events.append(2), [], throttle=1)
 
     screen.open('/')
     screen.click('Test')
@@ -124,9 +124,9 @@ def test_throttling(screen: Screen):
 def test_throttling_variants(screen: Screen):
     events = []
     value = 0
-    ui.button('Both').on('click', lambda: events.append(value), throttle=1)
-    ui.button('Leading').on('click', lambda: events.append(value), throttle=1, trailing_events=False)
-    ui.button('Trailing').on('click', lambda: events.append(value), throttle=1, leading_events=False)
+    ui.button('Both').on('click', lambda: events.append(value), [], throttle=1)
+    ui.button('Leading').on('click', lambda: events.append(value), [], throttle=1, trailing_events=False)
+    ui.button('Trailing').on('click', lambda: events.append(value), [], throttle=1, leading_events=False)
 
     screen.open('/')
     value = 1

@@ -1,15 +1,14 @@
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, List, Optional
 
 from typing_extensions import Self
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
-from ...events import ValueChangeEventArguments, handle_event
+from ...events import GenericEventArguments, ValueChangeEventArguments, handle_event
 
 
 class ValueElement(Element):
     VALUE_PROP: str = 'model-value'
-    EVENT_ARGS: Optional[List[str]] = ['value']
     LOOPBACK: bool = True
     value = BindableProperty(on_change=lambda sender, value: sender.on_value_change(value))
 
@@ -26,11 +25,11 @@ class ValueElement(Element):
         self._send_update_on_value_change = True
         self.change_handler = on_value_change
 
-        def handle_change(msg: Dict) -> None:
+        def handle_change(e: GenericEventArguments) -> None:
             self._send_update_on_value_change = self.LOOPBACK
-            self.set_value(self._msg_to_value(msg))
+            self.set_value(self._event_args_to_value(e))
             self._send_update_on_value_change = True
-        self.on(f'update:{self.VALUE_PROP}', handle_change, self.EVENT_ARGS, throttle=throttle)
+        self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
 
     def bind_value_to(self,
                       target_object: Any,
@@ -100,8 +99,8 @@ class ValueElement(Element):
         args = ValueChangeEventArguments(sender=self, client=self.client, value=self._value_to_event_value(value))
         handle_event(self.change_handler, args)
 
-    def _msg_to_value(self, msg: Dict) -> Any:
-        return msg['args']
+    def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+        return e.args
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value

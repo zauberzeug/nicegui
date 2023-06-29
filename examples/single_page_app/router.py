@@ -42,6 +42,6 @@ class Router():
 
     def frame(self) -> ui.element:
         self.content = ui.element('router_frame') \
-            .on('open', lambda msg: self.open(msg['args'])) \
+            .on('open', lambda e: self.open(e.args)) \
             .use_component('router_frame')
         return self.content
