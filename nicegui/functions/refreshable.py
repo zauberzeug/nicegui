@@ -18,23 +18,21 @@ class RefreshableTarget:
     args: Tuple[Any, ...]
     kwargs: Dict[str, Any]
 
-    def run(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> Union[None, Awaitable]:
-        args = args or self.args
-        kwargs = kwargs or self.kwargs
+    def run(self, func: Callable[..., Any]) -> Union[None, Awaitable]:
         if is_coroutine_function(func):
             async def wait_for_result() -> None:
                 with self.container:
                     if self.instance is None:
-                        await func(*args, **kwargs)
+                        await func(*self.args, **self.kwargs)
                     else:
-                        await func(self.instance, *args, **kwargs)
+                        await func(self.instance, *self.args, **self.kwargs)
             return wait_for_result()
         else:
             with self.container:
                 if self.instance is None:
-                    func(*args, **kwargs)
+                    func(*self.args, **self.kwargs)
                 else:
-                    func(self.instance, *args, **kwargs)
+                    func(self.instance, *self.args, **self.kwargs)
             return None  # required by mypy
 
 
@@ -60,13 +58,14 @@ class refreshable:
         self.targets.append(target)
         return target.run(self.func)
 
-    def refresh(self, *args: Any, **kwargs: Any) -> None:
+    def refresh(self, **kwargs: Any) -> None:
         self.prune()
         for target in self.targets:
             if target.instance != self.instance:
                 continue
             target.container.clear()
-            result = target.run(self.func, *args, **kwargs)
+            target.kwargs.update(kwargs)
+            result = target.run(self.func)
             if is_coroutine_function(self.func):
                 assert result is not None
                 if globals.loop and globals.loop.is_running():
