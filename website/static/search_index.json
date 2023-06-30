@@ -710,6 +710,11 @@
     "url": "/documentation/refreshable"
   },
   {
+    "title": "Refreshable: Refreshable UI with parameters",
+    "content": "Here is a demo of how to use the refreshable decorator to create a UI that can be refreshed with different parameters.",
+    "url": "/documentation/refreshable#refreshable_ui_with_parameters"
+  },
+  {
     "title": "Refreshable: Refreshable UI for input validation",
     "content": "Here is a demo of how to use the refreshable decorator to give feedback about the validity of user input.",
     "url": "/documentation/refreshable#refreshable_ui_for_input_validation"
