@@ -229,6 +229,11 @@
           });
           window.socket.on("disconnect", () => {
             document.getElementById('popup').style.opacity = 1;
+            const checkAndReload = async () => {
+              const response = await fetch(window.location.href);
+              if (response.ok) window.location.reload();
+            };
+            setInterval(checkAndReload, 500);
           });
           window.socket.on("update", async (msg) => {
             for (const [id, element] of Object.entries(msg)) {
