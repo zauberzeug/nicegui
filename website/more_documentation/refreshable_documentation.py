@@ -21,6 +21,24 @@ def main_demo() -> None:
 
 
 def more() -> None:
+    @text_demo('Refreshable UI with parameters', '''
+        Here is a demo of how to use the refreshable decorator to create a UI that can be refreshed with different parameters.
+    ''')
+    def refreshable_with_parameters():
+        from datetime import datetime
+
+        import pytz
+
+        @ui.refreshable
+        def clock_ui(timezone: str):
+            ui.label(f'Current time in {timezone}:')
+            ui.label(datetime.now(tz=pytz.timezone(timezone)).strftime('%H:%M:%S'))
+
+        clock_ui('Europe/Berlin')
+        ui.button('Refresh', on_click=clock_ui.refresh)
+        ui.button('Refresh for New York', on_click=lambda: clock_ui.refresh('America/New_York'))
+        ui.button('Refresh for Tokyo', on_click=lambda: clock_ui.refresh('Asia/Tokyo'))
+
     @text_demo('Refreshable UI for input validation', '''
         Here is a demo of how to use the refreshable decorator to give feedback about the validity of user input.
     ''')

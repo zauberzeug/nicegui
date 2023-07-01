@@ -98,3 +98,31 @@ def test_multiple_targets(screen: Screen) -> None:
     screen.click('increment B')
     screen.should_contain('A = 2 (3)')
     screen.should_contain('B = 2 (4)')
+
+
+def test_refresh_with_arguments(screen: Screen):
+    a = 0
+
+    @ui.refreshable
+    def some_ui(*, b: int):
+        ui.label(f'a={a}, b={b}')
+
+    some_ui(b=0)
+    ui.button('Refresh 1', on_click=lambda: some_ui.refresh(b=1))
+    ui.button('Refresh 2', on_click=lambda: some_ui.refresh())
+    ui.button('Refresh 3', on_click=some_ui.refresh)
+
+    screen.open('/')
+    screen.should_contain('a=0, b=0')
+
+    a = 1
+    screen.click('Refresh 1')
+    screen.should_contain('a=1, b=1')
+
+    a = 2
+    screen.click('Refresh 2')
+    screen.should_contain('a=2, b=1')
+
+    a = 3
+    screen.click('Refresh 3')
+    screen.should_contain('a=3, b=1')

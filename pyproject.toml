@@ -46,6 +46,7 @@ pandas = [
     { version = "^2.0.0", markers = "python_version >= '3.8'" },
 ]
 secure = "^0.3.0"
+webdriver-manager = "^3.8.6"
 
 [build-system]
 requires = [
