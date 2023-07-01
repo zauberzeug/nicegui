@@ -231,7 +231,7 @@
             document.getElementById('popup').style.opacity = 1;
             const checkAndReload = async () => {
               const response = await fetch(window.location.href);
-              if (response.ok) window.location.reload();
+              if (response.ok || response.status == 404) window.location.reload();
             };
             setInterval(checkAndReload, 500);
           });
