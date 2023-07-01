@@ -52,7 +52,7 @@ def test_click_cell(screen: Screen):
         'columnDefs': [{'field': 'name'}, {'field': 'age'}],
         'rowData': [{'name': 'Alice', 'age': 18}],
     })
-    grid.on('cellClicked', lambda msg: ui.label(f'{msg["args"]["data"]["name"]} has been clicked!'))
+    grid.on('cellClicked', lambda e: ui.label(f'{e.args["data"]["name"]} has been clicked!'))
 
     screen.open('/')
     screen.click('Alice')

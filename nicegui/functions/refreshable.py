@@ -1,14 +1,15 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Awaitable, Callable, Dict, List, Tuple, Union
 
 from typing_extensions import Self
 
 from .. import background_tasks, globals
-from ..dependencies import register_component
+from ..dependencies import register_vue_component
 from ..element import Element
 from ..helpers import KWONLY_SLOTS, is_coroutine_function
 
-register_component('refreshable', __file__, 'refreshable.js')
+register_vue_component('refreshable', Path(__file__).parent / 'refreshable.js')
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -54,16 +55,20 @@ class refreshable:
 
     def __call__(self, *args: Any, **kwargs: Any) -> Union[None, Awaitable]:
         self.prune()
-        target = RefreshableTarget(container=Element('refreshable'), instance=self.instance, args=args, kwargs=kwargs)
+        container = Element('refreshable')
+        container.use_component('refreshable')
+        target = RefreshableTarget(container=container, instance=self.instance, args=args, kwargs=kwargs)
         self.targets.append(target)
         return target.run(self.func)
 
-    def refresh(self) -> None:
+    def refresh(self, *args: Any, **kwargs: Any) -> None:
         self.prune()
         for target in self.targets:
             if target.instance != self.instance:
                 continue
             target.container.clear()
+            target.args = args or target.args
+            target.kwargs.update(kwargs)
             result = target.run(self.func)
             if is_coroutine_function(self.func):
                 assert result is not None

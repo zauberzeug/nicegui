@@ -1,0 +1,9 @@
+version: "3"
+services:
+  nicegui:
+    build:
+      context: .
+    ports:
+      - 8080:8080
+    volumes:
+      - ./ros2_ws/src:/ros2_ws/src

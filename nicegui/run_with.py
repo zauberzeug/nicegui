@@ -17,7 +17,6 @@ def run_with(
     dark: Optional[bool] = False,
     language: Language = 'en-US',
     binding_refresh_interval: float = 0.1,
-    exclude: str = '',
     mount_path: str = '/',
     storage_secret: Optional[str] = None,
 ) -> None:
@@ -28,7 +27,6 @@ def run_with(
     globals.dark = dark
     globals.language = language
     globals.binding_refresh_interval = binding_refresh_interval
-    globals.excludes = [e.strip() for e in exclude.split(',')]
     globals.tailwind = True
 
     set_storage_secret(storage_secret)

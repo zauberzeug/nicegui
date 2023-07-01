@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-import warnings
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Union
 
@@ -42,6 +41,8 @@ class Element(Visibility):
         self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
+        self.components: List[str] = []
+        self.libraries: List[str] = []
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
 
@@ -96,6 +97,8 @@ class Element(Visibility):
             'text': self._text,
             'slots': self._collect_slot_dict(),
             'events': [listener.to_dict() for listener in self._event_listeners.values()],
+            'libraries': self.libraries,
+            'components': self.components,
         }
 
     @staticmethod
@@ -218,14 +221,10 @@ class Element(Visibility):
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
         """
         if handler:
-            if args and '*' in args:
-                url = f'https://github.com/zauberzeug/nicegui/issues/644'
-                warnings.warn(DeprecationWarning(f'Event args "*" is deprecated, omit this parameter instead ({url})'))
-                args = None
             listener = EventListener(
                 element_id=self.id,
                 type=type,
-                args=args,
+                args=[args] if args and isinstance(args[0], str) else args,
                 handler=handler,
                 throttle=throttle,
                 leading_events=leading_events,
@@ -239,7 +238,8 @@ class Element(Visibility):
     def _handle_event(self, msg: Dict) -> None:
         listener = self._event_listeners[msg['listener_id']]
         storage.request_contextvar.set(listener.request)
-        events.handle_event(listener.handler, msg, sender=self)
+        args = events.GenericEventArguments(sender=self, client=self.client, args=msg['args'])
+        events.handle_event(listener.handler, args)
 
     def update(self) -> None:
         """Update the element on the client side."""
@@ -306,3 +306,13 @@ class Element(Visibility):
 
         Can be overridden to perform cleanup.
         """
+
+    def use_component(self, name: str) -> Self:
+        """Register a ``*.js`` Vue component to be used by this element."""
+        self.components.append(name)
+        return self
+
+    def use_library(self, name: str) -> Self:
+        """Register a JavaScript library to be used by this element."""
+        self.libraries.append(name)
+        return self

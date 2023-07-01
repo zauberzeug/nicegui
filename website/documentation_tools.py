@@ -50,7 +50,7 @@ def subheading(text: str, *, make_menu_entry: bool = True, more_link: Optional[s
                 if await ui.run_javascript(f'!!document.querySelector("div.q-drawer__backdrop")'):
                     menu.hide()
                     ui.open(f'#{name}')
-            ui.link(text, target=f'#{name}').props('data-close-overlay').on('click', click)
+            ui.link(text, target=f'#{name}').props('data-close-overlay').on('click', click, [])
 
 
 def render_docstring(doc: str, with_params: bool = True) -> ui.html:

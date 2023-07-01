@@ -1,13 +1,15 @@
-from typing import Any, Callable, Dict, List
+from pathlib import Path
+from typing import Any, Callable, List
 
 from typing_extensions import Literal
 
 from ..binding import BindableProperty
-from ..dependencies import register_component
+from ..dependencies import register_vue_component
 from ..element import Element
-from ..events import KeyboardAction, KeyboardKey, KeyboardModifiers, KeyEventArguments, handle_event
+from ..events import (GenericEventArguments, KeyboardAction, KeyboardKey, KeyboardModifiers, KeyEventArguments,
+                      handle_event)
 
-register_component('keyboard', __file__, 'keyboard.js')
+register_vue_component('keyboard', Path(__file__).parent / 'keyboard.js')
 
 
 class Keyboard(Element):
@@ -35,26 +37,27 @@ class Keyboard(Element):
         self._props['repeating'] = repeating
         self._props['ignore'] = ignore
         self.on('key', self.handle_key)
+        self.use_component('keyboard')
 
-    def handle_key(self, msg: Dict) -> None:
+    def handle_key(self, e: GenericEventArguments) -> None:
         if not self.active:
             return
 
         action = KeyboardAction(
-            keydown=msg['args']['action'] == 'keydown',
-            keyup=msg['args']['action'] == 'keyup',
-            repeat=msg['args']['repeat'],
+            keydown=e.args['action'] == 'keydown',
+            keyup=e.args['action'] == 'keyup',
+            repeat=e.args['repeat'],
         )
         modifiers = KeyboardModifiers(
-            alt=msg['args']['altKey'],
-            ctrl=msg['args']['ctrlKey'],
-            meta=msg['args']['metaKey'],
-            shift=msg['args']['shiftKey'],
+            alt=e.args['altKey'],
+            ctrl=e.args['ctrlKey'],
+            meta=e.args['metaKey'],
+            shift=e.args['shiftKey'],
         )
         key = KeyboardKey(
-            name=msg['args']['key'],
-            code=msg['args']['code'],
-            location=msg['args']['location'],
+            name=e.args['key'],
+            code=e.args['code'],
+            location=e.args['location'],
         )
         arguments = KeyEventArguments(
             sender=self,

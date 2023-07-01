@@ -1,11 +1,13 @@
+from pathlib import Path
 from typing import Dict, Union
 
 import plotly.graph_objects as go
 
-from ..dependencies import js_dependencies, register_component
+from ..dependencies import register_library, register_vue_component
 from ..element import Element
 
-register_component('plotly', __file__, 'plotly.vue', [], ['lib/plotly.min.js'])
+register_vue_component('plotly', Path(__file__).parent / 'plotly.vue')
+register_library('plotly', Path(__file__).parent / 'lib' / 'plotly' / 'plotly.min.js')
 
 
 class Plotly(Element):
@@ -26,9 +28,9 @@ class Plotly(Element):
                        a `dict` object with keys `data`, `layout`, `config` (optional).
         """
         super().__init__('plotly')
+        self.use_library('plotly')
 
         self.figure = figure
-        self._props['lib'] = [d.import_path for d in js_dependencies.values() if d.path.name == 'plotly.min.js'][0]
         self.update()
 
     def update_figure(self, figure: Union[Dict, go.Figure]):
@@ -37,7 +39,11 @@ class Plotly(Element):
         self.update()
 
     def update(self) -> None:
-        self._props['options'] = self._get_figure_json()
+        super().update()
+        options = self._get_figure_json()
+        options['config'] = \
+            {**options['config'], **{'responsive': True}} if 'config' in options else {'responsive': True}
+        self._props['options'] = options
         self.run_method('update', self._props['options'])
 
     def _get_figure_json(self) -> Dict:

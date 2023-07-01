@@ -96,7 +96,7 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
         add_star().classes('max-[490px]:hidden')
         with ui.row().classes('lg:hidden'):
             with ui.button(icon='more_vert').props('flat color=white round'):
-                with ui.menu().classes('bg-primary text-white text-lg').props(remove='no-parent-event'):
+                with ui.menu().classes('bg-primary text-white text-lg'):
                     for title, target in menu_items.items():
                         ui.menu_item(title, on_click=lambda target=target: ui.open(target))
 
@@ -281,9 +281,10 @@ async def index_page(client: Client) -> None:
             example_link('Single Page App', 'navigate without reloading the page')
             example_link('Chat App', 'a simple chat app')
             example_link('Chat with AI', 'a simple chat app with AI')
-            example_link('SQLite Database', 'CRUD operations on a SQLite database')
+            example_link('SQLite Database', 'CRUD operations on a SQLite database with async-support through Tortoise ORM')
             example_link('Pandas DataFrame', 'displays an editable [pandas](https://pandas.pydata.org) DataFrame')
             example_link('Lightbox', 'A thumbnail gallery where each image can be clicked to enlarge')
+            example_link('ROS2', 'Using NiceGUI as web interface for a ROS2 robot')
 
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')

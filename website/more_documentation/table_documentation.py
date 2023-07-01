@@ -74,19 +74,15 @@ def more() -> None:
             {'name': 'Bob', 'age': 21},
             {'name': 'Carol'},
         ]
-        visible_columns = {column['name'] for column in columns}
         table = ui.table(columns=columns, rows=rows, row_key='name')
 
         def toggle(column: Dict, visible: bool) -> None:
-            if visible:
-                visible_columns.add(column['name'])
-            else:
-                visible_columns.remove(column['name'])
-            table._props['columns'] = [column for column in columns if column['name'] in visible_columns]
+            column['classes'] = '' if visible else 'hidden'
+            column['headerClasses'] = '' if visible else 'hidden'
             table.update()
 
         with ui.button(icon='menu'):
-            with ui.menu().props(remove='no-parent-event'), ui.column().classes('gap-0 p-2'):
+            with ui.menu(), ui.column().classes('gap-0 p-2'):
                 for column in columns:
                     ui.switch(column['label'], value=True, on_change=lambda e, column=column: toggle(column, e.value))
 
@@ -95,7 +91,7 @@ def more() -> None:
         After emitting a `rename` event from the scoped slot, the `rename` function updates the table rows.
     ''')
     def table_with_drop_down_selection():
-        from typing import Dict
+        from nicegui import events
 
         columns = [
             {'name': 'name', 'label': 'Name', 'field': 'name'},
@@ -108,10 +104,10 @@ def more() -> None:
         ]
         name_options = ['Alice', 'Bob', 'Carol']
 
-        def rename(msg: Dict) -> None:
+        def rename(e: events.GenericEventArguments) -> None:
             for row in rows:
-                if row['id'] == msg['args']['id']:
-                    row['name'] = msg['args']['name']
+                if row['id'] == e.args['id']:
+                    row['name'] = e.args['name']
             ui.notify(f'Table.rows is now: {table.rows}')
 
         table = ui.table(columns=columns, rows=rows, row_key='name').classes('w-full')

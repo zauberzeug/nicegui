@@ -18,7 +18,7 @@ from nicegui.json import NiceGUIJSONResponse
 from . import __version__, background_tasks, binding, favicon, globals, outbox
 from .app import App
 from .client import Client
-from .dependencies import js_components, js_dependencies
+from .dependencies import js_components, libraries
 from .element import Element
 from .error import error_content
 from .helpers import is_file, safe_invoke
@@ -44,16 +44,21 @@ def index(request: Request) -> Response:
     return globals.index_client.build_response(request)
 
 
-@app.get(f'/_nicegui/{__version__}' + '/dependencies/{id}/{name}')
-def get_dependencies(id: int, name: str):
-    if id in js_dependencies and js_dependencies[id].path.exists() and js_dependencies[id].path.name == name:
-        return FileResponse(js_dependencies[id].path, media_type='text/javascript')
-    raise HTTPException(status_code=404, detail=f'dependency "{name}" with ID {id} not found')
+@app.get(f'/_nicegui/{__version__}' + '/library/{name}/{file}')
+def get_dependencies(name: str, file: str):
+    if name in libraries and libraries[name]['path'].exists():
+        filepath = Path(libraries[name]['path']).parent / file
+        if filepath.exists() and not filepath.is_dir():
+            return FileResponse(filepath, media_type='text/javascript')
+        return FileResponse(libraries[name]['path'], media_type='text/javascript')
+    raise HTTPException(status_code=404, detail=f'dependency "{name}" not found')
 
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{name}')
 def get_components(name: str):
-    return FileResponse(js_components[name].path, media_type='text/javascript')
+    if name in js_components and js_components[name]['path'].exists():
+        return FileResponse(js_components[name]['path'], media_type='text/javascript')
+    raise HTTPException(status_code=404, detail=f'library "{name}" not found')
 
 
 @app.on_event('startup')
@@ -102,7 +107,7 @@ def print_welcome_message():
     addresses = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ['localhost'] + sorted(ips)]
     if len(addresses) >= 2:
         addresses[-1] = 'and ' + addresses[-1]
-    print(f'NiceGUI ready to go on {", ".join(addresses)}')
+    print(f'NiceGUI ready to go on {", ".join(addresses)}', flush=True)
 
 
 @app.on_event('shutdown')
@@ -181,6 +186,9 @@ def handle_event(client: Client, msg: Dict) -> None:
     with client:
         sender = client.elements.get(msg['id'])
         if sender:
+            msg['args'] = [json.loads(arg) for arg in msg.get('args', [])]
+            if len(msg['args']) == 1:
+                msg['args'] = msg['args'][0]
             sender._handle_event(msg)
 
 

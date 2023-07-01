@@ -1,21 +1,21 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from .. import binding, globals
-from ..dependencies import register_component
+from ..dependencies import register_library, register_vue_component
 from ..element import Element
-from ..events import SceneClickEventArguments, SceneClickHit, handle_event
+from ..events import GenericEventArguments, SceneClickEventArguments, SceneClickHit, handle_event
 from ..helpers import KWONLY_SLOTS
 from .scene_object3d import Object3D
 
-register_component('scene', __file__, 'scene.js', [
-    'lib/three.min.js',
-    'lib/CSS2DRenderer.js',
-    'lib/CSS3DRenderer.js',
-    'lib/OrbitControls.js',
-    'lib/STLLoader.js',
-    'lib/tween.umd.min.js',
-])
+register_vue_component('scene', Path(__file__).parent / 'scene.js')
+register_library('three', Path(__file__).parent / 'lib' / 'three' / 'three.module.js', expose=True)
+register_library('CSS2DRenderer', Path(__file__).parent / 'lib' / 'three' / 'modules' / 'CSS2DRenderer.js', expose=True)
+register_library('CSS3DRenderer', Path(__file__).parent / 'lib' / 'three' / 'modules' / 'CSS3DRenderer.js', expose=True)
+register_library('OrbitControls', Path(__file__).parent / 'lib' / 'three' / 'modules' / 'OrbitControls.js', expose=True)
+register_library('STLLoader', Path(__file__).parent / 'lib' / 'three' / 'modules' / 'STLLoader.js', expose=True)
+register_library('tween', Path(__file__).parent / 'lib' / 'tween' / 'tween.umd.js')
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -82,10 +82,17 @@ class Scene(Element):
         self.is_initialized = False
         self.on('init', self.handle_init)
         self.on('click3d', self.handle_click)
+        self.use_component('scene')
+        self.use_library('three')
+        self.use_library('CSS2DRenderer')
+        self.use_library('CSS3DRenderer')
+        self.use_library('OrbitControls')
+        self.use_library('STLLoader')
+        self.use_library('tween')
 
-    def handle_init(self, msg: Dict) -> None:
+    def handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True
-        with globals.socket_id(msg['args']['socket_id']):
+        with globals.socket_id(e.args['socket_id']):
             self.move_camera(duration=0)
             for object in self.objects.values():
                 object.send()
@@ -95,23 +102,23 @@ class Scene(Element):
             return
         super().run_method(name, *args)
 
-    def handle_click(self, msg: Dict) -> None:
+    def handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
             sender=self,
             client=self.client,
-            click_type=msg['args']['click_type'],
-            button=msg['args']['button'],
-            alt=msg['args']['alt_key'],
-            ctrl=msg['args']['ctrl_key'],
-            meta=msg['args']['meta_key'],
-            shift=msg['args']['shift_key'],
+            click_type=e.args['click_type'],
+            button=e.args['button'],
+            alt=e.args['alt_key'],
+            ctrl=e.args['ctrl_key'],
+            meta=e.args['meta_key'],
+            shift=e.args['shift_key'],
             hits=[SceneClickHit(
                 object_id=hit['object_id'],
                 object_name=hit['object_name'],
                 x=hit['point']['x'],
                 y=hit['point']['y'],
                 z=hit['point']['z'],
-            ) for hit in msg['args']['hits']],
+            ) for hit in e.args['hits']],
         )
         handle_event(self.on_click, arguments)
 

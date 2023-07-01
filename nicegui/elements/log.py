@@ -1,11 +1,12 @@
 import urllib.parse
 from collections import deque
+from pathlib import Path
 from typing import Any, Optional
 
-from ..dependencies import register_component
+from ..dependencies import register_vue_component
 from ..element import Element
 
-register_component('log', __file__, 'log.js')
+register_vue_component('log', Path(__file__).parent / 'log.js')
 
 
 class Log(Element):
@@ -22,6 +23,7 @@ class Log(Element):
         self._props['lines'] = ''
         self._classes = ['nicegui-log']
         self.lines: deque[str] = deque(maxlen=max_lines)
+        self.use_component('log')
         self.total_count: int = 0
 
     def push(self, line: Any) -> None:

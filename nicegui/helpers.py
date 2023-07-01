@@ -27,6 +27,11 @@ mimetypes.init()
 KWONLY_SLOTS = {'kw_only': True, 'slots': True} if sys.version_info >= (3, 10) else {}
 
 
+def is_pytest() -> bool:
+    """Check if the code is running in pytest."""
+    return 'pytest' in sys.modules
+
+
 def is_coroutine_function(object: Any) -> bool:
     """Check if the object is a coroutine function.
 

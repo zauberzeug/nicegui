@@ -41,7 +41,6 @@ favicon: Optional[Union[str, Path]]
 dark: Optional[bool]
 language: Language
 binding_refresh_interval: float
-excludes: List[str]
 tailwind: bool
 air: Optional['Air'] = None
 socket_io_js_extra_headers: Dict = {}

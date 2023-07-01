@@ -1,12 +1,17 @@
 export default {
   props: ["options"],
   template: `
-      <q-select v-bind="$attrs" :options="filteredOptions" @filter="filterFn">
-          <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
-              <slot :name="slot" v-bind="slotProps || {}" />
-          </template>
-      </q-select>
-    `,
+    <q-select
+      ref="qRef"
+      v-bind="$attrs"
+      :options="filteredOptions"
+      @filter="filterFn"
+    >
+      <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
+        <slot :name="slot" v-bind="slotProps || {}" />
+      </template>
+    </q-select>
+  `,
   data() {
     return {
       initialOptions: this.options,

@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
-from ..dependencies import register_component
-from ..events import MouseEventArguments, handle_event
+from ..dependencies import register_vue_component
+from ..events import GenericEventArguments, MouseEventArguments, handle_event
 from .mixins.content_element import ContentElement
 from .mixins.source_element import SourceElement
 
-register_component('interactive_image', __file__, 'interactive_image.js')
+register_vue_component('interactive_image', Path(__file__).parent / 'interactive_image.js')
 
 
 class InteractiveImage(SourceElement, ContentElement):
@@ -38,22 +38,23 @@ class InteractiveImage(SourceElement, ContentElement):
         super().__init__(tag='interactive_image', source=source, content=content)
         self._props['events'] = events
         self._props['cross'] = cross
+        self.use_component('interactive_image')
 
-        def handle_mouse(msg: Dict) -> None:
+        def handle_mouse(e: GenericEventArguments) -> None:
             if on_mouse is None:
                 return
             arguments = MouseEventArguments(
                 sender=self,
                 client=self.client,
-                type=msg['args'].get('mouse_event_type'),
-                image_x=msg['args'].get('image_x'),
-                image_y=msg['args'].get('image_y'),
-                button=msg['args'].get('button', 0),
-                buttons=msg['args'].get('buttons', 0),
-                alt=msg['args'].get('alt', False),
-                ctrl=msg['args'].get('ctrl', False),
-                meta=msg['args'].get('meta', False),
-                shift=msg['args'].get('shift', False),
+                type=e.args.get('mouse_event_type'),
+                image_x=e.args.get('image_x'),
+                image_y=e.args.get('image_y'),
+                button=e.args.get('button', 0),
+                buttons=e.args.get('buttons', 0),
+                alt=e.args.get('alt', False),
+                ctrl=e.args.get('ctrl', False),
+                meta=e.args.get('meta', False),
+                shift=e.args.get('shift', False),
             )
             return handle_event(on_mouse, arguments)
         self.on('mouse', handle_mouse)

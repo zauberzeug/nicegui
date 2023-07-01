@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import ast
+import inspect
 import json
 import os
 import re
@@ -74,6 +75,11 @@ class DocVisitor(ast.NodeVisitor):
             if docstring is None:
                 api = getattr(ui, self.topic) if hasattr(ui, self.topic) else getattr(app, self.topic)
                 docstring = api.__doc__ or api.__init__.__doc__
+                for name, method in api.__dict__.items():
+                    if not name.startswith('_') and inspect.isfunction(method):
+                        # add method name to docstring
+                        docstring += name + ' '
+                        docstring += method.__doc__ or ''
             lines = cleanup(docstring).splitlines()
             self.add_to_search_index(lines[0], lines[1:], main=True)
 
@@ -126,10 +132,11 @@ class MainVisitor(ast.NodeVisitor):
         if function_name == 'example_link':
             title = ast_string_node_to_string(node.args[0])
             name = name = title.lower().replace(' ', '_')
+            file = 'main.py' if not 'ros' in name else ''  # TODO: generalize hack to use folder if main.py is not available
             documents.append({
                 'title': 'Example: ' + title,
                 'content': ast_string_node_to_string(node.args[1]),
-                'url': f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/main.py',
+                'url': f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/{file}',
             })
 
 

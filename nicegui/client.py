@@ -11,7 +11,7 @@ from fastapi.templating import Jinja2Templates
 from nicegui import json
 
 from . import __version__, globals, outbox
-from .dependencies import generate_js_imports, generate_vue_content
+from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
 
@@ -37,7 +37,7 @@ class Client:
         self.on_air = False
 
         with Element('q-layout', _client=self).props('view="HHH LpR FFF"').classes('nicegui-layout') as self.layout:
-            with Element('q-page-container'):
+            with Element('q-page-container') as self.page_container:
                 with Element('q-page'):
                     self.content = Element('div').classes('nicegui-content')
 
@@ -70,17 +70,18 @@ class Client:
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
-        vue_html, vue_styles, vue_scripts = generate_vue_content()
         elements = json.dumps({id: element._to_dict() for id, element in self.elements.items()})
+        vue_html, vue_styles, vue_scripts, import_maps, js_imports = generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse('index.html', {
             'request': request,
             'version': __version__,
             'client_id': str(self.id),
             'elements': elements,
             'head_html': self.head_html,
-            'body_html': f'{self.body_html}\n{vue_html}\n{vue_styles}',
+            'body_html': f'{vue_styles}\n{self.body_html}\n{vue_html}',
             'vue_scripts': vue_scripts,
-            'js_imports': generate_js_imports(prefix),
+            'import_maps': import_maps,
+            'js_imports': js_imports,
             'title': self.page.resolve_title(),
             'viewport': self.page.resolve_viewport(),
             'favicon_url': get_favicon_url(self.page, prefix),

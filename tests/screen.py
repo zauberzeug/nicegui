@@ -31,7 +31,7 @@ class Screen:
         self.ui_run_kwargs = {'port': PORT, 'show': False, 'reload': False}
 
     def start_server(self) -> None:
-        '''Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script.'''
+        """Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script."""
         self.server_thread = threading.Thread(target=ui.run, kwargs=self.ui_run_kwargs)
         self.server_thread.start()
 
@@ -45,17 +45,17 @@ class Screen:
             return False
 
     def stop_server(self) -> None:
-        '''Stop the webserver.'''
+        """Stop the webserver."""
         self.close()
         self.caplog.clear()
         globals.server.should_exit = True
         self.server_thread.join()
 
     def open(self, path: str, timeout: float = 3.0) -> None:
-        '''Try to open the page until the server is ready or we time out.
+        """Try to open the page until the server is ready or we time out.
 
         If the server is not yet running, start it.
-        '''
+        """
         if self.server_thread is None:
             self.start_server()
         deadline = time.time() + timeout
@@ -140,8 +140,8 @@ class Screen:
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 
-    def find_by_id(self, id: str) -> WebElement:
-        return self.selenium.find_element(By.ID, id)
+    def find_element(self, element: ui.element) -> WebElement:
+        return self.selenium.find_element(By.ID, f'c{element.id}')
 
     def find_by_tag(self, name: str) -> WebElement:
         return self.selenium.find_element(By.TAG_NAME, name)
@@ -166,6 +166,7 @@ class Screen:
         self.selenium.get_screenshot_as_file(filename)
 
     def assert_py_logger(self, level: str, message: str) -> None:
+        """Assert that the Python logger has received a message with the given level and text."""
         try:
             assert self.caplog.records, 'Expected a log message'
             record = self.caplog.records[0]

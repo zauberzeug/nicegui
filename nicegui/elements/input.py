@@ -1,11 +1,12 @@
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
-from ..dependencies import register_component
+from ..dependencies import register_vue_component
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
 from .mixins.validation_element import ValidationElement
 
-register_component('nicegui-input', __file__, 'input.js')
+register_vue_component('nicegui-input', Path(__file__).parent / 'input.js')
 
 
 class Input(ValidationElement, DisableableElement):
@@ -58,7 +59,14 @@ class Input(ValidationElement, DisableableElement):
 
         self._props['autocomplete'] = autocomplete or []
 
+        self.use_component('nicegui-input')
+
     def set_autocomplete(self, autocomplete: Optional[List[str]]) -> None:
         """Set the autocomplete list."""
         self._props['autocomplete'] = autocomplete
         self.update()
+
+    def on_value_change(self, value: Any) -> None:
+        super().on_value_change(value)
+        if self._send_update_on_value_change:
+            self.run_method('updateValue')
