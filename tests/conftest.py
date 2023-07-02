@@ -78,4 +78,5 @@ def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pyt
     logs = screen.caplog.get_records('call')
     assert not logs, f'There were unexpected logs:\n-------\n{logs}\n-------'
     screen.stop_server()
-    shutil.rmtree(DOWNLOAD_DIR)
+    if DOWNLOAD_DIR.exists():
+        shutil.rmtree(DOWNLOAD_DIR)
