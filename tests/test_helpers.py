@@ -7,6 +7,7 @@ from pathlib import Path
 from nicegui import helpers
 
 TEST_DIR = Path(__file__).parent
+DOWNLOAD_DIR = TEST_DIR / 'download'
 
 
 def test_is_port_open():

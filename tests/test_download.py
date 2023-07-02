@@ -1,23 +1,31 @@
-from fastapi import HTTPException
+from pathlib import Path
+from fastapi.responses import PlainTextResponse
 
 from nicegui import app, ui
 
-from .screen import PORT, Screen
+from .screen import Screen
+from .test_helpers import TEST_DIR, DOWNLOAD_DIR
+
+IMAGE_FILE = Path(TEST_DIR).parent / 'examples' / 'slideshow' / 'slides' / 'slide1.jpg'
 
 
-def test_download(screen: Screen):
-    success = False
-
-    @app.get('/static/test.py')
+def test_download_text_file(screen: Screen):
+    @app.get('/static/test.txt')
     def test():
-        nonlocal success
-        success = True
-        raise HTTPException(404, 'Not found')
+        return PlainTextResponse('test')
 
-    ui.button('Download', on_click=lambda: ui.download('static/test.py'))
+    ui.button('Download', on_click=lambda: ui.download('static/test.txt'))
 
     screen.open('/')
     screen.click('Download')
     screen.wait(0.5)
-    assert success
-    screen.assert_py_logger('WARNING', f'http://localhost:{PORT}/static/test.py not found')
+    assert (DOWNLOAD_DIR / 'test.txt').read_text() == 'test'
+
+
+def test_downloading_local_file_as_src(screen: Screen):
+    ui.button('download', on_click=lambda: ui.download(IMAGE_FILE))
+
+    screen.open('/')
+    screen.click('download')
+    screen.wait(0.5)
+    assert (DOWNLOAD_DIR / 'slide1.jpg').exists()

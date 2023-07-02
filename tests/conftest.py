@@ -1,5 +1,6 @@
 import importlib
 import os
+import shutil
 from typing import Dict, Generator
 
 import icecream
@@ -10,6 +11,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from nicegui import Client, globals
 from nicegui.page import page
+from .test_helpers import DOWNLOAD_DIR
 
 from .screen import Screen
 
@@ -21,6 +23,11 @@ def chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeO
     chrome_options.add_argument('headless')
     chrome_options.add_argument('disable-gpu')
     chrome_options.add_argument('window-size=600x600')
+    chrome_options.add_experimental_option('prefs', {
+        "download.default_directory": str(DOWNLOAD_DIR),
+        "download.prompt_for_download": False,  # To auto download the file
+        "download.directory_upgrade": True,
+    })
     return chrome_options
 
 
@@ -71,3 +78,4 @@ def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pyt
     logs = screen.caplog.get_records('call')
     assert not logs, f'There were unexpected logs:\n-------\n{logs}\n-------'
     screen.stop_server()
+    shutil.rmtree(DOWNLOAD_DIR)
