@@ -23,3 +23,15 @@ def more() -> None:
         # ui.query('body').classes('bg-gradient-to-t from-blue-400 to-blue-100')
         # END OF DEMO
         globals.get_slot_stack()[-1].parent.classes('bg-gradient-to-t from-blue-400 to-blue-100')
+
+    @text_demo('Modify defaul page padding', '''
+        By default, NiceGUI provides a build-in padding around the content of the page.
+        You can modify it by using the class selector `.nicegui-content`.
+    ''')
+    def remove_padding():
+        # ui.query('.nicegui-content').classes('p-0')
+        globals.get_slot_stack()[-1].parent.classes(remove='p-4')  # HIDE
+        # with ui.column().classes('h-screen w-full bg-gray-400 justify-between'):
+        with ui.column().classes('h-full w-full bg-gray-400 justify-between'):  # HIDE
+            ui.label('Top-Left')
+            ui.label('Bottom-Right').classes('self-end')
