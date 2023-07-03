@@ -34,8 +34,12 @@ with ui.table(title='My Team', columns=columns, rows=rows, selection='multiple',
             with table.cell():
                 new_age = ui.number('Age')
 
+def remove_from_table():
+    table.remove_rows(*table.selected)
+    table.selected.clear()
+
 ui.label().bind_text_from(table, 'selected', lambda val: f'Current selection: {val}')
-ui.button('Remove', on_click=lambda: table.remove_rows(*table.selected)) \
+ui.button('Remove', on_click=remove_from_table) \
     .bind_visibility_from(table, 'selected', backward=lambda val: bool(val))
 
 ui.run()
