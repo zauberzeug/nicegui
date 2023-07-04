@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Callable, Optional
 
 from .label import Label
 from .mixins.color_elements import TextColorElement
@@ -19,6 +19,7 @@ class Knob(ValueElement, DisableableElement, TextColorElement):
                  track_color: Optional[str] = None,
                  size: Optional[str] = None,
                  show_value: bool = False,
+                 on_change: Optional[Callable[..., Any]] = None,
                  ) -> None:
         """Knob
 
@@ -34,8 +35,9 @@ class Knob(ValueElement, DisableableElement, TextColorElement):
         :param track_color: color name for the track of the component, examples: primary, teal-10
         :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem
         :param show_value: whether to show the value as text
+        :param on_change: callback to execute when the value changes
         """
-        super().__init__(tag='q-knob', value=value, on_value_change=None, throttle=0.05, text_color=color)
+        super().__init__(tag='q-knob', value=value, on_value_change=on_change, throttle=0.05, text_color=color)
 
         self._props['min'] = min
         self._props['max'] = max
