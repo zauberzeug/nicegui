@@ -1,8 +1,9 @@
-from .mixins.value_element import ValueElement
-from .mixins.disableable_element import DisableableElement
-from .mixins.color_elements import TextColorElement
-from .label import Label
 from typing import Any, Callable, Optional
+
+from .label import Label
+from .mixins.color_elements import TextColorElement
+from .mixins.disableable_element import DisableableElement
+from .mixins.value_element import ValueElement
 
 
 class Knob(ValueElement, DisableableElement, TextColorElement):
