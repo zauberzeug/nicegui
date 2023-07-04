@@ -63,7 +63,7 @@ def query(selector: str) -> Query:
     With the query result you can add classes, styles, and attributes like with every other UI element.
     This can be useful for example to change the background color of the page (e.g. `ui.query('body').classes('bg-green')`).
 
-    :param selector: the CSS selector (eg. `body`, `#my-id`, `.my-class`, `div > p`)
+    :param selector: the CSS selector (e.g. "body", "#my-id", ".my-class", "div > p")
     """
     for element in get_client().elements.values():
         if isinstance(element, Query) and element._props['selector'] == selector:
