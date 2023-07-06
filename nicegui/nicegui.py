@@ -1,6 +1,5 @@
 import asyncio
 import os
-import socket
 import time
 import urllib.parse
 from pathlib import Path
@@ -21,7 +20,7 @@ from .client import Client
 from .dependencies import js_components, js_dependencies
 from .element import Element
 from .error import error_content
-from .helpers import is_file, safe_invoke
+from .helpers import get_all_ips, is_file, safe_invoke
 from .page import page
 
 globals.app = app = App(default_response_class=NiceGUIJSONResponse)
@@ -90,12 +89,7 @@ def handle_startup(with_welcome_message: bool = True) -> None:
 def print_welcome_message():
     host = os.environ['NICEGUI_HOST']
     port = os.environ['NICEGUI_PORT']
-    ips = set()
-    if host == '0.0.0.0':
-        try:
-            ips.update(set(info[4][0] for info in socket.getaddrinfo(socket.gethostname(), None) if len(info[4]) == 2))
-        except Exception:
-            pass  # NOTE: if we can't get the host's IP, we'll just use localhost
+    ips = set(get_all_ips() if host == '0.0.0.0' else [])
     ips.discard('127.0.0.1')
     addresses = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ['localhost'] + sorted(ips)]
     if len(addresses) >= 2:
