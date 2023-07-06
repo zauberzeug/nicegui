@@ -31,15 +31,21 @@ def register_vue_component(name: str, path: Path) -> None:
         js_components[name] = {'name': name, 'path': path}
 
 
-def register_library(name: str, path: Path, *, expose: bool = False) -> None:
+def register_library(
+        location: Path,  base_path: Path = Path(__file__).parent / 'elements' / 'lib', *, expose: bool = False) -> str:
     """Register a new external library.
 
-    :param name: unique machine-name (used in element's `use_library`): no space, no special characters
-    :param path: local path
+    :param location: the location to the library you want to register relative to the base_path. This is also used as the resource identifier (used in element's `use_library`) and must therefore be url-safe.
+    :param base_path: the base path where your libraries are located
     :param expose: if True, this will be exposed as an ESM module but NOT imported
+    :return: the resource identifier library name to be used in element's `use_library`
     """
-    assert path.suffix == '.js' or path.suffix == '.mjs', 'Only JS dependencies are supported.'
-    libraries[name] = {'name': name, 'path': path, 'expose': expose}
+    if isinstance(location, str):
+        return
+    assert location.suffix == '.js' or location.suffix == '.mjs', 'Only JS dependencies are supported.'
+    name = str(location)
+    libraries[name] = {'name': name, 'path': base_path / location,  'expose': expose}
+    return name
 
 
 def generate_resources(prefix: str, elements: List[Element]) -> Tuple[str, str, str, str, str]:
@@ -55,7 +61,7 @@ def generate_resources(prefix: str, elements: List[Element]) -> Tuple[str, str, 
     for key in libraries:
         if key not in done_libraries and libraries[key]['expose']:
             name = libraries[key]['name']
-            import_maps['imports'][name] = f'{prefix}/_nicegui/{__version__}/library/{key}/include'
+            import_maps['imports'][name] = f'{prefix}/_nicegui/{__version__}/library/{key}'
             done_libraries.add(key)
     # Build the none optimized component (ie, the vue component).
     for key in vue_components:
@@ -70,7 +76,7 @@ def generate_resources(prefix: str, elements: List[Element]) -> Tuple[str, str, 
         for key in element.libraries:
             if key in libraries and key not in done_libraries:
                 if not libraries[key]['expose']:
-                    js_imports += f'import "{prefix}/_nicegui/{__version__}/library/{key}/include";\n'
+                    js_imports += f'import "{prefix}/_nicegui/{__version__}/library/{key}";\n'
                 done_libraries.add(key)
         for key in element.components:
             if key in js_components and key not in done_components:
@@ -79,7 +85,6 @@ def generate_resources(prefix: str, elements: List[Element]) -> Tuple[str, str, 
                 js_imports += f'import {{ default as {var} }} from "{prefix}/_nicegui/{__version__}/components/{key}";\n'
                 js_imports += f'app.component("{name}", {var});\n'
                 done_components.add(key)
-
     vue_styles = f'<style>{vue_styles}</style>'
     import_maps = f'<script type="importmap">{json.dumps(import_maps)}</script>'
     return vue_html, vue_styles, vue_scripts, import_maps, js_imports

@@ -7,7 +7,7 @@ from ..dependencies import register_library, register_vue_component
 from ..element import Element
 
 register_vue_component('plotly', Path(__file__).parent / 'plotly.vue')
-register_library('plotly', Path(__file__).parent / 'lib' / 'plotly' / 'plotly.min.js')
+library_name = register_library(Path('plotly') / 'plotly.min.js')
 
 
 class Plotly(Element):
@@ -28,7 +28,7 @@ class Plotly(Element):
                        a `dict` object with keys `data`, `layout`, `config` (optional).
         """
         super().__init__('plotly')
-        self.use_library('plotly')
+        self.use_library(library_name)
 
         self.figure = figure
         self.update()

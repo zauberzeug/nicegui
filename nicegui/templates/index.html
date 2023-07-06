@@ -190,7 +190,7 @@
       async function loadDependencies(element) {
         for (const name of element['libraries']) {
           if (loaded_libraries.has(name)) continue;
-          await import(`{{ prefix | safe }}/_nicegui/{{version}}/library/${name}/include`);
+          await import(`{{ prefix | safe }}/_nicegui/{{version}}/library/${name}`);
           loaded_libraries.add(name);
         }
         for (const name of element['components']) {

@@ -44,13 +44,14 @@ def index(request: Request) -> Response:
     return globals.index_client.build_response(request)
 
 
-@app.get(f'/_nicegui/{__version__}' + '/library/{name}/{file}')
-def get_dependencies(name: str, file: str):
+@app.get(f'/_nicegui/{__version__}' + '/library/{name:path}')
+def get_dependencies(name: str):
     if name in libraries and libraries[name]['path'].exists():
-        filepath = Path(libraries[name]['path']).parent / file
-        if filepath.exists() and not filepath.is_dir():
-            return FileResponse(filepath, media_type='text/javascript')
-        return FileResponse(libraries[name]['path'], media_type='text/javascript')
+        return FileResponse(
+            libraries[name]['path'],
+            media_type='text/javascript',
+            headers={'Cache-Control': 'public, max-age=3600'}
+        )
     raise HTTPException(status_code=404, detail=f'dependency "{name}" not found')
 
 
