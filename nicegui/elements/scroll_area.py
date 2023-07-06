@@ -1,7 +1,8 @@
-from typing import Optional, Callable, Any
+from dataclasses import fields
+from typing import Optional, Callable, Any, Dict
 
 from ..element import Element
-from ..events import handle_event, ScrollEventArguments
+from ..events import ScrollEventArguments, ScrollInfo
 
 
 class ScrollArea(Element):
@@ -15,9 +16,14 @@ class ScrollArea(Element):
         super().__init__('q-scroll-area')
         self._classes = ['nicegui-scroll']
 
-        def scroll_handle(info):
-            handle_event(on_scroll, ScrollEventArguments(
-                sender=self, client=self.client, info=info))
-
         if on_scroll:
-            self.on('scroll', scroll_handle)
+            self.on('scroll',
+                    lambda x: self._handle_scroll(on_scroll=on_scroll, msg=x), args=[x.name for x in fields(ScrollInfo)]
+                    )
+
+    def _handle_scroll(self, on_scroll: Callable, msg: Dict):
+        on_scroll(ScrollEventArguments(
+            sender=self,
+            client=self.client,
+            info=ScrollInfo(**msg['args'])
+        ))

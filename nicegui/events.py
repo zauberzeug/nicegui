@@ -270,11 +270,11 @@ class KeyEventArguments(EventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class ScrollInfo:
-    verticalPosition: int
+    verticalPosition: float
     verticalPercentage: float
     verticalSize: int
     verticalContainerSize: int
-    horizontalPosition: int
+    horizontalPosition: float
     horizontalPercentage: float
     horizontalSize: int
     horizontalContainerSize: int
