@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 def create_favicon_route(path: str, favicon: Optional[Union[str, Path]]) -> None:
     if is_file(favicon):
-        globals.app.add_route(f'{path}/favicon.ico', lambda _: FileResponse(favicon))
+        globals.app.add_route('/favicon.ico' if path == '/' else f'{path}/favicon.ico', lambda _: FileResponse(favicon))
 
 
 def get_favicon_url(page: 'page', prefix: str) -> str:
@@ -31,7 +31,7 @@ def get_favicon_url(page: 'page', prefix: str) -> str:
         return svg_to_data_url(favicon)
     elif is_char(favicon):
         return svg_to_data_url(char_to_svg(favicon))
-    elif page.path == '/':
+    elif page.path == '/' or page.favicon is None:
         return f'{prefix}/favicon.ico'
     else:
         return f'{prefix}{page.path}/favicon.ico'

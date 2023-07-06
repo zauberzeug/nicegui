@@ -9,8 +9,9 @@ import time
 import webbrowser
 from contextlib import nullcontext
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generator, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generator, List, Optional, Tuple, Union
 
+import netifaces
 from fastapi import Request
 from fastapi.responses import StreamingResponse
 from starlette.middleware import Middleware
@@ -157,3 +158,13 @@ def get_streaming_response(file: Path, request: Request) -> StreamingResponse:
         headers=headers,
         status_code=206,
     )
+
+
+def get_all_ips() -> List[str]:
+    ips = []
+    for interface in netifaces.interfaces():
+        try:
+            ips.append(netifaces.ifaddresses(interface)[netifaces.AF_INET][0]['addr'])
+        except KeyError:
+            pass
+    return ips

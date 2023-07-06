@@ -1,10 +1,9 @@
 import asyncio
 import time
-from typing import Any, Callable, Optional
+from typing import Any, Awaitable, Callable, Optional
 
 from .. import background_tasks, globals
 from ..binding import BindableProperty
-from ..helpers import is_coroutine_function
 from ..slot import Slot
 
 
@@ -40,6 +39,14 @@ class Timer:
         else:
             globals.app.on_startup(coroutine)
 
+    def activate(self) -> None:
+        """Activate the timer."""
+        self.active = True
+
+    def deactivate(self) -> None:
+        """Deactivate the timer."""
+        self.active = False
+
     async def _run_once(self) -> None:
         try:
             if not await self._connected():
@@ -50,7 +57,7 @@ class Timer:
                 if globals.state not in {globals.State.STOPPING, globals.State.STOPPED}:
                     await self._invoke_callback()
         finally:
-            self.cleanup()
+            self._cleanup()
 
     async def _run_in_loop(self) -> None:
         try:
@@ -75,13 +82,13 @@ class Timer:
                         globals.handle_exception(e)
                         await asyncio.sleep(self.interval)
         finally:
-            self.cleanup()
+            self._cleanup()
 
     async def _invoke_callback(self) -> None:
         try:
             assert self.callback is not None
             result = self.callback()
-            if is_coroutine_function(self.callback):
+            if isinstance(result, Awaitable):
                 await result
         except Exception as e:
             globals.handle_exception(e)
@@ -104,6 +111,6 @@ class Timer:
                 globals.log.error(f'Timer cancelled because client is not connected after {timeout} seconds')
                 return False
 
-    def cleanup(self) -> None:
+    def _cleanup(self) -> None:
         self.slot = None
         self.callback = None

@@ -20,10 +20,16 @@ class Menu(ValueElement):
         self._props['no-parent-event'] = True
 
     def open(self) -> None:
+        """Open the menu."""
         self.value = True
 
     def close(self) -> None:
+        """Close the menu."""
         self.value = False
+
+    def toggle(self) -> None:
+        """Toggle the menu."""
+        self.value = not self.value
 
 
 class MenuItem(TextElement):

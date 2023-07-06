@@ -1,11 +1,15 @@
 from typing import Any, Callable, Dict, List, Optional
 
+from ..dependencies import register_component
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
-from .mixins.value_element import ValueElement
+from .mixins.validation_element import ValidationElement
+
+register_component('nicegui-input', __file__, 'input.js')
 
 
-class Input(ValueElement, DisableableElement):
+class Input(ValidationElement, DisableableElement):
+    VALUE_PROP: str = 'value'
     LOOPBACK = False
 
     def __init__(self,
@@ -35,9 +39,9 @@ class Input(ValueElement, DisableableElement):
         :param password_toggle_button: whether to show a button to toggle the password visibility (default: False)
         :param on_change: callback to execute when the value changes
         :param autocomplete: optional list of strings for autocompletion
-        :param validation: dictionary of validation rules, e.g. ``{'Too short!': lambda value: len(value) < 3}``
+        :param validation: dictionary of validation rules, e.g. ``{'Too long!': lambda value: len(value) < 3}``
         """
-        super().__init__(tag='q-input', value=value, on_value_change=on_change)
+        super().__init__(tag='nicegui-input', value=value, on_value_change=on_change, validation=validation)
         if label is not None:
             self._props['label'] = label
         if placeholder is not None:
@@ -52,35 +56,14 @@ class Input(ValueElement, DisableableElement):
                     self.props(f'type={"text" if is_hidden else "password"}')
                 icon = Icon('visibility_off').classes('cursor-pointer').on('click', toggle_type)
 
-        self.validation = validation
+        self._props['autocomplete'] = autocomplete or []
 
-        if autocomplete:
-            def find_autocompletion() -> Optional[str]:
-                if self.value:
-                    needle = str(self.value).casefold()
-                    for item in autocomplete or []:
-                        if item.casefold().startswith(needle):
-                            return item
-                return None  # required by mypy
-
-            def autocomplete_input() -> None:
-                match = find_autocompletion() or ''
-                self.props(f'shadow-text="{match[len(self.value):]}"')
-
-            def complete_input() -> None:
-                match = find_autocompletion()
-                if match:
-                    self.set_value(match)
-                self.props(f'shadow-text=""')
-
-            self.on('keyup', autocomplete_input)
-            self.on('keydown.tab', complete_input)
+    def set_autocomplete(self, autocomplete: Optional[List[str]]) -> None:
+        """Set the autocomplete list."""
+        self._props['autocomplete'] = autocomplete
+        self.update()
 
     def on_value_change(self, value: Any) -> None:
         super().on_value_change(value)
-        for message, check in self.validation.items():
-            if not check(value):
-                self.props(f'error error-message="{message}"')
-                break
-        else:
-            self.props(remove='error')
+        if self._send_update_on_value_change:
+            self.run_method('updateValue')

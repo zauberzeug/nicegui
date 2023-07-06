@@ -166,6 +166,7 @@ def create_full() -> None:
 
     load_demo(ui.expansion)
     load_demo(ui.scroll_area)
+    load_demo(ui.separator)
     load_demo(ui.splitter)
     load_demo('tabs')
     load_demo(ui.stepper)

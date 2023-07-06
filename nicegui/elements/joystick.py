@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, Optional
 
 from ..dependencies import register_component
 from ..element import Element
@@ -26,20 +26,29 @@ class Joystick(Element):
         :param options: arguments like `color` which should be passed to the `underlying nipple.js library <https://github.com/yoannmoinet/nipplejs#options>`_
         """
         super().__init__('joystick')
-        self.on('start',
-                lambda _: handle_event(on_start, JoystickEventArguments(sender=self,
-                                                                        client=self.client,
-                                                                        action='start')))
-        self.on('move',
-                lambda msg: handle_event(on_move, JoystickEventArguments(sender=self,
-                                                                         client=self.client,
-                                                                         action='move',
-                                                                         x=msg['args']['data']['vector']['x'],
-                                                                         y=msg['args']['data']['vector']['y'])),
-                args=['data'],
-                throttle=throttle)
-        self.on('end',
-                lambda _: handle_event(on_end, JoystickEventArguments(sender=self,
-                                                                      client=self.client,
-                                                                      action='end')))
         self._props['options'] = options
+        self.active = False
+
+        def handle_start() -> None:
+            self.active = True
+            handle_event(on_start, JoystickEventArguments(sender=self,
+                                                          client=self.client,
+                                                          action='start'))
+
+        def handle_move(msg: Dict) -> None:
+            if self.active:
+                handle_event(on_move, JoystickEventArguments(sender=self,
+                                                             client=self.client,
+                                                             action='move',
+                                                             x=float(msg['args']['data']['vector']['x']),
+                                                             y=float(msg['args']['data']['vector']['y'])))
+
+        def handle_end() -> None:
+            self.active = False
+            handle_event(on_end, JoystickEventArguments(sender=self,
+                                                        client=self.client,
+                                                        action='end'))
+
+        self.on('start', handle_start)
+        self.on('move', handle_move, args=['data'], throttle=throttle),
+        self.on('end', handle_end)

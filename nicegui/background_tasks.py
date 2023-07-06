@@ -36,6 +36,8 @@ def create_lazy(coroutine: Awaitable[T], *, name: str) -> None:
     If a third task with the same name is created while the first one is still running, the second one is discarded.
     """
     if name in lazy_tasks_running:
+        if name in lazy_tasks_waiting:
+            asyncio.Task(lazy_tasks_waiting[name]).cancel()
         lazy_tasks_waiting[name] = coroutine
         return
 

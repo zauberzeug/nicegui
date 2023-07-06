@@ -281,9 +281,10 @@ async def index_page(client: Client) -> None:
             example_link('Single Page App', 'navigate without reloading the page')
             example_link('Chat App', 'a simple chat app')
             example_link('Chat with AI', 'a simple chat app with AI')
-            example_link('SQLite Database', 'CRUD operations on a SQLite database')
+            example_link('SQLite Database', 'CRUD operations on a SQLite database with async-support through Tortoise ORM')
             example_link('Pandas DataFrame', 'displays an editable [pandas](https://pandas.pydata.org) DataFrame')
             example_link('Lightbox', 'A thumbnail gallery where each image can be clicked to enlarge')
+            example_link('ROS2', 'Using NiceGUI as web interface for a ROS2 robot')
 
     with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
         link_target('why')
@@ -331,10 +332,6 @@ def documentation_page() -> None:
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Reference, Demos and more', '*NiceGUI* Documentation')
-        ui.markdown('''
-            This is the documentation for NiceGUI >= 1.0.
-            Documentation for older versions can be found at [https://0.9.nicegui.io/](https://0.9.nicegui.io/reference).
-        ''').classes('bold-links arrow-links')
         documentation.create_full()
 
 

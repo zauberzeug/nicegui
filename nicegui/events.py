@@ -290,13 +290,16 @@ def handle_event(handler: Optional[Callable[..., Any]],
     if handler is None:
         return
     try:
-        no_arguments = not any(p.default is Parameter.empty for p in signature(handler).parameters.values())
+        expects_arguments = any(p.default is Parameter.empty and
+                                p.kind is not Parameter.VAR_POSITIONAL and
+                                p.kind is not Parameter.VAR_KEYWORD
+                                for p in signature(handler).parameters.values())
         sender = arguments.sender if isinstance(arguments, EventArguments) else sender
         assert sender is not None and sender.parent_slot is not None
         if sender.is_ignoring_events:
             return
         with sender.parent_slot:
-            result = handler() if no_arguments else handler(arguments)
+            result = handler(arguments) if expects_arguments else handler()
         if isinstance(result, Awaitable):
             async def wait_for_result():
                 with sender.parent_slot:

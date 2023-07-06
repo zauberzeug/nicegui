@@ -1,79 +1,49 @@
 #!/usr/bin/env python3
-import sqlite3
-from pathlib import Path
-from typing import Any, Dict
+from typing import List
 
-from nicegui import ui
+import models
+from tortoise.contrib.fastapi import register_tortoise
 
-DB_FILE = Path(__file__).parent / 'users.db'
-DB_FILE.touch()
-conn = sqlite3.connect(DB_FILE, check_same_thread=False)
-cursor = conn.cursor()
-cursor.execute('CREATE TABLE IF NOT EXISTS users (id integer primary key AUTOINCREMENT, name text, age integer)')
-conn.commit()
+from nicegui import app, ui
+
+register_tortoise(
+    app,
+    db_url='sqlite://db.sqlite3',
+    modules={'models': ['models']},  # tortoise will look for models in this main module
+    generate_schemas=True,  # in production you should use version control migrations instead
+)
 
 
 @ui.refreshable
-def users_ui() -> None:
-    cursor.execute('SELECT * FROM users')
-    for row in cursor.fetchall():
-        user = {'id': row[0], 'name': row[1], 'age': row[2]}
+async def list_of_users() -> None:
+    async def delete(user: models.User) -> None:
+        await user.delete()
+        list_of_users.refresh()
+
+    users: List[models.User] = await models.User.all()
+    for user in reversed(users):
         with ui.card():
-            with ui.row().classes('justify-between w-full'):
-                ui.label(user['id'])
-                ui.label(user['name'])
-                ui.label(user['age'])
-            with ui.row():
-                ui.button('edit', on_click=lambda user=user: open_dialog(user))
-                ui.button('delete', on_click=lambda user=user: delete(user), color='red')
+            with ui.row().classes('items-center'):
+                ui.input('Name', on_change=user.save) \
+                    .bind_value(user, 'name').on('blur', list_of_users.refresh)
+                ui.number('Age', on_change=user.save, format='%.0f') \
+                    .bind_value(user, 'age').on('blur', list_of_users.refresh).classes('w-20')
+                ui.button(icon='delete', on_click=lambda u=user: delete(u)).props('flat')
 
 
-def create() -> None:
-    cursor.execute('INSERT INTO users (name, age) VALUES (?, ?)', (name.value, age.value))
-    conn.commit()
-    ui.notify(f'Created new user {name.value}')
-    name.value = ''
-    age.value = None
-    users_ui.refresh()
+@ui.page('/')
+async def index():
+    async def create() -> None:
+        await models.User.create(name=name.value, age=age.value or 0)
+        name.value = ''
+        age.value = None
+        list_of_users.refresh()
 
-
-def update() -> None:
-    query = 'UPDATE users SET name=?, age=? WHERE id=?'
-    cursor.execute(query, (dialog_name.value, dialog_age.value, dialog_id))
-    conn.commit()
-    ui.notify(f'Updated user {dialog_name.value}')
-    dialog.close()
-    users_ui.refresh()
-
-
-def delete(user: Dict[str, Any]) -> None:
-    cursor.execute('DELETE from users WHERE id=?', (user['id'],))
-    conn.commit()
-    ui.notify(f'Deleted user {user["name"]}')
-    users_ui.refresh()
-
-
-def open_dialog(user: Dict[str, Any]) -> None:
-    global dialog_id
-    dialog_id = user['id']
-    dialog_name.value = user['name']
-    dialog_age.value = user['age']
-    dialog.open()
-
-
-name = ui.input(label='Name')
-age = ui.number(label='Age', format='%.0f')
-ui.button('Add new user', on_click=create)
-
-users_ui()
-
-with ui.dialog() as dialog:
-    with ui.card():
-        dialog_id = None
-        dialog_name = ui.input('Name')
-        dialog_age = ui.number('Age', format='%.0f')
-        with ui.row():
-            ui.button('Save', on_click=update)
-            ui.button('Close', on_click=dialog.close).props('outline')
+    with ui.column().classes('mx-auto'):
+        with ui.row().classes('w-full items-center px-4'):
+            name = ui.input(label='Name')
+            age = ui.number(label='Age', format='%.0f').classes('w-20')
+            ui.button(on_click=create, icon='add').props('flat').classes('ml-auto')
+        await list_of_users()
 
 ui.run()
