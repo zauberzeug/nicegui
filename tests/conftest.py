@@ -1,6 +1,7 @@
 import importlib
 import os
 import shutil
+from pathlib import Path
 from typing import Dict, Generator
 
 import icecream
@@ -11,9 +12,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from nicegui import Client, globals
 from nicegui.page import page
-from .test_helpers import DOWNLOAD_DIR
 
 from .screen import Screen
+
+DOWNLOAD_DIR = Path(__file__).parent / 'download'
 
 icecream.install()
 

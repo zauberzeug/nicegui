@@ -1,12 +1,13 @@
 from pathlib import Path
+
 from fastapi.responses import PlainTextResponse
 
 from nicegui import app, ui
 
+from .conftest import DOWNLOAD_DIR
 from .screen import Screen
-from .test_helpers import TEST_DIR, DOWNLOAD_DIR
 
-IMAGE_FILE = Path(TEST_DIR).parent / 'examples' / 'slideshow' / 'slides' / 'slide1.jpg'
+IMAGE_FILE = Path(__file__).parent.parent / 'examples' / 'slideshow' / 'slides' / 'slide1.jpg'
 
 
 def test_download_text_file(screen: Screen):
