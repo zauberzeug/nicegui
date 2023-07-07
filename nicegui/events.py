@@ -268,6 +268,22 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
+@dataclass(**KWONLY_SLOTS)
+class ScrollInfo:
+    verticalPosition: float
+    verticalPercentage: float
+    verticalSize: int
+    verticalContainerSize: int
+    horizontalPosition: float
+    horizontalPercentage: float
+    horizontalSize: int
+    horizontalContainerSize: int
+
+
+@dataclass(**KWONLY_SLOTS)
+class ScrollEventArguments(EventArguments):
+    info: ScrollInfo
+
 def handle_event(handler: Optional[Callable[..., Any]],
                  arguments: Union[EventArguments, Dict], *,
                  sender: Optional['Element'] = None) -> None:
