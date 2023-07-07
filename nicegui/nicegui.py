@@ -55,11 +55,15 @@ def get_dependencies(name: str):
     raise HTTPException(status_code=404, detail=f'dependency "{name}" not found')
 
 
-@app.get(f'/_nicegui/{__version__}' + '/components/{name}')
-def get_components(name: str):
-    if name in js_components and js_components[name]['path'].exists():
-        return FileResponse(js_components[name]['path'], media_type='text/javascript')
-    raise HTTPException(status_code=404, detail=f'library "{name}" not found')
+@app.get(f'/_nicegui/{__version__}' + '/components/{resource:path}')
+def get_components(resource: str):
+    if resource in js_components and js_components[resource]['path'].exists():
+        return FileResponse(
+            js_components[resource]['path'],
+            media_type='text/javascript',
+            headers={'Cache-Control': 'public, max-age=3600'},
+        )
+    raise HTTPException(status_code=404, detail=f'library "{resource}" not found')
 
 
 @app.on_event('startup')
