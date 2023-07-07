@@ -105,8 +105,8 @@
         }
 
         // @todo: Try avoid this with better handling of initial page load.
-        element['components'].forEach((component) => loaded_components.add(component));
-        element['libraries'].forEach((library) => loaded_libraries.add(library));
+        element.components.forEach((component) => loaded_components.add(component));
+        element.libraries.forEach((library) => loaded_libraries.add(library));
 
         const props = {
           id: 'c' + element.id,
@@ -190,16 +190,16 @@
       }
 
       async function loadDependencies(element) {
-        for (const name of element['libraries']) {
-          if (loaded_libraries.has(name)) continue;
-          await import(`{{ prefix | safe }}/_nicegui/{{version}}/libraries/${name}`);
-          loaded_libraries.add(name);
-        }
-        for (const name of element['components']) {
+        for (const {name, key, tag} of element.components) {
           if (loaded_components.has(name)) continue;
-          const component = (await import(`{{ prefix | safe }}/_nicegui/{{version}}/components/${name}`)).default;
-          app = app.component(name, component);
+          const component = (await import(`{{ prefix | safe }}/_nicegui/{{version}}/components/${key}`)).default;
+          app = app.component(tag, component);
           loaded_components.add(name);
+        }
+        for (const {name, key} of element.libraries) {
+          if (loaded_libraries.has(name)) continue;
+          await import(`{{ prefix | safe }}/_nicegui/{{version}}/libraries/${key}`);
+          loaded_libraries.add(name);
         }
       }
 

@@ -42,8 +42,8 @@ class Element(Visibility):
         self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
-        self.components: List[str] = []
-        self.libraries: List[str] = []
+        self.components: List[JsComponent] = []
+        self.libraries: List[Library] = []
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
 
@@ -98,8 +98,8 @@ class Element(Visibility):
             'text': self._text,
             'slots': self._collect_slot_dict(),
             'events': [listener.to_dict() for listener in self._event_listeners.values()],
-            'libraries': self.libraries,
-            'components': self.components,
+            'components': [{'key': c.key, 'name': c.name, 'tag': c.tag} for c in self.components],
+            'libraries': [{'key': l.key, 'name': l.name} for l in self.libraries],
         }
 
     @staticmethod
@@ -310,10 +310,10 @@ class Element(Visibility):
 
     def use_component(self, component: JsComponent) -> Self:
         """Register a ``*.js`` Vue component to be used by this element."""
-        self.components.append(component.key)
+        self.components.append(component)
         return self
 
     def use_library(self, library: Library) -> Self:
         """Register a JavaScript library to be used by this element."""
-        self.libraries.append(library.key)
+        self.libraries.append(library)
         return self

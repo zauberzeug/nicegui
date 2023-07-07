@@ -90,13 +90,17 @@ def deconstruct_location(location: Path, base_path: Path) -> Tuple[Path, str, st
     return base_path / location, str(location), location.name.split('.', 1)[0], location.suffix.lower()
 
 
-def generate_resources(prefix: str, elements: List[Element]) -> Tuple[str, str, str, str, str]:
+def generate_resources(prefix: str, elements: List[Element]) -> Tuple[List[str],
+                                                                      List[str],
+                                                                      List[str],
+                                                                      Dict[str, str],
+                                                                      List[str]]:
     done_libraries: Set[str] = set()
     done_components: Set[str] = set()
-    vue_scripts: str = ''
-    vue_html: str = ''
-    vue_styles: str = ''
-    js_imports: str = ''
+    vue_scripts: List[str] = []
+    vue_html: List[str] = []
+    vue_styles: List[str] = []
+    js_imports: List[str] = []
     imports: Dict[str, str] = {}
 
     # build the importmap structure for exposed libraries
@@ -108,26 +112,24 @@ def generate_resources(prefix: str, elements: List[Element]) -> Tuple[str, str, 
     # build the none-optimized component (i.e. the Vue component)
     for key, component in vue_components.items():
         if key not in done_components:
-            vue_html += f'{component.html}\n'
-            vue_scripts += component.script.replace(f"Vue.component('{component.name}',",
-                                                    f"app.component('{component.tag}',", 1) + '\n'
-            vue_styles += f'{component.style}\n'
+            vue_html.append(component.html)
+            vue_scripts.append(component.script.replace(f"Vue.component('{component.name}',",
+                                                        f"app.component('{component.tag}',", 1))
+            vue_styles.append(component.style)
             done_components.add(key)
 
     # build the resources associated with the elements
     for element in elements:
-        if key.startswith('nipple'):
-            print(key, flush=True)
-        for key in element.libraries:
-            if key in libraries and key not in done_libraries:
-                if not libraries[key].expose:
-                    js_imports += f'import "{prefix}/_nicegui/{__version__}/libraries/{key}";\n'
-                done_libraries.add(key)
-        for key in element.components:
-            if key in js_components and key not in done_components:
-                component = js_components[key]
-                js_imports += f'import {{ default as {component.name} }} from "{prefix}/_nicegui/{__version__}/components/{key}";\n'
-                js_imports += f'app.component("{component.tag}", {component.name});\n'
-                done_components.add(key)
-    vue_styles = f'<style>{vue_styles}</style>'
+        for library in element.libraries:
+            if library.key not in done_libraries:
+                if not library.expose:
+                    js_imports.append(f'import "{prefix}/_nicegui/{__version__}/libraries/{library.key}";')
+                done_libraries.add(library.key)
+        for component in element.components:
+            if component.key not in done_components:
+                js_imports.extend([
+                    f'import {{ default as {component.name} }} from "{prefix}/_nicegui/{__version__}/components/{component.key}";',
+                    f'app.component("{component.tag}", {component.name});',
+                ])
+                done_components.add(component.key)
     return vue_html, vue_styles, vue_scripts, imports, js_imports

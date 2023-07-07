@@ -27,7 +27,7 @@ class Plotly(Element):
         :param figure: Plotly figure to be rendered. Can be either a `go.Figure` instance, or
                        a `dict` object with keys `data`, `layout`, `config` (optional).
         """
-        super().__init__('nicegui-plotly')
+        super().__init__(component.tag)
         self.use_library(library)
 
         self.figure = figure

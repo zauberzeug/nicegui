@@ -8,6 +8,7 @@ import markdown2
 from pygments.formatters import HtmlFormatter
 
 from ..dependencies import register_vue_component
+from .mermaid import library as mermaid_library
 from .mixins.content_element import ContentElement
 
 component = register_vue_component(Path('markdown.js'))
@@ -30,7 +31,7 @@ class Markdown(ContentElement):
         self.use_component(component)
         if 'mermaid' in extras:
             self._props['use_mermaid'] = True
-            self.use_library('mermaid')
+            self.use_library(mermaid_library)
 
     def on_content_change(self, content: str) -> None:
         html = prepare_content(content, extras=' '.join(self.extras))
