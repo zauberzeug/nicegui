@@ -71,6 +71,7 @@ class Table(FilterElement):
         """Remove rows from the table."""
         keys = [row[self.row_key] for row in rows]
         self.rows[:] = [row for row in self.rows if row[self.row_key] not in keys]
+        self.selected[:] = [row for row in self.selected if row[self.row_key] not in keys]
         self.update()
 
     class row(Element):
