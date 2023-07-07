@@ -19,7 +19,6 @@
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.prod.js"></script>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.{{ language }}.umd.prod.js"></script>
-    {{ import_maps | safe }}
 
     <!-- NOTE: force Prettier to keep the line break -->
     {{ body_html | safe }}
@@ -190,7 +189,7 @@
       async function loadDependencies(element) {
         for (const name of element['libraries']) {
           if (loaded_libraries.has(name)) continue;
-          await import(`{{ prefix | safe }}/_nicegui/{{version}}/library/${name}/include`);
+          await import(`{{ prefix | safe }}/_nicegui/{{version}}/library/${name}`);
           loaded_libraries.add(name);
         }
         for (const name of element['components']) {

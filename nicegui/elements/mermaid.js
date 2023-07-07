@@ -1,4 +1,4 @@
-import mermaid from "mermaid";
+import mermaid from "mermaid/mermaid.esm.min.mjs";
 export default {
   template: `<div></div>`,
   mounted() {

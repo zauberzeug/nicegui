@@ -7,11 +7,11 @@ from ..element import Element
 register_vue_component('chart', Path(__file__).parent / 'chart.js')
 
 core_dependencies: List[Path] = []
-for path in sorted((Path(__file__).parent / 'lib' / 'highcharts').glob('*.js'), key=lambda p: p.stem):
-    register_library(path.stem, path)
-    core_dependencies.append(path)
-for path in sorted((Path(__file__).parent / 'lib' / 'highcharts' / 'modules').glob('*.js'), key=lambda p: p.stem):
-    register_library(path.stem, path)
+base = Path(__file__).parent / 'lib'
+for path in sorted((base / 'highcharts').glob('*.js'), key=lambda p: p.stem):
+    core_dependencies.append(register_library(path.relative_to(base)))
+for path in sorted((base / 'highcharts' / 'modules').glob('*.js'), key=lambda p: p.stem):
+    register_library(path.relative_to(base))
 
 
 class Chart(Element):
@@ -36,9 +36,9 @@ class Chart(Element):
         self._props['extras'] = extras
         self.use_component('chart')
         for dependency in core_dependencies:
-            self.use_library(dependency.stem)
+            self.use_library(dependency)
         for extra in extras:
-            self.use_library(extra)
+            self.use_library(f'highcharts/modules/{extra}.js')
 
     @property
     def options(self) -> Dict:
