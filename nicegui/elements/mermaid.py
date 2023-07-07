@@ -4,7 +4,7 @@ from ..dependencies import register_library, register_vue_component
 from .mixins.content_element import ContentElement
 
 component = register_vue_component(Path('mermaid.js'))
-library = register_library(Path('mermaid') / 'mermaid.esm.min.mjs', expose=True)
+library = register_library(Path('mermaid', 'mermaid.esm.min.mjs'), expose=True)
 extras_path = Path(__file__).parent / 'lib' / 'mermaid'
 for path in extras_path.glob('*.js'):
     register_library(path.relative_to(extras_path.parent))

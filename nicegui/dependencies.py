@@ -23,11 +23,8 @@ def register_vue_component(location: Path, base_path: Path = Path(__file__).pare
     :param base_path: base path where your libraries are located
     :return: resource identifier to be used in element's `use_component`
     """
-    suffix = location.suffix.lower()
+    path, key, name, suffix = deconstruct_location(location, base_path)
     assert suffix in {'.vue', '.js', '.mjs'}, 'Only VUE and JS components are supported.'
-    name = location.stem
-    key = str(location)
-    path = base_path / location
     if suffix == '.vue':
         assert key not in vue_components, f'Duplicate VUE component {key}'
         vue_components[key] = vbuild.VBuild(name, path.read_text())
@@ -46,14 +43,16 @@ def register_library(location: Path, base_path: Path = Path(__file__).parent / '
     :param expose: whether to expose library as an ESM module (exposed modules will NOT be imported)
     :return: resource identifier to be used in element's `use_library`
     """
-    suffix = location.suffix.lower()
+    path, key, name, suffix = deconstruct_location(location, base_path)
     assert suffix in {'.js', '.mjs'}, 'Only JS dependencies are supported.'
-    name = location.stem
-    key = str(location)
-    path = base_path / location
     assert key not in libraries, f'Duplicate js library {key}'
     libraries[key] = {'name': name, 'path': path,  'expose': expose}
     return key
+
+
+def deconstruct_location(location: Path, base_path: Path) -> Tuple[str, str, str, str]:
+    """Deconstruct a location into its parts: full path, relative path, name, suffix."""
+    return base_path / location, str(location), location.name.split('.', 1)[0], location.suffix.lower()
 
 
 def generate_resources(prefix: str, elements: List[Element]) -> Tuple[str, str, str, str, str]:
