@@ -18,7 +18,7 @@ class Log(Element):
 
         :param max_lines: maximum number of lines before dropping oldest ones (default: `None`)
         """
-        super().__init__('log')
+        super().__init__(component.tag)
         self._props['max_lines'] = max_lines
         self._props['lines'] = ''
         self._classes = ['nicegui-log']

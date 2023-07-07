@@ -31,7 +31,7 @@ class ChatMessage(Element):
         :param sent: render as a sent message (so from current user) (default: False)
         :param text_html: render text as HTML (default: False)
         """
-        super().__init__('chat_message')
+        super().__init__(component.tag)
         self.use_component(component)
 
         if isinstance(text, str):

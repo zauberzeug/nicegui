@@ -46,17 +46,17 @@ def index(request: Request) -> Response:
 
 @app.get(f'/_nicegui/{__version__}' + '/libraries/{key:path}')
 def get_library(key: str) -> FileResponse:
-    if key in libraries and libraries[key]['path'].exists():
+    if key in libraries and libraries[key].path.exists():
         headers = {'Cache-Control': 'public, max-age=3600'}
-        return FileResponse(libraries[key]['path'], media_type='text/javascript', headers=headers)
+        return FileResponse(libraries[key].path, media_type='text/javascript', headers=headers)
     raise HTTPException(status_code=404, detail=f'library "{key}" not found')
 
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
 def get_component(key: str) -> FileResponse:
-    if key in js_components and js_components[key]['path'].exists():
+    if key in js_components and js_components[key].path.exists():
         headers = {'Cache-Control': 'public, max-age=3600'}
-        return FileResponse(js_components[key]['path'], media_type='text/javascript', headers=headers)
+        return FileResponse(js_components[key].path, media_type='text/javascript', headers=headers)
     raise HTTPException(status_code=404, detail=f'component "{key}" not found')
 
 

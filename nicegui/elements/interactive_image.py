@@ -35,7 +35,7 @@ class InteractiveImage(SourceElement, ContentElement):
         :param events: list of JavaScript events to subscribe to (default: `['click']`)
         :param cross: whether to show crosshairs (default: `False`)
         """
-        super().__init__(tag='interactive_image', source=source, content=content)
+        super().__init__(tag=component.tag, source=source, content=content)
         self._props['events'] = events
         self._props['cross'] = cross
         self.use_component(component)

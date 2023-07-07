@@ -42,7 +42,7 @@ class Input(ValidationElement, DisableableElement):
         :param autocomplete: optional list of strings for autocompletion
         :param validation: dictionary of validation rules, e.g. ``{'Too long!': lambda value: len(value) < 3}``
         """
-        super().__init__(tag='nicegui-input', value=value, on_value_change=on_change, validation=validation)
+        super().__init__(tag=component.tag, value=value, on_value_change=on_change, validation=validation)
         if label is not None:
             self._props['label'] = label
         if placeholder is not None:

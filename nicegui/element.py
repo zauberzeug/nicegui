@@ -16,6 +16,7 @@ from .tailwind import Tailwind
 
 if TYPE_CHECKING:
     from .client import Client
+    from .dependencies import JsComponent, Library
 
 PROPS_PATTERN = re.compile(r'([:\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
 
@@ -307,12 +308,12 @@ class Element(Visibility):
         Can be overridden to perform cleanup.
         """
 
-    def use_component(self, name: str) -> Self:
+    def use_component(self, component: JsComponent) -> Self:
         """Register a ``*.js`` Vue component to be used by this element."""
-        self.components.append(name)
+        self.components.append(component.key)
         return self
 
-    def use_library(self, name: str) -> Self:
+    def use_library(self, library: Library) -> Self:
         """Register a JavaScript library to be used by this element."""
-        self.libraries.append(name)
+        self.libraries.append(library.key)
         return self

@@ -17,5 +17,5 @@ class Image(SourceElement):
 
         :param source: the source of the image; can be a URL, local file path or a base64 string
         """
-        super().__init__(tag='image', source=source)
+        super().__init__(tag=component.tag, source=source)
         self.use_component(component)

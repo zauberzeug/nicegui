@@ -37,7 +37,7 @@ class Upload(DisableableElement):
         :param label: label for the uploader (default: `''`)
         :param auto_upload: automatically upload files when they are selected (default: `False`)
         """
-        super().__init__(tag='upload')
+        super().__init__(tag=component.tag)
         self.use_component(component)
         self._props['multiple'] = multiple
         self._props['label'] = label

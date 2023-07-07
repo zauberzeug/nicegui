@@ -27,7 +27,7 @@ class Joystick(Element):
         :param throttle: throttle interval in seconds for the move event (default: 0.05)
         :param options: arguments like `color` which should be passed to the `underlying nipple.js library <https://github.com/yoannmoinet/nipplejs#options>`_
         """
-        super().__init__('joystick')
+        super().__init__('nicegui-joystick')
         self.use_library(library)
         self._props['options'] = options
         self.active = False

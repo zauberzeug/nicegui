@@ -24,7 +24,7 @@ class AgGrid(Element):
         :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
         :param theme: AG Grid theme (default: 'balham')
         """
-        super().__init__('aggrid')
+        super().__init__(component.tag)
         self._props['options'] = options
         self._props['html_columns'] = html_columns
         self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']

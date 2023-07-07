@@ -40,7 +40,7 @@ class Select(ChoiceElement, DisableableElement):
                 value = []
             elif not isinstance(value, list):
                 value = [value]
-        super().__init__(tag='select', options=options, value=value, on_change=on_change)
+        super().__init__(tag=component.tag, options=options, value=value, on_change=on_change)
         self.use_component(component)
         if label is not None:
             self._props['label'] = label

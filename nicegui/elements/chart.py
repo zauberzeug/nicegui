@@ -30,7 +30,7 @@ class Chart(Element):
         :param type: chart type (e.g. "chart", "stockChart", "mapChart", ...; default: "chart")
         :param extras: list of extra dependencies to include (e.g. "annotations", "arc-diagram", "solid-gauge", ...)
         """
-        super().__init__('chart')
+        super().__init__(component.tag)
         self._props['type'] = type
         self._props['options'] = options
         self._props['extras'] = extras

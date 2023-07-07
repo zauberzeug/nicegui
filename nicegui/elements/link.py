@@ -27,7 +27,7 @@ class Link(TextElement):
         :param target: page function, NiceGUI element on the same page or string that is a an absolute URL or relative path from base URL
         :param new_tab: open link in new tab (default: False)
         """
-        super().__init__(tag='link', text=text)
+        super().__init__(tag=component.tag, text=text)
         if isinstance(target, str):
             self._props['href'] = target
         elif isinstance(target, Element):

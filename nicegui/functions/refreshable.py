@@ -55,8 +55,7 @@ class refreshable:
 
     def __call__(self, *args: Any, **kwargs: Any) -> Union[None, Awaitable]:
         self.prune()
-        container = Element('refreshable')
-        container.use_component(component)
+        container = Element(component.tag).use_component(component)
         target = RefreshableTarget(container=container, instance=self.instance, args=args, kwargs=kwargs)
         self.targets.append(target)
         return target.run(self.func)

@@ -30,7 +30,7 @@ class Keyboard(Element):
         :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: `True`)
         :param ignore: ignore keys when one of these element types is focussed (default: `['input', 'select', 'button', 'textarea']`)
         """
-        super().__init__('keyboard')
+        super().__init__(component.tag)
         self.key_handler = on_key
         self.active = active
         self._props['events'] = ['keydown', 'keyup']

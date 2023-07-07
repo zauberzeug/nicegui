@@ -29,7 +29,7 @@ class Audio(Element):
         See `here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#events>`_
         for a list of events you can subscribe to using the generic event subscription `on()`.
         """
-        super().__init__('audio')
+        super().__init__(component.tag)
         if Path(src).is_file():
             src = globals.app.add_media_file(local_file=src)
         self._props['src'] = src

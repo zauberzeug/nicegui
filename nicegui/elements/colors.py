@@ -21,7 +21,7 @@ class Colors(Element):
 
         Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/>`_.
         """
-        super().__init__('colors')
+        super().__init__(component.tag)
         self.use_component(component)
         self._props['primary'] = primary
         self._props['secondary'] = secondary

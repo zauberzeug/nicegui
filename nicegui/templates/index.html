@@ -19,7 +19,9 @@
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.prod.js"></script>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.{{ language }}.umd.prod.js"></script>
-    {{ import_maps | safe }}
+    <script type="importmap">
+      {"imports": {{ imports | safe }}}
+    </script>
 
     <!-- NOTE: force Prettier to keep the line break -->
     {{ body_html | safe }}
@@ -151,7 +153,7 @@
                 props: { props: { type: Object, default: {} } },
                 template: data.template,
               }, {
-                props: props
+                props: props,
               }));
             }
             const children = data.ids.map(id => renderRecursively(elements, id));

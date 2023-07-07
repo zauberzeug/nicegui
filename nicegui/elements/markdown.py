@@ -24,7 +24,7 @@ class Markdown(ContentElement):
         :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)
         """
         self.extras = extras
-        super().__init__(tag='markdown', content=content)
+        super().__init__(tag=component.tag, content=content)
         self._classes = ['nicegui-markdown']
         self._props['codehilite_css'] = HtmlFormatter(nobackground=True).get_style_defs('.codehilite')
         self.use_component(component)

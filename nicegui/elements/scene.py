@@ -73,7 +73,7 @@ class Scene(Element):
         :param grid: whether to display a grid
         :param on_click: callback to execute when a 3d object is clicked
         """
-        super().__init__('scene')
+        super().__init__(component.tag)
         self._props['width'] = width
         self._props['height'] = height
         self._props['grid'] = grid

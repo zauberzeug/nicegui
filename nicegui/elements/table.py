@@ -36,7 +36,7 @@ class Table(FilterElement):
 
         If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
         """
-        super().__init__(tag='nicegui-table')
+        super().__init__(tag=component.tag)
 
         self.rows = rows
         self.row_key = row_key

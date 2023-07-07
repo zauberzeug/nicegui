@@ -20,7 +20,7 @@ class DarkMode(ValueElement):
 
         :param value: Whether dark mode is enabled. If None, dark mode is set to auto.
         """
-        super().__init__(tag='dark_mode', value=value, on_value_change=None)
+        super().__init__(tag=component.tag, value=value, on_value_change=None)
         self.use_component(component)
 
     def enable(self) -> None:

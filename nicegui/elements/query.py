@@ -13,7 +13,7 @@ component = register_vue_component(Path('query.js'))
 class Query(Element):
 
     def __init__(self, selector: str) -> None:
-        super().__init__('query')
+        super().__init__(component.tag)
         self._props['selector'] = selector
         self._props['classes'] = []
         self._props['style'] = {}

@@ -21,7 +21,7 @@ class Mermaid(ContentElement):
 
         :param content: the Mermaid content to be displayed
         '''
-        super().__init__(tag='mermaid', content=content)
+        super().__init__(tag=component.tag, content=content)
         self.use_component(component)
         self.use_library(library)
 
