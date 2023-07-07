@@ -5,7 +5,7 @@ from ..dependencies import register_library, register_vue_component
 from ..element import Element
 from ..events import GenericEventArguments, JoystickEventArguments, handle_event
 
-register_vue_component('joystick', Path(__file__).parent / 'joystick.vue')
+register_vue_component(Path('joystick.vue'))
 library_name = register_library(Path('nipplejs') / 'nipplejs.js')
 
 
