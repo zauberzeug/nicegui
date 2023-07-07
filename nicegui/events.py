@@ -269,20 +269,16 @@ class KeyEventArguments(EventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
-class ScrollInfo:
-    verticalPosition: float
-    verticalPercentage: float
-    verticalSize: int
-    verticalContainerSize: int
-    horizontalPosition: float
-    horizontalPercentage: float
-    horizontalSize: int
-    horizontalContainerSize: int
-
-
-@dataclass(**KWONLY_SLOTS)
 class ScrollEventArguments(EventArguments):
-    info: ScrollInfo
+    vertical_position: float
+    vertical_percentage: float
+    vertical_size: float
+    vertical_container_size: float
+    horizontal_position: float
+    horizontal_percentage: float
+    horizontal_size: float
+    horizontal_container_size: float
+
 
 def handle_event(handler: Optional[Callable[..., Any]],
                  arguments: Union[EventArguments, Dict], *,
