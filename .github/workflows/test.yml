@@ -25,7 +25,7 @@ jobs:
           poetry config virtualenvs.create false
           poetry install
           # install packages to run the examples
-          pip install opencv-python opencv-contrib-python-headless httpx replicate langchain openai simpy
+          pip install opencv-python opencv-contrib-python-headless httpx replicate langchain openai simpy tortoise-orm
           pip install -r tests/requirements.txt
           # try fix issue with importlib_resources
           pip install importlib-resources
@@ -46,7 +46,7 @@ jobs:
   slack:
     needs:
       - test
-    if: always() # also execute when test fails
+    if: always() # also execute when test fail
     runs-on: ubuntu-latest
     steps:
       - name: Determine if we need to notify
@@ -55,8 +55,18 @@ jobs:
         with:
           needs_context: ${{ toJson(needs) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check if secret exists
+        id: check_secret
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_ROBOTICS_CI_WEBHOOK }}
+        run: |
+          if [[ -z "$SLACK_WEBHOOK" ]]; then
+            echo "slack_webhook_exists=false" >> $GITHUB_ENV
+          else
+            echo "slack_webhook_exists=true" >> $GITHUB_ENV
+          fi
       - name: Slack workflow notification
-        if: steps.should_notify.outputs.should_send_message == 'yes'
+        if: steps.should_notify.outputs.should_send_message == 'yes' && env.slack_webhook_exists == 'true'
         uses: Gamesight/slack-workflow-status@master
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}

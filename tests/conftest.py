@@ -5,6 +5,8 @@ from typing import Dict, Generator
 import icecream
 import pytest
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 from nicegui import Client, globals
 from nicegui.page import page
@@ -28,13 +30,6 @@ def capabilities(capabilities: Dict) -> Dict:
     return capabilities
 
 
-@pytest.fixture
-def selenium(selenium: webdriver.Chrome) -> webdriver.Chrome:
-    selenium.implicitly_wait(Screen.IMPLICIT_WAIT)
-    selenium.set_page_load_timeout(4)
-    return selenium
-
-
 @pytest.fixture(autouse=True)
 def reset_globals() -> Generator[None, None, None]:
     for path in {'/'}.union(globals.page_routes.values()):
@@ -56,10 +51,20 @@ def remove_all_screenshots() -> None:
             os.remove(os.path.join(Screen.SCREENSHOT_DIR, name))
 
 
+@pytest.fixture(scope='function')
+def driver(chrome_options: webdriver.ChromeOptions) -> webdriver.Chrome:
+    s = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=s, options=chrome_options)
+    driver.implicitly_wait(Screen.IMPLICIT_WAIT)
+    driver.set_page_load_timeout(4)
+    yield driver
+    driver.quit()
+
+
 @pytest.fixture
-def screen(selenium: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture) \
+def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture) \
         -> Generator[Screen, None, None]:
-    screen = Screen(selenium, caplog)
+    screen = Screen(driver, caplog)
     yield screen
     if screen.is_open:
         screen.shot(request.node.name)

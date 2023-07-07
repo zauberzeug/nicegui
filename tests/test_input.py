@@ -141,3 +141,20 @@ def test_update_input(screen: Screen):
     input.value = 'Pete'
     screen.wait(0.5)
     assert element.get_attribute('value') == 'Pete'
+
+
+def test_switching_focus(screen: Screen):
+    input1 = ui.input()
+    input2 = ui.input()
+    ui.button('focus 1', on_click=lambda: input1.run_method('focus'))
+    ui.button('focus 2', on_click=lambda: input2.run_method('focus'))
+
+    screen.open('/')
+    elements = screen.selenium.find_elements(By.XPATH, '//input')
+    assert len(elements) == 2
+    screen.click('focus 1')
+    screen.wait(0.3)
+    assert elements[0] == screen.selenium.switch_to.active_element
+    screen.click('focus 2')
+    screen.wait(0.3)
+    assert elements[1] == screen.selenium.switch_to.active_element

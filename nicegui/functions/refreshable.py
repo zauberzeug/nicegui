@@ -58,12 +58,14 @@ class refreshable:
         self.targets.append(target)
         return target.run(self.func)
 
-    def refresh(self) -> None:
+    def refresh(self, *args: Any, **kwargs: Any) -> None:
         self.prune()
         for target in self.targets:
             if target.instance != self.instance:
                 continue
             target.container.clear()
+            target.args = args or target.args
+            target.kwargs.update(kwargs)
             result = target.run(self.func)
             if is_coroutine_function(self.func):
                 assert result is not None

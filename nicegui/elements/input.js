@@ -1,6 +1,7 @@
 export default {
   template: `
     <q-input
+      ref="qRef"
       v-bind="$attrs"
       v-model="inputValue"
       :shadow-text="shadowText"
@@ -23,13 +24,17 @@ export default {
   data() {
     return {
       inputValue: this.value,
+      emitting: true,
     };
   },
   watch: {
     value(newValue) {
+      this.emitting = false;
       this.inputValue = newValue;
+      this.$nextTick(() => (this.emitting = true));
     },
     inputValue(newValue) {
+      if (!this.emitting) return;
       this.$emit("update:value", newValue);
     },
   },

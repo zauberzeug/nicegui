@@ -30,6 +30,7 @@ pywebview = "^4.0.2"
 importlib_metadata = { version = "^6.0.0", markers = "python_version ~= '3.7'" } # Python 3.7 has no importlib.metadata
 itsdangerous = "^2.1.2"
 aiofiles = "^23.1.0"
+netifaces = "^0.11.0"
 
 [tool.poetry.group.dev.dependencies]
 icecream = "^2.1.0"
@@ -46,6 +47,7 @@ pandas = [
     { version = "^2.0.0", markers = "python_version >= '3.8'" },
 ]
 secure = "^0.3.0"
+webdriver-manager = "^3.8.6"
 
 [build-system]
 requires = [
