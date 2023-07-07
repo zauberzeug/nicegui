@@ -15,43 +15,45 @@ libraries: Dict[str, Any] = {}
 def register_vue_component(location: Path, base_path: Path = Path(__file__).parent / 'elements') -> str:
     """Register a .vue or .js Vue component.
 
-    :param location: the location to the library you want to register relative to the base_path. This is also used as the resource identifier and must therefore be url-safe.
-    :param base_path: the base path where your libraries are located
-    :return: the resource identifier library name to be used in element's `use_component`        
+    Single-file components (.vue) are built right away
+    to delegate this "long" process to the bootstrap phase
+    and to avoid building the component on every single request.
+
+    :param location: location to the library relative to the base_path (used as the resource identifier, must be URL-safe)
+    :param base_path: base path where your libraries are located
+    :return: resource identifier to be used in element's `use_component`
     """
-    assert isinstance(location, Path)
     suffix = location.suffix.lower()
     assert suffix in {'.vue', '.js', '.mjs'}, 'Only VUE and JS components are supported.'
     name = location.stem
+    key = str(location)
     path = base_path / location
     if suffix == '.vue':
-        assert name not in vue_components, f'Duplicate VUE component name {name}'
-        # The component (in case of .vue) is built right away to:
-        # 1. delegate this "long" process to the bootstrap phase
-        # 2. avoid building the component on every single request
-        vue_components[name] = vbuild.VBuild(name, path.read_text())
+        assert key not in vue_components, f'Duplicate VUE component {key}'
+        vue_components[key] = vbuild.VBuild(name, path.read_text())
     elif suffix == '.js':
-        assert name not in js_components, f'Duplicate JS component name {name}'
-        js_components[str(location)] = {'name': name, 'path': path}
-    return str(location)
+        assert key not in js_components, f'Duplicate JS component {key}'
+        js_components[key] = {'name': name, 'path': path}
+    return key
 
 
-def register_library(location: Path,
-                     base_path: Path = Path(__file__).parent / 'elements' / 'lib', *, expose: bool = False
-                     ) -> str:
-    """Register a new external library.
+def register_library(location: Path, base_path: Path = Path(__file__).parent / 'elements' / 'lib', *,
+                     expose: bool = False) -> str:
+    """Register a *.js library.
 
-    :param location: the location to the library you want to register relative to the base_path. This is also used as the resource identifier and must therefore be url-safe.
-    :param base_path: the base path where your libraries are located
-    :param expose: if True, this will be exposed as an ESM module but NOT imported
-    :return: the resource identifier library name to be used in element's `use_library`
+    :param location: location to the library relative to the base_path (used as the resource identifier, must be URL-safe)
+    :param base_path: base path where your libraries are located
+    :param expose: whether to expose library as an ESM module (exposed modules will NOT be imported)
+    :return: resource identifier to be used in element's `use_library`
     """
-    assert isinstance(location, Path)
-    assert location.suffix == '.js' or location.suffix == '.mjs', 'Only JS dependencies are supported.'
-    name = str(location)
-    assert name not in libraries, f'Duplicate js library name {name}'
-    libraries[name] = {'name': name, 'path': base_path / location,  'expose': expose}
-    return name
+    suffix = location.suffix.lower()
+    assert suffix in {'.js', '.mjs'}, 'Only JS dependencies are supported.'
+    name = location.stem
+    key = str(location)
+    path = base_path / location
+    assert key not in libraries, f'Duplicate js library {key}'
+    libraries[key] = {'name': name, 'path': path,  'expose': expose}
+    return key
 
 
 def generate_resources(prefix: str, elements: List[Element]) -> Tuple[str, str, str, str, str]:
@@ -67,7 +69,7 @@ def generate_resources(prefix: str, elements: List[Element]) -> Tuple[str, str, 
     for resource in libraries:
         if resource not in done_libraries and libraries[resource]['expose']:
             name = libraries[resource]['name']
-            import_maps['imports'][name] = f'{prefix}/_nicegui/{__version__}/library/{resource}'
+            import_maps['imports'][name] = f'{prefix}/_nicegui/{__version__}/libraries/{resource}'
             done_libraries.add(resource)
     # Build the none optimized component (ie, the vue component).
     for resource in vue_components:
@@ -82,7 +84,7 @@ def generate_resources(prefix: str, elements: List[Element]) -> Tuple[str, str, 
         for resource in element.libraries:
             if resource in libraries and resource not in done_libraries:
                 if not libraries[resource]['expose']:
-                    js_imports += f'import "{prefix}/_nicegui/{__version__}/library/{resource}";\n'
+                    js_imports += f'import "{prefix}/_nicegui/{__version__}/libraries/{resource}";\n'
                 done_libraries.add(resource)
         for resource in element.components:
             if resource in js_components and resource not in done_components:

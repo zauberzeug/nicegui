@@ -10,14 +10,13 @@ from ..helpers import KWONLY_SLOTS
 from .scene_object3d import Object3D
 
 component = register_vue_component(Path('scene.js'))
-lib = Path('three')
 libraries = [
-    register_library(lib / 'three.module.js', expose=True),
-    register_library(lib / 'modules' / 'CSS2DRenderer.js', expose=True),
-    register_library(lib / 'modules' / 'CSS3DRenderer.js', expose=True),
-    register_library(lib / 'modules' / 'OrbitControls.js', expose=True),
-    register_library(lib / 'modules' / 'STLLoader.js', expose=True),
-    register_library(lib / 'tween' / 'tween.umd.js'),
+    register_library(Path('three', 'three.module.js'), expose=True),
+    register_library(Path('three', 'modules', 'CSS2DRenderer.js'), expose=True),
+    register_library(Path('three', 'modules', 'CSS3DRenderer.js'), expose=True),
+    register_library(Path('three', 'modules', 'OrbitControls.js'), expose=True),
+    register_library(Path('three', 'modules', 'STLLoader.js'), expose=True),
+    register_library(Path('tween', 'tween.umd.js')),
 ]
 
 
