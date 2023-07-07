@@ -6,7 +6,7 @@ from ..dependencies import register_vue_component
 from ..element import Element
 from .mixins.text_element import TextElement
 
-register_vue_component('link', Path(__file__).parent / 'link.js')
+component = register_vue_component(Path('link.js'))
 
 
 class Link(TextElement):
@@ -36,7 +36,7 @@ class Link(TextElement):
             self._props['href'] = globals.page_routes[target]
         self._props['target'] = '_blank' if new_tab else '_self'
         self._classes = ['nicegui-link']
-        self.use_component('link')
+        self.use_component(component)
 
 
 class LinkTarget(Element):

@@ -5,8 +5,8 @@ from ..dependencies import register_library, register_vue_component
 from ..element import Element
 from ..events import GenericEventArguments, JoystickEventArguments, handle_event
 
-register_vue_component('joystick', Path(__file__).parent / 'joystick.vue')
-library_name = register_library(Path('nipplejs') / 'nipplejs.js')
+component = register_vue_component(Path('joystick.vue'))
+library = register_library(Path('nipplejs', 'nipplejs.js'))
 
 
 class Joystick(Element):
@@ -28,7 +28,7 @@ class Joystick(Element):
         :param options: arguments like `color` which should be passed to the `underlying nipple.js library <https://github.com/yoannmoinet/nipplejs#options>`_
         """
         super().__init__('joystick')
-        self.use_library(library_name)
+        self.use_library(library)
         self._props['options'] = options
         self.active = False
 

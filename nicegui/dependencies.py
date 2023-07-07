@@ -1,5 +1,4 @@
 import json
-import logging
 from pathlib import Path
 from typing import Any, Dict, List, Set, Tuple
 
@@ -13,18 +12,14 @@ js_components: Dict[str, Any] = {}
 libraries: Dict[str, Any] = {}
 
 
-def register_vue_component(location: Path,
-                           base_path: Path = Path(__file__).parent / 'elements', *, expose: bool = False
-                           ) -> str:
+def register_vue_component(location: Path, base_path: Path = Path(__file__).parent / 'elements') -> str:
     """Register a .vue or .js Vue component.
 
     :param location: the location to the library you want to register relative to the base_path. This is also used as the resource identifier and must therefore be url-safe.
     :param base_path: the base path where your libraries are located
     :return: the resource identifier library name to be used in element's `use_component`        
     """
-    if isinstance(location, str):
-        logging.warning('register_vue_component: location is a string, did you mean to use register_library?')
-        return
+    assert isinstance(location, Path)
     suffix = location.suffix.lower()
     assert suffix in {'.vue', '.js', '.mjs'}, 'Only VUE and JS components are supported.'
     name = location.stem
@@ -51,8 +46,7 @@ def register_library(location: Path,
     :param expose: if True, this will be exposed as an ESM module but NOT imported
     :return: the resource identifier library name to be used in element's `use_library`
     """
-    if isinstance(location, str):
-        return
+    assert isinstance(location, Path)
     assert location.suffix == '.js' or location.suffix == '.mjs', 'Only JS dependencies are supported.'
     name = str(location)
     assert name not in libraries, f'Duplicate js library name {name}'

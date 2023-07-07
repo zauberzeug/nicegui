@@ -7,8 +7,8 @@ from ..dependencies import register_library, register_vue_component
 from ..element import Element
 from ..functions.javascript import run_javascript
 
-register_vue_component('aggrid', Path(__file__).parent / 'aggrid.js')
-library_name = register_library(Path('aggrid') / 'ag-grid-community.min.js')
+component = register_vue_component(Path('aggrid.js'))
+library = register_library(Path('aggrid', 'ag-grid-community.min.js'))
 
 
 class AgGrid(Element):
@@ -28,8 +28,8 @@ class AgGrid(Element):
         self._props['options'] = options
         self._props['html_columns'] = html_columns
         self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']
-        self.use_component('aggrid')
-        self.use_library(library_name)
+        self.use_component(component)
+        self.use_library(library)
 
     @staticmethod
     def from_pandas(df: 'pandas.DataFrame', *, theme: str = 'balham') -> AgGrid:

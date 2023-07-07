@@ -9,7 +9,7 @@ from ..dependencies import register_vue_component
 from ..element import Element
 from ..helpers import KWONLY_SLOTS, is_coroutine_function
 
-register_vue_component('refreshable', Path(__file__).parent / 'refreshable.js')
+component = register_vue_component(Path('refreshable.js'))
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -56,7 +56,7 @@ class refreshable:
     def __call__(self, *args: Any, **kwargs: Any) -> Union[None, Awaitable]:
         self.prune()
         container = Element('refreshable')
-        container.use_component('refreshable')
+        container.use_component(component)
         target = RefreshableTarget(container=container, instance=self.instance, args=args, kwargs=kwargs)
         self.targets.append(target)
         return target.run(self.func)

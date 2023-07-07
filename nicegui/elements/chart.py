@@ -4,7 +4,7 @@ from typing import Dict, List
 from ..dependencies import register_library, register_vue_component
 from ..element import Element
 
-register_vue_component('chart', Path(__file__).parent / 'chart.js')
+component = register_vue_component(Path('chart.js'))
 
 core_dependencies: List[Path] = []
 base = Path(__file__).parent / 'lib'
@@ -34,7 +34,7 @@ class Chart(Element):
         self._props['type'] = type
         self._props['options'] = options
         self._props['extras'] = extras
-        self.use_component('chart')
+        self.use_component(component)
         for dependency in core_dependencies:
             self.use_library(dependency)
         for extra in extras:

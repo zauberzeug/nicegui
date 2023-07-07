@@ -6,7 +6,7 @@ from .. import globals
 from ..dependencies import register_vue_component
 from ..element import Element
 
-register_vue_component('audio', Path(__file__).parent / 'audio.js')
+component = register_vue_component(Path('audio.js'))
 
 
 class Audio(Element):
@@ -37,7 +37,7 @@ class Audio(Element):
         self._props['autoplay'] = autoplay
         self._props['muted'] = muted
         self._props['loop'] = loop
-        self.use_component('audio')
+        self.use_component(component)
 
         if type:
             url = f'https://github.com/zauberzeug/nicegui/pull/624'
