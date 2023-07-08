@@ -176,6 +176,7 @@ try:
     __all__.append('plotly')
 except ImportError:
     def plotly(*args, **kwargs):
+        raise ImportError('Plotly is not installed. Please run "pip install plotly".')
         raise ImportError('Plotly is not installed. Please run "pip install nicegui[plotly]".')
 
 if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
@@ -186,10 +187,10 @@ if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
         __all__.extend(['line_plot', 'pyplot', 'plot'])
     except ImportError:
         def line_plot(*args, **kwargs):
-            raise ImportError('Matplotlib is not installed. Please run "pip install nicegui[matplotlib]".')
+            raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
 
         def pyplot(*args, **kwargs):
-            raise ImportError('Matplotlib is not installed. Please run "pip install nicegui[matplotlib]".')
+            raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
 
         def plot(*args, **kwargs):
-            raise ImportError('Matplotlib is not installed. Please run "pip install nicegui[matplotlib]".')
+            raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
