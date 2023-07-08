@@ -746,4 +746,23 @@ def create_full() -> None:
         See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
     ''')
 
+    subheading('NiceGUI On Air')
+
+    ui.markdown('''
+        By using `ui.run(on_air=True)` you can share your local app with others over the internet 🧞.
+                
+        When accessing the on-air URL, all libraries (like Vue, Quasar, ...) are loaded from our CDN.
+        Thereby only the raw content and events need to be transmitted by your local app.
+        This makes it blazing fast even if your app only has a poor internet connection (e.g. a mobile robot in the field).
+
+        Currently "On Air" is available as tech preview and generates a random URL that is valid for 1 hour.
+        We will gradually improve stability and extend the service with password protection, custom URLs and more.
+        Please let us know your feedback on [GitHub](https://github.com/zauberzeug/nicegui/discussions), 
+        [Reddit](https://www.reddit.com/r/nicegui/), or [Discord](https://discord.gg/3XkZVYJ).
+        
+        **Data Privacy:**
+        We take your privacy very serious. 
+        NiceGUI On Air does not log or store any content of the relayed data.
+    ''').classes('bold-links arrow-links')
+
     ui.element('div').classes('h-32')
