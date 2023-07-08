@@ -40,7 +40,6 @@ __all__ = [
     'menu_item',
     'mermaid',
     'number',
-    'plotly',
     'circular_progress',
     'linear_progress',
     'query',
@@ -127,7 +126,6 @@ from .elements.menu import Menu as menu
 from .elements.menu import MenuItem as menu_item
 from .elements.mermaid import Mermaid as mermaid
 from .elements.number import Number as number
-from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
 from .elements.query import query
@@ -173,8 +171,25 @@ from .page_layout import RightDrawer as right_drawer
 from .run import run
 from .run_with import run_with
 
+try:
+    from .elements.plotly import Plotly as plotly
+    __all__.append('plotly')
+except ImportError:
+    def plotly(*args, **kwargs):
+        raise ImportError('Plotly is not installed. Please run "pip install nicegui[plotly]".')
+
 if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
-    from .elements.line_plot import LinePlot as line_plot
-    from .elements.pyplot import Pyplot as pyplot
-    plot = deprecated(pyplot, 'ui.plot', 'ui.pyplot', 317)
-    __all__.extend(['line_plot', 'pyplot', 'plot'])
+    try:
+        from .elements.line_plot import LinePlot as line_plot
+        from .elements.pyplot import Pyplot as pyplot
+        plot = deprecated(pyplot, 'ui.plot', 'ui.pyplot', 317)
+        __all__.extend(['line_plot', 'pyplot', 'plot'])
+    except ImportError:
+        def line_plot(*args, **kwargs):
+            raise ImportError('Matplotlib is not installed. Please run "pip install nicegui[matplotlib]".')
+
+        def pyplot(*args, **kwargs):
+            raise ImportError('Matplotlib is not installed. Please run "pip install nicegui[matplotlib]".')
+
+        def plot(*args, **kwargs):
+            raise ImportError('Matplotlib is not installed. Please run "pip install nicegui[matplotlib]".')

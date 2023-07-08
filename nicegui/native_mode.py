@@ -41,7 +41,8 @@ def open_window(
         start_window_method_executor(window, method_queue, response_queue, closing)
         webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
     except NameError:
-        logging.error('Native mode is not supported in this configuration. Please install pywebview to use it.')
+        logging.error('''Native mode is not supported in this configuration.
+Please run "pip install nicegui[native] to use it.''')
         sys.exit(1)
 
 
