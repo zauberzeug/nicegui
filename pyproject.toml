@@ -30,7 +30,8 @@ matplotlib = { version = "^3.5.0", optional = true }
 
 [tool.poetry.extras]
 native = ["pywebview"]
-
+plotly = ["plotly"]
+matplotlib = ["matplotlib"]
 
 [tool.poetry.group.dev.dependencies]
 icecream = "^2.1.0"
