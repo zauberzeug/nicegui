@@ -11,6 +11,6 @@ RUN curl -sSL https://install.python-poetry.org | python3 - && \
 WORKDIR /app
 
 COPY ./pyproject.toml ./poetry.lock* main.py ./
-RUN poetry install --no-root
+RUN poetry install --no-root --all-extras
 
 CMD python3 -m debugpy --listen 5678 main.py
