@@ -6,8 +6,8 @@ import plotly.graph_objects as go
 from ..dependencies import register_library, register_vue_component
 from ..element import Element
 
-register_vue_component('plotly', Path(__file__).parent / 'plotly.vue')
-library_name = register_library(Path('plotly') / 'plotly.min.js')
+component = register_vue_component(Path('plotly.vue'))
+library = register_library(Path('plotly', 'plotly.min.js'))
 
 
 class Plotly(Element):
@@ -27,8 +27,8 @@ class Plotly(Element):
         :param figure: Plotly figure to be rendered. Can be either a `go.Figure` instance, or
                        a `dict` object with keys `data`, `layout`, `config` (optional).
         """
-        super().__init__('plotly')
-        self.use_library(library_name)
+        super().__init__(component.tag)
+        self.use_library(library)
 
         self.figure = figure
         self.update()

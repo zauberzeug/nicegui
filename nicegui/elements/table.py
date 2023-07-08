@@ -8,7 +8,7 @@ from ..element import Element
 from ..events import GenericEventArguments, TableSelectionEventArguments, handle_event
 from .mixins.filter_element import FilterElement
 
-register_vue_component('nicegui-table', Path(__file__).parent / 'table.js')
+component = register_vue_component(Path('table.js'))
 
 
 class Table(FilterElement):
@@ -36,7 +36,7 @@ class Table(FilterElement):
 
         If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
         """
-        super().__init__(tag='nicegui-table')
+        super().__init__(tag=component.tag)
 
         self.rows = rows
         self.row_key = row_key
@@ -63,7 +63,7 @@ class Table(FilterElement):
             handle_event(on_select, arguments)
         self.on('selection', handle_selection, ['added', 'rows', 'keys'])
 
-        self.use_component('nicegui-table')
+        self.use_component(component)
 
     def add_rows(self, *rows: Dict) -> None:
         """Add rows to the table."""

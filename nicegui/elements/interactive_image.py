@@ -8,7 +8,7 @@ from ..events import GenericEventArguments, MouseEventArguments, handle_event
 from .mixins.content_element import ContentElement
 from .mixins.source_element import SourceElement
 
-register_vue_component('interactive_image', Path(__file__).parent / 'interactive_image.js')
+component = register_vue_component(Path('interactive_image.js'))
 
 
 class InteractiveImage(SourceElement, ContentElement):
@@ -35,10 +35,10 @@ class InteractiveImage(SourceElement, ContentElement):
         :param events: list of JavaScript events to subscribe to (default: `['click']`)
         :param cross: whether to show crosshairs (default: `False`)
         """
-        super().__init__(tag='interactive_image', source=source, content=content)
+        super().__init__(tag=component.tag, source=source, content=content)
         self._props['events'] = events
         self._props['cross'] = cross
-        self.use_component('interactive_image')
+        self.use_component(component)
 
         def handle_mouse(e: GenericEventArguments) -> None:
             if on_mouse is None:

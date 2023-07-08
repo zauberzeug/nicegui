@@ -9,15 +9,14 @@ from ..events import GenericEventArguments, SceneClickEventArguments, SceneClick
 from ..helpers import KWONLY_SLOTS
 from .scene_object3d import Object3D
 
-register_vue_component('scene', Path(__file__).parent / 'scene.js')
-lib = Path('three')
-library_names = [
-    register_library(lib / 'three.module.js', expose=True),
-    register_library(lib / 'modules' / 'CSS2DRenderer.js', expose=True),
-    register_library(lib / 'modules' / 'CSS3DRenderer.js', expose=True),
-    register_library(lib / 'modules' / 'OrbitControls.js', expose=True),
-    register_library(lib / 'modules' / 'STLLoader.js', expose=True),
-    register_library(lib / 'tween' / 'tween.umd.js'),
+component = register_vue_component(Path('scene.js'))
+libraries = [
+    register_library(Path('three', 'three.module.js'), expose=True),
+    register_library(Path('three', 'modules', 'CSS2DRenderer.js'), expose=True),
+    register_library(Path('three', 'modules', 'CSS3DRenderer.js'), expose=True),
+    register_library(Path('three', 'modules', 'OrbitControls.js'), expose=True),
+    register_library(Path('three', 'modules', 'STLLoader.js'), expose=True),
+    register_library(Path('tween', 'tween.umd.js')),
 ]
 
 
@@ -74,7 +73,7 @@ class Scene(Element):
         :param grid: whether to display a grid
         :param on_click: callback to execute when a 3d object is clicked
         """
-        super().__init__('scene')
+        super().__init__(component.tag)
         self._props['width'] = width
         self._props['height'] = height
         self._props['grid'] = grid
@@ -85,9 +84,9 @@ class Scene(Element):
         self.is_initialized = False
         self.on('init', self.handle_init)
         self.on('click3d', self.handle_click)
-        self.use_component('scene')
-        for library_name in library_names:
-            self.use_library(library_name)
+        self.use_component(component)
+        for library in libraries:
+            self.use_library(library)
 
     def handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True

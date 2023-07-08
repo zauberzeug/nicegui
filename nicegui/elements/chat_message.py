@@ -5,7 +5,7 @@ from typing import List, Optional, Union
 from ..dependencies import register_vue_component
 from ..element import Element
 
-register_vue_component('chat_message', Path(__file__).parent / 'chat_message.js')
+component = register_vue_component(Path('chat_message.js'))
 
 
 class ChatMessage(Element):
@@ -31,8 +31,8 @@ class ChatMessage(Element):
         :param sent: render as a sent message (so from current user) (default: False)
         :param text_html: render text as HTML (default: False)
         """
-        super().__init__('chat_message')
-        self.use_component('chat_message')
+        super().__init__(component.tag)
+        self.use_component(component)
 
         if isinstance(text, str):
             text = [text]

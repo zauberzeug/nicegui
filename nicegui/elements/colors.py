@@ -3,7 +3,7 @@ from pathlib import Path
 from ..dependencies import register_vue_component
 from ..element import Element
 
-register_vue_component('colors', Path(__file__).parent / 'colors.js')
+component = register_vue_component(Path('colors.js'))
 
 
 class Colors(Element):
@@ -21,8 +21,8 @@ class Colors(Element):
 
         Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/>`_.
         """
-        super().__init__('colors')
-        self.use_component('colors')
+        super().__init__(component.tag)
+        self.use_component(component)
         self._props['primary'] = primary
         self._props['secondary'] = secondary
         self._props['accent'] = accent

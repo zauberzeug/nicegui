@@ -6,7 +6,7 @@ from typing import Any, Optional
 from ..dependencies import register_vue_component
 from ..element import Element
 
-register_vue_component('log', Path(__file__).parent / 'log.js')
+component = register_vue_component(Path('log.js'))
 
 
 class Log(Element):
@@ -18,12 +18,12 @@ class Log(Element):
 
         :param max_lines: maximum number of lines before dropping oldest ones (default: `None`)
         """
-        super().__init__('log')
+        super().__init__(component.tag)
         self._props['max_lines'] = max_lines
         self._props['lines'] = ''
         self._classes = ['nicegui-log']
         self.lines: deque[str] = deque(maxlen=max_lines)
-        self.use_component('log')
+        self.use_component(component)
         self.total_count: int = 0
 
     def push(self, line: Any) -> None:

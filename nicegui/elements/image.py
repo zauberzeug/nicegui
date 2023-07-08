@@ -5,7 +5,7 @@ from nicegui.dependencies import register_vue_component
 
 from .mixins.source_element import SourceElement
 
-register_vue_component('image', Path(__file__).parent / 'image.js')
+component = register_vue_component(Path('image.js'))
 
 
 class Image(SourceElement):
@@ -17,5 +17,5 @@ class Image(SourceElement):
 
         :param source: the source of the image; can be a URL, local file path or a base64 string
         """
-        super().__init__(tag='image', source=source)
-        self.use_component('image')
+        super().__init__(tag=component.tag, source=source)
+        self.use_component(component)

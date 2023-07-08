@@ -8,7 +8,7 @@ from ..events import GenericEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
 
-register_vue_component('select', Path(__file__).parent / 'select.js')
+component = register_vue_component(Path('select.js'))
 
 
 class Select(ChoiceElement, DisableableElement):
@@ -40,8 +40,8 @@ class Select(ChoiceElement, DisableableElement):
                 value = []
             elif not isinstance(value, list):
                 value = [value]
-        super().__init__(tag='select', options=options, value=value, on_change=on_change)
-        self.use_component('select')
+        super().__init__(tag=component.tag, options=options, value=value, on_change=on_change)
+        self.use_component(component)
         if label is not None:
             self._props['label'] = label
         if with_input:

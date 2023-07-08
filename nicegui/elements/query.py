@@ -7,18 +7,18 @@ from ..dependencies import register_vue_component
 from ..element import Element
 from ..globals import get_client
 
-register_vue_component('query', Path(__file__).parent / 'query.js')
+component = register_vue_component(Path('query.js'))
 
 
 class Query(Element):
 
     def __init__(self, selector: str) -> None:
-        super().__init__('query')
+        super().__init__(component.tag)
         self._props['selector'] = selector
         self._props['classes'] = []
         self._props['style'] = {}
         self._props['props'] = {}
-        self.use_component('query')
+        self.use_component(component)
 
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
             -> Self:

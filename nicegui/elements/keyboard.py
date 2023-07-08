@@ -9,7 +9,7 @@ from ..element import Element
 from ..events import (GenericEventArguments, KeyboardAction, KeyboardKey, KeyboardModifiers, KeyEventArguments,
                       handle_event)
 
-register_vue_component('keyboard', Path(__file__).parent / 'keyboard.js')
+component = register_vue_component(Path('keyboard.js'))
 
 
 class Keyboard(Element):
@@ -30,14 +30,14 @@ class Keyboard(Element):
         :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: `True`)
         :param ignore: ignore keys when one of these element types is focussed (default: `['input', 'select', 'button', 'textarea']`)
         """
-        super().__init__('keyboard')
+        super().__init__(component.tag)
         self.key_handler = on_key
         self.active = active
         self._props['events'] = ['keydown', 'keyup']
         self._props['repeating'] = repeating
         self._props['ignore'] = ignore
         self.on('key', self.handle_key)
-        self.use_component('keyboard')
+        self.use_component(component)
 
     def handle_key(self, e: GenericEventArguments) -> None:
         if not self.active:

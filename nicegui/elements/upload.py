@@ -9,7 +9,7 @@ from ..events import EventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
 from .mixins.disableable_element import DisableableElement
 
-register_vue_component('upload', Path(__file__).parent / 'upload.js')
+component = register_vue_component(Path('upload.js'))
 
 
 class Upload(DisableableElement):
@@ -37,8 +37,8 @@ class Upload(DisableableElement):
         :param label: label for the uploader (default: `''`)
         :param auto_upload: automatically upload files when they are selected (default: `False`)
         """
-        super().__init__(tag='upload')
-        self.use_component('upload')
+        super().__init__(tag=component.tag)
+        self.use_component(component)
         self._props['multiple'] = multiple
         self._props['label'] = label
         self._props['auto-upload'] = auto_upload

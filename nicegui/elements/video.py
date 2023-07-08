@@ -6,7 +6,7 @@ from .. import globals
 from ..dependencies import register_vue_component
 from ..element import Element
 
-register_vue_component('video', Path(__file__).parent / 'video.js')
+component = register_vue_component(Path('video.js'))
 
 
 class Video(Element):
@@ -29,7 +29,7 @@ class Video(Element):
         See `here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events>`_
         for a list of events you can subscribe to using the generic event subscription `on()`.
         """
-        super().__init__('video')
+        super().__init__(component.tag)
         if Path(src).is_file():
             src = globals.app.add_media_file(local_file=src)
         self._props['src'] = src
@@ -37,7 +37,7 @@ class Video(Element):
         self._props['autoplay'] = autoplay
         self._props['muted'] = muted
         self._props['loop'] = loop
-        self.use_component('video')
+        self.use_component(component)
 
         if type:
             url = f'https://github.com/zauberzeug/nicegui/pull/624'

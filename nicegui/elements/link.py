@@ -6,7 +6,7 @@ from ..dependencies import register_vue_component
 from ..element import Element
 from .mixins.text_element import TextElement
 
-register_vue_component('link', Path(__file__).parent / 'link.js')
+component = register_vue_component(Path('link.js'))
 
 
 class Link(TextElement):
@@ -27,7 +27,7 @@ class Link(TextElement):
         :param target: page function, NiceGUI element on the same page or string that is a an absolute URL or relative path from base URL
         :param new_tab: open link in new tab (default: False)
         """
-        super().__init__(tag='link', text=text)
+        super().__init__(tag=component.tag, text=text)
         if isinstance(target, str):
             self._props['href'] = target
         elif isinstance(target, Element):
@@ -36,7 +36,7 @@ class Link(TextElement):
             self._props['href'] = globals.page_routes[target]
         self._props['target'] = '_blank' if new_tab else '_self'
         self._classes = ['nicegui-link']
-        self.use_component('link')
+        self.use_component(component)
 
 
 class LinkTarget(Element):
