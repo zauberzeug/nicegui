@@ -23,7 +23,7 @@ jobs:
       - name: install dependencies
         run: |
           poetry config virtualenvs.create false
-          poetry install
+          poetry install --all-extras
           # install packages to run the examples
           pip install opencv-python opencv-contrib-python-headless httpx replicate langchain openai simpy tortoise-orm
           pip install -r tests/requirements.txt
