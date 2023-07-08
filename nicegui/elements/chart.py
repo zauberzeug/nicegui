@@ -1,17 +1,18 @@
 from pathlib import Path
 from typing import Dict, List
 
-from ..dependencies import register_library, register_vue_component
+from ..dependencies import Library, register_library, register_vue_component
 from ..element import Element
 
 component = register_vue_component(Path('chart.js'))
 
-core_dependencies: List[Path] = []
+core_dependencies: List[Library] = []
+extra_dependencies: Dict[str, Library] = {}
 base = Path(__file__).parent / 'lib'
 for path in sorted((base / 'highcharts').glob('*.js'), key=lambda p: p.stem):
     core_dependencies.append(register_library(path.relative_to(base)))
 for path in sorted((base / 'highcharts' / 'modules').glob('*.js'), key=lambda p: p.stem):
-    register_library(path.relative_to(base))
+    extra_dependencies[path.stem] = register_library(path.relative_to(base))
 
 
 class Chart(Element):
@@ -38,7 +39,7 @@ class Chart(Element):
         for dependency in core_dependencies:
             self.use_library(dependency)
         for extra in extras:
-            self.use_library(f'highcharts/modules/{extra}.js')
+            self.use_library(extra_dependencies[extra])
 
     @property
     def options(self) -> Dict:
