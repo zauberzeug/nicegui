@@ -231,6 +231,8 @@
           });
           window.socket.on("disconnect", () => {
             document.getElementById('popup').style.opacity = 1;
+          });
+          window.socket.on("try_reconnect", () => {
             const checkAndReload = async () => {
               await fetch(window.location.href);
               window.location.reload();
