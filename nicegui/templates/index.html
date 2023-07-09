@@ -232,8 +232,8 @@
           window.socket.on("disconnect", () => {
             document.getElementById('popup').style.opacity = 1;
             const checkAndReload = async () => {
-              const response = await fetch(window.location.href);
-              if (response.ok || response.status == 404) window.location.reload();
+              await fetch(window.location.href);
+              window.location.reload();
             };
             setInterval(checkAndReload, 500);
           });
