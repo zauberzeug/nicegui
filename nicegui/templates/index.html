@@ -234,7 +234,7 @@
           });
           window.socket.on("try_reconnect", () => {
             const checkAndReload = async () => {
-              await fetch(window.location.href);
+              await fetch(window.location.href, { headers: { 'NiceGUI-Check': 'try_reconnect' }, });
               window.location.reload();
             };
             setInterval(checkAndReload, 500);
