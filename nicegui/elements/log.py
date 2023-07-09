@@ -1,15 +1,11 @@
 import urllib.parse
 from collections import deque
-from pathlib import Path
 from typing import Any, Optional
 
-from ..dependencies import register_vue_component
 from ..element import Element
 
-component = register_vue_component(Path('log.js'))
 
-
-class Log(Element):
+class Log(Element, component='log.js'):
 
     def __init__(self, max_lines: Optional[int] = None) -> None:
         """Log view
@@ -18,12 +14,11 @@ class Log(Element):
 
         :param max_lines: maximum number of lines before dropping oldest ones (default: `None`)
         """
-        super().__init__(component.tag)
+        super().__init__()
         self._props['max_lines'] = max_lines
         self._props['lines'] = ''
         self._classes = ['nicegui-log']
         self.lines: deque[str] = deque(maxlen=max_lines)
-        self.use_component(component)
         self.total_count: int = 0
 
     def push(self, line: Any) -> None:

@@ -1,15 +1,11 @@
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, Awaitable, Callable, Dict, List, Tuple, Union
 
 from typing_extensions import Self
 
 from .. import background_tasks, globals
-from ..dependencies import register_vue_component
 from ..element import Element
 from ..helpers import KWONLY_SLOTS, is_coroutine_function
-
-component = register_vue_component(Path('refreshable.js'), base_path=Path(__file__).parent.parent / 'functions')
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -37,6 +33,10 @@ class RefreshableTarget:
             return None  # required by mypy
 
 
+class RefreshableContainer(Element, component='refreshable.js'):
+    pass
+
+
 class refreshable:
 
     def __init__(self, func: Callable[..., Any]) -> None:
@@ -55,8 +55,7 @@ class refreshable:
 
     def __call__(self, *args: Any, **kwargs: Any) -> Union[None, Awaitable]:
         self.prune()
-        container = Element(component.tag).use_component(component)
-        target = RefreshableTarget(container=container, instance=self.instance, args=args, kwargs=kwargs)
+        target = RefreshableTarget(container=RefreshableContainer(), instance=self.instance, args=args, kwargs=kwargs)
         self.targets.append(target)
         return target.run(self.func)
 

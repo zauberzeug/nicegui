@@ -1,17 +1,12 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Dict, List, Optional, cast
 
-from ..dependencies import register_library, register_vue_component
 from ..element import Element
 from ..functions.javascript import run_javascript
 
-component = register_vue_component(Path('aggrid.js'))
-library = register_library(Path('aggrid', 'ag-grid-community.min.js'))
 
-
-class AgGrid(Element):
+class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-community.min.js']):
 
     def __init__(self, options: Dict, *, html_columns: List[int] = [], theme: str = 'balham') -> None:
         """AG Grid
@@ -24,12 +19,10 @@ class AgGrid(Element):
         :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
         :param theme: AG Grid theme (default: 'balham')
         """
-        super().__init__(component.tag)
+        super().__init__()
         self._props['options'] = options
         self._props['html_columns'] = html_columns
         self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']
-        self.use_component(component)
-        self.use_library(library)
 
     @staticmethod
     def from_pandas(df: 'pandas.DataFrame', *, theme: str = 'balham') -> AgGrid:

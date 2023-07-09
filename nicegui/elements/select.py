@@ -1,17 +1,13 @@
 import re
 from copy import deepcopy
-from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from ..dependencies import register_vue_component
 from ..events import GenericEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
 
-component = register_vue_component(Path('select.js'))
 
-
-class Select(ChoiceElement, DisableableElement):
+class Select(ChoiceElement, DisableableElement, component='select.js'):
 
     def __init__(self,
                  options: Union[List, Dict], *,
@@ -40,8 +36,7 @@ class Select(ChoiceElement, DisableableElement):
                 value = []
             elif not isinstance(value, list):
                 value = [value]
-        super().__init__(tag=component.tag, options=options, value=value, on_change=on_change)
-        self.use_component(component)
+        super().__init__(options=options, value=value, on_change=on_change)
         if label is not None:
             self._props['label'] = label
         if with_input:

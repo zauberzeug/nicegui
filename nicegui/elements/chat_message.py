@@ -1,14 +1,10 @@
 import html
-from pathlib import Path
 from typing import List, Optional, Union
 
-from ..dependencies import register_vue_component
 from ..element import Element
 
-component = register_vue_component(Path('chat_message.js'))
 
-
-class ChatMessage(Element):
+class ChatMessage(Element, component='chat_message.js'):
 
     def __init__(self,
                  text: Union[str, List[str]], *,
@@ -31,8 +27,7 @@ class ChatMessage(Element):
         :param sent: render as a sent message (so from current user) (default: False)
         :param text_html: render text as HTML (default: False)
         """
-        super().__init__(component.tag)
-        self.use_component(component)
+        super().__init__()
 
         if isinstance(text, str):
             text = [text]

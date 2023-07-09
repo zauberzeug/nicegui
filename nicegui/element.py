@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import inspect
 import re
 from copy import deepcopy
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Union
 
 from typing_extensions import Self
@@ -9,6 +11,7 @@ from typing_extensions import Self
 from nicegui import json
 
 from . import binding, events, globals, outbox, storage
+from .dependencies import JsComponent, Library, register_library, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
@@ -16,14 +19,17 @@ from .tailwind import Tailwind
 
 if TYPE_CHECKING:
     from .client import Client
-    from .dependencies import JsComponent, Library
 
 PROPS_PATTERN = re.compile(r'([:\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
 
 
 class Element(Visibility):
+    components: List[JsComponent] = []
+    libraries: List[Library] = []
+    extra_libraries: List[Library] = []
+    exposed_libraries: List[Library] = []
 
-    def __init__(self, tag: str, *, _client: Optional[Client] = None) -> None:
+    def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
         """Generic Element
 
         This class is the base class for all other UI elements.
@@ -36,14 +42,12 @@ class Element(Visibility):
         self.client = _client or globals.get_client()
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
-        self.tag = tag
+        self.tag = tag if tag else self.components[0].tag if self.components else 'div'
         self._classes: List[str] = []
         self._style: Dict[str, str] = {}
         self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
-        self.components: List[JsComponent] = []
-        self.libraries: List[Library] = []
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
 
@@ -59,6 +63,19 @@ class Element(Visibility):
         outbox.enqueue_update(self)
         if self.parent_slot:
             outbox.enqueue_update(self.parent_slot.parent)
+
+    def __init_subclass__(cls, *,
+                          component: Union[str, Path, None] = None,
+                          libraries: List[Union[str, Path]] = [],
+                          exposed_libraries: List[Union[str, Path]] = [],
+                          extra_libraries: List[Union[str, Path]] = [],
+                          ) -> None:
+        super().__init_subclass__()
+        base = Path(inspect.getfile(cls)).parent
+        cls.components = [register_vue_component(Path(component), base)] if component else []
+        cls.libraries = [register_library(Path(library), base) for library in libraries]
+        cls.extra_libraries = [register_library(Path(library), base) for library in extra_libraries]
+        cls.exposed_libraries = [register_library(Path(library), base, expose=True) for library in exposed_libraries]
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
@@ -307,13 +324,3 @@ class Element(Visibility):
 
         Can be overridden to perform cleanup.
         """
-
-    def use_component(self, component: JsComponent) -> Self:
-        """Register a ``*.js`` Vue component to be used by this element."""
-        self.components.append(component)
-        return self
-
-    def use_library(self, library: Library) -> Self:
-        """Register a JavaScript library to be used by this element."""
-        self.libraries.append(library)
-        return self

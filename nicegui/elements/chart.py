@@ -1,21 +1,14 @@
 from pathlib import Path
 from typing import Dict, List
 
-from ..dependencies import Library, register_library, register_vue_component
 from ..element import Element
 
-component = register_vue_component(Path('chart.js'))
-
-core_dependencies: List[Library] = []
-extra_dependencies: Dict[str, Library] = {}
-base = Path(__file__).parent / 'lib'
-for path in sorted((base / 'highcharts').glob('*.js'), key=lambda p: p.stem):
-    core_dependencies.append(register_library(path.relative_to(base)))
-for path in sorted((base / 'highcharts' / 'modules').glob('*.js'), key=lambda p: p.stem):
-    extra_dependencies[path.stem] = register_library(path.relative_to(base))
+base = Path(__file__).parent
+libraries = [p.relative_to(base) for p in sorted((base / 'lib' / 'highcharts').glob('*.js'), key=lambda p: p.stem)]
+modules = {p.stem: p.relative_to(base) for p in sorted((base / 'lib' / 'highcharts' / 'modules').glob('*.js'))}
 
 
-class Chart(Element):
+class Chart(Element, component='chart.js', libraries=libraries, extra_libraries=list(modules.values())):
 
     def __init__(self, options: Dict, *, type: str = 'chart', extras: List[str] = []) -> None:
         """Chart
@@ -31,15 +24,11 @@ class Chart(Element):
         :param type: chart type (e.g. "chart", "stockChart", "mapChart", ...; default: "chart")
         :param extras: list of extra dependencies to include (e.g. "annotations", "arc-diagram", "solid-gauge", ...)
         """
-        super().__init__(component.tag)
+        super().__init__()
         self._props['type'] = type
         self._props['options'] = options
         self._props['extras'] = extras
-        self.use_component(component)
-        for dependency in core_dependencies:
-            self.use_library(dependency)
-        for extra in extras:
-            self.use_library(extra_dependencies[extra])
+        self.libraries.extend(library for library in self.extra_libraries if library.path.stem in extras)
 
     @property
     def options(self) -> Dict:

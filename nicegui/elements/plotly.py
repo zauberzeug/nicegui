@@ -1,16 +1,11 @@
-from pathlib import Path
 from typing import Dict, Union
 
 import plotly.graph_objects as go
 
-from ..dependencies import register_library, register_vue_component
 from ..element import Element
 
-component = register_vue_component(Path('plotly.vue'))
-library = register_library(Path('plotly', 'plotly.min.js'))
 
-
-class Plotly(Element):
+class Plotly(Element, component='plotly.vue', libraries=['lib/plotly/plotly.min.js']):
 
     def __init__(self, figure: Union[Dict, go.Figure]) -> None:
         """Plotly Element
@@ -27,8 +22,7 @@ class Plotly(Element):
         :param figure: Plotly figure to be rendered. Can be either a `go.Figure` instance, or
                        a `dict` object with keys `data`, `layout`, `config` (optional).
         """
-        super().__init__(component.tag)
-        self.use_library(library)
+        super().__init__()
 
         self.figure = figure
         self.update()
