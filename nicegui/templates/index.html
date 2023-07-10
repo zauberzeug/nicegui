@@ -192,6 +192,7 @@
       async function loadDependencies(element) {
         for (const {name, key, tag} of element.components) {
           if (loaded_components.has(name)) continue;
+          if (key.endsWith('.vue')) continue;
           const component = (await import(`{{ prefix | safe }}/_nicegui/{{version}}/components/${key}`)).default;
           app = app.component(tag, component);
           loaded_components.add(name);
@@ -253,8 +254,25 @@
             download: (msg) => download(msg.url, msg.filename),
             notify: (msg) => Quasar.Notify.create(msg),
           };
+          const socketMessageQueue = [];
+          let isProcessingSocketMessage = false;
           for (const [event, handler] of Object.entries(messageHandlers)) {
-            window.socket.on(event, handler);
+            window.socket.on(event, async (...args) => {
+              socketMessageQueue.push(() => handler(...args));
+              if (!isProcessingSocketMessage) {
+                while (socketMessageQueue.length > 0) {
+                  const handler = socketMessageQueue.shift()
+                  isProcessingSocketMessage = true;
+                  try {
+                    await handler();
+                  }
+                  catch (e) {
+                    console.error(e);
+                  }
+                  isProcessingSocketMessage = false;
+                }
+              }
+            });
           }
         },
       }).use(Quasar, {

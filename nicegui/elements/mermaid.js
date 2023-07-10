@@ -8,7 +8,7 @@ export default {
     async update(content) {
       this.$el.innerHTML = content;
       this.$el.removeAttribute("data-processed");
-      await mermaid.run({ nodes: [this.$el] });
+      this.$nextTick(() => mermaid.run({ nodes: [this.$el] }));
     },
   },
   props: {

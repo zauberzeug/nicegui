@@ -3,7 +3,7 @@ from typing import Any, Callable, Dict, Optional
 from .input import Input
 
 
-class Textarea(Input):
+class Textarea(Input, component='input.js'):
 
     def __init__(self,
                  label: Optional[str] = None, *,
