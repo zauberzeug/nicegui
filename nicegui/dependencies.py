@@ -1,12 +1,16 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import TYPE_CHECKING, Dict, List, Set, Tuple
 
 import vbuild
 
 from . import __version__
-from .element import Element
 from .helpers import KWONLY_SLOTS
+
+if TYPE_CHECKING:
+    from .element import Element
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -53,7 +57,7 @@ def register_vue_component(location: Path, base_path: Path = Path(__file__).pare
 
     :param location: location to the library relative to the base_path (used as the resource identifier, must be URL-safe)
     :param base_path: base path where your libraries are located
-    :return: resource identifier to be used in element's `use_component`
+    :return: registered component
     """
     path, key, name, suffix = deconstruct_location(location, base_path)
     if suffix == '.vue':
@@ -75,7 +79,7 @@ def register_library(location: Path, base_path: Path = Path(__file__).parent / '
     :param location: location to the library relative to the base_path (used as the resource identifier, must be URL-safe)
     :param base_path: base path where your libraries are located
     :param expose: whether to expose library as an ESM module (exposed modules will NOT be imported)
-    :return: resource identifier to be used in element's `use_library`
+    :return: registered library
     """
     path, key, name, suffix = deconstruct_location(location, base_path)
     if suffix in {'.js', '.mjs'}:
@@ -87,7 +91,9 @@ def register_library(location: Path, base_path: Path = Path(__file__).parent / '
 
 def deconstruct_location(location: Path, base_path: Path) -> Tuple[Path, str, str, str]:
     """Deconstruct a location into its parts: full path, relative path, name, suffix."""
-    return base_path / location, str(location), location.name.split('.', 1)[0], location.suffix.lower()
+    abs_path = location if location.is_absolute() else base_path / location
+    rel_path = location if not location.is_absolute() else location.relative_to(base_path)
+    return abs_path, str(rel_path), location.name.split('.', 1)[0], location.suffix.lower()
 
 
 def generate_resources(prefix: str, elements: List[Element]) -> Tuple[List[str],
@@ -126,7 +132,7 @@ def generate_resources(prefix: str, elements: List[Element]) -> Tuple[List[str],
                     js_imports.append(f'import "{prefix}/_nicegui/{__version__}/libraries/{library.key}";')
                 done_libraries.add(library.key)
         for component in element.components:
-            if component.key not in done_components:
+            if component.key not in done_components and component.path.suffix.lower() == '.js':
                 js_imports.extend([
                     f'import {{ default as {component.name} }} from "{prefix}/_nicegui/{__version__}/components/{component.key}";',
                     f'app.component("{component.tag}", {component.name});',

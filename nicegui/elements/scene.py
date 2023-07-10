@@ -1,23 +1,11 @@
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from .. import binding, globals
-from ..dependencies import register_library, register_vue_component
 from ..element import Element
 from ..events import GenericEventArguments, SceneClickEventArguments, SceneClickHit, handle_event
 from ..helpers import KWONLY_SLOTS
 from .scene_object3d import Object3D
-
-component = register_vue_component(Path('scene.js'))
-libraries = [
-    register_library(Path('three', 'three.module.js'), expose=True),
-    register_library(Path('three', 'modules', 'CSS2DRenderer.js'), expose=True),
-    register_library(Path('three', 'modules', 'CSS3DRenderer.js'), expose=True),
-    register_library(Path('three', 'modules', 'OrbitControls.js'), expose=True),
-    register_library(Path('three', 'modules', 'STLLoader.js'), expose=True),
-    register_library(Path('tween', 'tween.umd.js')),
-]
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -38,7 +26,16 @@ class SceneObject:
     id: str = 'scene'
 
 
-class Scene(Element):
+class Scene(Element,
+            component='scene.js',
+            libraries=['lib/tween/tween.umd.js'],
+            exposed_libraries=[
+                'lib/three/three.module.js',
+                'lib/three/modules/CSS2DRenderer.js',
+                'lib/three/modules/CSS3DRenderer.js',
+                'lib/three/modules/OrbitControls.js',
+                'lib/three/modules/STLLoader.js',
+            ]):
     from .scene_objects import Box as box
     from .scene_objects import Curve as curve
     from .scene_objects import Cylinder as cylinder
@@ -73,7 +70,7 @@ class Scene(Element):
         :param grid: whether to display a grid
         :param on_click: callback to execute when a 3d object is clicked
         """
-        super().__init__(component.tag)
+        super().__init__()
         self._props['width'] = width
         self._props['height'] = height
         self._props['grid'] = grid
@@ -84,9 +81,6 @@ class Scene(Element):
         self.is_initialized = False
         self.on('init', self.handle_init)
         self.on('click3d', self.handle_click)
-        self.use_component(component)
-        for library in libraries:
-            self.use_library(library)
 
     def handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True

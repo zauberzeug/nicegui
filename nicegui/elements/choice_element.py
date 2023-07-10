@@ -6,7 +6,7 @@ from .mixins.value_element import ValueElement
 class ChoiceElement(ValueElement):
 
     def __init__(self, *,
-                 tag: str,
+                 tag: Optional[str] = None,
                  options: Union[List, Dict],
                  value: Any,
                  on_change: Optional[Callable[..., Any]] = None,

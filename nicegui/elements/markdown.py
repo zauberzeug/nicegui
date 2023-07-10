@@ -1,20 +1,16 @@
 import os
 import re
 from functools import lru_cache
-from pathlib import Path
 from typing import List
 
 import markdown2
 from pygments.formatters import HtmlFormatter
 
-from ..dependencies import register_vue_component
-from .mermaid import library as mermaid_library
+from .mermaid import Mermaid
 from .mixins.content_element import ContentElement
 
-component = register_vue_component(Path('markdown.js'))
 
-
-class Markdown(ContentElement):
+class Markdown(ContentElement, component='markdown.js'):
 
     def __init__(self, content: str = '', *, extras: List[str] = ['fenced-code-blocks', 'tables']) -> None:
         """Markdown Element
@@ -25,13 +21,12 @@ class Markdown(ContentElement):
         :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)
         """
         self.extras = extras
-        super().__init__(tag=component.tag, content=content)
+        super().__init__(content=content)
         self._classes = ['nicegui-markdown']
         self._props['codehilite_css'] = HtmlFormatter(nobackground=True).get_style_defs('.codehilite')
-        self.use_component(component)
         if 'mermaid' in extras:
             self._props['use_mermaid'] = True
-            self.use_library(mermaid_library)
+            self.libraries.append(Mermaid.exposed_libraries[0])
 
     def on_content_change(self, content: str) -> None:
         html = prepare_content(content, extras=' '.join(self.extras))

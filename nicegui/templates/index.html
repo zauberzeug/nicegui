@@ -105,8 +105,8 @@
         }
 
         // @todo: Try avoid this with better handling of initial page load.
-        element.components.forEach((component) => loaded_components.add(component));
-        element.libraries.forEach((library) => loaded_libraries.add(library));
+        element.components.forEach((component) => loaded_components.add(component.name));
+        element.libraries.forEach((library) => loaded_libraries.add(library.name));
 
         const props = {
           id: 'c' + element.id,
