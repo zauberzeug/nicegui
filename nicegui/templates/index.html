@@ -220,37 +220,42 @@
           const transports = ['websocket', 'polling'];
           window.path_prefix = "{{ prefix | safe }}";
           window.socket = io(url, { path: "{{ prefix | safe }}/_nicegui_ws/socket.io", query, extraHeaders, transports });
-          window.socket.on("connect", () => {
-            window.socket.emit("handshake", (ok) => {
-              if (!ok) window.location.reload();
-              document.getElementById('popup').style.opacity = 0;
-            });
-          });
-          window.socket.on("connect_error", (err) => {
-            if (err.message == 'timeout') window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
-          });
-          window.socket.on("disconnect", () => {
-            document.getElementById('popup').style.opacity = 1;
-          });
-          window.socket.on("update", async (msg) => {
-            for (const [id, element] of Object.entries(msg)) {
-              await loadDependencies(element);
-              this.elements[element.id] = element;
-            }
-          });
-          window.socket.on("run_method", (msg) => {
-            const element = getElement(msg.id);
-            if (element === null || element === undefined) return;
-            if (msg.name in element) {
-              element[msg.name](...msg.args);
-            } else {
-              element.$refs.qRef[msg.name](...msg.args);
-            }
-          });
-          window.socket.on("run_javascript", (msg) => runJavascript(msg['code'], msg['request_id']));
-          window.socket.on("open", (msg) => (location.href = msg.startsWith('/') ? "{{ prefix | safe }}" + msg : msg));
-          window.socket.on("download", (msg) => download(msg.url, msg.filename));
-          window.socket.on("notify", (msg) => Quasar.Notify.create(msg));
+          const messageHandlers = {
+            connect: () => {
+              window.socket.emit("handshake", (ok) => {
+                if (!ok) window.location.reload();
+                document.getElementById('popup').style.opacity = 0;
+              });
+            },
+            connect_error: (err) => {
+              if (err.message == 'timeout') window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
+            },
+            disconnect: () => {
+              document.getElementById('popup').style.opacity = 1;
+            },
+            update: async (msg) => {
+              for (const [id, element] of Object.entries(msg)) {
+                await loadDependencies(element);
+                this.elements[element.id] = element;
+              }
+            },
+            run_method: (msg) => {
+              const element = getElement(msg.id);
+              if (element === null || element === undefined) return;
+              if (msg.name in element) {
+                element[msg.name](...msg.args);
+              } else {
+                element.$refs.qRef[msg.name](...msg.args);
+              }
+            },
+            run_javascript: (msg) => runJavascript(msg['code'], msg['request_id']),
+            open: (msg) => (location.href = msg.startsWith('/') ? "{{ prefix | safe }}" + msg : msg),
+            download: (msg) => download(msg.url, msg.filename),
+            notify: (msg) => Quasar.Notify.create(msg),
+          };
+          for (const [event, handler] of Object.entries(messageHandlers)) {
+            window.socket.on(event, handler);
+          }
         },
       }).use(Quasar, {
         config: {
