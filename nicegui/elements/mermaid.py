@@ -1,14 +1,10 @@
-from pathlib import Path
-
 from .mixins.content_element import ContentElement
-
-base = Path(__file__).parent
 
 
 class Mermaid(ContentElement,
               component='mermaid.js',
               exposed_libraries=['lib/mermaid/mermaid.esm.min.mjs'],
-              extra_libraries=[p.relative_to(base) for p in (base / 'lib' / 'mermaid').glob('*.js')]):
+              extra_libraries=['lib/mermaid/*.js']):
     CONTENT_PROP = 'content'
 
     def __init__(self, content: str) -> None:

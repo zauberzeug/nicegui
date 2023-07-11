@@ -1,4 +1,5 @@
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
@@ -142,3 +143,20 @@ def test_create_from_pandas(screen: Screen):
     screen.should_contain('Bob')
     screen.should_contain('18')
     screen.should_contain('21')
+
+
+def test_create_dynamically(screen: Screen):
+    ui.button('Create', on_click=lambda: ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]}))
+
+    screen.open('/')
+    screen.click('Create')
+    screen.should_contain('Alice')
+
+
+def test_api_method_after_creation(screen: Screen):
+    options = {'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]}
+    ui.button('Create', on_click=lambda: ui.aggrid(options).call_api_method('selectAll'))
+
+    screen.open('/')
+    screen.click('Create')
+    assert screen.selenium.find_element(By.CLASS_NAME, 'ag-row-selected')

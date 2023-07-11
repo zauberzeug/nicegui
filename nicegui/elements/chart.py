@@ -1,14 +1,12 @@
-from pathlib import Path
 from typing import Dict, List
 
 from ..element import Element
 
-base = Path(__file__).parent
-libraries = [p.relative_to(base) for p in sorted((base / 'lib' / 'highcharts').glob('*.js'), key=lambda p: p.stem)]
-modules = {p.stem: p.relative_to(base) for p in sorted((base / 'lib' / 'highcharts' / 'modules').glob('*.js'))}
 
-
-class Chart(Element, component='chart.js', libraries=libraries, extra_libraries=list(modules.values())):
+class Chart(Element,
+            component='chart.js',
+            libraries=['lib/highcharts/*.js'],
+            extra_libraries=['lib/highcharts/modules/*.js']):
 
     def __init__(self, options: Dict, *, type: str = 'chart', extras: List[str] = []) -> None:
         """Chart

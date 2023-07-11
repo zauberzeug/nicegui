@@ -110,3 +110,17 @@ def test_dynamic_column_attributes(screen: Screen):
 
     screen.open('/')
     screen.should_contain('18 years')
+
+
+def test_remove_selection(screen: Screen):
+    t = ui.table(columns=columns(), rows=rows(), selection='single')
+    ui.button('Remove first row', on_click=lambda: t.remove_rows(t.rows[0]))
+
+    screen.open('/')
+    screen.find('Alice').find_element(By.XPATH, 'preceding-sibling::td').click()
+    screen.should_contain('1 record selected.')
+
+    screen.click('Remove first row')
+    screen.wait(0.5)
+    screen.should_not_contain('Alice')
+    screen.should_not_contain('1 record selected.')

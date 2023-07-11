@@ -33,6 +33,7 @@ loop: Optional[asyncio.AbstractEventLoop] = None
 log: logging.Logger = logging.getLogger('nicegui')
 state: State = State.STOPPED
 ui_run_has_been_called: bool = False
+optional_features: List[str] = []
 
 reload: bool
 title: str

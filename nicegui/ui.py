@@ -40,13 +40,13 @@ __all__ = [
     'menu_item',
     'mermaid',
     'number',
-    'plotly',
     'circular_progress',
     'linear_progress',
     'query',
     'radio',
     'row',
     'scene',
+    'scroll_area',
     'select',
     'separator',
     'slider',
@@ -127,13 +127,13 @@ from .elements.menu import Menu as menu
 from .elements.menu import MenuItem as menu_item
 from .elements.mermaid import Mermaid as mermaid
 from .elements.number import Number as number
-from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
 from .elements.query import query
 from .elements.radio import Radio as radio
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
+from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
 from .elements.slider import Slider as slider
@@ -173,8 +173,28 @@ from .page_layout import RightDrawer as right_drawer
 from .run import run
 from .run_with import run_with
 
+from .globals import optional_features
+try:
+    from .elements.plotly import Plotly as plotly
+    optional_features.append('plotly')
+except ImportError:
+    def plotly(*args, **kwargs):
+        raise ImportError('Plotly is not installed. Please run "pip install plotly".')
+__all__.append('plotly')
+
 if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
-    from .elements.line_plot import LinePlot as line_plot
-    from .elements.pyplot import Pyplot as pyplot
-    plot = deprecated(pyplot, 'ui.plot', 'ui.pyplot', 317)
+    try:
+        from .elements.line_plot import LinePlot as line_plot
+        from .elements.pyplot import Pyplot as pyplot
+        plot = deprecated(pyplot, 'ui.plot', 'ui.pyplot', 317)
+        optional_features.append('matplotlib')
+    except ImportError:
+        def line_plot(*args, **kwargs):
+            raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
+
+        def pyplot(*args, **kwargs):
+            raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
+
+        def plot(*args, **kwargs):
+            raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
     __all__.extend(['line_plot', 'pyplot', 'plot'])

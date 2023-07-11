@@ -73,18 +73,19 @@ def test_removing_chart_series(screen: Screen):
     assert len(screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-point')) == 3
 
 
+def test_missing_extra(screen: Screen):
+    # NOTE: This test does not work after test_extra() has been run, because conftest won't reset libraries correctly.
+    ui.chart({'chart': {'type': 'solidgauge'}})
+
+    screen.open('/')
+    assert not screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-pane')
+
+
 def test_extra(screen: Screen):
     ui.chart({'chart': {'type': 'solidgauge'}}, extras=['solid-gauge'])
 
     screen.open('/')
     assert screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-pane')
-
-
-def test_missing_extra(screen: Screen):
-    ui.chart({'chart': {'type': 'solidgauge'}})
-
-    screen.open('/')
-    assert not screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-pane')
 
 
 def test_stock_chart(screen: Screen):
@@ -131,3 +132,11 @@ def test_stock_chart(screen: Screen):
     screen.wait(0.5)
     screen.should_not_contain('alice')
     screen.should_not_contain('bob')
+
+
+def test_create_dynamically(screen: Screen):
+    ui.button('Create', on_click=lambda: ui.chart({}))
+
+    screen.open('/')
+    screen.click('Create')
+    screen.should_contain('Chart title')

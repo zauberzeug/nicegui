@@ -24,7 +24,7 @@ PROPS_PATTERN = re.compile(r'([:\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.
 
 
 class Element(Visibility):
-    components: List[JsComponent] = []
+    component: Optional[JsComponent] = None
     libraries: List[Library] = []
     extra_libraries: List[Library] = []
     exposed_libraries: List[Library] = []
@@ -42,7 +42,7 @@ class Element(Visibility):
         self.client = _client or globals.get_client()
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
-        self.tag = tag if tag else self.components[0].tag if self.components else 'div'
+        self.tag = tag if tag else self.component.tag if self.component else 'div'
         self._classes: List[str] = []
         self._style: Dict[str, str] = {}
         self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
@@ -72,10 +72,32 @@ class Element(Visibility):
                           ) -> None:
         super().__init_subclass__()
         base = Path(inspect.getfile(cls)).parent
-        cls.components = [register_vue_component(Path(component), base)] if component else []
-        cls.libraries = [register_library(Path(library), base) for library in libraries]
-        cls.extra_libraries = [register_library(Path(library), base) for library in extra_libraries]
-        cls.exposed_libraries = [register_library(Path(library), base, expose=True) for library in exposed_libraries]
+
+        def glob_absolute_paths(file: Union[str, Path]) -> List[Path]:
+            path = Path(file)
+            if not path.is_absolute():
+                path = base / path
+            return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
+
+        cls.component = None
+        if component:
+            for path in glob_absolute_paths(component):
+                cls.component = register_vue_component(path)
+
+        cls.libraries = []
+        for library in libraries:
+            for path in glob_absolute_paths(library):
+                cls.libraries.append(register_library(path))
+
+        cls.extra_libraries = []
+        for library in extra_libraries:
+            for path in glob_absolute_paths(library):
+                cls.extra_libraries.append(register_library(path))
+
+        cls.exposed_libraries = []
+        for library in exposed_libraries:
+            for path in glob_absolute_paths(library):
+                cls.exposed_libraries.append(register_library(path, expose=True))
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
@@ -115,8 +137,17 @@ class Element(Visibility):
             'text': self._text,
             'slots': self._collect_slot_dict(),
             'events': [listener.to_dict() for listener in self._event_listeners.values()],
-            'components': [{'key': c.key, 'name': c.name, 'tag': c.tag} for c in self.components],
-            'libraries': [{'key': l.key, 'name': l.name} for l in self.libraries],
+            'component': {
+                'key': self.component.key,
+                'name': self.component.name,
+                'tag': self.component.tag
+            } if self.component else None,
+            'libraries': [
+                {
+                    'key': library.key,
+                    'name': library.name,
+                } for library in self.libraries
+            ],
         }
 
     @staticmethod

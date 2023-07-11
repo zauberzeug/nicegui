@@ -14,7 +14,7 @@ class Lightbox:
     def __init__(self) -> None:
         with ui.dialog().props('maximized').classes('bg-black') as self.dialog:
             ui.keyboard(self._on_key)
-            self.large_image = ui.image().props('no-spinner')
+            self.large_image = ui.image().props('no-spinner fit=scale-down')
         self.image_list: List[str] = []
 
     def add_image(self, thumb_url: str, orig_url: str) -> ui.image:
