@@ -1,4 +1,3 @@
-from .air import Air
 import logging
 import multiprocessing
 import os
@@ -16,6 +15,7 @@ from uvicorn.supervisors import ChangeReload, Multiprocess
 from . import globals, helpers
 from . import native as native_module
 from . import native_mode
+from .air import Air
 from .language import Language
 
 APP_IMPORT_STRING = 'nicegui:app'
@@ -70,7 +70,7 @@ def run(*,
     :param language: language for Quasar elements (default: `'en-US'`)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param show: automatically open the UI in a browser tab (default: `True`)
-    :param on_air: Tech-Preview: `allows temporary remote access <https://nicegui.io/documentation#nicegui_on_air>`_ if set to True (default: disabled)
+    :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
     :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`)
     :param fullscreen: open the UI in a fullscreen window (default: `False`, also activates `native`)
