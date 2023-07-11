@@ -190,10 +190,13 @@
       }
 
       async function loadDependencies(element) {
-        if (element.component && !loaded_components.has(element.component.name) && !element.component.key.endsWith('.vue')) {
-          const component = (await import(`{{ prefix | safe }}/_nicegui/{{version}}/components/${element.component.key}`)).default;
-          app = app.component(element.component.tag, component);
-          loaded_components.add(element.component.name);
+        if (element.component) {
+          const {name, key, tag} = element.component;
+          if (!loaded_components.has(name) && !key.endsWith('.vue')) {
+            const component = await import(`{{ prefix | safe }}/_nicegui/{{version}}/components/${key}`);
+            app = app.component(tag, component.default);
+            loaded_components.add(name);
+          }
         }
         for (const {name, key} of element.libraries) {
           if (loaded_libraries.has(name)) continue;

@@ -70,12 +70,15 @@ class Element(Visibility):
                           exposed_libraries: List[Union[str, Path]] = [],
                           extra_libraries: List[Union[str, Path]] = [],
                           ) -> None:
+        def abs_path(file: Union[str, Path]) -> Path:
+            p = Path(file)
+            return p if p.is_absolute() else base / p
         super().__init_subclass__()
         base = Path(inspect.getfile(cls)).parent
-        cls.component = register_vue_component(Path(component), base) if component else None
-        cls.libraries = [register_library(Path(library), base) for library in libraries]
-        cls.extra_libraries = [register_library(Path(library), base) for library in extra_libraries]
-        cls.exposed_libraries = [register_library(Path(library), base, expose=True) for library in exposed_libraries]
+        cls.component = register_vue_component(abs_path(component)) if component else None
+        cls.libraries = [register_library(abs_path(library)) for library in libraries]
+        cls.extra_libraries = [register_library(abs_path(library)) for library in extra_libraries]
+        cls.exposed_libraries = [register_library(abs_path(library), expose=True) for library in exposed_libraries]
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
