@@ -105,7 +105,7 @@
         }
 
         // @todo: Try avoid this with better handling of initial page load.
-        element.components.forEach((component) => loaded_components.add(component.name));
+        if (element.component) loaded_components.add(element.component.name);
         element.libraries.forEach((library) => loaded_libraries.add(library.name));
 
         const props = {
@@ -190,12 +190,10 @@
       }
 
       async function loadDependencies(element) {
-        for (const {name, key, tag} of element.components) {
-          if (loaded_components.has(name)) continue;
-          if (key.endsWith('.vue')) continue;
-          const component = (await import(`{{ prefix | safe }}/_nicegui/{{version}}/components/${key}`)).default;
-          app = app.component(tag, component);
-          loaded_components.add(name);
+        if (element.component && !loaded_components.has(element.component.name) && !element.component.key.endsWith('.vue')) {
+          const component = (await import(`{{ prefix | safe }}/_nicegui/{{version}}/components/${element.component.key}`)).default;
+          app = app.component(element.component.tag, component);
+          loaded_components.add(element.component.name);
         }
         for (const {name, key} of element.libraries) {
           if (loaded_libraries.has(name)) continue;

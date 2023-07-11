@@ -139,7 +139,8 @@ def generate_resources(prefix: str, elements: List[Element]) -> Tuple[List[str],
                 if not library.expose:
                     js_imports.append(f'import "{prefix}/_nicegui/{__version__}/libraries/{library.key}";')
                 done_libraries.add(library.key)
-        for component in element.components:
+        if element.component:
+            component = element.component
             if component.key not in done_components and component.path.suffix.lower() == '.js':
                 js_imports.extend([
                     f'import {{ default as {component.name} }} from "{prefix}/_nicegui/{__version__}/components/{component.key}";',
