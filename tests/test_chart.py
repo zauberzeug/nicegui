@@ -132,3 +132,11 @@ def test_stock_chart(screen: Screen):
     screen.wait(0.5)
     screen.should_not_contain('alice')
     screen.should_not_contain('bob')
+
+
+def test_create_dynamically(screen: Screen):
+    ui.button('Create', on_click=lambda: ui.chart({}))
+
+    screen.open('/')
+    screen.click('Create')
+    screen.should_contain('Chart title')

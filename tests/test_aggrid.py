@@ -142,3 +142,11 @@ def test_create_from_pandas(screen: Screen):
     screen.should_contain('Bob')
     screen.should_contain('18')
     screen.should_contain('21')
+
+
+def test_create_dynamically(screen: Screen):
+    ui.button('Create', on_click=lambda: ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]}))
+
+    screen.open('/')
+    screen.click('Create')
+    screen.should_contain('Alice')
