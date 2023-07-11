@@ -1,13 +1,9 @@
-from pathlib import Path
 from typing import Optional
 
-from ..dependencies import register_vue_component
 from .mixins.value_element import ValueElement
 
-register_vue_component('dark_mode', Path(__file__).parent / 'dark_mode.js')
 
-
-class DarkMode(ValueElement):
+class DarkMode(ValueElement, component='dark_mode.js'):
     VALUE_PROP = 'value'
 
     def __init__(self, value: Optional[bool] = False) -> None:
@@ -20,8 +16,7 @@ class DarkMode(ValueElement):
 
         :param value: Whether dark mode is enabled. If None, dark mode is set to auto.
         """
-        super().__init__(tag='dark_mode', value=value, on_value_change=None)
-        self.use_component('dark_mode')
+        super().__init__(value=value, on_value_change=None)
 
     def enable(self) -> None:
         """Enable dark mode."""

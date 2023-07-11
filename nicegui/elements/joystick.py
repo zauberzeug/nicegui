@@ -1,15 +1,10 @@
-from pathlib import Path
 from typing import Any, Callable, Optional
 
-from ..dependencies import register_library, register_vue_component
 from ..element import Element
 from ..events import GenericEventArguments, JoystickEventArguments, handle_event
 
-register_vue_component('joystick', Path(__file__).parent / 'joystick.vue')
-register_library('nipplejs', Path(__file__).parent / 'lib' / 'nipplejs' / 'nipplejs.js')
 
-
-class Joystick(Element):
+class Joystick(Element, component='joystick.vue', libraries=['lib/nipplejs/nipplejs.js']):
 
     def __init__(self, *,
                  on_start: Optional[Callable[..., Any]] = None,
@@ -27,8 +22,7 @@ class Joystick(Element):
         :param throttle: throttle interval in seconds for the move event (default: 0.05)
         :param options: arguments like `color` which should be passed to the `underlying nipple.js library <https://github.com/yoannmoinet/nipplejs#options>`_
         """
-        super().__init__('joystick')
-        self.use_library('nipplejs')
+        super().__init__()
         self._props['options'] = options
         self.active = False
 

@@ -1,15 +1,11 @@
-from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
-from ..dependencies import register_vue_component
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
 from .mixins.validation_element import ValidationElement
 
-register_vue_component('nicegui-input', Path(__file__).parent / 'input.js')
 
-
-class Input(ValidationElement, DisableableElement):
+class Input(ValidationElement, DisableableElement, component='input.js'):
     VALUE_PROP: str = 'value'
     LOOPBACK = False
 
@@ -42,7 +38,7 @@ class Input(ValidationElement, DisableableElement):
         :param autocomplete: optional list of strings for autocompletion
         :param validation: dictionary of validation rules, e.g. ``{'Too long!': lambda value: len(value) < 3}``
         """
-        super().__init__(tag='nicegui-input', value=value, on_value_change=on_change, validation=validation)
+        super().__init__(value=value, on_value_change=on_change, validation=validation)
         if label is not None:
             self._props['label'] = label
         if placeholder is not None:
@@ -58,8 +54,6 @@ class Input(ValidationElement, DisableableElement):
                 icon = Icon('visibility_off').classes('cursor-pointer').on('click', toggle_type)
 
         self._props['autocomplete'] = autocomplete or []
-
-        self.use_component('nicegui-input')
 
     def set_autocomplete(self, autocomplete: Optional[List[str]]) -> None:
         """Set the autocomplete list."""

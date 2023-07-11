@@ -93,3 +93,11 @@ def test_replace_scene(screen: Screen):
     screen.click('Replace scene')
     screen.wait(0.5)
     assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'box'
+
+
+def test_create_dynamically(screen: Screen):
+    ui.button('Create', on_click=lambda: ui.scene())
+
+    screen.open('/')
+    screen.click('Create')
+    assert screen.find_by_tag('canvas')

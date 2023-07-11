@@ -40,3 +40,11 @@ def test_replace_plotly(screen: Screen):
     screen.click('Replace')
     screen.wait(0.5)
     assert screen.find_by_tag('text').text == 'B'
+
+
+def test_create_dynamically(screen: Screen):
+    ui.button('Create', on_click=lambda: ui.plotly(go.Figure(go.Scatter(x=[], y=[]))))
+
+    screen.open('/')
+    screen.click('Create')
+    assert screen.find_by_tag('svg')

@@ -1,85 +1,151 @@
-import json
+from __future__ import annotations
+
+import hashlib
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Set, Tuple
+from typing import TYPE_CHECKING, Dict, List, Set, Tuple
 
 import vbuild
 
 from . import __version__
-from .element import Element
+from .helpers import KWONLY_SLOTS
 
-vue_components: Dict[str, Any] = {}
-js_components: Dict[str, Any] = {}
-libraries: Dict[str, Any] = {}
+if TYPE_CHECKING:
+    from .element import Element
 
 
-def register_vue_component(name: str, path: Path) -> None:
+@dataclass(**KWONLY_SLOTS)
+class Component:
+    key: str
+    name: str
+    path: Path
+
+    @property
+    def tag(self) -> str:
+        return f'nicegui-{self.name}'
+
+
+@dataclass(**KWONLY_SLOTS)
+class VueComponent(Component):
+    html: str
+    script: str
+    style: str
+
+
+@dataclass(**KWONLY_SLOTS)
+class JsComponent(Component):
+    pass
+
+
+@dataclass(**KWONLY_SLOTS)
+class Library:
+    key: str
+    name: str
+    path: Path
+    expose: bool
+
+
+vue_components: Dict[str, VueComponent] = {}
+js_components: Dict[str, JsComponent] = {}
+libraries: Dict[str, Library] = {}
+
+
+def register_vue_component(path: Path) -> Component:
     """Register a .vue or .js Vue component.
 
-    :param name: unique machine-name (used in element's `use_library`): no space, no special characters
-    :param path: local path
+    Single-file components (.vue) are built right away
+    to delegate this "long" process to the bootstrap phase
+    and to avoid building the component on every single request.
     """
-    suffix = path.suffix.lower()
-    assert suffix in {'.vue', '.js', '.mjs'}, 'Only VUE and JS components are supported.'
-    if suffix == '.vue':
-        assert name not in vue_components, f'Duplicate VUE component name {name}'
-        # The component (in case of .vue) is built right away to:
-        # 1. delegate this "long" process to the bootstrap phase
-        # 2. avoid building the component on every single request
-        vue_components[name] = vbuild.VBuild(name, path.read_text())
-    elif suffix == '.js':
-        assert name not in js_components, f'Duplicate JS component name {name}'
-        js_components[name] = {'name': name, 'path': path}
+    key = compute_key(path)
+    name = get_name(path)
+    if path.suffix == '.vue':
+        if key in vue_components and vue_components[key].path == path:
+            return vue_components[key]
+        assert key not in vue_components, f'Duplicate VUE component {key}'
+        v = vbuild.VBuild(name, path.read_text())
+        vue_components[key] = VueComponent(key=key, name=name, path=path, html=v.html, script=v.script, style=v.style)
+        return vue_components[key]
+    if path.suffix == '.js':
+        if key in js_components and js_components[key].path == path:
+            return js_components[key]
+        assert key not in js_components, f'Duplicate JS component {key}'
+        js_components[key] = JsComponent(key=key, name=name, path=path)
+        return js_components[key]
+    raise ValueError(f'Unsupported component type "{path.suffix}"')
 
 
-def register_library(name: str, path: Path, *, expose: bool = False) -> None:
-    """Register a new external library.
+def register_library(path: Path, *, expose: bool = False) -> Library:
+    """Register a *.js library."""
+    key = compute_key(path)
+    name = get_name(path)
+    if path.suffix in {'.js', '.mjs'}:
+        if key in libraries and libraries[key].path == path:
+            return libraries[key]
+        assert key not in libraries, f'Duplicate js library {key}'
+        libraries[key] = Library(key=key, name=name, path=path, expose=expose)
+        return libraries[key]
+    raise ValueError(f'Unsupported library type "{path.suffix}"')
 
-    :param name: unique machine-name (used in element's `use_library`): no space, no special characters
-    :param path: local path
-    :param expose: if True, this will be exposed as an ESM module but NOT imported
+
+def compute_key(path: Path) -> str:
+    """Compute a key for a given path using a hash function.
+
+    If the path is relative to the NiceGUI base directory, the key is computed from the relative path.
     """
-    assert path.suffix == '.js' or path.suffix == '.mjs', 'Only JS dependencies are supported.'
-    libraries[name] = {'name': name, 'path': path, 'expose': expose}
+    nicegui_base = Path(__file__).parent
+    try:
+        path = path.relative_to(nicegui_base)
+    except ValueError:
+        pass
+    return f'{hashlib.sha256(str(path.parent).encode()).hexdigest()}/{path.name}'
 
 
-def generate_resources(prefix: str, elements: List[Element]) -> Tuple[str, str, str, str, str]:
+def get_name(path: Path) -> str:
+    return path.name.split('.', 1)[0]
+
+
+def generate_resources(prefix: str, elements: List[Element]) -> Tuple[List[str],
+                                                                      List[str],
+                                                                      List[str],
+                                                                      Dict[str, str],
+                                                                      List[str]]:
     done_libraries: Set[str] = set()
     done_components: Set[str] = set()
-    vue_scripts = ''
-    vue_html = ''
-    vue_styles = ''
-    js_imports = ''
-    import_maps = {'imports': {}}
+    vue_scripts: List[str] = []
+    vue_html: List[str] = []
+    vue_styles: List[str] = []
+    js_imports: List[str] = []
+    imports: Dict[str, str] = {}
 
-    # Build the importmap structure for exposed libraries.
-    for key in libraries:
-        if key not in done_libraries and libraries[key]['expose']:
-            name = libraries[key]['name']
-            import_maps['imports'][name] = f'{prefix}/_nicegui/{__version__}/library/{key}/include'
+    # build the importmap structure for exposed libraries
+    for key, library in libraries.items():
+        if key not in done_libraries and library.expose:
+            imports[library.name] = f'{prefix}/_nicegui/{__version__}/libraries/{key}'
             done_libraries.add(key)
-    # Build the none optimized component (ie, the vue component).
-    for key in vue_components:
+
+    # build the none-optimized component (i.e. the Vue component)
+    for key, component in vue_components.items():
         if key not in done_components:
-            vue_html += f'{vue_components[key].html}\n'
-            vue_scripts += f'{vue_components[key].script.replace("Vue.component", "app.component", 1)}\n'
-            vue_styles += f'{vue_components[key].style}\n'
+            vue_html.append(component.html)
+            vue_scripts.append(component.script.replace(f"Vue.component('{component.name}',",
+                                                        f"app.component('{component.tag}',", 1))
+            vue_styles.append(component.style)
             done_components.add(key)
 
-    # Build the resources associated with the elements.
+    # build the resources associated with the elements
     for element in elements:
-        for key in element.libraries:
-            if key in libraries and key not in done_libraries:
-                if not libraries[key]['expose']:
-                    js_imports += f'import "{prefix}/_nicegui/{__version__}/library/{key}/include";\n'
-                done_libraries.add(key)
-        for key in element.components:
-            if key in js_components and key not in done_components:
-                name = js_components[key]['name']
-                var = key.replace('-', '_')
-                js_imports += f'import {{ default as {var} }} from "{prefix}/_nicegui/{__version__}/components/{key}";\n'
-                js_imports += f'app.component("{name}", {var});\n'
-                done_components.add(key)
-
-    vue_styles = f'<style>{vue_styles}</style>'
-    import_maps = f'<script type="importmap">{json.dumps(import_maps)}</script>'
-    return vue_html, vue_styles, vue_scripts, import_maps, js_imports
+        for library in element.libraries:
+            if library.key not in done_libraries:
+                if not library.expose:
+                    url = f'{prefix}/_nicegui/{__version__}/libraries/{library.key}'
+                    js_imports.append(f'import "{url}";')
+                done_libraries.add(library.key)
+        if element.component:
+            component = element.component
+            if component.key not in done_components and component.path.suffix.lower() == '.js':
+                url = f'{prefix}/_nicegui/{__version__}/components/{component.key}'
+                js_imports.append(f'import {{ default as {component.name} }} from "{url}";')
+                js_imports.append(f'app.component("{component.tag}", {component.name});')
+                done_components.add(component.key)
+    return vue_html, vue_styles, vue_scripts, imports, js_imports

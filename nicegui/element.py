@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import inspect
 import re
 from copy import deepcopy
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Union
 
 from typing_extensions import Self
@@ -9,6 +11,7 @@ from typing_extensions import Self
 from nicegui import json
 
 from . import binding, events, globals, outbox, storage
+from .dependencies import JsComponent, Library, register_library, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
@@ -21,8 +24,12 @@ PROPS_PATTERN = re.compile(r'([:\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.
 
 
 class Element(Visibility):
+    component: Optional[JsComponent] = None
+    libraries: List[Library] = []
+    extra_libraries: List[Library] = []
+    exposed_libraries: List[Library] = []
 
-    def __init__(self, tag: str, *, _client: Optional[Client] = None) -> None:
+    def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
         """Generic Element
 
         This class is the base class for all other UI elements.
@@ -35,14 +42,12 @@ class Element(Visibility):
         self.client = _client or globals.get_client()
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
-        self.tag = tag
+        self.tag = tag if tag else self.component.tag if self.component else 'div'
         self._classes: List[str] = []
         self._style: Dict[str, str] = {}
         self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
-        self.components: List[str] = []
-        self.libraries: List[str] = []
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
 
@@ -58,6 +63,41 @@ class Element(Visibility):
         outbox.enqueue_update(self)
         if self.parent_slot:
             outbox.enqueue_update(self.parent_slot.parent)
+
+    def __init_subclass__(cls, *,
+                          component: Union[str, Path, None] = None,
+                          libraries: List[Union[str, Path]] = [],
+                          exposed_libraries: List[Union[str, Path]] = [],
+                          extra_libraries: List[Union[str, Path]] = [],
+                          ) -> None:
+        super().__init_subclass__()
+        base = Path(inspect.getfile(cls)).parent
+
+        def glob_absolute_paths(file: Union[str, Path]) -> List[Path]:
+            path = Path(file)
+            if not path.is_absolute():
+                path = base / path
+            return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
+
+        cls.component = None
+        if component:
+            for path in glob_absolute_paths(component):
+                cls.component = register_vue_component(path)
+
+        cls.libraries = []
+        for library in libraries:
+            for path in glob_absolute_paths(library):
+                cls.libraries.append(register_library(path))
+
+        cls.extra_libraries = []
+        for library in extra_libraries:
+            for path in glob_absolute_paths(library):
+                cls.extra_libraries.append(register_library(path))
+
+        cls.exposed_libraries = []
+        for library in exposed_libraries:
+            for path in glob_absolute_paths(library):
+                cls.exposed_libraries.append(register_library(path, expose=True))
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
@@ -97,8 +137,17 @@ class Element(Visibility):
             'text': self._text,
             'slots': self._collect_slot_dict(),
             'events': [listener.to_dict() for listener in self._event_listeners.values()],
-            'libraries': self.libraries,
-            'components': self.components,
+            'component': {
+                'key': self.component.key,
+                'name': self.component.name,
+                'tag': self.component.tag
+            } if self.component else None,
+            'libraries': [
+                {
+                    'key': library.key,
+                    'name': library.name,
+                } for library in self.libraries
+            ],
         }
 
     @staticmethod
@@ -306,13 +355,3 @@ class Element(Visibility):
 
         Can be overridden to perform cleanup.
         """
-
-    def use_component(self, name: str) -> Self:
-        """Register a ``*.js`` Vue component to be used by this element."""
-        self.components.append(name)
-        return self
-
-    def use_library(self, name: str) -> Self:
-        """Register a JavaScript library to be used by this element."""
-        self.libraries.append(name)
-        return self

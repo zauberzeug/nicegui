@@ -44,21 +44,20 @@ def index(request: Request) -> Response:
     return globals.index_client.build_response(request)
 
 
-@app.get(f'/_nicegui/{__version__}' + '/library/{name}/{file}')
-def get_dependencies(name: str, file: str):
-    if name in libraries and libraries[name]['path'].exists():
-        filepath = Path(libraries[name]['path']).parent / file
-        if filepath.exists() and not filepath.is_dir():
-            return FileResponse(filepath, media_type='text/javascript')
-        return FileResponse(libraries[name]['path'], media_type='text/javascript')
-    raise HTTPException(status_code=404, detail=f'dependency "{name}" not found')
+@app.get(f'/_nicegui/{__version__}' + '/libraries/{key:path}')
+def get_library(key: str) -> FileResponse:
+    if key in libraries and libraries[key].path.exists():
+        headers = {'Cache-Control': 'public, max-age=3600'}
+        return FileResponse(libraries[key].path, media_type='text/javascript', headers=headers)
+    raise HTTPException(status_code=404, detail=f'library "{key}" not found')
 
 
-@app.get(f'/_nicegui/{__version__}' + '/components/{name}')
-def get_components(name: str):
-    if name in js_components and js_components[name]['path'].exists():
-        return FileResponse(js_components[name]['path'], media_type='text/javascript')
-    raise HTTPException(status_code=404, detail=f'library "{name}" not found')
+@app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
+def get_component(key: str) -> FileResponse:
+    if key in js_components and js_components[key].path.exists():
+        headers = {'Cache-Control': 'public, max-age=3600'}
+        return FileResponse(js_components[key].path, media_type='text/javascript', headers=headers)
+    raise HTTPException(status_code=404, detail=f'component "{key}" not found')
 
 
 @app.on_event('startup')

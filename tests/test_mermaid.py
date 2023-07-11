@@ -53,5 +53,14 @@ def test_replace_mermaid(screen: Screen):
     screen.open('/')
     screen.should_contain('Node_A')
     screen.click('Replace')
+    screen.wait(0.5)
     screen.should_contain('Node_B')
     screen.should_not_contain('Node_A')
+
+
+def test_create_dynamically(screen: Screen):
+    ui.button('Create', on_click=lambda: ui.mermaid('graph LR; Node'))
+
+    screen.open('/')
+    screen.click('Create')
+    screen.should_contain('Node')
