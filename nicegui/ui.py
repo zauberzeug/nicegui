@@ -46,6 +46,7 @@ __all__ = [
     'radio',
     'row',
     'scene',
+    'scroll_area',
     'select',
     'separator',
     'slider',
@@ -132,6 +133,7 @@ from .elements.query import query
 from .elements.radio import Radio as radio
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
+from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
 from .elements.slider import Slider as slider
