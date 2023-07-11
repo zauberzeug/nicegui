@@ -94,8 +94,10 @@ def compute_key(path: Path) -> str:
     If the path is relative to the NiceGUI base directory, the key is computed from the relative path.
     """
     nicegui_base = Path(__file__).parent
-    if path.is_relative_to(nicegui_base):
+    try:
         path = path.relative_to(nicegui_base)
+    except ValueError:
+        pass
     return f'{hashlib.sha256(str(path.parent).encode()).hexdigest()}/{path.name}'
 
 
