@@ -1,14 +1,19 @@
 import mermaid from "mermaid";
 export default {
   template: `<div></div>`,
+  data: () => ({
+    last_content: "",
+  }),
   mounted() {
     this.update(this.content);
   },
   methods: {
-    async update(content) {
+    update(content) {
+      if (this.last_content === content) return;
+      this.last_content = content;
       this.$el.innerHTML = content;
       this.$el.removeAttribute("data-processed");
-      this.$nextTick(() => mermaid.run({ nodes: [this.$el] }));
+      mermaid.run({ nodes: [this.$el] });
     },
   },
   props: {
