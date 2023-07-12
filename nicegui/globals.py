@@ -14,6 +14,7 @@ from .app import App
 from .language import Language
 
 if TYPE_CHECKING:
+    from .air import Air
     from .client import Client
     from .slot import Slot
 
@@ -42,6 +43,7 @@ dark: Optional[bool]
 language: Language
 binding_refresh_interval: float
 tailwind: bool
+air: Optional['Air'] = None
 socket_io_js_extra_headers: Dict = {}
 
 _socket_id: Optional[str] = None

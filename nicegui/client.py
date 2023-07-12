@@ -34,6 +34,7 @@ class Client:
         self.is_waiting_for_disconnect: bool = False
         self.environ: Optional[Dict[str, Any]] = None
         self.shared = shared
+        self.on_air = False
 
         with Element('q-layout', _client=self).props('view="hhh lpr fff"').classes('nicegui-layout') as self.layout:
             with Element('q-page-container') as self.page_container:

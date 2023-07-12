@@ -232,6 +232,13 @@
             connect_error: (err) => {
               if (err.message == 'timeout') window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
             },
+            try_reconnect: () => {
+              const checkAndReload = async () => {
+                await fetch(window.location.href, { headers: { 'NiceGUI-Check': 'try_reconnect' } });
+                window.location.reload();
+              };
+              setInterval(checkAndReload, 500);
+            },
             disconnect: () => {
               document.getElementById('popup').style.opacity = 1;
             },

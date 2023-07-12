@@ -84,7 +84,7 @@ class Scene(Element,
 
     def handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True
-        with globals.socket_id(e.args):
+        with globals.socket_id(e.args['socket_id']):
             self.move_camera(duration=0)
             for object in self.objects.values():
                 object.send()
