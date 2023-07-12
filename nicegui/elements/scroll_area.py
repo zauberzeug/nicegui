@@ -3,7 +3,7 @@ from typing import Any, Callable, Dict, Optional
 from typing_extensions import Literal
 
 from ..element import Element
-from ..events import ScrollEventArguments, handle_event
+from ..events import GenericEventArguments, ScrollEventArguments, handle_event
 
 
 class ScrollArea(Element):
@@ -20,7 +20,7 @@ class ScrollArea(Element):
         self._classes = ['nicegui-scroll-area']
 
         if on_scroll:
-            self.on('scroll', lambda msg: self._handle_scroll(on_scroll, msg), args=[
+            self.on('scroll', lambda e: self._handle_scroll(on_scroll, e), args=[
                 'verticalPosition',
                 'verticalPercentage',
                 'verticalSize',
@@ -31,18 +31,18 @@ class ScrollArea(Element):
                 'horizontalContainerSize',
             ])
 
-    def _handle_scroll(self, on_scroll: Callable[..., Any], msg: Dict) -> None:
+    def _handle_scroll(self, on_scroll: Callable[..., Any], e: GenericEventArguments) -> None:
         handle_event(on_scroll, ScrollEventArguments(
             sender=self,
             client=self.client,
-            vertical_position=msg['args']['verticalPosition'],
-            vertical_percentage=msg['args']['verticalPercentage'],
-            vertical_size=msg['args']['verticalSize'],
-            vertical_container_size=msg['args']['verticalContainerSize'],
-            horizontal_position=msg['args']['horizontalPosition'],
-            horizontal_percentage=msg['args']['horizontalPercentage'],
-            horizontal_size=msg['args']['horizontalSize'],
-            horizontal_container_size=msg['args']['horizontalContainerSize'],
+            vertical_position=e.args['verticalPosition'],
+            vertical_percentage=e.args['verticalPercentage'],
+            vertical_size=e.args['verticalSize'],
+            vertical_container_size=e.args['verticalContainerSize'],
+            horizontal_position=e.args['horizontalPosition'],
+            horizontal_percentage=e.args['horizontalPercentage'],
+            horizontal_size=e.args['horizontalSize'],
+            horizontal_container_size=e.args['horizontalContainerSize'],
         ))
 
     def scroll_to(self, *,
