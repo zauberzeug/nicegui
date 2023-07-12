@@ -31,7 +31,7 @@ def more() -> None:
     ''')
     def multi_select():
         names = ['Alice', 'Bob', 'Carol']
-        ui.select(names, multiple=True, value=names[:2],  label='comma-separated') \
+        ui.select(names, multiple=True, value=names[:2], label='comma-separated') \
             .classes('w-64')
         ui.select(names, multiple=True, value=names[:2], label='with chips') \
-            .props('use-chips').classes('w-64')
+            .classes('w-64').props('use-chips')

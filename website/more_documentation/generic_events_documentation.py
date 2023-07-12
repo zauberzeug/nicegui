@@ -98,7 +98,7 @@ def more() -> None:
     ''')
     async def custom_events() -> None:
         tabwatch = ui.checkbox('Watch browser tab re-entering') \
-            .on('tabvisible', lambda: ui.notify('welcome back') if tabwatch.value else None)
+            .on('tabvisible', lambda: ui.notify('Welcome back!') if tabwatch.value else None, args=[])
         ui.add_head_html(f'''
             <script>
             document.addEventListener('visibilitychange', () => {{

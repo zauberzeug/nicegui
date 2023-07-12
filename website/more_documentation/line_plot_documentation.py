@@ -27,4 +27,4 @@ def main_demo() -> None:
         line_checkbox.value = e.args
         if line_checkbox.value:
             ui.timer(10.0, turn_off, once=True)
-    line_checkbox.on('update:model-value', handle_change)
+    line_checkbox.on('update:model-value', handle_change, args=[None])
