@@ -48,10 +48,10 @@
   "highcharts": {
     "destination": "elements/lib",
     "keep": [
-      "package/highcharts(\\.min)?\\.js",
-      "package/highcharts-more(\\.min)?\\.js",
-      "package/highcharts-3d(\\.min)?\\.js",
-      "package/modules/[^\\.]*(\\.min)?\\.js"
+      "package/highcharts\\.js(\\.map)?",
+      "package/highcharts-more\\.js(\\.map)?",
+      "package/highcharts-3d\\.js(\\.map)?",
+      "package/modules/[^\\.]*\\.js(\\.map)?"
     ],
     "rename": {
       "package/": ""

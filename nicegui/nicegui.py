@@ -45,9 +45,15 @@ def index(request: Request) -> Response:
 
 @app.get(f'/_nicegui/{__version__}' + '/libraries/{key:path}')
 def get_library(key: str) -> FileResponse:
-    if key in libraries and libraries[key].path.exists():
-        headers = {'Cache-Control': 'public, max-age=3600'}
-        return FileResponse(libraries[key].path, media_type='text/javascript', headers=headers)
+    is_map = key.endswith('.map')
+    dict_key = key[:-4] if is_map else key
+    if dict_key in libraries:
+        path = libraries[dict_key].path
+        if is_map:
+            path = path.with_name(path.name + '.map')
+        if path.exists():
+            headers = {'Cache-Control': 'public, max-age=3600'}
+            return FileResponse(path, media_type='text/javascript', headers=headers)
     raise HTTPException(status_code=404, detail=f'library "{key}" not found')
 
 
