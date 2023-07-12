@@ -25,7 +25,7 @@
   },
   "socket.io": {
     "destination": "static",
-    "keep": ["package/client-dist/socket\\.io(\\.min)?\\.js"],
+    "keep": ["package/client-dist/socket\\.io\\.min\\.js(\\.map)?"],
     "rename": {
       "package/client-dist": ".."
     }
