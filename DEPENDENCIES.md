@@ -1,13 +1,14 @@
 # Included Web Dependencies
 
-- Quasar: 2.11.10
-- Vue: 3.2.47
-- Socket.io: 4.6.1
-- Tailwind CSS: 3.2.6
-- Tween.js: 18.6.4
-- Plotly.js: 2.20.0
-- AG Grid: 29.1.0
-- NippleJS: 0.10.1
-- Mermaid: 9.4.3
-- Highcharts: 10.3.3
-- Three.js: 0.150.1
+- vue: 3.3.4
+- quasar: 2.12.2
+- tailwindcss: 3.3.2
+- socket.io: 4.7.1
+- es-module-shims: 1.7.3
+- aggrid: 30.0.3
+- highcharts: 11.1.0
+- mermaid: 10.2.4
+- nipplejs: 0.10.1
+- plotly: 2.24.3
+- three: 0.154.0
+- tween: 21.0.0

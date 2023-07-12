@@ -14,4 +14,3 @@ function initRange(domain, range) {
 export {
   initRange as i
 };
-//# sourceMappingURL=init-cc95ec8e.js.map

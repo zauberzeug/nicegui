@@ -2,18 +2,27 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
     typeof define === 'function' && define.amd ? define(['exports'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.TWEEN = {}));
-}(this, (function (exports) { 'use strict';
+})(this, (function (exports) { 'use strict';
 
     /**
      * The Ease class provides a collection of easing functions for use with tween.js.
      */
-    var Easing = {
-        Linear: {
+    var Easing = Object.freeze({
+        Linear: Object.freeze({
             None: function (amount) {
                 return amount;
             },
-        },
-        Quadratic: {
+            In: function (amount) {
+                return this.None(amount);
+            },
+            Out: function (amount) {
+                return this.None(amount);
+            },
+            InOut: function (amount) {
+                return this.None(amount);
+            },
+        }),
+        Quadratic: Object.freeze({
             In: function (amount) {
                 return amount * amount;
             },
@@ -26,8 +35,8 @@
                 }
                 return -0.5 * (--amount * (amount - 2) - 1);
             },
-        },
-        Cubic: {
+        }),
+        Cubic: Object.freeze({
             In: function (amount) {
                 return amount * amount * amount;
             },
@@ -40,8 +49,8 @@
                 }
                 return 0.5 * ((amount -= 2) * amount * amount + 2);
             },
-        },
-        Quartic: {
+        }),
+        Quartic: Object.freeze({
             In: function (amount) {
                 return amount * amount * amount * amount;
             },
@@ -54,8 +63,8 @@
                 }
                 return -0.5 * ((amount -= 2) * amount * amount * amount - 2);
             },
-        },
-        Quintic: {
+        }),
+        Quintic: Object.freeze({
             In: function (amount) {
                 return amount * amount * amount * amount * amount;
             },
@@ -68,19 +77,19 @@
                 }
                 return 0.5 * ((amount -= 2) * amount * amount * amount * amount + 2);
             },
-        },
-        Sinusoidal: {
+        }),
+        Sinusoidal: Object.freeze({
             In: function (amount) {
-                return 1 - Math.cos((amount * Math.PI) / 2);
+                return 1 - Math.sin(((1.0 - amount) * Math.PI) / 2);
             },
             Out: function (amount) {
                 return Math.sin((amount * Math.PI) / 2);
             },
             InOut: function (amount) {
-                return 0.5 * (1 - Math.cos(Math.PI * amount));
+                return 0.5 * (1 - Math.sin(Math.PI * (0.5 - amount)));
             },
-        },
-        Exponential: {
+        }),
+        Exponential: Object.freeze({
             In: function (amount) {
                 return amount === 0 ? 0 : Math.pow(1024, amount - 1);
             },
@@ -99,8 +108,8 @@
                 }
                 return 0.5 * (-Math.pow(2, -10 * (amount - 1)) + 2);
             },
-        },
-        Circular: {
+        }),
+        Circular: Object.freeze({
             In: function (amount) {
                 return 1 - Math.sqrt(1 - amount * amount);
             },
@@ -113,8 +122,8 @@
                 }
                 return 0.5 * (Math.sqrt(1 - (amount -= 2) * amount) + 1);
             },
-        },
-        Elastic: {
+        }),
+        Elastic: Object.freeze({
             In: function (amount) {
                 if (amount === 0) {
                     return 0;
@@ -146,15 +155,15 @@
                 }
                 return 0.5 * Math.pow(2, -10 * (amount - 1)) * Math.sin((amount - 1.1) * 5 * Math.PI) + 1;
             },
-        },
-        Back: {
+        }),
+        Back: Object.freeze({
             In: function (amount) {
                 var s = 1.70158;
-                return amount * amount * ((s + 1) * amount - s);
+                return amount === 1 ? 1 : amount * amount * ((s + 1) * amount - s);
             },
             Out: function (amount) {
                 var s = 1.70158;
-                return --amount * amount * ((s + 1) * amount + s) + 1;
+                return amount === 0 ? 0 : --amount * amount * ((s + 1) * amount + s) + 1;
             },
             InOut: function (amount) {
                 var s = 1.70158 * 1.525;
@@ -163,8 +172,8 @@
                 }
                 return 0.5 * ((amount -= 2) * amount * ((s + 1) * amount + s) + 2);
             },
-        },
-        Bounce: {
+        }),
+        Bounce: Object.freeze({
             In: function (amount) {
                 return 1 - Easing.Bounce.Out(1 - amount);
             },
@@ -188,40 +197,29 @@
                 }
                 return Easing.Bounce.Out(amount * 2 - 1) * 0.5 + 0.5;
             },
+        }),
+        generatePow: function (power) {
+            if (power === void 0) { power = 4; }
+            power = power < Number.EPSILON ? Number.EPSILON : power;
+            power = power > 10000 ? 10000 : power;
+            return {
+                In: function (amount) {
+                    return Math.pow(amount, power);
+                },
+                Out: function (amount) {
+                    return 1 - Math.pow((1 - amount), power);
+                },
+                InOut: function (amount) {
+                    if (amount < 0.5) {
+                        return Math.pow((amount * 2), power) / 2;
+                    }
+                    return (1 - Math.pow((2 - amount * 2), power)) / 2 + 0.5;
+                },
+            };
         },
-    };
+    });
 
-    var now;
-    // Include a performance.now polyfill.
-    // In node.js, use process.hrtime.
-    // eslint-disable-next-line
-    // @ts-ignore
-    if (typeof self === 'undefined' && typeof process !== 'undefined' && process.hrtime) {
-        now = function () {
-            // eslint-disable-next-line
-            // @ts-ignore
-            var time = process.hrtime();
-            // Convert [seconds, nanoseconds] to milliseconds.
-            return time[0] * 1000 + time[1] / 1000000;
-        };
-    }
-    // In a browser, use self.performance.now if it is available.
-    else if (typeof self !== 'undefined' && self.performance !== undefined && self.performance.now !== undefined) {
-        // This must be bound, because directly assigning this function
-        // leads to an invocation exception in Chrome.
-        now = self.performance.now.bind(self.performance);
-    }
-    // Use Date.now if it is available.
-    else if (Date.now !== undefined) {
-        now = Date.now;
-    }
-    // Otherwise, use 'new Date().getTime()'.
-    else {
-        now = function () {
-            return new Date().getTime();
-        };
-    }
-    var now$1 = now;
+    var now = function () { return performance.now(); };
 
     /**
      * Controlling groups of tweens
@@ -252,7 +250,7 @@
             delete this._tweensAddedDuringUpdate[tween.getId()];
         };
         Group.prototype.update = function (time, preserve) {
-            if (time === void 0) { time = now$1(); }
+            if (time === void 0) { time = now(); }
             if (preserve === void 0) { preserve = false; }
             var tweenIds = Object.keys(this._tweens);
             if (tweenIds.length === 0) {
@@ -393,6 +391,7 @@
             this._valuesEnd = {};
             this._valuesStartRepeat = {};
             this._duration = 1000;
+            this._isDynamic = false;
             this._initialRepeat = 0;
             this._repeat = 0;
             this._yoyo = false;
@@ -402,10 +401,13 @@
             this._startTime = 0;
             this._easingFunction = Easing.Linear.None;
             this._interpolationFunction = Interpolation.Linear;
+            // eslint-disable-next-line
             this._chainedTweens = [];
             this._onStartCallbackFired = false;
+            this._onEveryStartCallbackFired = false;
             this._id = Sequence.nextId();
             this._isChainStopped = false;
+            this._propertiesAreSetUp = false;
             this._goToEnd = false;
         }
         Tween.prototype.getId = function () {
@@ -417,22 +419,28 @@
         Tween.prototype.isPaused = function () {
             return this._isPaused;
         };
-        Tween.prototype.to = function (properties, duration) {
-            // TODO? restore this, then update the 07_dynamic_to example to set fox
-            // tween's to on each update. That way the behavior is opt-in (there's
-            // currently no opt-out).
-            // for (const prop in properties) this._valuesEnd[prop] = properties[prop]
-            this._valuesEnd = Object.create(properties);
-            if (duration !== undefined) {
-                this._duration = duration;
-            }
+        Tween.prototype.to = function (target, duration) {
+            if (duration === void 0) { duration = 1000; }
+            if (this._isPlaying)
+                throw new Error('Can not call Tween.to() while Tween is already started or paused. Stop the Tween first.');
+            this._valuesEnd = target;
+            this._propertiesAreSetUp = false;
+            this._duration = duration;
             return this;
         };
-        Tween.prototype.duration = function (d) {
-            this._duration = d;
+        Tween.prototype.duration = function (duration) {
+            if (duration === void 0) { duration = 1000; }
+            this._duration = duration;
             return this;
         };
-        Tween.prototype.start = function (time) {
+        Tween.prototype.dynamic = function (dynamic) {
+            if (dynamic === void 0) { dynamic = false; }
+            this._isDynamic = dynamic;
+            return this;
+        };
+        Tween.prototype.start = function (time, overrideStartingValues) {
+            if (time === void 0) { time = now(); }
+            if (overrideStartingValues === void 0) { overrideStartingValues = false; }
             if (this._isPlaying) {
                 return this;
             }
@@ -451,13 +459,27 @@
             this._isPlaying = true;
             this._isPaused = false;
             this._onStartCallbackFired = false;
+            this._onEveryStartCallbackFired = false;
             this._isChainStopped = false;
-            this._startTime = time !== undefined ? (typeof time === 'string' ? now$1() + parseFloat(time) : time) : now$1();
+            this._startTime = time;
             this._startTime += this._delayTime;
-            this._setupProperties(this._object, this._valuesStart, this._valuesEnd, this._valuesStartRepeat);
+            if (!this._propertiesAreSetUp || overrideStartingValues) {
+                this._propertiesAreSetUp = true;
+                // If dynamic is not enabled, clone the end values instead of using the passed-in end values.
+                if (!this._isDynamic) {
+                    var tmp = {};
+                    for (var prop in this._valuesEnd)
+                        tmp[prop] = this._valuesEnd[prop];
+                    this._valuesEnd = tmp;
+                }
+                this._setupProperties(this._object, this._valuesStart, this._valuesEnd, this._valuesStartRepeat, overrideStartingValues);
+            }
             return this;
         };
-        Tween.prototype._setupProperties = function (_object, _valuesStart, _valuesEnd, _valuesStartRepeat) {
+        Tween.prototype.startFromCurrentValues = function (time) {
+            return this.start(time, true);
+        };
+        Tween.prototype._setupProperties = function (_object, _valuesStart, _valuesEnd, _valuesStartRepeat, overrideStartingValues) {
             for (var property in _valuesEnd) {
                 var startValue = _object[property];
                 var startValueIsArray = Array.isArray(startValue);
@@ -474,28 +496,46 @@
                     if (endValues.length === 0) {
                         continue;
                     }
-                    // handle an array of relative values
-                    endValues = endValues.map(this._handleRelativeValue.bind(this, startValue));
-                    // Create a local copy of the Array with the start value at the front
-                    _valuesEnd[property] = [startValue].concat(endValues);
+                    // Handle an array of relative values.
+                    // Creates a local copy of the Array with the start value at the front
+                    var temp = [startValue];
+                    for (var i = 0, l = endValues.length; i < l; i += 1) {
+                        var value = this._handleRelativeValue(startValue, endValues[i]);
+                        if (isNaN(value)) {
+                            isInterpolationList = false;
+                            console.warn('Found invalid interpolation list. Skipping.');
+                            break;
+                        }
+                        temp.push(value);
+                    }
+                    if (isInterpolationList) {
+                        // if (_valuesStart[property] === undefined) { // handle end values only the first time. NOT NEEDED? setupProperties is now guarded by _propertiesAreSetUp.
+                        _valuesEnd[property] = temp;
+                        // }
+                    }
                 }
                 // handle the deepness of the values
                 if ((propType === 'object' || startValueIsArray) && startValue && !isInterpolationList) {
                     _valuesStart[property] = startValueIsArray ? [] : {};
-                    // eslint-disable-next-line
-                    for (var prop in startValue) {
-                        // eslint-disable-next-line
-                        // @ts-ignore FIXME?
-                        _valuesStart[property][prop] = startValue[prop];
+                    var nestedObject = startValue;
+                    for (var prop in nestedObject) {
+                        _valuesStart[property][prop] = nestedObject[prop];
                     }
-                    _valuesStartRepeat[property] = startValueIsArray ? [] : {}; // TODO? repeat nested values? And yoyo? And array values?
-                    // eslint-disable-next-line
-                    // @ts-ignore FIXME?
-                    this._setupProperties(startValue, _valuesStart[property], _valuesEnd[property], _valuesStartRepeat[property]);
+                    // TODO? repeat nested values? And yoyo? And array values?
+                    _valuesStartRepeat[property] = startValueIsArray ? [] : {};
+                    var endValues = _valuesEnd[property];
+                    // If dynamic is not enabled, clone the end values instead of using the passed-in end values.
+                    if (!this._isDynamic) {
+                        var tmp = {};
+                        for (var prop in endValues)
+                            tmp[prop] = endValues[prop];
+                        _valuesEnd[property] = endValues = tmp;
+                    }
+                    this._setupProperties(nestedObject, _valuesStart[property], endValues, _valuesStartRepeat[property], overrideStartingValues);
                 }
                 else {
-                    // Save the starting value, but only once.
-                    if (typeof _valuesStart[property] === 'undefined') {
+                    // Save the starting value, but only once unless override is requested.
+                    if (typeof _valuesStart[property] === 'undefined' || overrideStartingValues) {
                         _valuesStart[property] = startValue;
                     }
                     if (!startValueIsArray) {
@@ -537,7 +577,7 @@
             return this;
         };
         Tween.prototype.pause = function (time) {
-            if (time === void 0) { time = now$1(); }
+            if (time === void 0) { time = now(); }
             if (this._isPaused || !this._isPlaying) {
                 return this;
             }
@@ -548,7 +588,7 @@
             return this;
         };
         Tween.prototype.resume = function (time) {
-            if (time === void 0) { time = now$1(); }
+            if (time === void 0) { time = now(); }
             if (!this._isPaused || !this._isPlaying) {
                 return this;
             }
@@ -566,14 +606,17 @@
             return this;
         };
         Tween.prototype.group = function (group) {
+            if (group === void 0) { group = mainGroup; }
             this._group = group;
             return this;
         };
         Tween.prototype.delay = function (amount) {
+            if (amount === void 0) { amount = 0; }
             this._delayTime = amount;
             return this;
         };
         Tween.prototype.repeat = function (times) {
+            if (times === void 0) { times = 0; }
             this._initialRepeat = times;
             this._repeat = times;
             return this;
@@ -583,17 +626,21 @@
             return this;
         };
         Tween.prototype.yoyo = function (yoyo) {
+            if (yoyo === void 0) { yoyo = false; }
             this._yoyo = yoyo;
             return this;
         };
         Tween.prototype.easing = function (easingFunction) {
+            if (easingFunction === void 0) { easingFunction = Easing.Linear.None; }
             this._easingFunction = easingFunction;
             return this;
         };
         Tween.prototype.interpolation = function (interpolationFunction) {
+            if (interpolationFunction === void 0) { interpolationFunction = Interpolation.Linear; }
             this._interpolationFunction = interpolationFunction;
             return this;
         };
+        // eslint-disable-next-line
         Tween.prototype.chain = function () {
             var tweens = [];
             for (var _i = 0; _i < arguments.length; _i++) {
@@ -604,6 +651,10 @@
         };
         Tween.prototype.onStart = function (callback) {
             this._onStartCallback = callback;
+            return this;
+        };
+        Tween.prototype.onEveryStart = function (callback) {
+            this._onEveryStartCallback = callback;
             return this;
         };
         Tween.prototype.onUpdate = function (callback) {
@@ -628,7 +679,7 @@
          * it is still playing, just paused).
          */
         Tween.prototype.update = function (time, autoStart) {
-            if (time === void 0) { time = now$1(); }
+            if (time === void 0) { time = now(); }
             if (autoStart === void 0) { autoStart = true; }
             if (this._isPaused)
                 return true;
@@ -639,7 +690,7 @@
                 if (time > endTime)
                     return false;
                 if (autoStart)
-                    this.start(time);
+                    this.start(time, true);
             }
             this._goToEnd = false;
             if (time < this._startTime) {
@@ -650,6 +701,12 @@
                     this._onStartCallback(this._object);
                 }
                 this._onStartCallbackFired = true;
+            }
+            if (this._onEveryStartCallbackFired === false) {
+                if (this._onEveryStartCallback) {
+                    this._onEveryStartCallback(this._object);
+                }
+                this._onEveryStartCallbackFired = true;
             }
             elapsed = (time - this._startTime) / this._duration;
             elapsed = this._duration === 0 || elapsed > 1 ? 1 : elapsed;
@@ -689,6 +746,7 @@
                     if (this._onRepeatCallback) {
                         this._onRepeatCallback(this._object);
                     }
+                    this._onEveryStartCallbackFired = false;
                     return true;
                 }
                 else {
@@ -698,7 +756,7 @@
                     for (var i = 0, numChainedTweens = this._chainedTweens.length; i < numChainedTweens; i++) {
                         // Make the chained tweens start exactly at the time they should,
                         // even if the `update()` method was called way past the duration of the tween
-                        this._chainedTweens[i].start(this._startTime + this._duration);
+                        this._chainedTweens[i].start(this._startTime + this._duration, false);
                     }
                     this._isPlaying = false;
                     return false;
@@ -744,9 +802,7 @@
             if (end.charAt(0) === '+' || end.charAt(0) === '-') {
                 return start + parseFloat(end);
             }
-            else {
-                return parseFloat(end);
-            }
+            return parseFloat(end);
         };
         Tween.prototype._swapEndStartRepeatValues = function (property) {
             var tmp = this._valuesStartRepeat[property];
@@ -762,7 +818,7 @@
         return Tween;
     }());
 
-    var VERSION = '18.6.4';
+    var VERSION = '21.0.0';
 
     /**
      * Tween.js - Licensed under the MIT license
@@ -793,7 +849,7 @@
         Easing: Easing,
         Group: Group,
         Interpolation: Interpolation,
-        now: now$1,
+        now: now,
         Sequence: Sequence,
         nextId: nextId,
         Tween: Tween,
@@ -815,11 +871,11 @@
     exports.default = exports$1;
     exports.getAll = getAll;
     exports.nextId = nextId;
-    exports.now = now$1;
+    exports.now = now;
     exports.remove = remove;
     exports.removeAll = removeAll;
     exports.update = update;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
-})));
+}));

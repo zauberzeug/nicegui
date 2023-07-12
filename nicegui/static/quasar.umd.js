@@ -1,5 +1,5 @@
 /*!
- * Quasar Framework v2.11.9
+ * Quasar Framework v2.12.2
  * (c) 2015-present Razvan Stoenescu
  * Released under the MIT License.
  */
@@ -740,7 +740,7 @@
 
         this.setDebounce(updateDebounce);
 
-        if (Object.keys(updateSizes).length > 0) {
+        if (Object.keys(updateSizes).length !== 0) {
           this.setSizes(updateSizes);
           updateSizes = void 0; // free up memory
         }
@@ -1044,7 +1044,7 @@
 
   function getLocale () {
 
-    const val = Array.isArray(navigator.languages) === true && navigator.languages.length > 0
+    const val = Array.isArray(navigator.languages) === true && navigator.languages.length !== 0
       ? navigator.languages[ 0 ]
       : navigator.language;
 
@@ -1653,7 +1653,7 @@
   }
 
   var installQuasar = function (parentApp, opts = {}) {
-      const $q = { version: '2.11.9' };
+      const $q = { version: '2.12.2' };
 
       if (globalConfigIsFrozen === false) {
         if (opts.config !== void 0) {
@@ -2130,7 +2130,7 @@
   const imgRE = /^img:/;
   const svgUseRE = /^svguse:/;
   const ionRE = /^ion-/;
-  const faRE = /^(fa-(solid|regular|light|brands|duotone|thin)|[lf]a[srlbdk]?) /;
+  const faRE = /^(fa-(sharp|solid|regular|light|brands|duotone|thin)|[lf]a[srlbdk]?) /;
 
   var QIcon = createComponent({
     name: 'QIcon',
@@ -3952,7 +3952,7 @@
           .filter(t => props[ t ] === true)
           .map(t => `q-btn-group--${ t }`).join(' ');
 
-        return `q-btn-group row no-wrap${ cls.length > 0 ? ' ' + cls : '' }`
+        return `q-btn-group row no-wrap${ cls.length !== 0 ? ' ' + cls : '' }`
           + (props.spread === true ? ' q-btn-group--spread' : ' inline')
       });
 
@@ -4399,7 +4399,7 @@
   function removeFocusWaitFlag (flag) {
     clearFlag(flag);
 
-    if (waitFlags.length === 0 && queue.length > 0) {
+    if (waitFlags.length === 0 && queue.length !== 0) {
       // only call last focus handler (can't focus multiple things at once)
       queue[ queue.length - 1 ]();
       queue = [];
@@ -5050,6 +5050,12 @@
     while (portalIndex >= 0) {
       const proxy = portalProxyList[ portalIndex ].$;
 
+      // skip QTooltip portals
+      if (proxy.type.name === 'QTooltip') {
+        portalIndex--;
+        continue
+      }
+
       if (proxy.type.name !== 'QDialog') {
         break
       }
@@ -5198,26 +5204,55 @@
     }
   }
 
-  function getTargetProps (el) {
+  function getTargetProps (width, height) {
     return {
       top: 0,
-      center: el.offsetHeight / 2,
-      bottom: el.offsetHeight,
+      center: height / 2,
+      bottom: height,
       left: 0,
-      middle: el.offsetWidth / 2,
-      right: el.offsetWidth
+      middle: width / 2,
+      right: width
     }
   }
 
-  function getTopLeftProps (anchorProps, targetProps, cfg) {
+  function getTopLeftProps (anchorProps, targetProps, anchorOrigin, selfOrigin) {
     return {
-      top: anchorProps[ cfg.anchorOrigin.vertical ] - targetProps[ cfg.selfOrigin.vertical ],
-      left: anchorProps[ cfg.anchorOrigin.horizontal ] - targetProps[ cfg.selfOrigin.horizontal ]
+      top: anchorProps[ anchorOrigin.vertical ] - targetProps[ selfOrigin.vertical ],
+      left: anchorProps[ anchorOrigin.horizontal ] - targetProps[ selfOrigin.horizontal ]
     }
   }
 
-  // cfg: { el, anchorEl, anchorOrigin, selfOrigin, offset, absoluteOffset, cover, fit, maxHeight, maxWidth }
-  function setPosition (cfg) {
+  function setPosition (cfg, retryNumber = 0) {
+    if (
+      cfg.targetEl === null
+      || cfg.anchorEl === null
+      || retryNumber > 5 // we should try only a few times
+    ) {
+      return
+    }
+
+    // some browsers report zero height or width because
+    // we are trying too early to get these dimensions
+    if (cfg.targetEl.offsetHeight === 0 || cfg.targetEl.offsetWidth === 0) {
+      setTimeout(() => {
+        setPosition(cfg, retryNumber + 1);
+      }, 10);
+      return
+    }
+
+    const {
+      targetEl,
+      offset,
+      anchorEl,
+      anchorOrigin,
+      selfOrigin,
+      absoluteOffset,
+      fit,
+      cover,
+      maxHeight,
+      maxWidth
+    } = cfg;
+
     if (client.is.ios === true && window.visualViewport !== void 0) {
       // uses the q-position-engine CSS class
 
@@ -5238,45 +5273,58 @@
     // if max-height/-width changes, so we
     // need to restore it after we calculate
     // the new positioning
-    const { scrollLeft, scrollTop } = cfg.el;
+    const { scrollLeft, scrollTop } = targetEl;
 
-    const anchorProps = cfg.absoluteOffset === void 0
-      ? getAnchorProps(cfg.anchorEl, cfg.cover === true ? [ 0, 0 ] : cfg.offset)
-      : getAbsoluteAnchorProps(cfg.anchorEl, cfg.absoluteOffset, cfg.offset);
+    const anchorProps = absoluteOffset === void 0
+      ? getAnchorProps(anchorEl, cover === true ? [ 0, 0 ] : offset)
+      : getAbsoluteAnchorProps(anchorEl, absoluteOffset, offset);
 
-    let elStyle = {
-      maxHeight: cfg.maxHeight,
-      maxWidth: cfg.maxWidth,
+    // we "reset" the critical CSS properties
+    // so we can take an accurate measurement
+    Object.assign(targetEl.style, {
+      top: 0,
+      left: 0,
+      minWidth: null,
+      minHeight: null,
+      maxWidth: maxWidth || '100vw',
+      maxHeight: maxHeight || '100vh',
       visibility: 'visible'
-    };
+    });
 
-    if (cfg.fit === true || cfg.cover === true) {
+    const { offsetWidth: origElWidth, offsetHeight: origElHeight } = targetEl;
+    const { elWidth, elHeight } = fit === true || cover === true
+      ? { elWidth: Math.max(anchorProps.width, origElWidth), elHeight: cover === true ? Math.max(anchorProps.height, origElHeight) : origElHeight }
+      : { elWidth: origElWidth, elHeight: origElHeight };
+
+    let elStyle = { maxWidth, maxHeight };
+
+    if (fit === true || cover === true) {
       elStyle.minWidth = anchorProps.width + 'px';
-      if (cfg.cover === true) {
+      if (cover === true) {
         elStyle.minHeight = anchorProps.height + 'px';
       }
     }
 
-    Object.assign(cfg.el.style, elStyle);
+    Object.assign(targetEl.style, elStyle);
 
-    const targetProps = getTargetProps(cfg.el);
-    let props = getTopLeftProps(anchorProps, targetProps, cfg);
+    const targetProps = getTargetProps(elWidth, elHeight);
+    let props = getTopLeftProps(anchorProps, targetProps, anchorOrigin, selfOrigin);
 
-    if (cfg.absoluteOffset === void 0 || cfg.offset === void 0) {
-      applyBoundaries(props, anchorProps, targetProps, cfg.anchorOrigin, cfg.selfOrigin);
+    if (absoluteOffset === void 0 || offset === void 0) {
+      applyBoundaries(props, anchorProps, targetProps, anchorOrigin, selfOrigin);
     }
     else { // we have touch position or context menu with offset
       const { top, left } = props; // cache initial values
 
       // apply initial boundaries
-      applyBoundaries(props, anchorProps, targetProps, cfg.anchorOrigin, cfg.selfOrigin);
+      applyBoundaries(props, anchorProps, targetProps, anchorOrigin, selfOrigin);
 
       let hasChanged = false;
 
       // did it flip vertically?
       if (props.top !== top) {
         hasChanged = true;
-        const offsetY = 2 * cfg.offset[ 1 ];
+        const offsetY = 2 * offset[ 1 ];
         anchorProps.center = anchorProps.top -= offsetY;
         anchorProps.bottom -= offsetY + 2;
       }
@@ -5284,17 +5332,17 @@
       // did it flip horizontally?
       if (props.left !== left) {
         hasChanged = true;
-        const offsetX = 2 * cfg.offset[ 0 ];
+        const offsetX = 2 * offset[ 0 ];
         anchorProps.middle = anchorProps.left -= offsetX;
         anchorProps.right -= offsetX + 2;
       }
 
       if (hasChanged === true) {
         // re-calculate props with the new anchor
-        props = getTopLeftProps(anchorProps, targetProps, cfg);
+        props = getTopLeftProps(anchorProps, targetProps, anchorOrigin, selfOrigin);
 
         // and re-apply boundaries
-        applyBoundaries(props, anchorProps, targetProps, cfg.anchorOrigin, cfg.selfOrigin);
+        applyBoundaries(props, anchorProps, targetProps, anchorOrigin, selfOrigin);
       }
     }
 
@@ -5318,14 +5366,14 @@
       }
     }
 
-    Object.assign(cfg.el.style, elStyle);
+    Object.assign(targetEl.style, elStyle);
 
     // restore scroll position
-    if (cfg.el.scrollTop !== scrollTop) {
-      cfg.el.scrollTop = scrollTop;
+    if (targetEl.scrollTop !== scrollTop) {
+      targetEl.scrollTop = scrollTop;
     }
-    if (cfg.el.scrollLeft !== scrollLeft) {
-      cfg.el.scrollLeft = scrollLeft;
+    if (targetEl.scrollLeft !== scrollLeft) {
+      targetEl.scrollLeft = scrollLeft;
     }
   }
 
@@ -5694,14 +5742,8 @@
       }
 
       function updatePosition () {
-        const el = innerRef.value;
-
-        if (el === null || anchorEl.value === null) {
-          return
-        }
-
         setPosition({
-          el,
+          targetEl: innerRef.value,
           offset: props.offset,
           anchorEl: anchorEl.value,
           anchorOrigin: anchorOrigin.value,
@@ -6361,12 +6403,19 @@
     return dir
   }
 
+  // This is especially important (not the main reason, but important)
+  // for TouchSwipe directive running on Firefox
+  // because text selection on such elements cannot be determined
+  // without additional work (on top of getSelection() API)
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=85686
+  const avoidNodeNamesList = [ 'INPUT', 'TEXTAREA' ];
+
   function shouldStart (evt, ctx) {
     return ctx.event === void 0
       && evt.target !== void 0
       && evt.target.draggable !== true
       && typeof ctx.handler === 'function'
-      && evt.target.nodeName.toUpperCase() !== 'INPUT'
+      && avoidNodeNamesList.includes(evt.target.nodeName.toUpperCase()) === false
       && (evt.qClonedBy === void 0 || evt.qClonedBy.indexOf(ctx.uid) === -1)
   }
 
@@ -6468,6 +6517,13 @@
                   ctx.end(evt);
                   return
                 }
+              }
+              // is user trying to select text?
+              // if so, then something should be reported here
+              // (previous selection, if any, was discarded when swipe started)
+              else if (window.getSelection().toString() !== '') {
+                ctx.end(evt);
+                return
               }
               else if (absX < ctx.sensitivity[ 2 ] && absY < ctx.sensitivity[ 2 ]) {
                 return
@@ -6829,7 +6885,7 @@
         index += direction;
       }
 
-      if (props.infinite === true && panels.length > 0 && startIndex !== -1 && startIndex !== panels.length) {
+      if (props.infinite === true && panels.length !== 0 && startIndex !== -1 && startIndex !== panels.length) {
         goToPanelByOffset(direction, direction === -1 ? panels.length : -1);
       }
     }
@@ -11103,7 +11159,7 @@
       }));
 
       const computedPalette = vue.computed(() => (
-        props.palette !== void 0 && props.palette.length > 0
+        props.palette !== void 0 && props.palette.length !== 0
           ? props.palette
           : palette
       ));
@@ -13351,7 +13407,7 @@
       );
 
       const headerTitle = vue.computed(() => {
-        if (props.title !== void 0 && props.title !== null && props.title.length > 0) {
+        if (props.title !== void 0 && props.title !== null && props.title.length !== 0) {
           return props.title
         }
 
@@ -13403,7 +13459,7 @@
       });
 
       const headerSubtitle = vue.computed(() => {
-        if (props.subtitle !== void 0 && props.subtitle !== null && props.subtitle.length > 0) {
+        if (props.subtitle !== void 0 && props.subtitle !== null && props.subtitle.length !== 0) {
           return props.subtitle
         }
 
@@ -15277,6 +15333,7 @@
         type: Number,
         default: 57
       },
+      noMiniAnimation: Boolean,
 
       breakpoint: {
         type: Number,
@@ -15653,6 +15710,7 @@
       vue.watch(() => $q.lang.rtl, () => { applyPosition(); });
 
       vue.watch(() => props.mini, () => {
+        if (props.noMiniAnimation) return
         if (props.modelValue === true) {
           animateMini();
           $layout.animate();
@@ -16029,7 +16087,7 @@
 
     get hasSelection () {
       return this.selection !== null
-        ? this.selection.toString().length > 0
+        ? this.selection.toString().length !== 0
         : false
     }
 
@@ -16489,14 +16547,8 @@
       }
 
       function updatePosition () {
-        const el = innerRef.value;
-
-        if (anchorEl.value === null || !el) {
-          return
-        }
-
         setPosition({
-          el,
+          targetEl: innerRef.value,
           offset: props.offset,
           anchorEl: anchorEl.value,
           anchorOrigin: anchorOrigin.value,
@@ -17254,7 +17306,7 @@
       const editable = vue.computed(() => !props.readonly && !props.disable);
 
       let defaultFont, offsetBottom;
-      let lastEmit = props.modelValue; // eslint-disable-line
+      let lastEmit = props.modelValue;
 
       {
         document.execCommand('defaultParagraphSeparator', false, props.paragraphTag);
@@ -17413,10 +17465,10 @@
       });
 
       vue.watch(editLinkUrl, v => {
-        emit(`link-${ v ? 'Show' : 'Hide' }`);
+        emit(`link${ v ? 'Show' : 'Hide' }`);
       });
 
-      const hasToolbar = vue.computed(() => props.toolbar && props.toolbar.length > 0);
+      const hasToolbar = vue.computed(() => props.toolbar && props.toolbar.length !== 0);
 
       const keys = vue.computed(() => {
         const
@@ -18692,7 +18744,7 @@
     const hasRules = vue.computed(() =>
       props.rules !== void 0
       && props.rules !== null
-      && props.rules.length > 0
+      && props.rules.length !== 0
     );
 
     const hasActiveRules = vue.computed(() =>
@@ -18705,7 +18757,7 @@
     );
 
     const errorMessage = vue.computed(() => (
-      typeof props.errorMessage === 'string' && props.errorMessage.length > 0
+      typeof props.errorMessage === 'string' && props.errorMessage.length !== 0
         ? props.errorMessage
         : innerErrorMessage.value
     ));
@@ -18874,7 +18926,7 @@
   function fieldValueIsFilled (val) {
     return val !== void 0
       && val !== null
-      && ('' + val).length > 0
+      && ('' + val).length !== 0
   }
 
   const useFieldProps = {
@@ -19070,7 +19122,7 @@
         hasError.value === true
           ? ' text-negative'
           : (
-              typeof props.standout === 'string' && props.standout.length > 0 && state.focused.value === true
+              typeof props.standout === 'string' && props.standout.length !== 0 && state.focused.value === true
                 ? ` ${ props.standout }`
                 : (props.color !== void 0 ? ` text-${ props.color }` : '')
             )
@@ -19564,7 +19616,7 @@
       const rejectedFiles = [];
 
       const done = () => {
-        if (rejectedFiles.length > 0) {
+        if (rejectedFiles.length !== 0) {
           emit('rejected', rejectedFiles);
         }
       };
@@ -19594,7 +19646,7 @@
       // Cordova/iOS allows selecting multiple files even when the
       // multiple attribute is not specified. We also normalize drag'n'dropped
       // files here:
-      if (props.multiple !== true && files.length > 0) {
+      if (props.multiple !== true && files.length !== 0) {
         files = [ files[ 0 ] ];
       }
 
@@ -19649,7 +19701,7 @@
 
       done();
 
-      if (files.length > 0) {
+      if (files.length !== 0) {
         return files
       }
     }
@@ -19675,7 +19727,7 @@
       stopAndPreventDrag(e);
       const files = e.dataTransfer.files;
 
-      if (files.length > 0) {
+      if (files.length !== 0) {
         addFilesToQueue(null, files);
       }
 
@@ -19860,7 +19912,7 @@
       }
 
       function removeFile (file) {
-        const index = innerValue.value.findIndex(file);
+        const index = innerValue.value.indexOf(file);
         if (index > -1) {
           removeAtIndex(index);
         }
@@ -19958,7 +20010,7 @@
           ? props.displayValue
           : selectedString.value;
 
-        return textContent.length > 0
+        return textContent.length !== 0
           ? [
               vue.h('div', {
                 class: props.inputClass,
@@ -21369,7 +21421,7 @@
 
     function updateMaskInternals () {
       hasMask.value = props.mask !== void 0
-        && props.mask.length > 0
+        && props.mask.length !== 0
         && getIsTypeText();
 
       if (hasMask.value === false) {
@@ -21383,7 +21435,7 @@
         localComputedMask = NAMED_MASKS[ props.mask ] === void 0
           ? props.mask
           : NAMED_MASKS[ props.mask ],
-        fillChar = typeof props.fillMask === 'string' && props.fillMask.length > 0
+        fillChar = typeof props.fillMask === 'string' && props.fillMask.length !== 0
           ? props.fillMask.slice(0, 1)
           : '_',
         fillCharEscaped = fillChar.replace(escRegex, '\\$&'),
@@ -21464,7 +21516,7 @@
           str = str.slice(m.shift().length);
           extractMatch.push(...m);
         }
-        if (extractMatch.length > 0) {
+        if (extractMatch.length !== 0) {
           return extractMatch.join('')
         }
 
@@ -21812,7 +21864,7 @@
         return val
       }
 
-      return props.reverseFillMask === true && val.length > 0
+      return props.reverseFillMask === true && val.length !== 0
         ? maskReplaced.slice(0, -val.length) + val
         : val + maskReplaced.slice(val.length)
     }
@@ -22241,7 +22293,7 @@
         hasShadow: vue.computed(() =>
           props.type !== 'file'
           && typeof props.shadowText === 'string'
-          && props.shadowText.length > 0
+          && props.shadowText.length !== 0
         ),
 
         inputRef,
@@ -22461,9 +22513,13 @@
       }
 
       function getContent () {
-        return showing.value === true
-          ? [ vue.h('div', { key: 'content', style: transitionStyle.value }, hSlot(slots.default)) ]
-          : void 0
+        if (showing.value === true) {
+          return [ vue.h('div', { key: 'content', style: transitionStyle.value }, hSlot(slots.default)) ]
+        }
+
+        if (slots.hidden !== void 0) {
+          return [ vue.h('div', { key: 'hidden', style: transitionStyle.value }, slots.hidden()) ]
+        }
       }
 
       return () => {
@@ -25700,7 +25756,7 @@
 
       const iconLabel = vue.computed(() => {
         if (typeof props.iconAriaLabel === 'string') {
-          const label = props.iconAriaLabel.length > 0 ? `${ props.iconAriaLabel } ` : '';
+          const label = props.iconAriaLabel.length !== 0 ? `${ props.iconAriaLabel } ` : '';
           return i => `${ label }${ i }`
         }
 
@@ -27750,7 +27806,7 @@
 
         resetInputValue();
 
-        if (typeof value === 'string' && value.length > 0) {
+        if (typeof value === 'string' && value.length !== 0) {
           const needle = value.toLocaleLowerCase();
           const findFn = extractFn => {
             const option = props.options.find(opt => extractFn.value(opt).toLocaleLowerCase() === needle);
@@ -27797,7 +27853,7 @@
           return
         }
 
-        const newValueModeValid = inputValue.value.length > 0
+        const newValueModeValid = inputValue.value.length !== 0
           && (props.newValueMode !== void 0 || props.onNewValue !== void 0);
 
         const tabShouldSelect = e.shiftKey !== true
@@ -27816,7 +27872,11 @@
           return
         }
 
-        if (e.target === void 0 || e.target.id !== state.targetUid.value) { return }
+        if (
+          e.target === void 0
+          || e.target.id !== state.targetUid.value
+          || state.editable.value !== true
+        ) { return }
 
         // down
         if (
@@ -27892,7 +27952,7 @@
           && e.altKey === false // not kbd shortcut
           && e.ctrlKey === false // not kbd shortcut
           && e.metaKey === false // not kbd shortcut, especially on macOS with Command key
-          && (e.keyCode !== 32 || searchBuffer.length > 0) // space in middle of search
+          && (e.keyCode !== 32 || searchBuffer.length !== 0) // space in middle of search
         ) {
           menu.value !== true && showPopup(e);
 
@@ -28179,7 +28239,7 @@
         if (
           val !== ''
           && props.multiple !== true
-          && innerValue.value.length > 0
+          && innerValue.value.length !== 0
           && userInputValue !== true
           && val === getOptionLabel.value(innerValue.value[ 0 ])
         ) {
@@ -28298,7 +28358,7 @@
             loading: innerLoadingIndicator.value,
             itemAligned: false,
             filled: true,
-            stackLabel: inputValue.value.length > 0,
+            stackLabel: inputValue.value.length !== 0,
             ...state.splitAttrs.listeners.value,
             onFocus: onDialogFieldFocus,
             onBlur: onDialogFieldBlur
@@ -28426,7 +28486,7 @@
 
       function resetInputValue () {
         props.useInput === true && updateInputValue(
-          props.multiple !== true && props.fillInput === true && innerValue.value.length > 0
+          props.multiple !== true && props.fillInput === true && innerValue.value.length !== 0
             ? getOptionLabel.value(innerValue.value[ 0 ]) || ''
             : '',
           true,
@@ -28438,7 +28498,7 @@
         let optionIndex = -1;
 
         if (show === true) {
-          if (innerValue.value.length > 0) {
+          if (innerValue.value.length !== 0) {
             const val = getOptionValue.value(innerValue.value[ 0 ]);
             optionIndex = props.options.findIndex(v => isDeepEqual(getOptionValue.value(v), val));
           }
@@ -28540,7 +28600,7 @@
         floatingLabel: vue.computed(() =>
           (props.hideSelected !== true && hasValue.value === true)
           || typeof inputValue.value === 'number'
-          || inputValue.value.length > 0
+          || inputValue.value.length !== 0
           || fieldValueIsFilled(props.displayValue)
         ),
 
@@ -28609,7 +28669,7 @@
               })
             );
 
-            if (isTarget === true && typeof props.autocomplete === 'string' && props.autocomplete.length > 0) {
+            if (isTarget === true && typeof props.autocomplete === 'string' && props.autocomplete.length !== 0) {
               child.push(
                 vue.h('input', {
                   class: 'q-select__autocomplete-input',
@@ -28621,7 +28681,7 @@
             }
           }
 
-          if (nameProp.value !== void 0 && props.disable !== true && innerOptionsValue.value.length > 0) {
+          if (nameProp.value !== void 0 && props.disable !== true && innerOptionsValue.value.length !== 0) {
             const opts = innerOptionsValue.value.map(value => vue.h('option', { value, selected: true }));
 
             child.push(
@@ -31613,7 +31673,7 @@
             + (props.autoWidth === true ? ' q-table--col-auto-width' : ''),
           style: col.headerStyle,
           onClick: evt => {
-            col.sortable === true && props.props.sort(col); // eslint-disable-line
+            col.sortable === true && props.props.sort(col);
             onClick(evt);
           }
         };
@@ -31982,7 +32042,7 @@
         sortBy: null,
         descending: false,
         page: 1,
-        rowsPerPage: props.rowsPerPageOptions.length > 0
+        rowsPerPage: props.rowsPerPageOptions.length !== 0
           ? props.rowsPerPageOptions[ 0 ]
           : 5
       }, props.pagination)
@@ -32193,7 +32253,7 @@
     });
 
     const allRowsSelected = vue.computed(() =>
-      computedRows.value.length > 0 && computedRows.value.every(
+      computedRows.value.length !== 0 && computedRows.value.every(
         row => selectedKeys.value[ getRowKey.value(row) ] === true
       )
     );
@@ -33134,7 +33194,7 @@
           }, getPaginationDiv(child))
         }
 
-        if (child.length > 0) {
+        if (child.length !== 0) {
           return vue.h('div', { class: bottomClass }, child)
         }
       }
@@ -33955,9 +34015,9 @@
             const am = computedFormat24h.value !== true
               ? isAM.value === true
               : (
-                  validHours.value.am.values.length > 0 && validHours.value.pm.values.length > 0
+                  validHours.value.am.values.length !== 0 && validHours.value.pm.values.length !== 0
                     ? distance >= clockRect.dist
-                    : validHours.value.am.values.length > 0
+                    : validHours.value.am.values.length !== 0
                 );
 
             val = getNormalizedClockValue(
@@ -34710,7 +34770,7 @@
           const tickStrategy = node.tickStrategy || (parent ? parent.tickStrategy : props.tickStrategy);
           const
             key = node[ props.nodeKey ],
-            isParent = node[ props.childrenKey ] && node[ props.childrenKey ].length > 0,
+            isParent = node[ props.childrenKey ] && Array.isArray(node[ props.childrenKey ]) && node[ props.childrenKey ].length !== 0,
             selectable = node.disabled !== true && hasSelection.value === true && node.selectable !== false,
             expandable = node.disabled !== true && node.expandable !== false,
             hasTicking = tickStrategy !== 'none',
@@ -34868,16 +34928,15 @@
       }
 
       function expandAll () {
-        const
-          expanded = innerExpanded.value,
-          travel = node => {
-            if (node[ props.childrenKey ] && node[ props.childrenKey ].length > 0) {
-              if (node.expandable !== false && node.disabled !== true) {
-                expanded.push(node[ props.nodeKey ]);
-                node[ props.childrenKey ].forEach(travel);
-              }
+        const expanded = [];
+        const travel = node => {
+          if (node[ props.childrenKey ] && node[ props.childrenKey ].length !== 0) {
+            if (node.expandable !== false && node.disabled !== true) {
+              expanded.push(node[ props.nodeKey ]);
+              node[ props.childrenKey ].forEach(travel);
             }
-          };
+          }
+        };
 
         props.nodes.forEach(travel);
 
@@ -34952,7 +35011,7 @@
                   }
                 });
               }
-              if (collapse.length > 0) {
+              if (collapse.length !== 0) {
                 target = target.filter(k => collapse.includes(k) === false);
               }
             }
@@ -35065,7 +35124,7 @@
           ? getChildren(node[ props.childrenKey ])
           : [];
 
-        const isParent = children.length > 0 || (m.lazy && m.lazy !== 'loaded');
+        const isParent = children.length !== 0 || (m.lazy && m.lazy !== 'loaded');
 
         let body = node.body
           ? slots[ `body-${ node.body }` ] || slots[ 'default-body' ]
@@ -35318,7 +35377,7 @@
     'start', 'finish', 'added', 'removed'
   ];
 
-  function getRenderer (getPlugin) {
+  function getRenderer (getPlugin, expose) {
     const vm = vue.getCurrentInstance();
     const { props, slots, emit, proxy } = vm;
     const { $q } = proxy;
@@ -35379,7 +35438,13 @@
       maxTotalSizeNumber
     } = useFile({ editable, dnd, getFileInput, addFilesToQueue });
 
-    Object.assign(state, getPlugin({ props, slots, emit, helpers: state }));
+    Object.assign(state, getPlugin({
+      props,
+      slots,
+      emit,
+      helpers: state,
+      exposeApi: obj => { Object.assign(state, obj); }
+    }));
 
     if (state.isBusy === void 0) {
       state.isBusy = vue.ref(false);
@@ -35409,7 +35474,7 @@
       editable.value === true
       && state.isBusy.value !== true
       && state.isUploading.value !== true
-      && state.queuedFiles.value.length > 0
+      && state.queuedFiles.value.length !== 0
     );
 
     vue.provide(uploaderKey, renderInput);
@@ -35489,7 +35554,7 @@
         return false
       });
 
-      if (removed.files.length > 0) {
+      if (removed.files.length !== 0) {
         state.files.value = localFiles;
         cb(removed);
         emit('removed', removed.files);
@@ -35617,8 +35682,8 @@
           vue.h('div', {
             class: 'flex flex-center no-wrap q-gutter-xs'
           }, [
-            getBtn(state.queuedFiles.value.length > 0, 'removeQueue', removeQueuedFiles),
-            getBtn(state.uploadedFiles.value.length > 0, 'removeUploaded', removeUploadedFiles),
+            getBtn(state.queuedFiles.value.length !== 0, 'removeQueue', removeQueuedFiles),
+            getBtn(state.uploadedFiles.value.length !== 0, 'removeUploaded', removeUploadedFiles),
 
             state.isUploading.value === true
               ? vue.h(QSpinner, { class: 'q-uploader__spinner' })
@@ -35700,7 +35765,7 @@
 
     vue.onBeforeUnmount(() => {
       state.isUploading.value === true && state.abort();
-      state.files.value.length > 0 && revokeImgURLs();
+      state.files.value.length !== 0 && revokeImgURLs();
     });
 
     const publicApi = {};
@@ -35733,7 +35798,23 @@
     });
 
     // expose public api (methods & computed props)
-    Object.assign(proxy, publicApi);
+    expose({
+      ...state,
+
+      upload,
+      reset,
+      removeUploadedFiles,
+      removeQueuedFiles,
+      removeFile,
+
+      pickFiles,
+      addFiles,
+
+      canAddFiles,
+      canUpload,
+      uploadSizeLabel,
+      uploadProgressLabel
+    });
 
     return () => {
       const children = [
@@ -35784,8 +35865,8 @@
       ? { ...coreEmitsObject, ...emits }
       : [ ...coreEmits, ...emits ],
 
-    setup () {
-      return getRenderer(injectPlugin)
+    setup (_, { expose }) {
+      return getRenderer(injectPlugin, expose)
     }
   });
 
@@ -35835,14 +35916,14 @@
     }));
 
     const isUploading = vue.computed(() => workingThreads.value > 0);
-    const isBusy = vue.computed(() => promises.value.length > 0);
+    const isBusy = vue.computed(() => promises.value.length !== 0);
 
     let abortPromises;
 
     function abort () {
       xhrs.value.forEach(x => { x.abort(); });
 
-      if (promises.value.length > 0) {
+      if (promises.value.length !== 0) {
         abortPromises = true;
       }
     }
@@ -36452,9 +36533,9 @@
       waitFor: options.waitFor === void 0 ? 0 : options.waitFor,
 
       duration: isNaN(options.duration) === true ? 300 : parseInt(options.duration, 10),
-      easing: typeof options.easing === 'string' && options.easing.length > 0 ? options.easing : 'ease-in-out',
+      easing: typeof options.easing === 'string' && options.easing.length !== 0 ? options.easing : 'ease-in-out',
       delay: isNaN(options.delay) === true ? 0 : parseInt(options.delay, 10),
-      fill: typeof options.fill === 'string' && options.fill.length > 0 ? options.fill : 'none',
+      fill: typeof options.fill === 'string' && options.fill.length !== 0 ? options.fill : 'none',
 
       resize: options.resize === true,
 
@@ -37370,7 +37451,7 @@
   }
 
   function insertArgs (arg, ctx) {
-    const opts = typeof arg === 'string' && arg.length > 0
+    const opts = typeof arg === 'string' && arg.length !== 0
       ? arg.split(':') : [];
 
     ctx.name = opts[ 0 ];
@@ -37783,7 +37864,7 @@
           // duration in ms, touch in pixels, mouse in pixels
           const data = [ 600, 5, 7 ];
 
-          if (typeof binding.arg === 'string' && binding.arg.length > 0) {
+          if (typeof binding.arg === 'string' && binding.arg.length !== 0) {
             binding.arg.split(':').forEach((val, index) => {
               const v = parseInt(val, 10);
               v && (data[ index ] = v);
@@ -37878,7 +37959,7 @@
             return
           }
 
-          const durations = typeof arg === 'string' && arg.length > 0
+          const durations = typeof arg === 'string' && arg.length !== 0
             ? arg.split(':').map(val => parseInt(val, 10))
             : [ 0, 600, 300 ];
 
@@ -39530,7 +39611,7 @@
       document.title = add.title;
     }
 
-    if (Object.keys(remove).length > 0) {
+    if (Object.keys(remove).length !== 0) {
       [ 'meta', 'link', 'script' ].forEach(type => {
         remove[ type ].forEach(name => {
           document.head.querySelector(`${ type }[data-qmeta="${ name }"]`).remove();
@@ -40446,21 +40527,25 @@
 
     off (name, callback) {
       const list = this.__stack[ name ];
-      const liveEvents = [];
 
-      if (list !== void 0 && callback) {
-        list.forEach(entry => {
-          if (entry.fn !== callback && entry.fn.__callback !== callback) {
-            liveEvents.push(entry);
-          }
-        });
+      if (list === void 0) {
+        return this // chainable
+      }
 
-        if (liveEvents.length !== 0) {
-          this.__stack[ name ] = liveEvents;
-        }
-        else {
-          delete this.__stack[ name ];
-        }
+      if (callback === void 0) {
+        delete this.__stack[ name ];
+        return this // chainable
+      }
+
+      const liveEvents = list.filter(
+        entry => entry.fn !== callback && entry.fn.__callback !== callback
+      );
+
+      if (liveEvents.length !== 0) {
+        this.__stack[ name ] = liveEvents;
+      }
+      else {
+        delete this.__stack[ name ];
       }
 
       return this // chainable
@@ -40838,7 +40923,7 @@
    */
 
   var index_umd = {
-    version: '2.11.9',
+    version: '2.12.2',
     install (app, opts) {
       installQuasar(app, {
         components,

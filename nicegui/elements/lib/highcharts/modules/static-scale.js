@@ -1,5 +1,5 @@
 /*
- Highcharts Gantt JS v10.3.3 (2023-01-20)
+ Highcharts Gantt JS v11.1.0 (2023-06-05)
 
  StaticScale
 
@@ -7,8 +7,8 @@
 
  License: www.highcharts.com/license
 */
-(function(a){"object"===typeof module&&module.exports?(a["default"]=a,module.exports=a):"function"===typeof define&&define.amd?define("highcharts/modules/static-scale",["highcharts"],function(b){a(b);a.Highcharts=b;return a}):a("undefined"!==typeof Highcharts?Highcharts:void 0)})(function(a){function b(a,c,f,b){a.hasOwnProperty(c)||(a[c]=b.apply(null,f),"function"===typeof CustomEvent&&window.dispatchEvent(new CustomEvent("HighchartsModuleLoaded",{detail:{path:c,module:a[c]}})))}a=a?a._modules:{};
-b(a,"Extensions/StaticScale.js",[a["Core/Axis/Axis.js"],a["Core/Chart/Chart.js"],a["Core/Utilities.js"]],function(a,c,b){var g=b.addEvent,f=b.defined,h=b.isNumber,k=b.pick;g(a,"afterSetOptions",function(){var a=this.chart.options.chart;!this.horiz&&h(this.options.staticScale)&&(!a.height||a.scrollablePlotArea&&a.scrollablePlotArea.minHeight)&&(this.staticScale=this.options.staticScale)});c.prototype.adjustHeight=function(){"adjustHeight"!==this.redrawTrigger&&((this.axes||[]).forEach(function(a){var b=
-a.chart,c=!!b.initiatedScale&&b.options.animation,d=a.options.staticScale;if(a.staticScale&&f(a.min)){var e=k(a.brokenAxis&&a.brokenAxis.unitLength,a.max+a.tickInterval-a.min)*d;e=Math.max(e,d);d=e-b.plotHeight;!b.scrollablePixelsY&&1<=Math.abs(d)&&(b.plotHeight=e,b.redrawTrigger="adjustHeight",b.setSize(void 0,b.chartHeight+d,c));a.series.forEach(function(a){(a=a.sharedClipKey&&b.sharedClips[a.sharedClipKey])&&a.attr(b.inverted?{width:b.plotHeight}:{height:b.plotHeight})})}}),this.initiatedScale=
-!0);this.redrawTrigger=null};g(c,"render",c.prototype.adjustHeight)});b(a,"masters/modules/static-scale.src.js",[],function(){})});
+'use strict';(function(a){"object"===typeof module&&module.exports?(a["default"]=a,module.exports=a):"function"===typeof define&&define.amd?define("highcharts/modules/static-scale",["highcharts"],function(d){a(d);a.Highcharts=d;return a}):a("undefined"!==typeof Highcharts?Highcharts:void 0)})(function(a){function d(a,b,d,f){a.hasOwnProperty(b)||(a[b]=f.apply(null,d),"function"===typeof CustomEvent&&window.dispatchEvent(new CustomEvent("HighchartsModuleLoaded",{detail:{path:b,module:a[b]}})))}a=a?
+a._modules:{};d(a,"Extensions/StaticScale.js",[a["Core/Axis/Axis.js"],a["Core/Chart/Chart.js"],a["Core/Utilities.js"]],function(a,b,d){const {addEvent:f,defined:g,isNumber:h,pick:k}=d;f(a,"afterSetOptions",function(){const a=this.chart.options.chart;!this.horiz&&h(this.options.staticScale)&&(!a.height||a.scrollablePlotArea&&a.scrollablePlotArea.minHeight)&&(this.staticScale=this.options.staticScale)});b.prototype.adjustHeight=function(){"adjustHeight"!==this.redrawTrigger&&((this.axes||[]).forEach(function(a){let c=
+a.chart,d=!!c.initiatedScale&&c.options.animation;var b=a.options.staticScale;let e;a.staticScale&&g(a.min)&&(e=k(a.brokenAxis&&a.brokenAxis.unitLength,a.max+a.tickInterval-a.min)*b,e=Math.max(e,b),b=e-c.plotHeight,!c.scrollablePixelsY&&1<=Math.abs(b)&&(c.plotHeight=e,c.redrawTrigger="adjustHeight",c.setSize(void 0,c.chartHeight+b,d)),a.series.forEach(function(a){(a=a.sharedClipKey&&c.sharedClips[a.sharedClipKey])&&a.attr(c.inverted?{width:c.plotHeight}:{height:c.plotHeight})}))}),this.initiatedScale=
+!0);this.redrawTrigger=null};f(b,"render",b.prototype.adjustHeight)});d(a,"masters/modules/static-scale.src.js",[],function(){})});
 //# sourceMappingURL=static-scale.js.map

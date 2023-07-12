@@ -4,4 +4,3 @@ function array(x) {
 export {
   array as a
 };
-//# sourceMappingURL=array-b7dcf730.js.map

@@ -16,8 +16,9 @@ import json
 import re
 import shutil
 import tarfile
-import urllib.request
 from pathlib import Path
+
+import requests
 
 
 def prepare(path: Path) -> Path:
@@ -30,6 +31,23 @@ def cleanup(path: Path) -> Path:
     return path
 
 
+def url_to_filename(url: str) -> str:
+    return re.sub(r'[^a-zA-Z0-9]', '_', url)
+
+
+def download_buffered(url: str) -> Path:
+    path = Path('/tmp/nicegui_dependencies')
+    path.mkdir(exist_ok=True)
+    filepath = path / url_to_filename(url)
+    if not filepath.exists():
+        response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+        filepath.write_bytes(response.content)
+    return filepath
+
+
+DEPENDENCIES = (Path(__file__).parent / 'DEPENDENCIES.md').open('w')
+DEPENDENCIES.write('# Included Web Dependencies\n\n')
+
 # Create a hidden folder to work in.
 tmp = cleanup(Path('.npm'))
 
@@ -38,44 +56,39 @@ for key, dependency in dependencies.items():
     # Reset destination folder.
     destination = prepare(Path('nicegui', dependency['destination'], key))
 
+    # Get package info from NPM.
+    package_name = dependency.get('package', key)
+    npm_data = json.loads(download_buffered(f'https://registry.npmjs.org/{package_name}').read_text())
+    npm_version = dependency.get('version', npm_data['dist-tags']['latest'])
+    npm_tarball = npm_data['versions'][npm_version]['dist']['tarball']
+    print(f'{key}: {npm_version} - {npm_tarball}')
+    DEPENDENCIES.write(f'- {key}: {npm_version}\n')
+
     # Handle the special case of tailwind. Hopefully remove this soon.
     if 'download' in dependency:
-        USER_AGENT = 'Mozilla/5.0'
-        request = urllib.request.Request(dependency['download'], headers={'User-Agent': USER_AGENT})
-        with urllib.request.urlopen(request) as resource:
-            content = resource.read().decode()
-            version = resource.geturl().rsplit('/', 1)[-1]
-            print(f'tailwind: {version} - https://cdn.tailwindcss.com')
-            prepare(Path(destination, dependency['rename'])).write_text(content)
-        continue
+        path = download_buffered(dependency['download'])
+        shutil.copyfile(path, prepare(Path(destination, dependency['rename'])))
 
-    package_name = dependency.get('package', key)
-    with urllib.request.urlopen(f'https://registry.npmjs.org/{package_name}') as npm:
-        # Get package info from NPM.
-        npm_data = json.load(npm)
-        npm_version = dependency.get('version', npm_data['dist-tags']['latest'])
-        npm_tarball = npm_data['versions'][npm_version]['dist']['tarball']
-        print(f'{key}: {npm_version} - {npm_tarball}')
+    # Download and extract.
+    tgz_file = prepare(Path(tmp, key, f'{key}.tgz'))
+    tgz_download = download_buffered(npm_tarball)
+    shutil.copyfile(tgz_download, tgz_file)
+    with tarfile.open(tgz_file) as archive:
+        to_be_extracted: list[tarfile.TarInfo] = []
+        for tarinfo in archive.getmembers():
+            for keep in dependency['keep']:
+                if re.match(f'^{keep}$', tarinfo.name):
+                    to_be_extracted.append(tarinfo)  # TODO: simpler?
 
-        # Download and extract.
-        tgz_file = prepare(Path(tmp, key, f'{key}.tgz'))
-        urllib.request.urlretrieve(npm_tarball, tgz_file)
-        with tarfile.open(tgz_file) as archive:
-            to_be_extracted = []
-            for tarinfo in archive.getmembers():
-                for keep in dependency['keep']:
-                    if re.match(f'^{keep}$', tarinfo.name):
-                        to_be_extracted.append(tarinfo)  # TODO: simpler?
+        archive.extractall(members=to_be_extracted, path=Path(tmp, key))
 
-            archive.extractall(members=to_be_extracted, path=Path(tmp, key))
+        for extracted in to_be_extracted:
+            filename: str = extracted.name
+            for rename in dependency['rename']:
+                filename = filename.replace(rename, dependency['rename'][rename])
 
-            for extracted in to_be_extracted:
-                filename: str = extracted.name
-                for rename in dependency['rename']:
-                    filename = filename.replace(rename, dependency['rename'][rename])
-
-                newfile = prepare(Path(destination, filename))
-                Path(tmp, key, extracted.name).rename(newfile)
+            newfile = prepare(Path(destination, filename))
+            Path(tmp, key, extracted.name).rename(newfile)
 
     # Delete destination folder if empty.
     if not any(destination.iterdir()):

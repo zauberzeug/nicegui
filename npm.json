@@ -1,4 +1,42 @@
 {
+  "vue": {
+    "destination": "static",
+    "keep": ["package/dist/vue\\.global(\\.prod)?\\.js"],
+    "rename": {
+      "package/dist": ".."
+    }
+  },
+  "quasar": {
+    "destination": "static",
+    "keep": [
+      "package/dist/quasar\\.umd(\\.prod)?\\.js",
+      "package/dist/quasar(\\.prod)?\\.css",
+      "package/dist/lang/.*\\.umd\\.prod\\.js"
+    ],
+    "rename": {
+      "package/dist": ".."
+    }
+  },
+  "tailwindcss": {
+    "destination": "static",
+    "keep": [],
+    "download": "https://cdn.tailwindcss.com",
+    "rename": "../tailwindcss.min.js"
+  },
+  "socket.io": {
+    "destination": "static",
+    "keep": ["package/client-dist/socket\\.io(\\.min)?\\.js"],
+    "rename": {
+      "package/client-dist": ".."
+    }
+  },
+  "es-module-shims": {
+    "destination": "static",
+    "keep": ["package/dist/es-module-shims\\.js"],
+    "rename": {
+      "package/dist": ".."
+    }
+  },
   "aggrid": {
     "package": "ag-grid-community",
     "destination": "elements/lib",
@@ -66,39 +104,5 @@
     "rename": {
       "package/dist/": ""
     }
-  },
-
-  "vue": {
-    "destination": "static",
-    "keep": ["package/dist/vue\\.global(\\.prod)?\\.js"],
-    "rename": {
-      "package/dist": ".."
-    }
-  },
-  "quasar": {
-    "destination": "static",
-    "keep": ["package/dist/quasar\\.umd(\\.prod)?\\.js", "package/dist/quasar(\\.prod)?\\.css"],
-    "rename": {
-      "package/dist": ".."
-    }
-  },
-  "socket.io": {
-    "destination": "static",
-    "keep": ["package/client-dist/socket\\.io(\\.min)?\\.js"],
-    "rename": {
-      "package/client-dist": ".."
-    }
-  },
-  "es-module-shims": {
-    "destination": "static",
-    "keep": ["package/dist/es-module-shims\\.js"],
-    "rename": {
-      "package/dist": ".."
-    }
-  },
-  "tailwind": {
-    "destination": "static",
-    "download": "https://cdn.tailwindcss.com",
-    "rename": "../tailwindcss.min.js"
   }
 }
