@@ -8,7 +8,7 @@ from socketio import AsyncClient
 from . import globals
 from .nicegui import handle_disconnect, handle_event, handle_handshake, handle_javascript_response
 
-RELAY_HOST = 'http://localhost'
+RELAY_HOST = 'https://on-air.nicegui.io/'
 
 
 class Air:
@@ -92,7 +92,7 @@ class Air:
 
         @self.relay.on('out_of_time')
         async def on_move() -> None:
-            print('Sorry, you have reached the time limit of this on-air preview.', flush=True)
+            print('Sorry, you have reached the time limit of this NiceGUI On Air preview.', flush=True)
             await self.connect()
 
     async def connect(self) -> None:
@@ -105,8 +105,8 @@ class Air:
                 transports=['websocket', 'polling'],
             )
         except:
-            logging.exception('Could not connect to NiceGUI on air server.')
-            print('Could not connect to NiceGUI on air server.', flush=True)
+            logging.exception('Could not connect to NiceGUI On Air server.')
+            print('Could not connect to NiceGUI On Air server.', flush=True)
 
     async def disconnect(self) -> None:
         await self.relay.disconnect()
