@@ -245,7 +245,9 @@
                   delete this.elements[id];
                   continue;
                 }
-                await loadDependencies(element);
+                if (element.component || element.libraries.length > 0) {
+                  await loadDependencies(element);
+                }
                 this.elements[element.id] = element;
               }
             },
