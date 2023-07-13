@@ -1,5 +1,6 @@
 import asyncio
 import functools
+import hashlib
 import inspect
 import mimetypes
 import socket
@@ -54,6 +55,10 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return Path(path).is_file()
     except OSError:
         return False
+
+
+def hash_file_path(path: Path) -> str:
+    return hashlib.sha256(str(path).encode()).hexdigest()[:32]
 
 
 def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional['Client'] = None) -> None:

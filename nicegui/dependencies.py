@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Set, Tuple
@@ -8,7 +7,7 @@ from typing import TYPE_CHECKING, Dict, List, Set, Tuple
 import vbuild
 
 from . import __version__
-from .helpers import KWONLY_SLOTS
+from .helpers import KWONLY_SLOTS, hash_file_path
 
 if TYPE_CHECKING:
     from .element import Element
@@ -98,7 +97,7 @@ def compute_key(path: Path) -> str:
         path = path.relative_to(nicegui_base)
     except ValueError:
         pass
-    return f'{hashlib.sha256(str(path.parent).encode()).hexdigest()}/{path.name}'
+    return f'{hash_file_path(path.parent)}/{path.name}'
 
 
 def get_name(path: Path) -> str:

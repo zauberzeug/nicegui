@@ -1,4 +1,3 @@
-import hashlib
 from pathlib import Path
 from typing import Awaitable, Callable, Optional, Union
 
@@ -9,10 +8,6 @@ from fastapi.staticfiles import StaticFiles
 from . import globals, helpers
 from .native import Native
 from .storage import Storage
-
-
-def hash_file_path(path: Path) -> str:
-    return hashlib.sha256(str(path.resolve()).encode()).hexdigest()[:32]
 
 
 class App(FastAPI):
@@ -100,11 +95,11 @@ class App(FastAPI):
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :return: URL path which can be used to access the file
         """
-        file = Path(local_file)
+        file = Path(local_file).resolve()
         if not file.is_file():
             raise ValueError(f'File not found: {file}')
         if url_path is None:
-            url_path = f'/_nicegui/auto/static/{hash_file_path(file)}/{file.name}'
+            url_path = f'/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}'
 
         @self.get(url_path)
         async def read_item() -> FileResponse:
@@ -146,11 +141,11 @@ class App(FastAPI):
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :return: URL path which can be used to access the file
         """
-        file = Path(local_file)
+        file = Path(local_file).resolve()
         if not file.is_file():
             raise ValueError(f'File not found: {local_file}')
         if url_path is None:
-            url_path = f'/_nicegui/auto/media/{hash_file_path(file)}/{file.name}'
+            url_path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}'
 
         @self.get(url_path)
         async def read_item(request: Request) -> StreamingResponse:
