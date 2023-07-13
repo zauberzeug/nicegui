@@ -108,7 +108,7 @@ async def index_page(client: Client) -> None:
     add_header()
 
     with ui.row().classes('w-full h-screen items-center gap-8 pr-4 no-wrap into-section'):
-        svg.face(half=True).classes('stroke-black w-[200px] md:w-[230px] lg:w-[300px]')
+        svg.face(half=True).classes('stroke-black dark:stroke-white w-[200px] md:w-[230px] lg:w-[300px]')
         with ui.column().classes('gap-4 md:gap-8 pt-32'):
             title('Meet the *NiceGUI*.')
             subtitle('And let any browser be the frontend of your Python code.') \
@@ -244,8 +244,8 @@ async def index_page(client: Client) -> None:
                     .classes('text-white text-2xl md:text-3xl font-medium')
                 ui.html('Fun-Fact: This whole website is also coded with NiceGUI.') \
                     .classes('text-white text-lg md:text-xl')
-            ui.link('Documentation', '/documentation') \
-                .classes('rounded-full mx-auto px-12 py-2 text-white bg-white font-medium text-lg md:text-xl')
+            ui.link('Documentation', '/documentation').style('color: black !important') \
+                .classes('rounded-full mx-auto px-12 py-2 bg-white font-medium text-lg md:text-xl')
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
         link_target('examples', '-50px')
@@ -286,7 +286,7 @@ async def index_page(client: Client) -> None:
             example_link('Lightbox', 'A thumbnail gallery where each image can be clicked to enlarge')
             example_link('ROS2', 'Using NiceGUI as web interface for a ROS2 robot')
 
-    with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
+    with ui.row().classes('dark-box min-h-screen mt-16'):
         link_target('why')
         with ui.column().classes('''
                 max-w-[1600px] m-auto
@@ -367,4 +367,4 @@ async def documentation_page_more(name: str, client: Client) -> None:
     await client.connected()
     await ui.run_javascript(f'document.title = "{name} • NiceGUI";', respond=False)
 
-ui.run(uvicorn_reload_includes='*.py, *.css, *.html')
+ui.run(uvicorn_reload_includes='*.py, *.css, *.html', dark=None)

@@ -35,8 +35,8 @@ def example_link(title: str, description: str) -> None:
     with ui.link(target=f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/{filename}') \
             .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
             .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
-        ui.label(title).classes(replace='text-black font-bold')
-        ui.markdown(description).classes(replace='text-black bold-links arrow-links')
+        ui.label(title).classes(replace='font-bold')
+        ui.markdown(description).classes(replace='bold-links arrow-links')
 
 
 def features(icon: str, title: str, items: List[str]) -> None:
@@ -49,5 +49,5 @@ def features(icon: str, title: str, items: List[str]) -> None:
 
 def side_menu() -> ui.left_drawer:
     return ui.left_drawer() \
-        .classes('column no-wrap gap-1 bg-[#eee] mt-[-20px] px-8 py-20') \
+        .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
         .style('height: calc(100% + 20px) !important')
