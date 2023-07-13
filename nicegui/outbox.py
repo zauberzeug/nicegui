@@ -13,6 +13,7 @@ MessageType = str
 Message = Tuple[ClientId, MessageType, Any]
 
 update_queue: DefaultDict[ClientId, Dict[ElementId, 'Element']] = defaultdict(dict)
+delete_queue: Deque[ElementId] = deque()
 message_queue: Deque[Message] = deque()
 
 
@@ -20,29 +21,42 @@ def enqueue_update(element: 'Element') -> None:
     update_queue[element.client.id][element.id] = element
 
 
-def enqueue_message(message_type: 'MessageType', data: Any, target_id: 'ClientId') -> None:
+def enqueue_delete(element_id: ElementId) -> None:
+    delete_queue.append(element_id)
+
+
+def enqueue_message(message_type: MessageType, data: Any, target_id: ClientId) -> None:
     message_queue.append((target_id, message_type, data))
+
+
+async def _emit(message_type: MessageType, data: Any, target_id: ClientId) -> None:
+    await globals.sio.emit(message_type, data, room=target_id)
+    if is_target_on_air(target_id):
+        await globals.air.emit(message_type, data, room=target_id)
 
 
 async def loop() -> None:
     while True:
-        if not update_queue and not message_queue:
+        if not update_queue and not message_queue and not delete_queue:
             await asyncio.sleep(0.01)
             continue
+
         coros = []
         try:
             for client_id, elements in update_queue.items():
                 data = {element_id: element._to_dict() for element_id, element in elements.items()}
-                coros.append(globals.sio.emit('update', data, room=client_id))
-                if is_target_on_air(client_id):
-                    coros.append(globals.air.emit('update', data, room=client_id))
-
+                coros.append(_emit('update', data, client_id))
             update_queue.clear()
+
+            if delete_queue:
+                data = {element_id: None for element_id in delete_queue}
+                coros.append(_emit('update', data, client_id))
+            delete_queue.clear()
+
             for target_id, message_type, data in message_queue:
-                coros.append(globals.sio.emit(message_type, data, room=target_id))
-                if is_target_on_air(target_id):
-                    coros.append(globals.air.emit(message_type, data, room=target_id))
+                coros.append(_emit(message_type, data, target_id))
             message_queue.clear()
+
             for coro in coros:
                 try:
                     await coro

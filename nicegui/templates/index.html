@@ -241,6 +241,10 @@
             },
             update: async (msg) => {
               for (const [id, element] of Object.entries(msg)) {
+                if (element === null) {
+                  delete this.elements[id];
+                  continue;
+                }
                 await loadDependencies(element);
                 this.elements[element.id] = element;
               }

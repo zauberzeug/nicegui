@@ -316,6 +316,7 @@ class Element(Visibility):
         descendants = [self.client.elements[id] for id in self._collect_descendant_ids()[1:]]
         binding.remove(descendants, Element)
         for element in descendants:
+            element.delete()
             del self.client.elements[element.id]
         for slot in self.slots.values():
             slot.children.clear()
@@ -345,13 +346,12 @@ class Element(Visibility):
             children = list(self)
             element = children[element]
         binding.remove([element], Element)
+        element.delete()
         del self.client.elements[element.id]
         for slot in self.slots.values():
             slot.children[:] = [e for e in slot if e.id != element.id]
         self.update()
 
     def delete(self) -> None:
-        """Called when the corresponding client is deleted.
-
-        Can be overridden to perform cleanup.
-        """
+        """Perform cleanup when the element is deleted."""
+        outbox.enqueue_delete(self.id)
