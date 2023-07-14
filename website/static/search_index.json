@@ -320,6 +320,11 @@
     "url": "/documentation/#package_for_installation"
   },
   {
+    "title": "NiceGUI On Air",
+    "content": "By using ui.run(on_air=True) you can share your local app with others over the internet \ud83e\uddde.  When accessing the on-air URL, all libraries (like Vue, Quasar, ...) are loaded from our CDN. Thereby only the raw content and events need to be transmitted by your local app. This makes it blazing fast even if your app only has a poor internet connection (e.g. a mobile robot in the field).  Currently \"On Air\" is available as a tech preview and generates a random URL that is valid for 1 hour. We will gradually improve stability and extend the service with password protection, custom URLs and more. Please let us know your feedback on GitHub, Reddit, or Discord.  **Data Privacy:** We take your privacy very serious. NiceGUI On Air does not log or store any content of the relayed data.",
+    "url": "/documentation/#nicegui_on_air"
+  },
+  {
     "title": "Icon",
     "content": "This element is based on Quasar's QIcon <https://quasar.dev/vue-components/icon>_ component.  Here <https://fonts.google.com/icons>_ is a reference of possible names.  :param name: name of the icon :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem :param color: icon color (either a Quasar, Tailwind, or CSS color or None, default: None)",
     "url": "/documentation/icon"
@@ -520,6 +525,21 @@
     "url": "/documentation/page#modularize_with_apirouter"
   },
   {
+    "title": "Scroll Area",
+    "content": "A way of customizing the scrollbars by encapsulating your content. This element exposes the Quasar ScrollArea <https://quasar.dev/vue-components/scroll-area/>_ component.  :param on_scroll: function to be called when the scroll position changes scroll_to Set the scroll area position in percentage (float) or pixel number (int).  You can add a delay to the actual scroll action with the duration_ms parameter.  :param pixels: scroll position offset from top in pixels :param percent: scroll position offset from top in percentage of the total scrolling size :param axis: scroll axis :param duration: animation duration (in seconds, default: 0.0 means no animation)",
+    "url": "/documentation/scroll_area"
+  },
+  {
+    "title": "Scroll Area: Handling Scroll Events",
+    "content": "You can use the on_scroll argument in ui.scroll_area to handle scroll events. The callback receives a ScrollEventArguments object with the following attributes:  - sender: the scroll area that generated the event - client: the matching client - additional arguments as described in Quasar's documentation for the ScrollArea API",
+    "url": "/documentation/scroll_area#handling_scroll_events"
+  },
+  {
+    "title": "Scroll Area: Setting the scroll position",
+    "content": "You can use scroll_to to programmatically set the scroll position. This can be useful for navigation or synchronization of multiple scroll areas.",
+    "url": "/documentation/scroll_area#setting_the_scroll_position"
+  },
+  {
     "title": "Text Input",
     "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  The on_change event is called on every keystroke and the value updates accordingly. If you want to wait until the user confirms the input, you can register a custom event callback, e.g. ui.input(...).on('keydown.enter', ...) or ui.input(...).on('blur', ...).  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed label for the text input :param placeholder: text to show if no value is entered :param value: the current value of the text input :param password: whether to hide the input (default: False) :param password_toggle_button: whether to show a button to toggle the password visibility (default: False) :param on_change: callback to execute when the value changes :param autocomplete: optional list of strings for autocompletion :param validation: dictionary of validation rules, e.g. `'Too long!': lambda value: len(value) < 3` set_autocomplete Set the autocomplete list.on_value_change",
     "url": "/documentation/input"
@@ -548,6 +568,11 @@
     "title": "Menu",
     "content": "Creates a menu. The menu should be placed inside the element where it should be shown.  :param value: whether the menu is already opened (default: False) open Open the menu.close Close the menu.toggle Toggle the menu.",
     "url": "/documentation/menu"
+  },
+  {
+    "title": "Menu: Custom Context Menu",
+    "content": "Using Quasar's context-menu and touch-position props, you can create custom context menus.",
+    "url": "/documentation/menu#custom_context_menu"
   },
   {
     "title": "Joystick",
@@ -676,7 +701,7 @@
   },
   {
     "title": "Notification",
-    "content": "Displays a notification on the screen.  :param message: content of the notification :param position: position on the screen (\"top-left\", \"top-right\", \"bottom-left\", \"bottom-right\", \"top\", \"bottom\", \"left\", \"right\" or \"center\", default: \"bottom\") :param closeBtn: optional label of a button to dismiss the notification (default: False) :param type: optional type (\"positive\", \"negative\", \"warning\", \"info\" or \"ongoing\") :param color: optional color name  Note: You can pass additional keyword arguments according to Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>_.",
+    "content": "Displays a notification on the screen.  :param message: content of the notification :param position: position on the screen (\"top-left\", \"top-right\", \"bottom-left\", \"bottom-right\", \"top\", \"bottom\", \"left\", \"right\" or \"center\", default: \"bottom\") :param close_button: optional label of a button to dismiss the notification (default: False) :param type: optional type (\"positive\", \"negative\", \"warning\", \"info\" or \"ongoing\") :param color: optional color name :param multi_line: enable multi-line notifications  Note: You can pass additional keyword arguments according to Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>_.",
     "url": "/documentation/notify"
   },
   {
@@ -686,7 +711,7 @@
   },
   {
     "title": "Notify: Multiline Notifications",
-    "content": "To allow a notification text to span multiple lines, it is sufficient to pass the mutliLine keyword with True. If manual newline breaks are required (e.g. ), you need to define a CSS style and pass it to the notification as shown in the example.",
+    "content": "To allow a notification text to span multiple lines, it is sufficient to set multi_line=True. If manual newline breaks are required (e.g. ), you need to define a CSS style and pass it to the notification as shown in the example.",
     "url": "/documentation/notify#multiline_notifications"
   },
   {
@@ -776,7 +801,7 @@
   },
   {
     "title": "Generic Element",
-    "content": "This class is the base class for all other UI elements. But you can use it to create elements with arbitrary HTML tags.  :param tag: HTML tag of the element :param _client: client for this element (for internal use only) add_slot Add a slot to the element.  :param name: name of the slot :param template: Vue template of the slot :return: the slot classes Apply, remove, or replace HTML classes.  This allows modifying the look of the element or its layout using Tailwind <https://tailwindcss.com/>_ or Quasar <https://quasar.dev/>_ classes.  Removing or replacing classes can be helpful if predefined classes are not desired.  :param add: whitespace-delimited string of classes :param remove: whitespace-delimited string of classes to remove from the element :param replace: whitespace-delimited string of classes to use instead of existing ones style Apply, remove, or replace CSS definitions.  Removing or replacing styles can be helpful if the predefined style is not desired.  :param add: semicolon-separated list of styles to add to the element :param remove: semicolon-separated list of styles to remove from the element :param replace: semicolon-separated list of styles to use instead of existing ones props Add or remove props.  This allows modifying the look of the element or its layout using Quasar <https://quasar.dev/>_ props. Since props are simply applied as HTML attributes, they can be used with any HTML element.  Boolean properties are assumed `True if no value is specified.  :param add: whitespace-delimited list of either boolean values or key=value pair to add :param remove: whitespace-delimited list of property keys to remove tooltip Add a tooltip to the element.  :param text: text of the tooltip on Subscribe to an event.  :param type: name of the event (e.g. \"click\", \"mousedown\", or \"update:model-value\") :param handler: callback that is called upon occurrence of the event :param args: arguments included in the event message sent to the event handler (default: None meaning all) :param throttle: minimum time (in seconds) between event occurrences (default: 0.0) :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: True) :param trailing_events: whether to trigger the event handler after the last event occurrence (default: True`) update Update the element on the client side.run_method Run a method on the client side.  :param name: name of the method :param args: arguments to pass to the method clear Remove all child elements.move Move the element to another container.  :param target_container: container to move the element to (default: the parent container) :param target_index: index within the target slot (default: append to the end) remove Remove a child element.  :param element: either the element instance or its ID delete Called when the corresponding client is deleted.  Can be overridden to perform cleanup.",
+    "content": "This class is the base class for all other UI elements. But you can use it to create elements with arbitrary HTML tags.  :param tag: HTML tag of the element :param _client: client for this element (for internal use only) add_slot Add a slot to the element.  :param name: name of the slot :param template: Vue template of the slot :return: the slot classes Apply, remove, or replace HTML classes.  This allows modifying the look of the element or its layout using Tailwind <https://tailwindcss.com/>_ or Quasar <https://quasar.dev/>_ classes.  Removing or replacing classes can be helpful if predefined classes are not desired.  :param add: whitespace-delimited string of classes :param remove: whitespace-delimited string of classes to remove from the element :param replace: whitespace-delimited string of classes to use instead of existing ones style Apply, remove, or replace CSS definitions.  Removing or replacing styles can be helpful if the predefined style is not desired.  :param add: semicolon-separated list of styles to add to the element :param remove: semicolon-separated list of styles to remove from the element :param replace: semicolon-separated list of styles to use instead of existing ones props Add or remove props.  This allows modifying the look of the element or its layout using Quasar <https://quasar.dev/>_ props. Since props are simply applied as HTML attributes, they can be used with any HTML element.  Boolean properties are assumed `True if no value is specified.  :param add: whitespace-delimited list of either boolean values or key=value pair to add :param remove: whitespace-delimited list of property keys to remove tooltip Add a tooltip to the element.  :param text: text of the tooltip on Subscribe to an event.  :param type: name of the event (e.g. \"click\", \"mousedown\", or \"update:model-value\") :param handler: callback that is called upon occurrence of the event :param args: arguments included in the event message sent to the event handler (default: None meaning all) :param throttle: minimum time (in seconds) between event occurrences (default: 0.0) :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: True) :param trailing_events: whether to trigger the event handler after the last event occurrence (default: True`) update Update the element on the client side.run_method Run a method on the client side.  :param name: name of the method :param args: arguments to pass to the method clear Remove all child elements.move Move the element to another container.  :param target_container: container to move the element to (default: the parent container) :param target_index: index within the target slot (default: append to the end) remove Remove a child element.  :param element: either the element instance or its ID delete Perform cleanup when the element is deleted.",
     "url": "/documentation/element"
   },
   {
@@ -911,8 +936,13 @@
   },
   {
     "title": "Generic Events",
-    "content": "Most UI elements come with predefined events. For example, a ui.button like \"A\" in the demo has an on_click parameter that expects a coroutine or function. But you can also use the on method to register a generic event handler like for \"B\". This allows you to register handlers for any event that is supported by JavaScript and Quasar.  For example, you can register a handler for the mousemove event like for \"C\", even though there is no on_mousemove parameter for ui.button. Some events, like mousemove, are fired very often. To avoid performance issues, you can use the throttle parameter to only call the handler every throttle seconds (\"D\").  The generic event handler can be synchronous or asynchronous and optionally takes an event dictionary as argument (\"E\"). You can also specify which attributes of the JavaScript or Quasar event should be passed to the handler (\"F\"). This can reduce the amount of data that needs to be transferred between the server and the client.",
+    "content": "Most UI elements come with predefined events. For example, a ui.button like \"A\" in the demo has an on_click parameter that expects a coroutine or function. But you can also use the on method to register a generic event handler like for \"B\". This allows you to register handlers for any event that is supported by JavaScript and Quasar.  For example, you can register a handler for the mousemove event like for \"C\", even though there is no on_mousemove parameter for ui.button. Some events, like mousemove, are fired very often. To avoid performance issues, you can use the throttle parameter to only call the handler every throttle seconds (\"D\").  The generic event handler can be synchronous or asynchronous and optionally takes GenericEventArguments as argument (\"E\"). You can also specify which attributes of the JavaScript or Quasar event should be passed to the handler (\"F\"). This can reduce the amount of data that needs to be transferred between the server and the client.",
     "url": "/documentation/generic_events"
+  },
+  {
+    "title": "Generic Events: Specifying event attributes",
+    "content": "**A list of strings** names the attributes of the JavaScript event object: ``py ui.button().on('click', handle_click, ['clientX', 'clientY']) `  **An empty list** requests _no_ attributes: `py ui.button().on('click', handle_click, []) `  **The value None** represents _all_ attributes (the default): `py ui.button().on('click', handle_click, None) `  **If the event is called with multiple arguments** like QTable's \"row-click\" (evt, row, index) => void, you can define a list of argument definitions: `py ui.table(...).on('rowClick', handle_click, [[], ['name'], None]) ` In this example the \"row-click\" event will omit all arguments of the first evt argument, send only the \"name\" attribute of the row argument and send the full index.  If the retrieved list of event arguments has length 1, the argument is automatically unpacked. So you can write `py ui.button().on('click', lambda e: print(e.args['clientX'], flush=True)) ` instead of `py ui.button().on('click', lambda e: print(e.args[0]['clientX'], flush=True)) ``  Note that by default all JSON-serializable attributes of all arguments are sent. This is to simplify registering for new events and discovering their attributes. If bandwidth is an issue, the arguments should be limited to what is actually needed on the server.",
+    "url": "/documentation/generic_events#specifying_event_attributes"
   },
   {
     "title": "Generic Events: Modifiers",
@@ -976,7 +1006,7 @@
   },
   {
     "title": "ui.run",
-    "content": "You can call ui.run() with optional arguments:  :param host: start server with this host (defaults to '127.0.0.1 in native mode, otherwise '0.0.0.0') :param port: use this port (default: 8080) :param title: page title (default: 'NiceGUI', can be overwritten per page) :param viewport: page meta viewport content (default: 'width=device-width, initial-scale=1', can be overwritten per page) :param favicon: relative filepath, absolute URL to a favicon (default: None, NiceGUI icon will be used) or emoji (e.g. '\ud83d\ude80', works for most browsers) :param dark: whether to use Quasar's dark mode (default: False, use None for \"auto\" mode) :param language: language for Quasar elements (default: 'en-US') :param binding_refresh_interval: time between binding updates (default: 0.1 seconds, bigger is more CPU friendly) :param show: automatically open the UI in a browser tab (default: True) :param native: open the UI in a native window of size 800x600 (default: False, deactivates show, automatically finds an open port) :param window_size: open the UI in a native window with the provided size (e.g. (1024, 786), default: None, also activates native) :param fullscreen: open the UI in a fullscreen window (default: False, also activates native) :param reload: automatically reload the UI on file changes (default: True) :param uvicorn_logging_level: logging level for uvicorn server (default: 'warning') :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only) :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: '.py') :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: '.*, .py[cod], .sw.*, ~*') :param exclude: comma-separated string to exclude elements (with corresponding JavaScript libraries) to save bandwidth (possible entries: aggrid, audio, chart, colors, interactive_image, joystick, keyboard, log, markdown, mermaid, plotly, scene, video) :param tailwind: whether to use Tailwind (experimental, default: True) :param storage_secret: secret key for browser based storage (default: None, a value is required to enable ui.storage.individual and ui.storage.browser) :param kwargs: additional keyword arguments are passed to uvicorn.run",
+    "content": "You can call ui.run() with optional arguments:  :param host: start server with this host (defaults to '127.0.0.1 in native mode, otherwise '0.0.0.0') :param port: use this port (default: 8080) :param title: page title (default: 'NiceGUI', can be overwritten per page) :param viewport: page meta viewport content (default: 'width=device-width, initial-scale=1', can be overwritten per page) :param favicon: relative filepath, absolute URL to a favicon (default: None, NiceGUI icon will be used) or emoji (e.g. '\ud83d\ude80', works for most browsers) :param dark: whether to use Quasar's dark mode (default: False, use None for \"auto\" mode) :param language: language for Quasar elements (default: 'en-US') :param binding_refresh_interval: time between binding updates (default: 0.1 seconds, bigger is more CPU friendly) :param show: automatically open the UI in a browser tab (default: True) :param on_air: tech preview: allows temporary remote access <https://nicegui.io/documentation#nicegui_on_air>_ if set to True (default: disabled) :param native: open the UI in a native window of size 800x600 (default: False, deactivates show, automatically finds an open port) :param window_size: open the UI in a native window with the provided size (e.g. (1024, 786), default: None, also activates native) :param fullscreen: open the UI in a fullscreen window (default: False, also activates native) :param reload: automatically reload the UI on file changes (default: True) :param uvicorn_logging_level: logging level for uvicorn server (default: 'warning') :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only) :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: '.py') :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: '.*, .py[cod], .sw.*, ~*') :param tailwind: whether to use Tailwind (experimental, default: True) :param storage_secret: secret key for browser based storage (default: None, a value is required to enable ui.storage.individual and ui.storage.browser) :param kwargs: additional keyword arguments are passed to uvicorn.run",
     "url": "/documentation/run"
   },
   {
@@ -1021,7 +1051,7 @@
   },
   {
     "title": "Knob",
-    "content": "This element is based on Quasar's QKnob <https://quasar.dev/vue-components/knob>_ component. The element is used to take a number input from the user through mouse/touch panning.  :param value: the initial value (default: 0.0) :param min: the minimum value (default: 0.0) :param max: the maximum value (default: 1.0) :param step: the step size (default: 0.01) :param color: knob color (either a Quasar, Tailwind, or CSS color or None, default: \"primary\") :param center_color: color name for the center part of the component, examples: primary, teal-10 :param track_color: color name for the track of the component, examples: primary, teal-10 :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem :param show_value: whether to show the value as text",
+    "content": "This element is based on Quasar's QKnob <https://quasar.dev/vue-components/knob>_ component. The element is used to take a number input from the user through mouse/touch panning.  :param value: the initial value (default: 0.0) :param min: the minimum value (default: 0.0) :param max: the maximum value (default: 1.0) :param step: the step size (default: 0.01) :param color: knob color (either a Quasar, Tailwind, or CSS color or None, default: \"primary\") :param center_color: color name for the center part of the component, examples: primary, teal-10 :param track_color: color name for the track of the component, examples: primary, teal-10 :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem :param show_value: whether to show the value as text :param on_change: callback to execute when the value changes",
     "url": "/documentation/knob"
   },
   {
@@ -1061,12 +1091,17 @@
   },
   {
     "title": "Query Selector",
-    "content": "To manipulate elements like the document body, you can use the ui.query function. With the query result you can add classes, styles, and attributes like with every other UI element. This can be useful for example to change the background color of the page (e.g. ui.query('body').classes('bg-green')).",
+    "content": "To manipulate elements like the document body, you can use the ui.query function. With the query result you can add classes, styles, and attributes like with every other UI element. This can be useful for example to change the background color of the page (e.g. ui.query('body').classes('bg-green')).  :param selector: the CSS selector (e.g. \"body\", \"#my-id\", \".my-class\", \"div > p\")",
     "url": "/documentation/query"
   },
   {
     "title": "Query: Set background gradient",
     "content": "It's easy to set a background gradient, image or similar. See w3schools.com for more information about setting background with CSS.",
     "url": "/documentation/query#set_background_gradient"
+  },
+  {
+    "title": "Query: Modify default page padding",
+    "content": "By default, NiceGUI provides a built-in padding around the content of the page. You can modify it using the class selector .nicegui-content.",
+    "url": "/documentation/query#modify_default_page_padding"
   }
 ]
