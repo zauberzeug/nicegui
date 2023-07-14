@@ -1,6 +1,4 @@
-from typing import Any, Callable, Optional
-
-from typing_extensions import Literal
+from typing import Any, Callable, Literal, Optional
 
 from ..element import Element
 from ..events import GenericEventArguments, ScrollEventArguments, handle_event

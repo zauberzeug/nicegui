@@ -1,8 +1,8 @@
 import asyncio
+from typing import Literal
 
 import pytest
 from selenium.webdriver.common.by import By
-from typing_extensions import Literal
 
 from nicegui import ui
 from nicegui.events import ClickEventArguments

@@ -1,6 +1,4 @@
-from typing import Any, Optional, Union
-
-from typing_extensions import Literal
+from typing import Any, Literal, Optional, Union
 
 from .. import globals, outbox
 

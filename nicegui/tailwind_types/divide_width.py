@@ -1,4 +1,4 @@
-from typing_extensions import Literal
+from typing import Literal
 
 DivideWidth = Literal[
     'x-0',

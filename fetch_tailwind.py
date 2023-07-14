@@ -84,7 +84,7 @@ for property in properties:
     if not property.members:
         continue
     with (Path(__file__).parent / 'nicegui' / 'tailwind_types' / f'{property.snake_title}.py').open('w') as f:
-        f.write('from typing_extensions import Literal\n')
+        f.write('from typing import Literal\n')
         f.write('\n')
         f.write(f'{property.pascal_title} = Literal[\n')
         for short_member in property.short_members:

@@ -1,6 +1,4 @@
-from typing import Any, Callable, List
-
-from typing_extensions import Literal
+from typing import Any, Callable, List, Literal
 
 from ..binding import BindableProperty
 from ..element import Element
