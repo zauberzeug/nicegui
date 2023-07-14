@@ -2,15 +2,18 @@ import json
 from datetime import date, datetime
 from typing import Any, Optional, Tuple
 
-import numpy as np
 from fastapi import Response
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 
 def dumps(obj: Any, sort_keys: bool = False, separators: Optional[Tuple[str, str]] = None):
     """Serializes a Python object to a JSON-encoded string.
 
-    This implementation uses Python's default json module, but extends it
-    in order to support numpy arrays.
+    This implementation uses Python's default json module, but extends it in order to support NumPy arrays.
     """
     if separators is None:
         separators = (',', ':')
@@ -41,14 +44,14 @@ class NiceGUIJSONResponse(Response):
 
 
 class NumpyJsonEncoder(json.JSONEncoder):
-    """Special json encoder that supports numpy arrays and date/datetime objects."""
+    """Special json encoder that supports NumPy arrays and date/datetime objects."""
 
     def default(self, obj):
-        if isinstance(obj, np.integer):
+        if np and isinstance(obj, np.integer):
             return int(obj)
-        if isinstance(obj, np.floating):
+        if np and isinstance(obj, np.floating):
             return float(obj)
-        if isinstance(obj, np.ndarray):
+        if np and isinstance(obj, np.ndarray):
             return obj.tolist()
         if isinstance(obj, (datetime, date)):
             return obj.isoformat()

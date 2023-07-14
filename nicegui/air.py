@@ -9,6 +9,7 @@ from . import globals
 from .nicegui import handle_disconnect, handle_event, handle_handshake, handle_javascript_response
 
 RELAY_HOST = 'https://on-air.nicegui.io/'
+RELAY_HOST = 'http://localhost/'
 
 
 class Air:
@@ -104,7 +105,7 @@ class Air:
                 socketio_path='/on_air/socket.io',
                 transports=['websocket', 'polling'],
             )
-        except:
+        except Exception:
             logging.exception('Could not connect to NiceGUI On Air server.')
             print('Could not connect to NiceGUI On Air server.', flush=True)
 

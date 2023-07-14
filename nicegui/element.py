@@ -354,4 +354,4 @@ class Element(Visibility):
 
     def delete(self) -> None:
         """Perform cleanup when the element is deleted."""
-        outbox.enqueue_delete(self.id)
+        outbox.enqueue_delete(self)

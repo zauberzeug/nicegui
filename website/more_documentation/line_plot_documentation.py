@@ -2,9 +2,8 @@ from nicegui import events, ui
 
 
 def main_demo() -> None:
+    import math
     from datetime import datetime
-
-    import numpy as np
 
     line_plot = ui.line_plot(n=2, limit=20, figsize=(3, 2), update_every=5) \
         .with_legend(['sin', 'cos'], loc='upper center', ncol=2)
@@ -12,8 +11,8 @@ def main_demo() -> None:
     def update_line_plot() -> None:
         now = datetime.now()
         x = now.timestamp()
-        y1 = np.sin(x)
-        y2 = np.cos(x)
+        y1 = math.sin(x)
+        y2 = math.cos(x)
         line_plot.push([now], [[y1], [y2]])
 
     line_updates = ui.timer(0.1, update_line_plot, active=False)

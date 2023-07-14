@@ -2,7 +2,7 @@ FROM python:3.11.3-slim
 
 LABEL maintainer="Zauberzeug GmbH <nicegui@zauberzeug.com>"
 
-RUN pip install itsdangerous prometheus_client isort docutils pandas
+RUN pip install itsdangerous prometheus_client isort docutils pandas plotly matplotlib requests
 
 WORKDIR /app
 
@@ -13,7 +13,6 @@ ARG VERSION=unknown
 RUN if [ "$VERSION" = "unknown" ]; then echo "Error: VERSION build argument is required. Use: fly deploy --build-arg VERSION=$(git describe --abbrev=0 --tags --match 'v*' 2>/dev/null | sed 's/^v//' || echo '0.0.0')" && exit 1; fi
 RUN sed -i "/\[tool.poetry\]/,/]/s/version = .*/version = \"$VERSION\"/" pyproject.toml
 
-RUN cat pyproject.toml
 RUN pip install .
 
 EXPOSE 8080

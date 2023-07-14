@@ -1,6 +1,8 @@
+import numpy as np
 from selenium.common.exceptions import JavascriptException
 
 from nicegui import ui
+from nicegui.elements.scene_object3d import Object3D
 
 from .screen import Screen
 
@@ -101,3 +103,12 @@ def test_create_dynamically(screen: Screen):
     screen.open('/')
     screen.click('Create')
     assert screen.find_by_tag('canvas')
+
+
+def test_rotation_matrix_from_euler():
+    omega, phi, kappa = 0.1, 0.2, 0.3
+    Rx = np.array([[1, 0, 0], [0, np.cos(omega), -np.sin(omega)], [0, np.sin(omega), np.cos(omega)]])
+    Ry = np.array([[np.cos(phi), 0, np.sin(phi)], [0, 1, 0], [-np.sin(phi), 0, np.cos(phi)]])
+    Rz = np.array([[np.cos(kappa), -np.sin(kappa), 0], [np.sin(kappa), np.cos(kappa), 0], [0, 0, 1]])
+    R = Rz @ Ry @ Rx
+    assert np.allclose(Object3D.rotation_matrix_from_euler(omega, phi, kappa), R)

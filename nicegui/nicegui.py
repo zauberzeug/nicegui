@@ -1,5 +1,4 @@
 import asyncio
-import os
 import time
 import urllib.parse
 from pathlib import Path
@@ -14,13 +13,13 @@ from fastapi_socketio import SocketManager
 from nicegui import json
 from nicegui.json import NiceGUIJSONResponse
 
-from . import __version__, background_tasks, binding, favicon, globals, outbox
+from . import __version__, background_tasks, binding, favicon, globals, outbox, welcome
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries
 from .element import Element
 from .error import error_content
-from .helpers import get_all_ips, is_file, safe_invoke
+from .helpers import is_file, safe_invoke
 from .page import page
 
 globals.app = app = App(default_response_class=NiceGUIJSONResponse)
@@ -93,20 +92,9 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     background_tasks.create(prune_slot_stacks())
     globals.state = globals.State.STARTED
     if with_welcome_message:
-        print_welcome_message()
+        welcome.print_message()
     if globals.air:
         background_tasks.create(globals.air.connect())
-
-
-def print_welcome_message():
-    host = os.environ['NICEGUI_HOST']
-    port = os.environ['NICEGUI_PORT']
-    ips = set(get_all_ips() if host == '0.0.0.0' else [])
-    ips.discard('127.0.0.1')
-    addresses = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ['localhost'] + sorted(ips)]
-    if len(addresses) >= 2:
-        addresses[-1] = 'and ' + addresses[-1]
-    print(f'NiceGUI ready to go on {", ".join(addresses)}', flush=True)
 
 
 @app.on_event('shutdown')

@@ -1,6 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional
-
-from typing_extensions import Literal
+from typing import Any, Callable, Dict, List, Literal, Optional
 
 from ..element import Element
 from ..events import GenericEventArguments, TableSelectionEventArguments, handle_event

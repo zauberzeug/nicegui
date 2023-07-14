@@ -88,6 +88,7 @@ __all__ = [
     'run_with',
 ]
 
+from . import globals
 from .deprecation import deprecated
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
@@ -173,10 +174,9 @@ from .page_layout import RightDrawer as right_drawer
 from .run import run
 from .run_with import run_with
 
-from .globals import optional_features
 try:
     from .elements.plotly import Plotly as plotly
-    optional_features.append('plotly')
+    globals.optional_features.add('plotly')
 except ImportError:
     def plotly(*args, **kwargs):
         raise ImportError('Plotly is not installed. Please run "pip install plotly".')
@@ -187,7 +187,7 @@ if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
         from .elements.line_plot import LinePlot as line_plot
         from .elements.pyplot import Pyplot as pyplot
         plot = deprecated(pyplot, 'ui.plot', 'ui.pyplot', 317)
-        optional_features.append('matplotlib')
+        globals.optional_features.add('matplotlib')
     except ImportError:
         def line_plot(*args, **kwargs):
             raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')

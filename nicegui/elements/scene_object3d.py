@@ -1,7 +1,6 @@
+import math
 import uuid
 from typing import TYPE_CHECKING, Any, List, Optional, Union, cast
-
-import numpy as np
 
 from .. import globals
 
@@ -93,11 +92,19 @@ class Object3D:
             self._move()
         return self
 
-    def rotate(self, omega: float, phi: float, kappa: float):
-        Rx = np.array([[1, 0, 0], [0, np.cos(omega), -np.sin(omega)], [0, np.sin(omega), np.cos(omega)]])
-        Ry = np.array([[np.cos(phi), 0, np.sin(phi)], [0, 1, 0], [-np.sin(phi), 0, np.cos(phi)]])
-        Rz = np.array([[np.cos(kappa), -np.sin(kappa), 0], [np.sin(kappa), np.cos(kappa), 0], [0, 0, 1]])
-        return self.rotate_R((Rz @ Ry @ Rx).tolist())
+    @staticmethod
+    def rotation_matrix_from_euler(r_x: float, r_y: float, r_z: float) -> List[List[float]]:
+        sx, cx = math.sin(r_x), math.cos(r_x)
+        sy, cy = math.sin(r_y), math.cos(r_y)
+        sz, cz = math.sin(r_z), math.cos(r_z)
+        return [
+            [cz * cy, -sz * cx + cz * sy * sx, sz * sx + cz * sy * cx],
+            [sz * cy, cz * cx + sz * sy * sx, -cz * sx + sz * sy * cx],
+            [-sy, cy * sx, cy * cx],
+        ]
+
+    def rotate(self, r_x: float, r_y: float, r_z: float) -> None:
+        return self.rotate_R(self.rotation_matrix_from_euler(r_x, r_y, r_z))
 
     def rotate_R(self, R: List[List[float]]):
         if self.R != R:

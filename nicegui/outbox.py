@@ -13,7 +13,6 @@ MessageType = str
 Message = Tuple[ClientId, MessageType, Any]
 
 update_queue: DefaultDict[ClientId, Dict[ElementId, 'Element']] = defaultdict(dict)
-delete_queue: Deque[ElementId] = deque()
 message_queue: Deque[Message] = deque()
 
 
@@ -21,8 +20,8 @@ def enqueue_update(element: 'Element') -> None:
     update_queue[element.client.id][element.id] = element
 
 
-def enqueue_delete(element_id: ElementId) -> None:
-    delete_queue.append(element_id)
+def enqueue_delete(element: 'Element') -> None:
+    update_queue[element.client.id][element.id] = None
 
 
 def enqueue_message(message_type: MessageType, data: Any, target_id: ClientId) -> None:
@@ -37,21 +36,19 @@ async def _emit(message_type: MessageType, data: Any, target_id: ClientId) -> No
 
 async def loop() -> None:
     while True:
-        if not update_queue and not message_queue and not delete_queue:
+        if not update_queue and not message_queue:
             await asyncio.sleep(0.01)
             continue
 
         coros = []
         try:
             for client_id, elements in update_queue.items():
-                data = {element_id: element._to_dict() for element_id, element in elements.items()}
+                data = {
+                    element_id: None if element is None else element._to_dict()
+                    for element_id, element in elements.items()
+                }
                 coros.append(_emit('update', data, client_id))
             update_queue.clear()
-
-            if delete_queue:
-                data = {element_id: None for element_id in delete_queue}
-                coros.append(_emit('update', data, client_id))
-            delete_queue.clear()
 
             for target_id, message_type, data in message_queue:
                 coros.append(_emit(message_type, data, target_id))

@@ -4,7 +4,7 @@ import logging
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterator, List, Optional, Set, Union
 
 from socketio import AsyncServer
 from uvicorn import Server
@@ -33,7 +33,7 @@ loop: Optional[asyncio.AbstractEventLoop] = None
 log: logging.Logger = logging.getLogger('nicegui')
 state: State = State.STOPPED
 ui_run_has_been_called: bool = False
-optional_features: List[str] = []
+optional_features: Set[str] = set()
 
 reload: bool
 title: str
