@@ -44,7 +44,7 @@ async def loop() -> None:
         try:
             for client_id, elements in update_queue.items():
                 data = {
-                    element_id: element._to_dict() if element else None
+                    element_id: None if element is None else element._to_dict()
                     for element_id, element in elements.items()
                 }
                 coros.append(_emit('update', data, client_id))
