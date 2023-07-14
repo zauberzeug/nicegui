@@ -12,7 +12,7 @@ def test_plotly(screen: Screen):
     plot = ui.plotly(fig)
 
     ui.button('Add trace', on_click=lambda: (
-        # test numpy array support for value arrays
+        # test NumPy array support for value arrays
         fig.add_trace(go.Scatter(x=np.array([0, 1, 2]), y=np.array([2, 1, 0]), name='Trace 2')),
         plot.update()
     ))

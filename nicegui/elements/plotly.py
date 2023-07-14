@@ -43,7 +43,7 @@ class Plotly(Element, component='plotly.vue', libraries=['lib/plotly/plotly.min.
     def _get_figure_json(self) -> Dict:
         if isinstance(self.figure, go.Figure):
             # convert go.Figure to dict object which is directly JSON serializable
-            # orjson supports numpy array serialization
+            # orjson supports NumPy array serialization
             return self.figure.to_plotly_json()
 
         if isinstance(self.figure, dict):

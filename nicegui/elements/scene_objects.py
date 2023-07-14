@@ -1,6 +1,5 @@
+import math
 from typing import List, Optional
-
-import numpy as np
 
 from .scene_object3d import Object3D
 
@@ -60,7 +59,7 @@ class Ring(Object3D):
                  theta_segments: int = 8,
                  phi_segments: int = 1,
                  theta_start: float = 0,
-                 theta_length: float = 2 * np.pi,
+                 theta_length: float = 2 * math.pi,
                  wireframe: bool = False,
                  ) -> None:
         super().__init__('ring',
@@ -164,7 +163,7 @@ class SpotLight(Object3D):
                  color: str = '#ffffff',
                  intensity: float = 1.0,
                  distance: float = 0.0,
-                 angle: float = np.pi / 3,
+                 angle: float = math.pi / 3,
                  penumbra: float = 0.0,
                  decay: float = 1.0,
                  ) -> None:

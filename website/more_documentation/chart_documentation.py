@@ -2,7 +2,7 @@ from nicegui import ui
 
 
 def main_demo() -> None:
-    from numpy.random import random
+    from random import random
 
     chart = ui.chart({
         'title': False,
@@ -15,7 +15,7 @@ def main_demo() -> None:
     }).classes('w-full h-64')
 
     def update():
-        chart.options['series'][0]['data'][:] = random(2)
+        chart.options['series'][0]['data'][0] = random()
         chart.update()
 
     ui.button('Update', on_click=update)

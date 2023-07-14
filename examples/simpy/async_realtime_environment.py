@@ -2,7 +2,6 @@ import asyncio
 from time import monotonic
 from typing import Any, Optional, Union
 
-from numpy import Infinity
 from simpy.core import EmptySchedule, Environment, Infinity, SimTime, StopSimulation
 from simpy.events import URGENT, Event
 from simpy.rt import RealtimeEnvironment
