@@ -74,7 +74,7 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
         'Examples': '/#examples',
         'Why?': '/#why',
     }
-    dark_mode = ui.dark_mode().bind_value(app.storage.user, 'dark_mode')
+    dark_mode = ui.dark_mode(value=None).bind_value(app.storage.user, 'dark_mode')
     with ui.header() \
             .classes('items-center duration-200 p-0 px-4 no-wrap') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
