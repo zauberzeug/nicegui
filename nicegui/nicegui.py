@@ -1,4 +1,3 @@
-from . import welcome
 import asyncio
 import time
 import urllib.parse
@@ -14,7 +13,7 @@ from fastapi_socketio import SocketManager
 from nicegui import json
 from nicegui.json import NiceGUIJSONResponse
 
-from . import __version__, background_tasks, binding, favicon, globals, outbox
+from . import __version__, background_tasks, binding, favicon, globals, outbox, welcome
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries

@@ -10,7 +10,7 @@ import time
 import webbrowser
 from contextlib import nullcontext
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generator, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generator, Optional, Tuple, Union
 
 from fastapi import Request
 from fastapi.responses import StreamingResponse

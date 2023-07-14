@@ -1,6 +1,7 @@
-from typing import List
-from .globals import optional_features
 import os
+from typing import List
+
+from .globals import optional_features
 
 try:
     import netifaces
@@ -21,7 +22,7 @@ def get_all_ips() -> List[str]:
     return ips
 
 
-def print_message():
+def print_message() -> None:
     host = os.environ['NICEGUI_HOST']
     port = os.environ['NICEGUI_PORT']
     ips = set(get_all_ips() if host == '0.0.0.0' else [])
