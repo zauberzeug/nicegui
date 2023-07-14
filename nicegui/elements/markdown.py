@@ -23,7 +23,10 @@ class Markdown(ContentElement, component='markdown.js'):
         self.extras = extras
         super().__init__(content=content)
         self._classes = ['nicegui-markdown']
-        self._props['codehilite_css'] = HtmlFormatter(nobackground=True).get_style_defs('.codehilite')
+        self._props['codehilite_css'] = (
+            HtmlFormatter(nobackground=True).get_style_defs('.codehilite') +
+            HtmlFormatter(nobackground=True, style='github-dark').get_style_defs('.body--dark .codehilite')
+        )
         if 'mermaid' in extras:
             self._props['use_mermaid'] = True
             self.libraries.append(Mermaid.exposed_libraries[0])
