@@ -24,15 +24,17 @@ orjson = {version = "^3.8.6", markers = "platform_machine != 'i386' and platform
 importlib_metadata = { version = "^6.0.0", markers = "python_version ~= '3.7'" } # Python 3.7 has no importlib.metadata
 itsdangerous = "^2.1.2"
 aiofiles = "^23.1.0"
-netifaces = "^0.11.0"
 pywebview = { version = "^4.0.2", optional = true }
 plotly = { version = "^5.13.0", optional = true }
 matplotlib = { version = "^3.5.0", optional = true }
+netifaces = { version = "^0.11.0", optional = true }
+httpx = "^0.24.1"
 
 [tool.poetry.extras]
 native = ["pywebview"]
 plotly = ["plotly"]
 matplotlib = ["matplotlib"]
+netifaces = ["netifaces"]
 
 [tool.poetry.group.dev.dependencies]
 icecream = "^2.1.0"
