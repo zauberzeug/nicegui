@@ -228,7 +228,7 @@ async def index_page(client: Client) -> None:
                 'generic [Vue](https://vuejs.org/) to Python bridge',
                 'dynamic GUI through [Quasar](https://quasar.dev/)',
                 'content is served with [FastAPI](http://fastapi.tiangolo.com/)',
-                'Python 3.7+',
+                'Python 3.8+',
             ])
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
