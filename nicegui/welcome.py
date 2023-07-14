@@ -1,4 +1,5 @@
 import os
+import socket
 from typing import List
 
 from .globals import optional_features
@@ -12,7 +13,7 @@ except ImportError:
 
 def get_all_ips() -> List[str]:
     if not 'netifaces' in optional_features:
-        return []
+        return [info[4][0] for info in socket.getaddrinfo(socket.gethostname(), None) if len(info[4]) == 2]
     ips = []
     for interface in netifaces.interfaces():
         try:
