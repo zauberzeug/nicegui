@@ -32,7 +32,7 @@ def more() -> None:
                     self.element.push(msg)
                 except (KeyboardInterrupt, SystemExit):
                     raise
-                except:
+                except Exception:
                     self.handleError(record)
 
         log = ui.log(max_lines=10).classes('w-full')
