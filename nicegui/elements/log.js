@@ -14,7 +14,7 @@ export default {
   },
   methods: {
     push(line, total_count) {
-      if (total_count === this.total_count) return;
+      if (total_count <= this.total_count) return;
       this.total_count = total_count;
       const decoded = decodeURIComponent(line);
       const textarea = this.$el;
