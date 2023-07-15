@@ -9,7 +9,6 @@ from . import globals
 from .nicegui import handle_disconnect, handle_event, handle_handshake, handle_javascript_response
 
 RELAY_HOST = 'https://on-air.nicegui.io/'
-RELAY_HOST = 'http://localhost/'
 
 
 class Air:
