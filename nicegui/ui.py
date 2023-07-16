@@ -11,6 +11,8 @@ __all__ = [
     'card',
     'card_actions',
     'card_section',
+    'carousel',
+    'carousel_slide',
     'chart',
     'chat_message',
     'checkbox',
@@ -99,6 +101,8 @@ from .elements.button import Button as button
 from .elements.card import Card as card
 from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section
+from .elements.carousel import Carousel as carousel
+from .elements.carousel import CarouselSlide as carousel_slide
 from .elements.chart import Chart as chart
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
