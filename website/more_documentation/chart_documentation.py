@@ -1,5 +1,7 @@
 from nicegui import ui
 
+from ..documentation_tools import text_demo
+
 
 def main_demo() -> None:
     from random import random
@@ -19,3 +21,22 @@ def main_demo() -> None:
         chart.update()
 
     ui.button('Update', on_click=update)
+
+
+def more() -> None:
+    @text_demo('Chart with extra dependencies', '''
+        To use a chart type that is not included in the default dependencies, you can specify extra dependencies.
+        This demo shows a solid gauge chart.
+    ''')
+    def extra_dependencies() -> None:
+        ui.chart({
+            'title': False,
+            'chart': {'type': 'solidgauge'},
+            'yAxis': {
+                'min': 0,
+                'max': 1,
+            },
+            'series': [
+                {'data': [0.42]},
+            ],
+        }, extras=['solid-gauge']).classes('w-full h-64')
