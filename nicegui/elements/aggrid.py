@@ -76,3 +76,34 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         """
         rows = await self.get_selected_rows()
         return rows[0] if rows else None
+
+    async def get_client_data(self) -> List[Dict]:
+        """Get the data from the client including any edits made by the client.
+
+        This method is especially useful when the grid is configured with ``'editable': True``.
+
+        See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/accessing-data/>`_ for more information.
+
+        Note that when editing a cell, the row data is not updated until the cell exits the edit mode.
+        This does not happen when the cell loses focus, unless ``stopEditingWhenCellsLoseFocus: True`` is set.
+
+        :return: list of row data
+        """
+        result = await run_javascript(f'''
+            const rowData = [];
+            getElement({self.id}).gridOptions.api.forEachNode(node => rowData.push(node.data));
+            return rowData;
+        ''')
+        return cast(List[Dict], result)
+
+    async def load_client_data(self) -> None:
+        """Obtain client data and update the element's row data with it.
+
+        This syncs edits made by the client in editable cells to the server.
+
+        Note that when editing a cell, the row data is not updated until the cell exits the edit mode.
+        This does not happen when the cell loses focus, unless ``stopEditingWhenCellsLoseFocus: True`` is set.
+        """
+        client_row_data = await self.get_client_data()
+        self.options['rowData'] = client_row_data
+        self.update()
