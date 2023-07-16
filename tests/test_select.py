@@ -62,3 +62,16 @@ def test_multi_select(screen: Screen):
 
     screen.click('cancel')  # remove icon
     screen.should_contain("['Bob']")
+
+
+def test_changing_options(screen: Screen):
+    s = ui.select([10, 20, 30], value=10)
+    ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
+    ui.button('reverse', on_click=lambda: (s.options.reverse(), s.update()))
+    ui.button('clear', on_click=lambda: (s.options.clear(), s.update()))
+
+    screen.open('/')
+    screen.click('reverse')
+    screen.should_contain('value = 10')
+    screen.click('clear')
+    screen.should_contain('value = None')
