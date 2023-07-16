@@ -12,6 +12,12 @@ WindowType = Literal['python', 'bash', 'browser']
 
 UNCOMMENT_PATTERN = re.compile(r'^(\s*)# ?')
 
+WINDOW_BG_COLORS = {
+    'python': ('#eef5fb', '#2b323b'),
+    'bash': ('#e8e8e8', '#2b323b'),
+    'browser': ('#ffffff', '#181c21'),
+}
+
 
 def uncomment(text: str) -> str:
     """non-executed lines should be shown in the code examples"""
@@ -59,15 +65,11 @@ def _dots() -> None:
 
 
 def window(type: WindowType, *, title: str = '', tab: Union[str, Callable] = '', classes: str = '') -> ui.column:
-    bgcolor = ('#00000010', '#ffffff10')
-    color = {
-        'python': ('#eef5fb', '#2b323b'),
-        'bash': ('#e8e8e8', '#2b323b'),
-        'browser': ('#ffffff', '#181c21'),
-    }[type]
+    bar_color = ('#00000010', '#ffffff10')
+    color = WINDOW_BG_COLORS[type]
     with ui.card().classes(f'no-wrap bg-[{color[0]}] dark:bg-[{color[1]}] rounded-xl p-0 gap-0 {classes}') \
             .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
-        with ui.row().classes(f'w-full h-8 p-2 bg-[{bgcolor[0]}] dark:bg-[{bgcolor[1]}]'):
+        with ui.row().classes(f'w-full h-8 p-2 bg-[{bar_color[0]}] dark:bg-[{bar_color[1]}]'):
             _dots()
             if title:
                 ui.label(title) \
@@ -76,11 +78,13 @@ def window(type: WindowType, *, title: str = '', tab: Union[str, Callable] = '',
             if tab:
                 with ui.row().classes('gap-0'):
                     with ui.label().classes(f'w-2 h-[24px] bg-[{color[0]}] dark:bg-[{color[1]}]'):
-                        ui.label().classes(f'w-full h-full bg-[{bgcolor[0]}] dark:bg-[{bgcolor[1]}] rounded-br-[6px]')
+                        ui.label().classes(
+                            f'w-full h-full bg-[{bar_color[0]}] dark:bg-[{bar_color[1]}] rounded-br-[6px]')
                     with ui.row().classes(f'text-sm text-gray-600 dark:text-gray-400 px-6 py-1 h-[24px] rounded-t-[6px] bg-[{color[0]}] dark:bg-[{color[1]}] items-center gap-2'):
                         tab() if callable(tab) else ui.label(tab)
                     with ui.label().classes(f'w-2 h-[24px] bg-[{color[0]}] dark:bg-[{color[1]}]'):
-                        ui.label().classes(f'w-full h-full bg-[{bgcolor[0]}] dark:bg-[{bgcolor[1]}] rounded-bl-[6px]')
+                        ui.label().classes(
+                            f'w-full h-full bg-[{bar_color[0]}] dark:bg-[{bar_color[1]}] rounded-bl-[6px]')
         return ui.column().classes('w-full h-full overflow-auto')
 
 
