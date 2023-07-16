@@ -173,6 +173,7 @@ def create_full() -> None:
     load_demo(ui.splitter)
     load_demo('tabs')
     load_demo(ui.stepper)
+    load_demo(ui.carousel)
     load_demo(ui.menu)
 
     @text_demo('Tooltips', '''
