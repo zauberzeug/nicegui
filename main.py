@@ -47,6 +47,11 @@ def logo_square() -> FileResponse:
     return FileResponse(svg.PATH / 'logo_square.png', media_type='image/png')
 
 
+@app.post('/dark_mode')
+async def dark_mode(request: Request) -> None:
+    app.storage.browser['dark_mode'] = (await request.json()).get('value')
+
+
 @app.middleware('http')
 async def redirect_reference_to_documentation(request: Request,
                                               call_next: Callable[[Request], Awaitable[Response]]) -> Response:
@@ -74,7 +79,13 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
         'Examples': '/#examples',
         'Why?': '/#why',
     }
-    dark_mode = ui.dark_mode(value=None).bind_value(app.storage.user, 'dark_mode')
+    dark_mode = ui.dark_mode(value=app.storage.browser.get('dark_mode'), on_change=lambda e: ui.run_javascript(f'''
+        fetch('/dark_mode', {{
+            method: 'POST',
+            headers: {{'Content-Type': 'application/json'}},
+            body: JSON.stringify({{value: {e.value}}}),
+        }});
+    ''', respond=False))
     with ui.header() \
             .classes('items-center duration-200 p-0 px-4 no-wrap') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
