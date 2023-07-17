@@ -441,7 +441,7 @@
   },
   {
     "title": "AG Grid",
-    "content": "An element to create a grid using AG Grid <https://www.ag-grid.com/>_.  The call_api_method method can be used to call an AG Grid API method.  :param options: dictionary of AG Grid options :param html_columns: list of columns that should be rendered as HTML (default: []) :param theme: AG Grid theme (default: 'balham') update call_api_method Call an AG Grid API method.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>_ for a list of methods.  :param name: name of the method :param args: arguments to pass to the method get_selected_rows Get the currently selected rows.  This method is especially useful when the grid is configured with `rowSelection: 'multiple'.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows>_ for more information.  :return: list of selected row data get_selected_row Get the single currently selected row.  This method is especially useful when the grid is configured with rowSelection: 'single'.  :return: row data of the first selection if any row is selected, otherwise None`",
+    "content": "An element to create a grid using AG Grid <https://www.ag-grid.com/>_.  The call_api_method method can be used to call an AG Grid API method.  :param options: dictionary of AG Grid options :param html_columns: list of columns that should be rendered as HTML (default: []) :param theme: AG Grid theme (default: 'balham') update call_api_method Call an AG Grid API method.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>_ for a list of methods.  :param name: name of the method :param args: arguments to pass to the method get_selected_rows Get the currently selected rows.  This method is especially useful when the grid is configured with `rowSelection: 'multiple'.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows>_ for more information.  :return: list of selected row data get_selected_row Get the single currently selected row.  This method is especially useful when the grid is configured with rowSelection: 'single'.  :return: row data of the first selection if any row is selected, otherwise None get_client_data Get the data from the client including any edits made by the client.  This method is especially useful when the grid is configured with 'editable': True.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/accessing-data/>_ for more information.  Note that when editing a cell, the row data is not updated until the cell exits the edit mode. This does not happen when the cell loses focus, unless stopEditingWhenCellsLoseFocus: True is set.  :return: list of row data load_client_data Obtain client data and update the element's row data with it.  This syncs edits made by the client in editable cells to the server.  Note that when editing a cell, the row data is not updated until the cell exits the edit mode. This does not happen when the cell loses focus, unless stopEditingWhenCellsLoseFocus: True` is set.",
     "url": "/documentation/aggrid"
   },
   {
@@ -468,6 +468,11 @@
     "title": "Aggrid: Render columns as HTML",
     "content": "You can render columns as HTML by passing a list of column indices to the html_columns argument.",
     "url": "/documentation/aggrid#render_columns_as_html"
+  },
+  {
+    "title": "Carousel",
+    "content": "This element represents Quasar's QCarousel <https://quasar.dev/vue-components/carousel#qcarousel-api>_ component. It contains individual carousel slides.  :param value: ui.carousel_slide or name of the slide to be initially selected (default: None meaning the first slide) :param on_value_change: callback to be executed when the selected slide changes :param animated: whether to animate slide transitions (default: False) :param arrows: whether to show arrows for manual slide navigation (default: False) :param navigation: whether to show navigation dots for manual slide navigation (default: False) on_value_change next previous",
+    "url": "/documentation/carousel"
   },
   {
     "title": "Slider",
@@ -563,6 +568,11 @@
     "title": "Chart",
     "content": "An element to create a chart using Highcharts <https://www.highcharts.com/>_. Updates can be pushed to the chart by changing the options property. After data has changed, call the update method to refresh the chart.  By default, a Highcharts.chart is created. To use, e.g., Highcharts.stockChart instead, set the type property to \"stockChart\".  :param options: dictionary of Highcharts options :param type: chart type (e.g. \"chart\", \"stockChart\", \"mapChart\", ...; default: \"chart\") :param extras: list of extra dependencies to include (e.g. \"annotations\", \"arc-diagram\", \"solid-gauge\", ...) update",
     "url": "/documentation/chart"
+  },
+  {
+    "title": "Chart: Chart with extra dependencies",
+    "content": "To use a chart type that is not included in the default dependencies, you can specify extra dependencies. This demo shows a solid gauge chart.",
+    "url": "/documentation/chart#chart_with_extra_dependencies"
   },
   {
     "title": "Menu",
@@ -790,13 +800,18 @@
     "url": "/documentation/card"
   },
   {
+    "title": "Card: Card without shadow",
+    "content": "You can remove the shadow from a card by adding the no-shadow class. The following demo shows a 1 pixel wide border instead.",
+    "url": "/documentation/card#card_without_shadow"
+  },
+  {
     "title": "Card: The issue with nested borders",
     "content": "The following example shows a table nested in a card. Cards have a default padding in NiceGUI, so the table is not flush with the card's border. The table has the flat and bordered props set, so it should have a border. However, due to the way QCard is designed, the border is not visible (first card). There are two ways to fix this:  - To get the original QCard behavior, use the tight method (second card). It removes the padding and the table border collapses with the card border.  - To preserve the padding _and_ the table border, move the table into another container like a ui.row (third card).  See https://github.com/zauberzeug/nicegui/issues/726 for more information.",
     "url": "/documentation/card#the_issue_with_nested_borders"
   },
   {
     "title": "Dark mode",
-    "content": "You can use this element to enable, disable or toggle dark mode on the page. The value None represents auto mode, which uses the client's system preference.  Note that this element overrides the dark parameter of the ui.run function and page decorators.  :param value: Whether dark mode is enabled. If None, dark mode is set to auto. enable Enable dark mode.disable Disable dark mode.toggle Toggle dark mode.  This method will raise a ValueError if dark mode is set to auto. auto Set dark mode to auto.  This will use the client's system preference.",
+    "content": "You can use this element to enable, disable or toggle dark mode on the page. The value None represents auto mode, which uses the client's system preference.  Note that this element overrides the dark parameter of the ui.run function and page decorators.  :param value: Whether dark mode is enabled. If None, dark mode is set to auto. :param on_change: Callback that is invoked when the value changes. enable Enable dark mode.disable Disable dark mode.toggle Toggle dark mode.  This method will raise a ValueError if dark mode is set to auto. auto Set dark mode to auto.  This will use the client's system preference.",
     "url": "/documentation/dark_mode"
   },
   {
