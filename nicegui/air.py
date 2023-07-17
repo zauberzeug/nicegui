@@ -95,15 +95,22 @@ class Air:
             print('Sorry, you have reached the time limit of this NiceGUI On Air preview.', flush=True)
             await self.connect()
 
+        @self.relay.on('reconnect')
+        async def on_reconnect(data: Dict[str, Any]) -> None:
+            await self.connect()
+
     async def connect(self) -> None:
         try:
             if self.relay.connected:
                 await self.relay.disconnect()
+                await asyncio.sleep(1)
             await self.relay.connect(
                 f'{RELAY_HOST}?device_token={self.token}',
                 socketio_path='/on_air/socket.io',
                 transports=['websocket', 'polling'],
             )
+        except socketio.exceptions.ConnectionError:
+            await self.connect()
         except Exception:
             logging.exception('Could not connect to NiceGUI On Air server.')
             print('Could not connect to NiceGUI On Air server.', flush=True)
