@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Callable, Optional
 
 from .mixins.value_element import ValueElement
 
@@ -6,7 +6,7 @@ from .mixins.value_element import ValueElement
 class DarkMode(ValueElement, component='dark_mode.js'):
     VALUE_PROP = 'value'
 
-    def __init__(self, value: Optional[bool] = False) -> None:
+    def __init__(self, value: Optional[bool] = False, *, on_change: Optional[Callable[..., Any]] = None) -> None:
         """Dark mode
 
         You can use this element to enable, disable or toggle dark mode on the page.
@@ -15,8 +15,9 @@ class DarkMode(ValueElement, component='dark_mode.js'):
         Note that this element overrides the `dark` parameter of the `ui.run` function and page decorators.
 
         :param value: Whether dark mode is enabled. If None, dark mode is set to auto.
+        :param on_change: Callback that is invoked when the value changes.
         """
-        super().__init__(value=value, on_value_change=None)
+        super().__init__(value=value, on_value_change=on_change)
 
     def enable(self) -> None:
         """Enable dark mode."""

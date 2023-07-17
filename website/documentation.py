@@ -549,10 +549,6 @@ def create_full() -> None:
 
     load_demo(ui.run)
 
-    # HACK: switch color to white for the next demo
-    demo_BROWSER_BGCOLOR = demo.BROWSER_BGCOLOR
-    demo.BROWSER_BGCOLOR = '#ffffff'
-
     @text_demo('Native Mode', '''
         You can enable native mode for NiceGUI by specifying `native=True` in the `ui.run` function.
         To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively.
@@ -576,8 +572,6 @@ def create_full() -> None:
         # ui.run(native=True, window_size=(400, 300), fullscreen=False)
         # END OF DEMO
         ui.button('enlarge', on_click=lambda: ui.notify('window will be set to 1000x700 in native mode'))
-    # HACK: restore color
-    demo.BROWSER_BGCOLOR = demo_BROWSER_BGCOLOR
 
     # Show a helpful workaround until issue is fixed upstream.
     # For more info see: https://github.com/r0x0r/pywebview/issues/1078
