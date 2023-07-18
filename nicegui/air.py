@@ -1,8 +1,10 @@
+import asyncio
 import gzip
 import logging
 from typing import Any, Dict
 
 import httpx
+import socketio
 from socketio import AsyncClient
 
 from . import globals
@@ -103,7 +105,6 @@ class Air:
         try:
             if self.relay.connected:
                 await self.relay.disconnect()
-                await asyncio.sleep(1)
             await self.relay.connect(
                 f'{RELAY_HOST}?device_token={self.token}',
                 socketio_path='/on_air/socket.io',
@@ -111,9 +112,13 @@ class Air:
             )
         except socketio.exceptions.ConnectionError:
             await self.connect()
+        except ValueError:  # NOTE this sometimes happens when the internal socketio client is not yet ready
+            await self.relay.disconnect()
+            await self.connect()
         except Exception:
             logging.exception('Could not connect to NiceGUI On Air server.')
             print('Could not connect to NiceGUI On Air server.', flush=True)
+            await self.connect()
 
     async def disconnect(self) -> None:
         await self.relay.disconnect()
