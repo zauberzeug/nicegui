@@ -79,22 +79,20 @@ class Element(Visibility):
                 path = base / path
             return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
 
-        cls.component = None
+        if cls.__base__ == Element:
+            cls.component = None
+            cls.libraries = []
+            cls.extra_libraries = []
+            cls.exposed_libraries = []
         if component:
             for path in glob_absolute_paths(component):
                 cls.component = register_vue_component(path)
-
-        cls.libraries = []
         for library in libraries:
             for path in glob_absolute_paths(library):
                 cls.libraries.append(register_library(path))
-
-        cls.extra_libraries = []
         for library in extra_libraries:
             for path in glob_absolute_paths(library):
                 cls.extra_libraries.append(register_library(path))
-
-        cls.exposed_libraries = []
         for library in exposed_libraries:
             for path in glob_absolute_paths(library):
                 cls.exposed_libraries.append(register_library(path, expose=True))
