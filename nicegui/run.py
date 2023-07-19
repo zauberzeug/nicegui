@@ -97,6 +97,7 @@ def run(*,
     if 'all' in endpoint_documentation:
         endpoint_documentation = 'internal page'  # any additional documentation groups need to be added here
 
+    # routes are already created by this point, so we have to iterate through and fix them
     for route in globals.app.routes:
         if route.path.startswith('/_nicegui'):
             if hasattr(route, 'methods'):
