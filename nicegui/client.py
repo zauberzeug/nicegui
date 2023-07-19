@@ -104,6 +104,8 @@ class Client:
 
     async def disconnected(self, check_interval: float = 0.1) -> None:
         """Block execution until the client disconnects."""
+        if not self.environ:
+            await self.connected()
         self.is_waiting_for_disconnect = True
         while self.id in globals.clients:
             await asyncio.sleep(check_interval)
