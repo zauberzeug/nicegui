@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { CSS2DRenderer, CSS2DObject } from "CSS2DRenderer";
 import { CSS3DRenderer, CSS3DObject } from "CSS3DRenderer";
+import { DragControls } from "DragControls";
 import { OrbitControls } from "OrbitControls";
 import { STLLoader } from "STLLoader";
 
@@ -117,6 +118,9 @@ export default {
       this.scene.add(grid);
     }
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.drag_controls = new DragControls(Array.from(this.objects.values()), this.camera, this.renderer.domElement);
+    this.drag_controls.addEventListener("dragstart", () => (this.controls.enabled = false));
+    this.drag_controls.addEventListener("dragend", () => (this.controls.enabled = true));
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));

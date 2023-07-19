@@ -33,6 +33,7 @@ class Scene(Element,
                 'lib/three/three.module.js',
                 'lib/three/modules/CSS2DRenderer.js',
                 'lib/three/modules/CSS3DRenderer.js',
+                'lib/three/modules/DragControls.js',
                 'lib/three/modules/OrbitControls.js',
                 'lib/three/modules/STLLoader.js',
             ]):
