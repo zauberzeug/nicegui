@@ -173,7 +173,7 @@ def handle_event(client: Client, msg: Dict) -> None:
     with client:
         sender = client.elements.get(msg['id'])
         if sender:
-            msg['args'] = [json.loads(arg) for arg in msg.get('args', [])]
+            msg['args'] = [None if arg is None else json.loads(arg) for arg in msg.get('args', [])]
             if len(msg['args']) == 1:
                 msg['args'] = msg['args'][0]
             sender._handle_event(msg)
