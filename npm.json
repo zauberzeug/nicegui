@@ -57,6 +57,21 @@
       "package/": ""
     }
   },
+  "leaflet": {
+    "destination": "elements/lib",
+    "keep": [
+      "package/dist/leaflet(\\.src)?\\.js(\\.map)?",
+      "package/dist/leaflet\\.css",
+      "package/dist/images/layers-2x\\.png",
+      "package/dist/images/layers\\.png",
+      "package/dist/images/marker-icon-2x\\.png",
+      "package/dist/images/marker-icon\\.png",
+      "package/dist/images/marker-shadow\\.png"
+    ],
+    "rename": {
+      "package/dist/": ""
+    }
+  },
   "mermaid": {
     "destination": "elements/lib",
     "keep": ["package/dist/.*\\.m?js"],

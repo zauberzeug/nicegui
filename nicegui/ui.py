@@ -34,6 +34,7 @@ __all__ = [
     'keyboard',
     'knob',
     'label',
+    'leaflet',
     'link',
     'link_target',
     'log',
@@ -124,6 +125,7 @@ from .elements.joystick import Joystick as joystick
 from .elements.keyboard import Keyboard as keyboard
 from .elements.knob import Knob as knob
 from .elements.label import Label as label
+from .elements.leaflet import Leaflet as leaflet
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
 from .elements.log import Log as log

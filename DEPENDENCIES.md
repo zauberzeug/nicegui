@@ -7,6 +7,7 @@
 - es-module-shims: 1.7.3
 - aggrid: 30.0.3
 - highcharts: 11.1.0
+- leaflet: 1.9.4
 - mermaid: 10.2.4
 - nipplejs: 0.10.1
 - plotly: 2.24.3
