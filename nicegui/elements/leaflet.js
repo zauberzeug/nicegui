@@ -2,14 +2,17 @@ export default {
   template: "<div></div>",
   props: {
     map_options: Object,
-    layers: Array,
   },
   async mounted() {
     await this.load_dependencies();
     this.map = L.map(this.$el, this.map_options);
     this.map.on("moveend", (e) => this.$emit("moveend", e.target.getCenter()));
     this.map.on("zoomend", (e) => this.$emit("zoomend", e.target.getZoom()));
-    this.layers.forEach((layer) => L.tileLayer(layer.url_template, layer.options).addTo(this.map));
+    const connectInterval = setInterval(async () => {
+      if (window.socket.id === undefined) return;
+      this.$emit("init", { socket_id: window.socket.id });
+      clearInterval(connectInterval);
+    }, 100);
   },
   updated() {
     this.map.setView(L.latLng(this.map_options.center.lat, this.map_options.center.lng), this.map_options.zoom);
@@ -33,6 +36,9 @@ export default {
           script.onerror = reject;
         });
       }
+    },
+    add_layer(layer) {
+      L[layer.type](...layer.args).addTo(this.map);
     },
   },
 };
