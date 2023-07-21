@@ -129,4 +129,4 @@ def test_object_creation_via_attribute(screen: Screen):
 
     screen.open('/')
     screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].type') == 'box'
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'box'
