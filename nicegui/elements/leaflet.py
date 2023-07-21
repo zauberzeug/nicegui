@@ -1,28 +1,32 @@
-from typing import Tuple, cast
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Dict, Tuple, cast
 
 from ..binding import BindableProperty
 from ..element import Element
+from ..helpers import KWONLY_SLOTS
+
+
+@dataclass(**KWONLY_SLOTS)
+class LeafletLayer:
+    url_template: str
+    options: Dict
+
+    @staticmethod
+    def default() -> LeafletLayer:
+        return LeafletLayer(url_template='http://{s}.tile.osm.org/{z}/{x}/{y}.png', options={
+            'attribution': '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        })
 
 
 class Leaflet(Element, component='leaflet.js'):
-    location = BindableProperty(lambda sender, value: cast(Leaflet, sender).on_location_change(value))
-    zoom = BindableProperty(lambda sender, value: cast(Leaflet, sender).on_zoom_change(value))
+    location = BindableProperty(lambda sender, _: cast(Leaflet, sender).update())
+    zoom = BindableProperty(lambda sender, _: cast(Leaflet, sender).update())
 
     def __init__(self, location: Tuple[float, float] = (0, 0), zoom: int = 13) -> None:
         super().__init__()
-        self._props['map_options'] = {
-            'center': {
-                'lat': location[0],
-                'lng': location[1],
-            },
-            'zoom': zoom,
-        }
-        self._props['layers'] = [{
-            'url_template': 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
-            'options': {
-                'attribution': '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>',
-            },
-        }]
+        self.layers = [LeafletLayer.default()]
         self.set_location(location)
         self.set_zoom(zoom)
         self.on('moveend', lambda e: self.set_location((e.args['lat'], e.args['lng'])))
@@ -34,11 +38,19 @@ class Leaflet(Element, component='leaflet.js'):
     def set_zoom(self, zoom: int) -> None:
         self.zoom = zoom
 
-    def on_location_change(self, location: Tuple[float, float]) -> None:
-        self._props['map_options']['center']['lat'] = location[0]
-        self._props['map_options']['center']['lng'] = location[1]
-        self.update()
-
-    def on_zoom_change(self, zoom: int) -> None:
-        self._props['map_options']['zoom'] = zoom
-        self.update()
+    def update(self) -> None:
+        self._props['map_options'] = {
+            'center': {
+                'lat': self.location[0],
+                'lng': self.location[1],
+            },
+            'zoom': self.zoom,
+        }
+        self._props['layers'] = [
+            {
+                'url_template': layer.url_template,
+                'options': layer.options
+            }
+            for layer in self.layers
+        ]
+        super().update()
