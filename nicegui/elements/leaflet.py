@@ -13,15 +13,23 @@ class Leaflet(Element, component='leaflet.js'):
     location = binding.BindableProperty(lambda sender, _: cast(Leaflet, sender).update())
     zoom = binding.BindableProperty(lambda sender, _: cast(Leaflet, sender).update())
 
-    def __init__(self, location: Tuple[float, float] = (0, 0), zoom: int = 13) -> None:
+    def __init__(self,
+                 location: Tuple[float, float] = (0, 0),
+                 zoom: int = 13,
+                 draw_control: bool = False,
+                 ) -> None:
         super().__init__()
         self.layers: List[Layer] = []
+
         self.set_location(location)
         self.set_zoom(zoom)
+        self.draw_control = draw_control
+
         self.is_initialized = False
         self.on('init', self.handle_init)
         self.on('moveend', lambda e: self.set_location((e.args['lat'], e.args['lng'])))
         self.on('zoomend', lambda e: self.set_zoom(e.args))
+
         self.tile_layer(
             url_template='http://{s}.tile.osm.org/{z}/{x}/{y}.png',
             options={'attribution': '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'},
@@ -61,6 +69,7 @@ class Leaflet(Element, component='leaflet.js'):
                 'lng': self.location[1],
             },
             'zoom': self.zoom,
+            'drawControl': self.draw_control,
         }
         super().update()
 
