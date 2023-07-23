@@ -153,3 +153,21 @@ def more() -> None:
                 {'name': 'Facebook', 'url': '<a href="https://facebook.com">https://facebook.com</a>'},
             ],
         }, html_columns=[1])
+
+    @text_demo('Respond to an AG Grid event', '''
+        All AG Grid events are passed through to NiceGUI via the AG Grid global listener.
+        These events can then be subscribed to using the on function.
+    ''')
+    def aggrid_with_html_columns():
+        ui.aggrid({
+            'columnDefs': [
+                {'headerName': 'Name', 'field': 'name'},
+                {'headerName': 'Age', 'field': 'age'},
+            ],
+            'rowData': [
+                {'name': 'Alice', 'age': 18},
+                {'name': 'Bob', 'age': 21},
+                {'name': 'Carol', 'age': 42},
+            ],
+            'rowSelection': 'multiple',
+        }).on("cellClicked", lambda event: ui.notify(f"Cell value: {event.args['value']}"))
