@@ -4,7 +4,12 @@ export default {
     map_options: Object,
   },
   async mounted() {
-    await this.load_dependencies();
+    await this.load_resource("https://unpkg.com/leaflet@1.6.0/dist/leaflet.css");
+    await this.load_resource("https://unpkg.com/leaflet@1.6.0/dist/leaflet.js");
+    if (this.map_options.drawControl) {
+      await this.load_resource("https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css");
+      await this.load_resource("https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js");
+    }
     this.map = L.map(this.$el, this.map_options);
     this.map.on("moveend", (e) => this.$emit("moveend", e.target.getCenter()));
     this.map.on("zoomend", (e) => this.$emit("zoomend", e.target.getZoom()));
@@ -22,41 +27,27 @@ export default {
     this.map.setView(L.latLng(this.map_options.center.lat, this.map_options.center.lng), this.map_options.zoom);
   },
   methods: {
-    async load_dependencies() {
-      if (!document.querySelector(`style[data-leaflet-css]`)) {
-        const link = document.createElement("link");
-        link.setAttribute("href", "https://unpkg.com/leaflet@1.6.0/dist/leaflet.css");
-        link.setAttribute("rel", "stylesheet");
-        link.setAttribute("data-leaflet-css", "");
-        document.head.appendChild(link);
-      }
-      if (!document.querySelector(`style[data-leaflet-draw-css]`)) {
-        const drawLink = document.createElement("link");
-        drawLink.setAttribute("href", "https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css");
-        drawLink.setAttribute("rel", "stylesheet");
-        drawLink.setAttribute("data-leaflet-draw-css", "");
-        document.head.appendChild(drawLink);
-      }
-      if (!document.querySelector(`script[data-leaflet-js]`)) {
-        const script = document.createElement("script");
-        script.setAttribute("src", "https://unpkg.com/leaflet@1.6.0/dist/leaflet.js");
-        script.setAttribute("data-leaflet-js", "");
-        document.head.appendChild(script);
-        await new Promise((resolve, reject) => {
-          script.onload = resolve;
-          script.onerror = reject;
-        });
-      }
-      if (!document.querySelector(`script[data-leaflet-draw-js]`)) {
-        const drawScript = document.createElement("script");
-        drawScript.setAttribute("src", "https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js");
-        drawScript.setAttribute("data-leaflet-draw-js", "");
-        document.head.appendChild(drawScript);
-        await new Promise((resolve, reject) => {
-          drawScript.onload = resolve;
-          drawScript.onerror = reject;
-        });
-      }
+    load_resource(url) {
+      return new Promise((resolve, reject) => {
+        const dataAttribute = `data-${url.split("/").pop().replace(/\./g, "-")}`;
+        if (document.querySelector(`[${dataAttribute}]`)) {
+          resolve();
+          return;
+        }
+        let element;
+        if (url.endsWith(".css")) {
+          element = document.createElement("link");
+          element.setAttribute("rel", "stylesheet");
+          element.setAttribute("href", url);
+        } else if (url.endsWith(".js")) {
+          element = document.createElement("script");
+          element.setAttribute("src", url);
+        }
+        element.setAttribute(dataAttribute, "");
+        document.head.appendChild(element);
+        element.onload = resolve;
+        element.onerror = reject;
+      });
     },
     add_layer(layer) {
       L[layer.type](...layer.args).addTo(this.map);
