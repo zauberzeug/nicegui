@@ -1,4 +1,9 @@
+from asyncio import sleep
+from contextlib import asynccontextmanager
+
 from nicegui import ui
+from nicegui.elements.button import Button
+from nicegui.elements.mixins.disableable_element import DisableableElement
 
 from ..documentation_tools import text_demo
 
@@ -33,3 +38,22 @@ def more() -> None:
             ui.label('Two')
             await b.clicked()
             ui.label('Three')
+
+    @text_demo('Disable button with a context manager', '''
+        This showcases a async context manager that can be used to disable a button for the duration of an async process.
+    ''')
+    async def disable_context_manager() -> None:
+        @asynccontextmanager
+        async def disable(element: DisableableElement) -> None:
+            element.disable()
+            try:
+                yield
+            finally:
+                element.enable()
+
+        async def disable_and_sleep_3(button: Button) -> None:
+            async with disable(button):
+                await sleep(3)
+
+        with ui.button("Disable for 3 seconds") as b:
+            b.on('click', lambda: disable_and_sleep_3(b))
