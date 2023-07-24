@@ -1,5 +1,3 @@
-from typing import List
-
 from nicegui import ui
 
 from ..documentation_tools import text_demo
@@ -37,9 +35,11 @@ def more() -> None:
         ''')
 
     @text_demo('Expand programmatically', '''
-               The tree can be expanded programmatically by modifying the `expanded` prop.
-               ''')
+        The tree can be expanded programmatically by modifying the "expanded" prop.
+    ''')
     def expand_programmatically():
+        from typing import List
+
         def expand(node_ids: List[str]) -> None:
             t._props['expanded'] = node_ids
             t.update()
@@ -48,7 +48,7 @@ def more() -> None:
             ui.button('all', on_click=lambda: expand(['A', 'B']))
             ui.button('A', on_click=lambda: expand(['A']))
             ui.button('B', on_click=lambda: expand(['B']))
-            ui.button('close', on_click=lambda: expand([]))
+            ui.button('none', on_click=lambda: expand([]))
 
         t = ui.tree([
             {'id': 'A', 'children': [{'id': 'A1'}, {'id': 'A2'}]},
