@@ -1,3 +1,5 @@
+from typing import List
+
 from nicegui import ui
 
 from ..documentation_tools import text_demo
@@ -33,3 +35,22 @@ def more() -> None:
         tree.add_slot('default-body', '''
             <span :props="props">Description: "{{ props.node.description }}"</span>
         ''')
+
+    @text_demo('Expand programmatically', '''
+               The tree can be expanded programmatically by modifying the `expanded` prop.
+               ''')
+    def expand_programmatically():
+        def expand(node_ids: List[str]) -> None:
+            t._props['expanded'] = node_ids
+            t.update()
+
+        with ui.row():
+            ui.button('all', on_click=lambda: expand(['A', 'B']))
+            ui.button('A', on_click=lambda: expand(['A']))
+            ui.button('B', on_click=lambda: expand(['B']))
+            ui.button('close', on_click=lambda: expand([]))
+
+        t = ui.tree([
+            {'id': 'A', 'children': [{'id': 'A1'}, {'id': 'A2'}]},
+            {'id': 'B', 'children': [{'id': 'B1'}, {'id': 'B2'}]},
+        ], label_key='id')
