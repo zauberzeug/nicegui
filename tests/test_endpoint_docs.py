@@ -1,16 +1,16 @@
 import requests
 
-from nicegui import __version__
+import nicegui
+from nicegui import __version__, ui
 
 from .screen import PORT, Screen
 
 
 def test_endpoint_documentation_default(screen: Screen):
-    screen.ui_run_kwargs['endpoint_documentation'] = ''
     screen.open('/')
 
     response = requests.get(f'http://localhost:{PORT}/openapi.json')
-    assert list(response.json()['paths']) == []
+    assert set(response.json()['paths']) == set()
 
 
 def test_endpoint_documentation_page_only(screen: Screen):
@@ -18,7 +18,7 @@ def test_endpoint_documentation_page_only(screen: Screen):
     screen.open('/')
 
     response = requests.get(f'http://localhost:{PORT}/openapi.json')
-    assert list(response.json()['paths']) == ['/']
+    assert set(response.json()['paths']) == {'/'}
 
 
 def test_endpoint_documentation_internal_only(screen: Screen):
@@ -26,10 +26,10 @@ def test_endpoint_documentation_internal_only(screen: Screen):
     screen.open('/')
 
     response = requests.get(f'http://localhost:{PORT}/openapi.json')
-    assert list(response.json()['paths']) == [
+    assert set(response.json()['paths']) == {
         f'/_nicegui/{__version__}/libraries/{{key}}',
         f'/_nicegui/{__version__}/components/{{key}}',
-    ]
+    }
 
 
 def test_endpoint_documentation_all(screen: Screen):
@@ -37,8 +37,8 @@ def test_endpoint_documentation_all(screen: Screen):
     screen.open('/')
 
     response = requests.get(f'http://localhost:{PORT}/openapi.json')
-    assert list(response.json()['paths']) == [
+    assert set(response.json()['paths']) == {
         '/',
         f'/_nicegui/{__version__}/libraries/{{key}}',
         f'/_nicegui/{__version__}/components/{{key}}',
-    ]
+    }
