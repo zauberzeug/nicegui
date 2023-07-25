@@ -55,5 +55,4 @@ def more() -> None:
             async with disable(button):
                 await sleep(3)
 
-        with ui.button("Disable for 3 seconds") as b:
-            b.on('click', lambda: disable_and_sleep_3(b))
+        b = ui.button("Disable for 3 seconds", on_click=lambda: disable_and_sleep_3(b))
