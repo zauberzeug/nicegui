@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  hush:
+    image: zauberzeug/nicegui:latest
+    ports:
+      - 8080:8080
+    volumes:
+      - ~/path/to/niceguidata:/app/.nicegui
+    environment:
+      - PUID=1000
+      - PGID=1000
