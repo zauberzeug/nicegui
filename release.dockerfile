@@ -7,10 +7,12 @@ RUN python -m pip install nicegui==$VERSION itsdangerous isort docutils requests
 
 WORKDIR /app
 
-COPY main.py README.md prometheus.py ./ 
+COPY main.py README.md prometheus.py ./
 COPY examples ./examples
 COPY website ./website
+COPY release/docker-entrypoint.sh ./
+RUN chmod 777 docker-entrypoint.sh
 
 EXPOSE 8080
 
-CMD python3 main.py
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
