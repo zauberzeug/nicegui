@@ -8,8 +8,8 @@ RUN python -m pip install nicegui==$VERSION itsdangerous isort docutils requests
 WORKDIR /app
 
 COPY main.py README.md prometheus.py ./ 
-ADD examples ./examples
-ADD website ./website
+COPY examples ./examples
+COPY website ./website
 
 EXPOSE 8080
 
