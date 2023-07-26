@@ -1,7 +1,6 @@
 import requests
 
-import nicegui
-from nicegui import __version__, ui
+from nicegui import __version__
 
 from .screen import PORT, Screen
 

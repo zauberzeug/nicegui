@@ -11,8 +11,9 @@ import uvicorn
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import globals, helpers, native_mode
+from . import globals, helpers
 from . import native as native_module
+from . import native_mode
 from .air import Air
 from .language import Language
 
@@ -96,16 +97,10 @@ def run(*,
 
     # routes are already created by this point, so we have to iterate through and fix them
     for route in globals.app.routes:
-        if route.path.startswith('/_nicegui'):
-            if hasattr(route, 'methods'):
-                route.include_in_schema = False
-                if endpoint_documentation in ['internal', 'all']:
-                    route.include_in_schema = True
-
+        if route.path.startswith('/_nicegui') and hasattr(route, 'methods'):
+            route.include_in_schema = endpoint_documentation in {'internal', 'all'}
         if route.name == 'decorated':
-            route.include_in_schema = False
-            if endpoint_documentation in ['page', 'all']:
-                route.include_in_schema = True
+            route.include_in_schema = endpoint_documentation in {'page', 'all'}
 
     if on_air:
         globals.air = Air('' if on_air is True else on_air)
