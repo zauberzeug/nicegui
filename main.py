@@ -63,6 +63,8 @@ async def redirect_reference_to_documentation(request: Request,
 fly_instance_id = os.environ.get('FLY_ALLOC_ID', '').split('-')[0]
 if fly_instance_id:
     nicegui_globals.socket_io_js_extra_headers['fly-force-instance-id'] = fly_instance_id
+    # NOTE polling is required for fly.io to use the force-instance header
+    nicegui_globals.socket_io_js_transports = ['polling']
 
 
 def add_head_html() -> None:

@@ -7,6 +7,8 @@ from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Tuple,
 
 from . import globals
 
+MAX_PROPAGATION_TIME = 0.01
+
 bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
 bindable_properties: Dict[Tuple[int, str], Any] = {}
 active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
@@ -45,7 +47,7 @@ async def loop() -> None:
                     set_attribute(target_obj, target_name, value)
                     propagate(target_obj, target_name, visited)
             del link, source_obj, target_obj
-        if time.time() - t > 0.01:
+        if time.time() - t > MAX_PROPAGATION_TIME:
             logging.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
         await asyncio.sleep(globals.binding_refresh_interval)
 

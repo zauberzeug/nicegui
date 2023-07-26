@@ -90,6 +90,7 @@ class Client:
             'prefix': prefix,
             'tailwind': globals.tailwind,
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
+            'socket_io_js_transports': globals.socket_io_js_transports,
         }, status_code, {'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'})
 
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
@@ -104,6 +105,8 @@ class Client:
 
     async def disconnected(self, check_interval: float = 0.1) -> None:
         """Block execution until the client disconnects."""
+        if not self.environ:
+            await self.connected()
         self.is_waiting_for_disconnect = True
         while self.id in globals.clients:
             await asyncio.sleep(check_interval)
