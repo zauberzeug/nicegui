@@ -31,6 +31,12 @@ jobs:
           pip install importlib-resources
       - name: test startup
         run: ./test_startup.sh
+      - name: Install Chrome
+        run: |
+          # Add the Google Chrome repository
+          wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb \
+          && sudo apt install -y --allow-downgrades /tmp/chrome.deb \
+          && rm /tmp/chrome.deb
       - name: setup chromedriver
         uses: nanasess/setup-chromedriver@v2.1.0
       - name: pytest
