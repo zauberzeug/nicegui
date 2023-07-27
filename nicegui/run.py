@@ -95,11 +95,10 @@ def run(*,
     globals.tailwind = tailwind
     globals.endpoint_documentation = endpoint_documentation
 
-    # routes are already created by this point, so we have to iterate through and fix them
     for route in globals.app.routes:
         if route.path.startswith('/_nicegui') and hasattr(route, 'methods'):
             route.include_in_schema = endpoint_documentation in {'internal', 'all'}
-        if route.name == 'decorated':
+        if route.path == '/' or route in globals.page_routes.values():
             route.include_in_schema = endpoint_documentation in {'page', 'all'}
 
     if on_air:
