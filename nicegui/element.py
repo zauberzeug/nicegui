@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import html
 import re
 from copy import copy, deepcopy
 from pathlib import Path
@@ -131,7 +132,7 @@ class Element(Visibility):
             'class': self._classes,
             'style': self._style,
             'props': self._props,
-            'text': self._text,
+            'text': html.escape(self._text) if self._text is not None else None,
             'slots': self._collect_slot_dict(),
             'events': [listener.to_dict() for listener in self._event_listeners.values()],
             'component': {

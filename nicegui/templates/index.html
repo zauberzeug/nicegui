@@ -43,6 +43,8 @@
       const loaded_components = new Set();
       const elements = {{ elements | safe }};
 
+      const domParser = new DOMParser();
+
       function stringifyEventArgs(args, event_args) {
         const result = [];
         args.forEach((arg, i) => {
@@ -155,7 +157,7 @@
             }
             const children = data.ids.map(id => renderRecursively(elements, id));
             if (name === 'default' && element.text !== null) {
-              children.unshift(element.text);
+              children.unshift(domParser.parseFromString(element.text, 'text/html').documentElement.textContent);
             }
             return [ ...rendered, ...children]
           }
