@@ -43,7 +43,8 @@
       const loaded_components = new Set();
 
       const domParser = new DOMParser();
-      const elements = JSON.parse(domParser.parseFromString('{{ elements | safe }}', 'text/html').documentElement.textContent);
+      const raw_elements = String.raw`{{ elements | safe }}`;
+      const elements = JSON.parse(domParser.parseFromString(raw_elements, 'text/html').documentElement.textContent);
 
       function stringifyEventArgs(args, event_args) {
         const result = [];
