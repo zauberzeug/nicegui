@@ -161,3 +161,18 @@ def test_move(screen: Screen):
     screen.click('Move X to top')
     screen.wait(0.5)
     assert screen.find('X').location['y'] < screen.find('A').location['y'] < screen.find('B').location['y']
+
+
+def test_xss(screen: Screen):
+    ui.label('</script><script>alert(1)</script>')
+    ui.label('<b>Bold 1</b>')
+    ui.button('Button 1', on_click=lambda: ui.label('</script><script>alert(2)</script>'))
+    ui.button('Button 2', on_click=lambda: ui.label('<b>Bold 2</b>'))
+
+    screen.open('/')
+    screen.click('Button 1')
+    screen.click('Button 2')
+    screen.should_contain('</script><script>alert(1)</script>')
+    screen.should_contain('</script><script>alert(2)</script>')
+    screen.should_contain('<b>Bold 1</b>')
+    screen.should_contain('<b>Bold 2</b>')
