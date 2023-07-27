@@ -34,6 +34,7 @@ def capabilities(capabilities: Dict) -> Dict:
 def reset_globals() -> Generator[None, None, None]:
     for path in {'/'}.union(globals.page_routes.values()):
         globals.app.remove_route(path)
+    globals.app.openapi_schema = None
     globals.app.middleware_stack = None
     globals.app.user_middleware.clear()
     # NOTE favicon routes must be removed separately because they are not "pages"
