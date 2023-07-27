@@ -50,5 +50,5 @@ def more() -> None:
         [ui.image](/documentation/image), [ui.avatar](/documentation/image) etc.
     ''')
     def link_from_elements():
-        with ui.link('', 'https://github.com/zauberzeug/nicegui', new_tab=True):
+        with ui.link(target='https://github.com/zauberzeug/nicegui'):
             ui.image('https://picsum.photos/id/41/640/360').classes('w-64')
