@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from io import StringIO
-from uuid import uuid4
+import io
+import uuid
 
 from fastapi.responses import StreamingResponse
 
@@ -9,19 +9,17 @@ from nicegui import Client, app, ui
 
 @ui.page('/')
 async def index(client: Client):
-    download_path = f"/download/{uuid4()}.txt"
+    download_path = f'/download/{uuid.uuid4()}.txt'
 
     @app.get(download_path)
-    async def download():
-        # create a file-like object from the string
-        string_io = StringIO(text_entry.value)
-        return StreamingResponse(
-            string_io, media_type="text/plain",
-            headers={'Content-Disposition': 'attachment; filename=download.txt', }
-        )
+    def download():
+        string_io = io.StringIO(textarea.value)  # create a file-like object from the string
+        headers = {'Content-Disposition': 'attachment; filename=download.txt'}
+        return StreamingResponse(string_io, media_type='text/plain', headers=headers)
 
-    text_entry = ui.textarea(value="hello world")
-    ui.button("Download", on_click=lambda: ui.download(download_path))
+    textarea = ui.textarea(value='Hello World!')
+    ui.button('Download', on_click=lambda: ui.download(download_path))
+
     # cleanup the download route after the client disconnected
     await client.disconnected()
     app.routes[:] = [route for route in app.routes if route.path != download_path]
