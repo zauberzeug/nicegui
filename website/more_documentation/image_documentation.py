@@ -31,3 +31,10 @@ def more() -> None:
 
         src = 'https://assets1.lottiefiles.com/datafiles/HN7OcWNnoqje6iXIiZdWzKxvLIbfeCGTmvXmEm1h/data.json'
         ui.html(f'<lottie-player src="{src}" loop autoplay />').classes('w-full')
+
+    @text_demo('Image link', '''
+        Images can link to another page by wrapping them in a [ui.link](https://nicegui.io/documentation/link).
+    ''')
+    def link():
+        with ui.link(target='https://github.com/zauberzeug/nicegui'):
+            ui.image('https://picsum.photos/id/41/640/360').classes('w-64')
