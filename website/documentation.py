@@ -164,7 +164,7 @@ def create_full() -> None:
         add_face()
 
         ui.button('Add', on_click=add_face)
-        ui.button('Remove', on_click=lambda: container.remove(0))
+        ui.button('Remove', on_click=lambda: container.remove(0) if list(container) else None)
         ui.button('Clear', on_click=container.clear)
 
     load_demo(ui.expansion)
