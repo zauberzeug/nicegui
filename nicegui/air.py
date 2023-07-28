@@ -39,8 +39,9 @@ class Air:
             )
             content = content.replace(
                 b"const transports = ['websocket', 'polling'];",
-                (f'const transports = ["polling"];').encode(),
+                b'const transports = ["polling"];'
             )
+            content = content.replace(b'"skipHijack":false', b'"skipHijack":true')
             response_headers = dict(response.headers)
             response_headers['content-encoding'] = 'gzip'
             compressed = gzip.compress(content)
