@@ -10,9 +10,10 @@ WORKDIR /app
 COPY main.py README.md prometheus.py ./
 COPY examples ./examples
 COPY website ./website
-COPY release/docker-entrypoint.sh ./
-RUN chmod 777 docker-entrypoint.sh
+RUN mkdir /resources
+COPY docker-entrypoint.sh /resources
+RUN chmod 777 /resources/docker-entrypoint.sh
 
 EXPOSE 8080
 
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+ENTRYPOINT ["/resources/docker-entrypoint.sh"]
