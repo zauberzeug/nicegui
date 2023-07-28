@@ -24,4 +24,4 @@ chmod -R 777 /usr/share/fonts
 chmod -R 777 /var/cache/fontconfig
 chmod -R 777 /usr/local/share/fonts
 
-exec su appuser -p -c "cd /app && python main.py"
+exec su appuser -p -c "cd /app && $@"

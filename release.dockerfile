@@ -15,5 +15,7 @@ COPY docker-entrypoint.sh /resources
 RUN chmod 777 /resources/docker-entrypoint.sh
 
 EXPOSE 8080
+ENV PYTHONUNBUFFERED True
 
 ENTRYPOINT ["/resources/docker-entrypoint.sh"]
+CMD ["python", "main.py"]

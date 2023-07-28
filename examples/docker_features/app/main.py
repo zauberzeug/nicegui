@@ -1,15 +1,16 @@
-from nicegui import app, ui
+import os
 import signal
+
+from nicegui import app, ui
 
 signal.signal(signal.SIGINT, app.shutdown)
 signal.signal(signal.SIGTERM, app.shutdown)
 
 
-def store_name(input):
-    app.storage.general['name'] = input.value
-
-
-ui.input(label='Name', on_change=lambda i: store_name(i))
+@ui.page('/')
+def index():
+    ui.textarea('This note is kept between visits') \
+        .classes('w-96').bind_value(app.storage.user, 'note')
 
 
 def my_shutdown():
@@ -17,4 +18,4 @@ def my_shutdown():
 
 
 app.on_shutdown(my_shutdown)
-ui.run()
+ui.run(storage_secret=os.environ['STORAGE_SECRET'])

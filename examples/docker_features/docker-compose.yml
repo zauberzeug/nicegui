@@ -6,8 +6,8 @@ services:
     ports:
       - 8080:8080
     volumes:
-      - ~/path/to/niceguidata:/app/.nicegui
-      - ./app:/app # mount local app directory
+      - ./app:/app # mounting local app directory
     environment:
       - PUID=1000
       - PGID=1000
+      - STORAGE_SECRET="change-this-to-yor-own-private-secret"
