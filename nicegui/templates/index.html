@@ -291,14 +291,7 @@
           }
         },
       }).use(Quasar, {
-        config: {
-          brand: {
-            primary: '#5898d4',
-          },
-          loadingBar: {
-            color: 'primary'
-          },
-        }
+        config: {{ quasar_config | safe }}
       });
 
       {{ js_imports | safe }}
