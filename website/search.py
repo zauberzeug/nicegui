@@ -32,7 +32,8 @@ class Search:
                 ui.icon('search', size='2em')
                 ui.input(placeholder='Search documentation', on_change=self.handle_input) \
                     .classes('flex-grow').props('borderless autofocus')
-                ui.button('ESC').props('padding="2px 8px" outline size=sm color=grey-5').classes('shadow')
+                ui.button('ESC', on_click=self.dialog.close) \
+                    .props('padding="2px 8px" outline size=sm color=grey-5').classes('shadow')
             ui.separator()
             self.results = ui.element('q-list').classes('w-full').props('separator')
         ui.keyboard(self.handle_keypress)
