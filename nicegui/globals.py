@@ -46,11 +46,19 @@ tailwind: bool
 air: Optional['Air'] = None
 socket_io_js_extra_headers: Dict = {}
 socket_io_js_transports: List[Literal['websocket', 'polling']] = ['websocket', 'polling']
-
 _socket_id: Optional[str] = None
 slot_stacks: Dict[int, List['Slot']] = {}
 clients: Dict[str, 'Client'] = {}
 index_client: 'Client'
+quasar_config: Dict = {
+    'brand': {
+        'primary': '#5898d4',
+    },
+    'loadingBar': {
+        'color': 'primary',
+        'skipHijack': False,
+    },
+}
 
 page_routes: Dict[Callable[..., Any], str] = {}
 

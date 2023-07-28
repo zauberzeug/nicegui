@@ -82,6 +82,7 @@ class Client:
             'vue_scripts': '\n'.join(vue_scripts),
             'imports': json.dumps(imports),
             'js_imports': '\n'.join(js_imports),
+            'quasar_config': json.dumps(globals.quasar_config),
             'title': self.page.resolve_title(),
             'viewport': self.page.resolve_viewport(),
             'favicon_url': get_favicon_url(self.page, prefix),
