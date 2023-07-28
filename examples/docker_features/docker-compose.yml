@@ -1,6 +1,7 @@
 version: "3.9"
+
 services:
-  hush:
+  nicegui:
     image: zauberzeug/nicegui:latest
     ports:
       - 8080:8080
