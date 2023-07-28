@@ -37,6 +37,10 @@ class Air:
                 b'const extraHeaders = {};',
                 (f'const extraHeaders = {{ "fly-force-instance-id" : "{data["instance-id"]}" }};').encode(),
             )
+            content = content.replace(
+                b"const transports = ['websocket', 'polling'];",
+                (f'const transports = ["polling"];').encode(),
+            )
             response_headers = dict(response.headers)
             response_headers['content-encoding'] = 'gzip'
             compressed = gzip.compress(content)
