@@ -53,7 +53,7 @@ def remove_all_screenshots() -> None:
 
 @pytest.fixture(scope='function')
 def driver(chrome_options: webdriver.ChromeOptions) -> webdriver.Chrome:
-    s = Service(ChromeDriverManager().install())
+    s = Service()
     driver = webdriver.Chrome(service=s, options=chrome_options)
     driver.implicitly_wait(Screen.IMPLICIT_WAIT)
     driver.set_page_load_timeout(4)
