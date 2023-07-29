@@ -11,9 +11,8 @@ import uvicorn
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import globals, helpers
+from . import globals, helpers, native_mode
 from . import native as native_module
-from . import native_mode
 from .air import Air
 from .language import Language
 
@@ -53,6 +52,7 @@ def run(*,
         uvicorn_reload_includes: str = '*.py',
         uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
         tailwind: bool = True,
+        development: bool = True,
         storage_secret: Optional[str] = None,
         **kwargs: Any,
         ) -> None:
@@ -91,6 +91,7 @@ def run(*,
     globals.language = language
     globals.binding_refresh_interval = binding_refresh_interval
     globals.tailwind = tailwind
+    globals.development = development
 
     if on_air:
         globals.air = Air('' if on_air is True else on_air)

@@ -15,8 +15,15 @@
     {% if tailwind %}
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
     {% endif %}
+
+    {% if development %}
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.js"></script>
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.js"></script>
+    {% else %}
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.prod.js"></script>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
+    {% endif %}
+
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     <script type="importmap">
       {"imports": {{ imports | safe }}}

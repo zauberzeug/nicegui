@@ -89,6 +89,7 @@ class Client:
             'language': self.page.resolve_language(),
             'prefix': prefix,
             'tailwind': globals.tailwind,
+            'development': globals.development,
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
         }, status_code, {'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'})
 

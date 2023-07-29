@@ -4,7 +4,18 @@ import logging
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterator, List, Optional, Set, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Set,
+    Union,
+)
 
 from socketio import AsyncServer
 from uvicorn import Server
@@ -43,6 +54,7 @@ dark: Optional[bool]
 language: Language
 binding_refresh_interval: float
 tailwind: bool
+development: bool = True
 air: Optional['Air'] = None
 socket_io_js_extra_headers: Dict = {}
 
