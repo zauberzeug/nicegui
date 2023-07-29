@@ -11,9 +11,8 @@ import uvicorn
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import globals, helpers
+from . import globals, helpers, native_mode
 from . import native as native_module
-from . import native_mode
 from .air import Air
 from .language import Language
 
@@ -98,7 +97,7 @@ def run(*,
     for route in globals.app.routes:
         if route.path.startswith('/_nicegui') and hasattr(route, 'methods'):
             route.include_in_schema = endpoint_documentation in {'internal', 'all'}
-        if route.path == '/' or route in globals.page_routes.values():
+        if route.path == '/' or route.path in globals.page_routes.values():
             route.include_in_schema = endpoint_documentation in {'page', 'all'}
 
     if on_air:
