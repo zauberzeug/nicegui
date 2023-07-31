@@ -71,6 +71,7 @@ class Client:
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
         elements = json.dumps({id: element._to_dict() for id, element in self.elements.items()})
+        socket_io_js_query_params = globals.socket_io_js_query_params | {'client_id': self.id}
         vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse('index.html', {
             'request': request,
@@ -89,6 +90,7 @@ class Client:
             'language': self.page.resolve_language(),
             'prefix': prefix,
             'tailwind': globals.tailwind,
+            'socket_io_js_query_params': socket_io_js_query_params,
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
             'socket_io_js_transports': globals.socket_io_js_transports,
         }, status_code, {'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'})

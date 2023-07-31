@@ -213,7 +213,7 @@
         },
         mounted() {
           window.app = this;
-          const query = { client_id: "{{ client_id }}" };
+          const query = {{ socket_io_js_query_params | safe }};
           const url = window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
           const extraHeaders = {{ socket_io_js_extra_headers | safe }};
           const transports = {{ socket_io_js_transports | safe }};
@@ -222,16 +222,23 @@
           const messageHandlers = {
             connect: () => {
               window.socket.emit("handshake", (ok) => {
-                if (!ok) window.location.reload();
+                if (!ok) {
+                  console.log('reloading because handshake failed')
+                  window.location.reload();
+                }
                 document.getElementById('popup').style.opacity = 0;
               });
             },
             connect_error: (err) => {
-              if (err.message == 'timeout') window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
+              if (err.message == 'timeout') {
+                console.log('reloading because connection time out')
+                window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
+              }
             },
             try_reconnect: () => {
               const checkAndReload = async () => {
                 await fetch(window.location.href, { headers: { 'NiceGUI-Check': 'try_reconnect' } });
+                console.log('reloading because reconnect was requested')
                 window.location.reload();
               };
               setInterval(checkAndReload, 500);
