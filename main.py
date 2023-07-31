@@ -79,7 +79,7 @@ class FlyReplayMiddleware(BaseHTTPMiddleware):
 
         async def send_wrapper(message):
             if target_instance != fly_instance_id:
-                if message['type'] == 'websocket.close' and 'Invalid session' in message['reason']:
+                if message['type'] == 'websocket.close':
                     # fly.io only seems to look at the fly-replay header if websocket is accepted
                     message = {'type': 'websocket.accept'}
                 if 'headers' not in message:
