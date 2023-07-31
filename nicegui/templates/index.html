@@ -213,7 +213,7 @@
         },
         mounted() {
           window.app = this;
-          const query = { client_id: "{{ client_id }}" };
+          const query = {{ socket_io_js_query_params | safe }};
           const url = window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
           const extraHeaders = {{ socket_io_js_extra_headers | safe }};
           const transports = {{ socket_io_js_transports | safe }};
