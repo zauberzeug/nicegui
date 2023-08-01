@@ -231,7 +231,7 @@
             },
             connect_error: (err) => {
               if (err.message == 'timeout') {
-                console.log('reloading because connection time out')
+                console.log('reloading because connection timed out')
                 window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
               }
             },

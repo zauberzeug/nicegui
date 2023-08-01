@@ -46,7 +46,7 @@ tailwind: bool
 air: Optional['Air'] = None
 socket_io_js_query_params: Dict = {}
 socket_io_js_extra_headers: Dict = {}
-# NOTE we favour websocket over polling
+# NOTE we favor websocket over polling
 socket_io_js_transports: List[Literal['websocket', 'polling']] = ['websocket', 'polling']
 
 _socket_id: Optional[str] = None
