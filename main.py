@@ -310,6 +310,9 @@ async def index_page(client: Client) -> None:
             example_link('Pandas DataFrame', 'displays an editable [pandas](https://pandas.pydata.org) DataFrame')
             example_link('Lightbox', 'A thumbnail gallery where each image can be clicked to enlarge')
             example_link('ROS2', 'Using NiceGUI as web interface for a ROS2 robot')
+            example_link('Docker Image',
+                         'Demonstrate using the official'
+                         '[zauberzeug/nicegui](https://hub.docker.com/r/zauberzeug/nicegui) docker image')
 
     with ui.row().classes('dark-box min-h-screen mt-16'):
         link_target('why')
