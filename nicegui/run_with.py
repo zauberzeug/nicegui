@@ -19,7 +19,7 @@ def run_with(
     binding_refresh_interval: float = 0.1,
     mount_path: str = '/',
     tailwind: bool = True,
-    development: bool = True,
+    prod_js: bool = True,
     storage_secret: Optional[str] = None,
 ) -> None:
     globals.ui_run_has_been_called = True
@@ -30,7 +30,7 @@ def run_with(
     globals.language = language
     globals.binding_refresh_interval = binding_refresh_interval
     globals.tailwind = tailwind
-    globals.development = development
+    globals.prod_js = prod_js
 
     set_storage_secret(storage_secret)
     app.on_event('startup')(lambda: handle_startup(with_welcome_message=False))

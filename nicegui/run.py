@@ -53,7 +53,7 @@ def run(*,
         uvicorn_reload_includes: str = '*.py',
         uvicorn_reload_excludes: str = '.*, .py[cod], .sw.*, ~*',
         tailwind: bool = True,
-        development: bool = True,
+        prod_js: bool = True,
         storage_secret: Optional[str] = None,
         **kwargs: Any,
         ) -> None:
@@ -80,7 +80,7 @@ def run(*,
     :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`)
     :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
     :param tailwind: whether to use Tailwind (experimental, default: `True`)
-    :param development: whether to use the development version of Vue and Quasar dependencies (default: `True`)
+    :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
     :param storage_secret: secret key for browser based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`    
     '''
@@ -93,7 +93,7 @@ def run(*,
     globals.language = language
     globals.binding_refresh_interval = binding_refresh_interval
     globals.tailwind = tailwind
-    globals.development = development
+    globals.prod_js = prod_js
 
     if on_air:
         globals.air = Air('' if on_air is True else on_air)
