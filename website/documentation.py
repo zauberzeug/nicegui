@@ -607,11 +607,15 @@ def create_full() -> None:
         A convenient alternative is the use of our [pre-built multi-arch Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
         With this command you can launch the script `main.py` in the current directory on the public port 80:
     ''').classes('bold-links arrow-links')
-    with demo.bash_window(classes='max-w-lg w-full h-52'):
+    with demo.bash_window(classes='max-w-lg w-full h-44'):
         ui.markdown('''
             ```bash
-            docker run -p 80:8080 -v $(pwd)/:/app/ \\
-                -d --restart always zauberzeug/nicegui:latest
+            docker run -it --restart always \\
+              -p 80:8080 \\
+              -e PUID=$(id -u) \\
+              -e PGID=$(id -g) \\
+              -v $(pwd)/:/app/ \\
+              zauberzeug/nicegui:latest
             ```
         ''')
     ui.markdown('''
@@ -619,7 +623,7 @@ def create_full() -> None:
         The `-d` tells docker to run in background and `--restart always` makes sure the container is restarted if the app crashes or the server reboots.
         Of course this can also be written in a Docker compose file:
     ''')
-    with demo.python_window('docker-compose.yml', classes='max-w-lg w-full h-52'):
+    with demo.python_window('docker-compose.yml', classes='max-w-lg w-full h-60'):
         ui.markdown('''
             ```yaml
             app:
@@ -627,15 +631,22 @@ def create_full() -> None:
                 restart: always
                 ports:
                     - 80:8080
+                environment:
+                    - PUID=1000 # change this to your user id
+                    - PGID=1000 # change this to your group id
                 volumes:
                     - ./:/app/
             ```
         ''')
+    ui.markdown('''
+        There are other handy features in the Docker image like non-root user execution and signal pass-through.
+        For more details we recommend to have a look at our [Docker example](https://github.com/zauberzeug/nicegui/tree/main/examples/docker_image).
+    ''').classes('bold-links arrow-links')
 
     ui.markdown('''
         You can provide SSL certificates directly using [FastAPI](https://fastapi.tiangolo.com/deployment/https/).
         In production we also like using reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/) to handle these details for us.
-        See our [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
+        See our development [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
 
         You may also have a look at [our demo for using a custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
         This will allow you to do very flexible deployments as described in the [FastAPI documentation](https://fastapi.tiangolo.com/deployment/).
