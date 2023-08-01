@@ -29,5 +29,6 @@ fi
 if [ -d "/usr/local/share/fonts" ]; then
   chmod -R 777 /usr/local/share/fonts
 fi
-# Execute the application per the arguments to the file.
-exec su appuser -p -c "$@"
+cd /app
+# Switch to appuser and execute the Docker CMD or passed in command-line arguments.
+exec gosu appuser "$@"

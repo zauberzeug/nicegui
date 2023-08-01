@@ -3,6 +3,10 @@ ARG VERSION
 
 LABEL maintainer="Zauberzeug GmbH <info@zauberzeug.com>"
 
+RUN apt update && apt install -y \
+    gosu \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN python -m pip install nicegui==$VERSION itsdangerous isort docutils requests
 
 WORKDIR /app
@@ -18,4 +22,4 @@ EXPOSE 8080
 ENV PYTHONUNBUFFERED True
 
 ENTRYPOINT ["/resources/docker-entrypoint.sh"]
-CMD ["cd /app && python main.py"]
+CMD ["python", "main.py"]
