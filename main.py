@@ -1,13 +1,6 @@
 #!/usr/bin/env python3
 import importlib
 import inspect
-
-if True:
-    # increasing max decode packets to be able to transfer images
-    # see https://github.com/miguelgrinberg/python-engineio/issues/142
-    from engineio.payload import Payload
-    Payload.max_decode_packets = 500
-
 import os
 from pathlib import Path
 from typing import Awaitable, Callable, Optional
