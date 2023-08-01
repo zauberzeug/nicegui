@@ -71,13 +71,15 @@ class Client:
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
         elements = json.dumps({id: element._to_dict() for id, element in self.elements.items()})
-        socket_io_js_query_params = {**globals.socket_io_js_query_params, **{'client_id': self.id}}
+        socket_io_js_query_params = {**globals.socket_io_js_query_params, 'client_id': self.id}
         vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse('index.html', {
             'request': request,
             'version': __version__,
-            'client_id': str(self.id),
-            'elements': elements,
+            'elements': elements.replace('&', '&amp;')
+                                .replace('<', '&lt;')
+                                .replace('>', '&gt;')
+                                .replace('`', '&#96;'),
             'head_html': self.head_html,
             'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
             'vue_scripts': '\n'.join(vue_scripts),
@@ -91,6 +93,7 @@ class Client:
             'language': self.page.resolve_language(),
             'prefix': prefix,
             'tailwind': globals.tailwind,
+            'prod_js': globals.prod_js,
             'socket_io_js_query_params': socket_io_js_query_params,
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
             'socket_io_js_transports': globals.socket_io_js_transports,

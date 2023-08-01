@@ -55,15 +55,16 @@ async def redirect_reference_to_documentation(request: Request,
         return RedirectResponse('/documentation')
     return await call_next(request)
 
-# NOTE in our global fly.io deployment we need to make sure that we connect back to the same instance.
+# NOTE In our global fly.io deployment we need to make sure that we connect back to the same instance.
 fly_instance_id = os.environ.get('FLY_ALLOC_ID', 'local').split('-')[0]
-nicegui_globals.socket_io_js_extra_headers['fly-force-instance-id'] = fly_instance_id  # for http long polling
+nicegui_globals.socket_io_js_extra_headers['fly-force-instance-id'] = fly_instance_id  # for HTTP long polling
 nicegui_globals.socket_io_js_query_params['fly_instance_id'] = fly_instance_id  # for websocket (FlyReplayMiddleware)
 
 
 class FlyReplayMiddleware(BaseHTTPMiddleware):
-    """
-    If the wrong instance was picked by the fly.io load balancer we use the fly-replay header
+    """Replay to correct fly.io instance.
+
+    If the wrong instance was picked by the fly.io load balancer, we use the fly-replay header
     to repeat the request again on the right instance.
 
     This only works if the correct instance is provided as a query_string parameter.
@@ -79,7 +80,7 @@ class FlyReplayMiddleware(BaseHTTPMiddleware):
 
         async def send_wrapper(message):
             if target_instance != fly_instance_id:
-                if message['type'] == 'websocket.close' and 'Invalid session' in message['reason']:
+                if message['type'] == 'websocket.close':
                     # fly.io only seems to look at the fly-replay header if websocket is accepted
                     message = {'type': 'websocket.accept'}
                 if 'headers' not in message:
