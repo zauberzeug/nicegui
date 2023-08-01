@@ -1,10 +1,6 @@
 import os
-import signal
 
 from nicegui import app, ui
-
-signal.signal(signal.SIGINT, app.shutdown)
-signal.signal(signal.SIGTERM, app.shutdown)
 
 
 @ui.page('/')
