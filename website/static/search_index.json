@@ -145,6 +145,11 @@
     "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/ros2/"
   },
   {
+    "title": "Example: Download Text as File",
+    "content": "providing in-memory data like strings as file download",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/download_text_as_file/main.py"
+  },
+  {
     "title": "Basic Elements",
     "content": "This is **Markdown**.",
     "url": "/documentation/#basic_elements"
@@ -875,6 +880,11 @@
     "url": "/documentation/image#lottie_files"
   },
   {
+    "title": "Image: Image link",
+    "content": "Images can link to another page by wrapping them in a ui.link.",
+    "url": "/documentation/image#image_link"
+  },
+  {
     "title": "Color Theming",
     "content": "Sets the main colors (primary, secondary, accent, ...) used by Quasar <https://quasar.dev/>_.",
     "url": "/documentation/colors"
@@ -1093,6 +1103,11 @@
     "title": "Link: Links to other pages",
     "content": "You can link to other pages by providing the link target as path or function reference.",
     "url": "/documentation/link#links_to_other_pages"
+  },
+  {
+    "title": "Link: Link from images and other elements",
+    "content": "By nesting elements inside a link you can make the whole element clickable. This works with all elements but is most useful for non-interactive elements like ui.image, ui.avatar etc.",
+    "url": "/documentation/link#link_from_images_and_other_elements"
   },
   {
     "title": "Log view",

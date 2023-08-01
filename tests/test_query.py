@@ -52,3 +52,11 @@ def test_query_multiple_divs(screen: Screen):
     screen.wait(0.5)
     assert screen.find('A').value_of_css_property('border') == '1px solid rgb(0, 0, 0)'
     assert screen.find('B').value_of_css_property('border') == '1px solid rgb(0, 0, 0)'
+
+
+def test_query_with_css_variables(screen: Screen):
+    ui.add_body_html('<div id="element">Test</div>')
+    ui.query('#element').style('--color: red; color: var(--color)')
+
+    screen.open('/')
+    assert screen.find('Test').value_of_css_property('color') == 'rgba(255, 0, 0, 1)'
