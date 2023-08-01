@@ -11,8 +11,9 @@ import uvicorn
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import globals, helpers, native_mode
+from . import globals, helpers
 from . import native as native_module
+from . import native_mode
 from .air import Air
 from .language import Language
 
@@ -79,6 +80,7 @@ def run(*,
     :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'.py'`)
     :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
     :param tailwind: whether to use Tailwind (experimental, default: `True`)
+    :param development: whether to use the development version of Vue and Quasar dependencies (default: `True`)
     :param storage_secret: secret key for browser based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`    
     '''

@@ -15,7 +15,7 @@
     {% if tailwind %}
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
     {% endif %}
-
+    <!-- prevent Prettier from removing this line -->
     {% if development %}
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.js"></script>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.js"></script>
