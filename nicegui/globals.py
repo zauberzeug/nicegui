@@ -43,6 +43,7 @@ dark: Optional[bool]
 language: Language
 binding_refresh_interval: float
 tailwind: bool
+prod_js: bool
 air: Optional['Air'] = None
 socket_io_js_extra_headers: Dict = {}
 endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
