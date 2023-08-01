@@ -4,7 +4,7 @@ import logging
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterator, List, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterator, List, Literal, Optional, Set, Union
 
 from socketio import AsyncServer
 from uvicorn import Server
@@ -46,6 +46,8 @@ tailwind: bool
 prod_js: bool
 air: Optional['Air'] = None
 socket_io_js_extra_headers: Dict = {}
+endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
+socket_io_js_transports: List[Literal['websocket', 'polling']] = ['websocket', 'polling']
 
 _socket_id: Optional[str] = None
 slot_stacks: Dict[int, List['Slot']] = {}

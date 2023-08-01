@@ -1,4 +1,5 @@
 import asyncio
+import html
 import time
 import uuid
 from pathlib import Path
@@ -76,7 +77,10 @@ class Client:
             'request': request,
             'version': __version__,
             'client_id': str(self.id),
-            'elements': elements,
+            'elements': elements.replace('&', '&amp;')
+                                .replace('<', '&lt;')
+                                .replace('>', '&gt;')
+                                .replace('`', '&#96;'),
             'head_html': self.head_html,
             'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
             'vue_scripts': '\n'.join(vue_scripts),
@@ -91,6 +95,7 @@ class Client:
             'tailwind': globals.tailwind,
             'prod_js': globals.prod_js,
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
+            'socket_io_js_transports': globals.socket_io_js_transports,
         }, status_code, {'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'})
 
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
@@ -105,6 +110,8 @@ class Client:
 
     async def disconnected(self, check_interval: float = 0.1) -> None:
         """Block execution until the client disconnects."""
+        if not self.environ:
+            await self.connected()
         self.is_waiting_for_disconnect = True
         while self.id in globals.clients:
             await asyncio.sleep(check_interval)
@@ -133,10 +140,10 @@ class Client:
             await asyncio.sleep(check_interval)
         return self.waiting_javascript_commands.pop(request_id)
 
-    def open(self, target: Union[Callable[..., Any], str]) -> None:
+    def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else globals.page_routes[target]
-        outbox.enqueue_message('open', path, self.id)
+        outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 
     def download(self, url: str, filename: Optional[str] = None) -> None:
         """Download a file from the given URL."""

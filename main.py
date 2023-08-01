@@ -1,13 +1,6 @@
 #!/usr/bin/env python3
 import importlib
 import inspect
-
-if True:
-    # increasing max decode packets to be able to transfer images
-    # see https://github.com/miguelgrinberg/python-engineio/issues/142
-    from engineio.payload import Payload
-    Payload.max_decode_packets = 500
-
 import os
 from pathlib import Path
 from typing import Awaitable, Callable, Optional
@@ -63,6 +56,8 @@ async def redirect_reference_to_documentation(request: Request,
 fly_instance_id = os.environ.get('FLY_ALLOC_ID', '').split('-')[0]
 if fly_instance_id:
     nicegui_globals.socket_io_js_extra_headers['fly-force-instance-id'] = fly_instance_id
+    # NOTE polling is required for fly.io to use the force-instance header
+    nicegui_globals.socket_io_js_transports = ['polling']
 
 
 def add_head_html() -> None:
@@ -310,6 +305,7 @@ async def index_page(client: Client) -> None:
             example_link('Pandas DataFrame', 'displays an editable [pandas](https://pandas.pydata.org) DataFrame')
             example_link('Lightbox', 'A thumbnail gallery where each image can be clicked to enlarge')
             example_link('ROS2', 'Using NiceGUI as web interface for a ROS2 robot')
+            example_link('Download Text as File', 'providing in-memory data like strings as file download')
 
     with ui.row().classes('dark-box min-h-screen mt-16'):
         link_target('why')

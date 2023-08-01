@@ -126,3 +126,23 @@ def test_refresh_with_arguments(screen: Screen):
     a = 3
     screen.click('Refresh 3')
     screen.should_contain('a=3, b=1')
+
+
+def test_refresh_deleted_element(screen: Screen):
+    @ui.refreshable
+    def some_ui():
+        ui.label('some text')
+
+    with ui.card() as card:
+        some_ui()
+
+    ui.button('Refresh', on_click=some_ui.refresh)
+    ui.button('Clear', on_click=card.clear)
+
+    some_ui()
+
+    screen.open('/')
+    screen.should_contain('some text')
+
+    screen.click('Clear')
+    screen.click('Refresh')

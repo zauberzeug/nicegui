@@ -4,7 +4,18 @@ LABEL maintainer="Zauberzeug GmbH <nicegui@zauberzeug.com>"
 
 RUN pip install itsdangerous prometheus_client isort docutils pandas plotly matplotlib requests
 
+RUN apt update && apt install curl -y
+
+RUN curl -sSL https://install.python-poetry.org | python3 - && \
+    cd /usr/local/bin && \
+    ln -s ~/.local/bin/poetry && \
+    poetry config virtualenvs.create false
+
 WORKDIR /app
+
+COPY pyproject.toml poetry.lock*  ./
+
+RUN poetry install --no-root --extras "plotly matplotlib"
 
 ADD . .
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 import re
-from copy import deepcopy
+from copy import copy, deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Union
 
@@ -79,11 +79,10 @@ class Element(Visibility):
                 path = base / path
             return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
 
-        if cls.__base__ == Element:
-            cls.component = None
-            cls.libraries = []
-            cls.extra_libraries = []
-            cls.exposed_libraries = []
+        cls.component = copy(cls.component)
+        cls.libraries = copy(cls.libraries)
+        cls.extra_libraries = copy(cls.extra_libraries)
+        cls.exposed_libraries = copy(cls.exposed_libraries)
         if component:
             for path in glob_absolute_paths(component):
                 cls.component = register_vue_component(path)

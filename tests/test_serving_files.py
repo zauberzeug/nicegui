@@ -6,7 +6,7 @@ import pytest
 
 from nicegui import app, ui
 
-from .screen import PORT, Screen
+from .screen import Screen
 from .test_helpers import TEST_DIR
 
 IMAGE_FILE = Path(TEST_DIR).parent / 'examples' / 'slideshow' / 'slides' / 'slide1.jpg'
@@ -27,7 +27,7 @@ def provide_media_files():
 def assert_video_file_streaming(path: str) -> None:
     with httpx.Client() as http_client:
         r = http_client.get(
-            path if 'http' in path else f'http://localhost:{PORT}{path}',
+            path if 'http' in path else f'http://localhost:{Screen.PORT}{path}',
             headers={'Range': 'bytes=0-1000'},
         )
         assert r.status_code == 206
@@ -56,7 +56,7 @@ def test_adding_single_static_file(screen: Screen):
 
     screen.open('/')
     with httpx.Client() as http_client:
-        r = http_client.get(f'http://localhost:{PORT}{url_path}')
+        r = http_client.get(f'http://localhost:{Screen.PORT}{url_path}')
         assert r.status_code == 200
         assert 'max-age=' in r.headers['Cache-Control']
 

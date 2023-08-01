@@ -2,7 +2,7 @@ from fastapi import HTTPException
 
 from nicegui import app, ui
 
-from .screen import PORT, Screen
+from .screen import Screen
 
 
 def test_download(screen: Screen):
@@ -20,4 +20,4 @@ def test_download(screen: Screen):
     screen.click('Download')
     screen.wait(0.5)
     assert success
-    screen.assert_py_logger('WARNING', f'http://localhost:{PORT}/static/test.py not found')
+    screen.assert_py_logger('WARNING', f'http://localhost:{Screen.PORT}/static/test.py not found')
