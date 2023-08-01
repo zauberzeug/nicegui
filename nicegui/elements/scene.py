@@ -82,6 +82,16 @@ class Scene(Element,
         self.on('init', self.handle_init)
         self.on('click3d', self.handle_click)
 
+    def __enter__(self) -> 'Scene':
+        Object3D.current_scene = self
+        return super().__enter__()
+
+    def __getattribute__(self, name: str) -> Any:
+        attribute = super().__getattribute__(name)
+        if isinstance(attribute, type) and issubclass(attribute, Object3D):
+            Object3D.current_scene = self
+        return attribute
+
     def handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True
         with globals.socket_id(e.args['socket_id']):
