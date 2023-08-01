@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -x
 # Get the PUID and PGID from environment variables (or use default values 1000 if not set)
 PUID=${PUID:-1000}
 PGID=${PGID:-1000}
