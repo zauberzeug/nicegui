@@ -11,8 +11,9 @@ import uvicorn
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import globals, helpers, native_mode
+from . import globals, helpers
 from . import native as native_module
+from . import native_mode
 from .air import Air
 from .language import Language
 
