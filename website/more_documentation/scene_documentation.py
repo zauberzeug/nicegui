@@ -55,3 +55,16 @@ def more() -> None:
         with ui.scene(width=285, height=220, on_click=handle_click) as scene:
             scene.sphere().move(x=-1, z=1).with_name('sphere')
             scene.box().move(x=1, z=1).with_name('box')
+
+    @text_demo('Rendering point clouds', '''
+        You can render point clouds using the `point_cloud` method.
+        The `points` argument is a list of point coordinates, and the `colors` argument is a list of RGB colors (0..1).
+    ''')
+    def point_clouds() -> None:
+        import numpy as np
+
+        with ui.scene().classes('w-full h-64') as scene:
+            x, y = np.meshgrid(np.linspace(-3, 3), np.linspace(-3, 3))
+            z = np.sin(x) * np.cos(y) + 1
+            points = np.dstack([x, y, z]).reshape(-1, 3)
+            scene.point_cloud(points=points, colors=points, point_size=0.1)
