@@ -41,7 +41,12 @@
 
       const loaded_libraries = new Set();
       const loaded_components = new Set();
-      const elements = {{ elements | safe }};
+
+      const raw_elements = String.raw`{{ elements | safe }}`;
+      const elements = JSON.parse(raw_elements.replace(/&#96;/g, '`')
+                                              .replace(/&gt;/g, '>')
+                                              .replace(/&lt;/g, '<')
+                                              .replace(/&amp;/g, '&'));
 
       function stringifyEventArgs(args, event_args) {
         const result = [];

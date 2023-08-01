@@ -1,4 +1,5 @@
 import asyncio
+import html
 import time
 import uuid
 from pathlib import Path
@@ -76,7 +77,10 @@ class Client:
             'request': request,
             'version': __version__,
             'client_id': str(self.id),
-            'elements': elements,
+            'elements': elements.replace('&', '&amp;')
+                                .replace('<', '&lt;')
+                                .replace('>', '&gt;')
+                                .replace('`', '&#96;'),
             'head_html': self.head_html,
             'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
             'vue_scripts': '\n'.join(vue_scripts),
