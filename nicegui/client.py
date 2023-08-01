@@ -90,6 +90,7 @@ class Client:
             'prefix': prefix,
             'tailwind': globals.tailwind,
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
+            'socket_io_js_transports': globals.socket_io_js_transports,
         }, status_code, {'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'})
 
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
@@ -134,10 +135,10 @@ class Client:
             await asyncio.sleep(check_interval)
         return self.waiting_javascript_commands.pop(request_id)
 
-    def open(self, target: Union[Callable[..., Any], str]) -> None:
+    def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else globals.page_routes[target]
-        outbox.enqueue_message('open', path, self.id)
+        outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 
     def download(self, url: str, filename: Optional[str] = None) -> None:
         """Download a file from the given URL."""

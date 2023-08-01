@@ -76,4 +76,8 @@ class refreshable:
                     globals.app.on_startup(result)
 
     def prune(self) -> None:
-        self.targets = [target for target in self.targets if target.container.client.id in globals.clients]
+        self.targets = [
+            target
+            for target in self.targets
+            if target.container.client.id in globals.clients and target.container.id in target.container.client.elements
+        ]

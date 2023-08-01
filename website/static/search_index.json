@@ -145,6 +145,11 @@
     "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/ros2/"
   },
   {
+    "title": "Example: Download Text as File",
+    "content": "providing in-memory data like strings as file download",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/download_text_as_file/main.py"
+  },
+  {
     "title": "Basic Elements",
     "content": "This is **Markdown**.",
     "url": "/documentation/#basic_elements"
@@ -326,7 +331,7 @@
   },
   {
     "title": "Icon",
-    "content": "This element is based on Quasar's QIcon <https://quasar.dev/vue-components/icon>_ component.  Here <https://fonts.google.com/icons>_ is a reference of possible names.  :param name: name of the icon :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem :param color: icon color (either a Quasar, Tailwind, or CSS color or None, default: None)",
+    "content": "This element is based on Quasar's QIcon <https://quasar.dev/vue-components/icon>_ component.  Here <https://fonts.google.com/icons?icon.set=Material+Icons>_ is a reference of possible names.  :param name: name of the icon :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem :param color: icon color (either a Quasar, Tailwind, or CSS color or None, default: None)",
     "url": "/documentation/icon"
   },
   {
@@ -346,7 +351,7 @@
   },
   {
     "title": "Open",
-    "content": "Can be used to programmatically trigger redirects for a specific client.  Note that *all* clients (i.e. browsers) connected to the page will open the target URL *unless* a socket is specified. User events like button clicks provide such a socket.  :param target: page function or string that is a an absolute URL or relative path from base URL :param socket: optional WebSocket defining the target client",
+    "content": "Can be used to programmatically trigger redirects for a specific client.  Note that *all* clients (i.e. browsers) connected to the page will open the target URL *unless* a socket is specified. User events like button clicks provide such a socket.  :param target: page function or string that is a an absolute URL or relative path from base URL :param new_tab: whether to open the target in a new tab",
     "url": "/documentation/open"
   },
   {
@@ -468,6 +473,11 @@
     "title": "Aggrid: Render columns as HTML",
     "content": "You can render columns as HTML by passing a list of column indices to the html_columns argument.",
     "url": "/documentation/aggrid#render_columns_as_html"
+  },
+  {
+    "title": "Aggrid: Respond to an AG Grid event",
+    "content": "All AG Grid events are passed through to NiceGUI via the AG Grid global listener. These events can be subscribed to using the .on() method.",
+    "url": "/documentation/aggrid#respond_to_an_ag_grid_event"
   },
   {
     "title": "Carousel",
@@ -670,6 +680,11 @@
     "url": "/documentation/tree#tree_with_custom_header_and_body"
   },
   {
+    "title": "Tree: Expand programmatically",
+    "content": "The tree can be expanded programmatically by modifying the \"expanded\" prop.",
+    "url": "/documentation/tree#expand_programmatically"
+  },
+  {
     "title": "Switch",
     "content": ":param text: the label to display next to the switch :param value: whether it should be active initially (default: False) :param on_change: callback which is invoked when state is changed by the user",
     "url": "/documentation/switch"
@@ -863,6 +878,11 @@
     "title": "Image: Lottie files",
     "content": "You can also use Lottie files with animations.",
     "url": "/documentation/image#lottie_files"
+  },
+  {
+    "title": "Image: Image link",
+    "content": "Images can link to another page by wrapping them in a ui.link.",
+    "url": "/documentation/image#image_link"
   },
   {
     "title": "Color Theming",
@@ -1083,6 +1103,11 @@
     "title": "Link: Links to other pages",
     "content": "You can link to other pages by providing the link target as path or function reference.",
     "url": "/documentation/link#links_to_other_pages"
+  },
+  {
+    "title": "Link: Link from images and other elements",
+    "content": "By nesting elements inside a link you can make the whole element clickable. This works with all elements but is most useful for non-interactive elements like ui.image, ui.avatar etc.",
+    "url": "/documentation/link#link_from_images_and_other_elements"
   },
   {
     "title": "Log view",

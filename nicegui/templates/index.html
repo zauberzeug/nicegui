@@ -216,7 +216,7 @@
           const query = { client_id: "{{ client_id }}" };
           const url = window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
           const extraHeaders = {{ socket_io_js_extra_headers | safe }};
-          const transports = ['websocket', 'polling'];
+          const transports = {{ socket_io_js_transports | safe }};
           window.path_prefix = "{{ prefix | safe }}";
           window.socket = io(url, { path: "{{ prefix | safe }}/_nicegui_ws/socket.io", query, extraHeaders, transports });
           const messageHandlers = {
@@ -261,7 +261,11 @@
               }
             },
             run_javascript: (msg) => runJavascript(msg['code'], msg['request_id']),
-            open: (msg) => (location.href = msg.startsWith('/') ? "{{ prefix | safe }}" + msg : msg),
+            open: (msg) => {
+              const url = msg.path.startsWith('/') ? "{{ prefix | safe }}" + msg.path : msg.path;
+              const target = msg.new_tab ? '_blank' : '_self';
+              window.open(url, target);
+            },
             download: (msg) => download(msg.url, msg.filename),
             notify: (msg) => Quasar.Notify.create(msg),
           };
