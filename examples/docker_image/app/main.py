@@ -9,9 +9,9 @@ def index():
         .classes('w-96').bind_value(app.storage.user, 'note')
 
 
-def my_shutdown():
-    print("Shutdown has been initiated!")
+def on_shutdown():
+    print('Shutdown has been initiated!')
 
 
-app.on_shutdown(my_shutdown)
+app.on_shutdown(on_shutdown)
 ui.run(storage_secret=os.environ['STORAGE_SECRET'])
