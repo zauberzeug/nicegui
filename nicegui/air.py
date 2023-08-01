@@ -38,11 +38,9 @@ class Air:
                 b'const extraHeaders = {};',
                 (f'const extraHeaders = {{ "fly-force-instance-id" : "{instance_id}" }};').encode(),
             )
-            match = re.search(b"const query = ({.*?})", content)
+            match = re.search(b'const query = ({.*?})', content)
             if match:
-                js_object = match.group(1)
-                new_js_object = \
-                    js_object[:-1].decode() + f", 'fly_instance_id' : '{instance_id}'}}"
+                new_js_object = match.group(1).decode().rstrip('}') + ", 'fly_instance_id' : '" + instance_id + "'}"
                 content = content.replace(match.group(0), f'const query = {new_js_object}'.encode())
             response_headers = dict(response.headers)
             response_headers['content-encoding'] = 'gzip'
