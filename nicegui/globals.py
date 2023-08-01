@@ -44,9 +44,11 @@ language: Language
 binding_refresh_interval: float
 tailwind: bool
 prod_js: bool
-air: Optional['Air'] = None
-socket_io_js_extra_headers: Dict = {}
 endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
+air: Optional['Air'] = None
+socket_io_js_query_params: Dict = {}
+socket_io_js_extra_headers: Dict = {}
+# NOTE we favor websocket over polling
 socket_io_js_transports: List[Literal['websocket', 'polling']] = ['websocket', 'polling']
 _socket_id: Optional[str] = None
 slot_stacks: Dict[int, List['Slot']] = {}
