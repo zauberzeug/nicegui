@@ -107,6 +107,9 @@ class page:
             parameters.insert(0, request)
         decorated.__signature__ = inspect.Signature(parameters)
 
+        if 'include_in_schema' not in self.kwargs:
+            self.kwargs['include_in_schema'] = globals.endpoint_documentation in {'page', 'all'}
+
         self.api_router.get(self._path, **self.kwargs)(decorated)
         globals.page_routes[func] = self.path
         return func

@@ -76,12 +76,16 @@ class Client:
         return templates.TemplateResponse('index.html', {
             'request': request,
             'version': __version__,
-            'elements': elements,
+            'elements': elements.replace('&', '&amp;')
+                                .replace('<', '&lt;')
+                                .replace('>', '&gt;')
+                                .replace('`', '&#96;'),
             'head_html': self.head_html,
             'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
             'vue_scripts': '\n'.join(vue_scripts),
             'imports': json.dumps(imports),
             'js_imports': '\n'.join(js_imports),
+            'quasar_config': json.dumps(globals.quasar_config),
             'title': self.page.resolve_title(),
             'viewport': self.page.resolve_viewport(),
             'favicon_url': get_favicon_url(self.page, prefix),
@@ -89,6 +93,7 @@ class Client:
             'language': self.page.resolve_language(),
             'prefix': prefix,
             'tailwind': globals.tailwind,
+            'prod_js': globals.prod_js,
             'socket_io_js_query_params': socket_io_js_query_params,
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
             'socket_io_js_transports': globals.socket_io_js_transports,

@@ -6,7 +6,12 @@
     <link href="{{ favicon_url }}" rel="shortcut icon" />
     <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/nicegui.css" rel="stylesheet" type="text/css" />
     <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/fonts.css" rel="stylesheet" type="text/css" />
+    {% if prod_js %}
     <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.prod.css" rel="stylesheet" type="text/css" />
+    {% else %}
+    <link href="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.css" rel="stylesheet" type="text/css" />
+    {% endif %}
+    <!-- prevent Prettier from removing this line -->
     {{ head_html | safe }}
   </head>
   <body>
@@ -15,8 +20,15 @@
     {% if tailwind %}
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/tailwindcss.min.js"></script>
     {% endif %}
+    <!-- prevent Prettier from removing this line -->
+    {% if prod_js %}
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.prod.js"></script>
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
+    {% else %}
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/vue.global.js"></script>
+    <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.js"></script>
+    {% endif %}
+
     <script src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     <script type="importmap">
       {"imports": {{ imports | safe }}}
@@ -41,7 +53,12 @@
 
       const loaded_libraries = new Set();
       const loaded_components = new Set();
-      const elements = {{ elements | safe }};
+
+      const raw_elements = String.raw`{{ elements | safe }}`;
+      const elements = JSON.parse(raw_elements.replace(/&#96;/g, '`')
+                                              .replace(/&gt;/g, '>')
+                                              .replace(/&lt;/g, '<')
+                                              .replace(/&amp;/g, '&'));
 
       function stringifyEventArgs(args, event_args) {
         const result = [];
@@ -298,14 +315,7 @@
           }
         },
       }).use(Quasar, {
-        config: {
-          brand: {
-            primary: '#5898d4',
-          },
-          loadingBar: {
-            color: 'primary'
-          },
-        }
+        config: {{ quasar_config | safe }}
       });
 
       {{ js_imports | safe }}
