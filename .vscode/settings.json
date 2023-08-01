@@ -1,25 +1,17 @@
 {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    "isort.args": [
-        "--line-length",
-        "120"
-    ],
-    "prettier.printWidth": 120,
-    "python.formatting.provider": "autopep8",
-    "python.formatting.autopep8Args": [
-        "--max-line-length=120",
-        "--experimental"
-    ],
-    "python.testing.pytestArgs": [
-        "."
-    ],
-    "python.testing.pytestEnabled": true,
-    "python.testing.unittestEnabled": false,
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.python",
-        "editor.codeActionsOnSave": {
-            "source.organizeImports": true
-        }
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "isort.args": ["--line-length", "120"],
+  "prettier.printWidth": 120,
+  "python.formatting.provider": "autopep8",
+  "python.formatting.autopep8Args": ["--max-line-length=120", "--experimental"],
+  "python.testing.pytestArgs": ["."],
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.python",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
     }
+  }
 }
