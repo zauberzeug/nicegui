@@ -186,3 +186,18 @@ def more() -> None:
             {'name': 'Carl', 'age': 42},
         ]
         ui.table(columns=columns, rows=rows, row_key='name')
+
+    @text_demo('Toggle fullscreen', '''
+        You can toggle the fullscreen mode of a table using the `toggle_fullscreen()` method.
+    ''')
+    def toggle_fullscreen():
+        table = ui.table(
+            columns=[{'name': 'name', 'label': 'Name', 'field': 'name'}],
+            rows=[{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
+        ).classes('w-full')
+
+        with table.add_slot('top-left'):
+            def toggle() -> None:
+                table.toggle_fullscreen()
+                button.props('icon=fullscreen_exit' if table.is_fullscreen else 'icon=fullscreen')
+            button = ui.button('Toggle fullscreen', icon='fullscreen', on_click=toggle).props('flat')
