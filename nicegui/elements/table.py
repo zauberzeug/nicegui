@@ -44,6 +44,7 @@ class Table(FilterElement, component='table.js'):
         self._props['pagination'] = {'rowsPerPage': pagination or 0}
         self._props['selection'] = selection or 'none'
         self._props['selected'] = self.selected
+        self._props['fullscreen'] = False
 
         def handle_selection(e: GenericEventArguments) -> None:
             if e.args['added']:
@@ -56,6 +57,11 @@ class Table(FilterElement, component='table.js'):
             arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
             handle_event(on_select, arguments)
         self.on('selection', handle_selection, ['added', 'rows', 'keys'])
+
+    def toggle_fullscreen(self) -> None:
+        """Toggle fullscreen mode."""
+        self._props['fullscreen'] = not self._props['fullscreen']
+        self.update()
 
     def add_rows(self, *rows: Dict) -> None:
         """Add rows to the table."""
