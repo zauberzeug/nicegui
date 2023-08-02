@@ -30,4 +30,5 @@ if [ -d "/usr/local/share/fonts" ]; then
   chmod -R 777 /usr/local/share/fonts
 fi
 # Switch to appuser and execute the Docker CMD or passed in command-line arguments.
+# Using gosu let's it run as PID 1 which is required for proper signal handling.
 exec gosu appuser "$@"
