@@ -53,6 +53,15 @@ class refreshable:
         self.instance = instance
         return self
 
+    def __getattribute__(self, __name: str) -> Any:
+        attribute = object.__getattribute__(self, __name)
+        if __name == 'refresh':
+            def refresh(instance=self.instance, *args: Any, **kwargs: Any) -> None:
+                self.instance = instance
+                attribute(*args, **kwargs)
+            return refresh
+        return attribute
+
     def __call__(self, *args: Any, **kwargs: Any) -> Union[None, Awaitable]:
         self.prune()
         target = RefreshableTarget(container=RefreshableContainer(), instance=self.instance, args=args, kwargs=kwargs)
