@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Callable, Union
 
 from .. import globals
@@ -15,4 +16,7 @@ def open(target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
     :param new_tab: whether to open the target in a new tab
     """
     path = target if isinstance(target, str) else globals.page_routes[target]
-    globals.get_client().open(path, new_tab)
+    if globals.get_client().has_socket_connection:
+        globals.get_client().open(path, new_tab)
+    else:
+        logging.error('Cannot open page because client is not connected, try RedirectResponse from FastAPI instead')
