@@ -62,3 +62,14 @@ class LinePlot(Pyplot):
         self.fig.gca().set_ylim(min_y - pad_y, max_y + pad_y)
         self._convert_to_html()
         self.update()
+
+    def clear(self) -> None:
+        """Clear the line plot."""
+        super().clear()
+        self.x.clear()
+        for y in self.Y:
+            y.clear()
+        for line in self.lines:
+            line.set_data([], [])
+        self._convert_to_html()
+        self.update()
