@@ -54,7 +54,7 @@ class Client:
     @property
     def ip(self) -> Optional[str]:
         """Return the IP address of the client, or None if the client is not connected."""
-        return self.environ['asgi.scope']['client'][0] if self.environ else None
+        return self.environ['asgi.scope']['client'][0] if self.has_socket_connection else None
 
     @property
     def has_socket_connection(self) -> bool:
@@ -103,7 +103,7 @@ class Client:
         """Block execution until the client is connected."""
         self.is_waiting_for_connection = True
         deadline = time.time() + timeout
-        while not self.environ:
+        while not self.has_socket_connection:
             if time.time() > deadline:
                 raise TimeoutError(f'No connection after {timeout} seconds')
             await asyncio.sleep(check_interval)
@@ -111,7 +111,7 @@ class Client:
 
     async def disconnected(self, check_interval: float = 0.1) -> None:
         """Block execution until the client disconnects."""
-        if not self.environ:
+        if not self.has_socket_connection:
             await self.connected()
         self.is_waiting_for_disconnect = True
         while self.id in globals.clients:
