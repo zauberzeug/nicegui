@@ -6,7 +6,6 @@ from typing import List
 
 import requests
 from bs4 import BeautifulSoup
-from secure import SecurePath
 
 
 @dataclass
@@ -53,7 +52,8 @@ properties: List[Property] = []
 
 
 def get_soup(url: str) -> BeautifulSoup:
-    path = Path('/tmp') / url.split('/')[-1]
+    path = Path('/tmp/nicegui_tailwind') / url.split('/')[-1]
+    path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
         html = path.read_text()
     else:
@@ -83,15 +83,15 @@ for file in (Path(__file__).parent / 'nicegui' / 'tailwind_types').glob('*.py'):
 for property in properties:
     if not property.members:
         continue
-    with SecurePath(open(Path(__file__).parent / 'nicegui' / 'tailwind_types' / f'{property.snake_title}.py', 'w')) as f:
-        f.write('from typing_extensions import Literal\n')
+    with (Path(__file__).parent / 'nicegui' / 'tailwind_types' / f'{property.snake_title}.py').open('w') as f:
+        f.write('from typing import Literal\n')
         f.write('\n')
         f.write(f'{property.pascal_title} = Literal[\n')
         for short_member in property.short_members:
             f.write(f"    '{short_member}',\n")
         f.write(']\n')
 
-with open(Path(__file__).parent / 'nicegui' / 'tailwind.py', 'w') as f:
+with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w') as f:
     f.write('from __future__ import annotations\n')
     f.write('\n')
     f.write('from typing import TYPE_CHECKING, List, Optional, Union, overload\n')
@@ -128,7 +128,7 @@ with open(Path(__file__).parent / 'nicegui' / 'tailwind.py', 'w') as f:
     f.write('\n')
     f.write('    def __call__(self, *args) -> Tailwind:\n')
     f.write('        if not args:\n')
-    f.write('           return self\n')
+    f.write('            return self\n')
     f.write('        if isinstance(args[0], Tailwind):\n')
     f.write('            args[0].apply(self.element)\n')
     f.write('        else:\n')

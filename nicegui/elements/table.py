@@ -1,16 +1,11 @@
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Literal, Optional
 
-from typing_extensions import Literal
-
-from ..dependencies import register_component
 from ..element import Element
-from ..events import TableSelectionEventArguments, handle_event
+from ..events import GenericEventArguments, TableSelectionEventArguments, handle_event
 from .mixins.filter_element import FilterElement
 
-register_component('nicegui-table', __file__, 'table.js')
 
-
-class Table(FilterElement):
+class Table(FilterElement, component='table.js'):
 
     def __init__(self,
                  columns: List[Dict],
@@ -35,7 +30,7 @@ class Table(FilterElement):
 
         If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
         """
-        super().__init__(tag='nicegui-table')
+        super().__init__()
 
         self.rows = rows
         self.row_key = row_key
@@ -49,18 +44,38 @@ class Table(FilterElement):
         self._props['pagination'] = {'rowsPerPage': pagination or 0}
         self._props['selection'] = selection or 'none'
         self._props['selected'] = self.selected
+        self._props['fullscreen'] = False
 
-        def handle_selection(msg: Dict) -> None:
-            if msg['args']['added']:
+        def handle_selection(e: GenericEventArguments) -> None:
+            if e.args['added']:
                 if selection == 'single':
                     self.selected.clear()
-                self.selected.extend(msg['args']['rows'])
+                self.selected.extend(e.args['rows'])
             else:
-                self.selected[:] = [row for row in self.selected if row[row_key] not in msg['args']['keys']]
+                self.selected[:] = [row for row in self.selected if row[row_key] not in e.args['keys']]
             self.update()
             arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
             handle_event(on_select, arguments)
-        self.on('selection', handle_selection)
+        self.on('selection', handle_selection, ['added', 'rows', 'keys'])
+
+    @property
+    def is_fullscreen(self) -> bool:
+        """Whether the table is in fullscreen mode."""
+        return self._props['fullscreen']
+
+    @is_fullscreen.setter
+    def is_fullscreen(self, value: bool) -> None:
+        """Set fullscreen mode."""
+        self._props['fullscreen'] = value
+        self.update()
+
+    def set_fullscreen(self, value: bool) -> None:
+        """Set fullscreen mode."""
+        self.is_fullscreen = value
+
+    def toggle_fullscreen(self) -> None:
+        """Toggle fullscreen mode."""
+        self.is_fullscreen = not self.is_fullscreen
 
     def add_rows(self, *rows: Dict) -> None:
         """Add rows to the table."""
@@ -71,6 +86,7 @@ class Table(FilterElement):
         """Remove rows from the table."""
         keys = [row[self.row_key] for row in rows]
         self.rows[:] = [row for row in self.rows if row[self.row_key] not in keys]
+        self.selected[:] = [row for row in self.selected if row[self.row_key] not in keys]
         self.update()
 
     class row(Element):

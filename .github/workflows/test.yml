@@ -6,7 +6,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python: ["3.8", "3.9", "3.10", "3.11"]
       fail-fast: false
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -23,7 +23,7 @@ jobs:
       - name: install dependencies
         run: |
           poetry config virtualenvs.create false
-          poetry install
+          poetry install --all-extras
           # install packages to run the examples
           pip install opencv-python opencv-contrib-python-headless httpx replicate langchain openai simpy tortoise-orm
           pip install -r tests/requirements.txt
@@ -32,7 +32,7 @@ jobs:
       - name: test startup
         run: ./test_startup.sh
       - name: setup chromedriver
-        uses: nanasess/setup-chromedriver@v1
+        uses: nanasess/setup-chromedriver@v2.1.1
       - name: pytest
         run: pytest
       - name: upload screenshots

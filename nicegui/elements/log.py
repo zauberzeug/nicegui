@@ -2,13 +2,10 @@ import urllib.parse
 from collections import deque
 from typing import Any, Optional
 
-from ..dependencies import register_component
 from ..element import Element
 
-register_component('log', __file__, 'log.js')
 
-
-class Log(Element):
+class Log(Element, component='log.js'):
 
     def __init__(self, max_lines: Optional[int] = None) -> None:
         """Log view
@@ -17,7 +14,7 @@ class Log(Element):
 
         :param max_lines: maximum number of lines before dropping oldest ones (default: `None`)
         """
-        super().__init__('log')
+        super().__init__()
         self._props['max_lines'] = max_lines
         self._props['lines'] = ''
         self._classes = ['nicegui-log']

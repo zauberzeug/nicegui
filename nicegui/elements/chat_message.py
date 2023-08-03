@@ -1,13 +1,10 @@
 import html
 from typing import List, Optional, Union
 
-from ..dependencies import register_component
 from ..element import Element
 
-register_component('chat_message', __file__, 'chat_message.js')
 
-
-class ChatMessage(Element):
+class ChatMessage(Element, component='chat_message.js'):
 
     def __init__(self,
                  text: Union[str, List[str]], *,
@@ -30,7 +27,7 @@ class ChatMessage(Element):
         :param sent: render as a sent message (so from current user) (default: False)
         :param text_html: render text as HTML (default: False)
         """
-        super().__init__('chat_message')
+        super().__init__()
 
         if isinstance(text, str):
             text = [text]

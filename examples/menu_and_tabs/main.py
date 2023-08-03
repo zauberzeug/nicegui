@@ -2,7 +2,7 @@
 from nicegui import ui
 
 with ui.header().classes(replace='row items-center') as header:
-    ui.button(on_click=lambda: left_drawer.toggle()).props('flat color=white icon=menu')
+    ui.button(on_click=lambda: left_drawer.toggle(), icon='menu').props('flat color=white')
     with ui.tabs() as tabs:
         ui.tab('A')
         ui.tab('B')

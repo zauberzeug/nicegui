@@ -1,6 +1,4 @@
 import asyncio
-import os
-import socket
 import time
 import urllib.parse
 from pathlib import Path
@@ -15,10 +13,10 @@ from fastapi_socketio import SocketManager
 from nicegui import json
 from nicegui.json import NiceGUIJSONResponse
 
-from . import __version__, background_tasks, binding, favicon, globals, outbox
+from . import __version__, background_tasks, binding, favicon, globals, outbox, welcome
 from .app import App
 from .client import Client
-from .dependencies import js_components, js_dependencies
+from .dependencies import js_components, libraries
 from .element import Element
 from .error import error_content
 from .helpers import is_file, safe_invoke
@@ -44,16 +42,26 @@ def index(request: Request) -> Response:
     return globals.index_client.build_response(request)
 
 
-@app.get(f'/_nicegui/{__version__}' + '/dependencies/{id}/{name}')
-def get_dependencies(id: int, name: str):
-    if id in js_dependencies and js_dependencies[id].path.exists() and js_dependencies[id].path.name == name:
-        return FileResponse(js_dependencies[id].path, media_type='text/javascript')
-    raise HTTPException(status_code=404, detail=f'dependency "{name}" with ID {id} not found')
+@app.get(f'/_nicegui/{__version__}' + '/libraries/{key:path}')
+def get_library(key: str) -> FileResponse:
+    is_map = key.endswith('.map')
+    dict_key = key[:-4] if is_map else key
+    if dict_key in libraries:
+        path = libraries[dict_key].path
+        if is_map:
+            path = path.with_name(path.name + '.map')
+        if path.exists():
+            headers = {'Cache-Control': 'public, max-age=3600'}
+            return FileResponse(path, media_type='text/javascript', headers=headers)
+    raise HTTPException(status_code=404, detail=f'library "{key}" not found')
 
 
-@app.get(f'/_nicegui/{__version__}' + '/components/{name}')
-def get_components(name: str):
-    return FileResponse(js_components[name].path, media_type='text/javascript')
+@app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
+def get_component(key: str) -> FileResponse:
+    if key in js_components and js_components[key].path.exists():
+        headers = {'Cache-Control': 'public, max-age=3600'}
+        return FileResponse(js_components[key].path, media_type='text/javascript', headers=headers)
+    raise HTTPException(status_code=404, detail=f'component "{key}" not found')
 
 
 @app.on_event('startup')
@@ -84,23 +92,9 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     background_tasks.create(prune_slot_stacks())
     globals.state = globals.State.STARTED
     if with_welcome_message:
-        print_welcome_message()
-
-
-def print_welcome_message():
-    host = os.environ['NICEGUI_HOST']
-    port = os.environ['NICEGUI_PORT']
-    ips = set()
-    if host == '0.0.0.0':
-        try:
-            ips.update(set(info[4][0] for info in socket.getaddrinfo(socket.gethostname(), None) if len(info[4]) == 2))
-        except Exception:
-            pass  # NOTE: if we can't get the host's IP, we'll just use localhost
-    ips.discard('127.0.0.1')
-    addresses = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ['localhost'] + sorted(ips)]
-    if len(addresses) >= 2:
-        addresses[-1] = 'and ' + addresses[-1]
-    print(f'NiceGUI ready to go on {", ".join(addresses)}', flush=True)
+        welcome.print_message()
+    if globals.air:
+        background_tasks.create(globals.air.connect())
 
 
 @app.on_event('shutdown')
@@ -112,6 +106,8 @@ async def handle_shutdown() -> None:
         for t in globals.shutdown_handlers:
             safe_invoke(t)
     globals.state = globals.State.STOPPED
+    if globals.air:
+        await globals.air.disconnect()
 
 
 @app.exception_handler(404)
@@ -131,24 +127,32 @@ async def exception_handler_500(request: Request, exception: Exception) -> Respo
 
 
 @sio.on('handshake')
-def handle_handshake(sid: str) -> bool:
+def on_handshake(sid: str) -> bool:
     client = get_client(sid)
     if not client:
         return False
     client.environ = sio.get_environ(sid)
     sio.enter_room(sid, client.id)
+    handle_handshake(client)
+    return True
+
+
+def handle_handshake(client: Client) -> None:
     for t in client.connect_handlers:
         safe_invoke(t, client)
     for t in globals.connect_handlers:
         safe_invoke(t, client)
-    return True
 
 
 @sio.on('disconnect')
-def handle_disconnect(sid: str) -> None:
+def on_disconnect(sid: str) -> None:
     client = get_client(sid)
     if not client:
         return
+    handle_disconnect(client)
+
+
+def handle_disconnect(client: Client) -> None:
     if not client.shared:
         delete_client(client.id)
     for t in client.disconnect_handlers:
@@ -158,21 +162,32 @@ def handle_disconnect(sid: str) -> None:
 
 
 @sio.on('event')
-def handle_event(sid: str, msg: Dict) -> None:
+def on_event(sid: str, msg: Dict) -> None:
     client = get_client(sid)
     if not client or not client.has_socket_connection:
         return
+    handle_event(client, msg)
+
+
+def handle_event(client: Client, msg: Dict) -> None:
     with client:
         sender = client.elements.get(msg['id'])
         if sender:
+            msg['args'] = [None if arg is None else json.loads(arg) for arg in msg.get('args', [])]
+            if len(msg['args']) == 1:
+                msg['args'] = msg['args'][0]
             sender._handle_event(msg)
 
 
 @sio.on('javascript_response')
-def handle_javascript_response(sid: str, msg: Dict) -> None:
+def on_javascript_response(sid: str, msg: Dict) -> None:
     client = get_client(sid)
     if not client:
         return
+    handle_javascript_response(client, msg)
+
+
+def handle_javascript_response(client: Client, msg: Dict) -> None:
     client.waiting_javascript_commands[msg['request_id']] = msg['result']
 
 

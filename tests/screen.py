@@ -16,11 +16,9 @@ from nicegui import globals, ui
 
 from .test_helpers import TEST_DIR
 
-PORT = 3392
-IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-input']
-
 
 class Screen:
+    PORT = 3392
     IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = TEST_DIR / 'screenshots'
 
@@ -28,7 +26,7 @@ class Screen:
         self.selenium = selenium
         self.caplog = caplog
         self.server_thread = None
-        self.ui_run_kwargs = {'port': PORT, 'show': False, 'reload': False}
+        self.ui_run_kwargs = {'port': self.PORT, 'show': False, 'reload': False}
 
     def start_server(self) -> None:
         """Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script."""
@@ -61,7 +59,7 @@ class Screen:
         deadline = time.time() + timeout
         while True:
             try:
-                self.selenium.get(f'http://localhost:{PORT}{path}')
+                self.selenium.get(f'http://localhost:{self.PORT}{path}')
                 self.selenium.find_element(By.XPATH, '//body')  # ensure page and JS are loaded
                 break
             except Exception as e:
@@ -140,8 +138,8 @@ class Screen:
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 
-    def find_by_id(self, id: str) -> WebElement:
-        return self.selenium.find_element(By.ID, id)
+    def find_element(self, element: ui.element) -> WebElement:
+        return self.selenium.find_element(By.ID, f'c{element.id}')
 
     def find_by_tag(self, name: str) -> WebElement:
         return self.selenium.find_element(By.TAG_NAME, name)

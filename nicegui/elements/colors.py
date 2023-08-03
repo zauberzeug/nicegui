@@ -1,10 +1,7 @@
-from ..dependencies import register_component
 from ..element import Element
 
-register_component('colors', __file__, 'colors.js')
 
-
-class Colors(Element):
+class Colors(Element, component='colors.js'):
 
     def __init__(self, *,
                  primary='#5898d4',
@@ -19,7 +16,7 @@ class Colors(Element):
 
         Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/>`_.
         """
-        super().__init__('colors')
+        super().__init__()
         self._props['primary'] = primary
         self._props['secondary'] = secondary
         self._props['accent'] = accent

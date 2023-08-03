@@ -1,6 +1,7 @@
 import uuid
 
 from nicegui import app, events, ui
+from nicegui.globals import optional_features
 
 from . import demo
 from .documentation_tools import element_demo, heading, intro_demo, load_demo, subheading, text_demo
@@ -130,9 +131,11 @@ def create_full() -> None:
     load_demo(ui.table)
     load_demo(ui.aggrid)
     load_demo(ui.chart)
-    load_demo(ui.pyplot)
-    load_demo(ui.line_plot)
-    load_demo(ui.plotly)
+    if 'matplotlib' in optional_features:
+        load_demo(ui.pyplot)
+        load_demo(ui.line_plot)
+    if 'plotly' in optional_features:
+        load_demo(ui.plotly)
     load_demo(ui.linear_progress)
     load_demo(ui.circular_progress)
     load_demo(ui.spinner)
@@ -161,14 +164,16 @@ def create_full() -> None:
         add_face()
 
         ui.button('Add', on_click=add_face)
-        ui.button('Remove', on_click=lambda: container.remove(0))
+        ui.button('Remove', on_click=lambda: container.remove(0) if list(container) else None)
         ui.button('Clear', on_click=container.clear)
 
     load_demo(ui.expansion)
+    load_demo(ui.scroll_area)
     load_demo(ui.separator)
     load_demo(ui.splitter)
     load_demo('tabs')
     load_demo(ui.stepper)
+    load_demo(ui.carousel)
     load_demo(ui.menu)
 
     @text_demo('Tooltips', '''
@@ -544,10 +549,6 @@ def create_full() -> None:
 
     load_demo(ui.run)
 
-    # HACK: switch color to white for the next demo
-    demo_BROWSER_BGCOLOR = demo.BROWSER_BGCOLOR
-    demo.BROWSER_BGCOLOR = '#ffffff'
-
     @text_demo('Native Mode', '''
         You can enable native mode for NiceGUI by specifying `native=True` in the `ui.run` function.
         To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively.
@@ -571,8 +572,6 @@ def create_full() -> None:
         # ui.run(native=True, window_size=(400, 300), fullscreen=False)
         # END OF DEMO
         ui.button('enlarge', on_click=lambda: ui.notify('window will be set to 1000x700 in native mode'))
-    # HACK: restore color
-    demo.BROWSER_BGCOLOR = demo_BROWSER_BGCOLOR
 
     # Show a helpful workaround until issue is fixed upstream.
     # For more info see: https://github.com/r0x0r/pywebview/issues/1078
@@ -608,11 +607,15 @@ def create_full() -> None:
         A convenient alternative is the use of our [pre-built multi-arch Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
         With this command you can launch the script `main.py` in the current directory on the public port 80:
     ''').classes('bold-links arrow-links')
-    with demo.bash_window(classes='max-w-lg w-full h-52'):
+    with demo.bash_window(classes='max-w-lg w-full h-44'):
         ui.markdown('''
             ```bash
-            docker run -p 80:8080 -v $(pwd)/:/app/ \\
-                -d --restart always zauberzeug/nicegui:latest
+            docker run -it --restart always \\
+              -p 80:8080 \\
+              -e PUID=$(id -u) \\
+              -e PGID=$(id -g) \\
+              -v $(pwd)/:/app/ \\
+              zauberzeug/nicegui:latest
             ```
         ''')
     ui.markdown('''
@@ -620,7 +623,7 @@ def create_full() -> None:
         The `-d` tells docker to run in background and `--restart always` makes sure the container is restarted if the app crashes or the server reboots.
         Of course this can also be written in a Docker compose file:
     ''')
-    with demo.python_window('docker-compose.yml', classes='max-w-lg w-full h-52'):
+    with demo.python_window('docker-compose.yml', classes='max-w-lg w-full h-60'):
         ui.markdown('''
             ```yaml
             app:
@@ -628,15 +631,22 @@ def create_full() -> None:
                 restart: always
                 ports:
                     - 80:8080
+                environment:
+                    - PUID=1000 # change this to your user id
+                    - PGID=1000 # change this to your group id
                 volumes:
                     - ./:/app/
             ```
         ''')
+    ui.markdown('''
+        There are other handy features in the Docker image like non-root user execution and signal pass-through.
+        For more details we recommend to have a look at our [Docker example](https://github.com/zauberzeug/nicegui/tree/main/examples/docker_image).
+    ''').classes('bold-links arrow-links')
 
     ui.markdown('''
         You can provide SSL certificates directly using [FastAPI](https://fastapi.tiangolo.com/deployment/https/).
         In production we also like using reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/) to handle these details for us.
-        See our [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
+        See our development [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
 
         You may also have a look at [our demo for using a custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
         This will allow you to do very flexible deployments as described in the [FastAPI documentation](https://fastapi.tiangolo.com/deployment/).
@@ -745,5 +755,24 @@ def create_full() -> None:
         ```
         See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
     ''')
+
+    subheading('NiceGUI On Air')
+
+    ui.markdown('''
+        By using `ui.run(on_air=True)` you can share your local app with others over the internet 🧞.
+
+        When accessing the on-air URL, all libraries (like Vue, Quasar, ...) are loaded from our CDN.
+        Thereby only the raw content and events need to be transmitted by your local app.
+        This makes it blazing fast even if your app only has a poor internet connection (e.g. a mobile robot in the field).
+
+        Currently "On Air" is available as a tech preview and generates a random URL that is valid for 1 hour.
+        We will gradually improve stability and extend the service with password protection, custom URLs and more.
+        Please let us know your feedback on [GitHub](https://github.com/zauberzeug/nicegui/discussions),
+        [Reddit](https://www.reddit.com/r/nicegui/), or [Discord](https://discord.gg/3XkZVYJ).
+
+        **Data Privacy:**
+        We take your privacy very serious.
+        NiceGUI On Air does not log or store any content of the relayed data.
+    ''').classes('bold-links arrow-links')
 
     ui.element('div').classes('h-32')

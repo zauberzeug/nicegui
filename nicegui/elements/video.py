@@ -3,13 +3,10 @@ from pathlib import Path
 from typing import Union
 
 from .. import globals
-from ..dependencies import register_component
 from ..element import Element
 
-register_component('video', __file__, 'video.js')
 
-
-class Video(Element):
+class Video(Element, component='video.js'):
 
     def __init__(self, src: Union[str, Path], *,
                  controls: bool = True,
@@ -29,7 +26,7 @@ class Video(Element):
         See `here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events>`_
         for a list of events you can subscribe to using the generic event subscription `on()`.
         """
-        super().__init__('video')
+        super().__init__()
         if Path(src).is_file():
             src = globals.app.add_media_file(local_file=src)
         self._props['src'] = src

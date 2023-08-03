@@ -4,7 +4,7 @@ from pathlib import Path
 from nicegui import app, ui
 from nicegui.events import KeyEventArguments
 
-folder = Path(__file__).resolve().parent / 'slides'  # image source: https://pixabay.com/
+folder = Path(__file__).parent / 'slides'  # image source: https://pixabay.com/
 files = sorted(f.name for f in folder.glob('*.jpg'))
 index = 0
 

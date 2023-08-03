@@ -1,5 +1,3 @@
-import os
-
 __all__ = [
     'deprecated',
     'element',
@@ -11,6 +9,8 @@ __all__ = [
     'card',
     'card_actions',
     'card_section',
+    'carousel',
+    'carousel_slide',
     'chart',
     'chat_message',
     'checkbox',
@@ -32,6 +32,7 @@ __all__ = [
     'keyboard',
     'knob',
     'label',
+    'line_plot',
     'link',
     'link_target',
     'log',
@@ -43,10 +44,12 @@ __all__ = [
     'plotly',
     'circular_progress',
     'linear_progress',
+    'pyplot',
     'query',
     'radio',
     'row',
     'scene',
+    'scroll_area',
     'select',
     'separator',
     'slider',
@@ -88,6 +91,7 @@ __all__ = [
     'run_with',
 ]
 
+from . import globals
 from .deprecation import deprecated
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
@@ -98,6 +102,8 @@ from .elements.button import Button as button
 from .elements.card import Card as card
 from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section
+from .elements.carousel import Carousel as carousel
+from .elements.carousel import CarouselSlide as carousel_slide
 from .elements.chart import Chart as chart
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
@@ -119,6 +125,7 @@ from .elements.joystick import Joystick as joystick
 from .elements.keyboard import Keyboard as keyboard
 from .elements.knob import Knob as knob
 from .elements.label import Label as label
+from .elements.line_plot import LinePlot as line_plot
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
 from .elements.log import Log as log
@@ -130,10 +137,12 @@ from .elements.number import Number as number
 from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
+from .elements.pyplot import Pyplot as pyplot
 from .elements.query import query
 from .elements.radio import Radio as radio
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
+from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
 from .elements.slider import Slider as slider
@@ -172,9 +181,3 @@ from .page_layout import PageSticky as page_sticky
 from .page_layout import RightDrawer as right_drawer
 from .run import run
 from .run_with import run_with
-
-if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
-    from .elements.line_plot import LinePlot as line_plot
-    from .elements.pyplot import Pyplot as pyplot
-    plot = deprecated(pyplot, 'ui.plot', 'ui.pyplot', 317)
-    __all__.extend(['line_plot', 'pyplot', 'plot'])

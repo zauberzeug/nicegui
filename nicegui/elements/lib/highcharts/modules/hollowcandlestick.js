@@ -1,0 +1,16 @@
+/*
+ Highstock JS v11.1.0 (2023-06-05)
+
+ Hollow Candlestick series type for Highcharts Stock
+
+ (c) 2010-2021 Karol Kolodziej
+
+ License: www.highcharts.com/license
+*/
+'use strict';(function(a){"object"===typeof module&&module.exports?(a["default"]=a,module.exports=a):"function"===typeof define&&define.amd?define("highcharts/modules/hollowcandlestick",["highcharts","highcharts/modules/stock"],function(d){a(d);a.Highcharts=d;return a}):a("undefined"!==typeof Highcharts?Highcharts:void 0)})(function(a){function d(a,b,d,g){a.hasOwnProperty(b)||(a[b]=g.apply(null,d),"function"===typeof CustomEvent&&window.dispatchEvent(new CustomEvent("HighchartsModuleLoaded",{detail:{path:b,
+module:a[b]}})))}a=a?a._modules:{};d(a,"Series/HollowCandlestick/HollowCandlestickPoint.js",[a["Core/Series/SeriesRegistry.js"]],function(a){({seriesTypes:{candlestick:a}}=a);class b extends a.prototype.pointClass{constructor(){super(...arguments);this.series=void 0}getClassName(){let a=super.getClassName.apply(this);const b=this.series.hollowCandlestickData[this.index];b.isBullish||"up"!==b.trendDirection||(a+="-bearish-up");return a}}return b});d(a,"Series/HollowCandlestick/HollowCandlestickSeries.js",
+[a["Series/HollowCandlestick/HollowCandlestickPoint.js"],a["Core/Series/SeriesRegistry.js"],a["Core/Utilities.js"],a["Core/Axis/Axis.js"]],function(a,b,d,g){const {seriesTypes:{candlestick:h}}=b,{addEvent:k,merge:l}=d;class e extends h{constructor(){super(...arguments);this.data=void 0;this.hollowCandlestickData=[];this.points=this.options=void 0}getPriceMovement(){const a=this.allGroupedData||this.yData,c=this.hollowCandlestickData;if(!c.length&&a&&a.length){c.push({isBullish:!0,trendDirection:"up"});
+for(let f=1;f<a.length;f++)c.push(this.isBullish(a[f],a[f-1]))}}getLineColor(a){return"up"===a?this.options.upColor||"#06b535":this.options.color||"#f21313"}getPointFill(a){return a.isBullish?"transparent":"up"===a.trendDirection?this.options.upColor||"#06b535":this.options.color||"#f21313"}init(){super.init.apply(this,arguments);this.hollowCandlestickData=[]}isBullish(a,c){return{isBullish:a[0]<=a[3],trendDirection:a[3]<c[3]?"down":"up"}}pointAttribs(a,c){let b=super.pointAttribs.call(this,a,c);
+a=this.hollowCandlestickData[a.index];b.fill=this.getPointFill(a)||b.fill;b.stroke=this.getLineColor(a.trendDirection)||b.stroke;c&&(c=this.options.states[c],b.fill=c.color||b.fill,b.stroke=c.lineColor||b.stroke,b["stroke-width"]=c.lineWidth||b["stroke-width"]);return b}}e.defaultOptions=l(h.defaultOptions,{color:"#f21313",dataGrouping:{groupAll:!0,groupPixelWidth:10},lineColor:"#f21313",upColor:"#06b535",upLineColor:"#06b535"});k(e,"updatedData",function(){this.hollowCandlestickData.length&&(this.hollowCandlestickData.length=
+0)});k(g,"postProcessData",function(){this.series.forEach(function(a){a.is("hollowcandlestick")&&a.getPriceMovement()})});e.prototype.pointClass=a;b.registerSeriesType("hollowcandlestick",e);"";return e});d(a,"masters/modules/hollowcandlestick.src.js",[],function(){})});
+//# sourceMappingURL=hollowcandlestick.js.map

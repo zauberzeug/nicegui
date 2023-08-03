@@ -15,7 +15,7 @@ def main_demo() -> None:
     Some events, like `mousemove`, are fired very often.
     To avoid performance issues, you can use the `throttle` parameter to only call the handler every `throttle` seconds ("D").
 
-    The generic event handler can be synchronous or asynchronous and optionally takes an event dictionary as argument ("E").
+    The generic event handler can be synchronous or asynchronous and optionally takes `GenericEventArguments` as argument ("E").
     You can also specify which attributes of the JavaScript or Quasar event should be passed to the handler ("F").
     This can reduce the amount of data that needs to be transferred between the server and the client.
     """
@@ -26,11 +26,60 @@ def main_demo() -> None:
         ui.button('C').on('mousemove', lambda: ui.notify('You moved on button C.'))
         ui.button('D').on('mousemove', lambda: ui.notify('You moved on button D.'), throttle=0.5)
     with ui.row():
-        ui.button('E').on('mousedown', lambda e: ui.notify(str(e)))
-        ui.button('F').on('mousedown', lambda e: ui.notify(str(e)), ['ctrlKey', 'shiftKey'])
+        ui.button('E').on('mousedown', lambda e: ui.notify(e))
+        ui.button('F').on('mousedown', lambda e: ui.notify(e), ['ctrlKey', 'shiftKey'])
 
 
 def more() -> None:
+    @text_demo('Specifying event attributes', '''
+        **A list of strings** names the attributes of the JavaScript event object:
+            ```py
+            ui.button().on('click', handle_click, ['clientX', 'clientY'])
+            ```
+
+        **An empty list** requests _no_ attributes:
+            ```py
+            ui.button().on('click', handle_click, [])
+            ```
+
+        **The value `None`** represents _all_ attributes (the default):
+            ```py
+            ui.button().on('click', handle_click, None)
+            ```
+
+        **If the event is called with multiple arguments** like QTable's "row-click" `(evt, row, index) => void`,
+            you can define a list of argument definitions:
+            ```py
+            ui.table(...).on('rowClick', handle_click, [[], ['name'], None])
+            ```
+            In this example the "row-click" event will omit all arguments of the first `evt` argument,
+            send only the "name" attribute of the `row` argument and send the full `index`.
+
+        If the retrieved list of event arguments has length 1, the argument is automatically unpacked.
+        So you can write
+        ```py
+        ui.button().on('click', lambda e: print(e.args['clientX'], flush=True))
+        ```
+        instead of
+        ```py
+        ui.button().on('click', lambda e: print(e.args[0]['clientX'], flush=True))
+        ```
+
+        Note that by default all JSON-serializable attributes of all arguments are sent.
+        This is to simplify registering for new events and discovering their attributes.
+        If bandwidth is an issue, the arguments should be limited to what is actually needed on the server.
+    ''')
+    def event_attributes() -> None:
+        columns = [
+            {'name': 'name', 'label': 'Name', 'field': 'name'},
+            {'name': 'age', 'label': 'Age', 'field': 'age'},
+        ]
+        rows = [
+            {'name': 'Alice', 'age': 42},
+            {'name': 'Bob', 'age': 23},
+        ]
+        ui.table(columns, rows, 'name').on('rowClick', ui.notify, [[], ['name'], None])
+
     @text_demo('Modifiers', '''
         You can also include [key modifiers](https://vuejs.org/guide/essentials/event-handling.html#key-modifiers>) (shown in input "A"),
         modifier combinations (shown in input "B"),
@@ -49,7 +98,7 @@ def more() -> None:
     ''')
     async def custom_events() -> None:
         tabwatch = ui.checkbox('Watch browser tab re-entering') \
-            .on('tabvisible', lambda: ui.notify('welcome back') if tabwatch.value else None)
+            .on('tabvisible', lambda: ui.notify('Welcome back!') if tabwatch.value else None, args=[])
         ui.add_head_html(f'''
             <script>
             document.addEventListener('visibilitychange', () => {{

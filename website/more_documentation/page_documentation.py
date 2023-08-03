@@ -30,7 +30,7 @@ def more() -> None:
         def page(word: str, count: int):
             ui.label(word * count)
 
-        ui.link('Say hi to Santa!', 'repeat/Ho! /3')
+        ui.link('Say hi to Santa!', '/repeat/Ho! /3')
 
     @text_demo('Wait for Client Connection', '''
         To wait for a client connection, you can add a `client` argument to the decorated page function

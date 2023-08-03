@@ -1,16 +1,12 @@
-from typing import Any, Callable, Dict, List
-
-from typing_extensions import Literal
+from typing import Any, Callable, List, Literal
 
 from ..binding import BindableProperty
-from ..dependencies import register_component
 from ..element import Element
-from ..events import KeyboardAction, KeyboardKey, KeyboardModifiers, KeyEventArguments, handle_event
+from ..events import (GenericEventArguments, KeyboardAction, KeyboardKey, KeyboardModifiers, KeyEventArguments,
+                      handle_event)
 
-register_component('keyboard', __file__, 'keyboard.js')
 
-
-class Keyboard(Element):
+class Keyboard(Element, component='keyboard.js'):
     active = BindableProperty()
 
     def __init__(self,
@@ -28,7 +24,7 @@ class Keyboard(Element):
         :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: `True`)
         :param ignore: ignore keys when one of these element types is focussed (default: `['input', 'select', 'button', 'textarea']`)
         """
-        super().__init__('keyboard')
+        super().__init__()
         self.key_handler = on_key
         self.active = active
         self._props['events'] = ['keydown', 'keyup']
@@ -36,25 +32,25 @@ class Keyboard(Element):
         self._props['ignore'] = ignore
         self.on('key', self.handle_key)
 
-    def handle_key(self, msg: Dict) -> None:
+    def handle_key(self, e: GenericEventArguments) -> None:
         if not self.active:
             return
 
         action = KeyboardAction(
-            keydown=msg['args']['action'] == 'keydown',
-            keyup=msg['args']['action'] == 'keyup',
-            repeat=msg['args']['repeat'],
+            keydown=e.args['action'] == 'keydown',
+            keyup=e.args['action'] == 'keyup',
+            repeat=e.args['repeat'],
         )
         modifiers = KeyboardModifiers(
-            alt=msg['args']['altKey'],
-            ctrl=msg['args']['ctrlKey'],
-            meta=msg['args']['metaKey'],
-            shift=msg['args']['shiftKey'],
+            alt=e.args['altKey'],
+            ctrl=e.args['ctrlKey'],
+            meta=e.args['metaKey'],
+            shift=e.args['shiftKey'],
         )
         key = KeyboardKey(
-            name=msg['args']['key'],
-            code=msg['args']['code'],
-            location=msg['args']['location'],
+            name=e.args['key'],
+            code=e.args['code'],
+            location=e.args['location'],
         )
         arguments = KeyEventArguments(
             sender=self,

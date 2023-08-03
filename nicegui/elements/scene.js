@@ -1,3 +1,9 @@
+import * as THREE from "three";
+import { CSS2DRenderer, CSS2DObject } from "CSS2DRenderer";
+import { CSS3DRenderer, CSS3DObject } from "CSS3DRenderer";
+import { OrbitControls } from "OrbitControls";
+import { STLLoader } from "STLLoader";
+
 function texture_geometry(coords) {
   const geometry = new THREE.BufferGeometry();
   const nI = coords[0].length;
@@ -67,9 +73,9 @@ export default {
     light.position.set(5, 10, 40);
     this.scene.add(light);
 
-    let renderer = undefined;
+    this.renderer = undefined;
     try {
-      renderer = new THREE.WebGLRenderer({
+      this.renderer = new THREE.WebGLRenderer({
         antialias: true,
         alpha: true,
         canvas: this.$el.children[0],
@@ -82,18 +88,21 @@ export default {
       this.$el.style.border = "1px solid silver";
       return;
     }
-    renderer.setClearColor("#eee");
-    renderer.setSize(this.width, this.height);
+    this.renderer.setClearColor("#eee");
+    this.renderer.setSize(this.width, this.height);
 
-    const text_renderer = new THREE.CSS2DRenderer({
+    this.text_renderer = new CSS2DRenderer({
       element: this.$el.children[1],
     });
-    text_renderer.setSize(this.width, this.height);
+    this.text_renderer.setSize(this.width, this.height);
 
-    const text3d_renderer = new THREE.CSS3DRenderer({
+    this.text3d_renderer = new CSS3DRenderer({
       element: this.$el.children[2],
     });
-    text3d_renderer.setSize(this.width, this.height);
+    this.text3d_renderer.setSize(this.width, this.height);
+
+    this.$nextTick(() => this.resize());
+    window.addEventListener("resize", this.resize, false);
 
     if (this.grid) {
       const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: "#eee" }));
@@ -107,21 +116,21 @@ export default {
       grid.rotateX(Math.PI / 2);
       this.scene.add(grid);
     }
-    this.controls = new THREE.OrbitControls(this.camera, renderer.domElement);
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
       TWEEN.update();
-      renderer.render(this.scene, this.camera);
-      text_renderer.render(this.scene, this.camera);
-      text3d_renderer.render(this.scene, this.camera);
+      this.renderer.render(this.scene, this.camera);
+      this.text_renderer.render(this.scene, this.camera);
+      this.text3d_renderer.render(this.scene, this.camera);
     };
     render();
 
     const raycaster = new THREE.Raycaster();
     const click_handler = (mouseEvent) => {
-      let x = (mouseEvent.offsetX / renderer.domElement.width) * 2 - 1;
-      let y = -(mouseEvent.offsetY / renderer.domElement.height) * 2 + 1;
+      let x = (mouseEvent.offsetX / this.renderer.domElement.width) * 2 - 1;
+      let y = -(mouseEvent.offsetY / this.renderer.domElement.height) * 2 + 1;
       raycaster.setFromCamera({ x: x, y: y }, this.camera);
       this.$emit("click3d", {
         hits: raycaster
@@ -144,13 +153,17 @@ export default {
     this.$el.ondblclick = click_handler;
 
     this.texture_loader = new THREE.TextureLoader();
-    this.stl_loader = new THREE.STLLoader();
+    this.stl_loader = new STLLoader();
 
     const connectInterval = setInterval(async () => {
       if (window.socket.id === undefined) return;
-      this.$emit("init", window.socket.id);
+      this.$emit("init", { socket_id: window.socket.id });
       clearInterval(connectInterval);
     }, 100);
+  },
+
+  beforeDestroy() {
+    window.removeEventListener("resize", this.resize);
   },
 
   methods: {
@@ -179,12 +192,12 @@ export default {
         const div = document.createElement("div");
         div.textContent = args[0];
         div.style.cssText = args[1];
-        mesh = new THREE.CSS2DObject(div);
+        mesh = new CSS2DObject(div);
       } else if (type == "text3d") {
         const div = document.createElement("div");
         div.textContent = args[0];
         div.style.cssText = "userSelect:none;" + args[1];
-        mesh = new THREE.CSS3DObject(div);
+        mesh = new CSS3DObject(div);
       } else if (type == "texture") {
         const url = args[0];
         const coords = args[1];
@@ -343,6 +356,14 @@ export default {
           this.controls.target.set(p[6], p[7], p[8]);
         })
         .start();
+    },
+    resize() {
+      const { clientWidth, clientHeight } = this.$el;
+      this.renderer.setSize(clientWidth, clientHeight);
+      this.text_renderer.setSize(clientWidth, clientHeight);
+      this.text3d_renderer.setSize(clientWidth, clientHeight);
+      this.camera.aspect = clientWidth / clientHeight;
+      this.camera.updateProjectionMatrix();
     },
   },
 

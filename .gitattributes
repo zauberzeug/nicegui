@@ -1,0 +1,13 @@
+nicegui/elements/tailwind.py       linguist-generated
+nicegui/elements/tailwind_types/** linguist-generated
+nicegui/elements/lib/**            linguist-vendored
+nicegui/static/es-module-shims.js  linguist-vendored
+nicegui/static/fonts/**            linguist-vendored
+nicegui/static/fonts.css           linguist-vendored
+nicegui/static/lang/**             linguist-vendored
+nicegui/static/quasar.*            linguist-vendored
+nicegui/static/socket.*            linguist-vendored
+nicegui/static/tailwindcss.*       linguist-vendored
+nicegui/static/vue.*               linguist-vendored
+website/**                         linguist-documentation
+examples/**                        linguist-documentation

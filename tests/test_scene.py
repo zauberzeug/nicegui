@@ -1,6 +1,8 @@
+import numpy as np
 from selenium.common.exceptions import JavascriptException
 
 from nicegui import ui
+from nicegui.elements.scene_object3d import Object3D
 
 from .screen import Screen
 
@@ -15,7 +17,7 @@ def test_moving_sphere_with_timer(screen: Screen):
     def position() -> None:
         for _ in range(3):
             try:
-                pos = screen.selenium.execute_script(f'return scene_{scene.id}.getObjectByName("sphere").position.z')
+                pos = screen.selenium.execute_script(f'return scene_c{scene.id}.getObjectByName("sphere").position.z')
                 if pos is not None:
                     return pos
             except JavascriptException as e:
@@ -38,7 +40,7 @@ def test_no_object_duplication_on_index_client(screen: Screen):
     screen.open('/')
     screen.switch_to(0)
     screen.wait(0.2)
-    assert screen.selenium.execute_script(f'return scene_{scene.id}.children.length') == 5
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5
 
 
 def test_no_object_duplication_with_page_builder(screen: Screen):
@@ -55,9 +57,9 @@ def test_no_object_duplication_with_page_builder(screen: Screen):
     screen.open('/')
     screen.switch_to(0)
     screen.wait(0.2)
-    assert screen.selenium.execute_script(f'return scene_{scene.id}.children.length') == 5
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5
     screen.switch_to(1)
-    assert screen.selenium.execute_script(f'return scene_{scene.id}.children.length') == 5
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5
 
 
 def test_deleting_group(screen: Screen):
@@ -89,7 +91,42 @@ def test_replace_scene(screen: Screen):
 
     screen.open('/')
     screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_{scene.id}.children[4].name') == 'sphere'
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'sphere'
     screen.click('Replace scene')
     screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_{scene.id}.children[4].name') == 'box'
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'box'
+
+
+def test_create_dynamically(screen: Screen):
+    ui.button('Create', on_click=lambda: ui.scene())
+
+    screen.open('/')
+    screen.click('Create')
+    assert screen.find_by_tag('canvas')
+
+
+def test_rotation_matrix_from_euler():
+    omega, phi, kappa = 0.1, 0.2, 0.3
+    Rx = np.array([[1, 0, 0], [0, np.cos(omega), -np.sin(omega)], [0, np.sin(omega), np.cos(omega)]])
+    Ry = np.array([[np.cos(phi), 0, np.sin(phi)], [0, 1, 0], [-np.sin(phi), 0, np.cos(phi)]])
+    Rz = np.array([[np.cos(kappa), -np.sin(kappa), 0], [np.sin(kappa), np.cos(kappa), 0], [0, 0, 1]])
+    R = Rz @ Ry @ Rx
+    assert np.allclose(Object3D.rotation_matrix_from_euler(omega, phi, kappa), R)
+
+
+def test_object_creation_via_context(screen: Screen):
+    with ui.scene() as scene:
+        scene.box().with_name('box')
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'box'
+
+
+def test_object_creation_via_attribute(screen: Screen):
+    scene = ui.scene()
+    scene.box().with_name('box')
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'box'

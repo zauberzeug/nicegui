@@ -4,7 +4,7 @@ import logging
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterator, List, Literal, Optional, Set, Union
 
 from socketio import AsyncServer
 from uvicorn import Server
@@ -14,6 +14,7 @@ from .app import App
 from .language import Language
 
 if TYPE_CHECKING:
+    from .air import Air
     from .client import Client
     from .slot import Slot
 
@@ -32,6 +33,7 @@ loop: Optional[asyncio.AbstractEventLoop] = None
 log: logging.Logger = logging.getLogger('nicegui')
 state: State = State.STOPPED
 ui_run_has_been_called: bool = False
+optional_features: Set[str] = set()
 
 reload: bool
 title: str
@@ -40,14 +42,27 @@ favicon: Optional[Union[str, Path]]
 dark: Optional[bool]
 language: Language
 binding_refresh_interval: float
-excludes: List[str]
 tailwind: bool
+prod_js: bool
+endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
+air: Optional['Air'] = None
+socket_io_js_query_params: Dict = {}
 socket_io_js_extra_headers: Dict = {}
-
+# NOTE we favor websocket over polling
+socket_io_js_transports: List[Literal['websocket', 'polling']] = ['websocket', 'polling']
 _socket_id: Optional[str] = None
 slot_stacks: Dict[int, List['Slot']] = {}
 clients: Dict[str, 'Client'] = {}
 index_client: 'Client'
+quasar_config: Dict = {
+    'brand': {
+        'primary': '#5898d4',
+    },
+    'loadingBar': {
+        'color': 'primary',
+        'skipHijack': False,
+    },
+}
 
 page_routes: Dict[Callable[..., Any], str] = {}
 

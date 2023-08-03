@@ -11,7 +11,7 @@ from fastapi.templating import Jinja2Templates
 from nicegui import json
 
 from . import __version__, globals, outbox
-from .dependencies import generate_js_imports, generate_vue_content
+from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
 
@@ -34,8 +34,9 @@ class Client:
         self.is_waiting_for_disconnect: bool = False
         self.environ: Optional[Dict[str, Any]] = None
         self.shared = shared
+        self.on_air = False
 
-        with Element('q-layout', _client=self).props('view="HHH LpR FFF"').classes('nicegui-layout') as self.layout:
+        with Element('q-layout', _client=self).props('view="hhh lpr fff"').classes('nicegui-layout') as self.layout:
             with Element('q-page-container') as self.page_container:
                 with Element('q-page'):
                     self.content = Element('div').classes('nicegui-content')
@@ -53,7 +54,7 @@ class Client:
     @property
     def ip(self) -> Optional[str]:
         """Return the IP address of the client, or None if the client is not connected."""
-        return self.environ['asgi.scope']['client'][0] if self.environ else None
+        return self.environ['asgi.scope']['client'][0] if self.has_socket_connection else None
 
     @property
     def has_socket_connection(self) -> bool:
@@ -69,17 +70,22 @@ class Client:
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
-        vue_html, vue_styles, vue_scripts = generate_vue_content()
         elements = json.dumps({id: element._to_dict() for id, element in self.elements.items()})
+        socket_io_js_query_params = {**globals.socket_io_js_query_params, 'client_id': self.id}
+        vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse('index.html', {
             'request': request,
             'version': __version__,
-            'client_id': str(self.id),
-            'elements': elements,
+            'elements': elements.replace('&', '&amp;')
+                                .replace('<', '&lt;')
+                                .replace('>', '&gt;')
+                                .replace('`', '&#96;'),
             'head_html': self.head_html,
-            'body_html': f'{self.body_html}\n{vue_html}\n{vue_styles}',
-            'vue_scripts': vue_scripts,
-            'js_imports': generate_js_imports(prefix),
+            'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
+            'vue_scripts': '\n'.join(vue_scripts),
+            'imports': json.dumps(imports),
+            'js_imports': '\n'.join(js_imports),
+            'quasar_config': json.dumps(globals.quasar_config),
             'title': self.page.resolve_title(),
             'viewport': self.page.resolve_viewport(),
             'favicon_url': get_favicon_url(self.page, prefix),
@@ -87,14 +93,17 @@ class Client:
             'language': self.page.resolve_language(),
             'prefix': prefix,
             'tailwind': globals.tailwind,
+            'prod_js': globals.prod_js,
+            'socket_io_js_query_params': socket_io_js_query_params,
             'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
+            'socket_io_js_transports': globals.socket_io_js_transports,
         }, status_code, {'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'})
 
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
         """Block execution until the client is connected."""
         self.is_waiting_for_connection = True
         deadline = time.time() + timeout
-        while not self.environ:
+        while not self.has_socket_connection:
             if time.time() > deadline:
                 raise TimeoutError(f'No connection after {timeout} seconds')
             await asyncio.sleep(check_interval)
@@ -102,6 +111,8 @@ class Client:
 
     async def disconnected(self, check_interval: float = 0.1) -> None:
         """Block execution until the client disconnects."""
+        if not self.has_socket_connection:
+            await self.connected()
         self.is_waiting_for_disconnect = True
         while self.id in globals.clients:
             await asyncio.sleep(check_interval)
@@ -130,10 +141,10 @@ class Client:
             await asyncio.sleep(check_interval)
         return self.waiting_javascript_commands.pop(request_id)
 
-    def open(self, target: Union[Callable[..., Any], str]) -> None:
+    def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else globals.page_routes[target]
-        outbox.enqueue_message('open', path, self.id)
+        outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 
     def download(self, url: str, filename: Optional[str] = None) -> None:
         """Download a file from the given URL."""

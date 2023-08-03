@@ -1,0 +1,108 @@
+{
+  "vue": {
+    "destination": "static",
+    "keep": ["package/dist/vue\\.global(\\.prod)?\\.js"],
+    "rename": {
+      "package/dist": ".."
+    }
+  },
+  "quasar": {
+    "destination": "static",
+    "keep": [
+      "package/dist/quasar\\.umd(\\.prod)?\\.js",
+      "package/dist/quasar(\\.prod)?\\.css",
+      "package/dist/lang/.*\\.umd\\.prod\\.js"
+    ],
+    "rename": {
+      "package/dist": ".."
+    }
+  },
+  "tailwindcss": {
+    "destination": "static",
+    "keep": [],
+    "download": "https://cdn.tailwindcss.com",
+    "rename": "../tailwindcss.min.js"
+  },
+  "socket.io": {
+    "destination": "static",
+    "keep": ["package/client-dist/socket\\.io\\.min\\.js(\\.map)?"],
+    "rename": {
+      "package/client-dist": ".."
+    }
+  },
+  "es-module-shims": {
+    "destination": "static",
+    "keep": ["package/dist/es-module-shims\\.js"],
+    "rename": {
+      "package/dist": ".."
+    }
+  },
+  "aggrid": {
+    "package": "ag-grid-community",
+    "destination": "elements/lib",
+    "keep": ["package/dist/ag-grid-community(\\.min)?\\.js"],
+    "rename": {
+      "package/dist/": ""
+    }
+  },
+  "highcharts": {
+    "destination": "elements/lib",
+    "keep": [
+      "package/highcharts\\.js(\\.map)?",
+      "package/highcharts-more\\.js(\\.map)?",
+      "package/highcharts-3d\\.js(\\.map)?",
+      "package/modules/[^\\.]*\\.js(\\.map)?"
+    ],
+    "rename": {
+      "package/": ""
+    }
+  },
+  "mermaid": {
+    "destination": "elements/lib",
+    "keep": ["package/dist/.*\\.m?js"],
+    "rename": {
+      "package/dist/": ""
+    }
+  },
+  "nipplejs": {
+    "destination": "elements/lib",
+    "keep": ["package/dist/nipplejs(\\.min)?\\.js"],
+    "rename": {
+      "package/dist/": ""
+    }
+  },
+  "plotly": {
+    "package": "plotly.js",
+    "destination": "elements/lib",
+    "keep": ["package/dist/plotly(\\.min)?\\.js"],
+    "rename": {
+      "package/dist/": ""
+    }
+  },
+  "three": {
+    "destination": "elements/lib",
+    "keep": [
+      "package/build/three\\.module\\.js",
+      "package/examples/jsm/renderers/CSS2DRenderer(\\.min)?\\.js",
+      "package/examples/jsm/renderers/CSS3DRenderer(\\.min)?\\.js",
+      "package/examples/jsm/controls/OrbitControls(\\.min)?\\.js",
+      "package/examples/jsm/loaders/STLLoader(\\.min)?\\.js",
+      "package/examples/jsm/libs/tween\\.module\\.min\\.js"
+    ],
+    "rename": {
+      "package/build/": "",
+      "package/examples/jsm/renderers/": "modules/",
+      "package/examples/jsm/controls/": "modules/",
+      "package/examples/jsm/loaders/": "modules/",
+      "package/examples/jsm/libs/": "modules/"
+    }
+  },
+  "tween": {
+    "package": "@tweenjs/tween.js",
+    "destination": "elements/lib",
+    "keep": ["package/dist/tween\\.umd(\\.min)?\\.js"],
+    "rename": {
+      "package/dist/": ""
+    }
+  }
+}

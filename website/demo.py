@@ -1,6 +1,6 @@
 import inspect
 import re
-from typing import Callable, Optional, Union
+from typing import Callable, Literal, Optional, Union
 
 import isort
 
@@ -8,20 +8,20 @@ from nicegui import ui
 
 from .intersection_observer import IntersectionObserver as intersection_observer
 
-PYTHON_BGCOLOR = '#00000010'
-PYTHON_COLOR = '#eef5fb'
-BASH_BGCOLOR = '#00000010'
-BASH_COLOR = '#e8e8e8'
-BROWSER_BGCOLOR = '#00000010'
-BROWSER_COLOR = '#ffffff'
+WindowType = Literal['python', 'bash', 'browser']
 
+UNCOMMENT_PATTERN = re.compile(r'^(\s*)# ?')
 
-uncomment_pattern = re.compile(r'^(\s*)# ?')
+WINDOW_BG_COLORS = {
+    'python': ('#eef5fb', '#2b323b'),
+    'bash': ('#e8e8e8', '#2b323b'),
+    'browser': ('#ffffff', '#181c21'),
+}
 
 
 def uncomment(text: str) -> str:
     """non-executed lines should be shown in the code examples"""
-    return uncomment_pattern.sub(r'\1', text)
+    return UNCOMMENT_PATTERN.sub(r'\1', text)
 
 
 def demo(f: Callable) -> Callable:
@@ -50,15 +50,11 @@ def demo(f: Callable) -> Callable:
             ui.markdown(f'````python\n{code}\n````')
             ui.icon('content_copy', size='xs') \
                 .classes('absolute right-2 top-10 opacity-10 hover:opacity-80 cursor-pointer') \
-                .on('click', copy_code)
+                .on('click', copy_code, [])
         with browser_window(title=getattr(f, 'tab', None),
                             classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
             intersection_observer(on_intersection=f)
     return f
-
-
-def _window_header(bgcolor: str) -> ui.row():
-    return ui.row().classes(f'w-full h-8 p-2 bg-[{bgcolor}]')
 
 
 def _dots() -> None:
@@ -68,43 +64,37 @@ def _dots() -> None:
         ui.icon('circle').classes('text-[13px] text-green-400')
 
 
-def _title(title: str) -> None:
-    ui.label(title).classes('text-sm text-gray-600 absolute left-1/2 top-[6px]').style('transform: translateX(-50%)')
-
-
-def _tab(content: Union[str, Callable], color: str, bgcolor: str) -> None:
-    with ui.row().classes('gap-0'):
-        with ui.label().classes(f'w-2 h-[24px] bg-[{color}]'):
-            ui.label().classes(f'w-full h-full bg-[{bgcolor}] rounded-br-[6px]')
-        with ui.row().classes(f'text-sm text-gray-600 px-6 py-1 h-[24px] rounded-t-[6px] bg-[{color}] items-center gap-2'):
-            if callable(content):
-                content()
-            else:
-                ui.label(content)
-        with ui.label().classes(f'w-2 h-[24px] bg-[{color}]'):
-            ui.label().classes(f'w-full h-full bg-[{bgcolor}] rounded-bl-[6px]')
-
-
-def window(color: str, bgcolor: str, *,
-           title: str = '', tab: Union[str, Callable] = '', classes: str = '') -> ui.column:
-    with ui.card().classes(f'no-wrap bg-[{color}] rounded-xl p-0 gap-0 {classes}') \
+def window(type: WindowType, *, title: str = '', tab: Union[str, Callable] = '', classes: str = '') -> ui.column:
+    bar_color = ('#00000010', '#ffffff10')
+    color = WINDOW_BG_COLORS[type]
+    with ui.card().classes(f'no-wrap bg-[{color[0]}] dark:bg-[{color[1]}] rounded-xl p-0 gap-0 {classes}') \
             .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
-        with _window_header(bgcolor):
+        with ui.row().classes(f'w-full h-8 p-2 bg-[{bar_color[0]}] dark:bg-[{bar_color[1]}]'):
             _dots()
             if title:
-                _title(title)
+                ui.label(title) \
+                    .classes('text-sm text-gray-600 dark:text-gray-400 absolute left-1/2 top-[6px]') \
+                    .style('transform: translateX(-50%)')
             if tab:
-                _tab(tab, color, bgcolor)
+                with ui.row().classes('gap-0'):
+                    with ui.label().classes(f'w-2 h-[24px] bg-[{color[0]}] dark:bg-[{color[1]}]'):
+                        ui.label().classes(
+                            f'w-full h-full bg-[{bar_color[0]}] dark:bg-[{bar_color[1]}] rounded-br-[6px]')
+                    with ui.row().classes(f'text-sm text-gray-600 dark:text-gray-400 px-6 py-1 h-[24px] rounded-t-[6px] bg-[{color[0]}] dark:bg-[{color[1]}] items-center gap-2'):
+                        tab() if callable(tab) else ui.label(tab)
+                    with ui.label().classes(f'w-2 h-[24px] bg-[{color[0]}] dark:bg-[{color[1]}]'):
+                        ui.label().classes(
+                            f'w-full h-full bg-[{bar_color[0]}] dark:bg-[{bar_color[1]}] rounded-bl-[6px]')
         return ui.column().classes('w-full h-full overflow-auto')
 
 
 def python_window(title: Optional[str] = None, *, classes: str = '') -> ui.card:
-    return window(PYTHON_COLOR, PYTHON_BGCOLOR, title=title or 'main.py', classes=classes).classes('p-2 python-window')
+    return window('python', title=title or 'main.py', classes=classes).classes('p-2 python-window')
 
 
 def bash_window(*, classes: str = '') -> ui.card:
-    return window(BASH_COLOR, BASH_BGCOLOR, title='bash', classes=classes).classes('p-2 bash-window')
+    return window('bash', title='bash', classes=classes).classes('p-2 bash-window')
 
 
 def browser_window(title: Optional[Union[str, Callable]] = None, *, classes: str = '') -> ui.card:
-    return window(BROWSER_COLOR, BROWSER_BGCOLOR, tab=title or 'NiceGUI', classes=classes).classes('p-4 browser-window')
+    return window('browser', tab=title or 'NiceGUI', classes=classes).classes('p-4 browser-window')

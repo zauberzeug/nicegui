@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Optional
 
 from . import background_tasks, globals
 from .helpers import KWONLY_SLOTS
@@ -14,6 +14,18 @@ if TYPE_CHECKING:
 class EventArguments:
     sender: 'Element'
     client: 'Client'
+
+
+@dataclass(**KWONLY_SLOTS)
+class GenericEventArguments(EventArguments):
+    args: Dict[str, Any]
+
+    def __getitem__(self, key: str) -> Any:
+        if key == 'args':
+            globals.log.warning('msg["args"] is deprecated, use e.args instead '
+                                '(see https://github.com/zauberzeug/nicegui/pull/1095)')
+            return self.args
+        raise KeyError(key)
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -268,9 +280,19 @@ class KeyEventArguments(EventArguments):
     modifiers: KeyboardModifiers
 
 
-def handle_event(handler: Optional[Callable[..., Any]],
-                 arguments: Union[EventArguments, Dict], *,
-                 sender: Optional['Element'] = None) -> None:
+@dataclass(**KWONLY_SLOTS)
+class ScrollEventArguments(EventArguments):
+    vertical_position: float
+    vertical_percentage: float
+    vertical_size: float
+    vertical_container_size: float
+    horizontal_position: float
+    horizontal_percentage: float
+    horizontal_size: float
+    horizontal_container_size: float
+
+
+def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArguments) -> None:
     if handler is None:
         return
     try:
@@ -278,15 +300,13 @@ def handle_event(handler: Optional[Callable[..., Any]],
                                 p.kind is not Parameter.VAR_POSITIONAL and
                                 p.kind is not Parameter.VAR_KEYWORD
                                 for p in signature(handler).parameters.values())
-        sender = arguments.sender if isinstance(arguments, EventArguments) else sender
-        assert sender is not None and sender.parent_slot is not None
-        if sender.is_ignoring_events:
+        if arguments.sender.is_ignoring_events:
             return
-        with sender.parent_slot:
+        with arguments.sender.parent_slot:
             result = handler(arguments) if expects_arguments else handler()
         if isinstance(result, Awaitable):
             async def wait_for_result():
-                with sender.parent_slot:
+                with arguments.sender.parent_slot:
                     await result
             if globals.loop and globals.loop.is_running():
                 background_tasks.create(wait_for_result(), name=str(handler))

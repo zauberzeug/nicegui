@@ -1,5 +1,6 @@
 import asyncio
 import functools
+import hashlib
 import inspect
 import mimetypes
 import socket
@@ -27,6 +28,11 @@ mimetypes.init()
 KWONLY_SLOTS = {'kw_only': True, 'slots': True} if sys.version_info >= (3, 10) else {}
 
 
+def is_pytest() -> bool:
+    """Check if the code is running in pytest."""
+    return 'pytest' in sys.modules
+
+
 def is_coroutine_function(object: Any) -> bool:
     """Check if the object is a coroutine function.
 
@@ -48,6 +54,10 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
         return Path(path).is_file()
     except OSError:
         return False
+
+
+def hash_file_path(path: Path) -> str:
+    return hashlib.sha256(str(path).encode()).hexdigest()[:32]
 
 
 def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional['Client'] = None) -> None:

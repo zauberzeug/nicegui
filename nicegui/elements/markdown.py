@@ -6,13 +6,11 @@ from typing import List
 import markdown2
 from pygments.formatters import HtmlFormatter
 
-from ..dependencies import register_component
+from .mermaid import Mermaid
 from .mixins.content_element import ContentElement
 
-register_component('markdown', __file__, 'markdown.js', ['lib/mermaid.min.js'])
 
-
-class Markdown(ContentElement):
+class Markdown(ContentElement, component='markdown.js'):
 
     def __init__(self, content: str = '', *, extras: List[str] = ['fenced-code-blocks', 'tables']) -> None:
         """Markdown Element
@@ -23,9 +21,15 @@ class Markdown(ContentElement):
         :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)
         """
         self.extras = extras
-        super().__init__(tag='markdown', content=content)
+        super().__init__(content=content)
         self._classes = ['nicegui-markdown']
-        self._props['codehilite_css'] = HtmlFormatter(nobackground=True).get_style_defs('.codehilite')
+        self._props['codehilite_css'] = (
+            HtmlFormatter(nobackground=True).get_style_defs('.codehilite') +
+            HtmlFormatter(nobackground=True, style='github-dark').get_style_defs('.body--dark .codehilite')
+        )
+        if 'mermaid' in extras:
+            self._props['use_mermaid'] = True
+            self.libraries.append(Mermaid.exposed_libraries[0])
 
     def on_content_change(self, content: str) -> None:
         html = prepare_content(content, extras=' '.join(self.extras))

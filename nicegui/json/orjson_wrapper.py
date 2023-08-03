@@ -1,9 +1,13 @@
 from decimal import Decimal
 from typing import Any, Optional, Tuple
 
-import numpy as np
 import orjson
 from fastapi import Response
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 ORJSON_OPTS = orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NON_STR_KEYS
 
@@ -11,8 +15,7 @@ ORJSON_OPTS = orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NON_STR_KEYS
 def dumps(obj: Any, sort_keys: bool = False, separators: Optional[Tuple[str, str]] = None):
     """Serializes a Python object to a JSON-encoded string.
 
-    By default, this function supports serializing numpy arrays,
-    which Python's json module does not.
+    By default, this function supports serializing NumPy arrays, which Python's json module does not.
 
     Uses package `orjson` internally.
     """
@@ -40,8 +43,8 @@ def loads(value: str) -> Any:
 
 
 def _orjson_converter(obj):
-    """Custom serializer/converter, e.g. for numpy object arrays."""
-    if isinstance(obj, np.ndarray) and obj.dtype == np.object_:
+    """Custom serializer/converter, e.g. for NumPy object arrays."""
+    if np and isinstance(obj, np.ndarray) and obj.dtype == np.object_:
         return obj.tolist()
     if isinstance(obj, Decimal):
         return float(obj)

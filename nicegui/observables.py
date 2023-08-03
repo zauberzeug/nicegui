@@ -1,6 +1,4 @@
-from typing import Any, Callable, Dict, Iterable, List, Set, Union, overload
-
-from typing_extensions import SupportsIndex
+from typing import Any, Callable, Dict, Iterable, List, Set, SupportsIndex, Union, overload
 
 
 class ObservableDict(dict):

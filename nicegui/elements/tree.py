@@ -1,8 +1,7 @@
-from typing import Any, Callable, Dict, List, Optional
-
-from nicegui.events import ValueChangeEventArguments, handle_event
+from typing import Any, Callable, List, Optional
 
 from ..element import Element
+from ..events import GenericEventArguments, ValueChangeEventArguments, handle_event
 
 
 class Tree(Element):
@@ -43,17 +42,17 @@ class Tree(Element):
                 self._props[name] = value
                 self.update()
 
-        def handle_selected(msg: Dict) -> None:
-            update_prop('selected', msg['args'])
-            handle_event(on_select, ValueChangeEventArguments(sender=self, client=self.client, value=msg['args']))
+        def handle_selected(e: GenericEventArguments) -> None:
+            update_prop('selected', e.args)
+            handle_event(on_select, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
         self.on('update:selected', handle_selected)
 
-        def handle_expanded(msg: Dict) -> None:
-            update_prop('expanded', msg['args'])
-            handle_event(on_expand, ValueChangeEventArguments(sender=self, client=self.client, value=msg['args']))
+        def handle_expanded(e: GenericEventArguments) -> None:
+            update_prop('expanded', e.args)
+            handle_event(on_expand, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
         self.on('update:expanded', handle_expanded)
 
-        def handle_ticked(msg: Dict) -> None:
-            update_prop('ticked', msg['args'])
-            handle_event(on_tick, ValueChangeEventArguments(sender=self, client=self.client, value=msg['args']))
+        def handle_ticked(e: GenericEventArguments) -> None:
+            update_prop('ticked', e.args)
+            handle_event(on_tick, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
         self.on('update:ticked', handle_ticked)

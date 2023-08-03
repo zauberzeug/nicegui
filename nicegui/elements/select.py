@@ -2,15 +2,12 @@ import re
 from copy import deepcopy
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from nicegui.dependencies import register_component
-
+from ..events import GenericEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
 
-register_component('select', __file__, 'select.js')
 
-
-class Select(ChoiceElement, DisableableElement):
+class Select(ChoiceElement, DisableableElement, component='select.js'):
 
     def __init__(self,
                  options: Union[List, Dict], *,
@@ -35,12 +32,11 @@ class Select(ChoiceElement, DisableableElement):
         """
         self.multiple = multiple
         if multiple:
-            self.EVENT_ARGS = None
             if value is None:
                 value = []
             elif not isinstance(value, list):
                 value = [value]
-        super().__init__(tag='select', options=options, value=value, on_change=on_change)
+        super().__init__(options=options, value=value, on_change=on_change)
         if label is not None:
             self._props['label'] = label
         if with_input:
@@ -52,25 +48,25 @@ class Select(ChoiceElement, DisableableElement):
         self._props['multiple'] = multiple
         self._props['clearable'] = clearable
 
-    def on_filter(self, event: Dict) -> None:
+    def on_filter(self, e: GenericEventArguments) -> None:
         self.options = [
             option
             for option in self.original_options
-            if not event['args'] or re.search(event['args'], option, re.IGNORECASE)
+            if not e.args or re.search(e.args, option, re.IGNORECASE)
         ]
         self.update()
 
-    def _msg_to_value(self, msg: Dict) -> Any:
+    def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         if self.multiple:
-            if msg['args'] is None:
+            if e.args is None:
                 return []
             else:
-                return [self._values[arg['value']] for arg in msg['args']]
+                return [self._values[arg['value']] for arg in e.args]
         else:
-            if msg['args'] is None:
+            if e.args is None:
                 return None
             else:
-                return self._values[msg['args']['value']]
+                return self._values[e.args['value']]
 
     def _value_to_model_value(self, value: Any) -> Any:
         if self.multiple:

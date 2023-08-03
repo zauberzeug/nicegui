@@ -1,5 +1,3 @@
-import numpy as np
-
 from nicegui import ui
 
 from ..documentation_tools import text_demo
@@ -34,7 +32,7 @@ def more() -> None:
                     'type': 'scatter',
                     'name': 'Trace 2',
                     'x': [1, 2, 3, 4],
-                    'y': np.array([1.4, 1.8, 3.8, 3.2]),
+                    'y': [1.4, 1.8, 3.8, 3.2],
                     'line': {'dash': 'dot', 'width': 3},
                 },
             ],
@@ -53,7 +51,8 @@ def more() -> None:
         To send the new plot to the browser, make sure to explicitly call `plot.update()` or `ui.update(plot)`.
     ''')
     def plot_updates():
-        import numpy as np
+        from random import random
+
         import plotly.graph_objects as go
 
         fig = go.Figure()
@@ -61,7 +60,7 @@ def more() -> None:
         plot = ui.plotly(fig).classes('w-full h-40')
 
         def add_trace():
-            fig.add_trace(go.Scatter(x=np.arange(10), y=np.random.randn(10)))
+            fig.add_trace(go.Scatter(x=[1, 2, 3], y=[random(), random(), random()]))
             plot.update()
 
         ui.button('Add trace', on_click=add_trace)

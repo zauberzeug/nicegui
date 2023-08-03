@@ -4,13 +4,21 @@ from ..documentation_tools import text_demo
 
 
 def main_demo() -> None:
-    with ui.card().tight() as card:
+    with ui.card().tight():
         ui.image('https://picsum.photos/id/684/640/360')
         with ui.card_section():
             ui.label('Lorem ipsum dolor sit amet, consectetur adipiscing elit, ...')
 
 
 def more() -> None:
+    @text_demo('Card without shadow', '''
+        You can remove the shadow from a card by adding the `no-shadow` class.
+        The following demo shows a 1 pixel wide border instead.
+    ''')
+    def card_without_shadow() -> None:
+        with ui.card().classes('no-shadow border-[1px]'):
+            ui.label('See, no shadow!')
+
     @text_demo('The issue with nested borders', '''
         The following example shows a table nested in a card.
         Cards have a default padding in NiceGUI, so the table is not flush with the card's border.

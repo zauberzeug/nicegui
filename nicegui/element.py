@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import inspect
 import re
-import warnings
-from copy import deepcopy
+from copy import copy, deepcopy
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Union
 
 from typing_extensions import Self
@@ -10,6 +11,7 @@ from typing_extensions import Self
 from nicegui import json
 
 from . import binding, events, globals, outbox, storage
+from .dependencies import JsComponent, Library, register_library, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
@@ -22,8 +24,12 @@ PROPS_PATTERN = re.compile(r'([:\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.
 
 
 class Element(Visibility):
+    component: Optional[JsComponent] = None
+    libraries: List[Library] = []
+    extra_libraries: List[Library] = []
+    exposed_libraries: List[Library] = []
 
-    def __init__(self, tag: str, *, _client: Optional[Client] = None) -> None:
+    def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
         """Generic Element
 
         This class is the base class for all other UI elements.
@@ -36,7 +42,7 @@ class Element(Visibility):
         self.client = _client or globals.get_client()
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
-        self.tag = tag
+        self.tag = tag if tag else self.component.tag if self.component else 'div'
         self._classes: List[str] = []
         self._style: Dict[str, str] = {}
         self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
@@ -57,6 +63,38 @@ class Element(Visibility):
         outbox.enqueue_update(self)
         if self.parent_slot:
             outbox.enqueue_update(self.parent_slot.parent)
+
+    def __init_subclass__(cls, *,
+                          component: Union[str, Path, None] = None,
+                          libraries: List[Union[str, Path]] = [],
+                          exposed_libraries: List[Union[str, Path]] = [],
+                          extra_libraries: List[Union[str, Path]] = [],
+                          ) -> None:
+        super().__init_subclass__()
+        base = Path(inspect.getfile(cls)).parent
+
+        def glob_absolute_paths(file: Union[str, Path]) -> List[Path]:
+            path = Path(file)
+            if not path.is_absolute():
+                path = base / path
+            return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
+
+        cls.component = copy(cls.component)
+        cls.libraries = copy(cls.libraries)
+        cls.extra_libraries = copy(cls.extra_libraries)
+        cls.exposed_libraries = copy(cls.exposed_libraries)
+        if component:
+            for path in glob_absolute_paths(component):
+                cls.component = register_vue_component(path)
+        for library in libraries:
+            for path in glob_absolute_paths(library):
+                cls.libraries.append(register_library(path))
+        for library in extra_libraries:
+            for path in glob_absolute_paths(library):
+                cls.extra_libraries.append(register_library(path))
+        for library in exposed_libraries:
+            for path in glob_absolute_paths(library):
+                cls.exposed_libraries.append(register_library(path, expose=True))
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
@@ -96,6 +134,17 @@ class Element(Visibility):
             'text': self._text,
             'slots': self._collect_slot_dict(),
             'events': [listener.to_dict() for listener in self._event_listeners.values()],
+            'component': {
+                'key': self.component.key,
+                'name': self.component.name,
+                'tag': self.component.tag
+            } if self.component else None,
+            'libraries': [
+                {
+                    'key': library.key,
+                    'name': library.name,
+                } for library in self.libraries
+            ],
         }
 
     @staticmethod
@@ -218,14 +267,10 @@ class Element(Visibility):
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
         """
         if handler:
-            if args and '*' in args:
-                url = f'https://github.com/zauberzeug/nicegui/issues/644'
-                warnings.warn(DeprecationWarning(f'Event args "*" is deprecated, omit this parameter instead ({url})'))
-                args = None
             listener = EventListener(
                 element_id=self.id,
                 type=type,
-                args=args,
+                args=[args] if args and isinstance(args[0], str) else args,
                 handler=handler,
                 throttle=throttle,
                 leading_events=leading_events,
@@ -239,7 +284,8 @@ class Element(Visibility):
     def _handle_event(self, msg: Dict) -> None:
         listener = self._event_listeners[msg['listener_id']]
         storage.request_contextvar.set(listener.request)
-        events.handle_event(listener.handler, msg, sender=self)
+        args = events.GenericEventArguments(sender=self, client=self.client, args=msg['args'])
+        events.handle_event(listener.handler, args)
 
     def update(self) -> None:
         """Update the element on the client side."""
@@ -267,6 +313,7 @@ class Element(Visibility):
         descendants = [self.client.elements[id] for id in self._collect_descendant_ids()[1:]]
         binding.remove(descendants, Element)
         for element in descendants:
+            element.delete()
             del self.client.elements[element.id]
         for slot in self.slots.values():
             slot.children.clear()
@@ -296,13 +343,12 @@ class Element(Visibility):
             children = list(self)
             element = children[element]
         binding.remove([element], Element)
+        element.delete()
         del self.client.elements[element.id]
         for slot in self.slots.values():
             slot.children[:] = [e for e in slot if e.id != element.id]
         self.update()
 
     def delete(self) -> None:
-        """Called when the corresponding client is deleted.
-
-        Can be overridden to perform cleanup.
-        """
+        """Perform cleanup when the element is deleted."""
+        outbox.enqueue_delete(self)

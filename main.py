@@ -1,20 +1,16 @@
 #!/usr/bin/env python3
 import importlib
 import inspect
-
-if True:
-    # increasing max decode packets to be able to transfer images
-    # see https://github.com/miguelgrinberg/python-engineio/issues/142
-    from engineio.payload import Payload
-    Payload.max_decode_packets = 500
-
 import os
 from pathlib import Path
 from typing import Awaitable, Callable, Optional
+from urllib.parse import parse_qs
 
 from fastapi import Request
 from fastapi.responses import FileResponse, RedirectResponse, Response
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 import prometheus
 from nicegui import Client, app
@@ -47,6 +43,11 @@ def logo_square() -> FileResponse:
     return FileResponse(svg.PATH / 'logo_square.png', media_type='image/png')
 
 
+@app.post('/dark_mode')
+async def dark_mode(request: Request) -> None:
+    app.storage.browser['dark_mode'] = (await request.json()).get('value')
+
+
 @app.middleware('http')
 async def redirect_reference_to_documentation(request: Request,
                                               call_next: Callable[[Request], Awaitable[Response]]) -> Response:
@@ -54,10 +55,42 @@ async def redirect_reference_to_documentation(request: Request,
         return RedirectResponse('/documentation')
     return await call_next(request)
 
-# NOTE in our global fly.io deployment we need to make sure that the websocket connects back to the same instance
-fly_instance_id = os.environ.get('FLY_ALLOC_ID', '').split('-')[0]
-if fly_instance_id:
-    nicegui_globals.socket_io_js_extra_headers['fly-force-instance-id'] = fly_instance_id
+# NOTE In our global fly.io deployment we need to make sure that we connect back to the same instance.
+fly_instance_id = os.environ.get('FLY_ALLOC_ID', 'local').split('-')[0]
+nicegui_globals.socket_io_js_extra_headers['fly-force-instance-id'] = fly_instance_id  # for HTTP long polling
+nicegui_globals.socket_io_js_query_params['fly_instance_id'] = fly_instance_id  # for websocket (FlyReplayMiddleware)
+
+
+class FlyReplayMiddleware(BaseHTTPMiddleware):
+    """Replay to correct fly.io instance.
+
+    If the wrong instance was picked by the fly.io load balancer, we use the fly-replay header
+    to repeat the request again on the right instance.
+
+    This only works if the correct instance is provided as a query_string parameter.
+    """
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        query_string = scope.get('query_string', b'').decode()
+        query_params = parse_qs(query_string)
+        target_instance = query_params.get('fly_instance_id', [fly_instance_id])[0]
+
+        async def send_wrapper(message):
+            if target_instance != fly_instance_id:
+                if message['type'] == 'websocket.close':
+                    # fly.io only seems to look at the fly-replay header if websocket is accepted
+                    message = {'type': 'websocket.accept'}
+                if 'headers' not in message:
+                    message['headers'] = []
+                message['headers'].append([b'fly-replay', f'instance={target_instance}'.encode()])
+            await send(message)
+        await self.app(scope, receive, send_wrapper)
+
+
+app.add_middleware(FlyReplayMiddleware)
 
 
 def add_head_html() -> None:
@@ -74,6 +107,13 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
         'Examples': '/#examples',
         'Why?': '/#why',
     }
+    dark_mode = ui.dark_mode(value=app.storage.browser.get('dark_mode'), on_change=lambda e: ui.run_javascript(f'''
+        fetch('/dark_mode', {{
+            method: 'POST',
+            headers: {{'Content-Type': 'application/json'}},
+            body: JSON.stringify({{value: {e.value}}}),
+        }});
+    ''', respond=False))
     with ui.header() \
             .classes('items-center duration-200 p-0 px-4 no-wrap') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
@@ -82,21 +122,34 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
         with ui.link(target=index_page).classes('row gap-4 items-center no-wrap mr-auto'):
             svg.face().classes('w-8 stroke-white stroke-2 max-[550px]:hidden')
             svg.word().classes('w-24')
-        with ui.row().classes('max-lg:hidden'):
+
+        with ui.row().classes('max-[1050px]:hidden'):
             for title, target in menu_items.items():
                 ui.link(title, target).classes(replace='text-lg text-white')
+
         search = Search()
         search.create_button()
-        with ui.link(target='https://discord.gg/TEpFeAaF4f').classes('max-[445px]:hidden').tooltip('Discord'):
+
+        with ui.element().classes('max-[360px]:hidden'):
+            ui.button(icon='dark_mode', on_click=lambda: dark_mode.set_value(None)) \
+                .props('flat fab-mini color=white').bind_visibility_from(dark_mode, 'value', value=True)
+            ui.button(icon='light_mode', on_click=lambda: dark_mode.set_value(True)) \
+                .props('flat fab-mini color=white').bind_visibility_from(dark_mode, 'value', value=False)
+            ui.button(icon='brightness_auto', on_click=lambda: dark_mode.set_value(False)) \
+                .props('flat fab-mini color=white').bind_visibility_from(dark_mode, 'value', lambda mode: mode is None)
+
+        with ui.link(target='https://discord.gg/TEpFeAaF4f').classes('max-[455px]:hidden').tooltip('Discord'):
             svg.discord().classes('fill-white scale-125 m-1')
-        with ui.link(target='https://www.reddit.com/r/nicegui/').classes('max-[395px]:hidden').tooltip('Reddit'):
+        with ui.link(target='https://www.reddit.com/r/nicegui/').classes('max-[405px]:hidden').tooltip('Reddit'):
             svg.reddit().classes('fill-white scale-125 m-1')
-        with ui.link(target='https://github.com/zauberzeug/nicegui/').tooltip('GitHub'):
+        with ui.link(target='https://github.com/zauberzeug/nicegui/').classes('max-[305px]:hidden').tooltip('GitHub'):
             svg.github().classes('fill-white scale-125 m-1')
+
         add_star().classes('max-[490px]:hidden')
-        with ui.row().classes('lg:hidden'):
+
+        with ui.row().classes('min-[1051px]:hidden'):
             with ui.button(icon='more_vert').props('flat color=white round'):
-                with ui.menu().classes('bg-primary text-white text-lg').props(remove='no-parent-event'):
+                with ui.menu().classes('bg-primary text-white text-lg'):
                     for title, target in menu_items.items():
                         ui.menu_item(title, on_click=lambda target=target: ui.open(target))
 
@@ -108,7 +161,7 @@ async def index_page(client: Client) -> None:
     add_header()
 
     with ui.row().classes('w-full h-screen items-center gap-8 pr-4 no-wrap into-section'):
-        svg.face(half=True).classes('stroke-black w-[200px] md:w-[230px] lg:w-[300px]')
+        svg.face(half=True).classes('stroke-black dark:stroke-white w-[200px] md:w-[230px] lg:w-[300px]')
         with ui.column().classes('gap-4 md:gap-8 pt-32'):
             title('Meet the *NiceGUI*.')
             subtitle('And let any browser be the frontend of your Python code.') \
@@ -228,7 +281,7 @@ async def index_page(client: Client) -> None:
                 'generic [Vue](https://vuejs.org/) to Python bridge',
                 'dynamic GUI through [Quasar](https://quasar.dev/)',
                 'content is served with [FastAPI](http://fastapi.tiangolo.com/)',
-                'Python 3.7+',
+                'Python 3.8+',
             ])
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
@@ -244,8 +297,8 @@ async def index_page(client: Client) -> None:
                     .classes('text-white text-2xl md:text-3xl font-medium')
                 ui.html('Fun-Fact: This whole website is also coded with NiceGUI.') \
                     .classes('text-white text-lg md:text-xl')
-            ui.link('Documentation', '/documentation') \
-                .classes('rounded-full mx-auto px-12 py-2 text-white bg-white font-medium text-lg md:text-xl')
+            ui.link('Documentation', '/documentation').style('color: black !important') \
+                .classes('rounded-full mx-auto px-12 py-2 bg-white font-medium text-lg md:text-xl')
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
         link_target('examples', '-50px')
@@ -285,8 +338,12 @@ async def index_page(client: Client) -> None:
             example_link('Pandas DataFrame', 'displays an editable [pandas](https://pandas.pydata.org) DataFrame')
             example_link('Lightbox', 'A thumbnail gallery where each image can be clicked to enlarge')
             example_link('ROS2', 'Using NiceGUI as web interface for a ROS2 robot')
+            example_link('Docker Image',
+                         'Demonstrate using the official'
+                         '[zauberzeug/nicegui](https://hub.docker.com/r/zauberzeug/nicegui) docker image')
+            example_link('Download Text as File', 'providing in-memory data like strings as file download')
 
-    with ui.row().classes('bg-primary w-full min-h-screen mt-16'):
+    with ui.row().classes('dark-box min-h-screen mt-16'):
         link_target('why')
         with ui.column().classes('''
                 max-w-[1600px] m-auto

@@ -2,20 +2,10 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from .. import binding, globals
-from ..dependencies import register_component
 from ..element import Element
-from ..events import SceneClickEventArguments, SceneClickHit, handle_event
+from ..events import GenericEventArguments, SceneClickEventArguments, SceneClickHit, handle_event
 from ..helpers import KWONLY_SLOTS
 from .scene_object3d import Object3D
-
-register_component('scene', __file__, 'scene.js', [
-    'lib/three.min.js',
-    'lib/CSS2DRenderer.js',
-    'lib/CSS3DRenderer.js',
-    'lib/OrbitControls.js',
-    'lib/STLLoader.js',
-    'lib/tween.umd.min.js',
-])
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -36,7 +26,16 @@ class SceneObject:
     id: str = 'scene'
 
 
-class Scene(Element):
+class Scene(Element,
+            component='scene.js',
+            libraries=['lib/tween/tween.umd.js'],
+            exposed_libraries=[
+                'lib/three/three.module.js',
+                'lib/three/modules/CSS2DRenderer.js',
+                'lib/three/modules/CSS3DRenderer.js',
+                'lib/three/modules/OrbitControls.js',
+                'lib/three/modules/STLLoader.js',
+            ]):
     from .scene_objects import Box as box
     from .scene_objects import Curve as curve
     from .scene_objects import Cylinder as cylinder
@@ -71,7 +70,7 @@ class Scene(Element):
         :param grid: whether to display a grid
         :param on_click: callback to execute when a 3d object is clicked
         """
-        super().__init__('scene')
+        super().__init__()
         self._props['width'] = width
         self._props['height'] = height
         self._props['grid'] = grid
@@ -83,9 +82,19 @@ class Scene(Element):
         self.on('init', self.handle_init)
         self.on('click3d', self.handle_click)
 
-    def handle_init(self, msg: Dict) -> None:
+    def __enter__(self) -> 'Scene':
+        Object3D.current_scene = self
+        return super().__enter__()
+
+    def __getattribute__(self, name: str) -> Any:
+        attribute = super().__getattribute__(name)
+        if isinstance(attribute, type) and issubclass(attribute, Object3D):
+            Object3D.current_scene = self
+        return attribute
+
+    def handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True
-        with globals.socket_id(msg['args']):
+        with globals.socket_id(e.args['socket_id']):
             self.move_camera(duration=0)
             for object in self.objects.values():
                 object.send()
@@ -95,23 +104,23 @@ class Scene(Element):
             return
         super().run_method(name, *args)
 
-    def handle_click(self, msg: Dict) -> None:
+    def handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
             sender=self,
             client=self.client,
-            click_type=msg['args']['click_type'],
-            button=msg['args']['button'],
-            alt=msg['args']['alt_key'],
-            ctrl=msg['args']['ctrl_key'],
-            meta=msg['args']['meta_key'],
-            shift=msg['args']['shift_key'],
+            click_type=e.args['click_type'],
+            button=e.args['button'],
+            alt=e.args['alt_key'],
+            ctrl=e.args['ctrl_key'],
+            meta=e.args['meta_key'],
+            shift=e.args['shift_key'],
             hits=[SceneClickHit(
                 object_id=hit['object_id'],
                 object_name=hit['object_name'],
                 x=hit['point']['x'],
                 y=hit['point']['y'],
                 z=hit['point']['z'],
-            ) for hit in msg['args']['hits']],
+            ) for hit in e.args['hits']],
         )
         handle_event(self.on_click, arguments)
 

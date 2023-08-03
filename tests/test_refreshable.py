@@ -31,7 +31,7 @@ def test_refreshable(screen: Screen) -> None:
     screen.should_contain('[]')
 
 
-async def test_async_refreshable(screen: Screen) -> None:
+def test_async_refreshable(screen: Screen) -> None:
     numbers = []
 
     @ui.refreshable
@@ -126,3 +126,46 @@ def test_refresh_with_arguments(screen: Screen):
     a = 3
     screen.click('Refresh 3')
     screen.should_contain('a=3, b=1')
+
+
+def test_refresh_deleted_element(screen: Screen):
+    @ui.refreshable
+    def some_ui():
+        ui.label('some text')
+
+    with ui.card() as card:
+        some_ui()
+
+    ui.button('Refresh', on_click=some_ui.refresh)
+    ui.button('Clear', on_click=card.clear)
+
+    some_ui()
+
+    screen.open('/')
+    screen.should_contain('some text')
+
+    screen.click('Clear')
+    screen.click('Refresh')
+
+
+def test_refresh_with_function_reference(screen: Screen):
+    # https://github.com/zauberzeug/nicegui/issues/1283
+    class Test:
+
+        def __init__(self, name):
+            self.name = name
+            self.ui()
+
+        @ui.refreshable
+        def ui(self):
+            ui.notify(f'Refreshing {self.name}')
+            ui.button(self.name, on_click=self.ui.refresh)
+
+    Test('A')
+    Test('B')
+
+    screen.open('/')
+    screen.click('A')
+    screen.should_contain('Refreshing A')
+    screen.click('B')
+    screen.should_contain('Refreshing B')

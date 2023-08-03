@@ -36,5 +36,5 @@ with ui.row().classes('items-center'):
         .props('no-caps')
     message = ui.input('message', value='NiceGUI')
 
-# NOTE on windows reload must be disabled to make asyncio.create_subprocess_exec work (see https://github.com/zauberzeug/nicegui/issues/486)
-ui.run(reload=platform.system() != "Windows")
+# NOTE: On Windows reload must be disabled to make asyncio.create_subprocess_exec work (see https://github.com/zauberzeug/nicegui/issues/486)
+ui.run(reload=platform.system() != 'Windows')

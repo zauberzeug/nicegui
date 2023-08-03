@@ -1,9 +1,6 @@
-try:
-    import importlib.metadata as importlib_metadata
-except ModuleNotFoundError:
-    import importlib_metadata
+import importlib.metadata
 
-__version__: str = importlib_metadata.version('nicegui')
+__version__: str = importlib.metadata.version('nicegui')
 
 from . import elements, globals, ui
 from .api_router import APIRouter

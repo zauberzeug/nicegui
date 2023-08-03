@@ -41,7 +41,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
       - name: verify
         shell: bash
-        run: for i in {1..100}; do python -m pip install 'nicegui==${{ env.VERSION }}' && break || sleep 2; done
+        run: for i in {1..100}; do sleep 2; python -m pip install 'nicegui==${{ env.VERSION }}' && break; done; sleep 5
 
   docker:
     needs: pypi

@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 from typing import Dict, Union
 
-import plotly.graph_objects as go
-
-from ..dependencies import js_dependencies, register_component
+from .. import globals
 from ..element import Element
 
-register_component('plotly', __file__, 'plotly.vue', [], ['lib/plotly.min.js'])
+try:
+    import plotly.graph_objects as go
+    globals.optional_features.add('plotly')
+except ImportError:
+    pass
 
 
-class Plotly(Element):
+class Plotly(Element, component='plotly.vue', libraries=['lib/plotly/plotly.min.js']):
 
     def __init__(self, figure: Union[Dict, go.Figure]) -> None:
         """Plotly Element
@@ -25,10 +29,12 @@ class Plotly(Element):
         :param figure: Plotly figure to be rendered. Can be either a `go.Figure` instance, or
                        a `dict` object with keys `data`, `layout`, `config` (optional).
         """
-        super().__init__('plotly')
+        if not 'plotly' in globals.optional_features:
+            raise ImportError('Plotly is not installed. Please run "pip install nicegui[plotly]".')
+
+        super().__init__()
 
         self.figure = figure
-        self._props['lib'] = [d.import_path for d in js_dependencies.values() if d.path.name == 'plotly.min.js'][0]
         self.update()
 
     def update_figure(self, figure: Union[Dict, go.Figure]):
@@ -38,13 +44,16 @@ class Plotly(Element):
 
     def update(self) -> None:
         super().update()
-        self._props['options'] = self._get_figure_json()
+        options = self._get_figure_json()
+        options['config'] = \
+            {**options['config'], **{'responsive': True}} if 'config' in options else {'responsive': True}
+        self._props['options'] = options
         self.run_method('update', self._props['options'])
 
     def _get_figure_json(self) -> Dict:
         if isinstance(self.figure, go.Figure):
             # convert go.Figure to dict object which is directly JSON serializable
-            # orjson supports numpy array serialization
+            # orjson supports NumPy array serialization
             return self.figure.to_plotly_json()
 
         if isinstance(self.figure, dict):

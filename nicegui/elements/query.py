@@ -2,17 +2,14 @@ from typing import Optional
 
 from typing_extensions import Self
 
-from ..dependencies import register_component
 from ..element import Element
 from ..globals import get_client
 
-register_component('query', __file__, 'query.js')
 
-
-class Query(Element):
+class Query(Element, component='query.js'):
 
     def __init__(self, selector: str) -> None:
-        super().__init__('query')
+        super().__init__()
         self._props['selector'] = selector
         self._props['classes'] = []
         self._props['style'] = {}
@@ -62,6 +59,8 @@ def query(selector: str) -> Query:
     To manipulate elements like the document body, you can use the `ui.query` function.
     With the query result you can add classes, styles, and attributes like with every other UI element.
     This can be useful for example to change the background color of the page (e.g. `ui.query('body').classes('bg-green')`).
+
+    :param selector: the CSS selector (e.g. "body", "#my-id", ".my-class", "div > p")
     """
     for element in get_client().elements.values():
         if isinstance(element, Query) and element._props['selector'] == selector:

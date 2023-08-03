@@ -4,6 +4,10 @@ body {
   overflow-x: hidden;
   background-color: #f8f8f8;
   font-family: "Fira Sans", Roboto, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --q-dark-page: #222;
+}
+html:has(.body--dark) {
+  background-color: #222;
 }
 .browser-window {
   font-family: Roboto, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -46,6 +50,12 @@ a:active:not(.browser-window *) {
   background-color: #5898d4d0;
   backdrop-filter: blur(5px);
 }
+.body--dark .q-header {
+  background-color: #3e6a94;
+}
+.body--dark .q-header.fade {
+  background-color: #3e6a94d0;
+}
 
 .scroll-indicator:after {
   content: "";
@@ -60,6 +70,10 @@ a:active:not(.browser-window *) {
   -webkit-animation: sdb04 2s infinite;
   animation: sdb04 1.5s infinite;
   transition-timing-function: ease;
+}
+.body--dark .scroll-indicator:after {
+  border-left: 3px solid #bbb;
+  border-bottom: 3px solid #bbb;
 }
 @-webkit-keyframes sdb04 {
   0% {
@@ -108,6 +122,9 @@ dl.docinfo p {
 .dark-box {
   background-color: #5898d4;
   width: 100%;
+}
+.body--dark .dark-box {
+  background-color: #3e6a94;
 }
 
 @media only screen and (min-width: 1024px) {

@@ -138,6 +138,21 @@ def test_wait_for_disconnect(screen: Screen):
     assert events == ['connected', 'disconnected', 'connected']
 
 
+def test_wait_for_disconnect_without_awaiting_connected(screen: Screen):
+    events = []
+
+    @ui.page('/')
+    async def page(client: Client):
+        await client.disconnected()
+        events.append('disconnected')
+
+    screen.open('/')
+    screen.wait(0.5)
+    screen.open('/')
+    screen.wait(0.5)
+    assert events == ['disconnected']
+
+
 def test_adding_elements_after_connected(screen: Screen):
     @ui.page('/')
     async def page(client: Client):

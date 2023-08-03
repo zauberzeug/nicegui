@@ -1,6 +1,4 @@
-from typing import Optional
-
-from typing_extensions import Literal
+from typing import Literal, Optional
 
 from . import globals
 from .element import Element

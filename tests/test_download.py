@@ -1,5 +1,7 @@
 from pathlib import Path
+from typing import Generator
 
+import pytest
 from fastapi.responses import PlainTextResponse
 
 from nicegui import app, ui
@@ -7,15 +9,20 @@ from nicegui import app, ui
 from .conftest import DOWNLOAD_DIR
 from .screen import Screen
 
-IMAGE_FILE = Path(__file__).parent.parent / 'examples' / 'slideshow' / 'slides' / 'slide1.jpg'
+
+@pytest.fixture
+def test_route() -> Generator[str, None, None]:
+    TEST_ROUTE = '/static/test.py'
+    yield TEST_ROUTE
+    app.remove_route(TEST_ROUTE)
 
 
-def test_download_text_file(screen: Screen):
-    @app.get('/static/test.txt')
+def test_download_text_file(screen: Screen, test_route: str):
+    @app.get(test_route)
     def test():
         return PlainTextResponse('test')
 
-    ui.button('Download', on_click=lambda: ui.download('static/test.txt'))
+    ui.button('Download', on_click=lambda: ui.download(test_route))
 
     screen.open('/')
     screen.click('Download')
@@ -24,6 +31,7 @@ def test_download_text_file(screen: Screen):
 
 
 def test_downloading_local_file_as_src(screen: Screen):
+    IMAGE_FILE = Path(__file__).parent.parent / 'examples' / 'slideshow' / 'slides' / 'slide1.jpg'
     ui.button('download', on_click=lambda: ui.download(IMAGE_FILE))
 
     screen.open('/')

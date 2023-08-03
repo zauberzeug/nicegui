@@ -2,14 +2,11 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, cast
 
-from ..dependencies import register_component
 from ..element import Element
 from ..functions.javascript import run_javascript
 
-register_component('aggrid', __file__, 'aggrid.js', ['lib/ag-grid-community.min.js'])
 
-
-class AgGrid(Element):
+class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-community.min.js']):
 
     def __init__(self, options: Dict, *, html_columns: List[int] = [], theme: str = 'balham') -> None:
         """AG Grid
@@ -22,7 +19,7 @@ class AgGrid(Element):
         :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
         :param theme: AG Grid theme (default: 'balham')
         """
-        super().__init__('aggrid')
+        super().__init__()
         self._props['options'] = options
         self._props['html_columns'] = html_columns
         self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']
@@ -79,3 +76,34 @@ class AgGrid(Element):
         """
         rows = await self.get_selected_rows()
         return rows[0] if rows else None
+
+    async def get_client_data(self) -> List[Dict]:
+        """Get the data from the client including any edits made by the client.
+
+        This method is especially useful when the grid is configured with ``'editable': True``.
+
+        See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/accessing-data/>`_ for more information.
+
+        Note that when editing a cell, the row data is not updated until the cell exits the edit mode.
+        This does not happen when the cell loses focus, unless ``stopEditingWhenCellsLoseFocus: True`` is set.
+
+        :return: list of row data
+        """
+        result = await run_javascript(f'''
+            const rowData = [];
+            getElement({self.id}).gridOptions.api.forEachNode(node => rowData.push(node.data));
+            return rowData;
+        ''')
+        return cast(List[Dict], result)
+
+    async def load_client_data(self) -> None:
+        """Obtain client data and update the element's row data with it.
+
+        This syncs edits made by the client in editable cells to the server.
+
+        Note that when editing a cell, the row data is not updated until the cell exits the edit mode.
+        This does not happen when the cell loses focus, unless ``stopEditingWhenCellsLoseFocus: True`` is set.
+        """
+        client_row_data = await self.get_client_data()
+        self.options['rowData'] = client_row_data
+        self.update()

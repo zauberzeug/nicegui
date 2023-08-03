@@ -35,9 +35,9 @@ To run the tests you need some additional setup which is described in [tests/REA
 
 There is no special Python version required for development.
 At Zauberzeug we mainly use 3.11.
-This means we sometimes miss some incompatibilities with 3.7.
+This means we sometimes miss some incompatibilities with older versions.
 But these will hopefully be uncovered by the GitHub Actions (see below).
-Also we use the 3.7 Docker container described below to verify compatibility in cases of uncertainty.
+Also we use the 3.8 Docker container described below to verify compatibility in cases of uncertainty.
 
 ### Alternative: Docker
 
@@ -52,7 +52,7 @@ By default, the development server listens to http://localhost:80/.
 
 The configuration is written in the `docker-compose.yml` file and automatically loads the `main.py` which contains the website https://nicegui.io.
 Every code change will result in reloading the content.
-We use Python 3.7 as a base to ensure compatibility (see `development.dockerfile`).
+We use Python 3.8 as a base to ensure compatibility (see `development.dockerfile`).
 
 To view the log output, use the command
 

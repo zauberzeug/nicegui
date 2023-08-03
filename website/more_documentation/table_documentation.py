@@ -82,7 +82,7 @@ def more() -> None:
             table.update()
 
         with ui.button(icon='menu'):
-            with ui.menu().props(remove='no-parent-event'), ui.column().classes('gap-0 p-2'):
+            with ui.menu(), ui.column().classes('gap-0 p-2'):
                 for column in columns:
                     ui.switch(column['label'], value=True, on_change=lambda e, column=column: toggle(column, e.value))
 
@@ -91,7 +91,7 @@ def more() -> None:
         After emitting a `rename` event from the scoped slot, the `rename` function updates the table rows.
     ''')
     def table_with_drop_down_selection():
-        from typing import Dict
+        from nicegui import events
 
         columns = [
             {'name': 'name', 'label': 'Name', 'field': 'name'},
@@ -104,10 +104,10 @@ def more() -> None:
         ]
         name_options = ['Alice', 'Bob', 'Carol']
 
-        def rename(msg: Dict) -> None:
+        def rename(e: events.GenericEventArguments) -> None:
             for row in rows:
-                if row['id'] == msg['args']['id']:
-                    row['name'] = msg['args']['name']
+                if row['id'] == e.args['id']:
+                    row['name'] = e.args['name']
             ui.notify(f'Table.rows is now: {table.rows}')
 
         table = ui.table(columns=columns, rows=rows, row_key='name').classes('w-full')
@@ -186,3 +186,18 @@ def more() -> None:
             {'name': 'Carl', 'age': 42},
         ]
         ui.table(columns=columns, rows=rows, row_key='name')
+
+    @text_demo('Toggle fullscreen', '''
+        You can toggle the fullscreen mode of a table using the `toggle_fullscreen()` method.
+    ''')
+    def toggle_fullscreen():
+        table = ui.table(
+            columns=[{'name': 'name', 'label': 'Name', 'field': 'name'}],
+            rows=[{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
+        ).classes('w-full')
+
+        with table.add_slot('top-left'):
+            def toggle() -> None:
+                table.toggle_fullscreen()
+                button.props('icon=fullscreen_exit' if table.is_fullscreen else 'icon=fullscreen')
+            button = ui.button('Toggle fullscreen', icon='fullscreen', on_click=toggle).props('flat')
