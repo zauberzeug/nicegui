@@ -13,5 +13,5 @@ def download(src: Union[str, Path], filename: Optional[str] = None) -> None:
     :param filename: name of the file to download (default: name of the file on the server)
     """
     if helpers.is_file(src):
-        src = globals.app.add_static_file(local_file=src)
+        src = globals.app.add_static_file(local_file=src, single_use=True)
     globals.get_client().download(src, filename)
