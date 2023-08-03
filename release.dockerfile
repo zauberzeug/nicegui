@@ -3,10 +3,6 @@ ARG VERSION
 
 LABEL maintainer="Zauberzeug GmbH <info@zauberzeug.com>"
 
-RUN apt update && apt install -y \
-    gosu \
-    && rm -rf /var/lib/apt/lists/*
-
 RUN python -m pip install nicegui==$VERSION itsdangerous isort docutils requests
 
 WORKDIR /app

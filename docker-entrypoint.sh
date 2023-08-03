@@ -19,6 +19,10 @@ fi
 useradd --create-home --shell /bin/bash --uid "$PUID" --gid "$PGID" appuser
 # Make user the owner of the app directory.
 chown -R appuser:appgroup /app
+# Copy the default .bashrc file to the appuser home directory.
+cp /etc/skel/.bashrc /home/appuser/.bashrc
+chown appuser:appgroup /home/appuser/.bashrc
+export HOME=/home/appuser
 # Set permissions on font directories.
 if [ -d "/usr/share/fonts" ]; then
   chmod -R 777 /usr/share/fonts
@@ -30,5 +34,5 @@ if [ -d "/usr/local/share/fonts" ]; then
   chmod -R 777 /usr/local/share/fonts
 fi
 # Switch to appuser and execute the Docker CMD or passed in command-line arguments.
-# Using gosu let's it run as PID 1 which is required for proper signal handling.
-exec gosu appuser "$@"
+# Using setpriv let's it run as PID 1 which is required for proper signal handling (similar to gosu/su-exec).
+exec setpriv --reuid=$PUID --regid=$PGID --init-groups $@
