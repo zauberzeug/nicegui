@@ -102,7 +102,7 @@ class App(FastAPI):
             url_path = f'/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}'
 
         @self.get(url_path)
-        async def read_item() -> FileResponse:
+        def read_item() -> FileResponse:
             return FileResponse(file, headers={'Cache-Control': 'public, max-age=3600'})
 
         return url_path
@@ -122,7 +122,7 @@ class App(FastAPI):
         :param local_directory: local folder with files to serve as media content
         """
         @self.get(url_path + '/{filename:path}')
-        async def read_item(request: Request, filename: str) -> StreamingResponse:
+        def read_item(request: Request, filename: str) -> StreamingResponse:
             filepath = Path(local_directory) / filename
             if not filepath.is_file():
                 return {'detail': 'Not Found'}, 404
@@ -148,7 +148,7 @@ class App(FastAPI):
             url_path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}'
 
         @self.get(url_path)
-        async def read_item(request: Request) -> StreamingResponse:
+        def read_item(request: Request) -> StreamingResponse:
             return helpers.get_streaming_response(file, request)
 
         return url_path
