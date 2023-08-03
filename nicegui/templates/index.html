@@ -33,6 +33,14 @@
     <script type="importmap">
       {"imports": {{ imports | safe }}}
     </script>
+    <script>
+      window.onload = () => {
+        const header = document.querySelector(".nicegui-header.fixed-top");
+        if (!header) return;
+        const updatePadding = () => (document.documentElement.style.scrollPaddingTop = `${header.offsetHeight}px`);
+        new ResizeObserver(updatePadding).observe(header);
+      };
+    </script>
     {{ body_html | safe }}
 
     <div id="app"></div>
