@@ -155,3 +155,9 @@ class Scene(Element,
     def delete(self) -> None:
         binding.remove(list(self.objects.values()), Object3D)
         super().delete()
+
+    def clear(self) -> None:
+        """Remove all objects from the scene."""
+        super().clear()
+        for object in list(self.objects.values()):
+            object.delete()

@@ -130,3 +130,17 @@ def test_object_creation_via_attribute(screen: Screen):
     screen.open('/')
     screen.wait(0.5)
     assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'box'
+
+
+def test_clearing_scene(screen: Screen):
+    with ui.scene() as scene:
+        scene.box().with_name('box')
+        scene.box().with_name('box2')
+    ui.button('Clear', on_click=scene.clear)
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert len(scene.objects) == 2
+    screen.click('Clear')
+    screen.wait(0.5)
+    assert len(scene.objects) == 0
