@@ -20,6 +20,7 @@ class Air:
         self.token = token
         self.relay = AsyncClient()
         self.client = httpx.AsyncClient(app=globals.app)
+        self.connecting = False
 
         @self.relay.on('http')
         async def on_http(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -108,6 +109,9 @@ class Air:
             await self.connect()
 
     async def connect(self) -> None:
+        if self.connecting:
+            return
+        self.connecting = True
         backoff_time = 1
         while True:
             try:
@@ -128,6 +132,7 @@ class Air:
 
             await asyncio.sleep(backoff_time)
             backoff_time = min(backoff_time * 2, 32)
+        self.connecting = False
 
     async def disconnect(self) -> None:
         await self.relay.disconnect()
