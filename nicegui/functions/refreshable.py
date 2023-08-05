@@ -80,7 +80,7 @@ class refreshable:
                 result = target.run(self.func)
             except TypeError as e:
                 if 'got multiple values for argument' in str(e):
-                    function = str(e).split()[0]
+                    function = str(e).split()[0].split('.')[-1]
                     parameter = str(e).split()[-1]
                     raise Exception(f'{parameter} needs to be consistently passed to {function} '
                                     'either as positional or as keyword argument') from e

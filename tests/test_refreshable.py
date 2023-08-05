@@ -132,9 +132,8 @@ def test_refresh_with_arguments(screen: Screen):
     screen.should_contain('count=5, value=2')
 
     screen.click('refresh(value=3)')
-    screen.assert_py_logger('ERROR',
-                            "'value' needs to be consistently passed to test_refresh_with_arguments.<locals>.some_ui() "
-                            "either as positional or as keyword argument")
+    screen.assert_py_logger(
+        'ERROR', "'value' needs to be consistently passed to some_ui() either as positional or as keyword argument")
 
 
 def test_refresh_deleted_element(screen: Screen):
