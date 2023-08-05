@@ -60,6 +60,7 @@ export default {
     this.scene = new THREE.Scene();
     this.objects = new Map();
     this.objects.set("scene", this.scene);
+    this.draggable_objects = [];
 
     window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
 
@@ -118,7 +119,7 @@ export default {
       this.scene.add(grid);
     }
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.drag_controls = new DragControls(Array.from(this.objects.values()), this.camera, this.renderer.domElement);
+    this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
     this.drag_controls.addEventListener("dragstart", () => (this.controls.enabled = false));
     this.drag_controls.addEventListener("dragend", () => (this.controls.enabled = true));
 
@@ -304,10 +305,16 @@ export default {
       if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).visible = value;
     },
+    draggable(object_id, value) {
+      if (!this.objects.has(object_id)) return;
+      if (value) this.draggable_objects.push(this.objects.get(object_id));
+      else this.draggable_objects.pop(this.objects.get(object_id));
+    },
     delete(object_id) {
       if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).removeFromParent();
       this.objects.delete(object_id);
+      this.draggable_objects.pop(this.objects.get(object_id));
     },
     set_texture_url(object_id, url) {
       if (!this.objects.has(object_id)) return;
