@@ -3,6 +3,7 @@ from typing import Literal, Optional
 from . import globals
 from .element import Element
 from .elements.mixins.value_element import ValueElement
+from .functions.html import add_body_html
 
 DrawerSides = Literal['left', 'right']
 
@@ -24,7 +25,9 @@ class Header(ValueElement):
                  value: bool = True,
                  fixed: bool = True,
                  bordered: bool = False,
-                 elevated: bool = False) -> None:
+                 elevated: bool = False,
+                 add_scroll_padding: bool = False,
+                 ) -> None:
         '''Header
 
         Note: The header is automatically placed above other layout elements in the DOM to improve accessibility.
@@ -34,6 +37,7 @@ class Header(ValueElement):
         :param fixed: whether the header should be fixed to the top of the page (default: `True`)
         :param bordered: whether the header should have a border (default: `False`)
         :param elevated: whether the header should have a shadow (default: `False`)
+        :param add_scroll_padding: whether to automatically prevent link targets from being hidden behind the header (default: `False`)
         '''
         with globals.get_client().layout:
             super().__init__(tag='q-header', value=value, on_value_change=None)
@@ -45,6 +49,18 @@ class Header(ValueElement):
         self.client.layout._props['view'] = ''.join(code)
 
         self.move(target_index=0)
+
+        if add_scroll_padding:
+            add_body_html(f'''
+                <script>
+                    window.onload = () => {{
+                        const header = getElement({self.id}).$el;
+                        new ResizeObserver(() => {{
+                            document.documentElement.style.scrollPaddingTop = `${{header.offsetHeight}}px`;
+                        }}).observe(header);
+                    }};
+                </script>
+            ''')
 
     def toggle(self):
         '''Toggle the header'''
