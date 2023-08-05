@@ -101,31 +101,34 @@ def test_multiple_targets(screen: Screen) -> None:
 
 
 def test_refresh_with_arguments(screen: Screen):
-    a = 0
+    count = 0
 
     @ui.refreshable
-    def some_ui(*, b: int):
-        ui.label(f'a={a}, b={b}')
+    def some_ui(value: int):
+        nonlocal count
+        count += 1
+        ui.label(f'{count=}, {value=}')
 
-    some_ui(b=0)
-    ui.button('Refresh 1', on_click=lambda: some_ui.refresh(b=1))
-    ui.button('Refresh 2', on_click=lambda: some_ui.refresh())
-    ui.button('Refresh 3', on_click=some_ui.refresh)
+    some_ui(0)
+    ui.button('refresh', on_click=some_ui.refresh)
+    ui.button('refresh()', on_click=lambda: some_ui.refresh())
+    ui.button('refresh(1)', on_click=lambda: some_ui.refresh(1))
+    ui.button('refresh(2)', on_click=lambda: some_ui.refresh(2))
 
     screen.open('/')
-    screen.should_contain('a=0, b=0')
+    screen.should_contain('count=1, value=0')
 
-    a = 1
-    screen.click('Refresh 1')
-    screen.should_contain('a=1, b=1')
+    screen.click('refresh')
+    screen.should_contain('count=2, value=0')
 
-    a = 2
-    screen.click('Refresh 2')
-    screen.should_contain('a=2, b=1')
+    screen.click('refresh()')
+    screen.should_contain('count=3, value=0')
 
-    a = 3
-    screen.click('Refresh 3')
-    screen.should_contain('a=3, b=1')
+    screen.click('refresh(1)')
+    screen.should_contain('count=4, value=1')
+
+    screen.click('refresh(2)')
+    screen.should_contain('count=5, value=2')
 
 
 def test_refresh_deleted_element(screen: Screen):

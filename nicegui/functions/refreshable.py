@@ -56,8 +56,8 @@ class refreshable:
     def __getattribute__(self, __name: str) -> Any:
         attribute = object.__getattribute__(self, __name)
         if __name == 'refresh':
-            def refresh(instance=self.instance, *args: Any, **kwargs: Any) -> None:
-                self.instance = instance
+            def refresh(*args: Any, _instance=self.instance, **kwargs: Any) -> None:
+                self.instance = _instance
                 attribute(*args, **kwargs)
             return refresh
         return attribute
