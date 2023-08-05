@@ -32,7 +32,6 @@ def capabilities(capabilities: Dict) -> Dict:
 
 @pytest.fixture(autouse=True)
 def reset_globals() -> Generator[None, None, None]:
-    print('!!! resetting globals !!!')
     for path in {'/'}.union(globals.page_routes.values()):
         globals.app.remove_route(path)
     globals.app.openapi_schema = None
