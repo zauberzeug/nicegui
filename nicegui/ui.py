@@ -1,5 +1,4 @@
 __all__ = [
-    'deprecated',
     'element',
     'aggrid',
     'audio',
@@ -91,8 +90,6 @@ __all__ = [
     'run_with',
 ]
 
-from . import globals
-from .deprecation import deprecated
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
 from .elements.audio import Audio as audio
