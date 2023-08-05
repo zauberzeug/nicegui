@@ -114,6 +114,7 @@ def test_refresh_with_arguments(screen: Screen):
     ui.button('refresh()', on_click=lambda: some_ui.refresh())
     ui.button('refresh(1)', on_click=lambda: some_ui.refresh(1))
     ui.button('refresh(2)', on_click=lambda: some_ui.refresh(2))
+    ui.button('refresh(value=3)', on_click=lambda: some_ui.refresh(value=3))
 
     screen.open('/')
     screen.should_contain('count=1, value=0')
@@ -129,6 +130,11 @@ def test_refresh_with_arguments(screen: Screen):
 
     screen.click('refresh(2)')
     screen.should_contain('count=5, value=2')
+
+    screen.click('refresh(value=3)')
+    screen.assert_py_logger('ERROR',
+                            "'value' needs to be consistently passed to test_refresh_with_arguments.<locals>.some_ui() "
+                            "either as positional or as keyword argument")
 
 
 def test_refresh_deleted_element(screen: Screen):

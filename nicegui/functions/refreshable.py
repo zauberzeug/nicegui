@@ -76,7 +76,15 @@ class refreshable:
             target.container.clear()
             target.args = args or target.args
             target.kwargs.update(kwargs)
-            result = target.run(self.func)
+            try:
+                result = target.run(self.func)
+            except TypeError as e:
+                if 'got multiple values for argument' in str(e):
+                    function = str(e).split()[0]
+                    parameter = str(e).split()[-1]
+                    raise Exception(f'{parameter} needs to be consistently passed to {function} '
+                                    'either as positional or as keyword argument') from e
+                raise
             if is_coroutine_function(self.func):
                 assert result is not None
                 if globals.loop and globals.loop.is_running():
