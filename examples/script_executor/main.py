@@ -3,6 +3,7 @@ import asyncio
 import os.path
 import platform
 import shlex
+import sys
 
 from nicegui import ui
 
@@ -11,6 +12,7 @@ async def run_command(command: str) -> None:
     """Run a command in the background and display the output in the pre-created dialog."""
     dialog.open()
     result.content = ''
+    command = command.replace('python3', sys.executable)  # NOTE replace with machine-independent Python path (#1240)
     process = await asyncio.create_subprocess_exec(
         *shlex.split(command),
         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT,
