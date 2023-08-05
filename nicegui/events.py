@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Literal, Optional
 
 from . import background_tasks, globals
 from .helpers import KWONLY_SLOTS
@@ -51,6 +51,16 @@ class SceneClickEventArguments(ClickEventArguments):
     meta: bool
     shift: bool
     hits: List[SceneClickHit]
+
+
+@dataclass(**KWONLY_SLOTS)
+class SceneDragEventArguments(ClickEventArguments):
+    type: Literal['dragstart', 'dragend']
+    object_id: str
+    object_name: str
+    x: float
+    y: float
+    z: float
 
 
 @dataclass(**KWONLY_SLOTS)

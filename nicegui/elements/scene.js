@@ -120,8 +120,19 @@ export default {
     }
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
-    this.drag_controls.addEventListener("dragstart", () => (this.controls.enabled = false));
-    this.drag_controls.addEventListener("dragend", () => (this.controls.enabled = true));
+    const handle_drag = (event) => {
+      this.$emit(event.type, {
+        type: event.type,
+        object_id: event.object.object_id,
+        object_name: event.object.name,
+        x: event.object.position.x,
+        y: event.object.position.y,
+        z: event.object.position.z,
+      });
+      this.controls.enabled = event.type == "dragend";
+    };
+    this.drag_controls.addEventListener("dragstart", handle_drag);
+    this.drag_controls.addEventListener("dragend", handle_drag);
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));

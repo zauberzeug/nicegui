@@ -3,7 +3,8 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 from .. import binding, globals
 from ..element import Element
-from ..events import GenericEventArguments, SceneClickEventArguments, SceneClickHit, handle_event
+from ..events import (GenericEventArguments, SceneClickEventArguments, SceneClickHit, SceneDragEventArguments,
+                      handle_event)
 from ..helpers import KWONLY_SLOTS
 from .scene_object3d import Object3D
 
@@ -58,10 +59,12 @@ class Scene(Element,
                  height: int = 300,
                  grid: bool = True,
                  on_click: Optional[Callable[..., Any]] = None,
+                 on_drag_start: Optional[Callable[..., Any]] = None,
+                 on_drag_end: Optional[Callable[..., Any]] = None,
                  ) -> None:
         """3D Scene
 
-        Display a 3d scene using `three.js <https://threejs.org/>`_.
+        Display a 3D scene using `three.js <https://threejs.org/>`_.
         Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes.
         Objects can be translated, rotated and displayed with different color, opacity or as wireframes.
         They can also be grouped to apply joint movements.
@@ -69,7 +72,9 @@ class Scene(Element,
         :param width: width of the canvas
         :param height: height of the canvas
         :param grid: whether to display a grid
-        :param on_click: callback to execute when a 3d object is clicked
+        :param on_click: callback to execute when a 3D object is clicked
+        :param on_drag_start: callback to execute when a 3D object is dragged
+        :param on_drag_end: callback to execute when a 3D object is dropped
         """
         super().__init__()
         self._props['width'] = width
@@ -79,9 +84,13 @@ class Scene(Element,
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
         self.on_click = on_click
+        self.on_drag_start = on_drag_start
+        self.on_drag_end = on_drag_end
         self.is_initialized = False
         self.on('init', self.handle_init)
         self.on('click3d', self.handle_click)
+        self.on('dragstart', self.handle_drag)
+        self.on('dragend', self.handle_drag)
 
     def handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True
@@ -114,6 +123,21 @@ class Scene(Element,
             ) for hit in e.args['hits']],
         )
         handle_event(self.on_click, arguments)
+
+    def handle_drag(self, e: GenericEventArguments) -> None:
+        arguments = SceneDragEventArguments(
+            sender=self,
+            client=self.client,
+            type=e.args['type'],
+            object_id=e.args['object_id'],
+            object_name=e.args['object_name'],
+            x=e.args['x'],
+            y=e.args['y'],
+            z=e.args['z'],
+        )
+        if arguments.type == 'dragend':
+            self.objects[arguments.object_id].move(arguments.x, arguments.y, arguments.z)
+        handle_event(self.on_drag_start if arguments.type == 'dragstart' else self.on_drag_end, arguments)
 
     def __len__(self) -> int:
         return len(self.objects)
