@@ -1,5 +1,7 @@
 import importlib
 import os
+import shutil
+from pathlib import Path
 from typing import Dict, Generator
 
 import icecream
@@ -13,6 +15,8 @@ from nicegui.page import page
 
 from .screen import Screen
 
+DOWNLOAD_DIR = Path(__file__).parent / 'download'
+
 icecream.install()
 
 
@@ -21,6 +25,11 @@ def chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeO
     chrome_options.add_argument('headless')
     chrome_options.add_argument('disable-gpu')
     chrome_options.add_argument('window-size=600x600')
+    chrome_options.add_experimental_option('prefs', {
+        "download.default_directory": str(DOWNLOAD_DIR),
+        "download.prompt_for_download": False,  # To auto download the file
+        "download.directory_upgrade": True,
+    })
     return chrome_options
 
 
@@ -75,3 +84,5 @@ def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pyt
     logs = screen.caplog.get_records('call')
     assert not logs, f'There were unexpected logs:\n-------\n{logs}\n-------'
     screen.stop_server()
+    if DOWNLOAD_DIR.exists():
+        shutil.rmtree(DOWNLOAD_DIR)
