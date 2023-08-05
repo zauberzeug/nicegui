@@ -1,7 +1,4 @@
-import os
-
 __all__ = [
-    'deprecated',
     'element',
     'aggrid',
     'audio',
@@ -34,6 +31,7 @@ __all__ = [
     'keyboard',
     'knob',
     'label',
+    'line_plot',
     'link',
     'link_target',
     'log',
@@ -42,8 +40,10 @@ __all__ = [
     'menu_item',
     'mermaid',
     'number',
+    'plotly',
     'circular_progress',
     'linear_progress',
+    'pyplot',
     'query',
     'radio',
     'row',
@@ -90,8 +90,6 @@ __all__ = [
     'run_with',
 ]
 
-from . import globals
-from .deprecation import deprecated
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
 from .elements.audio import Audio as audio
@@ -124,6 +122,7 @@ from .elements.joystick import Joystick as joystick
 from .elements.keyboard import Keyboard as keyboard
 from .elements.knob import Knob as knob
 from .elements.label import Label as label
+from .elements.line_plot import LinePlot as line_plot
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
 from .elements.log import Log as log
@@ -132,8 +131,10 @@ from .elements.menu import Menu as menu
 from .elements.menu import MenuItem as menu_item
 from .elements.mermaid import Mermaid as mermaid
 from .elements.number import Number as number
+from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
+from .elements.pyplot import Pyplot as pyplot
 from .elements.query import query
 from .elements.radio import Radio as radio
 from .elements.row import Row as row
@@ -177,28 +178,3 @@ from .page_layout import PageSticky as page_sticky
 from .page_layout import RightDrawer as right_drawer
 from .run import run
 from .run_with import run_with
-
-try:
-    from .elements.plotly import Plotly as plotly
-    globals.optional_features.add('plotly')
-except ImportError:
-    def plotly(*args, **kwargs):
-        raise ImportError('Plotly is not installed. Please run "pip install plotly".')
-__all__.append('plotly')
-
-if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
-    try:
-        from .elements.line_plot import LinePlot as line_plot
-        from .elements.pyplot import Pyplot as pyplot
-        plot = deprecated(pyplot, 'ui.plot', 'ui.pyplot', 317)
-        globals.optional_features.add('matplotlib')
-    except ImportError:
-        def line_plot(*args, **kwargs):
-            raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
-
-        def pyplot(*args, **kwargs):
-            raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
-
-        def plot(*args, **kwargs):
-            raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
-    __all__.extend(['line_plot', 'pyplot', 'plot'])

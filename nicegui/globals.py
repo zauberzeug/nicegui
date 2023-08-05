@@ -4,7 +4,7 @@ import logging
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterator, List, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterator, List, Literal, Optional, Set, Union
 
 from socketio import AsyncServer
 from uvicorn import Server
@@ -43,13 +43,26 @@ dark: Optional[bool]
 language: Language
 binding_refresh_interval: float
 tailwind: bool
+prod_js: bool
+endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
 air: Optional['Air'] = None
+socket_io_js_query_params: Dict = {}
 socket_io_js_extra_headers: Dict = {}
-
+# NOTE we favor websocket over polling
+socket_io_js_transports: List[Literal['websocket', 'polling']] = ['websocket', 'polling']
 _socket_id: Optional[str] = None
 slot_stacks: Dict[int, List['Slot']] = {}
 clients: Dict[str, 'Client'] = {}
 index_client: 'Client'
+quasar_config: Dict = {
+    'brand': {
+        'primary': '#5898d4',
+    },
+    'loadingBar': {
+        'color': 'primary',
+        'skipHijack': False,
+    },
+}
 
 page_routes: Dict[Callable[..., Any], str] = {}
 

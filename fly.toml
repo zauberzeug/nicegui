@@ -25,8 +25,8 @@ strategy = "rolling"
   protocol = "tcp"
   script_checks = []
   [services.concurrency]
-    hard_limit = 100
-    soft_limit = 12
+    hard_limit = 200
+    soft_limit = 100
     type = "connections"
 
   [[services.ports]]
@@ -40,13 +40,13 @@ strategy = "rolling"
 
   [[services.tcp_checks]]
     interval = "10s"
-    grace_period = "2m"
+    grace_period = "30s"
     restart_limit = 3
     timeout = "5s"
 
   [[services.http_checks]]
     interval = "20s"
-    grace_period = "4m"
+    grace_period = "1m"
     method = "get"
     path = "/"
     protocol = "http"

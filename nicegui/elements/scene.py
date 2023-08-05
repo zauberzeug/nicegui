@@ -92,6 +92,16 @@ class Scene(Element,
         self.on('dragstart', self.handle_drag)
         self.on('dragend', self.handle_drag)
 
+    def __enter__(self) -> 'Scene':
+        Object3D.current_scene = self
+        return super().__enter__()
+
+    def __getattribute__(self, name: str) -> Any:
+        attribute = super().__getattribute__(name)
+        if isinstance(attribute, type) and issubclass(attribute, Object3D):
+            Object3D.current_scene = self
+        return attribute
+
     def handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True
         with globals.socket_id(e.args['socket_id']):
@@ -170,3 +180,9 @@ class Scene(Element,
     def delete(self) -> None:
         binding.remove(list(self.objects.values()), Object3D)
         super().delete()
+
+    def clear(self) -> None:
+        """Remove all objects from the scene."""
+        super().clear()
+        for object in list(self.objects.values()):
+            object.delete()
