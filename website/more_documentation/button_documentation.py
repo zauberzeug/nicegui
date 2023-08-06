@@ -36,23 +36,24 @@ def more() -> None:
             ui.label('Three')
 
     @text_demo('Disable button with a context manager', '''
-        This showcases a async context manager that can be used to disable a button for the duration of an async process.
+        This showcases a context manager that can be used to disable a button for the duration of an async process.
     ''')
     async def disable_context_manager() -> None:
-        from asyncio import sleep
         from contextlib import contextmanager
-        from typing import Awaitable, ContextManager
+        import httpx
 
         @contextmanager
-        def disable(element: DisableableElement) -> ContextManager[None]:
+        def disable(element: DisableableElement):
             element.disable()
             try:
                 yield
             finally:
                 element.enable()
 
-        async def disable_and_sleep_3(button: ui.button) -> Awaitable[None]:
+        async def get_slow_response(button: ui.button):
             with disable(button):
-                await sleep(3)
+                async with httpx.AsyncClient() as client:
+                    response = await client.get('https://httpbin.org/delay/3', timeout=5)
+                    ui.notify(f"Response code: {response.status_code}")
 
-        ui.button("Disable for 3 seconds", on_click=lambda e: disable_and_sleep_3(e.sender))
+        ui.button("Get slow response", on_click=lambda e: get_slow_response(e.sender))
