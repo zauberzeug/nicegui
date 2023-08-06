@@ -1,20 +1,19 @@
 import math
 import uuid
-from typing import TYPE_CHECKING, Any, List, Optional, Union, cast
-
-from .. import globals
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 if TYPE_CHECKING:
     from .scene import Scene, SceneObject
 
 
 class Object3D:
+    current_scene: Optional['Scene'] = None
 
     def __init__(self, type: str, *args: Any) -> None:
         self.type = type
         self.id = str(uuid.uuid4())
         self.name: Optional[str] = None
-        self.scene: 'Scene' = cast('Scene', globals.get_slot().parent)
+        self.scene: 'Scene' = self.current_scene
         self.scene.objects[self.id] = self
         self.parent: Union[Object3D, SceneObject] = self.scene.stack[-1]
         self.args: List = list(args)

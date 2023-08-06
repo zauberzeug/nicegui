@@ -1,6 +1,6 @@
-import asyncio
 import gzip
 import logging
+import re
 from typing import Any, Dict
 
 import httpx
@@ -33,10 +33,15 @@ class Air:
                 content=data['body'],
             )
             response = await self.client.send(request)
+            instance_id = data['instance-id']
             content = response.content.replace(
                 b'const extraHeaders = {};',
-                (f'const extraHeaders = {{ "fly-force-instance-id" : "{data["instance-id"]}" }};').encode(),
+                (f'const extraHeaders = {{ "fly-force-instance-id" : "{instance_id}" }};').encode(),
             )
+            match = re.search(b'const query = ({.*?})', content)
+            if match:
+                new_js_object = match.group(1).decode().rstrip('}') + ", 'fly_instance_id' : '" + instance_id + "'}"
+                content = content.replace(match.group(0), f'const query = {new_js_object}'.encode())
             response_headers = dict(response.headers)
             response_headers['content-encoding'] = 'gzip'
             compressed = gzip.compress(content)

@@ -23,7 +23,7 @@ class GenericEventArguments(EventArguments):
     def __getitem__(self, key: str) -> Any:
         if key == 'args':
             globals.log.warning('msg["args"] is deprecated, use e.args instead '
-                                '(see https://github.com/zauberzeug/nicegui/pull/1095)')
+                                '(see https://github.com/zauberzeug/nicegui/pull/1095)')  # DEPRECATED
             return self.args
         raise KeyError(key)
 
