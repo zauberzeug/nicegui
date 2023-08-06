@@ -41,15 +41,17 @@ def more() -> None:
     async def disable_context_manager() -> None:
         from asyncio import sleep
         from contextlib import asynccontextmanager
+        from typing import AsyncContextManager, Awaitable
+
         @asynccontextmanager
-        async def disable(element: DisableableElement) -> None:
+        async def disable(element: DisableableElement) -> AsyncContextManager[None]:
             element.disable()
             try:
                 yield
             finally:
                 element.enable()
 
-        async def disable_and_sleep_3(button: ui.button) -> None:
+        async def disable_and_sleep_3(button: ui.button) -> Awaitable[None]:
             async with disable(button):
                 await sleep(3)
 
