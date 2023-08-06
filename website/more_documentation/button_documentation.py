@@ -1,5 +1,4 @@
 from nicegui import ui
-from nicegui.elements.mixins.disableable_element import DisableableElement
 
 from ..documentation_tools import text_demo
 
@@ -39,6 +38,7 @@ def more() -> None:
         This showcases a context manager that can be used to disable a button for the duration of an async process.
     ''')
     async def disable_context_manager() -> None:
+        from nicegui.elements.mixins.disableable_element import DisableableElement
         from contextlib import contextmanager
         import httpx
 
