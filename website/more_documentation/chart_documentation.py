@@ -45,20 +45,18 @@ def more() -> None:
         This chart allows data manipulation by dragging the series points. Data can be read via the on_change callback.
     ''')
     def drag() -> None:
-        ui.chart(
-            {
-                'title': False,
-                'plotOptions': {
-                    'series': {
-                        'stickyTracking': False,
-                        'dragDrop': {'draggableX': True, 'draggableY': True, 'dragPrecisionX': 1, 'dragPrecisionY': 1},
-                    }
+        ui.chart({
+            'title': False,
+            'plotOptions': {
+                'series': {
+                    'stickyTracking': False,
+                    'dragDrop': {'draggableX': True, 'draggableY': True, 'dragPrecisionX': 1, 'dragPrecisionY': 1},
                 },
-                'series': [
-                    {'name': 'A', 'data': [{'x': 20, 'y': 10}, {'x': 30, 'y': 20}, {'x': 40, 'y': 30}]},
-                    {'name': 'B', 'data': [{'x': 50, 'y': 40}, {'x': 60, 'y': 50}, {'x': 70, 'y': 60}]},
-                ],
             },
-            extras=['draggable-points'],
+            'series': [
+                {'name': 'A', 'data': [[20, 10], [30, 20], [40, 30]]},
+                {'name': 'B', 'data': [[50, 40], [60, 50], [70, 60]]},
+            ],
+        },  extras=['draggable-points'],
             on_change=lambda e: ui.notify(f'The value changed to {e}.')
         ).classes('w-full h-64')
