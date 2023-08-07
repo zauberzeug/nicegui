@@ -61,4 +61,4 @@ def more() -> None:
             },
             extras=['draggable-points'],
             on_change=lambda e: ui.notify(f'The value changed to {e}.')
-        )
+        ).classes('w-full h-64')
