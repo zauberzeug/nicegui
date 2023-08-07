@@ -1,3 +1,4 @@
+import asyncio
 import gzip
 import logging
 import re
@@ -19,6 +20,7 @@ class Air:
         self.token = token
         self.relay = AsyncClient()
         self.client = httpx.AsyncClient(app=globals.app)
+        self.connecting = False
 
         @self.relay.on('http')
         async def on_http(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -107,26 +109,34 @@ class Air:
             await self.connect()
 
     async def connect(self) -> None:
-        try:
-            if self.relay.connected:
+        if self.connecting:
+            return
+        self.connecting = True
+        backoff_time = 1
+        while True:
+            try:
+                if self.relay.connected:
+                    await self.relay.disconnect()
+                await self.relay.connect(
+                    f'{RELAY_HOST}?device_token={self.token}',
+                    socketio_path='/on_air/socket.io',
+                    transports=['websocket', 'polling'],  # favor websocket over polling
+                )
+                break
+            except socketio.exceptions.ConnectionError:
+                pass
+            except ValueError:  # NOTE this sometimes happens when the internal socketio client is not yet ready
                 await self.relay.disconnect()
-            await self.relay.connect(
-                f'{RELAY_HOST}?device_token={self.token}',
-                socketio_path='/on_air/socket.io',
-                transports=['websocket', 'polling'],
-            )
-        except socketio.exceptions.ConnectionError:
-            await self.connect()
-        except ValueError:  # NOTE this sometimes happens when the internal socketio client is not yet ready
-            await self.relay.disconnect()
-            await self.connect()
-        except Exception:
-            logging.exception('Could not connect to NiceGUI On Air server.')
-            print('Could not connect to NiceGUI On Air server.', flush=True)
-            await self.connect()
+            except Exception:
+                globals.log.exception('Could not connect to NiceGUI On Air server.')
+
+            await asyncio.sleep(backoff_time)
+            backoff_time = min(backoff_time * 2, 32)
+        self.connecting = False
 
     async def disconnect(self) -> None:
         await self.relay.disconnect()
 
     async def emit(self, message_type: str, data: Dict[str, Any], room: str) -> None:
-        await self.relay.emit('forward', {'event': message_type, 'data': data, 'room': room})
+        if self.relay.connected:
+            await self.relay.emit('forward', {'event': message_type, 'data': data, 'room': room})
