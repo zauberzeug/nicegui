@@ -8,11 +8,12 @@ def main_demo() -> None:
         'columnDefs': [
             {'headerName': 'Name', 'field': 'name'},
             {'headerName': 'Age', 'field': 'age'},
+            {'headerName': 'Parent', 'field': 'parent_name', 'hide': True},
         ],
         'rowData': [
-            {'name': 'Alice', 'age': 18},
-            {'name': 'Bob', 'age': 21},
-            {'name': 'Carol', 'age': 42},
+            {'name': 'Alice', 'age': 18, 'parent_name': 'Frederic'},
+            {'name': 'Bob', 'age': 21, 'parent_name': 'Joseph'},
+            {'name': 'Carol', 'age': 42, 'parent_name': 'John-Peter'},
         ],
         'rowSelection': 'multiple',
     }).classes('max-h-40')
@@ -23,6 +24,7 @@ def main_demo() -> None:
 
     ui.button('Update', on_click=update)
     ui.button('Select all', on_click=lambda: grid.call_api_method('selectAll'))
+    ui.button('Show parent', on_click=lambda: grid.call_column_api_method('setColumnVisible', 'parent_name', True))
 
 
 def more() -> None:
