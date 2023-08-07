@@ -7,19 +7,23 @@ export default {
         this.seriesCount = this.options.series ? this.options.series.length : 0;
         // if (this.on_change_set === true) { // I am setting self._props['on_change_set'] = True; not sure why it isn't working.
         if (true) {
-          this.options.plotOptions.series.point = {
-            events: {
-              drop: (e) => {
+          if ("plotOptions" in this.options) {
+            if ("series" in this.options.plotOptions) {
+              this.options.plotOptions.series.point = {
+                events: {
+                  drop: (e) => {
                     this.$emit("on_point_drop", {
                       type: "point_drop",
-                  series_name: e.target.series.name,
-                  series_index: e.target.series.index,
-                  series_xdata: e.target.series.xData,
-                  series_ydata: e.target.series.yData,
-                });
-              },
-            },
-          };
+                      series_name: e.target.series.name,
+                      series_index: e.target.series.index,
+                      series_xdata: e.target.series.xData,
+                      series_ydata: e.target.series.yData,
+                    });
+                  },
+                },
+              };
+            }
+          }
         }
         this.chart = Highcharts[this.type](this.$el, this.options);
         this.chart.reflow();
