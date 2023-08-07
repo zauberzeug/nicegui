@@ -3,15 +3,13 @@ from typing import Callable, Dict, List, Optional
 from ..element import Element
 
 
-class Chart(
-    Element,
-    component='chart.js',
-    libraries=['lib/highcharts/*.js'],
-    extra_libraries=['lib/highcharts/modules/*.js'],
-):
-    def __init__(
-        self, options: Dict, *, type: str = 'chart', extras: List[str] = [], on_change: Optional[Callable] = None
-    ) -> None:
+class Chart(Element,
+            component='chart.js',
+            libraries=['lib/highcharts/*.js'],
+            extra_libraries=['lib/highcharts/modules/*.js']):
+
+    def __init__(self, options: Dict, *,
+                 type: str = 'chart', extras: List[str] = [], on_change: Optional[Callable] = None) -> None:
         """Chart
 
         An element to create a chart using `Highcharts <https://www.highcharts.com/>`_.
