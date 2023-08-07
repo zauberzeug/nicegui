@@ -55,6 +55,16 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         """
         self.run_method('call_api_method', name, *args)
 
+    def call_column_api_method(self, name: str, *args) -> None:
+        """Call an AG Grid Column API method.
+
+        See `AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>`_ for a list of methods.
+
+        :param name: name of the method
+        :param args: arguments to pass to the method
+        """
+        self.run_method('call_column_api_method', name, *args)
+
     async def get_selected_rows(self) -> List[Dict]:
         """Get the currently selected rows.
 
