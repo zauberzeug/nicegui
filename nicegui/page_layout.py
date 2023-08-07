@@ -26,7 +26,7 @@ class Header(ValueElement):
                  fixed: bool = True,
                  bordered: bool = False,
                  elevated: bool = False,
-                 add_scroll_padding: bool = False,
+                 add_scroll_padding: bool = False,  # DEPRECATED: will be True in v1.4
                  ) -> None:
         '''Header
 
@@ -37,7 +37,7 @@ class Header(ValueElement):
         :param fixed: whether the header should be fixed to the top of the page (default: `True`)
         :param bordered: whether the header should have a border (default: `False`)
         :param elevated: whether the header should have a shadow (default: `False`)
-        :param add_scroll_padding: whether to automatically prevent link targets from being hidden behind the header (default: `False`)
+        :param add_scroll_padding: whether to automatically prevent link targets from being hidden behind the header (default: `False`, will be `True` in v1.4)
         '''
         with globals.get_client().layout:
             super().__init__(tag='q-header', value=value, on_value_change=None)
