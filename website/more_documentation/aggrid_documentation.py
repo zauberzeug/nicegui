@@ -5,15 +5,16 @@ from ..documentation_tools import text_demo
 
 def main_demo() -> None:
     grid = ui.aggrid({
+        'defaultColDef': {'flex': 1},
         'columnDefs': [
             {'headerName': 'Name', 'field': 'name'},
             {'headerName': 'Age', 'field': 'age'},
-            {'headerName': 'Parent', 'field': 'parent_name', 'hide': True},
+            {'headerName': 'Parent', 'field': 'parent', 'hide': True},
         ],
         'rowData': [
-            {'name': 'Alice', 'age': 18, 'parent_name': 'Frederic'},
-            {'name': 'Bob', 'age': 21, 'parent_name': 'Joseph'},
-            {'name': 'Carol', 'age': 42, 'parent_name': 'John-Peter'},
+            {'name': 'Alice', 'age': 18, 'parent': 'David'},
+            {'name': 'Bob', 'age': 21, 'parent': 'Eve'},
+            {'name': 'Carol', 'age': 42, 'parent': 'Frank'},
         ],
         'rowSelection': 'multiple',
     }).classes('max-h-40')
@@ -24,7 +25,7 @@ def main_demo() -> None:
 
     ui.button('Update', on_click=update)
     ui.button('Select all', on_click=lambda: grid.call_api_method('selectAll'))
-    ui.button('Show parent', on_click=lambda: grid.call_column_api_method('setColumnVisible', 'parent_name', True))
+    ui.button('Show parent', on_click=lambda: grid.call_column_api_method('setColumnVisible', 'parent', True))
 
 
 def more() -> None:

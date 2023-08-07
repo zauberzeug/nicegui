@@ -92,19 +92,16 @@ def test_call_api_method_with_argument(screen: Screen):
 
 def test_call_column_api_method_with_argument(screen: Screen):
     grid = ui.aggrid({
-        'columnDefs': [{'field': 'name'}, {'field': 'parent_name', 'hide': True}],
-        'rowData': [{'name': 'Alice', 'parent_name': 'Frederic'}, {'name': 'Bob', 'parent_name': 'Joseph'}, {'name': 'Carol', 'parent_name': 'John-Peter'}],
+        'columnDefs': [{'field': 'name'}, {'field': 'age', 'hide': True}],
+        'rowData': [{'name': 'Alice', 'age': '18'}, {'name': 'Bob', 'age': '21'}, {'name': 'Carol', 'age': '42'}],
     })
-    ui.button('Show Age', on_click=lambda: grid.call_column_api_method('setColumnVisible', 'parent_name', True))
+    ui.button('Show Age', on_click=lambda: grid.call_column_api_method('setColumnVisible', 'age', True))
 
     screen.open('/')
     screen.should_contain('Alice')
-    screen.should_not_contain('Frederic')
-    screen.should_not_contain('Joseph')
+    screen.should_not_contain('18')
     screen.click('Show Age')
-    screen.should_contain('Alice')
-    screen.should_contain('Frederic')
-    screen.should_contain('Joseph')
+    screen.should_contain('18')
 
 
 def test_get_selected_rows(screen: Screen):
