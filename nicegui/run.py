@@ -47,6 +47,7 @@ def run(*,
         native: bool = False,
         window_size: Optional[Tuple[int, int]] = None,
         fullscreen: bool = False,
+        frameless: bool = False,
         reload: bool = True,
         uvicorn_logging_level: str = 'warning',
         uvicorn_reload_dirs: str = '.',
@@ -75,6 +76,7 @@ def run(*,
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
     :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`)
     :param fullscreen: open the UI in a fullscreen window (default: `False`, also activates `native`)
+    :param frameless: open the UI in a frameless window (default: `False`, also activates `native`)
     :param reload: automatically reload the UI on file changes (default: `True`)
     :param uvicorn_logging_level: logging level for uvicorn server (default: `'warning'`)
     :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only)
@@ -116,6 +118,8 @@ def run(*,
 
     if fullscreen:
         native = True
+    if frameless:
+        native = True
     if window_size:
         native = True
     if native:
@@ -123,7 +127,7 @@ def run(*,
         host = host or '127.0.0.1'
         port = native_mode.find_open_port()
         width, height = window_size or (800, 600)
-        native_mode.activate(host, port, title, width, height, fullscreen)
+        native_mode.activate(host, port, title, width, height, fullscreen, frameless)
     else:
         host = host or '0.0.0.0'
 

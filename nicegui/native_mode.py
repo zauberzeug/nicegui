@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import _thread
 import logging
 import multiprocessing as mp
@@ -17,33 +19,33 @@ try:
         # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
         warnings.filterwarnings('ignore', category=DeprecationWarning)
         import webview
+    globals.optional_features.add('native')
 except ModuleNotFoundError:
-    class webview:
-        class Window:
-            pass
     pass
 
 
 def open_window(
-    host: str, port: int, title: str, width: int, height: int, fullscreen: bool,
+    host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
     method_queue: mp.Queue, response_queue: mp.Queue,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
 
-    window_kwargs = dict(url=f'http://{host}:{port}', title=title, width=width, height=height, fullscreen=fullscreen)
+    window_kwargs = dict(
+        url=f'http://{host}:{port}',
+        title=title,
+        width=width,
+        height=height,
+        fullscreen=fullscreen,
+        frameless=frameless,
+    )
     window_kwargs.update(globals.app.native.window_args)
 
-    try:
-        window = webview.create_window(**window_kwargs)
-        closing = Event()
-        window.events.closing += closing.set
-        start_window_method_executor(window, method_queue, response_queue, closing)
-        webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
-    except NameError:
-        logging.error('''Native mode is not supported in this configuration.
-Please run "pip install pywebview" to use it.''')
-        sys.exit(1)
+    window = webview.create_window(**window_kwargs)
+    closing = Event()
+    window.events.closing += closing.set
+    start_window_method_executor(window, method_queue, response_queue, closing)
+    webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
 
 
 def start_window_method_executor(
@@ -90,7 +92,7 @@ def start_window_method_executor(
     Thread(target=window_method_executor).start()
 
 
-def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool) -> None:
+def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
     def check_shutdown() -> None:
         while process.is_alive():
             time.sleep(0.1)
@@ -99,8 +101,13 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
             time.sleep(0.1)
         _thread.interrupt_main()
 
+    if 'native' not in globals.optional_features:
+        logging.error('Native mode is not supported in this configuration.\n'
+                      'Please run "pip install pywebview" to use it.')
+        sys.exit(1)
+
     mp.freeze_support()
-    args = host, port, title, width, height, fullscreen, native.method_queue, native.response_queue
+    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
     process = mp.Process(target=open_window, args=args, daemon=False)
     process.start()
 
