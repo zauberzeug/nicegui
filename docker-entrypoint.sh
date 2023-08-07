@@ -15,8 +15,10 @@ fi
 if ! getent group "$PGID" >/dev/null; then
   groupadd -g "$PGID" appgroup
 fi
-# Create user.
-useradd --create-home --shell /bin/bash --uid "$PUID" --gid "$PGID" appuser
+# Create user if it doesn't exist.
+if ! getent passwd "$PUID" >/dev/null; then
+  useradd --create-home --shell /bin/bash --uid "$PUID" --gid "$PGID" appuser
+fi
 # Make user the owner of the app directory.
 chown -R appuser:appgroup /app
 # Copy the default .bashrc file to the appuser home directory.
