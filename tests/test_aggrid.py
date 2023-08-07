@@ -95,7 +95,7 @@ def test_call_column_api_method_with_argument(screen: Screen):
         'columnDefs': [{'field': 'name'}, {'field': 'parent_name', 'hide': True}],
         'rowData': [{'name': 'Alice', 'parent_name': 'Frederic'}, {'name': 'Bob', 'parent_name': 'Joseph'}, {'name': 'Carol', 'parent_name': 'John-Peter'}],
     })
-    ui.button('Show Age', on_click=lambda: grid.call_column_api_method('setColumnVisible', 'parent_name'))
+    ui.button('Show Age', on_click=lambda: grid.call_column_api_method('setColumnVisible', 'parent_name', True))
 
     screen.open('/')
     screen.should_contain('Alice')
