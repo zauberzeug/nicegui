@@ -38,22 +38,22 @@ def more() -> None:
         This showcases a context manager that can be used to disable a button for the duration of an async process.
     ''')
     def disable_context_manager() -> None:
-        from nicegui.elements.mixins.disableable_element import DisableableElement
         from contextlib import contextmanager
+
         import httpx
 
         @contextmanager
-        def disable(element: DisableableElement):
-            element.disable()
+        def disable(button: ui.button) -> None:
+            button.disable()
             try:
                 yield
             finally:
-                element.enable()
+                button.enable()
 
-        async def get_slow_response(button: ui.button):
+        async def get_slow_response(button: ui.button) -> None:
             with disable(button):
                 async with httpx.AsyncClient() as client:
-                    response = await client.get('https://httpbin.org/delay/3', timeout=5)
-                    ui.notify(f"Response code: {response.status_code}")
+                    response = await client.get('https://httpbin.org/delay/1', timeout=5)
+                    ui.notify(f'Response code: {response.status_code}')
 
-        ui.button("Get slow response", on_click=lambda e: get_slow_response(e.sender))
+        ui.button('Get slow response', on_click=lambda e: get_slow_response(e.sender))
