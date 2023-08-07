@@ -5,7 +5,8 @@ export default {
       const imports = this.extras.map((extra) => import(window.path_prefix + extra));
       Promise.allSettled(imports).then(() => {
         this.seriesCount = this.options.series ? this.options.series.length : 0;
-        if ("dragDrop" in this.options.plotOptions.series) {
+        // if (this.on_change_set === true) { // I am setting self._props['on_change_set'] = True; not sure why it isn't working.
+        if (true) {
           this.options.plotOptions.series.point = {
             events: {
               drop: (e) => {
