@@ -5,6 +5,20 @@ export default {
       const imports = this.extras.map((extra) => import(window.path_prefix + extra));
       Promise.allSettled(imports).then(() => {
         this.seriesCount = this.options.series ? this.options.series.length : 0;
+        if ("dragDrop" in this.options.plotOptions.series) {
+          this.options.plotOptions.series.point = {
+            events: {
+              drop: (e) => {
+                this.$emit("change", {
+                  series_name: e.target.series.name,
+                  series_index: e.target.series.index,
+                  series_xdata: e.target.series.xData,
+                  series_ydata: e.target.series.yData,
+                });
+              },
+            },
+          };
+        }
         this.chart = Highcharts[this.type](this.$el, this.options);
         this.chart.reflow();
       });
