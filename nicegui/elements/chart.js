@@ -9,7 +9,8 @@ export default {
           this.options.plotOptions.series.point = {
             events: {
               drop: (e) => {
-                this.$emit("change", {
+                    this.$emit("on_point_drop", {
+                      type: "point_drop",
                   series_name: e.target.series.name,
                   series_index: e.target.series.index,
                   series_xdata: e.target.series.xData,

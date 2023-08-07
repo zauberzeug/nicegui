@@ -30,6 +30,7 @@ class Chart(Element,
         self._props['extras'] = extras
         self.libraries.extend(library for library in self.extra_libraries if library.path.stem in extras)
         self.on('change', on_change)
+        self.on('on_point_drop', on_change)
 
     @property
     def options(self) -> Dict:
