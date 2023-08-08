@@ -38,8 +38,8 @@ class Chart(Element,
             self._props['on_event_set'] = True
         if on_drag_drop is not None:
             self._props['on_drag_drop_set'] = True
-        self.on_event = on_event
-        self.on_drag_drop = on_drag_drop
+        self._on_event = on_event
+        self._on_drag_drop = on_drag_drop
         self.on('on_event', self.handle_event)
         self.on('on_point_drag_drop', self.handle_drag_drop)
 
@@ -62,7 +62,7 @@ class Chart(Element,
                 event_type=event_type,
             )
 
-        handle_event(self.on_event, arguments)
+        handle_event(self._on_event, arguments)
 
     def handle_drag_drop(self, e: GenericEventArguments) -> None:
         event_type = e.args.get('event_type', None)
@@ -95,7 +95,7 @@ class Chart(Element,
                 series_x=e.args.get('series_x', None),
                 series_y=e.args.get('series_y', None),
             )
-        handle_event(self.on_drag_drop, arguments)
+        handle_event(self._on_drag_drop, arguments)
 
     @property
     def options(self) -> Dict:
