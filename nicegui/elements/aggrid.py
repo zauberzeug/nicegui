@@ -2,8 +2,15 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, cast
 
+from .. import globals
 from ..element import Element
 from ..functions.javascript import run_javascript
+
+try:
+    import pandas as pd
+    globals.optional_features.add('pandas')
+except ImportError:
+    pass
 
 
 class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-community.min.js']):
@@ -25,7 +32,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']
 
     @staticmethod
-    def from_pandas(df: 'pandas.DataFrame', *, theme: str = 'balham') -> AgGrid:
+    def from_pandas(df: pd.DataFrame, *, theme: str = 'balham') -> AgGrid:
         """Create an AG Grid from a Pandas DataFrame.
 
         :param df: Pandas DataFrame
