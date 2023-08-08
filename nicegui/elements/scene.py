@@ -61,6 +61,7 @@ class Scene(Element,
                  on_click: Optional[Callable[..., Any]] = None,
                  on_drag_start: Optional[Callable[..., Any]] = None,
                  on_drag_end: Optional[Callable[..., Any]] = None,
+                 drag_constraints: str = '',
                  ) -> None:
         """3D Scene
 
@@ -75,6 +76,7 @@ class Scene(Element,
         :param on_click: callback to execute when a 3D object is clicked
         :param on_drag_start: callback to execute when a 3D object is dragged
         :param on_drag_end: callback to execute when a 3D object is dropped
+        :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
         """
         super().__init__()
         self._props['width'] = width
@@ -91,6 +93,7 @@ class Scene(Element,
         self.on('click3d', self.handle_click)
         self.on('dragstart', self.handle_drag)
         self.on('dragend', self.handle_drag)
+        self._props['drag_constraints'] = drag_constraints
 
     def __enter__(self) -> 'Scene':
         Object3D.current_scene = self

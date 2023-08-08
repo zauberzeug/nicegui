@@ -120,7 +120,14 @@ export default {
     }
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
-    const handle_drag = (event) => {
+    const applyConstraint = (constraint, position) => {
+      if (!constraint) return;
+      const [variable, expression] = constraint.split("=").map((s) => s.trim());
+      position[variable] = eval(expression.replace(/x|y|z/g, (match) => `(${position[match]})`));
+    };
+    const handleDrag = (event) => {
+      this.drag_constraints.split(",").forEach((constraint) => applyConstraint(constraint, event.object.position));
+      if (event.type === "drag") return;
       this.$emit(event.type, {
         type: event.type,
         object_id: event.object.object_id,
@@ -131,8 +138,9 @@ export default {
       });
       this.controls.enabled = event.type == "dragend";
     };
-    this.drag_controls.addEventListener("dragstart", handle_drag);
-    this.drag_controls.addEventListener("dragend", handle_drag);
+    this.drag_controls.addEventListener("dragstart", handleDrag);
+    this.drag_controls.addEventListener("drag", handleDrag);
+    this.drag_controls.addEventListener("dragend", handleDrag);
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
@@ -393,5 +401,6 @@ export default {
     width: Number,
     height: Number,
     grid: Boolean,
+    drag_constraints: String,
   },
 };
