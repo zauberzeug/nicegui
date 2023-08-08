@@ -47,9 +47,9 @@ def more() -> None:
     def drag() -> None:
         def handle_drag_drop(e):
             if e.event_type == 'point_drag_start':
-                ui.notify('Point drag event started.')
+                ui.notify('Point drag started.')
             elif e.event_type == 'point_drag':
-                ui.notify(f"You dragged a point {e.point_index} in series {e.series_index}.")
+                ui.notify(f"You are dragging point {e.point_index} in series {e.series_index}.")
             elif e.event_type == 'point_drop':
                 ui.notify(f"You dropped point {e.point_index} in series {e.series_index} at [{e.point_x},{e.point_y}].")
 
