@@ -43,7 +43,7 @@ class Chart(Element,
         self.on('on_event', self.handle_event)
         self.on('on_point_drag_drop', self.handle_drag_drop)
 
-    def handle_event(self, e: GenericEventArguments) -> None:
+    def handle_event(self, e: ChartEventArguments) -> None:
         event_type = e.args.get('event_type', None)
         if event_type == 'point_click':
             arguments = ChartPointEventArguments(
@@ -64,7 +64,7 @@ class Chart(Element,
 
         handle_event(self._on_event, arguments)
 
-    def handle_drag_drop(self, e: GenericEventArguments) -> None:
+    def handle_drag_drop(self, e: ChartEventArguments) -> None:
         event_type = e.args.get('event_type', None)
         if event_type == 'point_drag_start':
             arguments = ChartEventArguments(
