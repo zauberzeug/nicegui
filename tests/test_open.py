@@ -14,5 +14,6 @@ def test_open_page(screen: Screen, new_tab: bool):
 
     screen.open('/')
     screen.click('Open test page')
+    screen.wait(0.5)
     screen.switch_to(1 if new_tab else 0)
     screen.should_contain('Test page')

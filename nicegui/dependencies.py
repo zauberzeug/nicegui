@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Set, Tuple
+from typing import TYPE_CHECKING, Dict, Iterable, List, Set, Tuple
 
 import vbuild
 
@@ -104,11 +104,11 @@ def get_name(path: Path) -> str:
     return path.name.split('.', 1)[0]
 
 
-def generate_resources(prefix: str, elements: List[Element]) -> Tuple[List[str],
-                                                                      List[str],
-                                                                      List[str],
-                                                                      Dict[str, str],
-                                                                      List[str]]:
+def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[str],
+                                                                          List[str],
+                                                                          List[str],
+                                                                          Dict[str, str],
+                                                                          List[str]]:
     done_libraries: Set[str] = set()
     done_components: Set[str] = set()
     vue_scripts: List[str] = []

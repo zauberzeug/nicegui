@@ -6,8 +6,9 @@ from fastapi import Response
 
 try:
     import numpy as np
+    has_numpy = True
 except ImportError:
-    np = None
+    has_numpy = False
 
 
 def dumps(obj: Any, sort_keys: bool = False, separators: Optional[Tuple[str, str]] = None):
@@ -47,11 +48,11 @@ class NumpyJsonEncoder(json.JSONEncoder):
     """Special json encoder that supports NumPy arrays and date/datetime objects."""
 
     def default(self, obj):
-        if np and isinstance(obj, np.integer):
+        if has_numpy and isinstance(obj, np.integer):
             return int(obj)
-        if np and isinstance(obj, np.floating):
+        if has_numpy and isinstance(obj, np.floating):
             return float(obj)
-        if np and isinstance(obj, np.ndarray):
+        if has_numpy and isinstance(obj, np.ndarray):
             return obj.tolist()
         if isinstance(obj, (datetime, date)):
             return obj.isoformat()

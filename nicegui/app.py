@@ -103,16 +103,15 @@ class App(FastAPI):
         file = Path(local_file).resolve()
         if not file.is_file():
             raise ValueError(f'File not found: {file}')
-        if url_path is None:
-            url_path = f'/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}'
+        path = f'/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
-        @self.get(url_path)
+        @self.get(path)
         def read_item() -> FileResponse:
             if single_use:
-                self.remove_route(url_path)
+                self.remove_route(path)
             return FileResponse(file, headers={'Cache-Control': 'public, max-age=3600'})
 
-        return url_path
+        return path
 
     def add_media_files(self, url_path: str, local_directory: Union[str, Path]) -> None:
         """Add directory of media files.
@@ -156,16 +155,15 @@ class App(FastAPI):
         file = Path(local_file).resolve()
         if not file.is_file():
             raise ValueError(f'File not found: {local_file}')
-        if url_path is None:
-            url_path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}'
+        path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
-        @self.get(url_path)
+        @self.get(path)
         def read_item(request: Request) -> StreamingResponse:
             if single_use:
-                self.remove_route(url_path)
+                self.remove_route(path)
             return helpers.get_streaming_response(file, request)
 
-        return url_path
+        return path
 
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""

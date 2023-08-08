@@ -6,8 +6,9 @@ from fastapi import Response
 
 try:
     import numpy as np
+    has_numpy = True
 except ImportError:
-    np = None
+    has_numpy = False
 
 ORJSON_OPTS = orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NON_STR_KEYS
 
@@ -44,7 +45,7 @@ def loads(value: str) -> Any:
 
 def _orjson_converter(obj):
     """Custom serializer/converter, e.g. for NumPy object arrays."""
-    if np and isinstance(obj, np.ndarray) and obj.dtype == np.object_:
+    if has_numpy and isinstance(obj, np.ndarray) and obj.dtype == np.object_:
         return obj.tolist()
     if isinstance(obj, Decimal):
         return float(obj)
