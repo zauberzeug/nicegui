@@ -1,6 +1,9 @@
 from typing import Callable, Dict, List, Optional
 
 from ..element import Element
+from ..events import (ChartEventArguments, ChartPointEventArguments, ChartSeriesEventArguments, GenericEventArguments,
+                      handle_event)
+from ..helpers import KWONLY_SLOTS
 
 
 class Chart(Element,
@@ -9,7 +12,9 @@ class Chart(Element,
             extra_libraries=['lib/highcharts/modules/*.js']):
 
     def __init__(self, options: Dict, *,
-                 type: str = 'chart', extras: List[str] = [], on_change: Optional[Callable] = None) -> None:
+                 type: str = 'chart', extras: List[str] = [],
+                 on_event: Optional[Callable] = None,
+                 on_drag_drop: Optional[Callable] = None) -> None:
         """Chart
 
         An element to create a chart using `Highcharts <https://www.highcharts.com/>`_.
@@ -29,12 +34,68 @@ class Chart(Element,
         self._props['options'] = options
         self._props['extras'] = extras
         self.libraries.extend(library for library in self.extra_libraries if library.path.stem in extras)
-        self.on('change', on_change)
-        if on_change is not None:
-            self._props['on_change_set'] = True
-            self.on('on_point_drop', on_change)
+        if on_event is not None:
+            self._props['on_event_set'] = True
+        if on_drag_drop is not None:
+            self._props['on_drag_drop_set'] = True
+        self.on_event = on_event
+        self.on_drag_drop = on_drag_drop
+        self.on('on_event', self.handle_event)
+        self.on('on_point_drag_drop', self.handle_drag_drop)
+
+    def handle_event(self, e: GenericEventArguments) -> None:
+        event_type = e.args.get('event_type', None)
+        if event_type == 'point_click':
+            arguments = ChartPointEventArguments(
+                sender=self,
+                client=self.client,
+                event_type=event_type,
+                point_index=e.args.get('point_index', None),
+                point_x=e.args.get('point_x', None),
+                point_y=e.args.get('point_y', None),
+                series_index=e.args.get('series_index', None),
+            )
         else:
-            self._props['on_change_set'] = False
+            arguments = ChartEventArguments(
+                sender=self,
+                client=self.client,
+                event_type=event_type,
+            )
+
+        handle_event(self.on_event, arguments)
+
+    def handle_drag_drop(self, e: GenericEventArguments) -> None:
+        event_type = e.args.get('event_type', None)
+        if event_type == 'point_drag_start':
+            arguments = ChartEventArguments(
+                sender=self,
+                client=self.client,
+                event_type=event_type,
+            )
+        elif event_type == 'point_drag':
+            arguments = ChartPointEventArguments(
+                sender=self,
+                client=self.client,
+                event_type=event_type,
+                point_index=e.args.get('point_index', None),
+                point_x=e.args.get('point_x', None),
+                point_y=e.args.get('point_y', None),
+                series_index=e.args.get('series_index', None),
+            )
+        elif event_type == 'point_drop':
+            arguments = ChartSeriesEventArguments(
+                sender=self,
+                client=self.client,
+                event_type=event_type,
+                point_index=e.args.get('point_index', None),
+                point_x=e.args.get('point_x', None),
+                point_y=e.args.get('point_y', None),
+                series_index=e.args.get('series_index', None),
+                series_name=e.args.get('series_name', None),
+                series_x=e.args.get('series_x', None),
+                series_y=e.args.get('series_y', None),
+            )
+        handle_event(self.on_drag_drop, arguments)
 
     @property
     def options(self) -> Dict:
