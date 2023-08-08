@@ -29,7 +29,7 @@ export default {
             });
           };
         }
-        // if (this.on_event_set === true) {
+        // if (this.on_drag_drop_set === true) {
         if (true) {
           this.options.plotOptions.series.point.events.dragStart = (e) => {
             this.$emit("on_point_drag_drop", {
