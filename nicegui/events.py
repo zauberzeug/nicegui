@@ -312,11 +312,13 @@ def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArgument
                                 for p in signature(handler).parameters.values())
         if arguments.sender.is_ignoring_events:
             return
-        with arguments.sender.parent_slot:
+        parent_slot = arguments.sender.parent_slot
+        assert parent_slot is not None
+        with parent_slot:
             result = handler(arguments) if expects_arguments else handler()
         if isinstance(result, Awaitable):
             async def wait_for_result():
-                with arguments.sender.parent_slot:
+                with parent_slot:
                     await result
             if globals.loop and globals.loop.is_running():
                 background_tasks.create(wait_for_result(), name=str(handler))

@@ -2,8 +2,15 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, cast
 
+from .. import globals
 from ..element import Element
 from ..functions.javascript import run_javascript
+
+try:
+    import pandas as pd
+    globals.optional_features.add('pandas')
+except ImportError:
+    pass
 
 
 class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-community.min.js']):
@@ -25,7 +32,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']
 
     @staticmethod
-    def from_pandas(df: 'pandas.DataFrame', *, theme: str = 'balham') -> AgGrid:
+    def from_pandas(df: pd.DataFrame, *, theme: str = 'balham') -> AgGrid:
         """Create an AG Grid from a Pandas DataFrame.
 
         :param df: Pandas DataFrame
@@ -54,6 +61,16 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         :param args: arguments to pass to the method
         """
         self.run_method('call_api_method', name, *args)
+
+    def call_column_api_method(self, name: str, *args) -> None:
+        """Call an AG Grid Column API method.
+
+        See `AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>`_ for a list of methods.
+
+        :param name: name of the method
+        :param args: arguments to pass to the method
+        """
+        self.run_method('call_column_api_method', name, *args)
 
     async def get_selected_rows(self) -> List[Dict]:
         """Get the currently selected rows.

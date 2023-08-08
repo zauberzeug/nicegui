@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import math
 import uuid
 from typing import TYPE_CHECKING, Any, List, Optional, Union
@@ -7,13 +9,14 @@ if TYPE_CHECKING:
 
 
 class Object3D:
-    current_scene: Optional['Scene'] = None
+    current_scene: Optional[Scene] = None
 
     def __init__(self, type: str, *args: Any) -> None:
         self.type = type
         self.id = str(uuid.uuid4())
         self.name: Optional[str] = None
-        self.scene: 'Scene' = self.current_scene
+        assert self.current_scene is not None
+        self.scene: Scene = self.current_scene
         self.scene.objects[self.id] = self
         self.parent: Union[Object3D, SceneObject] = self.scene.stack[-1]
         self.args: List = list(args)

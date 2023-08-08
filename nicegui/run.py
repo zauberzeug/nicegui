@@ -8,6 +8,7 @@ from typing import Any, List, Literal, Optional, Tuple, Union
 
 import __main__
 import uvicorn
+from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
@@ -20,10 +21,17 @@ from .language import Language
 APP_IMPORT_STRING = 'nicegui:app'
 
 
+class CustomServerConfig(uvicorn.Config):
+    storage_secret: Optional[str] = None
+    method_queue: Optional[multiprocessing.Queue] = None
+    response_queue: Optional[multiprocessing.Queue] = None
+
+
 class Server(uvicorn.Server):
 
     def run(self, sockets: Optional[List[socket.socket]] = None) -> None:
         globals.server = self
+        assert isinstance(self.config, CustomServerConfig)
         native_module.method_queue = self.config.method_queue
         native_module.response_queue = self.config.response_queue
         if native_module.method_queue is not None:
@@ -47,6 +55,7 @@ def run(*,
         native: bool = False,
         window_size: Optional[Tuple[int, int]] = None,
         fullscreen: bool = False,
+        frameless: bool = False,
         reload: bool = True,
         uvicorn_logging_level: str = 'warning',
         uvicorn_reload_dirs: str = '.',
@@ -75,6 +84,7 @@ def run(*,
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
     :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`)
     :param fullscreen: open the UI in a fullscreen window (default: `False`, also activates `native`)
+    :param frameless: open the UI in a frameless window (default: `False`, also activates `native`)
     :param reload: automatically reload the UI on file changes (default: `True`)
     :param uvicorn_logging_level: logging level for uvicorn server (default: `'warning'`)
     :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only)
@@ -99,6 +109,8 @@ def run(*,
     globals.endpoint_documentation = endpoint_documentation
 
     for route in globals.app.routes:
+        if not isinstance(route, Route):
+            continue
         if route.path.startswith('/_nicegui') and hasattr(route, 'methods'):
             route.include_in_schema = endpoint_documentation in {'internal', 'all'}
         if route.path == '/' or route.path in globals.page_routes.values():
@@ -116,6 +128,8 @@ def run(*,
 
     if fullscreen:
         native = True
+    if frameless:
+        native = True
     if window_size:
         native = True
     if native:
@@ -123,7 +137,7 @@ def run(*,
         host = host or '127.0.0.1'
         port = native_mode.find_open_port()
         width, height = window_size or (800, 600)
-        native_mode.activate(host, port, title, width, height, fullscreen)
+        native_mode.activate(host, port, title, width, height, fullscreen, frameless)
     else:
         host = host or '0.0.0.0'
 
@@ -139,7 +153,7 @@ def run(*,
 
     # NOTE: The following lines are basically a copy of `uvicorn.run`, but keep a reference to the `server`.
 
-    config = uvicorn.Config(
+    config = CustomServerConfig(
         APP_IMPORT_STRING if reload else globals.app,
         host=host,
         port=port,

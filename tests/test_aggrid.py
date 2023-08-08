@@ -90,6 +90,20 @@ def test_call_api_method_with_argument(screen: Screen):
     screen.should_not_contain('Carol')
 
 
+def test_call_column_api_method_with_argument(screen: Screen):
+    grid = ui.aggrid({
+        'columnDefs': [{'field': 'name'}, {'field': 'age', 'hide': True}],
+        'rowData': [{'name': 'Alice', 'age': '18'}, {'name': 'Bob', 'age': '21'}, {'name': 'Carol', 'age': '42'}],
+    })
+    ui.button('Show Age', on_click=lambda: grid.call_column_api_method('setColumnVisible', 'age', True))
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_not_contain('18')
+    screen.click('Show Age')
+    screen.should_contain('18')
+
+
 def test_get_selected_rows(screen: Screen):
     grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}],

@@ -14,4 +14,6 @@ def download(src: Union[str, Path], filename: Optional[str] = None) -> None:
     """
     if helpers.is_file(src):
         src = globals.app.add_static_file(local_file=src, single_use=True)
+    else:
+        src = str(src)
     globals.get_client().download(src, filename)

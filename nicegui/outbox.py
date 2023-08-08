@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 from collections import defaultdict, deque
 from typing import TYPE_CHECKING, Any, DefaultDict, Deque, Dict, Tuple
@@ -12,15 +14,15 @@ ElementId = int
 MessageType = str
 Message = Tuple[ClientId, MessageType, Any]
 
-update_queue: DefaultDict[ClientId, Dict[ElementId, 'Element']] = defaultdict(dict)
+update_queue: DefaultDict[ClientId, Dict[ElementId, Element]] = defaultdict(dict)
 message_queue: Deque[Message] = deque()
 
 
-def enqueue_update(element: 'Element') -> None:
+def enqueue_update(element: Element) -> None:
     update_queue[element.client.id][element.id] = element
 
 
-def enqueue_delete(element: 'Element') -> None:
+def enqueue_delete(element: Element) -> None:
     update_queue[element.client.id][element.id] = None
 
 
@@ -31,6 +33,7 @@ def enqueue_message(message_type: MessageType, data: Any, target_id: ClientId) -
 async def _emit(message_type: MessageType, data: Any, target_id: ClientId) -> None:
     await globals.sio.emit(message_type, data, room=target_id)
     if is_target_on_air(target_id):
+        assert globals.air is not None
         await globals.air.emit(message_type, data, room=target_id)
 
 

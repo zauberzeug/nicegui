@@ -1,4 +1,4 @@
-from typing import Any, get_args
+from typing import Any, Optional, get_args
 
 from ...element import Element
 from ...tailwind_types.background_color import BackgroundColor
@@ -16,7 +16,7 @@ TAILWIND_COLORS = get_args(BackgroundColor)
 class BackgroundColorElement(Element):
     BACKGROUND_COLOR_PROP = 'color'
 
-    def __init__(self, *, background_color: str, **kwargs: Any) -> None:
+    def __init__(self, *, background_color: Optional[str], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if background_color in QUASAR_COLORS:
             self._props[self.BACKGROUND_COLOR_PROP] = background_color
@@ -29,7 +29,7 @@ class BackgroundColorElement(Element):
 class TextColorElement(Element):
     TEXT_COLOR_PROP = 'color'
 
-    def __init__(self, *, text_color: str, **kwargs: Any) -> None:
+    def __init__(self, *, text_color: Optional[str], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if text_color in QUASAR_COLORS:
             self._props[self.TEXT_COLOR_PROP] = text_color

@@ -47,6 +47,9 @@ export default {
     call_api_method(name, ...args) {
       this.gridOptions.api[name](...args);
     },
+    call_column_api_method(name, ...args) {
+      this.gridOptions.columnApi[name](...args);
+    },
     handle_event(type, args) {
       this.$emit(type, {
         value: args.value,
