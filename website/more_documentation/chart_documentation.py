@@ -45,6 +45,14 @@ def more() -> None:
         This chart allows data manipulation by dragging the series points. Data can be read via the on_change callback.
     ''')
     def drag() -> None:
+        def handle_drag_drop(e):
+            if e.event_type == 'point_drag_start':
+                ui.notify('Point drag event started.')
+            elif e.event_type == 'point_drag':
+                ui.notify(f"You dragged a point {e.point_index} in series {e.series_index}.")
+            elif e.event_type == 'point_drop':
+                ui.notify(f"You dropped point {e.point_index} in series {e.series_index} at [{e.point_x},{e.point_y}].")
+
         ui.chart({
             'title': False,
             'plotOptions': {
@@ -58,5 +66,6 @@ def more() -> None:
                 {'name': 'B', 'data': [[50, 40], [60, 50], [70, 60]]},
             ],
         },  extras=['draggable-points'],
-            on_change=lambda e: ui.notify(f'The value changed to {e}.')
+            on_event=lambda e: ui.notify(f"Event occured: {e}"),
+            on_drag_drop=lambda e: handle_drag_drop(e)
         ).classes('w-full h-64')
