@@ -6,7 +6,7 @@ body:
     attributes:
       label: Description
       description: |
-      Make sure it is really an issue (see [FAQs](/zauberzeug/nicegui/wiki/FAQs)).
+      Make sure it is really an issue (see [FAQs](https://github.com/zauberzeug/nicegui/wiki/FAQs) ).
       A lot of people will read your message.
       Make it worth their time.
         1. What are you trying to do?
