@@ -17,8 +17,7 @@ export default {
         if (!this.options.plotOptions.series.point.events) {
           this.options.plotOptions.series.point.events = {};
         }
-        // if (this.on_event_set === true) {
-        if (true) {
+        if (this.on_event_set === true) {
           this.options.plotOptions.series.point.events.click = (e) => {
             this.$emit("on_event", {
               event_type: "point_click",
@@ -29,8 +28,7 @@ export default {
             });
           };
         }
-        // if (this.on_drag_drop_set === true) {
-        if (true) {
+        if (this.on_drag_drop_set === true) {
           this.options.plotOptions.series.point.events.dragStart = (e) => {
             this.$emit("on_point_drag_drop", {
               event_type: "point_drag_start",
@@ -93,5 +91,7 @@ export default {
     type: String,
     options: Object,
     extras: Array,
+    on_event_set: Boolean,
+    on_drag_drop_set: Boolean,
   },
 };
