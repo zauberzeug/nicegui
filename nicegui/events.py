@@ -309,7 +309,10 @@ def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArgument
         if isinstance(result, Awaitable):
             async def wait_for_result():
                 with parent_slot:
-                    await result
+                    try:
+                        await result
+                    except Exception as e:
+                        globals.handle_exception(e)
             if globals.loop and globals.loop.is_running():
                 background_tasks.create(wait_for_result(), name=str(handler))
             else:
