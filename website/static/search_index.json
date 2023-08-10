@@ -146,7 +146,7 @@
   },
   {
     "title": "Example: Docker Image",
-    "content": "Demonstrate using the official[zauberzeug/nicegui](https://hub.docker.com/r/zauberzeug/nicegui) docker image",
+    "content": "Demonstrate using the official [zauberzeug/nicegui](https://hub.docker.com/r/zauberzeug/nicegui) docker image",
     "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/docker_image/"
   },
   {
