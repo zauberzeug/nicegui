@@ -57,7 +57,7 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
 
 
 def hash_file_path(path: Path) -> str:
-    return hashlib.sha256(str(path).encode()).hexdigest()[:32]
+    return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
 
 
 def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional['Client'] = None) -> None:
