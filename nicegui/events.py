@@ -39,7 +39,7 @@ class ChartEventArguments(EventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
-class ChartPointEventArguments(ChartEventArguments):
+class ChartPointClickEventArguments(ChartEventArguments):
     series_index: int
     point_index: int
     point_x: float
@@ -47,10 +47,24 @@ class ChartPointEventArguments(ChartEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
-class ChartSeriesEventArguments(ChartPointEventArguments):
-    series_name: str
-    series_x: List[float]
-    series_y: List[float]
+class ChartPointDragStartEventArguments(ChartEventArguments):
+    pass
+
+
+@dataclass(**KWONLY_SLOTS)
+class ChartPointDragEventArguments(ChartEventArguments):
+    series_index: int
+    point_index: int
+    point_x: float
+    point_y: float
+
+
+@dataclass(**KWONLY_SLOTS)
+class ChartPointDropEventArguments(ChartEventArguments):
+    series_index: int
+    point_index: int
+    point_x: float
+    point_y: float
 
 
 @dataclass(**KWONLY_SLOTS)

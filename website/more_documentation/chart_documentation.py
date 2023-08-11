@@ -41,31 +41,32 @@ def more() -> None:
             ],
         }, extras=['solid-gauge']).classes('w-full h-64')
 
-    @text_demo('Chart with point dragging enabled', '''
-        This chart allows data manipulation by dragging the series points. Data can be read via the on_change callback.
+    @text_demo('Chart with draggable points', '''
+        This chart allows dragging the series points.
+        You can register callbacks for the following events:
+        
+        - `on_point_click`: called when a point is clicked
+        - `on_point_drag_start`: called when a point drag starts
+        - `on_point_drag`: called when a point is dragged
+        - `on_point_drop`: called when a point is dropped
     ''')
     def drag() -> None:
-        def handle_drag_drop(e):
-            if e.event_type == 'point_drag_start':
-                ui.notify('Point drag started.')
-            elif e.event_type == 'point_drag':
-                ui.notify(f"You are dragging point {e.point_index} in series {e.series_index}.")
-            elif e.event_type == 'point_drop':
-                ui.notify(f"You dropped point {e.point_index} in series {e.series_index} at [{e.point_x},{e.point_y}].")
-
-        ui.chart({
-            'title': False,
-            'plotOptions': {
-                'series': {
-                    'stickyTracking': False,
-                    'dragDrop': {'draggableX': True, 'draggableY': True, 'dragPrecisionX': 1, 'dragPrecisionY': 1},
+        ui.chart(
+            {
+                'title': False,
+                'plotOptions': {
+                    'series': {
+                        'stickyTracking': False,
+                        'dragDrop': {'draggableY': True, 'dragPrecisionY': 1},
+                    },
                 },
+                'series': [
+                    {'name': 'A', 'data': [[20, 10], [30, 20], [40, 30]]},
+                    {'name': 'B', 'data': [[50, 40], [60, 50], [70, 60]]},
+                ],
             },
-            'series': [
-                {'name': 'A', 'data': [[20, 10], [30, 20], [40, 30]]},
-                {'name': 'B', 'data': [[50, 40], [60, 50], [70, 60]]},
-            ],
-        },  extras=['draggable-points'],
-            on_event=lambda e: ui.notify(f"Event occured: {e}"),
-            on_drag_drop=lambda e: handle_drag_drop(e)
+            extras=['draggable-points'],
+            on_point_click=lambda e: ui.notify(f'Click: {e}'),
+            on_point_drag_start=lambda e: ui.notify(f'Drag start: {e}'),
+            on_point_drop=lambda e: ui.notify(f'Drop: {e}')
         ).classes('w-full h-64')
