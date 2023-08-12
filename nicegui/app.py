@@ -62,7 +62,10 @@ class App(FastAPI):
         """
         if globals.reload:
             raise Exception('calling shutdown() is not supported when auto-reload is enabled')
-        globals.server.should_exit = True
+        if self.native.main_window:
+            self.native.main_window.destroy()
+        else:
+            globals.server.should_exit = True
 
     def add_static_files(self, url_path: str, local_directory: Union[str, Path]) -> None:
         """Add a directory of static files.
