@@ -65,6 +65,8 @@ def more() -> None:
         - `object_id`: the id of the object that was dragged.
         - `object_name`: the name of the object that was dragged.
         - `x`, `y`, `z`: the x, y and z coordinates of the dragged object.
+               
+        You can also use the `drag_constraints` argument to set a comma-separated JavaScript expression for constraining positions of dragged objects
     ''')
     def draggable_objects() -> None:
         from nicegui import events
@@ -72,10 +74,13 @@ def more() -> None:
         def handle_drag(e: events.SceneDragEventArguments):
             ui.notify(f'You dropped the sphere at ({e.x:.2f}, {e.y:.2f}, {e.z:.2f})')
 
-        with ui.scene(width=285, height=220, on_drag_end=handle_drag) as scene:
-            sphere = scene.sphere()
+        with ui.scene(width=285, height=220,
+                      drag_constraints='z = 1', on_drag_end=handle_drag) as scene:
+            sphere = scene.sphere().move(z=1).draggable()
 
-        ui.switch('draggable sphere', on_change=lambda e: sphere.draggable(e.value))
+        ui.switch('draggable sphere',
+                  value=sphere.draggable_,
+                  on_change=lambda e: sphere.draggable(e.value))
 
     @text_demo('Rendering point clouds', '''
         You can render point clouds using the `point_cloud` method.
