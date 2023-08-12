@@ -42,14 +42,14 @@ def open_window(
     window_kwargs.update(globals.app.native.window_args)
 
     window = webview.create_window(**window_kwargs)
-    closing = Event()
-    window.events.closing += closing.set
-    start_window_method_executor(window, method_queue, response_queue, closing)
+    closed = Event()
+    window.events.closed += closed.set
+    start_window_method_executor(window, method_queue, response_queue, closed)
     webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
 
 
 def start_window_method_executor(
-        window: webview.Window, method_queue: mp.Queue, response_queue: mp.Queue, closing: Event
+        window: webview.Window, method_queue: mp.Queue, response_queue: mp.Queue, closed: Event
 ) -> None:
     def execute(method: Callable, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> None:
         try:
@@ -61,7 +61,7 @@ def start_window_method_executor(
 
     def window_method_executor() -> None:
         pending_executions: List[Thread] = []
-        while not closing.is_set():
+        while not closed.is_set():
             try:
                 method_name, args, kwargs = method_queue.get(block=False)
                 if method_name == 'signal_server_shutdown':
