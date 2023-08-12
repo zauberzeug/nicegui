@@ -768,7 +768,7 @@ def create_full() -> None:
         Currently "On Air" is available as a tech preview and generates a random URL that is valid for 1 hour.
         We will gradually improve stability and extend the service with password protection, custom URLs and more.
         Please let us know your feedback on [GitHub](https://github.com/zauberzeug/nicegui/discussions),
-        [Reddit](https://www.reddit.com/r/nicegui/), or [Discord](https://discord.gg/3XkZVYJ).
+        [Reddit](https://www.reddit.com/r/nicegui/), or [Discord](https://discord.gg/TEpFeAaF4f).
 
         **Data Privacy:**
         We take your privacy very serious.
