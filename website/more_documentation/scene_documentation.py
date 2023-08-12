@@ -66,7 +66,8 @@ def more() -> None:
         - `object_name`: the name of the object that was dragged.
         - `x`, `y`, `z`: the x, y and z coordinates of the dragged object.
                
-        You can also use the `drag_constraints` argument to set a comma-separated JavaScript expression for constraining positions of dragged objects
+        You can also use the `drag_constraints` argument to set comma-separated JavaScript expressions
+        for constraining positions of dragged objects.
     ''')
     def draggable_objects() -> None:
         from nicegui import events
