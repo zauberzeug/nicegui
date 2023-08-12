@@ -56,6 +56,33 @@ def more() -> None:
             scene.sphere().move(x=-1, z=1).with_name('sphere')
             scene.box().move(x=1, z=1).with_name('box')
 
+    @text_demo('Draggable objects', '''
+        You can make objects draggable using the `.draggable` method.
+        There is an optional `on_drag_start` and `on_drag_end` argument to `ui.scene` to handle drag events.
+        The callbacks receive a `SceneDragEventArguments` object with the following attributes:
+        
+        - `type`: the type of drag event ("dragstart" or "dragend").
+        - `object_id`: the id of the object that was dragged.
+        - `object_name`: the name of the object that was dragged.
+        - `x`, `y`, `z`: the x, y and z coordinates of the dragged object.
+               
+        You can also use the `drag_constraints` argument to set comma-separated JavaScript expressions
+        for constraining positions of dragged objects.
+    ''')
+    def draggable_objects() -> None:
+        from nicegui import events
+
+        def handle_drag(e: events.SceneDragEventArguments):
+            ui.notify(f'You dropped the sphere at ({e.x:.2f}, {e.y:.2f}, {e.z:.2f})')
+
+        with ui.scene(width=285, height=220,
+                      drag_constraints='z = 1', on_drag_end=handle_drag) as scene:
+            sphere = scene.sphere().move(z=1).draggable()
+
+        ui.switch('draggable sphere',
+                  value=sphere.draggable_,
+                  on_change=lambda e: sphere.draggable(e.value))
+
     @text_demo('Rendering point clouds', '''
         You can render point clouds using the `point_cloud` method.
         The `points` argument is a list of point coordinates, and the `colors` argument is a list of RGB colors (0..1).

@@ -24,6 +24,7 @@ class Object3D:
         self.opacity: float = 1.0
         self.side_: str = 'front'
         self.visible_: bool = True
+        self.draggable_: bool = False
         self.x: float = 0
         self.y: float = 0
         self.z: float = 0
@@ -46,6 +47,7 @@ class Object3D:
         self._rotate()
         self._scale()
         self._visible()
+        self._draggable()
 
     def __enter__(self):
         self.scene.stack.append(self)
@@ -74,6 +76,9 @@ class Object3D:
 
     def _visible(self) -> None:
         self.scene.run_method('visible', self.id, self.visible_)
+
+    def _draggable(self) -> None:
+        self.scene.run_method('draggable', self.id, self.draggable_)
 
     def _delete(self) -> None:
         self.scene.run_method('delete', self.id)
@@ -130,6 +135,12 @@ class Object3D:
         if self.visible_ != value:
             self.visible_ = value
             self._visible()
+        return self
+
+    def draggable(self, value: bool = True):
+        if self.draggable_ != value:
+            self.draggable_ = value
+            self._draggable()
         return self
 
     def delete(self) -> None:
