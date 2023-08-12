@@ -342,6 +342,7 @@ async def index_page(client: Client) -> None:
                          'Demonstrate using the official '
                          '[zauberzeug/nicegui](https://hub.docker.com/r/zauberzeug/nicegui) docker image')
             example_link('Download Text as File', 'providing in-memory data like strings as file download')
+            example_link('Generate PDF', 'create SVG preview and PDF download from input form elements')
 
     with ui.row().classes('dark-box min-h-screen mt-16'):
         link_target('why')
