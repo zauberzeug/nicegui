@@ -29,4 +29,8 @@ RUN pip install .
 EXPOSE 8080
 EXPOSE 9062
 
-CMD python3 main.py
+COPY fly-entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["python", "main.py"]
