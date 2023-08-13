@@ -33,3 +33,10 @@ class ChoiceElement(ValueElement):
         self._update_values_and_labels()
         self._update_options()
         super().update()
+
+    def set_options(self, options: Union[List, Dict], *, value=None) -> None:
+        """Set the options of this choice element."""
+        self.options = options
+        if value is not None:
+            self.value = value
+        self.update()

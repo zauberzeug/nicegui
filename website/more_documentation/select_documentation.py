@@ -35,3 +35,14 @@ def more() -> None:
             .classes('w-64')
         ui.select(names, multiple=True, value=names[:2], label='with chips') \
             .classes('w-64').props('use-chips')
+
+    @text_demo('update_selection', '''
+        Options can be changed with the `options` property.
+        But then you also need to call `update()` afterwards to let the change take effect.
+        `set_options` is a shortcut that does both and works well for lambdas.
+    ''')
+    def update_selection():
+        select = ui.select([1, 2, 3], value=1)
+        with ui.row():
+            ui.button('4, 5, 6', on_click=lambda: select.set_options([4, 5, 6], value=4))
+            ui.button('1, 2, 3', on_click=lambda: select.set_options([1, 2, 3], value=1))
