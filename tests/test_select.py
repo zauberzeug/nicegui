@@ -75,3 +75,14 @@ def test_changing_options(screen: Screen):
     screen.should_contain('value = 10')
     screen.click('clear')
     screen.should_contain('value = None')
+
+
+def test_set_options(screen:  Screen):
+    s = ui.select([1, 2, 3], value=1)
+    ui.button('4, 5, 6', on_click=lambda: s.set_options([4, 5, 6], value=4))
+
+    screen.open('/')
+    screen.click('4, 5, 6')
+    screen.find_by_class('q-select').click()
+    items = [item.text for item in screen.find_all_by_class('q-item')]
+    assert items == ['4', '5', '6']
