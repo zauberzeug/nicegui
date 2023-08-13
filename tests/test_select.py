@@ -83,6 +83,7 @@ def test_set_options(screen:  Screen):
 
     screen.open('/')
     screen.click('4, 5, 6')
+    screen.wait(0.5)
     screen.find_by_class('q-select').click()
     items = [item.text for item in screen.find_all_by_class('q-item')]
     assert items == ['4', '5', '6']
