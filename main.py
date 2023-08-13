@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Awaitable, Callable, Optional
 from urllib.parse import parse_qs
 
+import icecream
 from fastapi import Request
 from fastapi.responses import FileResponse, RedirectResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -23,6 +24,7 @@ from website.search import Search
 from website.star import add_star
 from website.style import example_link, features, heading, link_target, section_heading, side_menu, subtitle, title
 
+icecream.install()
 prometheus.start_monitor(app)
 
 # session middleware is required for demo in documentation and prometheus
