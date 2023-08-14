@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from inspect import Parameter, signature
 from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Literal, Optional
+from contextlib import nullcontext
 
 from . import background_tasks, globals
 from .helpers import KWONLY_SLOTS
@@ -317,9 +318,13 @@ def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArgument
                                 p.kind is not Parameter.VAR_POSITIONAL and
                                 p.kind is not Parameter.VAR_KEYWORD
                                 for p in signature(handler).parameters.values())
-        if arguments.sender.is_ignoring_events:
-            return
-        parent_slot = arguments.sender.parent_slot
+        if isinstance(arguments, UiEventArguments):
+            if arguments.sender.is_ignoring_events:
+                return
+            parent_slot = arguments.sender.parent_slot
+        else:
+            parent_slot = nullcontext()
+        
         assert parent_slot is not None
         with parent_slot:
             result = handler(arguments) if expects_arguments else handler()
