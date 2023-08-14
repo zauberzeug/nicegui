@@ -141,6 +141,12 @@ class Screen:
     def find_element(self, element: ui.element) -> WebElement:
         return self.selenium.find_element(By.ID, f'c{element.id}')
 
+    def find_by_class(self, name: str) -> WebElement:
+        return self.selenium.find_element(By.CLASS_NAME, name)
+
+    def find_all_by_class(self, name: str) -> WebElement:
+        return self.selenium.find_elements(By.CLASS_NAME, name)
+
     def find_by_tag(self, name: str) -> WebElement:
         return self.selenium.find_element(By.TAG_NAME, name)
 
