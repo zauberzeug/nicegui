@@ -12,12 +12,15 @@ if TYPE_CHECKING:
 
 @dataclass(**KWONLY_SLOTS)
 class EventArguments:
+    pass
+
+@dataclass(**KWONLY_SLOTS)
+class UiEventArguments(EventArguments):
     sender: 'Element'
     client: 'Client'
 
-
 @dataclass(**KWONLY_SLOTS)
-class GenericEventArguments(EventArguments):
+class GenericEventArguments(UiEventArguments):
     args: Dict[str, Any]
 
     def __getitem__(self, key: str) -> Any:
@@ -29,8 +32,12 @@ class GenericEventArguments(EventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
-class ClickEventArguments(EventArguments):
+class ClickEventArguments(UiEventArguments):
     pass
+
+@dataclass(**KWONLY_SLOTS)
+class ObservableChangeEventArguments(EventArguments):
+    ...
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -64,12 +71,12 @@ class SceneDragEventArguments(ClickEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
-class ColorPickEventArguments(EventArguments):
+class ColorPickEventArguments(UiEventArguments):
     color: str
 
 
 @dataclass(**KWONLY_SLOTS)
-class MouseEventArguments(EventArguments):
+class MouseEventArguments(UiEventArguments):
     type: str
     image_x: float
     image_y: float
@@ -82,26 +89,26 @@ class MouseEventArguments(EventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
-class JoystickEventArguments(EventArguments):
+class JoystickEventArguments(UiEventArguments):
     action: str
     x: Optional[float] = None
     y: Optional[float] = None
 
 
 @dataclass(**KWONLY_SLOTS)
-class UploadEventArguments(EventArguments):
+class UploadEventArguments(UiEventArguments):
     content: BinaryIO
     name: str
     type: str
 
 
 @dataclass(**KWONLY_SLOTS)
-class ValueChangeEventArguments(EventArguments):
+class ValueChangeEventArguments(UiEventArguments):
     value: Any
 
 
 @dataclass(**KWONLY_SLOTS)
-class TableSelectionEventArguments(EventArguments):
+class TableSelectionEventArguments(UiEventArguments):
     selection: List[Any]
 
 
@@ -284,14 +291,14 @@ class KeyboardKey:
 
 
 @dataclass(**KWONLY_SLOTS)
-class KeyEventArguments(EventArguments):
+class KeyEventArguments(UiEventArguments):
     action: KeyboardAction
     key: KeyboardKey
     modifiers: KeyboardModifiers
 
 
 @dataclass(**KWONLY_SLOTS)
-class ScrollEventArguments(EventArguments):
+class ScrollEventArguments(UiEventArguments):
     vertical_position: float
     vertical_percentage: float
     vertical_size: float
