@@ -7,8 +7,7 @@ export default {
     update_grid() {
       this.$el.textContent = "";
       this.gridOptions = {
-        ...this.options,
-        onGridReady: (params) => params.api.sizeColumnsToFit(),
+        ...this.options
       };
       for (const column of this.html_columns) {
         if (this.gridOptions.columnDefs[column].cellRenderer === undefined) {
