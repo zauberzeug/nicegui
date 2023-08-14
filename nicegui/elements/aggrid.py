@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Dict, List, Optional, cast
 
 from .. import globals
@@ -39,6 +40,8 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         :param theme: AG Grid theme (default: 'balham')
         :return: AG Grid
         """
+        if any('.' in col for col in df.columns):
+            logging.warning('aggrid.from_pandas(): DataFrame column names must not contain dots "."')
         return AgGrid({
             'columnDefs': [{'field': col} for col in df.columns],
             'rowData': df.to_dict('records'),
