@@ -154,3 +154,21 @@ def more() -> None:
                 {'name': 'Carol', 'age': 42},
             ],
         }).on('cellClicked', lambda event: ui.notify(f'Cell value: {event.args["value"]}'))
+
+    @text_demo('AG Grid with complex objects', '''
+        You can use nested complex objects in AG Grid by separating the field names with a period.
+        (This is the reason why keys in `rowData` are not allowed to contain periods.)
+    ''')
+    def aggrid_with_complex_objects():
+        ui.aggrid({
+            'columnDefs': [
+                {'headerName': 'First name', 'field': 'name.first'},
+                {'headerName': 'Last name', 'field': 'name.last'},
+                {'headerName': 'Age', 'field': 'age'}
+            ],
+            'rowData': [
+                {'name': {'first': 'Alice', 'last': 'Adams'}, 'age': 18},
+                {'name': {'first': 'Bob', 'last': 'Brown'}, 'age': 21},
+                {'name': {'first': 'Carol', 'last': 'Clark'}, 'age': 42},
+            ],
+        }).classes('max-h-40')
