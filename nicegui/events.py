@@ -34,6 +34,40 @@ class ClickEventArguments(EventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
+class ChartEventArguments(EventArguments):
+    event_type: str
+
+
+@dataclass(**KWONLY_SLOTS)
+class ChartPointClickEventArguments(ChartEventArguments):
+    series_index: int
+    point_index: int
+    point_x: float
+    point_y: float
+
+
+@dataclass(**KWONLY_SLOTS)
+class ChartPointDragStartEventArguments(ChartEventArguments):
+    pass
+
+
+@dataclass(**KWONLY_SLOTS)
+class ChartPointDragEventArguments(ChartEventArguments):
+    series_index: int
+    point_index: int
+    point_x: float
+    point_y: float
+
+
+@dataclass(**KWONLY_SLOTS)
+class ChartPointDropEventArguments(ChartEventArguments):
+    series_index: int
+    point_index: int
+    point_x: float
+    point_y: float
+
+
+@dataclass(**KWONLY_SLOTS)
 class SceneClickHit:
     object_id: str
     object_name: str
