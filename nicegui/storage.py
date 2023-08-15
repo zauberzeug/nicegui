@@ -3,6 +3,7 @@ import json
 import uuid
 from collections.abc import MutableMapping
 from pathlib import Path
+from tempfile import gettempdir
 from typing import Any, Dict, Iterator, Optional, Union
 
 import aiofiles
@@ -74,7 +75,11 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
 class Storage:
 
     def __init__(self) -> None:
-        self.storage_dir = Path('.nicegui')
+        if globals.storage_dir is not None:
+            self.storage_dir = Path(globals.storage_dir)
+        else:
+            self.storage_dir = Path(gettempdir() / 'nicegui')
+
         self._general = PersistentDict(self.storage_dir / 'storage_general.json')
         self._users: Dict[str, PersistentDict] = {}
 
