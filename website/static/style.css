@@ -9,6 +9,9 @@ body {
 html:has(.body--dark) {
   background-color: #222;
 }
+html:not(.has-dialog) {
+  scroll-behavior: smooth;
+}
 .browser-window {
   font-family: Roboto, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
@@ -125,13 +128,6 @@ dl.docinfo p {
 }
 .body--dark .dark-box {
   background-color: #3e6a94;
-}
-
-@media only screen and (min-width: 1024px) {
-  html {
-    /* prevent issues with smooth scrolling while menu is closing */
-    scroll-behavior: smooth;
-  }
 }
 
 /* google-webfonts-helper (https://gwfh.mranftl.com/fonts) */

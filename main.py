@@ -34,6 +34,11 @@ app.add_static_files('/favicon', str(Path(__file__).parent / 'website' / 'favico
 app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
 app.add_static_files('/static', str(Path(__file__).parent / 'website' / 'static'))
 
+# HACK: prevent the page from scrolling when closing a dialog (#1404)
+def on_dialog_value_change(sender, value, on_value_change=ui.dialog.on_value_change) -> None:
+    ui.query('html').classes(**{'add' if value else 'remove': 'has-dialog'})
+    on_value_change(sender, value)
+ui.dialog.on_value_change = on_dialog_value_change
 
 @app.get('/logo.png')
 def logo() -> FileResponse:
