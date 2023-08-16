@@ -16,7 +16,12 @@ except ImportError:
 
 class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-community.min.js']):
 
-    def __init__(self, options: Dict, *, html_columns: List[int] = [], theme: str = 'balham') -> None:
+    def __init__(self,
+                 options: Dict, *,
+                 html_columns: List[int] = [],
+                 theme: str = 'balham',
+                 auto_size_columns: bool = True,
+                 ) -> None:
         """AG Grid
 
         An element to create a grid using `AG Grid <https://www.ag-grid.com/>`_.
@@ -26,10 +31,12 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         :param options: dictionary of AG Grid options
         :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
         :param theme: AG Grid theme (default: 'balham')
+        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
         """
         super().__init__()
         self._props['options'] = options
         self._props['html_columns'] = html_columns
+        self._props['auto_size_columns'] = auto_size_columns
         self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']
 
     @staticmethod

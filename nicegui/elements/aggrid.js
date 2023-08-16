@@ -8,7 +8,7 @@ export default {
       this.$el.textContent = "";
       this.gridOptions = {
         ...this.options,
-        onGridReady: (params) => params.api.sizeColumnsToFit(),
+        onGridReady: this.auto_size_columns ? (params) => params.api.sizeColumnsToFit() : undefined,
       };
       for (const column of this.html_columns) {
         if (this.gridOptions.columnDefs[column].cellRenderer === undefined) {
@@ -88,5 +88,6 @@ export default {
   props: {
     options: Object,
     html_columns: Array,
+    auto_size_columns: Boolean,
   },
 };
