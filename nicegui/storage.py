@@ -75,10 +75,12 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
 class Storage:
 
     def __init__(self) -> None:
-        if globals.storage_dir is not None:
-            self.storage_dir = Path(globals.storage_dir)
-        else:
+        if globals.storage_path == 'temp':
             self.storage_dir = Path(gettempdir() / 'nicegui')
+        elif globals.storage_path is not None and globals.storage_path != 'temp':
+            self.storage_dir = Path(globals.storage_path)
+        else:
+            self.storage_dir = Path('.nicegui')
 
         self._general = PersistentDict(self.storage_dir / 'storage_general.json')
         self._users: Dict[str, PersistentDict] = {}
