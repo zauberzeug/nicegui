@@ -1,6 +1,10 @@
+import asyncio
 import sys
 
+from nicegui import ui
 from nicegui.observables import make_observable
+
+from .screen import Screen
 
 count = 0
 
@@ -12,6 +16,12 @@ def reset_counter():
 
 def increment_counter():
     global count
+    count += 1
+
+
+async def increment_counter_slowly(_):
+    global count
+    await asyncio.sleep(0.1)
     count += 1
 
 
@@ -119,3 +129,16 @@ def test_nested_observables():
     assert count == 5
     data['d'].add(4)
     assert count == 6
+
+
+def test_async_handler(screen: Screen):
+    reset_counter()
+    data = make_observable([], increment_counter_slowly)
+    ui.button('Append 42', on_click=lambda: data.append(42))
+
+    screen.open('/')
+    assert count == 0
+
+    screen.click('Append 42')
+    screen.wait(0.5)
+    assert count == 1
