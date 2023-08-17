@@ -6,6 +6,7 @@
 - socket.io: 4.7.1
 - es-module-shims: 1.7.3
 - aggrid: 30.0.3
+- echarts: 5.4.3
 - highcharts: 11.1.0
 - mermaid: 10.2.4
 - nipplejs: 0.10.1

@@ -1,14 +1,11 @@
-from typing import Dict, List
+from typing import Dict
 
 from ..element import Element
 
 
-class ECharts(Element,
-              component='echarts.js',
-              libraries=['lib/echarts/*.js'],
-              extra_libraries=['lib/echarts/extensions/*.js']):
+class ECharts(Element, component='echarts.js', libraries=['lib/echarts/echarts.min.js']):
 
-    def __init__(self, options: Dict, *, extras: List[str] = []) -> None:
+    def __init__(self, options: Dict) -> None:
         """Apache ECharts
 
         An element to create a chart using `ECharts <https://echarts.apache.org/>`_.
@@ -16,12 +13,9 @@ class ECharts(Element,
         After data has changed, call the `update` method to refresh the chart.
 
         :param options: dictionary of EChart options
-        :param extras: list of extra extensions to include
         """
         super().__init__()
         self._props['options'] = options
-        self._props['extras'] = extras
-        self.libraries.extend(library for library in self.extra_libraries if library.path.stem in extras)
         self._classes = ['nicegui-echarts']
 
     @property
