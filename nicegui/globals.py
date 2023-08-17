@@ -41,7 +41,6 @@ reload: bool
 title: str
 viewport: str
 favicon: Optional[Union[str, Path]]
-storage_path: Path
 dark: Optional[bool]
 language: Language
 binding_refresh_interval: float

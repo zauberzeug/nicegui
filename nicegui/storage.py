@@ -74,7 +74,8 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
 class Storage:
 
     def __init__(self) -> None:
-        self._general = PersistentDict(globals.storage_path / 'storage_general.json')
+        self.storage_path = Path('.nicegui')
+        self._general = PersistentDict(self.storage_path / 'storage_general.json')
         self._users: Dict[str, PersistentDict] = {}
 
     @property
@@ -115,7 +116,7 @@ class Storage:
                 raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
         id = request.session['id']
         if id not in self._users:
-            self._users[id] = PersistentDict(globals.storage_path / f'storage_user_{id}.json')
+            self._users[id] = PersistentDict(self.storage_path / f'storage_user_{id}.json')
         return self._users[id]
 
     @property
@@ -127,5 +128,5 @@ class Storage:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
-        for filepath in globals.storage_path.glob('storage_*.json'):
+        for filepath in self.storage_path.glob('storage_*.json'):
             filepath.unlink()
