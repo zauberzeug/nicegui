@@ -1,24 +1,35 @@
+from __future__ import annotations
+
+from contextlib import nullcontext
 from dataclasses import dataclass
 from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Literal, Optional
-from contextlib import nullcontext
+from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Literal, Optional, Union
 
 from . import background_tasks, globals
 from .helpers import KWONLY_SLOTS
+from .slot import Slot
 
 if TYPE_CHECKING:
     from .client import Client
     from .element import Element
+    from .observables import ObservableDict, ObservableList, ObservableSet
 
 
 @dataclass(**KWONLY_SLOTS)
 class EventArguments:
     pass
 
+
+@dataclass(**KWONLY_SLOTS)
+class ObservableChangeEventArguments(EventArguments):
+    sender: Union[ObservableDict, ObservableList, ObservableSet]
+
+
 @dataclass(**KWONLY_SLOTS)
 class UiEventArguments(EventArguments):
-    sender: 'Element'
-    client: 'Client'
+    sender: Element
+    client: Client
+
 
 @dataclass(**KWONLY_SLOTS)
 class GenericEventArguments(UiEventArguments):
@@ -35,10 +46,6 @@ class GenericEventArguments(UiEventArguments):
 @dataclass(**KWONLY_SLOTS)
 class ClickEventArguments(UiEventArguments):
     pass
-
-@dataclass(**KWONLY_SLOTS)
-class ObservableChangeEventArguments(EventArguments):
-    ...
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -352,14 +359,16 @@ def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArgument
                                 p.kind is not Parameter.VAR_POSITIONAL and
                                 p.kind is not Parameter.VAR_KEYWORD
                                 for p in signature(handler).parameters.values())
+
+        parent_slot: Union[Slot, nullcontext]
         if isinstance(arguments, UiEventArguments):
             if arguments.sender.is_ignoring_events:
                 return
+            assert arguments.sender.parent_slot is not None
             parent_slot = arguments.sender.parent_slot
         else:
             parent_slot = nullcontext()
-        
-        assert parent_slot is not None
+
         with parent_slot:
             result = handler(arguments) if expects_arguments else handler()
         if isinstance(result, Awaitable):
