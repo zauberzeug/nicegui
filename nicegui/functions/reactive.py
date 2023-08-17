@@ -52,6 +52,16 @@ def use_state(default: any):
         refreshable_func.refresh()
     return value, set_value
 
+def use_thread(fn):
+    '''Trigger a task on component mounted, ONLY ONCE during the lifetime of the component.
+
+    This is useful when you want to trigger a task on component mounted, and you don't want to trigger it again when the component is refreshed.
+    Typically used when you want to show a skeleton when the component is mounted, and then fetch data and render the real content.
+    '''
+    runned, set_runned = ui.use_state(False)
+    if not runned:
+        set_runned(True)
+        return ui.timer(0, fn, once=True)
 
 def reactive(func: Callable):
     '''Reactive Component Decorator for NiceGUI.
