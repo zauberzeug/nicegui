@@ -9,7 +9,6 @@ def comp():
     ui.button('Increment').on('click', lambda: set_count(count + 1))
 ```
 
-See more examples in ./extras.py
 
 '''
 from nicegui import ui
