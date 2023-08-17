@@ -40,11 +40,12 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']
 
     @staticmethod
-    def from_pandas(df: pd.DataFrame, *, theme: str = 'balham') -> AgGrid:
+    def from_pandas(df: pd.DataFrame, *, theme: str = 'balham', auto_size_columns: bool = True) -> AgGrid:
         """Create an AG Grid from a Pandas DataFrame.
 
         :param df: Pandas DataFrame
         :param theme: AG Grid theme (default: 'balham')
+        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
         :return: AG Grid
         """
         if any('.' in col for col in df.columns):
@@ -52,7 +53,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         return AgGrid({
             'columnDefs': [{'field': col} for col in df.columns],
             'rowData': df.to_dict('records'),
-        }, theme=theme)
+        }, theme=theme, auto_size_columns=auto_size_columns)
 
     @property
     def options(self) -> Dict:
