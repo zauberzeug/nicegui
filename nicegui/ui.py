@@ -77,6 +77,8 @@ __all__ = [
     'notify',
     'open',
     'refreshable',
+    'reactive',
+    'use_state',
     'timer',
     'update',
     'page',
@@ -167,6 +169,7 @@ from .functions.javascript import run_javascript
 from .functions.notify import notify
 from .functions.open import open
 from .functions.refreshable import refreshable
+from .functions.reactive import reactive, use_state
 from .functions.timer import Timer as timer
 from .functions.update import update
 from .page import page
