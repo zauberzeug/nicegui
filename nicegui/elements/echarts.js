@@ -30,7 +30,6 @@ export default {
     },
   },
   props: {
-    type: String,
     options: Object,
     extras: Array,
   },

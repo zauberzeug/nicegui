@@ -7,7 +7,7 @@ class ECharts(
     Element, component="echarts.js", libraries=["lib/echarts/*.js"], extra_libraries=["lib/echarts/extensions/*.js"]
 ):
     def __init__(self, options: Dict, *, extras: List[str] = []) -> None:
-        """Chart
+        """ECharts
 
         An element to create a chart using `ECharts <https://echarts.apache.org/>`_.
         Updates can be pushed to the chart by changing the `options` property.
@@ -17,7 +17,6 @@ class ECharts(
         :param extras: list of extra extensions to include
         """
         super().__init__()
-        self._props["type"] = type
         self._props["options"] = options
         self._props["extras"] = extras
         self.libraries.extend(library for library in self.extra_libraries if library.path.stem in extras)
