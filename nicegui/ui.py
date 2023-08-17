@@ -20,7 +20,7 @@ __all__ = [
     'dark_mode',
     'date',
     'dialog',
-    'echarts'
+    'echarts',
     'expansion',
     'grid',
     'html',

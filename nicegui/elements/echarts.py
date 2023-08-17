@@ -3,11 +3,13 @@ from typing import Dict, List
 from ..element import Element
 
 
-class ECharts(
-    Element, component="echarts.js", libraries=["lib/echarts/*.js"], extra_libraries=["lib/echarts/extensions/*.js"]
-):
+class ECharts(Element,
+              component='echarts.js',
+              libraries=['lib/echarts/*.js'],
+              extra_libraries=['lib/echarts/extensions/*.js']):
+
     def __init__(self, options: Dict, *, extras: List[str] = []) -> None:
-        """Chart
+        """Apache ECharts
 
         An element to create a chart using `ECharts <https://echarts.apache.org/>`_.
         Updates can be pushed to the chart by changing the `options` property.
@@ -17,15 +19,15 @@ class ECharts(
         :param extras: list of extra extensions to include
         """
         super().__init__()
-        self._props["type"] = type
-        self._props["options"] = options
-        self._props["extras"] = extras
+        self._props['options'] = options
+        self._props['extras'] = extras
         self.libraries.extend(library for library in self.extra_libraries if library.path.stem in extras)
+        self._classes = ['nicegui-echarts']
 
     @property
     def options(self) -> Dict:
-        return self._props["options"]
+        return self._props['options']
 
     def update(self) -> None:
         super().update()
-        self.run_method("update_chart")
+        self.run_method('update_chart')

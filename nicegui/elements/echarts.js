@@ -19,7 +19,6 @@ export default {
   methods: {
     update_chart() {
       if (this.chart) {
-        console.log(this.options);
         this.chart.setOption(this.options);
       }
     },
@@ -30,7 +29,6 @@ export default {
     },
   },
   props: {
-    type: String,
     options: Object,
     extras: Array,
   },
