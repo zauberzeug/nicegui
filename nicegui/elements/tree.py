@@ -1,4 +1,4 @@
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List, Literal, Optional
 
 from ..element import Element
 from ..events import GenericEventArguments, ValueChangeEventArguments, handle_event
@@ -13,12 +13,15 @@ class Tree(Element):
                  on_select: Optional[Callable[..., Any]] = None,
                  on_expand: Optional[Callable[..., Any]] = None,
                  on_tick: Optional[Callable[..., Any]] = None,
+                 tick_strategy: Optional[Literal['leaf', 'leaf-filtered', 'strict']] = None,
                  ) -> None:
         """Tree
 
         Display hierarchical data using Quasar's `QTree <https://quasar.dev/vue-components/tree>`_ component.
 
         If using IDs, make sure they are unique within the whole tree.
+
+        To use checkboxes and ``on_tick``, set the ``tick_strategy`` parameter to "leaf", "leaf-filtered" or "strict".
 
         :param nodes: hierarchical list of node objects
         :param node_key: property name of each node object that holds its unique id (default: "id")
@@ -27,6 +30,7 @@ class Tree(Element):
         :param on_select: callback which is invoked when the node selection changes
         :param on_expand: callback which is invoked when the node expansion changes
         :param on_tick: callback which is invoked when a node is ticked or unticked
+        :param tick_strategy: whether and how to use checkboxes ("leaf", "leaf-filtered" or "strict"; default: ``None``)
         """
         super().__init__('q-tree')
         self._props['nodes'] = nodes
@@ -36,6 +40,8 @@ class Tree(Element):
         self._props['selected'] = []
         self._props['expanded'] = []
         self._props['ticked'] = []
+        if tick_strategy is not None:
+            self._props['tick-strategy'] = tick_strategy
 
         def update_prop(name: str, value: Any) -> None:
             if self._props[name] != value:

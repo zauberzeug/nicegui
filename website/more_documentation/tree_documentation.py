@@ -54,3 +54,12 @@ def more() -> None:
             {'id': 'A', 'children': [{'id': 'A1'}, {'id': 'A2'}]},
             {'id': 'B', 'children': [{'id': 'B1'}, {'id': 'B2'}]},
         ], label_key='id')
+
+    @text_demo('Tree with checkboxes', '''
+        The tree can be used with checkboxes by setting the "tick-strategy" prop.
+    ''')
+    def tree_with_checkboxes():
+        ui.tree([
+            {'id': 'A', 'children': [{'id': 'A1'}, {'id': 'A2'}]},
+            {'id': 'B', 'children': [{'id': 'B1'}, {'id': 'B2'}]},
+        ], label_key='id', tick_strategy='leaf', on_tick=lambda e: ui.notify(e.value))
