@@ -1,5 +1,5 @@
 export default {
-  template: "<div></div>",
+  template: "<div style='width:100%; min-height:200px;'></div>",
   mounted() {
     setTimeout(() => {
       const imports = this.extras.map((extra) => import(window.path_prefix + extra));
