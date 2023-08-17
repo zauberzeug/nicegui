@@ -43,7 +43,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
     def from_pandas(df: pd.DataFrame, *,
                     theme: str = 'balham',
                     auto_size_columns: bool = True,
-                    options: Dict) -> AgGrid:
+                    options: Dict = {}) -> AgGrid:
         """Create an AG Grid from a Pandas DataFrame.
 
         :param df: Pandas DataFrame
