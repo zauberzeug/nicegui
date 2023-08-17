@@ -21,6 +21,7 @@ def run_with(
     tailwind: bool = True,
     prod_js: bool = True,
     storage_secret: Optional[str] = None,
+    storage_path: Union[str, Path] = Path('.nicegui'),
 ) -> None:
     globals.ui_run_has_been_called = True
     globals.title = title
@@ -31,6 +32,7 @@ def run_with(
     globals.binding_refresh_interval = binding_refresh_interval
     globals.tailwind = tailwind
     globals.prod_js = prod_js
+    globals.storage_path = Path(storage_path)
 
     set_storage_secret(storage_secret)
     app.on_event('startup')(lambda: handle_startup(with_welcome_message=False))
