@@ -45,6 +45,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :param df: Pandas DataFrame
         :param theme: AG Grid theme (default: 'balham')
+        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
         :return: AG Grid
         """
         if any('.' in col for col in df.columns):
