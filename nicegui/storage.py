@@ -3,7 +3,6 @@ import json
 import uuid
 from collections.abc import MutableMapping
 from pathlib import Path
-from tempfile import gettempdir
 from typing import Any, Dict, Iterator, Optional, Union
 
 import aiofiles
