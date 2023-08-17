@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from inspect import Parameter, signature
 from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Literal, Optional
+from contextlib import nullcontext
 
 from . import background_tasks, globals
 from .helpers import KWONLY_SLOTS
@@ -12,12 +13,15 @@ if TYPE_CHECKING:
 
 @dataclass(**KWONLY_SLOTS)
 class EventArguments:
+    pass
+
+@dataclass(**KWONLY_SLOTS)
+class UiEventArguments(EventArguments):
     sender: 'Element'
     client: 'Client'
 
-
 @dataclass(**KWONLY_SLOTS)
-class GenericEventArguments(EventArguments):
+class GenericEventArguments(UiEventArguments):
     args: Dict[str, Any]
 
     def __getitem__(self, key: str) -> Any:
@@ -29,8 +33,12 @@ class GenericEventArguments(EventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
-class ClickEventArguments(EventArguments):
+class ClickEventArguments(UiEventArguments):
     pass
+
+@dataclass(**KWONLY_SLOTS)
+class ObservableChangeEventArguments(EventArguments):
+    ...
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -98,12 +106,12 @@ class SceneDragEventArguments(ClickEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
-class ColorPickEventArguments(EventArguments):
+class ColorPickEventArguments(UiEventArguments):
     color: str
 
 
 @dataclass(**KWONLY_SLOTS)
-class MouseEventArguments(EventArguments):
+class MouseEventArguments(UiEventArguments):
     type: str
     image_x: float
     image_y: float
@@ -116,26 +124,26 @@ class MouseEventArguments(EventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
-class JoystickEventArguments(EventArguments):
+class JoystickEventArguments(UiEventArguments):
     action: str
     x: Optional[float] = None
     y: Optional[float] = None
 
 
 @dataclass(**KWONLY_SLOTS)
-class UploadEventArguments(EventArguments):
+class UploadEventArguments(UiEventArguments):
     content: BinaryIO
     name: str
     type: str
 
 
 @dataclass(**KWONLY_SLOTS)
-class ValueChangeEventArguments(EventArguments):
+class ValueChangeEventArguments(UiEventArguments):
     value: Any
 
 
 @dataclass(**KWONLY_SLOTS)
-class TableSelectionEventArguments(EventArguments):
+class TableSelectionEventArguments(UiEventArguments):
     selection: List[Any]
 
 
@@ -318,14 +326,14 @@ class KeyboardKey:
 
 
 @dataclass(**KWONLY_SLOTS)
-class KeyEventArguments(EventArguments):
+class KeyEventArguments(UiEventArguments):
     action: KeyboardAction
     key: KeyboardKey
     modifiers: KeyboardModifiers
 
 
 @dataclass(**KWONLY_SLOTS)
-class ScrollEventArguments(EventArguments):
+class ScrollEventArguments(UiEventArguments):
     vertical_position: float
     vertical_percentage: float
     vertical_size: float
@@ -344,9 +352,13 @@ def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArgument
                                 p.kind is not Parameter.VAR_POSITIONAL and
                                 p.kind is not Parameter.VAR_KEYWORD
                                 for p in signature(handler).parameters.values())
-        if arguments.sender.is_ignoring_events:
-            return
-        parent_slot = arguments.sender.parent_slot
+        if isinstance(arguments, UiEventArguments):
+            if arguments.sender.is_ignoring_events:
+                return
+            parent_slot = arguments.sender.parent_slot
+        else:
+            parent_slot = nullcontext()
+        
         assert parent_slot is not None
         with parent_slot:
             result = handler(arguments) if expects_arguments else handler()
