@@ -19,13 +19,12 @@ export default {
   methods: {
     update_chart() {
       if (this.chart) {
-        console.log(this.options);
         this.chart.setOption(this.options);
       }
     },
     destroyChart() {
       if (this.chart) {
-        this.chart.destroy();
+        this.chart.dispose();
       }
     },
   },
