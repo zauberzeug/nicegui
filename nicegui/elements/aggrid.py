@@ -40,19 +40,23 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']
 
     @staticmethod
-    def from_pandas(df: pd.DataFrame, *, theme: str = 'balham', auto_size_columns: bool = True) -> AgGrid:
+    def from_pandas(df: pd.DataFrame, *,
+                    theme: str = 'balham',
+                    auto_size_columns: bool = True,
+                    options: Dict) -> AgGrid:
         """Create an AG Grid from a Pandas DataFrame.
 
         :param df: Pandas DataFrame
         :param theme: AG Grid theme (default: 'balham')
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
-        :return: AG Grid
+        :param options: dictionary of additional AG Grid options
+        :return: AG Grid element
         """
-        if any('.' in col for col in df.columns):
-            logging.warning('aggrid.from_pandas(): DataFrame column names must not contain dots "."')
         return AgGrid({
             'columnDefs': [{'field': col} for col in df.columns],
             'rowData': df.to_dict('records'),
+            'suppressDotNotation': True,
+            **options,
         }, theme=theme, auto_size_columns=auto_size_columns)
 
     @property
