@@ -2,7 +2,7 @@ from nicegui import ui
 
 
 def main_demo() -> None:
-    chart = ui.echarts({
+    chart = ui.echart({
         'xAxis': {'type': 'value'},
         'yAxis': {'type': 'value'},
         'series': [{'data': [[0, 0], [1, 1]], 'type': 'line'}],

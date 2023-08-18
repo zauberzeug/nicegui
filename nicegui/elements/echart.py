@@ -3,10 +3,10 @@ from typing import Dict
 from ..element import Element
 
 
-class ECharts(Element, component='echarts.js', libraries=['lib/echarts/echarts.min.js']):
+class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min.js']):
 
     def __init__(self, options: Dict) -> None:
-        """Apache ECharts
+        """Apache EChart
 
         An element to create a chart using `ECharts <https://echarts.apache.org/>`_.
         Updates can be pushed to the chart by changing the `options` property.
@@ -16,7 +16,7 @@ class ECharts(Element, component='echarts.js', libraries=['lib/echarts/echarts.m
         """
         super().__init__()
         self._props['options'] = options
-        self._classes = ['nicegui-echarts']
+        self._classes = ['nicegui-echart']
 
     @property
     def options(self) -> Dict:
