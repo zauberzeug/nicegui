@@ -15,8 +15,8 @@ def start_monitor(app: FastAPI) -> None:
     except ModuleNotFoundError:
         logging.info('Prometheus not installed, skipping monitoring')
         return
-      
-    visits = prometheus_client.Counter('nicegui_page_visits', 'Number of real page visits',
+
+    visits = prometheus_client.Counter('page_visits', 'Number of real page visits',
                                        ['path', 'session', 'origin'])
 
     class PrometheusMiddleware(BaseHTTPMiddleware):
@@ -36,4 +36,3 @@ def start_monitor(app: FastAPI) -> None:
         prometheus_client.start_http_server(9062)
 
     app.add_middleware(PrometheusMiddleware)
-
