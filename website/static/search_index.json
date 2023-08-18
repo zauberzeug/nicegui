@@ -155,6 +155,11 @@
     "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/download_text_as_file/main.py"
   },
   {
+    "title": "Example: Generate PDF",
+    "content": "create SVG preview and PDF download from input form elements",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/generate_pdf/main.py"
+  },
+  {
     "title": "Basic Elements",
     "content": "This is **Markdown**.",
     "url": "/documentation/#basic_elements"
@@ -456,7 +461,7 @@
   },
   {
     "title": "AG Grid",
-    "content": "An element to create a grid using AG Grid <https://www.ag-grid.com/>_.  The call_api_method method can be used to call an AG Grid API method.  :param options: dictionary of AG Grid options :param html_columns: list of columns that should be rendered as HTML (default: []) :param theme: AG Grid theme (default: 'balham') update call_api_method Call an AG Grid API method.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>_ for a list of methods.  :param name: name of the method :param args: arguments to pass to the method call_column_api_method Call an AG Grid Column API method.  See AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>_ for a list of methods.  :param name: name of the method :param args: arguments to pass to the method get_selected_rows Get the currently selected rows.  This method is especially useful when the grid is configured with `rowSelection: 'multiple'.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows>_ for more information.  :return: list of selected row data get_selected_row Get the single currently selected row.  This method is especially useful when the grid is configured with rowSelection: 'single'.  :return: row data of the first selection if any row is selected, otherwise None get_client_data Get the data from the client including any edits made by the client.  This method is especially useful when the grid is configured with 'editable': True.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/accessing-data/>_ for more information.  Note that when editing a cell, the row data is not updated until the cell exits the edit mode. This does not happen when the cell loses focus, unless stopEditingWhenCellsLoseFocus: True is set.  :return: list of row data load_client_data Obtain client data and update the element's row data with it.  This syncs edits made by the client in editable cells to the server.  Note that when editing a cell, the row data is not updated until the cell exits the edit mode. This does not happen when the cell loses focus, unless stopEditingWhenCellsLoseFocus: True` is set.",
+    "content": "An element to create a grid using AG Grid <https://www.ag-grid.com/>_.  The call_api_method method can be used to call an AG Grid API method.  :param options: dictionary of AG Grid options :param html_columns: list of columns that should be rendered as HTML (default: []) :param theme: AG Grid theme (default: 'balham') :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: True) update call_api_method Call an AG Grid API method.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>_ for a list of methods.  :param name: name of the method :param args: arguments to pass to the method call_column_api_method Call an AG Grid Column API method.  See AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>_ for a list of methods.  :param name: name of the method :param args: arguments to pass to the method get_selected_rows Get the currently selected rows.  This method is especially useful when the grid is configured with `rowSelection: 'multiple'.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows>_ for more information.  :return: list of selected row data get_selected_row Get the single currently selected row.  This method is especially useful when the grid is configured with rowSelection: 'single'.  :return: row data of the first selection if any row is selected, otherwise None get_client_data Get the data from the client including any edits made by the client.  This method is especially useful when the grid is configured with 'editable': True.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/accessing-data/>_ for more information.  Note that when editing a cell, the row data is not updated until the cell exits the edit mode. This does not happen when the cell loses focus, unless stopEditingWhenCellsLoseFocus: True is set.  :return: list of row data load_client_data Obtain client data and update the element's row data with it.  This syncs edits made by the client in editable cells to the server.  Note that when editing a cell, the row data is not updated until the cell exits the edit mode. This does not happen when the cell loses focus, unless stopEditingWhenCellsLoseFocus: True` is set.",
     "url": "/documentation/aggrid"
   },
   {
@@ -488,6 +493,11 @@
     "title": "Aggrid: Respond to an AG Grid event",
     "content": "All AG Grid events are passed through to NiceGUI via the AG Grid global listener. These events can be subscribed to using the .on() method.",
     "url": "/documentation/aggrid#respond_to_an_ag_grid_event"
+  },
+  {
+    "title": "Aggrid: AG Grid with complex objects",
+    "content": "You can use nested complex objects in AG Grid by separating the field names with a period. (This is the reason why keys in rowData are not allowed to contain periods.)",
+    "url": "/documentation/aggrid#ag_grid_with_complex_objects"
   },
   {
     "title": "Carousel",
@@ -586,13 +596,18 @@
   },
   {
     "title": "Chart",
-    "content": "An element to create a chart using Highcharts <https://www.highcharts.com/>_. Updates can be pushed to the chart by changing the options property. After data has changed, call the update method to refresh the chart.  By default, a Highcharts.chart is created. To use, e.g., Highcharts.stockChart instead, set the type property to \"stockChart\".  :param options: dictionary of Highcharts options :param type: chart type (e.g. \"chart\", \"stockChart\", \"mapChart\", ...; default: \"chart\") :param extras: list of extra dependencies to include (e.g. \"annotations\", \"arc-diagram\", \"solid-gauge\", ...) update",
+    "content": "An element to create a chart using Highcharts <https://www.highcharts.com/>_. Updates can be pushed to the chart by changing the options property. After data has changed, call the update method to refresh the chart.  By default, a Highcharts.chart is created. To use, e.g., Highcharts.stockChart instead, set the type property to \"stockChart\".  :param options: dictionary of Highcharts options :param type: chart type (e.g. \"chart\", \"stockChart\", \"mapChart\", ...; default: \"chart\") :param extras: list of extra dependencies to include (e.g. \"annotations\", \"arc-diagram\", \"solid-gauge\", ...) :param on_point_click: callback function that is called when a point is clicked :param on_point_drag_start: callback function that is called when a point drag starts :param on_point_drag: callback function that is called when a point is dragged :param on_point_drop: callback function that is called when a point is dropped update",
     "url": "/documentation/chart"
   },
   {
     "title": "Chart: Chart with extra dependencies",
     "content": "To use a chart type that is not included in the default dependencies, you can specify extra dependencies. This demo shows a solid gauge chart.",
     "url": "/documentation/chart#chart_with_extra_dependencies"
+  },
+  {
+    "title": "Chart: Chart with draggable points",
+    "content": "This chart allows dragging the series points. You can register callbacks for the following events:  - on_point_click: called when a point is clicked - on_point_drag_start: called when a point drag starts - on_point_drag: called when a point is dragged - on_point_drop: called when a point is dropped",
+    "url": "/documentation/chart#chart_with_draggable_points"
   },
   {
     "title": "Menu",
@@ -681,7 +696,7 @@
   },
   {
     "title": "Tree",
-    "content": "Display hierarchical data using Quasar's QTree <https://quasar.dev/vue-components/tree>_ component.  If using IDs, make sure they are unique within the whole tree.  :param nodes: hierarchical list of node objects :param node_key: property name of each node object that holds its unique id (default: \"id\") :param label_key: property name of each node object that holds its label (default: \"label\") :param children_key: property name of each node object that holds its list of children (default: \"children\") :param on_select: callback which is invoked when the node selection changes :param on_expand: callback which is invoked when the node expansion changes :param on_tick: callback which is invoked when a node is ticked or unticked",
+    "content": "Display hierarchical data using Quasar's QTree <https://quasar.dev/vue-components/tree>_ component.  If using IDs, make sure they are unique within the whole tree.  To use checkboxes and `on_tick, set the tick_strategy parameter to \"leaf\", \"leaf-filtered\" or \"strict\".  :param nodes: hierarchical list of node objects :param node_key: property name of each node object that holds its unique id (default: \"id\") :param label_key: property name of each node object that holds its label (default: \"label\") :param children_key: property name of each node object that holds its list of children (default: \"children\") :param on_select: callback which is invoked when the node selection changes :param on_expand: callback which is invoked when the node expansion changes :param on_tick: callback which is invoked when a node is ticked or unticked :param tick_strategy: whether and how to use checkboxes (\"leaf\", \"leaf-filtered\" or \"strict\"; default: None`)",
     "url": "/documentation/tree"
   },
   {
@@ -693,6 +708,11 @@
     "title": "Tree: Expand programmatically",
     "content": "The tree can be expanded programmatically by modifying the \"expanded\" prop.",
     "url": "/documentation/tree#expand_programmatically"
+  },
+  {
+    "title": "Tree: Tree with checkboxes",
+    "content": "The tree can be used with checkboxes by setting the \"tick-strategy\" prop.",
+    "url": "/documentation/tree#tree_with_checkboxes"
   },
   {
     "title": "Switch",
@@ -930,6 +950,11 @@
     "url": "/documentation/select#multi_selection"
   },
   {
+    "title": "Select: Update options",
+    "content": "Options can be changed with the options property. But then you also need to call update() afterwards to let the change take effect. set_options is a shortcut that does both and works well for lambdas.",
+    "url": "/documentation/select#update_options"
+  },
+  {
     "title": "Separator",
     "content": "A separator for cards, menus and other component containers. Similar to HTML's <hr> tag.",
     "url": "/documentation/separator"
@@ -983,6 +1008,11 @@
     "title": "Markdown: Markdown tables",
     "content": "By activating the \"tables\" extra, you can use Markdown tables. See the markdown2 documentation for a list of available extras.",
     "url": "/documentation/markdown#markdown_tables"
+  },
+  {
+    "title": "Apache EChart",
+    "content": "An element to create a chart using ECharts <https://echarts.apache.org/>_. Updates can be pushed to the chart by changing the options property. After data has changed, call the update method to refresh the chart.  :param options: dictionary of EChart options update",
+    "url": "/documentation/echart"
   },
   {
     "title": "Generic Events",
@@ -1046,7 +1076,7 @@
   },
   {
     "title": "3D Scene",
-    "content": "Display a 3d scene using three.js <https://threejs.org/>_. Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes. Objects can be translated, rotated and displayed with different color, opacity or as wireframes. They can also be grouped to apply joint movements.  :param width: width of the canvas :param height: height of the canvas :param grid: whether to display a grid :param on_click: callback to execute when a 3d object is clicked handle_init run_method handle_click move_camera delete clear Remove all objects from the scene.",
+    "content": "Display a 3D scene using three.js <https://threejs.org/>_. Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes. Objects can be translated, rotated and displayed with different color, opacity or as wireframes. They can also be grouped to apply joint movements.  :param width: width of the canvas :param height: height of the canvas :param grid: whether to display a grid :param on_click: callback to execute when a 3D object is clicked :param on_drag_start: callback to execute when a 3D object is dragged :param on_drag_end: callback to execute when a 3D object is dropped :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. `'x = 0, z = y / 2'`) handle_init run_method handle_click handle_drag move_camera delete clear Remove all objects from the scene.",
     "url": "/documentation/scene"
   },
   {
@@ -1055,13 +1085,18 @@
     "url": "/documentation/scene#handling_click_events"
   },
   {
+    "title": "Scene: Draggable objects",
+    "content": "You can make objects draggable using the .draggable method. There is an optional on_drag_start and on_drag_end argument to ui.scene to handle drag events. The callbacks receive a SceneDragEventArguments object with the following attributes:  - type: the type of drag event (\"dragstart\" or \"dragend\"). - object_id: the id of the object that was dragged. - object_name: the name of the object that was dragged. - x, y, z: the x, y and z coordinates of the dragged object.  You can also use the drag_constraints argument to set comma-separated JavaScript expressions for constraining positions of dragged objects.",
+    "url": "/documentation/scene#draggable_objects"
+  },
+  {
     "title": "Scene: Rendering point clouds",
     "content": "You can render point clouds using the point_cloud method. The points argument is a list of point coordinates, and the colors argument is a list of RGB colors (0..1).",
     "url": "/documentation/scene#rendering_point_clouds"
   },
   {
     "title": "ui.run",
-    "content": "You can call ui.run() with optional arguments:  :param host: start server with this host (defaults to '127.0.0.1 in native mode, otherwise '0.0.0.0') :param port: use this port (default: 8080) :param title: page title (default: 'NiceGUI', can be overwritten per page) :param viewport: page meta viewport content (default: 'width=device-width, initial-scale=1', can be overwritten per page) :param favicon: relative filepath, absolute URL to a favicon (default: None, NiceGUI icon will be used) or emoji (e.g. '\ud83d\ude80', works for most browsers) :param dark: whether to use Quasar's dark mode (default: False, use None for \"auto\" mode) :param language: language for Quasar elements (default: 'en-US') :param binding_refresh_interval: time between binding updates (default: 0.1 seconds, bigger is more CPU friendly) :param show: automatically open the UI in a browser tab (default: True) :param on_air: tech preview: allows temporary remote access <https://nicegui.io/documentation#nicegui_on_air>_ if set to True (default: disabled) :param native: open the UI in a native window of size 800x600 (default: False, deactivates show, automatically finds an open port) :param window_size: open the UI in a native window with the provided size (e.g. (1024, 786), default: None, also activates native) :param fullscreen: open the UI in a fullscreen window (default: False, also activates native) :param frameless: open the UI in a frameless window (default: False, also activates native) :param reload: automatically reload the UI on file changes (default: True) :param uvicorn_logging_level: logging level for uvicorn server (default: 'warning') :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only) :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: '.py') :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: '.*, .py[cod], .sw.*, ~*') :param tailwind: whether to use Tailwind (experimental, default: True) :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: True) :param endpoint_documentation: control what endpoints appear in the autogenerated OpenAPI docs (default: 'none', options: 'none', 'internal', 'page', 'all') :param storage_secret: secret key for browser based storage (default: None, a value is required to enable ui.storage.individual and ui.storage.browser) :param kwargs: additional keyword arguments are passed to uvicorn.run",
+    "content": "You can call ui.run() with optional arguments:  :param host: start server with this host (defaults to '127.0.0.1 in native mode, otherwise '0.0.0.0') :param port: use this port (default: 8080) :param title: page title (default: 'NiceGUI', can be overwritten per page) :param viewport: page meta viewport content (default: 'width=device-width, initial-scale=1', can be overwritten per page) :param favicon: relative filepath, absolute URL to a favicon (default: None, NiceGUI icon will be used) or emoji (e.g. '\ud83d\ude80', works for most browsers) :param dark: whether to use Quasar's dark mode (default: False, use None for \"auto\" mode) :param language: language for Quasar elements (default: 'en-US') :param binding_refresh_interval: time between binding updates (default: 0.1 seconds, bigger is more CPU friendly) :param show: automatically open the UI in a browser tab (default: True) :param on_air: tech preview: allows temporary remote access <https://nicegui.io/documentation#nicegui_on_air>_ if set to True (default: disabled) :param native: open the UI in a native window of size 800x600 (default: False, deactivates show, automatically finds an open port) :param window_size: open the UI in a native window with the provided size (e.g. (1024, 786), default: None, also activates native) :param fullscreen: open the UI in a fullscreen window (default: False, also activates native) :param frameless: open the UI in a frameless window (default: False, also activates native) :param reload: automatically reload the UI on file changes (default: True) :param uvicorn_logging_level: logging level for uvicorn server (default: 'warning') :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only) :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: '.py') :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: '.*, .py[cod], .sw.*, ~*') :param tailwind: whether to use Tailwind (experimental, default: True) :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: True) :param endpoint_documentation: control what endpoints appear in the autogenerated OpenAPI docs (default: 'none', options: 'none', 'internal', 'page', 'all') :param storage_secret: secret key for browser-based storage (default: None, a value is required to enable ui.storage.individual and ui.storage.browser) :param kwargs: additional keyword arguments are passed to uvicorn.run",
     "url": "/documentation/run"
   },
   {
