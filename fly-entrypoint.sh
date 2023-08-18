@@ -7,6 +7,4 @@ if [[ ! -z "$SWAP" ]]; then
   swapon _swapfile
 fi
 
-free -hm
-df -h
 exec "$@"

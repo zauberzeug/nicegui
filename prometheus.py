@@ -16,7 +16,8 @@ def start_monitor(app: FastAPI) -> None:
         logging.info('Prometheus not installed, skipping monitoring')
         return
 
-    visits = prometheus_client.Counter('page_visits', 'Number of real page visits', ['path', 'session', 'origin'])
+    visits = prometheus_client.Counter('nicegui_page_visits', 'Number of real page visits',
+                                       ['path', 'session', 'origin'])
 
     class PrometheusMiddleware(BaseHTTPMiddleware):
 
