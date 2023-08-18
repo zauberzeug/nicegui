@@ -45,6 +45,13 @@
       "package/dist/": ""
     }
   },
+  "echarts": {
+    "destination": "elements/lib",
+    "keep": ["package/dist/echarts\\.min\\.js", "package/dist/echarts\\.js\\.map"],
+    "rename": {
+      "package/dist/": ""
+    }
+  },
   "highcharts": {
     "destination": "elements/lib",
     "keep": [
