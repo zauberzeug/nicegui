@@ -114,10 +114,10 @@ def use_state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
     target = RefreshableTarget.current_target
     assert target is not None
 
-    if target.locals:
-        value = target.locals[target.next_index]
-    else:
+    if target.next_index >= len(target.locals):
         target.locals.append(value)
+    else:
+        value = target.locals[target.next_index]
 
     def set_value(new_value: Any, index=target.next_index) -> None:
         target.locals[index] = new_value
