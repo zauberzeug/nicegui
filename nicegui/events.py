@@ -49,7 +49,7 @@ class ClickEventArguments(UiEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
-class ChartEventArguments(EventArguments):
+class ChartEventArguments(UiEventArguments):
     event_type: str
 
 
