@@ -3,7 +3,7 @@ from typing import Any, Callable, Dict, Optional
 from fastapi import Request
 from starlette.datastructures import UploadFile
 
-from ..events import EventArguments, UploadEventArguments, handle_event
+from ..events import UiEventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
 from .mixins.disableable_element import DisableableElement
 
@@ -63,7 +63,7 @@ class Upload(DisableableElement, component='upload.js'):
             return {'upload': 'success'}
 
         if on_rejected:
-            self.on('rejected', lambda _: handle_event(on_rejected, EventArguments(sender=self, client=self.client)),
+            self.on('rejected', lambda _: handle_event(on_rejected, UiEventArguments(sender=self, client=self.client)),
                     args=[])
 
     def reset(self) -> None:
