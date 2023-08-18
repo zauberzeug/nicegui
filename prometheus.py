@@ -2,11 +2,11 @@ import inspect
 import logging
 import uuid
 
-from fastapi import FastAPI, Request
-from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi import FastAPI, Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
-EXCLUDED_USER_AGENTS = ('bot', 'spider', 'crawler', 'monitor', 'curl',
-                        'wget', 'python-requests', 'kuma', 'health check')
+EXCLUDED_USER_AGENTS = {'bot', 'spider', 'crawler', 'monitor', 'curl',
+                        'wget', 'python-requests', 'kuma', 'health check'}
 
 
 def start_monitor(app: FastAPI) -> None:
@@ -16,11 +16,11 @@ def start_monitor(app: FastAPI) -> None:
         logging.info('Prometheus not installed, skipping monitoring')
         return
 
-    visits = prometheus_client.Counter('page_visits', 'Number of real page visits',
-                                       ['path', 'session', 'origin'])
+    visits = prometheus_client.Counter('page_visits', 'Number of real page visits', ['path', 'session', 'origin'])
 
     class PrometheusMiddleware(BaseHTTPMiddleware):
-        async def dispatch(self, request: Request, call_next):
+
+        async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
             if 'id' not in request.session:
                 request.session['id'] = str(uuid.uuid4())
             response = await call_next(request)
