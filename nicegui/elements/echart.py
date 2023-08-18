@@ -3,7 +3,7 @@ from typing import Dict
 from ..element import Element
 
 
-class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min.js']):
+class Echart(Element, component='echart.js', libraries=['lib/echarts/echarts.min.js']):
 
     def __init__(self, options: Dict) -> None:
         """Apache EChart
