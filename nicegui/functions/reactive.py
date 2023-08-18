@@ -12,9 +12,10 @@ def comp():
 ```
 """
 import sys
-from typing import Callable
+from typing import Any, Callable, Dict
 
-from nicegui import ui
+from nicegui.functions.refreshable import refreshable
+from nicegui.functions.timer import Timer as timer
 from nicegui.helpers import is_coroutine_function
 
 
@@ -37,29 +38,29 @@ def use_state(default: any):
     frame = sys._getframe()
     while not '_context_state_' in frame.f_locals:
         frame = frame.f_back
-    state = frame.f_locals['_context_state_']
-    refreshable_func = state.get('_refreshable_func')
+    state: Dict[str, Any] = frame.f_locals['_context_state_']
+    refreshable_func: refreshable = state.get('_refreshable_func')
 
     key = state['__idx']
     value = state.setdefault(key, default)
     state['__idx'] += 1
 
-    def set_value(value):
+    def set_value(value) -> None:
         state.update({key: value})
         refreshable_func.refresh()
     return value, set_value
 
 
-def use_thread(fn):
+def use_thread(func: Callable) -> None:
     """Trigger a task on component mounted, ONLY ONCE during the lifetime of the component.
 
     This is useful when you want to trigger a task on component mounted, and you don't want to trigger it again when the component is refreshed.
     Typically used when you want to show a skeleton when the component is mounted, and then fetch data and render the real content.
     """
-    runned, set_runned = ui.use_state(False)
+    runned, set_runned = use_state(False)
     if not runned:
         set_runned(True)
-        return ui.timer(0, fn, once=True)
+        timer(0, func, once=True)
 
 
 def reactive(func: Callable):
@@ -73,19 +74,17 @@ def reactive(func: Callable):
             _context_state_ = {}
             if not is_coroutine_function(func):
                 def __state_wrapper__(*args, **kwargs):
-                    nonlocal _context_state_
                     _context_state_['__idx'] = 0
                     return func(*args, **kwargs)
                 return __state_wrapper__, _context_state_
             else:
                 async def __state_wrapper__(*args, **kwargs):
-                    nonlocal _context_state_
                     _context_state_['__idx'] = 0
                     return await func(*args, **kwargs)
                 return __state_wrapper__, _context_state_
 
         f, state = _co()
-        _refreshable_func = ui.refreshable(f)
+        _refreshable_func = refreshable(f)
         state['_refreshable_func'] = _refreshable_func
         return _refreshable_func(*args, **kwargs)
     return __refresh_wrapper__
