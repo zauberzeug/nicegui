@@ -15,6 +15,7 @@ class ColorInput(ValueElement, DisableableElement):
                  placeholder: Optional[str] = None,
                  value: str = '',
                  on_change: Optional[Callable[..., Any]] = None,
+                 preview: bool = True,
                  ) -> None:
         """Color Input
 
@@ -22,6 +23,7 @@ class ColorInput(ValueElement, DisableableElement):
         :param placeholder: text to show if no color is selected
         :param value: the current color value
         :param on_change: callback to execute when the value changes
+        :param preview: change button background to selected color
         """
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
         if label is not None:
@@ -34,8 +36,22 @@ class ColorInput(ValueElement, DisableableElement):
             self.button = ui.button(on_click=self.open_picker, icon='colorize') \
                 .props('flat round', remove='color').classes('cursor-pointer')
 
+        self.preview = preview
+        if self.preview:
+            self.button.style(f'background-color: {value or "#fff"}')
+            self.button.style('text-shadow: 2px 0 #fff, -2px 0 #fff, 0 2px #fff, 0 -2px #fff, 1px 1px #fff, -1px -1px #fff, 1px -1px #fff, -1px 1px #fff')
+
     def open_picker(self) -> None:
         """Open the color picker"""
         if self.value:
             self.picker.set_color(self.value)
         self.picker.open()
+
+    def on_value_change(self, value: Any) -> None:
+        """Modify button color.
+
+        :param value: The new value.
+        """
+        super().on_value_change(value)
+        if self.preview:
+            self.button.style(f'background-color: {value or "#fff"}')
