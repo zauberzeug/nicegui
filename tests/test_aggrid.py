@@ -109,7 +109,7 @@ def test_call_api_method_with_argument(screen: Screen):
 def test_call_column_api_method_with_argument(screen: Screen):
     grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}, {'field': 'age', 'hide': True}],
-        'rowData': [{'name': 'Alice', 'age': '18'}, {'name': 'Bob', 'age': '21'}, {'name': 'Carol', 'age': '42'}]
+        'rowData': [{'name': 'Alice', 'age': '18'}, {'name': 'Bob', 'age': '21'}, {'name': 'Carol', 'age': '42'}],
     })
     ui.button('Show Age', on_click=lambda: grid.call_column_api_method('setColumnVisible', 'age', True))
 
