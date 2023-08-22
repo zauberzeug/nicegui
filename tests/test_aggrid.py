@@ -72,6 +72,22 @@ def test_html_columns(screen: Screen):
     assert 'text-bold' in screen.find('Alice').get_attribute('class')
 
 
+def test_dynamic_method(screen: Screen):
+    grid = ui.aggrid({
+        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+        'rowData': [{'name': 'Alice', 'age': '18'}, {'name': 'Bob', 'age': '21'}, {'name': 'Carol', 'age': '42'}],
+        ':getRowHeight': 'params=>params.data.age>35 ? 40:25'
+    })
+    screen.open('/')
+    trs = screen.find_all_by_class("ag-row")
+    assert len(trs) == 3
+    heights = [int(tr.get_attribute("clientHeight")) for tr in trs]
+    # we allow for some margin since there are borders etc
+    assert heights[0] <= 25 and heights[0] >= 23
+    assert heights[1] <= 25 and heights[1] >= 23
+    assert heights[2] <= 40 and heights[2] >= 38
+
+
 def test_call_api_method_with_argument(screen: Screen):
     grid = ui.aggrid({
         'columnDefs': [{'field': 'name', 'filter': True}],
@@ -93,7 +109,7 @@ def test_call_api_method_with_argument(screen: Screen):
 def test_call_column_api_method_with_argument(screen: Screen):
     grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}, {'field': 'age', 'hide': True}],
-        'rowData': [{'name': 'Alice', 'age': '18'}, {'name': 'Bob', 'age': '21'}, {'name': 'Carol', 'age': '42'}],
+        'rowData': [{'name': 'Alice', 'age': '18'}, {'name': 'Bob', 'age': '21'}, {'name': 'Carol', 'age': '42'}]
     })
     ui.button('Show Age', on_click=lambda: grid.call_column_api_method('setColumnVisible', 'age', True))
 

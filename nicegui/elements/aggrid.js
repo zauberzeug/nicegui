@@ -1,3 +1,25 @@
+function recursive_convert_dynamic(obj) {
+  if (typeof obj !== "object" || obj === null) return obj;
+  if (Array.isArray(obj)) {
+    return obj.map((v) => recursive_convert_dynamic(v));
+  }
+  if (!Object.keys(obj).some((k) => k.startsWith(":"))) {
+    return obj; // feels a bit more safe than always copying
+  }
+  const convertedObj = { ...obj };
+  for (const attr in convertedObj) {
+    if (attr.startsWith(":")) {
+      try {
+        convertedObj[attr.slice(1)] = new Function("return " + convertedObj[attr])();
+        delete convertedObj[attr];
+      } catch (e) {
+        console.error(`Error while converting ${attr} attribute to function:`, e);
+      }
+    }
+  }
+  return convertedObj;
+}
+
 export default {
   template: "<div></div>",
   mounted() {
@@ -15,6 +37,7 @@ export default {
           this.gridOptions.columnDefs[column].cellRenderer = (params) => (params.value ? params.value : "");
         }
       }
+      this.gridOptions = recursive_convert_dynamic(this.gridOptions);
 
       // Code for CheckboxRenderer https://blog.ag-grid.com/binding-boolean-values-to-checkboxes-in-ag-grid/
       function CheckboxRenderer() {}
