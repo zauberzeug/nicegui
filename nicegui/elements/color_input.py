@@ -39,7 +39,8 @@ class ColorInput(ValueElement, DisableableElement):
         self.preview = preview
         if self.preview:
             self.button.style(f'background-color: {value or "#fff"}')
-            self.button.style('text-shadow: 2px 0 #fff, -2px 0 #fff, 0 2px #fff, 0 -2px #fff, 1px 1px #fff, -1px -1px #fff, 1px -1px #fff, -1px 1px #fff')
+            self.button.style(
+                'text-shadow: 2px 0 #fff, -2px 0 #fff, 0 2px #fff, 0 -2px #fff, 1px 1px #fff, -1px -1px #fff, 1px -1px #fff, -1px 1px #fff')
 
     def open_picker(self) -> None:
         """Open the color picker"""

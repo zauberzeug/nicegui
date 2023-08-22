@@ -16,6 +16,7 @@ def test_entering_color(screen: Screen):
     button = screen.selenium.find_element(By.CLASS_NAME, 'q-btn')
     assert button.value_of_css_property('background-color') == 'rgba(0, 17, 0, 1)'
 
+
 def test_picking_color(screen: Screen):
     ui.color_input(label='Color', on_change=lambda e: output.set_text(e.value))
     output = ui.label()
