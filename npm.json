@@ -112,5 +112,12 @@
     "rename": {
       "package/dist/": ""
     }
+  },
+  "vanilla-jsoneditor": {
+    "destination": "elements/lib",
+    "keep": ["package/index\\.js", "package/index\\.js\\.map"],
+    "rename": {
+      "package/": ""
+    }
   }
 }

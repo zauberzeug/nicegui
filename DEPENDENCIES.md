@@ -13,3 +13,4 @@
 - plotly: 2.24.3
 - three: 0.154.0
 - tween: 21.0.0
+- vanilla-jsoneditor: 0.18.0
