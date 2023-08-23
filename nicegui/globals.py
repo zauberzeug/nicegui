@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import logging
+import os
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
@@ -48,6 +49,7 @@ tailwind: bool
 prod_js: bool
 endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
 air: Optional[Air] = None
+storage_path: Path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui'))
 socket_io_js_query_params: Dict = {}
 socket_io_js_extra_headers: Dict = {}
 # NOTE we favor websocket over polling
