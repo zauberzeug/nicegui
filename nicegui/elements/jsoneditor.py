@@ -15,6 +15,8 @@ class JSONEditor(Element, component='jsoneditor.js', exposed_libraries=['lib/van
         After data has changed, call the `update` method to refresh the editor.
 
         :param properties: dictionary of JSONEditor properties
+        :param on_select: callback function that is called when the editor's content has been selected
+        :param on_change: callback function that is called when the editor's content has changed
         """
         super().__init__()
         self._props['properties'] = properties
