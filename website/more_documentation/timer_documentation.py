@@ -11,13 +11,16 @@ def main_demo() -> None:
 
 
 def more() -> None:
-    @text_demo('Activate and deactivate a timer', '''
+    @text_demo('Activate, deactivate and cancel a timer', '''
         You can activate and deactivate a timer using the `active` property.
+        You can cancel a timer using the `cancel` method.
+        After canceling a timer, it cannot be activated anymore.
     ''')
     def activate_deactivate_demo():
-        slider = ui.slider(min=-1, max=1, value=0)
+        slider = ui.slider(min=0, max=1, value=0.5)
         timer = ui.timer(0.1, lambda: slider.set_value((slider.value + 0.01) % 1.0))
         ui.switch('active').bind_value_to(timer, 'active')
+        ui.button('Cancel', on_click=timer.cancel)
 
     @text_demo('Call a function after a delay', '''
         You can call a function after a delay using a timer with the `once` parameter.

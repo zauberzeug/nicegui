@@ -47,7 +47,6 @@ class Timer:
 
     def deactivate(self) -> None:
         """Deactivate the timer."""
-        assert not self._is_canceled, 'Cannot deactivate a canceled timer'
         self.active = False
 
     def cancel(self) -> None:
