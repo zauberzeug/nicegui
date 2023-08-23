@@ -14,4 +14,4 @@ def main_demo() -> None:
             'string': 'Hello World'
         }}},
         on_select=lambda e: ui.notify(f'Select: {e}'),
-        on_change=lambda e: ui.notify(f'Change: {e}')).classes('w-full')
+        on_change=lambda e: ui.notify(f'Change: {e}'))
