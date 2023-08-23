@@ -143,6 +143,7 @@ def create_full() -> None:
     load_demo(ui.scene)
     load_demo(ui.tree)
     load_demo(ui.log)
+    load_demo(ui.jsoneditor)
 
     heading('Layout')
 
