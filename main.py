@@ -402,7 +402,7 @@ def documentation_page() -> None:
 
 @ui.page('/documentation/{name}')
 async def documentation_page_more(name: str, client: Client) -> None:
-    if name in {'ag_grid', 'e_chart', 'j_s_o_neditor'}:
+    if name in {'ag_grid', 'e_chart', 'j_s_o_n_editor'}:
         name = name.replace('_', '')  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
     module = importlib.import_module(f'website.more_documentation.{name}_documentation')
     more = getattr(module, 'more', None)

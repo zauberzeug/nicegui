@@ -122,7 +122,7 @@ from .elements.image import Image as image
 from .elements.input import Input as input
 from .elements.interactive_image import InteractiveImage as interactive_image
 from .elements.joystick import Joystick as joystick
-from .elements.jsoneditor import JSONeditor as jsoneditor
+from .elements.jsoneditor import JSONEditor as jsoneditor
 from .elements.keyboard import Keyboard as keyboard
 from .elements.knob import Knob as knob
 from .elements.label import Label as label

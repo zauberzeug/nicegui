@@ -5,7 +5,7 @@ from ..events import (GenericEventArguments, JSONEditorOnChangeEventArguments, J
                       JSONEditorOnSelectTextEventArguments, handle_event)
 
 
-class JSONeditor(Element, component='jsoneditor.js', exposed_libraries=['lib/vanilla-jsoneditor/index.js']):
+class JSONEditor(Element, component='jsoneditor.js', exposed_libraries=['lib/vanilla-jsoneditor/index.js']):
     def __init__(
             self, properties: Dict, on_select: Optional[Callable] = None, on_change: Optional[Callable] = None) -> None:
         """JSONEditor
