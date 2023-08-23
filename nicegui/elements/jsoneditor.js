@@ -5,11 +5,9 @@ export default {
   mounted() {
     setTimeout(() => {
       this.properties.onChange = (updatedContent, previousContent, { contentErrors, patchResult }) => {
-        console.log("onChange", { updatedContent, previousContent, contentErrors, patchResult });
         this.$emit("change", { content: updatedContent, errors: contentErrors });
       };
       this.properties.onSelect = (selection) => {
-        console.log("onSelect", { selection });
         if (selection.type === "text") {
           this.$emit("select_text", { main: selection.main, ranges: selection.ranges, type: selection.type });
         } else {
