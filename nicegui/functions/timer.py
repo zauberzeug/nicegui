@@ -54,7 +54,7 @@ class Timer:
             assert self.slot is not None
             with self.slot:
                 await asyncio.sleep(self.interval)
-                if globals.state not in {globals.State.STOPPING, globals.State.STOPPED}:
+                if self.active and globals.state not in {globals.State.STOPPING, globals.State.STOPPED}:
                     await self._invoke_callback()
         finally:
             self._cleanup()
