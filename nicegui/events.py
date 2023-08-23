@@ -351,6 +351,31 @@ class ScrollEventArguments(UiEventArguments):
     horizontal_container_size: float
 
 
+@dataclass(**KWONLY_SLOTS)
+class JSONEditorEventArguments(UiEventArguments):
+    event_type: str
+
+
+@dataclass(**KWONLY_SLOTS)
+class JSONEditorOnSelectJSONEventArguments(JSONEditorEventArguments):
+    edit: bool
+    path: dict
+    type: str
+
+
+@dataclass(**KWONLY_SLOTS)
+class JSONEditorOnSelectTextEventArguments(JSONEditorEventArguments):
+    main: int
+    ranges: dict
+    type: str
+
+
+@dataclass(**KWONLY_SLOTS)
+class JSONEditorOnChangeEventArguments(JSONEditorEventArguments):
+    content: dict
+    errors: dict
+
+
 def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArguments) -> None:
     if handler is None:
         return
