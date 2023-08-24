@@ -15,7 +15,11 @@ class ValueElement(Element):
     def __init__(self, *,
                  value: Any,
                  on_value_change: Optional[Callable[..., Any]],
-                 throttle: float = 0,
+                 # use trailing throttle for value element. for example:
+                 # input element should not send each time when user input every char in a word.
+                 throttle: float = 0.5,
+                 leading_events: bool = False,
+                 trailing_events: bool = True,
                  **kwargs: Any,
                  ) -> None:
         super().__init__(**kwargs)
@@ -29,7 +33,8 @@ class ValueElement(Element):
             self._send_update_on_value_change = self.LOOPBACK
             self.set_value(self._event_args_to_value(e))
             self._send_update_on_value_change = True
-        self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
+        self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle,
+                leading_events=leading_events, trailing_events=trailing_events)
 
     def bind_value_to(self,
                       target_object: Any,

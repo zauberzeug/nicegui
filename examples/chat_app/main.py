@@ -32,7 +32,7 @@ async def main(client: Client):
         with ui.row().classes('w-full no-wrap items-center'):
             with ui.avatar().on('click', lambda: ui.open(main)):
                 ui.image(avatar)
-            text = ui.input(placeholder='message').on('keydown.enter', send) \
+            text = ui.input(placeholder='message').on('keydown.enter', send, throttle=1.5) \
                 .props('rounded outlined input-class=mx-3').classes('flex-grow')
         ui.markdown('simple chat app built with [NiceGUI](https://nicegui.io)') \
             .classes('text-xs self-end mr-8 m-[-1em] text-primary')
