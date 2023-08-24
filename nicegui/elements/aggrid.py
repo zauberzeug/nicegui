@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from typing import Dict, List, Optional, cast
 
 from .. import globals

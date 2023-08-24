@@ -1,5 +1,4 @@
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
@@ -173,4 +172,4 @@ def test_api_method_after_creation(screen: Screen):
 
     screen.open('/')
     screen.click('Create')
-    assert screen.selenium.find_element(By.CLASS_NAME, 'ag-row-selected')
+    assert screen.find_by_class('ag-row-selected')
