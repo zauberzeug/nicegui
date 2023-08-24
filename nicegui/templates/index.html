@@ -80,6 +80,8 @@
         return result;
       }
 
+      // Debouncing and Throttling Explained Through Examples
+      // https://css-tricks.com/debouncing-throttling-explained-examples/
       const waitingCallbacks = new Map();
       function throttle(callback, time, leading, trailing, id) {
         if (time <= 0) {
@@ -87,31 +89,24 @@
           callback();
           return;
         }
-        if (waitingCallbacks.has(id)) {
-          if (trailing) {
-            // update trailing callback
-            waitingCallbacks.set(id, callback);
-          }
-        } else {
-          if (leading) {
-            // execute leading callback and set timeout to block more leading callbacks
+        // below: if time > 0
+        if (leading) {
+          if (!waitingCallbacks.has(id) || Date.now() >= waitingCallbacks.get(id) + 1000 * time) {
+            waitingCallbacks.set(id, Date.now());
             callback();
-            waitingCallbacks.set(id, null);
-          }
-          else if (trailing) {
-            // set trailing callback and set timeout to execute it
-            waitingCallbacks.set(id, callback);
-          }
-          if (leading || trailing) {
-            // set timeout to remove block and to execute trailing callback
-            setTimeout(() => {
-              const trailingCallback = waitingCallbacks.get(id);
-              if (trailingCallback) trailingCallback();
-              waitingCallbacks.delete(id)
-            }, 1000 * time);
-          }
+          } else if (!trailing)  // sure now: id in Map and waited time < need time
+            waitingCallbacks.set(id, Date.now());
+          return;
         }
+        // below: if time > 0 and not leading
+        clearTimeout(waitingCallbacks.get(id)??null);
+        waitingCallbacks.set(id,
+          setTimeout(() => {
+            callback();
+          }, 1000 * time)
+        );
       }
+
       function renderRecursively(elements, id) {
         const element = elements[id];
         if (element === undefined) {
