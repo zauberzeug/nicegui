@@ -91,7 +91,7 @@ class Number(ValidationElement, DisableableElement):
         self.set_value(float(self.format % value) if self.format else value)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
-        if e.args is None:
+        if not e.args:
             return None
         assert isinstance(e.args, str)
         return float(e.args)
