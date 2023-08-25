@@ -1,3 +1,5 @@
+import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
+
 export default {
   template: `
     <q-table
@@ -15,19 +17,8 @@ export default {
   },
   computed: {
     convertedColumns() {
-      return this.columns.map((column) => {
-        for (const attr in column) {
-          if (attr.startsWith(":")) {
-            try {
-              column[attr.slice(1)] = new Function("return " + column[attr])();
-              delete column[attr];
-            } catch (e) {
-              console.error(`Error while converting ${attr} attribute to function:`, e);
-            }
-          }
-        }
-        return column;
-      });
+      this.columns.forEach((column) => convertDynamicProperties(column, false));
+      return this.columns;
     },
   },
 };

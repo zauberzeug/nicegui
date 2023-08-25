@@ -1,9 +1,11 @@
-export function convertDynamicProperties(obj) {
+export function convertDynamicProperties(obj, recursive) {
   if (typeof obj !== "object" || obj === null) {
     return;
   }
   if (Array.isArray(obj)) {
-    obj.forEach((v) => convertDynamicProperties(v));
+    if (recursive) {
+      obj.forEach((v) => convertDynamicProperties(v, true));
+    }
     return;
   }
   for (const [attr, value] of Object.entries(obj)) {
@@ -15,7 +17,9 @@ export function convertDynamicProperties(obj) {
         console.error(`Error while converting ${attr} attribute to function:`, e);
       }
     } else {
-      convertDynamicProperties(value);
+      if (recursive) {
+        convertDynamicProperties(value, true);
+      }
     }
   }
 }
