@@ -17,7 +17,7 @@ export default {
           this.gridOptions.columnDefs[column].cellRenderer = (params) => (params.value ? params.value : "");
         }
       }
-      this.gridOptions = convertDynamicProperties(this.gridOptions);
+      convertDynamicProperties(this.gridOptions);
 
       // Code for CheckboxRenderer https://blog.ag-grid.com/binding-boolean-values-to-checkboxes-in-ag-grid/
       function CheckboxRenderer() {}
