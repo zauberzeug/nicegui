@@ -1,3 +1,5 @@
+import { recursive_convert_dynamic } from "../../static/utils/dynamic_obj.js";
+
 export default {
   template: "<div></div>",
   mounted() {
@@ -15,6 +17,7 @@ export default {
           this.gridOptions.columnDefs[column].cellRenderer = (params) => (params.value ? params.value : "");
         }
       }
+      this.gridOptions = recursive_convert_dynamic(this.gridOptions);
 
       // Code for CheckboxRenderer https://blog.ag-grid.com/binding-boolean-values-to-checkboxes-in-ag-grid/
       function CheckboxRenderer() {}
