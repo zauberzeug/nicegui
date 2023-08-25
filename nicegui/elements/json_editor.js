@@ -7,12 +7,7 @@ export default {
       this.$emit("change", { content: updatedContent, errors: contentErrors });
     };
     this.properties.onSelect = (selection) => {
-      if (selection.type === "text") {
-        this.$emit("select_text", { main: selection.main, ranges: selection.ranges, type: selection.type });
-      }
-      if (selection.type === "key" || selection.type === "value") {
-        this.$emit("select_json", { edit: selection.edit, path: selection.path, type: selection.type });
-      }
+      this.$emit("select", { selection: selection });
     };
     this.editor = new JSONEditor({
       target: this.$el,
