@@ -23,7 +23,6 @@ class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/va
         """
         super().__init__()
         self._props['properties'] = properties
-        self._classes = ['nicegui-json-editor']
 
         if on_select:
             def handle_on_select(e: GenericEventArguments) -> None:

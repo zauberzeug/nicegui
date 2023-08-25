@@ -14,4 +14,4 @@ def main_demo() -> None:
     }
     ui.json_editor({'content': {'json': json}},
                    on_select=lambda e: ui.notify(f'Select: {e}'),
-                   on_change=lambda e: ui.notify(f'Change: {e}')).classes('h-80')
+                   on_change=lambda e: ui.notify(f'Change: {e}'))
