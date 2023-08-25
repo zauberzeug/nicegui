@@ -1,22 +1,29 @@
-export function recursive_has_dynamic(obj) {
+export function hasDynamicProperties(obj) {
   if (typeof obj !== "object" || obj === null) return false;
   if (Array.isArray(obj)) {
-    return obj.some((v) => recursive_has_dynamic(v));
+    return obj.some((v) => hasDynamicProperties(v));
   }
   for (const [key, value] of Object.entries(obj)) {
-    if (key.startsWith(":")) return true;
-    if (recursive_has_dynamic(value)) {
+    if (key.startsWith(":")) {
+      return true;
+    }
+    if (hasDynamicProperties(value)) {
       return true;
     }
   }
   return false;
 }
 
-export function recursive_convert_dynamic(obj) {
-  if (!recursive_has_dynamic(obj)) return obj; // double-loop hierarchy is probably safer and uses less RAM if dynamic not used
-  if (typeof obj !== "object" || obj === null) return obj;
+export function convertDynamicProperties(obj) {
+  if (!hasDynamicProperties(obj)) {
+    // double-loop hierarchy is probably safer and uses less RAM if dynamic not used
+    return obj;
+  }
+  if (typeof obj !== "object" || obj === null) {
+    return obj;
+  }
   if (Array.isArray(obj)) {
-    return obj.map((v) => recursive_convert_dynamic(v));
+    return obj.map((v) => convertDynamicProperties(v));
   }
   const targetObj = {};
   for (const [attr, value] of Object.entries(obj)) {
@@ -27,7 +34,7 @@ export function recursive_convert_dynamic(obj) {
         console.error(`Error while converting ${attr} attribute to function:`, e);
       }
     } else {
-      targetObj[attr] = recursive_convert_dynamic(value);
+      targetObj[attr] = convertDynamicProperties(value);
     }
   }
   return targetObj;

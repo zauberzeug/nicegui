@@ -172,3 +172,17 @@ def more() -> None:
                 {'name': {'first': 'Carol', 'last': 'Clark'}, 'age': 42},
             ],
         }).classes('max-h-40')
+
+    @text_demo('AG Grid with dynamic row height', '''
+        You can set the height of individual rows by passing a function to the `getRowHeight` argument.
+    ''')
+    def aggrid_with_dynamic_row_height():
+        ui.aggrid({
+            'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+            'rowData': [
+                {'name': 'Alice', 'age': '18'},
+                {'name': 'Bob', 'age': '21'},
+                {'name': 'Carol', 'age': '42'},
+            ],
+            ':getRowHeight': 'params => params.data.age > 35 ? 50 : 25',
+        }).classes('max-h-40')

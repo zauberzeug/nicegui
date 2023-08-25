@@ -1,4 +1,4 @@
-import { recursive_convert_dynamic } from "../../static/utils/dynamic_obj.js";
+import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
 export default {
   template: "<div></div>",
@@ -17,7 +17,7 @@ export default {
           this.gridOptions.columnDefs[column].cellRenderer = (params) => (params.value ? params.value : "");
         }
       }
-      this.gridOptions = recursive_convert_dynamic(this.gridOptions);
+      this.gridOptions = convertDynamicProperties(this.gridOptions);
 
       // Code for CheckboxRenderer https://blog.ag-grid.com/binding-boolean-values-to-checkboxes-in-ag-grid/
       function CheckboxRenderer() {}
