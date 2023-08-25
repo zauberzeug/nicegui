@@ -32,6 +32,7 @@ class Timer:
         self.callback: Optional[Callable[..., Any]] = callback
         self.active = active
         self.slot: Optional[Slot] = globals.get_slot()
+        self._is_canceled: bool = False
 
         coroutine = self._run_once if once else self._run_in_loop
         if globals.state == globals.State.STARTED:
@@ -41,11 +42,16 @@ class Timer:
 
     def activate(self) -> None:
         """Activate the timer."""
+        assert not self._is_canceled, 'Cannot activate a canceled timer'
         self.active = True
 
     def deactivate(self) -> None:
         """Deactivate the timer."""
         self.active = False
+
+    def cancel(self) -> None:
+        """Cancel the timer."""
+        self._is_canceled = True
 
     async def _run_once(self) -> None:
         try:
@@ -54,8 +60,13 @@ class Timer:
             assert self.slot is not None
             with self.slot:
                 await asyncio.sleep(self.interval)
-                if self.active and globals.state not in {globals.State.STOPPING, globals.State.STOPPED}:
-                    await self._invoke_callback()
+                if self._is_canceled:
+                    return
+                if not self.active:
+                    return
+                if globals.state in {globals.State.STOPPING, globals.State.STOPPED}:
+                    return
+                await self._invoke_callback()
         finally:
             self._cleanup()
 
@@ -67,6 +78,8 @@ class Timer:
             with self.slot:
                 while True:
                     if self.slot.parent.client.id not in globals.clients:
+                        break
+                    if self._is_canceled:
                         break
                     if globals.state in {globals.State.STOPPING, globals.State.STOPPED}:
                         break

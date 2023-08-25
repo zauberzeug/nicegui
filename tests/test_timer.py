@@ -17,7 +17,7 @@ class Counter:
 
 def test_timer(screen: Screen):
     counter = Counter()
-    ui.timer(0.1, counter.increment)
+    t = ui.timer(0.1, counter.increment)
 
     assert counter.value == 0, 'count is initially zero'
     screen.wait(0.5)
@@ -26,6 +26,22 @@ def test_timer(screen: Screen):
     screen.start_server()
     screen.wait(0.5)
     assert counter.value > 0, 'timer is running after starting the server'
+
+    t.deactivate()
+    screen.wait(0.5)
+    c = counter.value
+    screen.wait(0.5)
+    assert counter.value == c, 'timer is not running anymore after deactivating it'
+
+    t.activate()
+    screen.wait(0.5)
+    assert counter.value > c, 'timer is running again after activating it'
+
+    t.cancel()
+    screen.wait(0.5)
+    c = counter.value
+    screen.wait(0.5)
+    assert counter.value == c, 'timer is not running anymore after canceling it'
 
 
 def test_timer_on_private_page(screen: Screen):
@@ -52,7 +68,7 @@ def test_timer_on_private_page(screen: Screen):
 
 @pytest.mark.parametrize('once', [True, False])
 def test_setting_visibility(screen: Screen, once: bool):
-    '''reproduction of https://github.com/zauberzeug/nicegui/issues/206'''
+    """reproduction of https://github.com/zauberzeug/nicegui/issues/206"""
     @ui.page('/')
     def page():
         label = ui.label('Some Label')
