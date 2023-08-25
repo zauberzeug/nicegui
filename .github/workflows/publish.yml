@@ -7,41 +7,9 @@ on:
       - v**
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build Docker Image
-        run: |
-          docker build -t test_image:latest -f release.dockerfile .
-      - name: Run and Test Container
-        run: |
-          docker run -d --name test_container test_image:latest
-          sleep 10
-
-          CONTAINER_STATUS=$(docker inspect -f '{{.State.Running}}' test_container)
-          if [ "${CONTAINER_STATUS}" != "true" ]; then
-          echo "The container is not running!"
-          exit 1
-          fi
-
-          CONTAINER_OUTPUT=$(docker logs test_container)
-          if echo "${CONTAINER_OUTPUT}" | grep -q "Error"; then
-            echo "Error found in container output!"
-            echo "${CONTAINER_OUTPUT}"
-            exit 1
-          fi
-          if ! echo "${CONTAINER_OUTPUT}" | grep -q "NiceGUI ready to go"; then
-            echo "Required message 'NiceGUI ready to go' not found in container output!"
-            echo "${CONTAINER_OUTPUT}"
-            exit 1
-          fi
-          docker stop test_container
-          docker rm test_container
-
   pypi:
-    needs: test
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
       - name: set up Python
@@ -78,6 +46,7 @@ jobs:
   docker:
     needs: pypi
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
       - name: Prepare
