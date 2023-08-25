@@ -8,9 +8,12 @@ def main_demo() -> None:
         'color': '#82b92c',
         None: None,
         'number': 123,
-        'object': {'a': 'b', 'c': 'd'},
+        'object': {
+            'a': 'b',
+            'c': 'd',
+        },
         'time': 1575599819000,
-        'string': 'Hello World'
+        'string': 'Hello World',
     }
     ui.json_editor({'content': {'json': json}},
                    on_select=lambda e: ui.notify(f'Select: {e}'),

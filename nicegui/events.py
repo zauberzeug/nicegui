@@ -355,6 +355,7 @@ class ScrollEventArguments(UiEventArguments):
 class JsonEditorSelectEventArguments(UiEventArguments):
     selection: Dict
 
+
 @dataclass(**KWONLY_SLOTS)
 class JsonEditorChangeEventArguments(UiEventArguments):
     content: Dict
