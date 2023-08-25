@@ -16,18 +16,17 @@ export default {
   computed: {
     convertedColumns() {
       return this.columns.map((column) => {
-        const convertedColumn = { ...column };
-        for (const attr in convertedColumn) {
+        for (const attr in column) {
           if (attr.startsWith(":")) {
             try {
-              convertedColumn[attr.slice(1)] = new Function("return " + convertedColumn[attr])();
-              delete convertedColumn[attr];
+              column[attr.slice(1)] = new Function("return " + column[attr])();
+              delete column[attr];
             } catch (e) {
               console.error(`Error while converting ${attr} attribute to function:`, e);
             }
           }
         }
-        return convertedColumn;
+        return column;
       });
     },
   },
