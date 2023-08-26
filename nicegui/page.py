@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import inspect
 import time
@@ -22,10 +24,10 @@ class page:
                  title: Optional[str] = None,
                  viewport: Optional[str] = None,
                  favicon: Optional[Union[str, Path]] = None,
-                 dark: Optional[bool] = ...,
-                 language: Language = ...,
+                 dark: Optional[bool] = ...,  # type: ignore
+                 language: Language = ...,  # type: ignore
                  response_timeout: float = 3.0,
-                 api_router: Optional['APIRouter'] = None,
+                 api_router: Optional[APIRouter] = None,
                  **kwargs: Any,
                  ) -> None:
         """Page

@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 from ..element import Element
 from ..events import ColorPickEventArguments, GenericEventArguments, handle_event
@@ -16,7 +16,7 @@ class ColorPicker(Menu):
         super().__init__(value=value)
         with self:
             def handle_change(e: GenericEventArguments):
-                handle_event(on_pick, ColorPickEventArguments(sender=self, client=self.client, color=e.args))
+                handle_event(on_pick, ColorPickEventArguments(sender=self, client=self.client, color=cast(str, e.args)))
             self.q_color = Element('q-color').on('change', handle_change)
 
     def set_color(self, color: str) -> None:

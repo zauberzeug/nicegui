@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import functools
 import hashlib
@@ -60,7 +62,7 @@ def hash_file_path(path: Path) -> str:
     return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
 
 
-def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional['Client'] = None) -> None:
+def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional[Client] = None) -> None:
     try:
         if isinstance(func, Awaitable):
             async def func_with_client():

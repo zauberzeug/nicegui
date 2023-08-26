@@ -77,7 +77,7 @@ def handle_startup(with_welcome_message: bool = True) -> None:
                            'to allow for multiprocessing.')
     if globals.favicon:
         if is_file(globals.favicon):
-            globals.app.add_route('/favicon.ico', lambda _: FileResponse(globals.favicon))
+            globals.app.add_route('/favicon.ico', lambda _: FileResponse(globals.favicon))  # type: ignore
         else:
             globals.app.add_route('/favicon.ico', lambda _: favicon.get_favicon_response())
     else:

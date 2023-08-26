@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import time
 import uuid
@@ -23,7 +25,7 @@ templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
 class Client:
 
-    def __init__(self, page: 'page', *, shared: bool = False) -> None:
+    def __init__(self, page: page, *, shared: bool = False) -> None:
         self.id = str(uuid.uuid4())
         self.created = time.time()
         globals.clients[self.id] = self
@@ -54,7 +56,7 @@ class Client:
     @property
     def ip(self) -> Optional[str]:
         """Return the IP address of the client, or None if the client is not connected."""
-        return self.environ['asgi.scope']['client'][0] if self.has_socket_connection else None  # pylint: disable=unsubscriptable-object
+        return self.environ['asgi.scope']['client'][0] if self.environ else None
 
     @property
     def has_socket_connection(self) -> bool:

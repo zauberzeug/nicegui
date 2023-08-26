@@ -32,9 +32,9 @@ class Server(uvicorn.Server):
     def run(self, sockets: Optional[List[socket.socket]] = None) -> None:
         globals.server = self
         assert isinstance(self.config, CustomServerConfig)
-        native_module.method_queue = self.config.method_queue
-        native_module.response_queue = self.config.response_queue
-        if native_module.method_queue is not None:
+        if self.config.method_queue is not None and self.config.response_queue is not None:
+            native_module.method_queue = self.config.method_queue
+            native_module.response_queue = self.config.response_queue
             globals.app.native.main_window = native_module.WindowProxy()
 
         helpers.set_storage_secret(self.config.storage_secret)

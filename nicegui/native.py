@@ -43,7 +43,7 @@ try:
         def load_url(self, url: str) -> None:
             self._send(url)
 
-        def load_html(self, content: str, base_uri: str = ...) -> None:
+        def load_html(self, content: str, base_uri: str = ...) -> None:  # type: ignore
             self._send(content, base_uri)
 
         def load_css(self, stylesheet: str) -> None:
@@ -111,7 +111,7 @@ try:
             raise NotImplementedError(f'exposing "{function}" is not supported')
 
         def _send(self, *args: Any, **kwargs: Any) -> None:
-            name = inspect.currentframe().f_back.f_code.co_name
+            name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
             method_queue.put((name, args, kwargs))
 
         async def _request(self, *args: Any, **kwargs: Any) -> Any:
@@ -121,14 +121,14 @@ try:
                     return response_queue.get()  # wait for the method to be called and writing its result to the queue
                 except Exception:
                     logging.exception(f'error in {name}')
-            name = inspect.currentframe().f_back.f_code.co_name
+            name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
             return await asyncio.get_event_loop().run_in_executor(None, partial(wrapper, *args, **kwargs))
 
         def signal_server_shutdown(self) -> None:
             self._send()
 
 except ModuleNotFoundError:
-    class WindowProxy:
+    class WindowProxy:  # type: ignore
         pass  # just a dummy if webview is not installed
 
 

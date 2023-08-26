@@ -17,7 +17,8 @@ if TYPE_CHECKING:
 
 def create_favicon_route(path: str, favicon: Optional[Union[str, Path]]) -> None:
     if is_file(favicon):
-        globals.app.add_route('/favicon.ico' if path == '/' else f'{path}/favicon.ico', lambda _: FileResponse(favicon))
+        globals.app.add_route('/favicon.ico' if path == '/' else f'{path}/favicon.ico',
+                              lambda _: FileResponse(favicon))  # type: ignore
 
 
 def get_favicon_url(page: page, prefix: str) -> str:

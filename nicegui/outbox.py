@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from collections import defaultdict, deque
-from typing import TYPE_CHECKING, Any, DefaultDict, Deque, Dict, Tuple
+from typing import TYPE_CHECKING, Any, DefaultDict, Deque, Dict, Optional, Tuple
 
 from . import globals  # pylint: disable=redefined-builtin
 
@@ -14,7 +14,7 @@ ElementId = int
 MessageType = str
 Message = Tuple[ClientId, MessageType, Any]
 
-update_queue: DefaultDict[ClientId, Dict[ElementId, Element]] = defaultdict(dict)
+update_queue: DefaultDict[ClientId, Dict[ElementId, Optional[Element]]] = defaultdict(dict)
 message_queue: Deque[Message] = deque()
 
 

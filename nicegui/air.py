@@ -1,6 +1,5 @@
 import asyncio
 import gzip
-import logging
 import re
 from typing import Any, Dict
 
@@ -87,7 +86,7 @@ class Air:
             if client_id not in globals.clients:
                 return
             client = globals.clients[client_id]
-            if isinstance(data['msg']['args'], list) and 'socket_id' in data['msg']['args']:
+            if isinstance(data['msg']['args'], dict) and 'socket_id' in data['msg']['args']:
                 data['msg']['args']['socket_id'] = client_id  # HACK: translate socket_id of ui.scene's init event
             handle_event(client, data['msg'])
 

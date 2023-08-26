@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Awaitable, Callable, Optional, Union
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -134,7 +134,7 @@ class App(FastAPI):
         def read_item(request: Request, filename: str) -> StreamingResponse:
             filepath = Path(local_directory) / filename
             if not filepath.is_file():
-                return {'detail': 'Not Found'}, 404
+                raise HTTPException(status_code=404, detail='Not Found')
             return helpers.get_streaming_response(filepath, request)
 
     def add_media_file(self, *,

@@ -187,11 +187,11 @@ class Tailwind:
     def __call__(self, *classes: str) -> Tailwind:
         ...
 
-    def __call__(self, *args) -> Tailwind:
+    def __call__(self, *args) -> Tailwind:  # type: ignore
         if not args:
             return self
         if isinstance(args[0], Tailwind):
-            args[0].apply(self.element)
+            args[0].apply(self.element)  # type: ignore
         else:
             self.element.classes(' '.join(args))
         return self
