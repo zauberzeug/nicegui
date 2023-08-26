@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from .. import binding, globals
+from .. import binding, globals  # pylint: disable=redefined-builtin
 from ..element import Element
 from ..events import (GenericEventArguments, SceneClickEventArguments, SceneClickHit, SceneDragEventArguments,
                       handle_event)
@@ -38,6 +38,7 @@ class Scene(Element,
                 'lib/three/modules/OrbitControls.js',
                 'lib/three/modules/STLLoader.js',
             ]):
+    # pylint: disable=import-outside-toplevel
     from .scene_objects import Box as box
     from .scene_objects import Curve as curve
     from .scene_objects import Cylinder as cylinder
@@ -109,8 +110,8 @@ class Scene(Element,
         self.is_initialized = True
         with globals.socket_id(e.args['socket_id']):
             self.move_camera(duration=0)
-            for object in self.objects.values():
-                object.send()
+            for obj in self.objects.values():
+                obj.send()
 
     def run_method(self, name: str, *args: Any) -> None:
         if not self.is_initialized:
@@ -184,8 +185,12 @@ class Scene(Element,
         binding.remove(list(self.objects.values()), Object3D)
         super().delete()
 
+    def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda: True) -> None:
+        for obj in list(self.objects.values()):
+            if predicate(obj):
+                obj.delete()
+
     def clear(self) -> None:
         """Remove all objects from the scene."""
         super().clear()
-        for object in list(self.objects.values()):
-            object.delete()
+        self.delete_objects()
