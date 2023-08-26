@@ -185,7 +185,7 @@ class Scene(Element,
         binding.remove(list(self.objects.values()), Object3D)
         super().delete()
 
-    def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda: True) -> None:
+    def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:
         for obj in list(self.objects.values()):
             if predicate(obj):
                 obj.delete()
