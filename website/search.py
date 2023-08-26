@@ -56,7 +56,7 @@ class Search:
                 self.results.clear()
                 for result in results:
                     href: str = result['item']['url']
-                    with ui.element('q-item').props(f'clickable') \
+                    with ui.element('q-item').props('clickable') \
                             .on('click', lambda href=href: self.open_url(href), []):
                         with ui.element('q-item-section'):
                             ui.label(result['item']['title'])

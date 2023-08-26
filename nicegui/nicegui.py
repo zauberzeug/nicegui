@@ -13,7 +13,8 @@ from fastapi_socketio import SocketManager
 from nicegui import json
 from nicegui.json import NiceGUIJSONResponse
 
-from . import __version__, background_tasks, binding, favicon, globals, outbox, welcome
+from . import (__version__, background_tasks, binding, favicon, globals, outbox,  # pylint: disable=redefined-builtin
+               welcome)
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries
@@ -25,7 +26,7 @@ from .page import page
 globals.app = app = App(default_response_class=NiceGUIJSONResponse)
 # NOTE we use custom json module which wraps orjson
 socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=json)
-globals.sio = sio = socket_manager._sio
+globals.sio = sio = socket_manager._sio  # pylint: disable=protected-access
 
 app.add_middleware(GZipMiddleware)
 static_files = StaticFiles(
@@ -34,7 +35,7 @@ static_files = StaticFiles(
 )
 app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
 
-globals.index_client = Client(page('/'), shared=True).__enter__()
+globals.index_client = Client(page('/'), shared=True).__enter__()  # pylint: disable=unnecessary-dunder-call
 
 
 @app.get('/')
@@ -176,7 +177,7 @@ def handle_event(client: Client, msg: Dict) -> None:
             msg['args'] = [None if arg is None else json.loads(arg) for arg in msg.get('args', [])]
             if len(msg['args']) == 1:
                 msg['args'] = msg['args'][0]
-            sender._handle_event(msg)
+            sender._handle_event(msg)  # pylint: disable=protected-access
 
 
 @sio.on('javascript_response')
@@ -200,13 +201,13 @@ def get_client(sid: str) -> Optional[Client]:
 
 async def prune_clients() -> None:
     while True:
-        stale = [
+        stale_clients = [
             id
             for id, client in globals.clients.items()
             if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
         ]
-        for id in stale:
-            delete_client(id)
+        for client_id in stale_clients:
+            delete_client(client_id)
         await asyncio.sleep(10)
 
 
@@ -227,8 +228,8 @@ async def prune_slot_stacks() -> None:
         await asyncio.sleep(10)
 
 
-def delete_client(id: str) -> None:
-    binding.remove(list(globals.clients[id].elements.values()), Element)
-    for element in globals.clients[id].elements.values():
+def delete_client(client_id: str) -> None:
+    binding.remove(list(globals.clients[client_id].elements.values()), Element)
+    for element in globals.clients[client_id].elements.values():
         element.delete()
-    del globals.clients[id]
+    del globals.clients[client_id]

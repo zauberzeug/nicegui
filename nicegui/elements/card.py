@@ -1,3 +1,5 @@
+from typing_extensions import Self
+
 from ..element import Element
 
 
@@ -18,7 +20,7 @@ class Card(Element):
         super().__init__('q-card')
         self._classes = ['nicegui-card']
 
-    def tight(self):
+    def tight(self) -> Self:
         """Removes padding and gaps between nested elements."""
         self._classes.clear()
         self._style.clear()

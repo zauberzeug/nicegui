@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Update dependencies according to npm.json configurations using the NPM packagist.
+"""Update dependencies according to npm.json configurations using the NPM packagist.
 
 npm.json file is a JSON object key => dependency.
 
@@ -66,8 +65,8 @@ for key, dependency in dependencies.items():
 
     # Handle the special case of tailwind. Hopefully remove this soon.
     if 'download' in dependency:
-        path = download_buffered(dependency['download'])
-        shutil.copyfile(path, prepare(Path(destination, dependency['rename'])))
+        download_path = download_buffered(dependency['download'])
+        shutil.copyfile(download_path, prepare(Path(destination, dependency['rename'])))
 
     # Download and extract.
     tgz_file = prepare(Path(tmp, key, f'{key}.tgz'))
