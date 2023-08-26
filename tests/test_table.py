@@ -1,3 +1,5 @@
+from typing import List
+
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
@@ -5,17 +7,19 @@ from nicegui import ui
 from .screen import Screen
 
 
-def columns(): return [
-    {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True},
-    {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
-]
+def columns() -> List:
+    return [
+        {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True},
+        {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
+    ]
 
 
-def rows(): return [
-    {'id': 0, 'name': 'Alice', 'age': 18},
-    {'id': 1, 'name': 'Bob', 'age': 21},
-    {'id': 2, 'name': 'Lionel', 'age': 19},
-]
+def rows() -> List:
+    return [
+        {'id': 0, 'name': 'Alice', 'age': 18},
+        {'id': 1, 'name': 'Bob', 'age': 21},
+        {'id': 2, 'name': 'Lionel', 'age': 19},
+    ]
 
 
 def test_table(screen: Screen):

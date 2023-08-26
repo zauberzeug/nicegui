@@ -85,7 +85,7 @@ def test_awaiting_coroutine(screen: Screen):
     async def update_user():
         await asyncio.sleep(0.1)
 
-    ui.timer(1, lambda: update_user())
+    ui.timer(1, update_user)
 
     screen.open('/')
     screen.wait(1)

@@ -1,3 +1,4 @@
+import pandas as pd
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
@@ -92,8 +93,8 @@ def test_call_api_method_with_argument(screen: Screen):
         'columnDefs': [{'field': 'name', 'filter': True}],
         'rowData': [{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
     })
-    filter = {'name': {'filterType': 'text', 'type': 'equals', 'filter': 'Alice'}}
-    ui.button('Filter', on_click=lambda: grid.call_api_method('setFilterModel', filter))
+    filter_model = {'name': {'filterType': 'text', 'type': 'equals', 'filter': 'Alice'}}
+    ui.button('Filter', on_click=lambda: grid.call_api_method('setFilterModel', filter_model))
 
     screen.open('/')
     screen.should_contain('Alice')
@@ -163,7 +164,6 @@ def test_replace_aggrid(screen: Screen):
 
 
 def test_create_from_pandas(screen: Screen):
-    import pandas as pd
     df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]})
     ui.aggrid.from_pandas(df)
 

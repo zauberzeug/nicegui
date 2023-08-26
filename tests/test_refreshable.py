@@ -111,7 +111,7 @@ def test_refresh_with_arguments(screen: Screen):
 
     some_ui(0)
     ui.button('refresh', on_click=some_ui.refresh)
-    ui.button('refresh()', on_click=lambda: some_ui.refresh())
+    ui.button('refresh()', on_click=lambda: some_ui.refresh())  # pylint: disable=unnecessary-lambda
     ui.button('refresh(1)', on_click=lambda: some_ui.refresh(1))
     ui.button('refresh(2)', on_click=lambda: some_ui.refresh(2))
     ui.button('refresh(value=3)', on_click=lambda: some_ui.refresh(value=3))

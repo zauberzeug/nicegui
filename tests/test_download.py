@@ -17,7 +17,7 @@ def test_route() -> Generator[str, None, None]:
     app.remove_route(TEST_ROUTE)
 
 
-def test_download_text_file(screen: Screen, test_route: str):
+def test_download_text_file(screen: Screen, test_route: str):  # pylint: disable=redefined-outer-name
     @app.get(test_route)
     def test():
         return PlainTextResponse('test')

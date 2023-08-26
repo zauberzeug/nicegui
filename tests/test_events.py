@@ -157,7 +157,7 @@ def test_throttling_variants(screen: Screen):
     screen.click('Trailing')
     value = 3
     screen.click('Trailing')
-    assert events == []
+    assert events == []  # pylint: disable=use-implicit-booleaness-not-comparison
     screen.wait(1.1)
     assert events == [3]
 
@@ -165,10 +165,13 @@ def test_throttling_variants(screen: Screen):
 @pytest.mark.parametrize('attribute', ['disabled', 'hidden'])
 def test_server_side_validation(screen: Screen, attribute: Literal['disabled', 'hidden']):
     b = ui.button('Button', on_click=lambda: ui.label('Success'))
-    b.disable() if attribute == 'disabled' else b.set_visibility(False)
+    if attribute == 'disabled':
+        b.disable()
+    else:
+        b.set_visibility(False)
     ui.button('Hack', on_click=lambda: ui.run_javascript(f'''
         getElement({b.id}).$emit("click", {{"id": {b.id}, "listener_id": "{list(b._event_listeners.keys())[0]}"}});
-    ''', respond=False))
+    ''', respond=False))  # pylint: disable=protected-access
 
     screen.open('/')
     screen.click('Hack')

@@ -6,6 +6,7 @@ from nicegui.observables import make_observable
 
 from .screen import Screen
 
+# pylint: disable=global-statement
 count = 0
 
 
@@ -58,7 +59,7 @@ def test_observable_list():
     assert count == 3
     data.remove(1)
     assert count == 4
-    data.pop()
+    data.pop(-1)
     assert count == 5
     data.sort()
     assert count == 6

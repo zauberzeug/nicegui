@@ -33,7 +33,7 @@ def test_set_source_in_tab(screen: Screen):
 @pytest.mark.parametrize('cross, number_of_lines', [(True, 2), (False, 0)])
 def test_with_cross(screen: Screen, cross: bool, number_of_lines: int):
     ii = ui.interactive_image('https://nicegui.io/logo.png', cross=cross)
-    ii.content = f'<circle cx="100" cy="100" r="15" fill="none" stroke="red" stroke-width="4" />'
+    ii.content = '<circle cx="100" cy="100" r="15" fill="none" stroke="red" stroke-width="4" />'
 
     screen.open('/')
     screen.find_by_tag('svg')

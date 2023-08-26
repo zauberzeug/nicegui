@@ -101,6 +101,8 @@ def test_shared_and_private_pages(screen: Screen):
 
 
 def test_wait_for_connected(screen: Screen):
+    label: ui.label
+
     async def load() -> None:
         label.text = 'loading...'
         # NOTE we can not use asyncio.create_task() here because we are on a different thread than the NiceGUI event loop
@@ -112,7 +114,7 @@ def test_wait_for_connected(screen: Screen):
 
     @ui.page('/')
     async def page(client: Client):
-        global label
+        nonlocal label
         label = ui.label()
         await client.connected()
         await load()
@@ -168,7 +170,7 @@ def test_adding_elements_after_connected(screen: Screen):
 def test_exception(screen: Screen):
     @ui.page('/')
     def page():
-        raise Exception('some exception')
+        raise RuntimeError('some exception')
 
     screen.open('/')
     screen.should_contain('500')
@@ -181,7 +183,7 @@ def test_exception_after_connected(screen: Screen):
     async def page(client: Client):
         await client.connected()
         ui.label('this is shown')
-        raise Exception('some exception')
+        raise RuntimeError('some exception')
 
     screen.open('/')
     screen.should_contain('this is shown')
@@ -189,9 +191,9 @@ def test_exception_after_connected(screen: Screen):
 
 
 def test_page_with_args(screen: Screen):
-    @ui.page('/page/{id}')
-    def page(id: int):
-        ui.label(f'Page {id}')
+    @ui.page('/page/{id_}')
+    def page(id_: int):
+        ui.label(f'Page {id_}')
 
     screen.open('/page/42')
     screen.should_contain('Page 42')
@@ -225,11 +227,11 @@ def test_dark_mode(screen: Screen):
         ui.label('A').classes('text-blue-400 dark:text-red-400')
 
     @ui.page('/light', dark=False)
-    def page():
+    def light_page():
         ui.label('B').classes('text-blue-400 dark:text-red-400')
 
     @ui.page('/dark', dark=True)
-    def page():
+    def dark_page():
         ui.label('C').classes('text-blue-400 dark:text-red-400')
 
     blue = 'rgba(96, 165, 250, 1)'

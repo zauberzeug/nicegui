@@ -1,7 +1,6 @@
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
-from nicegui.element import Element
 
 from .screen import Screen
 
@@ -34,21 +33,23 @@ def test_classes(screen: Screen):
 
 
 def test_style_parsing():
-    assert Element._parse_style(None) == {}
-    assert Element._parse_style('color: red; background-color: green') == {'color': 'red', 'background-color': 'green'}
-    assert Element._parse_style('width:12em;height:34.5em') == {'width': '12em', 'height': '34.5em'}
-    assert Element._parse_style('transform: translate(120.0px, 50%)') == {'transform': 'translate(120.0px, 50%)'}
-    assert Element._parse_style('box-shadow: 0 0 0.5em #1976d2') == {'box-shadow': '0 0 0.5em #1976d2'}
+    # pylint: disable=protected-access
+    assert ui.element._parse_style(None) == {}  # pylint: disable=use-implicit-booleaness-not-comparison
+    assert ui.element._parse_style('color: red; background-color: blue') == {'color': 'red', 'background-color': 'blue'}
+    assert ui.element._parse_style('width:12em;height:34.5em') == {'width': '12em', 'height': '34.5em'}
+    assert ui.element._parse_style('transform: translate(120.0px, 50%)') == {'transform': 'translate(120.0px, 50%)'}
+    assert ui.element._parse_style('box-shadow: 0 0 0.5em #1976d2') == {'box-shadow': '0 0 0.5em #1976d2'}
 
 
 def test_props_parsing():
-    assert Element._parse_props(None) == {}
-    assert Element._parse_props('one two=1 three="abc def"') == {'one': True, 'two': '1', 'three': 'abc def'}
-    assert Element._parse_props('loading percentage=12.5') == {'loading': True, 'percentage': '12.5'}
-    assert Element._parse_props('size=50%') == {'size': '50%'}
-    assert Element._parse_props('href=http://192.168.42.100/') == {'href': 'http://192.168.42.100/'}
-    assert Element._parse_props('hint="Your \\"given\\" name"') == {'hint': 'Your "given" name'}
-    assert Element._parse_props('input-style="{ color: #ff0000 }"') == {'input-style': '{ color: #ff0000 }'}
+    # pylint: disable=protected-access
+    assert ui.element._parse_props(None) == {}  # pylint: disable=use-implicit-booleaness-not-comparison
+    assert ui.element._parse_props('one two=1 three="abc def"') == {'one': True, 'two': '1', 'three': 'abc def'}
+    assert ui.element._parse_props('loading percentage=12.5') == {'loading': True, 'percentage': '12.5'}
+    assert ui.element._parse_props('size=50%') == {'size': '50%'}
+    assert ui.element._parse_props('href=http://192.168.42.100/') == {'href': 'http://192.168.42.100/'}
+    assert ui.element._parse_props('hint="Your \\"given\\" name"') == {'hint': 'Your "given" name'}
+    assert ui.element._parse_props('input-style="{ color: #ff0000 }"') == {'input-style': '{ color: #ff0000 }'}
 
 
 def test_style(screen: Screen):
@@ -84,7 +85,7 @@ def test_style(screen: Screen):
 
 
 def test_props(screen: Screen):
-    input = ui.input()
+    input_ = ui.input()
 
     def assert_props(*props: str) -> None:
         class_conditions = [f'contains(@class, "q-field--{prop}")' for prop in props]
@@ -94,13 +95,13 @@ def test_props(screen: Screen):
     screen.wait(0.5)
     assert_props('standard')
 
-    input.props('dark')
+    input_.props('dark')
     assert_props('standard', 'dark')
 
-    input.props('dark')
+    input_.props('dark')
     assert_props('standard', 'dark')
 
-    input.props(remove='dark')
+    input_.props(remove='dark')
     assert_props('standard')
 
 
@@ -112,7 +113,7 @@ def test_remove_and_clear(screen: Screen):
 
     ui.button('Remove B', on_click=lambda: row.remove(b))
     ui.button('Remove 0', on_click=lambda: row.remove(0))
-    ui.button('Clear', on_click=lambda: row.clear())
+    ui.button('Clear', on_click=row.clear)
 
     screen.open('/')
     screen.should_contain('Label A')

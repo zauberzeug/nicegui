@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Union
 
+from typing_extensions import Self
+
 from .. import binding, globals  # pylint: disable=redefined-builtin
 from ..element import Element
 from ..events import (GenericEventArguments, SceneClickEventArguments, SceneClickHit, SceneDragEventArguments,
@@ -96,9 +98,10 @@ class Scene(Element,
         self.on('dragend', self.handle_drag)
         self._props['drag_constraints'] = drag_constraints
 
-    def __enter__(self) -> 'Scene':
+    def __enter__(self) -> Self:
         Object3D.current_scene = self
-        return super().__enter__()
+        super().__enter__()
+        return self
 
     def __getattribute__(self, name: str) -> Any:
         attribute = super().__getattribute__(name)
