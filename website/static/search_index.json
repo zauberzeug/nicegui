@@ -311,7 +311,7 @@
   },
   {
     "title": "Environment Variables",
-    "content": "You can set the following environment variables to configure NiceGUI:  - MATPLOTLIB (default: true) can be set to false to avoid the potentially costly import of Matplotlib. This will make ui.pyplot and ui.line_plot unavailable. - MARKDOWN_CONTENT_CACHE_SIZE (default: 1000): The maximum number of Markdown content snippets that are cached in memory.",
+    "content": "You can set the following environment variables to configure NiceGUI:  - MATPLOTLIB (default: true) can be set to false to avoid the potentially costly import of Matplotlib. This will make ui.pyplot and ui.line_plot unavailable. - NICEGUI_STORAGE_PATH (default: local \".nicegui\") can be set to change the location of the storage files. - MARKDOWN_CONTENT_CACHE_SIZE (default: 1000): The maximum number of Markdown content snippets that are cached in memory.",
     "url": "/documentation/#environment_variables"
   },
   {
@@ -431,13 +431,13 @@
   },
   {
     "title": "Timer",
-    "content": "One major drive behind the creation of NiceGUI was the necessity to have a simple approach to update the interface in regular intervals, for example to show a graph with incoming measurements. A timer will execute a callback repeatedly with a given interval.  :param interval: the interval in which the timer is called (can be changed during runtime) :param callback: function or coroutine to execute when interval elapses :param active: whether the callback should be executed or not (can be changed during runtime) :param once: whether the callback is only executed once after a delay specified by interval (default: False) activate Activate the timer.deactivate Deactivate the timer.",
+    "content": "One major drive behind the creation of NiceGUI was the necessity to have a simple approach to update the interface in regular intervals, for example to show a graph with incoming measurements. A timer will execute a callback repeatedly with a given interval.  :param interval: the interval in which the timer is called (can be changed during runtime) :param callback: function or coroutine to execute when interval elapses :param active: whether the callback should be executed or not (can be changed during runtime) :param once: whether the callback is only executed once after a delay specified by interval (default: False) activate Activate the timer.deactivate Deactivate the timer.cancel Cancel the timer.",
     "url": "/documentation/timer"
   },
   {
-    "title": "Timer: Activate and deactivate a timer",
-    "content": "You can activate and deactivate a timer using the active property.",
-    "url": "/documentation/timer#activate_and_deactivate_a_timer"
+    "title": "Timer: Activate, deactivate and cancel a timer",
+    "content": "You can activate and deactivate a timer using the active property. You can cancel a timer using the cancel method. After canceling a timer, it cannot be activated anymore.",
+    "url": "/documentation/timer#activate,_deactivate_and_cancel_a_timer"
   },
   {
     "title": "Timer: Call a function after a delay",
@@ -498,6 +498,11 @@
     "title": "Aggrid: AG Grid with complex objects",
     "content": "You can use nested complex objects in AG Grid by separating the field names with a period. (This is the reason why keys in rowData are not allowed to contain periods.)",
     "url": "/documentation/aggrid#ag_grid_with_complex_objects"
+  },
+  {
+    "title": "Aggrid: AG Grid with dynamic row height",
+    "content": "You can set the height of individual rows by passing a function to the getRowHeight argument.",
+    "url": "/documentation/aggrid#ag_grid_with_dynamic_row_height"
   },
   {
     "title": "Carousel",
@@ -593,6 +598,11 @@
     "title": "Input: Styling",
     "content": "Quasar has a lot of props to change the appearance. It is even possible to style the underlying input with input-style and input-class props and use the provided slots to add custom elements.",
     "url": "/documentation/input#styling"
+  },
+  {
+    "title": "JSONEditor",
+    "content": "An element to create a JSON editor using JSONEditor <https://github.com/josdejong/svelte-jsoneditor>_. Updates can be pushed to the editor by changing the properties property. After data has changed, call the update method to refresh the editor.  :param properties: dictionary of JSONEditor properties :param on_select: callback function that is called when some of the content has been selected :param on_change: callback function that is called when the content has changed update",
+    "url": "/documentation/json_editor"
   },
   {
     "title": "Chart",
@@ -806,7 +816,7 @@
   },
   {
     "title": "Color Input",
-    "content": ":param label: displayed label for the color input :param placeholder: text to show if no color is selected :param value: the current color value :param on_change: callback to execute when the value changes open_picker Open the color picker",
+    "content": ":param label: displayed label for the color input :param placeholder: text to show if no color is selected :param value: the current color value :param on_change: callback to execute when the value changes :param preview: change button background to selected color (default: False) open_picker Open the color pickeron_value_change",
     "url": "/documentation/color_input"
   },
   {
