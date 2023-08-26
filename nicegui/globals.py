@@ -52,8 +52,7 @@ air: Optional[Air] = None
 storage_path: Path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
 socket_io_js_query_params: Dict = {}
 socket_io_js_extra_headers: Dict = {}
-# NOTE we favor websocket over polling
-socket_io_js_transports: List[Literal['websocket', 'polling']] = ['websocket', 'polling']
+socket_io_js_transports: List[Literal['websocket', 'polling']] = ['websocket', 'polling']  # NOTE: we favor websocket
 _socket_id: Optional[str] = None
 slot_stacks: Dict[int, List[Slot]] = {}
 clients: Dict[str, Client] = {}
@@ -106,9 +105,9 @@ def get_client() -> Client:
 
 
 @contextmanager
-def socket_id(id: str) -> Iterator[None]:
-    global _socket_id
-    _socket_id = id
+def socket_id(id_: str) -> Iterator[None]:
+    global _socket_id  # pylint: disable=global-statement
+    _socket_id = id_
     yield
     _socket_id = None
 

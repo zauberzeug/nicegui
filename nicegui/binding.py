@@ -5,7 +5,7 @@ from collections import defaultdict
 from collections.abc import Mapping
 from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Tuple, Type, Union
 
-from . import globals
+from . import globals  # pylint: disable=redefined-builtin
 
 MAX_PROPAGATION_TIME = 0.01
 
@@ -17,15 +17,13 @@ active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
 def has_attribute(obj: Union[object, Mapping], name: str) -> Any:
     if isinstance(obj, Mapping):
         return name in obj
-    else:
-        return hasattr(obj, name)
+    return hasattr(obj, name)
 
 
 def get_attribute(obj: Union[object, Mapping], name: str) -> Any:
     if isinstance(obj, Mapping):
         return obj[name]
-    else:
-        return getattr(obj, name)
+    return getattr(obj, name)
 
 
 def set_attribute(obj: Union[object, Mapping], name: str, value: Any) -> None:
@@ -46,7 +44,7 @@ async def loop() -> None:
                 if not has_attribute(target_obj, target_name) or get_attribute(target_obj, target_name) != value:
                     set_attribute(target_obj, target_name, value)
                     propagate(target_obj, target_name, visited)
-            del link, source_obj, target_obj
+            del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
         if time.time() - t > MAX_PROPAGATION_TIME:
             logging.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
         await asyncio.sleep(globals.binding_refresh_interval)
@@ -92,15 +90,15 @@ class BindableProperty:
         self.on_change = on_change
 
     def __set_name__(self, _, name: str) -> None:
-        self.name = name
+        self.name = name  # pylint: disable=attribute-defined-outside-init
 
     def __get__(self, owner: Any, _=None) -> Any:
         return getattr(owner, '___' + self.name)
 
     def __set__(self, owner: Any, value: Any) -> None:
-        has_attribute = hasattr(owner, '___' + self.name)
-        value_changed = has_attribute and getattr(owner, '___' + self.name) != value
-        if has_attribute and not value_changed:
+        has_attr = hasattr(owner, '___' + self.name)
+        value_changed = has_attr and getattr(owner, '___' + self.name) != value
+        if has_attr and not value_changed:
             return
         setattr(owner, '___' + self.name, value)
         bindable_properties[(id(owner), self.name)] = owner
@@ -109,22 +107,22 @@ class BindableProperty:
             self.on_change(owner, value)
 
 
-def remove(objects: List[Any], type: Type) -> None:
+def remove(objects: List[Any], type_: Type) -> None:
     active_links[:] = [
         (source_obj, source_name, target_obj, target_name, transform)
         for source_obj, source_name, target_obj, target_name, transform in active_links
-        if not (isinstance(source_obj, type) and source_obj in objects or
-                isinstance(target_obj, type) and target_obj in objects)
+        if not (isinstance(source_obj, type_) and source_obj in objects or
+                isinstance(target_obj, type_) and target_obj in objects)
     ]
     for key, binding_list in list(bindings.items()):
         binding_list[:] = [
             (source_obj, target_obj, target_name, transform)
             for source_obj, target_obj, target_name, transform in binding_list
-            if not (isinstance(source_obj, type) and source_obj in objects or
-                    isinstance(target_obj, type) and target_obj in objects)
+            if not (isinstance(source_obj, type_) and source_obj in objects or
+                    isinstance(target_obj, type_) and target_obj in objects)
         ]
         if not binding_list:
             del bindings[key]
     for (obj_id, name), obj in list(bindable_properties.items()):
-        if isinstance(obj, type) and obj in objects:
+        if isinstance(obj, type_) and obj in objects:
             del bindable_properties[(obj_id, name)]

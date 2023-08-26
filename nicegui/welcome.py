@@ -2,7 +2,7 @@ import os
 import socket
 from typing import List
 
-from . import globals
+from . import globals  # pylint: disable=redefined-builtin
 
 try:
     import netifaces

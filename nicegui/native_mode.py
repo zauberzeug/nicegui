@@ -12,7 +12,7 @@ import warnings
 from threading import Event, Thread
 from typing import Any, Callable, Dict, List, Tuple
 
-from . import globals, helpers, native
+from . import globals, helpers, native  # pylint: disable=redefined-builtin
 
 try:
     with warnings.catch_warnings():

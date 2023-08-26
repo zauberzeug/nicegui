@@ -10,7 +10,7 @@ from fastapi.templating import Jinja2Templates
 
 from nicegui import json
 
-from . import __version__, globals, outbox
+from . import __version__, globals, outbox  # pylint: disable=redefined-builtin
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
@@ -54,7 +54,7 @@ class Client:
     @property
     def ip(self) -> Optional[str]:
         """Return the IP address of the client, or None if the client is not connected."""
-        return self.environ['asgi.scope']['client'][0] if self.has_socket_connection else None
+        return self.environ['asgi.scope']['client'][0] if self.has_socket_connection else None  # pylint: disable=unsubscriptable-object
 
     @property
     def has_socket_connection(self) -> bool:
@@ -70,7 +70,9 @@ class Client:
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
-        elements = json.dumps({id: element._to_dict() for id, element in self.elements.items()})
+        elements = json.dumps({
+            id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
+        })
         socket_io_js_query_params = {**globals.socket_io_js_query_params, 'client_id': self.id}
         vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse('index.html', {

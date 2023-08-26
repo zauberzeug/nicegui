@@ -21,7 +21,7 @@ try:
 
     class WindowProxy(webview.Window):
 
-        def __init__(self) -> None:
+        def __init__(self) -> None:  # pylint: disable=super-init-not-called
             pass  # NOTE we don't call super().__init__ here because this is just a proxy to the actual window
 
         async def get_always_on_top(self) -> bool:
@@ -52,10 +52,10 @@ try:
         def set_title(self, title: str) -> None:
             self._send(title)
 
-        async def get_cookies(self) -> Any:
+        async def get_cookies(self) -> Any:  # pylint: disable=invalid-overridden-method
             return await self._request()
 
-        async def get_current_url(self) -> str:
+        async def get_current_url(self) -> str:  # pylint: disable=invalid-overridden-method
             return await self._request()
 
         def destroy(self) -> None:
@@ -88,10 +88,10 @@ try:
         async def evaluate_js(self, script: str) -> str:
             return await self._request(script)
 
-        async def create_confirmation_dialog(self, title: str, message: str) -> bool:
+        async def create_confirmation_dialog(self, title: str, message: str) -> bool:  # pylint: disable=invalid-overridden-method
             return await self._request(title, message)
 
-        async def create_file_dialog(
+        async def create_file_dialog(  # pylint: disable=invalid-overridden-method
             self,
             dialog_type: int = webview.OPEN_DIALOG,
             directory: str = '',
@@ -128,7 +128,7 @@ try:
             self._send()
 
 except ModuleNotFoundError:
-    class WindowProxy():
+    class WindowProxy:
         pass  # just a dummy if webview is not installed
 
 

@@ -67,8 +67,8 @@ class ObservableList(list):
         super().extend(make_observable(list(iterable), self.on_change))
         self.on_change()
 
-    def insert(self, index: SupportsIndex, object: Any) -> None:
-        super().insert(index, make_observable(object, self.on_change))
+    def insert(self, index: SupportsIndex, obj: Any) -> None:
+        super().insert(index, make_observable(obj, self.on_change))
         self.on_change()
 
     def remove(self, value: Any) -> None:

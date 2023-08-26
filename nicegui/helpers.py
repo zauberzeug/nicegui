@@ -17,7 +17,7 @@ from fastapi.responses import StreamingResponse
 from starlette.middleware import Middleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import background_tasks, globals
+from . import background_tasks, globals  # pylint: disable=redefined-builtin
 from .storage import RequestTrackingMiddleware
 
 if TYPE_CHECKING:
@@ -33,22 +33,22 @@ def is_pytest() -> bool:
     return 'pytest' in sys.modules
 
 
-def is_coroutine_function(object: Any) -> bool:
+def is_coroutine_function(obj: Any) -> bool:
     """Check if the object is a coroutine function.
 
     This function is needed because functools.partial is not a coroutine function, but its func attribute is.
     Note: It will return false for coroutine objects.
     """
-    while isinstance(object, functools.partial):
-        object = object.func
-    return asyncio.iscoroutinefunction(object)
+    while isinstance(obj, functools.partial):
+        obj = obj.func
+    return asyncio.iscoroutinefunction(obj)
 
 
 def is_file(path: Optional[Union[str, Path]]) -> bool:
     """Check if the path is a file that exists."""
     if not path:
         return False
-    elif isinstance(path, str) and path.strip().startswith('data:'):
+    if isinstance(path, str) and path.strip().startswith('data:'):
         return False  # NOTE: avoid passing data URLs to Path
     try:
         return Path(path).is_file()

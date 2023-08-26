@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from fastapi import Request, Response
 
-from . import background_tasks, globals
+from . import background_tasks, globals  # pylint: disable=redefined-builtin
 from .client import Client
 from .favicon import create_favicon_route
 from .language import Language

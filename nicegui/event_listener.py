@@ -24,13 +24,13 @@ class EventListener:
 
     def to_dict(self) -> Dict[str, Any]:
         words = self.type.split('.')
-        type = words.pop(0)
+        type_ = words.pop(0)
         specials = [w for w in words if w in {'capture', 'once', 'passive'}]
         modifiers = [w for w in words if w in {'stop', 'prevent', 'self', 'ctrl', 'shift', 'alt', 'meta'}]
         keys = [w for w in words if w not in specials + modifiers]
         return {
             'listener_id': self.id,
-            'type': type,
+            'type': type_,
             'specials': specials,
             'modifiers': modifiers,
             'keys': keys,

@@ -10,7 +10,7 @@ from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 
-from . import background_tasks, globals, observables
+from . import background_tasks, globals, observables  # pylint: disable=redefined-builtin
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
@@ -113,10 +113,10 @@ class Storage:
                                    '(https://nicegui.io/documentation/page)')
             else:
                 raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
-        id = request.session['id']
-        if id not in self._users:
-            self._users[id] = PersistentDict(globals.storage_path / f'storage_user_{id}.json')
-        return self._users[id]
+        session_id = request.session['id']
+        if session_id not in self._users:
+            self._users[session_id] = PersistentDict(globals.storage_path / f'storage_user_{session_id}.json')
+        return self._users[session_id]
 
     @property
     def general(self) -> Dict:

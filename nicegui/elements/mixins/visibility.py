@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any, Callable, cast
 
 from typing_extensions import Self
@@ -52,7 +54,8 @@ class Visibility:
         :param value: If specified, the element will be visible only when the target value is equal to this value.
         """
         if value is not None:
-            def backward(x): return x == value
+            def backward(x):  # pylint: disable=function-redefined
+                return x == value
         bind_from(self, 'visible', target_object, target_name, backward)
         return self
 
@@ -74,7 +77,8 @@ class Visibility:
         :param value: If specified, the element will be visible only when the target value is equal to this value.
         """
         if value is not None:
-            def backward(x): return x == value
+            def backward(x):  # pylint: disable=function-redefined
+                return x == value
         bind(self, 'visible', target_object, target_name, forward=forward, backward=backward)
         return self
 
@@ -90,10 +94,11 @@ class Visibility:
 
         :param visible: Whether the element should be visible.
         """
-        self = cast('Element', self)
-        if visible and 'hidden' in self._classes:
-            self._classes.remove('hidden')
-            self.update()
-        if not visible and 'hidden' not in self._classes:
-            self._classes.append('hidden')
-            self.update()
+        element: Element = cast(Element, self)
+        classes = element._classes  # pylint: disable=protected-access, no-member
+        if visible and 'hidden' in classes:
+            classes.remove('hidden')
+            element.update()  # pylint: disable=no-member
+        if not visible and 'hidden' not in classes:
+            classes.append('hidden')
+            element.update()  # pylint: disable=no-member

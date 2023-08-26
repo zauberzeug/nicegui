@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Iterator, List, Optional
 
 from typing_extensions import Self
 
-from . import globals
+from . import globals  # pylint: disable=redefined-builtin
 
 if TYPE_CHECKING:
     from .element import Element
@@ -10,11 +12,11 @@ if TYPE_CHECKING:
 
 class Slot:
 
-    def __init__(self, parent: 'Element', name: str, template: Optional[str] = None) -> None:
+    def __init__(self, parent: Element, name: str, template: Optional[str] = None) -> None:
         self.name = name
         self.parent = parent
         self.template = template
-        self.children: List['Element'] = []
+        self.children: List[Element] = []
 
     def __enter__(self) -> Self:
         globals.get_slot_stack().append(self)
@@ -24,5 +26,5 @@ class Slot:
         globals.get_slot_stack().pop()
         globals.prune_slot_stack()
 
-    def __iter__(self) -> Iterator['Element']:
+    def __iter__(self) -> Iterator[Element]:
         return iter(self.children)

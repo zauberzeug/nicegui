@@ -4,7 +4,7 @@ import asyncio
 from collections import defaultdict, deque
 from typing import TYPE_CHECKING, Any, DefaultDict, Deque, Dict, Tuple
 
-from . import globals
+from . import globals  # pylint: disable=redefined-builtin
 
 if TYPE_CHECKING:
     from .element import Element
@@ -47,7 +47,7 @@ async def loop() -> None:
         try:
             for client_id, elements in update_queue.items():
                 data = {
-                    element_id: None if element is None else element._to_dict()
+                    element_id: None if element is None else element._to_dict()  # pylint: disable=protected-access
                     for element_id, element in elements.items()
                 }
                 coros.append(_emit('update', data, client_id))
@@ -70,5 +70,5 @@ async def loop() -> None:
 def is_target_on_air(target_id: str) -> bool:
     if target_id in globals.clients:
         return globals.clients[target_id].on_air
-    else:
-        return target_id in globals.sio.manager.rooms
+
+    return target_id in globals.sio.manager.rooms

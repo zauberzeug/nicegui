@@ -57,7 +57,7 @@ def get_soup(url: str) -> BeautifulSoup:
     if path.exists():
         html = path.read_text()
     else:
-        req = requests.get(url)
+        req = requests.get(url, timeout=5)
         html = req.text
         path.write_text(html)
     return BeautifulSoup(html, 'html.parser')
@@ -80,14 +80,14 @@ for li in soup.select('li[class="mt-12 lg:mt-8"]'):
 
 for file in (Path(__file__).parent / 'nicegui' / 'tailwind_types').glob('*.py'):
     file.unlink()
-for property in properties:
-    if not property.members:
+for property_ in properties:
+    if not property_.members:
         continue
-    with (Path(__file__).parent / 'nicegui' / 'tailwind_types' / f'{property.snake_title}.py').open('w') as f:
+    with (Path(__file__).parent / 'nicegui' / 'tailwind_types' / f'{property_.snake_title}.py').open('w') as f:
         f.write('from typing import Literal\n')
         f.write('\n')
-        f.write(f'{property.pascal_title} = Literal[\n')
-        for short_member in property.short_members:
+        f.write(f'{property_.pascal_title} = Literal[\n')
+        for short_member in property_.short_members:
             f.write(f"    '{short_member}',\n")
         f.write(']\n')
 
@@ -98,10 +98,10 @@ with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w') as f:
     f.write('\n')
     f.write('if TYPE_CHECKING:\n')
     f.write('    from .element import Element\n')
-    for property in sorted(properties, key=lambda p: p.title):
-        if not property.members:
+    for property_ in sorted(properties, key=lambda p: p.title):
+        if not property_.members:
             continue
-        f.write(f'    from .tailwind_types.{property.snake_title} import {property.pascal_title}\n')
+        f.write(f'    from .tailwind_types.{property_.snake_title} import {property_.pascal_title}\n')
     f.write('\n')
     f.write('\n')
     f.write('class PseudoElement:\n')
@@ -115,7 +115,7 @@ with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w') as f:
     f.write('\n')
     f.write('class Tailwind:\n')
     f.write('\n')
-    f.write("    def __init__(self, _element: Optional['Element'] = None) -> None:\n")
+    f.write("    def __init__(self, _element: Optional[Element] = None) -> None:\n")
     f.write('        self.element: Union[PseudoElement, Element] = PseudoElement() if _element is None else _element\n')
     f.write('\n')
     f.write('    @overload\n')
@@ -135,18 +135,18 @@ with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w') as f:
     f.write("            self.element.classes(' '.join(args))\n")
     f.write('        return self\n')
     f.write('\n')
-    f.write("    def apply(self, element: 'Element') -> None:\n")
+    f.write("    def apply(self, element: Element) -> None:\n")
     f.write('        element._classes.extend(self.element._classes)\n')
     f.write('        element.update()\n')
-    for property in properties:
+    for property_ in properties:
         f.write('\n')
-        if property.members:
-            f.write(f"    def {property.snake_title}(self, value: {property.pascal_title}) -> 'Tailwind':\n")
-            f.write(f'        """{property.description}"""\n')
-            f.write(f"        self.element.classes('{property.common_prefix}' + value)\n")
-            f.write(f'        return self\n')
+        if property_.members:
+            f.write(f"    def {property_.snake_title}(self, value: {property_.pascal_title}) -> Tailwind:\n")
+            f.write(f'        """{property_.description}"""\n')
+            f.write(f"        self.element.classes('{property_.common_prefix}' + value)\n")
+            f.write(r'        return self\n')
         else:
-            f.write(f"    def {property.snake_title}(self) -> 'Tailwind':\n")
-            f.write(f'        """{property.description}"""\n')
-            f.write(f"        self.element.classes('{property.common_prefix}')\n")
-            f.write(f'        return self\n')
+            f.write(f"    def {property_.snake_title}(self) -> Tailwind:\n")
+            f.write(f'        """{property_.description}"""\n')
+            f.write(f"        self.element.classes('{property_.common_prefix}')\n")
+            f.write(r'        return self\n')

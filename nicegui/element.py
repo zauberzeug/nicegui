@@ -10,7 +10,7 @@ from typing_extensions import Self
 
 from nicegui import json
 
-from . import binding, events, globals, outbox, storage
+from . import binding, events, globals, outbox, storage  # pylint: disable=redefined-builtin
 from .dependencies import JsComponent, Library, register_library, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
@@ -246,11 +246,11 @@ class Element(Visibility):
         """
         with self:
             tooltip = Element('q-tooltip')
-            tooltip._text = text
+            tooltip._text = text  # pylint: disable=protected-access
         return self
 
     def on(self,
-           type: str,
+           type: str,  # pylint: disable=redefined-builtin
            handler: Optional[Callable[..., Any]] = None,
            args: Optional[List[str]] = None, *,
            throttle: float = 0.0,
@@ -300,12 +300,13 @@ class Element(Visibility):
         if not globals.loop:
             return
         data = {'id': self.id, 'name': name, 'args': args}
-        outbox.enqueue_message('run_method', data, globals._socket_id or self.client.id)
+        target_id = globals._socket_id or self.client.id  # pylint: disable=protected-access
+        outbox.enqueue_message('run_method', data, target_id)
 
     def _collect_descendant_ids(self) -> List[int]:
         ids: List[int] = [self.id]
         for child in self:
-            ids.extend(child._collect_descendant_ids())
+            ids.extend(child._collect_descendant_ids())  # pylint: disable=protected-access
         return ids
 
     def clear(self) -> None:
