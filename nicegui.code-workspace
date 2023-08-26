@@ -16,6 +16,7 @@
       "littlefoxteam.vscode-python-test-adapter",
       "ms-python.autopep8",
       "ms-python.isort",
+      "ms-python.mypy-type-checker",
       "ms-python.pylint",
       "ms-python.python",
       "ms-python.vscode-pylance",
