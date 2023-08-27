@@ -1,4 +1,4 @@
-from nicegui import background_tasks, events, ui
+from nicegui import __version__, background_tasks, events, ui
 
 
 class Search:
@@ -7,7 +7,9 @@ class Search:
         ui.add_head_html(r'''
             <script>
             async function loadSearchData() {
-                const response = await fetch("/static/search_index.json");
+                const response = await fetch("'''
+                         f'/static/search_index.json?version={__version__}");'
+                         r'''
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
