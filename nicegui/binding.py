@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import time
 from collections import defaultdict
 from collections.abc import Mapping
@@ -46,7 +45,8 @@ async def loop() -> None:
                     propagate(target_obj, target_name, visited)
             del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
         if time.time() - t > MAX_PROPAGATION_TIME:
-            logging.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
+            globals.log.warning(
+                f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
         await asyncio.sleep(globals.binding_refresh_interval)
 
 

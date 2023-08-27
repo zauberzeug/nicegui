@@ -1,12 +1,12 @@
 import asyncio
 import inspect
-import logging
 import warnings
 from dataclasses import dataclass, field
 from functools import partial
 from multiprocessing import Queue
 from typing import Any, Callable, Dict, Optional, Tuple
 
+from .globals import log
 from .helpers import KWONLY_SLOTS
 
 method_queue: Queue = Queue()
@@ -120,7 +120,7 @@ try:
                     method_queue.put((name, args, kwargs))
                     return response_queue.get()  # wait for the method to be called and writing its result to the queue
                 except Exception:
-                    logging.exception(f'error in {name}')
+                    log.exception(f'error in {name}')
             name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
             return await asyncio.get_event_loop().run_in_executor(None, partial(wrapper, *args, **kwargs))
 

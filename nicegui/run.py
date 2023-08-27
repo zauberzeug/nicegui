@@ -1,4 +1,3 @@
-import logging
 import multiprocessing
 import os
 import socket
@@ -123,7 +122,7 @@ def run(*,
         return
 
     if reload and not hasattr(__main__, '__file__'):
-        logging.warning('auto-reloading is only supported when running from a file')
+        globals.log.warning('auto-reloading is only supported when running from a file')
         globals.reload = reload = False
 
     if fullscreen:
@@ -170,7 +169,7 @@ def run(*,
     globals.server = Server(config=config)
 
     if (reload or config.workers > 1) and not isinstance(config.app, str):
-        logging.warning('You must pass the application as an import string to enable "reload" or "workers".')
+        globals.log.warning('You must pass the application as an import string to enable "reload" or "workers".')
         sys.exit(1)
 
     if config.should_reload:
