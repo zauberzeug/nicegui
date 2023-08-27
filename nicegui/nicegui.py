@@ -93,7 +93,7 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     background_tasks.create(prune_slot_stacks())
     globals.state = globals.State.STARTED
     if with_welcome_message:
-        welcome.print_message()
+        background_tasks.create(welcome.print_message())
     if globals.air:
         background_tasks.create(globals.air.connect())
 
