@@ -107,7 +107,7 @@ class page:
         if 'request' not in {p.name for p in parameters}:
             request = inspect.Parameter('request', inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request)
             parameters.insert(0, request)
-        decorated.__signature__ = inspect.Signature(parameters)
+        decorated.__signature__ = inspect.Signature(parameters)  # type: ignore
 
         if 'include_in_schema' not in self.kwargs:
             self.kwargs['include_in_schema'] = globals.endpoint_documentation in {'page', 'all'}

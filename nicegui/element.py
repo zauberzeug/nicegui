@@ -4,14 +4,14 @@ import inspect
 import re
 from copy import copy, deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union
 
 from typing_extensions import Self
 
 from nicegui import json
 
 from . import binding, events, globals, outbox, storage  # pylint: disable=redefined-builtin
-from .dependencies import JsComponent, Library, register_library, register_vue_component
+from .dependencies import Component, Library, register_library, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
@@ -24,7 +24,7 @@ PROPS_PATTERN = re.compile(r'([:\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.
 
 
 class Element(Visibility):
-    component: Optional[JsComponent] = None
+    component: Optional[Component] = None
     libraries: List[Library] = []
     extra_libraries: List[Library] = []
     exposed_libraries: List[Library] = []
@@ -252,7 +252,7 @@ class Element(Visibility):
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
            handler: Optional[Callable[..., Any]] = None,
-           args: Optional[List[str]] = None, *,
+           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None, *,
            throttle: float = 0.0,
            leading_events: bool = True,
            trailing_events: bool = True,
@@ -270,7 +270,7 @@ class Element(Visibility):
             listener = EventListener(
                 element_id=self.id,
                 type=type,
-                args=[args] if args and isinstance(args[0], str) else args,
+                args=[args] if args and isinstance(args[0], str) else args,  # type: ignore
                 handler=handler,
                 throttle=throttle,
                 leading_events=leading_events,
