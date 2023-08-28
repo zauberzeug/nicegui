@@ -22,6 +22,7 @@ from .element import Element
 from .error import error_content
 from .helpers import is_file, safe_invoke
 from .page import page
+from .middlewares import RedirectWithPrefixMiddleware
 
 globals.app = app = App(default_response_class=NiceGUIJSONResponse)
 # NOTE we use custom json module which wraps orjson
@@ -29,6 +30,7 @@ socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=jso
 globals.sio = sio = socket_manager._sio  # pylint: disable=protected-access
 
 app.add_middleware(GZipMiddleware)
+app.add_middleware(RedirectWithPrefixMiddleware)
 static_files = StaticFiles(
     directory=(Path(__file__).parent / 'static').resolve(),
     follow_symlink=True,
