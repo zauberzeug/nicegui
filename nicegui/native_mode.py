@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import _thread
-import logging
 import multiprocessing as mp
 import queue
 import socket
@@ -57,7 +56,7 @@ def start_window_method_executor(
             if response is not None or 'dialog' in method.__name__:
                 response_queue.put(response)
         except Exception:
-            logging.exception(f'error in window.{method.__name__}')
+            globals.log.exception(f'error in window.{method.__name__}')
 
     def window_method_executor() -> None:
         pending_executions: List[Thread] = []
@@ -66,7 +65,7 @@ def start_window_method_executor(
                 method_name, args, kwargs = method_queue.get(block=False)
                 if method_name == 'signal_server_shutdown':
                     if pending_executions:
-                        logging.warning('shutdown is possibly blocked by opened dialogs like a file picker')
+                        globals.log.warning('shutdown is possibly blocked by opened dialogs like a file picker')
                         while pending_executions:
                             pending_executions.pop().join()
                 elif method_name == 'get_always_on_top':
@@ -83,11 +82,11 @@ def start_window_method_executor(
                         pending_executions.append(Thread(target=execute, args=(method, args, kwargs)))
                         pending_executions[-1].start()
                     else:
-                        logging.error(f'window.{method_name} is not callable')
+                        globals.log.error(f'window.{method_name} is not callable')
             except queue.Empty:
                 time.sleep(0.01)
             except Exception:
-                logging.exception(f'error in window.{method_name}')
+                globals.log.exception(f'error in window.{method_name}')
 
     Thread(target=window_method_executor).start()
 
@@ -102,8 +101,8 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         _thread.interrupt_main()
 
     if 'native' not in globals.optional_features:
-        logging.error('Native mode is not supported in this configuration.\n'
-                      'Please run "pip install pywebview" to use it.')
+        globals.log.error('Native mode is not supported in this configuration.\n'
+                          'Please run "pip install pywebview" to use it.')
         sys.exit(1)
 
     mp.freeze_support()
