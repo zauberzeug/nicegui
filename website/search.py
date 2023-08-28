@@ -7,7 +7,7 @@ class Search:
         ui.add_head_html(r'''
             <script>
             async function loadSearchData() {
-                const response = await fetch("/static/search_index.json?version=''' + __version__ + r'''");'
+                const response = await fetch("/static/search_index.json?version=''' + __version__ + r'''");
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
