@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING, Dict, Iterable, List, Set, Tuple
 
 import vbuild
 
-from .helpers import KWONLY_SLOTS, hash_file_path
+from .dataclasses import KWONLY_SLOTS
+from .helpers import hash_file_path
 from .version import __version__
 
 if TYPE_CHECKING:

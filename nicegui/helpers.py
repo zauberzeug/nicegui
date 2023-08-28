@@ -27,8 +27,6 @@ if TYPE_CHECKING:
 
 mimetypes.init()
 
-KWONLY_SLOTS = {'kw_only': True, 'slots': True} if sys.version_info >= (3, 10) else {}
-
 
 def is_pytest() -> bool:
     """Check if the code is running in pytest."""

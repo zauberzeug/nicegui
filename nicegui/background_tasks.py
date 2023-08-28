@@ -3,7 +3,7 @@ import asyncio
 import sys
 from typing import Awaitable, Dict, Set, TypeVar
 
-from . import globals  # pylint: disable=redefined-builtin
+from . import globals  # pylint: disable=redefined-builtin,cyclic-import
 
 T = TypeVar('T')
 

@@ -6,7 +6,7 @@ from inspect import Parameter, signature
 from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Literal, Optional, Union
 
 from . import background_tasks, globals  # pylint: disable=redefined-builtin
-from .helpers import KWONLY_SLOTS
+from .dataclasses import KWONLY_SLOTS
 from .slot import Slot
 
 if TYPE_CHECKING:

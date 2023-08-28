@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from fastapi import Request
 
-from .helpers import KWONLY_SLOTS
+from .dataclasses import KWONLY_SLOTS
 
 
 @dataclass(**KWONLY_SLOTS)

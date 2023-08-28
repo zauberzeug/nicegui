@@ -1,7 +1,6 @@
 from typing import Optional
 
-from nicegui import ui
-
+from .label import Label as label
 from .mixins.color_elements import TextColorElement
 from .mixins.value_element import ValueElement
 
@@ -30,7 +29,7 @@ class LinearProgress(ValueElement, TextColorElement):
 
         if show_value:
             with self:
-                ui.label().classes('absolute-center text-sm text-white').bind_text_from(self, 'value')
+                label().classes('absolute-center text-sm text-white').bind_text_from(self, 'value')
 
 
 class CircularProgress(ValueElement, TextColorElement):
@@ -65,4 +64,4 @@ class CircularProgress(ValueElement, TextColorElement):
 
         if show_value:
             with self:
-                ui.label().classes('absolute-center text-xs').bind_text_from(self, 'value')
+                label().classes('absolute-center text-xs').bind_text_from(self, 'value')

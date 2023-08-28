@@ -6,8 +6,8 @@ from functools import partial
 from multiprocessing import Queue
 from typing import Any, Callable, Dict, Optional, Tuple
 
+from .dataclasses import KWONLY_SLOTS
 from .globals import log
-from .helpers import KWONLY_SLOTS
 
 method_queue: Queue = Queue()
 response_queue: Queue = Queue()

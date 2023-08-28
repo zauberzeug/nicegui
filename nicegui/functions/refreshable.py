@@ -5,7 +5,8 @@ from typing_extensions import Self
 
 from .. import background_tasks, globals
 from ..element import Element
-from ..helpers import KWONLY_SLOTS, is_coroutine_function
+from ..helpers import is_coroutine_function
+from .dataclasses import KWONLY_SLOTS
 
 
 @dataclass(**KWONLY_SLOTS)

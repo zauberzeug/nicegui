@@ -4,10 +4,10 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from typing_extensions import Self
 
 from .. import binding, globals  # pylint: disable=redefined-builtin
+from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..events import (GenericEventArguments, SceneClickEventArguments, SceneClickHit, SceneDragEventArguments,
                       handle_event)
-from ..helpers import KWONLY_SLOTS
 from .scene_object3d import Object3D
 
 
