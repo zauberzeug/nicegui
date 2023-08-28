@@ -10,17 +10,16 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
-from nicegui import json
-from nicegui.json import NiceGUIJSONResponse
-
-from . import (__version__, background_tasks, binding, favicon, globals, outbox,  # pylint: disable=redefined-builtin
-               welcome)
+from . import (__version__, background_tasks, binding, favicon, globals, json,  # pylint: disable=redefined-builtin
+               outbox, welcome)
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries
 from .element import Element
 from .error import error_content
 from .helpers import is_file, safe_invoke
+from .json import NiceGUIJSONResponse
+from .middlewares import RedirectWithPrefixMiddleware
 from .page import page
 
 globals.app = app = App(default_response_class=NiceGUIJSONResponse)
@@ -29,6 +28,7 @@ socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=jso
 globals.sio = sio = socket_manager._sio  # pylint: disable=protected-access
 
 app.add_middleware(GZipMiddleware)
+app.add_middleware(RedirectWithPrefixMiddleware)
 static_files = StaticFiles(
     directory=(Path(__file__).parent / 'static').resolve(),
     follow_symlink=True,

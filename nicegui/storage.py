@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, Optional, Union
 
 import aiofiles
-from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.requests import Request
 from starlette.responses import Response
 
 from . import background_tasks, globals, observables  # pylint: disable=redefined-builtin
