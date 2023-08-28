@@ -3,20 +3,18 @@ from __future__ import annotations
 
 import asyncio
 import sys
-from typing import Awaitable, Dict, Set, TypeVar
+from typing import Awaitable, Dict, Set
 
 from . import globals  # pylint: disable=redefined-builtin,cyclic-import
-
-T = TypeVar('T')
 
 name_supported = sys.version_info[1] >= 8
 
 running_tasks: Set[asyncio.Task] = set()
 lazy_tasks_running: Dict[str, asyncio.Task] = {}
-lazy_tasks_waiting: Dict[str, Awaitable[T]] = {}
+lazy_tasks_waiting: Dict[str, Awaitable] = {}
 
 
-def create(coroutine: Awaitable[T], *, name: str = 'unnamed task') -> asyncio.Task[T]:
+def create(coroutine: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
     """Wraps a loop.create_task call and ensures there is an exception handler added to the task.
 
     If the task raises an exception, it is logged and handled by the global exception handlers.
@@ -24,6 +22,7 @@ def create(coroutine: Awaitable[T], *, name: str = 'unnamed task') -> asyncio.Ta
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
     """
     assert globals.loop is not None
+    assert asyncio.iscoroutine(coroutine)
     task: asyncio.Task = \
         globals.loop.create_task(coroutine, name=name) if name_supported else globals.loop.create_task(coroutine)
     task.add_done_callback(_handle_task_result)
@@ -32,7 +31,7 @@ def create(coroutine: Awaitable[T], *, name: str = 'unnamed task') -> asyncio.Ta
     return task
 
 
-def create_lazy(coroutine: Awaitable[T], *, name: str) -> None:
+def create_lazy(coroutine: Awaitable, *, name: str) -> None:
     """Wraps a create call and ensures a second task with the same name is delayed until the first one is done.
 
     If a third task with the same name is created while the first one is still running, the second one is discarded.
