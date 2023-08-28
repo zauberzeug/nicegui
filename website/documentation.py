@@ -670,11 +670,11 @@ def create_full() -> None:
         with demo.python_window(classes='max-w-lg w-full'):
             ui.markdown('''
                 ```python
-                from nicegui import ui
+                from nicegui import native_mode, ui
 
                 ui.label('Hello from PyInstaller')
 
-                ui.run(reload=False)
+                ui.run(reload=False, native_mode.find_open_port())
                 ```
             ''')
         with demo.python_window('build.py', classes='max-w-lg w-full'):
