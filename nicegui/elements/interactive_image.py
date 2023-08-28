@@ -52,5 +52,5 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
                 meta=e.args.get('meta', False),
                 shift=e.args.get('shift', False),
             )
-            return handle_event(on_mouse, arguments)
+            handle_event(on_mouse, arguments)
         self.on('mouse', handle_mouse)

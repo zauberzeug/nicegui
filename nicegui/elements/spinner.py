@@ -32,7 +32,7 @@ SpinnerTypes = Literal[
 class Spinner(TextColorElement):
 
     def __init__(self,
-                 type: Optional[SpinnerTypes] = 'default', *,
+                 type: Optional[SpinnerTypes] = 'default', *,  # pylint: disable=redefined-builtin
                  size: str = '1em',
                  color: Optional[str] = 'primary',
                  thickness: float = 5.0,

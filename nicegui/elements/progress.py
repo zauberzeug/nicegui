@@ -38,8 +38,8 @@ class CircularProgress(ValueElement, TextColorElement):
 
     def __init__(self,
                  value: float = 0.0, *,
-                 min: float = 0.0,
-                 max: float = 1.0,
+                 min: float = 0.0,  # pylint: disable=redefined-builtin
+                 max: float = 1.0,  # pylint: disable=redefined-builtin
                  size: str = 'xl',
                  show_value: bool = True,
                  color: Optional[str] = 'primary',

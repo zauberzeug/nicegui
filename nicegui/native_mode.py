@@ -30,16 +30,15 @@ def open_window(
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
 
-    window_kwargs = dict(
-        url=f'http://{host}:{port}',
-        title=title,
-        width=width,
-        height=height,
-        fullscreen=fullscreen,
-        frameless=frameless,
-    )
-    window_kwargs.update(globals.app.native.window_args)
-
+    window_kwargs = {
+        'url': f'http://{host}:{port}',
+        'title': title,
+        'width': width,
+        'height': height,
+        'fullscreen': fullscreen,
+        'frameless': frameless,
+        **globals.app.native.window_args,
+    }
     window = webview.create_window(**window_kwargs)
     closed = Event()
     window.events.closed += closed.set

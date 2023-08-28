@@ -12,10 +12,11 @@ from fastapi.templating import Jinja2Templates
 
 from nicegui import json
 
-from . import __version__, globals, outbox  # pylint: disable=redefined-builtin
+from . import globals, outbox  # pylint: disable=redefined-builtin
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
+from .version import __version__
 
 if TYPE_CHECKING:
     from .page import page
@@ -56,7 +57,7 @@ class Client:
     @property
     def ip(self) -> Optional[str]:
         """Return the IP address of the client, or None if the client is not connected."""
-        return self.environ['asgi.scope']['client'][0] if self.environ else None
+        return self.environ.get('asgi.scope')['client'][0] if self.environ else None
 
     @property
     def has_socket_connection(self) -> bool:

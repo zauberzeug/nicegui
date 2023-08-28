@@ -7,7 +7,7 @@ import httpx
 import socketio
 from socketio import AsyncClient
 
-from . import globals
+from . import globals  # pylint: disable=redefined-builtin
 from .nicegui import handle_disconnect, handle_event, handle_handshake, handle_javascript_response
 
 RELAY_HOST = 'https://on-air.nicegui.io/'
@@ -104,7 +104,7 @@ class Air:
             await self.connect()
 
         @self.relay.on('reconnect')
-        async def on_reconnect(data: Dict[str, Any]) -> None:
+        async def on_reconnect(_: Dict[str, Any]) -> None:
             await self.connect()
 
     async def connect(self) -> None:

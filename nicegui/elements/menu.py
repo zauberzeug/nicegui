@@ -1,6 +1,6 @@
 from typing import Any, Callable, Optional
 
-from .. import globals
+from .. import globals  # pylint: disable=redefined-builtin
 from ..events import ClickEventArguments, handle_event
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement

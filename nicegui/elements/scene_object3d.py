@@ -11,8 +11,8 @@ if TYPE_CHECKING:
 class Object3D:
     current_scene: Optional[Scene] = None
 
-    def __init__(self, type: str, *args: Any) -> None:
-        self.type = type
+    def __init__(self, type_: str, *args: Any) -> None:
+        self.type = type_
         self.id = str(uuid.uuid4())
         self.name: Optional[str] = None
         assert self.current_scene is not None

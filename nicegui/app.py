@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import globals, helpers
+from . import globals, helpers  # pylint: disable=redefined-builtin
 from .native import Native
 from .storage import Storage
 
@@ -61,7 +61,7 @@ class App(FastAPI):
         Only possible when auto-reload is disabled.
         """
         if globals.reload:
-            raise Exception('calling shutdown() is not supported when auto-reload is enabled')
+            raise RuntimeError('calling shutdown() is not supported when auto-reload is enabled')
         if self.native.main_window:
             self.native.main_window.destroy()
         else:

@@ -90,8 +90,7 @@ class Storage:
             if globals.get_client() == globals.index_client:
                 raise RuntimeError('app.storage.browser can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
-            else:
-                raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
+            raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
         if request.state.responded:
             return ReadOnlyDict(
                 request.session,
@@ -111,8 +110,7 @@ class Storage:
             if globals.get_client() == globals.index_client:
                 raise RuntimeError('app.storage.user can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
-            else:
-                raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
+            raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
         session_id = request.session['id']
         if session_id not in self._users:
             self._users[session_id] = PersistentDict(globals.storage_path / f'storage_user_{session_id}.json')

@@ -8,8 +8,9 @@ from typing import TYPE_CHECKING, Optional, Tuple, Union
 
 from fastapi.responses import FileResponse, Response, StreamingResponse
 
-from . import __version__, globals  # pylint: disable=redefined-builtin
+from . import globals  # pylint: disable=redefined-builtin
 from .helpers import is_file
+from .version import __version__
 
 if TYPE_CHECKING:
     from .page import page

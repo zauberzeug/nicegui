@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Dict, Iterable, List, Set, Tuple
 
 import vbuild
 
-from . import __version__
 from .helpers import KWONLY_SLOTS, hash_file_path
+from .version import __version__
 
 if TYPE_CHECKING:
     from .element import Element

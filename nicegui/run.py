@@ -11,9 +11,9 @@ from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import globals, helpers
+from . import globals, helpers  # pylint: disable=redefined-builtin
 from . import native as native_module
-from . import native_mode
+from . import native_mode  # pylint: disable=redefined-builtin
 from .air import Air
 from .language import Language
 

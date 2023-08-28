@@ -177,11 +177,10 @@ class KeyboardKey:
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, str):
-            return self.name == other or self.code == other
-        elif isinstance(other, KeyboardKey):
+            return other in {self.name, self.code}
+        if isinstance(other, KeyboardKey):
             return self == other
-        else:
-            return False
+        return False
 
     def __repr__(self):
         return str(self.name)

@@ -20,9 +20,10 @@ def get_all_ips() -> List[str]:
         except socket.gaierror:
             return []
     ips = []
-    for interface in netifaces.interfaces():
+    for interface in netifaces.interfaces():  # pylint: disable=c-extension-no-member
         try:
-            ips.append(netifaces.ifaddresses(interface)[netifaces.AF_INET][0]['addr'])
+            ip = netifaces.ifaddresses(interface)[netifaces.AF_INET][0]['addr']  # pylint: disable=c-extension-no-member
+            ips.append(ip)
         except KeyError:
             pass
     return ips

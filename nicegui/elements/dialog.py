@@ -35,7 +35,7 @@ class Dialog(ValueElement):
         self._result = None
         self.submitted.clear()
         self.open()
-        yield from self.submitted.wait().__await__()
+        yield from self.submitted.wait().__await__()  # pylint: disable=no-member
         result = self._result
         self.close()
         return result

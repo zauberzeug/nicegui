@@ -1,6 +1,6 @@
 from typing import Any, Callable, Union
 
-from .. import globals
+from .. import globals  # pylint: disable=redefined-builtin
 from ..element import Element
 from .mixins.text_element import TextElement
 

@@ -2,7 +2,7 @@ import warnings
 from pathlib import Path
 from typing import Union
 
-from .. import globals
+from .. import globals  # pylint: disable=redefined-builtin
 from ..element import Element
 
 
@@ -13,7 +13,7 @@ class Audio(Element, component='audio.js'):
                  autoplay: bool = False,
                  muted: bool = False,
                  loop: bool = False,
-                 type: str = '',  # DEPRECATED
+                 type: str = '',  # DEPRECATED, pylint: disable=redefined-builtin
                  ) -> None:
         """Audio
 
@@ -36,5 +36,5 @@ class Audio(Element, component='audio.js'):
         self._props['loop'] = loop
 
         if type:
-            url = f'https://github.com/zauberzeug/nicegui/pull/624'
+            url = 'https://github.com/zauberzeug/nicegui/pull/624'
             warnings.warn(DeprecationWarning(f'The type parameter for ui.audio is deprecated and ineffective ({url}).'))

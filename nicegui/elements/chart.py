@@ -11,7 +11,7 @@ class Chart(Element,
             extra_libraries=['lib/highcharts/modules/*.js']):
 
     def __init__(self, options: Dict, *,
-                 type: str = 'chart', extras: List[str] = [],
+                 type: str = 'chart', extras: List[str] = [],  # pylint: disable=redefined-builtin
                  on_point_click: Optional[Callable] = None,
                  on_point_drag_start: Optional[Callable] = None,
                  on_point_drag: Optional[Callable] = None,

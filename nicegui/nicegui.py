@@ -10,8 +10,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
-from . import (__version__, background_tasks, binding, favicon, globals, json,  # pylint: disable=redefined-builtin
-               outbox, welcome)
+from . import background_tasks, binding, favicon, globals, json, outbox, welcome  # pylint: disable=redefined-builtin
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries
@@ -21,6 +20,7 @@ from .helpers import is_file, safe_invoke
 from .json import NiceGUIJSONResponse
 from .middlewares import RedirectWithPrefixMiddleware
 from .page import page
+from .version import __version__
 
 globals.app = app = App(default_response_class=NiceGUIJSONResponse)
 # NOTE we use custom json module which wraps orjson

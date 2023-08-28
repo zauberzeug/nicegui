@@ -13,7 +13,8 @@ class Keyboard(Element, component='keyboard.js'):
                  on_key: Callable[..., Any], *,
                  active: bool = True,
                  repeating: bool = True,
-                 ignore: List[Literal['input', 'select', 'button', 'textarea']] = ['input', 'select', 'button', 'textarea'],
+                 ignore: List[Literal['input', 'select', 'button', 'textarea']] = [
+                     'input', 'select', 'button', 'textarea'],
                  ) -> None:
         """Keyboard
 
@@ -59,4 +60,4 @@ class Keyboard(Element, component='keyboard.js'):
             modifiers=modifiers,
             key=key,
         )
-        return handle_event(self.key_handler, arguments)
+        handle_event(self.key_handler, arguments)

@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Optional, Union, overload
@@ -187,17 +188,17 @@ class Tailwind:
     def __call__(self, *classes: str) -> Tailwind:
         ...
 
-    def __call__(self, *args) -> Tailwind:  # type: ignore
+    def __call__(self, *args) -> Tailwind:
         if not args:
             return self
         if isinstance(args[0], Tailwind):
-            args[0].apply(self.element)  # type: ignore
+            args[0].apply(self.element)
         else:
             self.element.classes(' '.join(args))
         return self
 
     def apply(self, element: Element) -> None:
-        element._classes.extend(self.element._classes)
+        element._classes.extend(self.element._classes)  # pylint: disable=protected-access
         element.update()
 
     def aspect_ratio(self, value: AspectRatio) -> Tailwind:

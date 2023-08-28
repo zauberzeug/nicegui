@@ -47,9 +47,9 @@ class LinePlot(Pyplot):
         if self.push_counter % self.update_every != 0:
             return
 
-        for i in range(len(self.lines)):
-            self.lines[i].set_xdata(self.x)
-            self.lines[i].set_ydata(self.Y[i])
+        for i, line in enumerate(self.lines):
+            line.set_xdata(self.x)
+            line.set_ydata(self.Y[i])
 
         flat_y = [y_i for y in self.Y for y_i in y]
         min_x = min(self.x)

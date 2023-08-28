@@ -92,6 +92,7 @@ for property_ in properties:
         f.write(']\n')
 
 with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w') as f:
+    f.write('# pylint: disable=too-many-lines\n')
     f.write('from __future__ import annotations\n')
     f.write('\n')
     f.write('from typing import TYPE_CHECKING, List, Optional, Union, overload\n')
@@ -136,7 +137,7 @@ with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w') as f:
     f.write('        return self\n')
     f.write('\n')
     f.write("    def apply(self, element: Element) -> None:\n")
-    f.write('        element._classes.extend(self.element._classes)\n')
+    f.write('        element._classes.extend(self.element._classes)  # pylint: disable=protected-access\n')
     f.write('        element.update()\n')
     for property_ in properties:
         f.write('\n')
@@ -144,9 +145,9 @@ with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w') as f:
             f.write(f"    def {property_.snake_title}(self, value: {property_.pascal_title}) -> Tailwind:\n")
             f.write(f'        """{property_.description}"""\n')
             f.write(f"        self.element.classes('{property_.common_prefix}' + value)\n")
-            f.write(r'        return self\n')
+            f.write(f'        return self\n')  # pylint: disable=f-string-without-interpolation
         else:
             f.write(f"    def {property_.snake_title}(self) -> Tailwind:\n")
             f.write(f'        """{property_.description}"""\n')
             f.write(f"        self.element.classes('{property_.common_prefix}')\n")
-            f.write(r'        return self\n')
+            f.write(f'        return self\n')  # pylint: disable=f-string-without-interpolation

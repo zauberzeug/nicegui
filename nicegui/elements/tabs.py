@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional, Union
 
-from .. import globals
+from .. import globals  # pylint: disable=redefined-builtin
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
@@ -24,7 +24,7 @@ class Tabs(ValueElement):
         super().__init__(tag='q-tabs', value=value, on_value_change=on_change)
 
     def _value_to_model_value(self, value: Any) -> Any:
-        return value._props['name'] if isinstance(value, Tab) or isinstance(value, TabPanel) else value
+        return value._props['name'] if isinstance(value, (Tab, TabPanel)) else value  # pylint: disable=protected-access
 
 
 class Tab(DisableableElement):
@@ -77,7 +77,7 @@ class TabPanels(ValueElement):
         self._props['keep-alive'] = keep_alive
 
     def _value_to_model_value(self, value: Any) -> Any:
-        return value._props['name'] if isinstance(value, Tab) or isinstance(value, TabPanel) else value
+        return value._props['name'] if isinstance(value, (Tab, TabPanel)) else value  # pylint: disable=protected-access
 
 
 class TabPanel(DisableableElement):

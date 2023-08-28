@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional, Union, cast
 
-from .. import globals
+from .. import globals  # pylint: disable=redefined-builtin
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
@@ -33,11 +33,11 @@ class Carousel(ValueElement):
         self._props['navigation'] = navigation
 
     def _value_to_model_value(self, value: Any) -> Any:
-        return value._props['name'] if isinstance(value, CarouselSlide) else value
+        return value._props['name'] if isinstance(value, CarouselSlide) else value  # pylint: disable=protected-access
 
     def on_value_change(self, value: Any) -> None:
         super().on_value_change(value)
-        names = [slide._props['name'] for slide in self]
+        names = [slide._props['name'] for slide in self]  # pylint: disable=protected-access
         for i, slide in enumerate(self):
             done = i < names.index(value) if value in names else False
             slide.props(f':done={done}')

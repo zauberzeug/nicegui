@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Dict, Union
 
-from .. import globals
+from .. import globals  # pylint: disable=redefined-builtin
 from ..element import Element
 
 try:

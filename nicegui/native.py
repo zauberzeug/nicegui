@@ -85,7 +85,7 @@ try:
         def move(self, x: int, y: int) -> None:
             self._send(x, y)
 
-        async def evaluate_js(self, script: str) -> str:
+        async def evaluate_js(self, script: str) -> str:  # pylint: disable=arguments-differ,invalid-overridden-method
             return await self._request(script)
 
         async def create_confirmation_dialog(self, title: str, message: str) -> bool:  # pylint: disable=invalid-overridden-method
@@ -107,7 +107,7 @@ try:
                 file_types=file_types,
             )
 
-        def expose(self, function: Callable) -> None:
+        def expose(self, function: Callable) -> None:  # pylint: disable=arguments-differ
             raise NotImplementedError(f'exposing "{function}" is not supported')
 
         def _send(self, *args: Any, **kwargs: Any) -> None:
@@ -121,6 +121,7 @@ try:
                     return response_queue.get()  # wait for the method to be called and writing its result to the queue
                 except Exception:
                     log.exception(f'error in {name}')
+                    return None
             name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
             return await asyncio.get_event_loop().run_in_executor(None, partial(wrapper, *args, **kwargs))
 

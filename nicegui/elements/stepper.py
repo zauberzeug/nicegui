@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional, Union, cast
 
-from .. import globals
+from .. import globals  # pylint: disable=redefined-builtin
 from ..element import Element
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -25,11 +25,11 @@ class Stepper(ValueElement):
         super().__init__(tag='q-stepper', value=value, on_value_change=on_value_change)
 
     def _value_to_model_value(self, value: Any) -> Any:
-        return value._props['name'] if isinstance(value, Step) else value
+        return value._props['name'] if isinstance(value, Step) else value  # pylint: disable=protected-access
 
     def on_value_change(self, value: Any) -> None:
         super().on_value_change(value)
-        names = [step._props['name'] for step in self]
+        names = [step._props['name'] for step in self]  # pylint: disable=protected-access
         for i, step in enumerate(self):
             done = i < names.index(value) if value in names else False
             step.props(f':done={done}')

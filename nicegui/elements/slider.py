@@ -7,8 +7,8 @@ from .mixins.value_element import ValueElement
 class Slider(ValueElement, DisableableElement):
 
     def __init__(self, *,
-                 min: float,
-                 max: float,
+                 min: float,  # pylint: disable=redefined-builtin
+                 max: float,  # pylint: disable=redefined-builtin
                  step: float = 1.0,
                  value: Optional[float] = None,
                  on_change: Optional[Callable[..., Any]] = None,
