@@ -58,7 +58,8 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
         self.update()
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
-        if self.multiple:  # pylint: disable=no-else-return
+        # pylint: disable=no-else-return
+        if self.multiple:
             if e.args is None:
                 return []
             assert isinstance(e.args, list)
@@ -69,7 +70,8 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
             return self._values[e.args['value']]
 
     def _value_to_model_value(self, value: Any) -> Any:
-        if self.multiple:  # pylint: disable=no-else-return
+        # pylint: disable=no-else-return
+        if self.multiple:
             result = []
             for item in value or []:
                 try:

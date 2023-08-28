@@ -57,7 +57,7 @@ class Client:
     @property
     def ip(self) -> Optional[str]:
         """Return the IP address of the client, or None if the client is not connected."""
-        return self.environ.get('asgi.scope')['client'][0] if self.environ else None
+        return self.environ['asgi.scope']['client'][0] if self.environ else None  # pylint: disable=unsubscriptable-object
 
     @property
     def has_socket_connection(self) -> bool:

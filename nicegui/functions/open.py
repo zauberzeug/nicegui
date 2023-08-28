@@ -1,9 +1,9 @@
 from typing import Any, Callable, Union
 
-from .. import globals
+from .. import globals  # pylint: disable=redefined-builtin
 
 
-def open(target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
+def open(target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:  # pylint: disable=redefined-builtin
     """Open
 
     Can be used to programmatically trigger redirects for a specific client.

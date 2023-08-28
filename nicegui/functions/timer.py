@@ -2,7 +2,7 @@ import asyncio
 import time
 from typing import Any, Awaitable, Callable, Optional
 
-from .. import background_tasks, globals
+from .. import background_tasks, globals  # pylint: disable=redefined-builtin
 from ..binding import BindableProperty
 from ..slot import Slot
 
@@ -115,14 +115,14 @@ class Timer:
         assert self.slot is not None
         if self.slot.parent.client.shared:
             return True
-        else:
-            # ignore served pages which do not reconnect to backend (eg. monitoring requests, scrapers etc.)
-            try:
-                await self.slot.parent.client.connected(timeout=timeout)
-                return True
-            except TimeoutError:
-                globals.log.error(f'Timer cancelled because client is not connected after {timeout} seconds')
-                return False
+
+        # ignore served pages which do not reconnect to backend (e.g. monitoring requests, scrapers etc.)
+        try:
+            await self.slot.parent.client.connected(timeout=timeout)
+            return True
+        except TimeoutError:
+            globals.log.error(f'Timer cancelled because client is not connected after {timeout} seconds')
+            return False
 
     def _cleanup(self) -> None:
         self.slot = None

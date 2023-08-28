@@ -1,6 +1,6 @@
 from typing import Any, Literal, Optional, Union
 
-from .. import globals, outbox
+from .. import globals, outbox  # pylint: disable=redefined-builtin
 
 ARG_MAP = {
     'close_button': 'closeBtn',
@@ -8,10 +8,27 @@ ARG_MAP = {
 }
 
 
+# pylint: disable=unused-argument
 def notify(message: Any, *,
-           position: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right', 'top', 'bottom', 'left', 'right', 'center'] = 'bottom',
+           position: Literal[
+               'top-left',
+               'top-right',
+               'bottom-left',
+               'bottom-right',
+               'top',
+               'bottom',
+               'left',
+               'right',
+               'center',
+           ] = 'bottom',
            close_button: Union[bool, str] = False,
-           type: Optional[Literal['positive', 'negative', 'warning', 'info', 'ongoing']] = None,
+           type: Optional[Literal[  # pylint: disable=redefined-builtin
+               'positive',
+               'negative',
+               'warning',
+               'info',
+               'ongoing',
+           ]] = None,
            color: Optional[str] = None,
            multi_line: bool = False,
            **kwargs: Any,

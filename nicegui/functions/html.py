@@ -1,4 +1,4 @@
-from .. import globals
+from .. import globals  # pylint: disable=redefined-builtin
 
 
 def add_body_html(code: str) -> None:

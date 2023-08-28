@@ -80,6 +80,7 @@ for li in soup.select('li[class="mt-12 lg:mt-8"]'):
 
 for file in (Path(__file__).parent / 'nicegui' / 'tailwind_types').glob('*.py'):
     file.unlink()
+(Path(__file__).parent / 'nicegui' / 'tailwind_types' / '__init__.py').touch()
 for property_ in properties:
     if not property_.members:
         continue
@@ -127,11 +128,11 @@ with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w') as f:
     f.write('    def __call__(self, *classes: str) -> Tailwind:\n')
     f.write('        ...\n')
     f.write('\n')
-    f.write('    def __call__(self, *args) -> Tailwind:\n')
+    f.write('    def __call__(self, *args) -> Tailwind:  # type: ignore\n')
     f.write('        if not args:\n')
     f.write('            return self\n')
     f.write('        if isinstance(args[0], Tailwind):\n')
-    f.write('            args[0].apply(self.element)\n')
+    f.write('            args[0].apply(self.element)  # type: ignore\n')
     f.write('        else:\n')
     f.write("            self.element.classes(' '.join(args))\n")
     f.write('        return self\n')

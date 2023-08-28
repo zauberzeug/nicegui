@@ -3,10 +3,10 @@ from typing import Any, Awaitable, Callable, Dict, List, Tuple, Union
 
 from typing_extensions import Self
 
-from .. import background_tasks, globals
+from .. import background_tasks, globals  # pylint: disable=redefined-builtin
+from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..helpers import is_coroutine_function
-from .dataclasses import KWONLY_SLOTS
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -17,6 +17,7 @@ class RefreshableTarget:
     kwargs: Dict[str, Any]
 
     def run(self, func: Callable[..., Any]) -> Union[None, Awaitable]:
+        # pylint: disable=no-else-return
         if is_coroutine_function(func):
             async def wait_for_result() -> None:
                 with self.container:
@@ -83,7 +84,7 @@ class refreshable:
                 if 'got multiple values for argument' in str(e):
                     function = str(e).split()[0].split('.')[-1]
                     parameter = str(e).split()[-1]
-                    raise Exception(f'{parameter} needs to be consistently passed to {function} '
+                    raise TypeError(f'{parameter} needs to be consistently passed to {function} '
                                     'either as positional or as keyword argument') from e
                 raise
             if is_coroutine_function(self.func):
