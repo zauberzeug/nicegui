@@ -60,7 +60,7 @@ class CircularProgress(ValueElement, TextColorElement):
         self._props['min'] = min
         self._props['max'] = max
         self._props['size'] = size
-        self._props['show-value'] = show_value
+        self._props['show-value'] = True  # NOTE always activate the default slot because this is expected by ui.element
         self._props['track-color'] = 'grey-4'
 
         if show_value:
