@@ -21,6 +21,7 @@ def test_remove_element_by_reference(screen: Screen):
     screen.should_not_contain('Label B')
     screen.should_contain('Label C')
     assert b.is_deleted
+    assert b.id not in row.client.elements
     assert len(row.default_slot.children) == 2
     assert len(binding.active_links) == 2
 
@@ -41,6 +42,7 @@ def test_remove_element_by_index(screen: Screen):
     screen.should_not_contain('Label B')
     screen.should_contain('Label C')
     assert b.is_deleted
+    assert b.id not in row.client.elements
     assert len(row.default_slot.children) == 2
     assert len(binding.active_links) == 2
 
@@ -63,6 +65,7 @@ def test_clear(screen: Screen):
     assert a.is_deleted
     assert b.is_deleted
     assert c.is_deleted
+    assert b.id not in row.client.elements
     assert len(row.default_slot.children) == 0
     assert len(binding.active_links) == 0
 
@@ -88,6 +91,9 @@ def test_remove_parent(screen: Screen):
     assert a.is_deleted
     assert b.is_deleted
     assert c.is_deleted
+    assert a.id not in container.client.elements
+    assert b.id not in container.client.elements
+    assert c.id not in container.client.elements
     assert len(container.default_slot.children) == 0
     assert len(row.default_slot.children) == 0
     assert len(binding.active_links) == 0
@@ -110,5 +116,6 @@ def test_delete_element(screen: Screen):
     screen.should_not_contain('Label B')
     screen.should_contain('Label C')
     assert b.is_deleted
+    assert b.id not in row.client.elements
     assert len(row.default_slot.children) == 2
     assert len(binding.active_links) == 2
