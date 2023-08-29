@@ -14,7 +14,6 @@ from . import background_tasks, binding, favicon, globals, json, outbox, welcome
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries
-from .element import Element
 from .error import error_content
 from .helpers import is_file, safe_invoke
 from .json import NiceGUIJSONResponse
@@ -229,6 +228,4 @@ async def prune_slot_stacks() -> None:
 
 
 def delete_client(client_id: str) -> None:
-    elements = globals.clients[client_id].elements.values()
-    Element._delete_elements(elements)  # pylint: disable=protected-access
-    del globals.clients[client_id]
+    globals.clients.pop(client_id).remove_all_elements()

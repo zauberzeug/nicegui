@@ -4,7 +4,7 @@ import asyncio
 import time
 import uuid
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterable, List, Optional, Union
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -12,7 +12,7 @@ from fastapi.templating import Jinja2Templates
 
 from nicegui import json
 
-from . import globals, outbox  # pylint: disable=redefined-builtin
+from . import binding, globals, outbox  # pylint: disable=redefined-builtin
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
@@ -162,3 +162,17 @@ class Client:
     def on_disconnect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
         """Register a callback to be called when the client disconnects."""
         self.disconnect_handlers.append(handler)
+
+    def remove_elements(self, elements: Iterable[Element]) -> None:
+        """Remove the given elements from the client."""
+        binding.remove(elements, Element)
+        element_ids = [element.id for element in elements]
+        for element_id in element_ids:
+            del self.elements[element_id]
+        for element in elements:
+            element._deleted = True  # pylint: disable=protected-access
+            outbox.enqueue_delete(element)
+
+    def remove_all_elements(self) -> None:
+        """Remove all elements from the client."""
+        self.remove_elements(self.elements.values())

@@ -4,13 +4,13 @@ import inspect
 import re
 from copy import copy, deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, Iterator, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union
 
 from typing_extensions import Self
 
 from nicegui import json
 
-from . import binding, events, globals, outbox, storage  # pylint: disable=redefined-builtin
+from . import events, globals, outbox, storage  # pylint: disable=redefined-builtin
 from .dependencies import Component, Library, register_library, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
@@ -310,18 +310,10 @@ class Element(Visibility):
             elements.extend(child._collect_descendants(include_self=True))  # pylint: disable=protected-access
         return elements
 
-    @staticmethod
-    def _delete_elements(elements: Iterable[Element]) -> None:
-        binding.remove(elements, Element)
-        for element in elements:
-            element._deleted = True  # pylint: disable=protected-access
-            del element.client.elements[element.id]
-            outbox.enqueue_delete(element)
-
     def clear(self) -> None:
         """Remove all child elements."""
         descendants = self._collect_descendants()
-        self._delete_elements(descendants)
+        self.client.remove_elements(descendants)
         for slot in self.slots.values():
             slot.children.clear()
         self.update()
@@ -350,14 +342,14 @@ class Element(Visibility):
             children = list(self)
             element = children[element]
         elements = element._collect_descendants(include_self=True)  # pylint: disable=protected-access
-        self._delete_elements(elements)
+        self.client.remove_elements(elements)
         assert element.parent_slot is not None
         element.parent_slot.children.remove(element)
         self.update()
 
     def delete(self) -> None:
         """Delete the element."""
-        self._delete_elements([self])
+        self.client.remove_elements([self])
         assert self.parent_slot is not None
         self.parent_slot.children.remove(self)
 
