@@ -357,6 +357,6 @@ class Element(Visibility):
         outbox.enqueue_delete(self)
 
     @property
-    def is_deleted(self) -> None:
+    def is_deleted(self) -> bool:
         """Whether the element has been deleted."""
         return self._deleted

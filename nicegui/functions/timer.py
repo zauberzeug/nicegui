@@ -114,6 +114,7 @@ class Timer:
             return False
 
     def _should_stop(self) -> bool:
+        assert self.slot is not None
         return (
             self.slot.parent.is_deleted or
             self.slot.parent.client.id not in globals.clients or
