@@ -184,9 +184,9 @@ class Scene(Element,
                         self.camera.look_at_x, self.camera.look_at_y, self.camera.look_at_z,
                         self.camera.up_x, self.camera.up_y, self.camera.up_z, duration)
 
-    def delete(self) -> None:
+    def _on_delete(self) -> None:
         binding.remove(list(self.objects.values()), Object3D)
-        super().delete()
+        super()._on_delete()
 
     def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:
         for obj in list(self.objects.values()):

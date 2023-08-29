@@ -153,9 +153,16 @@ def create_full() -> None:
     load_demo(ui.grid)
 
     @text_demo('Clear Containers', '''
-        To remove all elements from a row, column or card container, use the `clear()` method.
+        To remove all elements from a row, column or card container, use can call
+        ```py
+        container.clear()
+        ```
 
-        Alternatively, you can remove individual elements with `remove(element)`, where `element` is an Element or an index.
+        Alternatively, you can remove individual elements by calling
+        
+        - `container.remove(element: Element)`,
+        - `container.remove(index: int)`, or
+        - `element.delete()`.
     ''')
     def clear_containers_demo():
         container = ui.row()

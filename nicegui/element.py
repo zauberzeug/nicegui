@@ -10,7 +10,7 @@ from typing_extensions import Self
 
 from nicegui import json
 
-from . import binding, events, globals, outbox, storage  # pylint: disable=redefined-builtin
+from . import events, globals, outbox, storage  # pylint: disable=redefined-builtin
 from .dependencies import Component, Library, register_library, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
@@ -304,19 +304,16 @@ class Element(Visibility):
         target_id = globals._socket_id or self.client.id  # pylint: disable=protected-access
         outbox.enqueue_message('run_method', data, target_id)
 
-    def _collect_descendant_ids(self) -> List[int]:
-        ids: List[int] = [self.id]
+    def _collect_descendants(self, *, include_self: bool = False) -> List[Element]:
+        elements: List[Element] = [self] if include_self else []
         for child in self:
-            ids.extend(child._collect_descendant_ids())  # pylint: disable=protected-access
-        return ids
+            elements.extend(child._collect_descendants(include_self=True))  # pylint: disable=protected-access
+        return elements
 
     def clear(self) -> None:
         """Remove all child elements."""
-        descendants = [self.client.elements[id] for id in self._collect_descendant_ids()[1:]]
-        binding.remove(descendants, Element)
-        for element in descendants:
-            element.delete()
-            del self.client.elements[element.id]
+        descendants = self._collect_descendants()
+        self.client.remove_elements(descendants)
         for slot in self.slots.values():
             slot.children.clear()
         self.update()
@@ -344,17 +341,23 @@ class Element(Visibility):
         if isinstance(element, int):
             children = list(self)
             element = children[element]
-        binding.remove([element], Element)
-        element.delete()
-        del self.client.elements[element.id]
-        for slot in self.slots.values():
-            slot.children[:] = [e for e in slot if e.id != element.id]
+        elements = element._collect_descendants(include_self=True)  # pylint: disable=protected-access
+        self.client.remove_elements(elements)
+        assert element.parent_slot is not None
+        element.parent_slot.children.remove(element)
         self.update()
 
     def delete(self) -> None:
-        """Perform cleanup when the element is deleted."""
-        self._deleted = True
-        outbox.enqueue_delete(self)
+        """Delete the element."""
+        self.client.remove_elements([self])
+        assert self.parent_slot is not None
+        self.parent_slot.children.remove(self)
+
+    def _on_delete(self) -> None:
+        """Called when the element is deleted.
+
+        This method can be overridden in subclasses to perform cleanup tasks.
+        """
 
     @property
     def is_deleted(self) -> bool:
