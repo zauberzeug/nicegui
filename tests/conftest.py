@@ -9,7 +9,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 
-from nicegui import Client, globals  # pylint: disable=redefined-builtin
+from nicegui import Client, binding, globals  # pylint: disable=redefined-builtin
 from nicegui.elements import plotly, pyplot
 from nicegui.page import page
 
@@ -57,6 +57,7 @@ def reset_globals() -> Generator[None, None, None]:
     globals.app.storage.clear()
     globals.index_client = Client(page('/'), shared=True).__enter__()
     globals.app.get('/')(globals.index_client.build_response)
+    binding.reset()
 
 
 @pytest.fixture(scope='session', autouse=True)

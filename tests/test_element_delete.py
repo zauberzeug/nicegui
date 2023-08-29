@@ -1,15 +1,16 @@
 import pytest
 
-from nicegui import ui
+from nicegui import binding, ui
 
 from .screen import Screen
 
 
 def test_remove_element_by_reference(screen: Screen):
+    texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
     with ui.row() as row:
-        ui.label('Label A')
-        b = ui.label('Label B')
-        ui.label('Label C')
+        ui.label().bind_text_from(texts, 'a')
+        b = ui.label().bind_text_from(texts, 'b')
+        ui.label().bind_text_from(texts, 'c')
 
     ui.button('Remove', on_click=lambda: row.remove(b))
 
@@ -21,13 +22,15 @@ def test_remove_element_by_reference(screen: Screen):
     screen.should_contain('Label C')
     assert b.is_deleted
     assert len(row.default_slot.children) == 2
+    assert len(binding.active_links) == 2
 
 
 def test_remove_element_by_index(screen: Screen):
+    texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
     with ui.row() as row:
-        ui.label('Label A')
-        b = ui.label('Label B')
-        ui.label('Label C')
+        ui.label().bind_text_from(texts, 'a')
+        b = ui.label().bind_text_from(texts, 'b')
+        ui.label().bind_text_from(texts, 'c')
 
     ui.button('Remove', on_click=lambda: row.remove(1))
 
@@ -39,13 +42,15 @@ def test_remove_element_by_index(screen: Screen):
     screen.should_contain('Label C')
     assert b.is_deleted
     assert len(row.default_slot.children) == 2
+    assert len(binding.active_links) == 2
 
 
 def test_clear(screen: Screen):
+    texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
     with ui.row() as row:
-        a = ui.label('Label A')
-        b = ui.label('Label B')
-        c = ui.label('Label C')
+        a = ui.label().bind_text_from(texts, 'a')
+        b = ui.label().bind_text_from(texts, 'b')
+        c = ui.label().bind_text_from(texts, 'c')
 
     ui.button('Clear', on_click=row.clear)
 
@@ -59,15 +64,17 @@ def test_clear(screen: Screen):
     assert b.is_deleted
     assert c.is_deleted
     assert len(row.default_slot.children) == 0
+    assert len(binding.active_links) == 0
 
 
 @pytest.mark.skip(reason='needs fix in element.py')  # TODO
 def test_remove_parent(screen: Screen):
+    texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
     with ui.element() as container:
         with ui.row() as row:
-            a = ui.label('Label A')
-            b = ui.label('Label B')
-            c = ui.label('Label C')
+            a = ui.label().bind_text_from(texts, 'a')
+            b = ui.label().bind_text_from(texts, 'b')
+            c = ui.label().bind_text_from(texts, 'c')
 
     ui.button('Remove parent', on_click=lambda: container.remove(row))
 
@@ -81,14 +88,18 @@ def test_remove_parent(screen: Screen):
     assert a.is_deleted
     assert b.is_deleted
     assert c.is_deleted
+    assert len(container.default_slot.children) == 0
+    assert len(row.default_slot.children) == 0
+    assert len(binding.active_links) == 0
 
 
 @pytest.mark.skip(reason='needs fix in element.py')  # TODO
 def test_delete_element(screen: Screen):
+    texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
     with ui.row() as row:
-        ui.label('Label A')
-        b = ui.label('Label B')
-        ui.label('Label C')
+        ui.label().bind_text_from(texts, 'a')
+        b = ui.label().bind_text_from(texts, 'b')
+        ui.label().bind_text_from(texts, 'c')
 
     ui.button('Delete', on_click=b.delete)
 
@@ -100,3 +111,4 @@ def test_delete_element(screen: Screen):
     screen.should_contain('Label C')
     assert b.is_deleted
     assert len(row.default_slot.children) == 2
+    assert len(binding.active_links) == 2

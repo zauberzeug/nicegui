@@ -126,3 +126,13 @@ def remove(objects: List[Any], type_: Type) -> None:
     for (obj_id, name), obj in list(bindable_properties.items()):
         if isinstance(obj, type_) and obj in objects:
             del bindable_properties[(obj_id, name)]
+
+
+def reset() -> None:
+    """Clear all bindings.
+
+    This function is intended for testing purposes only.
+    """
+    bindings.clear()
+    bindable_properties.clear()
+    active_links.clear()
