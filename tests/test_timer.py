@@ -89,3 +89,19 @@ def test_awaiting_coroutine(screen: Screen):
 
     screen.open('/')
     screen.wait(1)
+
+
+def test_timer_on_deleted_container(screen: Screen):
+    state = {'count': 0}
+    with ui.row() as outer_container:
+        with ui.row():
+            ui.timer(0.1, lambda: state.update(count=state['count'] + 1))
+
+    ui.button('delete', on_click=outer_container.clear)
+
+    screen.open('/')
+    screen.click('delete')
+    screen.wait(0.5)
+    count = state['count']
+    screen.wait(0.5)
+    assert state['count'] == count, 'timer is not running anymore after deleting the container'

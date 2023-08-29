@@ -60,13 +60,8 @@ class Timer:
             assert self.slot is not None
             with self.slot:
                 await asyncio.sleep(self.interval)
-                if self._is_canceled:
-                    return
-                if not self.active:
-                    return
-                if globals.state in {globals.State.STOPPING, globals.State.STOPPED}:
-                    return
-                await self._invoke_callback()
+                if self.active and not self._should_stop():
+                    await self._invoke_callback()
         finally:
             self._cleanup()
 
@@ -76,13 +71,7 @@ class Timer:
                 return
             assert self.slot is not None
             with self.slot:
-                while True:
-                    if self.slot.parent.client.id not in globals.clients:
-                        break
-                    if self._is_canceled:
-                        break
-                    if globals.state in {globals.State.STOPPING, globals.State.STOPPED}:
-                        break
+                while not self._should_stop():
                     try:
                         start = time.time()
                         if self.active:
@@ -123,6 +112,14 @@ class Timer:
         except TimeoutError:
             globals.log.error(f'Timer cancelled because client is not connected after {timeout} seconds')
             return False
+
+    def _should_stop(self) -> bool:
+        return (
+            self.slot.parent.is_deleted or
+            self.slot.parent.client.id not in globals.clients or
+            self._is_canceled or
+            globals.state in {globals.State.STOPPING, globals.State.STOPPED}
+        )
 
     def _cleanup(self) -> None:
         self.slot = None

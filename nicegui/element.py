@@ -50,6 +50,7 @@ class Element(Visibility):
         self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
+        self._deleted: bool = False
 
         self.client.elements[self.id] = self
         self.parent_slot: Optional[Slot] = None
@@ -352,4 +353,10 @@ class Element(Visibility):
 
     def delete(self) -> None:
         """Perform cleanup when the element is deleted."""
+        self._deleted = True
         outbox.enqueue_delete(self)
+
+    @property
+    def is_deleted(self) -> None:
+        """Whether the element has been deleted."""
+        return self._deleted
