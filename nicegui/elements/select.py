@@ -49,7 +49,6 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
         self._props['clearable'] = clearable
 
     def on_filter(self, e: GenericEventArguments) -> None:
-        assert isinstance(e.args, str)
         self.options = [
             option
             for option in self.original_options
@@ -62,7 +61,6 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
         if self.multiple:
             if e.args is None:
                 return []
-            assert isinstance(e.args, list)
             return [self._values[arg['value']] for arg in e.args]
         else:
             if e.args is None:

@@ -33,7 +33,7 @@ class UiEventArguments(EventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class GenericEventArguments(UiEventArguments):
-    args: Dict[str, Any]
+    args: Any
 
     def __getitem__(self, key: str) -> Any:
         if key == 'args':

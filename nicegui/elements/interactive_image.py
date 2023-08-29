@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union, cast
 
 from ..events import GenericEventArguments, MouseEventArguments, handle_event
 from .mixins.content_element import ContentElement
@@ -27,7 +27,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         See `OpenCV Webcam <https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam/main.py>`_ for an example.
 
         :param source: the source of the image; can be an URL, local file path or a base64 string
-        :param content: SVG content which should be overlayed; viewport has the same dimensions as the image
+        :param content: SVG content which should be overlaid; viewport has the same dimensions as the image
         :param on_mouse: callback for mouse events (yields `type`, `image_x` and `image_y`)
         :param events: list of JavaScript events to subscribe to (default: `['click']`)
         :param cross: whether to show crosshairs (default: `False`)
@@ -39,18 +39,19 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         def handle_mouse(e: GenericEventArguments) -> None:
             if on_mouse is None:
                 return
+            args = cast(dict, e.args)
             arguments = MouseEventArguments(
                 sender=self,
                 client=self.client,
-                type=e.args.get('mouse_event_type', ''),
-                image_x=e.args.get('image_x', 0.0),
-                image_y=e.args.get('image_y', 0.0),
-                button=e.args.get('button', 0),
-                buttons=e.args.get('buttons', 0),
-                alt=e.args.get('alt', False),
-                ctrl=e.args.get('ctrl', False),
-                meta=e.args.get('meta', False),
-                shift=e.args.get('shift', False),
+                type=args.get('mouse_event_type', ''),
+                image_x=args.get('image_x', 0.0),
+                image_y=args.get('image_y', 0.0),
+                button=args.get('button', 0),
+                buttons=args.get('buttons', 0),
+                alt=args.get('alt', False),
+                ctrl=args.get('ctrl', False),
+                meta=args.get('meta', False),
+                shift=args.get('shift', False),
             )
             handle_event(on_mouse, arguments)
         self.on('mouse', handle_mouse)
