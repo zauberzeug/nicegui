@@ -229,7 +229,6 @@ async def prune_slot_stacks() -> None:
 
 
 def delete_client(client_id: str) -> None:
-    binding.remove(list(globals.clients[client_id].elements.values()), Element)
-    for element in globals.clients[client_id].elements.values():
-        element.delete()
+    elements = globals.clients[client_id].elements.values()
+    Element._delete_elements(elements)  # pylint: disable=protected-access
     del globals.clients[client_id]

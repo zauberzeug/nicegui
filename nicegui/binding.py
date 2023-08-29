@@ -2,7 +2,7 @@ import asyncio
 import time
 from collections import defaultdict
 from collections.abc import Mapping
-from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
 
 from . import globals  # pylint: disable=redefined-builtin
 
@@ -107,7 +107,7 @@ class BindableProperty:
             self.on_change(owner, value)
 
 
-def remove(objects: List[Any], type_: Type) -> None:
+def remove(objects: Iterable[Any], type_: Type) -> None:
     active_links[:] = [
         (source_obj, source_name, target_obj, target_name, transform)
         for source_obj, source_name, target_obj, target_name, transform in active_links

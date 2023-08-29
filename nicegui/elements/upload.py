@@ -69,6 +69,6 @@ class Upload(DisableableElement, component='upload.js'):
     def reset(self) -> None:
         self.run_method('reset')
 
-    def delete(self) -> None:
+    def _on_delete(self) -> None:
         app.remove_route(self._props['url'])
-        super().delete()
+        super()._on_delete()

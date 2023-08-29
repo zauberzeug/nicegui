@@ -1,5 +1,3 @@
-import pytest
-
 from nicegui import binding, ui
 
 from .screen import Screen
@@ -70,7 +68,6 @@ def test_clear(screen: Screen):
     assert len(binding.active_links) == 0
 
 
-@pytest.mark.skip(reason='needs fix in element.py')  # TODO
 def test_remove_parent(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
     with ui.element() as container:
@@ -95,11 +92,9 @@ def test_remove_parent(screen: Screen):
     assert b.id not in container.client.elements
     assert c.id not in container.client.elements
     assert len(container.default_slot.children) == 0
-    assert len(row.default_slot.children) == 0
     assert len(binding.active_links) == 0
 
 
-@pytest.mark.skip(reason='needs fix in element.py')  # TODO
 def test_delete_element(screen: Screen):
     texts = {'a': 'Label A', 'b': 'Label B', 'c': 'Label C'}
     with ui.row() as row:
