@@ -61,7 +61,7 @@ def more() -> None:
         #
         # @ui.page('/')
         # def index():
-        #     counter[app.storage.session.browser[id]] += 1
+        #     counter[app.storage.browser['id']] += 1
         #     ui.label(f'{len(counter)} unique views ({sum(counter.values())} overall) since {start}')
         #
         # ui.run(storage_secret='private key to secure the browser session cookie')
