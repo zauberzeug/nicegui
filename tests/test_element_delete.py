@@ -114,3 +114,32 @@ def test_delete_element(screen: Screen):
     assert b.id not in row.client.elements
     assert len(row.default_slot.children) == 2
     assert len(binding.active_links) == 2
+
+
+def test_on_delete(screen: Screen):
+    deleted_labels = []
+
+    class CustomLabel(ui.label):
+
+        def __init__(self, text: str) -> None:
+            super().__init__(text)
+
+        def _on_delete(self) -> None:
+            deleted_labels.append(self.text)
+            super()._on_delete()
+
+    with ui.row() as row:
+        CustomLabel('Label A')
+        b = CustomLabel('Label B')
+        CustomLabel('Label C')
+
+    ui.button('Delete C', on_click=lambda: row.remove(2))
+    ui.button('Delete B', on_click=lambda: row.remove(b))
+    ui.button('Clear row', on_click=row.clear)
+
+    screen.open('/')
+    screen.click('Delete C')
+    screen.click('Delete B')
+    screen.click('Clear row')
+    screen.wait(0.5)
+    assert deleted_labels == ['Label C', 'Label B', 'Label A']
