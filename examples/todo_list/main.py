@@ -38,7 +38,11 @@ def todo_ui():
     for item in todos.items:
         with ui.row().classes('items-center'):
             ui.checkbox(value=item.done, on_change=todo_ui.refresh).bind_value(item, 'done')
-            ui.input(value=item.name).classes('flex-grow').bind_value(item, 'name')
+            # ui.input(value=item.name).classes('flex-grow').bind_value(item, 'name')
+            if item.done:
+                ui.label(item.name).classes('flex-grow line-through')
+            else:
+                ui.label(item.name).classes('flex-grow')
             ui.button(on_click=lambda item=item: todos.remove(item), icon='delete').props('flat fab-mini color=grey')
 
 
