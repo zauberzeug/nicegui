@@ -50,6 +50,8 @@ pandas = "^2.0.0"
 secure = "^0.3.0"
 webdriver-manager = "^3.8.6"
 numpy = ">=1.24.0"
+selenium = "^4.11.2"
+beautifulsoup4 = "^4.12.2"
 
 [build-system]
 requires = [

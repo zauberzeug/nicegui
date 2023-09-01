@@ -1,0 +1,24 @@
+// For format details, see https://aka.ms/devcontainer.json.
+{
+  "name": "nicegui-dev",
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.vscode-pylance",
+        "ms-python.python",
+        "esbenp.prettier-vscode",
+        "littlefoxteam.vscode-python-test-adapter",
+        "cschleiden.vscode-github-actions",
+        "samuelcolvin.jinjahtml",
+        "ms-python.isort",
+        "Vue.volar"
+      ]
+    }
+  },
+  // More info: https://aka.ms/dev-containers-non-root.
+  "remoteUser": "vscode"
+}
