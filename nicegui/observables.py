@@ -111,79 +111,88 @@ class ObservableList(list):
 
 class ObservableSet(set):
 
-    def __init__(self, data: set, on_change: Callable) -> None:
+    def __init__(self, data: set = set(), on_change: Callable = None) -> None:
         super().__init__(data)
         for item in self:
             super().add(make_observable(item, on_change))
-        self.on_change = lambda: events.handle_event(on_change, events.ObservableChangeEventArguments(sender=self))
+        self._on_change_handler: list[Callable] = []
+        if on_change is not None:
+            self._on_change_handler.append(on_change)
+
+    def _notify_change(self) -> None:
+        for handler in self._on_change_handler:
+            events.handle_event(handler, events.ObservableChangeEventArguments(sender=self))
+
+    def on_change(self, handler: Callable) -> None:
+        self._on_change_handler.append(handler)
 
     def add(self, item: Any) -> None:
-        super().add(make_observable(item, self.on_change))
-        self.on_change()
+        super().add(make_observable(item, self._notify_change))
+        self._notify_change()
 
     def remove(self, item: Any) -> None:
         super().remove(item)
-        self.on_change()
+        self._notify_change()
 
     def discard(self, item: Any) -> None:
         super().discard(item)
-        self.on_change()
+        self._notify_change()
 
     def pop(self) -> Any:
         item = super().pop()
-        self.on_change()
+        self._notify_change()
         return item
 
     def clear(self) -> None:
         super().clear()
-        self.on_change()
+        self._notify_change()
 
     def update(self, *s: Iterable[Any]) -> None:
-        super().update(make_observable(set(*s), self.on_change))
-        self.on_change()
+        super().update(make_observable(set(*s), self._notify_change))
+        self._notify_change()
 
     def intersection_update(self, *s: Iterable[Any]) -> None:
         super().intersection_update(*s)
-        self.on_change()
+        self._notify_change()
 
     def difference_update(self, *s: Iterable[Any]) -> None:
         super().difference_update(*s)
-        self.on_change()
+        self._notify_change()
 
     def symmetric_difference_update(self, *s: Iterable[Any]) -> None:
         super().symmetric_difference_update(*s)
-        self.on_change()
+        self._notify_change()
 
     def __or__(self, other: Any) -> Any:
         return super().__or__(other)
 
     def __ior__(self, other: Any) -> Any:
-        super().__ior__(make_observable(other, self.on_change))
-        self.on_change()
+        super().__ior__(make_observable(other, self._notify_change))
+        self._notify_change()
         return self
 
     def __and__(self, other: Any) -> set:
         return super().__and__(other)
 
     def __iand__(self, other: Any) -> Any:
-        super().__iand__(make_observable(other, self.on_change))
-        self.on_change()
+        super().__iand__(make_observable(other, self._notify_change))
+        self._notify_change()
         return self
 
     def __sub__(self, other: Any) -> set:
         return super().__sub__(other)
 
     def __isub__(self, other: Any) -> Any:
-        super().__isub__(make_observable(other, self.on_change))
-        self.on_change()
+        super().__isub__(make_observable(other, self._notify_change))
+        self._notify_change()
         return self
 
     def __xor__(self, other: Any) -> set:
         return super().__xor__(other)
 
     def __ixor__(self, other: Any) -> Any:
-        super().__ixor__(make_observable(other, self.on_change))
-        self.on_change()
+        super().__ixor__(make_observable(other, self._notify_change))
+        self._notify_change()
         return self
 
 
