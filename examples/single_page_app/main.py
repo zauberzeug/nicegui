@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 from router import Router
 
-from nicegui import ui
+from nicegui import Client, ui
 
 
 @ui.page('/')  # normal index page (e.g. the entry point of the app)
 @ui.page('/{_:path}')  # all other pages will be handled by the router but must be registered to also show the SPA index page
-def main():
+async def main(client: Client):
     router = Router()
 
     @router.add('/')
@@ -29,6 +29,8 @@ def main():
 
     # this places the content which should be displayed
     router.frame().classes('w-full p-4 bg-gray-100')
+    await client.connected()
+    router.open(show_one)  # this is the default page
 
 
 ui.run()
