@@ -49,6 +49,19 @@ class ClickEventArguments(UiEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
+class EChartPointClickEventArguments(ChartEventArguments):
+    component_type: str
+    series_type: str
+    series_index: int
+    series_name: str
+    name: str
+    data_index: int
+    data: Union[float, int, str]
+    data_type: str
+    value: Union[float, int, list]
+
+
+@dataclass(**KWONLY_SLOTS)
 class ChartEventArguments(UiEventArguments):
     event_type: str
 
