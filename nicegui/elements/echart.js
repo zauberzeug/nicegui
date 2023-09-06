@@ -17,6 +17,11 @@ export default {
         this.chart.setOption(this.options);
       }
     },
+    resize_chart() {
+      if (this.chart) {
+        this.chart.resize();
+      }
+    },
     destroyChart() {
       if (this.chart) {
         this.chart.dispose();
