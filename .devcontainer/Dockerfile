@@ -11,8 +11,8 @@ ARG USER_GID=$USER_UID
 ENV POETRY_VERSION=1.6.1 \
     PATH="/home/$USERNAME/.local/bin:$PATH" \
     POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=1 \
-    POETRY_VIRTUALENVS_CREATE=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=false \
+    POETRY_VIRTUALENVS_CREATE=false \
     POETRY_CACHE_DIR=/tmp/poetry_cache \
     DISPLAY=:99
 
@@ -35,12 +35,12 @@ RUN wget -nv -O /tmp/chromedriver.zip https://edgedl.me.gvt1.com/edgedl/chrome/c
     && unzip -j /tmp/chromedriver.zip -d /usr/local/bin/ \
     && rm /tmp/chromedriver.zip
 
-USER $USERNAME
-WORKDIR /workspaces/nicegui
-
 RUN pip install -U pip && pip install poetry==$POETRY_VERSION
 
 COPY ./pyproject.toml ./poetry.lock* main.py ./
 RUN poetry install --all-extras
+
+WORKDIR /workspaces/nicegui
+USER $USERNAME
 
 CMD python -m debugpy --listen 5678 main.py
