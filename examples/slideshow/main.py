@@ -4,6 +4,8 @@ from pathlib import Path
 from nicegui import app, ui
 from nicegui.events import KeyEventArguments
 
+ui.query('.nicegui-content').classes('p-0')  # remove padding from the main content
+
 folder = Path(__file__).parent / 'slides'  # image source: https://pixabay.com/
 files = sorted(f.name for f in folder.glob('*.jpg'))
 index = 0
