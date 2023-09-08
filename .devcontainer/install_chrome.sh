@@ -3,7 +3,7 @@
 export CHROMEVERSION="116.0.5845.96"
 export CHROMEURL=https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/${CHROMEVERSION}
 
-# SElect chrome platfrom according to TARGETPLATFORM passed from Docker
+# Select chrome platfrom according to TARGETPLATFORM passed from Docker
 if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     export CHROMEPLATFORM=linux64; \
 elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
@@ -35,6 +35,6 @@ wget -nv -O /tmp/chromedriver.zip ${CHROMEURL}/${CHROMEPLATFORM}/chromedriver-${
     && ln -s /opt/google/chromedriver/chromedriver /usr/bin/chromedriver \
     && rm /tmp/chromedriver.zip
 
-echo "Installed google chrome and chromedriver versions:"
+echo "Installed versions:"
 echo `google-chrome --version`
 echo `chromedriver --version`
