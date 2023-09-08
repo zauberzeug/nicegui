@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Chrome and chromedriver versions must match as per
 # https://googlechromelabs.github.io/chrome-for-testing/#stable
 export CHROMEVERSION="116.0.5845.96"
