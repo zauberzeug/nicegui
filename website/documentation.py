@@ -764,7 +764,7 @@ def create_full() -> None:
         sys.stdout = open('logs.txt', 'w')
         ```
         See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
-    ''')
+    ''').classes('bold-links arrow-links')
 
     subheading('NiceGUI On Air')
 
