@@ -54,3 +54,21 @@ def test_nested_card(screen: Screen):
     canvas = screen.find_by_tag('canvas')
     assert canvas.rect['height'] == 168
     assert canvas.rect['width'] == 568
+
+def test_nested_expansion(screen: Screen):
+    with ui.expansion() as e:
+        with ui.card().style('height: 200px').style('width: 600px'):
+            ui.echart({
+                'xAxis': {'type': 'value'},
+                'yAxis': {'type': 'category', 'data': ['A', 'B', 'C']},
+                'series': [
+                    {'type': 'line', 'data': [0.1, 0.2, 0.3],},
+                ],
+            })
+    ui.button('Open', on_click=e.open)
+
+    screen.open('/')
+    screen.click('Open')
+    canvas = screen.find_by_tag('canvas')
+    assert canvas.rect['height'] == 168
+    assert canvas.rect['width'] == 568
