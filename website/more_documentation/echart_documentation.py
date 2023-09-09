@@ -1,5 +1,7 @@
 from nicegui import ui
 
+from ..documentation_tools import text_demo
+
 
 def main_demo() -> None:
     from random import random
@@ -35,4 +37,20 @@ def more() -> None:
             ],
         },
         on_point_click=lambda e: ui.notify(f'Click {e}')
+        ).classes('w-full h-64')
+
+
+    @text_demo('Chart with dynamic properties', '''
+        Dynamic properties can be passed to chart elements to customize them such as apply an axis label format.
+        To make a property dynamic prefix `:` to the property name.
+    ''')
+    def dynamic() -> None:
+        echart = ui.echart({
+            'xAxis': {'type': 'category'},
+            'yAxis': {'type': 'value', 'data': 'A', 'axisLabel' : {':formatter': f'value => "$" + value.toFixed(2)'}},
+            'legend': {'textStyle': {'color': 'gray'}},
+            'series': [
+                {'type': 'line', 'name': 'Alpha', 'data': [5, 8, 13, 21, 34, 55]},
+            ],
+        },
         ).classes('w-full h-64')

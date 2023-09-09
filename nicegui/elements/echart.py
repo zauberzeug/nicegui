@@ -1,8 +1,11 @@
+import mimetypes
 from typing import Callable, Dict, Optional
 
 from ..element import Element
 from ..events import (EChartPointClickEventArguments, GenericEventArguments, handle_event)
 
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
 
 class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min.js']):
 
