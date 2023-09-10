@@ -5,6 +5,7 @@ import re
 from copy import copy, deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union
+import mimetypes
 
 from typing_extensions import Self
 
@@ -22,6 +23,8 @@ if TYPE_CHECKING:
 
 PROPS_PATTERN = re.compile(r'([:\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
 
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
 
 class Element(Visibility):
     component: Optional[Component] = None
