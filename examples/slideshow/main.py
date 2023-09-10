@@ -6,10 +6,18 @@ from nicegui.events import KeyEventArguments
 
 ui.query('.nicegui-content').classes('p-0')  # remove padding from the main content
 
-folder = Path(__file__).parent / 'slides'  # image source: https://pixabay.com/
-files = sorted(f.name for f in folder.glob('*.jpg'))
-index = 0
+def glob_img_files(folder, types=["jpg","png"]):
+    files = []
+    for f in folder.glob("*"):
+        for _type in types:
+            if f.name.lower().endswith(_type):
+                files.append(f.name)
+    return sorted(files)
 
+folder = Path(__file__).parent / 'slides'  # image source: https://pixabay.com/
+# files = sorted(f.name for f in folder.glob('*.jpg'))
+files = glob_img_files(folder)
+index = 0
 
 def handle_key(event: KeyEventArguments) -> None:
     global index
@@ -20,6 +28,7 @@ def handle_key(event: KeyEventArguments) -> None:
             index -= 1
         index = index % len(files)
         slide.set_source(f'slides/{files[index]}')
+
 
 
 app.add_static_files('/slides', folder)  # serve all files in this folder
