@@ -53,8 +53,9 @@ def demo(f: Callable) -> Callable:
                 .on('click', copy_code, [])
         with browser_window(title=getattr(f, 'tab', None),
                             classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window') as window:
-            ui.spinner(size='lg').props('thickness=2')
-            intersection_observer(on_intersection=lambda: (window.clear(), f()))
+            spinner = ui.spinner(size='lg').props('thickness=2')
+            intersection_observer(on_intersection=lambda: window.remove(spinner))
+            intersection_observer(on_intersection=f)
     return f
 
 
