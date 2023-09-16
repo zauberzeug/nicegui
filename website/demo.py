@@ -4,7 +4,7 @@ from typing import Callable, Literal, Optional, Union
 
 import isort
 
-from nicegui import ui
+from nicegui import helpers, ui
 
 from .intersection_observer import IntersectionObserver as intersection_observer
 
@@ -54,8 +54,14 @@ def demo(f: Callable) -> Callable:
         with browser_window(title=getattr(f, 'tab', None),
                             classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window') as window:
             spinner = ui.spinner(size='lg').props('thickness=2')
-            intersection_observer(on_intersection=lambda: window.remove(spinner))
-            intersection_observer(on_intersection=f)
+
+            async def handle_intersection():
+                window.remove(spinner)
+                if helpers.is_coroutine_function(f):
+                    await f()
+                else:
+                    f()
+            intersection_observer(on_intersection=handle_intersection)
     return f
 
 
