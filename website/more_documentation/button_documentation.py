@@ -11,7 +11,7 @@ def more() -> None:
     @text_demo('Icons', '''
         You can also add an icon to a button.
     ''')
-    async def icons() -> None:
+    def icons() -> None:
         with ui.row():
             ui.button('demo', icon='history')
             ui.button(icon='thumb_up')
