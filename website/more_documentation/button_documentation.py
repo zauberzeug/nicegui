@@ -4,14 +4,14 @@ from ..documentation_tools import text_demo
 
 
 def main_demo() -> None:
-    ui.button('Click me!', on_click=lambda: ui.notify(f'You clicked me!'))
+    ui.button('Click me!', on_click=lambda: ui.notify('You clicked me!'))
 
 
 def more() -> None:
     @text_demo('Icons', '''
         You can also add an icon to a button.
     ''')
-    async def icons() -> None:
+    def icons() -> None:
         with ui.row():
             ui.button('demo', icon='history')
             ui.button(icon='thumb_up')
