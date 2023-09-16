@@ -5,6 +5,7 @@ Please see the `OAuth2 example at FastAPI <https://fastapi.tiangolo.com/tutorial
 use the great `Authlib package <https://docs.authlib.org/en/v0.13/client/starlette.html#using-fastapi>`_ to implement a classing real authentication system.
 Here we just demonstrate the NiceGUI integration.
 """
+from typing import Optional
 from urllib.parse import quote
 
 from fastapi import Request
@@ -22,7 +23,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         if request.url.path not in ['/login'] and not app.storage.user.get('authenticated', False):
-            return RedirectResponse(f'/login?referer_path={quote(request.url.path)}')
+            return RedirectResponse(f'/login?referrer_path={quote(request.url.path)}')
         return await call_next(request)
 
 
@@ -42,11 +43,11 @@ def test_page() -> None:
 
 
 @ui.page('/login')
-def login(referer_path: str = '') -> None:
+def login(referrer_path: str = '') -> Optional[RedirectResponse]:
     def try_login() -> None:  # local function to avoid passing username and password as arguments
         if passwords.get(username.value) == password.value:
             app.storage.user.update({'username': username.value, 'authenticated': True})
-            ui.open(referer_path or '/')
+            ui.open(referrer_path or '/')
         else:
             ui.notify('Wrong username or password', color='negative')
 
