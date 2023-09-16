@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-
 import random
+from typing import Optional
 
 from nicegui import ui
 from nicegui.binding import BindableProperty, bind_from
@@ -9,33 +9,32 @@ from nicegui.binding import BindableProperty, bind_from
 class colorful_label(ui.label):
     """A label with a bindable background color."""
 
-    # this class variable defines what happens when the background property changes
-    background = BindableProperty(on_change=lambda sender, bg: sender.on_background_change(bg))
+    # This class variable defines what happens when the background property changes.
+    background = BindableProperty(on_change=lambda sender, value: sender.on_background_change(value))
 
-    def __init__(self, text: str):
+    def __init__(self, text: str = '') -> None:
         super().__init__(text)
-        self.background = None  # initialize the background property
+        self.background: Optional[str] = None  # initialize the background property
 
-    def on_background_change(self, bg: str) -> None:
+    def on_background_change(self, bg_class: str) -> None:
         """Update the classes of the label when the background property changes."""
         self._classes = [c for c in self._classes if not c.startswith('bg-')]
-        self._classes.append(bg)
+        self._classes.append(bg_class)
         self.update()
 
 
-def shuffle():
-    for key in data:
-        data[key] = random.choice([True, False])
+temperatures = {'Berlin': 5, 'New York': 15, 'Tokio': 25}
+ui.button(icon='refresh', on_click=lambda: temperatures.update({city: random.randint(0, 30) for city in temperatures}))
 
 
-ui.button('shuffle', on_click=shuffle)
-data = {}
-for k in 'abcde':
-    data[k] = random.choice([True, False])
-    label = colorful_label(k.upper()).classes('w-48 text-center')
-    # binding from the data to the label
-    # there is also a bind_to method which would propagate changes from the label to the data
-    # and a bind method which would propagate changes both ways
-    bind_from(label, 'background', data, k, backward=lambda x: 'bg-green' if x else 'bg-red')
+for city in temperatures:
+    label = colorful_label().classes('w-48 text-center') \
+        .bind_text_from(temperatures, city, backward=lambda t, city=city: f'{city} ({t}°C)')
+    # Bind background color from temperature.
+    # There is also a bind_to method which would propagate changes from the label to the temperatures dictionary
+    # and a bind method which would propagate changes both ways.
+    bind_from(self_obj=label, self_name='background',
+              other_obj=temperatures, other_name=city,
+              backward=lambda t: 'bg-green' if t < 10 else 'bg-yellow' if t < 20 else 'bg-orange')
 
 ui.run()
