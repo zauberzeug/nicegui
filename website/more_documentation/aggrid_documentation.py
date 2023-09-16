@@ -142,7 +142,7 @@ def more() -> None:
         All AG Grid events are passed through to NiceGUI via the AG Grid global listener.
         These events can be subscribed to using the `.on()` method.
     ''')
-    def aggrid_with_html_columns():
+    def aggrid_respond_to_event():
         ui.aggrid({
             'columnDefs': [
                 {'headerName': 'Name', 'field': 'name'},
