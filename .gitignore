@@ -10,3 +10,4 @@ venv
 .idea
 .nicegui/
 *.sqlite*
+**/data/

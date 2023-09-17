@@ -11,6 +11,8 @@ python hello\hello.py
 
 ## Examples
 
+see ~\nicegui\examples\nicegui_demos.md
+
 - cd todo_list && python main.py
     - too many codes
 

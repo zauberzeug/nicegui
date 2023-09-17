@@ -9,9 +9,9 @@
 | `docker_image`     |    |    |
 | `download_text_as_file`     |    |    |
 | `fastapi`     |    |    |
-| `ffmpeg_extract_images`     |    |    |
+| `ffmpeg_extract_images`     |  ffmpeg: video to image  |    |
 | `generate_pdf`     |    |    |
-| `hello`     |    |    |
+| `hello_nicegui`     |    |    |
 | `image_mask_overlay`     |    |    |
 | `infinite_scroll`     |    |    |
 | `lightbox`     |    |    |
@@ -31,6 +31,7 @@
 | `slideshow`     |  image browser   |  could use simpy to auto-show  |
 | `slots`     |    |    |
 | `sqlite_database`     | tortoise   | Sqlite DB - https://github.com/tortoise/tortoise-orm    |
+| `styling`     |  props, classes, style, tailwind  | CSS style   |
 | `svg_clock`     |  html/svg  | clock   |
 | `table_and_slots`     |  table and slot |    |
 | `todo_list`     | form  |  basic form using dataclass   |
