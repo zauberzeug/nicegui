@@ -115,16 +115,16 @@ class ObservableSet(set):
         super().__init__(data)
         for item in self:
             super().add(make_observable(item, on_change))
-        self._on_change_handler: list[Callable] = []
+        self._change_handlers: List[Callable] = []
         if on_change is not None:
-            self._on_change_handler.append(on_change)
+            self._change_handlers.append(on_change)
 
     def _notify_change(self) -> None:
-        for handler in self._on_change_handler:
+        for handler in self._change_handlers:
             events.handle_event(handler, events.ObservableChangeEventArguments(sender=self))
 
     def on_change(self, handler: Callable) -> None:
-        self._on_change_handler.append(handler)
+        self._change_handlers.append(handler)
 
     def add(self, item: Any) -> None:
         super().add(make_observable(item, self._notify_change))
