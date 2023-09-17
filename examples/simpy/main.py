@@ -31,7 +31,7 @@ async def run_simpy():
     env.process(traffic_light(env))
     env.process(clock(env))
     try:
-        await env.run(until=300)  # run until 300 seconds of simulation time have passed
+        await env.run(until=3600)  # run until 300 seconds of simulation time have passed
     except asyncio.CancelledError:
         return
     ui.notify('Simulation completed')

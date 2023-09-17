@@ -42,7 +42,7 @@ def todo_ui():
             ui.button(on_click=lambda item=item: todos.remove(item), icon='delete').props('flat fab-mini color=grey')
 
 
-todos = ToDoList('My Weekend', on_change=todo_ui.refresh)
+todos = ToDoList('ToDo List', on_change=todo_ui.refresh)
 todos.add('Order pizza', done=True)
 todos.add('New NiceGUI Release')
 todos.add('Clean the house')
@@ -50,8 +50,9 @@ todos.add('Call mom')
 
 with ui.card().classes('w-80 items-stretch'):
     ui.label().bind_text_from(todos, 'title').classes('text-semibold text-2xl')
-    todo_ui()
     add_input = ui.input('New item').classes('mx-12')
     add_input.on('keydown.enter', lambda: (todos.add(add_input.value), add_input.set_value('')))
+
+    todo_ui()
 
 ui.run()

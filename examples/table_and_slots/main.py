@@ -17,25 +17,28 @@ rows = [
     {'id': 6, 'name': 'Carol'},
 ]
 
-with ui.table(title='My Team', columns=columns, rows=rows, selection='multiple', pagination=10).classes('w-96') as table:
-    with table.add_slot('top-right'):
-        with ui.input(placeholder='Search').props('type=search').bind_value(table, 'filter').add_slot('append'):
+with ui.table(title='My Team', columns=columns, rows=rows, selection='multiple', pagination=5).classes('w-96') as _table:
+
+    with _table.add_slot('top-right'):
+        with ui.input(placeholder='Search').props('type=search').bind_value(_table, 'filter').add_slot('append'):
             ui.icon('search')
-    with table.add_slot('bottom-row'):
-        with table.row():
-            with table.cell():
+
+    with _table.add_slot('bottom-row'):
+        with _table.row():
+
+            with _table.cell():
                 ui.button(on_click=lambda: (
-                    table.add_rows({'id': time.time(), 'name': new_name.value, 'age': new_age.value}),
+                    _table.add_rows({'id': time.time(), 'name': new_name.value, 'age': new_age.value}),
                     new_name.set_value(None),
                     new_age.set_value(None),
                 ), icon='add').props('flat fab-mini')
-            with table.cell():
+            with _table.cell():
                 new_name = ui.input('Name')
-            with table.cell():
+            with _table.cell():
                 new_age = ui.number('Age')
 
-ui.label().bind_text_from(table, 'selected', lambda val: f'Current selection: {val}')
-ui.button('Remove', on_click=lambda: table.remove_rows(*table.selected)) \
-    .bind_visibility_from(table, 'selected', backward=lambda val: bool(val))
+ui.label().bind_text_from(_table, 'selected', lambda val: f'Current selection: {val}')
+ui.button('Remove', on_click=lambda: _table.remove_rows(*_table.selected)) \
+    .bind_visibility_from(_table, 'selected', backward=lambda val: bool(val))
 
 ui.run()

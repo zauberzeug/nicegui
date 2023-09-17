@@ -28,10 +28,13 @@ async def search(e: events.ValueChangeEventArguments) -> None:
                 ui.label(drink['strDrink']).classes('absolute-bottom text-subtitle2 text-center')
     running_query = None
 
-# create a search field which is initially focused and leaves space at the top
-search_field = ui.input(on_change=search) \
-    .props('autofocus outlined rounded item-aligned input-class="ml-3"') \
-    .classes('w-96 self-center mt-24 transition-all')
+with ui.row():
+    ui.html("""<a href=https://www.thecocktaildb.com/><img src="https://www.thecocktaildb.com/images/logo.png"> </a>""")
+    # create a search field which is initially focused and leaves space at the top
+    search_field = ui.input(on_change=search) \
+        .props('autofocus outlined rounded item-aligned input-class="ml-3"') \
+        .classes('w-96 self-center mt-24 transition-all')
+
 results = ui.row()
 
 ui.run()

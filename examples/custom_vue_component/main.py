@@ -2,10 +2,8 @@
 from counter import Counter
 
 from nicegui import ui
-
-ui.markdown('''
-#### Try the new click counter!
-
+# ui.markdown not working
+ui.label(''' #### Try the new click counter!
 Click to increment its value.
 ''')
 with ui.card():
