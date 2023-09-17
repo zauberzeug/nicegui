@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Iterable, List, Set, SupportsIndex, Union, overload
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set, SupportsIndex, Union, overload
 
 from . import events
 
@@ -111,7 +111,7 @@ class ObservableList(list):
 
 class ObservableSet(set):
 
-    def __init__(self, data: set = set(), on_change: Callable = None) -> None:
+    def __init__(self, data: set = set(), on_change: Optional[Callable] = None) -> None:
         super().__init__(data)
         for item in self:
             super().add(make_observable(item, on_change))
