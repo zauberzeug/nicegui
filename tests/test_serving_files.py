@@ -3,6 +3,7 @@ from pathlib import Path
 
 import httpx
 import pytest
+import requests
 
 from nicegui import app, ui
 
@@ -81,3 +82,15 @@ def test_auto_serving_file_from_video_source(screen: Screen):
     video = screen.find_by_tag('video')
     assert '/_nicegui/auto/media/' in video.get_attribute('src')
     assert_video_file_streaming(video.get_attribute('src'))
+
+
+def test_mimetypes_of_static_files(screen: Screen):
+    screen.open('/')
+
+    response = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/0.1.0/static/vue.global.js', timeout=5)
+    assert response.status_code == 200
+    assert response.headers['Content-Type'].startswith('text/javascript')
+
+    response = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/0.1.0/static/nicegui.css', timeout=5)
+    assert response.status_code == 200
+    assert response.headers['Content-Type'].startswith('text/css')
