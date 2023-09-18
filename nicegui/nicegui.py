@@ -1,4 +1,5 @@
 import asyncio
+import mimetypes
 import time
 import urllib.parse
 from pathlib import Path
@@ -25,6 +26,9 @@ globals.app = app = App(default_response_class=NiceGUIJSONResponse)
 # NOTE we use custom json module which wraps orjson
 socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=json)
 globals.sio = sio = socket_manager._sio  # pylint: disable=protected-access
+
+mimetypes.add_type('text/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
 
 app.add_middleware(GZipMiddleware)
 app.add_middleware(RedirectWithPrefixMiddleware)
