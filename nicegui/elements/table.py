@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Literal, Optional
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 from ..element import Element
 from ..events import GenericEventArguments, TableSelectionEventArguments, handle_event
@@ -13,7 +13,7 @@ class Table(FilterElement, component='table.js'):
                  row_key: str = 'id',
                  title: Optional[str] = None,
                  selection: Optional[Literal['single', 'multiple']] = None,
-                 pagination: Optional[int] = None,
+                 pagination: Optional[Union[int, dict]] = None,
                  on_select: Optional[Callable[..., Any]] = None,
                  ) -> None:
         """Table
@@ -25,7 +25,7 @@ class Table(FilterElement, component='table.js'):
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
         :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`)
+        :param pagination: A dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
         :param on_select: callback which is invoked when the selection changes
 
         If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
@@ -41,7 +41,10 @@ class Table(FilterElement, component='table.js'):
         self._props['row-key'] = row_key
         self._props['title'] = title
         self._props['hide-pagination'] = pagination is None
-        self._props['pagination'] = {'rowsPerPage': pagination or 0}
+        if isinstance(pagination, dict):
+            self._props['pagination'] = pagination
+        else:
+            self._props['pagination'] = {'rowsPerPage': pagination or 0}
         self._props['selection'] = selection or 'none'
         self._props['selected'] = self.selected
         self._props['fullscreen'] = False
