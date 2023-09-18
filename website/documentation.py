@@ -681,7 +681,7 @@ def create_full() -> None:
 
                 ui.label('Hello from PyInstaller')
 
-                ui.run(reload=False, native_mode.find_open_port())
+                ui.run(reload=False, port=native_mode.find_open_port())
                 ```
             ''')
         with demo.python_window('build.py', classes='max-w-lg w-full'):
@@ -764,7 +764,7 @@ def create_full() -> None:
         sys.stdout = open('logs.txt', 'w')
         ```
         See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
-    ''')
+    ''').classes('bold-links arrow-links')
 
     subheading('NiceGUI On Air')
 

@@ -1,7 +1,15 @@
 export default {
   template: `
     <div style="position:relative">
-      <img ref="img" :src="computed_src" style="width:100%; height:100%;" v-on="onEvents" draggable="false" />
+      <img
+        ref="img"
+        :src="computed_src"
+        style="width:100%; height:100%;"
+        @load="onImageLoaded"
+        v-on="onCrossEvents"
+        v-on="onUserEvents"
+        draggable="false"
+      />
       <svg style="position:absolute;top:0;left:0;pointer-events:none" :viewBox="viewBox">
         <g v-if="cross" :style="{ display: cssDisplay }">
           <line :x1="x" y1="0" :x2="x" y2="100%" stroke="black" />
@@ -74,18 +82,20 @@ export default {
     },
   },
   computed: {
-    onEvents() {
-      const allEvents = {};
+    onCrossEvents() {
+      if (!this.cross) return {};
+      return {
+        mouseenter: () => (this.cssDisplay = "block"),
+        mouseleave: () => (this.cssDisplay = "none"),
+        mousemove: (event) => this.updateCrossHair(event),
+      };
+    },
+    onUserEvents() {
+      const events = {};
       for (const type of this.events) {
-        allEvents[type] = (event) => this.onMouseEvent(type, event);
+        events[type] = (event) => this.onMouseEvent(type, event);
       }
-      if (this.cross) {
-        allEvents["mouseenter"] = () => (this.cssDisplay = "block");
-        allEvents["mouseleave"] = () => (this.cssDisplay = "none");
-        allEvents["mousemove"] = (event) => this.updateCrossHair(event);
-      }
-      allEvents["load"] = (event) => this.onImageLoaded(event);
-      return allEvents;
+      return events;
     },
   },
   props: {

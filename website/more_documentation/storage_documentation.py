@@ -15,11 +15,13 @@ def main_demo() -> None:
     - `app.storage.user`:
         Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie.
         Unique to each user, this storage is accessible across all their browser tabs.
+        `app.storage.browser['id']` is used to identify the user.
     - `app.storage.general`:
         Also stored server-side, this dictionary provides a shared storage space accessible to all users.
     - `app.storage.browser`:
         Unlike the previous types, this dictionary is stored directly as the browser session cookie, shared among all browser tabs for the same user.
         However, `app.storage.user` is generally preferred due to its advantages in reducing data payload, enhancing security, and offering larger storage capacity.
+        By default, NiceGUI holds a unique identifier for the browser session in `app.storage.browser['id']`.
 
     The user storage and browser storage are only available within `page builder functions </documentation/page>`_
     because they are accessing the underlying `Request` object from FastAPI.

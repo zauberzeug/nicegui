@@ -16,14 +16,14 @@ def more() -> None:
         The `autocomplete` feature provides suggestions as you type, making input easier and faster.
         The parameter `options` is a list of strings that contains the available options that will appear.
     ''')
-    async def autocomplete_demo():
+    def autocomplete_demo():
         options = ['AutoComplete', 'NiceGUI', 'Awesome']
         ui.input(label='Text', placeholder='start typing', autocomplete=options)
 
     @text_demo('Clearable', '''
         The `clearable` prop from [Quasar](https://quasar.dev/) adds a button to the input that clears the text.    
     ''')
-    async def clearable():
+    def clearable():
         i = ui.input(value='some text').props('clearable')
         ui.label().bind_text_from(i, 'value')
 
@@ -32,7 +32,7 @@ def more() -> None:
         It is even possible to style the underlying input with `input-style` and `input-class` props
         and use the provided slots to add custom elements.
     ''')
-    async def styling():
+    def styling():
         ui.input(placeholder='start typing').props('rounded outlined dense')
         ui.input('styling', value='some text') \
             .props('input-style="color: blue" input-class="font-mono"')
