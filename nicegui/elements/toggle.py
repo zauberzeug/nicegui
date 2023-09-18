@@ -11,6 +11,7 @@ class Toggle(ChoiceElement, DisableableElement):
                  options: Union[List, Dict], *,
                  value: Any = None,
                  on_change: Optional[Callable[..., Any]] = None,
+                 clearable: bool = False,
                  ) -> None:
         """Toggle
 
@@ -20,8 +21,10 @@ class Toggle(ChoiceElement, DisableableElement):
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
         :param value: the initial value
         :param on_change: callback to execute when selection changes
+        :param clearable: whether the toggle can be cleared by clicking the selected option
         """
         super().__init__(tag='q-btn-toggle', options=options, value=value, on_change=on_change)
+        self._props['clearable'] = clearable
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         return self._values[e.args] if e.args is not None else None
