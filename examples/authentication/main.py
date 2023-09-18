@@ -6,7 +6,6 @@ use the great `Authlib package <https://docs.authlib.org/en/v0.13/client/starlet
 Here we just demonstrate the NiceGUI integration.
 """
 from typing import Optional
-from urllib.parse import quote
 
 from fastapi import Request
 from fastapi.responses import RedirectResponse
@@ -18,12 +17,14 @@ from nicegui import app, ui
 # in reality users passwords would obviously need to be hashed
 passwords = {'user1': 'pass1', 'user2': 'pass2'}
 
-unrestricted_page_routes = ['/login']
+unrestricted_page_routes = {'/login'}
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
     """This middleware restricts access to all NiceGUI pages.
-    It redirects the user to the login page if they are not authenticated."""
+
+    It redirects the user to the login page if they are not authenticated.
+    """
 
     async def dispatch(self, request: Request, call_next):
         if not app.storage.user.get('authenticated', False):
@@ -45,7 +46,7 @@ def main_page() -> None:
 
 @ui.page('/subpage')
 def test_page() -> None:
-    ui.label('This is a subpage page.')
+    ui.label('This is a sub page.')
 
 
 @ui.page('/login')
