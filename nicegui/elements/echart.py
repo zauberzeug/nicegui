@@ -27,4 +27,8 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
         self.run_method('update_chart')
 
     def resize(self) -> None:
+        """Resize the chart to fit the container.
+
+        Usually, this does not need to be called manually, as the chart is resized automatically when the window is resized.
+        """
         self.run_method('resize_chart')
