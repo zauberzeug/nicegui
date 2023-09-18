@@ -55,6 +55,7 @@ class Air:
 
         @self.relay.on('ready')
         def on_ready(data: Dict[str, Any]) -> None:
+            globals.app.urls.add(data['device_url'])
             print(f'NiceGUI is on air at {data["device_url"]}', flush=True)
 
         @self.relay.on('error')

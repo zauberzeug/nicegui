@@ -531,6 +531,21 @@ def create_full() -> None:
         ui.button('shutdown', on_click=lambda: ui.notify(
             'Nah. We do not actually shutdown the documentation server. Try it in your own app!'))
 
+    @text_demo('URLs', '''
+        You can access the list of all URLs on which the NiceGUI app is available via `app.urls`.
+        The URLs are not available in `app.on_startup` because the server is not yet running.
+        Instead, you can access them in a page function or register a callback with `app.urls.on_change`.
+    ''')
+    def urls_demo():
+        from nicegui import app
+
+        # @ui.page('/')
+        # def index():
+        #     for url in app.urls:
+        #         ui.link(url, target=url)
+        # END OF DEMO
+        ui.link('https://nicegui.io', target='https://nicegui.io')
+
     heading('NiceGUI Fundamentals')
 
     @text_demo('Auto-context', '''

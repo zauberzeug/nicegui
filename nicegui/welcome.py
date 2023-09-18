@@ -36,10 +36,11 @@ async def print_message() -> None:
     loop = asyncio.get_running_loop()
     ips = set((await loop.run_in_executor(None, get_all_ips)) if host == '0.0.0.0' else [])
     ips.discard('127.0.0.1')
-    addresses = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ['localhost'] + sorted(ips)]
-    if len(addresses) >= 2:
-        addresses[-1] = 'and ' + addresses[-1]
+    urls = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ['localhost'] + sorted(ips)]
+    globals.app.urls.update(urls)
+    if len(urls) >= 2:
+        urls[-1] = 'and ' + urls[-1]
     extra = ''
     if 'netifaces' not in globals.optional_features:
         extra = ' (install netifaces to show all IPs and speedup this message)'
-    print(f'on {", ".join(addresses)}' + extra, flush=True)
+    print(f'on {", ".join(urls)}' + extra, flush=True)
