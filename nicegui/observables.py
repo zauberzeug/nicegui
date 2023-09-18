@@ -111,7 +111,12 @@ class ObservableList(list):
 
 class ObservableSet(set):
 
-    def __init__(self, data: set = set(), on_change: Optional[Callable] = None) -> None:
+    def __init__(self,
+                 data: set = None,  # type: ignore
+                 on_change: Optional[Callable] = None,
+                 ) -> None:
+        if data is None:
+            data = set()
         super().__init__(data)
         for item in self:
             super().add(make_observable(item, on_change))
