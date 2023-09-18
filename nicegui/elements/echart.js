@@ -3,7 +3,7 @@ export default {
   mounted() {
     this.chart = echarts.init(this.$el);
     this.chart.setOption(this.options);
-    this.chart.resize();
+    new ResizeObserver(() => this.resize_chart()).observe(this.$el);
   },
   beforeDestroy() {
     this.destroyChart();
