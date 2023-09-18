@@ -115,9 +115,7 @@ class ObservableSet(set):
                  data: set = None,  # type: ignore
                  on_change: Optional[Callable] = None,
                  ) -> None:
-        if data is None:
-            data = set()
-        super().__init__(data)
+        super().__init__(set() if data is None else data)
         for item in self:
             super().add(make_observable(item, on_change))
         self._change_handlers: List[Callable] = []
