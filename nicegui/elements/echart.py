@@ -25,3 +25,6 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
     def update(self) -> None:
         super().update()
         self.run_method('update_chart')
+
+    def resize(self) -> None:
+        self.run_method('resize_chart')
