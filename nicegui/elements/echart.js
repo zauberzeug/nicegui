@@ -1,8 +1,11 @@
+import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
+
 export default {
   template: "<div></div>",
   mounted() {
     this.chart = echarts.init(this.$el);
-    this.chart.setOption(this.options);
+    this.chart.on("click", (e) => this.$emit("pointClick", e));
+    this.update_chart();
     new ResizeObserver(this.chart.resize).observe(this.$el);
   },
   beforeDestroy() {
@@ -13,6 +16,7 @@ export default {
   },
   methods: {
     update_chart() {
+      convertDynamicProperties(this.options, true);
       this.chart.setOption(this.options);
     },
   },
