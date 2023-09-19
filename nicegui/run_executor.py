@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from functools import partial
 from typing import Any, Callable
@@ -35,5 +36,6 @@ def tear_down() -> None:
         return
     for p in process_pool._processes.values():  # pylint: disable=protected-access
         p.kill()
-    process_pool.shutdown(wait=True, cancel_futures=True)
-    thread_pool.shutdown(wait=False, cancel_futures=True)
+    kwargs = {'cancel_futures': True} if sys.version_info >= (3, 9) else {}
+    process_pool.shutdown(wait=True, **kwargs)
+    thread_pool.shutdown(wait=False, **kwargs)
