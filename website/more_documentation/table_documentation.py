@@ -204,6 +204,13 @@ def more() -> None:
 
     @text_demo('Pagination', '''
         You can provide either a single integer or a dictionary to define pagination.
+
+        The dictionary can contain the following keys:
+
+        - `rowsPerPage`: The number of rows per page.
+        - `sortBy`: The column name to sort by.
+        - `descending`: Whether to sort in descending order.
+        - `page`: The current page (1-based).
     ''')
     def pagination() -> None:
         columns = [
