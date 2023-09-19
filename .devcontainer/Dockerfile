@@ -8,24 +8,22 @@ ENV POETRY_VERSION=1.6.1 \
     DEBIAN_FRONTEND=noninteractive \
     DISPLAY=:99
 
-# Create remote user
+# Chrome and chromedriver versions must match
+# See https://chromiumdash.appspot.com/home
+ARG CHROMIUM_VERSION=117.0.5938.62
+
+# Create remote user and install google chromium and chromium-driver
 ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
-    && apt-get update \
-    && apt-get install -y sudo git wget gnupg unzip curl \
+    && apt-get update && apt-get install --no-install-recommends -y \
+    sudo git chromium=${CHROMIUM_VERSION}* chromium-driver=${CHROMIUM_VERSION}* \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     && rm -rf /var/lib/apt/lists/*
-
-# Install google chrome and chromedriver
-ARG TARGETPLATFORM
-COPY .devcontainer/install_chrome.sh ./install_chrome.sh
-RUN ./install_chrome.sh
-RUN rm ./install_chrome.sh
 
 # Install nicegui
 RUN pip install -U pip && pip install poetry==$POETRY_VERSION
