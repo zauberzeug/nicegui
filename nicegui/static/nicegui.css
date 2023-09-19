@@ -97,6 +97,12 @@ h6.q-timeline__title {
   font-size: 1.25rem;
   font-weight: 500;
 }
+.nicegui-code {
+  position: relative;
+  background-color: rgba(127, 127, 127, 0.1);
+  box-shadow: 0 0 0.5em rgba(127, 127, 127, 0.05);
+  border-radius: 0.25rem;
+}
 
 #popup {
   position: fixed;
