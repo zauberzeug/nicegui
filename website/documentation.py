@@ -531,6 +531,21 @@ def create_full() -> None:
         ui.button('shutdown', on_click=lambda: ui.notify(
             'Nah. We do not actually shutdown the documentation server. Try it in your own app!'))
 
+    @text_demo('URLs', '''
+        You can access the list of all URLs on which the NiceGUI app is available via `app.urls`.
+        The URLs are not available in `app.on_startup` because the server is not yet running.
+        Instead, you can access them in a page function or register a callback with `app.urls.on_change`.
+    ''')
+    def urls_demo():
+        from nicegui import app
+
+        # @ui.page('/')
+        # def index():
+        #     for url in app.urls:
+        #         ui.link(url, target=url)
+        # END OF DEMO
+        ui.link('https://nicegui.io', target='https://nicegui.io')
+
     heading('NiceGUI Fundamentals')
 
     @text_demo('Auto-context', '''
@@ -681,7 +696,7 @@ def create_full() -> None:
 
                 ui.label('Hello from PyInstaller')
 
-                ui.run(reload=False, native_mode.find_open_port())
+                ui.run(reload=False, port=native_mode.find_open_port())
                 ```
             ''')
         with demo.python_window('build.py', classes='max-w-lg w-full'):
@@ -764,7 +779,7 @@ def create_full() -> None:
         sys.stdout = open('logs.txt', 'w')
         ```
         See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
-    ''')
+    ''').classes('bold-links arrow-links')
 
     subheading('NiceGUI On Air')
 

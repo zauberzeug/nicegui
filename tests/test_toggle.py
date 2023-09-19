@@ -35,3 +35,15 @@ def test_changing_options(screen: Screen):
     screen.should_contain('value = 10')
     screen.click('clear')
     screen.should_contain('value = None')
+
+
+def test_clearable_toggle(screen: Screen):
+    t = ui.toggle(['A', 'B', 'C'], clearable=True)
+    ui.label().bind_text_from(t, 'value', lambda v: f'value = {v}')
+
+    screen.open('/')
+    screen.click('A')
+    screen.should_contain('value = A')
+
+    screen.click('A')
+    screen.should_contain('value = None')

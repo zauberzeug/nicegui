@@ -18,6 +18,11 @@ def main_demo() -> None:
     The generic event handler can be synchronous or asynchronous and optionally takes `GenericEventArguments` as argument ("E").
     You can also specify which attributes of the JavaScript or Quasar event should be passed to the handler ("F").
     This can reduce the amount of data that needs to be transferred between the server and the client.
+
+    Here you can find more information about the events that are supported:
+
+    - https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement#events for HTML elements
+    - https://quasar.dev/vue-components for Quasar-based elements (see the "Events" tab on the individual component page)
     """
     with ui.row():
         ui.button('A', on_click=lambda: ui.notify('You clicked the button A.'))

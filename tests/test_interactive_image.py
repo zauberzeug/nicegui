@@ -1,4 +1,5 @@
 import pytest
+from selenium.webdriver.common.action_chains import ActionChains
 
 from nicegui import Client, ui
 
@@ -57,3 +58,20 @@ def test_replace_interactive_image(screen: Screen):
     screen.click('Replace')
     screen.wait(0.5)
     assert screen.find_by_tag('img').get_attribute('src').endswith('id/30/640/360')
+
+
+@pytest.mark.parametrize('cross', [True, False])
+def test_mousemove_event(screen: Screen, cross: bool):
+    counter = {'value': 0}
+    ii = ui.interactive_image('https://picsum.photos/id/29/640/360', cross=cross, events=['mousemove'],
+                              on_mouse=lambda: counter.update(value=counter['value'] + 1))
+
+    screen.open('/')
+    element = screen.find_element(ii)
+    ActionChains(screen.selenium) \
+        .move_to_element_with_offset(element, 0, 0) \
+        .pause(0.5) \
+        .move_by_offset(10, 10) \
+        .pause(0.5) \
+        .perform()
+    assert counter['value'] > 0

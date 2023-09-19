@@ -12,7 +12,7 @@ from .slot import Slot
 if TYPE_CHECKING:
     from .client import Client
     from .element import Element
-    from .observables import ObservableDict, ObservableList, ObservableSet
+    from .observables import ObservableCollection
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -22,7 +22,7 @@ class EventArguments:
 
 @dataclass(**KWONLY_SLOTS)
 class ObservableChangeEventArguments(EventArguments):
-    sender: Union[ObservableDict, ObservableList, ObservableSet]
+    sender: ObservableCollection
 
 
 @dataclass(**KWONLY_SLOTS)

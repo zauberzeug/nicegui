@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import globals, helpers  # pylint: disable=redefined-builtin
 from .native import Native
+from .observables import ObservableSet
 from .storage import Storage
 
 
@@ -16,6 +17,7 @@ class App(FastAPI):
         super().__init__(**kwargs)
         self.native = Native()
         self.storage = Storage()
+        self.urls = ObservableSet()
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
         """Called every time a new client connects to NiceGUI.
