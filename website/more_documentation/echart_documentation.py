@@ -21,36 +21,26 @@ def main_demo() -> None:
         echart.update()
 
     ui.button('Update', on_click=update)
-    
+
 
 def more() -> None:
-    @text_demo('Chart with clickable points', '''
+    @text_demo('EChart with clickable points', '''
         You can register a callback for an event when a series point is clicked.
     ''')
-    def click() -> None:
-        echart = ui.echart({
+    def clickable_points() -> None:
+        ui.echart({
             'xAxis': {'type': 'category'},
-            'yAxis': {'type': 'value', 'data': 'A', 'inverse': True},
-            'legend': {'textStyle': {'color': 'gray'}},
-            'series': [
-                {'type': 'line', 'name': 'Alpha', 'data': [20, 10, 30, 50, 40, 30]},
-            ],
-        },
-        on_point_click=lambda e: ui.notify(f'Click {e}')
-        ).classes('w-full h-64')
+            'yAxis': {'type': 'value'},
+            'series': [{'type': 'line', 'data': [20, 10, 30, 50, 40, 30]}],
+        }, on_point_click=ui.notify)
 
-
-    @text_demo('Chart with dynamic properties', '''
+    @text_demo('EChart with dynamic properties', '''
         Dynamic properties can be passed to chart elements to customize them such as apply an axis label format.
-        To make a property dynamic prefix `:` to the property name.
+        To make a property dynamic, prefix a colon ":" to the property name.
     ''')
-    def dynamic() -> None:
-        echart = ui.echart({
+    def dynamic_properties() -> None:
+        ui.echart({
             'xAxis': {'type': 'category'},
-            'yAxis': {'type': 'value', 'data': 'A', 'axisLabel' : {':formatter': f'value => "$" + value.toFixed(2)'}},
-            'legend': {'textStyle': {'color': 'gray'}},
-            'series': [
-                {'type': 'line', 'name': 'Alpha', 'data': [5, 8, 13, 21, 34, 55]},
-            ],
-        },
-        ).classes('w-full h-64')
+            'yAxis': {'axisLabel': {':formatter': 'value => "$" + value'}},
+            'series': [{'type': 'line', 'data': [5, 8, 13, 21, 34, 55]}],
+        })

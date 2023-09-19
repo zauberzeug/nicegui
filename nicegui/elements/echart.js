@@ -4,23 +4,9 @@ export default {
   template: "<div></div>",
   mounted() {
     this.chart = echarts.init(this.$el);
-    convertDynamicProperties(this.options, true);
-    this.chart.setOption(this.options);
+    this.chart.on("click", (e) => this.$emit("pointClick", e));
+    this.update_chart();
     new ResizeObserver(this.chart.resize).observe(this.$el);
-    function unpack(e) {
-      return {
-        component_type: e.componentType,
-        series_type: e.seriesType,
-        series_index: e.seriesIndex,
-        series_name: e.seriesName,
-        name: e.name,
-        data_index: e.dataIndex,
-        data: e.data,
-        data_type: e.dataType,
-        value: e.value,
-      };
-    }
-    this.chart.on("click", (e) => this.$emit("pointClick", unpack(e)));
   },
   beforeDestroy() {
     this.chart.dispose();

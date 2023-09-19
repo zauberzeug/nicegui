@@ -1,17 +1,12 @@
-import mimetypes
 from typing import Callable, Dict, Optional
 
 from ..element import Element
-from ..events import (EChartPointClickEventArguments, GenericEventArguments, handle_event)
+from ..events import EChartPointClickEventArguments, GenericEventArguments, handle_event
 
-mimetypes.add_type('application/javascript', '.js')
-mimetypes.add_type('text/css', '.css')
 
 class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min.js']):
 
-    def __init__(self, options: Dict,
-            on_point_click: Optional[Callable] = None,
-            ) -> None:
+    def __init__(self, options: Dict, on_point_click: Optional[Callable] = None) -> None:
         """Apache EChart
 
         An element to create a chart using `ECharts <https://echarts.apache.org/>`_.
@@ -30,29 +25,27 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
                 handle_event(on_point_click, EChartPointClickEventArguments(
                     sender=self,
                     client=self.client,
-                    event_type='point_click',
-                    component_type=e.args['component_type'],
-                    series_type=e.args['series_type'],
-                    series_index=e.args['series_index'],
-                    series_name=e.args['series_name'],
+                    component_type=e.args['componentType'],
+                    series_type=e.args['seriesType'],
+                    series_index=e.args['seriesIndex'],
+                    series_name=e.args['seriesName'],
                     name=e.args['name'],
-                    data_index=e.args['data_index'],
+                    data_index=e.args['dataIndex'],
                     data=e.args['data'],
-                    data_type=e.args.get('data_type'),
+                    data_type=e.args.get('dataType'),
                     value=e.args['value'],
                 ))
-            
             self.on('pointClick', handle_point_click, [
-                'component_type', 
-                'series_type',
-                'series_index', 
-                'series_name',
+                'componentType',
+                'seriesType',
+                'seriesIndex',
+                'seriesName',
                 'name',
-                'data_index', 
+                'dataIndex',
                 'data',
-                'data_type',
+                'dataType',
                 'value',
-                ])
+            ])
 
     @property
     def options(self) -> Dict:

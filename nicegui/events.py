@@ -54,7 +54,7 @@ class ChartEventArguments(UiEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
-class EChartPointClickEventArguments(ChartEventArguments):
+class EChartPointClickEventArguments(UiEventArguments):
     component_type: str
     series_type: str
     series_index: int
