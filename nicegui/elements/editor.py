@@ -14,7 +14,8 @@ class Editor(ValueElement, DisableableElement):
                  ) -> None:
         """Editor
 
-        A code editor with syntax highlighting, based on `Quasar's QEditor <https://quasar.dev/vue-components/editor>`_.
+        A WYSIWYG editor based on `Quasar's QEditor <https://quasar.dev/vue-components/editor>`_.
+        The value is a string containing the formatted text as HTML code.
 
         :param value: initial value
         :param on_change: callback to be invoked when the value changes
