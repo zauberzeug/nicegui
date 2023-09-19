@@ -93,6 +93,10 @@
   padding: 0.5rem;
   border: 1px solid #8884;
 }
+h6.q-timeline__title {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
 
 #popup {
   position: fixed;

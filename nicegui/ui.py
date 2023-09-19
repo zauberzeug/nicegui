@@ -67,6 +67,8 @@ __all__ = [
     'tabs',
     'textarea',
     'time',
+    'timeline',
+    'timeline_item',
     'toggle',
     'tooltip',
     'tree',
@@ -160,6 +162,8 @@ from .elements.tabs import TabPanels as tab_panels
 from .elements.tabs import Tabs as tabs
 from .elements.textarea import Textarea as textarea
 from .elements.time import Time as time
+from .elements.timeline import Timeline as timeline
+from .elements.timeline import TimelineEntry as timeline_entry
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree

@@ -1,29 +1,73 @@
-import uuid
+from typing import Literal, Optional
 
 from nicegui.element import Element
 
 
-class Timeline(Element, component='timeline.js'):
+class Timeline(Element):
 
-    def __init__(self, initial_items: list = None, timelinecolor: str = "secondary") -> None:
-        super().__init__()
-        if initial_items:
-            self._props['initialItems'] = initial_items
-            self._props['timelinecolor'] = timelinecolor
+    def __init__(self,
+                 *,
+                 side: Literal['left', 'right'] = 'left',
+                 layout: Literal['dense', 'comfortable', 'loose'] = 'dense',
+                 color: Optional[str] = None,
+                 ) -> None:
+        """Timeline
 
-    """Timeline
+        This element represents `Quasar's QTimeline <https://quasar.dev/vue-components/timeline#qtimeline-api>`_ component.
 
-    :param initialItems: Items of the timeline. Should be an Array of dictionarys and contain the id, title, subtitle, icon, body
-    :param timelinecolor: Color of the Icons. Should be an quasar color
+        :param side: Side ("left" or "right"; default: "left").
+        :param layout: Layout ("dense", "comfortable" or "loose"; default: "dense").
+        :param color: Color of the icons.
+        """
+        super().__init__('q-timeline')
+        self._props['side'] = side
+        self._props['layout'] = layout
+        if color is not None:
+            self._props['color'] = color
 
-    See `here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#events>`_
-    for a list of events you can subscribe to using the generic event subscription `on()`.
-    """
 
-    def _generate_id(self):
-        """Generate a unique ID for each timeline item."""
-        return str(uuid.uuid4())
+class TimelineEntry(Element):
 
-# Example Usage:
-# timeline = Timeline()
-# timeline.add_item(heading="Timeline Heading", title="Event Title", subtitle="Date", body="Description")
+    def __init__(self,
+                 body: Optional[str] = None,
+                 *,
+                 side: Literal['left', 'right'] = 'left',
+                 heading: bool = False,
+                 tag: Optional[str] = None,
+                 icon: Optional[str] = None,
+                 avatar: Optional[str] = None,
+                 title: Optional[str] = None,
+                 subtitle: Optional[str] = None,
+                 color: Optional[str] = None,
+                 ) -> None:
+        """Timeline Entry
+
+        This element represents `Quasar's QTimelineEntry <https://quasar.dev/vue-components/timeline#qtimelineentry-api>`_ component.
+
+        :param body: Body text.
+        :param side: Side ("left" or "right"; default: "left").
+        :param heading: Whether the timeline entry is a heading.
+        :param tag: HTML tag name to be used if it is a heading.
+        :param icon: Icon name.
+        :param avatar: Avatar URL.
+        :param title: Title text.
+        :param subtitle: Subtitle text.
+        :param color: Color or the timeline.
+        """
+        super().__init__('q-timeline-entry')
+        if body is not None:
+            self._props['body'] = body
+        self._props['side'] = side
+        self._props['heading'] = heading
+        if tag is not None:
+            self._props['tag'] = tag
+        if color is not None:
+            self._props['color'] = color
+        if icon is not None:
+            self._props['icon'] = icon
+        if avatar is not None:
+            self._props['avatar'] = avatar
+        if title is not None:
+            self._props['title'] = title
+        if subtitle is not None:
+            self._props['subtitle'] = subtitle
