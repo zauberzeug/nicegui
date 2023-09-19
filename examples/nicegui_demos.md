@@ -18,6 +18,7 @@
 | `local_file_picker`     |    |    |
 | `map`     | leaflet map  | js integration    |
 | `menu_and_tabs`     |  layout  |    |
+| `mermaid`     |  diagram, graph  |    |
 | `modularization`     | layout   |    |
 | `nginx_subpath`     |    |    |
 | `opencv_webcam`     |    |    |
