@@ -1,4 +1,15 @@
-FROM python:3.8-slim
+FROM python:3.8-slim as builder
+
+RUN apt update && apt install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install --upgrade pip
+
+# netifaces needs to be compiled on some platforms (macos ARM for example)
+RUN python3 -m pip install netifaces
+
+FROM python:3.8-slim as devcontainer
 
 ENV POETRY_VERSION=1.6.1 \
     POETRY_NO_INTERACTION=1 \
@@ -24,6 +35,8 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /usr/local/lib/python3.8/site-packages /usr/local/lib/python3.8/site-packages
 
 # Install nicegui
 RUN pip install -U pip && pip install poetry==$POETRY_VERSION
