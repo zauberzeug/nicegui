@@ -144,6 +144,7 @@ def create_full() -> None:
     load_demo(ui.tree)
     load_demo(ui.log)
     load_demo(ui.editor)
+    load_demo(ui.code)
     load_demo(ui.json_editor)
 
     heading('Layout')
