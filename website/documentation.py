@@ -358,6 +358,49 @@ def create_full() -> None:
 
         ui.button('start async task', on_click=async_task)
 
+    @text_demo('Running CPU-bound tasks', '''
+        NiceGUI provides a `cpu_bound` function for running CPU-bound tasks in a separate process.
+        This is useful for long-running computations that would otherwise block the event loop and make the UI unresponsive.
+        The function returns a future that can be awaited.
+    ''')
+    def cpu_bound_demo():
+        import time
+
+        from nicegui import run
+
+        def compute_sum(a: float, b: float) -> float:
+            time.sleep(1)  # simulate a long-running computation
+            return a + b
+
+        async def handle_click():
+            result = await run.cpu_bound(compute_sum, 1, 2)
+            ui.notify(f'Sum is {result}')
+
+        # ui.button('Compute', on_click=handle_click)
+        # END OF DEMO
+        async def mock_click():
+            import asyncio
+            await asyncio.sleep(1)
+            ui.notify('Sum is 3')
+        ui.button('Compute', on_click=mock_click)
+
+    @text_demo('Running I/O-bound tasks', '''
+        NiceGUI provides an `io_bound` function for running I/O-bound tasks in a separate thread.
+        This is useful for long-running I/O operations that would otherwise block the event loop and make the UI unresponsive.
+        The function returns a future that can be awaited.
+    ''')
+    def io_bound_demo():
+        import requests
+
+        from nicegui import run
+
+        async def handle_click():
+            URL = 'https://httpbin.org/delay/1'
+            response = await run.io_bound(requests.get, URL, timeout=3)
+            ui.notify(f'Downloaded {len(response.content)} bytes')
+
+        ui.button('Download', on_click=handle_click)
+
     heading('Pages')
 
     load_demo(ui.page)
