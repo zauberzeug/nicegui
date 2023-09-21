@@ -10,7 +10,7 @@ process_pool = ProcessPoolExecutor()
 thread_pool = ThreadPoolExecutor()
 
 
-async def _run(executor: Any, callback: Callable, *args: Any, **kwargs: Any):
+async def _run(executor: Any, callback: Callable, *args: Any, **kwargs: Any) -> Any:
     if globals.state == globals.State.STOPPING:
         return
     try:
@@ -23,15 +23,18 @@ async def _run(executor: Any, callback: Callable, *args: Any, **kwargs: Any):
         pass
 
 
-async def cpu_bound(callback: Callable, *args: Any, **kwargs: Any):
-    _run(process_pool, callback, *args, **kwargs)
+async def cpu_bound(callback: Callable, *args: Any, **kwargs: Any) -> Any:
+    """Run a CPU-bound function in a separate process."""
+    return await _run(process_pool, callback, *args, **kwargs)
 
 
-async def io_bound(callback: Callable, *args: Any, **kwargs: Any):
-    _run(thread_pool, callback, *args, **kwargs)
+async def io_bound(callback: Callable, *args: Any, **kwargs: Any) -> Any:
+    """Run an I/O-bound function in a separate thread."""
+    return await _run(thread_pool, callback, *args, **kwargs)
 
 
 def tear_down() -> None:
+    """Kill all processes and threads."""
     if helpers.is_pytest():
         return
     for p in process_pool._processes.values():  # pylint: disable=protected-access
