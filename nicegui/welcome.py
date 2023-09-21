@@ -41,6 +41,6 @@ async def print_message() -> None:
     if len(urls) >= 2:
         urls[-1] = 'and ' + urls[-1]
     extra = ''
-    if 'netifaces' not in globals.optional_features:
+    if 'netifaces' not in globals.optional_features and os.environ.get('NO_NETIFACES', 'false').lower() != 'true':
         extra = ' (install netifaces to show all IPs and speedup this message)'
     print(f'on {", ".join(urls)}' + extra, flush=True)
