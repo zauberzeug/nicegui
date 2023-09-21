@@ -43,14 +43,11 @@ class Air:
             if match:
                 new_js_object = match.group(1).decode().rstrip('}') + ", 'fly_instance_id' : '" + instance_id + "'}"
                 content = content.replace(match.group(0), f'const query = {new_js_object}'.encode())
-            response.headers.update({'content-encoding': 'gzip'})
             compressed = gzip.compress(content)
-            response.headers.update({'content-length': str(len(compressed))})
-            # NOTE the same header can occur multiple times so we send them as list of tuples
-            response_headers = [(k, v) for k, v in response.headers.items()]
+            response.headers.update({'content-encoding': 'gzip', 'content-length': str(len(compressed))})
             return {
                 'status_code': response.status_code,
-                'headers': response_headers,
+                'headers': list(response.headers.items()),  # NOTE items() concatenates values for duplicate keys
                 'content': compressed,
             }
 
