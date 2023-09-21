@@ -1,4 +1,3 @@
-import asyncio
 import inspect
 import warnings
 from dataclasses import dataclass, field
@@ -8,6 +7,7 @@ from typing import Any, Callable, Dict, Optional, Tuple
 
 from .dataclasses import KWONLY_SLOTS
 from .globals import log
+from .run_executor import io_bound
 
 method_queue: Queue = Queue()
 response_queue: Queue = Queue()
@@ -123,7 +123,7 @@ try:
                     log.exception(f'error in {name}')
                     return None
             name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
-            return await asyncio.get_event_loop().run_in_executor(None, partial(wrapper, *args, **kwargs))
+            return await io_bound(wrapper, *args, **kwargs)
 
         def signal_server_shutdown(self) -> None:
             self._send()
