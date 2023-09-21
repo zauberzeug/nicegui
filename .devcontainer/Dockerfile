@@ -1,4 +1,4 @@
-FROM python:3.8-slim as base
+FROM python:3.8-slim
 
 ENV POETRY_VERSION=1.6.1 \
     POETRY_NO_INTERACTION=1 \
@@ -8,22 +8,9 @@ ENV POETRY_VERSION=1.6.1 \
     SHELL=/bin/bash \
     DISPLAY=:99
 
-FROM base as builder
-
-RUN apt-get update && apt-get install --no-install-recommends -y \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
-
-# Netifaces needs to be compiled on some platforms (macos ARM for example)
-RUN pip install -U pip && pip install netifaces
-
-FROM base as devcontainer
-
-COPY --from=builder /usr/local/lib/python3.8/site-packages /usr/local/lib/python3.8/site-packages
-
 # Install packages
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    sudo git chromium chromium-driver \
+    sudo git gcc chromium chromium-driver \
     && rm -rf /var/lib/apt/lists/*
 
 # Create remote user
