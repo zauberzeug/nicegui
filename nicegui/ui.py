@@ -22,6 +22,7 @@ __all__ = [
     'date',
     'dialog',
     'echart',
+    'editor',
     'expansion',
     'grid',
     'html',
@@ -118,6 +119,7 @@ from .elements.dark_mode import DarkMode as dark_mode
 from .elements.date import Date as date
 from .elements.dialog import Dialog as dialog
 from .elements.echart import EChart as echart
+from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
 from .elements.grid import Grid as grid
 from .elements.html import Html as html

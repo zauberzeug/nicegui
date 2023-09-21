@@ -99,8 +99,9 @@ h6.q-timeline__title {
 }
 .nicegui-code {
   position: relative;
-  background-color: rgba(127, 127, 127, 0.1);
-  box-shadow: 0 0 0.5em rgba(127, 127, 127, 0.05);
+  background-color: rgba(127, 159, 191, 0.1);
+  border: 1pt solid rgba(127, 159, 191, 0.15);
+  box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
   border-radius: 0.25rem;
 }
 
@@ -108,9 +109,9 @@ h6.q-timeline__title {
   position: fixed;
   bottom: 0;
   left: 0;
-  border: 1pt solid rgba(127, 127, 127, 0.25);
+  border: 1pt solid rgba(127, 159, 191, 0.25);
   border-radius: 0.25em;
-  box-shadow: 0 0 0.5em rgba(127, 127, 127, 0.05);
+  box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
   margin: 2em;
   padding: 1.5em 4em;
   display: flex;
