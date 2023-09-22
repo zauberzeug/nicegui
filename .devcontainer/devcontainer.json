@@ -18,6 +18,7 @@
         "Vue.volar"
       ],
       "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
         "terminal.integrated.shell.linux": "bash",
         "terminal.integrated.profiles.linux": {
           "bash (container default)": {
@@ -25,6 +26,7 @@
             "overrideName": true
           }
         }
+      }
       }
     }
   },
