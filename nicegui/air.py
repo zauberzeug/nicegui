@@ -47,7 +47,7 @@ class Air:
             response.headers.update({'content-encoding': 'gzip', 'content-length': str(len(compressed))})
             return {
                 'status_code': response.status_code,
-                'headers': [(k.decode(), v.decode()) for k, v in headers.raw],
+                'headers': response.headers.multi_items(),
                 'content': compressed,
             }
 
