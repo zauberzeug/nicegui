@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-import asyncio
 import base64
-import concurrent.futures
 import signal
 import time
 
@@ -10,10 +8,8 @@ import numpy as np
 from fastapi import Response
 
 import nicegui.globals
-from nicegui import app, ui
+from nicegui import app, run, ui
 
-# We need an executor to schedule CPU-intensive tasks with `loop.run_in_executor()`.
-process_pool_executor = concurrent.futures.ProcessPoolExecutor()
 # In case you don't have a webcam, this will provide a black placeholder image.
 black_1px = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjYGBg+A8AAQQBAHAgZQsAAAAASUVORK5CYII='
 placeholder = Response(content=base64.b64decode(black_1px.encode('ascii')), media_type='image/png')
@@ -31,14 +27,13 @@ def convert(frame: np.ndarray) -> bytes:
 async def grab_video_frame() -> Response:
     if not video_capture.isOpened():
         return placeholder
-    loop = asyncio.get_running_loop()
     # The `video_capture.read` call is a blocking function.
     # So we run it in a separate thread (default executor) to avoid blocking the event loop.
-    _, frame = await loop.run_in_executor(None, video_capture.read)
+    _, frame = await run.io_bound(video_capture.read)
     if frame is None:
         return placeholder
     # `convert` is a CPU-intensive function, so we run it in a separate process to avoid blocking the event loop and GIL.
-    jpeg = await loop.run_in_executor(process_pool_executor, convert, frame)
+    jpeg = await run.cpu_bound(convert, frame)
     return Response(content=jpeg, media_type='image/jpeg')
 
 # For non-flickering image updates an interactive image is much better than `ui.image()`.
@@ -68,8 +63,6 @@ async def cleanup() -> None:
     await disconnect()
     # Release the webcam hardware so it can be used by other applications again.
     video_capture.release()
-    # The process pool executor must be shutdown when the app is closed, otherwise the process will not exit.
-    process_pool_executor.shutdown()
 
 app.on_shutdown(cleanup)
 # We also need to disconnect clients when the app is stopped with Ctrl+C,

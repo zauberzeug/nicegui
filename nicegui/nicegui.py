@@ -11,7 +11,8 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
-from . import background_tasks, binding, favicon, globals, json, outbox, welcome  # pylint: disable=redefined-builtin
+from . import (background_tasks, binding, favicon, globals, json, outbox,  # pylint: disable=redefined-builtin
+               run_executor, welcome)
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries
@@ -109,6 +110,7 @@ async def handle_shutdown() -> None:
     with globals.index_client:
         for t in globals.shutdown_handlers:
             safe_invoke(t)
+    run_executor.tear_down()
     globals.state = globals.State.STOPPED
     if globals.air:
         await globals.air.disconnect()

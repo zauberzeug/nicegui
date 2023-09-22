@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
-import asyncio
 import time
-from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import Manager, Queue
 
-from nicegui import app, ui
-
-pool = ProcessPoolExecutor()
+from nicegui import run, ui
 
 
 def heavy_computation(q: Queue) -> str:
-    '''Some heavy computation that updates the progress bar through the queue.'''
+    """Run some heavy computation that updates the progress bar through the queue."""
     n = 50
     for i in range(n):
         # Perform some heavy computation
@@ -23,11 +19,9 @@ def heavy_computation(q: Queue) -> str:
 
 @ui.page('/')
 def main_page():
-
     async def start_computation():
         progressbar.visible = True
-        loop = asyncio.get_running_loop()
-        result = await loop.run_in_executor(pool, heavy_computation, queue)
+        result = await run.cpu_bound(heavy_computation, queue)
         ui.notify(result)
         progressbar.visible = False
 
@@ -41,8 +35,5 @@ def main_page():
     progressbar = ui.linear_progress(value=0).props('instant-feedback')
     progressbar.visible = False
 
-
-# stop the pool when the app is closed; will not cancel any running tasks
-app.on_shutdown(pool.shutdown)
 
 ui.run()
