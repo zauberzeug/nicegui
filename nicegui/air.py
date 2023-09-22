@@ -47,7 +47,7 @@ class Air:
             response.headers.update({'content-encoding': 'gzip', 'content-length': str(len(compressed))})
             return {
                 'status_code': response.status_code,
-                'headers': list(response.headers.items()),  # NOTE items() concatenates values for duplicate keys
+                'headers': [(k.decode(), v.decode()) for k, v in headers.raw],
                 'content': compressed,
             }
 
