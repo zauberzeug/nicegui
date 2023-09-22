@@ -23,6 +23,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
 ENV PATH="/home/${USERNAME}/.local/bin:${PATH}"
+ENV CHROME_BINARY_LOCATION=/usr/bin/chromium
 
 # Install nicegui
 RUN pip install -U pip && pip install poetry==$POETRY_VERSION

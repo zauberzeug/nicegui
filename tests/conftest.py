@@ -32,6 +32,8 @@ def chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeO
         "download.prompt_for_download": False,  # To auto download the file
         "download.directory_upgrade": True,
     })
+    if 'CHROME_BINARY_LOCATION' in os.environ:
+        chrome_options.binary_location = os.environ['CHROME_BINARY_LOCATION']
     return chrome_options
 
 
