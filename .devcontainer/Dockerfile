@@ -25,7 +25,6 @@ RUN groupadd --gid $USER_GID $USERNAME \
 ENV PATH="/home/${USERNAME}/.local/bin:${PATH}"
 
 # Install nicegui
-RUN pip install -U pip
 RUN pip install -U pip && pip install poetry==$POETRY_VERSION
 COPY nicegui pyproject.toml poetry.lock README.md ./
 RUN poetry install --all-extras
