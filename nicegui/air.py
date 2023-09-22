@@ -43,13 +43,11 @@ class Air:
             if match:
                 new_js_object = match.group(1).decode().rstrip('}') + ", 'fly_instance_id' : '" + instance_id + "'}"
                 content = content.replace(match.group(0), f'const query = {new_js_object}'.encode())
-            response_headers = dict(response.headers)
-            response_headers['content-encoding'] = 'gzip'
             compressed = gzip.compress(content)
-            response_headers['content-length'] = str(len(compressed))
+            response.headers.update({'content-encoding': 'gzip', 'content-length': str(len(compressed))})
             return {
                 'status_code': response.status_code,
-                'headers': response_headers,
+                'headers': response.headers.multi_items(),
                 'content': compressed,
             }
 
