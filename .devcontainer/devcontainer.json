@@ -16,10 +16,19 @@
         "samuelcolvin.jinjahtml",
         "ms-python.isort",
         "Vue.volar"
-      ]
+      ],
+      "settings": {
+        "terminal.integrated.shell.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "bash (container default)": {
+            "path": "/usr/bin/bash",
+            "overrideName": true
+          }
+        }
+      }
     }
   },
-  "runArgs": ["--net", "host"],
   // More info: https://aka.ms/dev-containers-non-root.
-  "remoteUser": "vscode"
+  "remoteUser": "vscode",
+  "postCreateCommand": "poetry install --all-extras"
 }
