@@ -13,6 +13,7 @@ __all__ = [
     'chart',
     'chat_message',
     'checkbox',
+    'code',
     'color_input',
     'color_picker',
     'colors',
@@ -21,6 +22,7 @@ __all__ = [
     'date',
     'dialog',
     'echart',
+    'editor',
     'expansion',
     'grid',
     'html',
@@ -67,6 +69,8 @@ __all__ = [
     'tabs',
     'textarea',
     'time',
+    'timeline',
+    'timeline_item',
     'toggle',
     'tooltip',
     'tree',
@@ -106,6 +110,7 @@ from .elements.carousel import CarouselSlide as carousel_slide
 from .elements.chart import Chart as chart
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
+from .elements.code import Code as code
 from .elements.color_input import ColorInput as color_input
 from .elements.color_picker import ColorPicker as color_picker
 from .elements.colors import Colors as colors
@@ -114,6 +119,7 @@ from .elements.dark_mode import DarkMode as dark_mode
 from .elements.date import Date as date
 from .elements.dialog import Dialog as dialog
 from .elements.echart import EChart as echart
+from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
 from .elements.grid import Grid as grid
 from .elements.html import Html as html
@@ -160,6 +166,8 @@ from .elements.tabs import TabPanels as tab_panels
 from .elements.tabs import Tabs as tabs
 from .elements.textarea import Textarea as textarea
 from .elements.time import Time as time
+from .elements.timeline import Timeline as timeline
+from .elements.timeline import TimelineEntry as timeline_entry
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree

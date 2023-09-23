@@ -143,6 +143,8 @@ def create_full() -> None:
     load_demo(ui.scene)
     load_demo(ui.tree)
     load_demo(ui.log)
+    load_demo(ui.editor)
+    load_demo(ui.code)
     load_demo(ui.json_editor)
 
     heading('Layout')
@@ -182,6 +184,7 @@ def create_full() -> None:
     load_demo(ui.splitter)
     load_demo('tabs')
     load_demo(ui.stepper)
+    load_demo(ui.timeline)
     load_demo(ui.carousel)
     load_demo(ui.menu)
 
@@ -354,6 +357,49 @@ def create_full() -> None:
             ui.notify('Asynchronous task finished')
 
         ui.button('start async task', on_click=async_task)
+
+    @text_demo('Running CPU-bound tasks', '''
+        NiceGUI provides a `cpu_bound` function for running CPU-bound tasks in a separate process.
+        This is useful for long-running computations that would otherwise block the event loop and make the UI unresponsive.
+        The function returns a future that can be awaited.
+    ''')
+    def cpu_bound_demo():
+        import time
+
+        from nicegui import run
+
+        def compute_sum(a: float, b: float) -> float:
+            time.sleep(1)  # simulate a long-running computation
+            return a + b
+
+        async def handle_click():
+            result = await run.cpu_bound(compute_sum, 1, 2)
+            ui.notify(f'Sum is {result}')
+
+        # ui.button('Compute', on_click=handle_click)
+        # END OF DEMO
+        async def mock_click():
+            import asyncio
+            await asyncio.sleep(1)
+            ui.notify('Sum is 3')
+        ui.button('Compute', on_click=mock_click)
+
+    @text_demo('Running I/O-bound tasks', '''
+        NiceGUI provides an `io_bound` function for running I/O-bound tasks in a separate thread.
+        This is useful for long-running I/O operations that would otherwise block the event loop and make the UI unresponsive.
+        The function returns a future that can be awaited.
+    ''')
+    def io_bound_demo():
+        import requests
+
+        from nicegui import run
+
+        async def handle_click():
+            URL = 'https://httpbin.org/delay/1'
+            response = await run.io_bound(requests.get, URL, timeout=3)
+            ui.notify(f'Downloaded {len(response.content)} bytes')
+
+        ui.button('Download', on_click=handle_click)
 
     heading('Pages')
 
@@ -531,6 +577,21 @@ def create_full() -> None:
         ui.button('shutdown', on_click=lambda: ui.notify(
             'Nah. We do not actually shutdown the documentation server. Try it in your own app!'))
 
+    @text_demo('URLs', '''
+        You can access the list of all URLs on which the NiceGUI app is available via `app.urls`.
+        The URLs are not available in `app.on_startup` because the server is not yet running.
+        Instead, you can access them in a page function or register a callback with `app.urls.on_change`.
+    ''')
+    def urls_demo():
+        from nicegui import app
+
+        # @ui.page('/')
+        # def index():
+        #     for url in app.urls:
+        #         ui.link(url, target=url)
+        # END OF DEMO
+        ui.link('https://nicegui.io', target='https://nicegui.io')
+
     heading('NiceGUI Fundamentals')
 
     @text_demo('Auto-context', '''
@@ -599,6 +660,7 @@ def create_full() -> None:
             This will make `ui.pyplot` and `ui.line_plot` unavailable.
         - `NICEGUI_STORAGE_PATH` (default: local ".nicegui") can be set to change the location of the storage files.
         - `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.
+        - `NO_NETIFACES` (default: `false`): Can be set to `true` to hide the netifaces startup warning (e.g. in docker container).
     ''')
     def env_var_demo():
         from nicegui.elements import markdown
@@ -681,7 +743,7 @@ def create_full() -> None:
 
                 ui.label('Hello from PyInstaller')
 
-                ui.run(reload=False, native_mode.find_open_port())
+                ui.run(reload=False, port=native_mode.find_open_port())
                 ```
             ''')
         with demo.python_window('build.py', classes='max-w-lg w-full'):
@@ -764,7 +826,7 @@ def create_full() -> None:
         sys.stdout = open('logs.txt', 'w')
         ```
         See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
-    ''')
+    ''').classes('bold-links arrow-links')
 
     subheading('NiceGUI On Air')
 

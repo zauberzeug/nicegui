@@ -12,7 +12,7 @@ from .slot import Slot
 if TYPE_CHECKING:
     from .client import Client
     from .element import Element
-    from .observables import ObservableDict, ObservableList, ObservableSet
+    from .observables import ObservableCollection
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -22,7 +22,7 @@ class EventArguments:
 
 @dataclass(**KWONLY_SLOTS)
 class ObservableChangeEventArguments(EventArguments):
-    sender: Union[ObservableDict, ObservableList, ObservableSet]
+    sender: ObservableCollection
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -51,6 +51,19 @@ class ClickEventArguments(UiEventArguments):
 @dataclass(**KWONLY_SLOTS)
 class ChartEventArguments(UiEventArguments):
     event_type: str
+
+
+@dataclass(**KWONLY_SLOTS)
+class EChartPointClickEventArguments(UiEventArguments):
+    component_type: str
+    series_type: str
+    series_index: int
+    series_name: str
+    name: str
+    data_index: int
+    data: Union[float, int, str]
+    data_type: str
+    value: Union[float, int, list]
 
 
 @dataclass(**KWONLY_SLOTS)

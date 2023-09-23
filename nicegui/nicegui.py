@@ -1,4 +1,5 @@
 import asyncio
+import mimetypes
 import time
 import urllib.parse
 from pathlib import Path
@@ -10,7 +11,8 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
-from . import background_tasks, binding, favicon, globals, json, outbox, welcome  # pylint: disable=redefined-builtin
+from . import (background_tasks, binding, favicon, globals, json, outbox,  # pylint: disable=redefined-builtin
+               run_executor, welcome)
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries
@@ -25,6 +27,9 @@ globals.app = app = App(default_response_class=NiceGUIJSONResponse)
 # NOTE we use custom json module which wraps orjson
 socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=json)
 globals.sio = sio = socket_manager._sio  # pylint: disable=protected-access
+
+mimetypes.add_type('text/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
 
 app.add_middleware(GZipMiddleware)
 app.add_middleware(RedirectWithPrefixMiddleware)
@@ -105,6 +110,7 @@ async def handle_shutdown() -> None:
     with globals.index_client:
         for t in globals.shutdown_handlers:
             safe_invoke(t)
+    run_executor.tear_down()
     globals.state = globals.State.STOPPED
     if globals.air:
         await globals.air.disconnect()

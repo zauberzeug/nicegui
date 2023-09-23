@@ -33,8 +33,18 @@ def test_table(screen: Screen):
     screen.should_contain('Lionel')
 
 
-def test_pagination(screen: Screen):
+def test_pagination_int(screen: Screen):
     ui.table(columns=columns(), rows=rows(), pagination=2)
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_not_contain('Lionel')
+    screen.should_contain('1-2 of 3')
+
+
+def test_pagination_dict(screen: Screen):
+    ui.table(columns=columns(), rows=rows(), pagination={'rowsPerPage': 2})
 
     screen.open('/')
     screen.should_contain('Alice')

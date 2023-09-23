@@ -18,7 +18,9 @@ def main_demo() -> None:
 
 def more() -> None:
     @text_demo('Custom Context Menu', '''
-        Using Quasar's `context-menu` and `touch-position` props, you can create custom context menus.
+        Using [Quasar's `context-menu`](https://quasar.dev/vue-components/menu#context-menu) and `touch-position` props, 
+        you can create custom context menus. 
+        These open by right-clicking on the parent.
     ''')
     def custom_context_menu() -> None:
         with ui.image('https://picsum.photos/id/377/640/360'):
