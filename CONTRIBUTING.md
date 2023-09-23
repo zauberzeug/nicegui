@@ -21,7 +21,7 @@ We're always looking for bug fixes, performance improvements, and new features.
 
 ## Setup
 
-# Dev Container
+### Dev Container
 
 The simplest way to setup a fully functioning development environment is to start our Dev Container in VS Code:
 
@@ -31,7 +31,7 @@ The simplest way to setup a fully functioning development environment is to star
 4. Wait until image has been build.
 5. Happy coding.
 
-# Locally
+### Locally
 
 To set up a local development environment for NiceGUI, you'll need to have Python 3.8+ and pip installed.
 
