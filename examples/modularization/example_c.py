@@ -15,6 +15,6 @@ def example_page():
 
 @router.page('/items/{id}', dark=True)
 def item(id: str):
-    with theme.frame(f'- Example C{id} -'):
-        ui.label(f'Item  #{id}').classes('text-h4 text-grey-8')
+    with theme.frame(f'- Example C: Item {id} -'):
+        ui.label(f'Item #{id}').classes('text-h4 text-grey-8')
         ui.link('go back', router.prefix).classes('text-xl text-grey-8')

@@ -4,9 +4,9 @@ from leaflet import leaflet  # this module wraps the JavaScript lib leafletjs.co
 from nicegui import Client, ui
 
 locations = {
+    (39.9042, 116.4074): 'Beijing',
     (52.5200, 13.4049): 'Berlin',
     (40.7306, -74.0060): 'New York',
-    (39.9042, 116.4074): 'Beijing',
     (35.6895, 139.6917): 'Tokyo',
 }
 

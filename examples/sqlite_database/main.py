@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 from typing import List
 
@@ -9,7 +10,7 @@ from nicegui import app, ui
 register_tortoise(
     app,
     db_url='sqlite://db.sqlite3',
-    modules={'models': ['models']},  # tortoise will look for models in this main module
+    modules={'models': ['models']},  # tortoise will look for models.py in this main module
     generate_schemas=True,  # in production you should use version control migrations instead
 )
 
@@ -46,4 +47,4 @@ async def index():
             ui.button(on_click=create, icon='add').props('flat').classes('ml-auto')
         await list_of_users()
 
-ui.run()
+ui.run(port=8081)
