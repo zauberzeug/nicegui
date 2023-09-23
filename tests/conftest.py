@@ -22,6 +22,8 @@ icecream.install()
 
 @pytest.fixture
 def chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeOptions:
+    chrome_options.add_argument('disable-dev-shm-using')
+    chrome_options.add_argument('no-sandbox')
     chrome_options.add_argument('headless')
     chrome_options.add_argument('disable-gpu')
     chrome_options.add_argument('window-size=600x600')
@@ -30,6 +32,8 @@ def chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeO
         "download.prompt_for_download": False,  # To auto download the file
         "download.directory_upgrade": True,
     })
+    if 'CHROME_BINARY_LOCATION' in os.environ:
+        chrome_options.binary_location = os.environ['CHROME_BINARY_LOCATION']
     return chrome_options
 
 
