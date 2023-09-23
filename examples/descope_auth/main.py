@@ -1,13 +1,36 @@
 #!/usr/bin/env python3
 
+import logging
 import os
 
+from descope import REFRESH_SESSION_TOKEN_NAME, SESSION_TOKEN_NAME, AuthException, DeliveryMethod, DescopeClient
 from fastapi import Request
 from fastapi.responses import RedirectResponse
+from icecream import ic
 from starlette.middleware.base import BaseHTTPMiddleware
 
 import nicegui.globals
-from nicegui import app, ui
+from nicegui import Client, app, events, ui
+
+descope_id = os.environ.get('DESCOPE_ID', '')
+try:
+    descope_client = DescopeClient(project_id=descope_id)
+except Exception as error:
+    print("failed to initialize. Error:")
+    print(error)
+
+
+def validate_session():
+    return
+    # Fetch session token from HTTP Authorization Header
+    session_token = "xxxx"
+
+    try:
+        jwt_response = descope_client.validate_session(session_token=session_token)
+        print("Successfully validated user session:")
+        print(jwt_response)
+    except Exception:
+        logging.exception("Could not validate user session.")
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
@@ -29,42 +52,44 @@ app.add_middleware(AuthMiddleware)
 unrestricted_page_routes = {'/login'}
 
 
-@ui.page('/login')
-def login():
-    ui.add_head_html('''
-        <script src="https://unpkg.com/@descope/web-component/dist/index.js"></script>
-        <script src="https://unpkg.com/@descope/web-js-sdk/dist/index.umd.js"></script>               
-    ''')
+def verify(token: str):
+    ic()
+    try:
+        jwt_response = descope_client.validate_session(session_token=token)
+        ic(jwt_response)
+        return True
+    except Exception:
+        logging.exception("Could not validate user session.")
+        ui.notify('Wrong username or password', type='negative')
+        return False
 
-    descope_id = os.environ.get('DESCOPE_ID', '')
-    with ui.card().classes('w-96 mx-auto') as login_card:
-        ui.element('descope-wc').props(f'project-id="{descope_id}" flow-id="sign-up-or-in"')
-    login_card.on('success', lambda e: ui.notify('Yes'))
-    login_card.on('error', lambda e: ui.notify('No'))
+
+@ui.page('/login')
+async def login(client: Client):
+    ui.add_head_html('<script src="https://unpkg.com/@descope/web-js-sdk/dist/index.umd.js"></script>')
     ui.add_body_html('''
         <script>
-            document.addEventListener("DOMContentLoaded", () => {
-                const sdk = Descope({ projectId: \'''' + descope_id + '''\', persistTokens: true, autoRefresh: true });
-
-                const sessionToken = sdk.getSessionToken()
-                var notValidToken
-                if (sessionToken) {
-                    notValidToken = sdk.isJwtExpired(sessionToken)
-                }
-                if (!sessionToken || notValidToken) {
-                    var loginElement = getElement(''' + str(login_card.id) + ''');
-                    const onSuccess = (e) => {
-                        sdk.refresh(),
-                        loginElement.$emit('success', encodeURIComponent(e.detail.user.loginIds));
-                    };
-                    const onError = (err) => loginElement.$emit('error');
-                    const wcElement = document.getElementsByTagName('descope-wc')[0];
-                    wcElement.addEventListener('success', onSuccess);
-                    wcElement.addEventListener('error', onError);
-                }
-            });
+            const sdk = Descope({ projectId: \'''' + descope_id + '''\', persistTokens: true, autoRefresh: true });
+            const sessionToken = sdk.getSessionToken()
         </script>                 
     ''')
+
+    await client.connected()
+    token = await ui.run_javascript('''
+            if (sessionToken && !sdk.isJwtExpired(sessionToken)) {
+                return sessionToken;
+            } else {
+                return null;
+            }
+    ''')
+    with ui.card().classes('w-96 mx-auto'):
+        if token and verify(token):
+            app.storage.user['authenticated'] = True
+            ui.open('/')
+        else:
+            ui.add_head_html('<script src="https://unpkg.com/@descope/web-component/dist/index.js"></script>')
+            ui.element('descope-wc').props(f'project-id="{descope_id}" flow-id="sign-up-or-in"') \
+                .on('success', lambda: ui.open('/'))
 
 
 @ui.page('/')
