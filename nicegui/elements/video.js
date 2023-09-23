@@ -24,5 +24,11 @@ export default {
     seek(seconds) {
       this.$el.currentTime = seconds;
     },
+    play() {
+      this.$el.play();
+    },
+    pause() {
+      this.$el.pause();
+    },
   },
 };

@@ -38,3 +38,22 @@ class Audio(Element, component='audio.js'):
         if type:
             url = 'https://github.com/zauberzeug/nicegui/pull/624'
             warnings.warn(DeprecationWarning(f'The type parameter for ui.audio is deprecated and ineffective ({url}).'))
+
+    def seek(self, seconds: float) -> None:
+        """Seek to a specific position in the audio.
+
+        :param seconds: the position in seconds
+        """
+        self.run_method('seek', seconds)
+
+    def play(self) -> None:
+        """Play audio.
+
+        """
+        self.run_method('play')
+
+    def pause(self) -> None:
+        """Pause audio.
+
+        """
+        self.run_method('pause')

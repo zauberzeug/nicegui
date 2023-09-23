@@ -11,3 +11,5 @@ venv
 .nicegui/
 *.sqlite*
 **/data/
+**/*.mp3
+**/*.mp4

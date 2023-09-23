@@ -45,3 +45,15 @@ class Video(Element, component='video.js'):
         :param seconds: the position in seconds
         """
         self.run_method('seek', seconds)
+
+    def play(self) -> None:
+        """Play video.
+
+        """
+        self.run_method('play')
+
+    def pause(self) -> None:
+        """Pause video.
+
+        """
+        self.run_method('pause')
