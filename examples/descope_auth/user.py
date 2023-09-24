@@ -6,17 +6,17 @@ from descope import AuthException, DescopeClient
 
 from nicegui import Client, app, ui
 
-descope_id = os.environ.get('DESCOPE_ID', '')
+_descope_id = os.environ.get('DESCOPE_PROJECT_ID', '')
 
 try:
-    descope_client = DescopeClient(project_id=descope_id)
+    descope_client = DescopeClient(project_id=_descope_id)
 except Exception as error:
     logging.exception("failed to initialize.")
 
 
-def login_form():
+def login_form() -> ui.element:
     with ui.card().classes('w-96 mx-auto'):
-        return ui.element('descope-wc').props(f'project-id="{descope_id}" flow-id="sign-up-or-in"') \
+        return ui.element('descope-wc').props(f'project-id="{_descope_id}" flow-id="sign-up-or-in"') \
             .on('success', lambda e: app.storage.user.update({'descope': e.args['detail']['user']}))
 
 
@@ -28,10 +28,10 @@ def about() -> Dict[str, Any]:
         return {}
 
 
-async def logout():
+async def logout() -> None:
     result = await ui.run_javascript('return await sdk.logout()', respond=True)
     if result['code'] != 200:
-        logging.error('Logout failed: ' + result)
+        logging.error(f'Logout failed: {result}')
         ui.notify('Logout failed', type='negative')
     else:
         app.storage.user['descope'] = None
@@ -49,7 +49,7 @@ class page(ui.page):
             ui.add_head_html('<script src="https://unpkg.com/@descope/web-js-sdk@latest/dist/index.umd.js"></script>')
             ui.add_body_html('''
                 <script>
-                    const sdk = Descope({ projectId: \'''' + descope_id + '''\', persistTokens: true, autoRefresh: true });
+                    const sdk = Descope({ projectId: \'''' + _descope_id + '''\', persistTokens: true, autoRefresh: true });
                     const sessionToken = sdk.getSessionToken()
                 </script>                 
             ''')
@@ -57,7 +57,7 @@ class page(ui.page):
             token = await ui.run_javascript('return sessionToken && !sdk.isJwtExpired(sessionToken) ? sessionToken : null;')
             if token and self._verify(token):
                 if self.path == '/login':
-                    self.refresh_token()
+                    await self.refresh_token()
                     ui.open('/')
                 else:
                     func()
@@ -71,7 +71,7 @@ class page(ui.page):
         return super().__call__(content)
 
     @staticmethod
-    def _verify(token: str):
+    def _verify(token: str) -> bool:
         try:
             descope_client.validate_session(session_token=token)
             return True
@@ -81,7 +81,7 @@ class page(ui.page):
             return False
 
     @staticmethod
-    async def refresh_token():
+    async def refresh_token() -> None:
         await ui.run_javascript('sdk.refresh()', respond=False)
 
 

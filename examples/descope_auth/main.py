@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
 import json
+import os
 
-import icecream
 import user
 
 from nicegui import ui
-
-icecream.install()
 
 
 @user.login_page
