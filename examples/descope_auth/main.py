@@ -14,7 +14,7 @@ def login():
 
 @user.page('/')
 def home():
-    ui.markdown(f'```\n{json.dumps(user.about(),indent=2)}\n```')
+    ui.markdown(f'```\n{json.dumps(user.about(), indent=2)}\n```')
     ui.button('Logout', on_click=user.logout)
 
 

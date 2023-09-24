@@ -23,11 +23,9 @@ def login_form() -> ui.element:
 
 def about() -> Dict[str, Any]:
     """Returns the user's Descope profile."""
-    try:
-        return app.storage.user['descope']
-    except AuthException:
-        logging.exception("Unable to load user.")
-        return {}
+    infos = app.storage.user['descope']
+    if not infos:
+        raise Exception('User is not logged in.')
 
 
 async def logout() -> None:
