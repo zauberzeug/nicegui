@@ -1,8 +1,8 @@
 import logging
 import os
-from typing import Any, Callable
+from typing import Any, Callable, Dict
 
-from descope import DescopeClient
+from descope import AuthException, DescopeClient
 
 from nicegui import Client, app, ui
 
@@ -11,8 +11,21 @@ descope_id = os.environ.get('DESCOPE_ID', '')
 try:
     descope_client = DescopeClient(project_id=descope_id)
 except Exception as error:
-    print("failed to initialize. Error:")
-    print(error)
+    logging.exception("failed to initialize.")
+
+
+def login_form():
+    with ui.card().classes('w-96 mx-auto'):
+        return ui.element('descope-wc').props(f'project-id="{descope_id}" flow-id="sign-up-or-in"') \
+            .on('success', lambda e: app.storage.user.update({'descope': e.args['detail']['user']}))
+
+
+def about() -> Dict[str, Any]:
+    try:
+        return app.storage.user['descope']
+    except AuthException:
+        logging.exception("Unable to load user.")
+        return {}
 
 
 async def logout():
@@ -20,25 +33,9 @@ async def logout():
     if result['code'] != 200:
         logging.error('Logout failed: ' + result)
         ui.notify('Logout failed', type='negative')
+    else:
+        app.storage.user['descope'] = None
     ui.open('/login')
-
-
-def _verify(token: str):
-    try:
-        jwt_response = descope_client.validate_session(session_token=token)
-        ic(jwt_response)
-        app.storage.user['user_id'] = jwt_response['userId']
-        return True
-    except Exception:
-        app.storage.user['user_id'] = None
-        logging.exception("Could not validate user session.")
-        ui.notify('Wrong username or password', type='negative')
-        return False
-
-
-def login_form():
-    with ui.card().classes('w-96 mx-auto'):
-        return ui.element('descope-wc').props(f'project-id="{descope_id}" flow-id="sign-up-or-in"')
 
 
 class page(ui.page):
@@ -58,9 +55,9 @@ class page(ui.page):
             ''')
             await client.connected()
             token = await ui.run_javascript('return sessionToken && !sdk.isJwtExpired(sessionToken) ? sessionToken : null;')
-            if token and _verify(token):
+            if token and self._verify(token):
                 if self.path == '/login':
-                    await ui.run_javascript('sdk.refresh()', respond=False)
+                    self.refresh_token()
                     ui.open('/')
                 else:
                     func()
@@ -68,9 +65,24 @@ class page(ui.page):
                 if self.path != '/login':
                     ui.open('/login')
                 else:
+                    ui.timer(30, self.refresh_token)
                     func()
 
         return super().__call__(content)
+
+    @staticmethod
+    def _verify(token: str):
+        try:
+            descope_client.validate_session(session_token=token)
+            return True
+        except AuthException:
+            logging.exception("Could not validate user session.")
+            ui.notify('Wrong username or password', type='negative')
+            return False
+
+    @staticmethod
+    async def refresh_token():
+        await ui.run_javascript('sdk.refresh()', respond=False)
 
 
 def login_page(func: Callable[..., Any]) -> Callable[..., Any]:

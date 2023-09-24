@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import json
+
 import icecream
 import user
 
@@ -15,7 +17,7 @@ def login():
 
 @user.page('/')
 def home():
-    ui.label('Welcome!')
+    ui.markdown(f'```\n{json.dumps(user.about(),indent=2)}\n```')
     ui.button('Logout', on_click=user.logout)
 
 
