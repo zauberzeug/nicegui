@@ -15,12 +15,14 @@ except Exception as error:
 
 
 def login_form() -> ui.element:
+    """Places and returns the Descope login form."""
     with ui.card().classes('w-96 mx-auto'):
         return ui.element('descope-wc').props(f'project-id="{_descope_id}" flow-id="sign-up-or-in"') \
             .on('success', lambda e: app.storage.user.update({'descope': e.args['detail']['user']}))
 
 
 def about() -> Dict[str, Any]:
+    """Returns the user's Descope profile."""
     try:
         return app.storage.user['descope']
     except AuthException:
@@ -29,6 +31,7 @@ def about() -> Dict[str, Any]:
 
 
 async def logout() -> None:
+    """Logs the user out."""
     result = await ui.run_javascript('return await sdk.logout()', respond=True)
     if result['code'] != 200:
         logging.error(f'Logout failed: {result}')
@@ -41,6 +44,13 @@ async def logout() -> None:
 class page(ui.page):
 
     def __init__(self, path):
+        """A page that requires the user to be logged in.
+
+        It allows the same parameters as ui.page, but adds a login check.
+        As recommended by Descope this is done via JavaScript and allows to use Flows.
+        But this means that the page has already awaited the client connection.
+        So `ui.add_head_html` will not work.
+        """
         super().__init__(path)
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
@@ -86,4 +96,5 @@ class page(ui.page):
 
 
 def login_page(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Marks the special page that will contain the login form."""
     return page('/login')(func)
