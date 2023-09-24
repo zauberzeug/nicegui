@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Any, Callable
 
-from descope import REFRESH_SESSION_TOKEN_NAME, SESSION_TOKEN_NAME, AuthException, DeliveryMethod, DescopeClient
+from descope import DescopeClient
 
 from nicegui import Client, app, ui
 
@@ -16,23 +16,32 @@ except Exception as error:
 
 
 async def logout():
-    ic(await ui.run_javascript('return await sdk.logout()', respond=True))
+    result = await ui.run_javascript('return await sdk.logout()', respond=True)
+    if result['code'] != 200:
+        logging.error('Logout failed: ' + result)
+        ui.notify('Logout failed', type='negative')
     ui.open('/login')
 
 
-def verify(token: str):
+def _verify(token: str):
     try:
         jwt_response = descope_client.validate_session(session_token=token)
-        app.storage.user['session_token'] = token
+        ic(jwt_response)
+        app.storage.user['user_id'] = jwt_response['userId']
         return True
     except Exception:
-        app.storage.user['session_token'] = None
+        app.storage.user['user_id'] = None
         logging.exception("Could not validate user session.")
         ui.notify('Wrong username or password', type='negative')
         return False
 
 
-class secure_page(ui.page):
+def login_form():
+    with ui.card().classes('w-96 mx-auto'):
+        return ui.element('descope-wc').props(f'project-id="{descope_id}" flow-id="sign-up-or-in"')
+
+
+class page(ui.page):
 
     def __init__(self, path):
         super().__init__(path)
@@ -49,7 +58,7 @@ class secure_page(ui.page):
             ''')
             await client.connected()
             token = await ui.run_javascript('return sessionToken && !sdk.isJwtExpired(sessionToken) ? sessionToken : null;')
-            if token and verify(token):
+            if token and _verify(token):
                 if self.path == '/login':
                     await ui.run_javascript('sdk.refresh()', respond=False)
                     ui.open('/')
@@ -62,3 +71,7 @@ class secure_page(ui.page):
                     func()
 
         return super().__call__(content)
+
+
+def login_page(func: Callable[..., Any]) -> Callable[..., Any]:
+    return page('/login')(func)
