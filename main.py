@@ -350,6 +350,7 @@ async def index_page(client: Client) -> None:
             example_link('Download Text as File', 'providing in-memory data like strings as file download')
             example_link('Generate PDF', 'create SVG preview and PDF download from input form elements')
             example_link('Custom Binding', 'create a custom binding for a label with a bindable background color')
+            example_link('Descope Auth', 'login form and user profile using [Descope](https://descope.com)')
 
     with ui.row().classes('dark-box min-h-screen mt-16'):
         link_target('why')
