@@ -10,8 +10,8 @@ _descope_id = os.environ.get('DESCOPE_PROJECT_ID', '')
 
 try:
     descope_client = DescopeClient(project_id=_descope_id)
-except Exception as error:
-    logging.exception("failed to initialize.")
+except AuthException as ex:
+    print(ex.error_message)
 
 
 def login_form() -> ui.element:
@@ -26,6 +26,7 @@ def about() -> Dict[str, Any]:
     infos = app.storage.user['descope']
     if not infos:
         raise Exception('User is not logged in.')
+    return infos
 
 
 async def logout() -> None:
@@ -65,7 +66,7 @@ class page(ui.page):
             token = await ui.run_javascript('return sessionToken && !sdk.isJwtExpired(sessionToken) ? sessionToken : null;')
             if token and self._verify(token):
                 if self.path == '/login':
-                    await self.refresh_token()
+                    await self._refresh()
                     ui.open('/')
                 else:
                     func()
@@ -73,7 +74,7 @@ class page(ui.page):
                 if self.path != '/login':
                     ui.open('/login')
                 else:
-                    ui.timer(30, self.refresh_token)
+                    ui.timer(30, self._refresh)
                     func()
 
         return super().__call__(content)
@@ -89,7 +90,7 @@ class page(ui.page):
             return False
 
     @staticmethod
-    async def refresh_token() -> None:
+    async def _refresh() -> None:
         await ui.run_javascript('sdk.refresh()', respond=False)
 
 
