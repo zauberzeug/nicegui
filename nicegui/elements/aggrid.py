@@ -52,7 +52,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         :return: AG Grid element
         """
         return AgGrid({
-            'columnDefs': [{'field': col} for col in df.columns],
+            'columnDefs': [{'field': str(col)} for col in df.columns],
             'rowData': df.to_dict('records'),
             'suppressDotNotation': True,
             **options,

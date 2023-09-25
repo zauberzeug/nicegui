@@ -164,7 +164,7 @@ def test_replace_aggrid(screen: Screen):
 
 
 def test_create_from_pandas(screen: Screen):
-    df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]})
+    df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
     ui.aggrid.from_pandas(df)
 
     screen.open('/')
@@ -172,6 +172,8 @@ def test_create_from_pandas(screen: Screen):
     screen.should_contain('Bob')
     screen.should_contain('18')
     screen.should_contain('21')
+    screen.should_contain('42')
+    screen.should_contain('answer')
 
 
 def test_create_dynamically(screen: Screen):
