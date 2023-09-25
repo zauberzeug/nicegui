@@ -17,4 +17,10 @@ def home():
     ui.button('Logout', on_click=user.logout)
 
 
+@user.page('/async')
+async def async_page():
+    await ui.button('Wait for it...').clicked()
+    ui.label('This is an async page')
+
+
 ui.run(storage_secret='THIS_NEEDS_TO_BE_CHANGED')

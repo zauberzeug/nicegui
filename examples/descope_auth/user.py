@@ -4,33 +4,33 @@ from typing import Any, Callable, Dict
 
 from descope import AuthException, DescopeClient
 
-from nicegui import Client, app, ui
+from nicegui import Client, app, helpers, ui
 
-_descope_id = os.environ.get('DESCOPE_PROJECT_ID', '')
+DESCOPE_ID = os.environ.get('DESCOPE_PROJECT_ID', '')
 
 try:
-    descope_client = DescopeClient(project_id=_descope_id)
+    descope_client = DescopeClient(project_id=DESCOPE_ID)
 except AuthException as ex:
     print(ex.error_message)
 
 
 def login_form() -> ui.element:
-    """Places and returns the Descope login form."""
+    """Create and return the Descope login form."""
     with ui.card().classes('w-96 mx-auto'):
-        return ui.element('descope-wc').props(f'project-id="{_descope_id}" flow-id="sign-up-or-in"') \
+        return ui.element('descope-wc').props(f'project-id="{DESCOPE_ID}" flow-id="sign-up-or-in"') \
             .on('success', lambda e: app.storage.user.update({'descope': e.args['detail']['user']}))
 
 
 def about() -> Dict[str, Any]:
-    """Returns the user's Descope profile."""
-    infos = app.storage.user['descope']
-    if not infos:
-        raise PermissionError('User is not logged in.')
-    return infos
+    """Return the user's Descope profile.
+
+    This function can only be used after the user has logged in.
+    """
+    return app.storage.user['descope']
 
 
 async def logout() -> None:
-    """Logs the user out."""
+    """Logout the user."""
     result = await ui.run_javascript('return await sdk.logout()', respond=True)
     if result['code'] == 200:
         app.storage.user['descope'] = None
@@ -57,29 +57,36 @@ class page(ui.page):
             ui.add_head_html('<script src="https://unpkg.com/@descope/web-js-sdk@latest/dist/index.umd.js"></script>')
             ui.add_body_html(f'''
                 <script>
-                    const sdk = Descope({{ projectId: '{_descope_id}', persistTokens: true, autoRefresh: true }});
+                    const sdk = Descope({{ projectId: '{DESCOPE_ID}', persistTokens: true, autoRefresh: true }});
                     const sessionToken = sdk.getSessionToken()
                 </script>                 
             ''')
             await client.connected()
-            token = await ui.run_javascript('return sessionToken && !sdk.isJwtExpired(sessionToken) ? sessionToken : null;')
-            if token and self._verify(token):
+            if await self._is_logged_in():
                 if self.path == self.LOGIN_PATH:
                     await self._refresh()
                     ui.open('/')
-                else:
-                    func()
+                    return
             else:
                 if self.path != self.LOGIN_PATH:
                     ui.open(self.LOGIN_PATH)
-                else:
-                    ui.timer(self.SESSION_TOKEN_REFRESH_INTERVAL, self._refresh)
-                    func()
+                    return
+                ui.timer(self.SESSION_TOKEN_REFRESH_INTERVAL, self._refresh)
+
+            if helpers.is_coroutine_function(func):
+                await func()
+            else:
+                func()
 
         return super().__call__(content)
 
     @staticmethod
-    def _verify(token: str) -> bool:
+    async def _is_logged_in() -> bool:
+        if not app.storage.user.get('descope'):
+            return False
+        token = await ui.run_javascript('return sessionToken && !sdk.isJwtExpired(sessionToken) ? sessionToken : null;')
+        if not token:
+            return False
         try:
             descope_client.validate_session(session_token=token)
             return True
