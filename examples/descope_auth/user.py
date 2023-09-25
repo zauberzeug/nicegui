@@ -25,56 +25,55 @@ def about() -> Dict[str, Any]:
     """Returns the user's Descope profile."""
     infos = app.storage.user['descope']
     if not infos:
-        raise Exception('User is not logged in.')
+        raise PermissionError('User is not logged in.')
     return infos
 
 
 async def logout() -> None:
     """Logs the user out."""
     result = await ui.run_javascript('return await sdk.logout()', respond=True)
-    if result['code'] != 200:
+    if result['code'] == 200:
+        app.storage.user['descope'] = None
+    else:
         logging.error(f'Logout failed: {result}')
         ui.notify('Logout failed', type='negative')
-    else:
-        app.storage.user['descope'] = None
-    ui.open('/login')
+    ui.open(page.LOGIN_PATH)
 
 
 class page(ui.page):
+    """A page that requires the user to be logged in.
 
-    def __init__(self, path):
-        """A page that requires the user to be logged in.
-
-        It allows the same parameters as ui.page, but adds a login check.
-        As recommended by Descope this is done via JavaScript and allows to use Flows.
-        But this means that the page has already awaited the client connection.
-        So `ui.add_head_html` will not work.
-        """
-        super().__init__(path)
+    It allows the same parameters as ui.page, but adds a login check.
+    As recommended by Descope, this is done via JavaScript and allows to use Flows.
+    But this means that the page has already awaited the client connection.
+    So `ui.add_head_html` will not work.
+    """
+    SESSION_TOKEN_REFRESH_INTERVAL = 30
+    LOGIN_PATH = '/login'
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         async def content(client: Client):
             ui.add_head_html('<script src="https://unpkg.com/@descope/web-component@latest/dist/index.js"></script>')
             ui.add_head_html('<script src="https://unpkg.com/@descope/web-js-sdk@latest/dist/index.umd.js"></script>')
-            ui.add_body_html('''
+            ui.add_body_html(f'''
                 <script>
-                    const sdk = Descope({ projectId: \'''' + _descope_id + '''\', persistTokens: true, autoRefresh: true });
+                    const sdk = Descope({{ projectId: '{_descope_id}', persistTokens: true, autoRefresh: true }});
                     const sessionToken = sdk.getSessionToken()
                 </script>                 
             ''')
             await client.connected()
             token = await ui.run_javascript('return sessionToken && !sdk.isJwtExpired(sessionToken) ? sessionToken : null;')
             if token and self._verify(token):
-                if self.path == '/login':
+                if self.path == self.LOGIN_PATH:
                     await self._refresh()
                     ui.open('/')
                 else:
                     func()
             else:
-                if self.path != '/login':
-                    ui.open('/login')
+                if self.path != self.LOGIN_PATH:
+                    ui.open(self.LOGIN_PATH)
                 else:
-                    ui.timer(30, self._refresh)
+                    ui.timer(self.SESSION_TOKEN_REFRESH_INTERVAL, self._refresh)
                     func()
 
         return super().__call__(content)
@@ -85,7 +84,7 @@ class page(ui.page):
             descope_client.validate_session(session_token=token)
             return True
         except AuthException:
-            logging.exception("Could not validate user session.")
+            logging.exception('Could not validate user session.')
             ui.notify('Wrong username or password', type='negative')
             return False
 
@@ -96,4 +95,4 @@ class page(ui.page):
 
 def login_page(func: Callable[..., Any]) -> Callable[..., Any]:
     """Marks the special page that will contain the login form."""
-    return page('/login')(func)
+    return page(page.LOGIN_PATH)(func)

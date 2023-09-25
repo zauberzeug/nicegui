@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import json
 
 import user
@@ -14,7 +13,7 @@ def login():
 
 @user.page('/')
 def home():
-    ui.markdown(f'```\n{json.dumps(user.about(), indent=2)}\n```')
+    ui.code(json.dumps(user.about(), indent=2), language='json')
     ui.button('Logout', on_click=user.logout)
 
 
