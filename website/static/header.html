@@ -16,6 +16,7 @@
 
 <script>
   window.onscroll = () => {
+    if (document.querySelector(".q-dialog__backdrop")) return;
     const header = document.querySelector(".q-header");
     if (document.documentElement.scrollTop > 50) header.classList.add("fade");
     else header.classList.remove("fade");
