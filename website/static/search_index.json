@@ -165,6 +165,11 @@
     "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/custom_binding/main.py"
   },
   {
+    "title": "Example: Descope Auth",
+    "content": "login form and user profile using [Descope](https://descope.com)",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/descope_auth/main.py"
+  },
+  {
     "title": "Basic Elements",
     "content": "This is **Markdown**.",
     "url": "/documentation/#basic_elements"
@@ -238,6 +243,16 @@
     "title": "Async event handlers",
     "content": "Most elements also support asynchronous event handlers.  Note: You can also pass a functools.partial into the on_click property to wrap async functions with parameters.",
     "url": "/documentation/#async_event_handlers"
+  },
+  {
+    "title": "Running CPU-bound tasks",
+    "content": "NiceGUI provides a cpu_bound function for running CPU-bound tasks in a separate process. This is useful for long-running computations that would otherwise block the event loop and make the UI unresponsive. The function returns a future that can be awaited.",
+    "url": "/documentation/#running_cpu-bound_tasks"
+  },
+  {
+    "title": "Running I/O-bound tasks",
+    "content": "NiceGUI provides an io_bound function for running I/O-bound tasks in a separate thread. This is useful for long-running I/O operations that would otherwise block the event loop and make the UI unresponsive. The function returns a future that can be awaited.",
+    "url": "/documentation/#running_i/o-bound_tasks"
   },
   {
     "title": "Action",
@@ -321,7 +336,7 @@
   },
   {
     "title": "Environment Variables",
-    "content": "You can set the following environment variables to configure NiceGUI:  - MATPLOTLIB (default: true) can be set to false to avoid the potentially costly import of Matplotlib. This will make ui.pyplot and ui.line_plot unavailable. - NICEGUI_STORAGE_PATH (default: local \".nicegui\") can be set to change the location of the storage files. - MARKDOWN_CONTENT_CACHE_SIZE (default: 1000): The maximum number of Markdown content snippets that are cached in memory.",
+    "content": "You can set the following environment variables to configure NiceGUI:  - MATPLOTLIB (default: true) can be set to false to avoid the potentially costly import of Matplotlib. This will make ui.pyplot and ui.line_plot unavailable. - NICEGUI_STORAGE_PATH (default: local \".nicegui\") can be set to change the location of the storage files. - MARKDOWN_CONTENT_CACHE_SIZE (default: 1000): The maximum number of Markdown content snippets that are cached in memory. - NO_NETIFACES (default: false): Can be set to true to hide the netifaces startup warning (e.g. in docker container).",
     "url": "/documentation/#environment_variables"
   },
   {
@@ -363,6 +378,11 @@
     "title": "Icon: Lottie files",
     "content": "You can also use Lottie files with animations.",
     "url": "/documentation/icon#lottie_files"
+  },
+  {
+    "title": "Code",
+    "content": "This element displays a code block with syntax highlighting.  :param content: code to display :param language: language of the code (default: \"python\") copy_to_clipboard",
+    "url": "/documentation/code"
   },
   {
     "title": "Download",
@@ -636,7 +656,7 @@
   },
   {
     "title": "Menu: Custom Context Menu",
-    "content": "Using Quasar's context-menu and touch-position props, you can create custom context menus.",
+    "content": "Using Quasar's context-menu and touch-position props, you can create custom context menus. These open by right-clicking on the parent.",
     "url": "/documentation/menu#custom_context_menu"
   },
   {
@@ -658,6 +678,11 @@
     "title": "Toggle",
     "content": "The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call update() to update the options in the UI.  :param options: a list ['value1', ...] or dictionary 'value1':'label1', ... specifying the options :param value: the initial value :param on_change: callback to execute when selection changes :param clearable: whether the toggle can be cleared by clicking the selected option",
     "url": "/documentation/toggle"
+  },
+  {
+    "title": "Editor",
+    "content": "A WYSIWYG editor based on Quasar's QEditor <https://quasar.dev/vue-components/editor>_. The value is a string containing the formatted text as HTML code.  :param value: initial value :param on_change: callback to be invoked when the value changes",
+    "url": "/documentation/editor"
   },
   {
     "title": "Keyboard",
@@ -838,6 +863,11 @@
     "title": "Color Input",
     "content": ":param label: displayed label for the color input :param placeholder: text to show if no color is selected :param value: the current color value :param on_change: callback to execute when the value changes :param preview: change button background to selected color (default: False) open_picker Open the color pickeron_value_change",
     "url": "/documentation/color_input"
+  },
+  {
+    "title": "Timeline",
+    "content": "This element represents Quasar's QTimeline <https://quasar.dev/vue-components/timeline#qtimeline-api>_ component.  :param side: Side (\"left\" or \"right\"; default: \"left\"). :param layout: Layout (\"dense\", \"comfortable\" or \"loose\"; default: \"dense\"). :param color: Color of the icons.",
+    "url": "/documentation/timeline"
   },
   {
     "title": "Textarea",
@@ -1041,8 +1071,18 @@
   },
   {
     "title": "Apache EChart",
-    "content": "An element to create a chart using ECharts <https://echarts.apache.org/>_. Updates can be pushed to the chart by changing the options property. After data has changed, call the update method to refresh the chart.  :param options: dictionary of EChart options update",
+    "content": "An element to create a chart using ECharts <https://echarts.apache.org/>_. Updates can be pushed to the chart by changing the options property. After data has changed, call the update method to refresh the chart.  :param options: dictionary of EChart options :param on_click_point: callback function that is called when a point is clicked update",
     "url": "/documentation/echart"
+  },
+  {
+    "title": "Echart: EChart with clickable points",
+    "content": "You can register a callback for an event when a series point is clicked.",
+    "url": "/documentation/echart#echart_with_clickable_points"
+  },
+  {
+    "title": "Echart: EChart with dynamic properties",
+    "content": "Dynamic properties can be passed to chart elements to customize them such as apply an axis label format. To make a property dynamic, prefix a colon \":\" to the property name.",
+    "url": "/documentation/echart#echart_with_dynamic_properties"
   },
   {
     "title": "Generic Events",
