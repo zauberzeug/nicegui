@@ -28,6 +28,7 @@ class Element(Visibility):
     libraries: List[Library] = []
     extra_libraries: List[Library] = []
     exposed_libraries: List[Library] = []
+    _default_props: Dict[str, Any] = {}
 
     def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
         """Generic Element
@@ -64,6 +65,9 @@ class Element(Visibility):
         outbox.enqueue_update(self)
         if self.parent_slot:
             outbox.enqueue_update(self.parent_slot.parent)
+
+        if self.__class__.__name__ in self._default_props:
+            self._props.update(self._default_props[self.__class__.__name__])
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
@@ -239,6 +243,29 @@ class Element(Visibility):
         if needs_update:
             self.update()
         return self
+
+    @classmethod
+    def default_props(cls, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
+        """Add or remove default props.
+
+        This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
+        Since props are simply applied as HTML attributes, they can be used with any HTML element.
+        All elements of this class will share these props. These must be defined before element instantiation.
+
+        Boolean properties are assumed ``True`` if no value is specified.
+
+        :param add: whitespace-delimited list of either boolean values or key=value pair to add
+        :param remove: whitespace-delimited list of property keys to remove
+        """
+        if cls.__name__ not in cls._default_props:
+            cls._default_props[cls.__name__] = {}
+        for key in cls._parse_props(remove):
+            if key in cls._default_props[cls.__name__]:
+                del cls._default_props[cls.__name__][key]
+        for key, value in cls._parse_props(add).items():
+            if cls._default_props[cls.__name__].get(key) != value:
+                cls._default_props[cls.__name__][key] = value
+        return cls
 
     def tooltip(self, text: str) -> Self:
         """Add a tooltip to the element.
