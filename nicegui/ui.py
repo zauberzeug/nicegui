@@ -70,7 +70,7 @@ __all__ = [
     'textarea',
     'time',
     'timeline',
-    'timeline_item',
+    'timeline_entry',
     'toggle',
     'tooltip',
     'tree',
