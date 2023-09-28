@@ -28,7 +28,6 @@ class Element(Visibility):
     libraries: List[Library] = []
     extra_libraries: List[Library] = []
     exposed_libraries: List[Library] = []
-    _default_props: Dict[str, Any] = {}
 
     def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
         """Generic Element
@@ -66,8 +65,8 @@ class Element(Visibility):
         if self.parent_slot:
             outbox.enqueue_update(self.parent_slot.parent)
 
-        if self.__class__.__name__ in self._default_props:
-            self._props.update(self._default_props[self.__class__.__name__])
+        if hasattr(self, "_default_props"):
+            self._props.update(self._default_props)
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
@@ -257,14 +256,14 @@ class Element(Visibility):
         :param add: whitespace-delimited list of either boolean values or key=value pair to add
         :param remove: whitespace-delimited list of property keys to remove
         """
-        if cls.__name__ not in cls._default_props:
-            cls._default_props[cls.__name__] = {}
+        if hasattr(cls, "_default_props") is not True:
+            cls._default_props = {}
         for key in cls._parse_props(remove):
-            if key in cls._default_props[cls.__name__]:
-                del cls._default_props[cls.__name__][key]
+            if key in cls._default_props:
+                del cls._default_props[key]
         for key, value in cls._parse_props(add).items():
-            if cls._default_props[cls.__name__].get(key) != value:
-                cls._default_props[cls.__name__][key] = value
+            if cls._default_props.get(key) != value:
+                cls._default_props[key] = value
         return cls
 
     def tooltip(self, text: str) -> Self:
