@@ -1,5 +1,8 @@
 from typing import Any, Callable, List, Literal, Optional
 
+from typing_extensions import Self
+
+from .. import globals  # pylint: disable=redefined-builtin
 from ..element import Element
 from ..events import GenericEventArguments, ValueChangeEventArguments, handle_event
 
@@ -14,6 +17,7 @@ class Tree(Element):
                  on_expand: Optional[Callable[..., Any]] = None,
                  on_tick: Optional[Callable[..., Any]] = None,
                  tick_strategy: Optional[Literal['leaf', 'leaf-filtered', 'strict']] = None,
+                 default_expand_all: bool = False,
                  ) -> None:
         """Tree
 
@@ -31,6 +35,7 @@ class Tree(Element):
         :param on_expand: callback which is invoked when the node expansion changes
         :param on_tick: callback which is invoked when a node is ticked or unticked
         :param tick_strategy: whether and how to use checkboxes ("leaf", "leaf-filtered" or "strict"; default: ``None``)
+        :param default_expand_all: whether to expand all nodes by default (default: ``False``)
         """
         super().__init__('q-tree')
         self._props['nodes'] = nodes
@@ -42,6 +47,13 @@ class Tree(Element):
         self._props['ticked'] = []
         if tick_strategy is not None:
             self._props['tick-strategy'] = tick_strategy
+        if default_expand_all:
+            # https://github.com/zauberzeug/nicegui/issues/1385
+            def expand_all(nodes: List) -> None:
+                for node in nodes:
+                    self._props['expanded'].append(node[node_key])
+                    expand_all(node.get(children_key, []))
+            expand_all(nodes)
 
         def update_prop(name: str, value: Any) -> None:
             if self._props[name] != value:
@@ -62,3 +74,11 @@ class Tree(Element):
             update_prop('ticked', e.args)
             handle_event(on_tick, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
         self.on('update:ticked', handle_ticked)
+
+    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
+        super().props(add, remove=remove)
+        if 'default-expand-all' in self._props:
+            del self._props['default-expand-all']
+            globals.log.warning('The prop "default_expand_all" is not supported by `ui.tree`.\n'
+                                'Use the parameter "default_expand_all" instead.')
+        return self
