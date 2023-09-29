@@ -23,3 +23,15 @@ def more() -> None:
         ui.button('Move X to A', on_click=lambda: x.move(a))
         ui.button('Move X to B', on_click=lambda: x.move(b))
         ui.button('Move X to top', on_click=lambda: x.move(target_index=0))
+
+    @text_demo('Default props', '''
+        You can set default props for all elements of a certain class.
+        This way you can avoid repeating the same props over and over again.
+    ''')
+    def default_props() -> None:
+        ui.button.default_props('rounded outline')
+        ui.button('Button A')
+        ui.button('Button B')
+        ui.input()
+        # END OF DEMO
+        ui.button.default_props(remove='rounded outline')

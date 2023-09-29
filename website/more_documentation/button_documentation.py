@@ -57,18 +57,3 @@ def more() -> None:
                     ui.notify(f'Response code: {response.status_code}')
 
         ui.button('Get slow response', on_click=lambda e: get_slow_response(e.sender))
-
-    @text_demo('Utilizing default props', '''
-            This shows utilizing default props to style multiple buttons.
-        ''')
-    def default_props() -> None:
-        ui.button("no props")
-        ui.button.default_props('rounded')
-        ui.button("rounded")
-        ui.button("rounded")
-        ui.input("no props")
-        ui.button.default_props(remove='rounded')
-        ui.input.default_props('rounded')
-        ui.button("no props")
-        ui.input("rounded")
-        ui.input.default_props(remove='rounded')
