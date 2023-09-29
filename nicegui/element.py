@@ -29,6 +29,7 @@ class Element(Visibility):
     extra_libraries: List[Library] = []
     exposed_libraries: List[Library] = []
     _default_props: Dict[str, Any] = {}
+    _default_classes: List[str] = []
 
     def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
         """Generic Element
@@ -45,6 +46,7 @@ class Element(Visibility):
         self.client.next_element_id += 1
         self.tag = tag if tag else self.component.tag if self.component else 'div'
         self._classes: List[str] = []
+        self._classes.extend(self._default_classes)
         self._style: Dict[str, str] = {}
         self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
         self._props.update(self._default_props)
@@ -100,6 +102,7 @@ class Element(Visibility):
                 cls.exposed_libraries.append(register_library(path, expose=True))
 
         cls._default_props = copy(cls._default_props)
+        cls._default_classes = copy(cls._default_classes)
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
@@ -179,6 +182,26 @@ class Element(Visibility):
             self._classes = new_classes
             self.update()
         return self
+
+    @classmethod
+    def default_classes(cls, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
+            -> Self:
+        """Apply, remove, or replace default HTML classes.
+
+        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
+
+        Removing or replacing classes can be helpful if predefined classes are not desired.
+        All elements of this class will share these HTML classes.
+        These must be defined before element instantiation.
+
+        :param add: whitespace-delimited string of classes
+        :param remove: whitespace-delimited string of classes to remove from the element
+        :param replace: whitespace-delimited string of classes to use instead of existing ones
+        """
+        new_classes = cls._update_classes_list(cls._default_classes, add, remove, replace)
+        if cls._default_classes != new_classes:
+            cls._default_classes = new_classes
+        return cls
 
     @staticmethod
     def _parse_style(text: Optional[str]) -> Dict[str, str]:
