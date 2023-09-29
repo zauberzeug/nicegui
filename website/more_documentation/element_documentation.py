@@ -32,6 +32,5 @@ def more() -> None:
         ui.button.default_props('rounded outline')
         ui.button('Button A')
         ui.button('Button B')
-        ui.input()
         # END OF DEMO
         ui.button.default_props(remove='rounded outline')
