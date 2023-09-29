@@ -144,3 +144,33 @@ def test_xss(screen: Screen):
     screen.should_contain('</script><script>alert(2)</script>')
     screen.should_contain('<b>Bold 1</b>, `code`, copy&paste, multi\nline')
     screen.should_contain('<b>Bold 2</b>, `code`, copy&paste, multi\nline')
+
+
+def test_default_props():
+    ui.button.default_props('rounded outline')
+    button_a = ui.button('Button A')
+    button_b = ui.button('Button B')
+    assert button_a._props.get('rounded') is True, 'default props are set'
+    assert button_a._props.get('outline') is True
+    assert button_b._props.get('rounded') is True
+    assert button_b._props.get('outline') is True
+
+    ui.button.default_props(remove='outline')
+    button_c = ui.button('Button C')
+    assert button_c._props.get('outline') is None, '"outline" prop was removed'
+    assert button_c._props.get('rounded') is True, 'other props are still there'
+
+    ui.input.default_props('filled')
+    input_a = ui.input()
+    assert input_a._props.get('filled') is True
+    assert input_a._props.get('rounded') is None, 'default props of ui.button do not affect ui.input'
+
+    class MyButton(ui.button):
+        pass
+    MyButton.default_props('flat')
+    button_d = MyButton()
+    button_e = ui.button()
+    assert button_d._props.get('flat') is True
+    assert button_d._props.get('rounded') is True, 'default props are inherited'
+    assert button_e._props.get('flat') is None, 'default props of MyButton do not affect ui.button'
+    assert button_e._props.get('rounded') is True

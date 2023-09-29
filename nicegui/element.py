@@ -99,6 +99,8 @@ class Element(Visibility):
             for path in glob_absolute_paths(library):
                 cls.exposed_libraries.append(register_library(path, expose=True))
 
+        cls._default_props = copy(cls._default_props)
+
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
 
