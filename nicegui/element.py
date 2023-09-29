@@ -245,7 +245,7 @@ class Element(Visibility):
         return self
 
     @classmethod
-    def default_props(cls, add: Optional[str] = None, *, remove: Optional[str] = None) -> None:
+    def default_props(cls, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
         """Add or remove default props.
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
@@ -264,6 +264,7 @@ class Element(Visibility):
         for key, value in cls._parse_props(add).items():
             if cls._default_props.get(key) != value:
                 cls._default_props[key] = value
+        return cls
 
     def tooltip(self, text: str) -> Self:
         """Add a tooltip to the element.

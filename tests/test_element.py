@@ -174,3 +174,8 @@ def test_default_props():
     assert button_d._props.get('rounded') is True, 'default props are inherited'
     assert button_e._props.get('flat') is None, 'default props of MyButton do not affect ui.button'
     assert button_e._props.get('rounded') is True
+
+    ui.button.default_props('no-caps').default_props('no-wrap')
+    button_f = ui.button()
+    assert button_f._props.get('no-caps') is True
+    assert button_f._props.get('no-wrap') is True
