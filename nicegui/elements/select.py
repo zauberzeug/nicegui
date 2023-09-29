@@ -20,6 +20,8 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
                  ) -> None:
         """Dropdown Selection
 
+        This element is based on Quasar's `QSelect <https://quasar.dev/vue-components/select>`_ component.
+
         The options can be specified as a list of values, or as a dictionary mapping values to labels.
         After manipulating the options, call `update()` to update the options in the UI.
 
