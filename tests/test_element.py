@@ -179,3 +179,73 @@ def test_default_props():
     button_f = ui.button()
     assert button_f._props.get('no-caps') is True
     assert button_f._props.get('no-wrap') is True
+
+
+def test_default_classes():
+    ui.button.default_classes('bg-white; text-green;')
+    button_a = ui.button('Button A')
+    button_b = ui.button('Button B')
+    assert 'bg-white;' in button_a._classes, 'default classes are set'
+    assert 'text-green;' in button_a._classes
+    assert 'bg-white;' in button_b._classes
+    assert 'text-green;' in button_b._classes
+
+    ui.button.default_classes(remove='text-green;')
+    button_c = ui.button('Button C')
+    assert 'text-green;' not in button_c._classes, '"text-green" class was removed'
+    assert 'bg-white;' in button_c._classes, 'other classes are still there'
+
+    ui.input.default_classes('text-black;')
+    input_a = ui.input()
+    assert 'text-black;' in input_a._classes
+    assert 'bg-white;' not in input_a._classes, 'default classes of ui.button do not affect ui.input'
+
+    class MyButton(ui.button):
+        pass
+    MyButton.default_classes('w-full;')
+    button_d = MyButton()
+    button_e = ui.button()
+    assert 'w-full;' in button_d._classes
+    assert 'bg-white;' in button_d._classes, 'default classes are inherited'
+    assert 'w-full;' not in button_e._classes, 'default classes of MyButton do not affect ui.button'
+    assert 'bg-white;' in button_e._classes
+
+    ui.button.default_classes('h-40;').default_classes('max-h-80;')
+    button_f = ui.button()
+    assert 'h-40;' in button_f._classes
+    assert 'max-h-80;' in button_f._classes
+
+
+def test_default_style():
+    ui.button.default_style('color: green; font-size: 200%')
+    button_a = ui.button('Button A')
+    button_b = ui.button('Button B')
+    assert button_a._style.get('color') == 'green', 'default style are set'
+    assert button_a._style.get('font-size') == '200%'
+    assert button_b._style.get('color') == 'green'
+    assert button_b._style.get('font-size') == '200%'
+
+    ui.button.default_style(remove='color: green')
+    button_c = ui.button('Button C')
+    assert button_c._style.get('color') is None, '"color" style was removed'
+    assert button_c._style.get('font-size') == '200%', 'other style are still there'
+
+    ui.input.default_style('font-weight: 300')
+    input_a = ui.input()
+    assert input_a._style.get('font-weight') == '300'
+    assert input_a._style.get('font-size') is None, 'default style of ui.button do not affect ui.input'
+
+    class MyButton(ui.button):
+        pass
+    MyButton.default_style('font-family: courier')
+    button_d = MyButton()
+    button_e = ui.button()
+    assert button_d._style.get('font-family') == 'courier'
+    assert button_d._style.get('font-size') == '200%', 'default style are inherited'
+    assert button_e._style.get('font-family') is None, 'default style of MyButton do not affect ui.button'
+    assert button_e._style.get('font-size') == '200%'
+
+    ui.button.default_style('border: 2px').default_style('padding: 30px')
+    button_f = ui.button()
+    assert button_f._style.get('border') == '2px'
+    assert button_f._style.get('padding') == '30px'
