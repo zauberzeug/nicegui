@@ -30,6 +30,7 @@ class Element(Visibility):
     exposed_libraries: List[Library] = []
     _default_props: Dict[str, Any] = {}
     _default_classes: List[str] = []
+    _default_style: Dict[str, str] = {}
 
     def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
         """Generic Element
@@ -48,6 +49,7 @@ class Element(Visibility):
         self._classes: List[str] = []
         self._classes.extend(self._default_classes)
         self._style: Dict[str, str] = {}
+        self._style.update(self._default_style)
         self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
         self._props.update(self._default_props)
         self._event_listeners: Dict[str, EventListener] = {}
@@ -103,6 +105,7 @@ class Element(Visibility):
 
         cls._default_props = copy(cls._default_props)
         cls._default_classes = copy(cls._default_classes)
+        cls._default_style = copy(cls._default_style)
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
@@ -231,6 +234,27 @@ class Element(Visibility):
             self._style = style_dict
             self.update()
         return self
+
+    @classmethod
+    def default_style(cls, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
+        """Apply, remove, or replace default CSS definitions.
+
+        Removing or replacing styles can be helpful if the predefined style is not desired.
+        All elements of this class will share these CSS definitions.
+        These must be defined before element instantiation.
+
+        :param add: semicolon-separated list of styles to add to the element
+        :param remove: semicolon-separated list of styles to remove from the element
+        :param replace: semicolon-separated list of styles to use instead of existing ones
+        """
+        style_dict = deepcopy(cls._default_style) if replace is None else {}
+        for key in cls._parse_style(remove):
+            style_dict.pop(key, None)
+        style_dict.update(cls._parse_style(add))
+        style_dict.update(cls._parse_style(replace))
+        if cls._default_style != style_dict:
+            cls._default_style = style_dict
+        return cls
 
     @staticmethod
     def _parse_props(text: Optional[str]) -> Dict[str, Any]:
