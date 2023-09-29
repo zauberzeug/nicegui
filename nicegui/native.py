@@ -1,7 +1,6 @@
 import inspect
 import warnings
 from dataclasses import dataclass, field
-from functools import partial
 from multiprocessing import Queue
 from typing import Any, Callable, Dict, Optional, Tuple
 

@@ -39,7 +39,7 @@ class Spinner(TextColorElement):
                  ) -> None:
         """Spinner
 
-        See `Quasar Spinner <https://quasar.dev/vue-components/spinners>`_ for more information.
+        This element is based on Quasar's `QSpinner <https://quasar.dev/vue-components/spinners>`_ component.
 
         :param type: type of spinner (e.g. "audio", "ball", "bars", ..., default: "default")
         :param size: size of the spinner (e.g. "3em", "10px", "xl", ..., default: "1em")

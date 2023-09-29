@@ -11,7 +11,7 @@ class Menu(ValueElement):
     def __init__(self, *, value: bool = False) -> None:
         """Menu
 
-        Creates a menu.
+        Creates a menu based on Quasar's `QMenu <https://quasar.dev/vue-components/menu>`_ component.
         The menu should be placed inside the element where it should be shown.
 
         :param value: whether the menu is already opened (default: `False`)
@@ -41,6 +41,7 @@ class MenuItem(TextElement):
         """Menu Item
 
         A menu item to be added to a menu.
+        This element is based on Quasar's `QItem <https://quasar.dev/vue-components/list-and-list-items#qitem-api>`_ component.
 
         :param text: label of the menu item
         :param on_click: callback to be executed when selecting the menu item

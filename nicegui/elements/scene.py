@@ -117,6 +117,11 @@ class Scene(Element,
                 obj.send()
 
     def run_method(self, name: str, *args: Any) -> None:
+        """Run a method on the client.
+
+        :param name: name of the method
+        :param args: arguments to pass to the method
+        """
         if not self.is_initialized:
             return
         super().run_method(name, *args)
@@ -170,6 +175,19 @@ class Scene(Element,
                     up_y: Optional[float] = None,
                     up_z: Optional[float] = None,
                     duration: float = 0.5) -> None:
+        """Move the camera to a new position.
+
+        :param x: camera x position
+        :param y: camera y position
+        :param z: camera z position
+        :param look_at_x: camera look-at x position
+        :param look_at_y: camera look-at y position
+        :param look_at_z: camera look-at z position
+        :param up_x: x component of the camera up vector
+        :param up_y: y component of the camera up vector
+        :param up_z: z component of the camera up vector
+        :param duration: duration of the movement in seconds (default: `0.5`)
+        """
         self.camera.x = self.camera.x if x is None else x
         self.camera.y = self.camera.y if y is None else y
         self.camera.z = self.camera.z if z is None else z
@@ -189,6 +207,10 @@ class Scene(Element,
         super()._on_delete()
 
     def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:
+        """Remove objects from the scene.
+
+        :param predicate: function which returns `True` for objects which should be deleted
+        """
         for obj in list(self.objects.values()):
             if predicate(obj):
                 obj.delete()

@@ -42,9 +42,11 @@ class Stepper(ValueElement):
             step.props(f':done={done}')
 
     def next(self) -> None:
+        """Show the next step."""
         self.run_method('next')
 
     def previous(self) -> None:
+        """Show the previous step."""
         self.run_method('previous')
 
 
@@ -73,4 +75,8 @@ class Step(DisableableElement):
 class StepperNavigation(Element):
 
     def __init__(self) -> None:
+        """Stepper Navigation
+
+        This element represents `Quasar's QStepperNavigation https://quasar.dev/vue-components/stepper#qsteppernavigation-api>`_ component.
+        """
         super().__init__('q-stepper-navigation')

@@ -15,6 +15,8 @@ class Slider(ValueElement, DisableableElement):
                  ) -> None:
         """Slider
 
+        This element is based on Quasar's `QSlider <https://quasar.dev/vue-components/slider>`_ component.
+
         :param min: lower bound of the slider
         :param max: upper bound of the slider
         :param step: step size
