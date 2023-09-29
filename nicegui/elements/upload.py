@@ -67,6 +67,7 @@ class Upload(DisableableElement, component='upload.js'):
                     args=[])
 
     def reset(self) -> None:
+        """Clear the upload queue."""
         self.run_method('reset')
 
     def _on_delete(self) -> None:

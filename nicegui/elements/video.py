@@ -17,6 +17,8 @@ class Video(Element, component='video.js'):
                  ) -> None:
         """Video
 
+        Displays a video.
+
         :param src: URL or local file path of the video source
         :param controls: whether to show the video controls, like play, pause, and volume (default: `True`)
         :param autoplay: whether to start playing the video automatically (default: `False`)

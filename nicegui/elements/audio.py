@@ -17,6 +17,8 @@ class Audio(Element, component='audio.js'):
                  ) -> None:
         """Audio
 
+        Displays an audio player.
+
         :param src: URL or local file path of the audio source
         :param controls: whether to show the audio controls, like play, pause, and volume (default: `True`)
         :param autoplay: whether to start playing the audio automatically (default: `False`)

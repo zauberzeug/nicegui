@@ -90,15 +90,28 @@ class Table(FilterElement, component='table.js'):
         self.update()
 
     class row(Element):
+
         def __init__(self) -> None:
+            """Row Element
+
+            This element is based on Quasar's `QTr <https://quasar.dev/vue-components/table#qtr-api>`_ component.
+            """
             super().__init__('q-tr')
 
     class header(Element):
+
         def __init__(self) -> None:
+            """Header Element
+
+            This element is based on Quasar's `QTh <https://quasar.dev/vue-components/table#qth-api>`_ component.
+            """
             super().__init__('q-th')
 
     class cell(Element):
-        def __init__(self, key: str = '') -> None:
+
+        def __init__(self) -> None:
+            """Cell Element
+
+            This element is based on Quasar's `QTd <https://quasar.dev/vue-components/table#qtd-api>`_ component.
+            """
             super().__init__('q-td')
-            if key:
-                self._props['key'] = key

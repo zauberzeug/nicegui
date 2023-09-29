@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import math
 import uuid
-from typing import TYPE_CHECKING, Any, List, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Literal, Optional, Union
+
+from typing_extensions import Self
 
 if TYPE_CHECKING:
     from .scene import Scene, SceneObject
@@ -34,7 +36,8 @@ class Object3D:
         self.sz: float = 1
         self._create()
 
-    def with_name(self, name: str):
+    def with_name(self, name: str) -> Self:
+        """Set the name of the object."""
         self.name = name
         self._name()
         return self
@@ -49,11 +52,11 @@ class Object3D:
         self._visible()
         self._draggable()
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         self.scene.stack.append(self)
         return self
 
-    def __exit__(self, *_):
+    def __exit__(self, *_) -> None:
         self.scene.stack.pop()
 
     def _create(self) -> None:
@@ -83,7 +86,13 @@ class Object3D:
     def _delete(self) -> None:
         self.scene.run_method('delete', self.id)
 
-    def material(self, color: str = '#ffffff', opacity: float = 1.0, side: str = 'front'):
+    def material(self, color: str = '#ffffff', opacity: float = 1.0, side: Literal['front', 'back', 'both'] = 'front') -> Self:
+        """Set the color and opacity of the object.
+
+        :param color: CSS color string (default: '#ffffff')
+        :param opacity: opacity between 0.0 and 1.0 (default: 1.0)
+        :param side: 'front', 'back', or 'double' (default: 'front')
+        """
         if self.color != color or self.opacity != opacity or self.side_ != side:
             self.color = color
             self.opacity = opacity
@@ -91,7 +100,13 @@ class Object3D:
             self._material()
         return self
 
-    def move(self, x: float = 0.0, y: float = 0.0, z: float = 0.0):
+    def move(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> Self:
+        """Move the object.
+
+        :param x: x coordinate
+        :param y: y coordinate
+        :param z: z coordinate
+        """
         if self.x != x or self.y != y or self.z != z:
             self.x = x
             self.y = y
@@ -101,6 +116,12 @@ class Object3D:
 
     @staticmethod
     def rotation_matrix_from_euler(r_x: float, r_y: float, r_z: float) -> List[List[float]]:
+        """Create a rotation matrix from Euler angles.
+
+        :param r_x: rotation around the x axis in radians
+        :param r_y: rotation around the y axis in radians
+        :param r_z: rotation around the z axis in radians
+        """
         sx, cx = math.sin(r_x), math.cos(r_x)
         sy, cy = math.sin(r_y), math.cos(r_y)
         sz, cz = math.sin(r_z), math.cos(r_z)
@@ -110,16 +131,32 @@ class Object3D:
             [-sy, cy * sx, cy * cx],
         ]
 
-    def rotate(self, r_x: float, r_y: float, r_z: float) -> None:
+    def rotate(self, r_x: float, r_y: float, r_z: float) -> Self:
+        """Rotate the object.
+
+        :param r_x: rotation around the x axis in radians
+        :param r_y: rotation around the y axis in radians
+        :param r_z: rotation around the z axis in radians
+        """
         return self.rotate_R(self.rotation_matrix_from_euler(r_x, r_y, r_z))
 
-    def rotate_R(self, R: List[List[float]]):
+    def rotate_R(self, R: List[List[float]]) -> Self:
+        """Rotate the object.
+
+        :param R: 3x3 rotation matrix
+        """
         if self.R != R:
             self.R = R
             self._rotate()
         return self
 
-    def scale(self, sx: float = 1.0, sy: Optional[float] = None, sz: Optional[float] = None):
+    def scale(self, sx: float = 1.0, sy: Optional[float] = None, sz: Optional[float] = None) -> Self:
+        """Scale the object.
+
+        :param sx: scale factor for the x axis
+        :param sy: scale factor for the y axis (default: `sx`)
+        :param sz: scale factor for the z axis (default: `sx`)
+        """
         if sy is None:
             sy = sx
         if sz is None:
@@ -131,19 +168,28 @@ class Object3D:
             self._scale()
         return self
 
-    def visible(self, value: bool = True):
+    def visible(self, value: bool = True) -> Self:
+        """Set the visibility of the object.
+
+        :param value: whether the object should be visible (default: `True`)
+        """
         if self.visible_ != value:
             self.visible_ = value
             self._visible()
         return self
 
-    def draggable(self, value: bool = True):
+    def draggable(self, value: bool = True) -> Self:
+        """Set whether the object should be draggable.
+
+        :param value: whether the object should be draggable (default: `True`)
+        """
         if self.draggable_ != value:
             self.draggable_ = value
             self._draggable()
         return self
 
     def delete(self) -> None:
+        """Delete the object."""
         children = [object for object in self.scene.objects.values() if object.parent == self]
         for child in children:
             child.delete()

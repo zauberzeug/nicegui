@@ -21,7 +21,7 @@ class Card(Element):
         self._classes = ['nicegui-card']
 
     def tight(self) -> Self:
-        """Removes padding and gaps between nested elements."""
+        """Remove padding and gaps between nested elements."""
         self._classes.clear()
         self._style.clear()
         return self
@@ -30,10 +30,18 @@ class Card(Element):
 class CardSection(Element):
 
     def __init__(self) -> None:
+        """Card Section
+
+        This element is based on Quasar's `QCardSection <https://quasar.dev/vue-components/card#qcardsection-api>`_ component.
+        """
         super().__init__('q-card-section')
 
 
 class CardActions(Element):
 
     def __init__(self) -> None:
+        """Card Actions
+
+        This element is based on Quasar's `QCardActions <https://quasar.dev/vue-components/card#qcardactions-api>`_ component.
+        """
         super().__init__('q-card-actions')

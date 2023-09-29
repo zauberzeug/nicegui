@@ -43,9 +43,11 @@ class Carousel(ValueElement):
             slide.props(f':done={done}')
 
     def next(self) -> None:
+        """Show the next slide."""
         self.run_method('next')
 
     def previous(self) -> None:
+        """Show the previous slide."""
         self.run_method('previous')
 
 
