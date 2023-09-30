@@ -9,9 +9,11 @@ class RouterFrame(ui.element, component='router_frame.js'):
 
 class Router():
 
-    def __init__(self) -> None:
+    def __init__(self, route_not_found: Callable = None) -> None:
         self.routes: Dict[str, Callable] = {}
         self.content: ui.element = None
+        self.paths: list = []
+        self.route_not_found = route_not_found if route_not_found else lambda: ui.label("Route not found")
 
     def add(self, path: str):
         def decorator(func: Callable):
@@ -22,7 +24,9 @@ class Router():
     def open(self, target: Union[Callable, str]) -> None:
         if isinstance(target, str):
             path = target
-            builder = self.routes[target]
+            self.paths = target.split('/')[1:]
+            combine = f'/{self.paths[0]}'
+            builder = self.routes[combine] if combine in self.routes else self.route_not_found
         else:
             path = {v: k for k, v in self.routes.items()}[target]
             builder = target

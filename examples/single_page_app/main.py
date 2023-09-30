@@ -15,7 +15,11 @@ def main():
 
     @router.add('/two')
     def show_two():
-        ui.label('Content Two').classes('text-2xl')
+        if len(router.paths) > 1:
+            dynamic_route = router.paths[-1]
+            ui.label(f'Content Two Dynamic:{dynamic_route}').classes('text-2xl')
+        else:
+            ui.label('Content Two').classes('text-2xl')
 
     @router.add('/three')
     def show_three():
@@ -24,8 +28,10 @@ def main():
     # adding some navigation buttons to switch between the different pages
     with ui.row():
         ui.button('One', on_click=lambda: router.open(show_one)).classes('w-32')
-        ui.button('Two', on_click=lambda: router.open(show_two)).classes('w-32')
+        # dynamic route need to be string to work properly
+        ui.button('Two', on_click=lambda: router.open('/two')).classes('w-32')
         ui.button('Three', on_click=lambda: router.open(show_three)).classes('w-32')
+        ui.button('Two Dynamic', on_click=lambda: router.open('/two/22'))
 
     # this places the content which should be displayed
     router.frame().classes('w-full p-4 bg-gray-100')
