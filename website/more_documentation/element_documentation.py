@@ -46,22 +46,22 @@ def more() -> None:
         Subclasses inherit the default classes of their parent class.
     ''')
     def default_classes() -> None:
-        ui.label.default_classes('bg-purple')
+        ui.label.default_classes('bg-blue-100 p-2')
         ui.label('Label A')
         ui.label('Label B')
         # END OF DEMO
-        ui.label.default_classes(remove='bg-purple')
+        ui.label.default_classes(remove='bg-blue-100 p-2')
 
     @text_demo('Default style', '''
-        You can set default style for all elements of a certain class.
+        You can set a default style for all elements of a certain class.
         This way you can avoid repeating the same style over and over again.
         
-        Default style only apply to elements created after the default style was set.
+        A default style only applies to elements created after the default style was set.
         Subclasses inherit the default style of their parent class.
     ''')
     def default_style() -> None:
-        ui.label.default_style('color: green')
+        ui.label.default_style('color: tomato')
         ui.label('Label A')
         ui.label('Label B')
         # END OF DEMO
-        ui.label.default_style(remove='color: green')
+        ui.label.default_style(remove='color: tomato')

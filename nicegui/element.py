@@ -201,9 +201,7 @@ class Element(Visibility):
         :param remove: whitespace-delimited string of classes to remove from the element
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
-        new_classes = cls._update_classes_list(cls._default_classes, add, remove, replace)
-        if cls._default_classes != new_classes:
-            cls._default_classes = new_classes
+        cls._default_classes = cls._update_classes_list(cls._default_classes, add, remove, replace)
         return cls
 
     @staticmethod
@@ -247,13 +245,12 @@ class Element(Visibility):
         :param remove: semicolon-separated list of styles to remove from the element
         :param replace: semicolon-separated list of styles to use instead of existing ones
         """
-        style_dict = deepcopy(cls._default_style) if replace is None else {}
+        if replace is not None:
+            cls._default_style.clear()
         for key in cls._parse_style(remove):
-            style_dict.pop(key, None)
-        style_dict.update(cls._parse_style(add))
-        style_dict.update(cls._parse_style(replace))
-        if cls._default_style != style_dict:
-            cls._default_style = style_dict
+            cls._default_style.pop(key, None)
+        cls._default_style.update(cls._parse_style(add))
+        cls._default_style.update(cls._parse_style(replace))
         return cls
 
     @staticmethod
@@ -309,8 +306,7 @@ class Element(Visibility):
             if key in cls._default_props:
                 del cls._default_props[key]
         for key, value in cls._parse_props(add).items():
-            if cls._default_props.get(key) != value:
-                cls._default_props[key] = value
+            cls._default_props[key] = value
         return cls
 
     def tooltip(self, text: str) -> Self:
