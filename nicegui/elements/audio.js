@@ -21,14 +21,5 @@ export default {
     compute_src() {
       this.computed_src = (this.src.startsWith("/") ? window.path_prefix : "") + this.src;
     },
-    seek(seconds) {
-      this.$el.currentTime = seconds;
-    },
-    play() {
-      this.$el.play();
-    },
-    pause() {
-      this.$el.pause();
-    },
   },
 };
