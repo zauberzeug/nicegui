@@ -1,9 +1,10 @@
 from typing import Optional
 
+from .mixins.name_element import NameElement
 from .mixins.color_elements import TextColorElement
 
 
-class Icon(TextColorElement):
+class Icon(NameElement, TextColorElement):
 
     def __init__(self,
                  name: str,
@@ -21,7 +22,7 @@ class Icon(TextColorElement):
         :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem
         :param color: icon color (either a Quasar, Tailwind, or CSS color or `None`, default: `None`)
         """
-        super().__init__(tag='q-icon', text_color=color)
+        super().__init__(tag='q-icon', name=name, text_color=color)
         self._props['name'] = name
 
         if size:
