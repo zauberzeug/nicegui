@@ -28,6 +28,9 @@ class Element(Visibility):
     libraries: List[Library] = []
     extra_libraries: List[Library] = []
     exposed_libraries: List[Library] = []
+    _default_props: Dict[str, Any] = {}
+    _default_classes: List[str] = []
+    _default_style: Dict[str, str] = {}
 
     def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
         """Generic Element
@@ -44,8 +47,11 @@ class Element(Visibility):
         self.client.next_element_id += 1
         self.tag = tag if tag else self.component.tag if self.component else 'div'
         self._classes: List[str] = []
+        self._classes.extend(self._default_classes)
         self._style: Dict[str, str] = {}
+        self._style.update(self._default_style)
         self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
+        self._props.update(self._default_props)
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
@@ -96,6 +102,10 @@ class Element(Visibility):
         for library in exposed_libraries:
             for path in glob_absolute_paths(library):
                 cls.exposed_libraries.append(register_library(path, expose=True))
+
+        cls._default_props = copy(cls._default_props)
+        cls._default_classes = copy(cls._default_classes)
+        cls._default_style = copy(cls._default_style)
 
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
@@ -176,6 +186,24 @@ class Element(Visibility):
             self.update()
         return self
 
+    @classmethod
+    def default_classes(cls, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
+            -> Self:
+        """Apply, remove, or replace default HTML classes.
+
+        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
+
+        Removing or replacing classes can be helpful if predefined classes are not desired.
+        All elements of this class will share these HTML classes.
+        These must be defined before element instantiation.
+
+        :param add: whitespace-delimited string of classes
+        :param remove: whitespace-delimited string of classes to remove from the element
+        :param replace: whitespace-delimited string of classes to use instead of existing ones
+        """
+        cls._default_classes = cls._update_classes_list(cls._default_classes, add, remove, replace)
+        return cls
+
     @staticmethod
     def _parse_style(text: Optional[str]) -> Dict[str, str]:
         result = {}
@@ -204,6 +232,26 @@ class Element(Visibility):
             self._style = style_dict
             self.update()
         return self
+
+    @classmethod
+    def default_style(cls, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
+        """Apply, remove, or replace default CSS definitions.
+
+        Removing or replacing styles can be helpful if the predefined style is not desired.
+        All elements of this class will share these CSS definitions.
+        These must be defined before element instantiation.
+
+        :param add: semicolon-separated list of styles to add to the element
+        :param remove: semicolon-separated list of styles to remove from the element
+        :param replace: semicolon-separated list of styles to use instead of existing ones
+        """
+        if replace is not None:
+            cls._default_style.clear()
+        for key in cls._parse_style(remove):
+            cls._default_style.pop(key, None)
+        cls._default_style.update(cls._parse_style(add))
+        cls._default_style.update(cls._parse_style(replace))
+        return cls
 
     @staticmethod
     def _parse_props(text: Optional[str]) -> Dict[str, Any]:
@@ -239,6 +287,27 @@ class Element(Visibility):
         if needs_update:
             self.update()
         return self
+
+    @classmethod
+    def default_props(cls, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
+        """Add or remove default props.
+
+        This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
+        Since props are simply applied as HTML attributes, they can be used with any HTML element.
+        All elements of this class will share these props.
+        These must be defined before element instantiation.
+
+        Boolean properties are assumed ``True`` if no value is specified.
+
+        :param add: whitespace-delimited list of either boolean values or key=value pair to add
+        :param remove: whitespace-delimited list of property keys to remove
+        """
+        for key in cls._parse_props(remove):
+            if key in cls._default_props:
+                del cls._default_props[key]
+        for key, value in cls._parse_props(add).items():
+            cls._default_props[key] = value
+        return cls
 
     def tooltip(self, text: str) -> Self:
         """Add a tooltip to the element.
