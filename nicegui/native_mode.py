@@ -106,7 +106,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
 
     mp.freeze_support()
     args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
-    process = mp.Process(target=open_window, args=args, daemon=False)
+    process = mp.Process(target=open_window, args=args, daemon=True)
     process.start()
 
     Thread(target=check_shutdown, daemon=True).start()
