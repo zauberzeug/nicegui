@@ -11,8 +11,8 @@ class NameElement(Element):
 
     def __init__(self, *, name: str, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        self.name = name
         self._props['name'] = name
-        self._name_to_model_name(name)
 
     def bind_name_to(self,
                      target_object: Any,
@@ -69,16 +69,12 @@ class NameElement(Element):
 
         :param name: The new name.
         """
-        self._props['name'] = name
-        self.update()
+        self.name = name
 
     def on_name_change(self, name: str) -> None:
         """Called when the name of this element changes.
 
         :param name: The new name.
         """
-        self._name_to_model_name(name)
-        self.update()
-
-    def _name_to_model_name(self, name: str) -> None:
         self._props['name'] = name
+        self.update()

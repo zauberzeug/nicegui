@@ -1,7 +1,7 @@
 from typing import Optional
 
-from .mixins.name_element import NameElement
 from .mixins.color_elements import TextColorElement
+from .mixins.name_element import NameElement
 
 
 class Icon(NameElement, TextColorElement):
@@ -23,7 +23,6 @@ class Icon(NameElement, TextColorElement):
         :param color: icon color (either a Quasar, Tailwind, or CSS color or `None`, default: `None`)
         """
         super().__init__(tag='q-icon', name=name, text_color=color)
-        self._props['name'] = name
 
         if size:
             self._props['size'] = size
