@@ -51,7 +51,7 @@ class TabPanels(ValueElement):
 
     def __init__(self,
                  tabs: Tabs, *,
-                 value: Union[Tab, TabPanel, None] = None,
+                 value: Union[Tab, TabPanel, str, None] = None,
                  on_change: Optional[Callable[..., Any]] = None,
                  animated: bool = True,
                  keep_alive: bool = True,
