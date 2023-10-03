@@ -91,10 +91,10 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     with globals.index_client:
         for t in globals.startup_handlers:
             safe_invoke(t)
-    background_tasks.create(binding.loop())
-    background_tasks.create(outbox.loop())
-    background_tasks.create(prune_clients())
-    background_tasks.create(prune_slot_stacks())
+    background_tasks.create(binding.loop(), name='refresh bindings')
+    background_tasks.create(outbox.loop(), name='send outbox')
+    background_tasks.create(prune_clients(), name='prune clients')
+    background_tasks.create(prune_slot_stacks(), name='prune slot stacks')
     globals.state = globals.State.STARTED
     if with_welcome_message:
         background_tasks.create(welcome.print_message())
