@@ -12,7 +12,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from nicegui import globals, ui  # pylint: disable=redefined-builtin
+from nicegui import app, globals, ui  # pylint: disable=redefined-builtin
 
 from .test_helpers import TEST_DIR
 
@@ -27,6 +27,8 @@ class Screen:
         self.caplog = caplog
         self.server_thread = None
         self.ui_run_kwargs = {'port': self.PORT, 'show': False, 'reload': False}
+        self.connected = threading.Event()
+        app.on_connect(self.connected.set)
 
     def start_server(self) -> None:
         """Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script."""
@@ -58,10 +60,12 @@ class Screen:
         if self.server_thread is None:
             self.start_server()
         deadline = time.time() + timeout
+        self.connected.clear()
         while True:
             try:
                 self.selenium.get(f'http://localhost:{self.PORT}{path}')
                 self.selenium.find_element(By.XPATH, '//body')  # ensure page and JS are loaded
+                self.connected.wait(1)  # Ensure that the client has connected to the API
                 break
             except Exception as e:
                 if time.time() > deadline:
