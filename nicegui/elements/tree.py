@@ -1,4 +1,4 @@
-from typing import Any, Callable, List, Literal, Optional
+from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Set
 
 from typing_extensions import Self
 
@@ -9,7 +9,8 @@ from ..events import GenericEventArguments, ValueChangeEventArguments, handle_ev
 
 class Tree(Element):
 
-    def __init__(self, nodes: List, *,
+    def __init__(self,
+                 nodes: List[Dict], *,
                  node_key: str = 'id',
                  label_key: str = 'label',
                  children_key: str = 'children',
@@ -17,7 +18,6 @@ class Tree(Element):
                  on_expand: Optional[Callable[..., Any]] = None,
                  on_tick: Optional[Callable[..., Any]] = None,
                  tick_strategy: Optional[Literal['leaf', 'leaf-filtered', 'strict']] = None,
-                 default_expand_all: bool = False,
                  ) -> None:
         """Tree
 
@@ -47,13 +47,6 @@ class Tree(Element):
         self._props['ticked'] = []
         if tick_strategy is not None:
             self._props['tick-strategy'] = tick_strategy
-        if default_expand_all:
-            # https://github.com/zauberzeug/nicegui/issues/1385
-            def expand_all(nodes: List) -> None:
-                for node in nodes:
-                    self._props['expanded'].append(node[node_key])
-                    expand_all(node.get(children_key, []))
-            expand_all(nodes)
 
         def update_prop(name: str, value: Any) -> None:
             if self._props[name] != value:
@@ -75,10 +68,42 @@ class Tree(Element):
             handle_event(on_tick, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
         self.on('update:ticked', handle_ticked)
 
+    def expand(self, node_keys: Optional[List[str]] = None) -> Self:
+        """Expand the given nodes.
+
+        :param node_keys: list of node keys to expand (default: all nodes)
+        """
+        self._props['expanded'][:] = self._find_node_keys(node_keys).union(self._props['expanded'])
+        self.update()
+        return self
+
+    def collapse(self, node_keys: Optional[List[Dict]] = None) -> Self:
+        """Collapse the given nodes.
+
+        :param node_keys: list of node keys to collapse (default: all nodes)
+        """
+        self._props['expanded'][:] = set(self._props['expanded']).difference(self._find_node_keys(node_keys))
+        self.update()
+        return self
+
+    def _find_node_keys(self, node_keys: Optional[List[str]] = None) -> Set[str]:
+        if node_keys is not None:
+            return set(node_keys)
+
+        CHILDREN_KEY = self._props['children-key']
+        NODE_KEY = self._props['node-key']
+
+        def iterate_nodes(nodes: List[Dict]) -> Iterator[Dict]:
+            for node in nodes:
+                yield node
+                yield from iterate_nodes(node.get(CHILDREN_KEY, []))
+        return {node[NODE_KEY] for node in iterate_nodes(self._props['nodes'])}
+
     def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
         super().props(add, remove=remove)
         if 'default-expand-all' in self._props:
+            # https://github.com/zauberzeug/nicegui/issues/1385
             del self._props['default-expand-all']
             globals.log.warning('The prop "default_expand_all" is not supported by `ui.tree`.\n'
-                                'Use the parameter "default_expand_all" instead.')
+                                'Use ".expand()" instead.')
         return self
