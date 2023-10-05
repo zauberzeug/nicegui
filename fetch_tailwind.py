@@ -18,7 +18,7 @@ class Property:
 
     def __post_init__(self) -> None:
         words = [s.split('-') for s in self.members]
-        prefix = words[0]
+        prefix = words[0]  # pylint: disable=redefined-outer-name
         for w in words:
             i = 0
             while i < len(prefix) and i < len(w) and prefix[i] == w[i]:
@@ -142,13 +142,17 @@ with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w') as f:
     f.write('        element.update()\n')
     for property_ in properties:
         f.write('\n')
+        prefix = property_.common_prefix
         if property_.members:
             f.write(f"    def {property_.snake_title}(self, value: {property_.pascal_title}) -> Tailwind:\n")
             f.write(f'        """{property_.description}"""\n')
-            f.write(f"        self.element.classes('{property_.common_prefix}' + value)\n")
+            if '' in property_.short_members:
+                f.write(f"        self.element.classes('{prefix}' + value if value else '{prefix.rstrip('''-''')}')\n")
+            else:
+                f.write(f"        self.element.classes('{prefix}' + value)\n")
             f.write(f'        return self\n')  # pylint: disable=f-string-without-interpolation
         else:
             f.write(f"    def {property_.snake_title}(self) -> Tailwind:\n")
             f.write(f'        """{property_.description}"""\n')
-            f.write(f"        self.element.classes('{property_.common_prefix}')\n")
+            f.write(f"        self.element.classes('{prefix}')\n")
             f.write(f'        return self\n')  # pylint: disable=f-string-without-interpolation

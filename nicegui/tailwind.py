@@ -323,12 +323,12 @@ class Tailwind:
 
     def flex_grow(self, value: FlexGrow) -> Tailwind:
         """Utilities for controlling how flex items grow."""
-        self.element.classes('grow-' + value)
+        self.element.classes('grow-' + value if value else 'grow')
         return self
 
     def flex_shrink(self, value: FlexShrink) -> Tailwind:
         """Utilities for controlling how flex items shrink."""
-        self.element.classes('shrink-' + value)
+        self.element.classes('shrink-' + value if value else 'shrink')
         return self
 
     def order(self, value: Order) -> Tailwind:
@@ -648,12 +648,12 @@ class Tailwind:
 
     def border_radius(self, value: BorderRadius) -> Tailwind:
         """Utilities for controlling the border radius of an element."""
-        self.element.classes('rounded-' + value)
+        self.element.classes('rounded-' + value if value else 'rounded')
         return self
 
     def border_width(self, value: BorderWidth) -> Tailwind:
         """Utilities for controlling the width of an element's borders."""
-        self.element.classes('border-' + value)
+        self.element.classes('border-' + value if value else 'border')
         return self
 
     def border_color(self, value: BorderColor) -> Tailwind:
@@ -693,7 +693,7 @@ class Tailwind:
 
     def outline_style(self, value: OutlineStyle) -> Tailwind:
         """Utilities for controlling the style of an element's outline."""
-        self.element.classes('outline-' + value)
+        self.element.classes('outline-' + value if value else 'outline')
         return self
 
     def outline_offset(self, value: OutlineOffset) -> Tailwind:
@@ -703,7 +703,7 @@ class Tailwind:
 
     def ring_width(self, value: RingWidth) -> Tailwind:
         """Utilities for creating outline rings with box-shadows."""
-        self.element.classes('ring-' + value)
+        self.element.classes('ring-' + value if value else 'ring')
         return self
 
     def ring_color(self, value: RingColor) -> Tailwind:
@@ -723,7 +723,7 @@ class Tailwind:
 
     def box_shadow(self, value: BoxShadow) -> Tailwind:
         """Utilities for controlling the box shadow of an element."""
-        self.element.classes('shadow-' + value)
+        self.element.classes('shadow-' + value if value else 'shadow')
         return self
 
     def box_shadow_color(self, value: BoxShadowColor) -> Tailwind:
@@ -748,7 +748,7 @@ class Tailwind:
 
     def blur(self, value: Blur) -> Tailwind:
         """Utilities for applying blur filters to an element."""
-        self.element.classes('blur-' + value)
+        self.element.classes('blur-' + value if value else 'blur')
         return self
 
     def brightness(self, value: Brightness) -> Tailwind:
@@ -763,12 +763,12 @@ class Tailwind:
 
     def drop_shadow(self, value: DropShadow) -> Tailwind:
         """Utilities for applying drop-shadow filters to an element."""
-        self.element.classes('drop-shadow-' + value)
+        self.element.classes('drop-shadow-' + value if value else 'drop-shadow')
         return self
 
     def grayscale(self, value: Grayscale) -> Tailwind:
         """Utilities for applying grayscale filters to an element."""
-        self.element.classes('grayscale-' + value)
+        self.element.classes('grayscale-' + value if value else 'grayscale')
         return self
 
     def hue_rotate(self, value: HueRotate) -> Tailwind:
@@ -778,7 +778,7 @@ class Tailwind:
 
     def invert(self, value: Invert) -> Tailwind:
         """Utilities for applying invert filters to an element."""
-        self.element.classes('invert-' + value)
+        self.element.classes('invert-' + value if value else 'invert')
         return self
 
     def saturate(self, value: Saturate) -> Tailwind:
@@ -788,12 +788,12 @@ class Tailwind:
 
     def sepia(self, value: Sepia) -> Tailwind:
         """Utilities for applying sepia filters to an element."""
-        self.element.classes('sepia-' + value)
+        self.element.classes('sepia-' + value if value else 'sepia')
         return self
 
     def backdrop_blur(self, value: BackdropBlur) -> Tailwind:
         """Utilities for applying backdrop blur filters to an element."""
-        self.element.classes('backdrop-blur-' + value)
+        self.element.classes('backdrop-blur-' + value if value else 'backdrop-blur')
         return self
 
     def backdrop_brightness(self, value: BackdropBrightness) -> Tailwind:
@@ -808,7 +808,7 @@ class Tailwind:
 
     def backdrop_grayscale(self, value: BackdropGrayscale) -> Tailwind:
         """Utilities for applying backdrop grayscale filters to an element."""
-        self.element.classes('backdrop-grayscale-' + value)
+        self.element.classes('backdrop-grayscale-' + value if value else 'backdrop-grayscale')
         return self
 
     def backdrop_hue_rotate(self, value: BackdropHueRotate) -> Tailwind:
@@ -818,7 +818,7 @@ class Tailwind:
 
     def backdrop_invert(self, value: BackdropInvert) -> Tailwind:
         """Utilities for applying backdrop invert filters to an element."""
-        self.element.classes('backdrop-invert-' + value)
+        self.element.classes('backdrop-invert-' + value if value else 'backdrop-invert')
         return self
 
     def backdrop_opacity(self, value: BackdropOpacity) -> Tailwind:
@@ -833,7 +833,7 @@ class Tailwind:
 
     def backdrop_sepia(self, value: BackdropSepia) -> Tailwind:
         """Utilities for applying backdrop sepia filters to an element."""
-        self.element.classes('backdrop-sepia-' + value)
+        self.element.classes('backdrop-sepia-' + value if value else 'backdrop-sepia')
         return self
 
     def border_collapse(self, value: BorderCollapse) -> Tailwind:
@@ -858,7 +858,7 @@ class Tailwind:
 
     def transition_property(self, value: TransitionProperty) -> Tailwind:
         """Utilities for controlling which CSS properties transition."""
-        self.element.classes('transition-' + value)
+        self.element.classes('transition-' + value if value else 'transition')
         return self
 
     def transition_duration(self, value: TransitionDuration) -> Tailwind:
@@ -933,7 +933,7 @@ class Tailwind:
 
     def resize(self, value: Resize) -> Tailwind:
         """Utilities for controlling how an element can be resized."""
-        self.element.classes('resize-' + value)
+        self.element.classes('resize-' + value if value else 'resize')
         return self
 
     def scroll_behavior(self, value: ScrollBehavior) -> Tailwind:

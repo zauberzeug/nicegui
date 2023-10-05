@@ -27,3 +27,9 @@ def test_tailwind_apply(screen: Screen):
     screen.open('/')
     assert screen.find('A').get_attribute('class') == 'bg-red-500 text-white'
     assert screen.find('B').get_attribute('class') == 'bg-red-500 text-white'
+
+
+def test_empty_values():
+    label = ui.label('A')
+    label.tailwind.border_width('')
+    assert 'border' in label._classes
