@@ -18,6 +18,7 @@ def test_tree(screen: Screen):
     screen.should_not_contain('B')
 
     screen.find_by_class('q-icon').click()
+    screen.wait(0.5)
     screen.should_contain('1')
     screen.should_contain('2')
 
