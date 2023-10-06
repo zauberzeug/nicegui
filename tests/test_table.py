@@ -138,3 +138,23 @@ def test_remove_selection(screen: Screen):
     screen.wait(0.5)
     screen.should_not_contain('Alice')
     screen.should_not_contain('1 record selected.')
+
+
+def test_replace_rows(screen: Screen):
+    t = ui.table(columns=columns(), rows=rows())
+
+    def replace_rows():
+        t.rows = [{'id': 3, 'name': 'Carol', 'age': 32}]
+    ui.button('Replace rows', on_click=replace_rows)
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_contain('Lionel')
+
+    screen.click('Replace rows')
+    screen.wait(0.5)
+    screen.should_not_contain('Alice')
+    screen.should_not_contain('Bob')
+    screen.should_not_contain('Lionel')
+    screen.should_contain('Carol')

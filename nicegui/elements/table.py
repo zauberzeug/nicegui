@@ -32,10 +32,6 @@ class Table(FilterElement, component='table.js'):
         """
         super().__init__()
 
-        self.rows = rows
-        self.row_key = row_key
-        self.selected: List[Dict] = []
-
         self._props['columns'] = columns
         self._props['rows'] = rows
         self._props['row-key'] = row_key
@@ -43,7 +39,7 @@ class Table(FilterElement, component='table.js'):
         self._props['hide-pagination'] = pagination is None
         self._props['pagination'] = pagination if isinstance(pagination, dict) else {'rowsPerPage': pagination or 0}
         self._props['selection'] = selection or 'none'
-        self._props['selected'] = self.selected
+        self._props['selected'] = []
         self._props['fullscreen'] = False
 
         def handle_selection(e: GenericEventArguments) -> None:
@@ -52,11 +48,51 @@ class Table(FilterElement, component='table.js'):
                     self.selected.clear()
                 self.selected.extend(e.args['rows'])
             else:
-                self.selected[:] = [row for row in self.selected if row[row_key] not in e.args['keys']]
+                self.selected = [row for row in self.selected if row[row_key] not in e.args['keys']]
             self.update()
             arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
             handle_event(on_select, arguments)
         self.on('selection', handle_selection, ['added', 'rows', 'keys'])
+
+    @property
+    def rows(self) -> List[Dict]:
+        """List of rows."""
+        return self._props['rows']
+
+    @rows.setter
+    def rows(self, value: List[Dict]) -> None:
+        self._props['rows'][:] = value
+        self.update()
+
+    @property
+    def columns(self) -> List[Dict]:
+        """List of columns."""
+        return self._props['columns']
+
+    @columns.setter
+    def columns(self, value: List[Dict]) -> None:
+        self._props['columns'][:] = value
+        self.update()
+
+    @property
+    def row_key(self) -> str:
+        """Name of the column containing unique data identifying the row."""
+        return self._props['row-key']
+
+    @row_key.setter
+    def row_key(self, value: str) -> None:
+        self._props['row-key'] = value
+        self.update()
+
+    @property
+    def selected(self) -> List[Dict]:
+        """List of selected rows."""
+        return self._props['selected']
+
+    @selected.setter
+    def selected(self, value: List[Dict]) -> None:
+        self._props['selected'][:] = value
+        self.update()
 
     @property
     def is_fullscreen(self) -> bool:
