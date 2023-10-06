@@ -31,7 +31,7 @@ for issue in issues:
     user: str = issue['user']['login']
     body: str = issue['body']
     labels: list[str] = [label['name'] for label in issue['labels']]
-    number_patterns = [r'#(\d+)', r'https://github.com/zauberzeug/nicegui/issues/(\d+)']
+    number_patterns = [r'#(\d+)', r'https://github.com/zauberzeug/nicegui/(?:issues|discussions|pulls)/(\d+)']
     numbers = [issue['number']] + [int(match) for pattern in number_patterns for match in re.findall(pattern, body)]
     numbers_str = ', '.join(f'#{number}' for number in sorted(numbers))
     note = f'{title.strip()} ({numbers_str} by @{user})'
