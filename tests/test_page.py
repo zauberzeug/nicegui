@@ -2,6 +2,7 @@ import asyncio
 from uuid import uuid4
 
 from fastapi.responses import PlainTextResponse
+from selenium.webdriver.common.by import By
 
 from nicegui import Client, background_tasks, ui
 
@@ -283,3 +284,16 @@ def test_returning_custom_response_async(screen: Screen):
     screen.open('/?plain=true')
     screen.should_contain('custom response')
     screen.should_not_contain('normal NiceGUI page')
+
+
+def test_reconnecting_without_page_reload(screen: Screen):
+    @ui.page('/', reconnect_timeout=3.0)
+    def page():
+        ui.input('Input').props('autofocus')
+        ui.button('drop connection', on_click=lambda: ui.run_javascript('socket.io.engine.close()', respond=False))
+
+    screen.open('/')
+    screen.type('hello')
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
+    screen.click('drop connection')
+    assert element.get_attribute('value') == 'hello', 'input should be preserved after reconnect (eg. no page reload)'

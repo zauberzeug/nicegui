@@ -144,6 +144,8 @@ def on_handshake(sid: str, client_id: str) -> bool:
 
 
 def handle_handshake(client: Client) -> None:
+    if client.disconnect_task:
+        client.disconnect_task.cancel()
     for t in client.connect_handlers:
         safe_invoke(t, client)
     for t in globals.connect_handlers:
@@ -157,10 +159,11 @@ def on_disconnect(sid: str) -> None:
     client_id = query['client_id'][0]
     client = globals.clients.get(client_id)
     if client:
-        client.disconnection = time.time()
+        client.disconnect_task = background_tasks.create(handle_disconnect(client, client.page.reconnect_timeout))
 
 
-def handle_disconnect(client: Client) -> None:
+async def handle_disconnect(client: Client, reconnection_delay: int) -> None:
+    await asyncio.sleep(reconnection_delay)
     if not client.shared:
         delete_client(client.id)
     for t in client.disconnect_handlers:
@@ -204,7 +207,7 @@ async def prune_clients() -> None:
         stale_clients = [
             id
             for id, client in globals.clients.items()
-            if not client.shared and not client.has_socket_connection and (client.disconnection or client.created) < time.time() - 60.0
+            if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
         ]
         for client_id in stale_clients:
             delete_client(client_id)

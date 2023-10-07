@@ -38,6 +38,8 @@ if True:  # HACK: prevent the page from scrolling when closing a dialog (#1404)
         on_value_change(sender, value)
     ui.dialog.on_value_change = on_dialog_value_change
 
+ui.page.RECONNECT_TIMEOUT = 3
+
 
 @app.get('/logo.png')
 def logo() -> FileResponse:
