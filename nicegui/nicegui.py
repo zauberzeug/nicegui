@@ -133,8 +133,8 @@ async def exception_handler_500(request: Request, exception: Exception) -> Respo
 
 
 @sio.on('handshake')
-def on_handshake(sid: str) -> bool:
-    client = get_client(sid)
+def on_handshake(sid: str, client_id: str) -> bool:
+    client = globals.clients.get(client_id)
     if not client:
         return False
     client.environ = sio.get_environ(sid)
@@ -152,10 +152,12 @@ def handle_handshake(client: Client) -> None:
 
 @sio.on('disconnect')
 def on_disconnect(sid: str) -> None:
-    client = get_client(sid)
-    if not client:
-        return
-    handle_disconnect(client)
+    query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
+    query = urllib.parse.parse_qs(query_bytes.decode())
+    client_id = query['client_id'][0]
+    client = globals.clients.get(client_id)
+    if client:
+        client.disconnection = time.time()
 
 
 def handle_disconnect(client: Client) -> None:
@@ -168,8 +170,8 @@ def handle_disconnect(client: Client) -> None:
 
 
 @sio.on('event')
-def on_event(sid: str, msg: Dict) -> None:
-    client = get_client(sid)
+def on_event(_: str, msg: Dict) -> None:
+    client = globals.clients[msg['client_id']]
     if not client or not client.has_socket_connection:
         return
     handle_event(client, msg)
@@ -186,8 +188,8 @@ def handle_event(client: Client, msg: Dict) -> None:
 
 
 @sio.on('javascript_response')
-def on_javascript_response(sid: str, msg: Dict) -> None:
-    client = get_client(sid)
+def on_javascript_response(_: str, msg: Dict) -> None:
+    client = globals.clients[msg['client_id']]
     if not client:
         return
     handle_javascript_response(client, msg)
@@ -197,19 +199,12 @@ def handle_javascript_response(client: Client, msg: Dict) -> None:
     client.waiting_javascript_commands[msg['request_id']] = msg['result']
 
 
-def get_client(sid: str) -> Optional[Client]:
-    query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
-    query = urllib.parse.parse_qs(query_bytes.decode())
-    client_id = query['client_id'][0]
-    return globals.clients.get(client_id)
-
-
 async def prune_clients() -> None:
     while True:
         stale_clients = [
             id
             for id, client in globals.clients.items()
-            if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
+            if not client.shared and not client.has_socket_connection and (client.disconnection or client.created) < time.time() - 60.0
         ]
         for client_id in stale_clients:
             delete_client(client_id)

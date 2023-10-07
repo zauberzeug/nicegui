@@ -38,6 +38,7 @@ class Client:
         self.environ: Optional[Dict[str, Any]] = None
         self.shared = shared
         self.on_air = False
+        self.disconnection: Optional[int] = None
 
         with Element('q-layout', _client=self).props('view="hhh lpr fff"').classes('nicegui-layout') as self.layout:
             with Element('q-page-container') as self.page_container:
