@@ -36,11 +36,11 @@ def more() -> None:
 
     @text_demo('Expand and collapse programmatically', '''
         The whole tree or individual nodes can be toggled programmatically using the `expand()` and `collapse()` methods.
-        This even works if a node is disabled (eg. not clickable by the user).
+        This even works if a node is disabled (e.g. not clickable by the user).
     ''')
     def expand_programmatically():
         t = ui.tree([
-            {'id': 'A', 'disabled': True, 'children': [{'id': 'A1'}, {'id': 'A2'}]},
+            {'id': 'A', 'children': [{'id': 'A1'}, {'id': 'A2'}], 'disabled': True},
             {'id': 'B', 'children': [{'id': 'B1'}, {'id': 'B2'}]},
         ], label_key='id').expand()
 
