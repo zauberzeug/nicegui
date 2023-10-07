@@ -838,7 +838,7 @@ def create_full() -> None:
         This makes it blazing fast even if your app only has a poor internet connection (e.g. a mobile robot in the field).
 
         By setting `on_air=True` you will get a random URL which is valid for 1 hour.
-        If you sign-up at https://on-air.nicegui.io you get a token which could be used to identify your device: `ui.run(on_air='<your token>`).
+        If you sign-up at https://on-air.nicegui.io you get a token which could be used to identify your device: `ui.run(on_air='<your token>'`).
         This will give you a fixed URL and the possibility to protect remote access with a passphrase.
 
         Currently On Air is available as a tech preview and can be used free of charge (for now).
