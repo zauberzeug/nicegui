@@ -36,18 +36,19 @@ def more() -> None:
 
     @text_demo('Expand and collapse programmatically', '''
         The whole tree or individual nodes can be toggled programmatically using the `expand()` and `collapse()` methods.
+        This even works if a node is disabled (eg. not clickable by the user).
     ''')
     def expand_programmatically():
-        with ui.row():
-            ui.button('+ all', on_click=lambda: t.expand())
-            ui.button('- all', on_click=lambda: t.collapse())
-            ui.button('+ A', on_click=lambda: t.expand(['A']))
-            ui.button('- A', on_click=lambda: t.collapse(['A']))
-
         t = ui.tree([
-            {'id': 'A', 'children': [{'id': 'A1'}, {'id': 'A2'}]},
+            {'id': 'A', 'disabled': True, 'children': [{'id': 'A1'}, {'id': 'A2'}]},
             {'id': 'B', 'children': [{'id': 'B1'}, {'id': 'B2'}]},
         ], label_key='id').expand()
+
+        with ui.row():
+            ui.button('+ all', on_click=t.expand)
+            ui.button('- all', on_click=t.collapse)
+            ui.button('+ A', on_click=lambda: t.expand(['A']))
+            ui.button('- A', on_click=lambda: t.collapse(['A']))
 
     @text_demo('Tree with checkboxes', '''
         The tree can be used with checkboxes by setting the "tick-strategy" prop.
