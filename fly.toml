@@ -8,9 +8,6 @@ primary_region = "fra"
 kill_signal = "SIGTERM"
 kill_timeout = "5s"
 
-[experimental]
-  auto_rollback = true
-
 [build]
   dockerfile = "fly.dockerfile"
 
@@ -19,6 +16,9 @@ kill_timeout = "5s"
 
 [processes]
   app = ""
+
+[env]
+  SWAP = "true"
 
 [[services]]
   protocol = "tcp"

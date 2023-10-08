@@ -2,9 +2,9 @@ FROM python:3.11.3-slim
 
 LABEL maintainer="Zauberzeug GmbH <nicegui@zauberzeug.com>"
 
-RUN pip install itsdangerous prometheus_client isort docutils pandas plotly matplotlib requests
+RUN apt update && apt install -y curl procps
 
-RUN apt update && apt install -y curl 
+RUN pip install itsdangerous prometheus_client isort docutils pandas plotly matplotlib requests
 
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
     cd /usr/local/bin && \
