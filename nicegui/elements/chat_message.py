@@ -7,7 +7,7 @@ from ..element import Element
 class ChatMessage(Element, component='chat_message.js'):
 
     def __init__(self,
-                 text: Union[str, List[str]], *,
+                 text: Union[str, List[str]] = ..., *,
                  name: Optional[str] = None,
                  label: Optional[str] = None,
                  stamp: Optional[str] = None,
@@ -29,6 +29,8 @@ class ChatMessage(Element, component='chat_message.js'):
         """
         super().__init__()
 
+        if text is ...:
+            text = []
         if isinstance(text, str):
             text = [text]
         if not text_html:
