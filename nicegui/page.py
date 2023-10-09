@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from fastapi import Request, Response
 
-from . import background_tasks, globals  # pylint: disable=redefined-builtin
+from . import background_tasks, binding, globals  # pylint: disable=redefined-builtin
 from .client import Client
 from .favicon import create_favicon_route
 from .language import Language
@@ -100,6 +100,7 @@ class page:
                 result = task.result() if task.done() else None
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
+            binding._refresh_step()  # pylint: disable=protected-access
             return client.build_response(request)
 
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']
