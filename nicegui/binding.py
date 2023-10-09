@@ -32,22 +32,26 @@ def set_attribute(obj: Union[object, Mapping], name: str, value: Any) -> None:
         setattr(obj, name, value)
 
 
-async def loop() -> None:
+async def refresh_loop() -> None:
     while True:
-        visited: Set[Tuple[int, str]] = set()
-        t = time.time()
-        for link in active_links:
-            (source_obj, source_name, target_obj, target_name, transform) = link
-            if has_attribute(source_obj, source_name):
-                value = transform(get_attribute(source_obj, source_name))
-                if not has_attribute(target_obj, target_name) or get_attribute(target_obj, target_name) != value:
-                    set_attribute(target_obj, target_name, value)
-                    propagate(target_obj, target_name, visited)
-            del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
-        if time.time() - t > MAX_PROPAGATION_TIME:
-            globals.log.warning(
-                f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
+        _refresh_step()
         await asyncio.sleep(globals.binding_refresh_interval)
+
+
+def _refresh_step():
+    visited: Set[Tuple[int, str]] = set()
+    t = time.time()
+    for link in active_links:
+        (source_obj, source_name, target_obj, target_name, transform) = link
+        if has_attribute(source_obj, source_name):
+            value = transform(get_attribute(source_obj, source_name))
+            if not has_attribute(target_obj, target_name) or get_attribute(target_obj, target_name) != value:
+                set_attribute(target_obj, target_name, value)
+                propagate(target_obj, target_name, visited)
+        del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
+    if time.time() - t > MAX_PROPAGATION_TIME:
+        globals.log.warning(
+            f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
 
 
 def propagate(source_obj: Any, source_name: str, visited: Optional[Set[Tuple[int, str]]] = None) -> None:

@@ -1,4 +1,3 @@
-
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
@@ -83,3 +82,15 @@ def test_binding_to_input(screen: Screen):
     element.value = 'five'
     screen.should_contain_input('five')
     assert data.text == 'five'
+
+
+def test_binding_refresh_before_page_delivery(screen: Screen):
+    state = {'count': 0}
+
+    @ui.page('/')
+    def main_page() -> None:
+        ui.label().bind_text_from(state, 'count')
+        state['count'] += 1
+
+    screen.open('/')
+    screen.should_contain('1')
