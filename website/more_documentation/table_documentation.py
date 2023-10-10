@@ -227,3 +227,20 @@ def more() -> None:
         ]
         ui.table(columns=columns, rows=rows, pagination=3)
         ui.table(columns=columns, rows=rows, pagination={'rowsPerPage': 4, 'sortBy': 'age', 'page': 2})
+
+    @text_demo('Computed fields', '''
+        You can use functions to compute the value of a column.
+        The function receives the row as an argument.
+        See the [Quasar documentation](https://quasar.dev/vue-components/table#defining-the-columns) for more information.
+    ''')
+    def computed_fields():
+        columns = [
+            {'name': 'name', 'label': 'Name', 'field': 'name', 'align': 'left'},
+            {'name': 'length', 'label': 'Length', ':field': 'row => row.name.length'},
+        ]
+        rows = [
+            {'name': 'Alice'},
+            {'name': 'Bob'},
+            {'name': 'Christopher'},
+        ]
+        ui.table(columns=columns, rows=rows, row_key='name')
