@@ -45,6 +45,7 @@ favicon: Optional[Union[str, Path]]
 dark: Optional[bool]
 language: Language
 binding_refresh_interval: float
+reconnect_timeout: float
 tailwind: bool
 prod_js: bool
 endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'

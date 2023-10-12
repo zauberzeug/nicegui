@@ -433,4 +433,4 @@ async def documentation_page_more(name: str, client: Client) -> None:
     await client.connected()
     await ui.run_javascript(f'document.title = "{name} • NiceGUI";', respond=False)
 
-ui.run(uvicorn_reload_includes='*.py, *.css, *.html')
+ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reconnect_timeout=3.0)

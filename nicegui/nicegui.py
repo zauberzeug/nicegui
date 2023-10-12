@@ -3,7 +3,7 @@ import mimetypes
 import time
 import urllib.parse
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 from fastapi import HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
@@ -133,8 +133,8 @@ async def exception_handler_500(request: Request, exception: Exception) -> Respo
 
 
 @sio.on('handshake')
-def on_handshake(sid: str) -> bool:
-    client = get_client(sid)
+def on_handshake(sid: str, client_id: str) -> bool:
+    client = globals.clients.get(client_id)
     if not client:
         return False
     client.environ = sio.get_environ(sid)
@@ -144,6 +144,9 @@ def on_handshake(sid: str) -> bool:
 
 
 def handle_handshake(client: Client) -> None:
+    if client.disconnect_task:
+        client.disconnect_task.cancel()
+        client.disconnect_task = None
     for t in client.connect_handlers:
         safe_invoke(t, client)
     for t in globals.connect_handlers:
@@ -152,13 +155,17 @@ def handle_handshake(client: Client) -> None:
 
 @sio.on('disconnect')
 def on_disconnect(sid: str) -> None:
-    client = get_client(sid)
-    if not client:
-        return
-    handle_disconnect(client)
+    query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
+    query = urllib.parse.parse_qs(query_bytes.decode())
+    client_id = query['client_id'][0]
+    client = globals.clients.get(client_id)
+    if client:
+        client.disconnect_task = background_tasks.create(handle_disconnect(client))
 
 
-def handle_disconnect(client: Client) -> None:
+async def handle_disconnect(client: Client) -> None:
+    delay = client.page.reconnect_timeout if client.page.reconnect_timeout is not None else globals.reconnect_timeout
+    await asyncio.sleep(delay)
     if not client.shared:
         delete_client(client.id)
     for t in client.disconnect_handlers:
@@ -168,8 +175,8 @@ def handle_disconnect(client: Client) -> None:
 
 
 @sio.on('event')
-def on_event(sid: str, msg: Dict) -> None:
-    client = get_client(sid)
+def on_event(_: str, msg: Dict) -> None:
+    client = globals.clients.get(msg['client_id'])
     if not client or not client.has_socket_connection:
         return
     handle_event(client, msg)
@@ -186,8 +193,8 @@ def handle_event(client: Client, msg: Dict) -> None:
 
 
 @sio.on('javascript_response')
-def on_javascript_response(sid: str, msg: Dict) -> None:
-    client = get_client(sid)
+def on_javascript_response(_: str, msg: Dict) -> None:
+    client = globals.clients.get(msg['client_id'])
     if not client:
         return
     handle_javascript_response(client, msg)
@@ -195,13 +202,6 @@ def on_javascript_response(sid: str, msg: Dict) -> None:
 
 def handle_javascript_response(client: Client, msg: Dict) -> None:
     client.waiting_javascript_commands[msg['request_id']] = msg['result']
-
-
-def get_client(sid: str) -> Optional[Client]:
-    query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
-    query = urllib.parse.parse_qs(query_bytes.decode())
-    client_id = query['client_id'][0]
-    return globals.clients.get(client_id)
 
 
 async def prune_clients() -> None:
