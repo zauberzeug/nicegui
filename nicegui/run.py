@@ -49,6 +49,7 @@ def run(*,
         dark: Optional[bool] = False,
         language: Language = 'en-US',
         binding_refresh_interval: float = 0.1,
+        reconnect_timeout: float = 0.0,  # NOTE: the value of 0.0 is DEPRECATED, change to 3.0 in 1.4 release
         show: bool = True,
         on_air: Optional[Union[str, Literal[True]]] = None,
         native: bool = False,
@@ -78,6 +79,7 @@ def run(*,
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param language: language for Quasar elements (default: `'en-US'`)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
+    :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 0.0 seconds, i.e. no reconnect)
     :param show: automatically open the UI in a browser tab (default: `True`)
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
@@ -103,6 +105,7 @@ def run(*,
     globals.dark = dark
     globals.language = language
     globals.binding_refresh_interval = binding_refresh_interval
+    globals.reconnect_timeout = reconnect_timeout
     globals.tailwind = tailwind
     globals.prod_js = prod_js
     globals.endpoint_documentation = endpoint_documentation

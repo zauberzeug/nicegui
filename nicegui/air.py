@@ -7,8 +7,8 @@ import httpx
 import socketio
 from socketio import AsyncClient
 
-from . import globals  # pylint: disable=redefined-builtin
-from .nicegui import background_tasks, handle_disconnect, handle_event, handle_handshake, handle_javascript_response
+from . import background_tasks, globals  # pylint: disable=redefined-builtin
+from .nicegui import handle_disconnect, handle_event, handle_handshake, handle_javascript_response
 
 RELAY_HOST = 'https://on-air.nicegui.io/'
 
@@ -77,7 +77,7 @@ class Air:
             if client_id not in globals.clients:
                 return
             client = globals.clients[client_id]
-            client.disconnect_task = background_tasks.create(handle_disconnect(client, client.page.reconnect_timeout))
+            client.disconnect_task = background_tasks.create(handle_disconnect(client))
 
         @self.relay.on('event')
         def on_event(data: Dict[str, Any]) -> None:

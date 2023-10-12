@@ -17,6 +17,7 @@ def run_with(
     dark: Optional[bool] = False,
     language: Language = 'en-US',
     binding_refresh_interval: float = 0.1,
+    reconnect_timeout: float = 0.0,  # NOTE: the value of 0.0 is DEPRECATED, change to 3.0 in 1.4 release
     mount_path: str = '/',
     tailwind: bool = True,
     prod_js: bool = True,
@@ -29,6 +30,7 @@ def run_with(
     globals.dark = dark
     globals.language = language
     globals.binding_refresh_interval = binding_refresh_interval
+    globals.reconnect_timeout = reconnect_timeout
     globals.tailwind = tailwind
     globals.prod_js = prod_js
 

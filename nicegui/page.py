@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 
 
 class page:
-    RECONNECT_TIMEOUT: float = 0.0  # TODO: change to 3.0 in 1.4 release
 
     def __init__(self,
                  path: str, *,
@@ -28,8 +27,8 @@ class page:
                  dark: Optional[bool] = ...,  # type: ignore
                  language: Language = ...,  # type: ignore
                  response_timeout: float = 3.0,
-                 api_router: Optional[APIRouter] = None,
                  reconnect_timeout: Optional[float] = None,
+                 api_router: Optional[APIRouter] = None,
                  **kwargs: Any,
                  ) -> None:
         """Page
@@ -45,9 +44,9 @@ class page:
         :param favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
         :param language: language of the page (defaults to `language` argument of `run` command)
-        :param response_timeout: maximum time for the decorated function to build the page (default: 3.0)
+        :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds)
+        :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 0.0 seconds)
         :param api_router: APIRouter instance to use, can be left `None` to use the default
-        :param reconnect_timeout: maximum time we wait for the browser to reconnect after a disconnect (default: 0.0)
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
         self._path = path
@@ -59,7 +58,7 @@ class page:
         self.response_timeout = response_timeout
         self.kwargs = kwargs
         self.api_router = api_router or globals.app.router
-        self.reconnect_timeout = reconnect_timeout or self.RECONNECT_TIMEOUT
+        self.reconnect_timeout = reconnect_timeout
 
         create_favicon_route(self.path, favicon)
 

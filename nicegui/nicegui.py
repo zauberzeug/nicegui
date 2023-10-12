@@ -3,7 +3,7 @@ import mimetypes
 import time
 import urllib.parse
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 from fastapi import HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
@@ -146,6 +146,7 @@ def on_handshake(sid: str, client_id: str) -> bool:
 def handle_handshake(client: Client) -> None:
     if client.disconnect_task:
         client.disconnect_task.cancel()
+        client.disconnect_task = None
     for t in client.connect_handlers:
         safe_invoke(t, client)
     for t in globals.connect_handlers:
@@ -159,11 +160,12 @@ def on_disconnect(sid: str) -> None:
     client_id = query['client_id'][0]
     client = globals.clients.get(client_id)
     if client:
-        client.disconnect_task = background_tasks.create(handle_disconnect(client, client.page.reconnect_timeout))
+        client.disconnect_task = background_tasks.create(handle_disconnect(client))
 
 
-async def handle_disconnect(client: Client, reconnection_delay: int) -> None:
-    await asyncio.sleep(reconnection_delay)
+async def handle_disconnect(client: Client) -> None:
+    delay = client.page.reconnect_timeout if client.page.reconnect_timeout is not None else globals.reconnect_timeout
+    await asyncio.sleep(delay)
     if not client.shared:
         delete_client(client.id)
     for t in client.disconnect_handlers:
@@ -174,7 +176,7 @@ async def handle_disconnect(client: Client, reconnection_delay: int) -> None:
 
 @sio.on('event')
 def on_event(_: str, msg: Dict) -> None:
-    client = globals.clients[msg['client_id']]
+    client = globals.clients.get(msg['client_id'])
     if not client or not client.has_socket_connection:
         return
     handle_event(client, msg)
@@ -192,7 +194,7 @@ def handle_event(client: Client, msg: Dict) -> None:
 
 @sio.on('javascript_response')
 def on_javascript_response(_: str, msg: Dict) -> None:
-    client = globals.clients[msg['client_id']]
+    client = globals.clients.get(msg['client_id'])
     if not client:
         return
     handle_javascript_response(client, msg)

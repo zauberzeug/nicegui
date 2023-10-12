@@ -294,6 +294,7 @@ def test_reconnecting_without_page_reload(screen: Screen):
 
     screen.open('/')
     screen.type('hello')
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
     screen.click('drop connection')
-    assert element.get_attribute('value') == 'hello', 'input should be preserved after reconnect (eg. no page reload)'
+    screen.wait(2.0)
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
+    assert element.get_attribute('value') == 'hello', 'input should be preserved after reconnect (i.e. no page reload)'
