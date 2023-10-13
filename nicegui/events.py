@@ -3,9 +3,10 @@ from __future__ import annotations
 from contextlib import nullcontext
 from dataclasses import dataclass
 from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Any, BinaryIO, Callable, Dict, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Literal, Optional, Union
 
-from . import background_tasks, globals, helpers  # pylint: disable=redefined-builtin
+from . import background_tasks, globals  # pylint: disable=redefined-builtin
+from .awaitable_response import AwaitableResponse
 from .dataclasses import KWONLY_SLOTS
 from .slot import Slot
 
@@ -432,7 +433,8 @@ def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArgument
 
         with parent_slot:
             result = handler(arguments) if expects_arguments else handler()
-        if helpers.is_coroutine_function(handler):
+        if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
+            # NOTE: await an awaitable result even if the handler is not a coroutine (like a lambda statement)
             async def wait_for_result():
                 with parent_slot:
                     try:
