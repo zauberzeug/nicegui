@@ -1,3 +1,5 @@
+import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
+
 export default {
   template: "<div></div>",
   mounted() {
@@ -8,13 +10,14 @@ export default {
       this.$el.textContent = "";
       this.gridOptions = {
         ...this.options,
-        onGridReady: (params) => params.api.sizeColumnsToFit(),
+        onGridReady: this.auto_size_columns ? (params) => params.api.sizeColumnsToFit() : undefined,
       };
       for (const column of this.html_columns) {
         if (this.gridOptions.columnDefs[column].cellRenderer === undefined) {
           this.gridOptions.columnDefs[column].cellRenderer = (params) => (params.value ? params.value : "");
         }
       }
+      convertDynamicProperties(this.gridOptions, true);
 
       // Code for CheckboxRenderer https://blog.ag-grid.com/binding-boolean-values-to-checkboxes-in-ag-grid/
       function CheckboxRenderer() {}
@@ -46,6 +49,9 @@ export default {
     },
     call_api_method(name, ...args) {
       this.gridOptions.api[name](...args);
+    },
+    call_column_api_method(name, ...args) {
+      this.gridOptions.columnApi[name](...args);
     },
     handle_event(type, args) {
       this.$emit(type, {
@@ -85,5 +91,6 @@ export default {
   props: {
     options: Object,
     html_columns: Array,
+    auto_size_columns: Boolean,
   },
 };

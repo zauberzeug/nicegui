@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import functools
 import hashlib
@@ -17,7 +19,7 @@ from fastapi.responses import StreamingResponse
 from starlette.middleware import Middleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import background_tasks, globals
+from . import background_tasks, globals  # pylint: disable=redefined-builtin
 from .storage import RequestTrackingMiddleware
 
 if TYPE_CHECKING:
@@ -25,30 +27,28 @@ if TYPE_CHECKING:
 
 mimetypes.init()
 
-KWONLY_SLOTS = {'kw_only': True, 'slots': True} if sys.version_info >= (3, 10) else {}
-
 
 def is_pytest() -> bool:
     """Check if the code is running in pytest."""
     return 'pytest' in sys.modules
 
 
-def is_coroutine_function(object: Any) -> bool:
+def is_coroutine_function(obj: Any) -> bool:
     """Check if the object is a coroutine function.
 
     This function is needed because functools.partial is not a coroutine function, but its func attribute is.
     Note: It will return false for coroutine objects.
     """
-    while isinstance(object, functools.partial):
-        object = object.func
-    return asyncio.iscoroutinefunction(object)
+    while isinstance(obj, functools.partial):
+        obj = obj.func
+    return asyncio.iscoroutinefunction(obj)
 
 
 def is_file(path: Optional[Union[str, Path]]) -> bool:
     """Check if the path is a file that exists."""
     if not path:
         return False
-    elif isinstance(path, str) and path.strip().startswith('data:'):
+    if isinstance(path, str) and path.strip().startswith('data:'):
         return False  # NOTE: avoid passing data URLs to Path
     try:
         return Path(path).is_file()
@@ -57,10 +57,10 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
 
 
 def hash_file_path(path: Path) -> str:
-    return hashlib.sha256(str(path).encode()).hexdigest()[:32]
+    return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
 
 
-def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional['Client'] = None) -> None:
+def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional[Client] = None) -> None:
     try:
         if isinstance(func, Awaitable):
             async def func_with_client():

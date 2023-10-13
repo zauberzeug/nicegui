@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { CSS2DRenderer, CSS2DObject } from "CSS2DRenderer";
 import { CSS3DRenderer, CSS3DObject } from "CSS3DRenderer";
+import { DragControls } from "DragControls";
 import { OrbitControls } from "OrbitControls";
 import { STLLoader } from "STLLoader";
 
@@ -59,6 +60,7 @@ export default {
     this.scene = new THREE.Scene();
     this.objects = new Map();
     this.objects.set("scene", this.scene);
+    this.draggable_objects = [];
 
     window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
 
@@ -117,6 +119,28 @@ export default {
       this.scene.add(grid);
     }
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
+    const applyConstraint = (constraint, position) => {
+      if (!constraint) return;
+      const [variable, expression] = constraint.split("=").map((s) => s.trim());
+      position[variable] = eval(expression.replace(/x|y|z/g, (match) => `(${position[match]})`));
+    };
+    const handleDrag = (event) => {
+      this.drag_constraints.split(",").forEach((constraint) => applyConstraint(constraint, event.object.position));
+      if (event.type === "drag") return;
+      this.$emit(event.type, {
+        type: event.type,
+        object_id: event.object.object_id,
+        object_name: event.object.name,
+        x: event.object.position.x,
+        y: event.object.position.y,
+        z: event.object.position.z,
+      });
+      this.controls.enabled = event.type == "dragend";
+    };
+    this.drag_controls.addEventListener("dragstart", handleDrag);
+    this.drag_controls.addEventListener("drag", handleDrag);
+    this.drag_controls.addEventListener("dragend", handleDrag);
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
@@ -300,10 +324,16 @@ export default {
       if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).visible = value;
     },
+    draggable(object_id, value) {
+      if (!this.objects.has(object_id)) return;
+      if (value) this.draggable_objects.push(this.objects.get(object_id));
+      else this.draggable_objects.pop(this.objects.get(object_id));
+    },
     delete(object_id) {
       if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).removeFromParent();
       this.objects.delete(object_id);
+      this.draggable_objects.pop(this.objects.get(object_id));
     },
     set_texture_url(object_id, url) {
       if (!this.objects.has(object_id)) return;
@@ -371,5 +401,6 @@ export default {
     width: Number,
     height: Number,
     grid: Boolean,
+    drag_constraints: String,
   },
 };

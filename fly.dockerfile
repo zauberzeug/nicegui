@@ -2,9 +2,20 @@ FROM python:3.11.3-slim
 
 LABEL maintainer="Zauberzeug GmbH <nicegui@zauberzeug.com>"
 
+RUN apt update && apt install -y curl procps
+
 RUN pip install itsdangerous prometheus_client isort docutils pandas plotly matplotlib requests
 
+RUN curl -sSL https://install.python-poetry.org | python3 - && \
+    cd /usr/local/bin && \
+    ln -s ~/.local/bin/poetry && \
+    poetry config virtualenvs.create false
+
 WORKDIR /app
+
+COPY pyproject.toml poetry.lock*  ./
+
+RUN poetry install --no-root --extras "plotly matplotlib"
 
 ADD . .
 
@@ -18,4 +29,8 @@ RUN pip install .
 EXPOSE 8080
 EXPOSE 9062
 
-CMD python3 main.py
+COPY fly-entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["python", "main.py"]

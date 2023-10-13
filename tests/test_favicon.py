@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 from nicegui import favicon, ui
 
-from .screen import PORT, Screen
+from .screen import Screen
 
 DEFAULT_FAVICON_PATH = Path(__file__).parent.parent / 'nicegui' / 'static' / 'favicon.ico'
 LOGO_FAVICON_PATH = Path(__file__).parent.parent / 'website' / 'static' / 'logo_square.png'
@@ -19,7 +19,7 @@ def assert_favicon_url_starts_with(screen: Screen, content: str):
 
 
 def assert_favicon(content: Union[Path, str, bytes], url_path: str = '/favicon.ico'):
-    response = requests.get(f'http://localhost:{PORT}{url_path}')
+    response = requests.get(f'http://localhost:{Screen.PORT}{url_path}', timeout=5)
     assert response.status_code == 200
     if isinstance(content, Path):
         assert content.read_bytes() == response.content
@@ -54,8 +54,8 @@ def test_data_url(screen: Screen):
     screen.ui_run_kwargs['favicon'] = icon
     screen.open('/')
     assert_favicon_url_starts_with(screen, 'data:image/png;base64')
-    _, bytes = favicon.data_url_to_bytes(icon)
-    assert_favicon(bytes)
+    _, bytes_ = favicon.data_url_to_bytes(icon)
+    assert_favicon(bytes_)
 
 
 def test_custom_file(screen: Screen):

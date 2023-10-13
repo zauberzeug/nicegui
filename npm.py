@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Update dependencies according to npm.json configurations using the NPM packagist.
+"""Update dependencies according to npm.json configurations using the NPM packagist.
 
 npm.json file is a JSON object key => dependency.
 
@@ -40,13 +39,19 @@ def download_buffered(url: str) -> Path:
     path.mkdir(exist_ok=True)
     filepath = path / url_to_filename(url)
     if not filepath.exists():
-        response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+        response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=3)
         filepath.write_bytes(response.content)
     return filepath
 
 
 DEPENDENCIES = (Path(__file__).parent / 'DEPENDENCIES.md').open('w')
 DEPENDENCIES.write('# Included Web Dependencies\n\n')
+KNOWN_LICENSES = {
+    'MIT': 'https://opensource.org/licenses/MIT',
+    'ISC': 'https://opensource.org/licenses/ISC',
+    'Apache-2.0': 'https://opensource.org/licenses/Apache-2.0',
+    'BSD-2-Clause': 'https://opensource.org/licenses/BSD-2-Clause',
+}
 
 # Create a hidden folder to work in.
 tmp = cleanup(Path('.npm'))
@@ -61,13 +66,14 @@ for key, dependency in dependencies.items():
     npm_data = json.loads(download_buffered(f'https://registry.npmjs.org/{package_name}').read_text())
     npm_version = dependency.get('version', npm_data['dist-tags']['latest'])
     npm_tarball = npm_data['versions'][npm_version]['dist']['tarball']
-    print(f'{key}: {npm_version} - {npm_tarball}')
-    DEPENDENCIES.write(f'- {key}: {npm_version}\n')
+    license_ = npm_data['versions'][npm_version]['license']
+    print(f'{key}: {npm_version} - {npm_tarball} ({license_})')
+    DEPENDENCIES.write(f'- {key}: {npm_version} ([{license_}]({KNOWN_LICENSES.get(license_, license_)}))\n')
 
     # Handle the special case of tailwind. Hopefully remove this soon.
     if 'download' in dependency:
-        path = download_buffered(dependency['download'])
-        shutil.copyfile(path, prepare(Path(destination, dependency['rename'])))
+        download_path = download_buffered(dependency['download'])
+        shutil.copyfile(download_path, prepare(Path(destination, dependency['rename'])))
 
     # Download and extract.
     tgz_file = prepare(Path(tmp, key, f'{key}.tgz'))

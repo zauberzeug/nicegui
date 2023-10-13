@@ -55,7 +55,7 @@ def test_toggle_button(screen: Screen):
 
 
 def test_input_validation(screen: Screen):
-    input = ui.input('Name', validation={'Too short': lambda value: len(value) >= 5})
+    input_ = ui.input('Name', validation={'Too short': lambda value: len(value) >= 5})
 
     screen.open('/')
     screen.should_contain('Name')
@@ -63,17 +63,17 @@ def test_input_validation(screen: Screen):
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Name"]')
     element.send_keys('John')
     screen.should_contain('Too short')
-    assert input.error == 'Too short'
+    assert input_.error == 'Too short'
 
     element.send_keys(' Doe')
     screen.wait(0.5)
     screen.should_not_contain('Too short')
-    assert input.error is None
+    assert input_.error is None
 
 
 def test_input_with_multi_word_error_message(screen: Screen):
-    input = ui.input(label='some input')
-    ui.button('set error', on_click=lambda: input.props('error error-message="Some multi word error message"'))
+    input_ = ui.input(label='some input')
+    ui.button('set error', on_click=lambda: input_.props('error error-message="Some multi word error message"'))
 
     screen.open('/')
     screen.should_not_contain('Some multi word error message')
@@ -83,7 +83,7 @@ def test_input_with_multi_word_error_message(screen: Screen):
 
 
 def test_autocompletion(screen: Screen):
-    input = ui.input('Input', autocomplete=['foo', 'bar', 'baz'])
+    input_ = ui.input('Input', autocomplete=['foo', 'bar', 'baz'])
 
     screen.open('/')
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
@@ -100,7 +100,7 @@ def test_autocompletion(screen: Screen):
     element.send_keys(Keys.TAB)
     screen.wait(0.2)
     assert element.get_attribute('value') == 'foo'
-    assert input.value == 'foo'
+    assert input_.value == 'foo'
 
     element.send_keys(Keys.BACKSPACE)
     element.send_keys(Keys.BACKSPACE)
@@ -108,9 +108,9 @@ def test_autocompletion(screen: Screen):
     element.send_keys(Keys.TAB)
     screen.wait(0.5)
     assert element.get_attribute('value') == 'fx'
-    assert input.value == 'fx'
+    assert input_.value == 'fx'
 
-    input.set_autocomplete(['one', 'two'])
+    input_.set_autocomplete(['one', 'two'])
     element.send_keys(Keys.BACKSPACE)
     element.send_keys(Keys.BACKSPACE)
     element.send_keys('o')
@@ -118,8 +118,8 @@ def test_autocompletion(screen: Screen):
 
 
 def test_clearable_input(screen: Screen):
-    input = ui.input(value='foo').props('clearable')
-    ui.label().bind_text_from(input, 'value', lambda value: f'value: {value}')
+    input_ = ui.input(value='foo').props('clearable')
+    ui.label().bind_text_from(input_, 'value', lambda value: f'value: {value}')
 
     screen.open('/')
     screen.should_contain('value: foo')
@@ -128,7 +128,7 @@ def test_clearable_input(screen: Screen):
 
 
 def test_update_input(screen: Screen):
-    input = ui.input('Name', value='Pete')
+    input_ = ui.input('Name', value='Pete')
 
     screen.open('/')
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Name"]')
@@ -138,7 +138,7 @@ def test_update_input(screen: Screen):
     screen.wait(0.5)
     assert element.get_attribute('value') == 'Peter'
 
-    input.value = 'Pete'
+    input_.value = 'Pete'
     screen.wait(0.5)
     assert element.get_attribute('value') == 'Pete'
 

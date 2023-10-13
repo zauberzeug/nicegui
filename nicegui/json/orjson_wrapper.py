@@ -1,13 +1,15 @@
 from decimal import Decimal
 from typing import Any, Optional, Tuple
 
+# pylint: disable=no-member
 import orjson
 from fastapi import Response
 
 try:
     import numpy as np
+    has_numpy = True
 except ImportError:
-    np = None
+    has_numpy = False
 
 ORJSON_OPTS = orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NON_STR_KEYS
 
@@ -22,7 +24,7 @@ def dumps(obj: Any, sort_keys: bool = False, separators: Optional[Tuple[str, str
     # note that parameters `sort_keys` and `separators` are required by AsyncServer's
     # internal calls, which match Python's default `json.dumps` API.
     assert separators is None or separators == (',', ':'), \
-        f'NiceGUI JSON serializer only supports Python''s default ' +\
+        'NiceGUI JSON serializer only supports Python''s default ' +\
         f'JSON separators "," and ":", but got {separators} instead.'
 
     opts = ORJSON_OPTS
@@ -44,10 +46,11 @@ def loads(value: str) -> Any:
 
 def _orjson_converter(obj):
     """Custom serializer/converter, e.g. for NumPy object arrays."""
-    if np and isinstance(obj, np.ndarray) and obj.dtype == np.object_:
+    if has_numpy and isinstance(obj, np.ndarray) and obj.dtype == np.object_:
         return obj.tolist()
     if isinstance(obj, Decimal):
         return float(obj)
+    raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
 
 
 class NiceGUIJSONResponse(Response):

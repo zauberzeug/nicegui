@@ -26,10 +26,10 @@ def test_change_chart_series(screen: Screen):
 
     screen.open('/')
     screen.wait(0.5)
-    before = [bar.size['width'] for bar in get_series_0()]
+    before = [bar.size['width'] for bar in get_series_0()]  # pylint: disable=disallowed-name
     screen.click('Update')
     screen.wait(0.5)
-    after = [bar.size['width'] for bar in get_series_0()]
+    after = [bar.size['width'] for bar in get_series_0()]  # pylint: disable=disallowed-name
     assert before[0] < after[0]
     assert before[1] < after[1]
 
@@ -112,7 +112,7 @@ def test_replace_chart(screen: Screen):
     screen.should_not_contain('A')
 
 
-def test_stock_chart(screen: Screen):
+def test_updating_stock_chart(screen: Screen):
     """https://github.com/zauberzeug/nicegui/discussions/948"""
     chart = ui.chart({'legend': {'enabled': True}, 'series': []}, type='stockChart', extras=['stock'])
     ui.button('update', on_click=lambda: (

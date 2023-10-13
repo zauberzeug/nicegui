@@ -9,9 +9,11 @@ def main_demo() -> None:
 
 
 def more() -> None:
-    @text_demo('Video start position', '''
-        This demo shows how to set the start position of a video.
+    @text_demo('Control the video element', '''
+        This demo shows how to play, pause and seek programmatically.
     ''')
-    def start_position_demo() -> None:
+    def control_demo() -> None:
         v = ui.video('https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4')
-        v.on('loadedmetadata', lambda: v.seek(5))
+        ui.button('Play', on_click=v.play)
+        ui.button('Pause', on_click=v.pause)
+        ui.button('Jump to 0:05', on_click=lambda: v.seek(5))

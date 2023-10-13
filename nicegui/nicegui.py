@@ -1,8 +1,9 @@
 import asyncio
+import mimetypes
 import time
 import urllib.parse
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 from fastapi import HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
@@ -10,31 +11,35 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
-from nicegui import json
-from nicegui.json import NiceGUIJSONResponse
-
-from . import __version__, background_tasks, binding, favicon, globals, outbox, welcome
+from . import (background_tasks, binding, favicon, globals, json, outbox,  # pylint: disable=redefined-builtin
+               run_executor, welcome)
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries
-from .element import Element
 from .error import error_content
 from .helpers import is_file, safe_invoke
+from .json import NiceGUIJSONResponse
+from .middlewares import RedirectWithPrefixMiddleware
 from .page import page
+from .version import __version__
 
 globals.app = app = App(default_response_class=NiceGUIJSONResponse)
 # NOTE we use custom json module which wraps orjson
 socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=json)
-globals.sio = sio = socket_manager._sio
+globals.sio = sio = socket_manager._sio  # pylint: disable=protected-access
+
+mimetypes.add_type('text/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
 
 app.add_middleware(GZipMiddleware)
+app.add_middleware(RedirectWithPrefixMiddleware)
 static_files = StaticFiles(
     directory=(Path(__file__).parent / 'static').resolve(),
     follow_symlink=True,
 )
 app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
 
-globals.index_client = Client(page('/'), shared=True).__enter__()
+globals.index_client = Client(page('/'), shared=True).__enter__()  # pylint: disable=unnecessary-dunder-call
 
 
 @app.get('/')
@@ -76,7 +81,7 @@ def handle_startup(with_welcome_message: bool = True) -> None:
                            'to allow for multiprocessing.')
     if globals.favicon:
         if is_file(globals.favicon):
-            globals.app.add_route('/favicon.ico', lambda _: FileResponse(globals.favicon))
+            globals.app.add_route('/favicon.ico', lambda _: FileResponse(globals.favicon))  # type: ignore
         else:
             globals.app.add_route('/favicon.ico', lambda _: favicon.get_favicon_response())
     else:
@@ -86,13 +91,13 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     with globals.index_client:
         for t in globals.startup_handlers:
             safe_invoke(t)
-    background_tasks.create(binding.loop())
-    background_tasks.create(outbox.loop())
-    background_tasks.create(prune_clients())
-    background_tasks.create(prune_slot_stacks())
+    background_tasks.create(binding.refresh_loop(), name='refresh bindings')
+    background_tasks.create(outbox.loop(), name='send outbox')
+    background_tasks.create(prune_clients(), name='prune clients')
+    background_tasks.create(prune_slot_stacks(), name='prune slot stacks')
     globals.state = globals.State.STARTED
     if with_welcome_message:
-        welcome.print_message()
+        background_tasks.create(welcome.print_message())
     if globals.air:
         background_tasks.create(globals.air.connect())
 
@@ -105,6 +110,7 @@ async def handle_shutdown() -> None:
     with globals.index_client:
         for t in globals.shutdown_handlers:
             safe_invoke(t)
+    run_executor.tear_down()
     globals.state = globals.State.STOPPED
     if globals.air:
         await globals.air.disconnect()
@@ -127,8 +133,8 @@ async def exception_handler_500(request: Request, exception: Exception) -> Respo
 
 
 @sio.on('handshake')
-def on_handshake(sid: str) -> bool:
-    client = get_client(sid)
+def on_handshake(sid: str, client_id: str) -> bool:
+    client = globals.clients.get(client_id)
     if not client:
         return False
     client.environ = sio.get_environ(sid)
@@ -138,6 +144,9 @@ def on_handshake(sid: str) -> bool:
 
 
 def handle_handshake(client: Client) -> None:
+    if client.disconnect_task:
+        client.disconnect_task.cancel()
+        client.disconnect_task = None
     for t in client.connect_handlers:
         safe_invoke(t, client)
     for t in globals.connect_handlers:
@@ -146,13 +155,17 @@ def handle_handshake(client: Client) -> None:
 
 @sio.on('disconnect')
 def on_disconnect(sid: str) -> None:
-    client = get_client(sid)
-    if not client:
-        return
-    handle_disconnect(client)
+    query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
+    query = urllib.parse.parse_qs(query_bytes.decode())
+    client_id = query['client_id'][0]
+    client = globals.clients.get(client_id)
+    if client:
+        client.disconnect_task = background_tasks.create(handle_disconnect(client))
 
 
-def handle_disconnect(client: Client) -> None:
+async def handle_disconnect(client: Client) -> None:
+    delay = client.page.reconnect_timeout if client.page.reconnect_timeout is not None else globals.reconnect_timeout
+    await asyncio.sleep(delay)
     if not client.shared:
         delete_client(client.id)
     for t in client.disconnect_handlers:
@@ -162,8 +175,8 @@ def handle_disconnect(client: Client) -> None:
 
 
 @sio.on('event')
-def on_event(sid: str, msg: Dict) -> None:
-    client = get_client(sid)
+def on_event(_: str, msg: Dict) -> None:
+    client = globals.clients.get(msg['client_id'])
     if not client or not client.has_socket_connection:
         return
     handle_event(client, msg)
@@ -176,12 +189,12 @@ def handle_event(client: Client, msg: Dict) -> None:
             msg['args'] = [None if arg is None else json.loads(arg) for arg in msg.get('args', [])]
             if len(msg['args']) == 1:
                 msg['args'] = msg['args'][0]
-            sender._handle_event(msg)
+            sender._handle_event(msg)  # pylint: disable=protected-access
 
 
 @sio.on('javascript_response')
-def on_javascript_response(sid: str, msg: Dict) -> None:
-    client = get_client(sid)
+def on_javascript_response(_: str, msg: Dict) -> None:
+    client = globals.clients.get(msg['client_id'])
     if not client:
         return
     handle_javascript_response(client, msg)
@@ -191,22 +204,15 @@ def handle_javascript_response(client: Client, msg: Dict) -> None:
     client.waiting_javascript_commands[msg['request_id']] = msg['result']
 
 
-def get_client(sid: str) -> Optional[Client]:
-    query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
-    query = urllib.parse.parse_qs(query_bytes.decode())
-    client_id = query['client_id'][0]
-    return globals.clients.get(client_id)
-
-
 async def prune_clients() -> None:
     while True:
-        stale = [
+        stale_clients = [
             id
             for id, client in globals.clients.items()
             if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
         ]
-        for id in stale:
-            delete_client(id)
+        for client_id in stale_clients:
+            delete_client(client_id)
         await asyncio.sleep(10)
 
 
@@ -227,8 +233,5 @@ async def prune_slot_stacks() -> None:
         await asyncio.sleep(10)
 
 
-def delete_client(id: str) -> None:
-    binding.remove(list(globals.clients[id].elements.values()), Element)
-    for element in globals.clients[id].elements.values():
-        element.delete()
-    del globals.clients[id]
+def delete_client(client_id: str) -> None:
+    globals.clients.pop(client_id).remove_all_elements()

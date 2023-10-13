@@ -1,8 +1,9 @@
 from typing import Literal, Optional
 
-from . import globals
+from . import globals  # pylint: disable=redefined-builtin
 from .element import Element
 from .elements.mixins.value_element import ValueElement
+from .functions.html import add_body_html
 
 DrawerSides = Literal['left', 'right']
 
@@ -24,8 +25,12 @@ class Header(ValueElement):
                  value: bool = True,
                  fixed: bool = True,
                  bordered: bool = False,
-                 elevated: bool = False) -> None:
-        '''Header
+                 elevated: bool = False,
+                 add_scroll_padding: bool = False,  # DEPRECATED: will be True in v1.4
+                 ) -> None:
+        """Header
+
+        This element is based on Quasar's `QHeader <https://quasar.dev/layout/header-and-footer#qheader-api>`_ component.
 
         Note: The header is automatically placed above other layout elements in the DOM to improve accessibility.
         To change the order, use the `move` method.
@@ -34,7 +39,8 @@ class Header(ValueElement):
         :param fixed: whether the header should be fixed to the top of the page (default: `True`)
         :param bordered: whether the header should have a border (default: `False`)
         :param elevated: whether the header should have a shadow (default: `False`)
-        '''
+        :param add_scroll_padding: whether to automatically prevent link targets from being hidden behind the header (default: `False`, will be `True` in v1.4)
+        """
         with globals.get_client().layout:
             super().__init__(tag='q-header', value=value, on_value_change=None)
         self._classes = ['nicegui-header']
@@ -46,16 +52,28 @@ class Header(ValueElement):
 
         self.move(target_index=0)
 
+        if add_scroll_padding:
+            add_body_html(f'''
+                <script>
+                    window.onload = () => {{
+                        const header = getElement({self.id}).$el;
+                        new ResizeObserver(() => {{
+                            document.documentElement.style.scrollPaddingTop = `${{header.offsetHeight}}px`;
+                        }}).observe(header);
+                    }};
+                </script>
+            ''')
+
     def toggle(self):
-        '''Toggle the header'''
+        """Toggle the header"""
         self.value = not self.value
 
     def show(self):
-        '''Show the header'''
+        """Show the header"""
         self.value = True
 
     def hide(self):
-        '''Hide the header'''
+        """Hide the header"""
         self.value = False
 
 
@@ -69,7 +87,9 @@ class Drawer(Element):
                  elevated: bool = False,
                  top_corner: bool = False,
                  bottom_corner: bool = False) -> None:
-        '''Drawer
+        """Drawer
+
+        This element is based on Quasar's `QDrawer <https://quasar.dev/layout/drawer>`_ component.
 
         Note: Depending on the side, the drawer is automatically placed above or below the main page container in the DOM to improve accessibility.
         To change the order, use the `move` method.
@@ -81,7 +101,7 @@ class Drawer(Element):
         :param elevated: whether the drawer should have a shadow (default: `False`)
         :param top_corner: whether the drawer expands into the top corner (default: `False`)
         :param bottom_corner: whether the drawer expands into the bottom corner (default: `False`)
-        '''
+        """
         with globals.get_client().layout:
             super().__init__('q-drawer')
         if value is None:
@@ -102,15 +122,15 @@ class Drawer(Element):
         self.move(target_index=page_container_index if side == 'left' else page_container_index + 1)
 
     def toggle(self) -> None:
-        '''Toggle the drawer'''
+        """Toggle the drawer"""
         self.run_method('toggle')
 
     def show(self) -> None:
-        '''Show the drawer'''
+        """Show the drawer"""
         self.run_method('show')
 
     def hide(self) -> None:
-        '''Hide the drawer'''
+        """Hide the drawer"""
         self.run_method('hide')
 
 
@@ -123,7 +143,9 @@ class LeftDrawer(Drawer):
                  elevated: bool = False,
                  top_corner: bool = False,
                  bottom_corner: bool = False) -> None:
-        '''Left drawer
+        """Left drawer
+
+        This element is based on Quasar's `QDrawer <https://quasar.dev/layout/drawer>`_ component.
 
         Note: The left drawer is automatically placed above the main page container in the DOM to improve accessibility.
         To change the order, use the `move` method.
@@ -134,7 +156,7 @@ class LeftDrawer(Drawer):
         :param elevated: whether the drawer should have a shadow (default: `False`)
         :param top_corner: whether the drawer expands into the top corner (default: `False`)
         :param bottom_corner: whether the drawer expands into the bottom corner (default: `False`)
-        '''
+        """
         super().__init__('left',
                          value=value,
                          fixed=fixed,
@@ -153,7 +175,9 @@ class RightDrawer(Drawer):
                  elevated: bool = False,
                  top_corner: bool = False,
                  bottom_corner: bool = False) -> None:
-        '''Right drawer
+        """Right drawer
+
+        This element is based on Quasar's `QDrawer <https://quasar.dev/layout/drawer>`_ component.
 
         Note: The right drawer is automatically placed below the main page container in the DOM to improve accessibility.
         To change the order, use the `move` method.
@@ -164,7 +188,7 @@ class RightDrawer(Drawer):
         :param elevated: whether the drawer should have a shadow (default: `False`)
         :param top_corner: whether the drawer expands into the top corner (default: `False`)
         :param bottom_corner: whether the drawer expands into the bottom corner (default: `False`)
-        '''
+        """
         super().__init__('right',
                          value=value,
                          fixed=fixed,
@@ -181,7 +205,9 @@ class Footer(ValueElement):
                  fixed: bool = True,
                  bordered: bool = False,
                  elevated: bool = False) -> None:
-        '''Footer
+        """Footer
+
+        This element is based on Quasar's `QFooter <https://quasar.dev/layout/header-and-footer#qfooter-api>`_ component.
 
         Note: The footer is automatically placed below other layout elements in the DOM to improve accessibility.
         To change the order, use the `move` method.
@@ -190,7 +216,7 @@ class Footer(ValueElement):
         :param fixed: whether the footer is fixed or scrolls with the content (default: `True`)
         :param bordered: whether the footer should have a border (default: `False`)
         :param elevated: whether the footer should have a shadow (default: `False`)
-        '''
+        """
         with globals.get_client().layout:
             super().__init__(tag='q-footer', value=value, on_value_change=None)
         self.classes('nicegui-footer')
@@ -203,29 +229,29 @@ class Footer(ValueElement):
         self.move(target_index=-1)
 
     def toggle(self) -> None:
-        '''Toggle the footer'''
+        """Toggle the footer"""
         self.value = not self.value
 
     def show(self) -> None:
-        '''Show the footer'''
+        """Show the footer"""
         self.value = True
 
     def hide(self) -> None:
-        '''Hide the footer'''
+        """Hide the footer"""
         self.value = False
 
 
 class PageSticky(Element):
 
     def __init__(self, position: PageStickyPositions = 'bottom-right', x_offset: float = 0, y_offset: float = 0) -> None:
-        '''Page sticky
+        """Page sticky
 
         A sticky element that is always visible at the bottom of the page.
 
         :param position: position of the sticky element (default: `'bottom-right'`)
         :param x_offset: horizontal offset of the sticky element (default: `0`)
         :param y_offset: vertical offset of the sticky element (default: `0`)
-        '''
+        """
         super().__init__('q-page-sticky')
         self._props['position'] = position
         self._props['offset'] = [x_offset, y_offset]

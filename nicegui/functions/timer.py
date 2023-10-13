@@ -2,7 +2,7 @@ import asyncio
 import time
 from typing import Any, Awaitable, Callable, Optional
 
-from .. import background_tasks, globals
+from .. import background_tasks, globals  # pylint: disable=redefined-builtin
 from ..binding import BindableProperty
 from ..slot import Slot
 
@@ -32,6 +32,7 @@ class Timer:
         self.callback: Optional[Callable[..., Any]] = callback
         self.active = active
         self.slot: Optional[Slot] = globals.get_slot()
+        self._is_canceled: bool = False
 
         coroutine = self._run_once if once else self._run_in_loop
         if globals.state == globals.State.STARTED:
@@ -41,11 +42,16 @@ class Timer:
 
     def activate(self) -> None:
         """Activate the timer."""
+        assert not self._is_canceled, 'Cannot activate a canceled timer'
         self.active = True
 
     def deactivate(self) -> None:
         """Deactivate the timer."""
         self.active = False
+
+    def cancel(self) -> None:
+        """Cancel the timer."""
+        self._is_canceled = True
 
     async def _run_once(self) -> None:
         try:
@@ -54,7 +60,7 @@ class Timer:
             assert self.slot is not None
             with self.slot:
                 await asyncio.sleep(self.interval)
-                if globals.state not in {globals.State.STOPPING, globals.State.STOPPED}:
+                if self.active and not self._should_stop():
                     await self._invoke_callback()
         finally:
             self._cleanup()
@@ -65,11 +71,7 @@ class Timer:
                 return
             assert self.slot is not None
             with self.slot:
-                while True:
-                    if self.slot.parent.client.id not in globals.clients:
-                        break
-                    if globals.state in {globals.State.STOPPING, globals.State.STOPPED}:
-                        break
+                while not self._should_stop():
                     try:
                         start = time.time()
                         if self.active:
@@ -102,14 +104,23 @@ class Timer:
         assert self.slot is not None
         if self.slot.parent.client.shared:
             return True
-        else:
-            # ignore served pages which do not reconnect to backend (eg. monitoring requests, scrapers etc.)
-            try:
-                await self.slot.parent.client.connected(timeout=timeout)
-                return True
-            except TimeoutError:
-                globals.log.error(f'Timer cancelled because client is not connected after {timeout} seconds')
-                return False
+
+        # ignore served pages which do not reconnect to backend (e.g. monitoring requests, scrapers etc.)
+        try:
+            await self.slot.parent.client.connected(timeout=timeout)
+            return True
+        except TimeoutError:
+            globals.log.error(f'Timer cancelled because client is not connected after {timeout} seconds')
+            return False
+
+    def _should_stop(self) -> bool:
+        assert self.slot is not None
+        return (
+            self.slot.parent.is_deleted or
+            self.slot.parent.client.id not in globals.clients or
+            self._is_canceled or
+            globals.state in {globals.State.STOPPING, globals.State.STOPPED}
+        )
 
     def _cleanup(self) -> None:
         self.slot = None

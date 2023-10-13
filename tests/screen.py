@@ -12,15 +12,13 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from nicegui import globals, ui
+from nicegui import app, globals, ui  # pylint: disable=redefined-builtin
 
 from .test_helpers import TEST_DIR
 
-PORT = 3392
-IGNORED_CLASSES = ['row', 'column', 'q-card', 'q-field', 'q-field__label', 'q-input']
-
 
 class Screen:
+    PORT = 3392
     IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = TEST_DIR / 'screenshots'
 
@@ -28,7 +26,9 @@ class Screen:
         self.selenium = selenium
         self.caplog = caplog
         self.server_thread = None
-        self.ui_run_kwargs = {'port': PORT, 'show': False, 'reload': False}
+        self.ui_run_kwargs = {'port': self.PORT, 'show': False, 'reload': False}
+        self.connected = threading.Event()
+        app.on_connect(self.connected.set)
 
     def start_server(self) -> None:
         """Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script."""
@@ -39,9 +39,10 @@ class Screen:
     def is_open(self) -> None:
         # https://stackoverflow.com/a/66150779/3419103
         try:
-            self.selenium.current_url
+            self.selenium.current_url  # pylint: disable=pointless-statement
             return True
-        except Exception:
+        except Exception as e:
+            print(e)
             return False
 
     def stop_server(self) -> None:
@@ -59,10 +60,12 @@ class Screen:
         if self.server_thread is None:
             self.start_server()
         deadline = time.time() + timeout
+        self.connected.clear()
         while True:
             try:
-                self.selenium.get(f'http://localhost:{PORT}{path}')
+                self.selenium.get(f'http://localhost:{self.PORT}{path}')
                 self.selenium.find_element(By.XPATH, '//body')  # ensure page and JS are loaded
+                self.connected.wait(1)  # Ensure that the client has connected to the API
                 break
             except Exception as e:
                 if time.time() > deadline:
@@ -102,8 +105,8 @@ class Screen:
     def should_contain_input(self, text: str) -> None:
         deadline = time.time() + self.IMPLICIT_WAIT
         while time.time() < deadline:
-            for input in self.selenium.find_elements(By.TAG_NAME, 'input'):
-                if input.get_attribute('value') == text:
+            for input_element in self.find_all_by_tag('input'):
+                if input_element.get_attribute('value') == text:
                     return
             self.wait(0.1)
         raise AssertionError(f'Could not find input with value "{text}"')
@@ -134,14 +137,20 @@ class Screen:
                     self.wait(0.1)  # HACK: repeat check after a short delay to avoid timing issue on fast machines
                     if not element.is_displayed():
                         raise AssertionError(f'Found "{text}" but it is hidden')
-            except StaleElementReferenceException:
-                raise AssertionError(f'Found "{text}" but it is hidden')
+            except StaleElementReferenceException as e:
+                raise AssertionError(f'Found "{text}" but it is hidden') from e
             return element
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 
     def find_element(self, element: ui.element) -> WebElement:
         return self.selenium.find_element(By.ID, f'c{element.id}')
+
+    def find_by_class(self, name: str) -> WebElement:
+        return self.selenium.find_element(By.CLASS_NAME, name)
+
+    def find_all_by_class(self, name: str) -> WebElement:
+        return self.selenium.find_elements(By.CLASS_NAME, name)
 
     def find_by_tag(self, name: str) -> WebElement:
         return self.selenium.find_element(By.TAG_NAME, name)

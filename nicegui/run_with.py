@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 from fastapi import FastAPI
 
-from nicegui import globals
+from nicegui import globals  # pylint: disable=redefined-builtin
 from nicegui.helpers import set_storage_secret
 from nicegui.language import Language
 from nicegui.nicegui import handle_shutdown, handle_startup
@@ -17,7 +17,10 @@ def run_with(
     dark: Optional[bool] = False,
     language: Language = 'en-US',
     binding_refresh_interval: float = 0.1,
+    reconnect_timeout: float = 0.0,  # NOTE: the value of 0.0 is DEPRECATED, change to 3.0 in 1.4 release
     mount_path: str = '/',
+    tailwind: bool = True,
+    prod_js: bool = True,
     storage_secret: Optional[str] = None,
 ) -> None:
     globals.ui_run_has_been_called = True
@@ -27,10 +30,12 @@ def run_with(
     globals.dark = dark
     globals.language = language
     globals.binding_refresh_interval = binding_refresh_interval
-    globals.tailwind = True
+    globals.reconnect_timeout = reconnect_timeout
+    globals.tailwind = tailwind
+    globals.prod_js = prod_js
 
     set_storage_secret(storage_secret)
     app.on_event('startup')(lambda: handle_startup(with_welcome_message=False))
-    app.on_event('shutdown')(lambda: handle_shutdown())
+    app.on_event('shutdown')(handle_shutdown)
 
     app.mount(mount_path, globals.app)

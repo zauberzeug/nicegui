@@ -131,6 +131,7 @@ def create_full() -> None:
     load_demo(ui.table)
     load_demo(ui.aggrid)
     load_demo(ui.chart)
+    load_demo(ui.echart)
     if 'matplotlib' in optional_features:
         load_demo(ui.pyplot)
         load_demo(ui.line_plot)
@@ -142,6 +143,9 @@ def create_full() -> None:
     load_demo(ui.scene)
     load_demo(ui.tree)
     load_demo(ui.log)
+    load_demo(ui.editor)
+    load_demo(ui.code)
+    load_demo(ui.json_editor)
 
     heading('Layout')
 
@@ -151,9 +155,16 @@ def create_full() -> None:
     load_demo(ui.grid)
 
     @text_demo('Clear Containers', '''
-        To remove all elements from a row, column or card container, use the `clear()` method.
+        To remove all elements from a row, column or card container, use can call
+        ```py
+        container.clear()
+        ```
 
-        Alternatively, you can remove individual elements with `remove(element)`, where `element` is an Element or an index.
+        Alternatively, you can remove individual elements by calling
+        
+        - `container.remove(element: Element)`,
+        - `container.remove(index: int)`, or
+        - `element.delete()`.
     ''')
     def clear_containers_demo():
         container = ui.row()
@@ -164,7 +175,7 @@ def create_full() -> None:
         add_face()
 
         ui.button('Add', on_click=add_face)
-        ui.button('Remove', on_click=lambda: container.remove(0))
+        ui.button('Remove', on_click=lambda: container.remove(0) if list(container) else None)
         ui.button('Clear', on_click=container.clear)
 
     load_demo(ui.expansion)
@@ -173,6 +184,7 @@ def create_full() -> None:
     load_demo(ui.splitter)
     load_demo('tabs')
     load_demo(ui.stepper)
+    load_demo(ui.timeline)
     load_demo(ui.carousel)
     load_demo(ui.menu)
 
@@ -345,6 +357,49 @@ def create_full() -> None:
             ui.notify('Asynchronous task finished')
 
         ui.button('start async task', on_click=async_task)
+
+    @text_demo('Running CPU-bound tasks', '''
+        NiceGUI provides a `cpu_bound` function for running CPU-bound tasks in a separate process.
+        This is useful for long-running computations that would otherwise block the event loop and make the UI unresponsive.
+        The function returns a future that can be awaited.
+    ''')
+    def cpu_bound_demo():
+        import time
+
+        from nicegui import run
+
+        def compute_sum(a: float, b: float) -> float:
+            time.sleep(1)  # simulate a long-running computation
+            return a + b
+
+        async def handle_click():
+            result = await run.cpu_bound(compute_sum, 1, 2)
+            ui.notify(f'Sum is {result}')
+
+        # ui.button('Compute', on_click=handle_click)
+        # END OF DEMO
+        async def mock_click():
+            import asyncio
+            await asyncio.sleep(1)
+            ui.notify('Sum is 3')
+        ui.button('Compute', on_click=mock_click)
+
+    @text_demo('Running I/O-bound tasks', '''
+        NiceGUI provides an `io_bound` function for running I/O-bound tasks in a separate thread.
+        This is useful for long-running I/O operations that would otherwise block the event loop and make the UI unresponsive.
+        The function returns a future that can be awaited.
+    ''')
+    def io_bound_demo():
+        import requests
+
+        from nicegui import run
+
+        async def handle_click():
+            URL = 'https://httpbin.org/delay/1'
+            response = await run.io_bound(requests.get, URL, timeout=3)
+            ui.notify(f'Downloaded {len(response.content)} bytes')
+
+        ui.button('Download', on_click=handle_click)
 
     heading('Pages')
 
@@ -522,6 +577,21 @@ def create_full() -> None:
         ui.button('shutdown', on_click=lambda: ui.notify(
             'Nah. We do not actually shutdown the documentation server. Try it in your own app!'))
 
+    @text_demo('URLs', '''
+        You can access the list of all URLs on which the NiceGUI app is available via `app.urls`.
+        The URLs are not available in `app.on_startup` because the server is not yet running.
+        Instead, you can access them in a page function or register a callback with `app.urls.on_change`.
+    ''')
+    def urls_demo():
+        from nicegui import app
+
+        # @ui.page('/')
+        # def index():
+        #     for url in app.urls:
+        #         ui.link(url, target=url)
+        # END OF DEMO
+        ui.link('https://nicegui.io', target='https://nicegui.io')
+
     heading('NiceGUI Fundamentals')
 
     @text_demo('Auto-context', '''
@@ -588,7 +658,9 @@ def create_full() -> None:
 
         - `MATPLOTLIB` (default: true) can be set to `false` to avoid the potentially costly import of Matplotlib.
             This will make `ui.pyplot` and `ui.line_plot` unavailable.
+        - `NICEGUI_STORAGE_PATH` (default: local ".nicegui") can be set to change the location of the storage files.
         - `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.
+        - `NO_NETIFACES` (default: `false`): Can be set to `true` to hide the netifaces startup warning (e.g. in docker container).
     ''')
     def env_var_demo():
         from nicegui.elements import markdown
@@ -607,11 +679,15 @@ def create_full() -> None:
         A convenient alternative is the use of our [pre-built multi-arch Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
         With this command you can launch the script `main.py` in the current directory on the public port 80:
     ''').classes('bold-links arrow-links')
-    with demo.bash_window(classes='max-w-lg w-full h-52'):
+    with demo.bash_window(classes='max-w-lg w-full h-44'):
         ui.markdown('''
             ```bash
-            docker run -p 80:8080 -v $(pwd)/:/app/ \\
-                -d --restart always zauberzeug/nicegui:latest
+            docker run -it --restart always \\
+              -p 80:8080 \\
+              -e PUID=$(id -u) \\
+              -e PGID=$(id -g) \\
+              -v $(pwd)/:/app/ \\
+              zauberzeug/nicegui:latest
             ```
         ''')
     ui.markdown('''
@@ -619,7 +695,7 @@ def create_full() -> None:
         The `-d` tells docker to run in background and `--restart always` makes sure the container is restarted if the app crashes or the server reboots.
         Of course this can also be written in a Docker compose file:
     ''')
-    with demo.python_window('docker-compose.yml', classes='max-w-lg w-full h-52'):
+    with demo.python_window('docker-compose.yml', classes='max-w-lg w-full h-60'):
         ui.markdown('''
             ```yaml
             app:
@@ -627,15 +703,22 @@ def create_full() -> None:
                 restart: always
                 ports:
                     - 80:8080
+                environment:
+                    - PUID=1000 # change this to your user id
+                    - PGID=1000 # change this to your group id
                 volumes:
                     - ./:/app/
             ```
         ''')
+    ui.markdown('''
+        There are other handy features in the Docker image like non-root user execution and signal pass-through.
+        For more details we recommend to have a look at our [Docker example](https://github.com/zauberzeug/nicegui/tree/main/examples/docker_image).
+    ''').classes('bold-links arrow-links')
 
     ui.markdown('''
         You can provide SSL certificates directly using [FastAPI](https://fastapi.tiangolo.com/deployment/https/).
         In production we also like using reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/) to handle these details for us.
-        See our [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
+        See our development [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
 
         You may also have a look at [our demo for using a custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
         This will allow you to do very flexible deployments as described in the [FastAPI documentation](https://fastapi.tiangolo.com/deployment/).
@@ -656,11 +739,11 @@ def create_full() -> None:
         with demo.python_window(classes='max-w-lg w-full'):
             ui.markdown('''
                 ```python
-                from nicegui import ui
+                from nicegui import native_mode, ui
 
                 ui.label('Hello from PyInstaller')
 
-                ui.run(reload=False)
+                ui.run(reload=False, port=native_mode.find_open_port())
                 ```
             ''')
         with demo.python_window('build.py', classes='max-w-lg w-full'):
@@ -743,7 +826,7 @@ def create_full() -> None:
         sys.stdout = open('logs.txt', 'w')
         ```
         See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
-    ''')
+    ''').classes('bold-links arrow-links')
 
     subheading('NiceGUI On Air')
 
@@ -754,10 +837,14 @@ def create_full() -> None:
         Thereby only the raw content and events need to be transmitted by your local app.
         This makes it blazing fast even if your app only has a poor internet connection (e.g. a mobile robot in the field).
 
-        Currently "On Air" is available as a tech preview and generates a random URL that is valid for 1 hour.
-        We will gradually improve stability and extend the service with password protection, custom URLs and more.
+        By setting `on_air=True` you will get a random URL which is valid for 1 hour.
+        If you sign-up at <https://on-air.nicegui.io> you get a token which could be used to identify your device: `ui.run(on_air='<your token>'`).
+        This will give you a fixed URL and the possibility to protect remote access with a passphrase.
+
+        Currently On Air is available as a tech preview and can be used free of charge (for now).
+        We will gradually improve stability, introduce payment options and extend the service with multi-device management, remote terminal access and more.
         Please let us know your feedback on [GitHub](https://github.com/zauberzeug/nicegui/discussions),
-        [Reddit](https://www.reddit.com/r/nicegui/), or [Discord](https://discord.gg/3XkZVYJ).
+        [Reddit](https://www.reddit.com/r/nicegui/), or [Discord](https://discord.gg/TEpFeAaF4f).
 
         **Data Privacy:**
         We take your privacy very serious.

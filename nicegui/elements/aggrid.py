@@ -2,13 +2,25 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, cast
 
+from .. import globals  # pylint: disable=redefined-builtin
 from ..element import Element
 from ..functions.javascript import run_javascript
+
+try:
+    import pandas as pd
+    globals.optional_features.add('pandas')
+except ImportError:
+    pass
 
 
 class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-community.min.js']):
 
-    def __init__(self, options: Dict, *, html_columns: List[int] = [], theme: str = 'balham') -> None:
+    def __init__(self,
+                 options: Dict, *,
+                 html_columns: List[int] = [],
+                 theme: str = 'balham',
+                 auto_size_columns: bool = True,
+                 ) -> None:
         """AG Grid
 
         An element to create a grid using `AG Grid <https://www.ag-grid.com/>`_.
@@ -18,24 +30,50 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         :param options: dictionary of AG Grid options
         :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
         :param theme: AG Grid theme (default: 'balham')
+        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
         """
         super().__init__()
         self._props['options'] = options
         self._props['html_columns'] = html_columns
+        self._props['auto_size_columns'] = auto_size_columns
         self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']
 
     @staticmethod
-    def from_pandas(df: 'pandas.DataFrame', *, theme: str = 'balham') -> AgGrid:
+    def from_pandas(df: pd.DataFrame, *,
+                    theme: str = 'balham',
+                    auto_size_columns: bool = True,
+                    options: Dict = {}) -> AgGrid:
         """Create an AG Grid from a Pandas DataFrame.
+
+        Note:
+        If the DataFrame contains non-serializable columns of type `datetime64[ns]`, `timedelta64[ns]`, `complex128` or `period[M]`,
+        they will be converted to strings.
+        To use a different conversion, convert the DataFrame manually before passing it to this method.
+        See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
 
         :param df: Pandas DataFrame
         :param theme: AG Grid theme (default: 'balham')
-        :return: AG Grid
+        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
+        :param options: dictionary of additional AG Grid options
+        :return: AG Grid element
         """
+        date_cols = df.columns[df.dtypes == 'datetime64[ns]']
+        time_cols = df.columns[df.dtypes == 'timedelta64[ns]']
+        complex_cols = df.columns[df.dtypes == 'complex128']
+        period_cols = df.columns[df.dtypes == 'period[M]']
+        if len(date_cols) != 0 or len(time_cols) != 0 or len(complex_cols) != 0 or len(period_cols) != 0:
+            df = df.copy()
+            df[date_cols] = df[date_cols].astype(str)
+            df[time_cols] = df[time_cols].astype(str)
+            df[complex_cols] = df[complex_cols].astype(str)
+            df[period_cols] = df[period_cols].astype(str)
+
         return AgGrid({
-            'columnDefs': [{'field': col} for col in df.columns],
+            'columnDefs': [{'field': str(col)} for col in df.columns],
             'rowData': df.to_dict('records'),
-        }, theme=theme)
+            'suppressDotNotation': True,
+            **options,
+        }, theme=theme, auto_size_columns=auto_size_columns)
 
     @property
     def options(self) -> Dict:
@@ -54,6 +92,16 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         :param args: arguments to pass to the method
         """
         self.run_method('call_api_method', name, *args)
+
+    def call_column_api_method(self, name: str, *args) -> None:
+        """Call an AG Grid Column API method.
+
+        See `AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>`_ for a list of methods.
+
+        :param name: name of the method
+        :param args: arguments to pass to the method
+        """
+        self.run_method('call_column_api_method', name, *args)
 
     async def get_selected_rows(self) -> List[Dict]:
         """Get the currently selected rows.

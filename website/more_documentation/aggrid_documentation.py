@@ -5,14 +5,16 @@ from ..documentation_tools import text_demo
 
 def main_demo() -> None:
     grid = ui.aggrid({
+        'defaultColDef': {'flex': 1},
         'columnDefs': [
             {'headerName': 'Name', 'field': 'name'},
             {'headerName': 'Age', 'field': 'age'},
+            {'headerName': 'Parent', 'field': 'parent', 'hide': True},
         ],
         'rowData': [
-            {'name': 'Alice', 'age': 18},
-            {'name': 'Bob', 'age': 21},
-            {'name': 'Carol', 'age': 42},
+            {'name': 'Alice', 'age': 18, 'parent': 'David'},
+            {'name': 'Bob', 'age': 21, 'parent': 'Eve'},
+            {'name': 'Carol', 'age': 42, 'parent': 'Frank'},
         ],
         'rowSelection': 'multiple',
     }).classes('max-h-40')
@@ -23,6 +25,7 @@ def main_demo() -> None:
 
     ui.button('Update', on_click=update)
     ui.button('Select all', on_click=lambda: grid.call_api_method('selectAll'))
+    ui.button('Show parent', on_click=lambda: grid.call_column_api_method('setColumnVisible', 'parent', True))
 
 
 def more() -> None:
@@ -93,23 +96,15 @@ def more() -> None:
     @text_demo('AG Grid with Conditional Cell Formatting', '''
         This demo shows how to use [cellClassRules](https://www.ag-grid.com/javascript-grid-cell-styles/#cell-class-rules)
         to conditionally format cells based on their values.
-        Since it is currently not possible to use the `cellClassRules` option in the `columnDefs` option,
-        we use the `run_javascript` method to set the `cellClassRules` option after the grid has been created.
-        The timer is used to delay the execution of the javascript code until the grid has been created.
-        You can also use `app.on_connect` instead.
     ''')
     def aggrid_with_conditional_cell_formatting():
-        ui.html('''
-            <style>
-            .cell-fail { background-color: #f6695e; }
-            .cell-pass { background-color: #70bf73; }
-           </style>
-        ''')
-
-        grid = ui.aggrid({
+        ui.aggrid({
             'columnDefs': [
                 {'headerName': 'Name', 'field': 'name'},
-                {'headerName': 'Age', 'field': 'age'},
+                {'headerName': 'Age', 'field': 'age', 'cellClassRules': {
+                    'bg-red-300': 'x < 21',
+                    'bg-green-300': 'x >= 21',
+                }},
             ],
             'rowData': [
                 {'name': 'Alice', 'age': 18},
@@ -117,17 +112,6 @@ def more() -> None:
                 {'name': 'Carol', 'age': 42},
             ],
         })
-
-        async def format() -> None:
-            await ui.run_javascript(f'''
-                getElement({grid.id}).gridOptions.columnApi.getColumn("age").getColDef().cellClassRules = {{
-                    "cell-fail": x => x.value < 21,
-                    "cell-pass": x => x.value >= 21,
-                }};
-                getElement({grid.id}).gridOptions.api.refreshCells();
-            ''', respond=False)
-
-        ui.timer(0, format, once=True)
 
     @text_demo('Create Grid from Pandas Dataframe', '''
         You can create an AG Grid from a Pandas Dataframe using the `from_pandas` method.
@@ -153,3 +137,52 @@ def more() -> None:
                 {'name': 'Facebook', 'url': '<a href="https://facebook.com">https://facebook.com</a>'},
             ],
         }, html_columns=[1])
+
+    @text_demo('Respond to an AG Grid event', '''
+        All AG Grid events are passed through to NiceGUI via the AG Grid global listener.
+        These events can be subscribed to using the `.on()` method.
+    ''')
+    def aggrid_respond_to_event():
+        ui.aggrid({
+            'columnDefs': [
+                {'headerName': 'Name', 'field': 'name'},
+                {'headerName': 'Age', 'field': 'age'},
+            ],
+            'rowData': [
+                {'name': 'Alice', 'age': 18},
+                {'name': 'Bob', 'age': 21},
+                {'name': 'Carol', 'age': 42},
+            ],
+        }).on('cellClicked', lambda event: ui.notify(f'Cell value: {event.args["value"]}'))
+
+    @text_demo('AG Grid with complex objects', '''
+        You can use nested complex objects in AG Grid by separating the field names with a period.
+        (This is the reason why keys in `rowData` are not allowed to contain periods.)
+    ''')
+    def aggrid_with_complex_objects():
+        ui.aggrid({
+            'columnDefs': [
+                {'headerName': 'First name', 'field': 'name.first'},
+                {'headerName': 'Last name', 'field': 'name.last'},
+                {'headerName': 'Age', 'field': 'age'}
+            ],
+            'rowData': [
+                {'name': {'first': 'Alice', 'last': 'Adams'}, 'age': 18},
+                {'name': {'first': 'Bob', 'last': 'Brown'}, 'age': 21},
+                {'name': {'first': 'Carol', 'last': 'Clark'}, 'age': 42},
+            ],
+        }).classes('max-h-40')
+
+    @text_demo('AG Grid with dynamic row height', '''
+        You can set the height of individual rows by passing a function to the `getRowHeight` argument.
+    ''')
+    def aggrid_with_dynamic_row_height():
+        ui.aggrid({
+            'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+            'rowData': [
+                {'name': 'Alice', 'age': '18'},
+                {'name': 'Bob', 'age': '21'},
+                {'name': 'Carol', 'age': '42'},
+            ],
+            ':getRowHeight': 'params => params.data.age > 35 ? 50 : 25',
+        }).classes('max-h-40')

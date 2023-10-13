@@ -23,7 +23,7 @@ def test_moving_sphere_with_timer(screen: Screen):
             except JavascriptException as e:
                 print(e.msg, flush=True)
             screen.wait(1.0)
-        raise Exception('Could not get position')
+        raise RuntimeError('Could not get position')
 
     screen.wait(0.2)
     assert position() > 0
@@ -44,9 +44,11 @@ def test_no_object_duplication_on_index_client(screen: Screen):
 
 
 def test_no_object_duplication_with_page_builder(screen: Screen):
+    scene: ui.scene
+
     @ui.page('/')
     def page():
-        global scene
+        nonlocal scene
         with ui.scene() as scene:
             sphere = scene.sphere().move(0, -4, 0)
             ui.timer(0.1, lambda: sphere.move(0, sphere.y + 0.5, 0))
@@ -98,7 +100,7 @@ def test_replace_scene(screen: Screen):
 
 
 def test_create_dynamically(screen: Screen):
-    ui.button('Create', on_click=lambda: ui.scene())
+    ui.button('Create', on_click=ui.scene)
 
     screen.open('/')
     screen.click('Create')
@@ -112,3 +114,35 @@ def test_rotation_matrix_from_euler():
     Rz = np.array([[np.cos(kappa), -np.sin(kappa), 0], [np.sin(kappa), np.cos(kappa), 0], [0, 0, 1]])
     R = Rz @ Ry @ Rx
     assert np.allclose(Object3D.rotation_matrix_from_euler(omega, phi, kappa), R)
+
+
+def test_object_creation_via_context(screen: Screen):
+    with ui.scene() as scene:
+        scene.box().with_name('box')
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'box'
+
+
+def test_object_creation_via_attribute(screen: Screen):
+    scene = ui.scene()
+    scene.box().with_name('box')
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'box'
+
+
+def test_clearing_scene(screen: Screen):
+    with ui.scene() as scene:
+        scene.box().with_name('box')
+        scene.box().with_name('box2')
+    ui.button('Clear', on_click=scene.clear)
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert len(scene.objects) == 2
+    screen.click('Clear')
+    screen.wait(0.5)
+    assert len(scene.objects) == 0

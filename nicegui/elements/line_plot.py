@@ -33,11 +33,21 @@ class LinePlot(Pyplot):
         self.push_counter = 0
 
     def with_legend(self, titles: List[str], **kwargs: Any):
+        """Add a legend to the plot.
+
+        :param titles: list of titles for the lines
+        :param kwargs: additional arguments which should be passed to `pyplot.legend <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html>`_
+        """
         self.fig.gca().legend(titles, **kwargs)
         self._convert_to_html()
         return self
 
     def push(self, x: List[float], Y: List[List[float]]) -> None:
+        """Push new data to the plot.
+
+        :param x: list of x values
+        :param Y: list of lists of y values (one list per line)
+        """
         self.push_counter += 1
 
         self.x = [*self.x, *x][self.slice]
@@ -47,9 +57,9 @@ class LinePlot(Pyplot):
         if self.push_counter % self.update_every != 0:
             return
 
-        for i in range(len(self.lines)):
-            self.lines[i].set_xdata(self.x)
-            self.lines[i].set_ydata(self.Y[i])
+        for i, line in enumerate(self.lines):
+            line.set_xdata(self.x)
+            line.set_ydata(self.Y[i])
 
         flat_y = [y_i for y in self.Y for y_i in y]
         min_x = min(self.x)
@@ -60,5 +70,16 @@ class LinePlot(Pyplot):
         pad_y = 0.01 * (max_y - min_y)
         self.fig.gca().set_xlim(min_x - pad_x, max_x + pad_x)
         self.fig.gca().set_ylim(min_y - pad_y, max_y + pad_y)
+        self._convert_to_html()
+        self.update()
+
+    def clear(self) -> None:
+        """Clear the line plot."""
+        super().clear()
+        self.x.clear()
+        for y in self.Y:
+            y.clear()
+        for line in self.lines:
+            line.set_data([], [])
         self._convert_to_html()
         self.update()

@@ -9,7 +9,7 @@ class Dialog(ValueElement):
     def __init__(self, *, value: bool = False) -> None:
         """Dialog
 
-        Creates a dialog.
+        Creates a dialog based on Quasar's `QDialog <https://quasar.dev/vue-components/dialog>`_ component.
         By default it is dismissible by clicking or pressing ESC.
         To make it persistent, set `.props('persistent')` on the dialog element.
 
@@ -35,7 +35,7 @@ class Dialog(ValueElement):
         self._result = None
         self.submitted.clear()
         self.open()
-        yield from self.submitted.wait().__await__()
+        yield from self.submitted.wait().__await__()  # pylint: disable=no-member
         result = self._result
         self.close()
         return result

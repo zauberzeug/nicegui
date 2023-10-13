@@ -1,15 +1,17 @@
 # Included Web Dependencies
 
-- vue: 3.3.4
-- quasar: 2.12.2
-- tailwindcss: 3.3.2
-- socket.io: 4.7.1
-- es-module-shims: 1.7.3
-- aggrid: 30.0.3
-- highcharts: 11.1.0
-- leaflet: 1.9.4
-- mermaid: 10.2.4
-- nipplejs: 0.10.1
-- plotly: 2.24.3
-- three: 0.154.0
-- tween: 21.0.0
+- vue: 3.3.4 ([MIT](https://opensource.org/licenses/MIT))
+- quasar: 2.12.2 ([MIT](https://opensource.org/licenses/MIT))
+- tailwindcss: 3.3.2 ([MIT](https://opensource.org/licenses/MIT))
+- socket.io: 4.7.1 ([MIT](https://opensource.org/licenses/MIT))
+- es-module-shims: 1.7.3 ([MIT](https://opensource.org/licenses/MIT))
+- aggrid: 30.0.3 ([MIT](https://opensource.org/licenses/MIT))
+- echarts: 5.4.3 ([Apache-2.0](https://opensource.org/licenses/Apache-2.0))
+- highcharts: 11.1.0 ([https://www.highcharts.com/license](https://www.highcharts.com/license))
+- leaflet: 1.9.4 ([BSD-2-Clause](https://opensource.org/licenses/BSD-2-Clause))
+- mermaid: 10.2.4 ([MIT](https://opensource.org/licenses/MIT))
+- nipplejs: 0.10.1 ([MIT](https://opensource.org/licenses/MIT))
+- plotly: 2.24.3 ([MIT](https://opensource.org/licenses/MIT))
+- three: 0.154.0 ([MIT](https://opensource.org/licenses/MIT))
+- tween: 21.0.0 ([MIT](https://opensource.org/licenses/MIT))
+- vanilla-jsoneditor: 0.18.0 ([ISC](https://opensource.org/licenses/ISC))

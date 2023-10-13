@@ -20,6 +20,8 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
                  ) -> None:
         """Dropdown Selection
 
+        This element is based on Quasar's `QSelect <https://quasar.dev/vue-components/select>`_ component.
+
         The options can be specified as a list of values, or as a dictionary mapping values to labels.
         After manipulating the options, call `update()` to update the options in the UI.
 
@@ -57,18 +59,18 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
         self.update()
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+        # pylint: disable=no-else-return
         if self.multiple:
             if e.args is None:
                 return []
-            else:
-                return [self._values[arg['value']] for arg in e.args]
+            return [self._values[arg['value']] for arg in e.args]
         else:
             if e.args is None:
                 return None
-            else:
-                return self._values[e.args['value']]
+            return self._values[e.args['value']]
 
     def _value_to_model_value(self, value: Any) -> Any:
+        # pylint: disable=no-else-return
         if self.multiple:
             result = []
             for item in value or []:

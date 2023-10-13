@@ -8,7 +8,7 @@ from ..element import Element
 class Log(Element, component='log.js'):
 
     def __init__(self, max_lines: Optional[int] = None) -> None:
-        """Log view
+        """Log View
 
         Create a log view that allows to add new lines without re-transmitting the whole history to the client.
 
@@ -22,6 +22,10 @@ class Log(Element, component='log.js'):
         self.total_count: int = 0
 
     def push(self, line: Any) -> None:
+        """Add a new line to the log.
+
+        :param line: the line to add (can contain line breaks)
+        """
         new_lines = [urllib.parse.quote(line) for line in str(line).splitlines()]
         self.lines.extend(new_lines)
         self._props['lines'] = '\n'.join(self.lines)
@@ -29,7 +33,7 @@ class Log(Element, component='log.js'):
         self.run_method('push', urllib.parse.quote(str(line)), self.total_count)
 
     def clear(self) -> None:
-        """Clear the log"""
+        """Clear the log."""
         super().clear()
         self._props['lines'] = ''
         self.lines.clear()

@@ -4,7 +4,7 @@ from functools import lru_cache
 from typing import List
 
 import markdown2
-from pygments.formatters import HtmlFormatter
+from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-module
 
 from .mermaid import Mermaid
 from .mixins.content_element import ContentElement

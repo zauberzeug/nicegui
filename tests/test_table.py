@@ -1,3 +1,5 @@
+from typing import List
+
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
@@ -5,17 +7,19 @@ from nicegui import ui
 from .screen import Screen
 
 
-def columns(): return [
-    {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True},
-    {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
-]
+def columns() -> List:
+    return [
+        {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True},
+        {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
+    ]
 
 
-def rows(): return [
-    {'id': 0, 'name': 'Alice', 'age': 18},
-    {'id': 1, 'name': 'Bob', 'age': 21},
-    {'id': 2, 'name': 'Lionel', 'age': 19},
-]
+def rows() -> List:
+    return [
+        {'id': 0, 'name': 'Alice', 'age': 18},
+        {'id': 1, 'name': 'Bob', 'age': 21},
+        {'id': 2, 'name': 'Lionel', 'age': 19},
+    ]
 
 
 def test_table(screen: Screen):
@@ -29,8 +33,18 @@ def test_table(screen: Screen):
     screen.should_contain('Lionel')
 
 
-def test_pagination(screen: Screen):
+def test_pagination_int(screen: Screen):
     ui.table(columns=columns(), rows=rows(), pagination=2)
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_not_contain('Lionel')
+    screen.should_contain('1-2 of 3')
+
+
+def test_pagination_dict(screen: Screen):
+    ui.table(columns=columns(), rows=rows(), pagination={'rowsPerPage': 2})
 
     screen.open('/')
     screen.should_contain('Alice')
@@ -124,3 +138,23 @@ def test_remove_selection(screen: Screen):
     screen.wait(0.5)
     screen.should_not_contain('Alice')
     screen.should_not_contain('1 record selected.')
+
+
+def test_replace_rows(screen: Screen):
+    t = ui.table(columns=columns(), rows=rows())
+
+    def replace_rows():
+        t.rows = [{'id': 3, 'name': 'Carol', 'age': 32}]
+    ui.button('Replace rows', on_click=replace_rows)
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_contain('Lionel')
+
+    screen.click('Replace rows')
+    screen.wait(0.5)
+    screen.should_not_contain('Alice')
+    screen.should_not_contain('Bob')
+    screen.should_not_contain('Lionel')
+    screen.should_contain('Carol')

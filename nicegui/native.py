@@ -1,13 +1,12 @@
-import asyncio
 import inspect
-import logging
 import warnings
 from dataclasses import dataclass, field
-from functools import partial
 from multiprocessing import Queue
 from typing import Any, Callable, Dict, Optional, Tuple
 
-from .helpers import KWONLY_SLOTS
+from .dataclasses import KWONLY_SLOTS
+from .globals import log
+from .run_executor import io_bound
 
 method_queue: Queue = Queue()
 response_queue: Queue = Queue()
@@ -21,7 +20,7 @@ try:
 
     class WindowProxy(webview.Window):
 
-        def __init__(self) -> None:
+        def __init__(self) -> None:  # pylint: disable=super-init-not-called
             pass  # NOTE we don't call super().__init__ here because this is just a proxy to the actual window
 
         async def get_always_on_top(self) -> bool:
@@ -43,7 +42,7 @@ try:
         def load_url(self, url: str) -> None:
             self._send(url)
 
-        def load_html(self, content: str, base_uri: str = ...) -> None:
+        def load_html(self, content: str, base_uri: str = ...) -> None:  # type: ignore
             self._send(content, base_uri)
 
         def load_css(self, stylesheet: str) -> None:
@@ -52,10 +51,10 @@ try:
         def set_title(self, title: str) -> None:
             self._send(title)
 
-        async def get_cookies(self) -> Any:
+        async def get_cookies(self) -> Any:  # pylint: disable=invalid-overridden-method
             return await self._request()
 
-        async def get_current_url(self) -> str:
+        async def get_current_url(self) -> str:  # pylint: disable=invalid-overridden-method
             return await self._request()
 
         def destroy(self) -> None:
@@ -85,13 +84,13 @@ try:
         def move(self, x: int, y: int) -> None:
             self._send(x, y)
 
-        async def evaluate_js(self, script: str) -> str:
+        async def evaluate_js(self, script: str) -> str:  # pylint: disable=arguments-differ,invalid-overridden-method
             return await self._request(script)
 
-        async def create_confirmation_dialog(self, title: str, message: str) -> bool:
+        async def create_confirmation_dialog(self, title: str, message: str) -> bool:  # pylint: disable=invalid-overridden-method
             return await self._request(title, message)
 
-        async def create_file_dialog(
+        async def create_file_dialog(  # pylint: disable=invalid-overridden-method
             self,
             dialog_type: int = webview.OPEN_DIALOG,
             directory: str = '',
@@ -107,11 +106,11 @@ try:
                 file_types=file_types,
             )
 
-        def expose(self, function: Callable) -> None:
+        def expose(self, function: Callable) -> None:  # pylint: disable=arguments-differ
             raise NotImplementedError(f'exposing "{function}" is not supported')
 
         def _send(self, *args: Any, **kwargs: Any) -> None:
-            name = inspect.currentframe().f_back.f_code.co_name
+            name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
             method_queue.put((name, args, kwargs))
 
         async def _request(self, *args: Any, **kwargs: Any) -> Any:
@@ -120,15 +119,16 @@ try:
                     method_queue.put((name, args, kwargs))
                     return response_queue.get()  # wait for the method to be called and writing its result to the queue
                 except Exception:
-                    logging.exception(f'error in {name}')
-            name = inspect.currentframe().f_back.f_code.co_name
-            return await asyncio.get_event_loop().run_in_executor(None, partial(wrapper, *args, **kwargs))
+                    log.exception(f'error in {name}')
+                    return None
+            name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
+            return await io_bound(wrapper, *args, **kwargs)
 
         def signal_server_shutdown(self) -> None:
             self._send()
 
 except ModuleNotFoundError:
-    class WindowProxy():
+    class WindowProxy:  # type: ignore
         pass  # just a dummy if webview is not installed
 
 

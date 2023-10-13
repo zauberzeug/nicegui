@@ -45,6 +45,13 @@
       "package/dist/": ""
     }
   },
+  "echarts": {
+    "destination": "elements/lib",
+    "keep": ["package/dist/echarts\\.min\\.js", "package/dist/echarts\\.js\\.map"],
+    "rename": {
+      "package/dist/": ""
+    }
+  },
   "highcharts": {
     "destination": "elements/lib",
     "keep": [
@@ -101,6 +108,7 @@
       "package/examples/jsm/renderers/CSS2DRenderer(\\.min)?\\.js",
       "package/examples/jsm/renderers/CSS3DRenderer(\\.min)?\\.js",
       "package/examples/jsm/controls/OrbitControls(\\.min)?\\.js",
+      "package/examples/jsm/controls/DragControls(\\.min)?\\.js",
       "package/examples/jsm/loaders/STLLoader(\\.min)?\\.js",
       "package/examples/jsm/libs/tween\\.module\\.min\\.js"
     ],
@@ -118,6 +126,13 @@
     "keep": ["package/dist/tween\\.umd(\\.min)?\\.js"],
     "rename": {
       "package/dist/": ""
+    }
+  },
+  "vanilla-jsoneditor": {
+    "destination": "elements/lib",
+    "keep": ["package/index\\.js", "package/index\\.js\\.map"],
+    "rename": {
+      "package/": ""
     }
   }
 }

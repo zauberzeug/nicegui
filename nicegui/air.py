@@ -1,13 +1,13 @@
 import asyncio
 import gzip
-import logging
+import re
 from typing import Any, Dict
 
 import httpx
 import socketio
 from socketio import AsyncClient
 
-from . import globals
+from . import background_tasks, globals  # pylint: disable=redefined-builtin
 from .nicegui import handle_disconnect, handle_event, handle_handshake, handle_javascript_response
 
 RELAY_HOST = 'https://on-air.nicegui.io/'
@@ -19,6 +19,7 @@ class Air:
         self.token = token
         self.relay = AsyncClient()
         self.client = httpx.AsyncClient(app=globals.app)
+        self.connecting = False
 
         @self.relay.on('http')
         async def on_http(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -33,22 +34,26 @@ class Air:
                 content=data['body'],
             )
             response = await self.client.send(request)
+            instance_id = data['instance-id']
             content = response.content.replace(
                 b'const extraHeaders = {};',
-                (f'const extraHeaders = {{ "fly-force-instance-id" : "{data["instance-id"]}" }};').encode(),
+                (f'const extraHeaders = {{ "fly-force-instance-id" : "{instance_id}" }};').encode(),
             )
-            response_headers = dict(response.headers)
-            response_headers['content-encoding'] = 'gzip'
+            match = re.search(b'const query = ({.*?})', content)
+            if match:
+                new_js_object = match.group(1).decode().rstrip('}') + ", 'fly_instance_id' : '" + instance_id + "'}"
+                content = content.replace(match.group(0), f'const query = {new_js_object}'.encode())
             compressed = gzip.compress(content)
-            response_headers['content-length'] = str(len(compressed))
+            response.headers.update({'content-encoding': 'gzip', 'content-length': str(len(compressed))})
             return {
                 'status_code': response.status_code,
-                'headers': response_headers,
+                'headers': response.headers.multi_items(),
                 'content': compressed,
             }
 
         @self.relay.on('ready')
         def on_ready(data: Dict[str, Any]) -> None:
+            globals.app.urls.add(data['device_url'])
             print(f'NiceGUI is on air at {data["device_url"]}', flush=True)
 
         @self.relay.on('error')
@@ -72,7 +77,7 @@ class Air:
             if client_id not in globals.clients:
                 return
             client = globals.clients[client_id]
-            handle_disconnect(client)
+            client.disconnect_task = background_tasks.create(handle_disconnect(client))
 
         @self.relay.on('event')
         def on_event(data: Dict[str, Any]) -> None:
@@ -80,7 +85,7 @@ class Air:
             if client_id not in globals.clients:
                 return
             client = globals.clients[client_id]
-            if isinstance(data['msg']['args'], list) and 'socket_id' in data['msg']['args']:
+            if isinstance(data['msg']['args'], dict) and 'socket_id' in data['msg']['args']:
                 data['msg']['args']['socket_id'] = client_id  # HACK: translate socket_id of ui.scene's init event
             handle_event(client, data['msg'])
 
@@ -98,30 +103,38 @@ class Air:
             await self.connect()
 
         @self.relay.on('reconnect')
-        async def on_reconnect(data: Dict[str, Any]) -> None:
+        async def on_reconnect(_: Dict[str, Any]) -> None:
             await self.connect()
 
     async def connect(self) -> None:
-        try:
-            if self.relay.connected:
+        if self.connecting:
+            return
+        self.connecting = True
+        backoff_time = 1
+        while True:
+            try:
+                if self.relay.connected:
+                    await self.relay.disconnect()
+                await self.relay.connect(
+                    f'{RELAY_HOST}?device_token={self.token}',
+                    socketio_path='/on_air/socket.io',
+                    transports=['websocket', 'polling'],  # favor websocket over polling
+                )
+                break
+            except socketio.exceptions.ConnectionError:
+                pass
+            except ValueError:  # NOTE this sometimes happens when the internal socketio client is not yet ready
                 await self.relay.disconnect()
-            await self.relay.connect(
-                f'{RELAY_HOST}?device_token={self.token}',
-                socketio_path='/on_air/socket.io',
-                transports=['websocket', 'polling'],
-            )
-        except socketio.exceptions.ConnectionError:
-            await self.connect()
-        except ValueError:  # NOTE this sometimes happens when the internal socketio client is not yet ready
-            await self.relay.disconnect()
-            await self.connect()
-        except Exception:
-            logging.exception('Could not connect to NiceGUI On Air server.')
-            print('Could not connect to NiceGUI On Air server.', flush=True)
-            await self.connect()
+            except Exception:
+                globals.log.exception('Could not connect to NiceGUI On Air server.')
+
+            await asyncio.sleep(backoff_time)
+            backoff_time = min(backoff_time * 2, 32)
+        self.connecting = False
 
     async def disconnect(self) -> None:
         await self.relay.disconnect()
 
     async def emit(self, message_type: str, data: Dict[str, Any], room: str) -> None:
-        await self.relay.emit('forward', {'event': message_type, 'data': data, 'room': room})
+        if self.relay.connected:
+            await self.relay.emit('forward', {'event': message_type, 'data': data, 'room': room})

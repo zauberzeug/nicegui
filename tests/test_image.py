@@ -1,5 +1,3 @@
-from selenium.webdriver.common.by import By
-
 from nicegui import ui
 
 from .screen import Screen
@@ -30,5 +28,5 @@ def test_base64_image(screen: Screen):
 
     screen.open('/')
     screen.wait(0.2)
-    image = screen.selenium.find_element(By.CLASS_NAME, 'q-img__image')
+    image = screen.find_by_class('q-img__image')
     assert 'data:image/png;base64,iVB' in image.get_attribute('src')

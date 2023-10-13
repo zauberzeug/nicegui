@@ -1,8 +1,15 @@
+from __future__ import annotations
+
 from typing import Dict, Union
 
-import plotly.graph_objects as go
-
+from .. import globals  # pylint: disable=redefined-builtin
 from ..element import Element
+
+try:
+    import plotly.graph_objects as go
+    globals.optional_features.add('plotly')
+except ImportError:
+    pass
 
 
 class Plotly(Element, component='plotly.vue', libraries=['lib/plotly/plotly.min.js']):
@@ -22,6 +29,9 @@ class Plotly(Element, component='plotly.vue', libraries=['lib/plotly/plotly.min.
         :param figure: Plotly figure to be rendered. Can be either a `go.Figure` instance, or
                        a `dict` object with keys `data`, `layout`, `config` (optional).
         """
+        if not 'plotly' in globals.optional_features:
+            raise ImportError('Plotly is not installed. Please run "pip install nicegui[plotly]".')
+
         super().__init__()
 
         self.figure = figure
@@ -33,12 +43,8 @@ class Plotly(Element, component='plotly.vue', libraries=['lib/plotly/plotly.min.
         self.update()
 
     def update(self) -> None:
+        self._props['options'] = self._get_figure_json()
         super().update()
-        options = self._get_figure_json()
-        options['config'] = \
-            {**options['config'], **{'responsive': True}} if 'config' in options else {'responsive': True}
-        self._props['options'] = options
-        self.run_method('update', self._props['options'])
 
     def _get_figure_json(self) -> Dict:
         if isinstance(self.figure, go.Figure):

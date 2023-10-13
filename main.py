@@ -1,20 +1,16 @@
 #!/usr/bin/env python3
 import importlib
 import inspect
-
-if True:
-    # increasing max decode packets to be able to transfer images
-    # see https://github.com/miguelgrinberg/python-engineio/issues/142
-    from engineio.payload import Payload
-    Payload.max_decode_packets = 500
-
 import os
 from pathlib import Path
 from typing import Awaitable, Callable, Optional
+from urllib.parse import parse_qs
 
 from fastapi import Request
 from fastapi.responses import FileResponse, RedirectResponse, Response
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 import prometheus
 from nicegui import Client, app
@@ -35,6 +31,12 @@ app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_
 app.add_static_files('/favicon', str(Path(__file__).parent / 'website' / 'favicon'))
 app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
 app.add_static_files('/static', str(Path(__file__).parent / 'website' / 'static'))
+
+if True:  # HACK: prevent the page from scrolling when closing a dialog (#1404)
+    def on_dialog_value_change(sender, value, on_value_change=ui.dialog.on_value_change) -> None:
+        ui.query('html').classes(**{'add' if value else 'remove': 'has-dialog'})
+        on_value_change(sender, value)
+    ui.dialog.on_value_change = on_dialog_value_change
 
 
 @app.get('/logo.png')
@@ -59,10 +61,42 @@ async def redirect_reference_to_documentation(request: Request,
         return RedirectResponse('/documentation')
     return await call_next(request)
 
-# NOTE in our global fly.io deployment we need to make sure that the websocket connects back to the same instance
-fly_instance_id = os.environ.get('FLY_ALLOC_ID', '').split('-')[0]
-if fly_instance_id:
-    nicegui_globals.socket_io_js_extra_headers['fly-force-instance-id'] = fly_instance_id
+# NOTE In our global fly.io deployment we need to make sure that we connect back to the same instance.
+fly_instance_id = os.environ.get('FLY_ALLOC_ID', 'local').split('-')[0]
+nicegui_globals.socket_io_js_extra_headers['fly-force-instance-id'] = fly_instance_id  # for HTTP long polling
+nicegui_globals.socket_io_js_query_params['fly_instance_id'] = fly_instance_id  # for websocket (FlyReplayMiddleware)
+
+
+class FlyReplayMiddleware(BaseHTTPMiddleware):
+    """Replay to correct fly.io instance.
+
+    If the wrong instance was picked by the fly.io load balancer, we use the fly-replay header
+    to repeat the request again on the right instance.
+
+    This only works if the correct instance is provided as a query_string parameter.
+    """
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        query_string = scope.get('query_string', b'').decode()
+        query_params = parse_qs(query_string)
+        target_instance = query_params.get('fly_instance_id', [fly_instance_id])[0]
+
+        async def send_wrapper(message):
+            if target_instance != fly_instance_id:
+                if message['type'] == 'websocket.close':
+                    # fly.io only seems to look at the fly-replay header if websocket is accepted
+                    message = {'type': 'websocket.accept'}
+                if 'headers' not in message:
+                    message['headers'] = []
+                message['headers'].append([b'fly-replay', f'instance={target_instance}'.encode()])
+            await send(message)
+        await self.app(scope, receive, send_wrapper)
+
+
+app.add_middleware(FlyReplayMiddleware)
 
 
 def add_head_html() -> None:
@@ -310,6 +344,13 @@ async def index_page(client: Client) -> None:
             example_link('Pandas DataFrame', 'displays an editable [pandas](https://pandas.pydata.org) DataFrame')
             example_link('Lightbox', 'A thumbnail gallery where each image can be clicked to enlarge')
             example_link('ROS2', 'Using NiceGUI as web interface for a ROS2 robot')
+            example_link('Docker Image',
+                         'Demonstrate using the official '
+                         '[zauberzeug/nicegui](https://hub.docker.com/r/zauberzeug/nicegui) docker image')
+            example_link('Download Text as File', 'providing in-memory data like strings as file download')
+            example_link('Generate PDF', 'create SVG preview and PDF download from input form elements')
+            example_link('Custom Binding', 'create a custom binding for a label with a bindable background color')
+            example_link('Descope Auth', 'login form and user profile using [Descope](https://descope.com)')
 
     with ui.row().classes('dark-box min-h-screen mt-16'):
         link_target('why')
@@ -362,8 +403,8 @@ def documentation_page() -> None:
 
 @ui.page('/documentation/{name}')
 async def documentation_page_more(name: str, client: Client) -> None:
-    if name == 'ag_grid':
-        name = 'aggrid'  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
+    if name in {'ag_grid', 'e_chart'}:
+        name = name.replace('_', '')  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
     module = importlib.import_module(f'website.more_documentation.{name}_documentation')
     more = getattr(module, 'more', None)
     if hasattr(ui, name):
@@ -392,4 +433,4 @@ async def documentation_page_more(name: str, client: Client) -> None:
     await client.connected()
     await ui.run_javascript(f'document.title = "{name} • NiceGUI";', respond=False)
 
-ui.run(uvicorn_reload_includes='*.py, *.css, *.html')
+ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reconnect_timeout=3.0)

@@ -1,11 +1,13 @@
 import os
 import sys
+from pathlib import Path
+from typing import Tuple
 
 import requests
 import yaml
 
 
-def get_infos() -> str:
+def get_infos() -> Tuple[str]:
     headers = {
         'Accept': 'application/json',
     }
@@ -16,7 +18,7 @@ def get_infos() -> str:
         'status': 'published',
     }
     try:
-        response = requests.get('https://zenodo.org/api/records', params=params, headers=headers)
+        response = requests.get('https://zenodo.org/api/records', params=params, headers=headers, timeout=5)
         response.raise_for_status()
     # Hide all error details to avoid leaking the token
     except Exception:
@@ -27,8 +29,7 @@ def get_infos() -> str:
 
 
 if __name__ == '__main__':
-    with open('CITATION.cff', 'r') as file:
-        citation = yaml.safe_load(file)
+    path = Path('CITATION.cff')
+    citation = yaml.safe_load(path.read_text())
     citation['doi'], citation['version'], citation['date-released'] = get_infos()
-    with open('CITATION.cff', 'w') as file:
-        yaml.dump(citation, file, sort_keys=False, default_flow_style=False)
+    path.write_text(yaml.dump(citation, sort_keys=False, default_flow_style=False))

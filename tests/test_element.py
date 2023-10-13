@@ -1,7 +1,6 @@
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
-from nicegui.element import Element
 
 from .screen import Screen
 
@@ -34,21 +33,23 @@ def test_classes(screen: Screen):
 
 
 def test_style_parsing():
-    assert Element._parse_style(None) == {}
-    assert Element._parse_style('color: red; background-color: green') == {'color': 'red', 'background-color': 'green'}
-    assert Element._parse_style('width:12em;height:34.5em') == {'width': '12em', 'height': '34.5em'}
-    assert Element._parse_style('transform: translate(120.0px, 50%)') == {'transform': 'translate(120.0px, 50%)'}
-    assert Element._parse_style('box-shadow: 0 0 0.5em #1976d2') == {'box-shadow': '0 0 0.5em #1976d2'}
+    # pylint: disable=protected-access
+    assert ui.element._parse_style(None) == {}  # pylint: disable=use-implicit-booleaness-not-comparison
+    assert ui.element._parse_style('color: red; background-color: blue') == {'color': 'red', 'background-color': 'blue'}
+    assert ui.element._parse_style('width:12em;height:34.5em') == {'width': '12em', 'height': '34.5em'}
+    assert ui.element._parse_style('transform: translate(120.0px, 50%)') == {'transform': 'translate(120.0px, 50%)'}
+    assert ui.element._parse_style('box-shadow: 0 0 0.5em #1976d2') == {'box-shadow': '0 0 0.5em #1976d2'}
 
 
 def test_props_parsing():
-    assert Element._parse_props(None) == {}
-    assert Element._parse_props('one two=1 three="abc def"') == {'one': True, 'two': '1', 'three': 'abc def'}
-    assert Element._parse_props('loading percentage=12.5') == {'loading': True, 'percentage': '12.5'}
-    assert Element._parse_props('size=50%') == {'size': '50%'}
-    assert Element._parse_props('href=http://192.168.42.100/') == {'href': 'http://192.168.42.100/'}
-    assert Element._parse_props('hint="Your \\"given\\" name"') == {'hint': 'Your "given" name'}
-    assert Element._parse_props('input-style="{ color: #ff0000 }"') == {'input-style': '{ color: #ff0000 }'}
+    # pylint: disable=protected-access
+    assert ui.element._parse_props(None) == {}  # pylint: disable=use-implicit-booleaness-not-comparison
+    assert ui.element._parse_props('one two=1 three="abc def"') == {'one': True, 'two': '1', 'three': 'abc def'}
+    assert ui.element._parse_props('loading percentage=12.5') == {'loading': True, 'percentage': '12.5'}
+    assert ui.element._parse_props('size=50%') == {'size': '50%'}
+    assert ui.element._parse_props('href=http://192.168.42.100/') == {'href': 'http://192.168.42.100/'}
+    assert ui.element._parse_props('hint="Your \\"given\\" name"') == {'hint': 'Your "given" name'}
+    assert ui.element._parse_props('input-style="{ color: #ff0000 }"') == {'input-style': '{ color: #ff0000 }'}
 
 
 def test_style(screen: Screen):
@@ -84,7 +85,7 @@ def test_style(screen: Screen):
 
 
 def test_props(screen: Screen):
-    input = ui.input()
+    input_ = ui.input()
 
     def assert_props(*props: str) -> None:
         class_conditions = [f'contains(@class, "q-field--{prop}")' for prop in props]
@@ -94,48 +95,14 @@ def test_props(screen: Screen):
     screen.wait(0.5)
     assert_props('standard')
 
-    input.props('dark')
+    input_.props('dark')
     assert_props('standard', 'dark')
 
-    input.props('dark')
+    input_.props('dark')
     assert_props('standard', 'dark')
 
-    input.props(remove='dark')
+    input_.props(remove='dark')
     assert_props('standard')
-
-
-def test_remove_and_clear(screen: Screen):
-    with ui.row() as row:
-        ui.label('Label A')
-        b = ui.label('Label B')
-        ui.label('Label C')
-
-    ui.button('Remove B', on_click=lambda: row.remove(b))
-    ui.button('Remove 0', on_click=lambda: row.remove(0))
-    ui.button('Clear', on_click=lambda: row.clear())
-
-    screen.open('/')
-    screen.should_contain('Label A')
-    screen.should_contain('Label B')
-    screen.should_contain('Label C')
-
-    screen.click('Remove B')
-    screen.wait(0.5)
-    screen.should_contain('Label A')
-    screen.should_not_contain('Label B')
-    screen.should_contain('Label C')
-
-    screen.click('Remove 0')
-    screen.wait(0.5)
-    screen.should_not_contain('Label A')
-    screen.should_not_contain('Label B')
-    screen.should_contain('Label C')
-
-    screen.click('Clear')
-    screen.wait(0.5)
-    screen.should_not_contain('Label A')
-    screen.should_not_contain('Label B')
-    screen.should_not_contain('Label C')
 
 
 def test_move(screen: Screen):
@@ -161,3 +128,124 @@ def test_move(screen: Screen):
     screen.click('Move X to top')
     screen.wait(0.5)
     assert screen.find('X').location['y'] < screen.find('A').location['y'] < screen.find('B').location['y']
+
+
+def test_xss(screen: Screen):
+    ui.label('</script><script>alert(1)</script>')
+    ui.label('<b>Bold 1</b>, `code`, copy&paste, multi\nline')
+    ui.button('Button', on_click=lambda: (
+        ui.label('</script><script>alert(2)</script>'),
+        ui.label('<b>Bold 2</b>, `code`, copy&paste, multi\nline'),
+    ))
+
+    screen.open('/')
+    screen.click('Button')
+    screen.should_contain('</script><script>alert(1)</script>')
+    screen.should_contain('</script><script>alert(2)</script>')
+    screen.should_contain('<b>Bold 1</b>, `code`, copy&paste, multi\nline')
+    screen.should_contain('<b>Bold 2</b>, `code`, copy&paste, multi\nline')
+
+
+def test_default_props():
+    ui.button.default_props('rounded outline')
+    button_a = ui.button('Button A')
+    button_b = ui.button('Button B')
+    assert button_a._props.get('rounded') is True, 'default props are set'
+    assert button_a._props.get('outline') is True
+    assert button_b._props.get('rounded') is True
+    assert button_b._props.get('outline') is True
+
+    ui.button.default_props(remove='outline')
+    button_c = ui.button('Button C')
+    assert button_c._props.get('outline') is None, '"outline" prop was removed'
+    assert button_c._props.get('rounded') is True, 'other props are still there'
+
+    ui.input.default_props('filled')
+    input_a = ui.input()
+    assert input_a._props.get('filled') is True
+    assert input_a._props.get('rounded') is None, 'default props of ui.button do not affect ui.input'
+
+    class MyButton(ui.button):
+        pass
+    MyButton.default_props('flat')
+    button_d = MyButton()
+    button_e = ui.button()
+    assert button_d._props.get('flat') is True
+    assert button_d._props.get('rounded') is True, 'default props are inherited'
+    assert button_e._props.get('flat') is None, 'default props of MyButton do not affect ui.button'
+    assert button_e._props.get('rounded') is True
+
+    ui.button.default_props('no-caps').default_props('no-wrap')
+    button_f = ui.button()
+    assert button_f._props.get('no-caps') is True
+    assert button_f._props.get('no-wrap') is True
+
+
+def test_default_classes():
+    ui.button.default_classes('bg-white text-green')
+    button_a = ui.button('Button A')
+    button_b = ui.button('Button B')
+    assert 'bg-white' in button_a._classes, 'default classes are set'
+    assert 'text-green' in button_a._classes
+    assert 'bg-white' in button_b._classes
+    assert 'text-green' in button_b._classes
+
+    ui.button.default_classes(remove='text-green')
+    button_c = ui.button('Button C')
+    assert 'text-green' not in button_c._classes, '"text-green" class was removed'
+    assert 'bg-white' in button_c._classes, 'other classes are still there'
+
+    ui.input.default_classes('text-black')
+    input_a = ui.input()
+    assert 'text-black' in input_a._classes
+    assert 'bg-white' not in input_a._classes, 'default classes of ui.button do not affect ui.input'
+
+    class MyButton(ui.button):
+        pass
+    MyButton.default_classes('w-full')
+    button_d = MyButton()
+    button_e = ui.button()
+    assert 'w-full' in button_d._classes
+    assert 'bg-white' in button_d._classes, 'default classes are inherited'
+    assert 'w-full' not in button_e._classes, 'default classes of MyButton do not affect ui.button'
+    assert 'bg-white' in button_e._classes
+
+    ui.button.default_classes('h-40').default_classes('max-h-80')
+    button_f = ui.button()
+    assert 'h-40' in button_f._classes
+    assert 'max-h-80' in button_f._classes
+
+
+def test_default_style():
+    ui.button.default_style('color: green; font-size: 200%')
+    button_a = ui.button('Button A')
+    button_b = ui.button('Button B')
+    assert button_a._style.get('color') == 'green', 'default style is set'
+    assert button_a._style.get('font-size') == '200%'
+    assert button_b._style.get('color') == 'green'
+    assert button_b._style.get('font-size') == '200%'
+
+    ui.button.default_style(remove='color: green')
+    button_c = ui.button('Button C')
+    assert button_c._style.get('color') is None, '"color" style was removed'
+    assert button_c._style.get('font-size') == '200%', 'other style are still there'
+
+    ui.input.default_style('font-weight: 300')
+    input_a = ui.input()
+    assert input_a._style.get('font-weight') == '300'
+    assert input_a._style.get('font-size') is None, 'default style of ui.button does not affect ui.input'
+
+    class MyButton(ui.button):
+        pass
+    MyButton.default_style('font-family: courier')
+    button_d = MyButton()
+    button_e = ui.button()
+    assert button_d._style.get('font-family') == 'courier'
+    assert button_d._style.get('font-size') == '200%', 'default style is inherited'
+    assert button_e._style.get('font-family') is None, 'default style of MyButton does not affect ui.button'
+    assert button_e._style.get('font-size') == '200%'
+
+    ui.button.default_style('border: 2px').default_style('padding: 30px')
+    button_f = ui.button()
+    assert button_f._style.get('border') == '2px'
+    assert button_f._style.get('padding') == '30px'

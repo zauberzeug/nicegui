@@ -11,8 +11,8 @@ class Knob(ValueElement, DisableableElement, TextColorElement):
     def __init__(self,
                  value: float = 0.0,
                  *,
-                 min: float = 0.0,
-                 max: float = 1.0,
+                 min: float = 0.0,  # pylint: disable=redefined-builtin
+                 max: float = 1.0,  # pylint: disable=redefined-builtin
                  step: float = 0.01,
                  color: Optional[str] = 'primary',
                  center_color: Optional[str] = None,

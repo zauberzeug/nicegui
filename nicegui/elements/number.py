@@ -12,12 +12,12 @@ class Number(ValidationElement, DisableableElement):
                  label: Optional[str] = None, *,
                  placeholder: Optional[str] = None,
                  value: Optional[float] = None,
-                 min: Optional[float] = None,
-                 max: Optional[float] = None,
+                 min: Optional[float] = None,  # pylint: disable=redefined-builtin
+                 max: Optional[float] = None,  # pylint: disable=redefined-builtin
                  step: Optional[float] = None,
                  prefix: Optional[str] = None,
                  suffix: Optional[str] = None,
-                 format: Optional[str] = None,
+                 format: Optional[str] = None,  # pylint: disable=redefined-builtin
                  on_change: Optional[Callable[..., Any]] = None,
                  validation: Dict[str, Callable[..., bool]] = {},
                  ) -> None:
@@ -85,23 +85,25 @@ class Number(ValidationElement, DisableableElement):
         return not self.min <= self.value <= self.max
 
     def sanitize(self) -> None:
+        """Sanitize the current value to be within the allowed limits."""
         value = float(self.value or 0)
         value = max(value, self.min)
         value = min(value, self.max)
         self.set_value(float(self.format % value) if self.format else value)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
-        return float(e.args) if e.args else None
+        if not e.args:
+            return None
+        return float(e.args)
 
     def _value_to_model_value(self, value: Any) -> Any:
         if value is None:
             return None
-        elif self.format is None:
+        if self.format is None:
             return str(value)
-        elif value == '':
+        if value == '':
             return 0
-        else:
-            return self.format % float(value)
+        return self.format % float(value)
 
     def _value_to_event_value(self, value: Any) -> Any:
         return float(value) if value else 0

@@ -1,12 +1,13 @@
 from pathlib import Path
 from typing import Awaitable, Callable, Optional, Union
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import globals, helpers
+from . import globals, helpers  # pylint: disable=redefined-builtin
 from .native import Native
+from .observables import ObservableSet
 from .storage import Storage
 
 
@@ -16,6 +17,7 @@ class App(FastAPI):
         super().__init__(**kwargs)
         self.native = Native()
         self.storage = Storage()
+        self.urls = ObservableSet()
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
         """Called every time a new client connects to NiceGUI.
@@ -61,8 +63,11 @@ class App(FastAPI):
         Only possible when auto-reload is disabled.
         """
         if globals.reload:
-            raise Exception('calling shutdown() is not supported when auto-reload is enabled')
-        globals.server.should_exit = True
+            raise RuntimeError('calling shutdown() is not supported when auto-reload is enabled')
+        if self.native.main_window:
+            self.native.main_window.destroy()
+        else:
+            globals.server.should_exit = True
 
     def add_static_files(self, url_path: str, local_directory: Union[str, Path]) -> None:
         """Add a directory of static files.
@@ -82,7 +87,11 @@ class App(FastAPI):
             raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
         globals.app.mount(url_path, StaticFiles(directory=str(local_directory)))
 
-    def add_static_file(self, *, local_file: Union[str, Path], url_path: Optional[str] = None) -> str:
+    def add_static_file(self, *,
+                        local_file: Union[str, Path],
+                        url_path: Optional[str] = None,
+                        single_use: bool = False,
+                        ) -> str:
         """Add a single static file.
 
         Allows a local file to be accessed online with enabled caching.
@@ -93,19 +102,21 @@ class App(FastAPI):
 
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
+        :param single_use: whether to remove the route after the file has been downloaded once (default: False)
         :return: URL path which can be used to access the file
         """
         file = Path(local_file).resolve()
         if not file.is_file():
             raise ValueError(f'File not found: {file}')
-        if url_path is None:
-            url_path = f'/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}'
+        path = f'/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
-        @self.get(url_path)
-        async def read_item() -> FileResponse:
+        @self.get(path)
+        def read_item() -> FileResponse:
+            if single_use:
+                self.remove_route(path)
             return FileResponse(file, headers={'Cache-Control': 'public, max-age=3600'})
 
-        return url_path
+        return path
 
     def add_media_files(self, url_path: str, local_directory: Union[str, Path]) -> None:
         """Add directory of media files.
@@ -122,13 +133,17 @@ class App(FastAPI):
         :param local_directory: local folder with files to serve as media content
         """
         @self.get(url_path + '/{filename:path}')
-        async def read_item(request: Request, filename: str) -> StreamingResponse:
+        def read_item(request: Request, filename: str) -> StreamingResponse:
             filepath = Path(local_directory) / filename
             if not filepath.is_file():
-                return {'detail': 'Not Found'}, 404
+                raise HTTPException(status_code=404, detail='Not Found')
             return helpers.get_streaming_response(filepath, request)
 
-    def add_media_file(self, *, local_file: Union[str, Path], url_path: Optional[str] = None) -> str:
+    def add_media_file(self, *,
+                       local_file: Union[str, Path],
+                       url_path: Optional[str] = None,
+                       single_use: bool = False,
+                       ) -> str:
         """Add a single media file.
 
         Allows a local file to be streamed.
@@ -139,19 +154,21 @@ class App(FastAPI):
 
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
+        :param single_use: whether to remove the route after the media file has been downloaded once (default: False)
         :return: URL path which can be used to access the file
         """
         file = Path(local_file).resolve()
         if not file.is_file():
             raise ValueError(f'File not found: {local_file}')
-        if url_path is None:
-            url_path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}'
+        path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
-        @self.get(url_path)
-        async def read_item(request: Request) -> StreamingResponse:
+        @self.get(path)
+        def read_item(request: Request) -> StreamingResponse:
+            if single_use:
+                self.remove_route(path)
             return helpers.get_streaming_response(file, request)
 
-        return url_path
+        return path
 
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""

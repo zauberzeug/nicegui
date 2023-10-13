@@ -3,7 +3,7 @@ from typing import Any, Callable, Union
 
 from typing_extensions import Self
 
-from ... import globals
+from ... import globals  # pylint: disable=redefined-builtin
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
 from ...helpers import is_file

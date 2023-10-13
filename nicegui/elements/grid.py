@@ -9,13 +9,13 @@ class Grid(Element):
                  rows: Optional[int] = None,
                  columns: Optional[int] = None,
                  ) -> None:
-        '''Grid Element
+        """Grid Element
 
         Provides a container which arranges its child in a grid.
 
         :param rows: number of rows in the grid
         :param columns: number of columns in the grid
-        '''
+        """
         super().__init__('div')
         self._classes = ['nicegui-grid']
         if rows is not None:

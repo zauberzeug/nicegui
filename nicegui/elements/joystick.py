@@ -47,5 +47,5 @@ class Joystick(Element, component='joystick.vue', libraries=['lib/nipplejs/nippl
                                                         action='end'))
 
         self.on('start', handle_start, [])
-        self.on('move', handle_move, ['data'], throttle=throttle),
+        self.on('move', handle_move, ['data'], throttle=throttle)
         self.on('end', handle_end, [])

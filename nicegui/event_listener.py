@@ -1,10 +1,10 @@
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Optional, Sequence
 
 from fastapi import Request
 
-from .helpers import KWONLY_SLOTS
+from .dataclasses import KWONLY_SLOTS
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -12,7 +12,7 @@ class EventListener:
     id: str = field(init=False)
     element_id: int
     type: str
-    args: List[Optional[List[str]]]
+    args: Sequence[Optional[Sequence[str]]]
     handler: Callable
     throttle: float
     leading_events: bool
@@ -24,13 +24,13 @@ class EventListener:
 
     def to_dict(self) -> Dict[str, Any]:
         words = self.type.split('.')
-        type = words.pop(0)
+        type_ = words.pop(0)
         specials = [w for w in words if w in {'capture', 'once', 'passive'}]
         modifiers = [w for w in words if w in {'stop', 'prevent', 'self', 'ctrl', 'shift', 'alt', 'meta'}]
         keys = [w for w in words if w not in specials + modifiers]
         return {
             'listener_id': self.id,
-            'type': type,
+            'type': type_,
             'specials': specials,
             'modifiers': modifiers,
             'keys': keys,

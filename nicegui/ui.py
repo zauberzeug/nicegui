@@ -1,7 +1,4 @@
-import os
-
 __all__ = [
-    'deprecated',
     'element',
     'aggrid',
     'audio',
@@ -16,6 +13,7 @@ __all__ = [
     'chart',
     'chat_message',
     'checkbox',
+    'code',
     'color_input',
     'color_picker',
     'colors',
@@ -23,6 +21,8 @@ __all__ = [
     'dark_mode',
     'date',
     'dialog',
+    'echart',
+    'editor',
     'expansion',
     'grid',
     'html',
@@ -31,10 +31,12 @@ __all__ = [
     'input',
     'interactive_image',
     'joystick',
+    'json_editor',
     'keyboard',
     'knob',
     'label',
     'leaflet',
+    'line_plot',
     'link',
     'link_target',
     'log',
@@ -43,8 +45,10 @@ __all__ = [
     'menu_item',
     'mermaid',
     'number',
+    'plotly',
     'circular_progress',
     'linear_progress',
+    'pyplot',
     'query',
     'radio',
     'row',
@@ -66,6 +70,8 @@ __all__ = [
     'tabs',
     'textarea',
     'time',
+    'timeline',
+    'timeline_entry',
     'toggle',
     'tooltip',
     'tree',
@@ -91,8 +97,6 @@ __all__ = [
     'run_with',
 ]
 
-from . import globals
-from .deprecation import deprecated
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
 from .elements.audio import Audio as audio
@@ -107,6 +111,7 @@ from .elements.carousel import CarouselSlide as carousel_slide
 from .elements.chart import Chart as chart
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
+from .elements.code import Code as code
 from .elements.color_input import ColorInput as color_input
 from .elements.color_picker import ColorPicker as color_picker
 from .elements.colors import Colors as colors
@@ -114,18 +119,22 @@ from .elements.column import Column as column
 from .elements.dark_mode import DarkMode as dark_mode
 from .elements.date import Date as date
 from .elements.dialog import Dialog as dialog
+from .elements.echart import EChart as echart
+from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
 from .elements.grid import Grid as grid
 from .elements.html import Html as html
 from .elements.icon import Icon as icon
 from .elements.image import Image as image
-from .elements.input import Input as input
+from .elements.input import Input as input  # pylint: disable=redefined-builtin
 from .elements.interactive_image import InteractiveImage as interactive_image
 from .elements.joystick import Joystick as joystick
+from .elements.json_editor import JsonEditor as json_editor
 from .elements.keyboard import Keyboard as keyboard
 from .elements.knob import Knob as knob
 from .elements.label import Label as label
 from .elements.leaflet import Leaflet as leaflet
+from .elements.line_plot import LinePlot as line_plot
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
 from .elements.log import Log as log
@@ -134,8 +143,10 @@ from .elements.menu import Menu as menu
 from .elements.menu import MenuItem as menu_item
 from .elements.mermaid import Mermaid as mermaid
 from .elements.number import Number as number
+from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
+from .elements.pyplot import Pyplot as pyplot
 from .elements.query import query
 from .elements.radio import Radio as radio
 from .elements.row import Row as row
@@ -157,6 +168,8 @@ from .elements.tabs import TabPanels as tab_panels
 from .elements.tabs import Tabs as tabs
 from .elements.textarea import Textarea as textarea
 from .elements.time import Time as time
+from .elements.timeline import Timeline as timeline
+from .elements.timeline import TimelineEntry as timeline_entry
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
@@ -166,7 +179,7 @@ from .functions.download import download
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
 from .functions.notify import notify
-from .functions.open import open
+from .functions.open import open  # pylint: disable=redefined-builtin
 from .functions.refreshable import refreshable
 from .functions.timer import Timer as timer
 from .functions.update import update
@@ -179,28 +192,3 @@ from .page_layout import PageSticky as page_sticky
 from .page_layout import RightDrawer as right_drawer
 from .run import run
 from .run_with import run_with
-
-try:
-    from .elements.plotly import Plotly as plotly
-    globals.optional_features.add('plotly')
-except ImportError:
-    def plotly(*args, **kwargs):
-        raise ImportError('Plotly is not installed. Please run "pip install plotly".')
-__all__.append('plotly')
-
-if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
-    try:
-        from .elements.line_plot import LinePlot as line_plot
-        from .elements.pyplot import Pyplot as pyplot
-        plot = deprecated(pyplot, 'ui.plot', 'ui.pyplot', 317)
-        globals.optional_features.add('matplotlib')
-    except ImportError:
-        def line_plot(*args, **kwargs):
-            raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
-
-        def pyplot(*args, **kwargs):
-            raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
-
-        def plot(*args, **kwargs):
-            raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
-    __all__.extend(['line_plot', 'pyplot', 'plot'])

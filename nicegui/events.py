@@ -1,36 +1,98 @@
+from __future__ import annotations
+
+from contextlib import nullcontext
 from dataclasses import dataclass
 from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Literal, Optional, Union
 
-from . import background_tasks, globals
-from .helpers import KWONLY_SLOTS
+from . import background_tasks, globals  # pylint: disable=redefined-builtin
+from .dataclasses import KWONLY_SLOTS
+from .slot import Slot
 
 if TYPE_CHECKING:
     from .client import Client
     from .element import Element
+    from .observables import ObservableCollection
 
 
 @dataclass(**KWONLY_SLOTS)
 class EventArguments:
-    sender: 'Element'
-    client: 'Client'
+    pass
 
 
 @dataclass(**KWONLY_SLOTS)
-class GenericEventArguments(EventArguments):
-    args: Dict[str, Any]
+class ObservableChangeEventArguments(EventArguments):
+    sender: ObservableCollection
+
+
+@dataclass(**KWONLY_SLOTS)
+class UiEventArguments(EventArguments):
+    sender: Element
+    client: Client
+
+
+@dataclass(**KWONLY_SLOTS)
+class GenericEventArguments(UiEventArguments):
+    args: Any
 
     def __getitem__(self, key: str) -> Any:
         if key == 'args':
             globals.log.warning('msg["args"] is deprecated, use e.args instead '
-                                '(see https://github.com/zauberzeug/nicegui/pull/1095)')
+                                '(see https://github.com/zauberzeug/nicegui/pull/1095)')  # DEPRECATED
             return self.args
         raise KeyError(key)
 
 
 @dataclass(**KWONLY_SLOTS)
-class ClickEventArguments(EventArguments):
+class ClickEventArguments(UiEventArguments):
     pass
+
+
+@dataclass(**KWONLY_SLOTS)
+class ChartEventArguments(UiEventArguments):
+    event_type: str
+
+
+@dataclass(**KWONLY_SLOTS)
+class EChartPointClickEventArguments(UiEventArguments):
+    component_type: str
+    series_type: str
+    series_index: int
+    series_name: str
+    name: str
+    data_index: int
+    data: Union[float, int, str]
+    data_type: str
+    value: Union[float, int, list]
+
+
+@dataclass(**KWONLY_SLOTS)
+class ChartPointClickEventArguments(ChartEventArguments):
+    series_index: int
+    point_index: int
+    point_x: float
+    point_y: float
+
+
+@dataclass(**KWONLY_SLOTS)
+class ChartPointDragStartEventArguments(ChartEventArguments):
+    pass
+
+
+@dataclass(**KWONLY_SLOTS)
+class ChartPointDragEventArguments(ChartEventArguments):
+    series_index: int
+    point_index: int
+    point_x: float
+    point_y: float
+
+
+@dataclass(**KWONLY_SLOTS)
+class ChartPointDropEventArguments(ChartEventArguments):
+    series_index: int
+    point_index: int
+    point_x: float
+    point_y: float
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -54,12 +116,22 @@ class SceneClickEventArguments(ClickEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
-class ColorPickEventArguments(EventArguments):
+class SceneDragEventArguments(ClickEventArguments):
+    type: Literal['dragstart', 'dragend']
+    object_id: str
+    object_name: str
+    x: float
+    y: float
+    z: float
+
+
+@dataclass(**KWONLY_SLOTS)
+class ColorPickEventArguments(UiEventArguments):
     color: str
 
 
 @dataclass(**KWONLY_SLOTS)
-class MouseEventArguments(EventArguments):
+class MouseEventArguments(UiEventArguments):
     type: str
     image_x: float
     image_y: float
@@ -72,26 +144,26 @@ class MouseEventArguments(EventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
-class JoystickEventArguments(EventArguments):
+class JoystickEventArguments(UiEventArguments):
     action: str
     x: Optional[float] = None
     y: Optional[float] = None
 
 
 @dataclass(**KWONLY_SLOTS)
-class UploadEventArguments(EventArguments):
+class UploadEventArguments(UiEventArguments):
     content: BinaryIO
     name: str
     type: str
 
 
 @dataclass(**KWONLY_SLOTS)
-class ValueChangeEventArguments(EventArguments):
+class ValueChangeEventArguments(UiEventArguments):
     value: Any
 
 
 @dataclass(**KWONLY_SLOTS)
-class TableSelectionEventArguments(EventArguments):
+class TableSelectionEventArguments(UiEventArguments):
     selection: List[Any]
 
 
@@ -118,11 +190,10 @@ class KeyboardKey:
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, str):
-            return self.name == other or self.code == other
-        elif isinstance(other, KeyboardKey):
+            return other in {self.name, self.code}
+        if isinstance(other, KeyboardKey):
             return self == other
-        else:
-            return False
+        return False
 
     def __repr__(self):
         return str(self.name)
@@ -274,14 +345,14 @@ class KeyboardKey:
 
 
 @dataclass(**KWONLY_SLOTS)
-class KeyEventArguments(EventArguments):
+class KeyEventArguments(UiEventArguments):
     action: KeyboardAction
     key: KeyboardKey
     modifiers: KeyboardModifiers
 
 
 @dataclass(**KWONLY_SLOTS)
-class ScrollEventArguments(EventArguments):
+class ScrollEventArguments(UiEventArguments):
     vertical_position: float
     vertical_percentage: float
     vertical_size: float
@@ -292,6 +363,17 @@ class ScrollEventArguments(EventArguments):
     horizontal_container_size: float
 
 
+@dataclass(**KWONLY_SLOTS)
+class JsonEditorSelectEventArguments(UiEventArguments):
+    selection: Dict
+
+
+@dataclass(**KWONLY_SLOTS)
+class JsonEditorChangeEventArguments(UiEventArguments):
+    content: Dict
+    errors: Dict
+
+
 def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArguments) -> None:
     if handler is None:
         return
@@ -300,14 +382,25 @@ def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArgument
                                 p.kind is not Parameter.VAR_POSITIONAL and
                                 p.kind is not Parameter.VAR_KEYWORD
                                 for p in signature(handler).parameters.values())
-        if arguments.sender.is_ignoring_events:
-            return
-        with arguments.sender.parent_slot:
+
+        parent_slot: Union[Slot, nullcontext]
+        if isinstance(arguments, UiEventArguments):
+            if arguments.sender.is_ignoring_events:
+                return
+            assert arguments.sender.parent_slot is not None
+            parent_slot = arguments.sender.parent_slot
+        else:
+            parent_slot = nullcontext()
+
+        with parent_slot:
             result = handler(arguments) if expects_arguments else handler()
         if isinstance(result, Awaitable):
             async def wait_for_result():
-                with arguments.sender.parent_slot:
-                    await result
+                with parent_slot:
+                    try:
+                        await result
+                    except Exception as e:
+                        globals.handle_exception(e)
             if globals.loop and globals.loop.is_running():
                 background_tasks.create(wait_for_result(), name=str(handler))
             else:

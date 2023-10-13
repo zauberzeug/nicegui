@@ -1,7 +1,7 @@
 from typing import Callable
 
 from nicegui.element import Element
-from nicegui.events import EventArguments, handle_event
+from nicegui.events import UiEventArguments, handle_event
 
 
 class IntersectionObserver(Element, component='intersection_observer.js'):
@@ -15,5 +15,5 @@ class IntersectionObserver(Element, component='intersection_observer.js'):
     def handle_intersection(self, _) -> None:
         self.run_method('stop')
         if self.active:
-            handle_event(self.on_intersection, EventArguments(sender=self, client=self.client))
+            handle_event(self.on_intersection, UiEventArguments(sender=self, client=self.client))
             self.active = False

@@ -6,11 +6,11 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, Optional, Union
 
 import aiofiles
-from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.requests import Request
 from starlette.responses import Response
 
-from . import background_tasks, globals, observables
+from . import background_tasks, globals, observables  # pylint: disable=redefined-builtin
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
@@ -42,7 +42,7 @@ class PersistentDict(observables.ObservableDict):
     def __init__(self, filepath: Path) -> None:
         self.filepath = filepath
         data = json.loads(filepath.read_text()) if filepath.exists() else {}
-        super().__init__(data, self.backup)
+        super().__init__(data, on_change=self.backup)
 
     def backup(self) -> None:
         if not self.filepath.exists():
@@ -74,8 +74,7 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
 class Storage:
 
     def __init__(self) -> None:
-        self.storage_dir = Path('.nicegui')
-        self._general = PersistentDict(self.storage_dir / 'storage_general.json')
+        self._general = PersistentDict(globals.storage_path / 'storage_general.json')
         self._users: Dict[str, PersistentDict] = {}
 
     @property
@@ -91,8 +90,7 @@ class Storage:
             if globals.get_client() == globals.index_client:
                 raise RuntimeError('app.storage.browser can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
-            else:
-                raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
+            raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
         if request.state.responded:
             return ReadOnlyDict(
                 request.session,
@@ -112,12 +110,11 @@ class Storage:
             if globals.get_client() == globals.index_client:
                 raise RuntimeError('app.storage.user can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
-            else:
-                raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
-        id = request.session['id']
-        if id not in self._users:
-            self._users[id] = PersistentDict(self.storage_dir / f'storage_user_{id}.json')
-        return self._users[id]
+            raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
+        session_id = request.session['id']
+        if session_id not in self._users:
+            self._users[session_id] = PersistentDict(globals.storage_path / f'storage_user_{session_id}.json')
+        return self._users[session_id]
 
     @property
     def general(self) -> Dict:
@@ -128,5 +125,5 @@ class Storage:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
-        for filepath in self.storage_dir.glob('storage_*.json'):
+        for filepath in globals.storage_path.glob('storage_*.json'):
             filepath.unlink()

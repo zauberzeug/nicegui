@@ -1,21 +1,24 @@
+from __future__ import annotations
+
 import asyncio
 import inspect
 import logging
+import os
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterator, List, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterator, List, Literal, Optional, Set, Union
 
 from socketio import AsyncServer
 from uvicorn import Server
 
 from . import background_tasks
-from .app import App
-from .language import Language
 
 if TYPE_CHECKING:
     from .air import Air
+    from .app import App
     from .client import Client
+    from .language import Language
     from .slot import Slot
 
 
@@ -42,14 +45,28 @@ favicon: Optional[Union[str, Path]]
 dark: Optional[bool]
 language: Language
 binding_refresh_interval: float
+reconnect_timeout: float
 tailwind: bool
-air: Optional['Air'] = None
+prod_js: bool
+endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
+air: Optional[Air] = None
+storage_path: Path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
+socket_io_js_query_params: Dict = {}
 socket_io_js_extra_headers: Dict = {}
-
+socket_io_js_transports: List[Literal['websocket', 'polling']] = ['websocket', 'polling']  # NOTE: we favor websocket
 _socket_id: Optional[str] = None
-slot_stacks: Dict[int, List['Slot']] = {}
-clients: Dict[str, 'Client'] = {}
-index_client: 'Client'
+slot_stacks: Dict[int, List[Slot]] = {}
+clients: Dict[str, Client] = {}
+index_client: Client
+quasar_config: Dict = {
+    'brand': {
+        'primary': '#5898d4',
+    },
+    'loadingBar': {
+        'color': 'primary',
+        'skipHijack': False,
+    },
+}
 
 page_routes: Dict[Callable[..., Any], str] = {}
 
@@ -67,7 +84,7 @@ def get_task_id() -> int:
         return 0
 
 
-def get_slot_stack() -> List['Slot']:
+def get_slot_stack() -> List[Slot]:
     task_id = get_task_id()
     if task_id not in slot_stacks:
         slot_stacks[task_id] = []
@@ -80,18 +97,18 @@ def prune_slot_stack() -> None:
         del slot_stacks[task_id]
 
 
-def get_slot() -> 'Slot':
+def get_slot() -> Slot:
     return get_slot_stack()[-1]
 
 
-def get_client() -> 'Client':
+def get_client() -> Client:
     return get_slot().parent.client
 
 
 @contextmanager
-def socket_id(id: str) -> Iterator[None]:
-    global _socket_id
-    _socket_id = id
+def socket_id(id_: str) -> Iterator[None]:
+    global _socket_id  # pylint: disable=global-statement
+    _socket_id = id_
     yield
     _socket_id = None
 

@@ -13,7 +13,7 @@ export default {
     },
     add_style(style) {
       Object.entries(style).forEach(([key, val]) =>
-        document.querySelectorAll(this.selector).forEach((e) => (e.style[key] = val))
+        document.querySelectorAll(this.selector).forEach((e) => e.style.setProperty(key, val))
       );
     },
     remove_style(keys) {

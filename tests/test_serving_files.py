@@ -3,10 +3,11 @@ from pathlib import Path
 
 import httpx
 import pytest
+import requests
 
-from nicegui import app, ui
+from nicegui import __version__, app, ui
 
-from .screen import PORT, Screen
+from .screen import Screen
 from .test_helpers import TEST_DIR
 
 IMAGE_FILE = Path(TEST_DIR).parent / 'examples' / 'slideshow' / 'slides' / 'slide1.jpg'
@@ -27,7 +28,7 @@ def provide_media_files():
 def assert_video_file_streaming(path: str) -> None:
     with httpx.Client() as http_client:
         r = http_client.get(
-            path if 'http' in path else f'http://localhost:{PORT}{path}',
+            path if 'http' in path else f'http://localhost:{Screen.PORT}{path}',
             headers={'Range': 'bytes=0-1000'},
         )
         assert r.status_code == 206
@@ -56,7 +57,7 @@ def test_adding_single_static_file(screen: Screen):
 
     screen.open('/')
     with httpx.Client() as http_client:
-        r = http_client.get(f'http://localhost:{PORT}{url_path}')
+        r = http_client.get(f'http://localhost:{Screen.PORT}{url_path}')
         assert r.status_code == 200
         assert 'max-age=' in r.headers['Cache-Control']
 
@@ -81,3 +82,15 @@ def test_auto_serving_file_from_video_source(screen: Screen):
     video = screen.find_by_tag('video')
     assert '/_nicegui/auto/media/' in video.get_attribute('src')
     assert_video_file_streaming(video.get_attribute('src'))
+
+
+def test_mimetypes_of_static_files(screen: Screen):
+    screen.open('/')
+
+    response = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.global.js', timeout=5)
+    assert response.status_code == 200
+    assert response.headers['Content-Type'].startswith('text/javascript')
+
+    response = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
+    assert response.status_code == 200
+    assert response.headers['Content-Type'].startswith('text/css')

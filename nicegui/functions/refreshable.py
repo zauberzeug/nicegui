@@ -3,9 +3,10 @@ from typing import Any, Awaitable, Callable, Dict, List, Tuple, Union
 
 from typing_extensions import Self
 
-from .. import background_tasks, globals
+from .. import background_tasks, globals  # pylint: disable=redefined-builtin
+from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
-from ..helpers import KWONLY_SLOTS, is_coroutine_function
+from ..helpers import is_coroutine_function
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -16,6 +17,7 @@ class RefreshableTarget:
     kwargs: Dict[str, Any]
 
     def run(self, func: Callable[..., Any]) -> Union[None, Awaitable]:
+        # pylint: disable=no-else-return
         if is_coroutine_function(func):
             async def wait_for_result() -> None:
                 with self.container:
@@ -53,6 +55,15 @@ class refreshable:
         self.instance = instance
         return self
 
+    def __getattribute__(self, __name: str) -> Any:
+        attribute = object.__getattribute__(self, __name)
+        if __name == 'refresh':
+            def refresh(*args: Any, _instance=self.instance, **kwargs: Any) -> None:
+                self.instance = _instance
+                attribute(*args, **kwargs)
+            return refresh
+        return attribute
+
     def __call__(self, *args: Any, **kwargs: Any) -> Union[None, Awaitable]:
         self.prune()
         target = RefreshableTarget(container=RefreshableContainer(), instance=self.instance, args=args, kwargs=kwargs)
@@ -67,7 +78,15 @@ class refreshable:
             target.container.clear()
             target.args = args or target.args
             target.kwargs.update(kwargs)
-            result = target.run(self.func)
+            try:
+                result = target.run(self.func)
+            except TypeError as e:
+                if 'got multiple values for argument' in str(e):
+                    function = str(e).split()[0].split('.')[-1]
+                    parameter = str(e).split()[-1]
+                    raise TypeError(f'{parameter} needs to be consistently passed to {function} '
+                                    'either as positional or as keyword argument') from e
+                raise
             if is_coroutine_function(self.func):
                 assert result is not None
                 if globals.loop and globals.loop.is_running():
@@ -76,4 +95,8 @@ class refreshable:
                     globals.app.on_startup(result)
 
     def prune(self) -> None:
-        self.targets = [target for target in self.targets if target.container.client.id in globals.clients]
+        self.targets = [
+            target
+            for target in self.targets
+            if target.container.client.id in globals.clients and target.container.id in target.container.client.elements
+        ]
