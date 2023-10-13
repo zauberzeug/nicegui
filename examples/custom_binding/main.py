@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import random
-from typing import Optional, Self, cast
+from typing import Optional
+
+from typing_extensions import Self, cast
 
 from nicegui import ui
 from nicegui.binding import BindableProperty, bind_from
