@@ -17,7 +17,7 @@ def run_with(
     dark: Optional[bool] = False,
     language: Language = 'en-US',
     binding_refresh_interval: float = 0.1,
-    reconnect_timeout: float = 0.0,  # NOTE: the value of 0.0 is DEPRECATED, change to 3.0 in 1.4 release
+    reconnect_timeout: float = 3.0,
     mount_path: str = '/',
     tailwind: bool = True,
     prod_js: bool = True,
@@ -32,7 +32,7 @@ def run_with(
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param language: language for Quasar elements (default: `'en-US'`)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
-    :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 0.0 seconds, i.e. no reconnect)
+    :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param mount_path: mount NiceGUI at this path (default: `'/'`)
     :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
     :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)

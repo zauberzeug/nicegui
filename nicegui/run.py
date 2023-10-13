@@ -11,9 +11,9 @@ from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
+from . import native_mode  # pylint: disable=redefined-builtin
 from . import globals, helpers  # pylint: disable=redefined-builtin
 from . import native as native_module
-from . import native_mode  # pylint: disable=redefined-builtin
 from .air import Air
 from .language import Language
 
@@ -49,7 +49,7 @@ def run(*,
         dark: Optional[bool] = False,
         language: Language = 'en-US',
         binding_refresh_interval: float = 0.1,
-        reconnect_timeout: float = 0.0,  # NOTE: the value of 0.0 is DEPRECATED, change to 3.0 in 1.4 release
+        reconnect_timeout: float = 3.0,
         show: bool = True,
         on_air: Optional[Union[str, Literal[True]]] = None,
         native: bool = False,
@@ -79,7 +79,7 @@ def run(*,
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param language: language for Quasar elements (default: `'en-US'`)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
-    :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 0.0 seconds, i.e. no reconnect)
+    :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param show: automatically open the UI in a browser tab (default: `True`)
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)

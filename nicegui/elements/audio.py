@@ -1,4 +1,3 @@
-import warnings
 from pathlib import Path
 from typing import Union
 
@@ -13,7 +12,6 @@ class Audio(Element, component='audio.js'):
                  autoplay: bool = False,
                  muted: bool = False,
                  loop: bool = False,
-                 type: str = '',  # DEPRECATED, pylint: disable=redefined-builtin
                  ) -> None:
         """Audio
 
@@ -36,10 +34,6 @@ class Audio(Element, component='audio.js'):
         self._props['autoplay'] = autoplay
         self._props['muted'] = muted
         self._props['loop'] = loop
-
-        if type:
-            url = 'https://github.com/zauberzeug/nicegui/pull/624'
-            warnings.warn(DeprecationWarning(f'The type parameter for ui.audio is deprecated and ineffective ({url}).'))
 
     def seek(self, seconds: float) -> None:
         """Seek to a specific position in the audio.
