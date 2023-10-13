@@ -23,7 +23,7 @@ except ModuleNotFoundError:
     pass
 
 
-def open_window(
+def _open_window(
     host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
     method_queue: mp.Queue, response_queue: mp.Queue,
 ) -> None:
@@ -42,13 +42,14 @@ def open_window(
     window = webview.create_window(**window_kwargs)
     closed = Event()
     window.events.closed += closed.set
-    start_window_method_executor(window, method_queue, response_queue, closed)
+    _start_window_method_executor(window, method_queue, response_queue, closed)
     webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
 
 
-def start_window_method_executor(
-        window: webview.Window, method_queue: mp.Queue, response_queue: mp.Queue, closed: Event
-) -> None:
+def _start_window_method_executor(window: webview.Window,
+                                  method_queue: mp.Queue,
+                                  response_queue: mp.Queue,
+                                  closed: Event) -> None:
     def execute(method: Callable, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> None:
         try:
             response = method(*args, **kwargs)
@@ -91,6 +92,7 @@ def start_window_method_executor(
 
 
 def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
+    """Activate native mode."""
     def check_shutdown() -> None:
         while process.is_alive():
             time.sleep(0.1)
@@ -106,7 +108,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
 
     mp.freeze_support()
     args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
-    process = mp.Process(target=open_window, args=args, daemon=True)
+    process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
     Thread(target=check_shutdown, daemon=True).start()

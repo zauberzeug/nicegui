@@ -17,6 +17,7 @@ class RefreshableTarget:
     kwargs: Dict[str, Any]
 
     def run(self, func: Callable[..., Any]) -> Union[None, Awaitable]:
+        """Run the function and return the result."""
         # pylint: disable=no-else-return
         if is_coroutine_function(func):
             async def wait_for_result() -> None:
@@ -71,6 +72,7 @@ class refreshable:
         return target.run(self.func)
 
     def refresh(self, *args: Any, **kwargs: Any) -> None:
+        """Refresh the UI elements created by this function."""
         self.prune()
         for target in self.targets:
             if target.instance != self.instance:
@@ -95,6 +97,10 @@ class refreshable:
                     globals.app.on_startup(result)
 
     def prune(self) -> None:
+        """Remove all targets that are no longer on a page with a client connection.
+
+        This method is called automatically before each refresh.
+        """
         self.targets = [
             target
             for target in self.targets

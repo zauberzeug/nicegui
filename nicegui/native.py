@@ -125,6 +125,7 @@ try:
             return await io_bound(wrapper, *args, **kwargs)
 
         def signal_server_shutdown(self) -> None:
+            """Signal the server shutdown."""
             self._send()
 
 except ModuleNotFoundError:

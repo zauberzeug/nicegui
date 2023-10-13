@@ -19,25 +19,29 @@ message_queue: Deque[Message] = deque()
 
 
 def enqueue_update(element: Element) -> None:
+    """Enqueue an update for the given element."""
     update_queue[element.client.id][element.id] = element
 
 
 def enqueue_delete(element: Element) -> None:
+    """Enqueue a deletion for the given element."""
     update_queue[element.client.id][element.id] = None
 
 
 def enqueue_message(message_type: MessageType, data: Any, target_id: ClientId) -> None:
+    """Enqueue a message for the given client."""
     message_queue.append((target_id, message_type, data))
 
 
 async def _emit(message_type: MessageType, data: Any, target_id: ClientId) -> None:
     await globals.sio.emit(message_type, data, room=target_id)
-    if is_target_on_air(target_id):
+    if _is_target_on_air(target_id):
         assert globals.air is not None
         await globals.air.emit(message_type, data, room=target_id)
 
 
 async def loop() -> None:
+    """Emit queued updates and messages in an endless loop."""
     while True:
         if not update_queue and not message_queue:
             await asyncio.sleep(0.01)
@@ -67,7 +71,7 @@ async def loop() -> None:
             await asyncio.sleep(0.1)
 
 
-def is_target_on_air(target_id: str) -> bool:
+def _is_target_on_air(target_id: str) -> bool:
     if target_id in globals.clients:
         return globals.clients[target_id].on_air
 

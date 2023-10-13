@@ -45,6 +45,7 @@ class PersistentDict(observables.ObservableDict):
         super().__init__(data, on_change=self.backup)
 
     def backup(self) -> None:
+        """Back up the data to the given file path."""
         if not self.filepath.exists():
             if not self:
                 return

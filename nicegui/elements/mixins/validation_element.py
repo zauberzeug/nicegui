@@ -26,6 +26,6 @@ class ValidationElement(ValueElement):
             self._error = None
             self.props(remove='error')
 
-    def on_value_change(self, value: Any) -> None:
-        super().on_value_change(value)
+    def _on_value_change(self, value: Any) -> None:
+        super()._on_value_change(value)
         self.validate()

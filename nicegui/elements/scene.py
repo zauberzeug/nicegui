@@ -92,10 +92,10 @@ class Scene(Element,
         self.on_drag_start = on_drag_start
         self.on_drag_end = on_drag_end
         self.is_initialized = False
-        self.on('init', self.handle_init)
-        self.on('click3d', self.handle_click)
-        self.on('dragstart', self.handle_drag)
-        self.on('dragend', self.handle_drag)
+        self.on('init', self._handle_init)
+        self.on('click3d', self._handle_click)
+        self.on('dragstart', self._handle_drag)
+        self.on('dragend', self._handle_drag)
         self._props['drag_constraints'] = drag_constraints
 
     def __enter__(self) -> Self:
@@ -109,7 +109,7 @@ class Scene(Element,
             Object3D.current_scene = self
         return attribute
 
-    def handle_init(self, e: GenericEventArguments) -> None:
+    def _handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True
         with globals.socket_id(e.args['socket_id']):
             self.move_camera(duration=0)
@@ -126,7 +126,7 @@ class Scene(Element,
             return
         super().run_method(name, *args)
 
-    def handle_click(self, e: GenericEventArguments) -> None:
+    def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
             sender=self,
             client=self.client,
@@ -146,7 +146,7 @@ class Scene(Element,
         )
         handle_event(self.on_click, arguments)
 
-    def handle_drag(self, e: GenericEventArguments) -> None:
+    def _handle_drag(self, e: GenericEventArguments) -> None:
         arguments = SceneDragEventArguments(
             sender=self,
             client=self.client,

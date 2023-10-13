@@ -77,6 +77,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
     @property
     def options(self) -> Dict:
+        """The options dictionary."""
         return self._props['options']
 
     def update(self) -> None:

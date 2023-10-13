@@ -107,6 +107,7 @@ class Air:
             await self.connect()
 
     async def connect(self) -> None:
+        """Connect to the NiceGUI On Air server."""
         if self.connecting:
             return
         self.connecting = True
@@ -133,8 +134,10 @@ class Air:
         self.connecting = False
 
     async def disconnect(self) -> None:
+        """Disconnect from the NiceGUI On Air server."""
         await self.relay.disconnect()
 
     async def emit(self, message_type: str, data: Dict[str, Any], room: str) -> None:
+        """Emit a message to the NiceGUI On Air server."""
         if self.relay.connected:
             await self.relay.emit('forward', {'event': message_type, 'data': data, 'room': room})

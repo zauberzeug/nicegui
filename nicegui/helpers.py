@@ -57,10 +57,12 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
 
 
 def hash_file_path(path: Path) -> str:
+    """Hash the given path."""
     return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
 
 
 def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional[Client] = None) -> None:
+    """Invoke the potentially async function in the client context and catch any exceptions."""
     try:
         if isinstance(func, Awaitable):
             async def func_with_client():
@@ -134,6 +136,7 @@ def set_storage_secret(storage_secret: Optional[str] = None) -> None:
 
 
 def get_streaming_response(file: Path, request: Request) -> StreamingResponse:
+    """Get a StreamingResponse for the given file and request."""
     file_size = file.stat().st_size
     start = 0
     end = file_size - 1

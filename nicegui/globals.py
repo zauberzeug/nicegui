@@ -78,6 +78,7 @@ exception_handlers: List[Callable[..., Any]] = [log.exception]
 
 
 def get_task_id() -> int:
+    """Return the ID of the current asyncio task."""
     try:
         return id(asyncio.current_task())
     except RuntimeError:
@@ -85,6 +86,7 @@ def get_task_id() -> int:
 
 
 def get_slot_stack() -> List[Slot]:
+    """Return the slot stack of the current asyncio task."""
     task_id = get_task_id()
     if task_id not in slot_stacks:
         slot_stacks[task_id] = []
@@ -92,21 +94,25 @@ def get_slot_stack() -> List[Slot]:
 
 
 def prune_slot_stack() -> None:
+    """Remove the current slot stack if it is empty."""
     task_id = get_task_id()
     if not slot_stacks[task_id]:
         del slot_stacks[task_id]
 
 
 def get_slot() -> Slot:
+    """Return the current slot."""
     return get_slot_stack()[-1]
 
 
 def get_client() -> Client:
+    """Return the current client."""
     return get_slot().parent.client
 
 
 @contextmanager
 def socket_id(id_: str) -> Iterator[None]:
+    """Enter a context with a specific socket ID."""
     global _socket_id  # pylint: disable=global-statement
     _socket_id = id_
     yield
@@ -114,6 +120,7 @@ def socket_id(id_: str) -> Iterator[None]:
 
 
 def handle_exception(exception: Exception) -> None:
+    """Handle an exception by invoking all registered exception handlers."""
     for handler in exception_handlers:
         result = handler() if not inspect.signature(handler).parameters else handler(exception)
         if isinstance(result, Awaitable):

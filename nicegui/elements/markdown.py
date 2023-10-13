@@ -40,11 +40,13 @@ class Markdown(ContentElement, component='markdown.js'):
 
 @lru_cache(maxsize=int(os.environ.get('MARKDOWN_CONTENT_CACHE_SIZE', '1000')))
 def prepare_content(content: str, extras: str) -> str:
+    """Render Markdown content to HTML."""
     html = markdown2.markdown(remove_indentation(content), extras=extras.split())
     return apply_tailwind(html)  # we need explicit Markdown styling because tailwind CSS removes all default styles
 
 
 def apply_tailwind(html: str) -> str:
+    """Apply tailwind CSS classes to the HTML."""
     rep = {
         '<h1': '<h1 class="text-5xl mb-4 mt-6"',
         '<h2': '<h2 class="text-4xl mb-3 mt-5"',

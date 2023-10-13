@@ -6,7 +6,8 @@
   "prettier.printWidth": 120,
   "pylint.args": [
     "--disable=C0103", // Invalid name (e.g., variable/function/class naming conventions)
-    "--disable=C0111", // Missing docstring (in function/class/method)
+    "--disable=C0114", // Missing module docstring
+    "--disable=C0115", // Missing class docstring
     "--disable=C0301", // Line too long (exceeds character limit)
     "--disable=C0302", // Too many lines in module
     "--disable=R0801", // Similar lines in files

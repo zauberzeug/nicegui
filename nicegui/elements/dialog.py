@@ -21,14 +21,17 @@ class Dialog(ValueElement):
 
     @property
     def submitted(self) -> asyncio.Event:
+        """An event that is set when the dialog is submitted."""
         if self._submitted is None:
             self._submitted = asyncio.Event()
         return self._submitted
 
     def open(self) -> None:
+        """Open the dialog."""
         self.value = True
 
     def close(self) -> None:
+        """Close the dialog."""
         self.value = False
 
     def __await__(self):
@@ -41,11 +44,12 @@ class Dialog(ValueElement):
         return result
 
     def submit(self, result: Any) -> None:
+        """Submit the dialog with the given result."""
         self._result = result
         self.submitted.set()
 
-    def on_value_change(self, value: Any) -> None:
-        super().on_value_change(value)
+    def _on_value_change(self, value: Any) -> None:
+        super()._on_value_change(value)
         if not self.value:
             self._result = None
             self.submitted.set()

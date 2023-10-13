@@ -12,7 +12,7 @@ except ImportError:
     pass
 
 
-def get_all_ips() -> List[str]:
+def _get_all_ips() -> List[str]:
     if 'netifaces' not in globals.optional_features:
         try:
             hostname = socket.gethostname()
@@ -30,10 +30,11 @@ def get_all_ips() -> List[str]:
 
 
 async def print_message() -> None:
+    """Print a welcome message with URLs to access the NiceGUI app."""
     print('NiceGUI ready to go ', end='', flush=True)
     host = os.environ['NICEGUI_HOST']
     port = os.environ['NICEGUI_PORT']
-    ips = set((await io_bound(get_all_ips)) if host == '0.0.0.0' else [])
+    ips = set((await io_bound(_get_all_ips)) if host == '0.0.0.0' else [])
     ips.discard('127.0.0.1')
     urls = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ['localhost'] + sorted(ips)]
     globals.app.urls.update(urls)

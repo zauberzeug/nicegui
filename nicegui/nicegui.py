@@ -44,11 +44,13 @@ globals.index_client = Client(page('/'), shared=True).__enter__()  # pylint: dis
 
 @app.get('/')
 def index(request: Request) -> Response:
+    """Auto-index page."""
     return globals.index_client.build_response(request)
 
 
 @app.get(f'/_nicegui/{__version__}' + '/libraries/{key:path}')
 def get_library(key: str) -> FileResponse:
+    """Get a library file with a given key."""
     is_map = key.endswith('.map')
     dict_key = key[:-4] if is_map else key
     if dict_key in libraries:
@@ -63,6 +65,7 @@ def get_library(key: str) -> FileResponse:
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
 def get_component(key: str) -> FileResponse:
+    """Get a component file with a given key."""
     if key in js_components and js_components[key].path.exists():
         headers = {'Cache-Control': 'public, max-age=3600'}
         return FileResponse(js_components[key].path, media_type='text/javascript', headers=headers)
@@ -71,6 +74,7 @@ def get_component(key: str) -> FileResponse:
 
 @app.on_event('startup')
 def handle_startup(with_welcome_message: bool = True) -> None:
+    """Handle the startup event."""
     if not globals.ui_run_has_been_called:
         raise RuntimeError('\n\n'
                            'You must call ui.run() to start the server.\n'
@@ -104,6 +108,7 @@ def handle_startup(with_welcome_message: bool = True) -> None:
 
 @app.on_event('shutdown')
 async def handle_shutdown() -> None:
+    """Handle the shutdown event."""
     if app.native.main_window:
         app.native.main_window.signal_server_shutdown()
     globals.state = globals.State.STOPPING
@@ -118,6 +123,7 @@ async def handle_shutdown() -> None:
 
 @app.exception_handler(404)
 async def exception_handler_404(request: Request, exception: Exception) -> Response:
+    """Handle 404 errors."""
     globals.log.warning(f'{request.url} not found')
     with Client(page('')) as client:
         error_content(404, exception)
@@ -126,6 +132,7 @@ async def exception_handler_404(request: Request, exception: Exception) -> Respo
 
 @app.exception_handler(Exception)
 async def exception_handler_500(request: Request, exception: Exception) -> Response:
+    """Handle 500 errors."""
     globals.log.exception(exception)
     with Client(page('')) as client:
         error_content(500, exception)
@@ -134,6 +141,7 @@ async def exception_handler_500(request: Request, exception: Exception) -> Respo
 
 @sio.on('handshake')
 def on_handshake(sid: str, client_id: str) -> bool:
+    """Handle the handshake event."""
     client = globals.clients.get(client_id)
     if not client:
         return False
@@ -144,6 +152,7 @@ def on_handshake(sid: str, client_id: str) -> bool:
 
 
 def handle_handshake(client: Client) -> None:
+    """Cancel pending disconnect task and invoke connect handlers."""
     if client.disconnect_task:
         client.disconnect_task.cancel()
         client.disconnect_task = None
@@ -155,6 +164,7 @@ def handle_handshake(client: Client) -> None:
 
 @sio.on('disconnect')
 def on_disconnect(sid: str) -> None:
+    """Handle the disconnect event."""
     query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
     query = urllib.parse.parse_qs(query_bytes.decode())
     client_id = query['client_id'][0]
@@ -164,10 +174,11 @@ def on_disconnect(sid: str) -> None:
 
 
 async def handle_disconnect(client: Client) -> None:
+    """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't."""
     delay = client.page.reconnect_timeout if client.page.reconnect_timeout is not None else globals.reconnect_timeout
     await asyncio.sleep(delay)
     if not client.shared:
-        delete_client(client.id)
+        _delete_client(client.id)
     for t in client.disconnect_handlers:
         safe_invoke(t, client)
     for t in globals.disconnect_handlers:
@@ -176,6 +187,7 @@ async def handle_disconnect(client: Client) -> None:
 
 @sio.on('event')
 def on_event(_: str, msg: Dict) -> None:
+    """Handle a generic event."""
     client = globals.clients.get(msg['client_id'])
     if not client or not client.has_socket_connection:
         return
@@ -183,6 +195,7 @@ def on_event(_: str, msg: Dict) -> None:
 
 
 def handle_event(client: Client, msg: Dict) -> None:
+    """Forward an event to the corresponding element."""
     with client:
         sender = client.elements.get(msg['id'])
         if sender:
@@ -194,6 +207,7 @@ def handle_event(client: Client, msg: Dict) -> None:
 
 @sio.on('javascript_response')
 def on_javascript_response(_: str, msg: Dict) -> None:
+    """Handle a JavaScript response."""
     client = globals.clients.get(msg['client_id'])
     if not client:
         return
@@ -201,10 +215,12 @@ def on_javascript_response(_: str, msg: Dict) -> None:
 
 
 def handle_javascript_response(client: Client, msg: Dict) -> None:
+    """Forward a JavaScript response to the corresponding element."""
     client.waiting_javascript_commands[msg['request_id']] = msg['result']
 
 
 async def prune_clients() -> None:
+    """Prune stale clients in an endless loop."""
     while True:
         stale_clients = [
             id
@@ -212,11 +228,12 @@ async def prune_clients() -> None:
             if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
         ]
         for client_id in stale_clients:
-            delete_client(client_id)
+            _delete_client(client_id)
         await asyncio.sleep(10)
 
 
 async def prune_slot_stacks() -> None:
+    """Prune stale slot stacks in an endless loop."""
     while True:
         running = [
             id(task)
@@ -233,5 +250,5 @@ async def prune_slot_stacks() -> None:
         await asyncio.sleep(10)
 
 
-def delete_client(client_id: str) -> None:
+def _delete_client(client_id: str) -> None:
     globals.clients.pop(client_id).remove_all_elements()

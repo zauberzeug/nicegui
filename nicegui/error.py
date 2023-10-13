@@ -7,6 +7,11 @@ from .elements.label import Label as label
 
 
 def error_content(status_code: int, exception: Union[str, Exception] = '') -> None:
+    """Create an error page.
+
+    :param status_code: HTTP status code
+    :param exception: exception that caused the error
+    """
     if 400 <= status_code <= 499:
         title = "This page doesn't exist."
     elif 500 <= status_code <= 599:

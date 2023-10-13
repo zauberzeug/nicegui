@@ -90,6 +90,7 @@ class Chart(Element,
 
     @property
     def options(self) -> Dict:
+        """The options dictionary."""
         return self._props['options']
 
     def update(self) -> None:

@@ -1,4 +1,3 @@
-import re
 from copy import deepcopy
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -49,14 +48,6 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
             self._props['input-debounce'] = 0
         self._props['multiple'] = multiple
         self._props['clearable'] = clearable
-
-    def on_filter(self, e: GenericEventArguments) -> None:
-        self.options = [
-            option
-            for option in self.original_options
-            if not e.args or re.search(e.args, option, re.IGNORECASE)
-        ]
-        self.update()
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         # pylint: disable=no-else-return

@@ -64,18 +64,23 @@ class page:
 
     @property
     def path(self) -> str:
+        """The path of the page including the APIRouter's prefix."""
         return self.api_router.prefix + self._path
 
     def resolve_title(self) -> str:
+        """Return the title of the page."""
         return self.title if self.title is not None else globals.title
 
     def resolve_viewport(self) -> str:
+        """Return the viewport of the page."""
         return self.viewport if self.viewport is not None else globals.viewport
 
     def resolve_dark(self) -> Optional[bool]:
+        """Return whether the page should use dark mode."""
         return self.dark if self.dark is not ... else globals.dark
 
     def resolve_language(self) -> Optional[str]:
+        """Return the language of the page."""
         return self.language if self.language is not ... else globals.language
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:

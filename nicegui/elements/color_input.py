@@ -46,8 +46,8 @@ class ColorInput(ValueElement, DisableableElement):
             self.picker.set_color(self.value)
         self.picker.open()
 
-    def on_value_change(self, value: Any) -> None:
-        super().on_value_change(value)
+    def _on_value_change(self, value: Any) -> None:
+        super()._on_value_change(value)
         self._update_preview()
 
     def _update_preview(self) -> None:
