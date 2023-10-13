@@ -29,11 +29,11 @@ class Router():
 
         async def build() -> None:
             with self.content:
-                await ui.run_javascript(f'''
+                ui.run_javascript(f'''
                     if (window.location.pathname !== "{path}") {{
                         history.pushState({{page: "{path}"}}, "", "{path}");
                     }}
-                ''', respond=False)
+                ''')
                 result = builder()
                 if isinstance(result, Awaitable):
                     await result

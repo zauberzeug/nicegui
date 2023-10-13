@@ -1,10 +1,8 @@
-from typing import Any, Optional
-
 from .. import globals  # pylint: disable=redefined-builtin
+from ..awaitable_response import AwaitableResponse
 
 
-async def run_javascript(code: str, *,
-                         respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Optional[Any]:
+def run_javascript(code: str, *, timeout: float = 1.0, check_interval: float = 0.01) -> AwaitableResponse:
     """Run JavaScript
 
     This function runs arbitrary JavaScript code on a page that is executed in the browser.
@@ -13,7 +11,6 @@ async def run_javascript(code: str, *,
     To access a client-side object by ID, use the JavaScript function `getElement()`.
 
     :param code: JavaScript code to run
-    :param respond: whether to wait for a response (default: `True`)
     :param timeout: timeout in seconds (default: `1.0`)
     :param check_interval: interval in seconds to check for a response (default: `0.01`)
 
@@ -21,7 +18,7 @@ async def run_javascript(code: str, *,
     """
     client = globals.get_client()
     if not client.has_socket_connection:
-        raise RuntimeError(
-            'Cannot run JavaScript before client is connected; try "await client.connected()" or "client.on_connect(...)".')
+        raise RuntimeError('Cannot run JavaScript before client is connected; '
+                           'try "await client.connected()" or "client.on_connect(...)".')
 
-    return await client.run_javascript(code, respond=respond, timeout=timeout, check_interval=check_interval)
+    return client.run_javascript(code, timeout=timeout, check_interval=check_interval)

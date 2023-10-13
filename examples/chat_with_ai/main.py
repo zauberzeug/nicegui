@@ -15,12 +15,12 @@ thinking: bool = False
 
 
 @ui.refreshable
-async def chat_messages() -> None:
+def chat_messages() -> None:
     for name, text in messages:
         ui.chat_message(text=text, name=name, sent=name == 'You')
     if thinking:
         ui.spinner(size='3rem').classes('self-center')
-    await ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)', respond=False)
+    ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)')
 
 
 @ui.page('/')
@@ -43,7 +43,7 @@ async def main(client: Client):
     await client.connected()
 
     with ui.column().classes('w-full max-w-2xl mx-auto items-stretch'):
-        await chat_messages()
+        chat_messages()
 
     with ui.footer().classes('bg-white'), ui.column().classes('w-full max-w-3xl mx-auto my-6'):
         with ui.row().classes('w-full no-wrap items-center'):

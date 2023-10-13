@@ -1,15 +1,12 @@
 import pytest
 
 from nicegui import Client, ui
-from nicegui.events import ValueChangeEventArguments
 
 from .screen import Screen
 
 
 def test_run_javascript_on_button_press(screen: Screen):
-    async def set_title() -> None:
-        await ui.run_javascript('document.title = "A New Title"')
-    ui.button('change title', on_click=set_title)
+    ui.button('change title', on_click=lambda: ui.run_javascript('document.title = "A New Title"'))
 
     screen.open('/')
     assert screen.selenium.title == 'NiceGUI'
@@ -21,11 +18,9 @@ def test_run_javascript_on_button_press(screen: Screen):
 def test_run_javascript_on_value_change(screen: Screen):
     @ui.page('/')
     async def page(client: Client):
-        async def set_title(e: ValueChangeEventArguments) -> None:
-            await ui.run_javascript(f'document.title = "Page {e.value}"')
-        ui.radio(['A', 'B'], on_change=set_title)
+        ui.radio(['A', 'B'], on_change=lambda e: ui.run_javascript(f'document.title = "Page {e.value}"'))
         await client.connected()
-        await ui.run_javascript('document.title = "Initial Title"')
+        ui.run_javascript('document.title = "Initial Title"')
 
     screen.open('/')
     screen.wait(0.5)
@@ -40,10 +35,10 @@ def test_run_javascript_on_value_change(screen: Screen):
 
 def test_run_javascript_before_client_connected(screen: Screen):
     @ui.page('/')
-    async def page():
+    def page():
         ui.label('before js')
         with pytest.raises(RuntimeError):
-            await ui.run_javascript('document.title = "A New Title"')
+            ui.run_javascript('document.title = "A New Title"')
         ui.label('after js')
 
     screen.open('/')

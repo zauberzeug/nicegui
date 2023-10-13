@@ -47,7 +47,7 @@ def subheading(text: str, *, make_menu_entry: bool = True, more_link: Optional[s
     if make_menu_entry:
         with get_menu() as menu:
             async def click():
-                if await ui.run_javascript(f'!!document.querySelector("div.q-drawer__backdrop")'):
+                if await ui.run_javascript('!!document.querySelector("div.q-drawer__backdrop")'):
                     menu.hide()
                     ui.open(f'#{name}')
             ui.link(text, target=f'#{name}').props('data-close-overlay').on('click', click, [])

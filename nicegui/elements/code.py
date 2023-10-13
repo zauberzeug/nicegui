@@ -30,7 +30,7 @@ class Code(Element):
 
     async def copy_to_clipboard(self) -> None:
         """Copy the code to the clipboard."""
-        await run_javascript('navigator.clipboard.writeText(`' + self.content + '`)', respond=False)
+        run_javascript('navigator.clipboard.writeText(`' + self.content + '`)')
         self.copy_button.props('icon=check')
         await asyncio.sleep(3.0)
         self.copy_button.props('icon=content_copy')
