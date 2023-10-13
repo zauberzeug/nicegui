@@ -1,12 +1,13 @@
 from typing import Any, List, Tuple, cast
 
-from .. import binding, globals
+from .. import binding, globals  # pylint: disable=redefined-builtin
 from ..element import Element
 from ..events import GenericEventArguments
 from .leaflet_layer import Layer
 
 
 class Leaflet(Element, component='leaflet.js'):
+    # pylint: disable=import-outside-toplevel
     from .leaflet_layers import Marker as marker
     from .leaflet_layers import TileLayer as tile_layer
 

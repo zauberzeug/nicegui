@@ -3,7 +3,7 @@ from typing import Dict, Tuple
 
 from typing_extensions import Self
 
-from ..helpers import KWONLY_SLOTS
+from ..dataclasses import KWONLY_SLOTS
 from .leaflet_layer import Layer
 
 
