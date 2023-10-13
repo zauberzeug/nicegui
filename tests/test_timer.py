@@ -47,7 +47,7 @@ def test_timer(screen: Screen):
 def test_timer_on_private_page(screen: Screen):
     counter = Counter()
 
-    @ui.page('/')
+    @ui.page('/', reconnect_timeout=0)
     def page():
         ui.timer(0.1, counter.increment)
 
