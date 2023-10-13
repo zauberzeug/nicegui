@@ -40,9 +40,13 @@
 /* original padding for some Quasar elements */
 .nicegui-step .q-stepper__nav {
   padding: 8px 0 0 0;
+  gap: 8px;
 }
 .nicegui-timeline-entry .q-timeline__content {
   padding: 0 0 24px 0;
+}
+.nicegui-splitter .q-splitter__panel {
+  padding: 0;
 }
 
 /* HACK: avoid stutter when expansion item is toggled */
