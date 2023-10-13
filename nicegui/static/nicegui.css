@@ -49,6 +49,19 @@
   padding: 0;
 }
 
+/* let step content fill the whole stepper for easier layout manipulation (#1788) */
+.nicegui-stepper {
+  display: flex;
+  flex-direction: column;
+}
+.nicegui-stepper .q-stepper__content {
+  flex-grow: 1;
+}
+.nicegui-stepper .q-stepper__step-content,
+.nicegui-stepper .q-stepper__step-inner {
+  height: 100%;
+}
+
 /* HACK: avoid stutter when expansion item is toggled */
 .nicegui-expansion .q-expansion-item__content {
   padding: 0 1rem;

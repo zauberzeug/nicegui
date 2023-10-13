@@ -30,6 +30,7 @@ class Stepper(ValueElement):
         """
         super().__init__(tag='q-stepper', value=value, on_value_change=on_value_change)
         self._props['keep-alive'] = keep_alive
+        self._classes = ['nicegui-stepper']
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value._props['name'] if isinstance(value, Step) else value  # pylint: disable=protected-access
