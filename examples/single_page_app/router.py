@@ -1,6 +1,6 @@
-from typing import Awaitable, Callable, Dict, Union
+from typing import Callable, Dict, Union
 
-from nicegui import background_tasks, ui
+from nicegui import background_tasks, helpers, ui
 
 
 class RouterFrame(ui.element, component='router_frame.js'):
@@ -35,7 +35,7 @@ class Router():
                     }}
                 ''')
                 result = builder()
-                if isinstance(result, Awaitable):
+                if helpers.is_coroutine_function(builder):
                     await result
         self.content.clear()
         background_tasks.create(build())

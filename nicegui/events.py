@@ -3,9 +3,9 @@ from __future__ import annotations
 from contextlib import nullcontext
 from dataclasses import dataclass
 from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, BinaryIO, Callable, Dict, List, Literal, Optional, Union
 
-from . import background_tasks, globals  # pylint: disable=redefined-builtin
+from . import background_tasks, globals, helpers  # pylint: disable=redefined-builtin
 from .dataclasses import KWONLY_SLOTS
 from .slot import Slot
 
@@ -432,7 +432,7 @@ def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArgument
 
         with parent_slot:
             result = handler(arguments) if expects_arguments else handler()
-        if isinstance(result, Awaitable):
+        if helpers.is_coroutine_function(handler):
             async def wait_for_result():
                 with parent_slot:
                     try:

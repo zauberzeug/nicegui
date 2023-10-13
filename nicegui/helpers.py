@@ -72,7 +72,7 @@ def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional[Cli
         else:
             with client or nullcontext():
                 result = func(client) if len(inspect.signature(func).parameters) == 1 and client is not None else func()
-            if isinstance(result, Awaitable):
+            if is_coroutine_function(func):
                 async def result_with_client():
                     with client or nullcontext():
                         await result
