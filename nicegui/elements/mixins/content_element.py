@@ -1,6 +1,6 @@
 from typing import Any, Callable
 
-from typing_extensions import Self
+from typing_extensions import Self, cast
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
@@ -8,12 +8,13 @@ from ...element import Element
 
 class ContentElement(Element):
     CONTENT_PROP = 'innerHTML'
-    content = BindableProperty(on_change=lambda sender, content: sender.on_content_change(content))
+    content = BindableProperty(
+        on_change=lambda sender, content: cast(Self, sender)._handle_content_change(content))  # pylint: disable=protected-access
 
     def __init__(self, *, content: str, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.content = content
-        self.on_content_change(content)
+        self._handle_content_change(content)
 
     def bind_content_to(self,
                         target_object: Any,
@@ -72,7 +73,7 @@ class ContentElement(Element):
         """
         self.content = content
 
-    def on_content_change(self, content: str) -> None:
+    def _handle_content_change(self, content: str) -> None:
         """Called when the content of this element changes.
 
         :param content: The new content.

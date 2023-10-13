@@ -31,7 +31,7 @@ class Markdown(ContentElement, component='markdown.js'):
             self._props['use_mermaid'] = True
             self.libraries.append(Mermaid.exposed_libraries[0])
 
-    def on_content_change(self, content: str) -> None:
+    def _handle_content_change(self, content: str) -> None:
         html = prepare_content(content, extras=' '.join(self.extras))
         if self._props.get('innerHTML') != html:
             self._props['innerHTML'] = html

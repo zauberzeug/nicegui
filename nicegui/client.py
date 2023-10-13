@@ -172,7 +172,7 @@ class Client:
         for element_id in element_ids:
             del self.elements[element_id]
         for element in elements:
-            element._on_delete()  # pylint: disable=protected-access
+            element._handle_delete()  # pylint: disable=protected-access
             element._deleted = True  # pylint: disable=protected-access
             outbox.enqueue_delete(element)
 

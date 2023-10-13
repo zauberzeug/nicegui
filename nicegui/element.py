@@ -422,7 +422,7 @@ class Element(Visibility):
         assert self.parent_slot is not None
         self.parent_slot.children.remove(self)
 
-    def _on_delete(self) -> None:
+    def _handle_delete(self) -> None:
         """Called when the element is deleted.
 
         This method can be overridden in subclasses to perform cleanup tasks.

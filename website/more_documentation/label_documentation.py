@@ -9,13 +9,13 @@ def main_demo() -> None:
 
 def more() -> None:
     @text_demo('Change Appearance Depending on the Content', '''
-        You can overwrite the `on_text_change` method to update other attributes of a label depending on its content. 
+        You can overwrite the `_handle_text_change` method to update other attributes of a label depending on its content. 
         This technique also works for bindings as shown in the example below.
     ''')
     def status():
         class status_label(ui.label):
-            def on_text_change(self, text: str) -> None:
-                super().on_text_change(text)
+            def _handle_text_change(self, text: str) -> None:
+                super()._handle_text_change(text)
                 if text == 'ok':
                     self.classes(replace='text-positive')
                 else:

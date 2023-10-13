@@ -48,8 +48,8 @@ class Dialog(ValueElement):
         self._result = result
         self.submitted.set()
 
-    def _on_value_change(self, value: Any) -> None:
-        super()._on_value_change(value)
+    def _handle_value_change(self, value: Any) -> None:
+        super()._handle_value_change(value)
         if not self.value:
             self._result = None
             self.submitted.set()

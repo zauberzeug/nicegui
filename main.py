@@ -33,10 +33,10 @@ app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
 app.add_static_files('/static', str(Path(__file__).parent / 'website' / 'static'))
 
 if True:  # HACK: prevent the page from scrolling when closing a dialog (#1404)
-    def on_dialog_value_change(sender, value, on_value_change=ui.dialog._on_value_change) -> None:
+    def _handle_value_change(sender, value, on_value_change=ui.dialog._handle_value_change) -> None:
         ui.query('html').classes(**{'add' if value else 'remove': 'has-dialog'})
         on_value_change(sender, value)
-    ui.dialog._on_value_change = on_dialog_value_change
+    ui.dialog._handle_value_change = _handle_value_change
 
 
 @app.get('/logo.png')

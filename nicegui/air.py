@@ -22,7 +22,7 @@ class Air:
         self.connecting = False
 
         @self.relay.on('http')
-        async def on_http(data: Dict[str, Any]) -> Dict[str, Any]:
+        async def _handle_http(data: Dict[str, Any]) -> Dict[str, Any]:
             headers: Dict[str, Any] = data['headers']
             headers.update({'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']})
             url = 'http://test' + data['path']
@@ -52,16 +52,16 @@ class Air:
             }
 
         @self.relay.on('ready')
-        def on_ready(data: Dict[str, Any]) -> None:
+        def _handle_ready(data: Dict[str, Any]) -> None:
             globals.app.urls.add(data['device_url'])
             print(f'NiceGUI is on air at {data["device_url"]}', flush=True)
 
         @self.relay.on('error')
-        def on_error(data: Dict[str, Any]) -> None:
+        def _handleerror(data: Dict[str, Any]) -> None:
             print('Error:', data['message'], flush=True)
 
         @self.relay.on('handshake')
-        def on_handshake(data: Dict[str, Any]) -> bool:
+        def _handle_handshake(data: Dict[str, Any]) -> bool:
             client_id = data['client_id']
             if client_id not in globals.clients:
                 return False
@@ -72,7 +72,7 @@ class Air:
             return True
 
         @self.relay.on('client_disconnect')
-        def on_disconnect(data: Dict[str, Any]) -> None:
+        def _handle_disconnect(data: Dict[str, Any]) -> None:
             client_id = data['client_id']
             if client_id not in globals.clients:
                 return
@@ -80,7 +80,7 @@ class Air:
             client.disconnect_task = background_tasks.create(handle_disconnect(client))
 
         @self.relay.on('event')
-        def on_event(data: Dict[str, Any]) -> None:
+        def _handle_event(data: Dict[str, Any]) -> None:
             client_id = data['client_id']
             if client_id not in globals.clients:
                 return
@@ -90,7 +90,7 @@ class Air:
             handle_event(client, data['msg'])
 
         @self.relay.on('javascript_response')
-        def on_javascript_response(data: Dict[str, Any]) -> None:
+        def _handle_javascript_response(data: Dict[str, Any]) -> None:
             client_id = data['client_id']
             if client_id not in globals.clients:
                 return
@@ -98,12 +98,12 @@ class Air:
             handle_javascript_response(client, data['msg'])
 
         @self.relay.on('out_of_time')
-        async def on_move() -> None:
+        async def _handle_out_of_time() -> None:
             print('Sorry, you have reached the time limit of this NiceGUI On Air preview.', flush=True)
             await self.connect()
 
         @self.relay.on('reconnect')
-        async def on_reconnect(_: Dict[str, Any]) -> None:
+        async def _handle_reconnect(_: Dict[str, Any]) -> None:
             await self.connect()
 
     async def connect(self) -> None:

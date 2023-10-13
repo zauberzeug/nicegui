@@ -43,14 +43,12 @@ globals.index_client = Client(page('/'), shared=True).__enter__()  # pylint: dis
 
 
 @app.get('/')
-def index(request: Request) -> Response:
-    """Auto-index page."""
+def _get_index(request: Request) -> Response:
     return globals.index_client.build_response(request)
 
 
 @app.get(f'/_nicegui/{__version__}' + '/libraries/{key:path}')
-def get_library(key: str) -> FileResponse:
-    """Get a library file with a given key."""
+def _get_library(key: str) -> FileResponse:
     is_map = key.endswith('.map')
     dict_key = key[:-4] if is_map else key
     if dict_key in libraries:
@@ -64,8 +62,7 @@ def get_library(key: str) -> FileResponse:
 
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
-def get_component(key: str) -> FileResponse:
-    """Get a component file with a given key."""
+def _get_component(key: str) -> FileResponse:
     if key in js_components and js_components[key].path.exists():
         headers = {'Cache-Control': 'public, max-age=3600'}
         return FileResponse(js_components[key].path, media_type='text/javascript', headers=headers)
@@ -122,8 +119,7 @@ async def handle_shutdown() -> None:
 
 
 @app.exception_handler(404)
-async def exception_handler_404(request: Request, exception: Exception) -> Response:
-    """Handle 404 errors."""
+async def _exception_handler_404(request: Request, exception: Exception) -> Response:
     globals.log.warning(f'{request.url} not found')
     with Client(page('')) as client:
         error_content(404, exception)
@@ -131,8 +127,7 @@ async def exception_handler_404(request: Request, exception: Exception) -> Respo
 
 
 @app.exception_handler(Exception)
-async def exception_handler_500(request: Request, exception: Exception) -> Response:
-    """Handle 500 errors."""
+async def _exception_handler_500(request: Request, exception: Exception) -> Response:
     globals.log.exception(exception)
     with Client(page('')) as client:
         error_content(500, exception)
@@ -140,8 +135,7 @@ async def exception_handler_500(request: Request, exception: Exception) -> Respo
 
 
 @sio.on('handshake')
-def on_handshake(sid: str, client_id: str) -> bool:
-    """Handle the handshake event."""
+def _on_handshake(sid: str, client_id: str) -> bool:
     client = globals.clients.get(client_id)
     if not client:
         return False
@@ -163,8 +157,7 @@ def handle_handshake(client: Client) -> None:
 
 
 @sio.on('disconnect')
-def on_disconnect(sid: str) -> None:
-    """Handle the disconnect event."""
+def _on_disconnect(sid: str) -> None:
     query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
     query = urllib.parse.parse_qs(query_bytes.decode())
     client_id = query['client_id'][0]
@@ -186,8 +179,7 @@ async def handle_disconnect(client: Client) -> None:
 
 
 @sio.on('event')
-def on_event(_: str, msg: Dict) -> None:
-    """Handle a generic event."""
+def _on_event(_: str, msg: Dict) -> None:
     client = globals.clients.get(msg['client_id'])
     if not client or not client.has_socket_connection:
         return
@@ -206,8 +198,7 @@ def handle_event(client: Client, msg: Dict) -> None:
 
 
 @sio.on('javascript_response')
-def on_javascript_response(_: str, msg: Dict) -> None:
-    """Handle a JavaScript response."""
+def _on_javascript_response(_: str, msg: Dict) -> None:
     client = globals.clients.get(msg['client_id'])
     if not client:
         return

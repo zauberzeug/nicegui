@@ -60,7 +60,7 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
         self._props['autocomplete'] = autocomplete
         self.update()
 
-    def _on_value_change(self, value: Any) -> None:
-        super()._on_value_change(value)
+    def _handle_value_change(self, value: Any) -> None:
+        super()._handle_value_change(value)
         if self._send_update_on_value_change:
             self.run_method('updateValue')

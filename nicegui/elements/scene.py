@@ -88,9 +88,9 @@ class Scene(Element,
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
-        self.on_click = on_click
-        self.on_drag_start = on_drag_start
-        self.on_drag_end = on_drag_end
+        self._click_handler = on_click
+        self._drag_start_handler = on_drag_start
+        self._drag_end_handler = on_drag_end
         self.is_initialized = False
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
@@ -144,7 +144,7 @@ class Scene(Element,
                 z=hit['point']['z'],
             ) for hit in e.args['hits']],
         )
-        handle_event(self.on_click, arguments)
+        handle_event(self._click_handler, arguments)
 
     def _handle_drag(self, e: GenericEventArguments) -> None:
         arguments = SceneDragEventArguments(
@@ -159,7 +159,7 @@ class Scene(Element,
         )
         if arguments.type == 'dragend':
             self.objects[arguments.object_id].move(arguments.x, arguments.y, arguments.z)
-        handle_event(self.on_drag_start if arguments.type == 'dragstart' else self.on_drag_end, arguments)
+        handle_event(self._drag_start_handler if arguments.type == 'dragstart' else self._drag_end_handler, arguments)
 
     def __len__(self) -> int:
         return len(self.objects)
@@ -202,9 +202,9 @@ class Scene(Element,
                         self.camera.look_at_x, self.camera.look_at_y, self.camera.look_at_z,
                         self.camera.up_x, self.camera.up_y, self.camera.up_z, duration)
 
-    def _on_delete(self) -> None:
+    def _handle_delete(self) -> None:
         binding.remove(list(self.objects.values()), Object3D)
-        super()._on_delete()
+        super()._handle_delete()
 
     def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:
         """Remove objects from the scene.

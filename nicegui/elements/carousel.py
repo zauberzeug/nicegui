@@ -35,8 +35,8 @@ class Carousel(ValueElement):
     def _value_to_model_value(self, value: Any) -> Any:
         return value._props['name'] if isinstance(value, CarouselSlide) else value  # pylint: disable=protected-access
 
-    def _on_value_change(self, value: Any) -> None:
-        super()._on_value_change(value)
+    def _handle_value_change(self, value: Any) -> None:
+        super()._handle_value_change(value)
         names = [slide._props['name'] for slide in self]  # pylint: disable=protected-access
         for i, slide in enumerate(self):
             done = i < names.index(value) if value in names else False

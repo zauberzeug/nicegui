@@ -123,7 +123,7 @@ def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
 class BindableProperty:
 
     def __init__(self, on_change: Optional[Callable[..., Any]] = None) -> None:
-        self.on_change = on_change
+        self._change_handler = on_change
 
     def __set_name__(self, _, name: str) -> None:
         self.name = name  # pylint: disable=attribute-defined-outside-init
@@ -139,8 +139,8 @@ class BindableProperty:
         setattr(owner, '___' + self.name, value)
         bindable_properties[(id(owner), self.name)] = owner
         _propagate(owner, self.name)
-        if value_changed and self.on_change is not None:
-            self.on_change(owner, value)
+        if value_changed and self._change_handler is not None:
+            self._change_handler(owner, value)
 
 
 def remove(objects: Iterable[Any], type_: Type) -> None:
