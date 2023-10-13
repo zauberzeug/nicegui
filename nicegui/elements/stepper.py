@@ -65,6 +65,7 @@ class Step(DisableableElement):
         super().__init__(tag='q-step')
         self._props['name'] = name
         self._props['title'] = title if title is not None else name
+        self._classes = ['nicegui-step']
         if icon:
             self._props['icon'] = icon
         self.stepper = cast(ValueElement, globals.get_slot().parent)
