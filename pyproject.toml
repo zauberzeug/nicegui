@@ -49,7 +49,10 @@ docutils = "^0.19"
 pandas = "^2.0.0"
 secure = "^0.3.0"
 webdriver-manager = "^3.8.6"
-numpy = ">=1.24.0"
+numpy = [
+    {version = "^1.24.0", python = "~3.8"},
+    {version = "^1.26.0", python = ">=3.9,<3.13"}
+]
 selenium = "^4.11.2"
 beautifulsoup4 = "^4.12.2"
 urllib3 = ">=1.26.17,^1.26 || >=2.0.6" # https://github.com/zauberzeug/nicegui/security/dependabot/22
