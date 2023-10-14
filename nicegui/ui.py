@@ -40,6 +40,7 @@ __all__ = [
     'link_target',
     'log',
     'markdown',
+    'context_menu',
     'menu',
     'menu_item',
     'mermaid',
@@ -137,6 +138,7 @@ from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
 from .elements.log import Log as log
 from .elements.markdown import Markdown as markdown
+from .elements.menu import ContextMenu as context_menu
 from .elements.menu import Menu as menu
 from .elements.menu import MenuItem as menu_item
 from .elements.mermaid import Mermaid as mermaid

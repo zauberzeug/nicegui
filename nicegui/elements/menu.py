@@ -1,6 +1,7 @@
 from typing import Any, Callable, Optional
 
 from .. import globals  # pylint: disable=redefined-builtin
+from ..element import Element
 from ..events import ClickEventArguments, handle_event
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
@@ -29,6 +30,14 @@ class Menu(ValueElement):
     def toggle(self) -> None:
         """Toggle the menu."""
         self.value = not self.value
+
+
+class ContextMenu(Element):
+
+    def __init__(self) -> None:
+        super().__init__('q-menu')
+        self._props['context-menu'] = True
+        self._props['touch-position'] = True
 
 
 class MenuItem(TextElement):

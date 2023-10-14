@@ -17,14 +17,13 @@ def main_demo() -> None:
 
 
 def more() -> None:
-    @text_demo('Custom Context Menu', '''
-        Using [Quasar's `context-menu`](https://quasar.dev/vue-components/menu#context-menu) and `touch-position` props, 
-        you can create custom context menus. 
-        These open by right-clicking on the parent.
+    @text_demo('Context Menu', '''
+        For context menus, use `ui.context_menu()` instead of `ui.menu()`.
+        It will open the menu on right-click at the current mouse position.
     ''')
-    def custom_context_menu() -> None:
+    def context_menu() -> None:
         with ui.image('https://picsum.photos/id/377/640/360'):
-            with ui.menu().props('context-menu touch-position'):
+            with ui.context_menu():
                 ui.menu_item('Flip horizontally')
                 ui.menu_item('Flip vertically')
                 ui.separator()
