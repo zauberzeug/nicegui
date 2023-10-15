@@ -51,7 +51,7 @@ kill_timeout = "5s"
     timeout = "10s"
     grace_period = "1m0s"
     method = "get"
-    path = "/"
+    path = "/status"
     protocol = "http"
     tls_skip_verify = false
 

@@ -430,7 +430,11 @@ async def documentation_page_more(name: str, client: Client) -> None:
                 ui.markdown('**Reference**').classes('mt-4')
             ui.markdown('## Reference').classes('mt-16')
             generate_class_doc(api)
-    await client.connected()
-    await ui.run_javascript(f'document.title = "{name} • NiceGUI";', respond=False)
+
+@app.get('/status')
+def status():
+    """for health checks"""
+    return 'Ok'
+
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reconnect_timeout=3.0)
