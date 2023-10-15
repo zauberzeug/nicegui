@@ -51,17 +51,18 @@ def test_props_parsing():
     assert ui.element._parse_props('hint="Your \\"given\\" name"') == {'hint': 'Your "given" name'}
     assert ui.element._parse_props('input-style="{ color: #ff0000 }"') == {'input-style': '{ color: #ff0000 }'}
 
-    assert ui.element._parse_props('alsotrue=""') == {'alsotrue': True}
-    assert ui.element._parse_props("alsotrue=''") == {'alsotrue': True}
+    assert ui.element._parse_props('alsotrue=""') == {'alsotrue': ""}
+    assert ui.element._parse_props("alsotrue=''") == {'alsotrue': ""}
 
     assert ui.element._parse_props("hint='Your \\\"given\\\" name'") == {'hint': 'Your "given" name'}
     assert ui.element._parse_props("one two=1 three='abc def'") == {'one': True, 'two': '1', 'three': 'abc def'}
     assert ui.element._parse_props('''three='abc def' four="hhh jjj"''') == {'three': 'abc def', 'four':'hhh jjj',}
     assert ui.element._parse_props('''foo="quote'quote"''')=={"foo":"quote'quote"}
-    assert ui.element._parse_props('''foo='quote"quote' ''')=={"foo":"quote'quote"}
-    assert ui.element._parse_props('''foo="this is a single quote: '" bar='this is a double quote: "' ''')=={"foo":"this is a single quote: '","bar":"this is a double quote: '"}
+    assert ui.element._parse_props('''foo='quote"quote' ''')=={"foo":"quote\"quote"}
+    assert ui.element._parse_props('''foo="this is a single quote: '" bar='this is a double quote: "' ''')=={"foo":"this is a single quote: '","bar":"this is a double quote: \""}
+    assert ui.element._parse_props('''foo="this is a single quote: '" bar='this is a double quote: \\"' ''')=={"foo":"this is a single quote: '","bar":'this is a double quote: "'}
     assert ui.element._parse_props("input-style='{ color: #ff0000 }'") == {'input-style': '{ color: #ff0000 }'}
-    assert ui.element._parse_props('''input-style='{ myquote: "quote" }' ''') == {'input-style': "{ myquote: 'quote' }"}
+    assert ui.element._parse_props('''input-style='{ myquote: "quote" }' ''') == {'input-style': "{ myquote: \"quote\" }"}
 
 
 def test_style(screen: Screen):

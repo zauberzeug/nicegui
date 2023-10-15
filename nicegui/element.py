@@ -1,4 +1,5 @@
 from __future__ import annotations
+import ast
 
 import inspect
 import re
@@ -284,14 +285,9 @@ class Element(Visibility):
         for match in PROPS_PATTERN.finditer(text or ''):
             key = match.group(1)
             value = match.group(2) or match.group(3) or match.group(4)
-            # NOTE: When using single quotes in props, all unescaped double quotes are converted to single, 
-            # so that json loads works
-            print([x for x in match.groups()])
-            if value and value.startswith("'") and value.endswith("'"):
-                value = '"' + re.sub(r'(?<!\\)"', "'", value[1:-1]) + '"'
-            if value and value.startswith('"') and value.endswith('"') :
-                value = json.loads(value)
-            dictionary[key] = value or True
+            if value is not None and ((value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')) ):
+                value = ast.literal_eval(value)
+            dictionary[key] = True if value is None else value
         return dictionary
 
     def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
