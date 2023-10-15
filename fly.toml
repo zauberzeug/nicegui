@@ -24,9 +24,9 @@ kill_timeout = "5s"
   protocol = "tcp"
   internal_port = 8080
   processes = ["app"]
-  auto_stop_machines = true
+  auto_stop_machines = false
   auto_start_machines = true
-  min_machines_running = 6
+  min_machines_running = 19
 
   [[services.ports]]
     port = 80
@@ -51,7 +51,7 @@ kill_timeout = "5s"
     timeout = "10s"
     grace_period = "1m0s"
     method = "get"
-    path = "/"
+    path = "/status"
     protocol = "http"
     tls_skip_verify = false
 

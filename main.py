@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import importlib
 import inspect
+import logging
 import os
 from pathlib import Path
 from typing import Awaitable, Callable, Optional
@@ -59,7 +60,10 @@ async def redirect_reference_to_documentation(request: Request,
                                               call_next: Callable[[Request], Awaitable[Response]]) -> Response:
     if request.url.path == '/reference':
         return RedirectResponse('/documentation')
-    return await call_next(request)
+    try:
+        return await call_next(request)
+    except RuntimeError as e:
+        logging.error(f'Error while processing request {request.url.path}: {e}')
 
 # NOTE In our global fly.io deployment we need to make sure that we connect back to the same instance.
 fly_instance_id = os.environ.get('FLY_ALLOC_ID', 'local').split('-')[0]
@@ -430,7 +434,17 @@ async def documentation_page_more(name: str, client: Client) -> None:
                 ui.markdown('**Reference**').classes('mt-4')
             ui.markdown('## Reference').classes('mt-16')
             generate_class_doc(api)
-    await client.connected()
-    await ui.run_javascript(f'document.title = "{name} • NiceGUI";', respond=False)
+    try:
+        await client.connected()
+        await ui.run_javascript(f'document.title = "{name} • NiceGUI";', respond=False)
+    except TimeoutError:
+        logging.warning(f'client did not connect for page /documentation/{name}')
+
+
+@app.get('/status')
+def status():
+    """for health checks"""
+    return 'Ok'
+
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reconnect_timeout=3.0)
