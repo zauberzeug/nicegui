@@ -1,7 +1,5 @@
 from nicegui import ui
 
-from ..documentation_tools import text_demo
-
 
 def main_demo() -> None:
     with ui.row().classes('w-full items-center'):
@@ -14,17 +12,3 @@ def main_demo() -> None:
                              lambda: result.set_text('Selected item 3'), auto_close=False)
                 ui.separator()
                 ui.menu_item('Close', on_click=menu.close)
-
-
-def more() -> None:
-    @text_demo('Context Menu', '''
-        For context menus, use `ui.context_menu()` instead of `ui.menu()`.
-        It will open the menu on right-click at the current mouse position.
-    ''')
-    def context_menu() -> None:
-        with ui.image('https://picsum.photos/id/377/640/360'):
-            with ui.context_menu():
-                ui.menu_item('Flip horizontally')
-                ui.menu_item('Flip vertically')
-                ui.separator()
-                ui.menu_item('Reset')
