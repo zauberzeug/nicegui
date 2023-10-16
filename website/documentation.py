@@ -187,6 +187,7 @@ def create_full() -> None:
     load_demo(ui.timeline)
     load_demo(ui.carousel)
     load_demo(ui.menu)
+    load_demo(ui.context_menu)
 
     @text_demo('Tooltips', '''
         Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
