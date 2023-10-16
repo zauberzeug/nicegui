@@ -447,4 +447,4 @@ def status():
     return 'Ok'
 
 
-ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reconnect_timeout=3.0)
+ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reconnect_timeout=10.0)

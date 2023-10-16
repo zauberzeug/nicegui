@@ -71,6 +71,10 @@ def get_component(key: str) -> FileResponse:
 
 @app.on_event('startup')
 def handle_startup(with_welcome_message: bool = True) -> None:
+    if globals.reconnect_timeout > 0:  # TODO in 1.4 we DEPRECATED a value of 0 and should remove this check
+        # NOTE ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
+        globals.sio.eio.ping_interval = max(globals.reconnect_timeout * 0.8, 4)
+        globals.sio.eio.ping_timeout = max(globals.reconnect_timeout * 0.4, 2)
     if not globals.ui_run_has_been_called:
         raise RuntimeError('\n\n'
                            'You must call ui.run() to start the server.\n'
