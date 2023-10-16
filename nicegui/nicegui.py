@@ -137,12 +137,12 @@ async def exception_handler_500(request: Request, exception: Exception) -> Respo
 
 
 @sio.on('handshake')
-def on_handshake(sid: str, client_id: str) -> bool:
+async def on_handshake(sid: str, client_id: str) -> bool:
     client = globals.clients.get(client_id)
     if not client:
         return False
     client.environ = sio.get_environ(sid)
-    sio.enter_room(sid, client.id)
+    await sio.enter_room(sid, client.id)
     handle_handshake(client)
     return True
 
