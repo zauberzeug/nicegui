@@ -3,7 +3,6 @@ from typing import Any, Callable, Optional
 from typing_extensions import Self
 
 from .. import globals  # pylint: disable=redefined-builtin
-from ..element import Element
 from ..events import ClickEventArguments, handle_event
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
@@ -39,22 +38,8 @@ class Menu(ValueElement):
             # https://github.com/zauberzeug/nicegui/issues/1738
             del self._props['touch-position']
             globals.log.warning('The prop "touch-position" is not supported by `ui.menu`.\n'
-                                'Use "ui.context-menu()" instead.')
+                                'Use "ui.context_menu()" instead.')
         return self
-
-
-class ContextMenu(Element):
-
-    def __init__(self) -> None:
-        """Context Menu
-
-        Creates a context menu based on Quasar's `QMenu <https://quasar.dev/vue-components/menu>`_ component.
-        The context menu should be placed inside the element where it should be shown.
-        It is automatically opened when the user right-clicks on the element and appears at the mouse position.
-        """
-        super().__init__('q-menu')
-        self._props['context-menu'] = True
-        self._props['touch-position'] = True
 
 
 class MenuItem(TextElement):
