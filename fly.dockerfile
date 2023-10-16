@@ -4,7 +4,7 @@ LABEL maintainer="Zauberzeug GmbH <nicegui@zauberzeug.com>"
 
 RUN apt update && apt install -y curl procps
 
-RUN pip install itsdangerous prometheus_client isort docutils pandas plotly matplotlib requests
+RUN pip install itsdangerous prometheus_client isort docutils pandas plotly matplotlib requests dnspython
 
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
     cd /usr/local/bin && \
@@ -32,5 +32,7 @@ EXPOSE 9062
 COPY fly-entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
+
+ENV PYTHONUNBUFFERED=1
 
 CMD ["python", "main.py"]

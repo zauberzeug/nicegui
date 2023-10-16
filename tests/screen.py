@@ -119,6 +119,12 @@ class Screen:
             raise AssertionError(f'Could not click on "{target_text}" on:\n{element.get_attribute("outerHTML")}') from e
         return element
 
+    def context_click(self, target_text: str) -> WebElement:
+        element = self.find(target_text)
+        action = ActionChains(self.selenium)
+        action.context_click(element).perform()
+        return element
+
     def click_at_position(self, element: WebElement, x: int, y: int) -> None:
         action = ActionChains(self.selenium)
         action.move_to_element_with_offset(element, x, y).click().perform()
