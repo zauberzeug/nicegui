@@ -242,7 +242,7 @@
             connect: () => {
               window.socket.emit("handshake", window.client_id, (ok) => {
                 if (!ok) {
-                  console.log('reloading because handshake failed')
+                  console.log('reloading because handshake failed for client_id ' + window.client_id)
                   window.location.reload();
                 }
                 document.getElementById('popup').style.opacity = 0;

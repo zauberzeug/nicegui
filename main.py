@@ -450,4 +450,4 @@ def status():
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html',
        # NOTE: do not reload when running on fly.io (see https://github.com/zauberzeug/nicegui/discussions/1720#discussioncomment-7288741)
        reload='FLY_ALLOC_ID' not in os.environ,
-       reconnect_timeout=3.0)
+       reconnect_timeout=10.0)
