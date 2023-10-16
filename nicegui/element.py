@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import inspect
 import re
 from copy import copy, deepcopy
@@ -7,8 +8,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union
 
 from typing_extensions import Self
-
-from nicegui import json
 
 from . import events, globals, outbox, storage  # pylint: disable=redefined-builtin
 from .dependencies import Component, Library, register_library, register_vue_component
@@ -20,7 +19,31 @@ from .tailwind import Tailwind
 if TYPE_CHECKING:
     from .client import Client
 
-PROPS_PATTERN = re.compile(r'([:\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
+PROPS_PATTERN = re.compile(r'''
+# Match a key-value pair optionally followed by whitespace or end of string
+([:\w\-]+)          # Capture group 1: Key
+(?:                 # Optional non-capturing group for value
+    =               # Match the equal sign
+    (?:             # Non-capturing group for value options
+        (           # Capture group 2: Value enclosed in double quotes
+            "       # Match  double quote
+            [^"\\]* # Match any character except quotes or backslashes zero or more times
+            (?:\\.[^"\\]*)*  # Match any escaped character followed by any character except quotes or backslashes zero or more times
+            "       # Match the closing quote
+        )
+        |
+        (           # Capture group 3: Value enclosed in single quotes
+            '       # Match a single quote
+            [^'\\]* # Match any character except quotes or backslashes zero or more times
+            (?:\\.[^'\\]*)*  # Match any escaped character followed by any character except quotes or backslashes zero or more times
+            '       # Match the closing quote
+        )
+        |           # Or
+        ([\w\-.%:\/]+)  # Capture group 4: Value without quotes
+    )
+)?                  # End of optional non-capturing group for value
+(?:$|\s)            # Match end of string or whitespace
+''', re.VERBOSE)
 
 
 class Element(Visibility):
@@ -258,10 +281,13 @@ class Element(Visibility):
         dictionary = {}
         for match in PROPS_PATTERN.finditer(text or ''):
             key = match.group(1)
-            value = match.group(2) or match.group(3)
-            if value and value.startswith('"') and value.endswith('"'):
-                value = json.loads(value)
-            dictionary[key] = value or True
+            value = match.group(2) or match.group(3) or match.group(4)
+            if value is None:
+                dictionary[key] = True
+            else:
+                if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
+                    value = ast.literal_eval(value)
+                dictionary[key] = value
         return dictionary
 
     def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
