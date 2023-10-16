@@ -77,7 +77,7 @@ class Tree(Element):
         self.update()
         return self
 
-    def collapse(self, node_keys: Optional[List[Dict]] = None) -> Self:
+    def collapse(self, node_keys: Optional[List[str]] = None) -> Self:
         """Collapse the given nodes.
 
         :param node_keys: list of node keys to collapse (default: all nodes)

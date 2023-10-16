@@ -38,7 +38,7 @@ async def refresh_loop() -> None:
         await asyncio.sleep(globals.binding_refresh_interval)
 
 
-def _refresh_step():
+def _refresh_step() -> None:
     visited: Set[Tuple[int, str]] = set()
     t = time.time()
     for link in active_links:
@@ -50,8 +50,7 @@ def _refresh_step():
                 propagate(target_obj, target_name, visited)
         del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
     if time.time() - t > MAX_PROPAGATION_TIME:
-        globals.log.warning(
-            f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
+        globals.log.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
 
 
 def propagate(source_obj: Any, source_name: str, visited: Optional[Set[Tuple[int, str]]] = None) -> None:

@@ -182,17 +182,20 @@ class Element(Visibility):
         }
 
     @staticmethod
-    def _update_classes_list(
-            classes: List[str],
-            add: Optional[str] = None, remove: Optional[str] = None, replace: Optional[str] = None) -> List[str]:
+    def _update_classes_list(classes: List[str],
+                             add: Optional[str] = None,
+                             remove: Optional[str] = None,
+                             replace: Optional[str] = None) -> List[str]:
         class_list = classes if replace is None else []
         class_list = [c for c in class_list if c not in (remove or '').split()]
         class_list += (add or '').split()
         class_list += (replace or '').split()
         return list(dict.fromkeys(class_list))  # NOTE: remove duplicates while preserving order
 
-    def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
-            -> Self:
+    def classes(self,
+                add: Optional[str] = None, *,
+                remove: Optional[str] = None,
+                replace: Optional[str] = None) -> Self:
         """Apply, remove, or replace HTML classes.
 
         This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
@@ -210,8 +213,10 @@ class Element(Visibility):
         return self
 
     @classmethod
-    def default_classes(cls, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
-            -> Self:
+    def default_classes(cls,
+                        add: Optional[str] = None, *,
+                        remove: Optional[str] = None,
+                        replace: Optional[str] = None) -> type[Self]:
         """Apply, remove, or replace default HTML classes.
 
         This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
@@ -237,7 +242,10 @@ class Element(Visibility):
                 result[key.strip()] = value.strip()
         return result
 
-    def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
+    def style(self,
+              add: Optional[str] = None, *,
+              remove: Optional[str] = None,
+              replace: Optional[str] = None) -> Self:
         """Apply, remove, or replace CSS definitions.
 
         Removing or replacing styles can be helpful if the predefined style is not desired.
@@ -257,7 +265,10 @@ class Element(Visibility):
         return self
 
     @classmethod
-    def default_style(cls, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
+    def default_style(cls,
+                      add: Optional[str] = None, *,
+                      remove: Optional[str] = None,
+                      replace: Optional[str] = None) -> type[Self]:
         """Apply, remove, or replace default CSS definitions.
 
         Removing or replacing styles can be helpful if the predefined style is not desired.
@@ -290,7 +301,9 @@ class Element(Visibility):
                 dictionary[key] = value
         return dictionary
 
-    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
+    def props(self,
+              add: Optional[str] = None, *,
+              remove: Optional[str] = None) -> Self:
         """Add or remove props.
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
@@ -315,7 +328,9 @@ class Element(Visibility):
         return self
 
     @classmethod
-    def default_props(cls, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
+    def default_props(cls,
+                      add: Optional[str] = None, *,
+                      remove: Optional[str] = None) -> type[Self]:
         """Add or remove default props.
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
