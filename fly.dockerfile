@@ -33,4 +33,6 @@ COPY fly-entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 
+ENV PYTHONUNBUFFERED=1
+
 CMD ["python", "main.py"]
