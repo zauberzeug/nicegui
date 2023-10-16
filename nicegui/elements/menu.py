@@ -1,5 +1,7 @@
 from typing import Any, Callable, Optional
 
+from typing_extensions import Self
+
 from .. import globals  # pylint: disable=redefined-builtin
 from ..events import ClickEventArguments, handle_event
 from .mixins.text_element import TextElement
@@ -29,6 +31,15 @@ class Menu(ValueElement):
     def toggle(self) -> None:
         """Toggle the menu."""
         self.value = not self.value
+
+    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
+        super().props(add, remove=remove)
+        if 'touch-position' in self._props:
+            # https://github.com/zauberzeug/nicegui/issues/1738
+            del self._props['touch-position']
+            globals.log.warning('The prop "touch-position" is not supported by `ui.menu`.\n'
+                                'Use "ui.context_menu()" instead.')
+        return self
 
 
 class MenuItem(TextElement):

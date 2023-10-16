@@ -18,6 +18,7 @@ __all__ = [
     'color_picker',
     'colors',
     'column',
+    'context_menu',
     'dark_mode',
     'date',
     'dialog',
@@ -115,6 +116,7 @@ from .elements.color_input import ColorInput as color_input
 from .elements.color_picker import ColorPicker as color_picker
 from .elements.colors import Colors as colors
 from .elements.column import Column as column
+from .elements.context_menu import ContextMenu as context_menu
 from .elements.dark_mode import DarkMode as dark_mode
 from .elements.date import Date as date
 from .elements.dialog import Dialog as dialog

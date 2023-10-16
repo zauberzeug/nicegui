@@ -1,7 +1,5 @@
 from nicegui import ui
 
-from ..documentation_tools import text_demo
-
 
 def main_demo() -> None:
     with ui.row().classes('w-full items-center'):
@@ -14,18 +12,3 @@ def main_demo() -> None:
                              lambda: result.set_text('Selected item 3'), auto_close=False)
                 ui.separator()
                 ui.menu_item('Close', on_click=menu.close)
-
-
-def more() -> None:
-    @text_demo('Custom Context Menu', '''
-        Using [Quasar's `context-menu`](https://quasar.dev/vue-components/menu#context-menu) and `touch-position` props, 
-        you can create custom context menus. 
-        These open by right-clicking on the parent.
-    ''')
-    def custom_context_menu() -> None:
-        with ui.image('https://picsum.photos/id/377/640/360'):
-            with ui.menu().props('context-menu touch-position'):
-                ui.menu_item('Flip horizontally')
-                ui.menu_item('Flip vertically')
-                ui.separator()
-                ui.menu_item('Reset')
