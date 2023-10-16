@@ -71,3 +71,4 @@ class TimelineEntry(Element):
             self._props['title'] = title
         if subtitle is not None:
             self._props['subtitle'] = subtitle
+        self._classes = ['nicegui-timeline-entry']
