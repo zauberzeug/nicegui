@@ -448,5 +448,6 @@ def status():
 
 
 ui.run(uvicorn_reload_includes='*.py, *.css, *.html',
-       reload=not os.environ.get('NICEGUI_PRODUCTION').lower() == 'true',
+       # NOTE: do not reload when running on fly.io (see https://github.com/zauberzeug/nicegui/discussions/1720#discussioncomment-7288741)
+       reload='FLY_ALLOC_ID' not in os.environ,
        reconnect_timeout=3.0)
