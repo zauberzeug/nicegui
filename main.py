@@ -82,6 +82,7 @@ class FlyReplayMiddleware(BaseHTTPMiddleware):
 
     def __init__(self, app: ASGIApp) -> None:
         self.app = app
+        self.app_name = os.environ('FLY_APP_NAME')
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         query_string = scope.get('query_string', b'').decode()
@@ -89,7 +90,7 @@ class FlyReplayMiddleware(BaseHTTPMiddleware):
         target_instance = query_params.get('fly_instance_id', [fly_instance_id])[0]
 
         async def send_wrapper(message):
-            if target_instance != fly_instance_id:
+            if target_instance != fly_instance_id and self.is_online(fly_instance_id):
                 if message['type'] == 'websocket.close':
                     # fly.io only seems to look at the fly-replay header if websocket is accepted
                     message = {'type': 'websocket.accept'}
@@ -99,8 +100,18 @@ class FlyReplayMiddleware(BaseHTTPMiddleware):
             await send(message)
         await self.app(scope, receive, send_wrapper)
 
+    def is_online(self, fly_instance_id: str) -> bool:
+        hostname = f'{fly_instance_id}.vm.{self.app_name}.internal'
+        try:
+            dns.resolver.resolve(hostname, 'AAAA')
+            return True
+        except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.resolver.NoNameservers, dns.resolver.Timeout):
+            return False
 
-app.add_middleware(FlyReplayMiddleware)
+
+if 'FLY_ALLOC_ID' in os.environ:
+    import dns.resolver  # NOTE only import on fly where we have it installed to look up if instance is still available
+    app.add_middleware(FlyReplayMiddleware)
 
 
 def add_head_html() -> None:
