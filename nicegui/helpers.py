@@ -3,17 +3,24 @@ from __future__ import annotations
 import asyncio
 import functools
 import hashlib
+import inspect
 import mimetypes
 import socket
 import sys
 import threading
 import time
 import webbrowser
+from contextlib import nullcontext
 from pathlib import Path
-from typing import Any, Generator, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generator, Optional, Tuple, Union
 
 from fastapi import Request
 from fastapi.responses import StreamingResponse
+
+from . import background_tasks, globals  # pylint: disable=redefined-builtin
+
+if TYPE_CHECKING:
+    from .client import Client
 
 mimetypes.init()
 
@@ -49,6 +56,26 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
 def hash_file_path(path: Path) -> str:
     """Hash the given path."""
     return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
+
+
+def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional[Client] = None) -> None:
+    """Invoke the potentially async function in the client context and catch any exceptions."""
+    try:
+        if isinstance(func, Awaitable):
+            async def func_with_client():
+                with client or nullcontext():
+                    await func
+            background_tasks.create(func_with_client())
+        else:
+            with client or nullcontext():
+                result = func(client) if len(inspect.signature(func).parameters) == 1 and client is not None else func()
+            if is_coroutine_function(func):
+                async def result_with_client():
+                    with client or nullcontext():
+                        await result
+                background_tasks.create(result_with_client())
+    except Exception as e:
+        globals.handle_exception(e)
 
 
 def is_port_open(host: str, port: int) -> bool:

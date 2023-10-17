@@ -81,7 +81,7 @@ class Timer:
                     except asyncio.CancelledError:
                         break
                     except Exception as e:
-                        globals.app.handle_exception(e)
+                        globals.handle_exception(e)
                         await asyncio.sleep(self.interval)
         finally:
             self._cleanup()
@@ -93,7 +93,7 @@ class Timer:
             if helpers.is_coroutine_function(self.callback):
                 await result
         except Exception as e:
-            globals.app.handle_exception(e)
+            globals.handle_exception(e)
 
     async def _connected(self, timeout: float = 60.0) -> bool:
         """Wait for the client connection before the timer callback can be allowed to manipulate the state.

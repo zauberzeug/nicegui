@@ -17,7 +17,7 @@ from .app import App
 from .client import Client
 from .dependencies import js_components, libraries
 from .error import error_content
-from .helpers import is_file
+from .helpers import is_file, safe_invoke
 from .json import NiceGUIJSONResponse
 from .middlewares import RedirectWithPrefixMiddleware
 from .page import page
@@ -94,7 +94,7 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     globals.loop = asyncio.get_running_loop()
     with globals.index_client:
         for t in globals.startup_handlers:
-            app.safe_invoke(t)
+            safe_invoke(t)
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
     background_tasks.create(outbox.loop(), name='send outbox')
     background_tasks.create(prune_clients(), name='prune clients')
@@ -114,7 +114,7 @@ async def handle_shutdown() -> None:
     globals.state = globals.State.STOPPING
     with globals.index_client:
         for t in globals.shutdown_handlers:
-            app.safe_invoke(t)
+            safe_invoke(t)
     run_executor.tear_down()
     globals.state = globals.State.STOPPED
     if globals.air:
@@ -154,9 +154,9 @@ def handle_handshake(client: Client) -> None:
         client.disconnect_task.cancel()
         client.disconnect_task = None
     for t in client.connect_handlers:
-        app.safe_invoke(t, client)
+        safe_invoke(t, client)
     for t in globals.connect_handlers:
-        app.safe_invoke(t, client)
+        safe_invoke(t, client)
 
 
 @sio.on('disconnect')
@@ -176,9 +176,9 @@ async def handle_disconnect(client: Client) -> None:
     if not client.shared:
         _delete_client(client.id)
     for t in client.disconnect_handlers:
-        app.safe_invoke(t, client)
+        safe_invoke(t, client)
     for t in globals.disconnect_handlers:
-        app.safe_invoke(t, client)
+        safe_invoke(t, client)
 
 
 @sio.on('event')
