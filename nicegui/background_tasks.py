@@ -57,4 +57,4 @@ def _handle_task_result(task: asyncio.Task) -> None:
     except asyncio.CancelledError:
         pass
     except Exception as e:
-        globals.handle_exception(e)
+        globals.app.handle_exception(e)

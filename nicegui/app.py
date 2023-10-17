@@ -1,11 +1,14 @@
+import inspect
+from contextlib import nullcontext
 from pathlib import Path
-from typing import Awaitable, Callable, Optional, Union
+from typing import Any, Awaitable, Callable, Optional, Union
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import globals, helpers  # pylint: disable=redefined-builtin
+from . import background_tasks, globals, helpers  # pylint: disable=redefined-builtin
+from .client import Client
 from .native import Native
 from .observables import ObservableSet
 from .storage import Storage
@@ -173,3 +176,30 @@ class App(FastAPI):
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""
         self.routes[:] = [r for r in self.routes if getattr(r, 'path', None) != path]
+
+    def handle_exception(self, exception: Exception) -> None:
+        """Handle an exception by invoking all registered exception handlers."""
+        for handler in self.exception_handlers:
+            result = handler() if not inspect.signature(handler).parameters else handler(exception)
+            if helpers.is_coroutine_function(handler):
+                background_tasks.create(result)
+
+    def safe_invoke(self, func: Union[Callable[..., Any], Awaitable], client: Optional[Client] = None) -> None:
+        """Invoke the potentially async function in the client context and catch any exceptions."""
+        try:
+            if isinstance(func, Awaitable):
+                async def func_with_client():
+                    with client or nullcontext():
+                        await func
+                background_tasks.create(func_with_client())
+            else:
+                with client or nullcontext():
+                    result = func(client) if len(inspect.signature(
+                        func).parameters) == 1 and client is not None else func()
+                if helpers.is_coroutine_function(func):
+                    async def result_with_client():
+                        with client or nullcontext():
+                            await result
+                    background_tasks.create(result_with_client())
+        except Exception as e:
+            self.handle_exception(e)
