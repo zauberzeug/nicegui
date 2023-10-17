@@ -411,16 +411,7 @@ class Element(Visibility):
         """
         if not globals.loop:
             return AwaitableResponse(None, None)
-        args_string = json.dumps(args)
-        return self.client.run_javascript(f'''
-              const element = getElement({self.id});
-              if (element === null || element === undefined) return;
-              if ("{name}" in element) {{
-                return element["{name}"](...{args_string});
-              }} else {{
-                return element.$refs.qRef["{name}"](...{args_string});
-              }}
-        ''')
+        return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})')
 
     def _collect_descendants(self, *, include_self: bool = False) -> List[Element]:
         elements: List[Element] = [self] if include_self else []
