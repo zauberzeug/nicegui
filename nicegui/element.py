@@ -413,12 +413,12 @@ class Element(Visibility):
             return AwaitableResponse(None, None)  # TODO: raise exception instead?
         args_string = json.dumps(args)
         return self.client.run_javascript(f'''
-              const element = getElement("{self.id}");
+              const element = getElement({self.id});
               if (element === null || element === undefined) return;
               if ("{name}" in element) {{
-                element["{name}"](...{args_string});
+                return element["{name}"](...{args_string});
               }} else {{
-                element.$refs.qRef["{name}"](...{args_string});
+                return element.$refs.qRef["{name}"](...{args_string});
               }}
         ''')  # TODO: consider globals._socket_id
 

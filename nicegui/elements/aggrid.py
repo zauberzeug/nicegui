@@ -113,7 +113,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :return: list of selected row data
         """
-        result = await self.client.run_javascript(f'return getElement({self.id}).gridOptions.api.getSelectedRows();')
+        result = await self.call_api_method('getSelectedRows')
         return cast(List[Dict], result)
 
     async def get_selected_row(self) -> Optional[Dict]:
