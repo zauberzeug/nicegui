@@ -1,3 +1,5 @@
+from selenium.webdriver import Keys
+
 from nicegui import ui
 
 from .screen import Screen
@@ -31,6 +33,10 @@ def test_select_with_input(screen: Screen):
     screen.should_contain('A')
     screen.should_contain('AB')
     screen.should_not_contain('XYZ')
+
+    screen.find_by_tag('input').send_keys('ABC' + Keys.ENTER)
+    screen.find_by_tag('input').click()
+    screen.should_not_contain('ABC')
 
 
 def test_replace_select(screen: Screen):
@@ -86,3 +92,36 @@ def test_set_options(screen:  Screen):
     screen.click('4')
     screen.should_contain('5')
     screen.should_contain('6')
+
+
+def test_add_new_values(screen:  Screen):
+    ui.select(
+        with_input=True,
+        options=['1', '2', '3'],
+        add_new_unique_values=True
+    )
+    screen.open('/')
+    screen.find_by_tag('input').send_keys('123' + Keys.TAB)
+    screen.wait(0.5)
+    screen.find_by_tag('input').click()
+    screen.should_contain('123')
+
+
+def test_add_new_values_with_multiple(screen:  Screen):
+    l = ui.label()
+    s = ui.select(
+        with_input=True,
+        options=['1', '2', '3'],
+        value='1',
+        multiple=True,
+        add_new_unique_values=True
+    ).props('use-chips')
+    l.bind_text_from(s, 'value', backward=str)
+    screen.open('/')
+    screen.should_contain("['1']")
+    screen.find_by_tag('input').send_keys('123' + Keys.ENTER)
+    screen.wait(0.5)
+    screen.find_by_tag('input').click()
+    screen.should_contain('123')
+    screen.click('123')
+    screen.should_contain("['1', '123']")
