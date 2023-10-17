@@ -410,7 +410,7 @@ class Element(Visibility):
         :param args: arguments to pass to the method
         """
         if not globals.loop:
-            return AwaitableResponse(None, None)  # TODO: raise exception instead?
+            return AwaitableResponse(None, None)
         args_string = json.dumps(args)
         return self.client.run_javascript(f'''
               const element = getElement({self.id});
@@ -420,7 +420,7 @@ class Element(Visibility):
               }} else {{
                 return element.$refs.qRef["{name}"](...{args_string});
               }}
-        ''')  # TODO: consider globals._socket_id
+        ''')
 
     def _collect_descendants(self, *, include_self: bool = False) -> List[Element]:
         elements: List[Element] = [self] if include_self else []

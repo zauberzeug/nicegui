@@ -133,12 +133,13 @@ class Client:
         You can do this by `await client.connected()` or register a callback with `client.on_connect(...)`.
         """
         request_id = str(uuid.uuid4())
+        target_id = globals._socket_id or self.id  # pylint: disable=protected-access
 
         def send_and_forget():
-            outbox.enqueue_message('run_javascript', {'code': code}, self.id)
+            outbox.enqueue_message('run_javascript', {'code': code}, target_id)
 
         async def send_and_wait():
-            outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, self.id)
+            outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
             deadline = time.time() + timeout
             while request_id not in self.waiting_javascript_commands:
                 if time.time() > deadline:
