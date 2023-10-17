@@ -410,7 +410,7 @@ class Element(Visibility):
         :param args: arguments to pass to the method
         """
         if not globals.loop:
-            return AwaitableResponse.none()  # TODO: raise exception instead?
+            return AwaitableResponse(None, None)  # TODO: raise exception instead?
         args_string = json.dumps(args)
         return self.client.run_javascript(f'''
               const element = getElement("{self.id}");

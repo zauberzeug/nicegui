@@ -124,7 +124,7 @@ class Scene(Element,
         :param args: arguments to pass to the method
         """
         if not self.is_initialized:
-            return AwaitableResponse.none()  # TODO: raise exception instead?
+            return AwaitableResponse(None, None)  # TODO: raise exception instead?
         return super().run_method(name, *args)
 
     def _handle_click(self, e: GenericEventArguments) -> None:
