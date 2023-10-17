@@ -187,6 +187,7 @@ def create_full() -> None:
     load_demo(ui.timeline)
     load_demo(ui.carousel)
     load_demo(ui.menu)
+    load_demo(ui.context_menu)
 
     @text_demo('Tooltips', '''
         Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
@@ -210,7 +211,7 @@ def create_full() -> None:
         Props with a leading `:` can contain JavaScript expressions that are evaluated on the client.
         You can also apply [Tailwind CSS](https://tailwindcss.com/) utility classes with the `classes` method.
 
-        If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
+        If you really need to apply CSS, you can use the `style` method. Here the delimiter is `;` instead of a blank space.
 
         All three functions also provide `remove` and `replace` parameters in case the predefined look is not wanted in a particular styling.
     ''')

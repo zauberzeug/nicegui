@@ -72,6 +72,9 @@ def _get_component(key: str) -> FileResponse:
 @app.on_event('startup')
 def handle_startup(with_welcome_message: bool = True) -> None:
     """Handle the startup event."""
+    # NOTE ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
+    globals.sio.eio.ping_interval = max(globals.reconnect_timeout * 0.8, 4)
+    globals.sio.eio.ping_timeout = max(globals.reconnect_timeout * 0.4, 2)
     if not globals.ui_run_has_been_called:
         raise RuntimeError('\n\n'
                            'You must call ui.run() to start the server.\n'
@@ -135,12 +138,12 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 
 @sio.on('handshake')
-def _on_handshake(sid: str, client_id: str) -> bool:
+async def _on_handshake(sid: str, client_id: str) -> bool:
     client = globals.clients.get(client_id)
     if not client:
         return False
     client.environ = sio.get_environ(sid)
-    sio.enter_room(sid, client.id)
+    await sio.enter_room(sid, client.id)
     handle_handshake(client)
     return True
 
