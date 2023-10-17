@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Dict, List, Optional, cast
 
 from .. import globals  # pylint: disable=redefined-builtin
+from ..awaitable_response import AwaitableResponse
 from ..element import Element
-from ..functions.javascript import run_javascript
 
 try:
     import pandas as pd
@@ -84,7 +84,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         super().update()
         self.run_method('update_grid')
 
-    def call_api_method(self, name: str, *args) -> None:
+    def call_api_method(self, name: str, *args) -> AwaitableResponse:
         """Call an AG Grid API method.
 
         See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>`_ for a list of methods.
@@ -92,9 +92,9 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         :param name: name of the method
         :param args: arguments to pass to the method
         """
-        self.run_method('call_api_method', name, *args)
+        return self.run_method('call_api_method', name, *args)
 
-    def call_column_api_method(self, name: str, *args) -> None:
+    def call_column_api_method(self, name: str, *args) -> AwaitableResponse:
         """Call an AG Grid Column API method.
 
         See `AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>`_ for a list of methods.
@@ -102,7 +102,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         :param name: name of the method
         :param args: arguments to pass to the method
         """
-        self.run_method('call_column_api_method', name, *args)
+        return self.run_method('call_column_api_method', name, *args)
 
     async def get_selected_rows(self) -> List[Dict]:
         """Get the currently selected rows.
@@ -113,7 +113,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :return: list of selected row data
         """
-        result = await run_javascript(f'return getElement({self.id}).gridOptions.api.getSelectedRows();')
+        result = await self.client.run_javascript(f'return getElement({self.id}).gridOptions.api.getSelectedRows();')
         return cast(List[Dict], result)
 
     async def get_selected_row(self) -> Optional[Dict]:
@@ -138,7 +138,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :return: list of row data
         """
-        result = await run_javascript(f'''
+        result = await self.client.run_javascript(f'''
             const rowData = [];
             getElement({self.id}).gridOptions.api.forEachNode(node => rowData.push(node.data));
             return rowData;

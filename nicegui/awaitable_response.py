@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Callable
 
 from . import background_tasks
@@ -22,3 +24,10 @@ class AwaitableResponse:
     def __await__(self):
         self.fire_and_forget_task.cancel()
         return self.wait_for_result().__await__()
+
+    @staticmethod
+    def none() -> AwaitableResponse:
+        """Return an AwaitableResponse that does nothing."""
+        async def do_nothing():
+            return None
+        return AwaitableResponse(lambda: None, do_nothing)

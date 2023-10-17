@@ -277,15 +277,6 @@
                 this.elements[element.id] = element;
               }
             },
-            run_method: (msg) => {
-              const element = getElement(msg.id);
-              if (element === null || element === undefined) return;
-              if (msg.name in element) {
-                element[msg.name](...msg.args);
-              } else {
-                element.$refs.qRef[msg.name](...msg.args);
-              }
-            },
             run_javascript: (msg) => runJavascript(msg['code'], msg['request_id']),
             open: (msg) => {
               const url = msg.path.startsWith('/') ? "{{ prefix | safe }}" + msg.path : msg.path;
