@@ -12,7 +12,7 @@ kill_timeout = "5s"
   dockerfile = "fly.dockerfile"
 
 [deploy]
-  strategy = "bluegreen"
+  strategy = "canary"
 
 [processes]
   app = ""
@@ -37,8 +37,8 @@ kill_timeout = "5s"
     port = 443
     handlers = ["tls", "http"]
   [services.concurrency]
-    type = "connections"
-    hard_limit = 80
+    type = "requests"
+    hard_limit = 60
     soft_limit = 30
 
   [[services.tcp_checks]]
