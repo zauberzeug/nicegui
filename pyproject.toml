@@ -53,7 +53,7 @@ webdriver-manager = "^3.8.6"
 numpy = ">=1.24.0"
 selenium = "^4.11.2"
 beautifulsoup4 = "^4.12.2"
-urllib3 = ">=1.26.17,^1.26 || >=2.0.6" # https://github.com/zauberzeug/nicegui/security/dependabot/22
+urllib3 = ">=1.26.18,^1.26 || >=2.0.7" # https://github.com/zauberzeug/nicegui/security/dependabot/23
 
 [build-system]
 requires = [
