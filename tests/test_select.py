@@ -97,9 +97,8 @@ def test_set_options(screen:  Screen):
 def test_add_new_values(screen:  Screen):
     ui.select(
         with_input=True,
-        options=['1', '2', '3'],
-        add_new_unique_values=True
-    )
+        options=['1', '2', '3']
+    ).props('new-value-mode="add-unique"')
     screen.open('/')
     screen.find_by_tag('input').send_keys('123' + Keys.TAB)
     screen.wait(0.5)
@@ -113,9 +112,8 @@ def test_add_new_values_with_multiple(screen:  Screen):
         with_input=True,
         options=['1', '2', '3'],
         value='1',
-        multiple=True,
-        add_new_unique_values=True
-    ).props('use-chips')
+        multiple=True
+    ).props('use-chips new-value-mode="add-unique"')
     l.bind_text_from(s, 'value', backward=str)
     screen.open('/')
     screen.should_contain("['1']")

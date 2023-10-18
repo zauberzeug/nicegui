@@ -17,7 +17,6 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
                  with_input: bool = False,
                  multiple: bool = False,
                  clearable: bool = False,
-                 add_new_unique_values: bool = False,
                  ) -> None:
         """Dropdown Selection
 
@@ -32,7 +31,6 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
         :param with_input: whether to show an input field to filter the options
         :param multiple: whether to allow multiple selections
         :param clearable: whether to add a button to clear the selection
-        :param add_new_unique_values: allow to add new unique values, equivalent to `new-value-mode="add-unique"`. Is only applied if `with_input == True`.
         """
         self.multiple = multiple
         if multiple:
@@ -49,8 +47,6 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
             self._props['hide-selected'] = not multiple
             self._props['fill-input'] = True
             self._props['input-debounce'] = 0
-            if add_new_unique_values:
-                self._props['new-value-mode'] = 'add-unique'
         self._props['multiple'] = multiple
         self._props['clearable'] = clearable
 
