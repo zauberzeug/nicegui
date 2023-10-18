@@ -1,4 +1,3 @@
-import re
 from copy import deepcopy
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -19,6 +18,8 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
                  clearable: bool = False,
                  ) -> None:
         """Dropdown Selection
+
+        This element is based on Quasar's `QSelect <https://quasar.dev/vue-components/select>`_ component.
 
         The options can be specified as a list of values, or as a dictionary mapping values to labels.
         After manipulating the options, call `update()` to update the options in the UI.
@@ -48,29 +49,19 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
         self._props['multiple'] = multiple
         self._props['clearable'] = clearable
 
-    def on_filter(self, e: GenericEventArguments) -> None:
-        assert isinstance(e.args, str)
-        self.options = [
-            option
-            for option in self.original_options
-            if not e.args or re.search(e.args, option, re.IGNORECASE)
-        ]
-        self.update()
-
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+        # pylint: disable=no-else-return
         if self.multiple:
             if e.args is None:
                 return []
-            else:
-                assert isinstance(e.args, list)
-                return [self._values[arg['value']] for arg in e.args]
+            return [self._values[arg['value']] for arg in e.args]
         else:
             if e.args is None:
                 return None
-            else:
-                return self._values[e.args['value']]
+            return self._values[e.args['value']]
 
     def _value_to_model_value(self, value: Any) -> Any:
+        # pylint: disable=no-else-return
         if self.multiple:
             result = []
             for item in value or []:

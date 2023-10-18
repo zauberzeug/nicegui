@@ -1,52 +1,80 @@
+/* prevent q-layout from getting strange outline when focussed */
 .nicegui-layout {
   outline: 2px solid transparent;
   outline-offset: 2px;
 }
+
+/* flex containers */
+.nicegui-content,
 .nicegui-header,
-.nicegui-footer {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 16px;
-}
-.nicegui-drawer {
-  padding: 16px;
-}
-.nicegui-content {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 16px;
-}
-.nicegui-row {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 1rem;
-}
+.nicegui-footer,
+.nicegui-drawer,
+.nicegui-tab-panel,
+.nicegui-card,
+.nicegui-carousel-slide,
+.nicegui-step .q-stepper__nav,
+.nicegui-step .q-stepper__step-inner,
+.nicegui-expansion .q-expansion-item__content,
+.nicegui-scroll-area .q-scrollarea__content,
+.nicegui-splitter .q-splitter__panel,
+.nicegui-timeline-entry .q-timeline__content,
+.nicegui-row,
 .nicegui-column {
   display: flex;
   flex-direction: column;
-  flex-wrap: wrap;
   align-items: flex-start;
   gap: 1rem;
+  padding: 1rem;
 }
+.nicegui-header,
+.nicegui-footer,
+.nicegui-step .q-stepper__nav,
+.nicegui-row {
+  flex-direction: row;
+}
+.nicegui-row,
+.nicegui-column {
+  padding: 0;
+}
+
+/* original padding for some Quasar elements */
+.nicegui-step .q-stepper__nav {
+  padding: 8px 0 0 0;
+  gap: 8px;
+}
+.nicegui-timeline-entry .q-timeline__content {
+  padding: 0 0 24px 0;
+}
+.nicegui-splitter .q-splitter__panel {
+  padding: 0;
+}
+
+/* let step content fill the whole stepper for easier layout manipulation (#1788) */
+.nicegui-stepper {
+  display: flex;
+  flex-direction: column;
+}
+.nicegui-stepper .q-stepper__content {
+  flex-grow: 1;
+}
+.nicegui-stepper .q-stepper__step-content,
+.nicegui-stepper .q-stepper__step-inner {
+  height: 100%;
+}
+
+/* HACK: avoid stutter when expansion item is toggled */
+.nicegui-expansion .q-expansion-item__content {
+  padding: 0 1rem;
+}
+.nicegui-expansion .q-expansion-item__content::before,
+.nicegui-expansion .q-expansion-item__content::after {
+  content: ""; /* the gap compensates for the missing vertical padding */
+}
+
+/* other NiceGUI elements */
 .nicegui-grid {
   display: grid;
   gap: 1rem;
-}
-.nicegui-card {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 16px;
 }
 .nicegui-link:link,
 .nicegui-link:visited {
@@ -60,14 +88,8 @@
 .nicegui-separator {
   width: 100%;
 }
-.nicegui-aggrid {
-  width: 100%;
-  height: 16rem;
-}
-.nicegui-echart {
-  width: 100%;
-  height: 16rem;
-}
+.nicegui-aggrid,
+.nicegui-echart,
 .nicegui-scroll-area {
   width: 100%;
   height: 16rem;
@@ -93,14 +115,26 @@
   padding: 0.5rem;
   border: 1px solid #8884;
 }
+h6.q-timeline__title {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+.nicegui-code {
+  position: relative;
+  background-color: rgba(127, 159, 191, 0.1);
+  border: 1pt solid rgba(127, 159, 191, 0.15);
+  box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
+  border-radius: 0.25rem;
+}
 
+/* connection popup */
 #popup {
   position: fixed;
   bottom: 0;
   left: 0;
-  border: 1pt solid rgba(127, 127, 127, 0.25);
+  border: 1pt solid rgba(127, 159, 191, 0.25);
   border-radius: 0.25em;
-  box-shadow: 0 0 0.5em rgba(127, 127, 127, 0.05);
+  box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
   margin: 2em;
   padding: 1.5em 4em;
   display: flex;
@@ -109,6 +143,7 @@
   opacity: 0;
   transition-duration: 500ms;
   pointer-events: none;
+  z-index: 1000;
 }
 .body--dark #popup {
   background-color: black;

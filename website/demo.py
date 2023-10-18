@@ -4,7 +4,7 @@ from typing import Callable, Literal, Optional, Union
 
 import isort
 
-from nicegui import ui
+from nicegui import helpers, ui
 
 from .intersection_observer import IntersectionObserver as intersection_observer
 
@@ -52,8 +52,16 @@ def demo(f: Callable) -> Callable:
                 .classes('absolute right-2 top-10 opacity-10 hover:opacity-80 cursor-pointer') \
                 .on('click', copy_code, [])
         with browser_window(title=getattr(f, 'tab', None),
-                            classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
-            intersection_observer(on_intersection=f)
+                            classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window') as window:
+            spinner = ui.spinner(size='lg').props('thickness=2')
+
+            async def handle_intersection():
+                window.remove(spinner)
+                if helpers.is_coroutine_function(f):
+                    await f()
+                else:
+                    f()
+            intersection_observer(on_intersection=handle_intersection)
     return f
 
 
@@ -64,9 +72,9 @@ def _dots() -> None:
         ui.icon('circle').classes('text-[13px] text-green-400')
 
 
-def window(type: WindowType, *, title: str = '', tab: Union[str, Callable] = '', classes: str = '') -> ui.column:
+def window(type_: WindowType, *, title: str = '', tab: Union[str, Callable] = '', classes: str = '') -> ui.column:
     bar_color = ('#00000010', '#ffffff10')
-    color = WINDOW_BG_COLORS[type]
+    color = WINDOW_BG_COLORS[type_]
     with ui.card().classes(f'no-wrap bg-[{color[0]}] dark:bg-[{color[1]}] rounded-xl p-0 gap-0 {classes}') \
             .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
         with ui.row().classes(f'w-full h-8 p-2 bg-[{bar_color[0]}] dark:bg-[{bar_color[1]}]'):
@@ -81,7 +89,10 @@ def window(type: WindowType, *, title: str = '', tab: Union[str, Callable] = '',
                         ui.label().classes(
                             f'w-full h-full bg-[{bar_color[0]}] dark:bg-[{bar_color[1]}] rounded-br-[6px]')
                     with ui.row().classes(f'text-sm text-gray-600 dark:text-gray-400 px-6 py-1 h-[24px] rounded-t-[6px] bg-[{color[0]}] dark:bg-[{color[1]}] items-center gap-2'):
-                        tab() if callable(tab) else ui.label(tab)
+                        if callable(tab):
+                            tab()
+                        else:
+                            ui.label(tab)
                     with ui.label().classes(f'w-2 h-[24px] bg-[{color[0]}] dark:bg-[{color[1]}]'):
                         ui.label().classes(
                             f'w-full h-full bg-[{bar_color[0]}] dark:bg-[{bar_color[1]}] rounded-bl-[6px]')

@@ -32,11 +32,7 @@ jobs:
       - name: test startup
         run: ./test_startup.sh
       - name: setup chromedriver
-        uses: nanasess/setup-chromedriver@v2.1.1
-        with:
-          # XXX: This is an unfortunate workaround due to this issue:
-          # https://github.com/nanasess/setup-chromedriver/issues/199
-          chromedriver-version: "115.0.5790.102"
+        uses: nanasess/setup-chromedriver@v2.2.0
       - name: pytest
         run: pytest
       - name: upload screenshots

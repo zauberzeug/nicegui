@@ -23,7 +23,7 @@ def test_moving_sphere_with_timer(screen: Screen):
             except JavascriptException as e:
                 print(e.msg, flush=True)
             screen.wait(1.0)
-        raise Exception('Could not get position')
+        raise RuntimeError('Could not get position')
 
     screen.wait(0.2)
     assert position() > 0
@@ -44,9 +44,11 @@ def test_no_object_duplication_on_index_client(screen: Screen):
 
 
 def test_no_object_duplication_with_page_builder(screen: Screen):
+    scene: ui.scene
+
     @ui.page('/')
     def page():
-        global scene
+        nonlocal scene
         with ui.scene() as scene:
             sphere = scene.sphere().move(0, -4, 0)
             ui.timer(0.1, lambda: sphere.move(0, sphere.y + 0.5, 0))
@@ -98,7 +100,7 @@ def test_replace_scene(screen: Screen):
 
 
 def test_create_dynamically(screen: Screen):
-    ui.button('Create', on_click=lambda: ui.scene())
+    ui.button('Create', on_click=ui.scene)
 
     screen.open('/')
     screen.click('Create')

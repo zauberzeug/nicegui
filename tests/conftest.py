@@ -9,7 +9,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 
-from nicegui import Client, globals
+from nicegui import Client, binding, globals  # pylint: disable=redefined-builtin
 from nicegui.elements import plotly, pyplot
 from nicegui.page import page
 
@@ -22,6 +22,8 @@ icecream.install()
 
 @pytest.fixture
 def chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeOptions:
+    chrome_options.add_argument('disable-dev-shm-using')
+    chrome_options.add_argument('no-sandbox')
     chrome_options.add_argument('headless')
     chrome_options.add_argument('disable-gpu')
     chrome_options.add_argument('window-size=600x600')
@@ -30,6 +32,8 @@ def chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeO
         "download.prompt_for_download": False,  # To auto download the file
         "download.directory_upgrade": True,
     })
+    if 'CHROME_BINARY_LOCATION' in os.environ:
+        chrome_options.binary_location = os.environ['CHROME_BINARY_LOCATION']
     return chrome_options
 
 
@@ -47,7 +51,9 @@ def reset_globals() -> Generator[None, None, None]:
     globals.app.middleware_stack = None
     globals.app.user_middleware.clear()
     # NOTE favicon routes must be removed separately because they are not "pages"
-    [globals.app.routes.remove(r) for r in globals.app.routes if r.path.endswith('/favicon.ico')]
+    for route in globals.app.routes:
+        if route.path.endswith('/favicon.ico'):
+            globals.app.routes.remove(route)
     importlib.reload(globals)
     # repopulate globals.optional_features
     importlib.reload(plotly)
@@ -55,6 +61,7 @@ def reset_globals() -> Generator[None, None, None]:
     globals.app.storage.clear()
     globals.index_client = Client(page('/'), shared=True).__enter__()
     globals.app.get('/')(globals.index_client.build_response)
+    binding.reset()
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -67,22 +74,22 @@ def remove_all_screenshots() -> None:
 @pytest.fixture(scope='function')
 def driver(chrome_options: webdriver.ChromeOptions) -> webdriver.Chrome:
     s = Service()
-    driver = webdriver.Chrome(service=s, options=chrome_options)
-    driver.implicitly_wait(Screen.IMPLICIT_WAIT)
-    driver.set_page_load_timeout(4)
-    yield driver
-    driver.quit()
+    driver_ = webdriver.Chrome(service=s, options=chrome_options)
+    driver_.implicitly_wait(Screen.IMPLICIT_WAIT)
+    driver_.set_page_load_timeout(4)
+    yield driver_
+    driver_.quit()
 
 
 @pytest.fixture
 def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture) \
         -> Generator[Screen, None, None]:
-    screen = Screen(driver, caplog)
-    yield screen
-    if screen.is_open:
-        screen.shot(request.node.name)
-    logs = screen.caplog.get_records('call')
+    screen_ = Screen(driver, caplog)
+    yield screen_
+    if screen_.is_open:
+        screen_.shot(request.node.name)
+    logs = screen_.caplog.get_records('call')
     assert not logs, f'There were unexpected logs:\n-------\n{logs}\n-------'
-    screen.stop_server()
+    screen_.stop_server()
     if DOWNLOAD_DIR.exists():
         shutil.rmtree(DOWNLOAD_DIR)

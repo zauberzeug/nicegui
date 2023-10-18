@@ -2,7 +2,7 @@ import asyncio
 
 from selenium.webdriver.common.by import By
 
-from nicegui import Client, app, background_tasks, ui
+from nicegui import Client, background_tasks, ui
 
 from .screen import Screen
 
@@ -74,13 +74,13 @@ def test_autoupdate_after_connected(screen: Screen):
 
 
 def test_autoupdate_on_async_event_handler(screen: Screen):
-    async def open():
+    async def open_dialog():
         with ui.dialog() as dialog, ui.card():
             l = ui.label('This should be visible')
         dialog.open()
         await asyncio.sleep(1)
         l.text = 'New text after 1 second'
-    ui.button('Dialog', on_click=open)
+    ui.button('Dialog', on_click=open_dialog)
 
     screen.open('/')
     screen.click('Dialog')

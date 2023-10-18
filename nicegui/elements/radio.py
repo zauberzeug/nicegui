@@ -14,6 +14,8 @@ class Radio(ChoiceElement, DisableableElement):
                  ) -> None:
         """Radio Selection
 
+        This element is based on Quasar's `QRadio <https://quasar.dev/vue-components/radio>`_ component.
+
         The options can be specified as a list of values, or as a dictionary mapping values to labels.
         After manipulating the options, call `update()` to update the options in the UI.
 
@@ -24,7 +26,6 @@ class Radio(ChoiceElement, DisableableElement):
         super().__init__(tag='q-option-group', options=options, value=value, on_change=on_change)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
-        assert isinstance(e.args, int)
         return self._values[e.args]
 
     def _value_to_model_value(self, value: Any) -> Any:

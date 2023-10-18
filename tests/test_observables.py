@@ -2,10 +2,11 @@ import asyncio
 import sys
 
 from nicegui import ui
-from nicegui.observables import make_observable
+from nicegui.observables import ObservableDict, ObservableList, ObservableSet
 
 from .screen import Screen
 
+# pylint: disable=global-statement
 count = 0
 
 
@@ -27,7 +28,7 @@ async def increment_counter_slowly(_):
 
 def test_observable_dict():
     reset_counter()
-    data = make_observable({}, increment_counter)
+    data = ObservableDict(on_change=increment_counter)
     data['a'] = 1
     assert count == 1
     del data['a']
@@ -49,7 +50,7 @@ def test_observable_dict():
 
 def test_observable_list():
     reset_counter()
-    data = make_observable([], increment_counter)
+    data = ObservableList(on_change=increment_counter)
     data.append(1)
     assert count == 1
     data.extend([2, 3, 4])
@@ -58,7 +59,7 @@ def test_observable_list():
     assert count == 3
     data.remove(1)
     assert count == 4
-    data.pop()
+    data.pop(-1)
     assert count == 5
     data.sort()
     assert count == 6
@@ -80,7 +81,7 @@ def test_observable_list():
 
 def test_observable_set():
     reset_counter()
-    data = make_observable({1, 2, 3, 4, 5}, increment_counter)
+    data = ObservableSet({1, 2, 3, 4, 5}, on_change=increment_counter)
     data.add(1)
     assert count == 1
     data.remove(1)
@@ -111,12 +112,12 @@ def test_observable_set():
 
 def test_nested_observables():
     reset_counter()
-    data = make_observable({
+    data = ObservableDict({
         'a': 1,
         'b': [1, 2, 3, {'x': 1, 'y': 2, 'z': 3}],
         'c': {'x': 1, 'y': 2, 'z': 3, 't': [1, 2, 3]},
         'd': {1, 2, 3},
-    }, increment_counter)
+    }, on_change=increment_counter)
     data['a'] = 42
     assert count == 1
     data['b'].append(4)
@@ -133,7 +134,7 @@ def test_nested_observables():
 
 def test_async_handler(screen: Screen):
     reset_counter()
-    data = make_observable([], increment_counter_slowly)
+    data = ObservableList(on_change=increment_counter_slowly)
     ui.button('Append 42', on_click=lambda: data.append(42))
 
     screen.open('/')
@@ -141,4 +142,15 @@ def test_async_handler(screen: Screen):
 
     screen.click('Append 42')
     screen.wait(0.5)
+    assert count == 1
+
+
+def test_setting_change_handler():
+    reset_counter()
+    data = ObservableList()
+    data.append(1)
+    assert count == 0
+
+    data.on_change(increment_counter)
+    data.append(2)
     assert count == 1

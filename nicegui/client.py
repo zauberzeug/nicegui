@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import asyncio
 import time
 import uuid
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterable, List, Optional, Union
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -10,10 +12,11 @@ from fastapi.templating import Jinja2Templates
 
 from nicegui import json
 
-from . import __version__, globals, outbox
+from . import binding, globals, outbox  # pylint: disable=redefined-builtin
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
+from .version import __version__
 
 if TYPE_CHECKING:
     from .page import page
@@ -23,7 +26,7 @@ templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
 class Client:
 
-    def __init__(self, page: 'page', *, shared: bool = False) -> None:
+    def __init__(self, page: page, *, shared: bool = False) -> None:
         self.id = str(uuid.uuid4())
         self.created = time.time()
         globals.clients[self.id] = self
@@ -35,6 +38,7 @@ class Client:
         self.environ: Optional[Dict[str, Any]] = None
         self.shared = shared
         self.on_air = False
+        self.disconnect_task: Optional[asyncio.Task] = None
 
         with Element('q-layout', _client=self).props('view="hhh lpr fff"').classes('nicegui-layout') as self.layout:
             with Element('q-page-container') as self.page_container:
@@ -54,7 +58,7 @@ class Client:
     @property
     def ip(self) -> Optional[str]:
         """Return the IP address of the client, or None if the client is not connected."""
-        return self.environ['asgi.scope']['client'][0] if self.has_socket_connection else None
+        return self.environ['asgi.scope']['client'][0] if self.environ else None  # pylint: disable=unsubscriptable-object
 
     @property
     def has_socket_connection(self) -> bool:
@@ -69,8 +73,11 @@ class Client:
         self.content.__exit__()
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
+        """Build a FastAPI response for the client."""
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
-        elements = json.dumps({id: element._to_dict() for id, element in self.elements.items()})
+        elements = json.dumps({
+            id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
+        })
         socket_io_js_query_params = {**globals.socket_io_js_query_params, 'client_id': self.id}
         vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse('index.html', {
@@ -157,3 +164,18 @@ class Client:
     def on_disconnect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
         """Register a callback to be called when the client disconnects."""
         self.disconnect_handlers.append(handler)
+
+    def remove_elements(self, elements: Iterable[Element]) -> None:
+        """Remove the given elements from the client."""
+        binding.remove(elements, Element)
+        element_ids = [element.id for element in elements]
+        for element_id in element_ids:
+            del self.elements[element_id]
+        for element in elements:
+            element._handle_delete()  # pylint: disable=protected-access
+            element._deleted = True  # pylint: disable=protected-access
+            outbox.enqueue_delete(element)
+
+    def remove_all_elements(self) -> None:
+        """Remove all elements from the client."""
+        self.remove_elements(self.elements.values())

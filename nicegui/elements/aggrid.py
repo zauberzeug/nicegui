@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import logging
 from typing import Dict, List, Optional, cast
 
-from .. import globals
+from .. import globals  # pylint: disable=redefined-builtin
 from ..element import Element
 from ..functions.javascript import run_javascript
 
@@ -46,14 +45,31 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
                     options: Dict = {}) -> AgGrid:
         """Create an AG Grid from a Pandas DataFrame.
 
+        Note:
+        If the DataFrame contains non-serializable columns of type `datetime64[ns]`, `timedelta64[ns]`, `complex128` or `period[M]`,
+        they will be converted to strings.
+        To use a different conversion, convert the DataFrame manually before passing it to this method.
+        See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
+
         :param df: Pandas DataFrame
         :param theme: AG Grid theme (default: 'balham')
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
         :param options: dictionary of additional AG Grid options
         :return: AG Grid element
         """
+        date_cols = df.columns[df.dtypes == 'datetime64[ns]']
+        time_cols = df.columns[df.dtypes == 'timedelta64[ns]']
+        complex_cols = df.columns[df.dtypes == 'complex128']
+        period_cols = df.columns[df.dtypes == 'period[M]']
+        if len(date_cols) != 0 or len(time_cols) != 0 or len(complex_cols) != 0 or len(period_cols) != 0:
+            df = df.copy()
+            df[date_cols] = df[date_cols].astype(str)
+            df[time_cols] = df[time_cols].astype(str)
+            df[complex_cols] = df[complex_cols].astype(str)
+            df[period_cols] = df[period_cols].astype(str)
+
         return AgGrid({
-            'columnDefs': [{'field': col} for col in df.columns],
+            'columnDefs': [{'field': str(col)} for col in df.columns],
             'rowData': df.to_dict('records'),
             'suppressDotNotation': True,
             **options,
@@ -61,6 +77,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
     @property
     def options(self) -> Dict:
+        """The options dictionary."""
         return self._props['options']
 
     def update(self) -> None:

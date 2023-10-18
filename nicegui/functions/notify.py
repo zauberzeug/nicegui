@@ -1,6 +1,6 @@
 from typing import Any, Literal, Optional, Union
 
-from .. import globals, outbox
+from .. import globals, outbox  # pylint: disable=redefined-builtin
 
 ARG_MAP = {
     'close_button': 'closeBtn',
@@ -8,10 +8,27 @@ ARG_MAP = {
 }
 
 
+# pylint: disable=unused-argument
 def notify(message: Any, *,
-           position: Literal['top-left', 'top-right', 'bottom-left', 'bottom-right', 'top', 'bottom', 'left', 'right', 'center'] = 'bottom',
+           position: Literal[
+               'top-left',
+               'top-right',
+               'bottom-left',
+               'bottom-right',
+               'top',
+               'bottom',
+               'left',
+               'right',
+               'center',
+           ] = 'bottom',
            close_button: Union[bool, str] = False,
-           type: Optional[Literal['positive', 'negative', 'warning', 'info', 'ongoing']] = None,
+           type: Optional[Literal[  # pylint: disable=redefined-builtin
+               'positive',
+               'negative',
+               'warning',
+               'info',
+               'ongoing',
+           ]] = None,
            color: Optional[str] = None,
            multi_line: bool = False,
            **kwargs: Any,
@@ -32,4 +49,7 @@ def notify(message: Any, *,
     options = {ARG_MAP.get(key, key): value for key, value in locals().items() if key != 'kwargs' and value is not None}
     options['message'] = str(message)
     options.update(kwargs)
-    outbox.enqueue_message('notify', options, globals.get_client().id)
+    if globals.get_client().has_socket_connection:
+        outbox.enqueue_message('notify', options, globals.get_client().id)
+    else:
+        globals.log.warning(f'Ignoring notification "{message}" because the client is not connected.')

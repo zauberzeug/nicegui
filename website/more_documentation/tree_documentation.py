@@ -34,26 +34,21 @@ def more() -> None:
             <span :props="props">Description: "{{ props.node.description }}"</span>
         ''')
 
-    @text_demo('Expand programmatically', '''
-        The tree can be expanded programmatically by modifying the "expanded" prop.
+    @text_demo('Expand and collapse programmatically', '''
+        The whole tree or individual nodes can be toggled programmatically using the `expand()` and `collapse()` methods.
+        This even works if a node is disabled (e.g. not clickable by the user).
     ''')
     def expand_programmatically():
-        from typing import List
-
-        def expand(node_ids: List[str]) -> None:
-            t._props['expanded'] = node_ids
-            t.update()
+        t = ui.tree([
+            {'id': 'A', 'children': [{'id': 'A1'}, {'id': 'A2'}], 'disabled': True},
+            {'id': 'B', 'children': [{'id': 'B1'}, {'id': 'B2'}]},
+        ], label_key='id').expand()
 
         with ui.row():
-            ui.button('all', on_click=lambda: expand(['A', 'B']))
-            ui.button('A', on_click=lambda: expand(['A']))
-            ui.button('B', on_click=lambda: expand(['B']))
-            ui.button('none', on_click=lambda: expand([]))
-
-        t = ui.tree([
-            {'id': 'A', 'children': [{'id': 'A1'}, {'id': 'A2'}]},
-            {'id': 'B', 'children': [{'id': 'B1'}, {'id': 'B2'}]},
-        ], label_key='id')
+            ui.button('+ all', on_click=t.expand)
+            ui.button('- all', on_click=t.collapse)
+            ui.button('+ A', on_click=lambda: t.expand(['A']))
+            ui.button('- A', on_click=lambda: t.collapse(['A']))
 
     @text_demo('Tree with checkboxes', '''
         The tree can be used with checkboxes by setting the "tick-strategy" prop.

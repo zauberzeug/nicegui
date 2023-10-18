@@ -9,7 +9,7 @@ class Dialog(ValueElement):
     def __init__(self, *, value: bool = False) -> None:
         """Dialog
 
-        Creates a dialog.
+        Creates a dialog based on Quasar's `QDialog <https://quasar.dev/vue-components/dialog>`_ component.
         By default it is dismissible by clicking or pressing ESC.
         To make it persistent, set `.props('persistent')` on the dialog element.
 
@@ -21,31 +21,35 @@ class Dialog(ValueElement):
 
     @property
     def submitted(self) -> asyncio.Event:
+        """An event that is set when the dialog is submitted."""
         if self._submitted is None:
             self._submitted = asyncio.Event()
         return self._submitted
 
     def open(self) -> None:
+        """Open the dialog."""
         self.value = True
 
     def close(self) -> None:
+        """Close the dialog."""
         self.value = False
 
     def __await__(self):
         self._result = None
         self.submitted.clear()
         self.open()
-        yield from self.submitted.wait().__await__()
+        yield from self.submitted.wait().__await__()  # pylint: disable=no-member
         result = self._result
         self.close()
         return result
 
     def submit(self, result: Any) -> None:
+        """Submit the dialog with the given result."""
         self._result = result
         self.submitted.set()
 
-    def on_value_change(self, value: Any) -> None:
-        super().on_value_change(value)
+    def _handle_value_change(self, value: Any) -> None:
+        super()._handle_value_change(value)
         if not self.value:
             self._result = None
             self.submitted.set()

@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from .. import binding, globals
+from typing_extensions import Self
+
+from .. import binding, globals  # pylint: disable=redefined-builtin
+from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..events import (GenericEventArguments, SceneClickEventArguments, SceneClickHit, SceneDragEventArguments,
                       handle_event)
-from ..helpers import KWONLY_SLOTS
 from .scene_object3d import Object3D
 
 
@@ -38,6 +40,7 @@ class Scene(Element,
                 'lib/three/modules/OrbitControls.js',
                 'lib/three/modules/STLLoader.js',
             ]):
+    # pylint: disable=import-outside-toplevel
     from .scene_objects import Box as box
     from .scene_objects import Curve as curve
     from .scene_objects import Cylinder as cylinder
@@ -85,19 +88,20 @@ class Scene(Element,
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
-        self.on_click = on_click
-        self.on_drag_start = on_drag_start
-        self.on_drag_end = on_drag_end
+        self._click_handler = on_click
+        self._drag_start_handler = on_drag_start
+        self._drag_end_handler = on_drag_end
         self.is_initialized = False
-        self.on('init', self.handle_init)
-        self.on('click3d', self.handle_click)
-        self.on('dragstart', self.handle_drag)
-        self.on('dragend', self.handle_drag)
+        self.on('init', self._handle_init)
+        self.on('click3d', self._handle_click)
+        self.on('dragstart', self._handle_drag)
+        self.on('dragend', self._handle_drag)
         self._props['drag_constraints'] = drag_constraints
 
-    def __enter__(self) -> 'Scene':
+    def __enter__(self) -> Self:
         Object3D.current_scene = self
-        return super().__enter__()
+        super().__enter__()
+        return self
 
     def __getattribute__(self, name: str) -> Any:
         attribute = super().__getattribute__(name)
@@ -105,19 +109,24 @@ class Scene(Element,
             Object3D.current_scene = self
         return attribute
 
-    def handle_init(self, e: GenericEventArguments) -> None:
+    def _handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True
         with globals.socket_id(e.args['socket_id']):
             self.move_camera(duration=0)
-            for object in self.objects.values():
-                object.send()
+            for obj in self.objects.values():
+                obj.send()
 
     def run_method(self, name: str, *args: Any) -> None:
+        """Run a method on the client.
+
+        :param name: name of the method
+        :param args: arguments to pass to the method
+        """
         if not self.is_initialized:
             return
         super().run_method(name, *args)
 
-    def handle_click(self, e: GenericEventArguments) -> None:
+    def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
             sender=self,
             client=self.client,
@@ -135,9 +144,9 @@ class Scene(Element,
                 z=hit['point']['z'],
             ) for hit in e.args['hits']],
         )
-        handle_event(self.on_click, arguments)
+        handle_event(self._click_handler, arguments)
 
-    def handle_drag(self, e: GenericEventArguments) -> None:
+    def _handle_drag(self, e: GenericEventArguments) -> None:
         arguments = SceneDragEventArguments(
             sender=self,
             client=self.client,
@@ -150,7 +159,7 @@ class Scene(Element,
         )
         if arguments.type == 'dragend':
             self.objects[arguments.object_id].move(arguments.x, arguments.y, arguments.z)
-        handle_event(self.on_drag_start if arguments.type == 'dragstart' else self.on_drag_end, arguments)
+        handle_event(self._drag_start_handler if arguments.type == 'dragstart' else self._drag_end_handler, arguments)
 
     def __len__(self) -> int:
         return len(self.objects)
@@ -166,6 +175,19 @@ class Scene(Element,
                     up_y: Optional[float] = None,
                     up_z: Optional[float] = None,
                     duration: float = 0.5) -> None:
+        """Move the camera to a new position.
+
+        :param x: camera x position
+        :param y: camera y position
+        :param z: camera z position
+        :param look_at_x: camera look-at x position
+        :param look_at_y: camera look-at y position
+        :param look_at_z: camera look-at z position
+        :param up_x: x component of the camera up vector
+        :param up_y: y component of the camera up vector
+        :param up_z: z component of the camera up vector
+        :param duration: duration of the movement in seconds (default: `0.5`)
+        """
         self.camera.x = self.camera.x if x is None else x
         self.camera.y = self.camera.y if y is None else y
         self.camera.z = self.camera.z if z is None else z
@@ -180,12 +202,20 @@ class Scene(Element,
                         self.camera.look_at_x, self.camera.look_at_y, self.camera.look_at_z,
                         self.camera.up_x, self.camera.up_y, self.camera.up_z, duration)
 
-    def delete(self) -> None:
+    def _handle_delete(self) -> None:
         binding.remove(list(self.objects.values()), Object3D)
-        super().delete()
+        super()._handle_delete()
+
+    def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:
+        """Remove objects from the scene.
+
+        :param predicate: function which returns `True` for objects which should be deleted
+        """
+        for obj in list(self.objects.values()):
+            if predicate(obj):
+                obj.delete()
 
     def clear(self) -> None:
         """Remove all objects from the scene."""
         super().clear()
-        for object in list(self.objects.values()):
-            object.delete()
+        self.delete_objects()

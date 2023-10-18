@@ -4,7 +4,7 @@ from functools import lru_cache
 from typing import List
 
 import markdown2
-from pygments.formatters import HtmlFormatter
+from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-module
 
 from .mermaid import Mermaid
 from .mixins.content_element import ContentElement
@@ -31,7 +31,7 @@ class Markdown(ContentElement, component='markdown.js'):
             self._props['use_mermaid'] = True
             self.libraries.append(Mermaid.exposed_libraries[0])
 
-    def on_content_change(self, content: str) -> None:
+    def _handle_content_change(self, content: str) -> None:
         html = prepare_content(content, extras=' '.join(self.extras))
         if self._props.get('innerHTML') != html:
             self._props['innerHTML'] = html
@@ -40,11 +40,13 @@ class Markdown(ContentElement, component='markdown.js'):
 
 @lru_cache(maxsize=int(os.environ.get('MARKDOWN_CONTENT_CACHE_SIZE', '1000')))
 def prepare_content(content: str, extras: str) -> str:
+    """Render Markdown content to HTML."""
     html = markdown2.markdown(remove_indentation(content), extras=extras.split())
     return apply_tailwind(html)  # we need explicit Markdown styling because tailwind CSS removes all default styles
 
 
 def apply_tailwind(html: str) -> str:
+    """Apply tailwind CSS classes to the HTML."""
     rep = {
         '<h1': '<h1 class="text-5xl mb-4 mt-6"',
         '<h2': '<h2 class="text-4xl mb-3 mt-5"',

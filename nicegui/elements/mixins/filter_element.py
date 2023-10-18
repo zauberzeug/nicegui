@@ -1,6 +1,6 @@
 from typing import Any, Callable, Optional
 
-from typing_extensions import Self
+from typing_extensions import Self, cast
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
@@ -8,9 +8,10 @@ from ...element import Element
 
 class FilterElement(Element):
     FILTER_PROP = 'filter'
-    filter = BindableProperty(on_change=lambda sender, filter: sender.on_filter_change(filter))
+    filter = BindableProperty(
+        on_change=lambda sender, filter: cast(Self, sender)._handle_filter_change(filter))  # pylint: disable=protected-access
 
-    def __init__(self, *, filter: Optional[str] = None, **kwargs: Any) -> None:
+    def __init__(self, *, filter: Optional[str] = None, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
         super().__init__(**kwargs)
         self.filter = filter
         self._props[self.FILTER_PROP] = filter
@@ -65,17 +66,17 @@ class FilterElement(Element):
         bind(self, 'filter', target_object, target_name, forward=forward, backward=backward)
         return self
 
-    def set_filter(self, filter: str) -> None:
+    def set_filter(self, filter_: str) -> None:
         """Set the filter of this element.
 
         :param filter: The new filter.
         """
-        self.filter = filter
+        self.filter = filter_
 
-    def on_filter_change(self, filter: str) -> None:
+    def _handle_filter_change(self, filter_: str) -> None:
         """Called when the filter of this element changes.
 
         :param filter: The new filter.
         """
-        self._props[self.FILTER_PROP] = filter
+        self._props[self.FILTER_PROP] = filter_
         self.update()

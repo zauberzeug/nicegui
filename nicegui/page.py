@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import inspect
 import time
@@ -6,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from fastapi import Request, Response
 
-from . import background_tasks, globals
+from . import background_tasks, binding, globals  # pylint: disable=redefined-builtin
 from .client import Client
 from .favicon import create_favicon_route
 from .language import Language
@@ -22,10 +24,11 @@ class page:
                  title: Optional[str] = None,
                  viewport: Optional[str] = None,
                  favicon: Optional[Union[str, Path]] = None,
-                 dark: Optional[bool] = ...,
-                 language: Language = ...,
+                 dark: Optional[bool] = ...,  # type: ignore
+                 language: Language = ...,  # type: ignore
                  response_timeout: float = 3.0,
-                 api_router: Optional['APIRouter'] = None,
+                 reconnect_timeout: Optional[float] = None,
+                 api_router: Optional[APIRouter] = None,
                  **kwargs: Any,
                  ) -> None:
         """Page
@@ -41,7 +44,8 @@ class page:
         :param favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
         :param language: language of the page (defaults to `language` argument of `run` command)
-        :param response_timeout: maximum time for the decorated function to build the page (default: 3.0)
+        :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds)
+        :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 0.0 seconds)
         :param api_router: APIRouter instance to use, can be left `None` to use the default
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
@@ -54,23 +58,29 @@ class page:
         self.response_timeout = response_timeout
         self.kwargs = kwargs
         self.api_router = api_router or globals.app.router
+        self.reconnect_timeout = reconnect_timeout
 
         create_favicon_route(self.path, favicon)
 
     @property
     def path(self) -> str:
+        """The path of the page including the APIRouter's prefix."""
         return self.api_router.prefix + self._path
 
     def resolve_title(self) -> str:
+        """Return the title of the page."""
         return self.title if self.title is not None else globals.title
 
     def resolve_viewport(self) -> str:
+        """Return the viewport of the page."""
         return self.viewport if self.viewport is not None else globals.viewport
 
     def resolve_dark(self) -> Optional[bool]:
+        """Return whether the page should use dark mode."""
         return self.dark if self.dark is not ... else globals.dark
 
     def resolve_language(self) -> Optional[str]:
+        """Return the language of the page."""
         return self.language if self.language is not ... else globals.language
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
@@ -98,6 +108,7 @@ class page:
                 result = task.result() if task.done() else None
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
+            binding._refresh_step()  # pylint: disable=protected-access
             return client.build_response(request)
 
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']
@@ -105,7 +116,7 @@ class page:
         if 'request' not in {p.name for p in parameters}:
             request = inspect.Parameter('request', inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request)
             parameters.insert(0, request)
-        decorated.__signature__ = inspect.Signature(parameters)
+        decorated.__signature__ = inspect.Signature(parameters)  # type: ignore
 
         if 'include_in_schema' not in self.kwargs:
             self.kwargs['include_in_schema'] = globals.endpoint_documentation in {'page', 'all'}

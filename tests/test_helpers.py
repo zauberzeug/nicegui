@@ -27,7 +27,6 @@ def test_is_port_open_on_bad_ip():
 
 
 def test_schedule_browser(monkeypatch):
-
     called_with_url = None
 
     def mock_webbrowser_open(url):
@@ -37,11 +36,10 @@ def test_schedule_browser(monkeypatch):
     monkeypatch.setattr(webbrowser, 'open', mock_webbrowser_open)
 
     with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
-
         sock.bind(('127.0.0.1', 0))
         host, port = sock.getsockname()
 
-        thread, cancel_event = helpers.schedule_browser(host, port)
+        _, cancel_event = helpers.schedule_browser(host, port)
 
         try:
             # port bound, but not opened yet
@@ -56,7 +54,6 @@ def test_schedule_browser(monkeypatch):
 
 
 def test_canceling_schedule_browser(monkeypatch):
-
     called_with_url = None
 
     def mock_webbrowser_open(url):

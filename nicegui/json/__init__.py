@@ -19,7 +19,7 @@ except ImportError:
 if has_orjson:
     from nicegui.json.orjson_wrapper import NiceGUIJSONResponse, dumps, loads
 else:
-    from nicegui.json.builtin_wrapper import NiceGUIJSONResponse, dumps, loads
+    from nicegui.json.builtin_wrapper import NiceGUIJSONResponse, dumps, loads  # type: ignore
 
 
 __all__ = [

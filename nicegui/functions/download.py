@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Optional, Union
 
-from .. import globals, helpers
+from .. import globals, helpers  # pylint: disable=redefined-builtin
 
 
 def download(src: Union[str, Path], filename: Optional[str] = None) -> None:

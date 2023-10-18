@@ -1,16 +1,17 @@
 from pathlib import Path
 from typing import Any, Callable, Union
 
-from typing_extensions import Self
+from typing_extensions import Self, cast
 
-from ... import globals
+from ... import globals  # pylint: disable=redefined-builtin
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
 from ...helpers import is_file
 
 
 class SourceElement(Element):
-    source = BindableProperty(on_change=lambda sender, source: sender.on_source_change(source))
+    source = BindableProperty(
+        on_change=lambda sender, source: cast(Self, sender)._handle_source_change(source))  # pylint: disable=protected-access
 
     def __init__(self, *, source: Union[str, Path], **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -76,7 +77,7 @@ class SourceElement(Element):
         """
         self.source = source
 
-    def on_source_change(self, source: Union[str, Path]) -> None:
+    def _handle_source_change(self, source: Union[str, Path]) -> None:
         """Called when the source of this element changes.
 
         :param source: The new source.

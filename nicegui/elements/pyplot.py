@@ -3,7 +3,7 @@ import io
 import os
 from typing import Any
 
-from .. import background_tasks, globals
+from .. import background_tasks, globals  # pylint: disable=redefined-builtin
 from ..element import Element
 
 try:

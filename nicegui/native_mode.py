@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import _thread
-import logging
 import multiprocessing as mp
 import queue
 import socket
@@ -12,7 +11,7 @@ import warnings
 from threading import Event, Thread
 from typing import Any, Callable, Dict, List, Tuple
 
-from . import globals, helpers, native
+from . import globals, helpers, native  # pylint: disable=redefined-builtin
 
 try:
     with warnings.catch_warnings():
@@ -24,40 +23,40 @@ except ModuleNotFoundError:
     pass
 
 
-def open_window(
+def _open_window(
     host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
     method_queue: mp.Queue, response_queue: mp.Queue,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
 
-    window_kwargs = dict(
-        url=f'http://{host}:{port}',
-        title=title,
-        width=width,
-        height=height,
-        fullscreen=fullscreen,
-        frameless=frameless,
-    )
-    window_kwargs.update(globals.app.native.window_args)
-
+    window_kwargs = {
+        'url': f'http://{host}:{port}',
+        'title': title,
+        'width': width,
+        'height': height,
+        'fullscreen': fullscreen,
+        'frameless': frameless,
+        **globals.app.native.window_args,
+    }
     window = webview.create_window(**window_kwargs)
     closed = Event()
     window.events.closed += closed.set
-    start_window_method_executor(window, method_queue, response_queue, closed)
+    _start_window_method_executor(window, method_queue, response_queue, closed)
     webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
 
 
-def start_window_method_executor(
-        window: webview.Window, method_queue: mp.Queue, response_queue: mp.Queue, closed: Event
-) -> None:
+def _start_window_method_executor(window: webview.Window,
+                                  method_queue: mp.Queue,
+                                  response_queue: mp.Queue,
+                                  closed: Event) -> None:
     def execute(method: Callable, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> None:
         try:
             response = method(*args, **kwargs)
             if response is not None or 'dialog' in method.__name__:
                 response_queue.put(response)
         except Exception:
-            logging.exception(f'error in window.{method.__name__}')
+            globals.log.exception(f'error in window.{method.__name__}')
 
     def window_method_executor() -> None:
         pending_executions: List[Thread] = []
@@ -66,7 +65,7 @@ def start_window_method_executor(
                 method_name, args, kwargs = method_queue.get(block=False)
                 if method_name == 'signal_server_shutdown':
                     if pending_executions:
-                        logging.warning('shutdown is possibly blocked by opened dialogs like a file picker')
+                        globals.log.warning('shutdown is possibly blocked by opened dialogs like a file picker')
                         while pending_executions:
                             pending_executions.pop().join()
                 elif method_name == 'get_always_on_top':
@@ -83,16 +82,17 @@ def start_window_method_executor(
                         pending_executions.append(Thread(target=execute, args=(method, args, kwargs)))
                         pending_executions[-1].start()
                     else:
-                        logging.error(f'window.{method_name} is not callable')
+                        globals.log.error(f'window.{method_name} is not callable')
             except queue.Empty:
                 time.sleep(0.01)
             except Exception:
-                logging.exception(f'error in window.{method_name}')
+                globals.log.exception(f'error in window.{method_name}')
 
     Thread(target=window_method_executor).start()
 
 
 def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
+    """Activate native mode."""
     def check_shutdown() -> None:
         while process.is_alive():
             time.sleep(0.1)
@@ -102,13 +102,13 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         _thread.interrupt_main()
 
     if 'native' not in globals.optional_features:
-        logging.error('Native mode is not supported in this configuration.\n'
-                      'Please run "pip install pywebview" to use it.')
+        globals.log.error('Native mode is not supported in this configuration.\n'
+                          'Please run "pip install pywebview" to use it.')
         sys.exit(1)
 
     mp.freeze_support()
     args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
-    process = mp.Process(target=open_window, args=args, daemon=False)
+    process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
     Thread(target=check_shutdown, daemon=True).start()

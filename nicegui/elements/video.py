@@ -1,8 +1,7 @@
-import warnings
 from pathlib import Path
 from typing import Union
 
-from .. import globals
+from .. import globals  # pylint: disable=redefined-builtin
 from ..element import Element
 
 
@@ -13,9 +12,10 @@ class Video(Element, component='video.js'):
                  autoplay: bool = False,
                  muted: bool = False,
                  loop: bool = False,
-                 type: str = '',  # DEPRECATED
                  ) -> None:
         """Video
+
+        Displays a video.
 
         :param src: URL or local file path of the video source
         :param controls: whether to show the video controls, like play, pause, and volume (default: `True`)
@@ -35,13 +35,17 @@ class Video(Element, component='video.js'):
         self._props['muted'] = muted
         self._props['loop'] = loop
 
-        if type:
-            url = f'https://github.com/zauberzeug/nicegui/pull/624'
-            warnings.warn(DeprecationWarning(f'The type parameter for ui.video is deprecated and ineffective ({url}).'))
-
     def seek(self, seconds: float) -> None:
         """Seek to a specific position in the video.
 
         :param seconds: the position in seconds
         """
         self.run_method('seek', seconds)
+
+    def play(self) -> None:
+        """Play video."""
+        self.run_method('play')
+
+    def pause(self) -> None:
+        """Pause video."""
+        self.run_method('pause')

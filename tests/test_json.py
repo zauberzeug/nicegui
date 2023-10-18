@@ -1,5 +1,5 @@
 """
-Test our two json serializers (orjson, and Python's built-in json module).
+Test our two JSON serializers (orjson, and Python's built-in json module).
 
 Need to ensure that we get the same output regardless of the serializer used.
 """
@@ -12,7 +12,7 @@ import pytest
 
 try:
     # try to import module, only run test if succeeded
-    import orjson
+    import orjson  # pylint: disable=unused-import
 except ImportError:
     pass
 
@@ -22,6 +22,7 @@ def test_json():
     # only run test if orjson is available to not break it on 32 bit systems
     # or architectures where orjson is not supported.
 
+    # pylint: disable=import-outside-toplevel
     from nicegui.json.builtin_wrapper import dumps as builtin_dumps
     from nicegui.json.orjson_wrapper import dumps as orjson_dumps
 

@@ -6,7 +6,8 @@ class Tooltip(TextElement):
     def __init__(self, text: str) -> None:
         """Tooltip
 
-        Can be placed in another element to show additional information on hover.
+        This element is based on Quasar's `QTooltip <https://quasar.dev/vue-components/tooltip>`_ component.
+        It be placed in another element to show additional information on hover.
 
         :param text: the content of the tooltip
         """

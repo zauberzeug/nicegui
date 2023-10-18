@@ -201,3 +201,46 @@ def more() -> None:
                 table.toggle_fullscreen()
                 button.props('icon=fullscreen_exit' if table.is_fullscreen else 'icon=fullscreen')
             button = ui.button('Toggle fullscreen', icon='fullscreen', on_click=toggle).props('flat')
+
+    @text_demo('Pagination', '''
+        You can provide either a single integer or a dictionary to define pagination.
+
+        The dictionary can contain the following keys:
+
+        - `rowsPerPage`: The number of rows per page.
+        - `sortBy`: The column name to sort by.
+        - `descending`: Whether to sort in descending order.
+        - `page`: The current page (1-based).
+    ''')
+    def pagination() -> None:
+        columns = [
+            {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True, 'align': 'left'},
+            {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
+        ]
+        rows = [
+            {'name': 'Elsa', 'age': 18},
+            {'name': 'Oaken', 'age': 46},
+            {'name': 'Hans', 'age': 20},
+            {'name': 'Sven'},
+            {'name': 'Olaf', 'age': 4},
+            {'name': 'Anna', 'age': 17},
+        ]
+        ui.table(columns=columns, rows=rows, pagination=3)
+        ui.table(columns=columns, rows=rows, pagination={'rowsPerPage': 4, 'sortBy': 'age', 'page': 2})
+
+    @text_demo('Computed fields', '''
+        You can use functions to compute the value of a column.
+        The function receives the row as an argument.
+        See the [Quasar documentation](https://quasar.dev/vue-components/table#defining-the-columns) for more information.
+    ''')
+    def computed_fields():
+        columns = [
+            {'name': 'name', 'label': 'Name', 'field': 'name', 'align': 'left'},
+            {'name': 'length', 'label': 'Length', ':field': 'row => row.name.length'},
+        ]
+        rows = [
+            {'name': 'Alice'},
+            {'name': 'Bob'},
+            {'name': 'Christopher'},
+        ]
+        ui.table(columns=columns, rows=rows, row_key='name')

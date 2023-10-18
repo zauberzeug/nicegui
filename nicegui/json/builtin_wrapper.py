@@ -47,13 +47,13 @@ class NiceGUIJSONResponse(Response):
 class NumpyJsonEncoder(json.JSONEncoder):
     """Special json encoder that supports NumPy arrays and date/datetime objects."""
 
-    def default(self, obj):
-        if has_numpy and isinstance(obj, np.integer):
-            return int(obj)
-        if has_numpy and isinstance(obj, np.floating):
-            return float(obj)
-        if has_numpy and isinstance(obj, np.ndarray):
-            return obj.tolist()
-        if isinstance(obj, (datetime, date)):
-            return obj.isoformat()
-        return json.JSONEncoder.default(self, obj)
+    def default(self, o):
+        if has_numpy and isinstance(o, np.integer):
+            return int(o)
+        if has_numpy and isinstance(o, np.floating):
+            return float(o)
+        if has_numpy and isinstance(o, np.ndarray):
+            return o.tolist()
+        if isinstance(o, (datetime, date)):
+            return o.isoformat()
+        return json.JSONEncoder.default(self, o)

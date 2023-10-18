@@ -5,9 +5,10 @@ from typing import Any, Awaitable, Callable, ClassVar, Dict, List, Optional, Tup
 
 from typing_extensions import Self
 
-from .. import background_tasks, globals
+from .. import background_tasks, globals  # pylint: disable=redefined-builtin
+from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
-from ..helpers import KWONLY_SLOTS, is_coroutine_function
+from ..helpers import is_coroutine_function
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -23,8 +24,10 @@ class RefreshableTarget:
     next_index: int = 0
 
     def run(self, func: Callable[..., Any]) -> Union[None, Awaitable]:
+        """Run the function and return the result."""
         RefreshableTarget.current_target = self
         self.next_index = 0
+        # pylint: disable=no-else-return
         if is_coroutine_function(func):
             async def wait_for_result() -> None:
                 with self.container:
@@ -79,6 +82,7 @@ class refreshable:
         return target.run(self.func)
 
     def refresh(self, *args: Any, **kwargs: Any) -> None:
+        """Refresh the UI elements created by this function."""
         self.prune()
         for target in self.targets:
             if target.instance != self.instance:
@@ -92,7 +96,7 @@ class refreshable:
                 if 'got multiple values for argument' in str(e):
                     function = str(e).split()[0].split('.')[-1]
                     parameter = str(e).split()[-1]
-                    raise Exception(f'{parameter} needs to be consistently passed to {function} '
+                    raise TypeError(f'{parameter} needs to be consistently passed to {function} '
                                     'either as positional or as keyword argument') from e
                 raise
             if is_coroutine_function(self.func):
@@ -103,6 +107,10 @@ class refreshable:
                     globals.app.on_startup(result)
 
     def prune(self) -> None:
+        """Remove all targets that are no longer on a page with a client connection.
+
+        This method is called automatically before each refresh.
+        """
         self.targets = [
             target
             for target in self.targets

@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from .. import globals
+from .. import globals  # pylint: disable=redefined-builtin
 
 
 async def run_javascript(code: str, *,

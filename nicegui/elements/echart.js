@@ -1,28 +1,23 @@
+import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
+
 export default {
   template: "<div></div>",
   mounted() {
-    setTimeout(() => {
-      this.chart = echarts.init(this.$el);
-      this.chart.setOption(this.options);
-      this.chart.resize();
-    }, 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
+    this.chart = echarts.init(this.$el);
+    this.chart.on("click", (e) => this.$emit("pointClick", e));
+    this.update_chart();
+    new ResizeObserver(this.chart.resize).observe(this.$el);
   },
   beforeDestroy() {
-    this.destroyChart();
+    this.chart.dispose();
   },
   beforeUnmount() {
-    this.destroyChart();
+    this.chart.dispose();
   },
   methods: {
     update_chart() {
-      if (this.chart) {
-        this.chart.setOption(this.options);
-      }
-    },
-    destroyChart() {
-      if (this.chart) {
-        this.chart.dispose();
-      }
+      convertDynamicProperties(this.options, true);
+      this.chart.setOption(this.options);
     },
   },
   props: {

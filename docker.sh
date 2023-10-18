@@ -33,43 +33,43 @@ cmd=$1
 cmd_args=${@:2}
 case $cmd in
     b | build)
-        docker-compose build $cmd_args
+        docker compose build $cmd_args
         ;;
     u | up)
-        docker-compose up -d $cmd_args
+        docker compose up -d $cmd_args
         ;;
     U | buildup | upbuild | upb | bup | ub)
-        docker-compose up -d --build $cmd_args
+        docker compose up -d --build $cmd_args
         ;;
     d | down)
-        docker-compose down -d $cmd_args
+        docker compose down -d $cmd_args
         ;;
     s | start)
-        docker-compose start $cmd_args
+        docker compose start $cmd_args
         ;;
     r | restart)
-        docker-compose restart $cmd_args
+        docker compose restart $cmd_args
         ;;
     h | stop)
-        docker-compose stop $cmd_args
+        docker compose stop $cmd_args
         ;;
     rm)
-        docker-compose rm $cmd_args
+        docker compose rm $cmd_args
         ;;
     ps)
-        docker-compose ps $cmd_args
+        docker compose ps $cmd_args
         ;;
     stat | stats)
         docker stats $cmd_args
         ;;
     l | log | logs)
-        docker-compose logs -f --tail 100 $cmd_args app
+        docker compose logs -f --tail 100 $cmd_args app
         ;;
     e | exec)
-        docker-compose exec $cmd_args app
+        docker compose exec $cmd_args app
         ;;
     a | attach)
-        docker-compose exec $cmd_args app /bin/bash
+        docker compose exec $cmd_args app /bin/bash
         ;;
     prune)
         docker system prune

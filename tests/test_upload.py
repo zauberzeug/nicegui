@@ -1,8 +1,6 @@
 from pathlib import Path
 from typing import List
 
-from selenium.webdriver.common.by import By
-
 from nicegui import events, ui
 
 from .screen import Screen
@@ -17,9 +15,9 @@ def test_uploading_text_file(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Test Title')
-    screen.selenium.find_element(By.CLASS_NAME, 'q-uploader__input').send_keys(str(test_path1))
+    screen.find_by_class('q-uploader__input').send_keys(str(test_path1))
     screen.wait(0.1)
-    screen.selenium.find_elements(By.CLASS_NAME, 'q-btn')[1].click()
+    screen.find_all_by_class('q-btn')[1].click()
     screen.wait(0.1)
     assert len(results) == 1
     assert results[0].name == test_path1.name
@@ -35,8 +33,8 @@ def test_two_upload_elements(screen: Screen):
     screen.open('/')
     screen.should_contain('Test Title 1')
     screen.should_contain('Test Title 2')
-    screen.selenium.find_element(By.CLASS_NAME, 'q-uploader__input').send_keys(str(test_path1))
-    screen.selenium.find_elements(By.CLASS_NAME, 'q-uploader__input')[1].send_keys(str(test_path2))
+    screen.find_by_class('q-uploader__input').send_keys(str(test_path1))
+    screen.find_all_by_class('q-uploader__input')[1].send_keys(str(test_path2))
     screen.wait(0.1)
     assert len(results) == 2
     assert results[0].name == test_path1.name
@@ -52,7 +50,7 @@ def test_uploading_from_two_tabs(screen: Screen):
     screen.switch_to(1)
     screen.open('/')
     screen.should_not_contain(test_path1.name)
-    screen.selenium.find_element(By.CLASS_NAME, 'q-uploader__input').send_keys(str(test_path1))
+    screen.find_by_class('q-uploader__input').send_keys(str(test_path1))
     screen.should_contain(f'uploaded {test_path1.name}')
     screen.switch_to(0)
     screen.should_not_contain(f'uploaded {test_path1.name}')
@@ -88,7 +86,7 @@ def test_reset_upload(screen: Screen):
     ui.button('Reset', on_click=upload.reset)
 
     screen.open('/')
-    screen.selenium.find_element(By.CLASS_NAME, 'q-uploader__input').send_keys(str(test_path1))
+    screen.find_by_class('q-uploader__input').send_keys(str(test_path1))
     screen.should_contain(test_path1.name)
     screen.click('Reset')
     screen.wait(0.5)

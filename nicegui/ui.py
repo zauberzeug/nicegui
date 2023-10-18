@@ -13,14 +13,17 @@ __all__ = [
     'chart',
     'chat_message',
     'checkbox',
+    'code',
     'color_input',
     'color_picker',
     'colors',
     'column',
+    'context_menu',
     'dark_mode',
     'date',
     'dialog',
     'echart',
+    'editor',
     'expansion',
     'grid',
     'html',
@@ -29,6 +32,7 @@ __all__ = [
     'input',
     'interactive_image',
     'joystick',
+    'json_editor',
     'keyboard',
     'knob',
     'label',
@@ -66,6 +70,8 @@ __all__ = [
     'tabs',
     'textarea',
     'time',
+    'timeline',
+    'timeline_entry',
     'toggle',
     'tooltip',
     'tree',
@@ -106,22 +112,26 @@ from .elements.carousel import CarouselSlide as carousel_slide
 from .elements.chart import Chart as chart
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
+from .elements.code import Code as code
 from .elements.color_input import ColorInput as color_input
 from .elements.color_picker import ColorPicker as color_picker
 from .elements.colors import Colors as colors
 from .elements.column import Column as column
+from .elements.context_menu import ContextMenu as context_menu
 from .elements.dark_mode import DarkMode as dark_mode
 from .elements.date import Date as date
 from .elements.dialog import Dialog as dialog
 from .elements.echart import EChart as echart
+from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
 from .elements.grid import Grid as grid
 from .elements.html import Html as html
 from .elements.icon import Icon as icon
 from .elements.image import Image as image
-from .elements.input import Input as input
+from .elements.input import Input as input  # pylint: disable=redefined-builtin
 from .elements.interactive_image import InteractiveImage as interactive_image
 from .elements.joystick import Joystick as joystick
+from .elements.json_editor import JsonEditor as json_editor
 from .elements.keyboard import Keyboard as keyboard
 from .elements.knob import Knob as knob
 from .elements.label import Label as label
@@ -159,6 +169,8 @@ from .elements.tabs import TabPanels as tab_panels
 from .elements.tabs import Tabs as tabs
 from .elements.textarea import Textarea as textarea
 from .elements.time import Time as time
+from .elements.timeline import Timeline as timeline
+from .elements.timeline import TimelineEntry as timeline_entry
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
@@ -168,7 +180,7 @@ from .functions.download import download
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
 from .functions.notify import notify
-from .functions.open import open
+from .functions.open import open  # pylint: disable=redefined-builtin
 from .functions.refreshable import refreshable, use_state
 from .functions.timer import Timer as timer
 from .functions.update import update

@@ -13,7 +13,7 @@ class Lightbox:
 
     def __init__(self) -> None:
         with ui.dialog().props('maximized').classes('bg-black') as self.dialog:
-            ui.keyboard(self._on_key)
+            ui.keyboard(self._handle_key)
             self.large_image = ui.image().props('no-spinner fit=scale-down')
         self.image_list: List[str] = []
 
@@ -23,7 +23,7 @@ class Lightbox:
         with ui.button(on_click=lambda: self._open(orig_url)).props('flat dense square'):
             return ui.image(thumb_url)
 
-    def _on_key(self, event_args: events.KeyEventArguments) -> None:
+    def _handle_key(self, event_args: events.KeyEventArguments) -> None:
         if not event_args.action.keydown:
             return
         if event_args.key.escape:

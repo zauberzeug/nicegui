@@ -63,6 +63,6 @@ def query(selector: str) -> Query:
     :param selector: the CSS selector (e.g. "body", "#my-id", ".my-class", "div > p")
     """
     for element in get_client().elements.values():
-        if isinstance(element, Query) and element._props['selector'] == selector:
+        if isinstance(element, Query) and element._props['selector'] == selector:  # pylint: disable=protected-access
             return element
     return Query(selector)

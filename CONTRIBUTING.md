@@ -21,7 +21,19 @@ We're always looking for bug fixes, performance improvements, and new features.
 
 ## Setup
 
-To set up a local development environment for NiceGUI, you'll need to have Python 3 and pip installed.
+### Dev Container
+
+The simplest way to setup a fully functioning development environment is to start our Dev Container in VS Code:
+
+1. Ensure you have VS Code, Docker and the Remote-Containers extension installed.
+2. Open the project root directory in VS Code.
+3. Press `F1`, type `Remote-Containers: Open Folder in Container`, and hit enter (or use the bottom-left corner icon in VS Code to reopen in container).
+4. Wait until image has been build.
+5. Happy coding.
+
+### Locally
+
+To set up a local development environment for NiceGUI, you'll need to have Python 3.8+ and pip installed.
 
 You can then use the following command to install NiceGUI in editable mode:
 
@@ -39,10 +51,9 @@ This means we sometimes miss some incompatibilities with older versions.
 But these will hopefully be uncovered by the GitHub Actions (see below).
 Also we use the 3.8 Docker container described below to verify compatibility in cases of uncertainty.
 
-### Alternative: Docker
+### Plain Docker
 
-You can also use Docker for development.
-Simply start the development container using the command:
+You can also use Docker for development by starting the development container using the command:
 
 ```bash
 ./docker.sh up app

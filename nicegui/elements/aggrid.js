@@ -1,3 +1,5 @@
+import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
+
 export default {
   template: "<div></div>",
   mounted() {
@@ -15,6 +17,7 @@ export default {
           this.gridOptions.columnDefs[column].cellRenderer = (params) => (params.value ? params.value : "");
         }
       }
+      convertDynamicProperties(this.gridOptions, true);
 
       // Code for CheckboxRenderer https://blog.ag-grid.com/binding-boolean-values-to-checkboxes-in-ag-grid/
       function CheckboxRenderer() {}

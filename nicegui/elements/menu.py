@@ -1,6 +1,8 @@
 from typing import Any, Callable, Optional
 
-from .. import globals
+from typing_extensions import Self
+
+from .. import globals  # pylint: disable=redefined-builtin
 from ..events import ClickEventArguments, handle_event
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
@@ -11,7 +13,7 @@ class Menu(ValueElement):
     def __init__(self, *, value: bool = False) -> None:
         """Menu
 
-        Creates a menu.
+        Creates a menu based on Quasar's `QMenu <https://quasar.dev/vue-components/menu>`_ component.
         The menu should be placed inside the element where it should be shown.
 
         :param value: whether the menu is already opened (default: `False`)
@@ -30,6 +32,15 @@ class Menu(ValueElement):
         """Toggle the menu."""
         self.value = not self.value
 
+    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
+        super().props(add, remove=remove)
+        if 'touch-position' in self._props:
+            # https://github.com/zauberzeug/nicegui/issues/1738
+            del self._props['touch-position']
+            globals.log.warning('The prop "touch-position" is not supported by `ui.menu`.\n'
+                                'Use "ui.context_menu()" instead.')
+        return self
+
 
 class MenuItem(TextElement):
 
@@ -41,6 +52,7 @@ class MenuItem(TextElement):
         """Menu Item
 
         A menu item to be added to a menu.
+        This element is based on Quasar's `QItem <https://quasar.dev/vue-components/list-and-list-items#qitem-api>`_ component.
 
         :param text: label of the menu item
         :param on_click: callback to be executed when selecting the menu item

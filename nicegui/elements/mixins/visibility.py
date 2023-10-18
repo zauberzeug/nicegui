@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any, Callable, cast
 
 from typing_extensions import Self
@@ -9,7 +11,8 @@ if TYPE_CHECKING:
 
 
 class Visibility:
-    visible = BindableProperty(on_change=lambda sender, visible: sender.on_visibility_change(visible))
+    visible = BindableProperty(
+        on_change=lambda sender, visible: cast(Self, sender)._handle_visibility_change(visible))  # pylint: disable=protected-access
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -52,7 +55,8 @@ class Visibility:
         :param value: If specified, the element will be visible only when the target value is equal to this value.
         """
         if value is not None:
-            def backward(x): return x == value
+            def backward(x):  # pylint: disable=function-redefined
+                return x == value
         bind_from(self, 'visible', target_object, target_name, backward)
         return self
 
@@ -74,7 +78,8 @@ class Visibility:
         :param value: If specified, the element will be visible only when the target value is equal to this value.
         """
         if value is not None:
-            def backward(x): return x == value
+            def backward(x):  # pylint: disable=function-redefined
+                return x == value
         bind(self, 'visible', target_object, target_name, forward=forward, backward=backward)
         return self
 
@@ -85,15 +90,16 @@ class Visibility:
         """
         self.visible = visible
 
-    def on_visibility_change(self, visible: str) -> None:
+    def _handle_visibility_change(self, visible: str) -> None:
         """Called when the visibility of this element changes.
 
         :param visible: Whether the element should be visible.
         """
-        self = cast('Element', self)
-        if visible and 'hidden' in self._classes:
-            self._classes.remove('hidden')
-            self.update()
-        if not visible and 'hidden' not in self._classes:
-            self._classes.append('hidden')
-            self.update()
+        element: Element = cast('Element', self)
+        classes = element._classes  # pylint: disable=protected-access, no-member
+        if visible and 'hidden' in classes:
+            classes.remove('hidden')
+            element.update()  # pylint: disable=no-member
+        if not visible and 'hidden' not in classes:
+            classes.append('hidden')
+            element.update()  # pylint: disable=no-member

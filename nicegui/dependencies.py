@@ -6,8 +6,9 @@ from typing import TYPE_CHECKING, Dict, Iterable, List, Set, Tuple
 
 import vbuild
 
-from . import __version__
-from .helpers import KWONLY_SLOTS, hash_file_path
+from .dataclasses import KWONLY_SLOTS
+from .helpers import hash_file_path
+from .version import __version__
 
 if TYPE_CHECKING:
     from .element import Element
@@ -21,6 +22,7 @@ class Component:
 
     @property
     def tag(self) -> str:
+        """The tag of the component."""
         return f'nicegui-{self.name}'
 
 
@@ -57,7 +59,7 @@ def register_vue_component(path: Path) -> Component:
     and to avoid building the component on every single request.
     """
     key = compute_key(path)
-    name = get_name(path)
+    name = _get_name(path)
     if path.suffix == '.vue':
         if key in vue_components and vue_components[key].path == path:
             return vue_components[key]
@@ -77,7 +79,7 @@ def register_vue_component(path: Path) -> Component:
 def register_library(path: Path, *, expose: bool = False) -> Library:
     """Register a *.js library."""
     key = compute_key(path)
-    name = get_name(path)
+    name = _get_name(path)
     if path.suffix in {'.js', '.mjs'}:
         if key in libraries and libraries[key].path == path:
             return libraries[key]
@@ -100,7 +102,7 @@ def compute_key(path: Path) -> str:
     return f'{hash_file_path(path.parent)}/{path.name}'
 
 
-def get_name(path: Path) -> str:
+def _get_name(path: Path) -> str:
     return path.name.split('.', 1)[0]
 
 
@@ -109,6 +111,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[s
                                                                           List[str],
                                                                           Dict[str, str],
                                                                           List[str]]:
+    """Generate the resources required by the elements to be sent to the client."""
     done_libraries: Set[str] = set()
     done_components: Set[str] = set()
     vue_scripts: List[str] = []
@@ -124,12 +127,12 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[s
             done_libraries.add(key)
 
     # build the none-optimized component (i.e. the Vue component)
-    for key, component in vue_components.items():
+    for key, vue_component in vue_components.items():
         if key not in done_components:
-            vue_html.append(component.html)
-            vue_scripts.append(component.script.replace(f"Vue.component('{component.name}',",
-                                                        f"app.component('{component.tag}',", 1))
-            vue_styles.append(component.style)
+            vue_html.append(vue_component.html)
+            vue_scripts.append(vue_component.script.replace(f"Vue.component('{vue_component.name}',",
+                                                            f"app.component('{vue_component.tag}',", 1))
+            vue_styles.append(vue_component.style)
             done_components.add(key)
 
     # build the resources associated with the elements
@@ -141,10 +144,10 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[s
                     js_imports.append(f'import "{url}";')
                 done_libraries.add(library.key)
         if element.component:
-            component = element.component
-            if component.key not in done_components and component.path.suffix.lower() == '.js':
-                url = f'{prefix}/_nicegui/{__version__}/components/{component.key}'
-                js_imports.append(f'import {{ default as {component.name} }} from "{url}";')
-                js_imports.append(f'app.component("{component.tag}", {component.name});')
-                done_components.add(component.key)
+            js_component = element.component
+            if js_component.key not in done_components and js_component.path.suffix.lower() == '.js':
+                url = f'{prefix}/_nicegui/{__version__}/components/{js_component.key}'
+                js_imports.append(f'import {{ default as {js_component.name} }} from "{url}";')
+                js_imports.append(f'app.component("{js_component.tag}", {js_component.name});')
+                done_components.add(js_component.key)
     return vue_html, vue_styles, vue_scripts, imports, js_imports

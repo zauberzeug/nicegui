@@ -141,6 +141,7 @@
           let handler = (...args) => {
             const data = {
               id: element.id,
+              client_id: window.client_id,
               listener_id: event.listener_id,
               args: stringifyEventArgs(args, event.args),
             };
@@ -188,7 +189,7 @@
             throw reason;
         }).then((result) => {
           if (request_id) {
-            window.socket.emit("javascript_response", {request_id, result});
+            window.socket.emit("javascript_response", {request_id, client_id: window.client_id, result});
           }
         });
       }
@@ -231,6 +232,7 @@
         mounted() {
           window.app = this;
           const query = {{ socket_io_js_query_params | safe }};
+          window.client_id = query.client_id;
           const url = window.location.protocol === 'https:' ? 'wss://' : 'ws://' + window.location.host;
           const extraHeaders = {{ socket_io_js_extra_headers | safe }};
           const transports = {{ socket_io_js_transports | safe }};
@@ -238,9 +240,9 @@
           window.socket = io(url, { path: "{{ prefix | safe }}/_nicegui_ws/socket.io", query, extraHeaders, transports });
           const messageHandlers = {
             connect: () => {
-              window.socket.emit("handshake", (ok) => {
+              window.socket.emit("handshake", window.client_id, (ok) => {
                 if (!ok) {
-                  console.log('reloading because handshake failed')
+                  console.log('reloading because handshake failed for client_id ' + window.client_id)
                   window.location.reload();
                 }
                 document.getElementById('popup').style.opacity = 0;

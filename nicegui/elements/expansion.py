@@ -14,7 +14,7 @@ class Expansion(ValueElement, DisableableElement):
                  ) -> None:
         """Expansion Element
 
-        Provides an expandable container.
+        Provides an expandable container based on Quasar's `QExpansionItem <https://quasar.dev/vue-components/expansion-item>`_ component.
 
         :param text: title text
         :param icon: optional icon (default: None)
@@ -25,9 +25,12 @@ class Expansion(ValueElement, DisableableElement):
         if text is not None:
             self._props['label'] = text
         self._props['icon'] = icon
+        self._classes = ['nicegui-expansion']
 
     def open(self) -> None:
+        """Open the expansion."""
         self.value = True
 
     def close(self) -> None:
+        """Close the expansion."""
         self.value = False

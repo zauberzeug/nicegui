@@ -10,6 +10,7 @@ class Image(SourceElement, component='image.js'):
         """Image
 
         Displays an image.
+        This element is based on Quasar's `QImg <https://quasar.dev/vue-components/img>`_ component.
 
         :param source: the source of the image; can be a URL, local file path or a base64 string
         """

@@ -111,7 +111,7 @@ def test_refresh_with_arguments(screen: Screen):
 
     some_ui(0)
     ui.button('refresh', on_click=some_ui.refresh)
-    ui.button('refresh()', on_click=lambda: some_ui.refresh())
+    ui.button('refresh()', on_click=lambda: some_ui.refresh())  # pylint: disable=unnecessary-lambda
     ui.button('refresh(1)', on_click=lambda: some_ui.refresh(1))
     ui.button('refresh(2)', on_click=lambda: some_ui.refresh(2))
     ui.button('refresh(value=3)', on_click=lambda: some_ui.refresh(value=3))
@@ -170,7 +170,10 @@ def test_refresh_with_function_reference(screen: Screen):
             ui.button(self.name, on_click=self.ui.refresh)
 
     Test('A')
+    screen.assert_py_logger('WARNING', 'Ignoring notification "Refreshing A" because the client is not connected.')
+
     Test('B')
+    screen.assert_py_logger('WARNING', 'Ignoring notification "Refreshing B" because the client is not connected.')
 
     screen.open('/')
     screen.click('A')

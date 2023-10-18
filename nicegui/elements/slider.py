@@ -7,13 +7,15 @@ from .mixins.value_element import ValueElement
 class Slider(ValueElement, DisableableElement):
 
     def __init__(self, *,
-                 min: float,
-                 max: float,
+                 min: float,  # pylint: disable=redefined-builtin
+                 max: float,  # pylint: disable=redefined-builtin
                  step: float = 1.0,
                  value: Optional[float] = None,
                  on_change: Optional[Callable[..., Any]] = None,
                  ) -> None:
         """Slider
+
+        This element is based on Quasar's `QSlider <https://quasar.dev/vue-components/slider>`_ component.
 
         :param min: lower bound of the slider
         :param max: upper bound of the slider

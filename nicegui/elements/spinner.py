@@ -32,14 +32,14 @@ SpinnerTypes = Literal[
 class Spinner(TextColorElement):
 
     def __init__(self,
-                 type: Optional[SpinnerTypes] = 'default', *,
+                 type: Optional[SpinnerTypes] = 'default', *,  # pylint: disable=redefined-builtin
                  size: str = '1em',
                  color: Optional[str] = 'primary',
                  thickness: float = 5.0,
                  ) -> None:
         """Spinner
 
-        See `Quasar Spinner <https://quasar.dev/vue-components/spinners>`_ for more information.
+        This element is based on Quasar's `QSpinner <https://quasar.dev/vue-components/spinners>`_ component.
 
         :param type: type of spinner (e.g. "audio", "ball", "bars", ..., default: "default")
         :param size: size of the spinner (e.g. "3em", "10px", "xl", ..., default: "1em")

@@ -1,4 +1,3 @@
-import logging
 import multiprocessing
 import os
 import socket
@@ -12,9 +11,9 @@ from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import globals, helpers
+from . import native_mode  # pylint: disable=redefined-builtin
+from . import globals, helpers  # pylint: disable=redefined-builtin
 from . import native as native_module
-from . import native_mode
 from .air import Air
 from .language import Language
 
@@ -32,9 +31,9 @@ class Server(uvicorn.Server):
     def run(self, sockets: Optional[List[socket.socket]] = None) -> None:
         globals.server = self
         assert isinstance(self.config, CustomServerConfig)
-        native_module.method_queue = self.config.method_queue
-        native_module.response_queue = self.config.response_queue
-        if native_module.method_queue is not None:
+        if self.config.method_queue is not None and self.config.response_queue is not None:
+            native_module.method_queue = self.config.method_queue
+            native_module.response_queue = self.config.response_queue
             globals.app.native.main_window = native_module.WindowProxy()
 
         helpers.set_storage_secret(self.config.storage_secret)
@@ -50,6 +49,7 @@ def run(*,
         dark: Optional[bool] = False,
         language: Language = 'en-US',
         binding_refresh_interval: float = 0.1,
+        reconnect_timeout: float = 3.0,
         show: bool = True,
         on_air: Optional[Union[str, Literal[True]]] = None,
         native: bool = False,
@@ -79,6 +79,7 @@ def run(*,
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param language: language for Quasar elements (default: `'en-US'`)
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
+    :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param show: automatically open the UI in a browser tab (default: `True`)
     :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
@@ -104,6 +105,7 @@ def run(*,
     globals.dark = dark
     globals.language = language
     globals.binding_refresh_interval = binding_refresh_interval
+    globals.reconnect_timeout = reconnect_timeout
     globals.tailwind = tailwind
     globals.prod_js = prod_js
     globals.endpoint_documentation = endpoint_documentation
@@ -123,7 +125,7 @@ def run(*,
         return
 
     if reload and not hasattr(__main__, '__file__'):
-        logging.warning('auto-reloading is only supported when running from a file')
+        globals.log.warning('auto-reloading is only supported when running from a file')
         globals.reload = reload = False
 
     if fullscreen:
@@ -170,7 +172,7 @@ def run(*,
     globals.server = Server(config=config)
 
     if (reload or config.workers > 1) and not isinstance(config.app, str):
-        logging.warning('You must pass the application as an import string to enable "reload" or "workers".')
+        globals.log.warning('You must pass the application as an import string to enable "reload" or "workers".')
         sys.exit(1)
 
     if config.should_reload:
