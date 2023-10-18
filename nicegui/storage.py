@@ -1,5 +1,4 @@
 import contextvars
-import json
 import uuid
 from collections.abc import MutableMapping
 from pathlib import Path
@@ -10,7 +9,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.responses import Response
 
-from . import background_tasks, globals, observables  # pylint: disable=redefined-builtin
+from . import background_tasks, globals, json, observables  # pylint: disable=redefined-builtin
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 

@@ -91,7 +91,7 @@ async def test_access_user_storage_from_fastapi(screen: Screen):
         assert response.status_code == 200
         assert response.text == '"OK"'
         await asyncio.sleep(0.5)  # wait for storage to be written
-        assert next(Path('.nicegui').glob('storage_user_*.json')).read_text() == '{"msg": "yes"}'
+        assert next(Path('.nicegui').glob('storage_user_*.json')).read_text() == '{"msg":"yes"}'
 
 
 def test_access_user_storage_on_interaction(screen: Screen):
@@ -105,7 +105,7 @@ def test_access_user_storage_on_interaction(screen: Screen):
     screen.open('/')
     screen.click('switch')
     screen.wait(0.5)
-    assert '{"test_switch": true}' in next(Path('.nicegui').glob('storage_user_*.json')).read_text()
+    assert next(Path('.nicegui').glob('storage_user_*.json')).read_text() == '{"test_switch":true}'
 
 
 def test_access_user_storage_from_button_click_handler(screen: Screen):
@@ -117,7 +117,7 @@ def test_access_user_storage_from_button_click_handler(screen: Screen):
     screen.open('/')
     screen.click('test')
     screen.wait(1)
-    assert '{"inner_function": "works"}' in next(Path('.nicegui').glob('storage_user_*.json')).read_text()
+    assert next(Path('.nicegui').glob('storage_user_*.json')).read_text() == '{"inner_function":"works"}'
 
 
 async def test_access_user_storage_from_background_task(screen: Screen):
@@ -130,7 +130,7 @@ async def test_access_user_storage_from_background_task(screen: Screen):
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
-    assert '{"subtask": "works"}' in next(Path('.nicegui').glob('storage_user_*.json')).read_text()
+    assert next(Path('.nicegui').glob('storage_user_*.json')).read_text() == '{"subtask":"works"}'
 
 
 def test_user_and_general_storage_is_persisted(screen: Screen):
@@ -166,4 +166,4 @@ def test_rapid_storage(screen: Screen):
     screen.open('/')
     screen.click('test')
     screen.wait(0.5)
-    assert '{"one": 1, "two": 2, "three": 3}' in Path('.nicegui', 'storage_general.json').read_text()
+    assert Path('.nicegui', 'storage_general.json').read_text() == '{"one":1,"two":2,"three":3}'

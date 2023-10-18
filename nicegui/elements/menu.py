@@ -4,6 +4,7 @@ from typing_extensions import Self
 
 from .. import globals  # pylint: disable=redefined-builtin
 from ..events import ClickEventArguments, handle_event
+from .context_menu import ContextMenu
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
@@ -65,6 +66,6 @@ class MenuItem(TextElement):
         def handle_click(_) -> None:
             handle_event(on_click, ClickEventArguments(sender=self, client=self.client))
             if auto_close:
-                assert isinstance(self.menu, Menu)
+                assert isinstance(self.menu, (Menu, ContextMenu))
                 self.menu.close()
         self.on('click', handle_click, [])
