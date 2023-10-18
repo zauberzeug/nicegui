@@ -118,7 +118,7 @@ class refreshable:
         ]
 
 
-def use_state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
+def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
     target = RefreshableTarget.current_target
     assert target is not None
 

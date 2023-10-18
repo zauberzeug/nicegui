@@ -180,3 +180,26 @@ def test_refresh_with_function_reference(screen: Screen):
     screen.should_contain('Refreshing A')
     screen.click('B')
     screen.should_contain('Refreshing B')
+
+
+def test_refreshable_with_state(screen: Screen):
+    @ui.refreshable
+    def counter(title: str):
+        count, set_count = ui.state(0)
+        ui.label(f'{title}: {count}')
+        ui.button(f'Increment {title}', on_click=lambda: set_count(count + 1))
+
+    counter('A')
+    counter('B')
+
+    screen.open('/')
+    screen.should_contain('A: 0')
+    screen.should_contain('B: 0')
+
+    screen.click('Increment A')
+    screen.should_contain('A: 1')
+    screen.should_contain('B: 0')
+
+    screen.click('Increment B')
+    screen.should_contain('A: 1')
+    screen.should_contain('B: 1')
