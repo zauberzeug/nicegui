@@ -1,6 +1,7 @@
 from typing import Any, Callable, Union
 
 from .. import globals  # pylint: disable=redefined-builtin
+from ..client import Client
 from ..logging import log
 
 
@@ -20,7 +21,7 @@ def open(target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
     :param target: page function or string that is a an absolute URL or relative path from base URL
     :param new_tab: whether to open the target in a new tab (might be blocked by the browser)
     """
-    path = target if isinstance(target, str) else globals.page_routes[target]
+    path = target if isinstance(target, str) else Client.page_routes[target]
     client = globals.get_client()
     if client.has_socket_connection:
         client.open(path, new_tab)

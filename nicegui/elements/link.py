@@ -1,6 +1,6 @@
 from typing import Any, Callable, Union
 
-from .. import globals  # pylint: disable=redefined-builtin
+from ..client import Client
 from ..element import Element
 from .mixins.text_element import TextElement
 
@@ -29,7 +29,7 @@ class Link(TextElement, component='link.js'):
         elif isinstance(target, Element):
             self._props['href'] = f'#c{target.id}'
         elif callable(target):
-            self._props['href'] = globals.page_routes[target]
+            self._props['href'] = Client.page_routes[target]
         self._props['target'] = '_blank' if new_tab else '_self'
         self._classes = ['nicegui-link']
 

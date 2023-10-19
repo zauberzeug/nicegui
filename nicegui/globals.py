@@ -5,7 +5,7 @@ import os
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Literal, Optional, Set, Union
+from typing import TYPE_CHECKING, Dict, Iterator, List, Literal, Optional, Set, Union
 
 from socketio import AsyncServer
 from uvicorn import Server
@@ -62,8 +62,6 @@ quasar_config: Dict = {
         'skipHijack': False,
     },
 }
-
-page_routes: Dict[Callable[..., Any], str] = {}
 
 
 def get_task_id() -> int:

@@ -122,5 +122,5 @@ class page:
             self.kwargs['include_in_schema'] = globals.endpoint_documentation in {'page', 'all'}
 
         self.api_router.get(self._path, **self.kwargs)(decorated)
-        globals.page_routes[func] = self.path
+        Client.page_routes[func] = self.path
         return func

@@ -27,6 +27,8 @@ templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
 
 class Client:
+    page_routes: Dict[Callable[..., Any], str] = {}
+    """Maps page builders to their routes."""
 
     def __init__(self, page: page, *, shared: bool = False) -> None:
         self.id = str(uuid.uuid4())
@@ -163,7 +165,7 @@ class Client:
 
     def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
         """Open a new page in the client."""
-        path = target if isinstance(target, str) else globals.page_routes[target]
+        path = target if isinstance(target, str) else self.page_routes[target]
         outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 
     def download(self, url: str, filename: Optional[str] = None) -> None:

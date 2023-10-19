@@ -16,6 +16,7 @@ from . import storage  # pylint: disable=redefined-builtin
 from . import globals, helpers  # pylint: disable=redefined-builtin
 from . import native as native_module
 from .air import Air
+from .client import Client
 from .language import Language
 from .logging import log
 
@@ -117,7 +118,7 @@ def run(*,
             continue
         if route.path.startswith('/_nicegui') and hasattr(route, 'methods'):
             route.include_in_schema = endpoint_documentation in {'internal', 'all'}
-        if route.path == '/' or route.path in globals.page_routes.values():
+        if route.path == '/' or route.path in Client.page_routes.values():
             route.include_in_schema = endpoint_documentation in {'page', 'all'}
 
     if on_air:
