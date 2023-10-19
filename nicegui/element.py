@@ -9,7 +9,8 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional,
 
 from typing_extensions import Self
 
-from . import events, globals, outbox, storage  # pylint: disable=redefined-builtin
+from . import events, globals, json, outbox, storage  # pylint: disable=redefined-builtin
+from .awaitable_response import AwaitableResponse
 from .dependencies import Component, Library, register_library, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
@@ -402,17 +403,15 @@ class Element(Visibility):
         """Update the element on the client side."""
         outbox.enqueue_update(self)
 
-    def run_method(self, name: str, *args: Any) -> None:
+    def run_method(self, name: str, *args: Any) -> AwaitableResponse:
         """Run a method on the client side.
 
         :param name: name of the method
         :param args: arguments to pass to the method
         """
         if not globals.loop:
-            return
-        data = {'id': self.id, 'name': name, 'args': args}
-        target_id = globals._socket_id or self.client.id  # pylint: disable=protected-access
-        outbox.enqueue_message('run_method', data, target_id)
+            return AwaitableResponse(None, None)
+        return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})')
 
     def _collect_descendants(self, *, include_self: bool = False) -> List[Element]:
         elements: List[Element] = [self] if include_self else []

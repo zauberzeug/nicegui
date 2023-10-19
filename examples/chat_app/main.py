@@ -9,10 +9,10 @@ messages: List[Tuple[str, str, str, str]] = []
 
 
 @ui.refreshable
-async def chat_messages(own_id: str) -> None:
+def chat_messages(own_id: str) -> None:
     for user_id, avatar, text, stamp in messages:
         ui.chat_message(text=text, stamp=stamp, avatar=avatar, sent=own_id == user_id)
-    await ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)', respond=False)
+    ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)')
 
 
 @ui.page('/')
@@ -39,6 +39,6 @@ async def main(client: Client):
 
     await client.connected()  # chat_messages(...) uses run_javascript which is only possible after connecting
     with ui.column().classes('w-full max-w-2xl mx-auto items-stretch'):
-        await chat_messages(user_id)
+        chat_messages(user_id)
 
 ui.run()

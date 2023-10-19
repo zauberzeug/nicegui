@@ -45,6 +45,15 @@
         const _id = id instanceof HTMLElement ? id.id : id;
         return window.app.$refs["r" + _id];
       }
+      function runMethod(element_id, method_name, args) {
+        const element = getElement(element_id);
+        if (element === null || element === undefined) return;
+        if (method_name in element) {
+          return element[method_name](...args);
+        } else {
+          return element.$refs.qRef[method_name](...args);
+        }
+      }
     </script>
     <script type="module">
       const True = true;
@@ -275,15 +284,6 @@
                   await loadDependencies(element);
                 }
                 this.elements[element.id] = element;
-              }
-            },
-            run_method: (msg) => {
-              const element = getElement(msg.id);
-              if (element === null || element === undefined) return;
-              if (msg.name in element) {
-                element[msg.name](...msg.args);
-              } else {
-                element.$refs.qRef[msg.name](...msg.args);
               }
             },
             run_javascript: (msg) => runJavascript(msg['code'], msg['request_id']),

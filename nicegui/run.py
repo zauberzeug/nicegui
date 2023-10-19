@@ -12,6 +12,7 @@ from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from . import native_mode  # pylint: disable=redefined-builtin
+from . import storage  # pylint: disable=redefined-builtin
 from . import globals, helpers  # pylint: disable=redefined-builtin
 from . import native as native_module
 from .air import Air
@@ -36,7 +37,7 @@ class Server(uvicorn.Server):
             native_module.response_queue = self.config.response_queue
             globals.app.native.main_window = native_module.WindowProxy()
 
-        helpers.set_storage_secret(self.config.storage_secret)
+        storage.set_storage_secret(self.config.storage_secret)
         super().run(sockets=sockets)
 
 

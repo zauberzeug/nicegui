@@ -171,7 +171,7 @@ def test_server_side_validation(screen: Screen, attribute: Literal['disabled', '
         b.set_visibility(False)
     ui.button('Hack', on_click=lambda: ui.run_javascript(f'''
         getElement({b.id}).$emit("click", {{"id": {b.id}, "listener_id": "{list(b._event_listeners.keys())[0]}"}});
-    ''', respond=False))  # pylint: disable=protected-access
+    '''))  # pylint: disable=protected-access
 
     screen.open('/')
     screen.click('Hack')
