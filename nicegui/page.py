@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from fastapi import Request, Response
 
-from . import background_tasks, binding, globals  # pylint: disable=redefined-builtin
+from . import background_tasks, binding, globals, helpers  # pylint: disable=redefined-builtin
 from .client import Client
 from .favicon import create_favicon_route
 from .language import Language
@@ -95,7 +95,7 @@ class page:
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                     dec_kwargs['client'] = client
                 result = func(*dec_args, **dec_kwargs)
-            if inspect.isawaitable(result):
+            if helpers.is_coroutine_function(func):
                 async def wait_for_result() -> None:
                     with client:
                         return await result

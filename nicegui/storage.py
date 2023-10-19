@@ -5,7 +5,9 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, Optional, Union
 
 import aiofiles
+from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -69,6 +71,16 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         request.state.responded = True
         return response
+
+
+def set_storage_secret(storage_secret: Optional[str] = None) -> None:
+    """Set storage_secret and add request tracking middleware."""
+    if any(m.cls == SessionMiddleware for m in globals.app.user_middleware):
+        # NOTE not using "add_middleware" because it would be the wrong order
+        globals.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
+    elif storage_secret is not None:
+        globals.app.add_middleware(RequestTrackingMiddleware)
+        globals.app.add_middleware(SessionMiddleware, secret_key=storage_secret)
 
 
 class Storage:

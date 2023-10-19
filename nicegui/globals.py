@@ -13,6 +13,7 @@ from socketio import AsyncServer
 from uvicorn import Server
 
 from . import background_tasks
+from .helpers import is_coroutine_function
 
 if TYPE_CHECKING:
     from .air import Air
@@ -123,5 +124,5 @@ def handle_exception(exception: Exception) -> None:
     """Handle an exception by invoking all registered exception handlers."""
     for handler in exception_handlers:
         result = handler() if not inspect.signature(handler).parameters else handler(exception)
-        if isinstance(result, Awaitable):
+        if is_coroutine_function(handler):
             background_tasks.create(result)

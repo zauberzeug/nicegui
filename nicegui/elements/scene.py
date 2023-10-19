@@ -4,6 +4,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from typing_extensions import Self
 
 from .. import binding, globals  # pylint: disable=redefined-builtin
+from ..awaitable_response import AwaitableResponse
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..events import (GenericEventArguments, SceneClickEventArguments, SceneClickHit, SceneDragEventArguments,
@@ -116,15 +117,15 @@ class Scene(Element,
             for obj in self.objects.values():
                 obj.send()
 
-    def run_method(self, name: str, *args: Any) -> None:
+    def run_method(self, name: str, *args: Any) -> AwaitableResponse:
         """Run a method on the client.
 
         :param name: name of the method
         :param args: arguments to pass to the method
         """
         if not self.is_initialized:
-            return
-        super().run_method(name, *args)
+            return AwaitableResponse(None, None)
+        return super().run_method(name, *args)
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(

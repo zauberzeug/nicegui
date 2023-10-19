@@ -3,8 +3,7 @@ from typing import Optional, Union
 
 from fastapi import FastAPI
 
-from nicegui import globals  # pylint: disable=redefined-builtin
-from nicegui.helpers import set_storage_secret
+from nicegui import globals, storage  # pylint: disable=redefined-builtin
 from nicegui.language import Language
 from nicegui.nicegui import handle_shutdown, handle_startup
 
@@ -49,7 +48,7 @@ def run_with(
     globals.tailwind = tailwind
     globals.prod_js = prod_js
 
-    set_storage_secret(storage_secret)
+    storage.set_storage_secret(storage_secret)
     app.on_event('startup')(lambda: handle_startup(with_welcome_message=False))
     app.on_event('shutdown')(handle_shutdown)
 

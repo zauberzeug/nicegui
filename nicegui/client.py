@@ -13,6 +13,7 @@ from fastapi.templating import Jinja2Templates
 from nicegui import json
 
 from . import binding, globals, outbox  # pylint: disable=redefined-builtin
+from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
@@ -125,28 +126,39 @@ class Client:
             await asyncio.sleep(check_interval)
         self.is_waiting_for_disconnect = False
 
-    async def run_javascript(self, code: str, *,
-                             respond: bool = True, timeout: float = 1.0, check_interval: float = 0.01) -> Optional[Any]:
+    def run_javascript(self, code: str, *,
+                       respond: Optional[bool] = None,  # DEPRECATED
+                       timeout: float = 1.0, check_interval: float = 0.01) -> AwaitableResponse:
         """Execute JavaScript on the client.
 
         The client connection must be established before this method is called.
         You can do this by `await client.connected()` or register a callback with `client.on_connect(...)`.
-        If respond is True, the javascript code must return a string.
         """
+        if respond is True:
+            globals.log.warning('The "respond" argument of run_javascript() has been removed. '
+                                'Now the method always returns an AwaitableResponse that can be awaited. '
+                                'Please remove the "respond=True" argument.')
+        if respond is False:
+            raise ValueError('The "respond" argument of run_javascript() has been removed. '
+                             'Now the method always returns an AwaitableResponse that can be awaited. '
+                             'Please remove the "respond=False" argument and call the method without awaiting.')
+
         request_id = str(uuid.uuid4())
-        command = {
-            'code': code,
-            'request_id': request_id if respond else None,
-        }
-        outbox.enqueue_message('run_javascript', command, self.id)
-        if not respond:
-            return None
-        deadline = time.time() + timeout
-        while request_id not in self.waiting_javascript_commands:
-            if time.time() > deadline:
-                raise TimeoutError('JavaScript did not respond in time')
-            await asyncio.sleep(check_interval)
-        return self.waiting_javascript_commands.pop(request_id)
+        target_id = globals._socket_id or self.id  # pylint: disable=protected-access
+
+        def send_and_forget():
+            outbox.enqueue_message('run_javascript', {'code': code}, target_id)
+
+        async def send_and_wait():
+            outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
+            deadline = time.time() + timeout
+            while request_id not in self.waiting_javascript_commands:
+                if time.time() > deadline:
+                    raise TimeoutError('JavaScript did not respond in time')
+                await asyncio.sleep(check_interval)
+            return self.waiting_javascript_commands.pop(request_id)
+
+        return AwaitableResponse(send_and_forget, send_and_wait)
 
     def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
         """Open a new page in the client."""

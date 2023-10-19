@@ -134,7 +134,7 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
             headers: {{'Content-Type': 'application/json'}},
             body: JSON.stringify({{value: {e.value}}}),
         }});
-    ''', respond=False))
+    '''))
     with ui.header() \
             .classes('items-center duration-200 p-0 px-4 no-wrap') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
@@ -447,7 +447,7 @@ async def documentation_page_more(name: str, client: Client) -> None:
             generate_class_doc(api)
     try:
         await client.connected()
-        await ui.run_javascript(f'document.title = "{name} • NiceGUI";', respond=False)
+        ui.run_javascript(f'document.title = "{name} • NiceGUI";')
     except TimeoutError:
         logging.warning(f'client did not connect for page /documentation/{name}')
 

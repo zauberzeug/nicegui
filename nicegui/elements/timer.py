@@ -1,8 +1,8 @@
 import asyncio
 import time
-from typing import Any, Awaitable, Callable, Optional
+from typing import Any, Callable, Optional
 
-from .. import background_tasks, globals  # pylint: disable=redefined-builtin
+from .. import background_tasks, globals, helpers  # pylint: disable=redefined-builtin
 from ..binding import BindableProperty
 from ..element import Element
 
@@ -88,7 +88,7 @@ class Timer(Element, component='timer.js'):
         try:
             assert self.callback is not None
             result = self.callback()
-            if isinstance(result, Awaitable):
+            if helpers.is_coroutine_function(self.callback):
                 await result
         except Exception as e:
             globals.handle_exception(e)

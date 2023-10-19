@@ -290,7 +290,7 @@ def test_reconnecting_without_page_reload(screen: Screen):
     @ui.page('/', reconnect_timeout=3.0)
     def page():
         ui.input('Input').props('autofocus')
-        ui.button('drop connection', on_click=lambda: ui.run_javascript('socket.io.engine.close()', respond=False))
+        ui.button('drop connection', on_click=lambda: ui.run_javascript('socket.io.engine.close()'))
 
     screen.open('/')
     screen.type('hello')
