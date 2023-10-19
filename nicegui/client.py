@@ -126,12 +126,23 @@ class Client:
             await asyncio.sleep(check_interval)
         self.is_waiting_for_disconnect = False
 
-    def run_javascript(self, code: str, *, timeout: float = 1.0, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_javascript(self, code: str, *,
+                       respond: Optional[bool] = None,  # DEPRECATED
+                       timeout: float = 1.0, check_interval: float = 0.01) -> AwaitableResponse:
         """Execute JavaScript on the client.
 
         The client connection must be established before this method is called.
         You can do this by `await client.connected()` or register a callback with `client.on_connect(...)`.
         """
+        if respond is True:
+            globals.log.warning('The "respond" argument of run_javascript() has been removed. '
+                                'Now the method always returns an AwaitableResponse that can be awaited. '
+                                'Please remove the "respond=True" argument.')
+        if respond is False:
+            raise ValueError('The "respond" argument of run_javascript() has been removed. '
+                             'Now the method always returns an AwaitableResponse that can be awaited. '
+                             'Please remove the "respond=False" argument and call the method without awaiting.')
+
         request_id = str(uuid.uuid4())
         target_id = globals._socket_id or self.id  # pylint: disable=protected-access
 
