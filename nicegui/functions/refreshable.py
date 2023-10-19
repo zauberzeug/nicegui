@@ -6,6 +6,7 @@ from typing import Any, Awaitable, Callable, ClassVar, Dict, List, Optional, Tup
 from typing_extensions import Self
 
 from .. import background_tasks, globals  # pylint: disable=redefined-builtin
+from ..client import Client
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..helpers import is_coroutine_function
@@ -114,7 +115,7 @@ class refreshable:
         self.targets = [
             target
             for target in self.targets
-            if target.container.client.id in globals.clients and target.container.id in target.container.client.elements
+            if target.container.client.id in Client.instances and target.container.id in target.container.client.elements
         ]
 
 

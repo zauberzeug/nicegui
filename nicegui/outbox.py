@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, DefaultDict, Deque, Dict, Optional, Tuple
 from . import globals  # pylint: disable=redefined-builtin
 
 if TYPE_CHECKING:
+    from .client import Client
     from .element import Element
 
 ClientId = str
@@ -33,15 +34,19 @@ def enqueue_message(message_type: MessageType, data: Any, target_id: ClientId) -
     message_queue.append((target_id, message_type, data))
 
 
-async def _emit(message_type: MessageType, data: Any, target_id: ClientId) -> None:
-    await globals.sio.emit(message_type, data, room=target_id)
-    if _is_target_on_air(target_id):
-        assert globals.air is not None
-        await globals.air.emit(message_type, data, room=target_id)
-
-
-async def loop() -> None:
+async def loop(clients: Dict[str, Client]) -> None:
     """Emit queued updates and messages in an endless loop."""
+    def is_target_on_air(target_id: str) -> bool:
+        if target_id in clients:
+            return clients[target_id].on_air
+        return target_id in globals.sio.manager.rooms
+
+    async def emit(message_type: MessageType, data: Any, target_id: ClientId) -> None:
+        await globals.sio.emit(message_type, data, room=target_id)
+        if is_target_on_air(target_id):
+            assert globals.air is not None
+            await globals.air.emit(message_type, data, room=target_id)
+
     while True:
         if not update_queue and not message_queue:
             await asyncio.sleep(0.01)
@@ -54,11 +59,11 @@ async def loop() -> None:
                     element_id: None if element is None else element._to_dict()  # pylint: disable=protected-access
                     for element_id, element in elements.items()
                 }
-                coros.append(_emit('update', data, client_id))
+                coros.append(emit('update', data, client_id))
             update_queue.clear()
 
             for target_id, message_type, data in message_queue:
-                coros.append(_emit(message_type, data, target_id))
+                coros.append(emit(message_type, data, target_id))
             message_queue.clear()
 
             for coro in coros:
@@ -69,10 +74,3 @@ async def loop() -> None:
         except Exception as e:
             globals.app.handle_exception(e)
             await asyncio.sleep(0.1)
-
-
-def _is_target_on_air(target_id: str) -> bool:
-    if target_id in globals.clients:
-        return globals.clients[target_id].on_air
-
-    return target_id in globals.sio.manager.rooms

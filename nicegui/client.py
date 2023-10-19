@@ -31,10 +31,16 @@ class Client:
     page_routes: Dict[Callable[..., Any], str] = {}
     """Maps page builders to their routes."""
 
+    instances: Dict[str, Client] = {}
+    """Maps client IDs to clients."""
+
+    index_client: Client
+    """The client that is used to render the auto-index page."""
+
     def __init__(self, page: page, *, shared: bool = False) -> None:
         self.id = str(uuid.uuid4())
         self.created = time.time()
-        globals.clients[self.id] = self
+        self.instances[self.id] = self
 
         self.elements: Dict[int, Element] = {}
         self.next_element_id: int = 0
@@ -61,6 +67,11 @@ class Client:
         self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
 
         self._temporary_socket_id: Optional[str] = None
+
+    @property
+    def is_index_client(self) -> bool:
+        """Return True if this client is the auto-index client."""
+        return self is self.index_client
 
     @property
     def ip(self) -> Optional[str]:
@@ -128,7 +139,7 @@ class Client:
         if not self.has_socket_connection:
             await self.connected()
         self.is_waiting_for_disconnect = True
-        while self.id in globals.clients:
+        while self.id in self.instances:
             await asyncio.sleep(check_interval)
         self.is_waiting_for_disconnect = False
 

@@ -5,6 +5,7 @@ from typing import Any, Callable, Optional
 
 from .. import background_tasks, globals, helpers  # pylint: disable=redefined-builtin
 from ..binding import BindableProperty
+from ..client import Client
 from ..element import Element
 from ..logging import log
 
@@ -115,7 +116,7 @@ class Timer(Element, component='timer.js'):
     def _should_stop(self) -> bool:
         return (
             self.is_deleted or
-            self.client.id not in globals.clients or
+            self.client.id not in Client.instances or
             self._is_canceled or
             globals.app.is_stopping or
             globals.app.is_stopped

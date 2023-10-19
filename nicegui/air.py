@@ -8,6 +8,7 @@ import socketio
 from socketio import AsyncClient
 
 from . import background_tasks, globals  # pylint: disable=redefined-builtin
+from .client import Client
 from .logging import log
 from .nicegui import handle_disconnect, handle_event, handle_handshake, handle_javascript_response
 
@@ -64,9 +65,9 @@ class Air:
         @self.relay.on('handshake')
         def _handle_handshake(data: Dict[str, Any]) -> bool:
             client_id = data['client_id']
-            if client_id not in globals.clients:
+            if client_id not in Client.instances:
                 return False
-            client = globals.clients[client_id]
+            client = Client.instances[client_id]
             client.environ = data['environ']
             client.on_air = True
             handle_handshake(client)
@@ -75,17 +76,17 @@ class Air:
         @self.relay.on('client_disconnect')
         def _handle_disconnect(data: Dict[str, Any]) -> None:
             client_id = data['client_id']
-            if client_id not in globals.clients:
+            if client_id not in Client.instances:
                 return
-            client = globals.clients[client_id]
+            client = Client.instances[client_id]
             client.disconnect_task = background_tasks.create(handle_disconnect(client))
 
         @self.relay.on('event')
         def _handle_event(data: Dict[str, Any]) -> None:
             client_id = data['client_id']
-            if client_id not in globals.clients:
+            if client_id not in Client.instances:
                 return
-            client = globals.clients[client_id]
+            client = Client.instances[client_id]
             if isinstance(data['msg']['args'], dict) and 'socket_id' in data['msg']['args']:
                 data['msg']['args']['socket_id'] = client_id  # HACK: translate socket_id of ui.scene's init event
             handle_event(client, data['msg'])
@@ -93,9 +94,9 @@ class Air:
         @self.relay.on('javascript_response')
         def _handle_javascript_response(data: Dict[str, Any]) -> None:
             client_id = data['client_id']
-            if client_id not in globals.clients:
+            if client_id not in Client.instances:
                 return
-            client = globals.clients[client_id]
+            client = Client.instances[client_id]
             handle_javascript_response(client, data['msg'])
 
         @self.relay.on('out_of_time')

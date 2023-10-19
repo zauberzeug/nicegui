@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import background_tasks, globals, helpers  # pylint: disable=redefined-builtin
+from .client import Client
 from .logging import log
 from .native import Native
 from .observables import ObservableSet
@@ -59,17 +60,15 @@ class App(FastAPI):
     def start(self) -> None:
         """Start NiceGUI. (For internal use only.)"""
         self._state = State.STARTING
-        with globals.index_client:
-            for t in self._startup_handlers:
-                helpers.safe_invoke(t)
+        for t in self._startup_handlers:
+            helpers.safe_invoke(t, Client.index_client)
         self._state = State.STARTED
 
     def stop(self) -> None:
         """Stop NiceGUI. (For internal use only.)"""
         self._state = State.STOPPING
-        with globals.index_client:
-            for t in self._shutdown_handlers:
-                helpers.safe_invoke(t)
+        for t in self._shutdown_handlers:
+            helpers.safe_invoke(t, Client.index_client)
         self._state = State.STOPPED
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:

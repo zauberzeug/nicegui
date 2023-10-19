@@ -4,6 +4,7 @@ import os
 from typing import Any
 
 from .. import background_tasks, globals  # pylint: disable=redefined-builtin
+from ..client import Client
 from ..element import Element
 
 try:
@@ -51,6 +52,6 @@ class Pyplot(Element):
         self.update()
 
     async def _auto_close(self) -> None:
-        while self.client.id in globals.clients:
+        while self.client.id in Client.instances:
             await asyncio.sleep(1.0)
         plt.close(self.fig)

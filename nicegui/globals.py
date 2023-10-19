@@ -39,8 +39,6 @@ socket_io_js_query_params: Dict = {}
 socket_io_js_extra_headers: Dict = {}
 socket_io_js_transports: List[Literal['websocket', 'polling']] = ['websocket', 'polling']  # NOTE: we favor websocket
 slot_stacks: Dict[int, List[Slot]] = {}
-clients: Dict[str, Client] = {}
-index_client: Client
 quasar_config: Dict = {
     'brand': {
         'primary': '#5898d4',

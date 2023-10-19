@@ -40,12 +40,12 @@ static_files = StaticFiles(
 )
 app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
 
-globals.index_client = Client(page('/'), shared=True).__enter__()  # pylint: disable=unnecessary-dunder-call
+Client.index_client = Client(page('/'), shared=True).__enter__()  # pylint: disable=unnecessary-dunder-call
 
 
 @app.get('/')
 def _get_index(request: Request) -> Response:
-    return globals.index_client.build_response(request)
+    return Client.index_client.build_response(request)
 
 
 @app.get(f'/_nicegui/{__version__}' + '/libraries/{key:path}')
@@ -94,7 +94,7 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     globals.loop = asyncio.get_running_loop()
     globals.app.start()
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
-    background_tasks.create(outbox.loop(), name='send outbox')
+    background_tasks.create(outbox.loop(Client.instances), name='send outbox')
     background_tasks.create(prune_clients(), name='prune clients')
     background_tasks.create(prune_slot_stacks(), name='prune slot stacks')
     if with_welcome_message:
@@ -132,7 +132,7 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 @sio.on('handshake')
 async def _on_handshake(sid: str, client_id: str) -> bool:
-    client = globals.clients.get(client_id)
+    client = Client.instances.get(client_id)
     if not client:
         return False
     client.environ = sio.get_environ(sid)
@@ -157,7 +157,7 @@ def _on_disconnect(sid: str) -> None:
     query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
     query = urllib.parse.parse_qs(query_bytes.decode())
     client_id = query['client_id'][0]
-    client = globals.clients.get(client_id)
+    client = Client.instances.get(client_id)
     if client:
         client.disconnect_task = background_tasks.create(handle_disconnect(client))
 
@@ -176,7 +176,7 @@ async def handle_disconnect(client: Client) -> None:
 
 @sio.on('event')
 def _on_event(_: str, msg: Dict) -> None:
-    client = globals.clients.get(msg['client_id'])
+    client = Client.instances.get(msg['client_id'])
     if not client or not client.has_socket_connection:
         return
     handle_event(client, msg)
@@ -195,7 +195,7 @@ def handle_event(client: Client, msg: Dict) -> None:
 
 @sio.on('javascript_response')
 def _on_javascript_response(_: str, msg: Dict) -> None:
-    client = globals.clients.get(msg['client_id'])
+    client = Client.instances.get(msg['client_id'])
     if not client:
         return
     handle_javascript_response(client, msg)
@@ -211,7 +211,7 @@ async def prune_clients() -> None:
     while True:
         stale_clients = [
             id
-            for id, client in globals.clients.items()
+            for id, client in Client.instances.items()
             if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
         ]
         for client_id in stale_clients:
@@ -238,4 +238,4 @@ async def prune_slot_stacks() -> None:
 
 
 def _delete_client(client_id: str) -> None:
-    globals.clients.pop(client_id).remove_all_elements()
+    Client.instances.pop(client_id).remove_all_elements()
