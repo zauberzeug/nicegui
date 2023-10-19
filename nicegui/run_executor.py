@@ -11,7 +11,7 @@ thread_pool = ThreadPoolExecutor()
 
 
 async def _run(executor: Any, callback: Callable, *args: Any, **kwargs: Any) -> Any:
-    if globals.state == globals.State.STOPPING:
+    if globals.app.is_stopping:
         return
     try:
         loop = asyncio.get_running_loop()

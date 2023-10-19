@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import os
 from contextlib import contextmanager
-from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Iterator, List, Literal, Optional, Set, Union
 
@@ -17,19 +16,10 @@ if TYPE_CHECKING:
     from .language import Language
     from .slot import Slot
 
-
-class State(Enum):
-    STOPPED = 0
-    STARTING = 1
-    STARTED = 2
-    STOPPING = 3
-
-
 app: App
 sio: AsyncServer
 server: Server
 loop: Optional[asyncio.AbstractEventLoop] = None
-state: State = State.STOPPED
 ui_run_has_been_called: bool = False
 optional_features: Set[str] = set()
 

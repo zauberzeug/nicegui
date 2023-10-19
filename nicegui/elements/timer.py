@@ -36,7 +36,7 @@ class Timer(Element, component='timer.js'):
         self._is_canceled: bool = False
 
         coroutine = self._run_once if once else self._run_in_loop
-        if globals.state == globals.State.STARTED:
+        if globals.app.is_started:
             background_tasks.create(coroutine(), name=str(callback))
         else:
             globals.app.on_startup(coroutine)
@@ -116,7 +116,8 @@ class Timer(Element, component='timer.js'):
             self.is_deleted or
             self.client.id not in globals.clients or
             self._is_canceled or
-            globals.state in {globals.State.STOPPING, globals.State.STOPPED}
+            globals.app.is_stopping or
+            globals.app.is_stopped
         )
 
     def _cleanup(self) -> None:

@@ -98,7 +98,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         while process.is_alive():
             time.sleep(0.1)
         globals.server.should_exit = True
-        while globals.state != globals.State.STOPPED:
+        while not globals.app.is_stopped:
             time.sleep(0.1)
         _thread.interrupt_main()
 

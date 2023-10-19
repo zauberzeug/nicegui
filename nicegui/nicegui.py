@@ -91,16 +91,12 @@ def handle_startup(with_welcome_message: bool = True) -> None:
             app.add_route('/favicon.ico', lambda _: favicon.get_favicon_response())
     else:
         app.add_route('/favicon.ico', lambda _: FileResponse(Path(__file__).parent / 'static' / 'favicon.ico'))
-    globals.state = globals.State.STARTING
     globals.loop = asyncio.get_running_loop()
-    with globals.index_client:
-        for t in app._startup_handlers:
-            safe_invoke(t)
+    globals.app.start()
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
     background_tasks.create(outbox.loop(), name='send outbox')
     background_tasks.create(prune_clients(), name='prune clients')
     background_tasks.create(prune_slot_stacks(), name='prune slot stacks')
-    globals.state = globals.State.STARTED
     if with_welcome_message:
         background_tasks.create(welcome.print_message())
     if globals.air:
@@ -112,12 +108,8 @@ async def handle_shutdown() -> None:
     """Handle the shutdown event."""
     if app.native.main_window:
         app.native.main_window.signal_server_shutdown()
-    globals.state = globals.State.STOPPING
-    with globals.index_client:
-        for t in app._shutdown_handlers:
-            safe_invoke(t)
+    globals.app.stop()
     run_executor.tear_down()
-    globals.state = globals.State.STOPPED
     if globals.air:
         await globals.air.disconnect()
 

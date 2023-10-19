@@ -1,4 +1,5 @@
 import inspect
+from enum import Enum
 from pathlib import Path
 from typing import Any, Awaitable, Callable, List, Optional, Union
 
@@ -13,6 +14,13 @@ from .observables import ObservableSet
 from .storage import Storage
 
 
+class State(Enum):
+    STOPPED = 0
+    STARTING = 1
+    STARTED = 2
+    STOPPING = 3
+
+
 class App(FastAPI):
 
     def __init__(self, **kwargs) -> None:
@@ -20,12 +28,49 @@ class App(FastAPI):
         self.native = Native()
         self.storage = Storage()
         self.urls = ObservableSet()
+        self.state: State = State.STOPPED
 
         self._startup_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._shutdown_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._exception_handlers: List[Callable[..., Any]] = [log.exception]
+
+    @property
+    def is_starting(self) -> bool:
+        """Return whether NiceGUI is starting."""
+        return self.state == State.STARTING
+
+    @property
+    def is_started(self) -> bool:
+        """Return whether NiceGUI is started."""
+        return self.state == State.STARTED
+
+    @property
+    def is_stopping(self) -> bool:
+        """Return whether NiceGUI is stopping."""
+        return self.state == State.STOPPING
+
+    @property
+    def is_stopped(self) -> bool:
+        """Return whether NiceGUI is stopped."""
+        return self.state == State.STOPPED
+
+    def start(self) -> None:
+        """Start NiceGUI. (For internal use only.)"""
+        self.state = State.STARTING
+        with globals.index_client:
+            for t in self._startup_handlers:
+                helpers.safe_invoke(t)
+        self.state = State.STARTED
+
+    def stop(self) -> None:
+        """Stop NiceGUI. (For internal use only.)"""
+        self.state = State.STOPPING
+        with globals.index_client:
+            for t in self._shutdown_handlers:
+                helpers.safe_invoke(t)
+        self.state = State.STOPPED
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
         """Called every time a new client connects to NiceGUI.
@@ -46,7 +91,7 @@ class App(FastAPI):
 
         Needs to be called before `ui.run()`.
         """
-        if globals.state == globals.State.STARTED:
+        if self.is_started:
             raise RuntimeError('Unable to register another startup handler. NiceGUI has already been started.')
         self._startup_handlers.append(handler)
 
