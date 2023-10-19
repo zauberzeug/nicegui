@@ -2,6 +2,7 @@ from typing import Optional
 
 from .. import globals  # pylint: disable=redefined-builtin
 from ..awaitable_response import AwaitableResponse
+from ..logging import log
 
 
 def run_javascript(code: str, *,
@@ -21,9 +22,9 @@ def run_javascript(code: str, *,
     :return: response from the browser, or `None` if `respond` is `False`
     """
     if respond is True:
-        globals.log.warning('The "respond" argument of run_javascript() has been removed. '
-                            'Now the function always returns an AwaitableResponse that can be awaited. '
-                            'Please remove the "respond=True" argument.')
+        log.warning('The "respond" argument of run_javascript() has been removed. '
+                    'Now the function always returns an AwaitableResponse that can be awaited. '
+                    'Please remove the "respond=True" argument.')
     if respond is False:
         raise ValueError('The "respond" argument of run_javascript() has been removed. '
                          'Now the function always returns an AwaitableResponse that can be awaited. '

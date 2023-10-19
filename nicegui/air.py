@@ -8,6 +8,7 @@ import socketio
 from socketio import AsyncClient
 
 from . import background_tasks, globals  # pylint: disable=redefined-builtin
+from .logging import log
 from .nicegui import handle_disconnect, handle_event, handle_handshake, handle_javascript_response
 
 RELAY_HOST = 'https://on-air.nicegui.io/'
@@ -127,7 +128,7 @@ class Air:
             except ValueError:  # NOTE this sometimes happens when the internal socketio client is not yet ready
                 await self.relay.disconnect()
             except Exception:
-                globals.log.exception('Could not connect to NiceGUI On Air server.')
+                log.exception('Could not connect to NiceGUI On Air server.')
 
             await asyncio.sleep(backoff_time)
             backoff_time = min(backoff_time * 2, 32)

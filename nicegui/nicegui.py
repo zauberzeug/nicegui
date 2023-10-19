@@ -19,6 +19,7 @@ from .dependencies import js_components, libraries
 from .error import error_content
 from .helpers import is_file, safe_invoke
 from .json import NiceGUIJSONResponse
+from .logging import log
 from .middlewares import RedirectWithPrefixMiddleware
 from .page import page
 from .version import __version__
@@ -85,15 +86,15 @@ def handle_startup(with_welcome_message: bool = True) -> None:
                            'to allow for multiprocessing.')
     if globals.favicon:
         if is_file(globals.favicon):
-            globals.app.add_route('/favicon.ico', lambda _: FileResponse(globals.favicon))  # type: ignore
+            app.add_route('/favicon.ico', lambda _: FileResponse(globals.favicon))  # type: ignore
         else:
-            globals.app.add_route('/favicon.ico', lambda _: favicon.get_favicon_response())
+            app.add_route('/favicon.ico', lambda _: favicon.get_favicon_response())
     else:
-        globals.app.add_route('/favicon.ico', lambda _: FileResponse(Path(__file__).parent / 'static' / 'favicon.ico'))
+        app.add_route('/favicon.ico', lambda _: FileResponse(Path(__file__).parent / 'static' / 'favicon.ico'))
     globals.state = globals.State.STARTING
     globals.loop = asyncio.get_running_loop()
     with globals.index_client:
-        for t in globals.startup_handlers:
+        for t in app._startup_handlers:
             safe_invoke(t)
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
     background_tasks.create(outbox.loop(), name='send outbox')
@@ -113,7 +114,7 @@ async def handle_shutdown() -> None:
         app.native.main_window.signal_server_shutdown()
     globals.state = globals.State.STOPPING
     with globals.index_client:
-        for t in globals.shutdown_handlers:
+        for t in app._shutdown_handlers:
             safe_invoke(t)
     run_executor.tear_down()
     globals.state = globals.State.STOPPED
@@ -123,7 +124,7 @@ async def handle_shutdown() -> None:
 
 @app.exception_handler(404)
 async def _exception_handler_404(request: Request, exception: Exception) -> Response:
-    globals.log.warning(f'{request.url} not found')
+    log.warning(f'{request.url} not found')
     with Client(page('')) as client:
         error_content(404, exception)
     return client.build_response(request, 404)
@@ -131,7 +132,7 @@ async def _exception_handler_404(request: Request, exception: Exception) -> Resp
 
 @app.exception_handler(Exception)
 async def _exception_handler_500(request: Request, exception: Exception) -> Response:
-    globals.log.exception(exception)
+    log.exception(exception)
     with Client(page('')) as client:
         error_content(500, exception)
     return client.build_response(request, 500)
@@ -155,7 +156,7 @@ def handle_handshake(client: Client) -> None:
         client.disconnect_task = None
     for t in client.connect_handlers:
         safe_invoke(t, client)
-    for t in globals.connect_handlers:
+    for t in app._connect_handlers:
         safe_invoke(t, client)
 
 
@@ -177,7 +178,7 @@ async def handle_disconnect(client: Client) -> None:
         _delete_client(client.id)
     for t in client.disconnect_handlers:
         safe_invoke(t, client)
-    for t in globals.disconnect_handlers:
+    for t in app._disconnect_handlers:
         safe_invoke(t, client)
 
 

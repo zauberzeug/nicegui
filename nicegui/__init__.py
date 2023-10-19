@@ -4,6 +4,7 @@ from . import run_executor as run
 from .api_router import APIRouter
 from .awaitable_response import AwaitableResponse
 from .client import Client
+from .logging import log
 from .nicegui import app
 from .tailwind import Tailwind
 from .version import __version__
@@ -15,6 +16,7 @@ __all__ = [
     'Client',
     'elements',
     'globals',
+    'log',
     'run',
     'Tailwind',
     'ui',

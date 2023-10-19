@@ -1,11 +1,13 @@
+import inspect
 from pathlib import Path
-from typing import Awaitable, Callable, Optional, Union
+from typing import Any, Awaitable, Callable, List, Optional, Union
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import globals, helpers  # pylint: disable=redefined-builtin
+from . import background_tasks, globals, helpers  # pylint: disable=redefined-builtin
+from .logging import log
 from .native import Native
 from .observables import ObservableSet
 from .storage import Storage
@@ -19,19 +21,25 @@ class App(FastAPI):
         self.storage = Storage()
         self.urls = ObservableSet()
 
+        self._startup_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+        self._shutdown_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+        self._connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+        self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+        self._exception_handlers: List[Callable[..., Any]] = [log.exception]
+
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
         """Called every time a new client connects to NiceGUI.
 
         The callback has an optional parameter of `nicegui.Client`.
         """
-        globals.connect_handlers.append(handler)
+        self._connect_handlers.append(handler)
 
     def on_disconnect(self, handler: Union[Callable, Awaitable]) -> None:
         """Called every time a new client disconnects from NiceGUI.
 
         The callback has an optional parameter of `nicegui.Client`.
         """
-        globals.disconnect_handlers.append(handler)
+        self._disconnect_handlers.append(handler)
 
     def on_startup(self, handler: Union[Callable, Awaitable]) -> None:
         """Called when NiceGUI is started or restarted.
@@ -40,21 +48,28 @@ class App(FastAPI):
         """
         if globals.state == globals.State.STARTED:
             raise RuntimeError('Unable to register another startup handler. NiceGUI has already been started.')
-        globals.startup_handlers.append(handler)
+        self._startup_handlers.append(handler)
 
     def on_shutdown(self, handler: Union[Callable, Awaitable]) -> None:
         """Called when NiceGUI is shut down or restarted.
 
         When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.
         """
-        globals.shutdown_handlers.append(handler)
+        self._shutdown_handlers.append(handler)
 
     def on_exception(self, handler: Callable) -> None:
         """Called when an exception occurs.
 
         The callback has an optional parameter of `Exception`.
         """
-        globals.exception_handlers.append(handler)
+        self._exception_handlers.append(handler)
+
+    def handle_exception(self, exception: Exception) -> None:
+        """Handle an exception by invoking all registered exception handlers."""
+        for handler in self._exception_handlers:
+            result = handler() if not inspect.signature(handler).parameters else handler(exception)
+            if helpers.is_coroutine_function(handler):
+                background_tasks.create(result)
 
     def shutdown(self) -> None:
         """Shut down NiceGUI.
@@ -85,7 +100,7 @@ class App(FastAPI):
         """
         if url_path == '/':
             raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
-        globals.app.mount(url_path, StaticFiles(directory=str(local_directory)))
+        self.mount(url_path, StaticFiles(directory=str(local_directory)))
 
     def add_static_file(self, *,
                         local_file: Union[str, Path],

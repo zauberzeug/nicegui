@@ -4,6 +4,7 @@ from typing_extensions import Self
 
 from .. import globals  # pylint: disable=redefined-builtin
 from ..events import ClickEventArguments, handle_event
+from ..logging import log
 from .context_menu import ContextMenu
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
@@ -38,8 +39,8 @@ class Menu(ValueElement):
         if 'touch-position' in self._props:
             # https://github.com/zauberzeug/nicegui/issues/1738
             del self._props['touch-position']
-            globals.log.warning('The prop "touch-position" is not supported by `ui.menu`.\n'
-                                'Use "ui.context_menu()" instead.')
+            log.warning('The prop "touch-position" is not supported by `ui.menu`.\n'
+                        'Use "ui.context_menu()" instead.')
         return self
 
 

@@ -1,6 +1,7 @@
 from typing import Any, Callable, Union
 
 from .. import globals  # pylint: disable=redefined-builtin
+from ..logging import log
 
 
 def open(target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:  # pylint: disable=redefined-builtin
@@ -24,4 +25,4 @@ def open(target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
     if client.has_socket_connection:
         client.open(path, new_tab)
     else:
-        globals.log.error('Cannot open page because client is not connected, try RedirectResponse from FastAPI instead')
+        log.error('Cannot open page because client is not connected, try RedirectResponse from FastAPI instead')

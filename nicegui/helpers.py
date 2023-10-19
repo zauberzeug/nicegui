@@ -75,7 +75,7 @@ def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional[Cli
                         await result
                 background_tasks.create(result_with_client())
     except Exception as e:
-        globals.handle_exception(e)
+        globals.app.handle_exception(e)
 
 
 def is_port_open(host: str, port: int) -> bool:

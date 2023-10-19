@@ -17,6 +17,7 @@ from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
+from .logging import log
 from .version import __version__
 
 if TYPE_CHECKING:
@@ -135,9 +136,9 @@ class Client:
         You can do this by `await client.connected()` or register a callback with `client.on_connect(...)`.
         """
         if respond is True:
-            globals.log.warning('The "respond" argument of run_javascript() has been removed. '
-                                'Now the method always returns an AwaitableResponse that can be awaited. '
-                                'Please remove the "respond=True" argument.')
+            log.warning('The "respond" argument of run_javascript() has been removed. '
+                        'Now the method always returns an AwaitableResponse that can be awaited. '
+                        'Please remove the "respond=True" argument.')
         if respond is False:
             raise ValueError('The "respond" argument of run_javascript() has been removed. '
                              'Now the method always returns an AwaitableResponse that can be awaited. '

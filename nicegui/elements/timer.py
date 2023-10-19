@@ -5,6 +5,7 @@ from typing import Any, Callable, Optional
 from .. import background_tasks, globals, helpers  # pylint: disable=redefined-builtin
 from ..binding import BindableProperty
 from ..element import Element
+from ..logging import log
 
 
 class Timer(Element, component='timer.js'):
@@ -79,7 +80,7 @@ class Timer(Element, component='timer.js'):
                     except asyncio.CancelledError:
                         break
                     except Exception as e:
-                        globals.handle_exception(e)
+                        globals.app.handle_exception(e)
                         await asyncio.sleep(self.interval)
         finally:
             self._cleanup()
@@ -91,7 +92,7 @@ class Timer(Element, component='timer.js'):
             if helpers.is_coroutine_function(self.callback):
                 await result
         except Exception as e:
-            globals.handle_exception(e)
+            globals.app.handle_exception(e)
 
     async def _connected(self, timeout: float = 60.0) -> bool:
         """Wait for the client connection before the timer callback can be allowed to manipulate the state.
@@ -107,7 +108,7 @@ class Timer(Element, component='timer.js'):
             await self.client.connected(timeout=timeout)
             return True
         except TimeoutError:
-            globals.log.error(f'Timer cancelled because client is not connected after {timeout} seconds')
+            log.error(f'Timer cancelled because client is not connected after {timeout} seconds')
             return False
 
     def _should_stop(self) -> bool:

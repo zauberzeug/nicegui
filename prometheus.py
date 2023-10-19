@@ -4,7 +4,7 @@ import uuid
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
-from nicegui.globals import log
+from nicegui import log
 
 EXCLUDED_USER_AGENTS = {'bot', 'spider', 'crawler', 'monitor', 'curl',
                         'wget', 'python-requests', 'kuma', 'health check'}

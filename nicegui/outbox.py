@@ -65,9 +65,9 @@ async def loop() -> None:
                 try:
                     await coro
                 except Exception as e:
-                    globals.handle_exception(e)
+                    globals.app.handle_exception(e)
         except Exception as e:
-            globals.handle_exception(e)
+            globals.app.handle_exception(e)
             await asyncio.sleep(0.1)
 
 

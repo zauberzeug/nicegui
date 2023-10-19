@@ -12,6 +12,7 @@ from threading import Event, Thread
 from typing import Any, Callable, Dict, List, Tuple
 
 from . import globals, helpers, native  # pylint: disable=redefined-builtin
+from .logging import log
 
 try:
     with warnings.catch_warnings():
@@ -56,7 +57,7 @@ def _start_window_method_executor(window: webview.Window,
             if response is not None or 'dialog' in method.__name__:
                 response_queue.put(response)
         except Exception:
-            globals.log.exception(f'error in window.{method.__name__}')
+            log.exception(f'error in window.{method.__name__}')
 
     def window_method_executor() -> None:
         pending_executions: List[Thread] = []
@@ -65,7 +66,7 @@ def _start_window_method_executor(window: webview.Window,
                 method_name, args, kwargs = method_queue.get(block=False)
                 if method_name == 'signal_server_shutdown':
                     if pending_executions:
-                        globals.log.warning('shutdown is possibly blocked by opened dialogs like a file picker')
+                        log.warning('shutdown is possibly blocked by opened dialogs like a file picker')
                         while pending_executions:
                             pending_executions.pop().join()
                 elif method_name == 'get_always_on_top':
@@ -82,11 +83,11 @@ def _start_window_method_executor(window: webview.Window,
                         pending_executions.append(Thread(target=execute, args=(method, args, kwargs)))
                         pending_executions[-1].start()
                     else:
-                        globals.log.error(f'window.{method_name} is not callable')
+                        log.error(f'window.{method_name} is not callable')
             except queue.Empty:
                 time.sleep(0.01)
             except Exception:
-                globals.log.exception(f'error in window.{method_name}')
+                log.exception(f'error in window.{method_name}')
 
     Thread(target=window_method_executor).start()
 
@@ -102,8 +103,8 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         _thread.interrupt_main()
 
     if 'native' not in globals.optional_features:
-        globals.log.error('Native mode is not supported in this configuration.\n'
-                          'Please run "pip install pywebview" to use it.')
+        log.error('Native mode is not supported in this configuration.\n'
+                  'Please run "pip install pywebview" to use it.')
         sys.exit(1)
 
     mp.freeze_support()

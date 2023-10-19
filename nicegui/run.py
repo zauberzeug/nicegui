@@ -17,6 +17,7 @@ from . import globals, helpers  # pylint: disable=redefined-builtin
 from . import native as native_module
 from .air import Air
 from .language import Language
+from .logging import log
 
 APP_IMPORT_STRING = 'nicegui:app'
 
@@ -126,7 +127,7 @@ def run(*,
         return
 
     if reload and not hasattr(__main__, '__file__'):
-        globals.log.warning('auto-reloading is only supported when running from a file')
+        log.warning('auto-reloading is only supported when running from a file')
         globals.reload = reload = False
 
     if fullscreen:
@@ -173,7 +174,7 @@ def run(*,
     globals.server = Server(config=config)
 
     if (reload or config.workers > 1) and not isinstance(config.app, str):
-        globals.log.warning('You must pass the application as an import string to enable "reload" or "workers".')
+        log.warning('You must pass the application as an import string to enable "reload" or "workers".')
         sys.exit(1)
 
     if config.should_reload:
