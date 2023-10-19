@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import os
-from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Iterator, List, Literal, Optional, Set, Union
+from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Set, Union
 
 from socketio import AsyncServer
 from uvicorn import Server
@@ -39,7 +38,6 @@ storage_path: Path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).re
 socket_io_js_query_params: Dict = {}
 socket_io_js_extra_headers: Dict = {}
 socket_io_js_transports: List[Literal['websocket', 'polling']] = ['websocket', 'polling']  # NOTE: we favor websocket
-_socket_id: Optional[str] = None
 slot_stacks: Dict[int, List[Slot]] = {}
 clients: Dict[str, Client] = {}
 index_client: Client
@@ -85,12 +83,3 @@ def get_slot() -> Slot:
 def get_client() -> Client:
     """Return the current client."""
     return get_slot().parent.client
-
-
-@contextmanager
-def socket_id(id_: str) -> Iterator[None]:
-    """Enter a context with a specific socket ID."""
-    global _socket_id  # pylint: disable=global-statement
-    _socket_id = id_
-    yield
-    _socket_id = None

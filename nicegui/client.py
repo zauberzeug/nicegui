@@ -3,8 +3,9 @@ from __future__ import annotations
 import asyncio
 import time
 import uuid
+from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterable, Iterator, List, Optional, Union
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -58,6 +59,8 @@ class Client:
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+
+        self._temporary_socket_id: Optional[str] = None
 
     @property
     def ip(self) -> Optional[str]:
@@ -147,7 +150,7 @@ class Client:
                              'Please remove the "respond=False" argument and call the method without awaiting.')
 
         request_id = str(uuid.uuid4())
-        target_id = globals._socket_id or self.id  # pylint: disable=protected-access
+        target_id = self._temporary_socket_id or self.id
 
         def send_and_forget():
             outbox.enqueue_message('run_javascript', {'code': code}, target_id)
@@ -194,3 +197,13 @@ class Client:
     def remove_all_elements(self) -> None:
         """Remove all elements from the client."""
         self.remove_elements(self.elements.values())
+
+    @contextmanager
+    def individual_target(self, socket_id: str) -> Iterator[None]:
+        """Use individual socket ID while in this context.
+
+        This context is useful for limiting messages from the shared auto-index page to a single client.
+        """
+        self._temporary_socket_id = socket_id
+        yield
+        self._temporary_socket_id = None
