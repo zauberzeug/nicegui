@@ -1,5 +1,7 @@
-from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Dict, List, Tuple, Union
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any, Awaitable, Callable, ClassVar, Dict, List, Optional, Tuple, Union
 
 from typing_extensions import Self
 
@@ -11,13 +13,20 @@ from ..helpers import is_coroutine_function
 
 @dataclass(**KWONLY_SLOTS)
 class RefreshableTarget:
-    container: Element
+    container: RefreshableContainer
+    refreshable: refreshable
     instance: Any
     args: Tuple[Any, ...]
     kwargs: Dict[str, Any]
 
+    current_target: ClassVar[Optional[RefreshableTarget]] = None
+    locals: List[Any] = field(default_factory=list)
+    next_index: int = 0
+
     def run(self, func: Callable[..., Any]) -> Union[None, Awaitable]:
         """Run the function and return the result."""
+        RefreshableTarget.current_target = self
+        self.next_index = 0
         # pylint: disable=no-else-return
         if is_coroutine_function(func):
             async def wait_for_result() -> None:
@@ -67,7 +76,8 @@ class refreshable:
 
     def __call__(self, *args: Any, **kwargs: Any) -> Union[None, Awaitable]:
         self.prune()
-        target = RefreshableTarget(container=RefreshableContainer(), instance=self.instance, args=args, kwargs=kwargs)
+        target = RefreshableTarget(container=RefreshableContainer(), refreshable=self, instance=self.instance,
+                                   args=args, kwargs=kwargs)
         self.targets.append(target)
         return target.run(self.func)
 
@@ -106,3 +116,21 @@ class refreshable:
             for target in self.targets
             if target.container.client.id in globals.clients and target.container.id in target.container.client.elements
         ]
+
+
+def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
+    target = RefreshableTarget.current_target
+    assert target is not None
+
+    if target.next_index >= len(target.locals):
+        target.locals.append(value)
+    else:
+        value = target.locals[target.next_index]
+
+    def set_value(new_value: Any, index=target.next_index) -> None:
+        target.locals[index] = new_value
+        target.refreshable.refresh()
+
+    target.next_index += 1
+
+    return value, set_value

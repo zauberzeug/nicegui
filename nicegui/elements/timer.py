@@ -4,10 +4,10 @@ from typing import Any, Callable, Optional
 
 from .. import background_tasks, globals, helpers  # pylint: disable=redefined-builtin
 from ..binding import BindableProperty
-from ..slot import Slot
+from ..element import Element
 
 
-class Timer:
+class Timer(Element, component='timer.js'):
     active = BindableProperty()
     interval = BindableProperty()
 
@@ -28,10 +28,10 @@ class Timer:
         :param active: whether the callback should be executed or not (can be changed during runtime)
         :param once: whether the callback is only executed once after a delay specified by `interval` (default: `False`)
         """
+        super().__init__()
         self.interval = interval
         self.callback: Optional[Callable[..., Any]] = callback
         self.active = active
-        self.slot: Optional[Slot] = globals.get_slot()
         self._is_canceled: bool = False
 
         coroutine = self._run_once if once else self._run_in_loop
@@ -57,8 +57,7 @@ class Timer:
         try:
             if not await self._connected():
                 return
-            assert self.slot is not None
-            with self.slot:
+            with self.parent_slot:
                 await asyncio.sleep(self.interval)
                 if self.active and not self._should_stop():
                     await self._invoke_callback()
@@ -69,8 +68,7 @@ class Timer:
         try:
             if not await self._connected():
                 return
-            assert self.slot is not None
-            with self.slot:
+            with self.parent_slot:
                 while not self._should_stop():
                     try:
                         start = time.time()
@@ -101,27 +99,24 @@ class Timer:
         See https://github.com/zauberzeug/nicegui/issues/206 for details.
         Returns True if the client is connected, False if the client is not connected and the timer should be cancelled.
         """
-        assert self.slot is not None
-        if self.slot.parent.client.shared:
+        if self.client.shared:
             return True
 
         # ignore served pages which do not reconnect to backend (e.g. monitoring requests, scrapers etc.)
         try:
-            await self.slot.parent.client.connected(timeout=timeout)
+            await self.client.connected(timeout=timeout)
             return True
         except TimeoutError:
             globals.log.error(f'Timer cancelled because client is not connected after {timeout} seconds')
             return False
 
     def _should_stop(self) -> bool:
-        assert self.slot is not None
         return (
-            self.slot.parent.is_deleted or
-            self.slot.parent.client.id not in globals.clients or
+            self.is_deleted or
+            self.client.id not in globals.clients or
             self._is_canceled or
             globals.state in {globals.State.STOPPING, globals.State.STOPPED}
         )
 
     def _cleanup(self) -> None:
-        self.slot = None
         self.callback = None

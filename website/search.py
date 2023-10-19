@@ -52,7 +52,7 @@ class Search:
     def handle_input(self, e: events.ValueChangeEventArguments) -> None:
         async def handle_input():
             with self.results:
-                results = await ui.run_javascript(f'return window.fuse.search("{e.value}").slice(0, 50)')
+                results = await ui.run_javascript(f'return window.fuse.search("{e.value}").slice(0, 50)', timeout=6)
                 self.results.clear()
                 for result in results:
                     href: str = result['item']['url']

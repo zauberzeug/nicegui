@@ -70,6 +70,7 @@ __all__ = [
     'tabs',
     'textarea',
     'time',
+    'timer',
     'timeline',
     'timeline_entry',
     'toggle',
@@ -84,7 +85,7 @@ __all__ = [
     'notify',
     'open',
     'refreshable',
-    'timer',
+    'state',
     'update',
     'page',
     'drawer',
@@ -170,6 +171,7 @@ from .elements.textarea import Textarea as textarea
 from .elements.time import Time as time
 from .elements.timeline import Timeline as timeline
 from .elements.timeline import TimelineEntry as timeline_entry
+from .elements.timer import Timer as timer
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
@@ -180,8 +182,7 @@ from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
 from .functions.notify import notify
 from .functions.open import open  # pylint: disable=redefined-builtin
-from .functions.refreshable import refreshable
-from .functions.timer import Timer as timer
+from .functions.refreshable import refreshable, state
 from .functions.update import update
 from .page import page
 from .page_layout import Drawer as drawer
