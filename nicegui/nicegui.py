@@ -148,7 +148,7 @@ def handle_handshake(client: Client) -> None:
         client.disconnect_task = None
     for t in client.connect_handlers:
         safe_invoke(t, client)
-    for t in app._connect_handlers:
+    for t in app._connect_handlers:  # pylint: disable=protected-access
         safe_invoke(t, client)
 
 
@@ -170,7 +170,7 @@ async def handle_disconnect(client: Client) -> None:
         _delete_client(client.id)
     for t in client.disconnect_handlers:
         safe_invoke(t, client)
-    for t in app._disconnect_handlers:
+    for t in app._disconnect_handlers:  # pylint: disable=protected-access
         safe_invoke(t, client)
 
 

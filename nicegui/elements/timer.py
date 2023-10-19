@@ -1,5 +1,6 @@
 import asyncio
 import time
+from contextlib import nullcontext
 from typing import Any, Callable, Optional
 
 from .. import background_tasks, globals, helpers  # pylint: disable=redefined-builtin
@@ -58,7 +59,7 @@ class Timer(Element, component='timer.js'):
         try:
             if not await self._connected():
                 return
-            with self.parent_slot:
+            with self.parent_slot or nullcontext():
                 await asyncio.sleep(self.interval)
                 if self.active and not self._should_stop():
                     await self._invoke_callback()
@@ -69,7 +70,7 @@ class Timer(Element, component='timer.js'):
         try:
             if not await self._connected():
                 return
-            with self.parent_slot:
+            with self.parent_slot or nullcontext():
                 while not self._should_stop():
                     try:
                         start = time.time()

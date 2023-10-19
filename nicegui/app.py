@@ -28,7 +28,7 @@ class App(FastAPI):
         self.native = Native()
         self.storage = Storage()
         self.urls = ObservableSet()
-        self.state: State = State.STOPPED
+        self._state: State = State.STOPPED
 
         self._startup_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self._shutdown_handlers: List[Union[Callable[..., Any], Awaitable]] = []
@@ -39,38 +39,38 @@ class App(FastAPI):
     @property
     def is_starting(self) -> bool:
         """Return whether NiceGUI is starting."""
-        return self.state == State.STARTING
+        return self._state == State.STARTING
 
     @property
     def is_started(self) -> bool:
         """Return whether NiceGUI is started."""
-        return self.state == State.STARTED
+        return self._state == State.STARTED
 
     @property
     def is_stopping(self) -> bool:
         """Return whether NiceGUI is stopping."""
-        return self.state == State.STOPPING
+        return self._state == State.STOPPING
 
     @property
     def is_stopped(self) -> bool:
         """Return whether NiceGUI is stopped."""
-        return self.state == State.STOPPED
+        return self._state == State.STOPPED
 
     def start(self) -> None:
         """Start NiceGUI. (For internal use only.)"""
-        self.state = State.STARTING
+        self._state = State.STARTING
         with globals.index_client:
             for t in self._startup_handlers:
                 helpers.safe_invoke(t)
-        self.state = State.STARTED
+        self._state = State.STARTED
 
     def stop(self) -> None:
         """Stop NiceGUI. (For internal use only.)"""
-        self.state = State.STOPPING
+        self._state = State.STOPPING
         with globals.index_client:
             for t in self._shutdown_handlers:
                 helpers.safe_invoke(t)
-        self.state = State.STOPPED
+        self._state = State.STOPPED
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
         """Called every time a new client connects to NiceGUI.

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, ClassVar, Dict, List, Optional, Tuple, Union
+from typing import Any, Awaitable, Callable, ClassVar, Dict, List, Optional, Tuple, Union, cast
 
 from typing_extensions import Self
 
@@ -119,8 +119,13 @@ class refreshable:
 
 
 def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
-    target = RefreshableTarget.current_target
-    assert target is not None
+    """Create a state variable that automatically updates its refreshable UI container.
+
+    :param value: The initial value of the state variable.
+
+    :return: A tuple containing the current value and a function to update the value.
+    """
+    target = cast(RefreshableTarget, RefreshableTarget.current_target)
 
     if target.next_index >= len(target.locals):
         target.locals.append(value)
