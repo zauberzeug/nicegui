@@ -2,7 +2,7 @@ import os
 import threading
 import time
 from contextlib import contextmanager
-from typing import List
+from typing import List, Optional
 
 import pytest
 from selenium import webdriver
@@ -25,7 +25,7 @@ class Screen:
     def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture) -> None:
         self.selenium = selenium
         self.caplog = caplog
-        self.server_thread = None
+        self.server_thread: Optional[threading.Thread] = None
         self.ui_run_kwargs = {'port': self.PORT, 'show': False, 'reload': False}
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
@@ -50,7 +50,8 @@ class Screen:
         self.close()
         self.caplog.clear()
         globals.server.should_exit = True
-        self.server_thread.join()
+        if self.server_thread:
+            self.server_thread.join()
 
     def open(self, path: str, timeout: float = 3.0) -> None:
         """Try to open the page until the server is ready or we time out.

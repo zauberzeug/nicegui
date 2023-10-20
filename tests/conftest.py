@@ -58,6 +58,7 @@ def reset_globals() -> Generator[None, None, None]:
     # repopulate globals.optional_features
     importlib.reload(plotly)
     importlib.reload(pyplot)
+    Client.instances.clear()
     globals.app.storage.clear()
     Client.index_client = Client(page('/'), shared=True).__enter__()
     globals.app.get('/')(Client.index_client.build_response)
