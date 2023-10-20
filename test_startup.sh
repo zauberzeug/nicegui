@@ -33,10 +33,12 @@ check main.py || error=1
 for path in examples/*
 do
     if test -f $path/requirements.txt; then
-        python3 -m pip install -r $path/requirements.txt || error=1 
+        sed '/^nicegui/d' $path/requirements.txt > $path/requirements.tmp.txt || error=1 # remove nicegui from requirements.txt
+        python3 -m pip install -r $path/requirements.tmp.txt || error=1
+        rm $path/requirements.tmp.txt || error=1
     fi
     if test -f $path/start.sh; then
-        check $path/start.sh dev || error=1 
+        check $path/start.sh dev || error=1
     elif test -f $path/main.py; then
         check $path/main.py || error=1
     fi
