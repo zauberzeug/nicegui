@@ -232,3 +232,12 @@ class App(FastAPI):
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""
         self.routes[:] = [r for r in self.routes if getattr(r, 'path', None) != path]
+
+    def reset(self) -> None:
+        """Reset app to its initial state. (Useful for testing.)"""
+        self.storage.clear()
+        self._startup_handlers.clear()
+        self._shutdown_handlers.clear()
+        self._connect_handlers.clear()
+        self._disconnect_handlers.clear()
+        self._exception_handlers.clear()

@@ -59,8 +59,9 @@ def reset_globals() -> Generator[None, None, None]:
     importlib.reload(plotly)
     importlib.reload(pyplot)
     Client.instances.clear()
-    globals.app.storage.clear()
+    Client.page_routes.clear()
     Client.index_client = Client(page('/'), shared=True).__enter__()
+    globals.app.reset()
     globals.app.get('/')(Client.index_client.build_response)
     binding.reset()
 
