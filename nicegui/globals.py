@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Set, Union
 
@@ -32,7 +31,6 @@ reconnect_timeout: float
 tailwind: bool
 prod_js: bool
 endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
-storage_path: Path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
 socket_io_js_query_params: Dict = {}
 socket_io_js_extra_headers: Dict = {}
 socket_io_js_transports: List[Literal['websocket', 'polling']] = ['websocket', 'polling']  # NOTE: we favor websocket

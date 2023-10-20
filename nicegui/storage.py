@@ -1,4 +1,5 @@
 import contextvars
+import os
 import uuid
 from collections.abc import MutableMapping
 from pathlib import Path
@@ -86,7 +87,8 @@ def set_storage_secret(storage_secret: Optional[str] = None) -> None:
 class Storage:
 
     def __init__(self) -> None:
-        self._general = PersistentDict(globals.storage_path / 'storage_general.json')
+        self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
+        self._general = PersistentDict(self.path / 'storage_general.json')
         self._users: Dict[str, PersistentDict] = {}
 
     @property
@@ -125,7 +127,7 @@ class Storage:
             raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
         session_id = request.session['id']
         if session_id not in self._users:
-            self._users[session_id] = PersistentDict(globals.storage_path / f'storage_user_{session_id}.json')
+            self._users[session_id] = PersistentDict(self.path / f'storage_user_{session_id}.json')
         return self._users[session_id]
 
     @property
@@ -137,5 +139,5 @@ class Storage:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
-        for filepath in globals.storage_path.glob('storage_*.json'):
+        for filepath in self.path.glob('storage_*.json'):
             filepath.unlink()
