@@ -3,8 +3,7 @@ import socket
 from typing import List
 
 from . import globals  # pylint: disable=redefined-builtin
-from . import optional_features
-from .run_executor import io_bound
+from . import optional_features, run
 
 try:
     import netifaces
@@ -35,7 +34,7 @@ async def print_message() -> None:
     print('NiceGUI ready to go ', end='', flush=True)
     host = os.environ['NICEGUI_HOST']
     port = os.environ['NICEGUI_PORT']
-    ips = set((await io_bound(_get_all_ips)) if host == '0.0.0.0' else [])
+    ips = set((await run.io_bound(_get_all_ips)) if host == '0.0.0.0' else [])
     ips.discard('127.0.0.1')
     urls = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ['localhost'] + sorted(ips)]
     globals.app.urls.update(urls)

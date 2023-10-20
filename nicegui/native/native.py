@@ -3,8 +3,8 @@ import warnings
 from multiprocessing import Queue
 from typing import Any, Callable, Tuple
 
+from .. import run
 from ..logging import log
-from ..run_executor import io_bound
 
 method_queue: Queue = Queue()
 response_queue: Queue = Queue()
@@ -120,7 +120,7 @@ try:
                     log.exception(f'error in {name}')
                     return None
             name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
-            return await io_bound(wrapper, *args, **kwargs)
+            return await run.io_bound(wrapper, *args, **kwargs)
 
         def signal_server_shutdown(self) -> None:
             """Signal the server shutdown."""
