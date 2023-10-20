@@ -1,45 +1,23 @@
 import multiprocessing
 import os
-import socket
 import sys
 from pathlib import Path
 from typing import Any, List, Literal, Optional, Tuple, Union
 
 import __main__
-import uvicorn
 from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from . import native_mode  # pylint: disable=redefined-builtin
-from . import storage  # pylint: disable=redefined-builtin
 from . import air, globals, helpers  # pylint: disable=redefined-builtin
 from . import native as native_module
 from .client import Client
 from .language import Language
 from .logging import log
+from .server import CustomServerConfig, Server
 
 APP_IMPORT_STRING = 'nicegui:app'
-
-
-class CustomServerConfig(uvicorn.Config):
-    storage_secret: Optional[str] = None
-    method_queue: Optional[multiprocessing.Queue] = None
-    response_queue: Optional[multiprocessing.Queue] = None
-
-
-class Server(uvicorn.Server):
-
-    def run(self, sockets: Optional[List[socket.socket]] = None) -> None:
-        globals.server = self
-        assert isinstance(self.config, CustomServerConfig)
-        if self.config.method_queue is not None and self.config.response_queue is not None:
-            native_module.method_queue = self.config.method_queue
-            native_module.response_queue = self.config.response_queue
-            globals.app.native.main_window = native_module.WindowProxy()
-
-        storage.set_storage_secret(self.config.storage_secret)
-        super().run(sockets=sockets)
 
 
 def run(*,
@@ -171,7 +149,7 @@ def run(*,
     config.storage_secret = storage_secret
     config.method_queue = native_module.method_queue if native else None
     config.response_queue = native_module.response_queue if native else None
-    globals.server = Server(config=config)
+    Server.create_singleton(config)
 
     if (reload or config.workers > 1) and not isinstance(config.app, str):
         log.warning('You must pass the application as an import string to enable "reload" or "workers".')
@@ -179,14 +157,14 @@ def run(*,
 
     if config.should_reload:
         sock = config.bind_socket()
-        ChangeReload(config, target=globals.server.run, sockets=[sock]).run()
+        ChangeReload(config, target=Server.instance.run, sockets=[sock]).run()
     elif config.workers > 1:
         sock = config.bind_socket()
-        Multiprocess(config, target=globals.server.run, sockets=[sock]).run()
+        Multiprocess(config, target=Server.instance.run, sockets=[sock]).run()
     else:
-        globals.server.run()
+        Server.instance.run()
     if config.uds:
         os.remove(config.uds)  # pragma: py-win32
 
-    if not globals.server.started and not config.should_reload and config.workers == 1:
+    if not Server.instance.started and not config.should_reload and config.workers == 1:
         sys.exit(STARTUP_FAILURE)

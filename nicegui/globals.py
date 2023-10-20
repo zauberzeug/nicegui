@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Union
 
 from socketio import AsyncServer
-from uvicorn import Server
 
 if TYPE_CHECKING:
     from .app import App
@@ -13,7 +12,6 @@ if TYPE_CHECKING:
 
 app: App
 sio: AsyncServer
-server: Server
 loop: Optional[asyncio.AbstractEventLoop] = None
 ui_run_has_been_called: bool = False
 

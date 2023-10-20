@@ -12,6 +12,7 @@ from .client import Client
 from .logging import log
 from .native import Native
 from .observables import ObservableSet
+from .server import Server
 from .storage import Storage
 
 
@@ -126,7 +127,7 @@ class App(FastAPI):
         if self.native.main_window:
             self.native.main_window.destroy()
         else:
-            globals.server.should_exit = True
+            Server.instance.should_exit = True
 
     def add_static_files(self, url_path: str, local_directory: Union[str, Path]) -> None:
         """Add a directory of static files.

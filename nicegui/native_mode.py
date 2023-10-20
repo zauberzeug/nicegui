@@ -13,6 +13,7 @@ from typing import Any, Callable, Dict, List, Tuple
 
 from . import globals, helpers, native, optional_features  # pylint: disable=redefined-builtin
 from .logging import log
+from .server import Server
 
 try:
     with warnings.catch_warnings():
@@ -97,7 +98,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
     def check_shutdown() -> None:
         while process.is_alive():
             time.sleep(0.1)
-        globals.server.should_exit = True
+        Server.instance.should_exit = True
         while not globals.app.is_stopped:
             time.sleep(0.1)
         _thread.interrupt_main()

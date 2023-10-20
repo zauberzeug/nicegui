@@ -12,7 +12,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from nicegui import app, globals, ui  # pylint: disable=redefined-builtin
+from nicegui import Server, app, ui
 
 from .test_helpers import TEST_DIR
 
@@ -49,7 +49,7 @@ class Screen:
         """Stop the webserver."""
         self.close()
         self.caplog.clear()
-        globals.server.should_exit = True
+        Server.instance.should_exit = True
         if self.server_thread:
             self.server_thread.join()
 
