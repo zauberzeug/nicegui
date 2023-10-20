@@ -240,4 +240,4 @@ class App(FastAPI):
         self._shutdown_handlers.clear()
         self._connect_handlers.clear()
         self._disconnect_handlers.clear()
-        self._exception_handlers.clear()
+        self._exception_handlers[:] = [log.exception]
