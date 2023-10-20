@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional,
 
 from typing_extensions import Self
 
-from . import events, globals, json, outbox, storage  # pylint: disable=redefined-builtin
+from . import context, events, globals, json, outbox, storage  # pylint: disable=redefined-builtin
 from .awaitable_response import AwaitableResponse
 from .dependencies import Component, Library, register_library, register_vue_component
 from .elements.mixins.visibility import Visibility
@@ -66,7 +66,7 @@ class Element(Visibility):
         :param _client: client for this element (for internal use only)
         """
         super().__init__()
-        self.client = _client or globals.get_client()
+        self.client = _client or context.get_client()
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
         self.tag = tag if tag else self.component.tag if self.component else 'div'
@@ -84,7 +84,7 @@ class Element(Visibility):
 
         self.client.elements[self.id] = self
         self.parent_slot: Optional[Slot] = None
-        slot_stack = globals.get_slot_stack()
+        slot_stack = context.get_slot_stack()
         if slot_stack:
             self.parent_slot = slot_stack[-1]
             self.parent_slot.children.append(self)

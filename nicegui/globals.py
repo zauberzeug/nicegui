@@ -9,9 +9,7 @@ from uvicorn import Server
 
 if TYPE_CHECKING:
     from .app import App
-    from .client import Client
     from .language import Language
-    from .slot import Slot
 
 app: App
 sio: AsyncServer
@@ -34,7 +32,6 @@ endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
 socket_io_js_query_params: Dict = {}
 socket_io_js_extra_headers: Dict = {}
 socket_io_js_transports: List[Literal['websocket', 'polling']] = ['websocket', 'polling']  # NOTE: we favor websocket
-slot_stacks: Dict[int, List[Slot]] = {}
 quasar_config: Dict = {
     'brand': {
         'primary': '#5898d4',
@@ -44,36 +41,3 @@ quasar_config: Dict = {
         'skipHijack': False,
     },
 }
-
-
-def get_task_id() -> int:
-    """Return the ID of the current asyncio task."""
-    try:
-        return id(asyncio.current_task())
-    except RuntimeError:
-        return 0
-
-
-def get_slot_stack() -> List[Slot]:
-    """Return the slot stack of the current asyncio task."""
-    task_id = get_task_id()
-    if task_id not in slot_stacks:
-        slot_stacks[task_id] = []
-    return slot_stacks[task_id]
-
-
-def prune_slot_stack() -> None:
-    """Remove the current slot stack if it is empty."""
-    task_id = get_task_id()
-    if not slot_stacks[task_id]:
-        del slot_stacks[task_id]
-
-
-def get_slot() -> Slot:
-    """Return the current slot."""
-    return get_slot_stack()[-1]
-
-
-def get_client() -> Client:
-    """Return the current client."""
-    return get_slot().parent.client

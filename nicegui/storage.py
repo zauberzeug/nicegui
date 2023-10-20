@@ -12,7 +12,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from . import background_tasks, globals, json, observables  # pylint: disable=redefined-builtin
+from . import background_tasks, context, globals, json, observables  # pylint: disable=redefined-builtin
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
@@ -101,7 +101,7 @@ class Storage:
         """
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if globals.get_client().is_index_client:
+            if context.get_client().is_index_client:
                 raise RuntimeError('app.storage.browser can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
             raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
@@ -121,7 +121,7 @@ class Storage:
         """
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if globals.get_client().is_index_client:
+            if context.get_client().is_index_client:
                 raise RuntimeError('app.storage.user can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
             raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')

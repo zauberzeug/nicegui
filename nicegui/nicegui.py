@@ -21,6 +21,7 @@ from .json import NiceGUIJSONResponse
 from .logging import log
 from .middlewares import RedirectWithPrefixMiddleware
 from .page import page
+from .slot import Slot
 from .version import __version__
 
 globals.app = app = App(default_response_class=NiceGUIJSONResponse)
@@ -95,7 +96,7 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
     background_tasks.create(outbox.loop(air.instance), name='send outbox')
     background_tasks.create(Client.prune_instances(), name='prune clients')
-    background_tasks.create(prune_slot_stacks(), name='prune slot stacks')
+    background_tasks.create(Slot.prune_stacks(), name='prune slot stacks')
     if with_welcome_message:
         background_tasks.create(welcome.print_message())
     air.connect()
@@ -162,25 +163,3 @@ def _on_javascript_response(_: str, msg: Dict) -> None:
     if not client:
         return
     client.handle_javascript_response(msg)
-
-
-async def prune_slot_stacks() -> None:
-    """Prune stale slot stacks in an endless loop."""
-    while True:
-        try:
-            running = [
-                id(task)
-                for task in asyncio.tasks.all_tasks()
-                if not task.done() and not task.cancelled()
-            ]
-            stale = [
-                id_
-                for id_ in globals.slot_stacks
-                if id_ not in running
-            ]
-            for id_ in stale:
-                del globals.slot_stacks[id_]
-        except Exception:
-            # NOTE: make sure the loop doesn't crash
-            log.exception('Error while pruning slot stacks')
-        await asyncio.sleep(10)

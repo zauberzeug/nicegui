@@ -1,6 +1,6 @@
 from typing import Optional
 
-from .. import globals  # pylint: disable=redefined-builtin
+from .. import context
 from ..awaitable_response import AwaitableResponse
 from ..logging import log
 
@@ -30,7 +30,7 @@ def run_javascript(code: str, *,
                          'Now the function always returns an AwaitableResponse that can be awaited. '
                          'Please remove the "respond=False" argument and call the function without awaiting.')
 
-    client = globals.get_client()
+    client = context.get_client()
     if not client.has_socket_connection:
         raise RuntimeError('Cannot run JavaScript before client is connected; '
                            'try "await client.connected()" or "client.on_connect(...)".')
