@@ -13,6 +13,7 @@ class NiceGuiLogElementCallbackHandler(BaseCallbackHandler):
 
     def print_text(self, message: str) -> None:
         self.element.push(message)
+        self.element.update()
 
     def on_chain_start(
         self, serialized: Dict[str, Any], inputs: Dict[str, Any], **kwargs: Any
