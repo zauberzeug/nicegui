@@ -8,7 +8,7 @@ import uvicorn
 
 from . import globals  # pylint: disable=redefined-builtin
 from . import storage  # pylint: disable=redefined-builtin
-from . import native as native_module
+from .native import native
 
 
 class CustomServerConfig(uvicorn.Config):
@@ -29,9 +29,9 @@ class Server(uvicorn.Server):
         self.instance = self
         assert isinstance(self.config, CustomServerConfig)
         if self.config.method_queue is not None and self.config.response_queue is not None:
-            native_module.method_queue = self.config.method_queue
-            native_module.response_queue = self.config.response_queue
-            globals.app.native.main_window = native_module.WindowProxy()
+            globals.app.native.main_window = native.WindowProxy()
+            native.method_queue = self.config.method_queue
+            native.response_queue = self.config.response_queue
 
         storage.set_storage_secret(self.config.storage_secret)
         super().run(sockets=sockets)

@@ -1,12 +1,10 @@
 import inspect
 import warnings
-from dataclasses import dataclass, field
 from multiprocessing import Queue
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Tuple
 
-from .dataclasses import KWONLY_SLOTS
-from .logging import log
-from .run_executor import io_bound
+from ..logging import log
+from ..run_executor import io_bound
 
 method_queue: Queue = Queue()
 response_queue: Queue = Queue()
@@ -131,10 +129,3 @@ try:
 except ModuleNotFoundError:
     class WindowProxy:  # type: ignore
         pass  # just a dummy if webview is not installed
-
-
-@dataclass(**KWONLY_SLOTS)
-class Native:
-    start_args: Dict[str, Any] = field(default_factory=dict)
-    window_args: Dict[str, Any] = field(default_factory=dict)
-    main_window: Optional[WindowProxy] = None

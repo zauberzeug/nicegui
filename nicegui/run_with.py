@@ -3,9 +3,10 @@ from typing import Optional, Union
 
 from fastapi import FastAPI
 
-from nicegui import globals, storage  # pylint: disable=redefined-builtin
-from nicegui.language import Language
-from nicegui.nicegui import handle_shutdown, handle_startup
+from . import globals, storage  # pylint: disable=redefined-builtin
+from .app import App
+from .language import Language
+from .nicegui import handle_shutdown, handle_startup
 
 
 def run_with(

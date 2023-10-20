@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from . import background_tasks, globals, helpers  # pylint: disable=redefined-builtin
 from .client import Client
 from .logging import log
-from .native import Native
+from .native import NativeConfig
 from .observables import ObservableSet
 from .server import Server
 from .storage import Storage
@@ -27,7 +27,7 @@ class App(FastAPI):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.native = Native()
+        self.native = NativeConfig()
         self.storage = Storage()
         self.urls = ObservableSet()
         self._state: State = State.STOPPED

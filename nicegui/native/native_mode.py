@@ -11,9 +11,10 @@ import warnings
 from threading import Event, Thread
 from typing import Any, Callable, Dict, List, Tuple
 
-from . import globals, helpers, native, optional_features  # pylint: disable=redefined-builtin
-from .logging import log
-from .server import Server
+from .. import globals, helpers, optional_features  # pylint: disable=redefined-builtin
+from ..logging import log
+from ..server import Server
+from . import native
 
 try:
     with warnings.catch_warnings():

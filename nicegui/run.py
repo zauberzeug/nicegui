@@ -9,7 +9,6 @@ from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import native_mode  # pylint: disable=redefined-builtin
 from . import air, globals, helpers  # pylint: disable=redefined-builtin
 from . import native as native_module
 from .client import Client
@@ -117,9 +116,9 @@ def run(*,
     if native:
         show = False
         host = host or '127.0.0.1'
-        port = native_mode.find_open_port()
+        port = native_module.find_open_port()
         width, height = window_size or (800, 600)
-        native_mode.activate(host, port, title, width, height, fullscreen, frameless)
+        native_module.activate(host, port, title, width, height, fullscreen, frameless)
     else:
         host = host or '0.0.0.0'
 
