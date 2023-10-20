@@ -174,7 +174,7 @@ async def handle_disconnect(client: Client) -> None:
     delay = client.page.reconnect_timeout if client.page.reconnect_timeout is not None else globals.reconnect_timeout
     await asyncio.sleep(delay)
     if not client.shared:
-        _delete_client(client.id)
+        _delete_client(client)
     for t in client.disconnect_handlers:
         safe_invoke(t, client)
     for t in globals.disconnect_handlers:
@@ -216,33 +216,47 @@ def handle_javascript_response(client: Client, msg: Dict) -> None:
 async def prune_clients() -> None:
     """Prune stale clients in an endless loop."""
     while True:
-        stale_clients = [
-            id
-            for id, client in globals.clients.items()
-            if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
-        ]
-        for client_id in stale_clients:
-            _delete_client(client_id)
+        try:
+            stale_clients = [
+                client
+                for client in globals.clients.values()
+                if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
+            ]
+            for client in stale_clients:
+                _delete_client(client)
+        except Exception:
+            # NOTE: make sure the loop doesn't crash
+            globals.log.exception('Error while pruning clients')
         await asyncio.sleep(10)
 
 
 async def prune_slot_stacks() -> None:
     """Prune stale slot stacks in an endless loop."""
     while True:
-        running = [
-            id(task)
-            for task in asyncio.tasks.all_tasks()
-            if not task.done() and not task.cancelled()
-        ]
-        stale = [
-            id_
-            for id_ in globals.slot_stacks
-            if id_ not in running
-        ]
-        for id_ in stale:
-            del globals.slot_stacks[id_]
+        try:
+            running = [
+                id(task)
+                for task in asyncio.tasks.all_tasks()
+                if not task.done() and not task.cancelled()
+            ]
+            stale = [
+                id_
+                for id_ in globals.slot_stacks
+                if id_ not in running
+            ]
+            for id_ in stale:
+                del globals.slot_stacks[id_]
+        except Exception:
+            # NOTE: make sure the loop doesn't crash
+            globals.log.exception('Error while pruning slot stacks')
         await asyncio.sleep(10)
 
 
-def _delete_client(client_id: str) -> None:
-    globals.clients.pop(client_id).remove_all_elements()
+def _delete_client(client: Client) -> None:
+    """Delete a client and all its elements.
+
+    If the global clients dictionary does not contain the client, its elements are still removed and a KeyError is raised.
+    Normally this should never happen, but has been observed (see #1826).
+    """
+    client.remove_all_elements()
+    del globals.clients[client.id]
