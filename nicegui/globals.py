@@ -9,7 +9,6 @@ from socketio import AsyncServer
 from uvicorn import Server
 
 if TYPE_CHECKING:
-    from .air import Air
     from .app import App
     from .client import Client
     from .language import Language
@@ -33,7 +32,6 @@ reconnect_timeout: float
 tailwind: bool
 prod_js: bool
 endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
-air: Optional[Air] = None
 storage_path: Path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
 socket_io_js_query_params: Dict = {}
 socket_io_js_extra_headers: Dict = {}

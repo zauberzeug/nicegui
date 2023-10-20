@@ -1,6 +1,5 @@
 import asyncio
 import mimetypes
-import time
 import urllib.parse
 from pathlib import Path
 from typing import Dict
@@ -11,13 +10,13 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
-from . import (background_tasks, binding, favicon, globals, json, outbox,  # pylint: disable=redefined-builtin
+from . import (air, background_tasks, binding, favicon, globals, json, outbox,  # pylint: disable=redefined-builtin
                run_executor, welcome)
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries
 from .error import error_content
-from .helpers import is_file, safe_invoke
+from .helpers import is_file
 from .json import NiceGUIJSONResponse
 from .logging import log
 from .middlewares import RedirectWithPrefixMiddleware
@@ -94,13 +93,12 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     globals.loop = asyncio.get_running_loop()
     globals.app.start()
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
-    background_tasks.create(outbox.loop(Client.instances), name='send outbox')
-    background_tasks.create(prune_clients(), name='prune clients')
+    background_tasks.create(outbox.loop(air.instance), name='send outbox')
+    background_tasks.create(Client.prune_instances(), name='prune clients')
     background_tasks.create(prune_slot_stacks(), name='prune slot stacks')
     if with_welcome_message:
         background_tasks.create(welcome.print_message())
-    if globals.air:
-        background_tasks.create(globals.air.connect())
+    air.connect()
 
 
 @app.on_event('shutdown')
@@ -110,8 +108,7 @@ async def handle_shutdown() -> None:
         app.native.main_window.signal_server_shutdown()
     globals.app.stop()
     run_executor.tear_down()
-    if globals.air:
-        await globals.air.disconnect()
+    air.disconnect()
 
 
 @app.exception_handler(404)
@@ -137,19 +134,8 @@ async def _on_handshake(sid: str, client_id: str) -> bool:
         return False
     client.environ = sio.get_environ(sid)
     await sio.enter_room(sid, client.id)
-    handle_handshake(client)
+    client.handle_handshake()
     return True
-
-
-def handle_handshake(client: Client) -> None:
-    """Cancel pending disconnect task and invoke connect handlers."""
-    if client.disconnect_task:
-        client.disconnect_task.cancel()
-        client.disconnect_task = None
-    for t in client.connect_handlers:
-        safe_invoke(t, client)
-    for t in app._connect_handlers:  # pylint: disable=protected-access
-        safe_invoke(t, client)
 
 
 @sio.on('disconnect')
@@ -159,19 +145,7 @@ def _on_disconnect(sid: str) -> None:
     client_id = query['client_id'][0]
     client = Client.instances.get(client_id)
     if client:
-        client.disconnect_task = background_tasks.create(handle_disconnect(client))
-
-
-async def handle_disconnect(client: Client) -> None:
-    """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't."""
-    delay = client.page.reconnect_timeout if client.page.reconnect_timeout is not None else globals.reconnect_timeout
-    await asyncio.sleep(delay)
-    if not client.shared:
-        _delete_client(client)
-    for t in client.disconnect_handlers:
-        safe_invoke(t, client)
-    for t in app._disconnect_handlers:  # pylint: disable=protected-access
-        safe_invoke(t, client)
+        client.handle_disconnect()
 
 
 @sio.on('event')
@@ -179,18 +153,7 @@ def _on_event(_: str, msg: Dict) -> None:
     client = Client.instances.get(msg['client_id'])
     if not client or not client.has_socket_connection:
         return
-    handle_event(client, msg)
-
-
-def handle_event(client: Client, msg: Dict) -> None:
-    """Forward an event to the corresponding element."""
-    with client:
-        sender = client.elements.get(msg['id'])
-        if sender:
-            msg['args'] = [None if arg is None else json.loads(arg) for arg in msg.get('args', [])]
-            if len(msg['args']) == 1:
-                msg['args'] = msg['args'][0]
-            sender._handle_event(msg)  # pylint: disable=protected-access
+    client.handle_event(msg)
 
 
 @sio.on('javascript_response')
@@ -198,29 +161,7 @@ def _on_javascript_response(_: str, msg: Dict) -> None:
     client = Client.instances.get(msg['client_id'])
     if not client:
         return
-    handle_javascript_response(client, msg)
-
-
-def handle_javascript_response(client: Client, msg: Dict) -> None:
-    """Forward a JavaScript response to the corresponding element."""
-    client.waiting_javascript_commands[msg['request_id']] = msg['result']
-
-
-async def prune_clients() -> None:
-    """Prune stale clients in an endless loop."""
-    while True:
-        try:
-            stale_clients = [
-                client
-                for client in Client.instances.values()
-                if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
-            ]
-            for client in stale_clients:
-                _delete_client(client)
-        except Exception:
-            # NOTE: make sure the loop doesn't crash
-            log.exception('Error while pruning clients')
-        await asyncio.sleep(10)
+    client.handle_javascript_response(msg)
 
 
 async def prune_slot_stacks() -> None:
@@ -243,13 +184,3 @@ async def prune_slot_stacks() -> None:
             # NOTE: make sure the loop doesn't crash
             log.exception('Error while pruning slot stacks')
         await asyncio.sleep(10)
-
-
-def _delete_client(client: Client) -> None:
-    """Delete a client and all its elements.
-
-    If the global clients dictionary does not contain the client, its elements are still removed and a KeyError is raised.
-    Normally this should never happen, but has been observed (see #1826).
-    """
-    client.remove_all_elements()
-    del Client.instances[client.id]

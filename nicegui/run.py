@@ -13,9 +13,8 @@ from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from . import native_mode  # pylint: disable=redefined-builtin
 from . import storage  # pylint: disable=redefined-builtin
-from . import globals, helpers  # pylint: disable=redefined-builtin
+from . import air, globals, helpers  # pylint: disable=redefined-builtin
 from . import native as native_module
-from .air import Air
 from .client import Client
 from .language import Language
 from .logging import log
@@ -122,7 +121,7 @@ def run(*,
             route.include_in_schema = endpoint_documentation in {'page', 'all'}
 
     if on_air:
-        globals.air = Air('' if on_air is True else on_air)
+        air.instance = air.Air('' if on_air is True else on_air)
 
     if multiprocessing.current_process().name != 'MainProcess':
         return

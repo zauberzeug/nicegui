@@ -13,11 +13,12 @@ from fastapi.templating import Jinja2Templates
 
 from nicegui import json
 
-from . import binding, globals, outbox  # pylint: disable=redefined-builtin
+from . import background_tasks, binding, globals, outbox  # pylint: disable=redefined-builtin
 from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
+from .helpers import safe_invoke
 from .logging import log
 from .version import __version__
 
@@ -194,6 +195,43 @@ class Client:
         """Register a callback to be called when the client disconnects."""
         self.disconnect_handlers.append(handler)
 
+    def handle_handshake(self) -> None:
+        """Cancel pending disconnect task and invoke connect handlers."""
+        if self.disconnect_task:
+            self.disconnect_task.cancel()
+            self.disconnect_task = None
+        for t in self.connect_handlers:
+            safe_invoke(t, self)
+        for t in globals.app._connect_handlers:  # pylint: disable=protected-access
+            safe_invoke(t, self)
+
+    def handle_disconnect(self) -> None:
+        """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't."""
+        async def handle_disconnect() -> None:
+            delay = self.page.reconnect_timeout if self.page.reconnect_timeout is not None else globals.reconnect_timeout
+            await asyncio.sleep(delay)
+            if not self.shared:
+                self.delete()
+            for t in self.disconnect_handlers:
+                safe_invoke(t, self)
+            for t in globals.app._disconnect_handlers:  # pylint: disable=protected-access
+                safe_invoke(t, self)
+        self.disconnect_task = background_tasks.create(handle_disconnect())
+
+    def handle_event(self, msg: Dict) -> None:
+        """Forward an event to the corresponding element."""
+        with self:
+            sender = self.elements.get(msg['id'])
+            if sender:
+                msg['args'] = [None if arg is None else json.loads(arg) for arg in msg.get('args', [])]
+                if len(msg['args']) == 1:
+                    msg['args'] = msg['args'][0]
+                sender._handle_event(msg)  # pylint: disable=protected-access
+
+    def handle_javascript_response(self, msg: Dict) -> None:
+        """Store the result of a JavaScript command."""
+        self.waiting_javascript_commands[msg['request_id']] = msg['result']
+
     def remove_elements(self, elements: Iterable[Element]) -> None:
         """Remove the given elements from the client."""
         binding.remove(elements, Element)
@@ -209,6 +247,15 @@ class Client:
         """Remove all elements from the client."""
         self.remove_elements(self.elements.values())
 
+    def delete(self) -> None:
+        """Delete a client and all its elements.
+
+        If the global clients dictionary does not contain the client, its elements are still removed and a KeyError is raised.
+        Normally this should never happen, but has been observed (see #1826).
+        """
+        self.remove_all_elements()
+        del Client.instances[self.id]
+
     @contextmanager
     def individual_target(self, socket_id: str) -> Iterator[None]:
         """Use individual socket ID while in this context.
@@ -218,3 +265,20 @@ class Client:
         self._temporary_socket_id = socket_id
         yield
         self._temporary_socket_id = None
+
+    @classmethod
+    async def prune_instances(cls) -> None:
+        """Prune stale clients in an endless loop."""
+        while True:
+            try:
+                stale_clients = [
+                    client
+                    for client in cls.instances.values()
+                    if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
+                ]
+                for client in stale_clients:
+                    client.delete()
+            except Exception:
+                # NOTE: make sure the loop doesn't crash
+                log.exception('Error while pruning clients')
+            await asyncio.sleep(10)

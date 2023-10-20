@@ -1,16 +1,15 @@
 import asyncio
 import gzip
 import re
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import httpx
 import socketio
-from socketio import AsyncClient
+import socketio.exceptions
 
 from . import background_tasks, globals  # pylint: disable=redefined-builtin
 from .client import Client
 from .logging import log
-from .nicegui import handle_disconnect, handle_event, handle_handshake, handle_javascript_response
 
 RELAY_HOST = 'https://on-air.nicegui.io/'
 
@@ -19,7 +18,7 @@ class Air:
 
     def __init__(self, token: str) -> None:
         self.token = token
-        self.relay = AsyncClient()
+        self.relay = socketio.AsyncClient()
         self.client = httpx.AsyncClient(app=globals.app)
         self.connecting = False
 
@@ -70,7 +69,7 @@ class Air:
             client = Client.instances[client_id]
             client.environ = data['environ']
             client.on_air = True
-            handle_handshake(client)
+            client.handle_handshake()
             return True
 
         @self.relay.on('client_disconnect')
@@ -78,8 +77,7 @@ class Air:
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return
-            client = Client.instances[client_id]
-            client.disconnect_task = background_tasks.create(handle_disconnect(client))
+            Client.instances[client_id].handle_disconnect()
 
         @self.relay.on('event')
         def _handle_event(data: Dict[str, Any]) -> None:
@@ -89,7 +87,7 @@ class Air:
             client = Client.instances[client_id]
             if isinstance(data['msg']['args'], dict) and 'socket_id' in data['msg']['args']:
                 data['msg']['args']['socket_id'] = client_id  # HACK: translate socket_id of ui.scene's init event
-            handle_event(client, data['msg'])
+            client.handle_event(data['msg'])
 
         @self.relay.on('javascript_response')
         def _handle_javascript_response(data: Dict[str, Any]) -> None:
@@ -97,7 +95,7 @@ class Air:
             if client_id not in Client.instances:
                 return
             client = Client.instances[client_id]
-            handle_javascript_response(client, data['msg'])
+            client.handle_javascript_response(data['msg'])
 
         @self.relay.on('out_of_time')
         async def _handle_out_of_time() -> None:
@@ -143,3 +141,25 @@ class Air:
         """Emit a message to the NiceGUI On Air server."""
         if self.relay.connected:
             await self.relay.emit('forward', {'event': message_type, 'data': data, 'room': room})
+
+    @staticmethod
+    def is_air_target(target_id: str) -> bool:
+        """Whether the given target ID is an On Air client or a SocketIO room."""
+        if target_id in Client.instances:
+            return Client.instances[target_id].on_air
+        return target_id in globals.sio.manager.rooms
+
+
+instance: Optional[Air] = None
+
+
+def connect() -> None:
+    """Connect to the NiceGUI On Air server if there is an air instance."""
+    if instance:
+        background_tasks.create(instance.connect())
+
+
+def disconnect() -> None:
+    """Disconnect from the NiceGUI On Air server if there is an air instance."""
+    if instance:
+        background_tasks.create(instance.disconnect())
