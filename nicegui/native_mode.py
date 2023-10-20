@@ -11,7 +11,7 @@ import warnings
 from threading import Event, Thread
 from typing import Any, Callable, Dict, List, Tuple
 
-from . import globals, helpers, native  # pylint: disable=redefined-builtin
+from . import globals, helpers, native, optional_features  # pylint: disable=redefined-builtin
 from .logging import log
 
 try:
@@ -19,7 +19,7 @@ try:
         # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
         warnings.filterwarnings('ignore', category=DeprecationWarning)
         import webview
-    globals.optional_features.add('native')
+    optional_features.register('native')
 except ModuleNotFoundError:
     pass
 
@@ -102,7 +102,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
             time.sleep(0.1)
         _thread.interrupt_main()
 
-    if 'native' not in globals.optional_features:
+    if not optional_features.has('native'):
         log.error('Native mode is not supported in this configuration.\n'
                   'Please run "pip install pywebview" to use it.')
         sys.exit(1)

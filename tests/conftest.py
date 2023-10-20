@@ -55,9 +55,6 @@ def reset_globals() -> Generator[None, None, None]:
         if route.path.endswith('/favicon.ico'):
             globals.app.routes.remove(route)
     importlib.reload(globals)
-    # repopulate globals.optional_features
-    importlib.reload(plotly)
-    importlib.reload(pyplot)
     Client.instances.clear()
     Client.page_routes.clear()
     Client.index_client = Client(page('/'), shared=True).__enter__()

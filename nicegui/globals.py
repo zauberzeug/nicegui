@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Set, Union
+from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Union
 
 from socketio import AsyncServer
 from uvicorn import Server
@@ -16,7 +16,6 @@ sio: AsyncServer
 server: Server
 loop: Optional[asyncio.AbstractEventLoop] = None
 ui_run_has_been_called: bool = False
-optional_features: Set[str] = set()
 
 reload: bool
 title: str

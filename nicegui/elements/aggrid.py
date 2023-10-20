@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, cast
 
-from .. import globals  # pylint: disable=redefined-builtin
+from .. import optional_features
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
 
 try:
     import pandas as pd
-    globals.optional_features.add('pandas')
+    optional_features.register('pandas')
 except ImportError:
     pass
 
