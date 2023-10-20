@@ -241,7 +241,7 @@ async def prune_slot_stacks() -> None:
                 del globals.slot_stacks[id_]
         except Exception:
             # NOTE: make sure the loop doesn't crash
-            globals.log.exception('Error while pruning slot stacks')
+            log.exception('Error while pruning slot stacks')
         await asyncio.sleep(10)
 
 
