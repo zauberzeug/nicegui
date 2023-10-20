@@ -4,14 +4,14 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from functools import partial
 from typing import Any, Callable
 
-from . import globals, helpers  # pylint: disable=redefined-builtin
+from . import core, helpers
 
 process_pool = ProcessPoolExecutor()
 thread_pool = ThreadPoolExecutor()
 
 
 async def _run(executor: Any, callback: Callable, *args: Any, **kwargs: Any) -> Any:
-    if globals.app.is_stopping:
+    if core.app.is_stopping:
         return
     try:
         loop = asyncio.get_running_loop()

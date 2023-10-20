@@ -2,8 +2,7 @@ import os
 import socket
 from typing import List
 
-from . import globals  # pylint: disable=redefined-builtin
-from . import optional_features, run
+from . import core, optional_features, run
 
 try:
     import netifaces
@@ -37,7 +36,7 @@ async def print_message() -> None:
     ips = set((await run.io_bound(_get_all_ips)) if host == '0.0.0.0' else [])
     ips.discard('127.0.0.1')
     urls = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ['localhost'] + sorted(ips)]
-    globals.app.urls.update(urls)
+    core.app.urls.update(urls)
     if len(urls) >= 2:
         urls[-1] = 'and ' + urls[-1]
     extra = ''

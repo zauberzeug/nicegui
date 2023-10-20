@@ -4,7 +4,7 @@ import asyncio
 from collections import defaultdict, deque
 from typing import TYPE_CHECKING, Any, DefaultDict, Deque, Dict, Optional, Tuple
 
-from . import globals  # pylint: disable=redefined-builtin
+from . import core
 
 if TYPE_CHECKING:
     from .air import Air
@@ -37,7 +37,7 @@ def enqueue_message(message_type: MessageType, data: Any, target_id: ClientId) -
 async def loop(air: Optional[Air]) -> None:
     """Emit queued updates and messages in an endless loop."""
     async def emit(message_type: MessageType, data: Any, target_id: ClientId) -> None:
-        await globals.sio.emit(message_type, data, room=target_id)
+        await core.sio.emit(message_type, data, room=target_id)
         if air is not None and air.is_air_target(target_id):
             await air.emit(message_type, data, room=target_id)
 
@@ -64,7 +64,7 @@ async def loop(air: Optional[Air]) -> None:
                 try:
                     await coro
                 except Exception as e:
-                    globals.app.handle_exception(e)
+                    core.app.handle_exception(e)
         except Exception as e:
-            globals.app.handle_exception(e)
+            core.app.handle_exception(e)
             await asyncio.sleep(0.1)

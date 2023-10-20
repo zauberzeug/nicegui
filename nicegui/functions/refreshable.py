@@ -5,7 +5,7 @@ from typing import Any, Awaitable, Callable, ClassVar, Dict, List, Optional, Tup
 
 from typing_extensions import Self
 
-from .. import background_tasks, globals  # pylint: disable=redefined-builtin
+from .. import background_tasks, core
 from ..client import Client
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
@@ -102,10 +102,10 @@ class refreshable:
                 raise
             if is_coroutine_function(self.func):
                 assert result is not None
-                if globals.loop and globals.loop.is_running():
+                if core.loop and core.loop.is_running():
                     background_tasks.create(result)
                 else:
-                    globals.app.on_startup(result)
+                    core.app.on_startup(result)
 
     def prune(self) -> None:
         """Remove all targets that are no longer on a page with a client connection.

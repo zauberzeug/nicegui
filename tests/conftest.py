@@ -9,8 +9,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 
-from nicegui import Client, binding, globals  # pylint: disable=redefined-builtin
-from nicegui.elements import plotly, pyplot
+from nicegui import Client, app, binding, core
 from nicegui.page import page
 
 from .screen import Screen
@@ -46,20 +45,20 @@ def capabilities(capabilities: Dict) -> Dict:
 @pytest.fixture(autouse=True)
 def reset_globals() -> Generator[None, None, None]:
     for path in {'/'}.union(Client.page_routes.values()):
-        globals.app.remove_route(path)
-    globals.app.openapi_schema = None
-    globals.app.middleware_stack = None
-    globals.app.user_middleware.clear()
+        app.remove_route(path)
+    app.openapi_schema = None
+    app.middleware_stack = None
+    app.user_middleware.clear()
     # NOTE favicon routes must be removed separately because they are not "pages"
-    for route in globals.app.routes:
+    for route in app.routes:
         if route.path.endswith('/favicon.ico'):
-            globals.app.routes.remove(route)
-    importlib.reload(globals)
+            app.routes.remove(route)
+    importlib.reload(core)
     Client.instances.clear()
     Client.page_routes.clear()
     Client.index_client = Client(page('/'), shared=True).__enter__()
-    globals.app.reset()
-    globals.app.get('/')(Client.index_client.build_response)
+    app.reset()
+    app.get('/')(Client.index_client.build_response)
     binding.reset()
 
 

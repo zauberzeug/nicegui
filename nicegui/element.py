@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional,
 
 from typing_extensions import Self
 
-from . import context, events, globals, json, outbox, storage  # pylint: disable=redefined-builtin
+from . import context, core, events, json, outbox, storage
 from .awaitable_response import AwaitableResponse
 from .dependencies import Component, Library, register_library, register_vue_component
 from .elements.mixins.visibility import Visibility
@@ -409,7 +409,7 @@ class Element(Visibility):
         :param name: name of the method
         :param args: arguments to pass to the method
         """
-        if not globals.loop:
+        if not core.loop:
             return AwaitableResponse(None, None)
         return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})')
 

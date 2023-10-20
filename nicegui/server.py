@@ -6,8 +6,7 @@ from typing import List, Optional
 
 import uvicorn
 
-from . import globals  # pylint: disable=redefined-builtin
-from . import storage  # pylint: disable=redefined-builtin
+from . import core, storage
 from .native import native
 
 
@@ -29,7 +28,7 @@ class Server(uvicorn.Server):
         self.instance = self
         assert isinstance(self.config, CustomServerConfig)
         if self.config.method_queue is not None and self.config.response_queue is not None:
-            globals.app.native.main_window = native.WindowProxy()
+            core.app.native.main_window = native.WindowProxy()
             native.method_queue = self.config.method_queue
             native.response_queue = self.config.response_queue
 

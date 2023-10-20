@@ -4,7 +4,7 @@ from collections import defaultdict
 from collections.abc import Mapping
 from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
 
-from . import globals  # pylint: disable=redefined-builtin
+from . import core
 from .logging import log
 
 MAX_PROPAGATION_TIME = 0.01
@@ -37,7 +37,7 @@ async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
     while True:
         _refresh_step()
-        await asyncio.sleep(globals.binding_refresh_interval)
+        await asyncio.sleep(core.app.config.binding_refresh_interval)
 
 
 def _refresh_step() -> None:

@@ -15,7 +15,6 @@ __all__ = [
     'Client',
     'context',
     'elements',
-    'globals',
     'log',
     'optional_features',
     'run',

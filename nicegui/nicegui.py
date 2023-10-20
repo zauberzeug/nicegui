@@ -10,13 +10,11 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
-from . import (air, background_tasks, binding, favicon, globals, json, outbox, run,  # pylint: disable=redefined-builtin
-               welcome)
+from . import air, background_tasks, binding, core, favicon, helpers, json, outbox, run, welcome
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries
 from .error import error_content
-from .helpers import is_file
 from .json import NiceGUIJSONResponse
 from .logging import log
 from .middlewares import RedirectWithPrefixMiddleware
@@ -24,10 +22,10 @@ from .page import page
 from .slot import Slot
 from .version import __version__
 
-globals.app = app = App(default_response_class=NiceGUIJSONResponse)
+core.app = app = App(default_response_class=NiceGUIJSONResponse)
 # NOTE we use custom json module which wraps orjson
 socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=json)
-globals.sio = sio = socket_manager._sio  # pylint: disable=protected-access
+core.sio = sio = socket_manager._sio  # pylint: disable=protected-access
 
 mimetypes.add_type('text/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
@@ -74,9 +72,9 @@ def _get_component(key: str) -> FileResponse:
 def handle_startup(with_welcome_message: bool = True) -> None:
     """Handle the startup event."""
     # NOTE ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
-    globals.sio.eio.ping_interval = max(globals.reconnect_timeout * 0.8, 4)
-    globals.sio.eio.ping_timeout = max(globals.reconnect_timeout * 0.4, 2)
-    if not globals.ui_run_has_been_called:
+    sio.eio.ping_interval = max(app.config.reconnect_timeout * 0.8, 4)
+    sio.eio.ping_timeout = max(app.config.reconnect_timeout * 0.4, 2)
+    if not hasattr(app, 'config'):
         raise RuntimeError('\n\n'
                            'You must call ui.run() to start the server.\n'
                            'If ui.run() is behind a main guard\n'
@@ -84,15 +82,15 @@ def handle_startup(with_welcome_message: bool = True) -> None:
                            'remove the guard or replace it with\n'
                            '   if __name__ in {"__main__", "__mp_main__"}:\n'
                            'to allow for multiprocessing.')
-    if globals.favicon:
-        if is_file(globals.favicon):
-            app.add_route('/favicon.ico', lambda _: FileResponse(globals.favicon))  # type: ignore
+    if app.config.favicon:
+        if helpers.is_file(app.config.favicon):
+            app.add_route('/favicon.ico', lambda _: FileResponse(app.config.favicon))  # type: ignore
         else:
             app.add_route('/favicon.ico', lambda _: favicon.get_favicon_response())
     else:
         app.add_route('/favicon.ico', lambda _: FileResponse(Path(__file__).parent / 'static' / 'favicon.ico'))
-    globals.loop = asyncio.get_running_loop()
-    globals.app.start()
+    core.loop = asyncio.get_running_loop()
+    app.start()
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
     background_tasks.create(outbox.loop(air.instance), name='send outbox')
     background_tasks.create(Client.prune_instances(), name='prune clients')
@@ -107,7 +105,7 @@ async def handle_shutdown() -> None:
     """Handle the shutdown event."""
     if app.native.main_window:
         app.native.main_window.signal_server_shutdown()
-    globals.app.stop()
+    app.stop()
     run.tear_down()
     air.disconnect()
 

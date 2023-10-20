@@ -11,7 +11,7 @@ import warnings
 from threading import Event, Thread
 from typing import Any, Callable, Dict, List, Tuple
 
-from .. import globals, helpers, optional_features  # pylint: disable=redefined-builtin
+from .. import core, helpers, optional_features
 from ..logging import log
 from ..server import Server
 from . import native
@@ -40,13 +40,13 @@ def _open_window(
         'height': height,
         'fullscreen': fullscreen,
         'frameless': frameless,
-        **globals.app.native.window_args,
+        **core.app.native.window_args,
     }
     window = webview.create_window(**window_kwargs)
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
-    webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
+    webview.start(storage_path=tempfile.mkdtemp(), **core.app.native.start_args)
 
 
 def _start_window_method_executor(window: webview.Window,
@@ -100,7 +100,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
         while process.is_alive():
             time.sleep(0.1)
         Server.instance.should_exit = True
-        while not globals.app.is_stopped:
+        while not core.app.is_stopped:
             time.sleep(0.1)
         _thread.interrupt_main()
 

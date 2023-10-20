@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Union
 
-from .. import globals  # pylint: disable=redefined-builtin
+from .. import core
 from ..element import Element
 
 
@@ -28,7 +28,7 @@ class Video(Element, component='video.js'):
         """
         super().__init__()
         if Path(src).is_file():
-            src = globals.app.add_media_file(local_file=src)
+            src = core.app.add_media_file(local_file=src)
         self._props['src'] = src
         self._props['controls'] = controls
         self._props['autoplay'] = autoplay

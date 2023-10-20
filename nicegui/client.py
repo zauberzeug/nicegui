@@ -13,7 +13,7 @@ from fastapi.templating import Jinja2Templates
 
 from nicegui import json
 
-from . import background_tasks, binding, globals, outbox  # pylint: disable=redefined-builtin
+from . import background_tasks, binding, core, outbox
 from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
@@ -97,7 +97,7 @@ class Client:
         elements = json.dumps({
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         })
-        socket_io_js_query_params = {**globals.socket_io_js_query_params, 'client_id': self.id}
+        socket_io_js_query_params = {**core.app.extra_config.socket_io_js_query_params, 'client_id': self.id}
         vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse('index.html', {
             'request': request,
@@ -111,18 +111,18 @@ class Client:
             'vue_scripts': '\n'.join(vue_scripts),
             'imports': json.dumps(imports),
             'js_imports': '\n'.join(js_imports),
-            'quasar_config': json.dumps(globals.quasar_config),
+            'quasar_config': json.dumps(core.app.extra_config.quasar_config),
             'title': self.page.resolve_title(),
             'viewport': self.page.resolve_viewport(),
             'favicon_url': get_favicon_url(self.page, prefix),
             'dark': str(self.page.resolve_dark()),
             'language': self.page.resolve_language(),
             'prefix': prefix,
-            'tailwind': globals.tailwind,
-            'prod_js': globals.prod_js,
+            'tailwind': core.app.config.tailwind,
+            'prod_js': core.app.config.prod_js,
             'socket_io_js_query_params': socket_io_js_query_params,
-            'socket_io_js_extra_headers': globals.socket_io_js_extra_headers,
-            'socket_io_js_transports': globals.socket_io_js_transports,
+            'socket_io_js_extra_headers': core.app.extra_config.socket_io_js_extra_headers,
+            'socket_io_js_transports': core.app.extra_config.socket_io_js_transports,
         }, status_code, {'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'})
 
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
@@ -202,19 +202,19 @@ class Client:
             self.disconnect_task = None
         for t in self.connect_handlers:
             safe_invoke(t, self)
-        for t in globals.app._connect_handlers:  # pylint: disable=protected-access
+        for t in core.app._connect_handlers:  # pylint: disable=protected-access
             safe_invoke(t, self)
 
     def handle_disconnect(self) -> None:
         """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't."""
         async def handle_disconnect() -> None:
-            delay = self.page.reconnect_timeout if self.page.reconnect_timeout is not None else globals.reconnect_timeout
+            delay = self.page.reconnect_timeout if self.page.reconnect_timeout is not None else core.app.config.reconnect_timeout
             await asyncio.sleep(delay)
             if not self.shared:
                 self.delete()
             for t in self.disconnect_handlers:
                 safe_invoke(t, self)
-            for t in globals.app._disconnect_handlers:  # pylint: disable=protected-access
+            for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
                 safe_invoke(t, self)
         self.disconnect_task = background_tasks.create(handle_disconnect())
 

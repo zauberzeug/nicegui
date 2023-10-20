@@ -12,7 +12,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from . import background_tasks, context, globals, json, observables  # pylint: disable=redefined-builtin
+from . import background_tasks, context, core, json, observables
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
@@ -56,10 +56,10 @@ class PersistentDict(observables.ObservableDict):
         async def backup() -> None:
             async with aiofiles.open(self.filepath, 'w') as f:
                 await f.write(json.dumps(self))
-        if globals.loop:
+        if core.loop:
             background_tasks.create_lazy(backup(), name=self.filepath.stem)
         else:
-            globals.app.on_startup(backup())
+            core.app.on_startup(backup())
 
 
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
@@ -76,12 +76,12 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
 
 def set_storage_secret(storage_secret: Optional[str] = None) -> None:
     """Set storage_secret and add request tracking middleware."""
-    if any(m.cls == SessionMiddleware for m in globals.app.user_middleware):
+    if any(m.cls == SessionMiddleware for m in core.app.user_middleware):
         # NOTE not using "add_middleware" because it would be the wrong order
-        globals.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
+        core.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
     elif storage_secret is not None:
-        globals.app.add_middleware(RequestTrackingMiddleware)
-        globals.app.add_middleware(SessionMiddleware, secret_key=storage_secret)
+        core.app.add_middleware(RequestTrackingMiddleware)
+        core.app.add_middleware(SessionMiddleware, secret_key=storage_secret)
 
 
 class Storage:

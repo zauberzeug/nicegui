@@ -2,12 +2,9 @@
 from __future__ import annotations
 
 import asyncio
-import sys
 from typing import Awaitable, Dict, Set
 
-from . import globals  # pylint: disable=redefined-builtin,cyclic-import
-
-name_supported = sys.version_info[1] >= 8
+from . import core
 
 running_tasks: Set[asyncio.Task] = set()
 lazy_tasks_running: Dict[str, asyncio.Task] = {}
@@ -21,10 +18,9 @@ def create(coroutine: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
     Also a reference to the task is kept until it is done, so that the task is not garbage collected mid-execution.
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
     """
-    assert globals.loop is not None
+    assert core.loop is not None
     assert asyncio.iscoroutine(coroutine)
-    task: asyncio.Task = \
-        globals.loop.create_task(coroutine, name=name) if name_supported else globals.loop.create_task(coroutine)
+    task: asyncio.Task = core.loop.create_task(coroutine, name=name)
     task.add_done_callback(_handle_task_result)
     running_tasks.add(task)
     task.add_done_callback(running_tasks.discard)
@@ -57,4 +53,4 @@ def _handle_task_result(task: asyncio.Task) -> None:
     except asyncio.CancelledError:
         pass
     except Exception as e:
-        globals.app.handle_exception(e)
+        core.app.handle_exception(e)

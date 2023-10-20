@@ -7,7 +7,7 @@ import httpx
 import socketio
 import socketio.exceptions
 
-from . import background_tasks, globals  # pylint: disable=redefined-builtin
+from . import background_tasks, core
 from .client import Client
 from .logging import log
 
@@ -19,7 +19,7 @@ class Air:
     def __init__(self, token: str) -> None:
         self.token = token
         self.relay = socketio.AsyncClient()
-        self.client = httpx.AsyncClient(app=globals.app)
+        self.client = httpx.AsyncClient(app=core.app)
         self.connecting = False
 
         @self.relay.on('http')
@@ -54,7 +54,7 @@ class Air:
 
         @self.relay.on('ready')
         def _handle_ready(data: Dict[str, Any]) -> None:
-            globals.app.urls.add(data['device_url'])
+            core.app.urls.add(data['device_url'])
             print(f'NiceGUI is on air at {data["device_url"]}', flush=True)
 
         @self.relay.on('error')
@@ -147,7 +147,7 @@ class Air:
         """Whether the given target ID is an On Air client or a SocketIO room."""
         if target_id in Client.instances:
             return Client.instances[target_id].on_air
-        return target_id in globals.sio.manager.rooms
+        return target_id in core.sio.manager.rooms
 
 
 instance: Optional[Air] = None
