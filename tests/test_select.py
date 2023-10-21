@@ -106,6 +106,18 @@ def test_add_new_values(screen:  Screen):
     screen.should_contain('123')
 
 
+def test_add_new_values_with_options_dict(screen:  Screen):
+    ui.select(
+        with_input=True,
+        options={1: '1', 2: '2', 3: '3'}
+    ).props('new-value-mode="add-unique"')
+    screen.open('/')
+    screen.find_by_tag('input').send_keys('123' + Keys.TAB)
+    screen.wait(0.5)
+    screen.find_by_tag('input').click()
+    screen.should_contain('123')
+
+
 def test_add_new_values_with_multiple(screen:  Screen):
     l = ui.label()
     s = ui.select(

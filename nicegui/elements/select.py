@@ -1,6 +1,6 @@
 import re
 from copy import deepcopy
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union, Literal
 
 from ..events import GenericEventArguments
 from .choice_element import ChoiceElement
@@ -17,6 +17,7 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
                  with_input: bool = False,
                  multiple: bool = False,
                  clearable: bool = False,
+                 new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None
                  ) -> None:
         """Dropdown Selection
 
@@ -31,6 +32,9 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
         :param with_input: whether to show an input field to filter the options
         :param multiple: whether to allow multiple selections
         :param clearable: whether to add a button to clear the selection
+        :param new_value_mode: processing new values from user input, see `<https://quasar.dev/vue-components/select#create-new-values>`_.
+        Is only applied if `with_input == True`.
+        Be careful when using with `options` being a `dict`: if an existing key matches the new value, the existing value is overwritten.
         """
         self.multiple = multiple
         if multiple:
@@ -47,6 +51,8 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
             self._props['hide-selected'] = not multiple
             self._props['fill-input'] = True
             self._props['input-debounce'] = 0
+            if new_value_mode is not None:
+                self._props['new_value_mode'] = new_value_mode
         self._props['multiple'] = multiple
         self._props['clearable'] = clearable
 
@@ -67,7 +73,10 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
                 out = []
                 for arg in e.args:
                     if isinstance(arg, str):
-                        self.options.append(arg)
+                        if isinstance(self.options, list):
+                            self.options.append(arg)
+                        else:  # self.options is a dict
+                            self.options[arg] = arg
                         self.update()
                         out.append(self._values[len(self.options) - 1])
                     else:
@@ -78,7 +87,10 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
                 return None
             else:
                 if isinstance(e.args, str):
-                    self.options.append(e.args)
+                    if isinstance(self.options, list):
+                        self.options.append(e.args)
+                    else:  # self.options is a dict
+                        self.options[e.args] = e.args
                     self.update()
                     return self._values[len(self.options) - 1]
                 else:
