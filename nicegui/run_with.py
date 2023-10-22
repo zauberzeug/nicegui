@@ -5,7 +5,6 @@ from fastapi import FastAPI
 
 from nicegui import globals, storage  # pylint: disable=redefined-builtin
 from nicegui.language import Language
-from nicegui.nicegui import handle_shutdown, handle_startup
 
 
 def run_with(
@@ -49,7 +48,4 @@ def run_with(
     globals.prod_js = prod_js
 
     storage.set_storage_secret(storage_secret)
-    app.on_event('startup')(lambda: handle_startup(with_welcome_message=False))
-    app.on_event('shutdown')(handle_shutdown)
-
     app.mount(mount_path, globals.app)
