@@ -8,7 +8,7 @@ from .run_executor import io_bound
 
 
 def _get_all_ips() -> List[str]:
-    ips = []
+    ips: List[str] = []
     for adapter in ifaddr.get_adapters():
         ips.extend(str(i.ip) for i in adapter.ips if i.is_IPv4)
     return ips
