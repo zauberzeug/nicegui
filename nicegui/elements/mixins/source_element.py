@@ -14,10 +14,8 @@ class SourceElement(Element):
 
     def __init__(self, *, source: Union[str, Path], **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if is_file(source):
-            source = globals.app.add_static_file(local_file=source)
         self.source = source
-        self._props['src'] = source
+        self.on_source_change(source)
 
     def bind_source_to(self,
                        target_object: Any,
@@ -81,5 +79,7 @@ class SourceElement(Element):
 
         :param source: The new source.
         """
+        if is_file(source):
+            source = globals.app.add_static_file(local_file=source)
         self._props['src'] = source
         self.update()

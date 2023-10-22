@@ -1,6 +1,11 @@
+import time
+from pathlib import Path
+
 from nicegui import ui
 
 from .screen import Screen
+
+example_file = str(Path(__file__).resolve().parent / '../examples/slideshow/slides/slide1.jpg')
 
 
 def test_base64_image(screen: Screen):
@@ -30,3 +35,47 @@ def test_base64_image(screen: Screen):
     screen.wait(0.2)
     image = screen.find_by_class('q-img__image')
     assert 'data:image/png;base64,iVB' in image.get_attribute('src')
+
+
+def test_setting_local_file(screen: Screen):
+    ui.image(example_file)
+
+    screen.open('/')
+    image = screen.find_by_class('q-img__image')
+    deadline = time.time() + 2
+    while time.time() < deadline:
+        js = 'return arguments[0].naturalWidth > 0 && arguments[0].naturalHeight > 0'
+        if screen.selenium.execute_script(js, image):
+            break
+    else:
+        assert False, 'image not loaded'
+
+
+def test_binding_local_file(screen: Screen):
+    images = {'one': example_file}
+    ui.image().bind_source_from(images, 'one')
+
+    screen.open('/')
+    image = screen.find_by_class('q-img__image')
+    deadline = time.time() + 2
+    while time.time() < deadline:
+        js = 'return arguments[0].naturalWidth > 0 && arguments[0].naturalHeight > 0'
+        if screen.selenium.execute_script(js, image):
+            break
+    else:
+        assert False, 'image not loaded'
+
+
+def test_set_source_with_local_file(screen: Screen):
+    ui.image().set_source(example_file)
+
+    screen.open('/')
+    image = screen.find_by_class('q-img__image')
+    deadline = time.time() + 2
+    while time.time() < deadline:
+        js = 'return arguments[0].naturalWidth > 0 && arguments[0].naturalHeight > 0'
+        if screen.selenium.execute_script(js, image):
+            break
+    else:
+        assert False, 'image not loaded'
+    screen.wait(0.2)
