@@ -3,9 +3,9 @@ from typing import List, Tuple
 
 from langchain.chains import ConversationChain
 from langchain.chat_models import ChatOpenAI
+from log_callback_handler import NiceGuiLogElementCallbackHandler
 
 from nicegui import Client, ui
-from log_callback_handler import NiceGuiLogElementCallbackHandler
 
 OPENAI_API_KEY = 'not-set'  # TODO: set your OpenAI API key here
 
@@ -27,13 +27,6 @@ async def chat_messages() -> None:
 @ui.page('/')
 async def main(client: Client):
 
-    with ui.tabs().classes('w-full') as tabs:
-        chat_panel = ui.tab('Chat')
-        logs_panel = ui.tab('Logs')
-    with ui.tab_panels(tabs).classes('w-full'):
-        with ui.tab_panel(logs_panel):
-            log = ui.log().classes('w-full').style('height: 50vh;')
-
     async def send() -> None:
         global thinking
         message = text.value
@@ -50,11 +43,20 @@ async def main(client: Client):
     anchor_style = r'a:link, a:visited {color: inherit !important; text-decoration: none; font-weight: 500}'
     ui.add_head_html(f'<style>{anchor_style}</style>')
     await client.connected()
-    
-    with ui.tab_panels(tabs, value=chat_panel).classes('w-full'):
-        with ui.tab_panel(chat_panel):
-            with ui.column().classes('w-full max-w-2xl mx-auto items-stretch'):
+
+    # the queries below are used to expand the contend down to the footer (content can then use flex-grow to expand)
+    ui.query('.q-page').classes('flex')
+    ui.query('.nicegui-content').classes('w-full')
+
+    with ui.tabs().classes('w-full') as tabs:
+        chat_tab = ui.tab('Chat')
+        logs_tab = ui.tab('Logs')
+    with ui.tab_panels(tabs, value=chat_tab).classes('w-full max-w-2xl mx-auto flex-grow items-stretch'):
+        with ui.tab_panel(chat_tab):
+            with ui.column().classes('w-full'):
                 await chat_messages()
+        with ui.tab_panel(logs_tab):
+            log = ui.log().classes('w-full h-full')
 
     with ui.footer().classes('bg-white'), ui.column().classes('w-full max-w-3xl mx-auto my-6'):
         with ui.row().classes('w-full no-wrap items-center'):
