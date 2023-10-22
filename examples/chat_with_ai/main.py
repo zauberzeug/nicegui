@@ -5,6 +5,7 @@ from langchain.chains import ConversationChain
 from langchain.chat_models import ChatOpenAI
 from log_callback_handler import NiceGuiLogElementCallbackHandler
 
+import nicegui.globals
 from nicegui import Client, ui
 
 OPENAI_API_KEY = 'not-set'  # TODO: set your OpenAI API key here
@@ -21,11 +22,12 @@ async def chat_messages() -> None:
         ui.chat_message(text=text, name=name, sent=name == 'You')
     if thinking:
         ui.spinner(size='3rem').classes('self-center')
-    await ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)', respond=False)
+    if nicegui.globals.get_client().has_socket_connection:
+        await ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)', respond=False)
 
 
 @ui.page('/')
-async def main(client: Client):
+async def main():
 
     async def send() -> None:
         global thinking
@@ -42,7 +44,6 @@ async def main(client: Client):
 
     anchor_style = r'a:link, a:visited {color: inherit !important; text-decoration: none; font-weight: 500}'
     ui.add_head_html(f'<style>{anchor_style}</style>')
-    await client.connected()
 
     # the queries below are used to expand the contend down to the footer (content can then use flex-grow to expand)
     ui.query('.q-page').classes('flex')
