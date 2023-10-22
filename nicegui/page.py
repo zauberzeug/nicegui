@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from fastapi import Request, Response
 
-from . import background_tasks, globals  # pylint: disable=redefined-builtin
+from . import background_tasks, binding, globals  # pylint: disable=redefined-builtin
 from .client import Client
 from .favicon import create_favicon_route
 from .language import Language
@@ -27,6 +27,7 @@ class page:
                  dark: Optional[bool] = ...,  # type: ignore
                  language: Language = ...,  # type: ignore
                  response_timeout: float = 3.0,
+                 reconnect_timeout: Optional[float] = None,
                  api_router: Optional[APIRouter] = None,
                  **kwargs: Any,
                  ) -> None:
@@ -43,7 +44,8 @@ class page:
         :param favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
         :param language: language of the page (defaults to `language` argument of `run` command)
-        :param response_timeout: maximum time for the decorated function to build the page (default: 3.0)
+        :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds)
+        :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 0.0 seconds)
         :param api_router: APIRouter instance to use, can be left `None` to use the default
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
@@ -56,6 +58,7 @@ class page:
         self.response_timeout = response_timeout
         self.kwargs = kwargs
         self.api_router = api_router or globals.app.router
+        self.reconnect_timeout = reconnect_timeout
 
         create_favicon_route(self.path, favicon)
 
@@ -100,6 +103,7 @@ class page:
                 result = task.result() if task.done() else None
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
+            binding._refresh_step()  # pylint: disable=protected-access
             return client.build_response(request)
 
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']

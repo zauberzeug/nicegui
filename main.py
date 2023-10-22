@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import importlib
 import inspect
+import logging
 import os
 from pathlib import Path
 from typing import Awaitable, Callable, Optional
@@ -59,7 +60,10 @@ async def redirect_reference_to_documentation(request: Request,
                                               call_next: Callable[[Request], Awaitable[Response]]) -> Response:
     if request.url.path == '/reference':
         return RedirectResponse('/documentation')
-    return await call_next(request)
+    try:
+        return await call_next(request)
+    except RuntimeError as e:
+        logging.error(f'Error while processing request {request.url.path}: {e}')
 
 # NOTE In our global fly.io deployment we need to make sure that we connect back to the same instance.
 fly_instance_id = os.environ.get('FLY_ALLOC_ID', 'local').split('-')[0]
@@ -78,6 +82,7 @@ class FlyReplayMiddleware(BaseHTTPMiddleware):
 
     def __init__(self, app: ASGIApp) -> None:
         self.app = app
+        self.app_name = os.environ.get('FLY_APP_NAME')
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         query_string = scope.get('query_string', b'').decode()
@@ -85,7 +90,7 @@ class FlyReplayMiddleware(BaseHTTPMiddleware):
         target_instance = query_params.get('fly_instance_id', [fly_instance_id])[0]
 
         async def send_wrapper(message):
-            if target_instance != fly_instance_id:
+            if target_instance != fly_instance_id and self.is_online(target_instance):
                 if message['type'] == 'websocket.close':
                     # fly.io only seems to look at the fly-replay header if websocket is accepted
                     message = {'type': 'websocket.accept'}
@@ -95,8 +100,18 @@ class FlyReplayMiddleware(BaseHTTPMiddleware):
             await send(message)
         await self.app(scope, receive, send_wrapper)
 
+    def is_online(self, fly_instance_id: str) -> bool:
+        hostname = f'{fly_instance_id}.vm.{self.app_name}.internal'
+        try:
+            dns.resolver.resolve(hostname, 'AAAA')
+            return True
+        except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.resolver.NoNameservers, dns.resolver.Timeout):
+            return False
 
-app.add_middleware(FlyReplayMiddleware)
+
+if 'FLY_ALLOC_ID' in os.environ:
+    import dns.resolver  # NOTE only import on fly where we have it installed to look up if instance is still available
+    app.add_middleware(FlyReplayMiddleware)
 
 
 def add_head_html() -> None:
@@ -430,7 +445,20 @@ async def documentation_page_more(name: str, client: Client) -> None:
                 ui.markdown('**Reference**').classes('mt-4')
             ui.markdown('## Reference').classes('mt-16')
             generate_class_doc(api)
-    await client.connected()
-    await ui.run_javascript(f'document.title = "{name} • NiceGUI";', respond=False)
+    try:
+        await client.connected()
+        await ui.run_javascript(f'document.title = "{name} • NiceGUI";', respond=False)
+    except TimeoutError:
+        logging.warning(f'client did not connect for page /documentation/{name}')
 
-ui.run(uvicorn_reload_includes='*.py, *.css, *.html')
+
+@app.get('/status')
+def status():
+    """for health checks"""
+    return 'Ok'
+
+
+ui.run(uvicorn_reload_includes='*.py, *.css, *.html',
+       # NOTE: do not reload when running on fly.io (see https://github.com/zauberzeug/nicegui/discussions/1720#discussioncomment-7288741)
+       reload='FLY_ALLOC_ID' not in os.environ,
+       reconnect_timeout=10.0)

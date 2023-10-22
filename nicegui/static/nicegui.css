@@ -120,6 +120,7 @@ h6.q-timeline__title {
   opacity: 0;
   transition-duration: 500ms;
   pointer-events: none;
+  z-index: 1000;
 }
 .body--dark #popup {
   background-color: black;

@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import pandas as pd
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
@@ -191,3 +193,23 @@ def test_api_method_after_creation(screen: Screen):
     screen.open('/')
     screen.click('Create')
     assert screen.find_by_class('ag-row-selected')
+
+
+def test_problematic_datatypes(screen: Screen):
+    df = pd.DataFrame({
+        'datetime_col': [datetime(2020, 1, 1)],
+        'timedelta_col': [timedelta(days=5)],
+        'complex_col': [1 + 2j],
+        'period_col': pd.Series([pd.Period('2021-01')]),
+    })
+    ui.aggrid.from_pandas(df)
+
+    screen.open('/')
+    screen.should_contain('Datetime_col')
+    screen.should_contain('Timedelta_col')
+    screen.should_contain('Complex_col')
+    screen.should_contain('Period_col')
+    screen.should_contain('2020-01-01')
+    screen.should_contain('5 days')
+    screen.should_contain('(1+2j)')
+    screen.should_contain('2021-01')

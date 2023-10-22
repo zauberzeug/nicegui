@@ -32,7 +32,7 @@ jobs:
       - name: test startup
         run: ./test_startup.sh
       - name: setup chromedriver
-        uses: nanasess/setup-chromedriver@v2.1.1
+        uses: nanasess/setup-chromedriver@v2.2.0
       - name: pytest
         run: pytest
       - name: upload screenshots

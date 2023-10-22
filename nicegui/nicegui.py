@@ -3,7 +3,7 @@ import mimetypes
 import time
 import urllib.parse
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 from fastapi import HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
@@ -71,6 +71,10 @@ def get_component(key: str) -> FileResponse:
 
 @app.on_event('startup')
 def handle_startup(with_welcome_message: bool = True) -> None:
+    if globals.reconnect_timeout > 0:  # TODO in 1.4 we DEPRECATED a value of 0 and should remove this check
+        # NOTE ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
+        globals.sio.eio.ping_interval = max(globals.reconnect_timeout * 0.8, 4)
+        globals.sio.eio.ping_timeout = max(globals.reconnect_timeout * 0.4, 2)
     if not globals.ui_run_has_been_called:
         raise RuntimeError('\n\n'
                            'You must call ui.run() to start the server.\n'
@@ -91,10 +95,10 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     with globals.index_client:
         for t in globals.startup_handlers:
             safe_invoke(t)
-    background_tasks.create(binding.loop())
-    background_tasks.create(outbox.loop())
-    background_tasks.create(prune_clients())
-    background_tasks.create(prune_slot_stacks())
+    background_tasks.create(binding.refresh_loop(), name='refresh bindings')
+    background_tasks.create(outbox.loop(), name='send outbox')
+    background_tasks.create(prune_clients(), name='prune clients')
+    background_tasks.create(prune_slot_stacks(), name='prune slot stacks')
     globals.state = globals.State.STARTED
     if with_welcome_message:
         background_tasks.create(welcome.print_message())
@@ -133,17 +137,20 @@ async def exception_handler_500(request: Request, exception: Exception) -> Respo
 
 
 @sio.on('handshake')
-def on_handshake(sid: str) -> bool:
-    client = get_client(sid)
+async def on_handshake(sid: str, client_id: str) -> bool:
+    client = globals.clients.get(client_id)
     if not client:
         return False
     client.environ = sio.get_environ(sid)
-    sio.enter_room(sid, client.id)
+    await sio.enter_room(sid, client.id)
     handle_handshake(client)
     return True
 
 
 def handle_handshake(client: Client) -> None:
+    if client.disconnect_task:
+        client.disconnect_task.cancel()
+        client.disconnect_task = None
     for t in client.connect_handlers:
         safe_invoke(t, client)
     for t in globals.connect_handlers:
@@ -152,15 +159,19 @@ def handle_handshake(client: Client) -> None:
 
 @sio.on('disconnect')
 def on_disconnect(sid: str) -> None:
-    client = get_client(sid)
-    if not client:
-        return
-    handle_disconnect(client)
+    query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
+    query = urllib.parse.parse_qs(query_bytes.decode())
+    client_id = query['client_id'][0]
+    client = globals.clients.get(client_id)
+    if client:
+        client.disconnect_task = background_tasks.create(handle_disconnect(client))
 
 
-def handle_disconnect(client: Client) -> None:
+async def handle_disconnect(client: Client) -> None:
+    delay = client.page.reconnect_timeout if client.page.reconnect_timeout is not None else globals.reconnect_timeout
+    await asyncio.sleep(delay)
     if not client.shared:
-        delete_client(client.id)
+        delete_client(client)
     for t in client.disconnect_handlers:
         safe_invoke(t, client)
     for t in globals.disconnect_handlers:
@@ -168,8 +179,8 @@ def handle_disconnect(client: Client) -> None:
 
 
 @sio.on('event')
-def on_event(sid: str, msg: Dict) -> None:
-    client = get_client(sid)
+def on_event(_: str, msg: Dict) -> None:
+    client = globals.clients.get(msg['client_id'])
     if not client or not client.has_socket_connection:
         return
     handle_event(client, msg)
@@ -186,8 +197,8 @@ def handle_event(client: Client, msg: Dict) -> None:
 
 
 @sio.on('javascript_response')
-def on_javascript_response(sid: str, msg: Dict) -> None:
-    client = get_client(sid)
+def on_javascript_response(_: str, msg: Dict) -> None:
+    client = globals.clients.get(msg['client_id'])
     if not client:
         return
     handle_javascript_response(client, msg)
@@ -197,41 +208,48 @@ def handle_javascript_response(client: Client, msg: Dict) -> None:
     client.waiting_javascript_commands[msg['request_id']] = msg['result']
 
 
-def get_client(sid: str) -> Optional[Client]:
-    query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
-    query = urllib.parse.parse_qs(query_bytes.decode())
-    client_id = query['client_id'][0]
-    return globals.clients.get(client_id)
-
-
 async def prune_clients() -> None:
     while True:
-        stale_clients = [
-            id
-            for id, client in globals.clients.items()
-            if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
-        ]
-        for client_id in stale_clients:
-            delete_client(client_id)
+        try:
+            stale_clients = [
+                client
+                for client in globals.clients.values()
+                if not client.shared and not client.has_socket_connection and client.created < time.time() - 60.0
+            ]
+            for client in stale_clients:
+                delete_client(client)
+        except Exception:
+            # NOTE: make sure the loop doesn't crash
+            globals.log.exception('Error while pruning clients')
         await asyncio.sleep(10)
 
 
 async def prune_slot_stacks() -> None:
     while True:
-        running = [
-            id(task)
-            for task in asyncio.tasks.all_tasks()
-            if not task.done() and not task.cancelled()
-        ]
-        stale = [
-            id_
-            for id_ in globals.slot_stacks
-            if id_ not in running
-        ]
-        for id_ in stale:
-            del globals.slot_stacks[id_]
+        try:
+            running = [
+                id(task)
+                for task in asyncio.tasks.all_tasks()
+                if not task.done() and not task.cancelled()
+            ]
+            stale = [
+                id_
+                for id_ in globals.slot_stacks
+                if id_ not in running
+            ]
+            for id_ in stale:
+                del globals.slot_stacks[id_]
+        except Exception:
+            # NOTE: make sure the loop doesn't crash
+            globals.log.exception('Error while pruning slot stacks')
         await asyncio.sleep(10)
 
 
-def delete_client(client_id: str) -> None:
-    globals.clients.pop(client_id).remove_all_elements()
+def delete_client(client: Client) -> None:
+    """Delete a client and all its elements.
+
+    If the global clients dictionary does not contain the client, its elements are still removed and a KeyError is raised.
+    Normally this should never happen, but has been observed (see #1826).
+    """
+    client.remove_all_elements()
+    del globals.clients[client.id]

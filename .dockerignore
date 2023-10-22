@@ -4,8 +4,13 @@
 **/.*.swp
 **/dist
 test.py
+demo.py
 **/*.pickle
 **/tests/screenshots
+**/.venv
+**/.pytest_cache
+**/.coverage
+**/.git
 
 # flyctl launch added from .pytest_cache/.gitignore
 # Created by pytest automatically.
