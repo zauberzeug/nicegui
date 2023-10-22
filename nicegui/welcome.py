@@ -1,30 +1,15 @@
 import os
-import socket
 from typing import List
 
-from . import core, optional_features, run
+import ifaddr
 
-try:
-    import netifaces
-    optional_features.register('netifaces')
-except ImportError:
-    pass
+from . import core, run
 
 
 def _get_all_ips() -> List[str]:
-    if not optional_features.has('netifaces'):
-        try:
-            hostname = socket.gethostname()
-            return socket.gethostbyname_ex(hostname)[2]
-        except socket.gaierror:
-            return []
-    ips = []
-    for interface in netifaces.interfaces():  # pylint: disable=c-extension-no-member
-        try:
-            ip = netifaces.ifaddresses(interface)[netifaces.AF_INET][0]['addr']  # pylint: disable=c-extension-no-member
-            ips.append(ip)
-        except KeyError:
-            pass
+    ips: List[str] = []
+    for adapter in ifaddr.get_adapters():
+        ips.extend(str(i.ip) for i in adapter.ips if i.is_IPv4)
     return ips
 
 
@@ -39,7 +24,4 @@ async def print_message() -> None:
     core.app.urls.update(urls)
     if len(urls) >= 2:
         urls[-1] = 'and ' + urls[-1]
-    extra = ''
-    if not optional_features.has('netifaces') and os.environ.get('NO_NETIFACES', 'false').lower() != 'true':
-        extra = ' (install netifaces to show all IPs and speedup this message)'
-    print(f'on {", ".join(urls)}' + extra, flush=True)
+    print(f'on {", ".join(urls)}', flush=True)

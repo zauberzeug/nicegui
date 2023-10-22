@@ -660,7 +660,6 @@ def create_full() -> None:
             This will make `ui.pyplot` and `ui.line_plot` unavailable.
         - `NICEGUI_STORAGE_PATH` (default: local ".nicegui") can be set to change the location of the storage files.
         - `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.
-        - `NO_NETIFACES` (default: `false`): Can be set to `true` to hide the netifaces startup warning (e.g. in docker container).
     ''')
     def env_var_demo():
         from nicegui.elements import markdown
