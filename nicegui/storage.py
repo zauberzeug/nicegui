@@ -101,7 +101,7 @@ class Storage:
         """
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if context.get_client().is_index_client:
+            if context.get_client().is_auto_index_client:
                 raise RuntimeError('app.storage.browser can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
             raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
@@ -121,7 +121,7 @@ class Storage:
         """
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if context.get_client().is_index_client:
+            if context.get_client().is_auto_index_client:
                 raise RuntimeError('app.storage.user can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
             raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')

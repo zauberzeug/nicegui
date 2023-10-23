@@ -17,7 +17,7 @@ class NiceGuiNode(Node):
         self.cmd_vel_publisher = self.create_publisher(Twist, 'cmd_vel', 1)
         self.subscription = self.create_subscription(Pose, 'pose', self.handle_pose, 1)
 
-        with Client.index_client:
+        with Client.auto_index_client:
             with ui.row().classes('items-stretch'):
                 with ui.card().classes('w-44 text-center items-center'):
                     ui.label('Control').classes('text-2xl')

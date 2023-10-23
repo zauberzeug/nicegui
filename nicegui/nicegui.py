@@ -38,12 +38,12 @@ static_files = StaticFiles(
 )
 app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
 
-Client.index_client = Client(page('/'), shared=True).__enter__()  # pylint: disable=unnecessary-dunder-call
+Client.auto_index_client = Client(page('/'), shared=True).__enter__()  # pylint: disable=unnecessary-dunder-call
 
 
 @app.get('/')
 def _get_index(request: Request) -> Response:
-    return Client.index_client.build_response(request)
+    return Client.auto_index_client.build_response(request)
 
 
 @app.get(f'/_nicegui/{__version__}' + '/libraries/{key:path}')

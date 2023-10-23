@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import background_tasks, core, helpers
+from . import background_tasks, helpers
 from .app_config import AppConfig, RunConfig
 from .client import Client
 from .logging import log
@@ -65,14 +65,14 @@ class App(FastAPI):
         """Start NiceGUI. (For internal use only.)"""
         self._state = State.STARTING
         for t in self._startup_handlers:
-            helpers.safe_invoke(t, Client.index_client)
+            helpers.safe_invoke(t, Client.auto_index_client)
         self._state = State.STARTED
 
     def stop(self) -> None:
         """Stop NiceGUI. (For internal use only.)"""
         self._state = State.STOPPING
         for t in self._shutdown_handlers:
-            helpers.safe_invoke(t, Client.index_client)
+            helpers.safe_invoke(t, Client.auto_index_client)
         self._state = State.STOPPED
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
@@ -125,7 +125,7 @@ class App(FastAPI):
         This will programmatically stop the server.
         Only possible when auto-reload is disabled.
         """
-        if core.app._run_config.reload:  # pylint: disable=protected-access
+        if self._run_config.reload:
             raise RuntimeError('calling shutdown() is not supported when auto-reload is enabled')
         if self.native.main_window:
             self.native.main_window.destroy()

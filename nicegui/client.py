@@ -35,7 +35,7 @@ class Client:
     instances: Dict[str, Client] = {}
     """Maps client IDs to clients."""
 
-    index_client: Client
+    auto_index_client: Client
     """The client that is used to render the auto-index page."""
 
     def __init__(self, page: page, *, shared: bool = False) -> None:
@@ -70,9 +70,9 @@ class Client:
         self._temporary_socket_id: Optional[str] = None
 
     @property
-    def is_index_client(self) -> bool:
+    def is_auto_index_client(self) -> bool:
         """Return True if this client is the auto-index client."""
-        return self is self.index_client
+        return self is self.auto_index_client
 
     @property
     def ip(self) -> Optional[str]:
