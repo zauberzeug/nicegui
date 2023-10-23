@@ -7,14 +7,15 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import background_tasks, helpers
+from .. import background_tasks, helpers
+from ..client import Client
+from ..logging import log
+from ..native import NativeConfig
+from ..observables import ObservableSet
+from ..server import Server
+from ..storage import Storage
 from .app_config import AppConfig
-from .client import Client
-from .logging import log
-from .native import NativeConfig
-from .observables import ObservableSet
-from .server import Server
-from .storage import Storage
+from .streaming_response import get_streaming_response
 
 
 class State(Enum):
@@ -64,14 +65,14 @@ class App(FastAPI):
         """Start NiceGUI. (For internal use only.)"""
         self._state = State.STARTING
         for t in self._startup_handlers:
-            helpers.safe_invoke(t, Client.auto_index_client)
+            Client.auto_index_client.safe_invoke(t)
         self._state = State.STARTED
 
     def stop(self) -> None:
         """Stop NiceGUI. (For internal use only.)"""
         self._state = State.STOPPING
         for t in self._shutdown_handlers:
-            helpers.safe_invoke(t, Client.auto_index_client)
+            Client.auto_index_client.safe_invoke(t)
         self._state = State.STOPPED
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
@@ -199,7 +200,7 @@ class App(FastAPI):
             filepath = Path(local_directory) / filename
             if not filepath.is_file():
                 raise HTTPException(status_code=404, detail='Not Found')
-            return helpers.get_streaming_response(filepath, request)
+            return get_streaming_response(filepath, request)
 
     def add_media_file(self, *,
                        local_file: Union[str, Path],
@@ -228,7 +229,7 @@ class App(FastAPI):
         def read_item(request: Request) -> StreamingResponse:
             if single_use:
                 self.remove_route(path)
-            return helpers.get_streaming_response(file, request)
+            return get_streaming_response(file, request)
 
         return path
 

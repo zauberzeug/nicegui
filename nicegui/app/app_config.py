@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Literal, Optional, Union
 
-from .dataclasses import KWONLY_SLOTS
-from .language import Language
+from ..dataclasses import KWONLY_SLOTS
+from ..language import Language
 
 
 @dataclass(**KWONLY_SLOTS)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 import time
 import uuid
 from contextlib import contextmanager
@@ -13,12 +14,11 @@ from fastapi.templating import Jinja2Templates
 
 from nicegui import json
 
-from . import background_tasks, binding, core, outbox
+from . import background_tasks, binding, core, helpers, outbox
 from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
-from .helpers import safe_invoke
 from .logging import log
 from .version import __version__
 
@@ -201,9 +201,9 @@ class Client:
             self._disconnect_task.cancel()
             self._disconnect_task = None
         for t in self.connect_handlers:
-            safe_invoke(t, self)
+            self.safe_invoke(t)
         for t in core.app._connect_handlers:  # pylint: disable=protected-access
-            safe_invoke(t, self)
+            self.safe_invoke(t)
 
     def handle_disconnect(self) -> None:
         """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't."""
@@ -213,12 +213,12 @@ class Client:
             else:
                 delay = core.app.config.reconnect_timeout  # pylint: disable=protected-access
             await asyncio.sleep(delay)
+            for t in self.disconnect_handlers:
+                self.safe_invoke(t)
+            for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
+                self.safe_invoke(t)
             if not self.shared:
                 self.delete()
-            for t in self.disconnect_handlers:
-                safe_invoke(t, self)
-            for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
-                safe_invoke(t, self)
         self._disconnect_task = background_tasks.create(handle_disconnect())
 
     def handle_event(self, msg: Dict) -> None:
@@ -234,6 +234,25 @@ class Client:
     def handle_javascript_response(self, msg: Dict) -> None:
         """Store the result of a JavaScript command."""
         self.waiting_javascript_commands[msg['request_id']] = msg['result']
+
+    def safe_invoke(self, func: Union[Callable[..., Any], Awaitable]) -> None:
+        """Invoke the potentially async function in the client context and catch any exceptions."""
+        try:
+            if isinstance(func, Awaitable):
+                async def func_with_client():
+                    with self:
+                        await func
+                background_tasks.create(func_with_client())
+            else:
+                with self:
+                    result = func(self) if len(inspect.signature(func).parameters) == 1 else func()
+                if helpers.is_coroutine_function(func):
+                    async def result_with_client():
+                        with self:
+                            await result
+                    background_tasks.create(result_with_client())
+        except Exception as e:
+            core.app.handle_exception(e)
 
     def remove_elements(self, elements: Iterable[Element]) -> None:
         """Remove the given elements from the client."""
