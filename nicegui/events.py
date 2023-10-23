@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from inspect import Parameter, signature
 from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Literal, Optional, Union
 
-from . import background_tasks, globals  # pylint: disable=redefined-builtin
+from . import background_tasks, core
 from .awaitable_response import AwaitableResponse
 from .dataclasses import KWONLY_SLOTS
 from .slot import Slot
@@ -440,10 +440,10 @@ def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArgument
                     try:
                         await result
                     except Exception as e:
-                        globals.handle_exception(e)
-            if globals.loop and globals.loop.is_running():
+                        core.app.handle_exception(e)
+            if core.loop and core.loop.is_running():
                 background_tasks.create(wait_for_result(), name=str(handler))
             else:
-                globals.app.on_startup(wait_for_result())
+                core.app.on_startup(wait_for_result())
     except Exception as e:
-        globals.handle_exception(e)
+        core.app.handle_exception(e)

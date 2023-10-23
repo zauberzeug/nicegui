@@ -1,7 +1,6 @@
 import uuid
 
-from nicegui import app, events, ui
-from nicegui.globals import optional_features
+from nicegui import app, events, optional_features, ui
 
 from . import demo
 from .documentation_tools import element_demo, heading, intro_demo, load_demo, subheading, text_demo
@@ -132,10 +131,10 @@ def create_full() -> None:
     load_demo(ui.aggrid)
     load_demo(ui.chart)
     load_demo(ui.echart)
-    if 'matplotlib' in optional_features:
+    if optional_features.has('matplotlib'):
         load_demo(ui.pyplot)
         load_demo(ui.line_plot)
-    if 'plotly' in optional_features:
+    if optional_features.has('plotly'):
         load_demo(ui.plotly)
     load_demo(ui.linear_progress)
     load_demo(ui.circular_progress)

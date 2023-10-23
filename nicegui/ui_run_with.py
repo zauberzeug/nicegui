@@ -3,9 +3,10 @@ from typing import Optional, Union
 
 from fastapi import FastAPI
 
-from nicegui import globals, storage  # pylint: disable=redefined-builtin
-from nicegui.language import Language
-from nicegui.nicegui import handle_shutdown, handle_startup
+from . import core, storage
+from .app_config import RunConfig
+from .language import Language
+from .nicegui import handle_shutdown, handle_startup
 
 
 def run_with(
@@ -37,19 +38,21 @@ def run_with(
     :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
     """
-    globals.ui_run_has_been_called = True
-    globals.title = title
-    globals.viewport = viewport
-    globals.favicon = favicon
-    globals.dark = dark
-    globals.language = language
-    globals.binding_refresh_interval = binding_refresh_interval
-    globals.reconnect_timeout = reconnect_timeout
-    globals.tailwind = tailwind
-    globals.prod_js = prod_js
+    core.app._run_config = RunConfig(  # pylint: disable=protected-access
+        reload=False,
+        title=title,
+        viewport=viewport,
+        favicon=favicon,
+        dark=dark,
+        language=language,
+        binding_refresh_interval=binding_refresh_interval,
+        reconnect_timeout=reconnect_timeout,
+        tailwind=tailwind,
+        prod_js=prod_js,
+    )
 
     storage.set_storage_secret(storage_secret)
     app.on_event('startup')(lambda: handle_startup(with_welcome_message=False))
     app.on_event('shutdown')(handle_shutdown)
 
-    app.mount(mount_path, globals.app)
+    app.mount(mount_path, core.app)

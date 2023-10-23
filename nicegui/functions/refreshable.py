@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, ClassVar, Dict, List, Optional, Tuple, Union
+from typing import Any, Awaitable, Callable, ClassVar, Dict, List, Optional, Tuple, Union, cast
 
 from typing_extensions import Self
 
-from .. import background_tasks, globals  # pylint: disable=redefined-builtin
+from .. import background_tasks, core
+from ..client import Client
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..helpers import is_coroutine_function
@@ -101,10 +102,10 @@ class refreshable:
                 raise
             if is_coroutine_function(self.func):
                 assert result is not None
-                if globals.loop and globals.loop.is_running():
+                if core.loop and core.loop.is_running():
                     background_tasks.create(result)
                 else:
-                    globals.app.on_startup(result)
+                    core.app.on_startup(result)
 
     def prune(self) -> None:
         """Remove all targets that are no longer on a page with a client connection.
@@ -114,13 +115,18 @@ class refreshable:
         self.targets = [
             target
             for target in self.targets
-            if target.container.client.id in globals.clients and target.container.id in target.container.client.elements
+            if target.container.client.id in Client.instances and target.container.id in target.container.client.elements
         ]
 
 
 def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
-    target = RefreshableTarget.current_target
-    assert target is not None
+    """Create a state variable that automatically updates its refreshable UI container.
+
+    :param value: The initial value of the state variable.
+
+    :return: A tuple containing the current value and a function to update the value.
+    """
+    target = cast(RefreshableTarget, RefreshableTarget.current_target)
 
     if target.next_index >= len(target.locals):
         target.locals.append(value)

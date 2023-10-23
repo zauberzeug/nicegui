@@ -3,7 +3,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Self
 
-from .. import binding, globals  # pylint: disable=redefined-builtin
+from .. import binding
 from ..awaitable_response import AwaitableResponse
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
@@ -112,7 +112,7 @@ class Scene(Element,
 
     def _handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True
-        with globals.socket_id(e.args['socket_id']):
+        with self.client.individual_target(e.args['socket_id']):
             self.move_camera(duration=0)
             for obj in self.objects.values():
                 obj.send()

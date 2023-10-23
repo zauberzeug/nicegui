@@ -1,10 +1,13 @@
 import asyncio
 import time
+from contextlib import nullcontext
 from typing import Any, Callable, Optional
 
-from .. import background_tasks, globals, helpers  # pylint: disable=redefined-builtin
+from .. import background_tasks, core, helpers
 from ..binding import BindableProperty
+from ..client import Client
 from ..element import Element
+from ..logging import log
 
 
 class Timer(Element, component='timer.js'):
@@ -35,10 +38,10 @@ class Timer(Element, component='timer.js'):
         self._is_canceled: bool = False
 
         coroutine = self._run_once if once else self._run_in_loop
-        if globals.state == globals.State.STARTED:
+        if core.app.is_started:
             background_tasks.create(coroutine(), name=str(callback))
         else:
-            globals.app.on_startup(coroutine)
+            core.app.on_startup(coroutine)
 
     def activate(self) -> None:
         """Activate the timer."""
@@ -57,7 +60,7 @@ class Timer(Element, component='timer.js'):
         try:
             if not await self._connected():
                 return
-            with self.parent_slot:
+            with self.parent_slot or nullcontext():
                 await asyncio.sleep(self.interval)
                 if self.active and not self._should_stop():
                     await self._invoke_callback()
@@ -68,7 +71,7 @@ class Timer(Element, component='timer.js'):
         try:
             if not await self._connected():
                 return
-            with self.parent_slot:
+            with self.parent_slot or nullcontext():
                 while not self._should_stop():
                     try:
                         start = time.time()
@@ -79,7 +82,7 @@ class Timer(Element, component='timer.js'):
                     except asyncio.CancelledError:
                         break
                     except Exception as e:
-                        globals.handle_exception(e)
+                        core.app.handle_exception(e)
                         await asyncio.sleep(self.interval)
         finally:
             self._cleanup()
@@ -91,7 +94,7 @@ class Timer(Element, component='timer.js'):
             if helpers.is_coroutine_function(self.callback):
                 await result
         except Exception as e:
-            globals.handle_exception(e)
+            core.app.handle_exception(e)
 
     async def _connected(self, timeout: float = 60.0) -> bool:
         """Wait for the client connection before the timer callback can be allowed to manipulate the state.
@@ -107,15 +110,16 @@ class Timer(Element, component='timer.js'):
             await self.client.connected(timeout=timeout)
             return True
         except TimeoutError:
-            globals.log.error(f'Timer cancelled because client is not connected after {timeout} seconds')
+            log.error(f'Timer cancelled because client is not connected after {timeout} seconds')
             return False
 
     def _should_stop(self) -> bool:
         return (
             self.is_deleted or
-            self.client.id not in globals.clients or
+            self.client.id not in Client.instances or
             self._is_canceled or
-            globals.state in {globals.State.STOPPING, globals.State.STOPPED}
+            core.app.is_stopping or
+            core.app.is_stopped
         )
 
     def _cleanup(self) -> None:

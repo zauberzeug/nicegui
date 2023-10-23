@@ -1,12 +1,10 @@
 import inspect
 import warnings
-from dataclasses import dataclass, field
 from multiprocessing import Queue
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Tuple
 
-from .dataclasses import KWONLY_SLOTS
-from .globals import log
-from .run_executor import io_bound
+from .. import run
+from ..logging import log
 
 method_queue: Queue = Queue()
 response_queue: Queue = Queue()
@@ -122,7 +120,7 @@ try:
                     log.exception(f'error in {name}')
                     return None
             name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
-            return await io_bound(wrapper, *args, **kwargs)
+            return await run.io_bound(wrapper, *args, **kwargs)
 
         def signal_server_shutdown(self) -> None:
             """Signal the server shutdown."""
@@ -131,10 +129,3 @@ try:
 except ModuleNotFoundError:
     class WindowProxy:  # type: ignore
         pass  # just a dummy if webview is not installed
-
-
-@dataclass(**KWONLY_SLOTS)
-class Native:
-    start_args: Dict[str, Any] = field(default_factory=dict)
-    window_args: Dict[str, Any] = field(default_factory=dict)
-    main_window: Optional[WindowProxy] = None

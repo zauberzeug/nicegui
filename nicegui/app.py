@@ -1,60 +1,123 @@
+import inspect
+from enum import Enum
 from pathlib import Path
-from typing import Awaitable, Callable, Optional, Union
+from typing import Any, Awaitable, Callable, List, Optional, Union
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import globals, helpers  # pylint: disable=redefined-builtin
-from .native import Native
+from . import background_tasks, helpers
+from .app_config import AppConfig, RunConfig
+from .client import Client
+from .logging import log
+from .native import NativeConfig
 from .observables import ObservableSet
+from .server import Server
 from .storage import Storage
+
+
+class State(Enum):
+    STOPPED = 0
+    STARTING = 1
+    STARTED = 2
+    STOPPING = 3
 
 
 class App(FastAPI):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.native = Native()
+        self.native = NativeConfig()
         self.storage = Storage()
         self.urls = ObservableSet()
+        self._state: State = State.STOPPED
+        self._run_config: RunConfig
+        self.config = AppConfig()
+
+        self._startup_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+        self._shutdown_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+        self._connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+        self._disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
+        self._exception_handlers: List[Callable[..., Any]] = [log.exception]
+
+    @property
+    def is_starting(self) -> bool:
+        """Return whether NiceGUI is starting."""
+        return self._state == State.STARTING
+
+    @property
+    def is_started(self) -> bool:
+        """Return whether NiceGUI is started."""
+        return self._state == State.STARTED
+
+    @property
+    def is_stopping(self) -> bool:
+        """Return whether NiceGUI is stopping."""
+        return self._state == State.STOPPING
+
+    @property
+    def is_stopped(self) -> bool:
+        """Return whether NiceGUI is stopped."""
+        return self._state == State.STOPPED
+
+    def start(self) -> None:
+        """Start NiceGUI. (For internal use only.)"""
+        self._state = State.STARTING
+        for t in self._startup_handlers:
+            helpers.safe_invoke(t, Client.auto_index_client)
+        self._state = State.STARTED
+
+    def stop(self) -> None:
+        """Stop NiceGUI. (For internal use only.)"""
+        self._state = State.STOPPING
+        for t in self._shutdown_handlers:
+            helpers.safe_invoke(t, Client.auto_index_client)
+        self._state = State.STOPPED
 
     def on_connect(self, handler: Union[Callable, Awaitable]) -> None:
         """Called every time a new client connects to NiceGUI.
 
         The callback has an optional parameter of `nicegui.Client`.
         """
-        globals.connect_handlers.append(handler)
+        self._connect_handlers.append(handler)
 
     def on_disconnect(self, handler: Union[Callable, Awaitable]) -> None:
         """Called every time a new client disconnects from NiceGUI.
 
         The callback has an optional parameter of `nicegui.Client`.
         """
-        globals.disconnect_handlers.append(handler)
+        self._disconnect_handlers.append(handler)
 
     def on_startup(self, handler: Union[Callable, Awaitable]) -> None:
         """Called when NiceGUI is started or restarted.
 
         Needs to be called before `ui.run()`.
         """
-        if globals.state == globals.State.STARTED:
+        if self.is_started:
             raise RuntimeError('Unable to register another startup handler. NiceGUI has already been started.')
-        globals.startup_handlers.append(handler)
+        self._startup_handlers.append(handler)
 
     def on_shutdown(self, handler: Union[Callable, Awaitable]) -> None:
         """Called when NiceGUI is shut down or restarted.
 
         When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.
         """
-        globals.shutdown_handlers.append(handler)
+        self._shutdown_handlers.append(handler)
 
     def on_exception(self, handler: Callable) -> None:
         """Called when an exception occurs.
 
         The callback has an optional parameter of `Exception`.
         """
-        globals.exception_handlers.append(handler)
+        self._exception_handlers.append(handler)
+
+    def handle_exception(self, exception: Exception) -> None:
+        """Handle an exception by invoking all registered exception handlers."""
+        for handler in self._exception_handlers:
+            result = handler() if not inspect.signature(handler).parameters else handler(exception)
+            if helpers.is_coroutine_function(handler):
+                background_tasks.create(result)
 
     def shutdown(self) -> None:
         """Shut down NiceGUI.
@@ -62,12 +125,12 @@ class App(FastAPI):
         This will programmatically stop the server.
         Only possible when auto-reload is disabled.
         """
-        if globals.reload:
+        if self._run_config.reload:
             raise RuntimeError('calling shutdown() is not supported when auto-reload is enabled')
         if self.native.main_window:
             self.native.main_window.destroy()
         else:
-            globals.server.should_exit = True
+            Server.instance.should_exit = True
 
     def add_static_files(self, url_path: str, local_directory: Union[str, Path]) -> None:
         """Add a directory of static files.
@@ -85,7 +148,7 @@ class App(FastAPI):
         """
         if url_path == '/':
             raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
-        globals.app.mount(url_path, StaticFiles(directory=str(local_directory)))
+        self.mount(url_path, StaticFiles(directory=str(local_directory)))
 
     def add_static_file(self, *,
                         local_file: Union[str, Path],
@@ -173,3 +236,12 @@ class App(FastAPI):
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""
         self.routes[:] = [r for r in self.routes if getattr(r, 'path', None) != path]
+
+    def reset(self) -> None:
+        """Reset app to its initial state. (Useful for testing.)"""
+        self.storage.clear()
+        self._startup_handlers.clear()
+        self._shutdown_handlers.clear()
+        self._connect_handlers.clear()
+        self._disconnect_handlers.clear()
+        self._exception_handlers[:] = [log.exception]

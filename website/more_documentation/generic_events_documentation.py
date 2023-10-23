@@ -1,4 +1,4 @@
-from nicegui import globals, ui
+from nicegui import context, ui
 
 from ..documentation_tools import text_demo
 
@@ -113,7 +113,7 @@ def more() -> None:
             </script>
         ''')
         # END OF DEMO
-        await globals.get_client().connected()
+        await context.get_client().connected()
         ui.run_javascript(f'''
             document.addEventListener('visibilitychange', () => {{
                 if (document.visibilityState === 'visible')

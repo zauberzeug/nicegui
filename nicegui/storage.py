@@ -1,4 +1,5 @@
 import contextvars
+import os
 import uuid
 from collections.abc import MutableMapping
 from pathlib import Path
@@ -11,7 +12,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from . import background_tasks, globals, json, observables  # pylint: disable=redefined-builtin
+from . import background_tasks, context, core, json, observables
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
@@ -55,10 +56,10 @@ class PersistentDict(observables.ObservableDict):
         async def backup() -> None:
             async with aiofiles.open(self.filepath, 'w') as f:
                 await f.write(json.dumps(self))
-        if globals.loop:
+        if core.loop:
             background_tasks.create_lazy(backup(), name=self.filepath.stem)
         else:
-            globals.app.on_startup(backup())
+            core.app.on_startup(backup())
 
 
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
@@ -75,18 +76,19 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
 
 def set_storage_secret(storage_secret: Optional[str] = None) -> None:
     """Set storage_secret and add request tracking middleware."""
-    if any(m.cls == SessionMiddleware for m in globals.app.user_middleware):
+    if any(m.cls == SessionMiddleware for m in core.app.user_middleware):
         # NOTE not using "add_middleware" because it would be the wrong order
-        globals.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
+        core.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
     elif storage_secret is not None:
-        globals.app.add_middleware(RequestTrackingMiddleware)
-        globals.app.add_middleware(SessionMiddleware, secret_key=storage_secret)
+        core.app.add_middleware(RequestTrackingMiddleware)
+        core.app.add_middleware(SessionMiddleware, secret_key=storage_secret)
 
 
 class Storage:
 
     def __init__(self) -> None:
-        self._general = PersistentDict(globals.storage_path / 'storage_general.json')
+        self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
+        self._general = PersistentDict(self.path / 'storage_general.json')
         self._users: Dict[str, PersistentDict] = {}
 
     @property
@@ -99,7 +101,7 @@ class Storage:
         """
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if globals.get_client() == globals.index_client:
+            if context.get_client().is_auto_index_client:
                 raise RuntimeError('app.storage.browser can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
             raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
@@ -119,13 +121,13 @@ class Storage:
         """
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if globals.get_client() == globals.index_client:
+            if context.get_client().is_auto_index_client:
                 raise RuntimeError('app.storage.user can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
             raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
         session_id = request.session['id']
         if session_id not in self._users:
-            self._users[session_id] = PersistentDict(globals.storage_path / f'storage_user_{session_id}.json')
+            self._users[session_id] = PersistentDict(self.path / f'storage_user_{session_id}.json')
         return self._users[session_id]
 
     @property
@@ -137,5 +139,5 @@ class Storage:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
-        for filepath in globals.storage_path.glob('storage_*.json'):
+        for filepath in self.path.glob('storage_*.json'):
             filepath.unlink()

@@ -11,14 +11,17 @@ import warnings
 from threading import Event, Thread
 from typing import Any, Callable, Dict, List, Tuple
 
-from . import globals, helpers, native  # pylint: disable=redefined-builtin
+from .. import core, helpers, optional_features
+from ..logging import log
+from ..server import Server
+from . import native
 
 try:
     with warnings.catch_warnings():
         # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
         warnings.filterwarnings('ignore', category=DeprecationWarning)
         import webview
-    globals.optional_features.add('native')
+    optional_features.register('native')
 except ModuleNotFoundError:
     pass
 
@@ -37,13 +40,13 @@ def _open_window(
         'height': height,
         'fullscreen': fullscreen,
         'frameless': frameless,
-        **globals.app.native.window_args,
+        **core.app.native.window_args,
     }
     window = webview.create_window(**window_kwargs)
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
-    webview.start(storage_path=tempfile.mkdtemp(), **globals.app.native.start_args)
+    webview.start(storage_path=tempfile.mkdtemp(), **core.app.native.start_args)
 
 
 def _start_window_method_executor(window: webview.Window,
@@ -56,7 +59,7 @@ def _start_window_method_executor(window: webview.Window,
             if response is not None or 'dialog' in method.__name__:
                 response_queue.put(response)
         except Exception:
-            globals.log.exception(f'error in window.{method.__name__}')
+            log.exception(f'error in window.{method.__name__}')
 
     def window_method_executor() -> None:
         pending_executions: List[Thread] = []
@@ -65,7 +68,7 @@ def _start_window_method_executor(window: webview.Window,
                 method_name, args, kwargs = method_queue.get(block=False)
                 if method_name == 'signal_server_shutdown':
                     if pending_executions:
-                        globals.log.warning('shutdown is possibly blocked by opened dialogs like a file picker')
+                        log.warning('shutdown is possibly blocked by opened dialogs like a file picker')
                         while pending_executions:
                             pending_executions.pop().join()
                 elif method_name == 'get_always_on_top':
@@ -82,11 +85,11 @@ def _start_window_method_executor(window: webview.Window,
                         pending_executions.append(Thread(target=execute, args=(method, args, kwargs)))
                         pending_executions[-1].start()
                     else:
-                        globals.log.error(f'window.{method_name} is not callable')
+                        log.error(f'window.{method_name} is not callable')
             except queue.Empty:
                 time.sleep(0.01)
             except Exception:
-                globals.log.exception(f'error in window.{method_name}')
+                log.exception(f'error in window.{method_name}')
 
     Thread(target=window_method_executor).start()
 
@@ -96,14 +99,14 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
     def check_shutdown() -> None:
         while process.is_alive():
             time.sleep(0.1)
-        globals.server.should_exit = True
-        while globals.state != globals.State.STOPPED:
+        Server.instance.should_exit = True
+        while not core.app.is_stopped:
             time.sleep(0.1)
         _thread.interrupt_main()
 
-    if 'native' not in globals.optional_features:
-        globals.log.error('Native mode is not supported in this configuration.\n'
-                          'Please run "pip install pywebview" to use it.')
+    if not optional_features.has('native'):
+        log.error('Native mode is not supported in this configuration.\n'
+                  'Please run "pip install pywebview" to use it.')
         sys.exit(1)
 
     mp.freeze_support()

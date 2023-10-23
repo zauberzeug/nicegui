@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Optional, Tuple, Union
 
 from fastapi.responses import FileResponse, Response, StreamingResponse
 
-from . import globals  # pylint: disable=redefined-builtin
+from . import core
 from .helpers import is_file
 from .version import __version__
 
@@ -19,13 +19,13 @@ if TYPE_CHECKING:
 def create_favicon_route(path: str, favicon: Optional[Union[str, Path]]) -> None:
     """Create a favicon route for the given path."""
     if is_file(favicon):
-        globals.app.add_route('/favicon.ico' if path == '/' else f'{path}/favicon.ico',
-                              lambda _: FileResponse(favicon))  # type: ignore
+        core.app.add_route('/favicon.ico' if path == '/' else f'{path}/favicon.ico',
+                           lambda _: FileResponse(favicon))  # type: ignore
 
 
 def get_favicon_url(page: page, prefix: str) -> str:
     """Return the URL of the favicon for a given page."""
-    favicon = page.favicon or globals.favicon
+    favicon = page.favicon or core.app._run_config.favicon  # pylint: disable=protected-access
     if not favicon:
         return f'{prefix}/_nicegui/{__version__}/static/favicon.ico'
 
@@ -46,9 +46,10 @@ def get_favicon_url(page: page, prefix: str) -> str:
 
 def get_favicon_response() -> Response:
     """Return the FastAPI response for the global favicon."""
-    if not globals.favicon:
-        raise ValueError(f'invalid favicon: {globals.favicon}')
-    favicon = str(globals.favicon).strip()
+    global_favicon = core.app._run_config.favicon  # pylint: disable=protected-access
+    if not global_favicon:
+        raise ValueError(f'invalid favicon: {global_favicon}')
+    favicon = str(global_favicon).strip()
 
     if _is_svg(favicon):
         return Response(favicon, media_type='image/svg+xml')

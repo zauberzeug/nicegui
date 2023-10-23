@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generator, Optional,
 from fastapi import Request
 from fastapi.responses import StreamingResponse
 
-from . import background_tasks, globals  # pylint: disable=redefined-builtin
+from . import background_tasks, core
 
 if TYPE_CHECKING:
     from .client import Client
@@ -75,7 +75,7 @@ def safe_invoke(func: Union[Callable[..., Any], Awaitable], client: Optional[Cli
                         await result
                 background_tasks.create(result_with_client())
     except Exception as e:
-        globals.handle_exception(e)
+        core.app.handle_exception(e)
 
 
 def is_port_open(host: str, port: int) -> bool:

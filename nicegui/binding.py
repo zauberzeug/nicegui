@@ -4,7 +4,8 @@ from collections import defaultdict
 from collections.abc import Mapping
 from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
 
-from . import globals  # pylint: disable=redefined-builtin
+from . import core
+from .logging import log
 
 MAX_PROPAGATION_TIME = 0.01
 
@@ -36,7 +37,7 @@ async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
     while True:
         _refresh_step()
-        await asyncio.sleep(globals.binding_refresh_interval)
+        await asyncio.sleep(core.app._run_config.binding_refresh_interval)  # pylint: disable=protected-access
 
 
 def _refresh_step() -> None:
@@ -51,7 +52,7 @@ def _refresh_step() -> None:
                 _propagate(target_obj, target_name, visited)
         del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
     if time.time() - t > MAX_PROPAGATION_TIME:
-        globals.log.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
+        log.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
 
 
 def _propagate(source_obj: Any, source_name: str, visited: Optional[Set[Tuple[int, str]]] = None) -> None:

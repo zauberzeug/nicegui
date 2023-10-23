@@ -3,7 +3,7 @@ from typing import Any, Callable, Union
 
 from typing_extensions import Self, cast
 
-from ... import globals  # pylint: disable=redefined-builtin
+from ... import core
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
 from ...helpers import is_file
@@ -16,7 +16,7 @@ class SourceElement(Element):
     def __init__(self, *, source: Union[str, Path], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if is_file(source):
-            source = globals.app.add_static_file(local_file=source)
+            source = core.app.add_static_file(local_file=source)
         self.source = source
         self._props['src'] = source
 

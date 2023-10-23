@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional, Union
 
-from .. import globals  # pylint: disable=redefined-builtin
+from .. import context
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
@@ -44,7 +44,7 @@ class Tab(DisableableElement):
         self._props['label'] = label if label is not None else name
         if icon:
             self._props['icon'] = icon
-        self.tabs = globals.get_slot().parent
+        self.tabs = context.get_slot().parent
 
 
 class TabPanels(ValueElement):

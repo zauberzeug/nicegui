@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from fastapi import Request, Response
 
-from . import background_tasks, binding, globals, helpers  # pylint: disable=redefined-builtin
+from . import background_tasks, binding, core, helpers
 from .client import Client
 from .favicon import create_favicon_route
 from .language import Language
@@ -57,7 +57,7 @@ class page:
         self.language = language
         self.response_timeout = response_timeout
         self.kwargs = kwargs
-        self.api_router = api_router or globals.app.router
+        self.api_router = api_router or core.app.router
         self.reconnect_timeout = reconnect_timeout
 
         create_favicon_route(self.path, favicon)
@@ -69,22 +69,22 @@ class page:
 
     def resolve_title(self) -> str:
         """Return the title of the page."""
-        return self.title if self.title is not None else globals.title
+        return self.title if self.title is not None else core.app._run_config.title  # pylint: disable=protected-access
 
     def resolve_viewport(self) -> str:
         """Return the viewport of the page."""
-        return self.viewport if self.viewport is not None else globals.viewport
+        return self.viewport if self.viewport is not None else core.app._run_config.viewport  # pylint: disable=protected-access
 
     def resolve_dark(self) -> Optional[bool]:
         """Return whether the page should use dark mode."""
-        return self.dark if self.dark is not ... else globals.dark
+        return self.dark if self.dark is not ... else core.app._run_config.dark  # pylint: disable=protected-access
 
     def resolve_language(self) -> Optional[str]:
         """Return the language of the page."""
-        return self.language if self.language is not ... else globals.language
+        return self.language if self.language is not ... else core.app._run_config.language  # pylint: disable=protected-access
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
-        globals.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
+        core.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
         parameters_of_decorated_func = list(inspect.signature(func).parameters.keys())
 
         async def decorated(*dec_args, **dec_kwargs) -> Response:
@@ -119,8 +119,8 @@ class page:
         decorated.__signature__ = inspect.Signature(parameters)  # type: ignore
 
         if 'include_in_schema' not in self.kwargs:
-            self.kwargs['include_in_schema'] = globals.endpoint_documentation in {'page', 'all'}
+            self.kwargs['include_in_schema'] = core.app.config.endpoint_documentation in {'page', 'all'}
 
         self.api_router.get(self._path, **self.kwargs)(decorated)
-        globals.page_routes[func] = self.path
+        Client.page_routes[func] = self.path
         return func
