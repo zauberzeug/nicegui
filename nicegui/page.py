@@ -69,19 +69,19 @@ class page:
 
     def resolve_title(self) -> str:
         """Return the title of the page."""
-        return self.title if self.title is not None else core.app._run_config.title  # pylint: disable=protected-access
+        return self.title if self.title is not None else core.app.config.title
 
     def resolve_viewport(self) -> str:
         """Return the viewport of the page."""
-        return self.viewport if self.viewport is not None else core.app._run_config.viewport  # pylint: disable=protected-access
+        return self.viewport if self.viewport is not None else core.app.config.viewport
 
     def resolve_dark(self) -> Optional[bool]:
         """Return whether the page should use dark mode."""
-        return self.dark if self.dark is not ... else core.app._run_config.dark  # pylint: disable=protected-access
+        return self.dark if self.dark is not ... else core.app.config.dark
 
     def resolve_language(self) -> Optional[str]:
         """Return the language of the page."""
-        return self.language if self.language is not ... else core.app._run_config.language  # pylint: disable=protected-access
+        return self.language if self.language is not ... else core.app.config.language
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         core.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used

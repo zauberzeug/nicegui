@@ -37,7 +37,7 @@ async def refresh_loop() -> None:
     """Refresh all bindings in an endless loop."""
     while True:
         _refresh_step()
-        await asyncio.sleep(core.app._run_config.binding_refresh_interval)  # pylint: disable=protected-access
+        await asyncio.sleep(core.app.config.binding_refresh_interval)
 
 
 def _refresh_step() -> None:

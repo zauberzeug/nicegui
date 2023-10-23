@@ -79,9 +79,9 @@ def _get_component(key: str) -> FileResponse:
 def _startup() -> None:
     """Handle the startup event."""
     # NOTE ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
-    sio.eio.ping_interval = max(app._run_config.reconnect_timeout * 0.8, 4)  # pylint: disable=protected-access
-    sio.eio.ping_timeout = max(app._run_config.reconnect_timeout * 0.4, 2)  # pylint: disable=protected-access
-    if not hasattr(app, '_run_config'):
+    sio.eio.ping_interval = max(app.config.reconnect_timeout * 0.8, 4)
+    sio.eio.ping_timeout = max(app.config.reconnect_timeout * 0.4, 2)
+    if not app.config.has_run_config:
         raise RuntimeError('\n\n'
                            'You must call ui.run() to start the server.\n'
                            'If ui.run() is behind a main guard\n'
@@ -89,10 +89,9 @@ def _startup() -> None:
                            'remove the guard or replace it with\n'
                            '   if __name__ in {"__main__", "__mp_main__"}:\n'
                            'to allow for multiprocessing.')
-    global_favicon = app._run_config.favicon  # pylint: disable=protected-access
-    if global_favicon:
-        if helpers.is_file(global_favicon):
-            app.add_route('/favicon.ico', lambda _: FileResponse(global_favicon))  # type: ignore
+    if core.app.config.favicon:
+        if helpers.is_file(core.app.config.favicon):
+            app.add_route('/favicon.ico', lambda _: FileResponse(core.app.config.favicon))  # type: ignore
         else:
             app.add_route('/favicon.ico', lambda _: favicon.get_favicon_response())
     else:

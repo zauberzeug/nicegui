@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import background_tasks, helpers
-from .app_config import AppConfig, RunConfig
+from .app_config import AppConfig
 from .client import Client
 from .logging import log
 from .native import NativeConfig
@@ -32,7 +32,6 @@ class App(FastAPI):
         self.storage = Storage()
         self.urls = ObservableSet()
         self._state: State = State.STOPPED
-        self._run_config: RunConfig
         self.config = AppConfig()
 
         self._startup_handlers: List[Union[Callable[..., Any], Awaitable]] = []
@@ -125,7 +124,7 @@ class App(FastAPI):
         This will programmatically stop the server.
         Only possible when auto-reload is disabled.
         """
-        if self._run_config.reload:
+        if self.config.reload:
             raise RuntimeError('calling shutdown() is not supported when auto-reload is enabled')
         if self.native.main_window:
             self.native.main_window.destroy()

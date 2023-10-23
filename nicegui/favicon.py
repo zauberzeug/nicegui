@@ -25,7 +25,7 @@ def create_favicon_route(path: str, favicon: Optional[Union[str, Path]]) -> None
 
 def get_favicon_url(page: page, prefix: str) -> str:
     """Return the URL of the favicon for a given page."""
-    favicon = page.favicon or core.app._run_config.favicon  # pylint: disable=protected-access
+    favicon = page.favicon or core.app.config.favicon
     if not favicon:
         return f'{prefix}/_nicegui/{__version__}/static/favicon.ico'
 
@@ -46,10 +46,9 @@ def get_favicon_url(page: page, prefix: str) -> str:
 
 def get_favicon_response() -> Response:
     """Return the FastAPI response for the global favicon."""
-    global_favicon = core.app._run_config.favicon  # pylint: disable=protected-access
-    if not global_favicon:
-        raise ValueError(f'invalid favicon: {global_favicon}')
-    favicon = str(global_favicon).strip()
+    if not core.app.config.favicon:
+        raise ValueError(f'invalid favicon: {core.app.config.favicon}')
+    favicon = str(core.app.config.favicon).strip()
 
     if _is_svg(favicon):
         return Response(favicon, media_type='image/svg+xml')

@@ -12,7 +12,6 @@ from uvicorn.supervisors import ChangeReload, Multiprocess
 from . import air, core, helpers
 from . import native as native_module
 from . import welcome
-from .app_config import RunConfig
 from .client import Client
 from .language import Language
 from .logging import log
@@ -78,7 +77,7 @@ def run(*,
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`    
     """
-    core.app._run_config = RunConfig(  # pylint: disable=protected-access
+    core.app.config.add_run_config(
         reload=reload,
         title=title,
         viewport=viewport,
@@ -110,7 +109,7 @@ def run(*,
 
     if reload and not hasattr(__main__, '__file__'):
         log.warning('auto-reloading is only supported when running from a file')
-        core.app._run_config.reload = reload = False  # pylint: disable=protected-access
+        core.app.config.reload = reload = False
 
     if fullscreen:
         native = True

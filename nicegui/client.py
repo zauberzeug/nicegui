@@ -118,8 +118,8 @@ class Client:
             'dark': str(self.page.resolve_dark()),
             'language': self.page.resolve_language(),
             'prefix': prefix,
-            'tailwind': core.app._run_config.tailwind,  # pylint: disable=protected-access
-            'prod_js': core.app._run_config.prod_js,  # pylint: disable=protected-access
+            'tailwind': core.app.config.tailwind,
+            'prod_js': core.app.config.prod_js,
             'socket_io_js_query_params': socket_io_js_query_params,
             'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
             'socket_io_js_transports': core.app.config.socket_io_js_transports,
@@ -211,7 +211,7 @@ class Client:
             if self.page.reconnect_timeout is not None:
                 delay = self.page.reconnect_timeout
             else:
-                delay = core.app._run_config.reconnect_timeout  # pylint: disable=protected-access
+                delay = core.app.config.reconnect_timeout  # pylint: disable=protected-access
             await asyncio.sleep(delay)
             if not self.shared:
                 self.delete()
