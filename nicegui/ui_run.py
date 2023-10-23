@@ -11,6 +11,7 @@ from uvicorn.supervisors import ChangeReload, Multiprocess
 
 from . import air, core, helpers
 from . import native as native_module
+from . import welcome
 from .app_config import RunConfig
 from .client import Client
 from .language import Language
@@ -101,6 +102,8 @@ def run(*,
 
     if on_air:
         air.instance = air.Air('' if on_air is True else on_air)
+
+    core.app.on_startup(welcome.print_message)
 
     if multiprocessing.current_process().name != 'MainProcess':
         return

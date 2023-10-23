@@ -1,6 +1,7 @@
 import asyncio
 import mimetypes
 import urllib.parse
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Dict
 
@@ -10,7 +11,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
-from . import air, background_tasks, binding, core, favicon, helpers, json, outbox, run, welcome
+from . import air, background_tasks, binding, core, favicon, helpers, json, outbox, run
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries
@@ -22,7 +23,14 @@ from .page import page
 from .slot import Slot
 from .version import __version__
 
-core.app = app = App(default_response_class=NiceGUIJSONResponse)
+
+@asynccontextmanager
+async def _lifespan(_: App):
+    _startup()
+    yield
+    await _shutdown()
+
+core.app = app = App(default_response_class=NiceGUIJSONResponse, lifespan=_lifespan)
 # NOTE we use custom json module which wraps orjson
 socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=json)
 core.sio = sio = socket_manager._sio  # pylint: disable=protected-access
@@ -68,8 +76,7 @@ def _get_component(key: str) -> FileResponse:
     raise HTTPException(status_code=404, detail=f'component "{key}" not found')
 
 
-@app.on_event('startup')
-def handle_startup(with_welcome_message: bool = True) -> None:
+def _startup() -> None:
     """Handle the startup event."""
     # NOTE ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
     sio.eio.ping_interval = max(app._run_config.reconnect_timeout * 0.8, 4)  # pylint: disable=protected-access
@@ -96,13 +103,10 @@ def handle_startup(with_welcome_message: bool = True) -> None:
     background_tasks.create(outbox.loop(air.instance), name='send outbox')
     background_tasks.create(Client.prune_instances(), name='prune clients')
     background_tasks.create(Slot.prune_stacks(), name='prune slot stacks')
-    if with_welcome_message:
-        background_tasks.create(welcome.print_message())
     air.connect()
 
 
-@app.on_event('shutdown')
-async def handle_shutdown() -> None:
+async def _shutdown() -> None:
     """Handle the shutdown event."""
     if app.native.main_window:
         app.native.main_window.signal_server_shutdown()
