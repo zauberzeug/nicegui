@@ -4,7 +4,7 @@ from typing import Optional, Union
 from fastapi import FastAPI
 
 from . import core, storage
-from .app_config import AppConfig
+from .app_config import RunConfig
 from .language import Language
 from .nicegui import handle_shutdown, handle_startup
 
@@ -38,7 +38,7 @@ def run_with(
     :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
     """
-    core.app.config = AppConfig(
+    core.app._run_config = RunConfig(  # pylint: disable=protected-access
         reload=False,
         title=title,
         viewport=viewport,

@@ -7,7 +7,7 @@ from .language import Language
 
 
 @dataclass(**KWONLY_SLOTS)
-class AppConfig:
+class RunConfig:
     reload: bool
     title: str
     viewport: str
@@ -21,7 +21,7 @@ class AppConfig:
 
 
 @dataclass(**KWONLY_SLOTS)
-class ExtraConfig:
+class AppConfig:
     endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
     socket_io_js_query_params: Dict = field(default_factory=dict)
     socket_io_js_extra_headers: Dict = field(default_factory=dict)

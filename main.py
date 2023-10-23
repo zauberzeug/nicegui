@@ -65,8 +65,8 @@ async def redirect_reference_to_documentation(request: Request,
 
 # NOTE In our global fly.io deployment we need to make sure that we connect back to the same instance.
 fly_instance_id = os.environ.get('FLY_ALLOC_ID', 'local').split('-')[0]
-app.extra_config.socket_io_js_extra_headers['fly-force-instance-id'] = fly_instance_id  # for HTTP long polling
-app.extra_config.socket_io_js_query_params['fly_instance_id'] = fly_instance_id  # for websocket (FlyReplayMiddleware)
+app.config.socket_io_js_extra_headers['fly-force-instance-id'] = fly_instance_id  # for HTTP long polling
+app.config.socket_io_js_query_params['fly_instance_id'] = fly_instance_id  # for websocket (FlyReplayMiddleware)
 
 
 class FlyReplayMiddleware(BaseHTTPMiddleware):
