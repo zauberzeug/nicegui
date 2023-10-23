@@ -12,7 +12,8 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from nicegui import Server, app, ui
+from nicegui import app, ui
+from nicegui.server import Server
 
 from .test_helpers import TEST_DIR
 
