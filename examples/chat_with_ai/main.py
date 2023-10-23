@@ -5,8 +5,7 @@ from langchain.chains import ConversationChain
 from langchain.chat_models import ChatOpenAI
 from log_callback_handler import NiceGuiLogElementCallbackHandler
 
-import nicegui.globals
-from nicegui import Client, ui
+from nicegui import context, ui
 
 OPENAI_API_KEY = 'not-set'  # TODO: set your OpenAI API key here
 
@@ -22,7 +21,7 @@ def chat_messages() -> None:
         ui.chat_message(text=text, name=name, sent=name == 'You')
     if thinking:
         ui.spinner(size='3rem').classes('self-center')
-    if nicegui.globals.get_client().has_socket_connection:
+    if context.get_client().has_socket_connection:
         ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)')
 
 
