@@ -70,8 +70,8 @@ export default {
     this.camera.up = new THREE.Vector3(0, 0, 1);
     this.camera.position.set(0, -3, 5);
 
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-    const light = new THREE.DirectionalLight(0xffffff, 0.3);
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.7 * Math.PI));
+    const light = new THREE.DirectionalLight(0xffffff, 0.3 * Math.PI);
     light.position.set(5, 10, 40);
     this.scene.add(light);
 
