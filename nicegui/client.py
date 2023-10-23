@@ -50,7 +50,7 @@ class Client:
         self.environ: Optional[Dict[str, Any]] = None
         self.shared = shared
         self.on_air = False
-        self.disconnect_task: Optional[asyncio.Task] = None
+        self._disconnect_task: Optional[asyncio.Task] = None
 
         with Element('q-layout', _client=self).props('view="hhh lpr fff"').classes('nicegui-layout') as self.layout:
             with Element('q-page-container') as self.page_container:
@@ -197,9 +197,9 @@ class Client:
 
     def handle_handshake(self) -> None:
         """Cancel pending disconnect task and invoke connect handlers."""
-        if self.disconnect_task:
-            self.disconnect_task.cancel()
-            self.disconnect_task = None
+        if self._disconnect_task:
+            self._disconnect_task.cancel()
+            self._disconnect_task = None
         for t in self.connect_handlers:
             safe_invoke(t, self)
         for t in core.app._connect_handlers:  # pylint: disable=protected-access
@@ -219,7 +219,7 @@ class Client:
                 safe_invoke(t, self)
             for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
                 safe_invoke(t, self)
-        self.disconnect_task = background_tasks.create(handle_disconnect())
+        self._disconnect_task = background_tasks.create(handle_disconnect())
 
     def handle_event(self, msg: Dict) -> None:
         """Forward an event to the corresponding element."""
