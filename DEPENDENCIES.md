@@ -2,7 +2,7 @@
 
 - vue: 3.3.6 ([MIT](https://opensource.org/licenses/MIT))
 - quasar: 2.13.0 ([MIT](https://opensource.org/licenses/MIT))
-- tailwindcss: 3.3.3 ([MIT](https://opensource.org/licenses/MIT))
+- tailwindcss: 3.2.0 ([MIT](https://opensource.org/licenses/MIT))
 - socket.io: 4.7.2 ([MIT](https://opensource.org/licenses/MIT))
 - es-module-shims: 1.8.0 ([MIT](https://opensource.org/licenses/MIT))
 - aggrid: 30.2.0 ([MIT](https://opensource.org/licenses/MIT))
