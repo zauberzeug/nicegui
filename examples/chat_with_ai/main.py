@@ -26,7 +26,7 @@ def chat_messages() -> None:
 
 
 @ui.page('/')
-async def main():
+def main():
 
     async def send() -> None:
         global thinking
@@ -52,9 +52,8 @@ async def main():
         chat_tab = ui.tab('Chat')
         logs_tab = ui.tab('Logs')
     with ui.tab_panels(tabs, value=chat_tab).classes('w-full max-w-2xl mx-auto flex-grow items-stretch'):
-        with ui.tab_panel(chat_tab):
-            with ui.column().classes('w-full'):
-                chat_messages()
+        with ui.tab_panel(chat_tab).classes('items-stretch'):
+            chat_messages()
         with ui.tab_panel(logs_tab):
             log = ui.log().classes('w-full h-full')
 
@@ -66,5 +65,6 @@ async def main():
                 .classes('w-full self-center').on('keydown.enter', send)
         ui.markdown('simple chat app built with [NiceGUI](https://nicegui.io)') \
             .classes('text-xs self-end mr-8 m-[-1em] text-primary')
+
 
 ui.run(title='Chat with GPT-3 (example)')
