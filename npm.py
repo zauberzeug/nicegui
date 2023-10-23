@@ -69,7 +69,7 @@ for key, dependency in dependencies.items():
     # Get package info from NPM.
     package_name = dependency.get('package', key)
     npm_data = json.loads(download_buffered(f'https://registry.npmjs.org/{package_name}').read_text())
-    npm_version = dependency.get('version', npm_data['dist-tags']['latest'])
+    npm_version = dependency.get('version') or dependency.get('version', npm_data['dist-tags']['latest'])
     npm_tarball = npm_data['versions'][npm_version]['dist']['tarball']
     license_ = npm_data['versions'][npm_version]['license']
     print(f'{key}: {npm_version} - {npm_tarball} ({license_})')
