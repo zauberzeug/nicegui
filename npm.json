@@ -52,18 +52,6 @@
       "package/dist/": ""
     }
   },
-  "highcharts": {
-    "destination": "nicegui/elements/lib",
-    "keep": [
-      "package/highcharts\\.js(\\.map)?",
-      "package/highcharts-more\\.js(\\.map)?",
-      "package/highcharts-3d\\.js(\\.map)?",
-      "package/modules/[^\\.]*\\.js(\\.map)?"
-    ],
-    "rename": {
-      "package/": ""
-    }
-  },
   "mermaid": {
     "destination": "nicegui/elements/lib",
     "keep": ["package/dist/.*\\.m?js"],
