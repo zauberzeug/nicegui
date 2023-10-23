@@ -26,6 +26,7 @@ __all__ = [
     'editor',
     'expansion',
     'grid',
+    'highchart',
     'html',
     'icon',
     'image',
@@ -109,7 +110,7 @@ from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section
 from .elements.carousel import Carousel as carousel
 from .elements.carousel import CarouselSlide as carousel_slide
-from .elements.chart import Chart as chart
+from .elements.chart import chart
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
 from .elements.code import Code as code
@@ -125,6 +126,7 @@ from .elements.echart import EChart as echart
 from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
 from .elements.grid import Grid as grid
+from .elements.highchart import highchart
 from .elements.html import Html as html
 from .elements.icon import Icon as icon
 from .elements.image import Image as image

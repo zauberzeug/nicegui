@@ -7,7 +7,6 @@
 - es-module-shims: 1.7.3 ([MIT](https://opensource.org/licenses/MIT))
 - aggrid: 30.0.3 ([MIT](https://opensource.org/licenses/MIT))
 - echarts: 5.4.3 ([Apache-2.0](https://opensource.org/licenses/Apache-2.0))
-- highcharts: 11.1.0 ([https://www.highcharts.com/license](https://www.highcharts.com/license))
 - mermaid: 10.2.4 ([MIT](https://opensource.org/licenses/MIT))
 - nipplejs: 0.10.1 ([MIT](https://opensource.org/licenses/MIT))
 - plotly: 2.24.3 ([MIT](https://opensource.org/licenses/MIT))

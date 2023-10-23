@@ -1422,6 +1422,20 @@ files = [
 ]
 
 [[package]]
+name = "nicegui-highcharts"
+version = "1.0.0"
+description = "Add Highcharts elements to your NiceGUI app."
+optional = true
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "nicegui_highcharts-1.0.0-py3-none-any.whl", hash = "sha256:9a04f07075c722810d1692749a24b08497247118714c65ac33efb98faf95c27b"},
+    {file = "nicegui_highcharts-1.0.0.tar.gz", hash = "sha256:70937ea5b36ee82ca22f3c700a2848dd0273d4839fdf5f7f05caab26130242f4"},
+]
+
+[package.dependencies]
+nicegui = ">=1.3.18"
+
+[[package]]
 name = "numpy"
 version = "1.24.4"
 description = "Fundamental package for array computing in Python"
@@ -3012,6 +3026,7 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.link
 testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
 [extras]
+highcharts = ["nicegui-highcharts"]
 matplotlib = ["matplotlib"]
 native = ["pywebview"]
 plotly = ["plotly"]
@@ -3019,4 +3034,4 @@ plotly = ["plotly"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "fcf8eb764c86720aa74b2df5148ee27b44a5cc1b70796a01bb77cc2ab26abe31"
+content-hash = "54ac0e03ed30b9d6b8da67852a35ee11c34733e13ee4bf319c7db66a6243ed99"
