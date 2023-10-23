@@ -15,7 +15,7 @@ def get_slot_stack() -> List[Slot]:
 
 def get_slot() -> Slot:
     """Return the current slot."""
-    return Slot.get_stack()[-1]
+    return get_slot_stack()[-1]
 
 
 def get_client() -> Client:
