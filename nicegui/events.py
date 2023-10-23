@@ -43,11 +43,6 @@ class ClickEventArguments(UiEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
-class ChartEventArguments(UiEventArguments):
-    event_type: str
-
-
-@dataclass(**KWONLY_SLOTS)
 class EChartPointClickEventArguments(UiEventArguments):
     component_type: str
     series_type: str
@@ -58,35 +53,6 @@ class EChartPointClickEventArguments(UiEventArguments):
     data: Union[float, int, str]
     data_type: str
     value: Union[float, int, list]
-
-
-@dataclass(**KWONLY_SLOTS)
-class ChartPointClickEventArguments(ChartEventArguments):
-    series_index: int
-    point_index: int
-    point_x: float
-    point_y: float
-
-
-@dataclass(**KWONLY_SLOTS)
-class ChartPointDragStartEventArguments(ChartEventArguments):
-    pass
-
-
-@dataclass(**KWONLY_SLOTS)
-class ChartPointDragEventArguments(ChartEventArguments):
-    series_index: int
-    point_index: int
-    point_x: float
-    point_y: float
-
-
-@dataclass(**KWONLY_SLOTS)
-class ChartPointDropEventArguments(ChartEventArguments):
-    series_index: int
-    point_index: int
-    point_x: float
-    point_y: float
 
 
 @dataclass(**KWONLY_SLOTS)

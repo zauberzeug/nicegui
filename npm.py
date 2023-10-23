@@ -15,9 +15,15 @@ import json
 import re
 import shutil
 import tarfile
+from argparse import ArgumentParser
 from pathlib import Path
 
 import requests
+
+parser = ArgumentParser()
+parser.add_argument('path', default='.', help='path to the root of the repository')
+args = parser.parse_args()
+root_path = Path(args.path)
 
 
 def prepare(path: Path) -> Path:
@@ -44,7 +50,7 @@ def download_buffered(url: str) -> Path:
     return filepath
 
 
-DEPENDENCIES = (Path(__file__).parent / 'DEPENDENCIES.md').open('w')
+DEPENDENCIES = (root_path / 'DEPENDENCIES.md').open('w')
 DEPENDENCIES.write('# Included Web Dependencies\n\n')
 KNOWN_LICENSES = {
     'MIT': 'https://opensource.org/licenses/MIT',
@@ -53,12 +59,12 @@ KNOWN_LICENSES = {
 }
 
 # Create a hidden folder to work in.
-tmp = cleanup(Path('.npm'))
+tmp = cleanup(root_path / '.npm')
 
-dependencies: dict[str, dict] = json.loads(Path('npm.json').read_text())
+dependencies: dict[str, dict] = json.loads((root_path / 'npm.json').read_text())
 for key, dependency in dependencies.items():
     # Reset destination folder.
-    destination = prepare(Path('nicegui', dependency['destination'], key))
+    destination = prepare(root_path / dependency['destination'] / key)
 
     # Get package info from NPM.
     package_name = dependency.get('package', key)
@@ -72,7 +78,7 @@ for key, dependency in dependencies.items():
     # Handle the special case of tailwind. Hopefully remove this soon.
     if 'download' in dependency:
         download_path = download_buffered(dependency['download'])
-        shutil.copyfile(download_path, prepare(Path(destination, dependency['rename'])))
+        shutil.copyfile(download_path, prepare(destination / dependency['rename']))
 
     # Download and extract.
     tgz_file = prepare(Path(tmp, key, f'{key}.tgz'))
