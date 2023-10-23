@@ -1,4 +1,4 @@
-from . import context, elements, optional_features, run, ui
+from . import context, elements, run, ui
 from .api_router import APIRouter
 from .awaitable_response import AwaitableResponse
 from .client import Client
@@ -13,7 +13,6 @@ __all__ = [
     'Client',
     'context',
     'elements',
-    'optional_features',
     'run',
     'Tailwind',
     'ui',
