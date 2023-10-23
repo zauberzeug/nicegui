@@ -15,7 +15,12 @@ def get_slot_stack() -> List[Slot]:
 
 def get_slot() -> Slot:
     """Return the current slot."""
-    return get_slot_stack()[-1]
+    slot_stack = get_slot_stack()
+    if not slot_stack:
+        raise RuntimeError('The current slot cannot be determined because the slot stack for this task is empty.\n'
+                           'This may happen if you try to create UI from a background task.\n'
+                           'To fix this, enter the target slot explicitly using `with container_element:`.')
+    return slot_stack[-1]
 
 
 def get_client() -> Client:
