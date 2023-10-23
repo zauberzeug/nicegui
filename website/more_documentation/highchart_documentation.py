@@ -6,7 +6,7 @@ from ..documentation_tools import text_demo
 def main_demo() -> None:
     from random import random
 
-    chart = ui.chart({
+    chart = ui.highchart({
         'title': False,
         'chart': {'type': 'bar'},
         'xAxis': {'categories': ['A', 'B']},
@@ -29,7 +29,7 @@ def more() -> None:
         This demo shows a solid gauge chart.
     ''')
     def extra_dependencies() -> None:
-        ui.chart({
+        ui.highchart({
             'title': False,
             'chart': {'type': 'solidgauge'},
             'yAxis': {
@@ -51,7 +51,7 @@ def more() -> None:
         - `on_point_drop`: called when a point is dropped
     ''')
     def drag() -> None:
-        ui.chart(
+        ui.highchart(
             {
                 'title': False,
                 'plotOptions': {

@@ -129,7 +129,8 @@ def create_full() -> None:
 
     load_demo(ui.table)
     load_demo(ui.aggrid)
-    load_demo(ui.chart)
+    if optional_features.has('highcharts'):
+        load_demo(ui.highchart)
     load_demo(ui.echart)
     if optional_features.has('matplotlib'):
         load_demo(ui.pyplot)
@@ -320,17 +321,22 @@ def create_full() -> None:
     load_demo('bindings')
 
     @text_demo('UI Updates', '''
-        NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed.
+        NiceGUI tries to automatically synchronize the state of UI elements with the client,
+        e.g. when a label text, an input value or style/classes/props of an element have changed.
         In other cases, you can explicitly call `element.update()` or `ui.update(*elements)` to update.
-        The demo code shows both methods for a `ui.chart`, where it is difficult to automatically detect changes in the `options` dictionary.
+        The demo code shows both methods for a `ui.echart`, where it is difficult to automatically detect changes in the `options` dictionary.
     ''')
     def ui_updates_demo():
-        from random import randint
+        from random import random
 
-        chart = ui.chart({'title': False, 'series': [{'data': [1, 2]}]}).classes('w-full h-64')
+        chart = ui.echart({
+            'xAxis': {'type': 'value'},
+            'yAxis': {'type': 'value'},
+            'series': [{'type': 'line', 'data': [[0, 0], [1, 1]]}],
+        })
 
         def add():
-            chart.options['series'][0]['data'].append(randint(0, 100))
+            chart.options['series'][0]['data'].append([random(), random()])
             chart.update()
 
         def clear():

@@ -6,7 +6,7 @@ from .screen import Screen
 
 
 def test_change_chart_series(screen: Screen):
-    chart = ui.chart({
+    chart = ui.highchart({
         'chart': {'type': 'bar'},
         'xAxis': {'categories': ['A', 'B']},
         'series': [
@@ -35,7 +35,7 @@ def test_change_chart_series(screen: Screen):
 
 
 def test_adding_chart_series(screen: Screen):
-    chart = ui.chart({
+    chart = ui.highchart({
         'chart': {'type': 'bar'},
         'xAxis': {'categories': ['A', 'B']},
         'series': [],
@@ -53,7 +53,7 @@ def test_adding_chart_series(screen: Screen):
 
 
 def test_removing_chart_series(screen: Screen):
-    chart = ui.chart({
+    chart = ui.highchart({
         'chart': {'type': 'bar'},
         'xAxis': {'categories': ['A', 'B']},
         'series': [
@@ -75,21 +75,21 @@ def test_removing_chart_series(screen: Screen):
 
 def test_missing_extra(screen: Screen):
     # NOTE: This test does not work after test_extra() has been run, because conftest won't reset libraries correctly.
-    ui.chart({'chart': {'type': 'solidgauge'}})
+    ui.highchart({'chart': {'type': 'solidgauge'}})
 
     screen.open('/')
     assert not screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-pane')
 
 
 def test_extra(screen: Screen):
-    ui.chart({'chart': {'type': 'solidgauge'}}, extras=['solid-gauge'])
+    ui.highchart({'chart': {'type': 'solidgauge'}}, extras=['solid-gauge'])
 
     screen.open('/')
     assert screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-pane')
 
 
 def test_stock_chart(screen: Screen):
-    ui.chart({}, type='stockChart', extras=['stock'])
+    ui.highchart({}, type='stockChart', extras=['stock'])
 
     screen.open('/')
     assert screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-range-selector-buttons')
@@ -97,12 +97,12 @@ def test_stock_chart(screen: Screen):
 
 def test_replace_chart(screen: Screen):
     with ui.row() as container:
-        ui.chart({'series': [{'name': 'A'}]})
+        ui.highchart({'series': [{'name': 'A'}]})
 
     def replace():
         container.clear()
         with container:
-            ui.chart({'series': [{'name': 'B'}]})
+            ui.highchart({'series': [{'name': 'B'}]})
     ui.button('Replace', on_click=replace)
 
     screen.open('/')
@@ -114,7 +114,7 @@ def test_replace_chart(screen: Screen):
 
 def test_updating_stock_chart(screen: Screen):
     """https://github.com/zauberzeug/nicegui/discussions/948"""
-    chart = ui.chart({'legend': {'enabled': True}, 'series': []}, type='stockChart', extras=['stock'])
+    chart = ui.highchart({'legend': {'enabled': True}, 'series': []}, type='stockChart', extras=['stock'])
     ui.button('update', on_click=lambda: (
         chart.options['series'].extend([{'name': 'alice'}, {'name': 'bob'}]),
         chart.update(),
@@ -135,7 +135,7 @@ def test_updating_stock_chart(screen: Screen):
 
 
 def test_create_dynamically(screen: Screen):
-    ui.button('Create', on_click=lambda: ui.chart({}))
+    ui.button('Create', on_click=lambda: ui.highchart({}))
 
     screen.open('/')
     screen.click('Create')
