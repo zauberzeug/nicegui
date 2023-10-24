@@ -25,6 +25,7 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
         After manipulating the options, call `update()` to update the options in the UI.
 
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
+        :param label: the label to display above the selection
         :param value: the initial value
         :param on_change: callback to execute when selection changes
         :param with_input: whether to show an input field to filter the options
