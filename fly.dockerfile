@@ -15,7 +15,7 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock*  ./
 
-RUN poetry install --no-root --extras "plotly matplotlib"
+RUN poetry install --no-root --extras "plotly matplotlib highcharts"
 
 ADD . .
 
