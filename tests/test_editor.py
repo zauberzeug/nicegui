@@ -11,4 +11,5 @@ def test_editor(screen: Screen):
     screen.open('/')
     screen.find_by_class('q-editor__content').click()
     screen.type('Hello\nworld!')
+    screen.wait(0.5)
     screen.should_contain('Hello<div>world!</div>')
