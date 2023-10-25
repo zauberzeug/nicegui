@@ -406,6 +406,9 @@ class Element(Visibility):
     def run_method(self, name: str, *args: Any) -> AwaitableResponse:
         """Run a method on the client side.
 
+        If the function is awaited, the result of the method call is returned.
+        Otherwise, the method is executed without waiting for a response.
+
         :param name: name of the method
         :param args: arguments to pass to the method
         """
