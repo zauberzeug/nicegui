@@ -5,6 +5,7 @@ from fastapi import FastAPI
 
 from . import core, storage
 from .language import Language
+from .nicegui import _shutdown, _startup
 
 
 def run_with(
@@ -52,3 +53,5 @@ def run_with(
     storage.set_storage_secret(storage_secret)
 
     app.mount(mount_path, core.app)
+    app.on_event('startup')(_startup)
+    app.on_event('shutdown')(_shutdown)
