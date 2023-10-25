@@ -52,7 +52,7 @@ class DocVisitor(ast.NodeVisitor):
         else:
             raise NotImplementedError(f'Unknown function type: {node.func}')
         if function_name in ['heading', 'subheading']:
-            self.on_new_heading()
+            self._handle_new_heading()
             self.current_title = node.args[0].s
         elif function_name == 'markdown':
             if node.args:
@@ -61,7 +61,7 @@ class DocVisitor(ast.NodeVisitor):
                 self.current_content.append(cleanup(raw))
         self.generic_visit(node)
 
-    def on_new_heading(self) -> None:
+    def _handle_new_heading(self) -> None:
         if self.current_title:
             self.add_to_search_index(self.current_title, self.current_content if self.current_content else 'Overview')
             self.current_content = []
@@ -146,7 +146,7 @@ def generate_for(file: Path, topic: Optional[str] = None) -> None:
     doc_visitor = DocVisitor(topic)
     doc_visitor.visit(tree)
     if doc_visitor.current_title:
-        doc_visitor.on_new_heading()  # to finalize the last heading
+        doc_visitor._handle_new_heading()  # to finalize the last heading
 
 
 documents = []

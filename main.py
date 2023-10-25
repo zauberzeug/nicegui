@@ -14,9 +14,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 import prometheus
-from nicegui import Client, app
-from nicegui import globals as nicegui_globals
-from nicegui import ui
+from nicegui import Client, app, ui
 from website import documentation, example_card, svg
 from website.demo import bash_window, browser_window, python_window
 from website.documentation_tools import create_anchor_name, element_demo, generate_class_doc
@@ -34,10 +32,10 @@ app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
 app.add_static_files('/static', str(Path(__file__).parent / 'website' / 'static'))
 
 if True:  # HACK: prevent the page from scrolling when closing a dialog (#1404)
-    def on_dialog_value_change(sender, value, on_value_change=ui.dialog.on_value_change) -> None:
+    def _handle_value_change(sender, value, on_value_change=ui.dialog._handle_value_change) -> None:
         ui.query('html').classes(**{'add' if value else 'remove': 'has-dialog'})
         on_value_change(sender, value)
-    ui.dialog.on_value_change = on_dialog_value_change
+    ui.dialog._handle_value_change = _handle_value_change
 
 
 @app.get('/logo.png')
@@ -67,8 +65,8 @@ async def redirect_reference_to_documentation(request: Request,
 
 # NOTE In our global fly.io deployment we need to make sure that we connect back to the same instance.
 fly_instance_id = os.environ.get('FLY_ALLOC_ID', 'local').split('-')[0]
-nicegui_globals.socket_io_js_extra_headers['fly-force-instance-id'] = fly_instance_id  # for HTTP long polling
-nicegui_globals.socket_io_js_query_params['fly_instance_id'] = fly_instance_id  # for websocket (FlyReplayMiddleware)
+app.config.socket_io_js_extra_headers['fly-force-instance-id'] = fly_instance_id  # for HTTP long polling
+app.config.socket_io_js_query_params['fly_instance_id'] = fly_instance_id  # for websocket (FlyReplayMiddleware)
 
 
 class FlyReplayMiddleware(BaseHTTPMiddleware):
@@ -134,7 +132,7 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
             headers: {{'Content-Type': 'application/json'}},
             body: JSON.stringify({{value: {e.value}}}),
         }});
-    ''', respond=False))
+    '''))
     with ui.header() \
             .classes('items-center duration-200 p-0 px-4 no-wrap') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
@@ -447,7 +445,7 @@ async def documentation_page_more(name: str, client: Client) -> None:
             generate_class_doc(api)
     try:
         await client.connected()
-        await ui.run_javascript(f'document.title = "{name} • NiceGUI";', respond=False)
+        ui.run_javascript(f'document.title = "{name} • NiceGUI";')
     except TimeoutError:
         logging.warning(f'client did not connect for page /documentation/{name}')
 

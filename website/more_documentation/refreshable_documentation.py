@@ -67,3 +67,23 @@ def more() -> None:
                         ui.label(rule).classes('text-xs text-red')
 
         show_info()
+
+    @text_demo('Refreshable UI with reactive state', '''
+        You can create reactive state variables with the `ui.state` function, like `count` and `color` in this demo.
+        They can be used like normal variables for creating UI elements like the `ui.label`.
+        Their corresponding setter functions can be used to set new values, which will automatically refresh the UI.
+    ''')
+    def reactive_state():
+        @ui.refreshable
+        def counter(name: str):
+            with ui.card():
+                count, set_count = ui.state(0)
+                color, set_color = ui.state('black')
+                ui.label(f'{name} = {count}').classes(f'text-{color}')
+                ui.button(f'{name} += 1', on_click=lambda: set_count(count + 1))
+                ui.select(['black', 'red', 'green', 'blue'],
+                          value=color, on_change=lambda e: set_color(e.value))
+
+        with ui.row():
+            counter('A')
+            counter('B')

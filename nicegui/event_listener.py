@@ -23,6 +23,7 @@ class EventListener:
         self.id = str(uuid.uuid4())
 
     def to_dict(self) -> Dict[str, Any]:
+        """Return a dictionary representation of the event listener."""
         words = self.type.split('.')
         type_ = words.pop(0)
         specials = [w for w in words if w in {'capture', 'once', 'passive'}]

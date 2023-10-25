@@ -9,7 +9,8 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional,
 
 from typing_extensions import Self
 
-from . import events, globals, outbox, storage  # pylint: disable=redefined-builtin
+from . import context, core, events, json, outbox, storage
+from .awaitable_response import AwaitableResponse
 from .dependencies import Component, Library, register_library, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
@@ -65,7 +66,7 @@ class Element(Visibility):
         :param _client: client for this element (for internal use only)
         """
         super().__init__()
-        self.client = _client or globals.get_client()
+        self.client = _client or context.get_client()
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
         self.tag = tag if tag else self.component.tag if self.component else 'div'
@@ -83,7 +84,7 @@ class Element(Visibility):
 
         self.client.elements[self.id] = self
         self.parent_slot: Optional[Slot] = None
-        slot_stack = globals.get_slot_stack()
+        slot_stack = context.get_slot_stack()
         if slot_stack:
             self.parent_slot = slot_stack[-1]
             self.parent_slot.children.append(self)
@@ -402,17 +403,15 @@ class Element(Visibility):
         """Update the element on the client side."""
         outbox.enqueue_update(self)
 
-    def run_method(self, name: str, *args: Any) -> None:
+    def run_method(self, name: str, *args: Any) -> AwaitableResponse:
         """Run a method on the client side.
 
         :param name: name of the method
         :param args: arguments to pass to the method
         """
-        if not globals.loop:
-            return
-        data = {'id': self.id, 'name': name, 'args': args}
-        target_id = globals._socket_id or self.client.id  # pylint: disable=protected-access
-        outbox.enqueue_message('run_method', data, target_id)
+        if not core.loop:
+            return AwaitableResponse(None, None)
+        return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})')
 
     def _collect_descendants(self, *, include_self: bool = False) -> List[Element]:
         elements: List[Element] = [self] if include_self else []
@@ -463,7 +462,7 @@ class Element(Visibility):
         assert self.parent_slot is not None
         self.parent_slot.children.remove(self)
 
-    def _on_delete(self) -> None:
+    def _handle_delete(self) -> None:
         """Called when the element is deleted.
 
         This method can be overridden in subclasses to perform cleanup tasks.

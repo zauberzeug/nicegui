@@ -29,8 +29,8 @@ class ScrollArea(Element):
                 'horizontalContainerSize',
             ])
 
-    def _handle_scroll(self, on_scroll: Optional[Callable[..., Any]], e: GenericEventArguments) -> None:
-        handle_event(on_scroll, ScrollEventArguments(
+    def _handle_scroll(self, handler: Optional[Callable[..., Any]], e: GenericEventArguments) -> None:
+        handle_event(handler, ScrollEventArguments(
             sender=self,
             client=self.client,
             vertical_position=e.args['verticalPosition'],

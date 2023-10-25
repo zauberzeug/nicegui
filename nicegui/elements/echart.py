@@ -49,6 +49,7 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
 
     @property
     def options(self) -> Dict:
+        """The options dictionary."""
         return self._props['options']
 
     def update(self) -> None:

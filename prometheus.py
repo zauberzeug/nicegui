@@ -1,10 +1,9 @@
 import inspect
+import logging
 import uuid
 
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
-
-from nicegui.globals import log
 
 EXCLUDED_USER_AGENTS = {'bot', 'spider', 'crawler', 'monitor', 'curl',
                         'wget', 'python-requests', 'kuma', 'health check'}
@@ -14,7 +13,7 @@ def start_monitor(app: FastAPI) -> None:
     try:
         import prometheus_client
     except ModuleNotFoundError:
-        log.info('Prometheus not installed, skipping monitoring')
+        logging.info('Prometheus not installed, skipping monitoring')
         return
 
     visits = prometheus_client.Counter('nicegui_page_visits', 'Number of real page visits',

@@ -3,13 +3,14 @@ import io
 import os
 from typing import Any
 
-from .. import background_tasks, globals  # pylint: disable=redefined-builtin
+from .. import background_tasks, optional_features
+from ..client import Client
 from ..element import Element
 
 try:
     if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
         import matplotlib.pyplot as plt
-        globals.optional_features.add('matplotlib')
+        optional_features.register('matplotlib')
 except ImportError:
     pass
 
@@ -24,7 +25,7 @@ class Pyplot(Element):
         :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later (default: `True`)
         :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_
         """
-        if 'matplotlib' not in globals.optional_features:
+        if not optional_features.has('matplotlib'):
             raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
 
         super().__init__('div')
@@ -51,6 +52,6 @@ class Pyplot(Element):
         self.update()
 
     async def _auto_close(self) -> None:
-        while self.client.id in globals.clients:
+        while self.client.id in Client.instances:
             await asyncio.sleep(1.0)
         plt.close(self.fig)

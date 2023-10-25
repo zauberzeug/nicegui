@@ -36,6 +36,7 @@ class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/va
 
     @property
     def properties(self) -> Dict:
+        """The property dictionary."""
         return self._props['properties']
 
     def update(self) -> None:

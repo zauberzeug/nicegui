@@ -236,7 +236,7 @@
   },
   {
     "title": "UI Updates",
-    "content": "NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed. In other cases, you can explicitly call element.update() or ui.update(*elements) to update. The demo code shows both methods for a ui.chart, where it is difficult to automatically detect changes in the options dictionary.",
+    "content": "NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed. In other cases, you can explicitly call element.update() or ui.update(*elements) to update. The demo code shows both methods for a ui.echart, where it is difficult to automatically detect changes in the options dictionary.",
     "url": "/documentation/#ui_updates"
   },
   {
@@ -336,7 +336,7 @@
   },
   {
     "title": "Environment Variables",
-    "content": "You can set the following environment variables to configure NiceGUI:  - MATPLOTLIB (default: true) can be set to false to avoid the potentially costly import of Matplotlib. This will make ui.pyplot and ui.line_plot unavailable. - NICEGUI_STORAGE_PATH (default: local \".nicegui\") can be set to change the location of the storage files. - MARKDOWN_CONTENT_CACHE_SIZE (default: 1000): The maximum number of Markdown content snippets that are cached in memory. - NO_NETIFACES (default: false): Can be set to true to hide the netifaces startup warning (e.g. in docker container).",
+    "content": "You can set the following environment variables to configure NiceGUI:  - MATPLOTLIB (default: true) can be set to false to avoid the potentially costly import of Matplotlib. This will make ui.pyplot and ui.line_plot unavailable. - NICEGUI_STORAGE_PATH (default: local \".nicegui\") can be set to change the location of the storage files. - MARKDOWN_CONTENT_CACHE_SIZE (default: 1000): The maximum number of Markdown content snippets that are cached in memory.",
     "url": "/documentation/#environment_variables"
   },
   {
@@ -381,7 +381,7 @@
   },
   {
     "title": "Code",
-    "content": "This element displays a code block with syntax highlighting.  :param content: code to display :param language: language of the code (default: \"python\") copy_to_clipboard",
+    "content": "This element displays a code block with syntax highlighting.  :param content: code to display :param language: language of the code (default: \"python\") copy_to_clipboard Copy the code to the clipboard.",
     "url": "/documentation/code"
   },
   {
@@ -401,7 +401,7 @@
   },
   {
     "title": "Column Element",
-    "content": "Provides a container which arranges its child in a column.",
+    "content": "Provides a container which arranges its child in a column.  :param wrap: whether to wrap the content (default: False)",
     "url": "/documentation/column"
   },
   {
@@ -481,7 +481,7 @@
   },
   {
     "title": "Run JavaScript",
-    "content": "This function runs arbitrary JavaScript code on a page that is executed in the browser. The asynchronous function will return after the command(s) are executed. The client must be connected before this function is called. To access a client-side object by ID, use the JavaScript function getElement().  :param code: JavaScript code to run :param respond: whether to wait for a response (default: True) :param timeout: timeout in seconds (default: 1.0) :param check_interval: interval in seconds to check for a response (default: 0.01)  :return: response from the browser, or None if respond is False",
+    "content": "This function runs arbitrary JavaScript code on a page that is executed in the browser. The asynchronous function will return after the command(s) are executed. The client must be connected before this function is called. To access a client-side object by ID, use the JavaScript function getElement().  :param code: JavaScript code to run :param timeout: timeout in seconds (default: 1.0) :param check_interval: interval in seconds to check for a response (default: 0.01)  :return: response from the browser, or None if respond is False",
     "url": "/documentation/run_javascript"
   },
   {
@@ -536,7 +536,7 @@
   },
   {
     "title": "Carousel",
-    "content": "This element represents Quasar's QCarousel <https://quasar.dev/vue-components/carousel#qcarousel-api>_ component. It contains individual carousel slides.  :param value: ui.carousel_slide or name of the slide to be initially selected (default: None meaning the first slide) :param on_value_change: callback to be executed when the selected slide changes :param animated: whether to animate slide transitions (default: False) :param arrows: whether to show arrows for manual slide navigation (default: False) :param navigation: whether to show navigation dots for manual slide navigation (default: False) on_value_change next Show the next slide.previous Show the previous slide.",
+    "content": "This element represents Quasar's QCarousel <https://quasar.dev/vue-components/carousel#qcarousel-api>_ component. It contains individual carousel slides.  :param value: ui.carousel_slide or name of the slide to be initially selected (default: None meaning the first slide) :param on_value_change: callback to be executed when the selected slide changes :param animated: whether to animate slide transitions (default: False) :param arrows: whether to show arrows for manual slide navigation (default: False) :param navigation: whether to show navigation dots for manual slide navigation (default: False) next Show the next slide.previous Show the previous slide.",
     "url": "/documentation/carousel"
   },
   {
@@ -566,7 +566,7 @@
   },
   {
     "title": "Label: Change Appearance Depending on the Content",
-    "content": "You can overwrite the on_text_change method to update other attributes of a label depending on its content. This technique also works for bindings as shown in the example below.",
+    "content": "You can overwrite the _handle_text_change method to update other attributes of a label depending on its content. This technique also works for bindings as shown in the example below.",
     "url": "/documentation/label#change_appearance_depending_on_the_content"
   },
   {
@@ -576,7 +576,7 @@
   },
   {
     "title": "Page",
-    "content": "This decorator marks a function to be a page builder. Each user accessing the given route will see a new instance of the page. This means it is private to the user and not shared with others (as it is done when placing elements outside of a page decorator <https://nicegui.io/documentation#auto-index_page>_).  :param path: route of the new page (path must start with '/') :param title: optional page title :param viewport: optional viewport meta tag content :param favicon: optional relative filepath or absolute URL to a favicon (default: None, NiceGUI icon will be used) :param dark: whether to use Quasar's dark mode (defaults to dark argument of run command) :param language: language of the page (defaults to language argument of run command) :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds) :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 0.0 seconds) :param api_router: APIRouter instance to use, can be left None to use the default :param kwargs: additional keyword arguments passed to FastAPI's @app.get method resolve_title resolve_viewport resolve_dark resolve_language",
+    "content": "This decorator marks a function to be a page builder. Each user accessing the given route will see a new instance of the page. This means it is private to the user and not shared with others (as it is done when placing elements outside of a page decorator <https://nicegui.io/documentation#auto-index_page>_).  :param path: route of the new page (path must start with '/') :param title: optional page title :param viewport: optional viewport meta tag content :param favicon: optional relative filepath or absolute URL to a favicon (default: None, NiceGUI icon will be used) :param dark: whether to use Quasar's dark mode (defaults to dark argument of run command) :param language: language of the page (defaults to language argument of run command) :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds) :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 0.0 seconds) :param api_router: APIRouter instance to use, can be left None to use the default :param kwargs: additional keyword arguments passed to FastAPI's @app.get method resolve_title Return the title of the page.resolve_viewport Return the viewport of the page.resolve_dark Return whether the page should use dark mode.resolve_language Return the language of the page.",
     "url": "/documentation/page"
   },
   {
@@ -611,7 +611,7 @@
   },
   {
     "title": "Text Input",
-    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  The on_change event is called on every keystroke and the value updates accordingly. If you want to wait until the user confirms the input, you can register a custom event callback, e.g. ui.input(...).on('keydown.enter', ...) or ui.input(...).on('blur', ...).  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed label for the text input :param placeholder: text to show if no value is entered :param value: the current value of the text input :param password: whether to hide the input (default: False) :param password_toggle_button: whether to show a button to toggle the password visibility (default: False) :param on_change: callback to execute when the value changes :param autocomplete: optional list of strings for autocompletion :param validation: dictionary of validation rules, e.g. `'Too long!': lambda value: len(value) < 3` set_autocomplete Set the autocomplete list.on_value_change",
+    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  The on_change event is called on every keystroke and the value updates accordingly. If you want to wait until the user confirms the input, you can register a custom event callback, e.g. ui.input(...).on('keydown.enter', ...) or ui.input(...).on('blur', ...).  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed label for the text input :param placeholder: text to show if no value is entered :param value: the current value of the text input :param password: whether to hide the input (default: False) :param password_toggle_button: whether to show a button to toggle the password visibility (default: False) :param on_change: callback to execute when the value changes :param autocomplete: optional list of strings for autocompletion :param validation: dictionary of validation rules, e.g. `'Too long!': lambda value: len(value) < 3` set_autocomplete Set the autocomplete list.",
     "url": "/documentation/input"
   },
   {
@@ -633,21 +633,6 @@
     "title": "JSONEditor",
     "content": "An element to create a JSON editor using JSONEditor <https://github.com/josdejong/svelte-jsoneditor>_. Updates can be pushed to the editor by changing the properties property. After data has changed, call the update method to refresh the editor.  :param properties: dictionary of JSONEditor properties :param on_select: callback function that is called when some of the content has been selected :param on_change: callback function that is called when the content has changed update",
     "url": "/documentation/json_editor"
-  },
-  {
-    "title": "Chart",
-    "content": "An element to create a chart using Highcharts <https://www.highcharts.com/>_. Updates can be pushed to the chart by changing the options property. After data has changed, call the update method to refresh the chart.  By default, a Highcharts.chart is created. To use, e.g., Highcharts.stockChart instead, set the type property to \"stockChart\".  :param options: dictionary of Highcharts options :param type: chart type (e.g. \"chart\", \"stockChart\", \"mapChart\", ...; default: \"chart\") :param extras: list of extra dependencies to include (e.g. \"annotations\", \"arc-diagram\", \"solid-gauge\", ...) :param on_point_click: callback function that is called when a point is clicked :param on_point_drag_start: callback function that is called when a point drag starts :param on_point_drag: callback function that is called when a point is dragged :param on_point_drop: callback function that is called when a point is dropped update",
-    "url": "/documentation/chart"
-  },
-  {
-    "title": "Chart: Chart with extra dependencies",
-    "content": "To use a chart type that is not included in the default dependencies, you can specify extra dependencies. This demo shows a solid gauge chart.",
-    "url": "/documentation/chart#chart_with_extra_dependencies"
-  },
-  {
-    "title": "Chart: Chart with draggable points",
-    "content": "This chart allows dragging the series points. You can register callbacks for the following events:  - on_point_click: called when a point is clicked - on_point_drag_start: called when a point drag starts - on_point_drag: called when a point is dragged - on_point_drop: called when a point is dropped",
-    "url": "/documentation/chart#chart_with_draggable_points"
   },
   {
     "title": "Menu",
@@ -675,28 +660,43 @@
     "url": "/documentation/toggle"
   },
   {
+    "title": "Highcharts chart.",
+    "content": "An element to create a chart using Highcharts <https://www.highcharts.com/>_. Updates can be pushed to the chart by changing the options property. After data has changed, call the update method to refresh the chart.  By default, a Highcharts.chart is created. To use, e.g., Highcharts.stockChart instead, set the type property to \"stockChart\".  :param options: dictionary of Highcharts options :param type: chart type (e.g. \"chart\", \"stockChart\", \"mapChart\", ...; default: \"chart\") :param extras: list of extra dependencies to include (e.g. \"annotations\", \"arc-diagram\", \"solid-gauge\", ...) :param on_point_click: callback function that is called when a point is clicked :param on_point_drag_start: callback function that is called when a point drag starts :param on_point_drag: callback function that is called when a point is dragged :param on_point_drop: callback function that is called when a point is dropped update",
+    "url": "/documentation/highchart"
+  },
+  {
+    "title": "Highchart: Chart with extra dependencies",
+    "content": "To use a chart type that is not included in the default dependencies, you can specify extra dependencies. This demo shows a solid gauge chart.",
+    "url": "/documentation/highchart#chart_with_extra_dependencies"
+  },
+  {
+    "title": "Highchart: Chart with draggable points",
+    "content": "This chart allows dragging the series points. You can register callbacks for the following events:  - on_point_click: called when a point is clicked - on_point_drag_start: called when a point drag starts - on_point_drag: called when a point is dragged - on_point_drop: called when a point is dropped",
+    "url": "/documentation/highchart#chart_with_draggable_points"
+  },
+  {
     "title": "Editor",
     "content": "A WYSIWYG editor based on Quasar's QEditor <https://quasar.dev/vue-components/editor>_. The value is a string containing the formatted text as HTML code.  :param value: initial value :param on_change: callback to be invoked when the value changes",
     "url": "/documentation/editor"
   },
   {
     "title": "Keyboard",
-    "content": "Adds global keyboard event tracking.  :param on_key: callback to be executed when keyboard events occur. :param active: boolean flag indicating whether the callback should be executed or not (default: True) :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: True) :param ignore: ignore keys when one of these element types is focussed (default: ['input', 'select', 'button', 'textarea']) handle_key",
+    "content": "Adds global keyboard event tracking.  :param on_key: callback to be executed when keyboard events occur. :param active: boolean flag indicating whether the callback should be executed or not (default: True) :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: True) :param ignore: ignore keys when one of these element types is focussed (default: ['input', 'select', 'button', 'textarea'])",
     "url": "/documentation/keyboard"
   },
   {
     "title": "Stepper",
-    "content": "This element represents Quasar's QStepper <https://quasar.dev/vue-components/stepper#qstepper-api>_ component. It contains individual steps.  To avoid issues with dynamic elements when switching steps, this element uses Vue's keep-alive <https://vuejs.org/guide/built-ins/keep-alive.html>_ component. If client-side performance is an issue, you can disable this feature.  :param value: ui.step or name of the step to be initially selected (default: None meaning the first step) :param on_value_change: callback to be executed when the selected step changes :param keep_alive: whether to use Vue's keep-alive component on the content (default: True) on_value_change next Show the next step.previous Show the previous step.",
+    "content": "This element represents Quasar's QStepper <https://quasar.dev/vue-components/stepper#qstepper-api>_ component. It contains individual steps.  To avoid issues with dynamic elements when switching steps, this element uses Vue's keep-alive <https://vuejs.org/guide/built-ins/keep-alive.html>_ component. If client-side performance is an issue, you can disable this feature.  :param value: ui.step or name of the step to be initially selected (default: None meaning the first step) :param on_value_change: callback to be executed when the selected step changes :param keep_alive: whether to use Vue's keep-alive component on the content (default: True) next Show the next step.previous Show the previous step.",
     "url": "/documentation/stepper"
   },
   {
     "title": "Row Element",
-    "content": "Provides a container which arranges its child in a row.",
+    "content": "Provides a container which arranges its child in a row.  :param wrap: whether to wrap the content (default: True)",
     "url": "/documentation/row"
   },
   {
     "title": "Mermaid Diagrams",
-    "content": "Renders diagrams and charts written in the Markdown-inspired Mermaid <https://mermaid.js.org/>_ language. The mermaid syntax can also be used inside Markdown elements by providing the extension string 'mermaid' to the `ui.markdown` element.  :param content: the Mermaid content to be displayed on_content_change",
+    "content": "Renders diagrams and charts written in the Markdown-inspired Mermaid <https://mermaid.js.org/>_ language. The mermaid syntax can also be used inside Markdown elements by providing the extension string 'mermaid' to the `ui.markdown` element.  :param content: the Mermaid content to be displayed",
     "url": "/documentation/mermaid"
   },
   {
@@ -726,7 +726,7 @@
   },
   {
     "title": "Dialog",
-    "content": "Creates a dialog based on Quasar's QDialog <https://quasar.dev/vue-components/dialog>_ component. By default it is dismissible by clicking or pressing ESC. To make it persistent, set .props('persistent') on the dialog element.  :param value: whether the dialog should be opened on creation (default: False) open close submit on_value_change",
+    "content": "Creates a dialog based on Quasar's QDialog <https://quasar.dev/vue-components/dialog>_ component. By default it is dismissible by clicking or pressing ESC. To make it persistent, set .props('persistent') on the dialog element.  :param value: whether the dialog should be opened on creation (default: False) open Open the dialog.close Close the dialog.submit Submit the dialog with the given result.",
     "url": "/documentation/dialog"
   },
   {
@@ -846,7 +846,7 @@
   },
   {
     "title": "Refreshable UI functions",
-    "content": "The @ui.refreshable decorator allows you to create functions that have a refresh method. This method will automatically delete all elements created by the function and recreate them. refresh prune",
+    "content": "The @ui.refreshable decorator allows you to create functions that have a refresh method. This method will automatically delete all elements created by the function and recreate them. refresh Refresh the UI elements created by this function.prune Remove all targets that are no longer on a page with a client connection.  This method is called automatically before each refresh.",
     "url": "/documentation/refreshable"
   },
   {
@@ -860,8 +860,13 @@
     "url": "/documentation/refreshable#refreshable_ui_for_input_validation"
   },
   {
+    "title": "Refreshable: Refreshable UI with reactive state",
+    "content": "You can create reactive state variables with the ui.state function, like count and color in this demo. They can be used like normal variables for creating UI elements like the ui.label. Their corresponding setter functions can be used to set new values, which will automatically refresh the UI.",
+    "url": "/documentation/refreshable#refreshable_ui_with_reactive_state"
+  },
+  {
     "title": "Color Input",
-    "content": "This element extends Quasar's QInput <https://quasar.dev/vue-components/input>_ component with a color picker.  :param label: displayed label for the color input :param placeholder: text to show if no color is selected :param value: the current color value :param on_change: callback to execute when the value changes :param preview: change button background to selected color (default: False) open_picker Open the color pickeron_value_change",
+    "content": "This element extends Quasar's QInput <https://quasar.dev/vue-components/input>_ component with a color picker.  :param label: displayed label for the color input :param placeholder: text to show if no color is selected :param value: the current color value :param on_change: callback to execute when the value changes :param preview: change button background to selected color (default: False) open_picker Open the color picker",
     "url": "/documentation/color_input"
   },
   {
@@ -1011,7 +1016,7 @@
   },
   {
     "title": "Dropdown Selection",
-    "content": "This element is based on Quasar's QSelect <https://quasar.dev/vue-components/select>_ component.  The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call update() to update the options in the UI.  :param options: a list ['value1', ...] or dictionary 'value1':'label1', ... specifying the options :param value: the initial value :param on_change: callback to execute when selection changes :param with_input: whether to show an input field to filter the options :param multiple: whether to allow multiple selections :param clearable: whether to add a button to clear the selection on_filter",
+    "content": "This element is based on Quasar's QSelect <https://quasar.dev/vue-components/select>_ component.  The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call update() to update the options in the UI.  :param options: a list ['value1', ...] or dictionary 'value1':'label1', ... specifying the options :param value: the initial value :param on_change: callback to execute when selection changes :param with_input: whether to show an input field to filter the options :param multiple: whether to allow multiple selections :param clearable: whether to add a button to clear the selection",
     "url": "/documentation/select"
   },
   {
@@ -1066,7 +1071,7 @@
   },
   {
     "title": "Markdown Element",
-    "content": "Renders Markdown onto the page.  :param content: the Markdown content to be displayed :param extras: list of markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>_ (default: ['fenced-code-blocks', 'tables']) on_content_change",
+    "content": "Renders Markdown onto the page.  :param content: the Markdown content to be displayed :param extras: list of markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>_ (default: ['fenced-code-blocks', 'tables'])",
     "url": "/documentation/markdown"
   },
   {
@@ -1161,7 +1166,7 @@
   },
   {
     "title": "3D Scene",
-    "content": "Display a 3D scene using three.js <https://threejs.org/>_. Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes. Objects can be translated, rotated and displayed with different color, opacity or as wireframes. They can also be grouped to apply joint movements.  :param width: width of the canvas :param height: height of the canvas :param grid: whether to display a grid :param on_click: callback to execute when a 3D object is clicked :param on_drag_start: callback to execute when a 3D object is dragged :param on_drag_end: callback to execute when a 3D object is dropped :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. `'x = 0, z = y / 2') handle_init run_method Run a method on the client.  :param name: name of the method :param args: arguments to pass to the method handle_click handle_drag move_camera Move the camera to a new position.  :param x: camera x position :param y: camera y position :param z: camera z position :param look_at_x: camera look-at x position :param look_at_y: camera look-at y position :param look_at_z: camera look-at z position :param up_x: x component of the camera up vector :param up_y: y component of the camera up vector :param up_z: z component of the camera up vector :param duration: duration of the movement in seconds (default: 0.5) delete_objects Remove objects from the scene.  :param predicate: function which returns True` for objects which should be deleted clear Remove all objects from the scene.",
+    "content": "Display a 3D scene using three.js <https://threejs.org/>_. Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes. Objects can be translated, rotated and displayed with different color, opacity or as wireframes. They can also be grouped to apply joint movements.  :param width: width of the canvas :param height: height of the canvas :param grid: whether to display a grid :param on_click: callback to execute when a 3D object is clicked :param on_drag_start: callback to execute when a 3D object is dragged :param on_drag_end: callback to execute when a 3D object is dropped :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. `'x = 0, z = y / 2') run_method Run a method on the client.  :param name: name of the method :param args: arguments to pass to the method move_camera Move the camera to a new position.  :param x: camera x position :param y: camera y position :param z: camera z position :param look_at_x: camera look-at x position :param look_at_y: camera look-at y position :param look_at_z: camera look-at z position :param up_x: x component of the camera up vector :param up_y: y component of the camera up vector :param up_z: z component of the camera up vector :param duration: duration of the movement in seconds (default: 0.5) delete_objects Remove objects from the scene.  :param predicate: function which returns True` for objects which should be deleted clear Remove all objects from the scene.",
     "url": "/documentation/scene"
   },
   {
@@ -1181,7 +1186,7 @@
   },
   {
     "title": "ui.run",
-    "content": "You can call ui.run() with optional arguments:  :param host: start server with this host (defaults to '127.0.0.1 in native mode, otherwise '0.0.0.0') :param port: use this port (default: 8080) :param title: page title (default: 'NiceGUI', can be overwritten per page) :param viewport: page meta viewport content (default: 'width=device-width, initial-scale=1', can be overwritten per page) :param favicon: relative filepath, absolute URL to a favicon (default: None, NiceGUI icon will be used) or emoji (e.g. '\ud83d\ude80', works for most browsers) :param dark: whether to use Quasar's dark mode (default: False, use None for \"auto\" mode) :param language: language for Quasar elements (default: 'en-US') :param binding_refresh_interval: time between binding updates (default: 0.1 seconds, bigger is more CPU friendly) :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 0.0 seconds, i.e. no reconnect) :param show: automatically open the UI in a browser tab (default: True) :param on_air: tech preview: allows temporary remote access <https://nicegui.io/documentation#nicegui_on_air>_ if set to True (default: disabled) :param native: open the UI in a native window of size 800x600 (default: False, deactivates show, automatically finds an open port) :param window_size: open the UI in a native window with the provided size (e.g. (1024, 786), default: None, also activates native) :param fullscreen: open the UI in a fullscreen window (default: False, also activates native) :param frameless: open the UI in a frameless window (default: False, also activates native) :param reload: automatically reload the UI on file changes (default: True) :param uvicorn_logging_level: logging level for uvicorn server (default: 'warning') :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only) :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: '.py') :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: '.*, .py[cod], .sw.*, ~*') :param tailwind: whether to use Tailwind (experimental, default: True) :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: True) :param endpoint_documentation: control what endpoints appear in the autogenerated OpenAPI docs (default: 'none', options: 'none', 'internal', 'page', 'all') :param storage_secret: secret key for browser-based storage (default: None, a value is required to enable ui.storage.individual and ui.storage.browser) :param kwargs: additional keyword arguments are passed to uvicorn.run",
+    "content": "You can call ui.run() with optional arguments:  :param host: start server with this host (defaults to '127.0.0.1 in native mode, otherwise '0.0.0.0') :param port: use this port (default: 8080) :param title: page title (default: 'NiceGUI', can be overwritten per page) :param viewport: page meta viewport content (default: 'width=device-width, initial-scale=1', can be overwritten per page) :param favicon: relative filepath, absolute URL to a favicon (default: None, NiceGUI icon will be used) or emoji (e.g. '\ud83d\ude80', works for most browsers) :param dark: whether to use Quasar's dark mode (default: False, use None for \"auto\" mode) :param language: language for Quasar elements (default: 'en-US') :param binding_refresh_interval: time between binding updates (default: 0.1 seconds, bigger is more CPU friendly) :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds) :param show: automatically open the UI in a browser tab (default: True) :param on_air: tech preview: allows temporary remote access <https://nicegui.io/documentation#nicegui_on_air>_ if set to True (default: disabled) :param native: open the UI in a native window of size 800x600 (default: False, deactivates show, automatically finds an open port) :param window_size: open the UI in a native window with the provided size (e.g. (1024, 786), default: None, also activates native) :param fullscreen: open the UI in a fullscreen window (default: False, also activates native) :param frameless: open the UI in a frameless window (default: False, also activates native) :param reload: automatically reload the UI on file changes (default: True) :param uvicorn_logging_level: logging level for uvicorn server (default: 'warning') :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only) :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: '.py') :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: '.*, .py[cod], .sw.*, ~*') :param tailwind: whether to use Tailwind (experimental, default: True) :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: True) :param endpoint_documentation: control what endpoints appear in the autogenerated OpenAPI docs (default: 'none', options: 'none', 'internal', 'page', 'all') :param storage_secret: secret key for browser-based storage (default: None, a value is required to enable ui.storage.individual and ui.storage.browser) :param kwargs: additional keyword arguments are passed to uvicorn.run",
     "url": "/documentation/run"
   },
   {

@@ -5,7 +5,7 @@ from typing import Callable, Optional, Union
 
 import docutils.core
 
-from nicegui import globals, ui
+from nicegui import context, ui
 from nicegui.binding import BindableProperty
 from nicegui.elements.markdown import apply_tailwind, remove_indentation
 
@@ -23,7 +23,7 @@ def create_anchor_name(text: str) -> str:
 
 
 def get_menu() -> ui.left_drawer:
-    return [element for element in globals.get_client().elements.values() if isinstance(element, ui.left_drawer)][0]
+    return [element for element in context.get_client().elements.values() if isinstance(element, ui.left_drawer)][0]
 
 
 def heading(text: str, *, make_menu_entry: bool = True) -> None:
@@ -47,7 +47,7 @@ def subheading(text: str, *, make_menu_entry: bool = True, more_link: Optional[s
     if make_menu_entry:
         with get_menu() as menu:
             async def click():
-                if await ui.run_javascript('!!document.querySelector("div.q-drawer__backdrop")', timeout=5):
+                if await ui.run_javascript('!!document.querySelector("div.q-drawer__backdrop")', timeout=5.0):
                     menu.hide()
                     ui.open(f'#{name}')
             ui.link(text, target=f'#{name}').props('data-close-overlay').on('click', click, [])

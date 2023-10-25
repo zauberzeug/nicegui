@@ -2,7 +2,7 @@ import os
 import threading
 import time
 from contextlib import contextmanager
-from typing import List
+from typing import List, Optional
 
 import pytest
 from selenium import webdriver
@@ -12,7 +12,8 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from nicegui import app, globals, ui  # pylint: disable=redefined-builtin
+from nicegui import app, ui
+from nicegui.server import Server
 
 from .test_helpers import TEST_DIR
 
@@ -25,7 +26,7 @@ class Screen:
     def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture) -> None:
         self.selenium = selenium
         self.caplog = caplog
-        self.server_thread = None
+        self.server_thread: Optional[threading.Thread] = None
         self.ui_run_kwargs = {'port': self.PORT, 'show': False, 'reload': False}
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
@@ -49,8 +50,9 @@ class Screen:
         """Stop the webserver."""
         self.close()
         self.caplog.clear()
-        globals.server.should_exit = True
-        self.server_thread.join()
+        Server.instance.should_exit = True
+        if self.server_thread:
+            self.server_thread.join()
 
     def open(self, path: str, timeout: float = 3.0) -> None:
         """Try to open the page until the server is ready or we time out.

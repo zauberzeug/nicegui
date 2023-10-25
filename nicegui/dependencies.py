@@ -22,6 +22,7 @@ class Component:
 
     @property
     def tag(self) -> str:
+        """The tag of the component."""
         return f'nicegui-{self.name}'
 
 
@@ -58,7 +59,7 @@ def register_vue_component(path: Path) -> Component:
     and to avoid building the component on every single request.
     """
     key = compute_key(path)
-    name = get_name(path)
+    name = _get_name(path)
     if path.suffix == '.vue':
         if key in vue_components and vue_components[key].path == path:
             return vue_components[key]
@@ -78,7 +79,7 @@ def register_vue_component(path: Path) -> Component:
 def register_library(path: Path, *, expose: bool = False) -> Library:
     """Register a *.js library."""
     key = compute_key(path)
-    name = get_name(path)
+    name = _get_name(path)
     if path.suffix in {'.js', '.mjs'}:
         if key in libraries and libraries[key].path == path:
             return libraries[key]
@@ -101,7 +102,7 @@ def compute_key(path: Path) -> str:
     return f'{hash_file_path(path.parent)}/{path.name}'
 
 
-def get_name(path: Path) -> str:
+def _get_name(path: Path) -> str:
     return path.name.split('.', 1)[0]
 
 
@@ -110,6 +111,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> Tuple[List[s
                                                                           List[str],
                                                                           Dict[str, str],
                                                                           List[str]]:
+    """Generate the resources required by the elements to be sent to the client."""
     done_libraries: Set[str] = set()
     done_components: Set[str] = set()
     vue_scripts: List[str] = []

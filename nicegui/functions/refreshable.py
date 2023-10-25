@@ -1,9 +1,12 @@
-from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Dict, List, Tuple, Union
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any, Awaitable, Callable, ClassVar, Dict, List, Optional, Tuple, Union, cast
 
 from typing_extensions import Self
 
-from .. import background_tasks, globals  # pylint: disable=redefined-builtin
+from .. import background_tasks, core
+from ..client import Client
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..helpers import is_coroutine_function
@@ -11,12 +14,20 @@ from ..helpers import is_coroutine_function
 
 @dataclass(**KWONLY_SLOTS)
 class RefreshableTarget:
-    container: Element
+    container: RefreshableContainer
+    refreshable: refreshable
     instance: Any
     args: Tuple[Any, ...]
     kwargs: Dict[str, Any]
 
+    current_target: ClassVar[Optional[RefreshableTarget]] = None
+    locals: List[Any] = field(default_factory=list)
+    next_index: int = 0
+
     def run(self, func: Callable[..., Any]) -> Union[None, Awaitable]:
+        """Run the function and return the result."""
+        RefreshableTarget.current_target = self
+        self.next_index = 0
         # pylint: disable=no-else-return
         if is_coroutine_function(func):
             async def wait_for_result() -> None:
@@ -66,11 +77,13 @@ class refreshable:
 
     def __call__(self, *args: Any, **kwargs: Any) -> Union[None, Awaitable]:
         self.prune()
-        target = RefreshableTarget(container=RefreshableContainer(), instance=self.instance, args=args, kwargs=kwargs)
+        target = RefreshableTarget(container=RefreshableContainer(), refreshable=self, instance=self.instance,
+                                   args=args, kwargs=kwargs)
         self.targets.append(target)
         return target.run(self.func)
 
     def refresh(self, *args: Any, **kwargs: Any) -> None:
+        """Refresh the UI elements created by this function."""
         self.prune()
         for target in self.targets:
             if target.instance != self.instance:
@@ -89,14 +102,41 @@ class refreshable:
                 raise
             if is_coroutine_function(self.func):
                 assert result is not None
-                if globals.loop and globals.loop.is_running():
+                if core.loop and core.loop.is_running():
                     background_tasks.create(result)
                 else:
-                    globals.app.on_startup(result)
+                    core.app.on_startup(result)
 
     def prune(self) -> None:
+        """Remove all targets that are no longer on a page with a client connection.
+
+        This method is called automatically before each refresh.
+        """
         self.targets = [
             target
             for target in self.targets
-            if target.container.client.id in globals.clients and target.container.id in target.container.client.elements
+            if target.container.client.id in Client.instances and target.container.id in target.container.client.elements
         ]
+
+
+def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
+    """Create a state variable that automatically updates its refreshable UI container.
+
+    :param value: The initial value of the state variable.
+
+    :return: A tuple containing the current value and a function to update the value.
+    """
+    target = cast(RefreshableTarget, RefreshableTarget.current_target)
+
+    if target.next_index >= len(target.locals):
+        target.locals.append(value)
+    else:
+        value = target.locals[target.next_index]
+
+    def set_value(new_value: Any, index=target.next_index) -> None:
+        target.locals[index] = new_value
+        target.refreshable.refresh()
+
+    target.next_index += 1
+
+    return value, set_value

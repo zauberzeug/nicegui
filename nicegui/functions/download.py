@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Optional, Union
 
-from .. import globals, helpers  # pylint: disable=redefined-builtin
+from .. import context, core, helpers
 
 
 def download(src: Union[str, Path], filename: Optional[str] = None) -> None:
@@ -13,7 +13,7 @@ def download(src: Union[str, Path], filename: Optional[str] = None) -> None:
     :param filename: name of the file to download (default: name of the file on the server)
     """
     if helpers.is_file(src):
-        src = globals.app.add_static_file(local_file=src, single_use=True)
+        src = core.app.add_static_file(local_file=src, single_use=True)
     else:
         src = str(src)
-    globals.get_client().download(src, filename)
+    context.get_client().download(src, filename)

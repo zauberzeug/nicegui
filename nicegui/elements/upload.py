@@ -70,6 +70,6 @@ class Upload(DisableableElement, component='upload.js'):
         """Clear the upload queue."""
         self.run_method('reset')
 
-    def _on_delete(self) -> None:
+    def _handle_delete(self) -> None:
         app.remove_route(self._props['url'])
-        super()._on_delete()
+        super()._handle_delete()
