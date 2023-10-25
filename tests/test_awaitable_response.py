@@ -41,5 +41,5 @@ async def test_awaitable_response():
 async def test_null_response():
     NullResponse()
 
-    with pytest.raises(RuntimeError, match='NullResponse cannot be awaited'):
-        await NullResponse()
+    core.loop = asyncio.get_event_loop()
+    await NullResponse()

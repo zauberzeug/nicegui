@@ -37,8 +37,12 @@ class AwaitableResponse:
 
 class NullResponse(AwaitableResponse):
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self) -> None:  # pylint: disable=super-init-not-called
+        """Null Response
+
+        This class can be used to create an AwaitableResponse that does nothing.
+        In contrast to AwaitableResponse, it can be created without a running event loop.
+        """
 
     def __await__(self):
-        raise RuntimeError('NullResponse cannot be awaited')
+        yield from []
