@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional,
 from typing_extensions import Self
 
 from . import context, core, events, json, outbox, storage
-from .awaitable_response import AwaitableResponse
+from .awaitable_response import AwaitableResponse, NullResponse
 from .dependencies import Component, Library, register_library, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
@@ -410,7 +410,7 @@ class Element(Visibility):
         :param args: arguments to pass to the method
         """
         if not core.loop:
-            return AwaitableResponse(None, None)
+            return NullResponse()
         return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})')
 
     def _collect_descendants(self, *, include_self: bool = False) -> List[Element]:
