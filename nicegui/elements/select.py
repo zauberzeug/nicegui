@@ -1,6 +1,6 @@
 import re
 from copy import deepcopy
-from typing import Any, Callable, Dict, List, Optional, Union, Literal
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 from ..events import GenericEventArguments
 from .choice_element import ChoiceElement
@@ -15,9 +15,9 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
                  value: Any = None,
                  on_change: Optional[Callable[..., Any]] = None,
                  with_input: bool = False,
+                 new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
                  multiple: bool = False,
                  clearable: bool = False,
-                 new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None
                  ) -> None:
         """Dropdown Selection
 
@@ -26,15 +26,18 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
         The options can be specified as a list of values, or as a dictionary mapping values to labels.
         After manipulating the options, call `update()` to update the options in the UI.
 
+        If `with_input` is True, an input field is shown to filter the options.
+
+        If `new_value_mode` is not None, it implies `with_input=True` and the user can enter new values in the input field.
+        See `Quasar's documentation <https://quasar.dev/vue-components/select#the-new-value-mode-prop>`_ for details.
+
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
         :param value: the initial value
         :param on_change: callback to execute when selection changes
         :param with_input: whether to show an input field to filter the options
+        :param new_value_mode: handle new values from user input (default: None, i.e. no new values)
         :param multiple: whether to allow multiple selections
         :param clearable: whether to add a button to clear the selection
-        :param new_value_mode: processing new values from user input, see `<https://quasar.dev/vue-components/select#create-new-values>`_.
-        Is only applied if `with_input == True`.
-        Be careful when using with `options` being a `dict`: if an existing key matches the new value, the existing value is overwritten.
         """
         self.multiple = multiple
         if multiple:
@@ -45,14 +48,15 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
         super().__init__(options=options, value=value, on_change=on_change)
         if label is not None:
             self._props['label'] = label
+        if new_value_mode is not None:
+            self._props['new-value-mode'] = new_value_mode
+            with_input = True
         if with_input:
             self.original_options = deepcopy(options)
             self._props['use-input'] = True
             self._props['hide-selected'] = not multiple
             self._props['fill-input'] = True
             self._props['input-debounce'] = 0
-            if new_value_mode is not None:
-                self._props['new_value_mode'] = new_value_mode
         self._props['multiple'] = multiple
         self._props['clearable'] = clearable
 
@@ -73,11 +77,7 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
                 out = []
                 for arg in e.args:
                     if isinstance(arg, str):
-                        if isinstance(self.options, list):
-                            self.options.append(arg)
-                        else:  # self.options is a dict
-                            self.options[arg] = arg
-                        self.update()
+                        self._handle_new_value(arg)
                         out.append(self._values[len(self.options) - 1])
                     else:
                         out.append(self._values[arg['value']])
@@ -87,11 +87,7 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
                 return None
             else:
                 if isinstance(e.args, str):
-                    if isinstance(self.options, list):
-                        self.options.append(e.args)
-                    else:  # self.options is a dict
-                        self.options[e.args] = e.args
-                    self.update()
+                    self._handle_new_value(e.args)
                     return self._values[len(self.options) - 1]
                 else:
                     return self._values[e.args['value']]
@@ -113,3 +109,13 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
                 return {'value': index, 'label': self._labels[index]}
             except ValueError:
                 return None
+
+    def _handle_new_value(self, value: str) -> None:
+        # TODO: handle add-unique and toggle
+        if isinstance(self.options, list):
+            self.options.append(value)
+            # NOTE: self._labels and self._values are updated via self.options since they share the same references
+        else:
+            self.options[value] = value
+            self._labels.append(value)
+            self._values.append(value)
