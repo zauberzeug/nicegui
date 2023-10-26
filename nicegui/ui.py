@@ -46,6 +46,7 @@ __all__ = [
     'menu_item',
     'mermaid',
     'number',
+    'pagination',
     'plotly',
     'circular_progress',
     'linear_progress',
@@ -146,6 +147,7 @@ from .elements.menu import Menu as menu
 from .elements.menu import MenuItem as menu_item
 from .elements.mermaid import Mermaid as mermaid
 from .elements.number import Number as number
+from .elements.pagination import Pagination as pagination
 from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
