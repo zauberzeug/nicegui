@@ -50,7 +50,7 @@ class Tab(DisableableElement):
 class TabPanels(ValueElement):
 
     def __init__(self,
-                 tabs: Tabs, *,
+                 tabs: Optional[Tabs]=None, *,
                  value: Union[Tab, TabPanel, str, None] = None,
                  on_change: Optional[Callable[..., Any]] = None,
                  animated: bool = True,
@@ -72,7 +72,8 @@ class TabPanels(ValueElement):
         :param keep_alive: whether to use Vue's keep-alive component on the content (default: `True`)
         """
         super().__init__(tag='q-tab-panels', value=value, on_value_change=on_change)
-        tabs.bind_value(self, 'value')
+        if tabs:
+            tabs.bind_value(self, 'value')
         self._props['animated'] = animated
         self._props['keep-alive'] = keep_alive
 
