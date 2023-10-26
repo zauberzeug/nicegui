@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional, Union
 
@@ -5,6 +6,7 @@ from fastapi import FastAPI
 
 from . import core, storage
 from .language import Language
+from .nicegui import _shutdown, _startup
 
 
 def run_with(
@@ -52,3 +54,13 @@ def run_with(
     storage.set_storage_secret(storage_secret)
 
     app.mount(mount_path, core.app)
+    main_app_lifespan = app.router.lifespan_context
+
+    @asynccontextmanager
+    async def lifespan_wrapper(app):
+        _startup()
+        async with main_app_lifespan(app):
+            yield
+        _shutdown()
+
+    app.router.lifespan_context = lifespan_wrapper
