@@ -25,7 +25,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         An element to create a grid using `AG Grid <https://www.ag-grid.com/>`_.
 
-        The `call_api_method` method can be used to call an AG Grid API method.
+        The methods `call_api_method` and `call_column_api_method` can be used to interact with the AG Grid instance on the client.
 
         :param options: dictionary of AG Grid options
         :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
@@ -89,8 +89,13 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>`_ for a list of methods.
 
+        If the function is awaited, the result of the method call is returned.
+        Otherwise, the method is executed without waiting for a response.
+
         :param name: name of the method
         :param args: arguments to pass to the method
+
+        :return: AwaitableResponse that can be awaited to get the result of the method call
         """
         return self.run_method('call_api_method', name, *args)
 
@@ -99,8 +104,13 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         See `AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>`_ for a list of methods.
 
+        If the function is awaited, the result of the method call is returned.
+        Otherwise, the method is executed without waiting for a response.
+
         :param name: name of the method
         :param args: arguments to pass to the method
+
+        :return: AwaitableResponse that can be awaited to get the result of the method call
         """
         return self.run_method('call_column_api_method', name, *args)
 

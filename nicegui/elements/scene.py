@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from typing_extensions import Self
 
 from .. import binding
-from ..awaitable_response import AwaitableResponse
+from ..awaitable_response import AwaitableResponse, NullResponse
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..events import (GenericEventArguments, SceneClickEventArguments, SceneClickHit, SceneDragEventArguments,
@@ -124,7 +124,7 @@ class Scene(Element,
         :param args: arguments to pass to the method
         """
         if not self.is_initialized:
-            return AwaitableResponse(None, None)
+            return NullResponse()
         return super().run_method(name, *args)
 
     def _handle_click(self, e: GenericEventArguments) -> None:
