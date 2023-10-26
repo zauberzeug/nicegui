@@ -59,8 +59,8 @@ def run_with(
     @asynccontextmanager
     async def lifespan_wrapper(app):
         _startup()
-        async with main_app_lifespan(app) as maybe_state:
-            yield maybe_state
+        async with main_app_lifespan(app):
+            yield
         _shutdown()
 
     app.router.lifespan_context = lifespan_wrapper
