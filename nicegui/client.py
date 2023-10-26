@@ -151,6 +151,15 @@ class Client:
 
         The client connection must be established before this method is called.
         You can do this by `await client.connected()` or register a callback with `client.on_connect(...)`.
+
+        If the function is awaited, the result of the JavaScript code is returned.
+        Otherwise, the JavaScript code is executed without waiting for a response.
+
+        :param code: JavaScript code to run
+        :param timeout: timeout in seconds (default: `1.0`)
+        :param check_interval: interval in seconds to check for a response (default: `0.01`)
+
+        :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """
         if respond is True:
             log.warning('The "respond" argument of run_javascript() has been removed. '
