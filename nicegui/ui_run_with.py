@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional, Union
 
@@ -53,5 +54,13 @@ def run_with(
     storage.set_storage_secret(storage_secret)
 
     app.mount(mount_path, core.app)
-    app.on_event('startup')(_startup)
-    app.on_event('shutdown')(_shutdown)
+    main_app_lifespan = app.router.lifespan_context
+
+    @asynccontextmanager
+    async def lifespan_wrapper(app):
+        _startup()
+        async with main_app_lifespan(app) as maybe_state:
+            yield maybe_state
+        _shutdown()
+
+    app.router.lifespan_context = lifespan_wrapper
