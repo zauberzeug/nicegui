@@ -49,6 +49,8 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
         if label is not None:
             self._props['label'] = label
         if new_value_mode is not None:
+            if isinstance(options, dict) and new_value_mode == 'add':
+                raise ValueError('new_value_mode "add" is not supported for dict options')
             self._props['new-value-mode'] = new_value_mode
             with_input = True
         if with_input:
@@ -66,21 +68,18 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
             if e.args is None:
                 return []
             else:
-                out = []
+                args = [self._values[arg['value']] if isinstance(arg, dict) else arg for arg in e.args]
                 for arg in e.args:
                     if isinstance(arg, str):
                         self._handle_new_value(arg)
-                        out.append(self._values[len(self.options) - 1])
-                    else:
-                        out.append(self._values[arg['value']])
-                return out
+                return [arg for arg in args if arg in self._values]
         else:
             if e.args is None:
                 return None
             else:
                 if isinstance(e.args, str):
                     self._handle_new_value(e.args)
-                    return self._values[len(self.options) - 1]
+                    return e.args if e.args in self._values else None
                 else:
                     return self._values[e.args['value']]
 
@@ -103,11 +102,26 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
                 return None
 
     def _handle_new_value(self, value: str) -> None:
-        # TODO: handle add-unique and toggle
+        mode = self._props['new-value-mode']
         if isinstance(self.options, list):
-            self.options.append(value)
+            if mode == 'add':
+                self.options.append(value)
+            elif mode == 'add-unique':
+                if value not in self.options:
+                    self.options.append(value)
+            elif mode == 'toggle':
+                if value in self.options:
+                    self.options.remove(value)
+                else:
+                    self.options.append(value)
             # NOTE: self._labels and self._values are updated via self.options since they share the same references
         else:
-            self.options[value] = value
-            self._labels.append(value)
-            self._values.append(value)
+            if mode in 'add-unique':
+                if value not in self.options:
+                    self.options[value] = value
+            elif mode == 'toggle':
+                if value in self.options:
+                    self.options.pop(value)
+                else:
+                    self.options.update({value: value})
+            self._update_values_and_labels()

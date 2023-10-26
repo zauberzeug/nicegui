@@ -99,9 +99,14 @@ def test_set_options(screen:  Screen):
 
 @pytest.mark.parametrize('option_dict', [False, True])
 @pytest.mark.parametrize('multiple', [False, True])
-@pytest.mark.parametrize('new_value_mode', ['add', None])
+@pytest.mark.parametrize('new_value_mode', ['add', 'add-unique', 'toggle', None])
 def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_value_mode: Optional[str]):
     options = {'a': 'A', 'b': 'B', 'c': 'C'} if option_dict else ['a', 'b', 'c']
+    if option_dict and new_value_mode == 'add':
+        with pytest.raises(ValueError, match='new_value_mode "add" is not supported for dict options'):
+            ui.select(options=options, multiple=multiple, new_value_mode=new_value_mode)
+        return
+
     s = ui.select(options=options, multiple=multiple, new_value_mode=new_value_mode)
     ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
     ui.label().bind_text_from(s, 'options', lambda v: f'options = {v}')
@@ -116,10 +121,22 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
     screen.should_contain("value = ['a']" if multiple else 'value = a')
 
     if new_value_mode:
-        screen.find_by_tag('input').send_keys(Keys.BACKSPACE + 'd')
-        screen.wait(0.5)
-        screen.find_by_tag('input').send_keys(Keys.ENTER)
-        screen.wait(0.5)
-        screen.should_contain("value = ['a', 'd']" if multiple else 'value = d')
-        screen.should_contain(
-            "options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd'}" if option_dict else "options = ['a', 'b', 'c', 'd']")
+        for _ in range(2):
+            screen.find_by_tag('input').send_keys(Keys.BACKSPACE + 'd')
+            screen.wait(0.5)
+            screen.find_by_tag('input').click()
+            screen.wait(0.5)
+            screen.find_by_tag('input').send_keys(Keys.ENTER)
+            screen.wait(0.5)
+        if new_value_mode == 'add':
+            screen.should_contain("value = ['a', 'd', 'd']" if multiple else 'value = d')
+            screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd', 'd': 'd'}" if option_dict else
+                                  "options = ['a', 'b', 'c', 'd', 'd']")
+        elif new_value_mode == 'add-unique':
+            screen.should_contain("value = ['a', 'd', 'd']" if multiple else 'value = d')
+            screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd'}" if option_dict else
+                                  "options = ['a', 'b', 'c', 'd']")
+        elif new_value_mode == 'toggle':
+            screen.should_contain("value = ['a']" if multiple else 'value = None')
+            screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C'}" if option_dict else
+                                  "options = ['a', 'b', 'c']")
