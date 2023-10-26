@@ -1,3 +1,6 @@
+from typing import Optional
+
+import pytest
 from selenium.webdriver import Keys
 
 from nicegui import ui
@@ -94,35 +97,29 @@ def test_set_options(screen:  Screen):
     screen.should_contain('6')
 
 
-def test_add_new_values(screen:  Screen):
-    ui.select(options=['1', '2', '3'], new_value_mode='add-unique')
+@pytest.mark.parametrize('option_dict', [False, True])
+@pytest.mark.parametrize('multiple', [False, True])
+@pytest.mark.parametrize('new_value_mode', ['add', None])
+def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_value_mode: Optional[str]):
+    options = {'a': 'A', 'b': 'B', 'c': 'C'} if option_dict else ['a', 'b', 'c']
+    s = ui.select(options=options, multiple=multiple, new_value_mode=new_value_mode)
+    ui.label().bind_text_from(s, 'value', lambda v: f'value = {v}')
+    ui.label().bind_text_from(s, 'options', lambda v: f'options = {v}')
 
     screen.open('/')
-    screen.find_by_tag('input').send_keys('123' + Keys.TAB)
+    screen.should_contain('value = []' if multiple else 'value = None')
+    screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C'}" if option_dict else "options = ['a', 'b', 'c']")
+
+    screen.find_by_class('q-select').click()
     screen.wait(0.5)
-    screen.find_by_tag('input').click()
-    screen.should_contain('123')
+    screen.find_all('A' if option_dict else 'a')[-1].click()
+    screen.should_contain("value = ['a']" if multiple else 'value = a')
 
-
-def test_add_new_values_with_options_dict(screen:  Screen):
-    ui.select(options={1: '1', 2: '2', 3: '3'}, new_value_mode='add-unique')
-
-    screen.open('/')
-    screen.find_by_tag('input').send_keys('123' + Keys.TAB)
-    screen.wait(0.5)
-    screen.find_by_tag('input').click()
-    screen.should_contain('123')
-
-
-def test_add_new_values_with_multiple(screen:  Screen):
-    s = ui.select(options=['1', '2', '3'], value='1', multiple=True, new_value_mode='add-unique').props('use-chips')
-    ui.label().bind_text_from(s, 'value', backward=str)
-
-    screen.open('/')
-    screen.should_contain("['1']")
-    screen.find_by_tag('input').send_keys('123' + Keys.ENTER)
-    screen.wait(0.5)
-    screen.find_by_tag('input').click()
-    screen.should_contain('123')
-    screen.click('123')
-    screen.should_contain("['1', '123']")
+    if new_value_mode:
+        screen.find_by_tag('input').send_keys(Keys.BACKSPACE + 'd')
+        screen.wait(0.5)
+        screen.find_by_tag('input').send_keys(Keys.ENTER)
+        screen.wait(0.5)
+        screen.should_contain("value = ['a', 'd']" if multiple else 'value = d')
+        screen.should_contain(
+            "options = {'a': 'A', 'b': 'B', 'c': 'C', 'd': 'd'}" if option_dict else "options = ['a', 'b', 'c', 'd']")
