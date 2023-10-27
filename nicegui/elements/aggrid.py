@@ -126,6 +126,20 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         result = await self.call_api_method('getSelectedRows')
         return cast(List[Dict], result)
 
+    async def get_selected_row_ids(self) -> List[int]:
+        """Get the currently selected rows ids (or nodes in AG Grid)
+
+        This method is useful when the grid is configured with ``rowSelection: 'multiple'``.
+        It returns only the ids of the selected rows, which on default are set by AG Grid
+
+        See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedNodes>`_ 
+        for more information.
+
+        :return: list of selected row ids
+        """
+        result = await self.client.run_javascript(f"return getElement({self.id}).gridOptions.api.getSelectedNodes().map(x => x.id)")
+        return cast(List[int], result)
+
     async def get_selected_row(self) -> Optional[Dict]:
         """Get the single currently selected row.
 

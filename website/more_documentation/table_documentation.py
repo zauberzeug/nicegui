@@ -1,5 +1,4 @@
 from nicegui import ui
-
 from ..documentation_tools import text_demo
 
 
@@ -273,3 +272,4 @@ def more() -> None:
                 </q-badge>
             </q-td>
         ''')
+
