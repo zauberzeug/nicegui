@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Callable, Union
+from typing import Any, Callable, Optional, Union
 
 from typing_extensions import Self, cast
 
@@ -15,6 +15,7 @@ class SourceElement(Element):
 
     def __init__(self, *, source: Union[str, Path], **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        self.auto_route: Optional[str] = None
         self.source = source
         self._set_props(source)
 
@@ -83,7 +84,15 @@ class SourceElement(Element):
         self._set_props(source)
         self.update()
 
-    def _set_props(self, source: str) -> None:
+    def _set_props(self, source: Union[str, Path]) -> None:
         if is_file(source):
+            if self.auto_route:
+                core.app.remove_route(self.auto_route)
             source = core.app.add_static_file(local_file=source)
+            self.auto_route = source
         self._props['src'] = source
+
+    def _handle_delete(self) -> None:
+        if self.auto_route:
+            core.app.remove_route(self.auto_route)
+        return super()._handle_delete()
