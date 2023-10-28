@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-fly scale count app=4  --region fra -y
+fly scale count app=7  --region fra -y
 fly scale count app=3  --region iad -y
 fly scale count app=1  --region jnb -y
 fly scale count app=3  --region lax -y
