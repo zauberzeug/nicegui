@@ -266,12 +266,12 @@ def test_default_style():
 
 
 def test_invalid_tags(screen: Screen):
-    good_tags = ['div', 'span', 'a', 'div1', 'div-', 'DIV']
-    bad_tags = ['1div', 'di v', '-div', '_div']
+    good_tags = ['div', 'div-1', 'DIV', 'däv', 'div_x', '🙂']
+    bad_tags = ['<div>', 'hi hi', 'hi/ho', 'foo$bar']
     for tag in good_tags:
         ui.element(tag)
     for tag in bad_tags:
-        with pytest.raises(ValueError, match=f'Invalid HTML tag: {tag}'):
+        with pytest.raises(ValueError):
             ui.element(tag)
 
     screen.open('/')
