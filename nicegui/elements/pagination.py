@@ -6,8 +6,11 @@ from nicegui.elements.mixins.value_element import ValueElement
 
 class Pagination(ValueElement, DisableableElement):
 
-    def __init__(self, min: int, max: int, *, direction_links: bool = False,
-                 value: Optional[int] = ..., on_change: Optional[Callable[..., Any]] = None) -> None:
+    def __init__(self,
+                 min: int, max: int, *,  # pylint: disable=redefined-builtin
+                 direction_links: bool = False,
+                 value: Optional[int] = ...,  # type: ignore
+                 on_change: Optional[Callable[..., Any]] = None) -> None:
         """Pagination
 
         A pagination element wrapping Quasar's `QPagination <https://quasar.dev/vue-components/pagination>`_ component.
