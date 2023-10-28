@@ -46,6 +46,8 @@ PROPS_PATTERN = re.compile(r'''
 (?:$|\s)            # Match end of string or whitespace
 ''', re.VERBOSE)
 
+TAG_PATTERN = re.compile(r'^[a-z][a-z0-9\-]*$', re.IGNORECASE)
+
 
 class Element(Visibility):
     component: Optional[Component] = None
@@ -70,6 +72,8 @@ class Element(Visibility):
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
         self.tag = tag if tag else self.component.tag if self.component else 'div'
+        if not TAG_PATTERN.match(self.tag):
+            raise ValueError(f'Invalid HTML tag: {self.tag}')
         self._classes: List[str] = []
         self._classes.extend(self._default_classes)
         self._style: Dict[str, str] = {}

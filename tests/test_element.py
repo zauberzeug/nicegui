@@ -1,3 +1,4 @@
+import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
@@ -262,3 +263,15 @@ def test_default_style():
     button_f = ui.button()
     assert button_f._style.get('border') == '2px'
     assert button_f._style.get('padding') == '30px'
+
+
+def test_invalid_tags(screen: Screen):
+    good_tags = ['div', 'span', 'a', 'div1', 'div-', 'DIV']
+    bad_tags = ['1div', 'di v', '-div', '_div']
+    for tag in good_tags:
+        ui.element(tag)
+    for tag in bad_tags:
+        with pytest.raises(ValueError, match=f'Invalid HTML tag: {tag}'):
+            ui.element(tag)
+
+    screen.open('/')
