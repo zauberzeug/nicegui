@@ -35,7 +35,7 @@ class RefreshableTarget:
                     if self.instance is None:
                         return await func(*self.args, **self.kwargs)
                     else:
-                        return func(self.instance, *self.args, **self.kwargs)
+                        return await func(self.instance, *self.args, **self.kwargs)
             return wait_for_result()
         else:
             with self.container:
