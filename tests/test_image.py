@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from nicegui import ui
+from nicegui import app, ui
 
 from .screen import Screen
 
@@ -59,3 +59,20 @@ def test_set_source_with_local_file(screen: Screen):
     screen.open('/')
     image = screen.find_by_class('q-img__image')
     screen.should_load_image(image)
+
+
+def test_removal_of_generated_routes(screen: Screen):
+    img = ui.image(example_file)
+    ui.button('Slide 2', on_click=lambda: img.set_source(str(example_file).replace('slide1', 'slide2')))
+    ui.button('Slide 3', on_click=lambda: img.set_source(str(example_file).replace('slide1', 'slide3')))
+
+    screen.open('/')
+    number_of_routes = len(app.routes)
+
+    screen.click('Slide 2')
+    screen.wait(0.5)
+    assert len(app.routes) == number_of_routes
+
+    screen.click('Slide 3')
+    screen.wait(0.5)
+    assert len(app.routes) == number_of_routes
