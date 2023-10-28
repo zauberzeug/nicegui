@@ -1,13 +1,14 @@
 from typing import Any, Callable
 
-from typing_extensions import Self
+from typing_extensions import Self, cast
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
 
 
 class NameElement(Element):
-    name = BindableProperty(on_change=lambda sender, name: sender.on_name_change(name))
+    name = BindableProperty(
+        on_change=lambda sender, name: cast(Self, sender)._handle_name_change(name))  # pylint: disable=protected-access
 
     def __init__(self, *, name: str, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -71,7 +72,7 @@ class NameElement(Element):
         """
         self.name = name
 
-    def on_name_change(self, name: str) -> None:
+    def _handle_name_change(self, name: str) -> None:
         """Called when the name of this element changes.
 
         :param name: The new name.

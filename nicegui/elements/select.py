@@ -1,4 +1,3 @@
-import re
 from copy import deepcopy
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -26,6 +25,7 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
         After manipulating the options, call `update()` to update the options in the UI.
 
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
+        :param label: the label to display above the selection
         :param value: the initial value
         :param on_change: callback to execute when selection changes
         :param with_input: whether to show an input field to filter the options
@@ -49,14 +49,6 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
             self._props['input-debounce'] = 0
         self._props['multiple'] = multiple
         self._props['clearable'] = clearable
-
-    def on_filter(self, e: GenericEventArguments) -> None:
-        self.options = [
-            option
-            for option in self.original_options
-            if not e.args or re.search(e.args, option, re.IGNORECASE)
-        ]
-        self.update()
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         # pylint: disable=no-else-return

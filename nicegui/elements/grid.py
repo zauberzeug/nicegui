@@ -6,6 +6,7 @@ from ..element import Element
 class Grid(Element):
 
     def __init__(self,
+                 *,
                  rows: Optional[int] = None,
                  columns: Optional[int] = None,
                  ) -> None:

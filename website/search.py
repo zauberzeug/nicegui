@@ -62,12 +62,12 @@ class Search:
                             ui.label(result['item']['title'])
         background_tasks.create_lazy(handle_input(), name='handle_search_input')
 
-    async def open_url(self, url: str) -> None:
-        await ui.run_javascript(f'''
+    def open_url(self, url: str) -> None:
+        ui.run_javascript(f'''
             const url = "{url}"
             if (url.startsWith("http"))
                 window.open(url, "_blank");
             else
                 window.location.href = url;
-        ''', respond=False)
+        ''')
         self.dialog.close()

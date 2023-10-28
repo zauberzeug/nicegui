@@ -2,6 +2,8 @@
 import random
 from typing import Optional
 
+from typing_extensions import Self, cast
+
 from nicegui import ui
 from nicegui.binding import BindableProperty, bind_from
 
@@ -10,13 +12,14 @@ class colorful_label(ui.label):
     """A label with a bindable background color."""
 
     # This class variable defines what happens when the background property changes.
-    background = BindableProperty(on_change=lambda sender, value: sender.on_background_change(value))
+    background = BindableProperty(
+        on_change=lambda sender, value: cast(Self, sender)._handle_background_change(value))
 
     def __init__(self, text: str = '') -> None:
         super().__init__(text)
         self.background: Optional[str] = None  # initialize the background property
 
-    def on_background_change(self, bg_class: str) -> None:
+    def _handle_background_change(self, bg_class: str) -> None:
         """Update the classes of the label when the background property changes."""
         self._classes = [c for c in self._classes if not c.startswith('bg-')]
         self._classes.append(bg_class)

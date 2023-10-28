@@ -3,7 +3,8 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 from typing_extensions import Self
 
-from .. import binding, globals  # pylint: disable=redefined-builtin
+from .. import binding
+from ..awaitable_response import AwaitableResponse, NullResponse
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..events import (GenericEventArguments, SceneClickEventArguments, SceneClickHit, SceneDragEventArguments,
@@ -88,14 +89,14 @@ class Scene(Element,
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
-        self.on_click = on_click
-        self.on_drag_start = on_drag_start
-        self.on_drag_end = on_drag_end
+        self._click_handler = on_click
+        self._drag_start_handler = on_drag_start
+        self._drag_end_handler = on_drag_end
         self.is_initialized = False
-        self.on('init', self.handle_init)
-        self.on('click3d', self.handle_click)
-        self.on('dragstart', self.handle_drag)
-        self.on('dragend', self.handle_drag)
+        self.on('init', self._handle_init)
+        self.on('click3d', self._handle_click)
+        self.on('dragstart', self._handle_drag)
+        self.on('dragend', self._handle_drag)
         self._props['drag_constraints'] = drag_constraints
 
     def __enter__(self) -> Self:
@@ -109,24 +110,24 @@ class Scene(Element,
             Object3D.current_scene = self
         return attribute
 
-    def handle_init(self, e: GenericEventArguments) -> None:
+    def _handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True
-        with globals.socket_id(e.args['socket_id']):
+        with self.client.individual_target(e.args['socket_id']):
             self.move_camera(duration=0)
             for obj in self.objects.values():
                 obj.send()
 
-    def run_method(self, name: str, *args: Any) -> None:
+    def run_method(self, name: str, *args: Any) -> AwaitableResponse:
         """Run a method on the client.
 
         :param name: name of the method
         :param args: arguments to pass to the method
         """
         if not self.is_initialized:
-            return
-        super().run_method(name, *args)
+            return NullResponse()
+        return super().run_method(name, *args)
 
-    def handle_click(self, e: GenericEventArguments) -> None:
+    def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
             sender=self,
             client=self.client,
@@ -144,9 +145,9 @@ class Scene(Element,
                 z=hit['point']['z'],
             ) for hit in e.args['hits']],
         )
-        handle_event(self.on_click, arguments)
+        handle_event(self._click_handler, arguments)
 
-    def handle_drag(self, e: GenericEventArguments) -> None:
+    def _handle_drag(self, e: GenericEventArguments) -> None:
         arguments = SceneDragEventArguments(
             sender=self,
             client=self.client,
@@ -159,7 +160,7 @@ class Scene(Element,
         )
         if arguments.type == 'dragend':
             self.objects[arguments.object_id].move(arguments.x, arguments.y, arguments.z)
-        handle_event(self.on_drag_start if arguments.type == 'dragstart' else self.on_drag_end, arguments)
+        handle_event(self._drag_start_handler if arguments.type == 'dragstart' else self._drag_end_handler, arguments)
 
     def __len__(self) -> int:
         return len(self.objects)
@@ -202,9 +203,9 @@ class Scene(Element,
                         self.camera.look_at_x, self.camera.look_at_y, self.camera.look_at_z,
                         self.camera.up_x, self.camera.up_y, self.camera.up_z, duration)
 
-    def _on_delete(self) -> None:
+    def _handle_delete(self) -> None:
         binding.remove(list(self.objects.values()), Object3D)
-        super()._on_delete()
+        super()._handle_delete()
 
     def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:
         """Remove objects from the scene.

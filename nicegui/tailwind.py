@@ -172,6 +172,7 @@ class PseudoElement:
         self._classes: List[str] = []
 
     def classes(self, add: str) -> None:
+        """Add the given classes to the element."""
         self._classes.append(add)
 
 
@@ -198,6 +199,7 @@ class Tailwind:
         return self
 
     def apply(self, element: Element) -> None:
+        """Apply the tailwind classes to the given element."""
         element._classes.extend(self.element._classes)  # pylint: disable=protected-access
         element.update()
 

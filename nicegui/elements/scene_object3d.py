@@ -43,6 +43,7 @@ class Object3D:
         return self
 
     def send(self) -> None:
+        """Send the object to the client."""
         self._create()
         self._name()
         self._material()

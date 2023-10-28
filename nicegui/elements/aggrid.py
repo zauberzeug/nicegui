@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, cast
 
-from .. import globals  # pylint: disable=redefined-builtin
+from .. import optional_features
+from ..awaitable_response import AwaitableResponse
 from ..element import Element
-from ..functions.javascript import run_javascript
 
 try:
     import pandas as pd
-    globals.optional_features.add('pandas')
+    optional_features.register('pandas')
 except ImportError:
     pass
 
@@ -25,7 +25,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         An element to create a grid using `AG Grid <https://www.ag-grid.com/>`_.
 
-        The `call_api_method` method can be used to call an AG Grid API method.
+        The methods `call_api_method` and `call_column_api_method` can be used to interact with the AG Grid instance on the client.
 
         :param options: dictionary of AG Grid options
         :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
@@ -77,31 +77,42 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
     @property
     def options(self) -> Dict:
+        """The options dictionary."""
         return self._props['options']
 
     def update(self) -> None:
         super().update()
         self.run_method('update_grid')
 
-    def call_api_method(self, name: str, *args) -> None:
+    def call_api_method(self, name: str, *args) -> AwaitableResponse:
         """Call an AG Grid API method.
 
         See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>`_ for a list of methods.
 
+        If the function is awaited, the result of the method call is returned.
+        Otherwise, the method is executed without waiting for a response.
+
         :param name: name of the method
         :param args: arguments to pass to the method
-        """
-        self.run_method('call_api_method', name, *args)
 
-    def call_column_api_method(self, name: str, *args) -> None:
+        :return: AwaitableResponse that can be awaited to get the result of the method call
+        """
+        return self.run_method('call_api_method', name, *args)
+
+    def call_column_api_method(self, name: str, *args) -> AwaitableResponse:
         """Call an AG Grid Column API method.
 
         See `AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>`_ for a list of methods.
 
+        If the function is awaited, the result of the method call is returned.
+        Otherwise, the method is executed without waiting for a response.
+
         :param name: name of the method
         :param args: arguments to pass to the method
+
+        :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        self.run_method('call_column_api_method', name, *args)
+        return self.run_method('call_column_api_method', name, *args)
 
     async def get_selected_rows(self) -> List[Dict]:
         """Get the currently selected rows.
@@ -112,7 +123,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :return: list of selected row data
         """
-        result = await run_javascript(f'return getElement({self.id}).gridOptions.api.getSelectedRows();')
+        result = await self.call_api_method('getSelectedRows')
         return cast(List[Dict], result)
 
     async def get_selected_row(self) -> Optional[Dict]:
@@ -137,7 +148,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :return: list of row data
         """
-        result = await run_javascript(f'''
+        result = await self.client.run_javascript(f'''
             const rowData = [];
             getElement({self.id}).gridOptions.api.forEachNode(node => rowData.push(node.data));
             return rowData;

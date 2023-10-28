@@ -34,7 +34,7 @@ def test_async_connect_handler(screen: Screen):
 def test_connect_disconnect_is_called_for_each_client(screen: Screen):
     events: List[str] = []
 
-    @ui.page('/')
+    @ui.page('/', reconnect_timeout=0)
     def page(client: Client):
         ui.label(f'client id: {client.id}')
     app.on_connect(lambda: events.append('connect'))

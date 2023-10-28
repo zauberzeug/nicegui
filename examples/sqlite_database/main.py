@@ -2,16 +2,21 @@
 from typing import List
 
 import models
-from tortoise.contrib.fastapi import register_tortoise
+from tortoise import Tortoise
 
 from nicegui import app, ui
 
-register_tortoise(
-    app,
-    db_url='sqlite://db.sqlite3',
-    modules={'models': ['models']},  # tortoise will look for models in this main module
-    generate_schemas=True,  # in production you should use version control migrations instead
-)
+
+async def init_db() -> None:
+    await Tortoise.init(db_url='sqlite://db.sqlite3', modules={'models': ['models']})
+    await Tortoise.generate_schemas()
+
+
+async def close_db() -> None:
+    await Tortoise.close_connections()
+
+app.on_startup(init_db)
+app.on_shutdown(close_db)
 
 
 @ui.refreshable

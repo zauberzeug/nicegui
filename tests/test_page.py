@@ -127,7 +127,7 @@ def test_wait_for_connected(screen: Screen):
 def test_wait_for_disconnect(screen: Screen):
     events = []
 
-    @ui.page('/')
+    @ui.page('/', reconnect_timeout=0)
     async def page(client: Client):
         await client.connected()
         events.append('connected')
@@ -144,7 +144,7 @@ def test_wait_for_disconnect(screen: Screen):
 def test_wait_for_disconnect_without_awaiting_connected(screen: Screen):
     events = []
 
-    @ui.page('/')
+    @ui.page('/', reconnect_timeout=0)
     async def page(client: Client):
         await client.disconnected()
         events.append('disconnected')
@@ -290,7 +290,7 @@ def test_reconnecting_without_page_reload(screen: Screen):
     @ui.page('/', reconnect_timeout=3.0)
     def page():
         ui.input('Input').props('autofocus')
-        ui.button('drop connection', on_click=lambda: ui.run_javascript('socket.io.engine.close()', respond=False))
+        ui.button('drop connection', on_click=lambda: ui.run_javascript('socket.io.engine.close()'))
 
     screen.open('/')
     screen.type('hello')

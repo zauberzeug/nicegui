@@ -26,6 +26,7 @@ __all__ = [
     'editor',
     'expansion',
     'grid',
+    'highchart',
     'html',
     'icon',
     'image',
@@ -45,6 +46,7 @@ __all__ = [
     'menu_item',
     'mermaid',
     'number',
+    'pagination',
     'plotly',
     'circular_progress',
     'linear_progress',
@@ -70,6 +72,7 @@ __all__ = [
     'tabs',
     'textarea',
     'time',
+    'timer',
     'timeline',
     'timeline_entry',
     'toggle',
@@ -84,7 +87,7 @@ __all__ = [
     'notify',
     'open',
     'refreshable',
-    'timer',
+    'state',
     'update',
     'page',
     'drawer',
@@ -108,7 +111,7 @@ from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section
 from .elements.carousel import Carousel as carousel
 from .elements.carousel import CarouselSlide as carousel_slide
-from .elements.chart import Chart as chart
+from .elements.chart import chart
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
 from .elements.code import Code as code
@@ -124,6 +127,7 @@ from .elements.echart import EChart as echart
 from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
 from .elements.grid import Grid as grid
+from .elements.highchart import highchart
 from .elements.html import Html as html
 from .elements.icon import Icon as icon
 from .elements.image import Image as image
@@ -143,6 +147,7 @@ from .elements.menu import Menu as menu
 from .elements.menu import MenuItem as menu_item
 from .elements.mermaid import Mermaid as mermaid
 from .elements.number import Number as number
+from .elements.pagination import Pagination as pagination
 from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
@@ -170,6 +175,7 @@ from .elements.textarea import Textarea as textarea
 from .elements.time import Time as time
 from .elements.timeline import Timeline as timeline
 from .elements.timeline import TimelineEntry as timeline_entry
+from .elements.timer import Timer as timer
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
@@ -180,8 +186,7 @@ from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
 from .functions.notify import notify
 from .functions.open import open  # pylint: disable=redefined-builtin
-from .functions.refreshable import refreshable
-from .functions.timer import Timer as timer
+from .functions.refreshable import refreshable, state
 from .functions.update import update
 from .page import page
 from .page_layout import Drawer as drawer
@@ -190,5 +195,5 @@ from .page_layout import Header as header
 from .page_layout import LeftDrawer as left_drawer
 from .page_layout import PageSticky as page_sticky
 from .page_layout import RightDrawer as right_drawer
-from .run import run
-from .run_with import run_with
+from .ui_run import run
+from .ui_run_with import run_with

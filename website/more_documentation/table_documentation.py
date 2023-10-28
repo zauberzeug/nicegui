@@ -244,3 +244,53 @@ def more() -> None:
             {'name': 'Christopher'},
         ]
         ui.table(columns=columns, rows=rows, row_key='name')
+
+    @text_demo('Conditional formatting', '''
+        You can use scoped slots to conditionally format the content of a cell.
+        See the [Quasar documentation](https://quasar.dev/vue-components/table#example--body-cell-slot)
+        for more information about body-cell slots.
+        
+        In this demo we use a `q-badge` to display the age in red if the person is under 21 years old.
+        We use the `body-cell-age` slot to insert the `q-badge` into the `age` column.
+        The ":color" attribute of the `q-badge` is set to "red" if the age is under 21, otherwise it is set to "green".
+        The colon in front of the "color" attribute indicates that the value is a JavaScript expression.
+    ''')
+    def conditional_formatting():
+        columns = [
+            {'name': 'name', 'label': 'Name', 'field': 'name'},
+            {'name': 'age', 'label': 'Age', 'field': 'age'},
+        ]
+        rows = [
+            {'name': 'Alice', 'age': 18},
+            {'name': 'Bob', 'age': 21},
+            {'name': 'Carol', 'age': 42},
+        ]
+        table = ui.table(columns=columns, rows=rows, row_key='name')
+        table.add_slot('body-cell-age', '''
+            <q-td key="age" :props="props">
+                <q-badge :color="props.value < 21 ? 'red' : 'green'">
+                    {{ props.value }}
+                </q-badge>
+            </q-td>
+        ''')
+
+    @text_demo('Table cells with links', '''
+        Here is a demo of how to insert links into table cells.
+        We use the `body-cell-link` slot to insert an `<a>` tag into the `link` column.
+    ''')
+    def table_cells_with_links():
+        columns = [
+            {'name': 'name', 'label': 'Name', 'field': 'name', 'align': 'left'},
+            {'name': 'link', 'label': 'Link', 'field': 'link', 'align': 'left'},
+        ]
+        rows = [
+            {'name': 'Google', 'link': 'https://google.com'},
+            {'name': 'Facebook', 'link': 'https://facebook.com'},
+            {'name': 'Twitter', 'link': 'https://twitter.com'},
+        ]
+        table = ui.table(columns=columns, rows=rows, row_key='name')
+        table.add_slot('body-cell-link', '''
+            <q-td :props="props">
+                <a :href="props.value">{{ props.value }}</a>
+            </q-td>
+        ''')
