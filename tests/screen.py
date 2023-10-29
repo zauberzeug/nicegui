@@ -113,6 +113,14 @@ class Screen:
             self.wait(0.1)
         raise AssertionError(f'Could not find input with value "{text}"')
 
+    def should_load_image(self, image: WebElement, *, timeout: float = 2.0) -> None:
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            js = 'return arguments[0].naturalWidth > 0 && arguments[0].naturalHeight > 0'
+            if self.selenium.execute_script(js, image):
+                return
+        raise AssertionError(f'Image not loaded: {image.get_attribute("outerHTML")}')
+
     def click(self, target_text: str) -> WebElement:
         element = self.find(target_text)
         try:
