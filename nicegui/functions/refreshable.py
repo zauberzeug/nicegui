@@ -24,26 +24,25 @@ class RefreshableTarget:
     locals: List[Any] = field(default_factory=list)
     next_index: int = 0
 
-    def run(self, func: Callable[..., Any]) -> Union[None, Awaitable]:
+    def run(self, func: Callable[..., Any]) -> Union[Any, Awaitable]:
         """Run the function and return the result."""
         RefreshableTarget.current_target = self
         self.next_index = 0
         # pylint: disable=no-else-return
         if is_coroutine_function(func):
-            async def wait_for_result() -> None:
+            async def wait_for_result() -> Any:
                 with self.container:
                     if self.instance is None:
-                        await func(*self.args, **self.kwargs)
+                        return await func(*self.args, **self.kwargs)
                     else:
-                        await func(self.instance, *self.args, **self.kwargs)
+                        return await func(self.instance, *self.args, **self.kwargs)
             return wait_for_result()
         else:
             with self.container:
                 if self.instance is None:
-                    func(*self.args, **self.kwargs)
+                    return func(*self.args, **self.kwargs)
                 else:
-                    func(self.instance, *self.args, **self.kwargs)
-            return None  # required by mypy
+                    return func(self.instance, *self.args, **self.kwargs)
 
 
 class RefreshableContainer(Element, component='refreshable.js'):
@@ -75,7 +74,7 @@ class refreshable:
             return refresh
         return attribute
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Union[None, Awaitable]:
+    def __call__(self, *args: Any, **kwargs: Any) -> Union[Any, Awaitable]:
         self.prune()
         target = RefreshableTarget(container=RefreshableContainer(), refreshable=self, instance=self.instance,
                                    args=args, kwargs=kwargs)

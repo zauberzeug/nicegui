@@ -205,3 +205,16 @@ def test_refreshable_with_state(screen: Screen):
     screen.wait(0.5)
     screen.should_contain('A: 1')
     screen.should_contain('B: 1')
+
+
+def test_refreshable_with_return_value(screen: Screen):
+    @ui.refreshable
+    def number_ui() -> int:
+        ui.label('42')
+        return 42
+
+    answer = number_ui()
+    assert answer == 42
+
+    screen.open('/')
+    screen.should_contain('42')
