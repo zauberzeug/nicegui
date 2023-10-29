@@ -273,3 +273,24 @@ def more() -> None:
                 </q-badge>
             </q-td>
         ''')
+
+    @text_demo('Table cells with links', '''
+        Here is a demo of how to insert links into table cells.
+        We use the `body-cell-link` slot to insert an `<a>` tag into the `link` column.
+    ''')
+    def table_cells_with_links():
+        columns = [
+            {'name': 'name', 'label': 'Name', 'field': 'name', 'align': 'left'},
+            {'name': 'link', 'label': 'Link', 'field': 'link', 'align': 'left'},
+        ]
+        rows = [
+            {'name': 'Google', 'link': 'https://google.com'},
+            {'name': 'Facebook', 'link': 'https://facebook.com'},
+            {'name': 'Twitter', 'link': 'https://twitter.com'},
+        ]
+        table = ui.table(columns=columns, rows=rows, row_key='name')
+        table.add_slot('body-cell-link', '''
+            <q-td :props="props">
+                <a :href="props.value">{{ props.value }}</a>
+            </q-td>
+        ''')
