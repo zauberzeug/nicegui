@@ -46,6 +46,11 @@ PROPS_PATTERN = re.compile(r'''
 (?:$|\s)            # Match end of string or whitespace
 ''', re.VERBOSE)
 
+# https://www.w3.org/TR/xml/#sec-common-syn
+TAG_START_CHAR = r':|[A-Z]|_|[a-z]|[\u00C0-\u00D6]|[\u00D8-\u00F6]|[\u00F8-\u02FF]|[\u0370-\u037D]|[\u037F-\u1FFF]|[\u200C-\u200D]|[\u2070-\u218F]|[\u2C00-\u2FEF]|[\u3001-\uD7FF]|[\uF900-\uFDCF]|[\uFDF0-\uFFFD]|[\U00010000-\U000EFFFF]'
+TAG_CHAR = TAG_START_CHAR + r'|-|\.|[0-9]|\u00B7|[\u0300-\u036F]|[\u203F-\u2040]'
+TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
+
 
 class Element(Visibility):
     component: Optional[Component] = None
@@ -70,6 +75,8 @@ class Element(Visibility):
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
         self.tag = tag if tag else self.component.tag if self.component else 'div'
+        if not TAG_PATTERN.match(self.tag):
+            raise ValueError(f'Invalid HTML tag: {self.tag}')
         self._classes: List[str] = []
         self._classes.extend(self._default_classes)
         self._style: Dict[str, str] = {}
