@@ -44,6 +44,9 @@ def capabilities(capabilities: Dict) -> Dict:
 
 @pytest.fixture(autouse=True)
 def reset_globals() -> Generator[None, None, None]:
+    for route in app.routes:
+        if route.path.startswith('/_nicegui/auto/static/'):
+            app.remove_route(route.path)
     for path in {'/'}.union(Client.page_routes.values()):
         app.remove_route(path)
     app.openapi_schema = None
@@ -58,6 +61,7 @@ def reset_globals() -> Generator[None, None, None]:
     Client.page_routes.clear()
     Client.auto_index_client = Client(page('/'), shared=True).__enter__()
     app.reset()
+    # NOTE we need to re-add the auto index route because we removed all routes above
     app.get('/')(Client.auto_index_client.build_response)
     binding.reset()
 
