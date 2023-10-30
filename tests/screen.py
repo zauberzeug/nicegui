@@ -159,13 +159,17 @@ class Screen:
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 
+    def find_all(self, text: str) -> List[WebElement]:
+        query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
+        return self.selenium.find_elements(By.XPATH, query)
+
     def find_element(self, element: ui.element) -> WebElement:
         return self.selenium.find_element(By.ID, f'c{element.id}')
 
     def find_by_class(self, name: str) -> WebElement:
         return self.selenium.find_element(By.CLASS_NAME, name)
 
-    def find_all_by_class(self, name: str) -> WebElement:
+    def find_all_by_class(self, name: str) -> List[WebElement]:
         return self.selenium.find_elements(By.CLASS_NAME, name)
 
     def find_by_tag(self, name: str) -> WebElement:
