@@ -482,3 +482,17 @@ class Element(Visibility):
     def is_deleted(self) -> bool:
         """Whether the element has been deleted."""
         return self._deleted
+
+    def __repr__(self) -> str:
+        return f'<{" ".join(self.representation)}>'
+
+    @property
+    def representation(self) -> List[str]:
+        """Representation of the element."""
+        result = []
+        result.append(self.__class__.__name__ if type(self) != Element else self.tag)
+        if self._classes:
+            result.append(f'classes="{", ".join(self._classes)}"')
+        if hasattr(self, 'text'):
+            result.append(f'text="{self.text}"')
+        return result
