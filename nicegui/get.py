@@ -1,4 +1,4 @@
-from typing import Generic, Iterator, Optional, Type, TypeVar
+from typing import Generic, Iterator, List, Optional, Type, TypeVar
 
 from typing_extensions import Self
 
@@ -12,6 +12,7 @@ class elements(Generic[T], Iterator[T]):
 
     def __init__(self, *, type: Optional[Type[T]] = Element):
         self.type = type
+        self._within_types = []
 
     def __iter__(self) -> Iterator[T]:
         client = context.get_client()
@@ -22,17 +23,22 @@ class elements(Generic[T], Iterator[T]):
             raise StopIteration
         return next(self._iterator)
 
-    def iterate(self, parent: Element) -> Iterator[T]:
+    def iterate(self, parent: Element, *, visited: List[Element] = []) -> Iterator[T]:
         for element in parent:
             if self.type is None or isinstance(element, self.type):
-                yield element
-            yield from self.iterate(element)
+                if not self._within_types or any(isinstance(element, type) for type in self._within_types for element in visited):
+                    yield element
+            yield from self.iterate(element, visited=visited + [element])
 
     def __len__(self) -> int:
         return len(list(iter(self)))
 
     def __getitem__(self, index) -> T:
         return list(iter(self))[index]
+
+    def within(self, *, type: Optional[Type[T]] = Element) -> Self:
+        self._within_types.append(type)
+        return self
 
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
         for element in self:

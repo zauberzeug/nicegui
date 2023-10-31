@@ -27,14 +27,26 @@ def test_get_all(screen: Screen):
 def test_get_by_type(screen: Screen):
     ui.button('button A')
     ui.label('label A')
+    ui.button('button B')
+    ui.label('label B')
+
+    result = ', '.join(b.text for b in ui.get(type=ui.button))
+
+    screen.open('/')
+    assert result == 'button A, button B'
+
+
+def test_get_within(screen: Screen):
+    ui.button('button A')
+    ui.label('label A')
     with ui.row():
         ui.button('button B')
         ui.label('label B')
 
-    ui.label(', '.join(b.text for b in ui.get(type=ui.button)))
+    result = [b.text for b in ui.get(type=ui.button).within(type=ui.row)]
 
     screen.open('/')
-    screen.should_contain('button A, button B')
+    assert result == ['button B']
 
 
 def test_setting_classes(screen: Screen):
