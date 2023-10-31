@@ -10,18 +10,18 @@ def test_get_all(screen: Screen):
         ui.button('button B')
         ui.label('label B')
 
-    elements = [str(b) for b in ui.get()]
+    elements = list(ui.get())
 
     screen.open('/')
     assert len(elements) == 8
-    assert elements[0] == '<q-page-container>'
-    assert elements[1] == '<q-page>'
-    assert elements[2] == '<div classes="nicegui-content">'
-    assert elements[3] == '<Button text="button A">'
-    assert elements[4] == '<Label text="label A">'
-    assert elements[5] == '<Row classes="nicegui-row, wrap">'
-    assert elements[6] == '<Button text="button B">'
-    assert elements[7] == '<Label text="label B">'
+    assert elements[0].tag == 'q-page-container'
+    assert elements[1].tag == 'q-page'
+    assert elements[2]._classes == ['nicegui-content']
+    assert elements[3].text == 'button A'
+    assert elements[4].text == 'label A'
+    assert elements[5].__class__.__name__ == 'Row'
+    assert elements[6].text == 'button B'
+    assert elements[7].text == 'label B'
 
 
 def test_get_by_type(screen: Screen):
