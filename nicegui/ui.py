@@ -188,6 +188,7 @@ from .functions.notify import notify
 from .functions.open import open  # pylint: disable=redefined-builtin
 from .functions.refreshable import refreshable, state
 from .functions.update import update
+from .get import get
 from .page import page
 from .page_layout import Drawer as drawer
 from .page_layout import Footer as footer
