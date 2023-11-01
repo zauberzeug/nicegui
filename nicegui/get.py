@@ -28,6 +28,9 @@ class elements(Generic[T], Iterator[T]):
         self._texts = [text] if isinstance(text, str) else text
         self._within_types: list[Element] = []
         self._within_keys: list[str] = []
+        self._exclude_types: list[Element] = []
+        self._exclude_keys: list[str] = []
+        self.exclude_texts: list[str] = []
 
     def __iter__(self) -> Iterator[T]:
         client = context.get_client()
@@ -37,7 +40,10 @@ class elements(Generic[T], Iterator[T]):
         for element in parent:
             if (self._types is None or isinstance(element, self._types)) and \
                 (not self._keys or all(key in element._keys for key in self._keys)) and \
-                    (not self._texts or hasattr(element, 'text') and all(text in element.text for text in self._texts)):
+                (not self._texts or hasattr(element, 'text') and all(text in element.text for text in self._texts)) and \
+                (not self._exclude_types or not any(isinstance(element, type) for type in self._exclude_types)) and \
+                (not self._exclude_keys or not any(key in element._keys for key in self._exclude_keys)) and \
+                    (not self.exclude_texts or ((hasattr(element, 'text') and not any(text in element.text for text in self.exclude_texts)))):
                 if (not self._within_types or any(isinstance(element, type) for type in self._within_types for element in visited)) and \
                         (not self._within_keys or any(key in element._keys for key in self._within_keys for element in visited)):
                     yield element
@@ -54,12 +60,22 @@ class elements(Generic[T], Iterator[T]):
     def __getitem__(self, index) -> T:
         return list(iter(self))[index]
 
-    def within(self, *, type: Optional[Type[T]] = None, key: str = None) -> Self:
+    def within(self, *, type: Optional[Element] = None, key: str = None) -> Self:
         if type is not None:
             assert issubclass(type, Element)
             self._within_types.append(type)
         if key is not None:
             self._within_keys.append(key)
+        return self
+
+    def exclude(self, *, type: Optional[Element] = None, key: Optional[str] = None, text: Optional[str] = None) -> Self:
+        if type is not None:
+            assert issubclass(type, Element)
+            self._exclude_types.append(type)
+        if key is not None:
+            self._exclude_keys.append(key)
+        if text is not None:
+            self.exclude_texts.append(text)
         return self
 
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
