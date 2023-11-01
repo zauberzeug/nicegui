@@ -24,6 +24,21 @@ def test_get_all(screen: Screen):
     assert elements[7].text == 'label B'
 
 
+def test_get_by_text_element(screen: Screen):
+    from nicegui.elements.mixins.text_element import TextElement
+
+    ui.button('button A')
+    ui.label('label A')
+    ui.icon('home')
+    ui.button('button B')
+    ui.label('label B')
+
+    result = [b.text for b in ui.get(type=TextElement)]
+
+    screen.open('/')
+    assert result == ['button A', 'label A', 'button B', 'label B']
+
+
 def test_get_by_type(screen: Screen):
     ui.button('button A')
     ui.label('label A')
@@ -106,7 +121,6 @@ def test_get_by_multiple_keys(screen: Screen):
     search = ui.get(type=ui.button, key='test important')
     result = [b.text for b in search]
     screen.open('/')
-    ic(search.__dict__)
     assert result == ['button B', 'button C']
 
 

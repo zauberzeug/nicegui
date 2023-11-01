@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Generic, Iterator, List, Optional, Type, TypeVar, Union
 
 from typing_extensions import Self
