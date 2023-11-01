@@ -11,17 +11,24 @@ T = TypeVar('T', bound=Element)
 
 
 class elements(Generic[T], Iterator[T]):
+    DEFAULT_LOCAL_SCOPE = True
 
     def __init__(self, *,
                  type: Type[T] = Element,
                  key: Union[str, list[str], None] = None,
                  text: Union[str, list[str], None] = None,
+                 local_scope: bool = DEFAULT_LOCAL_SCOPE,
                  ) -> None:
-        """Get elements by type and/or key.
+        """Get Elements
+
+        Sometimes it's handy to search the element tree of the current page. 
+        `ui.get()` allows powerful filtering of elements by type, key and text.
+        It also provides a fluent interface to apply more filters like excluding elements or filtering for elements within a specific parent.
 
         :param type: filter by type of the elements; the iterator will be of type `type`
         :param key: filter by element keys; can be a list of strings or a single string where keys are separated by whitespace
         :param text: filter for elements which contain sub-text in their `.text` attribute; can be a singe string or list of strings which all must match
+        :param local_scope: if `True`, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with `ui.get.DEFAULT_LOCAL_SCOPE = True`)
         """
         self._types = type
         self._keys = key.split() if isinstance(key, str) else key
@@ -33,10 +40,10 @@ class elements(Generic[T], Iterator[T]):
         self._exclude_types: list[Element] = []
         self._exclude_keys: list[str] = []
         self._exclude_texts: list[str] = []
+        self._scope = context.get_slot().parent if local_scope else context.get_client().layout
 
     def __iter__(self) -> Iterator[T]:
-        client = context.get_client()
-        return self.iterate(client.layout)
+        return self.iterate(self._scope)
 
     def iterate(self, parent: Element, *, visited: List[Element] = []) -> Iterator[T]:
         for element in parent:
@@ -64,7 +71,7 @@ class elements(Generic[T], Iterator[T]):
     def __getitem__(self, index) -> T:
         return list(iter(self))[index]
 
-    def within(self, *, type: Optional[Element] = None, key: str = None) -> Self:
+    def within(self, *, type: Optional[Element] = None, key: Optional[str] = None) -> Self:
         if type is not None:
             assert issubclass(type, Element)
             self._within_types.append(type)

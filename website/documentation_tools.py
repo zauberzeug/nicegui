@@ -108,6 +108,8 @@ class element_demo:
 
 def load_demo(api: Union[type, Callable, str]) -> None:
     name = api if isinstance(api, str) else pascal_to_snake(api.__name__)
+    if name == 'elements':
+        name = 'get'
     try:
         module = importlib.import_module(f'website.more_documentation.{name}_documentation')
     except ModuleNotFoundError:

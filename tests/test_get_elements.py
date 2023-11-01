@@ -240,3 +240,15 @@ def test_get_not_within_key(screen: Screen):
     screen.open('/')
     assert len(result) == 1
     assert result[0].text == 'button A'
+
+
+def test_get_in_local_scope(screen: Screen):
+    ui.button('button A')
+    ui.label('label A')
+    with ui.row():
+        ui.button('button B')
+        ui.label('label B')
+        result = [e.text for e in ui.get(local_scope=True)]
+
+    screen.open('/')
+    assert result == ['button B', 'label B']

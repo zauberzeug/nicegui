@@ -621,6 +621,7 @@ def create_full() -> None:
             ui.timer(1.0, lambda: ui.label('Tick!'), once=True)
 
     load_demo('generic_events')
+    load_demo(ui.get)
 
     heading('Configuration')
 

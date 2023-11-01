@@ -406,6 +406,7 @@ async def index_page(client: Client) -> None:
 
 @ui.page('/documentation')
 def documentation_page() -> None:
+    ui.get.DEFAULT_LOCAL_SCOPE = True
     add_head_html()
     menu = side_menu()
     add_header(menu)
@@ -417,6 +418,7 @@ def documentation_page() -> None:
 
 @ui.page('/documentation/{name}')
 async def documentation_page_more(name: str, client: Client) -> None:
+    ui.get.DEFAULT_LOCAL_SCOPE = True
     if name in {'ag_grid', 'e_chart'}:
         name = name.replace('_', '')  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
     module = importlib.import_module(f'website.more_documentation.{name}_documentation')
