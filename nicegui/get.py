@@ -12,15 +12,20 @@ T = TypeVar('T', bound=Element)
 
 class elements(Generic[T], Iterator[T]):
 
-    def __init__(self, *, type: Type[T] = Element, key: Union[str, list[str], None] = None) -> None:
+    def __init__(self, *,
+                 type: Type[T] = Element,
+                 key: Union[str, list[str], None] = None,
+                 text: Union[str, list[str], None] = None,
+                 ) -> None:
         """Get elements by type and/or key.
 
-        :param type: type of the elements to get (iterator will then be of type `type`)
-        :param key: key of the elements to get, can be a list of strings or a single string where keys are separated by whitespace
+        :param type: filter by type of the elements; the iterator will be of type `type`
+        :param key: filter by element keys; can be a list of strings or a single string where keys are separated by whitespace
+        :param text: filter for elements which contain sub-text in their `.text` attribute; can be a singe string or list of strings which all must match
         """
         self._types = type
         self._keys = key.split() if isinstance(key, str) else key
-        assert self._keys is None or isinstance(self._keys, list)
+        self._texts = [text] if isinstance(text, str) else text
         self._within_types: list[Element] = []
         self._within_keys: list[str] = []
 
@@ -31,7 +36,8 @@ class elements(Generic[T], Iterator[T]):
     def iterate(self, parent: Element, *, visited: List[Element] = []) -> Iterator[T]:
         for element in parent:
             if (self._types is None or isinstance(element, self._types)) and \
-                    (not self._keys or all(key in element._keys for key in self._keys)):
+                (not self._keys or all(key in element._keys for key in self._keys)) and \
+                    (not self._texts or hasattr(element, 'text') and all(text in element.text for text in self._texts)):
                 if (not self._within_types or any(isinstance(element, type) for type in self._within_types for element in visited)) and \
                         (not self._within_keys or any(key in element._keys for key in self._within_keys for element in visited)):
                     yield element

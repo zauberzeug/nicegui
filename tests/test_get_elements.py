@@ -51,6 +51,30 @@ def test_get_by_type(screen: Screen):
     assert result == 'button A, button B'
 
 
+def test_get_by_containing_text(screen: Screen):
+    ui.button('button A')
+    ui.label('label A')
+    ui.button('button B')
+    ui.label('label B')
+
+    result = ', '.join(b.text for b in ui.get(text='A'))
+
+    screen.open('/')
+    assert result == 'button A, label A'
+
+
+def test_get_by_containing_texts(screen: Screen):
+    ui.button('button A')
+    ui.label('label A')
+    ui.button('button B')
+    ui.label('label B')
+
+    result = ', '.join(b.text for b in ui.get(text=['A', 'tt']))
+
+    screen.open('/')
+    assert result == 'button A'
+
+
 def test_setting_classes(screen: Screen):
     ui.label('label A')
     ui.label('label B')
