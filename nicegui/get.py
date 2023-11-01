@@ -14,6 +14,7 @@ class elements(Generic[T], Iterator[T]):
         self.type = type
         self.key = key
         self._within_types = []
+        self._within_keys = []
 
     def __iter__(self) -> Iterator[T]:
         client = context.get_client()
@@ -23,7 +24,8 @@ class elements(Generic[T], Iterator[T]):
         for element in parent:
             if (self.type is None or isinstance(element, self.type)) and \
                     (not self.key or self.key in element._keys):
-                if not self._within_types or any(isinstance(element, type) for type in self._within_types for element in visited):
+                if (not self._within_types or any(isinstance(element, type) for type in self._within_types for element in visited)) and \
+                        (not self._within_keys or any(key in element._keys for key in self._within_keys for element in visited)):
                     yield element
             yield from self.iterate(element, visited=visited + [element])
 
@@ -38,8 +40,12 @@ class elements(Generic[T], Iterator[T]):
     def __getitem__(self, index) -> T:
         return list(iter(self))[index]
 
-    def within(self, *, type: Optional[Type[T]] = Element) -> Self:
-        self._within_types.append(type)
+    def within(self, *, type: Optional[Type[T]] = None, key: str = None) -> Self:
+        if type is not None:
+            assert issubclass(type, Element)
+            self._within_types.append(type)
+        if key is not None:
+            self._within_keys.append(key)
         return self
 
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:

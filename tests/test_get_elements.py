@@ -36,19 +36,6 @@ def test_get_by_type(screen: Screen):
     assert result == 'button A, button B'
 
 
-def test_get_within(screen: Screen):
-    ui.button('button A')
-    ui.label('label A')
-    with ui.row():
-        ui.button('button B')
-        ui.label('label B')
-
-    result = [b.text for b in ui.get(type=ui.button).within(type=ui.row)]
-
-    screen.open('/')
-    assert result == ['button B']
-
-
 def test_setting_classes(screen: Screen):
     ui.label('label A')
     ui.label('label B')
@@ -109,3 +96,29 @@ def test_get_by_multiple_keys(screen: Screen):
     assert test[2].text == 'button C'
     assert important[0].text == 'button B'
     assert important[1].text == 'button C'
+
+
+def test_get_within_type(screen: Screen):
+    ui.button('button A')
+    ui.label('label A')
+    with ui.row():
+        ui.button('button B')
+        ui.label('label B')
+
+    result = [b.text for b in ui.get(type=ui.button).within(type=ui.row)]
+
+    screen.open('/')
+    assert result == ['button B']
+
+
+def test_get_within_key(screen: Screen):
+    ui.button('button A')
+    ui.label('label A')
+    with ui.row().keys('horizontal'):
+        ui.button('button B')
+        ui.label('label B')
+
+    result = [b.text for b in ui.get().within(key='horizontal')]
+
+    screen.open('/')
+    assert result == ['button B', 'label B']

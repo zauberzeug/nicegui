@@ -364,9 +364,9 @@ class Element(Visibility):
 
         Keys are used to identify elements for querying with :func:`ui.get`.
 
-        :param keys: keys of the element
+        :param keys: keys of the element, can be a list of strings or a single string with whitespace-delimited keys
         """
-        self._keys = list(keys)
+        self._keys = [key.strip() for key in ' '.join(keys).split() if key]
         return self
 
     def tooltip(self, text: str) -> Self:
