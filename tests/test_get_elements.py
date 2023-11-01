@@ -212,3 +212,31 @@ def test_get_with_excluding_text(screen: Screen):
     screen.open('/')
     assert len(result) == 1
     assert result[0].text == 'button B'
+
+
+def test_get_not_within_type(screen: Screen):
+    ui.button('button A')
+    ui.label('label A')
+    with ui.row():
+        ui.button('button B')
+        ui.label('label B')
+
+    result = [e for e in ui.get(type=ui.button).not_within(type=ui.row)]
+
+    screen.open('/')
+    assert len(result) == 1
+    assert result[0].text == 'button A'
+
+
+def test_get_not_within_key(screen: Screen):
+    ui.button('button A')
+    ui.label('label A')
+    with ui.row().keys('horizontal'):
+        ui.button('button B')
+        ui.label('label B')
+
+    result = [e for e in ui.get(type=ui.button).not_within(key='horizontal')]
+
+    screen.open('/')
+    assert len(result) == 1
+    assert result[0].text == 'button A'
