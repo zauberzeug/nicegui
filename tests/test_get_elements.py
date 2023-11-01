@@ -80,7 +80,7 @@ def test_get_by_key(screen: Screen):
     assert result[0].text == 'button B'
 
 
-def test_get_by_multiple_keys(screen: Screen):
+def test_get_by_specific_key(screen: Screen):
     ui.button('button A').keys('test')
     ui.button('button B').keys('important ', 'test')
     ui.button('button C').keys(' important test')
@@ -96,6 +96,18 @@ def test_get_by_multiple_keys(screen: Screen):
     assert test[2].text == 'button C'
     assert important[0].text == 'button B'
     assert important[1].text == 'button C'
+
+
+def test_get_by_multiple_keys(screen: Screen):
+    ui.button('button A').keys('test')
+    ui.button('button B').keys('important ', 'test')
+    ui.button('button C').keys(' important test')
+
+    search = ui.get(type=ui.button, key='test important')
+    result = [b.text for b in search]
+    screen.open('/')
+    ic(search.__dict__)
+    assert result == ['button B', 'button C']
 
 
 def test_get_within_type(screen: Screen):

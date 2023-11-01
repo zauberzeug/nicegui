@@ -1,4 +1,4 @@
-from typing import Generic, Iterator, List, Optional, Type, TypeVar
+from typing import Generic, Iterator, List, Optional, Type, TypeVar, Union
 
 from typing_extensions import Self
 
@@ -10,11 +10,17 @@ T = TypeVar('T', bound=Element)
 
 class elements(Generic[T], Iterator[T]):
 
-    def __init__(self, *, type: Optional[Type[T]] = Element, key: str = '') -> None:
-        self.type = type
-        self.key = key
-        self._within_types = []
-        self._within_keys = []
+    def __init__(self, *, type: Type[T] = Element, key: Union[str, list[str], None] = None) -> None:
+        """Get elements by type and/or key.
+
+        :param type: type of the elements to get (iterator will then be of type `type`)
+        :param key: key of the elements to get, can be a list of strings or a single string where keys are separated by whitespace
+        """
+        self._types = type
+        self._keys = key.split() if isinstance(key, str) else key
+        assert self._keys is None or isinstance(self._keys, list)
+        self._within_types: list[Element] = []
+        self._within_keys: list[str] = []
 
     def __iter__(self) -> Iterator[T]:
         client = context.get_client()
@@ -22,8 +28,8 @@ class elements(Generic[T], Iterator[T]):
 
     def iterate(self, parent: Element, *, visited: List[Element] = []) -> Iterator[T]:
         for element in parent:
-            if (self.type is None or isinstance(element, self.type)) and \
-                    (not self.key or self.key in element._keys):
+            if (self._types is None or isinstance(element, self._types)) and \
+                    (not self._keys or all(key in element._keys for key in self._keys)):
                 if (not self._within_types or any(isinstance(element, type) for type in self._within_types for element in visited)) and \
                         (not self._within_keys or any(key in element._keys for key in self._within_keys for element in visited)):
                     yield element
