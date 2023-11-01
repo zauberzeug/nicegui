@@ -80,3 +80,14 @@ def test_setting_props(screen: Screen):
     screen.open('/')
     for e in screen.find_all_by_tag('button'):
         assert 'q-btn--flat' in e.get_attribute('class')
+
+
+def test_get_by_key(screen: Screen):
+    ui.button('button A')
+    ui.button('button B').keys('important')
+
+    result = list(ui.get(key='important'))
+
+    screen.open('/')
+    assert len(result) == 1
+    assert result[0].text == 'button B'

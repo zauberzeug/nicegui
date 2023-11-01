@@ -83,6 +83,7 @@ class Element(Visibility):
         self._style.update(self._default_style)
         self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
         self._props.update(self._default_props)
+        self._keys: List[str] = []
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
@@ -357,6 +358,16 @@ class Element(Visibility):
         for key, value in cls._parse_props(add).items():
             cls._default_props[key] = value
         return cls
+
+    def keys(self, *keys: str) -> Self:
+        """Set the keys of the element.
+
+        Keys are used to identify elements for querying with :func:`ui.get`.
+
+        :param keys: keys of the element
+        """
+        self._keys = list(keys)
+        return self
 
     def tooltip(self, text: str) -> Self:
         """Add a tooltip to the element.

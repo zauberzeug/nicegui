@@ -10,25 +10,27 @@ T = TypeVar('T', bound=Element)
 
 class elements(Generic[T], Iterator[T]):
 
-    def __init__(self, *, type: Optional[Type[T]] = Element):
+    def __init__(self, *, type: Optional[Type[T]] = Element, key: str = '') -> None:
         self.type = type
+        self.key = key
         self._within_types = []
 
     def __iter__(self) -> Iterator[T]:
         client = context.get_client()
         return self.iterate(client.layout)
 
-    def __next__(self) -> T:  # Define __next__ to return the next item from _iterator
-        if self._iterator is None:
-            raise StopIteration
-        return next(self._iterator)
-
     def iterate(self, parent: Element, *, visited: List[Element] = []) -> Iterator[T]:
         for element in parent:
-            if self.type is None or isinstance(element, self.type):
+            if (self.type is None or isinstance(element, self.type)) and \
+                    (not self.key or self.key in element._keys):
                 if not self._within_types or any(isinstance(element, type) for type in self._within_types for element in visited):
                     yield element
             yield from self.iterate(element, visited=visited + [element])
+
+    def __next__(self) -> T:
+        if self._iterator is None:
+            raise StopIteration
+        return next(self._iterator)
 
     def __len__(self) -> int:
         return len(list(iter(self)))
