@@ -174,6 +174,33 @@ def test_get_within_key(screen: Screen):
     assert result == ['button B', 'label B']
 
 
+def test_get_within_element(screen: Screen):
+    ui.button('button A')
+    ui.label('label A')
+    with ui.row() as r:
+        ui.button('button B')
+        ui.label('label B')
+
+    result = [e.text for e in ui.get().within(element=r)]
+
+    screen.open('/')
+    assert result == ['button B', 'label B']
+
+
+def test_get_within_elements(screen: Screen):
+    with ui.row() as r1:
+        ui.button('button A')
+        ui.label('label A')
+    with ui.row() as r2:
+        ui.button('button B')
+        ui.label('label B')
+
+    result = [e.text for e in ui.get().within(element=[r1, r2])]
+
+    screen.open('/')
+    assert result == ['button A', 'label A', 'button B', 'label B']
+
+
 def test_get_with_excluding_type(screen: Screen):
     ui.button('button A')
     ui.label('label A')
@@ -236,6 +263,20 @@ def test_get_not_within_key(screen: Screen):
         ui.label('label B')
 
     result = [e for e in ui.get(type=ui.button).not_within(key='horizontal')]
+
+    screen.open('/')
+    assert len(result) == 1
+    assert result[0].text == 'button A'
+
+
+def test_get_not_within_element(screen: Screen):
+    ui.button('button A')
+    ui.label('label A')
+    with ui.row() as r:
+        ui.button('button B')
+        ui.label('label B')
+
+    result = [e for e in ui.get(type=ui.button).not_within(element=r)]
 
     screen.open('/')
     assert len(result) == 1

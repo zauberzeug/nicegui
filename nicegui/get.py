@@ -35,8 +35,10 @@ class elements(Generic[T], Iterator[T]):
         self._texts = [text] if isinstance(text, str) else text
         self._within_types: list[Element] = []
         self._within_keys: list[str] = []
+        self._within_elements: list[Element] = []
         self._not_within_types: list[Element] = []
         self._not_within_keys: list[str] = []
+        self._not_within_elements: list[Element] = []
         self._exclude_types: list[Element] = []
         self._exclude_keys: list[str] = []
         self._exclude_texts: list[str] = []
@@ -52,13 +54,15 @@ class elements(Generic[T], Iterator[T]):
                 (not self._texts or hasattr(element, 'text') and all(text in element.text for text in self._texts)) and \
                 (not self._exclude_types or not any(isinstance(element, type) for type in self._exclude_types)) and \
                 (not self._exclude_keys or not any(key in element._keys for key in self._exclude_keys)) and \
-                    (not self._exclude_texts or ((hasattr(element, 'text') and not any(text in element.text for text in self._exclude_texts)))):
+                (not self._exclude_texts or (hasattr(element, 'text') and not any(text in element.text for text in self._exclude_texts))) and \
+                    (not self._within_elements or any(element in within_element for within_element in self._within_elements)):
                 if (not self._within_types or any(isinstance(element, type) for type in self._within_types for element in visited)) and \
                     (not self._within_keys or any(key in element._keys for key in self._within_keys for element in visited)) and \
                     (not self._not_within_types or not any(isinstance(element, type) for type in self._not_within_types for element in visited)) and \
                         (not self._not_within_keys or not any(key in element._keys for key in self._not_within_keys for element in visited)):
                     yield element
-            yield from self.iterate(element, visited=visited + [element])
+            if element not in self._not_within_elements:
+                yield from self.iterate(element, visited=visited + [element])
 
     def __next__(self) -> T:
         if self._iterator is None:
@@ -71,12 +75,14 @@ class elements(Generic[T], Iterator[T]):
     def __getitem__(self, index) -> T:
         return list(iter(self))[index]
 
-    def within(self, *, type: Optional[Element] = None, key: Optional[str] = None) -> Self:
+    def within(self, *, type: Optional[Element] = None, key: Optional[str] = None, element: Union[Element, list[Element], None] = None) -> Self:
         if type is not None:
             assert issubclass(type, Element)
             self._within_types.append(type)
         if key is not None:
             self._within_keys.append(key)
+        if element is not None:
+            self._within_elements.extend(element if isinstance(element, list) else [element])
         return self
 
     def exclude(self, *, type: Optional[Element] = None, key: Optional[str] = None, text: Optional[str] = None) -> Self:
@@ -91,7 +97,7 @@ class elements(Generic[T], Iterator[T]):
             self._exclude_texts.append(text)
         return self
 
-    def not_within(self, *, type: Optional[Element] = None, key: str = None) -> Self:
+    def not_within(self, *, type: Optional[Element] = None, key: str = None, element: Union[Element, list[Element], None] = None) -> Self:
         """Exclude elements which have a parent of a specific type or key."""
 
         if type is not None:
@@ -99,6 +105,8 @@ class elements(Generic[T], Iterator[T]):
             self._not_within_types.append(type)
         if key is not None:
             self._not_within_keys.append(key)
+        if element is not None:
+            self._not_within_elements.extend(element if isinstance(element, list) else [element])
         return self
 
     def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
