@@ -91,3 +91,21 @@ def test_get_by_key(screen: Screen):
     screen.open('/')
     assert len(result) == 1
     assert result[0].text == 'button B'
+
+
+def test_get_by_multiple_keys(screen: Screen):
+    ui.button('button A').keys('test')
+    ui.button('button B').keys('important ', 'test')
+    ui.button('button C').keys(' important test')
+
+    test = list(ui.get(key='test'))
+    important = list(ui.get(key='important'))
+
+    screen.open('/')
+    assert len(test) == 3
+    assert len(important) == 2
+    assert test[0].text == 'button A'
+    assert test[1].text == 'button B'
+    assert test[2].text == 'button C'
+    assert important[0].text == 'button B'
+    assert important[1].text == 'button C'
