@@ -11,7 +11,7 @@ T = TypeVar('T', bound=Element)
 
 
 class elements(Generic[T], Iterator[T]):
-    DEFAULT_LOCAL_SCOPE = True
+    DEFAULT_LOCAL_SCOPE = False
 
     def __init__(self, *,
                  type: Type[T] = Element,
