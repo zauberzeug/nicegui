@@ -49,7 +49,8 @@ def run(*,
         ) -> None:
     """ui.run
 
-    You can call `ui.run()` with optional arguments:
+    You can call `ui.run()` with optional arguments.
+    Most of them only apply after stopping and fully restarting the app and do not apply with auto-reloading.
 
     :param host: start server with this host (defaults to `'127.0.0.1` in native mode, otherwise `'0.0.0.0'`)
     :param port: use this port (default: `8080`)
