@@ -108,7 +108,7 @@ class page:
                 result = task.result() if task.done() else None
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
-            binding._refresh_step()  # pylint: disable=protected-access
+            await binding._refresh_step()  # pylint: disable=protected-access
             return client.build_response(request)
 
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']
