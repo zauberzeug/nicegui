@@ -34,7 +34,7 @@ class Splitter(ValueElement, DisableableElement):
         self._props['horizontal'] = horizontal
         self._props['limits'] = limits
         self._props['reverse'] = reverse
-        self._classes = ['nicegui-splitter']
+        self._classes.append('nicegui-splitter')
 
         self.before = self.add_slot('before')
         self.after = self.add_slot('after')

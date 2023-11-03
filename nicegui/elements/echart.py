@@ -18,7 +18,7 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
         """
         super().__init__()
         self._props['options'] = options
-        self._classes = ['nicegui-echart']
+        self._classes.append('nicegui-echart')
 
         if on_point_click:
             def handle_point_click(e: GenericEventArguments) -> None:

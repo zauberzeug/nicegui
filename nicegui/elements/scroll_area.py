@@ -15,7 +15,7 @@ class ScrollArea(Element):
         :param on_scroll: function to be called when the scroll position changes
         """
         super().__init__('q-scroll-area')
-        self._classes = ['nicegui-scroll-area']
+        self._classes.append('nicegui-scroll-area')
 
         if on_scroll:
             self.on('scroll', lambda e: self._handle_scroll(on_scroll, e), args=[

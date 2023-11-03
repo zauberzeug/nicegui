@@ -45,7 +45,7 @@ class Header(ValueElement):
         """
         with context.get_client().layout:
             super().__init__(tag='q-header', value=value, on_value_change=None)
-        self._classes = ['nicegui-header']
+        self._classes.append('nicegui-header')
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
         if wrap:
@@ -115,7 +115,7 @@ class Drawer(Element):
         self._props['side'] = side
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
-        self._classes = ['nicegui-drawer']
+        self._classes.append('nicegui-drawer')
         code = list(self.client.layout._props['view'])
         code[0 if side == 'left' else 2] = side[0].lower() if top_corner else 'h'
         code[4 if side == 'left' else 6] = side[0].upper() if fixed else side[0].lower()

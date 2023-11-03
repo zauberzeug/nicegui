@@ -36,7 +36,8 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         self._props['options'] = options
         self._props['html_columns'] = html_columns
         self._props['auto_size_columns'] = auto_size_columns
-        self._classes = ['nicegui-aggrid', f'ag-theme-{theme}']
+        self._classes.append('nicegui-aggrid')
+        self._classes.append(f'ag-theme-{theme}')
 
     @staticmethod
     def from_pandas(df: pd.DataFrame, *,
