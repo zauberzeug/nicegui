@@ -140,8 +140,13 @@
         };
         Object.entries(props).forEach(([key, value]) => {
           if (key.startsWith(':')) {
-            props[key.substring(1)] = eval(value);
-            delete props[key];
+            try {
+              props[key.substring(1)] = eval(value);
+              delete props[key];
+            }
+            catch (e) {
+              console.error(`Error while converting ${key} attribute to function:`, e);
+            }
           }
         });
         element.events.forEach((event) => {
