@@ -1,3 +1,4 @@
+import math
 from typing import Any, Callable, Dict, Optional
 
 from ..events import GenericEventArguments
@@ -40,8 +41,7 @@ class Number(ValidationElement, DisableableElement):
         :param format: a string like "%.2f" to format the displayed value
         :param on_change: callback to execute when the value changes
         :param validation: dictionary of validation rules, e.g. ``{'Too large!': lambda value: value < 3}``
-        :param integer: whether to return float or integer
-
+        :param integer: whether to restrict the value to integers (default: `False`)
         """
         self.format = format
         self.integer = integer
@@ -90,16 +90,13 @@ class Number(ValidationElement, DisableableElement):
 
     def sanitize(self) -> None:
         """Sanitize the current value to be within the allowed limits."""
-        if self.value is None and 'clearable' in self._props:
-            self.set_value(None)
+        value = float(self.value or 0)
+        value = max(value, self.min)
+        value = min(value, self.max)
+        if self.integer:
+            self.set_value(int(math.floor(value)))
         else:
-            value = float(self.value or 0)
-            value = max(value, self.min)
-            value = min(value, self.max)
-            if self.integer:
-                self.set_value(int(math.floor(value)))
-            else:
-                self.set_value(float(self.format % value) if self.format else value)
+            self.set_value(float(self.format % value) if self.format else value)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         if not e.args:
@@ -120,6 +117,6 @@ class Number(ValidationElement, DisableableElement):
 
     def _value_to_event_value(self, value: Any) -> Any:
         if self.integer:
-            return int(math.floor(value))
+            return int(math.floor(value)) if value else 0
         else:
             return float(value) if value else 0

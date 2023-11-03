@@ -19,8 +19,9 @@ def more() -> None:
         ui.label().bind_text_from(i, 'value')
 
     @text_demo('Integer', '''
-       Coerce the returned value to be integer instead of the default float.    
+        You can coerce an integer value instead of the default float using the `integer` parameter.
     ''')
     def integer():
         i = ui.number(value=38)
-        ui.button('Check number type', on_click=lambda: ui.notify(f'{i.value=} is of type {type(i.value)}'))
+        ui.button('Check number type',
+                  on_click=lambda: ui.notify(f'{i.value=} is of type {type(i.value)}'))
