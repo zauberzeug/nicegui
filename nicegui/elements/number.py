@@ -20,6 +20,7 @@ class Number(ValidationElement, DisableableElement):
                  format: Optional[str] = None,  # pylint: disable=redefined-builtin
                  on_change: Optional[Callable[..., Any]] = None,
                  validation: Dict[str, Callable[..., bool]] = {},
+                 integer: Optional[bool] = False,
                  ) -> None:
         """Number Input
 
@@ -39,8 +40,11 @@ class Number(ValidationElement, DisableableElement):
         :param format: a string like "%.2f" to format the displayed value
         :param on_change: callback to execute when the value changes
         :param validation: dictionary of validation rules, e.g. ``{'Too large!': lambda value: value < 3}``
+        :param integer: whether to return float or integer
+
         """
         self.format = format
+        self.integer = integer
         super().__init__(tag='q-input', value=value, on_value_change=on_change, validation=validation)
         self._props['type'] = 'number'
         if label is not None:
@@ -86,15 +90,24 @@ class Number(ValidationElement, DisableableElement):
 
     def sanitize(self) -> None:
         """Sanitize the current value to be within the allowed limits."""
-        value = float(self.value or 0)
-        value = max(value, self.min)
-        value = min(value, self.max)
-        self.set_value(float(self.format % value) if self.format else value)
+        if self.value is None and 'clearable' in self._props:
+            self.set_value(None)
+        else:
+            value = float(self.value or 0)
+            value = max(value, self.min)
+            value = min(value, self.max)
+            if self.integer:
+                self.set_value(int(math.floor(value)))
+            else:
+                self.set_value(float(self.format % value) if self.format else value)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         if not e.args:
             return None
-        return float(e.args)
+        if self.integer:
+            return int(math.floor(float(e.args)))
+        else:
+            return float(e.args)
 
     def _value_to_model_value(self, value: Any) -> Any:
         if value is None:
@@ -106,4 +119,7 @@ class Number(ValidationElement, DisableableElement):
         return self.format % float(value)
 
     def _value_to_event_value(self, value: Any) -> Any:
-        return float(value) if value else 0
+        if self.integer:
+            return int(math.floor(value))
+        else:
+            return float(value) if value else 0
