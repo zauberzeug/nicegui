@@ -53,3 +53,24 @@ def test_out_of_limits(screen: Screen):
 
     number.max = 15
     screen.should_contain('out_of_limits: False')
+
+
+def test_integer(screen: Screen):
+    event_values = []
+    number = ui.number('Number', integer=True, value=5, on_change=lambda e: event_values.append(e.value))
+    ui.label().bind_text_from(number, 'value', lambda value: f'value: {value}, type: {type(value)}')
+
+    screen.open('/')
+    screen.should_contain("value: 5, type: <class 'int'>")
+
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Number"]')
+    element.send_keys('67.89')
+    screen.should_contain("value: 567, type: <class 'int'>")
+
+    number.set_value(1.23)
+    screen.should_contain("value: 1, type: <class 'int'>")
+
+    number.value = 4.56
+    screen.should_contain("value: 4, type: <class 'int'>")
+
+    assert event_values == [56, 567, 0, 567, 1, 4]

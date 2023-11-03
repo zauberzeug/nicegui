@@ -93,18 +93,12 @@ class Number(ValidationElement, DisableableElement):
         value = float(self.value or 0)
         value = max(value, self.min)
         value = min(value, self.max)
-        if self.integer:
-            self.set_value(int(math.floor(value)))
-        else:
-            self.set_value(float(self.format % value) if self.format else value)
+        self.set_value(float(self.format % value) if self.format else value)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         if not e.args:
             return None
-        if self.integer:
-            return int(math.floor(float(e.args)))
-        else:
-            return float(e.args)
+        return float(e.args)
 
     def _value_to_model_value(self, value: Any) -> Any:
         if value is None:
@@ -113,10 +107,13 @@ class Number(ValidationElement, DisableableElement):
             return str(value)
         if value == '':
             return 0
-        return self.format % float(value)
+        model_value = self.format % float(value)
+        if self.integer:
+            model_value = str(int(math.floor(float(model_value))))
+        return model_value
 
     def _value_to_event_value(self, value: Any) -> Any:
+        event_value = float(value) if value else 0
         if self.integer:
-            return int(math.floor(value)) if value else 0
-        else:
-            return float(value) if value else 0
+            event_value = int(math.floor(event_value))
+        return event_value
