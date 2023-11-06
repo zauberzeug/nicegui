@@ -170,6 +170,11 @@
     "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/descope_auth/main.py"
   },
   {
+    "title": "Example: Editable table",
+    "content": "editable table allowing to add, edit, delete rows",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/editable_table/main.py"
+  },
+  {
     "title": "Basic Elements",
     "content": "This is **Markdown**.",
     "url": "/documentation/#basic_elements"
@@ -226,7 +231,7 @@
   },
   {
     "title": "Tailwind CSS",
-    "content": "Tailwind CSS is a CSS framework for rapidly building custom user interfaces. NiceGUI provides a fluent, auto-complete friendly interface for adding Tailwind classes to UI elements.  You can discover available classes by navigating the methods of the tailwind property. The builder pattern allows you to chain multiple classes together (as shown with \"Label A\"). You can also call the tailwind property with a list of classes (as shown with \"Label B\").  Although this is very similar to using the classes method, it is more convenient for Tailwind classes due to auto-completion.  Last but not least, you can also predefine a style and apply it to multiple elements (labels C and D).",
+    "content": "Tailwind CSS is a CSS framework for rapidly building custom user interfaces. NiceGUI provides a fluent, auto-complete friendly interface for adding Tailwind classes to UI elements.  You can discover available classes by navigating the methods of the tailwind property. The builder pattern allows you to chain multiple classes together (as shown with \"Label A\"). You can also call the tailwind property with a list of classes (as shown with \"Label B\").  Although this is very similar to using the classes method, it is more convenient for Tailwind classes due to auto-completion.  Last but not least, you can also predefine a style and apply it to multiple elements (labels C and D).  Note that sometimes Tailwind is overruled by Quasar styles, e.g. when using ui.button('Button').tailwind('bg-red-500'). This is a known limitation and not fully in our control. But we try to provide solutions like the color parameter: ui.button('Button', color='red-500').",
     "url": "/documentation/#tailwind_css"
   },
   {
@@ -555,6 +560,11 @@
     "url": "/documentation/slider#disable_slider"
   },
   {
+    "title": "Pagination",
+    "content": "A pagination element wrapping Quasar's QPagination <https://quasar.dev/vue-components/pagination>_ component.  :param min: minimum page number :param max: maximum page number :param direction_links: whether to show first/last page links :param value: initial page (defaults to min if no value is provided) :param on_change: callback to be invoked when the value changes",
+    "url": "/documentation/pagination"
+  },
+  {
     "title": "Grid Element",
     "content": "Provides a container which arranges its child in a grid.  :param rows: number of rows in the grid :param columns: number of columns in the grid",
     "url": "/documentation/grid"
@@ -820,6 +830,11 @@
     "url": "/documentation/table#conditional_formatting"
   },
   {
+    "title": "Table: Table cells with links",
+    "content": "Here is a demo of how to insert links into table cells. We use the body-cell-link slot to insert an <a> tag into the link column.",
+    "url": "/documentation/table#table_cells_with_links"
+  },
+  {
     "title": "Notification",
     "content": "Displays a notification on the screen.  :param message: content of the notification :param position: position on the screen (\"top-left\", \"top-right\", \"bottom-left\", \"bottom-right\", \"top\", \"bottom\", \"left\", \"right\" or \"center\", default: \"bottom\") :param close_button: optional label of a button to dismiss the notification (default: False) :param type: optional type (\"positive\", \"negative\", \"warning\", \"info\" or \"ongoing\") :param color: optional color name :param multi_line: enable multi-line notifications  Note: You can pass additional keyword arguments according to Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>_.",
     "url": "/documentation/notify"
@@ -1021,7 +1036,7 @@
   },
   {
     "title": "Dropdown Selection",
-    "content": "This element is based on Quasar's QSelect <https://quasar.dev/vue-components/select>_ component.  The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call update() to update the options in the UI.  :param options: a list ['value1', ...] or dictionary 'value1':'label1', ... specifying the options :param label: the label to display above the selection :param value: the initial value :param on_change: callback to execute when selection changes :param with_input: whether to show an input field to filter the options :param multiple: whether to allow multiple selections :param clearable: whether to add a button to clear the selection",
+    "content": "This element is based on Quasar's QSelect <https://quasar.dev/vue-components/select>_ component.  The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call update() to update the options in the UI.  If with_input is True, an input field is shown to filter the options.  If new_value_mode is not None, it implies with_input=True and the user can enter new values in the input field. See Quasar's documentation <https://quasar.dev/vue-components/select#the-new-value-mode-prop>_ for details.  :param options: a list ['value1', ...] or dictionary 'value1':'label1', ... specifying the options :param label: the label to display above the selection :param value: the initial value :param on_change: callback to execute when selection changes :param with_input: whether to show an input field to filter the options :param new_value_mode: handle new values from user input (default: None, i.e. no new values) :param multiple: whether to allow multiple selections :param clearable: whether to add a button to clear the selection",
     "url": "/documentation/select"
   },
   {
@@ -1191,7 +1206,7 @@
   },
   {
     "title": "ui.run",
-    "content": "You can call ui.run() with optional arguments:  :param host: start server with this host (defaults to '127.0.0.1 in native mode, otherwise '0.0.0.0') :param port: use this port (default: 8080) :param title: page title (default: 'NiceGUI', can be overwritten per page) :param viewport: page meta viewport content (default: 'width=device-width, initial-scale=1', can be overwritten per page) :param favicon: relative filepath, absolute URL to a favicon (default: None, NiceGUI icon will be used) or emoji (e.g. '\ud83d\ude80', works for most browsers) :param dark: whether to use Quasar's dark mode (default: False, use None for \"auto\" mode) :param language: language for Quasar elements (default: 'en-US') :param binding_refresh_interval: time between binding updates (default: 0.1 seconds, bigger is more CPU friendly) :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds) :param show: automatically open the UI in a browser tab (default: True) :param on_air: tech preview: allows temporary remote access <https://nicegui.io/documentation#nicegui_on_air>_ if set to True (default: disabled) :param native: open the UI in a native window of size 800x600 (default: False, deactivates show, automatically finds an open port) :param window_size: open the UI in a native window with the provided size (e.g. (1024, 786), default: None, also activates native) :param fullscreen: open the UI in a fullscreen window (default: False, also activates native) :param frameless: open the UI in a frameless window (default: False, also activates native) :param reload: automatically reload the UI on file changes (default: True) :param uvicorn_logging_level: logging level for uvicorn server (default: 'warning') :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only) :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: '.py') :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: '.*, .py[cod], .sw.*, ~*') :param tailwind: whether to use Tailwind (experimental, default: True) :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: True) :param endpoint_documentation: control what endpoints appear in the autogenerated OpenAPI docs (default: 'none', options: 'none', 'internal', 'page', 'all') :param storage_secret: secret key for browser-based storage (default: None, a value is required to enable ui.storage.individual and ui.storage.browser) :param kwargs: additional keyword arguments are passed to uvicorn.run",
+    "content": "You can call ui.run() with optional arguments. Most of them only apply after stopping and fully restarting the app and do not apply with auto-reloading.  :param host: start server with this host (defaults to '127.0.0.1 in native mode, otherwise '0.0.0.0') :param port: use this port (default: 8080) :param title: page title (default: 'NiceGUI', can be overwritten per page) :param viewport: page meta viewport content (default: 'width=device-width, initial-scale=1', can be overwritten per page) :param favicon: relative filepath, absolute URL to a favicon (default: None, NiceGUI icon will be used) or emoji (e.g. '\ud83d\ude80', works for most browsers) :param dark: whether to use Quasar's dark mode (default: False, use None for \"auto\" mode) :param language: language for Quasar elements (default: 'en-US') :param binding_refresh_interval: time between binding updates (default: 0.1 seconds, bigger is more CPU friendly) :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds) :param show: automatically open the UI in a browser tab (default: True) :param on_air: tech preview: allows temporary remote access <https://nicegui.io/documentation#nicegui_on_air>_ if set to True (default: disabled) :param native: open the UI in a native window of size 800x600 (default: False, deactivates show, automatically finds an open port) :param window_size: open the UI in a native window with the provided size (e.g. (1024, 786), default: None, also activates native) :param fullscreen: open the UI in a fullscreen window (default: False, also activates native) :param frameless: open the UI in a frameless window (default: False, also activates native) :param reload: automatically reload the UI on file changes (default: True) :param uvicorn_logging_level: logging level for uvicorn server (default: 'warning') :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only) :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: '*.py') :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: '.*, .py[cod], .sw.*, ~*') :param tailwind: whether to use Tailwind (experimental, default: True) :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: True) :param endpoint_documentation: control what endpoints appear in the autogenerated OpenAPI docs (default: 'none', options: 'none', 'internal', 'page', 'all') :param storage_secret: secret key for browser-based storage (default: None, a value is required to enable ui.storage.individual and ui.storage.browser) :param kwargs: additional keyword arguments are passed to uvicorn.run",
     "url": "/documentation/run"
   },
   {
