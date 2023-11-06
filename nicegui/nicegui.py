@@ -79,8 +79,6 @@ def _get_component(key: str) -> FileResponse:
 def _startup() -> None:
     """Handle the startup event."""
     # NOTE ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
-    sio.eio.ping_interval = max(app.config.reconnect_timeout * 0.8, 4)
-    sio.eio.ping_timeout = max(app.config.reconnect_timeout * 0.4, 2)
     if not app.config.has_run_config:
         raise RuntimeError('\n\n'
                            'You must call ui.run() to start the server.\n'
@@ -89,6 +87,8 @@ def _startup() -> None:
                            'remove the guard or replace it with\n'
                            '   if __name__ in {"__main__", "__mp_main__"}:\n'
                            'to allow for multiprocessing.')
+    sio.eio.ping_interval = max(app.config.reconnect_timeout * 0.8, 4)
+    sio.eio.ping_timeout = max(app.config.reconnect_timeout * 0.4, 2)
     if core.app.config.favicon:
         if helpers.is_file(core.app.config.favicon):
             app.add_route('/favicon.ico', lambda _: FileResponse(core.app.config.favicon))  # type: ignore
