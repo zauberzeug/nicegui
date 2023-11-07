@@ -49,7 +49,8 @@ export default {
   },
   methods: {
     compute_src() {
-      const new_src = (this.src.startsWith("/") ? window.path_prefix : "") + this.src;
+      const suffix = this.t ? (this.src.includes("?") ? "&" : "?") + "_nicegui_t=" + this.t : "";
+      const new_src = (this.src.startsWith("/") ? window.path_prefix : "") + this.src + suffix;
       if (new_src == this.computed_src) {
         return;
       }
@@ -103,5 +104,6 @@ export default {
     content: String,
     events: Array,
     cross: Boolean,
+    t: String,
   },
 };
