@@ -4,6 +4,7 @@ from . import context
 from .element import Element
 from .elements.mixins.value_element import ValueElement
 from .functions.html import add_body_html
+from .logging import log
 
 DrawerSides = Literal['left', 'right']
 
@@ -272,4 +273,4 @@ class PageSticky(Element):
 def _check_current_slot() -> None:
     parent = context.get_slot().parent
     if parent != parent.client.content:
-        raise RuntimeError('Layout elements must not be nested but must be direct children of the page content.')
+        log.warning('Layout elements should not be nested but must be direct children of the page content. This will be raising an Exception in NiceGUI 1.5')  # DEPRECATED
