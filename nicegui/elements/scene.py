@@ -117,7 +117,7 @@ class Scene(Element,
             for obj in self.objects.values():
                 obj.send()
 
-    def run_method(self, name: str, *args: Any) -> AwaitableResponse:
+    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         """Run a method on the client.
 
         :param name: name of the method
@@ -125,7 +125,7 @@ class Scene(Element,
         """
         if not self.is_initialized:
             return NullResponse()
-        return super().run_method(name, *args)
+        return super().run_method(name, *args, timeout=timeout, check_interval=check_interval)
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
