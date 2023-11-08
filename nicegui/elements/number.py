@@ -86,7 +86,9 @@ class Number(ValidationElement, DisableableElement):
 
     def sanitize(self) -> None:
         """Sanitize the current value to be within the allowed limits."""
-        value = float(self.value or 0)
+        if self.value is None:
+            return
+        value = float(self.value)
         value = max(value, self.min)
         value = min(value, self.max)
         self.set_value(float(self.format % value) if self.format else value)
