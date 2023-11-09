@@ -177,10 +177,10 @@ def test_create_from_pandas(screen: Screen):
 
 def test_problematic_datatypes(screen: Screen):
     df = pd.DataFrame({
-        'datetime_col': [datetime(2020, 1, 1)],
-        'timedelta_col': [timedelta(days=5)],
-        'complex_col': [1 + 2j],
-        'period_col': pd.Series([pd.Period('2021-01')]),
+        'Datetime_col': [datetime(2020, 1, 1)],
+        'Timedelta_col': [timedelta(days=5)],
+        'Complex_col': [1 + 2j],
+        'Period_col': pd.Series([pd.Period('2021-01')]),
     })
     ui.table.from_pandas(df)
 
