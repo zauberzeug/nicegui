@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 from .. import optional_features
@@ -32,7 +34,7 @@ class Table(FilterElement, component='table.js'):
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
         :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: A dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
+        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
         :param on_select: callback which is invoked when the selection changes
 
         If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
@@ -67,8 +69,8 @@ class Table(FilterElement, component='table.js'):
                     title: Optional[str] = None,
                     selection: Optional[Literal['single', 'multiple']] = None,
                     pagination: Optional[Union[int, dict]] = None,
-                    on_select: Optional[Callable[..., Any]] = None) -> 'Table':
-        """Create QTable from a Pandas DataFrame.
+                    on_select: Optional[Callable[..., Any]] = None) -> Table:
+        """Create a table from a Pandas DataFrame.
 
         Note:
         If the DataFrame contains non-serializable columns of type `datetime64[ns]`, `timedelta64[ns]`, `complex128` or `period[M]`,
@@ -80,9 +82,9 @@ class Table(FilterElement, component='table.js'):
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
         :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: A dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
+        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
         :param on_select: callback which is invoked when the selection changes
-        :return: QTable element
+        :return: table element
         """
         date_cols = df.columns[df.dtypes == 'datetime64[ns]']
         time_cols = df.columns[df.dtypes == 'timedelta64[ns]']

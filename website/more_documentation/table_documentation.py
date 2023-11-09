@@ -127,9 +127,9 @@ def more() -> None:
         ''')
         table.on('rename', rename)
 
-    @text_demo('Table from pandas dataframe', '''
-        You can create a table from a pandas dataframe using the from_pandas method. 
-        This method takes a Pandas Dataframe as input and returns a table.
+    @text_demo('Table from Pandas DataFrame', '''
+        You can create a table from a Pandas DataFrame using the `from_pandas` method. 
+        This method takes a Pandas DataFrame as input and returns a table.
     ''')
     def table_from_pandas_demo():
         import pandas as pd
