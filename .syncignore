@@ -16,3 +16,4 @@ venv
 .github/
 tests/
 .git/
+.mypy_cache/
