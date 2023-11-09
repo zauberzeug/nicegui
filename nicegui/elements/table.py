@@ -67,7 +67,7 @@ class Table(FilterElement, component='table.js'):
                     title: Optional[str] = None,
                     selection: Optional[Literal['single', 'multiple']] = None,
                     pagination: Optional[Union[int, dict]] = None,
-                    on_select: Optional[Callable[..., Any]] = None):
+                    on_select: Optional[Callable[..., Any]] = None) -> 'Table':
         """Create QTable from a Pandas DataFrame.
 
         Note:
