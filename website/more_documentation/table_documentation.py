@@ -128,16 +128,14 @@ def more() -> None:
         table.on('rename', rename)
 
     @text_demo('Table from pandas dataframe', '''
-        Here is a demo of how to create a table from a pandas dataframe.
+        You can create a table from a pandas dataframe using the from_pandas method. 
+        This method takes a Pandas Dataframe as input and returns a table.
     ''')
     def table_from_pandas_demo():
         import pandas as pd
 
         df = pd.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
-        ui.table(
-            columns=[{'name': col, 'label': col, 'field': col} for col in df.columns],
-            rows=df.to_dict('records'),
-        )
+        ui.table.from_pandas(df).classes('max-h-40')
 
     @text_demo('Adding rows', '''
         It's simple to add new rows with the `add_rows(dict)` method.

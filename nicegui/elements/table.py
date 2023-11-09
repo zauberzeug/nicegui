@@ -1,8 +1,15 @@
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
+from .. import optional_features
 from ..element import Element
 from ..events import GenericEventArguments, TableSelectionEventArguments, handle_event
 from .mixins.filter_element import FilterElement
+
+try:
+    import pandas as pd
+    optional_features.register('pandas')
+except ImportError:
+    pass
 
 
 class Table(FilterElement, component='table.js'):
@@ -53,6 +60,49 @@ class Table(FilterElement, component='table.js'):
             arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
             handle_event(on_select, arguments)
         self.on('selection', handle_selection, ['added', 'rows', 'keys'])
+
+    @staticmethod
+    def from_pandas(df: pd.DataFrame,
+                    row_key: str = 'id',
+                    title: Optional[str] = None,
+                    selection: Optional[Literal['single', 'multiple']] = None,
+                    pagination: Optional[Union[int, dict]] = None,
+                    on_select: Optional[Callable[..., Any]] = None):
+        """Create QTable from a Pandas DataFrame.
+
+        Note:
+        If the DataFrame contains non-serializable columns of type `datetime64[ns]`, `timedelta64[ns]`, `complex128` or `period[M]`,
+        they will be converted to strings.
+        To use a different conversion, convert the DataFrame manually before passing it to this method.
+        See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
+
+        :param df: Pandas DataFrame
+        :param row_key: name of the column containing unique data identifying the row (default: "id")
+        :param title: title of the table
+        :param selection: selection type ("single" or "multiple"; default: `None`)
+        :param pagination: A dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
+        :param on_select: callback which is invoked when the selection changes
+        :return: QTable element
+        """
+        date_cols = df.columns[df.dtypes == 'datetime64[ns]']
+        time_cols = df.columns[df.dtypes == 'timedelta64[ns]']
+        complex_cols = df.columns[df.dtypes == 'complex128']
+        period_cols = df.columns[df.dtypes == 'period[M]']
+        if len(date_cols) != 0 or len(time_cols) != 0 or len(complex_cols) != 0 or len(period_cols) != 0:
+            df = df.copy()
+            df[date_cols] = df[date_cols].astype(str)
+            df[time_cols] = df[time_cols].astype(str)
+            df[complex_cols] = df[complex_cols].astype(str)
+            df[period_cols] = df[period_cols].astype(str)
+
+        return Table(
+            columns=[{'name': col, 'label': col, 'field': col} for col in df.columns],
+            rows=df.to_dict('records'),
+            row_key=row_key,
+            title=title,
+            selection=selection,
+            pagination=pagination,
+            on_select=on_select)
 
     @property
     def rows(self) -> List[Dict]:

@@ -1,5 +1,7 @@
+from datetime import datetime, timedelta
 from typing import List
 
+import pandas as pd
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
@@ -158,3 +160,36 @@ def test_replace_rows(screen: Screen):
     screen.should_not_contain('Bob')
     screen.should_not_contain('Lionel')
     screen.should_contain('Carol')
+
+
+def test_create_from_pandas(screen: Screen):
+    df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
+    ui.table.from_pandas(df)
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_contain('18')
+    screen.should_contain('21')
+    screen.should_contain('42')
+    screen.should_contain('answer')
+
+
+def test_problematic_datatypes(screen: Screen):
+    df = pd.DataFrame({
+        'datetime_col': [datetime(2020, 1, 1)],
+        'timedelta_col': [timedelta(days=5)],
+        'complex_col': [1 + 2j],
+        'period_col': pd.Series([pd.Period('2021-01')]),
+    })
+    ui.table.from_pandas(df)
+
+    screen.open('/')
+    screen.should_contain('Datetime_col')
+    screen.should_contain('Timedelta_col')
+    screen.should_contain('Complex_col')
+    screen.should_contain('Period_col')
+    screen.should_contain('2020-01-01')
+    screen.should_contain('5 days')
+    screen.should_contain('(1+2j)')
+    screen.should_contain('2021-01')
