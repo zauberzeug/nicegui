@@ -175,6 +175,11 @@
     "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/editable_table/main.py"
   },
   {
+    "title": "Example: Editable table using AG Grid",
+    "content": "editable table allowing to add, edit, delete rows, using AG Grid",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/editable_table_aggrid/main.py"
+  },
+  {
     "title": "Basic Elements",
     "content": "This is **Markdown**.",
     "url": "/documentation/#basic_elements"
@@ -1320,3 +1325,4 @@
     "url": "/documentation/query#modify_default_page_padding"
   }
 ]
+
