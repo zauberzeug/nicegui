@@ -365,6 +365,7 @@ async def index_page(client: Client) -> None:
             example_link('Custom Binding', 'create a custom binding for a label with a bindable background color')
             example_link('Descope Auth', 'login form and user profile using [Descope](https://descope.com)')
             example_link('Editable table', 'editable table allowing to add, edit, delete rows')
+            example_link('Editable AG Grid', 'editable AG Grid allowing to add, edit, delete rows')
 
     with ui.row().classes('dark-box min-h-screen mt-16'):
         link_target('why')
