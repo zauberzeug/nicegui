@@ -108,4 +108,12 @@
       "package/": ""
     }
   }
+  ,
+  "fullcalendar": {
+    "destination": "nicegui/elements/lib",
+    "keep": ["package/index.global.min.js"],
+    "rename": {
+      "package/": ""
+    }
+  }
 }

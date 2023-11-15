@@ -58,6 +58,7 @@ __all__ = [
     'scroll_area',
     'select',
     'separator',
+    'fullcalendar',
     'slider',
     'spinner',
     'splitter',
@@ -176,6 +177,7 @@ from .elements.time import Time as time
 from .elements.timeline import Timeline as timeline
 from .elements.timeline import TimelineEntry as timeline_entry
 from .elements.timer import Timer as timer
+from .elements.fullcalendar import FullCalendar as fullcalendar
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
