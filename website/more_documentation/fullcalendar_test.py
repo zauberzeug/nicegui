@@ -59,14 +59,14 @@ fullcal.addevent('MATH 1B03 - T06 - Linear Algebra I', '2023-10-18 09:30:00', '2
 
 def add_event():
     global fullcal
-    fullcal.addevent("Math 1b03", "2023-10-19 09:30:00", "2023-10-19 10:20:00")
+    fullcal.addevent("Math 1b03", "2023-11-18 09:30:00", "2023-11-18 10:20:00")
     
     print(fullcal._props)
 
 
 def remove_event():
     global fullcal
-    fullcal.remove_event("Math 1b03", "2023-10-19 09:30:00", "2023-10-19 10:20:00")
+    fullcal.remove_event("Math 1b03", "2023-11-18 09:30:00", "2023-10-19 10:20:00")
 
 ui.button("click me to add event", on_click=add_event)
 ui.button("Clcik me to delete event", on_click=remove_event)
