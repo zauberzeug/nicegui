@@ -1,26 +1,35 @@
 export default {
   template: "<div></div>",
   props: {
-    eventsData: Array,
+    options: Array,
+    eventToAdd: Object
   },
   mounted() {
-    this.calendar = new FullCalendar.Calendar(this.$el, {
-      initialView: "timeGridWeek",
-      slotMinTime: "05:00:00",
-      slotMaxTime: "22:00:00",
-      allDaySlot: false,
-      timeZone: "local",
-      height: "auto",
-      events: this.eventsData,
-      eventClick: function(info) {
-          alert('Event: ' + info.event.title);
-          this.$emit("click", {"click":info});
-        
-      }
-    });
+    this.options.eventClick = (info) => {
+      console.log("hi2");
+      this.$emit("click", { info: info });
+    };
 
+    this.calendar = new FullCalendar.Calendar(this.$el, this.options);
     this.calendar.render();
   },
   methods: {
+    update_calendar() {
+      if (this.calendar) {
+        // this.calendar = new FullCalendar.Calendar(this.$el, this.options);
+        // this.calendar.render()
+        // this.calendar.addEvent(this.eventToAdd);
+        this.calendar.render()
+      }
+    },
+    add_event(eventToAdd) {
+      if (this.calendar) {
+        this.calendar.addEvent(eventToAdd);
+        this.calendar.render() 
+        console.log("hi");
+      }
+      
+    }
+
   },
 };

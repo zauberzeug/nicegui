@@ -99,11 +99,13 @@ __all__ = [
     'right_drawer',
     'run',
     'run_with',
+    'calendar_event'
 ]
 
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
 from .elements.audio import Audio as audio
+from .elements.calendarEvent import CalendarEvent as calendar_event
 from .elements.avatar import Avatar as avatar
 from .elements.badge import Badge as badge
 from .elements.button import Button as button
