@@ -18,23 +18,30 @@ class FullCalendar(Element, component='fullcalendar.js', libraries=['lib/fullcal
 
             self.on("click", handle_on_click, ['info'])
 
-    def updater(self, event) -> None:
+
+
+    def addevent(self, title, start, end, **args):
+        event_dict = {"title": title, "start": start, "end": end, **args}
+        self._props['options']['events'].append(event_dict)
         super().update()
-        print("Attempting to update!")
-        self.run_method('update_calendar', event)
+        self.run_method('update_calendar')
+        super().update()
 
-    def updatecal(self, options: Dict[str, Any]) -> None:
-        # Implement your logic here to update the calendar with the new options
-        print("Updating calendar with options:", options)
-        # You might want to update the FullCalendar instance with the new options
-        self._props['options'] = options
-        self.updater(None)
-    
+    def remove_event(self, title, start, end, **args):
+        index_to_remove = None
+        for i, event in enumerate(self._props['options']['events']):
+            if (
+                event["title"] == title
+                and event["start"] == start
+                and event["end"] == end
+                and all(event[key] == args[key] for key in args)
+            ):
+                index_to_remove = i
+                break
 
-    def addevent(self, event):
-        self._props['eventToAdd'] = event
-        self._props['options']['events'].append(event)
-        # super().update()
-        print("Attempting to add an event", event)
-        # self.run_method('add_event', event)
-        self.updater(event)
+        # Remove the event if found
+        if index_to_remove is not None:
+            del self._props['options']['events'][index_to_remove]
+        super().update()
+        self.run_method('update_calendar')
+        

@@ -2,7 +2,7 @@ export default {
   template: "<div></div>",
   props: {
     options: Array,
-    eventToAdd: Object
+    // eventToAdd: Object
   },
   mounted() {
     this.options.eventClick = (info) => {
@@ -15,21 +15,11 @@ export default {
   },
   methods: {
     update_calendar() {
-      if (this.calendar) {
-        // this.calendar = new FullCalendar.Calendar(this.$el, this.options);
-        // this.calendar.render()
-        // this.calendar.addEvent(this.eventToAdd);
+      if (this.calendar) {    
         this.calendar.render()
       }
     },
-    add_event(eventToAdd) {
-      if (this.calendar) {
-        this.calendar.addEvent(eventToAdd);
-        this.calendar.render() 
-        console.log("hi");
-      }
-      
-    }
+
 
   },
 };
