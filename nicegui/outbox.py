@@ -51,7 +51,7 @@ async def loop(air: Optional[Air]) -> None:
             for client_id, elements in update_queue.items():
                 data = {
                     element_id: None if element is None else element._to_dict()  # pylint: disable=protected-access
-                    for element_id, element in elements.items()
+                    for element_id, element in list(elements.items())
                 }
                 coros.append(emit('update', data, client_id))
             update_queue.clear()
