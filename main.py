@@ -15,12 +15,8 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 
 import prometheus
 from nicegui import Client, app, ui
-from website import documentation, example_card, svg
-from website.demo import bash_window, browser_window, python_window
-from website.documentation_tools import create_anchor_name, element_demo, generate_class_doc
-from website.search import Search
-from website.star import add_star
-from website.style import example_link, features, heading, link_target, section_heading, side_menu, subtitle, title
+from website import (Search, add_star, documentation, example_card, example_link, features, heading, link_target,
+                     section_heading, side_menu, subtitle, svg, title)
 
 prometheus.start_monitor(app)
 
@@ -49,7 +45,7 @@ def logo_square() -> FileResponse:
 
 
 @app.post('/dark_mode')
-async def dark_mode(request: Request) -> None:
+async def post_dark_mode(request: Request) -> None:
     app.storage.browser['dark_mode'] = (await request.json()).get('value')
 
 
@@ -143,8 +139,8 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
             svg.word().classes('w-24')
 
         with ui.row().classes('max-[1050px]:hidden'):
-            for title, target in menu_items.items():
-                ui.link(title, target).classes(replace='text-lg text-white')
+            for title_, target in menu_items.items():
+                ui.link(title_, target).classes(replace='text-lg text-white')
 
         search = Search()
         search.create_button()
@@ -169,8 +165,8 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
         with ui.row().classes('min-[1051px]:hidden'):
             with ui.button(icon='more_vert').props('flat color=white round'):
                 with ui.menu().classes('bg-primary text-white text-lg'):
-                    for title, target in menu_items.items():
-                        ui.menu_item(title, on_click=lambda target=target: ui.open(target))
+                    for title_, target in menu_items.items():
+                        ui.menu_item(title_, on_click=lambda target=target: ui.open(target))
 
 
 @ui.page('/')
@@ -221,7 +217,7 @@ async def index_page(client: Client) -> None:
             with ui.column().classes('w-full max-w-md gap-2'):
                 ui.html('<em>1.</em>').classes('text-3xl font-bold')
                 ui.markdown('Create __main.py__').classes('text-lg')
-                with python_window(classes='w-full h-52'):
+                with documentation.python_window(classes='w-full h-52'):
                     ui.markdown('''
                         ```python\n
                         from nicegui import ui
@@ -234,7 +230,7 @@ async def index_page(client: Client) -> None:
             with ui.column().classes('w-full max-w-md gap-2'):
                 ui.html('<em>2.</em>').classes('text-3xl font-bold')
                 ui.markdown('Install and launch').classes('text-lg')
-                with bash_window(classes='w-full h-52'):
+                with documentation.bash_window(classes='w-full h-52'):
                     ui.markdown('''
                         ```bash
                         pip3 install nicegui
@@ -244,7 +240,7 @@ async def index_page(client: Client) -> None:
             with ui.column().classes('w-full max-w-md gap-2'):
                 ui.html('<em>3.</em>').classes('text-3xl font-bold')
                 ui.markdown('Enjoy!').classes('text-lg')
-                with browser_window(classes='w-full h-52'):
+                with documentation.browser_window(classes='w-full h-52'):
                     ui.label('Hello NiceGUI!')
         with ui.expansion('...or use Docker to run your main.py').classes('w-full gap-2 bold-links arrow-links'):
             with ui.row().classes('mt-8 w-full justify-center items-center gap-8'):
@@ -254,7 +250,7 @@ async def index_page(client: Client) -> None:
 
                     The command searches for `main.py` in in your current directory and makes the app available at http://localhost:8888.
                 ''').classes('max-w-xl')
-                with bash_window(classes='max-w-lg w-full h-52'):
+                with documentation.bash_window(classes='max-w-lg w-full h-52'):
                     ui.markdown('''
                         ```bash
                         docker run -it --rm -p 8888:8080 \\
@@ -420,7 +416,7 @@ def documentation_page() -> None:
 async def documentation_page_more(name: str, client: Client) -> None:
     if name in {'ag_grid', 'e_chart'}:
         name = name.replace('_', '')  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
-    module = importlib.import_module(f'website.more_documentation.{name}_documentation')
+    module = importlib.import_module(f'website.documentation.more.{name}_documentation')
     more = getattr(module, 'more', None)
     if hasattr(ui, name):
         api = getattr(ui, name)
@@ -432,19 +428,20 @@ async def documentation_page_more(name: str, client: Client) -> None:
     add_head_html()
     add_header()
     with side_menu() as menu:
-        ui.markdown(f'[← back](/documentation#{create_anchor_name(back_link_target)})').classes('bold-links')
+        ui.markdown(f'[← back](/documentation#{documentation.create_anchor_name(back_link_target)})') \
+            .classes('bold-links')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Documentation', f'ui.*{name}*' if hasattr(ui, name) else f'*{name.replace("_", " ").title()}*')
         with menu:
             ui.markdown('**Demos**' if more else '**Demo**').classes('mt-4')
-        element_demo(api)(getattr(module, 'main_demo'))
+        documentation.element_demo(api)(getattr(module, 'main_demo'))
         if more:
             more()
         if inspect.isclass(api):
             with menu:
                 ui.markdown('**Reference**').classes('mt-4')
             ui.markdown('## Reference').classes('mt-16')
-            generate_class_doc(api)
+            documentation.generate_class_doc(api)
     try:
         await client.connected()
         ui.run_javascript(f'document.title = "{name} • NiceGUI";')
