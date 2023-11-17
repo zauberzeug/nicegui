@@ -410,7 +410,7 @@ class Element(Visibility):
         """Update the element on the client side."""
         outbox.enqueue_update(self)
 
-    def run_method(self, name: str, *args: Any) -> AwaitableResponse:
+    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         """Run a method on the client side.
 
         If the function is awaited, the result of the method call is returned.
@@ -418,10 +418,13 @@ class Element(Visibility):
 
         :param name: name of the method
         :param args: arguments to pass to the method
+        :param timeout: maximum time to wait for a response (default: 1 second)
+        :param check_interval: time between checks for a response (default: 0.01 seconds)
         """
         if not core.loop:
             return NullResponse()
-        return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})')
+        return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})',
+                                          timeout=timeout, check_interval=check_interval)
 
     def _collect_descendants(self, *, include_self: bool = False) -> List[Element]:
         elements: List[Element] = [self] if include_self else []

@@ -12,6 +12,7 @@ export default {
   `,
   props: {
     src: String,
+    t: String,
   },
   data: function () {
     return {
@@ -26,7 +27,8 @@ export default {
   },
   methods: {
     compute_src() {
-      this.computed_src = (this.src.startsWith("/") ? window.path_prefix : "") + this.src;
+      const suffix = this.t ? (this.src.includes("?") ? "&" : "?") + "_nicegui_t=" + this.t : "";
+      this.computed_src = (this.src.startsWith("/") ? window.path_prefix : "") + this.src + suffix;
     },
   },
 };

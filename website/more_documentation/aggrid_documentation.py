@@ -113,9 +113,9 @@ def more() -> None:
             ],
         })
 
-    @text_demo('Create Grid from Pandas Dataframe', '''
-        You can create an AG Grid from a Pandas Dataframe using the `from_pandas` method.
-        This method takes a Pandas Dataframe as input and returns an AG Grid.
+    @text_demo('Create Grid from Pandas DataFrame', '''
+        You can create an AG Grid from a Pandas DataFrame using the `from_pandas` method.
+        This method takes a Pandas DataFrame as input and returns an AG Grid.
     ''')
     def aggrid_from_pandas():
         import pandas as pd

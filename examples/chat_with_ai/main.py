@@ -9,27 +9,25 @@ from nicegui import context, ui
 
 OPENAI_API_KEY = 'not-set'  # TODO: set your OpenAI API key here
 
-llm = ConversationChain(llm=ChatOpenAI(model_name='gpt-3.5-turbo', openai_api_key=OPENAI_API_KEY))
-
-messages: List[Tuple[str, str]] = []
-thinking: bool = False
-
-
-@ui.refreshable
-def chat_messages() -> None:
-    for name, text in messages:
-        ui.chat_message(text=text, name=name, sent=name == 'You')
-    if thinking:
-        ui.spinner(size='3rem').classes('self-center')
-    if context.get_client().has_socket_connection:
-        ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)')
-
 
 @ui.page('/')
 def main():
+    llm = ConversationChain(llm=ChatOpenAI(model_name='gpt-3.5-turbo', openai_api_key=OPENAI_API_KEY))
+
+    messages: List[Tuple[str, str]] = []
+    thinking: bool = False
+
+    @ui.refreshable
+    def chat_messages() -> None:
+        for name, text in messages:
+            ui.chat_message(text=text, name=name, sent=name == 'You')
+        if thinking:
+            ui.spinner(size='3rem').classes('self-center')
+        if context.get_client().has_socket_connection:
+            ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)')
 
     async def send() -> None:
-        global thinking
+        nonlocal thinking
         message = text.value
         messages.append(('You', text.value))
         thinking = True

@@ -38,3 +38,12 @@ def more() -> None:
     def link():
         with ui.link(target='https://github.com/zauberzeug/nicegui'):
             ui.image('https://picsum.photos/id/41/640/360').classes('w-64')
+
+    @text_demo('Force reload', '''
+        You can force an image to reload by calling the `force_reload` method.
+        It will append a timestamp to the image URL, which will make the browser reload the image.
+    ''')
+    def force_reload():
+        img = ui.image('https://picsum.photos/640/360').classes('w-64')
+
+        ui.button('Force reload', on_click=img.force_reload)

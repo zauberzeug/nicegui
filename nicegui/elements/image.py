@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 from typing import Union
 
@@ -15,3 +16,8 @@ class Image(SourceElement, component='image.js'):
         :param source: the source of the image; can be a URL, local file path or a base64 string
         """
         super().__init__(source=source)
+
+    def force_reload(self) -> None:
+        """Force the image to reload from the source."""
+        self._props['t'] = time.time()
+        self.update()

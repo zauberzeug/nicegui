@@ -1,6 +1,6 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, cast
 
-from typing_extensions import Self, cast
+from typing_extensions import Self
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element

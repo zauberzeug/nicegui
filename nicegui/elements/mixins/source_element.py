@@ -1,7 +1,7 @@
 from pathlib import Path
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional, Union, cast
 
-from typing_extensions import Self, cast
+from typing_extensions import Self
 
 from ... import core
 from ...binding import BindableProperty, bind, bind_from, bind_to

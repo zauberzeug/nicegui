@@ -300,6 +300,10 @@ def create_full() -> None:
         Although this is very similar to using the `classes` method, it is more convenient for Tailwind classes due to auto-completion.
 
         Last but not least, you can also predefine a style and apply it to multiple elements (labels C and D).
+               
+        Note that sometimes Tailwind is overruled by Quasar styles, e.g. when using `ui.button('Button').tailwind('bg-red-500')`.
+        This is a known limitation and not fully in our control.
+        But we try to provide solutions like the `color` parameter: `ui.button('Button', color='red-500')`.
     ''')
     def tailwind_demo():
         from nicegui import Tailwind

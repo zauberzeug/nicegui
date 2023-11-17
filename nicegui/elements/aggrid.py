@@ -85,7 +85,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         super().update()
         self.run_method('update_grid')
 
-    def call_api_method(self, name: str, *args) -> AwaitableResponse:
+    def call_api_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         """Call an AG Grid API method.
 
         See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>`_ for a list of methods.
@@ -95,12 +95,15 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :param name: name of the method
         :param args: arguments to pass to the method
+        :param timeout: timeout in seconds (default: 1 second)
+        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('call_api_method', name, *args)
+        return self.run_method('call_api_method', name, *args, timeout=timeout, check_interval=check_interval)
 
-    def call_column_api_method(self, name: str, *args) -> AwaitableResponse:
+    def call_column_api_method(self, name: str, *args,
+                               timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         """Call an AG Grid Column API method.
 
         See `AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>`_ for a list of methods.
@@ -110,10 +113,12 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :param name: name of the method
         :param args: arguments to pass to the method
+        :param timeout: timeout in seconds (default: 1 second)
+        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('call_column_api_method', name, *args)
+        return self.run_method('call_column_api_method', name, *args, timeout=timeout, check_interval=check_interval)
 
     async def get_selected_rows(self) -> List[Dict]:
         """Get the currently selected rows.
@@ -137,7 +142,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         rows = await self.get_selected_rows()
         return rows[0] if rows else None
 
-    async def get_client_data(self) -> List[Dict]:
+    async def get_client_data(self, *, timeout: float = 1, check_interval: float = 0.01) -> List[Dict]:
         """Get the data from the client including any edits made by the client.
 
         This method is especially useful when the grid is configured with ``'editable': True``.
@@ -147,13 +152,15 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         Note that when editing a cell, the row data is not updated until the cell exits the edit mode.
         This does not happen when the cell loses focus, unless ``stopEditingWhenCellsLoseFocus: True`` is set.
 
+        :param timeout: timeout in seconds (default: 1 second)
+        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
         :return: list of row data
         """
         result = await self.client.run_javascript(f'''
             const rowData = [];
             getElement({self.id}).gridOptions.api.forEachNode(node => rowData.push(node.data));
             return rowData;
-        ''')
+        ''', timeout=timeout, check_interval=check_interval)
         return cast(List[Dict], result)
 
     async def load_client_data(self) -> None:

@@ -29,6 +29,7 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
 
         If `new_value_mode` is not None, it implies `with_input=True` and the user can enter new values in the input field.
         See `Quasar's documentation <https://quasar.dev/vue-components/select#the-new-value-mode-prop>`_ for details.
+        Note that this mode is ineffective when setting the `value` property programmatically.
 
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
         :param label: the label to display above the selection
