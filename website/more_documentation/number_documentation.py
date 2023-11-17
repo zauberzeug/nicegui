@@ -10,7 +10,6 @@ def main_demo() -> None:
 
 
 def more() -> None:
-
     @text_demo('Clearable', '''
         The `clearable` prop from [Quasar](https://quasar.dev/) adds a button to the input that clears the text.    
     ''')
@@ -18,10 +17,13 @@ def more() -> None:
         i = ui.number(value=42).props('clearable')
         ui.label().bind_text_from(i, 'value')
 
-    @text_demo('Integer', '''
-        You can coerce an integer value instead of the default float using the `integer` parameter.
+    @text_demo('Number of digits', '''
+        You can specify the number of digits using the `digits` parameter.
+        A negative value means decimal places before the dot.
+        The rounding takes place when the input loses focus,
+        when sanitization parameters like min, max or digits change,
+        or when `sanitize()` is called manually.
     ''')
     def integer():
-        i = ui.number(value=38)
-        ui.button('Check number type',
-                  on_click=lambda: ui.notify(f'{i.value=} is of type {type(i.value)}'))
+        n = ui.number(value=3.14159265359, digits=5)
+        n.sanitize()

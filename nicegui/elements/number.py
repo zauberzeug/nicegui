@@ -1,4 +1,3 @@
-import math
 from typing import Any, Callable, Dict, Optional
 
 from ..events import GenericEventArguments
@@ -15,13 +14,13 @@ class Number(ValidationElement, DisableableElement):
                  value: Optional[float] = None,
                  min: Optional[float] = None,  # pylint: disable=redefined-builtin
                  max: Optional[float] = None,  # pylint: disable=redefined-builtin
+                 digits: Optional[int] = None,
                  step: Optional[float] = None,
                  prefix: Optional[str] = None,
                  suffix: Optional[str] = None,
                  format: Optional[str] = None,  # pylint: disable=redefined-builtin
                  on_change: Optional[Callable[..., Any]] = None,
                  validation: Dict[str, Callable[..., bool]] = {},
-                 integer: Optional[bool] = False,
                  ) -> None:
         """Number Input
 
@@ -35,16 +34,15 @@ class Number(ValidationElement, DisableableElement):
         :param value: the initial value of the field
         :param min: the minimum value allowed
         :param max: the maximum value allowed
+        :param digits: the number of digits allowed (default: no limit, negative: decimal places before the dot)
         :param step: the step size for the stepper buttons
         :param prefix: a prefix to prepend to the displayed value
         :param suffix: a suffix to append to the displayed value
         :param format: a string like "%.2f" to format the displayed value
         :param on_change: callback to execute when the value changes
         :param validation: dictionary of validation rules, e.g. ``{'Too large!': lambda value: value < 3}``
-        :param integer: whether to restrict the value to integers (default: `False`)
         """
         self.format = format
-        self.integer = integer
         super().__init__(tag='q-input', value=value, on_value_change=on_change, validation=validation)
         self._props['type'] = 'number'
         if label is not None:
@@ -55,6 +53,7 @@ class Number(ValidationElement, DisableableElement):
             self._props['min'] = min
         if max is not None:
             self._props['max'] = max
+        self._digits = digits
         if step is not None:
             self._props['step'] = step
         if prefix is not None:
@@ -84,6 +83,16 @@ class Number(ValidationElement, DisableableElement):
         self.sanitize()
 
     @property
+    def digits(self) -> Optional[int]:
+        """The number of digits allowed (default: no limit, negative: decimal places before the dot)."""
+        return self._digits
+
+    @digits.setter
+    def digits(self, value: Optional[int]) -> None:
+        self._digits = value
+        self.sanitize()
+
+    @property
     def out_of_limits(self) -> bool:
         """Whether the current value is out of the allowed limits."""
         return not self.min <= self.value <= self.max
@@ -95,6 +104,8 @@ class Number(ValidationElement, DisableableElement):
         value = float(self.value)
         value = max(value, self.min)
         value = min(value, self.max)
+        if self.digits is not None:
+            value = float(round(value, self.digits))
         self.set_value(float(self.format % value) if self.format else value)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
@@ -109,13 +120,7 @@ class Number(ValidationElement, DisableableElement):
             return str(value)
         if value == '':
             return 0
-        model_value = self.format % float(value)
-        if self.integer:
-            model_value = str(int(math.floor(float(model_value))))
-        return model_value
+        return self.format % float(value)
 
     def _value_to_event_value(self, value: Any) -> Any:
-        event_value = float(value) if value else 0
-        if self.integer:
-            event_value = int(math.floor(event_value))
-        return event_value
+        return float(value) if value else 0

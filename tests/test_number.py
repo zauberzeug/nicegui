@@ -1,3 +1,4 @@
+import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
@@ -58,22 +59,20 @@ def test_out_of_limits(screen: Screen):
     screen.should_contain('out_of_limits: False')
 
 
-def test_integer(screen: Screen):
-    event_values = []
-    number = ui.number('Number', integer=True, value=5, on_change=lambda e: event_values.append(e.value))
-    ui.label().bind_text_from(number, 'value', lambda value: f'value: {value}, type: {type(value)}')
+@pytest.mark.parametrize('digits', [None, 1, -1])
+def test_rounding(digits: int, screen: Screen):
+    number = ui.number('Number', value=12, digits=digits)
+    ui.label().bind_text_from(number, 'value', lambda value: f'number=_{value}_')
 
     screen.open('/')
-    screen.should_contain("value: 5, type: <class 'int'>")
+    screen.should_contain('number=_12_')
 
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Number"]')
-    element.send_keys('67.89')
-    screen.should_contain("value: 567, type: <class 'int'>")
-
-    number.set_value(1.23)
-    screen.should_contain("value: 1, type: <class 'int'>")
-
-    number.value = 4.56
-    screen.should_contain("value: 4, type: <class 'int'>")
-
-    assert event_values == [56, 567, 0, 567, 1, 4]
+    element.send_keys('.345')
+    screen.click('number=')  # blur the number input
+    if digits is None:
+        screen.should_contain('number=_12.345_')
+    elif digits == 1:
+        screen.should_contain('number=_12.3_')
+    elif digits == -1:
+        screen.should_contain('number=_10.0_')
