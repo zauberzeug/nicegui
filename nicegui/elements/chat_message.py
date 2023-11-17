@@ -2,9 +2,10 @@ import html
 from typing import List, Optional, Union
 
 from ..element import Element
+from .html import Html
 
 
-class ChatMessage(Element, component='chat_message.js'):
+class ChatMessage(Element):
 
     def __init__(self,
                  text: Union[str, List[str]] = ..., *,
@@ -27,7 +28,7 @@ class ChatMessage(Element, component='chat_message.js'):
         :param sent: render as a sent message (so from current user) (default: False)
         :param text_html: render text as HTML (default: False)
         """
-        super().__init__()
+        super().__init__('q-chat-message')
 
         if text is ...:
             text = []
@@ -36,8 +37,6 @@ class ChatMessage(Element, component='chat_message.js'):
         if not text_html:
             text = [html.escape(part) for part in text]
             text = [part.replace('\n', '<br />') for part in text]
-        self._props['text'] = text
-        self._props['text-html'] = True
 
         if name is not None:
             self._props['name'] = name
@@ -48,3 +47,7 @@ class ChatMessage(Element, component='chat_message.js'):
         if avatar is not None:
             self._props['avatar'] = avatar
         self._props['sent'] = sent
+
+        with self:
+            for line in text:
+                Html(line)
