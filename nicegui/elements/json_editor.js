@@ -28,7 +28,7 @@ export default {
     },
     destroyEditor() {
       if (this.editor) {
-        this.editor.dispose();
+        this.editor.destroy();
       }
     },
   },

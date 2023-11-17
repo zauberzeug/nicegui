@@ -25,6 +25,7 @@ class Expansion(ValueElement, DisableableElement):
         if text is not None:
             self._props['label'] = text
         self._props['icon'] = icon
+        self._classes.append('nicegui-expansion')
 
     def open(self) -> None:
         """Open the expansion."""

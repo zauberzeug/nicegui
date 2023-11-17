@@ -1,6 +1,6 @@
 FROM python:3.8-slim
 
-RUN apt update && apt install curl -y
+RUN apt update && apt install curl build-essential -y
 
 # We use Poetry for dependency management
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
@@ -10,7 +10,7 @@ RUN curl -sSL https://install.python-poetry.org | python3 - && \
 
 WORKDIR /app
 
-COPY ./pyproject.toml ./poetry.lock* main.py ./
-RUN poetry install --no-root --all-extras
+COPY . .
+RUN poetry install --all-extras
 
 CMD python3 -m debugpy --listen 5678 main.py

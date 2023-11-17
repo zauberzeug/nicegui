@@ -1,5 +1,5 @@
 /*!
- * Quasar Framework v2.12.2
+ * Quasar Framework v2.13.0
  * (c) 2015-present Razvan Stoenescu
  * Released under the MIT License.
  */
@@ -1653,7 +1653,7 @@
   }
 
   var installQuasar = function (parentApp, opts = {}) {
-      const $q = { version: '2.12.2' };
+      const $q = { version: '2.13.0' };
 
       if (globalConfigIsFrozen === false) {
         if (opts.config !== void 0) {
@@ -8923,9 +8923,12 @@
       + (props.innerTrackColor !== void 0 ? ` bg-${ props.innerTrackColor }` : '')
     );
     const innerBarStyle = vue.computed(() => {
+      const innerDiff = innerMaxRatio.value - innerMinRatio.value;
       const acc = {
         [ positionProp.value ]: `${ 100 * innerMinRatio.value }%`,
-        [ sizeProp.value ]: `${ 100 * (innerMaxRatio.value - innerMinRatio.value) }%`
+        [ sizeProp.value ]: innerDiff === 0
+          ? '2px'
+          : `${ 100 * innerDiff }%`
       };
       if (props.innerTrackImg !== void 0) {
         acc.backgroundImage = `url(${ props.innerTrackImg }) !important`;
@@ -9019,18 +9022,16 @@
     }));
 
     const markerStyle = vue.computed(() => {
-      if (innerBarLen.value !== 0) {
-        const size = 100 * markerStep.value / innerBarLen.value;
+      const size = innerBarLen.value === 0
+        ? '2px'
+        : 100 * markerStep.value / innerBarLen.value;
 
-        return {
-          ...innerBarStyle.value,
-          backgroundSize: props.vertical === true
-            ? `2px ${ size }%`
-            : `${ size }% 2px`
-        }
+      return {
+        ...innerBarStyle.value,
+        backgroundSize: props.vertical === true
+          ? `2px ${ size }%`
+          : `${ size }% 2px`
       }
-
-      return null
     });
 
     function getMarkerList (def) {
@@ -21615,7 +21616,12 @@
         ? unmaskValue(masked)
         : masked;
 
-      String(props.modelValue) !== val && emitValue(val, true);
+      if (
+        String(props.modelValue) !== val
+        && (props.modelValue !== null || val !== '')
+      ) {
+        emitValue(val, true);
+      }
     }
 
     function moveCursorForPaste (inp, start, end) {
@@ -21741,7 +21747,10 @@
     function onMaskedKeydown (e) {
       emit('keydown', e);
 
-      if (shouldIgnoreKey(e) === true) {
+      if (
+        shouldIgnoreKey(e) === true
+        || e.altKey === true // let browser handle these
+      ) {
         return
       }
 
@@ -26293,11 +26302,26 @@
         targetRef.value[ dirProps[ axis ].scroll ] = offset;
       }
 
+      let mouseEventTimer = null;
+
       function onMouseenter () {
-        hover.value = true;
+        if (mouseEventTimer !== null) {
+          clearTimeout(mouseEventTimer);
+        }
+
+        // setTimeout needed for iOS; see ticket #16210
+        mouseEventTimer = setTimeout(() => {
+          mouseEventTimer = null;
+          hover.value = true;
+        }, proxy.$q.platform.is.ios ? 50 : 0);
       }
 
       function onMouseleave () {
+        if (mouseEventTimer !== null) {
+          clearTimeout(mouseEventTimer);
+          mouseEventTimer = null;
+        }
+
         hover.value = false;
       }
 
@@ -27291,7 +27315,8 @@
       const dialogFieldFocused = vue.ref(false);
       const innerLoadingIndicator = vue.ref(false);
 
-      let inputTimer = null, innerValueCache,
+      let filterTimer = null, inputValueTimer = null,
+        innerValueCache,
         hasDialog, userInputValue, filterId = null, defaultInputValue,
         transitionShowComputed, searchBuffer, searchBufferExp;
 
@@ -27736,9 +27761,11 @@
             scrollTo(index);
 
             if (skipInputValue !== true && props.useInput === true && props.fillInput === true) {
-              setInputValue(index >= 0
-                ? getOptionLabel.value(props.options[ index ])
-                : defaultInputValue
+              setInputValue(
+                index >= 0
+                  ? getOptionLabel.value(props.options[ index ])
+                  : defaultInputValue,
+                true
               );
             }
           }
@@ -27799,9 +27826,13 @@
 
         e.target.value = '';
 
-        if (inputTimer !== null) {
-          clearTimeout(inputTimer);
-          inputTimer = null;
+        if (filterTimer !== null) {
+          clearTimeout(filterTimer);
+          filterTimer = null;
+        }
+        if (inputValueTimer !== null) {
+          clearTimeout(inputValueTimer);
+          inputValueTimer = null;
         }
 
         resetInputValue();
@@ -27892,6 +27923,10 @@
         // backspace
         if (
           e.keyCode === 8
+          && (
+            props.useChips === true
+            || props.clearable === true
+          )
           && props.hideSelected !== true
           && inputValue.value.length === 0
         ) {
@@ -27986,7 +28021,7 @@
               scrollTo(index);
 
               if (index >= 0 && props.useInput === true && props.fillInput === true) {
-                setInputValue(getOptionLabel.value(props.options[ index ]));
+                setInputValue(getOptionLabel.value(props.options[ index ]), true);
               }
             });
           }
@@ -28020,11 +28055,11 @@
               mode = props.newValueMode;
             }
 
+            updateInputValue('', props.multiple !== true, true);
+
             if (val === void 0 || val === null) {
               return
             }
-
-            updateInputValue('', props.multiple !== true, true);
 
             const fn = mode === 'toggle' ? toggleOption : add;
             fn(val, mode === 'add-unique');
@@ -28172,9 +28207,13 @@
       }
 
       function onInput (e) {
-        if (inputTimer !== null) {
-          clearTimeout(inputTimer);
-          inputTimer = null;
+        if (filterTimer !== null) {
+          clearTimeout(filterTimer);
+          filterTimer = null;
+        }
+        if (inputValueTimer !== null) {
+          clearTimeout(inputValueTimer);
+          inputValueTimer = null;
         }
 
         if (e && e.target && e.target.qComposing === true) {
@@ -28195,17 +28234,26 @@
         }
 
         if (props.onFilter !== void 0) {
-          inputTimer = setTimeout(() => {
-            inputTimer = null;
+          filterTimer = setTimeout(() => {
+            filterTimer = null;
             filter(inputValue.value);
           }, props.inputDebounce);
         }
       }
 
-      function setInputValue (val) {
+      function setInputValue (val, emitImmediately) {
         if (inputValue.value !== val) {
           inputValue.value = val;
-          emit('inputValue', val);
+
+          if (emitImmediately === true || props.inputDebounce === 0 || props.inputDebounce === '0') {
+            emit('inputValue', val);
+          }
+          else {
+            inputValueTimer = setTimeout(() => {
+              inputValueTimer = null;
+              emit('inputValue', val);
+            }, props.inputDebounce);
+          }
         }
       }
 
@@ -28213,7 +28261,7 @@
         userInputValue = internal !== true;
 
         if (props.useInput === true) {
-          setInputValue(val);
+          setInputValue(val, true);
 
           if (noFiltering === true || internal !== true) {
             defaultInputValue = val;
@@ -28566,7 +28614,8 @@
       updatePreState();
 
       vue.onBeforeUnmount(() => {
-        inputTimer !== null && clearTimeout(inputTimer);
+        filterTimer !== null && clearTimeout(filterTimer);
+        inputValueTimer !== null && clearTimeout(inputValueTimer);
       });
 
       // expose public methods
@@ -29488,7 +29537,7 @@
     vue.h('rect', {
       x: '0',
       y: '0',
-      width: ' 100',
+      width: '100',
       height: '100',
       fill: 'none'
     }),
@@ -29569,7 +29618,7 @@
     vue.h('rect', {
       x: '0',
       y: '0',
-      width: ' 100',
+      width: '100',
       height: '100',
       fill: 'none'
     }),
@@ -29579,7 +29628,7 @@
       vue.h('rect', {
         x: '-20',
         y: '-20',
-        width: ' 40',
+        width: '40',
         height: '40',
         fill: 'currentColor',
         opacity: '0.9'
@@ -29604,7 +29653,7 @@
       vue.h('rect', {
         x: '-20',
         y: '-20',
-        width: ' 40',
+        width: '40',
         height: '40',
         fill: 'currentColor',
         opacity: '0.8'
@@ -29629,7 +29678,7 @@
       vue.h('rect', {
         x: '-20',
         y: '-20',
-        width: ' 40',
+        width: '40',
         height: '40',
         fill: 'currentColor',
         opacity: '0.7'
@@ -29654,7 +29703,7 @@
       vue.h('rect', {
         x: '-20',
         y: '-20',
-        width: ' 40',
+        width: '40',
         height: '40',
         fill: 'currentColor',
         opacity: '0.6'
@@ -29802,7 +29851,7 @@
       vue.h('rect', {
         x: '-10',
         y: '-30',
-        width: ' 20',
+        width: '20',
         height: '60',
         fill: 'currentColor',
         opacity: '0.6'
@@ -29828,7 +29877,7 @@
       vue.h('rect', {
         x: '-10',
         y: '-30',
-        width: ' 20',
+        width: '20',
         height: '60',
         fill: 'currentColor',
         opacity: '0.8'
@@ -29854,7 +29903,7 @@
       vue.h('rect', {
         x: '-10',
         y: '-30',
-        width: ' 20',
+        width: '20',
         height: '60',
         fill: 'currentColor',
         opacity: '0.9'
@@ -30166,7 +30215,7 @@
         vue.h('rect', {
           x: '15',
           y: '20',
-          width: ' 70',
+          width: '70',
           height: '25'
         }, [
           vue.h('animate', {
@@ -30195,7 +30244,7 @@
         vue.h('rect', {
           x: '15',
           y: '55',
-          width: ' 70',
+          width: '70',
           height: '25'
         }, [
           vue.h('animate', {
@@ -31890,6 +31939,9 @@
                 A = val(a),
                 B = val(b);
 
+              if (col.rawSort !== void 0) {
+                return col.rawSort(A, B, a, b) * dir
+              }
               if (A === null || A === void 0) {
                 return -1 * dir
               }
@@ -31897,6 +31949,8 @@
                 return 1 * dir
               }
               if (col.sort !== void 0) {
+                // gets called without rows that have null/undefined as value
+                // due to the above two statements
                 return col.sort(A, B, a, b) * dir
               }
               if (isNumber(A) === true && isNumber(B) === true) {
@@ -34251,23 +34305,36 @@
         }
       }
 
+      function goToViewWhenHasModel (newView) {
+        const model = props.modelValue;
+        if (
+          view.value !== newView
+          && model !== void 0
+          && model !== null
+          && model !== ''
+          && typeof model !== 'string'
+        ) {
+          view.value = newView;
+        }
+      }
+
       function verifyAndUpdate () {
         if (hourInSelection.value !== null && hourInSelection.value(innerModel.value.hour) !== true) {
           innerModel.value = __splitDate();
-          view.value = 'hour';
+          goToViewWhenHasModel('hour');
           return
         }
 
         if (minuteInSelection.value !== null && minuteInSelection.value(innerModel.value.minute) !== true) {
           innerModel.value.minute = null;
           innerModel.value.second = null;
-          view.value = 'minute';
+          goToViewWhenHasModel('minute');
           return
         }
 
         if (props.withSeconds === true && secondInSelection.value !== null && secondInSelection.value(innerModel.value.second) !== true) {
           innerModel.value.second = null;
-          view.value = 'second';
+          goToViewWhenHasModel('second');
           return
         }
 
@@ -35129,6 +35196,7 @@
         let body = node.body
           ? slots[ `body-${ node.body }` ] || slots[ 'default-body' ]
           : slots[ 'default-body' ];
+
         const slotScope = header !== void 0 || body !== void 0
           ? getSlotScope(node, m, key)
           : null;
@@ -35152,6 +35220,8 @@
               + (m.selected === true ? ' q-tree__node--selected' : '')
               + (m.disabled === true ? ' q-tree__node--disabled' : ''),
             tabindex: m.link === true ? 0 : -1,
+            ariaExpanded: children.length > 0 ? m.expanded : null,
+            role: 'treeitem',
             onClick: (e) => {
               onClick(node, m, e);
             },
@@ -35216,16 +35286,21 @@
           isParent === true
             ? (
                 props.noTransition === true
-                  ? vue.h('div', {
-                    class: 'q-tree__node-collapsible' + textColorClass.value,
-                    key: `${ key }__q`
-                  }, [
-                    body,
-                    vue.h('div', {
-                      class: 'q-tree__children'
-                        + (m.disabled === true ? ' q-tree__node--disabled' : '')
-                    }, m.expanded ? children : null)
-                  ])
+                  ? (
+                      m.expanded === true
+                        ? vue.h('div', {
+                          class: 'q-tree__node-collapsible' + textColorClass.value,
+                          key: `${ key }__q`
+                        }, [
+                          body,
+                          vue.h('div', {
+                            class: 'q-tree__children'
+                              + (m.disabled === true ? ' q-tree__node--disabled' : ''),
+                            role: 'group'
+                          }, children)
+                        ])
+                        : null
+                    )
 
                   : vue.h(QSlideTransition, {
                     duration: props.duration,
@@ -35239,7 +35314,8 @@
                       body,
                       vue.h('div', {
                         class: 'q-tree__children'
-                          + (m.disabled === true ? ' q-tree__node--disabled' : '')
+                          + (m.disabled === true ? ' q-tree__node--disabled' : ''),
+                        role: 'group'
                       }, children)
                     ]),
                     [ [ vue.vShow, m.expanded ] ]
@@ -35333,7 +35409,8 @@
 
         return vue.h(
           'div', {
-            class: classes.value
+            class: classes.value,
+            role: 'tree'
           },
           children.length === 0
             ? (
@@ -40503,9 +40580,9 @@
     }
 
     once (name, callback, ctx) {
-      const listener = () => {
+      const listener = (...args) => {
         this.off(name, listener);
-        callback.apply(ctx, arguments);
+        callback.apply(ctx, args);
       };
 
       listener.__callback = callback;
@@ -40923,7 +41000,7 @@
    */
 
   var index_umd = {
-    version: '2.12.2',
+    version: '2.13.0',
     install (app, opts) {
       installQuasar(app, {
         components,

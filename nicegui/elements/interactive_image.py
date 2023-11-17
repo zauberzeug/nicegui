@@ -1,4 +1,5 @@
 from __future__ import annotations
+import time
 
 from pathlib import Path
 from typing import Any, Callable, List, Optional, Union, cast
@@ -55,3 +56,8 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
             )
             handle_event(on_mouse, arguments)
         self.on('mouse', handle_mouse)
+
+    def force_reload(self) -> None:
+        """Force the image to reload from the source."""
+        self._props['t'] = time.time()
+        self.update()

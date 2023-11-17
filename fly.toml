@@ -12,7 +12,7 @@ kill_timeout = "5s"
   dockerfile = "fly.dockerfile"
 
 [deploy]
-  strategy = "bluegreen"
+  strategy = "canary"
 
 [processes]
   app = ""
@@ -26,7 +26,7 @@ kill_timeout = "5s"
   processes = ["app"]
   auto_stop_machines = true
   auto_start_machines = true
-  min_machines_running = 6
+  min_machines_running = 10
 
   [[services.ports]]
     port = 80
@@ -38,8 +38,8 @@ kill_timeout = "5s"
     handlers = ["tls", "http"]
   [services.concurrency]
     type = "connections"
-    hard_limit = 150
-    soft_limit = 80
+    hard_limit = 35
+    soft_limit = 10
 
   [[services.tcp_checks]]
     interval = "10s"
@@ -51,10 +51,10 @@ kill_timeout = "5s"
     timeout = "10s"
     grace_period = "1m0s"
     method = "get"
-    path = "/"
+    path = "/status"
     protocol = "http"
     tls_skip_verify = false
 
 [[metrics]]
+  path = "/"
   port = 9062
-  path = "/metrics"

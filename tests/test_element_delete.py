@@ -124,9 +124,9 @@ def test_on_delete(screen: Screen):
         def __init__(self, text: str) -> None:
             super().__init__(text)
 
-        def _on_delete(self) -> None:
+        def _handle_delete(self) -> None:
             deleted_labels.append(self.text)
-            super()._on_delete()
+            super()._handle_delete()
 
     with ui.row() as row:
         CustomLabel('Label A')

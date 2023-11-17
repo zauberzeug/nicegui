@@ -132,6 +132,7 @@ def test_refresh_with_arguments(screen: Screen):
     screen.should_contain('count=5, value=2')
 
     screen.click('refresh(value=3)')
+    screen.wait(0.5)
     screen.assert_py_logger(
         'ERROR', "'value' needs to be consistently passed to some_ui() either as positional or as keyword argument")
 
@@ -180,3 +181,41 @@ def test_refresh_with_function_reference(screen: Screen):
     screen.should_contain('Refreshing A')
     screen.click('B')
     screen.should_contain('Refreshing B')
+
+
+def test_refreshable_with_state(screen: Screen):
+    @ui.refreshable
+    def counter(title: str):
+        count, set_count = ui.state(0)
+        ui.label(f'{title}: {count}')
+        ui.button(f'Increment {title}', on_click=lambda: set_count(count + 1))
+
+    counter('A')
+    counter('B')
+
+    screen.open('/')
+    screen.should_contain('A: 0')
+    screen.should_contain('B: 0')
+
+    screen.click('Increment A')
+    screen.wait(0.5)
+    screen.should_contain('A: 1')
+    screen.should_contain('B: 0')
+
+    screen.click('Increment B')
+    screen.wait(0.5)
+    screen.should_contain('A: 1')
+    screen.should_contain('B: 1')
+
+
+def test_refreshable_with_return_value(screen: Screen):
+    @ui.refreshable
+    def number_ui() -> int:
+        ui.label('42')
+        return 42
+
+    answer = number_ui()
+    assert answer == 42
+
+    screen.open('/')
+    screen.should_contain('42')

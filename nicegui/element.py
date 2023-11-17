@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import inspect
 import re
 from copy import copy, deepcopy
@@ -8,9 +9,8 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional,
 
 from typing_extensions import Self
 
-from nicegui import json
-
-from . import events, globals, outbox, storage  # pylint: disable=redefined-builtin
+from . import context, core, events, json, outbox, storage
+from .awaitable_response import AwaitableResponse, NullResponse
 from .dependencies import Component, Library, register_library, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
@@ -20,7 +20,36 @@ from .tailwind import Tailwind
 if TYPE_CHECKING:
     from .client import Client
 
-PROPS_PATTERN = re.compile(r'([:\w\-]+)(?:=(?:("[^"\\]*(?:\\.[^"\\]*)*")|([\w\-.%:\/]+)))?(?:$|\s)')
+PROPS_PATTERN = re.compile(r'''
+# Match a key-value pair optionally followed by whitespace or end of string
+([:\w\-]+)          # Capture group 1: Key
+(?:                 # Optional non-capturing group for value
+    =               # Match the equal sign
+    (?:             # Non-capturing group for value options
+        (           # Capture group 2: Value enclosed in double quotes
+            "       # Match  double quote
+            [^"\\]* # Match any character except quotes or backslashes zero or more times
+            (?:\\.[^"\\]*)*  # Match any escaped character followed by any character except quotes or backslashes zero or more times
+            "       # Match the closing quote
+        )
+        |
+        (           # Capture group 3: Value enclosed in single quotes
+            '       # Match a single quote
+            [^'\\]* # Match any character except quotes or backslashes zero or more times
+            (?:\\.[^'\\]*)*  # Match any escaped character followed by any character except quotes or backslashes zero or more times
+            '       # Match the closing quote
+        )
+        |           # Or
+        ([\w\-.%:\/]+)  # Capture group 4: Value without quotes
+    )
+)?                  # End of optional non-capturing group for value
+(?:$|\s)            # Match end of string or whitespace
+''', re.VERBOSE)
+
+# https://www.w3.org/TR/xml/#sec-common-syn
+TAG_START_CHAR = r':|[A-Z]|_|[a-z]|[\u00C0-\u00D6]|[\u00D8-\u00F6]|[\u00F8-\u02FF]|[\u0370-\u037D]|[\u037F-\u1FFF]|[\u200C-\u200D]|[\u2070-\u218F]|[\u2C00-\u2FEF]|[\u3001-\uD7FF]|[\uF900-\uFDCF]|[\uFDF0-\uFFFD]|[\U00010000-\U000EFFFF]'
+TAG_CHAR = TAG_START_CHAR + r'|-|\.|[0-9]|\u00B7|[\u0300-\u036F]|[\u203F-\u2040]'
+TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 
 
 class Element(Visibility):
@@ -42,10 +71,12 @@ class Element(Visibility):
         :param _client: client for this element (for internal use only)
         """
         super().__init__()
-        self.client = _client or globals.get_client()
+        self.client = _client or context.get_client()
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
         self.tag = tag if tag else self.component.tag if self.component else 'div'
+        if not TAG_PATTERN.match(self.tag):
+            raise ValueError(f'Invalid HTML tag: {self.tag}')
         self._classes: List[str] = []
         self._classes.extend(self._default_classes)
         self._style: Dict[str, str] = {}
@@ -60,7 +91,7 @@ class Element(Visibility):
 
         self.client.elements[self.id] = self
         self.parent_slot: Optional[Slot] = None
-        slot_stack = globals.get_slot_stack()
+        slot_stack = context.get_slot_stack()
         if slot_stack:
             self.parent_slot = slot_stack[-1]
             self.parent_slot.children.append(self)
@@ -159,17 +190,20 @@ class Element(Visibility):
         }
 
     @staticmethod
-    def _update_classes_list(
-            classes: List[str],
-            add: Optional[str] = None, remove: Optional[str] = None, replace: Optional[str] = None) -> List[str]:
+    def _update_classes_list(classes: List[str],
+                             add: Optional[str] = None,
+                             remove: Optional[str] = None,
+                             replace: Optional[str] = None) -> List[str]:
         class_list = classes if replace is None else []
         class_list = [c for c in class_list if c not in (remove or '').split()]
         class_list += (add or '').split()
         class_list += (replace or '').split()
         return list(dict.fromkeys(class_list))  # NOTE: remove duplicates while preserving order
 
-    def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
-            -> Self:
+    def classes(self,
+                add: Optional[str] = None, *,
+                remove: Optional[str] = None,
+                replace: Optional[str] = None) -> Self:
         """Apply, remove, or replace HTML classes.
 
         This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
@@ -187,8 +221,10 @@ class Element(Visibility):
         return self
 
     @classmethod
-    def default_classes(cls, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
-            -> Self:
+    def default_classes(cls,
+                        add: Optional[str] = None, *,
+                        remove: Optional[str] = None,
+                        replace: Optional[str] = None) -> type[Self]:
         """Apply, remove, or replace default HTML classes.
 
         This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
@@ -214,7 +250,10 @@ class Element(Visibility):
                 result[key.strip()] = value.strip()
         return result
 
-    def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
+    def style(self,
+              add: Optional[str] = None, *,
+              remove: Optional[str] = None,
+              replace: Optional[str] = None) -> Self:
         """Apply, remove, or replace CSS definitions.
 
         Removing or replacing styles can be helpful if the predefined style is not desired.
@@ -234,7 +273,10 @@ class Element(Visibility):
         return self
 
     @classmethod
-    def default_style(cls, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
+    def default_style(cls,
+                      add: Optional[str] = None, *,
+                      remove: Optional[str] = None,
+                      replace: Optional[str] = None) -> type[Self]:
         """Apply, remove, or replace default CSS definitions.
 
         Removing or replacing styles can be helpful if the predefined style is not desired.
@@ -258,13 +300,18 @@ class Element(Visibility):
         dictionary = {}
         for match in PROPS_PATTERN.finditer(text or ''):
             key = match.group(1)
-            value = match.group(2) or match.group(3)
-            if value and value.startswith('"') and value.endswith('"'):
-                value = json.loads(value)
-            dictionary[key] = value or True
+            value = match.group(2) or match.group(3) or match.group(4)
+            if value is None:
+                dictionary[key] = True
+            else:
+                if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
+                    value = ast.literal_eval(value)
+                dictionary[key] = value
         return dictionary
 
-    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
+    def props(self,
+              add: Optional[str] = None, *,
+              remove: Optional[str] = None) -> Self:
         """Add or remove props.
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
@@ -289,7 +336,9 @@ class Element(Visibility):
         return self
 
     @classmethod
-    def default_props(cls, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
+    def default_props(cls,
+                      add: Optional[str] = None, *,
+                      remove: Optional[str] = None) -> type[Self]:
         """Add or remove default props.
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
@@ -361,17 +410,21 @@ class Element(Visibility):
         """Update the element on the client side."""
         outbox.enqueue_update(self)
 
-    def run_method(self, name: str, *args: Any) -> None:
+    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         """Run a method on the client side.
+
+        If the function is awaited, the result of the method call is returned.
+        Otherwise, the method is executed without waiting for a response.
 
         :param name: name of the method
         :param args: arguments to pass to the method
+        :param timeout: maximum time to wait for a response (default: 1 second)
+        :param check_interval: time between checks for a response (default: 0.01 seconds)
         """
-        if not globals.loop:
-            return
-        data = {'id': self.id, 'name': name, 'args': args}
-        target_id = globals._socket_id or self.client.id  # pylint: disable=protected-access
-        outbox.enqueue_message('run_method', data, target_id)
+        if not core.loop:
+            return NullResponse()
+        return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})',
+                                          timeout=timeout, check_interval=check_interval)
 
     def _collect_descendants(self, *, include_self: bool = False) -> List[Element]:
         elements: List[Element] = [self] if include_self else []
@@ -422,7 +475,7 @@ class Element(Visibility):
         assert self.parent_slot is not None
         self.parent_slot.children.remove(self)
 
-    def _on_delete(self) -> None:
+    def _handle_delete(self) -> None:
         """Called when the element is deleted.
 
         This method can be overridden in subclasses to perform cleanup tasks.

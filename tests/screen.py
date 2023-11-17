@@ -2,7 +2,7 @@ import os
 import threading
 import time
 from contextlib import contextmanager
-from typing import List
+from typing import List, Optional
 
 import pytest
 from selenium import webdriver
@@ -12,7 +12,8 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from nicegui import app, globals, ui  # pylint: disable=redefined-builtin
+from nicegui import app, ui
+from nicegui.server import Server
 
 from .test_helpers import TEST_DIR
 
@@ -25,7 +26,7 @@ class Screen:
     def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture) -> None:
         self.selenium = selenium
         self.caplog = caplog
-        self.server_thread = None
+        self.server_thread: Optional[threading.Thread] = None
         self.ui_run_kwargs = {'port': self.PORT, 'show': False, 'reload': False}
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
@@ -49,8 +50,9 @@ class Screen:
         """Stop the webserver."""
         self.close()
         self.caplog.clear()
-        globals.server.should_exit = True
-        self.server_thread.join()
+        Server.instance.should_exit = True
+        if self.server_thread:
+            self.server_thread.join()
 
     def open(self, path: str, timeout: float = 3.0) -> None:
         """Try to open the page until the server is ready or we time out.
@@ -111,12 +113,26 @@ class Screen:
             self.wait(0.1)
         raise AssertionError(f'Could not find input with value "{text}"')
 
+    def should_load_image(self, image: WebElement, *, timeout: float = 2.0) -> None:
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            js = 'return arguments[0].naturalWidth > 0 && arguments[0].naturalHeight > 0'
+            if self.selenium.execute_script(js, image):
+                return
+        raise AssertionError(f'Image not loaded: {image.get_attribute("outerHTML")}')
+
     def click(self, target_text: str) -> WebElement:
         element = self.find(target_text)
         try:
             element.click()
         except ElementNotInteractableException as e:
             raise AssertionError(f'Could not click on "{target_text}" on:\n{element.get_attribute("outerHTML")}') from e
+        return element
+
+    def context_click(self, target_text: str) -> WebElement:
+        element = self.find(target_text)
+        action = ActionChains(self.selenium)
+        action.context_click(element).perform()
         return element
 
     def click_at_position(self, element: WebElement, x: int, y: int) -> None:
@@ -143,13 +159,17 @@ class Screen:
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 
+    def find_all(self, text: str) -> List[WebElement]:
+        query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
+        return self.selenium.find_elements(By.XPATH, query)
+
     def find_element(self, element: ui.element) -> WebElement:
         return self.selenium.find_element(By.ID, f'c{element.id}')
 
     def find_by_class(self, name: str) -> WebElement:
         return self.selenium.find_element(By.CLASS_NAME, name)
 
-    def find_all_by_class(self, name: str) -> WebElement:
+    def find_all_by_class(self, name: str) -> List[WebElement]:
         return self.selenium.find_elements(By.CLASS_NAME, name)
 
     def find_by_tag(self, name: str) -> WebElement:

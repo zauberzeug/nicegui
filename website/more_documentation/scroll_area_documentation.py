@@ -5,10 +5,9 @@ from ..documentation_tools import text_demo
 
 def main_demo() -> None:
     with ui.row():
-        with ui.card().classes('w-32 h-32'):
-            with ui.scroll_area():
-                ui.label('I scroll. ' * 20)
-        with ui.card().classes('w-32 h-32'):
+        with ui.scroll_area().classes('w-32 h-32 border'):
+            ui.label('I scroll. ' * 20)
+        with ui.column().classes('p-4 w-32 h-32 border'):
             ui.label('I will not scroll. ' * 10)
 
 

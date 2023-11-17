@@ -2,8 +2,8 @@ from typing import Optional
 
 from typing_extensions import Self
 
+from .. import context
 from ..element import Element
-from ..globals import get_client
 
 
 class Query(Element, component='query.js'):
@@ -62,7 +62,7 @@ def query(selector: str) -> Query:
 
     :param selector: the CSS selector (e.g. "body", "#my-id", ".my-class", "div > p")
     """
-    for element in get_client().elements.values():
+    for element in context.get_client().elements.values():
         if isinstance(element, Query) and element._props['selector'] == selector:  # pylint: disable=protected-access
             return element
     return Query(selector)

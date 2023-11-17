@@ -1,6 +1,6 @@
-from typing import Awaitable, Callable, Dict, Union
+from typing import Callable, Dict, Union
 
-from nicegui import background_tasks, ui
+from nicegui import background_tasks, helpers, ui
 
 
 class RouterFrame(ui.element, component='router_frame.js'):
@@ -29,13 +29,13 @@ class Router():
 
         async def build() -> None:
             with self.content:
-                await ui.run_javascript(f'''
+                ui.run_javascript(f'''
                     if (window.location.pathname !== "{path}") {{
                         history.pushState({{page: "{path}"}}, "", "{path}");
                     }}
-                ''', respond=False)
+                ''')
                 result = builder()
-                if isinstance(result, Awaitable):
+                if helpers.is_coroutine_function(builder):
                     await result
         self.content.clear()
         background_tasks.create(build())

@@ -18,7 +18,7 @@ class Card(Element):
         If you want the padding and borders for nested children, move the children into another container.
         """
         super().__init__('q-card')
-        self._classes = ['nicegui-card']
+        self._classes.append('nicegui-card')
 
     def tight(self) -> Self:
         """Remove padding and gaps between nested elements."""

@@ -32,11 +32,21 @@ error=0
 check main.py || error=1
 for path in examples/*
 do
-    if test -f $path/requirements.txt; then
-        python3 -m pip install -r $path/requirements.txt || error=1 
+    # skip if python is 3.11 and if path is examples/sqlite_database
+    if test $(python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2) = "3.11" && test $path = "examples/sqlite_database"; then
+        continue # until https://github.com/omnilib/aiosqlite/issues/241 is fixed
     fi
+    
+    # install all requirements except nicegui
+    if test -f $path/requirements.txt; then
+        sed '/^nicegui/d' $path/requirements.txt > $path/requirements.tmp.txt || error=1 # remove nicegui from requirements.txt
+        python3 -m pip install -r $path/requirements.tmp.txt || error=1
+        rm $path/requirements.tmp.txt || error=1
+    fi
+
+    # run start.sh or main.py
     if test -f $path/start.sh; then
-        check $path/start.sh dev || error=1 
+        check $path/start.sh dev || error=1
     elif test -f $path/main.py; then
         check $path/main.py || error=1
     fi

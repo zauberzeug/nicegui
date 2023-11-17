@@ -15,7 +15,7 @@ class ScrollArea(Element):
         :param on_scroll: function to be called when the scroll position changes
         """
         super().__init__('q-scroll-area')
-        self._classes = ['nicegui-scroll-area']
+        self._classes.append('nicegui-scroll-area')
 
         if on_scroll:
             self.on('scroll', lambda e: self._handle_scroll(on_scroll, e), args=[
@@ -29,8 +29,8 @@ class ScrollArea(Element):
                 'horizontalContainerSize',
             ])
 
-    def _handle_scroll(self, on_scroll: Optional[Callable[..., Any]], e: GenericEventArguments) -> None:
-        handle_event(on_scroll, ScrollEventArguments(
+    def _handle_scroll(self, handler: Optional[Callable[..., Any]], e: GenericEventArguments) -> None:
+        handle_event(handler, ScrollEventArguments(
             sender=self,
             client=self.client,
             vertical_position=e.args['verticalPosition'],

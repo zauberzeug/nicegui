@@ -29,6 +29,12 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
         You can use the `validation` parameter to define a dictionary of validation rules.
         The key of the first rule that fails will be displayed as an error message.
 
+        Note about styling the input:
+        Quasar's `QInput` component is a wrapper around a native `input` element.
+        This means that you cannot style the input directly,
+        but you can use the `input-class` and `input-style` props to style the native input element.
+        See the "Style" props section on the `QInput <https://quasar.dev/vue-components/input>`_ documentation for more details.
+
         :param label: displayed label for the text input
         :param placeholder: text to show if no value is entered
         :param value: the current value of the text input
@@ -60,7 +66,7 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
         self._props['autocomplete'] = autocomplete
         self.update()
 
-    def on_value_change(self, value: Any) -> None:
-        super().on_value_change(value)
+    def _handle_value_change(self, value: Any) -> None:
+        super()._handle_value_change(value)
         if self._send_update_on_value_change:
             self.run_method('updateValue')

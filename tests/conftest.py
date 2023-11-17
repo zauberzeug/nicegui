@@ -9,8 +9,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 
-from nicegui import Client, binding, globals  # pylint: disable=redefined-builtin
-from nicegui.elements import plotly, pyplot
+from nicegui import Client, app, binding, core
 from nicegui.page import page
 
 from .screen import Screen
@@ -45,22 +44,25 @@ def capabilities(capabilities: Dict) -> Dict:
 
 @pytest.fixture(autouse=True)
 def reset_globals() -> Generator[None, None, None]:
-    for path in {'/'}.union(globals.page_routes.values()):
-        globals.app.remove_route(path)
-    globals.app.openapi_schema = None
-    globals.app.middleware_stack = None
-    globals.app.user_middleware.clear()
+    for route in app.routes:
+        if route.path.startswith('/_nicegui/auto/static/'):
+            app.remove_route(route.path)
+    for path in {'/'}.union(Client.page_routes.values()):
+        app.remove_route(path)
+    app.openapi_schema = None
+    app.middleware_stack = None
+    app.user_middleware.clear()
     # NOTE favicon routes must be removed separately because they are not "pages"
-    for route in globals.app.routes:
+    for route in app.routes:
         if route.path.endswith('/favicon.ico'):
-            globals.app.routes.remove(route)
-    importlib.reload(globals)
-    # repopulate globals.optional_features
-    importlib.reload(plotly)
-    importlib.reload(pyplot)
-    globals.app.storage.clear()
-    globals.index_client = Client(page('/'), shared=True).__enter__()
-    globals.app.get('/')(globals.index_client.build_response)
+            app.routes.remove(route)
+    importlib.reload(core)
+    Client.instances.clear()
+    Client.page_routes.clear()
+    Client.auto_index_client = Client(page('/'), shared=True).__enter__()
+    app.reset()
+    # NOTE we need to re-add the auto index route because we removed all routes above
+    app.get('/')(Client.auto_index_client.build_response)
     binding.reset()
 
 
@@ -89,7 +91,8 @@ def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pyt
     if screen_.is_open:
         screen_.shot(request.node.name)
     logs = screen_.caplog.get_records('call')
-    assert not logs, f'There were unexpected logs:\n-------\n{logs}\n-------'
     screen_.stop_server()
     if DOWNLOAD_DIR.exists():
         shutil.rmtree(DOWNLOAD_DIR)
+    if logs:
+        pytest.fail('There were unexpected logs. See "Captured log call" below.', pytrace=False)

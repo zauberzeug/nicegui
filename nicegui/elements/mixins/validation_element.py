@@ -15,13 +15,17 @@ class ValidationElement(ValueElement):
         """The latest error message from the validation functions."""
         return self._error
 
-    def on_value_change(self, value: Any) -> None:
-        super().on_value_change(value)
+    def validate(self) -> None:
+        """Validate the current value and set the error message if necessary."""
         for message, check in self.validation.items():
-            if not check(value):
+            if not check(self.value):
                 self._error = message
                 self.props(f'error error-message="{message}"')
                 break
         else:
             self._error = None
             self.props(remove='error')
+
+    def _handle_value_change(self, value: Any) -> None:
+        super()._handle_value_change(value)
+        self.validate()

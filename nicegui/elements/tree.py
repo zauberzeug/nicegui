@@ -2,9 +2,9 @@ from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Set
 
 from typing_extensions import Self
 
-from .. import globals  # pylint: disable=redefined-builtin
 from ..element import Element
 from ..events import GenericEventArguments, ValueChangeEventArguments, handle_event
+from ..logging import log
 
 
 class Tree(Element):
@@ -77,7 +77,7 @@ class Tree(Element):
         self.update()
         return self
 
-    def collapse(self, node_keys: Optional[List[Dict]] = None) -> Self:
+    def collapse(self, node_keys: Optional[List[str]] = None) -> Self:
         """Collapse the given nodes.
 
         :param node_keys: list of node keys to collapse (default: all nodes)
@@ -104,6 +104,6 @@ class Tree(Element):
         if 'default-expand-all' in self._props:
             # https://github.com/zauberzeug/nicegui/issues/1385
             del self._props['default-expand-all']
-            globals.log.warning('The prop "default_expand_all" is not supported by `ui.tree`.\n'
-                                'Use ".expand()" instead.')
+            log.warning('The prop "default_expand_all" is not supported by `ui.tree`.\n'
+                        'Use ".expand()" instead.')
         return self

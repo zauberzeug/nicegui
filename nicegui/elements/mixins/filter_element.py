@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, cast
 
 from typing_extensions import Self
 
@@ -8,7 +8,8 @@ from ...element import Element
 
 class FilterElement(Element):
     FILTER_PROP = 'filter'
-    filter = BindableProperty(on_change=lambda sender, filter: sender.on_filter_change(filter))
+    filter = BindableProperty(
+        on_change=lambda sender, filter: cast(Self, sender)._handle_filter_change(filter))  # pylint: disable=protected-access
 
     def __init__(self, *, filter: Optional[str] = None, **kwargs: Any) -> None:  # pylint: disable=redefined-builtin
         super().__init__(**kwargs)
@@ -72,7 +73,7 @@ class FilterElement(Element):
         """
         self.filter = filter_
 
-    def on_filter_change(self, filter_: str) -> None:
+    def _handle_filter_change(self, filter_: str) -> None:
         """Called when the filter of this element changes.
 
         :param filter: The new filter.

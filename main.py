@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import importlib
 import inspect
+import logging
 import os
 from pathlib import Path
 from typing import Awaitable, Callable, Optional
@@ -13,9 +14,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 import prometheus
-from nicegui import Client, app
-from nicegui import globals as nicegui_globals
-from nicegui import ui
+from nicegui import Client, app, ui
 from website import documentation, example_card, svg
 from website.demo import bash_window, browser_window, python_window
 from website.documentation_tools import create_anchor_name, element_demo, generate_class_doc
@@ -33,10 +32,10 @@ app.add_static_files('/fonts', str(Path(__file__).parent / 'website' / 'fonts'))
 app.add_static_files('/static', str(Path(__file__).parent / 'website' / 'static'))
 
 if True:  # HACK: prevent the page from scrolling when closing a dialog (#1404)
-    def on_dialog_value_change(sender, value, on_value_change=ui.dialog.on_value_change) -> None:
+    def _handle_value_change(sender, value, on_value_change=ui.dialog._handle_value_change) -> None:
         ui.query('html').classes(**{'add' if value else 'remove': 'has-dialog'})
         on_value_change(sender, value)
-    ui.dialog.on_value_change = on_dialog_value_change
+    ui.dialog._handle_value_change = _handle_value_change
 
 
 @app.get('/logo.png')
@@ -59,12 +58,15 @@ async def redirect_reference_to_documentation(request: Request,
                                               call_next: Callable[[Request], Awaitable[Response]]) -> Response:
     if request.url.path == '/reference':
         return RedirectResponse('/documentation')
-    return await call_next(request)
+    try:
+        return await call_next(request)
+    except RuntimeError as e:
+        logging.error(f'Error while processing request {request.url.path}: {e}')
 
 # NOTE In our global fly.io deployment we need to make sure that we connect back to the same instance.
 fly_instance_id = os.environ.get('FLY_ALLOC_ID', 'local').split('-')[0]
-nicegui_globals.socket_io_js_extra_headers['fly-force-instance-id'] = fly_instance_id  # for HTTP long polling
-nicegui_globals.socket_io_js_query_params['fly_instance_id'] = fly_instance_id  # for websocket (FlyReplayMiddleware)
+app.config.socket_io_js_extra_headers['fly-force-instance-id'] = fly_instance_id  # for HTTP long polling
+app.config.socket_io_js_query_params['fly_instance_id'] = fly_instance_id  # for websocket (FlyReplayMiddleware)
 
 
 class FlyReplayMiddleware(BaseHTTPMiddleware):
@@ -78,6 +80,7 @@ class FlyReplayMiddleware(BaseHTTPMiddleware):
 
     def __init__(self, app: ASGIApp) -> None:
         self.app = app
+        self.app_name = os.environ.get('FLY_APP_NAME')
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         query_string = scope.get('query_string', b'').decode()
@@ -85,7 +88,7 @@ class FlyReplayMiddleware(BaseHTTPMiddleware):
         target_instance = query_params.get('fly_instance_id', [fly_instance_id])[0]
 
         async def send_wrapper(message):
-            if target_instance != fly_instance_id:
+            if target_instance != fly_instance_id and self.is_online(target_instance):
                 if message['type'] == 'websocket.close':
                     # fly.io only seems to look at the fly-replay header if websocket is accepted
                     message = {'type': 'websocket.accept'}
@@ -95,8 +98,18 @@ class FlyReplayMiddleware(BaseHTTPMiddleware):
             await send(message)
         await self.app(scope, receive, send_wrapper)
 
+    def is_online(self, fly_instance_id: str) -> bool:
+        hostname = f'{fly_instance_id}.vm.{self.app_name}.internal'
+        try:
+            dns.resolver.resolve(hostname, 'AAAA')
+            return True
+        except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.resolver.NoNameservers, dns.resolver.Timeout):
+            return False
 
-app.add_middleware(FlyReplayMiddleware)
+
+if 'FLY_ALLOC_ID' in os.environ:
+    import dns.resolver  # NOTE only import on fly where we have it installed to look up if instance is still available
+    app.add_middleware(FlyReplayMiddleware)
 
 
 def add_head_html() -> None:
@@ -119,7 +132,7 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
             headers: {{'Content-Type': 'application/json'}},
             body: JSON.stringify({{value: {e.value}}}),
         }});
-    ''', respond=False))
+    '''))
     with ui.header() \
             .classes('items-center duration-200 p-0 px-4 no-wrap') \
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
@@ -351,6 +364,8 @@ async def index_page(client: Client) -> None:
             example_link('Generate PDF', 'create SVG preview and PDF download from input form elements')
             example_link('Custom Binding', 'create a custom binding for a label with a bindable background color')
             example_link('Descope Auth', 'login form and user profile using [Descope](https://descope.com)')
+            example_link('Editable table', 'editable table allowing to add, edit, delete rows')
+            example_link('Editable AG Grid', 'editable AG Grid allowing to add, edit, delete rows')
 
     with ui.row().classes('dark-box min-h-screen mt-16'):
         link_target('why')
@@ -430,7 +445,20 @@ async def documentation_page_more(name: str, client: Client) -> None:
                 ui.markdown('**Reference**').classes('mt-4')
             ui.markdown('## Reference').classes('mt-16')
             generate_class_doc(api)
-    await client.connected()
-    await ui.run_javascript(f'document.title = "{name} • NiceGUI";', respond=False)
+    try:
+        await client.connected()
+        ui.run_javascript(f'document.title = "{name} • NiceGUI";')
+    except TimeoutError:
+        logging.warning(f'client did not connect for page /documentation/{name}')
 
-ui.run(uvicorn_reload_includes='*.py, *.css, *.html')
+
+@app.get('/status')
+def status():
+    """for health checks"""
+    return 'Ok'
+
+
+ui.run(uvicorn_reload_includes='*.py, *.css, *.html',
+       # NOTE: do not reload when running on fly.io (see https://github.com/zauberzeug/nicegui/discussions/1720#discussioncomment-7288741)
+       reload='FLY_ALLOC_ID' not in os.environ,
+       reconnect_timeout=10.0)

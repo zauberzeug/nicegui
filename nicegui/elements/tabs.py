@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional, Union
 
-from .. import globals  # pylint: disable=redefined-builtin
+from .. import context
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
@@ -44,13 +44,13 @@ class Tab(DisableableElement):
         self._props['label'] = label if label is not None else name
         if icon:
             self._props['icon'] = icon
-        self.tabs = globals.get_slot().parent
+        self.tabs = context.get_slot().parent
 
 
 class TabPanels(ValueElement):
 
     def __init__(self,
-                 tabs: Tabs, *,
+                 tabs: Optional[Tabs] = None, *,
                  value: Union[Tab, TabPanel, str, None] = None,
                  on_change: Optional[Callable[..., Any]] = None,
                  animated: bool = True,
@@ -65,14 +65,15 @@ class TabPanels(ValueElement):
         this element uses Vue's `keep-alive <https://vuejs.org/guide/built-ins/keep-alive.html>`_ component.
         If client-side performance is an issue, you can disable this feature.
 
-        :param tabs: the `ui.tabs` element that controls this element
+        :param tabs: an optional `ui.tabs` element that controls this element
         :param value: `ui.tab`, `ui.tab_panel`, or name of the tab panel to be initially visible
         :param on_change: callback to be executed when the visible tab panel changes
         :param animated: whether the tab panels should be animated (default: `True`)
         :param keep_alive: whether to use Vue's keep-alive component on the content (default: `True`)
         """
         super().__init__(tag='q-tab-panels', value=value, on_value_change=on_change)
-        tabs.bind_value(self, 'value')
+        if tabs is not None:
+            tabs.bind_value(self, 'value')
         self._props['animated'] = animated
         self._props['keep-alive'] = keep_alive
 
@@ -92,3 +93,4 @@ class TabPanel(DisableableElement):
         """
         super().__init__(tag='q-tab-panel')
         self._props['name'] = name._props['name'] if isinstance(name, Tab) else name
+        self._classes.append('nicegui-tab-panel')
