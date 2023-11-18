@@ -6,7 +6,6 @@ export default {
   },
   mounted() {
     this.options.eventClick = (info) => {
-      console.log("hi2");
       this.$emit("click", { info: info });
     };
 
@@ -15,10 +14,12 @@ export default {
   },
   methods: {
     update_calendar() {
-      if (this.calendar) {    
-        this.calendar.render()
-      }
+      if (this.calendar) {   
+        this.calendar.setOption('events', this.options.events)
+        this.calendar.render();
+          }
     },
+
 
 
   },

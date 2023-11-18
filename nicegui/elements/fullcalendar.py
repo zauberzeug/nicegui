@@ -13,7 +13,6 @@ class FullCalendar(Element, component='fullcalendar.js', libraries=['lib/fullcal
         
         if on_click:
             def handle_on_click(e: GenericEventArguments):
-                # print(e)
                 handle_event(on_click, e)
 
             self.on("click", handle_on_click, ['info'])
@@ -25,23 +24,14 @@ class FullCalendar(Element, component='fullcalendar.js', libraries=['lib/fullcal
         self._props['options']['events'].append(event_dict)
         super().update()
         self.run_method('update_calendar')
-        super().update()
 
     def remove_event(self, title, start, end, **args):
-        index_to_remove = None
-        for i, event in enumerate(self._props['options']['events']):
-            if (
-                event["title"] == title
-                and event["start"] == start
-                and event["end"] == end
-                and all(event[key] == args[key] for key in args)
-            ):
-                index_to_remove = i
+
+        for event in self._props['options']['events']:
+            if event['title'] == title and event['start'] == start and event['end'] == end:
+                self._props['options']['events'].remove(event)
                 break
 
-        # Remove the event if found
-        if index_to_remove is not None:
-            del self._props['options']['events'][index_to_remove]
         super().update()
         self.run_method('update_calendar')
         
