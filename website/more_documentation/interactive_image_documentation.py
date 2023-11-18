@@ -26,3 +26,12 @@ def more() -> None:
             ui.button(on_click=lambda: ui.notify('thumbs up'), icon='thumb_up') \
                 .props('flat fab color=white') \
                 .classes('absolute bottom-0 left-0 m-2')
+
+    @text_demo('Force reload', '''
+        You can force an image to reload by calling the `force_reload` method.
+        It will append a timestamp to the image URL, which will make the browser reload the image.
+    ''')
+    def force_reload():
+        img = ui.interactive_image('https://picsum.photos/640/360').classes('w-64')
+
+        ui.button('Force reload', on_click=img.force_reload)

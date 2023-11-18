@@ -1,6 +1,7 @@
 from typing import Any, Literal, Optional, Union
 
-from .. import globals, outbox  # pylint: disable=redefined-builtin
+from .. import context, outbox
+from ..logging import log
 
 ARG_MAP = {
     'close_button': 'closeBtn',
@@ -49,7 +50,7 @@ def notify(message: Any, *,
     options = {ARG_MAP.get(key, key): value for key, value in locals().items() if key != 'kwargs' and value is not None}
     options['message'] = str(message)
     options.update(kwargs)
-    if globals.get_client().has_socket_connection:
-        outbox.enqueue_message('notify', options, globals.get_client().id)
+    if context.get_client().has_socket_connection:
+        outbox.enqueue_message('notify', options, context.get_client().id)
     else:
-        globals.log.warning(f'Ignoring notification "{message}" because the client is not connected.')
+        log.warning(f'Ignoring notification "{message}" because the client is not connected.')

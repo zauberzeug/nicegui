@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
 from fastapi import Request, Response
 
-from . import background_tasks, binding, globals  # pylint: disable=redefined-builtin
+from . import background_tasks, binding, core, helpers
 from .client import Client
 from .favicon import create_favicon_route
 from .language import Language
@@ -57,29 +57,34 @@ class page:
         self.language = language
         self.response_timeout = response_timeout
         self.kwargs = kwargs
-        self.api_router = api_router or globals.app.router
+        self.api_router = api_router or core.app.router
         self.reconnect_timeout = reconnect_timeout
 
         create_favicon_route(self.path, favicon)
 
     @property
     def path(self) -> str:
+        """The path of the page including the APIRouter's prefix."""
         return self.api_router.prefix + self._path
 
     def resolve_title(self) -> str:
-        return self.title if self.title is not None else globals.title
+        """Return the title of the page."""
+        return self.title if self.title is not None else core.app.config.title
 
     def resolve_viewport(self) -> str:
-        return self.viewport if self.viewport is not None else globals.viewport
+        """Return the viewport of the page."""
+        return self.viewport if self.viewport is not None else core.app.config.viewport
 
     def resolve_dark(self) -> Optional[bool]:
-        return self.dark if self.dark is not ... else globals.dark
+        """Return whether the page should use dark mode."""
+        return self.dark if self.dark is not ... else core.app.config.dark
 
     def resolve_language(self) -> Optional[str]:
-        return self.language if self.language is not ... else globals.language
+        """Return the language of the page."""
+        return self.language if self.language is not ... else core.app.config.language
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
-        globals.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
+        core.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
         parameters_of_decorated_func = list(inspect.signature(func).parameters.keys())
 
         async def decorated(*dec_args, **dec_kwargs) -> Response:
@@ -90,7 +95,7 @@ class page:
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
                     dec_kwargs['client'] = client
                 result = func(*dec_args, **dec_kwargs)
-            if inspect.isawaitable(result):
+            if helpers.is_coroutine_function(func):
                 async def wait_for_result() -> None:
                     with client:
                         return await result
@@ -114,8 +119,8 @@ class page:
         decorated.__signature__ = inspect.Signature(parameters)  # type: ignore
 
         if 'include_in_schema' not in self.kwargs:
-            self.kwargs['include_in_schema'] = globals.endpoint_documentation in {'page', 'all'}
+            self.kwargs['include_in_schema'] = core.app.config.endpoint_documentation in {'page', 'all'}
 
         self.api_router.get(self._path, **self.kwargs)(decorated)
-        globals.page_routes[func] = self.path
+        Client.page_routes[func] = self.path
         return func

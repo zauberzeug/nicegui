@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional, Union, cast
 
-from .. import globals  # pylint: disable=redefined-builtin
+from .. import context
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
@@ -35,8 +35,8 @@ class Carousel(ValueElement):
     def _value_to_model_value(self, value: Any) -> Any:
         return value._props['name'] if isinstance(value, CarouselSlide) else value  # pylint: disable=protected-access
 
-    def on_value_change(self, value: Any) -> None:
-        super().on_value_change(value)
+    def _handle_value_change(self, value: Any) -> None:
+        super()._handle_value_change(value)
         names = [slide._props['name'] for slide in self]  # pylint: disable=protected-access
         for i, slide in enumerate(self):
             done = i < names.index(value) if value in names else False
@@ -62,8 +62,9 @@ class CarouselSlide(DisableableElement):
         :param name: name of the slide (will be the value of the `ui.carousel` element, auto-generated if `None`)
         """
         super().__init__(tag='q-carousel-slide')
-        self.carousel = cast(ValueElement, globals.get_slot().parent)
+        self.carousel = cast(ValueElement, context.get_slot().parent)
         name = name or f'slide_{len(self.carousel.default_slot.children)}'
         self._props['name'] = name
+        self._classes.append('nicegui-carousel-slide')
         if self.carousel.value is None:
             self.carousel.value = name

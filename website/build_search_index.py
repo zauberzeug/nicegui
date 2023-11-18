@@ -52,7 +52,7 @@ class DocVisitor(ast.NodeVisitor):
         else:
             raise NotImplementedError(f'Unknown function type: {node.func}')
         if function_name in ['heading', 'subheading']:
-            self.on_new_heading()
+            self._handle_new_heading()
             self.current_title = node.args[0].s
         elif function_name == 'markdown':
             if node.args:
@@ -61,7 +61,7 @@ class DocVisitor(ast.NodeVisitor):
                 self.current_content.append(cleanup(raw))
         self.generic_visit(node)
 
-    def on_new_heading(self) -> None:
+    def _handle_new_heading(self) -> None:
         if self.current_title:
             self.add_to_search_index(self.current_title, self.current_content if self.current_content else 'Overview')
             self.current_content = []
@@ -131,9 +131,9 @@ class MainVisitor(ast.NodeVisitor):
             return
         if function_name == 'example_link':
             title = ast_string_node_to_string(node.args[0])
-            name = name = title.lower().replace(' ', '_')
-            # TODO: generalize hack to use folder if main.py is not available
-            file = 'main.py' if not any(x in name for x in ['ros', 'docker']) else ''
+            name = title.lower().replace(' ', '_')
+            path = Path(__file__).parent.parent / 'examples' / name
+            file = 'main.py' if (path / 'main.py').is_file() else ''
             documents.append({
                 'title': 'Example: ' + title,
                 'content': ast_string_node_to_string(node.args[1]),
@@ -146,7 +146,7 @@ def generate_for(file: Path, topic: Optional[str] = None) -> None:
     doc_visitor = DocVisitor(topic)
     doc_visitor.visit(tree)
     if doc_visitor.current_title:
-        doc_visitor.on_new_heading()  # to finalize the last heading
+        doc_visitor._handle_new_heading()  # to finalize the last heading
 
 
 documents = []

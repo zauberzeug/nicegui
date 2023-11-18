@@ -1,7 +1,11 @@
 from typing import Any, Callable, Optional
 
-from .. import globals  # pylint: disable=redefined-builtin
+from typing_extensions import Self
+
+from .. import context
 from ..events import ClickEventArguments, handle_event
+from ..logging import log
+from .context_menu import ContextMenu
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
@@ -30,6 +34,15 @@ class Menu(ValueElement):
         """Toggle the menu."""
         self.value = not self.value
 
+    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
+        super().props(add, remove=remove)
+        if 'touch-position' in self._props:
+            # https://github.com/zauberzeug/nicegui/issues/1738
+            del self._props['touch-position']
+            log.warning('The prop "touch-position" is not supported by `ui.menu`.\n'
+                        'Use "ui.context_menu()" instead.')
+        return self
+
 
 class MenuItem(TextElement):
 
@@ -48,12 +61,12 @@ class MenuItem(TextElement):
         :param auto_close: whether the menu should be closed after a click event (default: `True`)
         """
         super().__init__(tag='q-item', text=text)
-        self.menu = globals.get_slot().parent
+        self.menu = context.get_slot().parent
         self._props['clickable'] = True
 
         def handle_click(_) -> None:
             handle_event(on_click, ClickEventArguments(sender=self, client=self.client))
             if auto_close:
-                assert isinstance(self.menu, Menu)
+                assert isinstance(self.menu, (Menu, ContextMenu))
                 self.menu.close()
         self.on('click', handle_click, [])

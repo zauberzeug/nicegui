@@ -1,23 +1,23 @@
 from pathlib import Path
-from typing import Any, Callable, Union
+from typing import Any, Callable, Optional, Union, cast
 
 from typing_extensions import Self
 
-from ... import globals  # pylint: disable=redefined-builtin
+from ... import core
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
 from ...helpers import is_file
 
 
 class SourceElement(Element):
-    source = BindableProperty(on_change=lambda sender, source: sender.on_source_change(source))
+    source = BindableProperty(
+        on_change=lambda sender, source: cast(Self, sender)._handle_source_change(source))  # pylint: disable=protected-access
 
     def __init__(self, *, source: Union[str, Path], **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if is_file(source):
-            source = globals.app.add_static_file(local_file=source)
+        self.auto_route: Optional[str] = None
         self.source = source
-        self._props['src'] = source
+        self._set_props(source)
 
     def bind_source_to(self,
                        target_object: Any,
@@ -76,10 +76,23 @@ class SourceElement(Element):
         """
         self.source = source
 
-    def on_source_change(self, source: Union[str, Path]) -> None:
+    def _handle_source_change(self, source: Union[str, Path]) -> None:
         """Called when the source of this element changes.
 
         :param source: The new source.
         """
-        self._props['src'] = source
+        self._set_props(source)
         self.update()
+
+    def _set_props(self, source: Union[str, Path]) -> None:
+        if is_file(source):
+            if self.auto_route:
+                core.app.remove_route(self.auto_route)
+            source = core.app.add_static_file(local_file=source)
+            self.auto_route = source
+        self._props['src'] = source
+
+    def _handle_delete(self) -> None:
+        if self.auto_route:
+            core.app.remove_route(self.auto_route)
+        return super()._handle_delete()

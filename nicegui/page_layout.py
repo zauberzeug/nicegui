@@ -1,9 +1,10 @@
 from typing import Literal, Optional
 
-from . import globals  # pylint: disable=redefined-builtin
+from . import context
 from .element import Element
 from .elements.mixins.value_element import ValueElement
 from .functions.html import add_body_html
+from .logging import log
 
 DrawerSides = Literal['left', 'right']
 
@@ -26,7 +27,8 @@ class Header(ValueElement):
                  fixed: bool = True,
                  bordered: bool = False,
                  elevated: bool = False,
-                 add_scroll_padding: bool = False,  # DEPRECATED: will be True in v1.4
+                 wrap: bool = True,
+                 add_scroll_padding: bool = True,
                  ) -> None:
         """Header
 
@@ -39,13 +41,17 @@ class Header(ValueElement):
         :param fixed: whether the header should be fixed to the top of the page (default: `True`)
         :param bordered: whether the header should have a border (default: `False`)
         :param elevated: whether the header should have a shadow (default: `False`)
-        :param add_scroll_padding: whether to automatically prevent link targets from being hidden behind the header (default: `False`, will be `True` in v1.4)
+        :param wrap: whether the header should wrap its content (default: `True`)
+        :param add_scroll_padding: whether to automatically prevent link targets from being hidden behind the header (default: `True`)
         """
-        with globals.get_client().layout:
+        _check_current_slot()
+        with context.get_client().layout:
             super().__init__(tag='q-header', value=value, on_value_change=None)
-        self._classes = ['nicegui-header']
+        self._classes.append('nicegui-header')
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
+        if wrap:
+            self._classes.append('wrap')
         code = list(self.client.layout._props['view'])
         code[1] = 'H' if fixed else 'h'
         self.client.layout._props['view'] = ''.join(code)
@@ -102,7 +108,8 @@ class Drawer(Element):
         :param top_corner: whether the drawer expands into the top corner (default: `False`)
         :param bottom_corner: whether the drawer expands into the bottom corner (default: `False`)
         """
-        with globals.get_client().layout:
+        _check_current_slot()
+        with context.get_client().layout:
             super().__init__('q-drawer')
         if value is None:
             self._props['show-if-above'] = True
@@ -111,7 +118,7 @@ class Drawer(Element):
         self._props['side'] = side
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
-        self._classes = ['nicegui-drawer']
+        self._classes.append('nicegui-drawer')
         code = list(self.client.layout._props['view'])
         code[0 if side == 'left' else 2] = side[0].lower() if top_corner else 'h'
         code[4 if side == 'left' else 6] = side[0].upper() if fixed else side[0].lower()
@@ -204,7 +211,9 @@ class Footer(ValueElement):
                  value: bool = True,
                  fixed: bool = True,
                  bordered: bool = False,
-                 elevated: bool = False) -> None:
+                 elevated: bool = False,
+                 wrap: bool = True,
+                 ) -> None:
         """Footer
 
         This element is based on Quasar's `QFooter <https://quasar.dev/layout/header-and-footer#qfooter-api>`_ component.
@@ -216,12 +225,16 @@ class Footer(ValueElement):
         :param fixed: whether the footer is fixed or scrolls with the content (default: `True`)
         :param bordered: whether the footer should have a border (default: `False`)
         :param elevated: whether the footer should have a shadow (default: `False`)
+        :param wrap: whether the footer should wrap its content (default: `True`)
         """
-        with globals.get_client().layout:
+        _check_current_slot()
+        with context.get_client().layout:
             super().__init__(tag='q-footer', value=value, on_value_change=None)
         self.classes('nicegui-footer')
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
+        if wrap:
+            self._classes.append('wrap')
         code = list(self.client.layout._props['view'])
         code[9] = 'F' if fixed else 'f'
         self.client.layout._props['view'] = ''.join(code)
@@ -255,3 +268,10 @@ class PageSticky(Element):
         super().__init__('q-page-sticky')
         self._props['position'] = position
         self._props['offset'] = [x_offset, y_offset]
+
+
+def _check_current_slot() -> None:
+    parent = context.get_slot().parent
+    if parent != parent.client.content:
+        log.warning('Layout elements should not be nested but must be direct children of the page content. '
+                    'This will be raising an exception in NiceGUI 1.5')  # DEPRECATED

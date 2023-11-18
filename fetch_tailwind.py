@@ -112,6 +112,7 @@ with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w') as f:
     f.write('        self._classes: List[str] = []\n')
     f.write('\n')
     f.write('    def classes(self, add: str) -> None:\n')
+    f.write('        """Add the given classes to the element."""\n')
     f.write('        self._classes.append(add)\n')
     f.write('\n')
     f.write('\n')
@@ -138,6 +139,7 @@ with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w') as f:
     f.write('        return self\n')
     f.write('\n')
     f.write("    def apply(self, element: Element) -> None:\n")
+    f.write('        """Apply the tailwind classes to the given element."""\n')
     f.write('        element._classes.extend(self.element._classes)  # pylint: disable=protected-access\n')
     f.write('        element.update()\n')
     for property_ in properties:

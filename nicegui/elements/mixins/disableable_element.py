@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 from typing_extensions import Self
 
@@ -7,7 +7,8 @@ from ...element import Element
 
 
 class DisableableElement(Element):
-    enabled = BindableProperty(on_change=lambda sender, value: sender.on_enabled_change(value))
+    enabled = BindableProperty(
+        on_change=lambda sender, value: cast(Self, sender)._handle_enabled_change(value))  # pylint: disable=protected-access
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -83,7 +84,7 @@ class DisableableElement(Element):
         """Set the enabled state of the element."""
         self.enabled = value
 
-    def on_enabled_change(self, enabled: bool) -> None:
+    def _handle_enabled_change(self, enabled: bool) -> None:
         """Called when the element is enabled or disabled.
 
         :param enabled: The new state.

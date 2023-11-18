@@ -7,7 +7,7 @@ from geometry_msgs.msg import Pose, Twist
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 
-from nicegui import app, globals, run, ui
+from nicegui import Client, app, run, ui
 
 
 class NiceGuiNode(Node):
@@ -17,7 +17,7 @@ class NiceGuiNode(Node):
         self.cmd_vel_publisher = self.create_publisher(Twist, 'cmd_vel', 1)
         self.subscription = self.create_subscription(Pose, 'pose', self.handle_pose, 1)
 
-        with globals.index_client:
+        with Client.auto_index_client:
             with ui.row().classes('items-stretch'):
                 with ui.card().classes('w-44 text-center items-center'):
                     ui.label('Control').classes('text-2xl')
@@ -67,7 +67,7 @@ def ros_main() -> None:
         rclpy.spin(node)
     except ExternalShutdownException:
         pass
-    
+
 
 app.on_startup(lambda: threading.Thread(target=ros_main).start())
 run.APP_IMPORT_STRING = f'{__name__}:app'  # ROS2 uses a non-standard module name, so we need to specify it here

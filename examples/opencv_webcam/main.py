@@ -7,8 +7,7 @@ import cv2
 import numpy as np
 from fastapi import Response
 
-import nicegui.globals
-from nicegui import app, run, ui
+from nicegui import Client, app, run, ui
 
 # In case you don't have a webcam, this will provide a black placeholder image.
 black_1px = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjYGBg+A8AAQQBAHAgZQsAAAAASUVORK5CYII='
@@ -46,8 +45,8 @@ ui.timer(interval=0.1, callback=lambda: video_image.set_source(f'/video/frame?{t
 
 async def disconnect() -> None:
     """Disconnect all clients from current running server."""
-    for client in nicegui.globals.clients.keys():
-        await app.sio.disconnect(client)
+    for client_id in Client.instances:
+        await app.sio.disconnect(client_id)
 
 
 def handle_sigint(signum, frame) -> None:

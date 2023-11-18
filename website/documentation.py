@@ -1,7 +1,6 @@
 import uuid
 
-from nicegui import app, events, ui
-from nicegui.globals import optional_features
+from nicegui import app, events, optional_features, ui
 
 from . import demo
 from .documentation_tools import element_demo, heading, intro_demo, load_demo, subheading, text_demo
@@ -130,12 +129,13 @@ def create_full() -> None:
 
     load_demo(ui.table)
     load_demo(ui.aggrid)
-    load_demo(ui.chart)
+    if optional_features.has('highcharts'):
+        load_demo(ui.highchart)
     load_demo(ui.echart)
-    if 'matplotlib' in optional_features:
+    if optional_features.has('matplotlib'):
         load_demo(ui.pyplot)
         load_demo(ui.line_plot)
-    if 'plotly' in optional_features:
+    if optional_features.has('plotly'):
         load_demo(ui.plotly)
     load_demo(ui.linear_progress)
     load_demo(ui.circular_progress)
@@ -186,7 +186,9 @@ def create_full() -> None:
     load_demo(ui.stepper)
     load_demo(ui.timeline)
     load_demo(ui.carousel)
+    load_demo(ui.pagination)
     load_demo(ui.menu)
+    load_demo(ui.context_menu)
 
     @text_demo('Tooltips', '''
         Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
@@ -210,7 +212,7 @@ def create_full() -> None:
         Props with a leading `:` can contain JavaScript expressions that are evaluated on the client.
         You can also apply [Tailwind CSS](https://tailwindcss.com/) utility classes with the `classes` method.
 
-        If you really need to apply CSS, you can use the `styles` method. Here the delimiter is `;` instead of a blank space.
+        If you really need to apply CSS, you can use the `style` method. Here the delimiter is `;` instead of a blank space.
 
         All three functions also provide `remove` and `replace` parameters in case the predefined look is not wanted in a particular styling.
     ''')
@@ -298,6 +300,10 @@ def create_full() -> None:
         Although this is very similar to using the `classes` method, it is more convenient for Tailwind classes due to auto-completion.
 
         Last but not least, you can also predefine a style and apply it to multiple elements (labels C and D).
+               
+        Note that sometimes Tailwind is overruled by Quasar styles, e.g. when using `ui.button('Button').tailwind('bg-red-500')`.
+        This is a known limitation and not fully in our control.
+        But we try to provide solutions like the `color` parameter: `ui.button('Button', color='red-500')`.
     ''')
     def tailwind_demo():
         from nicegui import Tailwind
@@ -320,17 +326,22 @@ def create_full() -> None:
     load_demo('bindings')
 
     @text_demo('UI Updates', '''
-        NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed.
+        NiceGUI tries to automatically synchronize the state of UI elements with the client,
+        e.g. when a label text, an input value or style/classes/props of an element have changed.
         In other cases, you can explicitly call `element.update()` or `ui.update(*elements)` to update.
-        The demo code shows both methods for a `ui.chart`, where it is difficult to automatically detect changes in the `options` dictionary.
+        The demo code shows both methods for a `ui.echart`, where it is difficult to automatically detect changes in the `options` dictionary.
     ''')
     def ui_updates_demo():
-        from random import randint
+        from random import random
 
-        chart = ui.chart({'title': False, 'series': [{'data': [1, 2]}]}).classes('w-full h-64')
+        chart = ui.echart({
+            'xAxis': {'type': 'value'},
+            'yAxis': {'type': 'value'},
+            'series': [{'type': 'line', 'data': [[0, 0], [1, 1]]}],
+        })
 
         def add():
-            chart.options['series'][0]['data'].append(randint(0, 100))
+            chart.options['series'][0]['data'].append([random(), random()])
             chart.update()
 
         def clear():
@@ -660,7 +671,6 @@ def create_full() -> None:
             This will make `ui.pyplot` and `ui.line_plot` unavailable.
         - `NICEGUI_STORAGE_PATH` (default: local ".nicegui") can be set to change the location of the storage files.
         - `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.
-        - `NO_NETIFACES` (default: `false`): Can be set to `true` to hide the netifaces startup warning (e.g. in docker container).
     ''')
     def env_var_demo():
         from nicegui.elements import markdown

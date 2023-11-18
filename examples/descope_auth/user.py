@@ -31,7 +31,7 @@ def about() -> Dict[str, Any]:
 
 async def logout() -> None:
     """Logout the user."""
-    result = await ui.run_javascript('return await sdk.logout()', respond=True)
+    result = await ui.run_javascript('return await sdk.logout()')
     if result['code'] == 200:
         app.storage.user['descope'] = None
     else:
@@ -64,7 +64,7 @@ class page(ui.page):
             await client.connected()
             if await self._is_logged_in():
                 if self.path == self.LOGIN_PATH:
-                    await self._refresh()
+                    self._refresh()
                     ui.open('/')
                     return
             else:
@@ -96,8 +96,8 @@ class page(ui.page):
             return False
 
     @staticmethod
-    async def _refresh() -> None:
-        await ui.run_javascript('sdk.refresh()', respond=False)
+    def _refresh() -> None:
+        ui.run_javascript('sdk.refresh()')
 
 
 def login_page(func: Callable[..., Any]) -> Callable[..., Any]:

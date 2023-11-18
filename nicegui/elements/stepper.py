@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional, Union, cast
 
-from .. import globals  # pylint: disable=redefined-builtin
+from .. import context
 from ..element import Element
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -30,12 +30,13 @@ class Stepper(ValueElement):
         """
         super().__init__(tag='q-stepper', value=value, on_value_change=on_value_change)
         self._props['keep-alive'] = keep_alive
+        self._classes.append('nicegui-stepper')
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value._props['name'] if isinstance(value, Step) else value  # pylint: disable=protected-access
 
-    def on_value_change(self, value: Any) -> None:
-        super().on_value_change(value)
+    def _handle_value_change(self, value: Any) -> None:
+        super()._handle_value_change(value)
         names = [step._props['name'] for step in self]  # pylint: disable=protected-access
         for i, step in enumerate(self):
             done = i < names.index(value) if value in names else False
@@ -65,18 +66,24 @@ class Step(DisableableElement):
         super().__init__(tag='q-step')
         self._props['name'] = name
         self._props['title'] = title if title is not None else name
+        self._classes.append('nicegui-step')
         if icon:
             self._props['icon'] = icon
-        self.stepper = cast(ValueElement, globals.get_slot().parent)
+        self.stepper = cast(ValueElement, context.get_slot().parent)
         if self.stepper.value is None:
             self.stepper.value = name
 
 
 class StepperNavigation(Element):
 
-    def __init__(self) -> None:
+    def __init__(self, *, wrap: bool = True) -> None:
         """Stepper Navigation
 
         This element represents `Quasar's QStepperNavigation https://quasar.dev/vue-components/stepper#qsteppernavigation-api>`_ component.
+
+        :param wrap: whether to wrap the content (default: `True`)
         """
         super().__init__('q-stepper-navigation')
+
+        if wrap:
+            self._classes.append('wrap')
