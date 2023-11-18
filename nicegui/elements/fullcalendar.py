@@ -34,4 +34,6 @@ class FullCalendar(Element, component='fullcalendar.js', libraries=['lib/fullcal
 
         super().update()
         self.run_method('update_calendar')
+    def get_events(self):
+        return self._props['options']['events']
         

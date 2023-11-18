@@ -42,4 +42,5 @@ def add_event():
 
 fullcal = create_fullcalendar()
 ui.button("Click me to add event", on_click=add_event)
+ui.button("Print out all the events", on_click=lambda: print(fullcal.get_events()))
 ui.run()
