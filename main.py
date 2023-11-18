@@ -409,7 +409,18 @@ def documentation_page() -> None:
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Reference, Demos and more', '*NiceGUI* Documentation')
-        documentation.create_full()
+        documentation.create_overview()
+
+
+@ui.page('/documentation/section_{name}')
+def documentation_section(name: str) -> None:
+    add_head_html()
+    with side_menu() as menu:
+        ui.markdown('[← back](/documentation)').classes('bold-links')
+    add_header(menu)
+    ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
+    with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
+        documentation.create_section(name)
 
 
 @ui.page('/documentation/{name}')

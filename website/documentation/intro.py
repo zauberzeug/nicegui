@@ -1,11 +1,11 @@
 from nicegui import ui
 
-from .tools import intro_demo
+from .tools import main_page_demo
 
 
 def create_intro() -> None:
-    @intro_demo('Styling',
-                'While having reasonable defaults, you can still modify the look of your app with CSS as well as Tailwind and Quasar classes.')
+    @main_page_demo('Styling',
+                    'While having reasonable defaults, you can still modify the look of your app with CSS as well as Tailwind and Quasar classes.')
     def formatting_demo():
         ui.icon('thumb_up')
         ui.markdown('This is **Markdown**.')
@@ -16,8 +16,8 @@ def create_intro() -> None:
             ui.label('Quasar').classes('q-ml-xl')
         ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
 
-    @intro_demo('Common UI Elements',
-                'NiceGUI comes with a collection of commonly used UI elements.')
+    @main_page_demo('Common UI Elements',
+                    'NiceGUI comes with a collection of commonly used UI elements.')
     def common_elements_demo():
         from nicegui.events import ValueChangeEventArguments
 
@@ -35,8 +35,8 @@ def create_intro() -> None:
             ui.select(['One', 'Two'], value='One', on_change=show)
         ui.link('And many more...', '/documentation').classes('mt-8')
 
-    @intro_demo('Value Binding',
-                'Binding values between UI elements and data models is built into NiceGUI.')
+    @main_page_demo('Value Binding',
+                    'Binding values between UI elements and data models is built into NiceGUI.')
     def binding_demo():
         class Demo:
             def __init__(self):

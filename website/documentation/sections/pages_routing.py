@@ -6,6 +6,13 @@ from ..tools import element_demo, load_demo, subheading, text_demo
 
 CONSTANT_UUID = str(uuid.uuid4())
 
+name = 'pages_routing'
+title = 'Pages & Routing'
+
+
+def intro() -> None:
+    ...
+
 
 def content() -> None:
     load_demo(ui.page)

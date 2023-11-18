@@ -65,24 +65,42 @@ def render_docstring(doc: str, with_params: bool = True) -> ui.html:
 
 class text_demo:
 
-    def __init__(self, title: str, explanation: str, tab: Optional[Union[str, Callable]] = None) -> None:
+    def __init__(self, title: str, explanation: str, *,
+                 tab: Optional[Union[str, Callable]] = None,
+                 more_link: Optional[str] = None,
+                 make_menu_entry: bool = True
+                 ) -> None:
         self.title = title
         self.explanation = explanation
-        self.make_menu_entry = True
+        self.make_menu_entry = make_menu_entry
         self.tab = tab
+        self.more_link = more_link
 
     def __call__(self, f: Callable) -> Callable:
-        subheading(self.title, make_menu_entry=self.make_menu_entry)
+        subheading(self.title, make_menu_entry=self.make_menu_entry, more_link=self.more_link)
         ui.markdown(self.explanation).classes('bold-links arrow-links')
         f.tab = self.tab
         return demo(f)
 
 
-class intro_demo(text_demo):
+class section_intro_demo(text_demo):
+
+    def __init__(self, name: str, title: str, explanation: str) -> None:
+        super().__init__(title, explanation, more_link=f'section_{name}', make_menu_entry=False)
+        self.name = name
+        with get_menu():
+            ui.link(title, f'/documentation/section_{name}')
+
+    def __call__(self, f: Callable) -> Callable:
+        result = super().__call__(f)
+        ui.markdown(f'[Read more...](/documentation/section_{self.name})').classes('bold-links arrow-links')
+        return result
+
+
+class main_page_demo(text_demo):
 
     def __init__(self, title: str, explanation: str) -> None:
-        super().__init__(title, explanation)
-        self.make_menu_entry = False
+        super().__init__(title, explanation, make_menu_entry=False)
 
 
 class element_demo:

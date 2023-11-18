@@ -3,6 +3,13 @@ from nicegui import ui
 from ..demo import bash_window, python_window
 from ..tools import load_demo, subheading, text_demo
 
+name = 'configuration_deployment'
+title = 'Configuration & Deployment'
+
+
+def intro() -> None:
+    ...
+
 
 def content() -> None:
     @text_demo('URLs', '''

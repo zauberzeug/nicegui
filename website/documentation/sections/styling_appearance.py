@@ -3,6 +3,13 @@ from nicegui import events, ui
 from ..demo import browser_window, python_window
 from ..tools import load_demo, subheading, text_demo
 
+name = 'styling_appearance'
+title = 'Styling & Appearance'
+
+
+def intro() -> None:
+    ...
+
 
 def content() -> None:
     @text_demo('Styling', '''

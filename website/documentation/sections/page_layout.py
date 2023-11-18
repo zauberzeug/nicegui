@@ -2,6 +2,13 @@ from nicegui import ui
 
 from ..tools import load_demo, text_demo
 
+name = 'page_layout'
+title = 'Page Layout'
+
+
+def intro() -> None:
+    ...
+
 
 def content() -> None:
     @text_demo('Auto-context', '''

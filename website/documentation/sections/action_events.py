@@ -2,6 +2,13 @@ from nicegui import app, ui
 
 from ..tools import element_demo, load_demo, subheading, text_demo
 
+name = 'action_events'
+title = 'Action Events'
+
+
+def intro() -> None:
+    ...
+
 
 def content() -> None:
     load_demo(ui.timer)

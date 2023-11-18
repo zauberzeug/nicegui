@@ -1,32 +1,32 @@
+from typing import Dict
+
+from .section import Section
 from .sections import (action_events, audiovisual_elements, binding_properties, configuration_deployment, controls,
                        data_elements, page_layout, styling_appearance, text_elements)
 from .tools import heading
 
+SECTIONS: Dict[str, Section] = {
+    section.name: section
+    for section in [
+        text_elements,
+        controls,
+        audiovisual_elements,
+        data_elements,
+        binding_properties,
+        page_layout,
+        styling_appearance,
+        action_events,
+        configuration_deployment,
+    ]
+}
 
-def create_full() -> None:
-    heading('Text Elements')
-    text_elements.content()
 
-    heading('Controls')
-    controls.content()
+def create_overview() -> None:
+    for section in SECTIONS.values():
+        section.intro()
 
-    heading('Audiovisual Elements')
-    audiovisual_elements.content()
 
-    heading('Data Elements')
-    data_elements.content()
-
-    heading('Binding Properties')
-    binding_properties.content()
-
-    heading('Page Layout')
-    page_layout.content()
-
-    heading('Styling and Appearance')
-    styling_appearance.content()
-
-    heading('Action Events')
-    action_events.content()
-
-    heading('Configuration and Deployment')
-    configuration_deployment.content()
+def create_section(name: str) -> None:
+    section = SECTIONS[name]
+    heading(section.title)
+    section.content()

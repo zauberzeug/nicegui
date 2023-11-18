@@ -2,6 +2,13 @@ from nicegui import ui
 
 from ..tools import load_demo
 
+name = 'controls'
+title = 'Controls'
+
+
+def intro() -> None:
+    ...
+
 
 def content() -> None:
     load_demo(ui.button)

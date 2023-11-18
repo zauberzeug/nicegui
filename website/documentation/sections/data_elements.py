@@ -2,6 +2,13 @@ from nicegui import optional_features, ui
 
 from ..tools import load_demo
 
+name = 'data_elements'
+title = 'Data Elements'
+
+
+def intro() -> None:
+    ...
+
 
 def content() -> None:
     load_demo(ui.table)

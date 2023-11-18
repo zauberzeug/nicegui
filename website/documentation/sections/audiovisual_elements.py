@@ -2,6 +2,13 @@ from nicegui import ui
 
 from ..tools import load_demo, text_demo
 
+name = 'audiovisual_elements'
+title = 'Audiovisual Elements'
+
+
+def intro() -> None:
+    ...
+
 
 def content() -> None:
     load_demo(ui.image)
