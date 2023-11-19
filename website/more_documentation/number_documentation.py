@@ -10,10 +10,20 @@ def main_demo() -> None:
 
 
 def more() -> None:
-
     @text_demo('Clearable', '''
         The `clearable` prop from [Quasar](https://quasar.dev/) adds a button to the input that clears the text.    
     ''')
     def clearable():
         i = ui.number(value=42).props('clearable')
         ui.label().bind_text_from(i, 'value')
+
+    @text_demo('Number of decimal places', '''
+        You can specify the number of decimal places using the `precision` parameter.
+        A negative value means decimal places before the dot.
+        The rounding takes place when the input loses focus,
+        when sanitization parameters like min, max or precision change,
+        or when `sanitize()` is called manually.
+    ''')
+    def integer():
+        n = ui.number(value=3.14159265359, precision=5)
+        n.sanitize()
