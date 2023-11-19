@@ -81,7 +81,6 @@ def create_full() -> None:
     load_demo(ui.upload)
     load_demo(ui.chat_message)
     load_demo(ui.element)
-    load_demo(ui.fullcalendar)
     heading('Markdown and HTML')
 
     load_demo(ui.markdown)
@@ -146,7 +145,7 @@ def create_full() -> None:
     load_demo(ui.editor)
     load_demo(ui.code)
     load_demo(ui.json_editor)
-
+    load_demo(ui.fullcalendar)
     heading('Layout')
 
     load_demo(ui.card)

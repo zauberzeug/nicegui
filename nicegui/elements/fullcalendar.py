@@ -8,6 +8,16 @@ from ..events import GenericEventArguments, handle_event
 
 class FullCalendar(Element, component='fullcalendar.js', libraries=['lib/fullcalendar/index.global.min.js']):
     def __init__(self, options: Dict[str, Any], on_click: Optional[Callable] = None) -> None:
+        """ FullCalendar
+            An element that integrates the FullCalendar library (https://fullcalendar.io/) to create an interactive calendar display.
+            
+            
+            :param properties: dictionary of FullCalendar properties for customization, such as "initialView", "slotMinTime", "slotMaxTime", "allDaySlot", "timeZone", "height", and "events".
+            :param on_click: callback function that is called when a calendar event is clicked.
+            :return: FullCalendar element with the specified properties and event handling.
+                
+        """
+
         super().__init__()
         self._props['options'] = options
         
