@@ -14,7 +14,7 @@ class Number(ValidationElement, DisableableElement):
                  value: Optional[float] = None,
                  min: Optional[float] = None,  # pylint: disable=redefined-builtin
                  max: Optional[float] = None,  # pylint: disable=redefined-builtin
-                 digits: Optional[int] = None,
+                 precision: Optional[int] = None,
                  step: Optional[float] = None,
                  prefix: Optional[str] = None,
                  suffix: Optional[str] = None,
@@ -34,7 +34,7 @@ class Number(ValidationElement, DisableableElement):
         :param value: the initial value of the field
         :param min: the minimum value allowed
         :param max: the maximum value allowed
-        :param digits: the number of digits allowed (default: no limit, negative: decimal places before the dot)
+        :param precision: the number of decimal places allowed (default: no limit, negative: decimal places before the dot)
         :param step: the step size for the stepper buttons
         :param prefix: a prefix to prepend to the displayed value
         :param suffix: a suffix to append to the displayed value
@@ -53,7 +53,7 @@ class Number(ValidationElement, DisableableElement):
             self._props['min'] = min
         if max is not None:
             self._props['max'] = max
-        self._digits = digits
+        self._precision = precision
         if step is not None:
             self._props['step'] = step
         if prefix is not None:
@@ -83,13 +83,13 @@ class Number(ValidationElement, DisableableElement):
         self.sanitize()
 
     @property
-    def digits(self) -> Optional[int]:
-        """The number of digits allowed (default: no limit, negative: decimal places before the dot)."""
-        return self._digits
+    def precision(self) -> Optional[int]:
+        """The number of decimal places allowed (default: no limit, negative: decimal places before the dot)."""
+        return self._precision
 
-    @digits.setter
-    def digits(self, value: Optional[int]) -> None:
-        self._digits = value
+    @precision.setter
+    def precision(self, value: Optional[int]) -> None:
+        self._precision = value
         self.sanitize()
 
     @property
@@ -104,8 +104,8 @@ class Number(ValidationElement, DisableableElement):
         value = float(self.value)
         value = max(value, self.min)
         value = min(value, self.max)
-        if self.digits is not None:
-            value = float(round(value, self.digits))
+        if self.precision is not None:
+            value = float(round(value, self.precision))
         self.set_value(float(self.format % value) if self.format else value)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:

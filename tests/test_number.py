@@ -59,9 +59,9 @@ def test_out_of_limits(screen: Screen):
     screen.should_contain('out_of_limits: False')
 
 
-@pytest.mark.parametrize('digits', [None, 1, -1])
-def test_rounding(digits: int, screen: Screen):
-    number = ui.number('Number', value=12, digits=digits)
+@pytest.mark.parametrize('precision', [None, 1, -1])
+def test_rounding(precision: int, screen: Screen):
+    number = ui.number('Number', value=12, precision=precision)
     ui.label().bind_text_from(number, 'value', lambda value: f'number=_{value}_')
 
     screen.open('/')
@@ -70,9 +70,9 @@ def test_rounding(digits: int, screen: Screen):
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Number"]')
     element.send_keys('.345')
     screen.click('number=')  # blur the number input
-    if digits is None:
+    if precision is None:
         screen.should_contain('number=_12.345_')
-    elif digits == 1:
+    elif precision == 1:
         screen.should_contain('number=_12.3_')
-    elif digits == -1:
+    elif precision == -1:
         screen.should_contain('number=_10.0_')

@@ -17,13 +17,13 @@ def more() -> None:
         i = ui.number(value=42).props('clearable')
         ui.label().bind_text_from(i, 'value')
 
-    @text_demo('Number of digits', '''
-        You can specify the number of digits using the `digits` parameter.
+    @text_demo('Number of decimal places', '''
+        You can specify the number of decimal places using the `precision` parameter.
         A negative value means decimal places before the dot.
         The rounding takes place when the input loses focus,
-        when sanitization parameters like min, max or digits change,
+        when sanitization parameters like min, max or precision change,
         or when `sanitize()` is called manually.
     ''')
     def integer():
-        n = ui.number(value=3.14159265359, digits=5)
+        n = ui.number(value=3.14159265359, precision=5)
         n.sanitize()
