@@ -218,6 +218,18 @@
         document.body.removeChild(anchor);
       }
 
+      function download_bytes(data, filename) {
+        const anchor = document.createElement("a");
+        const url = URL.createObjectURL(new Blob([data]));
+        anchor.href = url;
+        anchor.target = "_blank";
+        anchor.download = filename || "";
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(url);
+      }
+
       async function loadDependencies(element) {
         if (element.component) {
           const {name, key, tag} = element.component;
@@ -298,6 +310,7 @@
               window.open(url, target);
             },
             download: (msg) => download(msg.url, msg.filename),
+            download_bytes: (msg) => download_bytes(msg.data, msg.filename),
             notify: (msg) => Quasar.Notify.create(msg),
           };
           const socketMessageQueue = [];

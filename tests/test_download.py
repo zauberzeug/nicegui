@@ -40,3 +40,12 @@ def test_downloading_local_file_as_src(screen: Screen):
     screen.wait(0.5)
     assert (DOWNLOAD_DIR / 'slide1.jpg').exists()
     assert len(app.routes) == route_count_before_download
+
+
+def test_download_raw_data(screen: Screen):
+    ui.button('download', on_click=lambda: ui.download_raw(b'test', 'test.txt'))
+
+    screen.open('/')
+    screen.click('download')
+    screen.wait(0.5)
+    assert (DOWNLOAD_DIR / 'test.txt').read_text() == 'test'

@@ -17,3 +17,14 @@ def download(src: Union[str, Path], filename: Optional[str] = None) -> None:
     else:
         src = str(src)
     context.get_client().download(src, filename)
+
+
+def download_raw(data: bytes, filename: Optional[str] = None) -> None:
+    """Download
+
+    Function to trigger the download of a file from raw data.
+
+    :param data: raw data of a file which should be downloaded
+    :param filename: name of the file to download (default: browser generated name)
+    """
+    context.get_client().download_bytes(data, filename)

@@ -196,6 +196,10 @@ class Client:
         """Download a file from the given URL."""
         outbox.enqueue_message('download', {'url': url, 'filename': filename}, self.id)
 
+    def download_bytes(self, data: bytes, filename: Optional[str] = None) -> None:
+        """Download a file from the given bytes."""
+        outbox.enqueue_message('download_bytes', {'data': data, 'filename': filename}, self.id)
+
     def on_connect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
         """Register a callback to be called when the client connects."""
         self.connect_handlers.append(handler)
