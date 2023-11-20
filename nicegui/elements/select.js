@@ -20,13 +20,20 @@ export default {
   },
   methods: {
     filterFn(val, update, abort) {
-      update(() => {
-        const needle = val.toLocaleLowerCase();
-        this.filteredOptions = needle
-          ? this.initialOptions.filter((v) => String(v.label).toLocaleLowerCase().indexOf(needle) > -1)
-          : this.initialOptions;
-      });
+      update(() => (this.filteredOptions = this.findFilteredOptions()));
     },
+    findFilteredOptions() {
+      const needle = this.$el.querySelector("input[type=search]")?.value.toLocaleLowerCase();
+      return needle
+        ? this.initialOptions.filter((v) => String(v.label).toLocaleLowerCase().indexOf(needle) > -1)
+        : this.initialOptions;
+    },
+  },
+  updated() {
+    const newFilteredOptions = this.findFilteredOptions();
+    if (newFilteredOptions.length !== this.filteredOptions.length) {
+      this.filteredOptions = newFilteredOptions;
+    }
   },
   watch: {
     options: {
