@@ -4,10 +4,9 @@ from ..tools import load_demo
 
 name = 'controls'
 title = 'Controls'
-
-
-def intro() -> None:
-    ...
+description = '''
+    NiceGUI provides a variety of elements for user interaction, e.g. `ui.button`, `ui.slider`, `ui.inputs`, etc.
+'''
 
 
 def content() -> None:

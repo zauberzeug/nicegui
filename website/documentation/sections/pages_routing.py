@@ -8,10 +8,8 @@ CONSTANT_UUID = str(uuid.uuid4())
 
 name = 'pages_routing'
 title = 'Pages & Routing'
-
-
-def intro() -> None:
-    ...
+description = '''
+'''
 
 
 def content() -> None:

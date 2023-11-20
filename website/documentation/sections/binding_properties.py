@@ -2,10 +2,9 @@ from ..tools import load_demo
 
 name = 'binding_properties'
 title = 'Binding Properties'
-
-
-def intro() -> None:
-    ...
+description = '''
+    To update UI elements automatically, you can bind them to each other or to your data model.
+'''
 
 
 def content() -> None:

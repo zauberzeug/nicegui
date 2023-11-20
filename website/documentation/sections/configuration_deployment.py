@@ -5,10 +5,9 @@ from ..tools import load_demo, subheading, text_demo
 
 name = 'configuration_deployment'
 title = 'Configuration & Deployment'
-
-
-def intro() -> None:
-    ...
+description = '''
+    Whether you want to run your app locally or on a server, native or in a browser, we got you covered.
+'''
 
 
 def content() -> None:

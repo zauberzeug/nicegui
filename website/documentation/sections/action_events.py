@@ -3,11 +3,10 @@ from nicegui import app, ui
 from ..tools import element_demo, load_demo, subheading, text_demo
 
 name = 'action_events'
-title = 'Action Events'
-
-
-def intro() -> None:
-    ...
+title = 'Action & Events'
+description = '''
+    This section covers timers, UI events, and the lifecycle of NiceGUI apps.
+'''
 
 
 def content() -> None:

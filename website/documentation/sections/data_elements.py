@@ -4,10 +4,9 @@ from ..tools import load_demo
 
 name = 'data_elements'
 title = 'Data Elements'
-
-
-def intro() -> None:
-    ...
+description = '''
+    There are several elements for displaying data, e.g. `ui.table`, `ui.aggrid`, `ui.highchart`, `ui.echart`, etc.
+'''
 
 
 def content() -> None:

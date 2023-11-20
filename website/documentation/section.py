@@ -11,7 +11,8 @@ class Section(Protocol):
     def title(self) -> str:
         ...
 
-    def intro(self) -> None:
+    @property
+    def description(self) -> str:
         ...
 
     def content(self) -> None:

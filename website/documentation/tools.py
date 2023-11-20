@@ -83,20 +83,6 @@ class text_demo:
         return demo(f)
 
 
-class section_intro_demo(text_demo):
-
-    def __init__(self, name: str, title: str, explanation: str) -> None:
-        super().__init__(title, explanation, more_link=f'section_{name}', make_menu_entry=False)
-        self.name = name
-        with get_menu():
-            ui.link(title, f'/documentation/section_{name}')
-
-    def __call__(self, f: Callable) -> Callable:
-        result = super().__call__(f)
-        ui.markdown(f'[Read more...](/documentation/section_{self.name})').classes('bold-links arrow-links')
-        return result
-
-
 class main_page_demo(text_demo):
 
     def __init__(self, title: str, explanation: str) -> None:

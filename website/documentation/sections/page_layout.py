@@ -4,10 +4,9 @@ from ..tools import load_demo, text_demo
 
 name = 'page_layout'
 title = 'Page Layout'
-
-
-def intro() -> None:
-    ...
+description = '''
+    This section covers fundamental techniques as well as several elements to structure your UI.
+'''
 
 
 def content() -> None:

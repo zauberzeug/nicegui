@@ -4,10 +4,9 @@ from ..tools import load_demo, text_demo
 
 name = 'audiovisual_elements'
 title = 'Audiovisual Elements'
-
-
-def intro() -> None:
-    ...
+description = '''
+    You can use elements like `ui.image`, `ui.audio`, `ui.video`, etc. to display audiovisual content.
+'''
 
 
 def content() -> None:

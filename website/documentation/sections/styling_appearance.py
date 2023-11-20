@@ -5,10 +5,9 @@ from ..tools import load_demo, subheading, text_demo
 
 name = 'styling_appearance'
 title = 'Styling & Appearance'
-
-
-def intro() -> None:
-    ...
+description = '''
+    NiceGUI allows to customize the appearance of UI elements in various ways, including CSS, Tailwind CSS and Quasar properties.
+'''
 
 
 def content() -> None:
