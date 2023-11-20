@@ -2,7 +2,6 @@ export default {
   template: "<div></div>",
   props: {
     options: Array,
-    // eventToAdd: Object
   },
   mounted() {
     this.options.eventClick = (info) => {
