@@ -404,8 +404,7 @@ async def index_page(client: Client) -> None:
 @ui.page('/documentation')
 def documentation_page() -> None:
     add_head_html()
-    menu = side_menu()
-    add_header(menu)
+    add_header()
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Reference, Demos and more', '*NiceGUI* Documentation')
