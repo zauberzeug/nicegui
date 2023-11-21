@@ -4,7 +4,7 @@ from nicegui import ui
 
 from .section import Section
 from .sections import (action_events, audiovisual_elements, binding_properties, configuration_deployment, controls,
-                       data_elements, page_layout, styling_appearance, text_elements)
+                       data_elements, page_layout, pages_routing, styling_appearance, text_elements)
 from .tools import heading
 
 SECTIONS: Dict[str, Section] = {
@@ -18,6 +18,7 @@ SECTIONS: Dict[str, Section] = {
         page_layout,
         styling_appearance,
         action_events,
+        pages_routing,
         configuration_deployment,
     ]
 }

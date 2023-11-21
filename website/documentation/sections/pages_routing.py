@@ -9,6 +9,7 @@ CONSTANT_UUID = str(uuid.uuid4())
 name = 'pages_routing'
 title = 'Pages & Routing'
 description = '''
+    A NiceGUI app can consist of multiple pages and other FastAPI endpoints.
 '''
 
 
