@@ -131,9 +131,9 @@ class MainVisitor(ast.NodeVisitor):
             return
         if function_name == 'example_link':
             title = ast_string_node_to_string(node.args[0])
-            name = name = title.lower().replace(' ', '_')
-            # TODO: generalize hack to use folder if main.py is not available
-            file = 'main.py' if not any(x in name for x in ['ros', 'docker']) else ''
+            name = title.lower().replace(' ', '_')
+            path = Path(__file__).parent.parent / 'examples' / name
+            file = 'main.py' if (path / 'main.py').is_file() else ''
             documents.append({
                 'title': 'Example: ' + title,
                 'content': ast_string_node_to_string(node.args[1]),

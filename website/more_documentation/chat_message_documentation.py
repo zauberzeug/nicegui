@@ -29,3 +29,11 @@ def more() -> None:
     ''')
     def multiple_messages():
         ui.chat_message(['Hi! 😀', 'How are you?'])
+
+    @text_demo('Chat message with child elements', '''
+        You can add child elements to a chat message.
+    ''')
+    def child_elements():
+        with ui.chat_message():
+            ui.label('Guess where I am!')
+            ui.image('https://picsum.photos/id/249/640/360').classes('w-64')

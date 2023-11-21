@@ -25,3 +25,11 @@ def test_newline(screen: Screen):
 
     screen.open('/')
     assert screen.find('Hello').find_element(By.TAG_NAME, 'br')
+
+
+def test_slot(screen: Screen):
+    with ui.chat_message():
+        ui.label('slot')
+
+    screen.open('/')
+    screen.should_contain('slot')
