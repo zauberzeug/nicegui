@@ -39,7 +39,7 @@ def subheading(text: str, *, make_menu_entry: bool = True, more_link: Optional[s
     ui.html(f'<div id="{name}"></div>').style('position: relative; top: -90px')
     with ui.row().classes('gap-2 items-center relative'):
         if more_link:
-            ui.link(text, f'documentation/{more_link}').classes('text-2xl')
+            ui.link(text, f'/documentation/{more_link}').classes('text-2xl')
         else:
             ui.label(text).classes('text-2xl')
         with ui.link(target=f'#{name}').classes('absolute').style('transform: translateX(-150%)'):
@@ -106,7 +106,7 @@ class element_demo:
             render_docstring(documentation, with_params=more_link is None)
             result = demo(f)
             if more_link:
-                ui.markdown(f'See [more...](documentation/{more_link})').classes('bold-links arrow-links')
+                ui.markdown(f'See [more...](/documentation/{more_link})').classes('bold-links arrow-links')
         return result
 
 
