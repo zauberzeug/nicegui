@@ -7,7 +7,7 @@ from geometry_msgs.msg import Pose, Twist
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 
-from nicegui import Client, app, run, ui
+from nicegui import Client, app, ui, ui_run
 
 
 class NiceGuiNode(Node):
@@ -70,5 +70,5 @@ def ros_main() -> None:
 
 
 app.on_startup(lambda: threading.Thread(target=ros_main).start())
-run.APP_IMPORT_STRING = f'{__name__}:app'  # ROS2 uses a non-standard module name, so we need to specify it here
+ui_run.APP_IMPORT_STRING = f'{__name__}:app'  # ROS2 uses a non-standard module name, so we need to specify it here
 ui.run(uvicorn_reload_dirs=str(Path(__file__).parent.resolve()), favicon='🤖')
