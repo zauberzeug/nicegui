@@ -428,18 +428,12 @@ async def documentation_page_more(name: str, client: Client) -> None:
         name = name.replace('_', '')  # NOTE: "AG Grid" leads to anchor name "ag_grid", but class is `ui.aggrid`
     module = importlib.import_module(f'website.documentation.more.{name}_documentation')
     more = getattr(module, 'more', None)
-    if hasattr(ui, name):
-        api = getattr(ui, name)
-        back_link_target = str(api.__doc__ or api.__init__.__doc__).splitlines()[0].strip()
-    else:
-        api = name
-        back_link_target = name
+    api = getattr(ui, name, name)
 
     add_head_html()
     add_header()
     with side_menu() as menu:
-        ui.markdown(f'[← back](/documentation#{documentation.create_anchor_name(back_link_target)})') \
-            .classes('bold-links')
+        ui.markdown('[← back](/documentation)').classes('bold-links')  # TODO: back to section
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Documentation', f'ui.*{name}*' if hasattr(ui, name) else f'*{name.replace("_", " ").title()}*')
         with menu:
