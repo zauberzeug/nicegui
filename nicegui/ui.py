@@ -25,6 +25,7 @@ __all__ = [
     'echart',
     'editor',
     'expansion',
+    'fullcalendar',
     'grid',
     'highchart',
     'html',
@@ -58,7 +59,6 @@ __all__ = [
     'scroll_area',
     'select',
     'separator',
-    'fullcalendar',
     'slider',
     'spinner',
     'splitter',
@@ -99,7 +99,6 @@ __all__ = [
     'right_drawer',
     'run',
     'run_with',
-    
 ]
 
 from .element import Element as element
@@ -128,6 +127,7 @@ from .elements.dialog import Dialog as dialog
 from .elements.echart import EChart as echart
 from .elements.editor import Editor as editor
 from .elements.expansion import Expansion as expansion
+from .elements.fullcalendar import FullCalendar as fullcalendar
 from .elements.grid import Grid as grid
 from .elements.highchart import highchart
 from .elements.html import Html as html
@@ -178,7 +178,6 @@ from .elements.time import Time as time
 from .elements.timeline import Timeline as timeline
 from .elements.timeline import TimelineEntry as timeline_entry
 from .elements.timer import Timer as timer
-from .elements.fullcalendar import FullCalendar as fullcalendar
 from .elements.toggle import Toggle as toggle
 from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
