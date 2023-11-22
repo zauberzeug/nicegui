@@ -208,14 +208,17 @@
         });
       }
 
-      function download(url, filename) {
+      function download(src, filename) {
         const anchor = document.createElement("a");
-        anchor.href = url;
+        anchor.href = typeof src === "string" ? src : URL.createObjectURL(new Blob([src]));
         anchor.target = "_blank";
         anchor.download = filename || "";
         document.body.appendChild(anchor);
         anchor.click();
         document.body.removeChild(anchor);
+        if (typeof src !== "string") {
+          URL.revokeObjectURL(url);
+        }
       }
 
       async function loadDependencies(element) {
@@ -297,7 +300,7 @@
               const target = msg.new_tab ? '_blank' : '_self';
               window.open(url, target);
             },
-            download: (msg) => download(msg.url, msg.filename),
+            download: (msg) => download(msg.src, msg.filename),
             notify: (msg) => Quasar.Notify.create(msg),
           };
           const socketMessageQueue = [];
