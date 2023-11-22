@@ -153,8 +153,7 @@ documents = []
 tree = ast.parse(Path('../main.py').read_text())
 MainVisitor().visit(tree)
 
-generate_for(Path('./documentation.py'))
-for file in Path('./more_documentation').glob('*.py'):
+for file in Path('./documentation/more').glob('*.py'):
     generate_for(file, file.stem.removesuffix('_documentation'))
 
 with open('static/search_index.json', 'w') as f:
