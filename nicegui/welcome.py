@@ -13,9 +13,9 @@ def _get_all_ips() -> List[str]:
     return ips
 
 
-async def print_message() -> None:
+async def print_message(welcome_message) -> None:
     """Print a welcome message with URLs to access the NiceGUI app."""
-    print('NiceGUI ready to go ', end='', flush=True)
+    print(welcome_message, end='', flush=True)
     host = os.environ['NICEGUI_HOST']
     port = os.environ['NICEGUI_PORT']
     ips = set((await run.io_bound(_get_all_ips)) if host == '0.0.0.0' else [])
