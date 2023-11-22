@@ -415,7 +415,7 @@ def documentation_page() -> None:
 def documentation_section(name: str) -> None:
     add_head_html()
     with side_menu() as menu:
-        ui.markdown('[← back](/documentation)').classes('bold-links')
+        ui.markdown('[← Overview](/documentation)').classes('bold-links')
     add_header(menu)
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
@@ -433,7 +433,7 @@ async def documentation_page_more(name: str, client: Client) -> None:
     add_head_html()
     add_header()
     with side_menu() as menu:
-        ui.markdown('[← back](/documentation)').classes('bold-links')  # TODO: back to section
+        ui.markdown('[← Overview](/documentation)').classes('bold-links')  # TODO: back to section
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         section_heading('Documentation', f'ui.*{name}*' if hasattr(ui, name) else f'*{name.replace("_", " ").title()}*')
         with menu:
