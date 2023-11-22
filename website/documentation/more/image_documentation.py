@@ -23,6 +23,16 @@ def more() -> None:
         base64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=='
         ui.image(base64).classes('w-2 h-2 m-auto')
 
+    @text_demo('PIL image', '''
+        You can also use a PIL image as image source.
+    ''')
+    def pil():
+        import numpy as np
+        from PIL import Image
+
+        image = Image.fromarray(np.random.randint(0, 255, (100, 100), dtype=np.uint8))
+        ui.image(image).classes('w-32')
+
     @text_demo('Lottie files', '''
         You can also use [Lottie files](https://lottiefiles.com/) with animations.
     ''')

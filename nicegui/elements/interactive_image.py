@@ -1,10 +1,13 @@
 from __future__ import annotations
-import time
 
+import time
 from pathlib import Path
 from typing import Any, Callable, List, Optional, Union, cast
 
+from PIL.Image import Image as PIL_Image
+
 from ..events import GenericEventArguments, MouseEventArguments, handle_event
+from .image import image_to_base64
 from .mixins.content_element import ContentElement
 from .mixins.source_element import SourceElement
 
@@ -56,6 +59,11 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
             )
             handle_event(on_mouse, arguments)
         self.on('mouse', handle_mouse)
+
+    def _set_props(self, source: Union[str, Path]) -> None:
+        if isinstance(source, PIL_Image):
+            source = image_to_base64(source)
+        super()._set_props(source)
 
     def force_reload(self) -> None:
         """Force the image to reload from the source."""
