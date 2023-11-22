@@ -145,11 +145,11 @@ def content() -> None:
         with python_window(classes='max-w-lg w-full'):
             ui.markdown('''
                 ```python
-                from nicegui import native_mode, ui
+                from nicegui import native, ui
 
                 ui.label('Hello from PyInstaller')
 
-                ui.run(reload=False, port=native_mode.find_open_port())
+                ui.run(reload=False, port=native.find_open_port())
                 ```
             ''')
         with python_window('build.py', classes='max-w-lg w-full'):
