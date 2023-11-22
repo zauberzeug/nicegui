@@ -17,7 +17,7 @@ export default {
   methods: {
     update_chart() {
       convertDynamicProperties(this.options, true);
-      this.chart.setOption(this.options, { notMerge: this.chart.options.series.length != this.options.series.length });
+      this.chart.setOption(this.options, { notMerge: this.chart.options?.series.length != this.options.series.length });
     },
   },
   props: {
