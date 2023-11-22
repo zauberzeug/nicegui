@@ -181,7 +181,7 @@ from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
 from .elements.upload import Upload as upload
 from .elements.video import Video as video
-from .functions.download import download, download_raw
+from .functions.download import download
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
 from .functions.notify import notify

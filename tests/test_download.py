@@ -43,7 +43,7 @@ def test_downloading_local_file_as_src(screen: Screen):
 
 
 def test_download_raw_data(screen: Screen):
-    ui.button('download', on_click=lambda: ui.download_raw(b'test', 'test.txt'))
+    ui.button('download', on_click=lambda: ui.download(b'test', 'test.txt'))
 
     screen.open('/')
     screen.click('download')
