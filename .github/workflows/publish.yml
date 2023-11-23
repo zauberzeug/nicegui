@@ -33,7 +33,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         id: create_release
         with:
-          draft: false
+          draft: true
           prerelease: false
           name: ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
