@@ -1,7 +1,8 @@
-from . import more
-from .content import create_overview, create_section
+from . import content, more
 from .demo import bash_window, browser_window, python_window
 from .intro import create_intro
+from .overview import create_overview, create_section
+from .rendering import render
 from .tools import create_anchor_name, element_demo, generate_class_doc
 
 __all__ = [
@@ -10,9 +11,11 @@ __all__ = [
     'create_anchor_name',
     'create_overview',
     'create_section',
+    'content',
     'more',
     'create_intro',
     'element_demo',
     'generate_class_doc',
     'python_window',
+    'render',
 ]

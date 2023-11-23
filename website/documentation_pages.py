@@ -5,18 +5,16 @@ import logging
 from nicegui import context, ui
 
 from . import documentation
+from .documentation.content.overview import Overview
 from .header import add_head_html, add_header
 from .style import section_heading, side_menu
+
+overview = Overview()
 
 
 def create_overview() -> None:
     """Create the documentation overview."""
-    add_head_html()
-    add_header()
-    ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
-    with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
-        section_heading('Reference, Demos and more', '*NiceGUI* Documentation')
-        documentation.create_overview()
+    documentation.render(overview)
 
 
 def create_section(name: str) -> None:
