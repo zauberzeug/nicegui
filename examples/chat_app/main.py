@@ -21,7 +21,7 @@ async def main(client: Client):
         stamp = datetime.utcnow().strftime('%X')
         messages.append((user_id, avatar, text.value, stamp))
         text.value = ''
-        chat_messages.refresh()
+        chat_messages.refresh(user_id)
 
     user_id = str(uuid4())
     avatar = f'https://robohash.org/{user_id}?bgset=bg2'
