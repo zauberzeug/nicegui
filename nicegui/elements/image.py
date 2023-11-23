@@ -10,6 +10,7 @@ from .mixins.source_element import SourceElement
 
 
 class Image(SourceElement, component='image.js'):
+    PIL_CONVERT_FORMAT = 'PNG'
 
     def __init__(self, source: Union[str, Path, PIL_Image] = '') -> None:
         """Image
@@ -23,7 +24,7 @@ class Image(SourceElement, component='image.js'):
 
     def _set_props(self, source: Union[str, Path]) -> None:
         if isinstance(source, PIL_Image):
-            source = image_to_base64(source)
+            source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)
 
     def force_reload(self) -> None:
@@ -32,11 +33,11 @@ class Image(SourceElement, component='image.js'):
         self.update()
 
 
-def image_to_base64(pil_image: PIL_Image, image_format: str = 'PNG') -> str:
+def pil_to_base64(pil_image: PIL_Image, image_format: str) -> str:
     """Convert a PIL image to a base64 string which can be used as image source.
 
     :param pil_image: the PIL image
-    :param image_format: the image format (default: 'PNG')
+    :param image_format: the image format
     :return: the base64 string
     """
     buffer = io.BytesIO()
