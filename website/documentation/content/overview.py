@@ -7,6 +7,7 @@ from ..content.sections.binding_properties import BindingPropertiesDocumentation
 from ..content.sections.controls import ControlsDocumentation
 from ..content.sections.data_elements import DataElementsDocumentation
 from ..content.sections.page_layout import PageLayoutDocumentation
+from ..content.sections.styling_appearance import StylingAppearanceDocumentation
 from ..content.sections.text_elements import TextElementsDocumentation
 from ..model import Documentation, SectionDocumentation
 
@@ -68,6 +69,9 @@ class Overview(Documentation):
             '''),
             (PageLayoutDocumentation(), '''
                 This section covers fundamental techniques as well as several elements to structure your UI.
+            '''),
+            (StylingAppearanceDocumentation(), '''
+                NiceGUI allows to customize the appearance of UI elements in various ways, including CSS, Tailwind CSS and Quasar properties.
             '''),
         ]
 
