@@ -2,6 +2,7 @@ from typing import List, Tuple
 
 from nicegui import ui
 
+from ..content.sections.action_events import ActionEventsDocumentation
 from ..content.sections.audiovisual_elements import AudiovisualElementsDocumentation
 from ..content.sections.binding_properties import BindingPropertiesDocumentation
 from ..content.sections.controls import ControlsDocumentation
@@ -72,6 +73,9 @@ class Overview(Documentation):
             '''),
             (StylingAppearanceDocumentation(), '''
                 NiceGUI allows to customize the appearance of UI elements in various ways, including CSS, Tailwind CSS and Quasar properties.
+            '''),
+            (ActionEventsDocumentation(), '''
+                This section covers timers, UI events, and the lifecycle of NiceGUI apps.
             '''),
         ]
 

@@ -38,7 +38,7 @@ def render_page(documentation: Documentation, *, is_main: bool = False) -> None:
             if part.title:
                 if part.link_target:
                     ui.link_target(part.link_target)
-                if part.link:
+                if part.link and part.link != documentation.route:
                     with ui.link(target=part.link):
                         ui.markdown(f'### {part.title}')
                 else:

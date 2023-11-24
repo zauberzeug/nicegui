@@ -58,10 +58,24 @@ class Documentation(abc.ABC):
             return function
         return decorator
 
+    def add_element_demo(self, element: Union[type, Callable]) -> Callable[[Callable], Callable]:
+        """Add an element demo section to the documentation."""
+        def decorator(function: Callable) -> Callable:
+            self._content.append(DocumentationPart(title=element.__name__, function=function))
+            return function
+        return decorator
+
     def add_element_intro(self, documentation: UiElementDocumentation) -> None:
         """Add an element intro section to the documentation."""
         documentation.back_link = self.route
         self.add_main_element_demo(documentation, intro_only=True)
+
+    def add_detail_intro(self, documentation: DetailDocumentation) -> None:
+        """Add a detail intro section to the documentation."""
+        documentation.back_link = self.route
+        part = documentation._content[0]  # pylint: disable=protected-access
+        part.link = documentation.route
+        self._content.append(part)
 
     def add_main_element_demo(self, documentation: UiElementDocumentation, *, intro_only: bool = False) -> None:
         """Add a demo section for an element to the documentation."""
@@ -104,6 +118,19 @@ class SectionDocumentation(Documentation):
         super().__init__(self._route, subtitle='Documentation', title=self._title, back_link='/documentation')
 
 
+class DetailDocumentation(Documentation):
+    _title: str
+    _route: str
+
+    def __init_subclass__(cls, title: str, name: str) -> None:
+        cls._title = title
+        cls._route = f'/documentation/{name}'
+        return super().__init_subclass__()
+
+    def __init__(self) -> None:
+        super().__init__(self._route, subtitle='Documentation', title=self._title)
+
+
 class UiElementDocumentation(Documentation):
     _element: Union[type, Callable]
 
@@ -116,7 +143,6 @@ class UiElementDocumentation(Documentation):
         name = self.element.__name__.lower()
         super().__init__(f'/documentation/{name}', subtitle='Documentation', title=f'ui.*{name}*')
 
-    @abc.abstractmethod
     def main_demo(self) -> None:
         """Add a demo for the element here."""
 
