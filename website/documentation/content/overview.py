@@ -8,6 +8,9 @@ from ..model import Documentation, SectionDocumentation
 
 class Overview(Documentation):
 
+    def __init__(self) -> None:
+        super().__init__('/documentation/', subtitle='Reference, Demos and more', title='*NiceGUI* Documentation')
+
     def content(self) -> None:
         self.add_markdown('Overview', '''
             NiceGUI is an open-source Python library to write graphical user interfaces which run in the browser.

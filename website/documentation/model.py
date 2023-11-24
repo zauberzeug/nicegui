@@ -23,15 +23,19 @@ class DocumentationPart:
     @property
     def link_target(self) -> Optional[str]:
         """Return the link target for in-page navigation."""
-        return self.link.lower().replace(' ', '_') if self.link else None
+        return self.title.lower().replace(' ', '_') if self.title else None
 
 
 class Documentation(abc.ABC):
-    title: Optional[str] = None
-    description: Optional[str] = None
 
-    def __init__(self, route: str, *, back_link: Optional[str] = None) -> None:
+    def __init__(self,
+                 route: str, *,
+                 title: str,
+                 subtitle: str,
+                 back_link: Optional[str] = None) -> None:
         self.route = route
+        self.title = title
+        self.subtitle = subtitle
         self.back_link = back_link
         self._content: List[DocumentationPart] = []
         self.content()
@@ -39,6 +43,9 @@ class Documentation(abc.ABC):
 
     def __iter__(self) -> Iterator[DocumentationPart]:
         return iter(self._content)
+
+    def __len__(self) -> int:
+        return len(self._content)
 
     def add_markdown(self, title: str, description: str) -> None:
         """Add a markdown section to the documentation."""
@@ -81,26 +88,29 @@ class Documentation(abc.ABC):
 
 
 class SectionDocumentation(Documentation):
-    route: str
+    _title: str
+    _route: str
 
     def __init_subclass__(cls, title: str, name: str) -> None:
-        cls.title = title
-        cls.route = f'/documentation/section_{name}'
+        cls._title = title
+        cls._route = f'/documentation/section_{name}'
         return super().__init_subclass__()
 
     def __init__(self) -> None:
-        super().__init__(self.route, back_link='/documentation')
+        super().__init__(self._route, subtitle='Documentation', title=self._title, back_link='/documentation')
 
 
 class ElementDocumentation(Documentation):
-    element: type
+    _element: type
 
     def __init_subclass__(cls, element: type) -> None:
-        cls.element = element
+        cls._element = element
         return super().__init_subclass__()
 
     def __init__(self) -> None:
-        super().__init__(f'/documentation/{self.element.__name__.lower()}')
+        self.element = self._element
+        name = self.element.__name__.lower()
+        super().__init__(f'/documentation/{name}', subtitle='Documentation', title=f'ui.*{name}*')
 
     @abc.abstractmethod
     def main_demo(self) -> None:

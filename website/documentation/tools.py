@@ -98,7 +98,7 @@ class element_demo:
         self.element_class = element_class
 
     def __call__(self, f: Callable, *, more_link: Optional[str] = None) -> Callable:
-        doc = f.__doc__ or self.element_class.__doc__ or self.element_class.__init__.__doc__
+        doc = f.__doc__ or self.element_class.__doc__ or self.element_class.__init__.__doc__  # type: ignore
         title, documentation = doc.split('\n', 1)
         with ui.column().classes('w-full mb-8 gap-2'):
             if more_link:
@@ -143,10 +143,10 @@ def generate_class_doc(class_obj: type) -> None:
     if properties:
         subheading('Properties')
         with ui.column().classes('gap-2'):
-            for name, property in sorted(properties.items()):
-                ui.markdown(f'**`{name}`**`{generate_property_signature_description(property)}`')
-                if property.__doc__:
-                    render_docstring(property.__doc__).classes('ml-8')
+            for name, property_ in sorted(properties.items()):
+                ui.markdown(f'**`{name}`**`{generate_property_signature_description(property_)}`')
+                if property_.__doc__:
+                    render_docstring(property_.__doc__).classes('ml-8')
     if methods:
         subheading('Methods')
         with ui.column().classes('gap-2'):
@@ -171,7 +171,7 @@ def generate_method_signature_description(method: Callable) -> str:
             param_type = inspect.formatannotation(param.annotation)
             param_string += f''': {param_type.strip("'")}'''
         if param.default != inspect.Parameter.empty:
-            param_string += f' = [...]' if callable(param.default) else f' = {repr(param.default)}'
+            param_string += ' = [...]' if callable(param.default) else f' = {repr(param.default)}'
         if param.kind == inspect.Parameter.VAR_POSITIONAL:
             param_string = f'*{param_string}'
         param_strings.append(param_string)
@@ -184,17 +184,17 @@ def generate_method_signature_description(method: Callable) -> str:
     return description
 
 
-def generate_property_signature_description(property: Optional[property]) -> str:
+def generate_property_signature_description(property_: Optional[property]) -> str:
     description = ''
-    if property is None:
+    if property_ is None:
         return ': BindableProperty'
-    if property.fget:
-        return_annotation = inspect.signature(property.fget).return_annotation
+    if property_.fget:
+        return_annotation = inspect.signature(property_.fget).return_annotation
         if return_annotation != inspect.Parameter.empty:
             return_type = inspect.formatannotation(return_annotation)
             description += f': {return_type}'
-    if property.fset:
+    if property_.fset:
         description += ' (settable)'
-    if property.fdel:
+    if property_.fdel:
         description += ' (deletable)'
     return description

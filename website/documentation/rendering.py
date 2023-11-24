@@ -2,19 +2,38 @@ from nicegui import ui
 
 from ..header import add_head_html, add_header
 from ..style import section_heading
-from .model import Documentation
+from .model import Documentation, ElementDocumentation
+from .tools import generate_class_doc
 
 
 def render_page(documentation: Documentation, *, is_main: bool = False) -> None:
     """Render the documentation."""
+
+    # header
     add_head_html()
     add_header()
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
+
+    # menu
+    if is_main:
+        menu = None
+    else:
+        with ui.left_drawer() \
+                .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
+                .style('height: calc(100% + 20px) !important') as menu:
+            ui.markdown(f'[← back]({documentation.back_link})').classes('bold-links')
+            ui.markdown('**Demos**' if len(documentation) > 1 else '**Demo**').classes('mt-4')
+            for part in documentation:
+                if part.title and part.link_target:
+                    ui.link(part.title, f'#{part.link_target}')
+
+    # content
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
-        if is_main:
-            section_heading('Reference, Demos and more', '*NiceGUI* Documentation')
-        if documentation.title:
-            ui.markdown(f'# {documentation.title}')
+
+        # heading
+        section_heading(documentation.subtitle, documentation.title)
+
+        # parts
         for part in documentation:
             if part.title:
                 if part.link_target:
@@ -29,9 +48,9 @@ def render_page(documentation: Documentation, *, is_main: bool = False) -> None:
             if part.function:
                 part.function()
 
-    if not is_main:
-        with ui.left_drawer():
-            ui.markdown(f'[← back]({documentation.back_link})').classes('bold-links')
-            for part in documentation:
-                if part.title and part.link_target:
-                    ui.link(part.title, f'#{part.link_target}')
+        # reference
+        if isinstance(documentation, ElementDocumentation) and menu:
+            with menu:
+                ui.markdown('**Reference**').classes('mt-4')
+            ui.markdown('## Reference').classes('mt-16')
+            generate_class_doc(documentation.element)
