@@ -1,14 +1,14 @@
 from nicegui import ui
 
-from ..model import ElementDocumentation
+from ..model import UiElementDocumentation
 
 
-class LabelDocumentation(ElementDocumentation, element=ui.label):
+class LabelDocumentation(UiElementDocumentation, element=ui.label):
 
     def main_demo(self) -> None:
         ui.label('some label')
 
-    def more_demos(self) -> None:
+    def more(self) -> None:
         @self.add_markdown_demo('Change Appearance Depending on the Content', '''
             You can overwrite the `_handle_text_change` method to update other attributes of a label depending on its content. 
             This technique also works for bindings as shown in the example below.

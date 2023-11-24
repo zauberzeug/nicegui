@@ -1,5 +1,9 @@
 from nicegui import ui
 
+from ..model import UiElementDocumentation
 
-def main_demo() -> None:
-    ui.html('This is <strong>HTML</strong>.')
+
+class HtmlDocumentation(UiElementDocumentation, element=ui.html):
+
+    def main_demo(self) -> None:
+        ui.html('This is <strong>HTML</strong>.')

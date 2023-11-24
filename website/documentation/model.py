@@ -58,12 +58,12 @@ class Documentation(abc.ABC):
             return function
         return decorator
 
-    def add_element_intro(self, documentation: ElementDocumentation) -> None:
+    def add_element_intro(self, documentation: UiElementDocumentation) -> None:
         """Add an element intro section to the documentation."""
         documentation.back_link = self.route
         self.add_main_element_demo(documentation, intro_only=True)
 
-    def add_main_element_demo(self, documentation: ElementDocumentation, *, intro_only: bool = False) -> None:
+    def add_main_element_demo(self, documentation: UiElementDocumentation, *, intro_only: bool = False) -> None:
         """Add a demo section for an element to the documentation."""
         title, doc = documentation.element.__init__.__doc__.split('\n', 1)  # type: ignore
         doc = remove_indentation(doc).replace('param ', '')
@@ -100,7 +100,7 @@ class SectionDocumentation(Documentation):
         super().__init__(self._route, subtitle='Documentation', title=self._title, back_link='/documentation')
 
 
-class ElementDocumentation(Documentation):
+class UiElementDocumentation(Documentation):
     _element: type
 
     def __init_subclass__(cls, element: type) -> None:
@@ -116,9 +116,9 @@ class ElementDocumentation(Documentation):
     def main_demo(self) -> None:
         """Add a demo for the element here."""
 
-    def more_demos(self) -> None:
+    def more(self) -> None:
         """Add more demos for the element here."""
 
     def content(self) -> None:
         self.add_main_element_demo(self)
-        self.more_demos()
+        self.more()

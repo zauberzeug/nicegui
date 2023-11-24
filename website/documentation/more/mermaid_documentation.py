@@ -1,9 +1,13 @@
 from nicegui import ui
 
+from ..model import UiElementDocumentation
 
-def main_demo() -> None:
-    ui.mermaid('''
-    graph LR;
-        A --> B;
-        A --> C;
-    ''')
+
+class MermaidDocumentation(UiElementDocumentation, element=ui.mermaid):
+
+    def main_demo(self) -> None:
+        ui.mermaid('''
+        graph LR;
+            A --> B;
+            A --> C;
+        ''')

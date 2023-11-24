@@ -2,7 +2,7 @@ from nicegui import ui
 
 from ..header import add_head_html, add_header
 from ..style import section_heading
-from .model import Documentation, ElementDocumentation
+from .model import Documentation, UiElementDocumentation
 from .tools import generate_class_doc
 
 
@@ -22,7 +22,7 @@ def render_page(documentation: Documentation, *, is_main: bool = False) -> None:
                 .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
                 .style('height: calc(100% + 20px) !important') as menu:
             ui.markdown(f'[← back]({documentation.back_link})').classes('bold-links')
-            ui.markdown('**Demos**' if len(documentation) > 1 else '**Demo**').classes('mt-4')
+            ui.markdown(f'**{documentation.title.replace("*", "")}**').classes('mt-4')
             for part in documentation:
                 if part.title and part.link_target:
                     ui.link(part.title, f'#{part.link_target}')
@@ -49,7 +49,7 @@ def render_page(documentation: Documentation, *, is_main: bool = False) -> None:
                 part.function()
 
         # reference
-        if isinstance(documentation, ElementDocumentation) and menu:
+        if isinstance(documentation, UiElementDocumentation) and menu:
             with menu:
                 ui.markdown('**Reference**').classes('mt-4')
             ui.markdown('## Reference').classes('mt-16')

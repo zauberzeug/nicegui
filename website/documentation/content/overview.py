@@ -59,7 +59,7 @@ class Overview(Documentation):
                             .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
                             .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
                         if documentation.title:
-                            ui.label(documentation.title).classes(replace='text-2xl')
+                            ui.label(documentation.title.replace('*', '')).classes(replace='text-2xl')
                         ui.markdown(description).classes(replace='bold-links arrow-links')
 
         self.add_markdown('Actions', '''
