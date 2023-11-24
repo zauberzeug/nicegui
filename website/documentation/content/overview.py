@@ -2,6 +2,7 @@ from typing import List, Tuple
 
 from nicegui import ui
 
+from ..content.sections.audiovisual_elements import AudiovisualElementsDocumentation
 from ..content.sections.controls import ControlsDocumentation
 from ..content.sections.text_elements import TextElementsDocumentation
 from ..model import Documentation, SectionDocumentation
@@ -52,6 +53,9 @@ class Overview(Documentation):
             '''),
             (ControlsDocumentation(), '''
                 NiceGUI provides a variety of elements for user interaction, e.g. `ui.button`, `ui.slider`, `ui.inputs`, etc.
+            '''),
+            (AudiovisualElementsDocumentation(), '''
+                You can use elements like `ui.image`, `ui.audio`, `ui.video`, etc. to display audiovisual content.
             '''),
         ]
 
