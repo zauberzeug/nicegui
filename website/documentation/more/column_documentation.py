@@ -1,23 +1,24 @@
 from nicegui import ui
 
-from ..tools import text_demo
+from ..model import UiElementDocumentation
 
 
-def main_demo() -> None:
-    with ui.column():
-        ui.label('label 1')
-        ui.label('label 2')
-        ui.label('label 3')
+class ColumnDocumentation(UiElementDocumentation, element=ui.column):
 
+    def main_demo(self) -> None:
+        with ui.column():
+            ui.label('label 1')
+            ui.label('label 2')
+            ui.label('label 3')
 
-def more() -> None:
-    @text_demo('Masonry or Pinterest-Style Layout', '''
-        To create a masonry/Pinterest layout, the normal `ui.column` can not be used.
-        But it can be achieved with a few TailwindCSS classes.
-    ''')
-    def masonry() -> None:
-        with ui.element('div').classes('columns-3 w-full gap-2'):
-            for i, height in enumerate([50, 50, 50, 150, 100, 50]):
-                tailwind = f'mb-2 p-2 h-[{height}px] bg-blue-100 break-inside-avoid'
-                with ui.card().classes(tailwind):
-                    ui.label(f'Card #{i+1}')
+    def more(self) -> None:
+        @self.add_markdown_demo('Masonry or Pinterest-Style Layout', '''
+            To create a masonry/Pinterest layout, the normal `ui.column` can not be used.
+            But it can be achieved with a few TailwindCSS classes.
+        ''')
+        def masonry() -> None:
+            with ui.element('div').classes('columns-3 w-full gap-2'):
+                for i, height in enumerate([50, 50, 50, 150, 100, 50]):
+                    tailwind = f'mb-2 p-2 h-[{height}px] bg-blue-100 break-inside-avoid'
+                    with ui.card().classes(tailwind):
+                        ui.label(f'Card #{i+1}')

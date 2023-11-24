@@ -6,6 +6,7 @@ from ..content.sections.audiovisual_elements import AudiovisualElementsDocumenta
 from ..content.sections.binding_properties import BindingPropertiesDocumentation
 from ..content.sections.controls import ControlsDocumentation
 from ..content.sections.data_elements import DataElementsDocumentation
+from ..content.sections.page_layout import PageLayoutDocumentation
 from ..content.sections.text_elements import TextElementsDocumentation
 from ..model import Documentation, SectionDocumentation
 
@@ -64,6 +65,9 @@ class Overview(Documentation):
             '''),
             (BindingPropertiesDocumentation(), '''
                 To update UI elements automatically, you can bind them to each other or to your data model.
+            '''),
+            (PageLayoutDocumentation(), '''
+                This section covers fundamental techniques as well as several elements to structure your UI.
             '''),
         ]
 

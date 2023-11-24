@@ -49,7 +49,7 @@ def render_page(documentation: Documentation, *, is_main: bool = False) -> None:
                 part.function()
 
         # reference
-        if isinstance(documentation, UiElementDocumentation) and menu:
+        if isinstance(documentation, UiElementDocumentation) and isinstance(documentation.element, type) and menu:
             with menu:
                 ui.markdown('**Reference**').classes('mt-4')
             ui.markdown('## Reference').classes('mt-16')

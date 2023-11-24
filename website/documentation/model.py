@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 import re
 from dataclasses import dataclass
-from typing import Callable, Iterator, List, Optional
+from typing import Callable, Iterator, List, Optional, Union
 
 import docutils.core
 
@@ -65,9 +65,13 @@ class Documentation(abc.ABC):
 
     def add_main_element_demo(self, documentation: UiElementDocumentation, *, intro_only: bool = False) -> None:
         """Add a demo section for an element to the documentation."""
-        title, doc = documentation.element.__init__.__doc__.split('\n', 1)  # type: ignore
-        doc = remove_indentation(doc).replace('param ', '')
-        html = apply_tailwind(docutils.core.publish_parts(doc, writer_name='html5_polyglot')['html_body'])
+        if isinstance(documentation.element, type):
+            doc = documentation.element.__init__.__doc__  # type: ignore
+        else:
+            doc = documentation.element.__doc__
+        title, description = doc.split('\n', 1)
+        description = remove_indentation(description).replace('param ', '')
+        html = apply_tailwind(docutils.core.publish_parts(description, writer_name='html5_polyglot')['html_body'])
         if intro_only:
             html = re.sub(r'<dl class=".* simple">.*?</dl>', '', html, flags=re.DOTALL)
         self._content.append(DocumentationPart(
@@ -101,9 +105,9 @@ class SectionDocumentation(Documentation):
 
 
 class UiElementDocumentation(Documentation):
-    _element: type
+    _element: Union[type, Callable]
 
-    def __init_subclass__(cls, element: type) -> None:
+    def __init_subclass__(cls, element: Union[type, Callable]) -> None:
         cls._element = element
         return super().__init_subclass__()
 
