@@ -3,6 +3,7 @@ from typing import List, Tuple
 from nicegui import ui
 
 from ..content.sections.audiovisual_elements import AudiovisualElementsDocumentation
+from ..content.sections.binding_properties import BindingPropertiesDocumentation
 from ..content.sections.controls import ControlsDocumentation
 from ..content.sections.data_elements import DataElementsDocumentation
 from ..content.sections.text_elements import TextElementsDocumentation
@@ -60,6 +61,9 @@ class Overview(Documentation):
             '''),
             (DataElementsDocumentation(), '''
                 There are several elements for displaying data, e.g. `ui.table`, `ui.aggrid`, `ui.highchart`, `ui.echart`, etc.
+            '''),
+            (BindingPropertiesDocumentation(), '''
+                To update UI elements automatically, you can bind them to each other or to your data model.
             '''),
         ]
 
