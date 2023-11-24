@@ -105,7 +105,8 @@ class Client:
             'elements': elements.replace('&', '&amp;')
                                 .replace('<', '&lt;')
                                 .replace('>', '&gt;')
-                                .replace('`', '&#96;'),
+                                .replace('`', '&#96;')
+                                .replace('$', '&#36;'),
             'head_html': self.head_html,
             'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
             'vue_scripts': '\n'.join(vue_scripts),

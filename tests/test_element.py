@@ -275,3 +275,10 @@ def test_invalid_tags(screen: Screen):
             ui.element(tag)
 
     screen.open('/')
+
+
+def test_bad_characters(screen: Screen):
+    ui.html(r'& <test> ` ${foo}')
+
+    screen.open('/')
+    screen.should_contain(r'& <test> ` ${foo}')
