@@ -11,15 +11,15 @@ SECTIONS: Dict[str, Section] = {
     section.name: section
     for section in [
         text_elements,
-        controls,
-        audiovisual_elements,
-        data_elements,
-        binding_properties,
-        page_layout,
-        styling_appearance,
-        action_events,
-        pages_routing,
-        configuration_deployment,
+        # controls,
+        # audiovisual_elements,
+        # data_elements,
+        # binding_properties,
+        # page_layout,
+        # styling_appearance,
+        # action_events,
+        # pages_routing,
+        # configuration_deployment,
     ]
 }
 

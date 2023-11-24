@@ -30,24 +30,9 @@ async def post_dark_mode(request: Request) -> None:
     app.storage.browser['dark_mode'] = (await request.json()).get('value')
 
 
-@ui.page('/')
-def main_page_() -> None:
-    main_page.create()
-
-
-@ui.page('/documentation')
-def documentation_page() -> None:
-    documentation_pages.create_overview()
-
-
-@ui.page('/documentation/section_{name}')
-def documentation_section(name: str) -> None:
-    documentation_pages.create_section(name)
-
-
-@ui.page('/documentation/{name}')
-async def documentation_page_more(name: str) -> None:
-    await documentation_pages.create_more(name)
+ui.page('/')(main_page.create)
+ui.page('/documentation')(documentation_pages.create_overview)
+ui.page('/documentation/{name}')(documentation_pages.create_page)
 
 
 @app.get('/status')
