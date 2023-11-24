@@ -1,46 +1,47 @@
 from nicegui import ui
 
-from ..tools import text_demo
+from ..model import UiElementDocumentation
 
 
-def main_demo() -> None:
-    from random import random
+class EChartDocumentation(UiElementDocumentation, element=ui.echart):
 
-    echart = ui.echart({
-        'xAxis': {'type': 'value'},
-        'yAxis': {'type': 'category', 'data': ['A', 'B'], 'inverse': True},
-        'legend': {'textStyle': {'color': 'gray'}},
-        'series': [
-            {'type': 'bar', 'name': 'Alpha', 'data': [0.1, 0.2]},
-            {'type': 'bar', 'name': 'Beta', 'data': [0.3, 0.4]},
-        ],
-    })
+    def main_demo(self) -> None:
+        from random import random
 
-    def update():
-        echart.options['series'][0]['data'][0] = random()
-        echart.update()
-
-    ui.button('Update', on_click=update)
-
-
-def more() -> None:
-    @text_demo('EChart with clickable points', '''
-        You can register a callback for an event when a series point is clicked.
-    ''')
-    def clickable_points() -> None:
-        ui.echart({
-            'xAxis': {'type': 'category'},
-            'yAxis': {'type': 'value'},
-            'series': [{'type': 'line', 'data': [20, 10, 30, 50, 40, 30]}],
-        }, on_point_click=ui.notify)
-
-    @text_demo('EChart with dynamic properties', '''
-        Dynamic properties can be passed to chart elements to customize them such as apply an axis label format.
-        To make a property dynamic, prefix a colon ":" to the property name.
-    ''')
-    def dynamic_properties() -> None:
-        ui.echart({
-            'xAxis': {'type': 'category'},
-            'yAxis': {'axisLabel': {':formatter': 'value => "$" + value'}},
-            'series': [{'type': 'line', 'data': [5, 8, 13, 21, 34, 55]}],
+        echart = ui.echart({
+            'xAxis': {'type': 'value'},
+            'yAxis': {'type': 'category', 'data': ['A', 'B'], 'inverse': True},
+            'legend': {'textStyle': {'color': 'gray'}},
+            'series': [
+                {'type': 'bar', 'name': 'Alpha', 'data': [0.1, 0.2]},
+                {'type': 'bar', 'name': 'Beta', 'data': [0.3, 0.4]},
+            ],
         })
+
+        def update():
+            echart.options['series'][0]['data'][0] = random()
+            echart.update()
+
+        ui.button('Update', on_click=update)
+
+    def more(self) -> None:
+        @self.add_markdown_demo('EChart with clickable points', '''
+            You can register a callback for an event when a series point is clicked.
+        ''')
+        def clickable_points() -> None:
+            ui.echart({
+                'xAxis': {'type': 'category'},
+                'yAxis': {'type': 'value'},
+                'series': [{'type': 'line', 'data': [20, 10, 30, 50, 40, 30]}],
+            }, on_point_click=ui.notify)
+
+        @self.add_markdown_demo('EChart with dynamic properties', '''
+            Dynamic properties can be passed to chart elements to customize them such as apply an axis label format.
+            To make a property dynamic, prefix a colon ":" to the property name.
+        ''')
+        def dynamic_properties() -> None:
+            ui.echart({
+                'xAxis': {'type': 'category'},
+                'yAxis': {'axisLabel': {':formatter': 'value => "$" + value'}},
+                'series': [{'type': 'line', 'data': [5, 8, 13, 21, 34, 55]}],
+            })

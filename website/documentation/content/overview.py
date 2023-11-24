@@ -4,6 +4,7 @@ from nicegui import ui
 
 from ..content.sections.audiovisual_elements import AudiovisualElementsDocumentation
 from ..content.sections.controls import ControlsDocumentation
+from ..content.sections.data_elements import DataElementsDocumentation
 from ..content.sections.text_elements import TextElementsDocumentation
 from ..model import Documentation, SectionDocumentation
 
@@ -56,6 +57,9 @@ class Overview(Documentation):
             '''),
             (AudiovisualElementsDocumentation(), '''
                 You can use elements like `ui.image`, `ui.audio`, `ui.video`, etc. to display audiovisual content.
+            '''),
+            (DataElementsDocumentation(), '''
+                There are several elements for displaying data, e.g. `ui.table`, `ui.aggrid`, `ui.highchart`, `ui.echart`, etc.
             '''),
         ]
 
