@@ -1,8 +1,8 @@
-from . import content, more
+from . import content, more, registry
 from .demo import bash_window, browser_window, python_window
 from .intro import create_intro
 from .overview import create_overview, create_section
-from .rendering import render
+from .rendering import render_page
 from .tools import create_anchor_name, element_demo, generate_class_doc
 
 __all__ = [
@@ -17,5 +17,6 @@ __all__ = [
     'element_demo',
     'generate_class_doc',
     'python_window',
-    'render',
+    'registry',
+    'render_page',
 ]

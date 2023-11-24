@@ -1,41 +1,12 @@
 import importlib
 import inspect
 import logging
-from typing import Dict
 
 from nicegui import context, ui
 
 from . import documentation
-from .documentation.content.overview import Overview
-from .documentation.model import ElementDocumentation, SectionDocumentation
-from .documentation.sections.text_elements import TextElementsDocumentation
 from .header import add_head_html, add_header
 from .style import section_heading, side_menu
-
-overview = Overview('/documentation')
-sections: Dict[str, SectionDocumentation] = {
-    d.route.split('/')[-1]: d
-    for d in [
-        TextElementsDocumentation('/documentation/section_text_elements'),
-    ]
-}
-elements: Dict[str, ElementDocumentation] = {
-    element_documentation.route.split('/')[-1]: element_documentation
-    for section in sections.values()
-    for element_documentation in section.element_documentations
-}
-
-
-def create_overview() -> None:
-    """Create the documentation overview."""
-    documentation.render(overview, heading=('Reference, Demos and more', '*NiceGUI* Documentation'))
-
-
-def create_page(name: str) -> None:
-    doc = elements.get(name) or sections.get(name)
-    if not doc:
-        raise ValueError(f'unknown documentation page: {name}')
-    documentation.render(doc)
 
 
 def create_section(name: str) -> None:

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pylint: disable=missing-function-docstring
 import os
 from pathlib import Path
 
@@ -8,7 +7,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 import prometheus
 from nicegui import app, ui
-from website import anti_scroll_hack, documentation_pages, fly, main_page, svg
+from website import anti_scroll_hack, documentation, fly, main_page, svg
 
 prometheus.start_monitor(app)
 
@@ -24,19 +23,31 @@ app.add_static_files('/static', str(Path(__file__).parent / 'website' / 'static'
 app.add_static_file(local_file=svg.PATH / 'logo.png', url_path='/logo.png')
 app.add_static_file(local_file=svg.PATH / 'logo_square.png', url_path='/logo_square.png')
 
+documentation.content.generate()
+
 
 @app.post('/dark_mode')
-async def post_dark_mode(request: Request) -> None:
+async def _post_dark_mode(request: Request) -> None:
     app.storage.browser['dark_mode'] = (await request.json()).get('value')
 
 
-ui.page('/')(main_page.create)
-ui.page('/documentation')(documentation_pages.create_overview)
-ui.page('/documentation/{name}')(documentation_pages.create_page)
+@ui.page('/')
+def _main_page() -> None:
+    main_page.create()
+
+
+@ui.page('/documentation')
+def _documentation_page() -> None:
+    documentation.render_page(documentation.registry.get(''), is_main=True)
+
+
+@ui.page('/documentation/{name}')
+def _documentation_detail_page(name: str) -> None:
+    documentation.render_page(documentation.registry.get(name))
 
 
 @app.get('/status')
-def status():
+def _status():
     return 'Ok'
 
 

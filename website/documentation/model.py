@@ -10,6 +10,8 @@ import docutils.core
 from nicegui.dataclasses import KWONLY_SLOTS
 from nicegui.elements.markdown import apply_tailwind, remove_indentation
 
+from . import registry
+
 
 @dataclass(**KWONLY_SLOTS)
 class DocumentationPart:
@@ -18,15 +20,22 @@ class DocumentationPart:
     link: Optional[str] = None
     function: Optional[Callable] = None
 
+    @property
+    def link_target(self) -> Optional[str]:
+        """Return the link target for in-page navigation."""
+        return self.link.lower().replace(' ', '_') if self.link else None
+
 
 class Documentation(abc.ABC):
-    TITLE: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
 
-    def __init__(self, route: str, back_link: Optional[str] = None) -> None:
+    def __init__(self, route: str, *, back_link: Optional[str] = None) -> None:
         self.route = route
         self.back_link = back_link
         self._content: List[DocumentationPart] = []
         self.content()
+        registry.add(self)
 
     def __iter__(self) -> Iterator[DocumentationPart]:
         return iter(self._content)
@@ -44,6 +53,7 @@ class Documentation(abc.ABC):
 
     def add_element_intro(self, documentation: ElementDocumentation) -> None:
         """Add an element intro section to the documentation."""
+        documentation.back_link = self.route
         self.add_main_element_demo(documentation, intro_only=True)
 
     def add_main_element_demo(self, documentation: ElementDocumentation, *, intro_only: bool = False) -> None:
@@ -71,16 +81,15 @@ class Documentation(abc.ABC):
 
 
 class SectionDocumentation(Documentation):
-    element_documentations: List[ElementDocumentation]
+    route: str
 
-    def __init_subclass__(cls, title: str) -> None:
-        cls.TITLE = title
-        cls.element_documentations = []
+    def __init_subclass__(cls, title: str, name: str) -> None:
+        cls.title = title
+        cls.route = f'/documentation/section_{name}'
         return super().__init_subclass__()
 
-    def add_element_intro(self, documentation: ElementDocumentation) -> None:
-        self.element_documentations.append(documentation)
-        super().add_element_intro(documentation)
+    def __init__(self) -> None:
+        super().__init__(self.route, back_link='/documentation')
 
 
 class ElementDocumentation(Documentation):
@@ -91,7 +100,7 @@ class ElementDocumentation(Documentation):
         return super().__init_subclass__()
 
     def __init__(self) -> None:
-        super().__init__(self.element.__name__.lower())
+        super().__init__(f'/documentation/{self.element.__name__.lower()}')
 
     @abc.abstractmethod
     def main_demo(self) -> None:

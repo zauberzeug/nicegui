@@ -1,7 +1,5 @@
 from nicegui import ui
 
-from ..model import SectionDocumentation
-from ..more.label_documentation import LabelDocumentation
 from ..tools import load_demo
 
 name = 'text_elements'
@@ -19,9 +17,3 @@ def content() -> None:
     load_demo(ui.markdown)
     load_demo(ui.mermaid)
     load_demo(ui.html)
-
-
-class TextElementsDocumentation(SectionDocumentation, title='Text Elements'):
-
-    def content(self) -> None:
-        self.add_element_intro(LabelDocumentation())

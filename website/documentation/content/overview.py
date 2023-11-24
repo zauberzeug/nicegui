@@ -1,30 +1,12 @@
-from typing import Dict
+from typing import List, Tuple
 
 from nicegui import ui
 
-from .. import model
-from ..section import Section
-from ..sections import (action_events, audiovisual_elements, binding_properties, configuration_deployment, controls,
-                        data_elements, page_layout, pages_routing, styling_appearance, text_elements)
-
-SECTIONS: Dict[str, Section] = {
-    section.name: section
-    for section in [
-        text_elements,
-        # controls,
-        # audiovisual_elements,
-        # data_elements,
-        # binding_properties,
-        # page_layout,
-        # styling_appearance,
-        # action_events,
-        # pages_routing,
-        # configuration_deployment,
-    ]
-}
+from ..content.sections.text_elements import TextElementsDocumentation
+from ..model import Documentation, SectionDocumentation
 
 
-class Overview(model.Documentation):
+class Overview(Documentation):
 
     def content(self) -> None:
         self.add_markdown('Overview', '''
@@ -60,15 +42,22 @@ class Overview(model.Documentation):
             Or if you prefer, almost anything can be styled with CSS.
         ''')
 
+        tiles: List[Tuple[SectionDocumentation, str]] = [
+            (TextElementsDocumentation(), '''
+                Elements like `ui.label`, `ui.markdown` and `ui.html` can be used to display text and other content.
+            '''),
+        ]
+
         @self.add_raw_nicegui
-        def tiles():
+        def create_tiles():
             with ui.grid().classes('grid-cols-[1fr] md:grid-cols-[1fr_1fr] xl:grid-cols-[1fr_1fr_1fr]'):
-                for section in SECTIONS.values():
-                    with ui.link(target=f'/documentation/section_{section.name}/') \
+                for documentation, description in tiles:
+                    with ui.link(target=documentation.route) \
                             .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
                             .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
-                        ui.label(section.title).classes(replace='text-2xl')
-                        ui.markdown(section.description).classes(replace='bold-links arrow-links')
+                        if documentation.title:
+                            ui.label(documentation.title).classes(replace='text-2xl')
+                        ui.markdown(description).classes(replace='bold-links arrow-links')
 
         self.add_markdown('Actions', '''
             NiceGUI runs an event loop to handle user input and other events like timers and keyboard bindings.
