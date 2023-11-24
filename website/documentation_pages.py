@@ -28,7 +28,7 @@ elements: Dict[str, ElementDocumentation] = {
 
 def create_overview() -> None:
     """Create the documentation overview."""
-    documentation.render(overview)
+    documentation.render(overview, heading=('Reference, Demos and more', '*NiceGUI* Documentation'))
 
 
 def create_page(name: str) -> None:
