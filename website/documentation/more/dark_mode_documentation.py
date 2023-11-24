@@ -1,7 +1,7 @@
 from nicegui import ui
 
-from ..demo import WINDOW_BG_COLORS
 from ..model import UiElementDocumentation
+from ..windows import WINDOW_BG_COLORS
 
 
 class DarkModeDocumentation(UiElementDocumentation, element=ui.dark_mode):

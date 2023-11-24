@@ -1,8 +1,8 @@
 from nicegui import ui
 
-from ...demo import bash_window, python_window
 from ...model import SectionDocumentation
 from ...more.run_documentation import RunDocumentation
+from ...windows import bash_window, python_window
 
 
 class ConfigurationDeploymentDocumentation(SectionDocumentation, title='Configuration & Deployment', name='configuration_deployment'):
