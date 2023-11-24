@@ -19,7 +19,7 @@ class NotifyDocumentation(UiElementDocumentation, element=ui.notify):
 
         @self.demo('Multiline Notifications', '''
             To allow a notification text to span multiple lines, it is sufficient to set `multi_line=True`.
-            If manual newline breaks are required (e.g. `\n`), you need to define a CSS style and pass it to the notification as shown in the example.
+            If manual newline breaks are required (e.g. `\\n`), you need to define a CSS style and pass it to the notification as shown in the example.
         ''')
         def multiline():
             ui.html('<style>.multi-line-notification { white-space: pre-line; }</style>')

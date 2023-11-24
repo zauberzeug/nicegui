@@ -5,6 +5,7 @@ from nicegui import ui
 from ..content.sections.action_events import ActionEventsDocumentation
 from ..content.sections.audiovisual_elements import AudiovisualElementsDocumentation
 from ..content.sections.binding_properties import BindingPropertiesDocumentation
+from ..content.sections.configuration_deployment import ConfigurationDeploymentDocumentation
 from ..content.sections.controls import ControlsDocumentation
 from ..content.sections.data_elements import DataElementsDocumentation
 from ..content.sections.page_layout import PageLayoutDocumentation
@@ -80,6 +81,9 @@ class Overview(Documentation):
             '''),
             (PagesRoutingDocumentation(), '''
                 A NiceGUI app can consist of multiple pages and other FastAPI endpoints.
+            '''),
+            (ConfigurationDeploymentDocumentation(), '''
+                Whether you want to run your app locally or on a server, native or in a browser, we got you covered.
             '''),
         ]
 
