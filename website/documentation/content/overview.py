@@ -8,6 +8,7 @@ from ..content.sections.binding_properties import BindingPropertiesDocumentation
 from ..content.sections.controls import ControlsDocumentation
 from ..content.sections.data_elements import DataElementsDocumentation
 from ..content.sections.page_layout import PageLayoutDocumentation
+from ..content.sections.pages_routing import PagesRoutingDocumentation
 from ..content.sections.styling_appearance import StylingAppearanceDocumentation
 from ..content.sections.text_elements import TextElementsDocumentation
 from ..model import Documentation, SectionDocumentation
@@ -76,6 +77,9 @@ class Overview(Documentation):
             '''),
             (ActionEventsDocumentation(), '''
                 This section covers timers, UI events, and the lifecycle of NiceGUI apps.
+            '''),
+            (PagesRoutingDocumentation(), '''
+                A NiceGUI app can consist of multiple pages and other FastAPI endpoints.
             '''),
         ]
 
