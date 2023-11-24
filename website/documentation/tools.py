@@ -110,15 +110,6 @@ class element_demo:
         return result
 
 
-def load_demo(api: Union[type, Callable, str]) -> None:
-    name = api if isinstance(api, str) else pascal_to_snake(api.__name__)
-    try:
-        module = importlib.import_module(f'website.documentation.more.{name}_documentation')
-    except ModuleNotFoundError:
-        module = importlib.import_module(f'website.documentation.more.{name.replace("_", "")}_documentation')
-    element_demo(api)(getattr(module, 'main_demo'), more_link=name)
-
-
 def is_method_or_property(cls: type, attribute_name: str) -> bool:
     attribute = cls.__dict__.get(attribute_name, None)
     return (
