@@ -9,7 +9,7 @@ class NotifyDocumentation(UiElementDocumentation, element=ui.notify):
         ui.button('Say hi!', on_click=lambda: ui.notify('Hi!', close_button='OK'))
 
     def more(self) -> None:
-        @self.add_markdown_demo('Notification Types', '''
+        @self.demo('Notification Types', '''
             There are different types that can be used to indicate the nature of the notification.
         ''')
         def notify_colors():
@@ -17,7 +17,7 @@ class NotifyDocumentation(UiElementDocumentation, element=ui.notify):
             ui.button('positive', on_click=lambda: ui.notify('success', type='positive'))
             ui.button('warning', on_click=lambda: ui.notify('warning', type='warning'))
 
-        @self.add_markdown_demo('Multiline Notifications', '''
+        @self.demo('Multiline Notifications', '''
             To allow a notification text to span multiple lines, it is sufficient to set `multi_line=True`.
             If manual newline breaks are required (e.g. `\n`), you need to define a CSS style and pass it to the notification as shown in the example.
         ''')

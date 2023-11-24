@@ -9,7 +9,7 @@ class UploadDocumentation(UiElementDocumentation, element=ui.upload):
         ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('max-w-full')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Upload restrictions', '''
+        @self.demo('Upload restrictions', '''
             In this demo, the upload is restricted to a maximum file size of 1 MB.
             When a file is rejected, a notification is shown.
         ''')
@@ -18,7 +18,7 @@ class UploadDocumentation(UiElementDocumentation, element=ui.upload):
                       on_rejected=lambda: ui.notify('Rejected!'),
                       max_file_size=1_000_000).classes('max-w-full')
 
-        @self.add_markdown_demo('Show file content', '''
+        @self.demo('Show file content', '''
             In this demo, the uploaded markdown file is shown in a dialog.
         ''')
         def show_file_content() -> None:

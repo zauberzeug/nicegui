@@ -19,7 +19,7 @@ class Overview(Documentation):
         super().__init__('/documentation/', subtitle='Reference, Demos and more', title='*NiceGUI* Documentation')
 
     def content(self) -> None:
-        self.add_markdown('Overview', '''
+        self.text('Overview', '''
             NiceGUI is an open-source Python library to write graphical user interfaces which run in the browser.
             It has a very gentle learning curve while still offering the option for advanced customizations.
             NiceGUI follows a backend-first philosophy:
@@ -29,13 +29,13 @@ class Overview(Documentation):
             scripts, dashboards, robotics projects, IoT solutions, smart home automation, and machine learning.
         ''')
 
-        self.add_markdown('How to use this guide', '''
+        self.text('How to use this guide', '''
             This documentation explains how to use NiceGUI.
             Each of the tiles covers a NiceGUI topic in detail.
             It is recommended to start by reading this entire introduction page, then refer to other sections as needed.
         ''')
 
-        self.add_markdown('Basic concepts', '''
+        self.text('Basic concepts', '''
             NiceGUI provides UI _components_ (or _elements_) such as buttons, sliders, text, images, charts, and more.
             Your app assembles these components into _pages_.
             When the user interacts with an item on a page, NiceGUI triggers an _event_ (or _action_).
@@ -79,7 +79,7 @@ class Overview(Documentation):
             '''),
         ]
 
-        @self.add_raw_nicegui
+        @self.ui
         def create_tiles():
             with ui.grid().classes('grid-cols-[1fr] md:grid-cols-[1fr_1fr] xl:grid-cols-[1fr_1fr_1fr]'):
                 for documentation, description in tiles:
@@ -90,20 +90,20 @@ class Overview(Documentation):
                             ui.label(documentation.title.replace('*', '')).classes(replace='text-2xl')
                         ui.markdown(description).classes(replace='bold-links arrow-links')
 
-        self.add_markdown('Actions', '''
+        self.text('Actions', '''
             NiceGUI runs an event loop to handle user input and other events like timers and keyboard bindings.
             You can write asynchronous functions for long-running tasks to keep the UI responsive.
             The _Actions_ section covers how to work with events.
         ''')
 
-        self.add_markdown('Implementation', '''
+        self.text('Implementation', '''
             NiceGUI is implemented with HTML components served by an HTTP server (FastAPI), even for native windows.
             If you already know HTML, everything will feel very familiar.
             If you don't know HTML, that's fine too!
             NiceGUI abstracts away the details, so you can focus on creating beautiful interfaces without worrying about how they are implemented.
         ''')
 
-        self.add_markdown('Running NiceGUI Apps', '''
+        self.text('Running NiceGUI Apps', '''
             There are several options for deploying NiceGUI.
             By default, NiceGUI runs a server on localhost and runs your app as a private web page on the local machine.
             When run this way, your app appears in a web browser window.
@@ -116,7 +116,7 @@ class Overview(Documentation):
             The section _Configuration and Deployment_ covers the options to the `ui.run()` function and the FastAPI framework it is based on.
         ''')
 
-        self.add_markdown('Customization', '''
+        self.text('Customization', '''
             If you want more customization in your app, you can use the underlying Tailwind classes and Quasar components
             to control the style or behavior of your components.
             You can also extend the available components by subclassing existing NiceGUI components or importing new ones from Quasar.

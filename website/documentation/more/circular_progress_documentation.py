@@ -10,7 +10,7 @@ class CircularProgressDocumentation(UiElementDocumentation, element=ui.circular_
         ui.circular_progress().bind_value_from(slider, 'value')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Nested Elements', '''
+        @self.demo('Nested Elements', '''
             You can put any element like icon, button etc inside a circular progress using the `with` statement.
             Just make sure it fits the bounds and disable the default behavior of showing the value.
         ''')

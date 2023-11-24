@@ -12,26 +12,26 @@ class ChatMessageDocumentation(UiElementDocumentation, element=ui.chat_message):
                         avatar='https://robohash.org/ui')
 
     def more(self) -> None:
-        @self.add_markdown_demo('HTML text', '''
+        @self.demo('HTML text', '''
             Using the `text_html` parameter, you can send HTML text to the chat.
         ''')
         def html_text():
             ui.chat_message('Without <strong>HTML</strong>')
             ui.chat_message('With <strong>HTML</strong>', text_html=True)
 
-        @self.add_markdown_demo('Newline', '''
+        @self.demo('Newline', '''
             You can use newlines in the chat message.
         ''')
         def newline():
             ui.chat_message('This is a\nlong line!')
 
-        @self.add_markdown_demo('Multi-part messages', '''
+        @self.demo('Multi-part messages', '''
             You can send multiple message parts by passing a list of strings.
         ''')
         def multiple_messages():
             ui.chat_message(['Hi! 😀', 'How are you?'])
 
-        @self.add_markdown_demo('Chat message with child elements', '''
+        @self.demo('Chat message with child elements', '''
             You can add child elements to a chat message.
         ''')
         def child_elements():

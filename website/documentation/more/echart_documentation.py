@@ -25,7 +25,7 @@ class EChartDocumentation(UiElementDocumentation, element=ui.echart):
         ui.button('Update', on_click=update)
 
     def more(self) -> None:
-        @self.add_markdown_demo('EChart with clickable points', '''
+        @self.demo('EChart with clickable points', '''
             You can register a callback for an event when a series point is clicked.
         ''')
         def clickable_points() -> None:
@@ -35,7 +35,7 @@ class EChartDocumentation(UiElementDocumentation, element=ui.echart):
                 'series': [{'type': 'line', 'data': [20, 10, 30, 50, 40, 30]}],
             }, on_point_click=ui.notify)
 
-        @self.add_markdown_demo('EChart with dynamic properties', '''
+        @self.demo('EChart with dynamic properties', '''
             Dynamic properties can be passed to chart elements to customize them such as apply an axis label format.
             To make a property dynamic, prefix a colon ":" to the property name.
         ''')

@@ -10,7 +10,7 @@ class DateDocumentation(UiElementDocumentation, element=ui.date):
         result = ui.label()
 
     def more(self) -> None:
-        @self.add_markdown_demo('Input element with date picker', '''
+        @self.demo('Input element with date picker', '''
             This demo shows how to implement a date picker with an input element.
             We place an icon in the input element's append slot.
             When the icon is clicked, we open a menu with a date picker.
@@ -25,7 +25,7 @@ class DateDocumentation(UiElementDocumentation, element=ui.date):
                 with ui.menu() as menu:
                     ui.date().bind_value(date)
 
-        @self.add_markdown_demo('Date filter', '''
+        @self.demo('Date filter', '''
             This demo shows how to filter the dates in a date picker.
             In order to pass a function to the date picker, we use the `:options` property.
             The leading `:` tells NiceGUI that the value is a JavaScript expression.

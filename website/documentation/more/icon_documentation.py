@@ -13,7 +13,7 @@ class IconDocumentation(UiElementDocumentation, element=ui.icon):
         ui.add_body_html(
             '<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>')
 
-        @self.add_markdown_demo('Eva icons', '''
+        @self.demo('Eva icons', '''
             You can use [Eva icons](https://akveo.github.io/eva-icons/) in your app.
         ''')
         def eva_icons():
@@ -21,7 +21,7 @@ class IconDocumentation(UiElementDocumentation, element=ui.icon):
 
             ui.element('i').classes('eva eva-github').classes('text-5xl')
 
-        @self.add_markdown_demo('Lottie files', '''
+        @self.demo('Lottie files', '''
             You can also use [Lottie files](https://lottiefiles.com/) with animations.
         ''')
         def lottie():

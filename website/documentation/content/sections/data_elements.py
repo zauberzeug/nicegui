@@ -22,22 +22,22 @@ from ...more.tree_documentation import TreeDocumentation
 class DataElementsDocumentation(SectionDocumentation, title='*Data* elements', name='data_elements'):
 
     def content(self) -> None:
-        self.add_element_intro(TableDocumentation())
-        self.add_element_intro(AgGridDocumentation())
+        self.intro(TableDocumentation())
+        self.intro(AgGridDocumentation())
         if optional_features.has('highcharts'):
-            self.add_element_intro(HighchartDocumentation())
-        self.add_element_intro(EChartDocumentation())
+            self.intro(HighchartDocumentation())
+        self.intro(EChartDocumentation())
         if optional_features.has('matplotlib'):
-            self.add_element_intro(PyplotDocumentation())
-            self.add_element_intro(LinePlotDocumentation())
+            self.intro(PyplotDocumentation())
+            self.intro(LinePlotDocumentation())
         if optional_features.has('plotly'):
-            self.add_element_intro(PlotlyDocumentation())
-        self.add_element_intro(LinearProgressDocumentation())
-        self.add_element_intro(CircularProgressDocumentation())
-        self.add_element_intro(SpinnerDocumentation())
-        self.add_element_intro(SceneDocumentation())
-        self.add_element_intro(TreeDocumentation())
-        self.add_element_intro(LogDocumentation())
-        self.add_element_intro(EditorDocumentation())
-        self.add_element_intro(CodeDocumentation())
-        self.add_element_intro(JsonEditorDocumentation())
+            self.intro(PlotlyDocumentation())
+        self.intro(LinearProgressDocumentation())
+        self.intro(CircularProgressDocumentation())
+        self.intro(SpinnerDocumentation())
+        self.intro(SceneDocumentation())
+        self.intro(TreeDocumentation())
+        self.intro(LogDocumentation())
+        self.intro(EditorDocumentation())
+        self.intro(CodeDocumentation())
+        self.intro(JsonEditorDocumentation())

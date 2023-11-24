@@ -10,7 +10,7 @@ class SliderDocumentation(UiElementDocumentation, element=ui.slider):
         ui.label().bind_text_from(slider, 'value')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Throttle events with leading and trailing options', '''
+        @self.demo('Throttle events with leading and trailing options', '''
             By default the value change event of a slider is throttled to 0.05 seconds.
             This means that if you move the slider quickly, the value will only be updated every 0.05 seconds.
 
@@ -37,7 +37,7 @@ class SliderDocumentation(UiElementDocumentation, element=ui.slider):
                 .on('update:model-value', lambda e: ui.notify(e.args),
                     throttle=1.0, leading_events=False)
 
-        @self.add_markdown_demo('Disable slider', '''
+        @self.demo('Disable slider', '''
             You can disable a slider with the `disable()` method.
             This will prevent the user from moving the slider.
             The slider will also be grayed out.

@@ -12,7 +12,7 @@ class LogDocumentation(UiElementDocumentation, element=ui.log):
         ui.button('Log time', on_click=lambda: log.push(datetime.now().strftime('%X.%f')[:-5]))
 
     def more(self) -> None:
-        @self.add_markdown_demo('Attach to a logger', '''
+        @self.demo('Attach to a logger', '''
             You can attach a `ui.log` element to a Python logger object so that log messages are pushed to the log element.
         ''')
         def logger_handler():

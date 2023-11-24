@@ -30,7 +30,7 @@ class SceneDocumentation(UiElementDocumentation, element=ui.scene):
             scene.text3d('3D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(y=-2).scale(.05)
 
     def more(self) -> None:
-        @self.add_markdown_demo('Handling Click Events', '''
+        @self.demo('Handling Click Events', '''
             You can use the `on_click` argument to `ui.scene` to handle click events.
             The callback receives a `SceneClickEventArguments` object with the following attributes:
 
@@ -57,7 +57,7 @@ class SceneDocumentation(UiElementDocumentation, element=ui.scene):
                 scene.sphere().move(x=-1, z=1).with_name('sphere')
                 scene.box().move(x=1, z=1).with_name('box')
 
-        @self.add_markdown_demo('Draggable objects', '''
+        @self.demo('Draggable objects', '''
             You can make objects draggable using the `.draggable` method.
             There is an optional `on_drag_start` and `on_drag_end` argument to `ui.scene` to handle drag events.
             The callbacks receive a `SceneDragEventArguments` object with the following attributes:
@@ -84,7 +84,7 @@ class SceneDocumentation(UiElementDocumentation, element=ui.scene):
                       value=sphere.draggable_,
                       on_change=lambda e: sphere.draggable(e.value))
 
-        @self.add_markdown_demo('Rendering point clouds', '''
+        @self.demo('Rendering point clouds', '''
             You can render point clouds using the `point_cloud` method.
             The `points` argument is a list of point coordinates, and the `colors` argument is a list of RGB colors (0..1).
         ''')

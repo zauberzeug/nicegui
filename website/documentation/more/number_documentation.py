@@ -11,14 +11,14 @@ class NumberDocumentation(UiElementDocumentation, element=ui.number):
         result = ui.label()
 
     def more(self) -> None:
-        @self.add_markdown_demo('Clearable', '''
+        @self.demo('Clearable', '''
             The `clearable` prop from [Quasar](https://quasar.dev/) adds a button to the input that clears the text.    
         ''')
         def clearable():
             i = ui.number(value=42).props('clearable')
             ui.label().bind_text_from(i, 'value')
 
-        @self.add_markdown_demo('Number of decimal places', '''
+        @self.demo('Number of decimal places', '''
             You can specify the number of decimal places using the `precision` parameter.
             A negative value means decimal places before the dot.
             The rounding takes place when the input loses focus,

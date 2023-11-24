@@ -10,7 +10,7 @@ from ...more.query_documentation import QueryDocumentation
 class StylingAppearanceDocumentation(SectionDocumentation, title='Styling & Appearance', name='styling_appearance'):
 
     def content(self) -> None:
-        @self.add_markdown_demo('Styling', '''
+        @self.demo('Styling', '''
             NiceGUI uses the [Quasar Framework](https://quasar.dev/) version 1.0 and hence has its full design power.
             Each NiceGUI element provides a `props` method whose content is passed [to the Quasar component](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components):
             Have a look at [the Quasar documentation](https://quasar.dev/vue-components/button#design) for all styling props.
@@ -26,14 +26,14 @@ class StylingAppearanceDocumentation(SectionDocumentation, title='Styling & Appe
             ui.button(icon='touch_app').props('outline round').classes('shadow-lg')
             ui.label('Stylish!').style('color: #6E93D6; font-size: 200%; font-weight: 300')
 
-        self.add_markdown('Try styling NiceGUI elements!', '''
+        self.text('Try styling NiceGUI elements!', '''
             Try out how
             [Tailwind CSS classes](https://tailwindcss.com/),
             [Quasar props](https://justpy.io/quasar_tutorial/introduction/#props-of-quasar-components),
             and CSS styles affect NiceGUI elements.
         ''')
 
-        @self.add_raw_nicegui
+        @self.ui
         def styling_demo():
             with ui.row():
                 ui.label('Select an element from those available and start styling it!').classes('mx-auto my-auto')
@@ -96,7 +96,7 @@ class StylingAppearanceDocumentation(SectionDocumentation, title='Styling & Appe
                         element: ui.element = select_element.value("element")
             live_demo_ui()
 
-        @self.add_markdown_demo('Tailwind CSS', '''
+        @self.demo('Tailwind CSS', '''
             [Tailwind CSS](https://tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces.
             NiceGUI provides a fluent, auto-complete friendly interface for adding Tailwind classes to UI elements.
             
@@ -122,6 +122,6 @@ class StylingAppearanceDocumentation(SectionDocumentation, title='Styling & Appe
             red_style.apply(label_c)
             ui.label('Label D').tailwind(red_style)
 
-        self.add_element_intro(QueryDocumentation())
-        self.add_element_intro(ColorsDocumentation())
-        self.add_element_intro(DarkModeDocumentation())
+        self.intro(QueryDocumentation())
+        self.intro(ColorsDocumentation())
+        self.intro(DarkModeDocumentation())

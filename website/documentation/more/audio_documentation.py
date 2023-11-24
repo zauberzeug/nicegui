@@ -13,7 +13,7 @@ class AudioDocumentation(UiElementDocumentation, element=ui.audio):
         ui.button(on_click=lambda: a.props(remove='muted'), icon='volume_up').props('outline')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Control the audio element', '''
+        @self.demo('Control the audio element', '''
             This demo shows how to play, pause and seek programmatically.
         ''')
         def control_demo() -> None:

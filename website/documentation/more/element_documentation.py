@@ -10,7 +10,7 @@ class ElementDocumentation(UiElementDocumentation, element=ui.element):
             ui.label('inside a colored div')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Move elements', '''
+        @self.demo('Move elements', '''
             This demo shows how to move elements between or within containers.
         ''')
         def move_elements() -> None:
@@ -25,7 +25,7 @@ class ElementDocumentation(UiElementDocumentation, element=ui.element):
             ui.button('Move X to B', on_click=lambda: x.move(b))
             ui.button('Move X to top', on_click=lambda: x.move(target_index=0))
 
-        @self.add_markdown_demo('Default props', '''
+        @self.demo('Default props', '''
             You can set default props for all elements of a certain class.
             This way you can avoid repeating the same props over and over again.
             
@@ -39,7 +39,7 @@ class ElementDocumentation(UiElementDocumentation, element=ui.element):
             # END OF DEMO
             ui.button.default_props(remove='rounded outline')
 
-        @self.add_markdown_demo('Default classes', '''
+        @self.demo('Default classes', '''
             You can set default classes for all elements of a certain class.
             This way you can avoid repeating the same classes over and over again.
             
@@ -53,7 +53,7 @@ class ElementDocumentation(UiElementDocumentation, element=ui.element):
             # END OF DEMO
             ui.label.default_classes(remove='bg-blue-100 p-2')
 
-        @self.add_markdown_demo('Default style', '''
+        @self.demo('Default style', '''
             You can set a default style for all elements of a certain class.
             This way you can avoid repeating the same style over and over again.
             

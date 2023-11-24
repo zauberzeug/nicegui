@@ -30,7 +30,7 @@ class AgGridDocumentation(UiElementDocumentation, element=ui.aggrid):
         ui.button('Show parent', on_click=lambda: grid.call_column_api_method('setColumnVisible', 'parent', True))
 
     def more(self) -> None:
-        @self.add_markdown_demo('Select AG Grid Rows', '''
+        @self.demo('Select AG Grid Rows', '''
             You can add checkboxes to grid cells to allow the user to select single or multiple rows.
 
             To retrieve the currently selected rows, use the `get_selected_rows` method.
@@ -74,7 +74,7 @@ class AgGridDocumentation(UiElementDocumentation, element=ui.aggrid):
             ui.button('Output selected rows', on_click=output_selected_rows)
             ui.button('Output selected row', on_click=output_selected_row)
 
-        @self.add_markdown_demo('Filter Rows using Mini Filters', '''
+        @self.demo('Filter Rows using Mini Filters', '''
             You can add [mini filters](https://ag-grid.com/javascript-data-grid/filter-set-mini-filter/)
             to the header of each column to filter the rows.
             
@@ -94,7 +94,7 @@ class AgGridDocumentation(UiElementDocumentation, element=ui.aggrid):
                 ],
             }).classes('max-h-40')
 
-        @self.add_markdown_demo('AG Grid with Conditional Cell Formatting', '''
+        @self.demo('AG Grid with Conditional Cell Formatting', '''
             This demo shows how to use [cellClassRules](https://www.ag-grid.com/javascript-grid-cell-styles/#cell-class-rules)
             to conditionally format cells based on their values.
         ''')
@@ -114,7 +114,7 @@ class AgGridDocumentation(UiElementDocumentation, element=ui.aggrid):
                 ],
             })
 
-        @self.add_markdown_demo('Create Grid from Pandas DataFrame', '''
+        @self.demo('Create Grid from Pandas DataFrame', '''
             You can create an AG Grid from a Pandas DataFrame using the `from_pandas` method.
             This method takes a Pandas DataFrame as input and returns an AG Grid.
         ''')
@@ -124,7 +124,7 @@ class AgGridDocumentation(UiElementDocumentation, element=ui.aggrid):
             df = pd.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
             ui.aggrid.from_pandas(df).classes('max-h-40')
 
-        @self.add_markdown_demo('Render columns as HTML', '''
+        @self.demo('Render columns as HTML', '''
             You can render columns as HTML by passing a list of column indices to the `html_columns` argument.
         ''')
         def aggrid_with_html_columns():
@@ -139,7 +139,7 @@ class AgGridDocumentation(UiElementDocumentation, element=ui.aggrid):
                 ],
             }, html_columns=[1])
 
-        @self.add_markdown_demo('Respond to an AG Grid event', '''
+        @self.demo('Respond to an AG Grid event', '''
             All AG Grid events are passed through to NiceGUI via the AG Grid global listener.
             These events can be subscribed to using the `.on()` method.
         ''')
@@ -156,7 +156,7 @@ class AgGridDocumentation(UiElementDocumentation, element=ui.aggrid):
                 ],
             }).on('cellClicked', lambda event: ui.notify(f'Cell value: {event.args["value"]}'))
 
-        @self.add_markdown_demo('AG Grid with complex objects', '''
+        @self.demo('AG Grid with complex objects', '''
             You can use nested complex objects in AG Grid by separating the field names with a period.
             (This is the reason why keys in `rowData` are not allowed to contain periods.)
         ''')
@@ -174,7 +174,7 @@ class AgGridDocumentation(UiElementDocumentation, element=ui.aggrid):
                 ],
             }).classes('max-h-40')
 
-        @self.add_markdown_demo('AG Grid with dynamic row height', '''
+        @self.demo('AG Grid with dynamic row height', '''
             You can set the height of individual rows by passing a function to the `getRowHeight` argument.
         ''')
         def aggrid_with_dynamic_row_height():

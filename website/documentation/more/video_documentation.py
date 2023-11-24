@@ -10,7 +10,7 @@ class VideoDocumentation(UiElementDocumentation, element=ui.video):
         v.on('ended', lambda _: ui.notify('Video playback completed'))
 
     def more(self) -> None:
-        @self.add_markdown_demo('Control the video element', '''
+        @self.demo('Control the video element', '''
             This demo shows how to play, pause and seek programmatically.
         ''')
         def control_demo() -> None:

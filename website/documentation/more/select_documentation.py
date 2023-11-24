@@ -10,7 +10,7 @@ class SelectDocumentation(UiElementDocumentation, element=ui.select):
         select2 = ui.select({1: 'One', 2: 'Two', 3: 'Three'}).bind_value(select1, 'value')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Search-as-you-type', '''
+        @self.demo('Search-as-you-type', '''
             You can activate `with_input` to get a text input with autocompletion.
             The options will be filtered as you type.
         ''')
@@ -27,7 +27,7 @@ class SelectDocumentation(UiElementDocumentation, element=ui.select):
             ui.select(options=continents, with_input=True,
                       on_change=lambda e: ui.notify(e.value)).classes('w-40')
 
-        @self.add_markdown_demo('Multi selection', '''
+        @self.demo('Multi selection', '''
             You can activate `multiple` to allow the selection of more than one item.
         ''')
         def multi_select():
@@ -37,7 +37,7 @@ class SelectDocumentation(UiElementDocumentation, element=ui.select):
             ui.select(names, multiple=True, value=names[:2], label='with chips') \
                 .classes('w-64').props('use-chips')
 
-        @self.add_markdown_demo('Update options', '''
+        @self.demo('Update options', '''
             Options can be changed with the `options` property.
             But then you also need to call `update()` afterwards to let the change take effect.
             `set_options` is a shortcut that does both and works well for lambdas.

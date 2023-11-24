@@ -13,7 +13,7 @@ class InputDocumentation(UiElementDocumentation, element=ui.input):
 
     def more(self) -> None:
 
-        @self.add_markdown_demo('Autocompletion', '''
+        @self.demo('Autocompletion', '''
             The `autocomplete` feature provides suggestions as you type, making input easier and faster.
             The parameter `options` is a list of strings that contains the available options that will appear.
         ''')
@@ -21,14 +21,14 @@ class InputDocumentation(UiElementDocumentation, element=ui.input):
             options = ['AutoComplete', 'NiceGUI', 'Awesome']
             ui.input(label='Text', placeholder='start typing', autocomplete=options)
 
-        @self.add_markdown_demo('Clearable', '''
+        @self.demo('Clearable', '''
             The `clearable` prop from [Quasar](https://quasar.dev/) adds a button to the input that clears the text.    
         ''')
         def clearable():
             i = ui.input(value='some text').props('clearable')
             ui.label().bind_text_from(i, 'value')
 
-        @self.add_markdown_demo('Styling', '''
+        @self.demo('Styling', '''
             Quasar has a lot of [props to change the appearance](https://quasar.dev/vue-components/input).
             It is even possible to style the underlying input with `input-style` and `input-class` props
             and use the provided slots to add custom elements.

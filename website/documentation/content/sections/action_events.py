@@ -9,13 +9,13 @@ from ...more.storage_documentation import StorageDocumentation
 from ...more.timer_documentation import TimerDocumentation
 
 
-class ActionEventsDocumentation(SectionDocumentation, title='Action & Events', name='action_events'):
+class ActionEventsDocumentation(SectionDocumentation, title='Action & *Events*', name='action_events'):
 
     def content(self) -> None:
-        self.add_element_intro(TimerDocumentation())
-        self.add_element_intro(KeyboardDocumentation())
+        self.intro(TimerDocumentation())
+        self.intro(KeyboardDocumentation())
 
-        @self.add_markdown_demo('UI Updates', '''
+        @self.demo('UI Updates', '''
             NiceGUI tries to automatically synchronize the state of UI elements with the client,
             e.g. when a label text, an input value or style/classes/props of an element have changed.
             In other cases, you can explicitly call `element.update()` or `ui.update(*elements)` to update.
@@ -42,9 +42,9 @@ class ActionEventsDocumentation(SectionDocumentation, title='Action & Events', n
                 ui.button('Add', on_click=add)
                 ui.button('Clear', on_click=clear)
 
-        self.add_element_intro(RefreshableDocumentation())
+        self.intro(RefreshableDocumentation())
 
-        @self.add_markdown_demo('Async event handlers', '''
+        @self.demo('Async event handlers', '''
             Most elements also support asynchronous event handlers.
 
             Note: You can also pass a `functools.partial` into the `on_click` property to wrap async functions with parameters.
@@ -59,9 +59,9 @@ class ActionEventsDocumentation(SectionDocumentation, title='Action & Events', n
 
             ui.button('start async task', on_click=async_task)
 
-        self.add_detail_intro(GenericEventsDocumentation())
+        self.intro(GenericEventsDocumentation())
 
-        @self.add_markdown_demo('Running CPU-bound tasks', '''
+        @self.demo('Running CPU-bound tasks', '''
             NiceGUI provides a `cpu_bound` function for running CPU-bound tasks in a separate process.
             This is useful for long-running computations that would otherwise block the event loop and make the UI unresponsive.
             The function returns a future that can be awaited.
@@ -87,7 +87,7 @@ class ActionEventsDocumentation(SectionDocumentation, title='Action & Events', n
                 ui.notify('Sum is 3')
             ui.button('Compute', on_click=mock_click)
 
-        @self.add_markdown_demo('Running I/O-bound tasks', '''
+        @self.demo('Running I/O-bound tasks', '''
             NiceGUI provides an `io_bound` function for running I/O-bound tasks in a separate thread.
             This is useful for long-running I/O operations that would otherwise block the event loop and make the UI unresponsive.
             The function returns a future that can be awaited.
@@ -104,9 +104,9 @@ class ActionEventsDocumentation(SectionDocumentation, title='Action & Events', n
 
             ui.button('Download', on_click=handle_click)
 
-        self.add_element_intro(RunJavascriptDocumentation())
+        self.intro(RunJavascriptDocumentation())
 
-        @self.add_markdown_demo('Events', '''
+        @self.demo('Events', '''
             You can register coroutines or functions to be called for the following events:
 
             - `app.on_startup`: called when NiceGUI is started or restarted
@@ -135,7 +135,7 @@ class ActionEventsDocumentation(SectionDocumentation, title='Action & Events', n
             global dt
             dt = datetime.now()
 
-        @self.add_element_demo(app.shutdown)
+        @self.demo(app.shutdown)
         def shutdown_demo():
             from nicegui import app
 
@@ -146,4 +146,4 @@ class ActionEventsDocumentation(SectionDocumentation, title='Action & Events', n
             ui.button('shutdown', on_click=lambda: ui.notify(
                 'Nah. We do not actually shutdown the documentation server. Try it in your own app!'))
 
-        self.add_detail_intro(StorageDocumentation())
+        self.intro(StorageDocumentation())

@@ -13,7 +13,7 @@ class PlotlyDocumentation(UiElementDocumentation, element=ui.plotly):
         ui.plotly(fig).classes('w-full h-40')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Dictionary interface', '''
+        @self.demo('Dictionary interface', '''
             This demo shows how to use the declarative dictionary interface to create a plot.
             For plots with many traces and data points, this is more efficient than the object-oriented interface.
             The definition corresponds to the [JavaScript Plotly API](https://plotly.com/javascript/).
@@ -46,7 +46,7 @@ class PlotlyDocumentation(UiElementDocumentation, element=ui.plotly):
             }
             ui.plotly(fig).classes('w-full h-40')
 
-        @self.add_markdown_demo('Plot updates', '''
+        @self.demo('Plot updates', '''
             This demo shows how to update the plot in real time.
             Click the button to add a new trace to the plot.
             To send the new plot to the browser, make sure to explicitly call `plot.update()` or `ui.update(plot)`.

@@ -22,7 +22,7 @@ class RunJavascriptDocumentation(UiElementDocumentation, element=ui.run_javascri
         label = ui.label()
 
     def more(self) -> None:
-        @self.add_markdown_demo('Run async JavaScript', '''
+        @self.demo('Run async JavaScript', '''
             Using `run_javascript` you can also run asynchronous code in the browser.
             The following demo shows how to get the current location of the user.
         ''')

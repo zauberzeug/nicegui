@@ -10,7 +10,7 @@ class AvatarDocumentation(UiElementDocumentation, element=ui.avatar):
         ui.avatar('img:https://nicegui.io/logo_square.png', color='blue-2')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Photos', '''
+        @self.demo('Photos', '''
             To use a photo as an avatar, you can use `ui.image` within `ui.avatar`.
         ''')
         def photos() -> None:

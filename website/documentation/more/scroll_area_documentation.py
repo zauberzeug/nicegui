@@ -13,7 +13,7 @@ class ScrollAreaDocumentation(UiElementDocumentation, element=ui.scroll_area):
                 ui.label('I will not scroll. ' * 10)
 
     def more(self) -> None:
-        @self.add_markdown_demo('Handling Scroll Events', '''
+        @self.demo('Handling Scroll Events', '''
             You can use the `on_scroll` argument in `ui.scroll_area` to handle scroll events.
             The callback receives a `ScrollEventArguments` object with the following attributes:
 
@@ -27,7 +27,7 @@ class ScrollAreaDocumentation(UiElementDocumentation, element=ui.scroll_area):
                 with ui.scroll_area(on_scroll=lambda e: position.set_value(e.vertical_percentage)):
                     ui.label('I scroll. ' * 20)
 
-        @self.add_markdown_demo('Setting the scroll position', '''
+        @self.demo('Setting the scroll position', '''
             You can use `scroll_to` to programmatically set the scroll position.
             This can be useful for navigation or synchronization of multiple scroll areas.
         ''')

@@ -13,7 +13,7 @@ class DialogDocumentation(UiElementDocumentation, element=ui.dialog):
         ui.button('Open a dialog', on_click=dialog.open)
 
     def more(self) -> None:
-        @self.add_markdown_demo('Awaitable dialog', '''
+        @self.demo('Awaitable dialog', '''
             Dialogs can be awaited.
             Use the `submit` method to close the dialog and return a result.
             Canceling the dialog by clicking in the background or pressing the escape key yields `None`.
@@ -31,7 +31,7 @@ class DialogDocumentation(UiElementDocumentation, element=ui.dialog):
 
             ui.button('Await a dialog', on_click=show)
 
-        @self.add_markdown_demo('Replacing content', '''
+        @self.demo('Replacing content', '''
             The content of a dialog can be changed.
         ''')
         def replace_content():

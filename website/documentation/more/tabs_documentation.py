@@ -26,7 +26,7 @@ class TabsDocumentation(UiElementDocumentation, element=ui.tabs):
                 ui.label('Second tab')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Name, label, icon', '''
+        @self.demo('Name, label, icon', '''
             The `ui.tab` element has a `label` property that can be used to display a different text than the `name`.
             The `name` can also be used instead of the `ui.tab` objects to associate a `ui.tab` with a `ui.tab_panel`. 
             Additionally each tab can have an `icon`.
@@ -41,7 +41,7 @@ class TabsDocumentation(UiElementDocumentation, element=ui.tabs):
                 with ui.tab_panel('a'):
                     ui.label('Infos')
 
-        @self.add_markdown_demo('Switch tabs programmatically', '''
+        @self.demo('Switch tabs programmatically', '''
             The `ui.tabs` and `ui.tab_panels` elements are derived from ValueElement which has a `set_value` method.
             That can be used to switch tabs programmatically.
         ''')

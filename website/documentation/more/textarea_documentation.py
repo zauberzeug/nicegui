@@ -11,7 +11,7 @@ class TextareaDocumentation(UiElementDocumentation, element=ui.textarea):
         result = ui.label()
 
     def more(self) -> None:
-        @self.add_markdown_demo('Clearable', '''
+        @self.demo('Clearable', '''
             The `clearable` prop from [Quasar](https://quasar.dev/) adds a button to the input that clears the text.    
         ''')
         def clearable():

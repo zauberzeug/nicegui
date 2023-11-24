@@ -11,10 +11,10 @@ from ...more.mermaid_documentation import MermaidDocumentation
 class TextElementsDocumentation(SectionDocumentation, title='*Text* Elements', name='text_elements'):
 
     def content(self) -> None:
-        self.add_element_intro(LabelDocumentation())
-        self.add_element_intro(LinkDocumentation())
-        self.add_element_intro(ChatMessageDocumentation())
-        self.add_element_intro(ElementDocumentation())
-        self.add_element_intro(MarkdownDocumentation())
-        self.add_element_intro(MermaidDocumentation())
-        self.add_element_intro(HtmlDocumentation())
+        self.intro(LabelDocumentation())
+        self.intro(LinkDocumentation())
+        self.intro(ChatMessageDocumentation())
+        self.intro(ElementDocumentation())
+        self.intro(MarkdownDocumentation())
+        self.intro(MermaidDocumentation())
+        self.intro(HtmlDocumentation())

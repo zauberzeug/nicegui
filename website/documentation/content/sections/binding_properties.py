@@ -8,7 +8,7 @@ date = '2023-01-01'
 class BindingPropertiesDocumentation(SectionDocumentation, title='*Binding* properties', name='binding_properties'):
 
     def content(self) -> None:
-        @self.add_markdown_demo('Bindings', '''
+        @self.demo('Bindings', '''
             NiceGUI is able to directly bind UI elements to models.
             Binding is possible for UI element properties like text, value or visibility and for model properties that are (nested) class attributes.
             Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property.
@@ -27,7 +27,7 @@ class BindingPropertiesDocumentation(SectionDocumentation, title='*Binding* prop
                 ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
                 ui.number().bind_value(demo, 'number')
 
-        @self.add_markdown_demo('Bind to dictionary', '''
+        @self.demo('Bind to dictionary', '''
             Here we are binding the text of labels to a dictionary.
         ''')
         def bind_dictionary():
@@ -38,7 +38,7 @@ class BindingPropertiesDocumentation(SectionDocumentation, title='*Binding* prop
 
             ui.button('Turn 18', on_click=lambda: data.update(age=18))
 
-        @self.add_markdown_demo('Bind to variable', '''
+        @self.demo('Bind to variable', '''
             Here we are binding the value from the datepicker to a bare variable.
             Therefore we use the dictionary `globals()` which contains all global variables.
             This demo is based on the [official datepicker example](/documentation/date#input_element_with_date_picker).
@@ -52,7 +52,7 @@ class BindingPropertiesDocumentation(SectionDocumentation, title='*Binding* prop
                 with date_input.add_slot('append'):
                     ui.icon('edit_calendar').on('click', menu.open).classes('cursor-pointer')
 
-        @self.add_markdown_demo('Bind to storage', '''
+        @self.demo('Bind to storage', '''
             Bindings also work with [`app.storage`](/documentation/storage).
             Here we are storing the value of a textarea between visits.
             The note is also shared between all tabs of the same user.

@@ -10,7 +10,7 @@ class ExpansionDocumentation(UiElementDocumentation, element=ui.expansion):
             ui.label('inside the expansion')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Expansion with Custom Header', '''
+        @self.demo('Expansion with Custom Header', '''
             Instead of setting a plain-text title, you can fill the expansion header with UI elements by adding them to the "header" slot.
         ''')
         def expansion_with_custom_header():

@@ -9,7 +9,7 @@ class MarkdownDocumentation(UiElementDocumentation, element=ui.markdown):
         ui.markdown('''This is **Markdown**.''')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Markdown with indentation', '''
+        @self.demo('Markdown with indentation', '''
             Common indentation is automatically stripped from the beginning of each line.
             So you can indent markdown elements, and they will still be rendered correctly.
         ''')
@@ -25,7 +25,7 @@ class MarkdownDocumentation(UiElementDocumentation, element=ui.markdown):
                 This is normal text again.
             ''')
 
-        @self.add_markdown_demo('Markdown with code blocks', '''
+        @self.demo('Markdown with code blocks', '''
             You can use code blocks to show code examples.
             If you specify the language after the opening triple backticks, the code will be syntax highlighted.
             See [the Pygments website](https://pygments.org/languages/) for a list of supported languages.
@@ -41,7 +41,7 @@ class MarkdownDocumentation(UiElementDocumentation, element=ui.markdown):
                 ```
             ''')
 
-        @self.add_markdown_demo('Markdown tables', '''
+        @self.demo('Markdown tables', '''
             By activating the "tables" extra, you can use Markdown tables.
             See the [markdown2 documentation](https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras) for a list of available extras.
         ''')

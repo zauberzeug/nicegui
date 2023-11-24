@@ -12,7 +12,7 @@ class TreeDocumentation(UiElementDocumentation, element=ui.tree):
         ], label_key='id', on_select=lambda e: ui.notify(e.value))
 
     def more(self) -> None:
-        @self.add_markdown_demo('Tree with custom header and body', '''
+        @self.demo('Tree with custom header and body', '''
             Scoped slots can be used to insert custom content into the header and body of a tree node.
             See the [Quasar documentation](https://quasar.dev/vue-components/tree#customize-content) for more information.
         ''')
@@ -35,7 +35,7 @@ class TreeDocumentation(UiElementDocumentation, element=ui.tree):
                 <span :props="props">Description: "{{ props.node.description }}"</span>
             ''')
 
-        @self.add_markdown_demo('Expand and collapse programmatically', '''
+        @self.demo('Expand and collapse programmatically', '''
             The whole tree or individual nodes can be toggled programmatically using the `expand()` and `collapse()` methods.
             This even works if a node is disabled (e.g. not clickable by the user).
         ''')
@@ -51,7 +51,7 @@ class TreeDocumentation(UiElementDocumentation, element=ui.tree):
                 ui.button('+ A', on_click=lambda: t.expand(['A']))
                 ui.button('- A', on_click=lambda: t.collapse(['A']))
 
-        @self.add_markdown_demo('Tree with checkboxes', '''
+        @self.demo('Tree with checkboxes', '''
             The tree can be used with checkboxes by setting the "tick-strategy" prop.
         ''')
         def tree_with_checkboxes():

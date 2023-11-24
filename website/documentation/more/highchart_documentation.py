@@ -25,7 +25,7 @@ class HighchartDocumentation(UiElementDocumentation, element=ui.highchart):
         ui.button('Update', on_click=update)
 
     def more(self) -> None:
-        @self.add_markdown_demo('Chart with extra dependencies', '''
+        @self.demo('Chart with extra dependencies', '''
             To use a chart type that is not included in the default dependencies, you can specify extra dependencies.
             This demo shows a solid gauge chart.
         ''')
@@ -42,7 +42,7 @@ class HighchartDocumentation(UiElementDocumentation, element=ui.highchart):
                 ],
             }, extras=['solid-gauge']).classes('w-full h-64')
 
-        @self.add_markdown_demo('Chart with draggable points', '''
+        @self.demo('Chart with draggable points', '''
             This chart allows dragging the series points.
             You can register callbacks for the following events:
             

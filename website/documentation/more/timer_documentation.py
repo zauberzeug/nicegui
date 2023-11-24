@@ -12,7 +12,7 @@ class TimerDocumentation(UiElementDocumentation, element=ui.timer):
         ui.timer(1.0, lambda: label.set_text(f'{datetime.now():%X}'))
 
     def more(self) -> None:
-        @self.add_markdown_demo('Activate, deactivate and cancel a timer', '''
+        @self.demo('Activate, deactivate and cancel a timer', '''
             You can activate and deactivate a timer using the `active` property.
             You can cancel a timer using the `cancel` method.
             After canceling a timer, it cannot be activated anymore.
@@ -23,7 +23,7 @@ class TimerDocumentation(UiElementDocumentation, element=ui.timer):
             ui.switch('active').bind_value_to(timer, 'active')
             ui.button('Cancel', on_click=timer.cancel)
 
-        @self.add_markdown_demo('Call a function after a delay', '''
+        @self.demo('Call a function after a delay', '''
             You can call a function after a delay using a timer with the `once` parameter.
         ''')
         def call_after_delay_demo():

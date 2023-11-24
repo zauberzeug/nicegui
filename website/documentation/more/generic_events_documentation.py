@@ -6,7 +6,7 @@ from ..model import DetailDocumentation
 class GenericEventsDocumentation(DetailDocumentation, title='Generic Events', name='generic_events'):
 
     def content(self) -> None:
-        @self.add_markdown_demo('Generic Events', '''
+        @self.demo('Generic Events', '''
             Most UI elements come with predefined events.
             For example, a `ui.button` like "A" in the demo has an `on_click` parameter that expects a coroutine or function.
             But you can also use the `on` method to register a generic event handler like for "B".
@@ -36,7 +36,7 @@ class GenericEventsDocumentation(DetailDocumentation, title='Generic Events', na
                 ui.button('E').on('mousedown', lambda e: ui.notify(e))
                 ui.button('F').on('mousedown', lambda e: ui.notify(e), ['ctrlKey', 'shiftKey'])
 
-        @self.add_markdown_demo('Specifying event attributes', '''
+        @self.demo('Specifying event attributes', '''
             **A list of strings** names the attributes of the JavaScript event object:
                 ```py
                 ui.button().on('click', handle_click, ['clientX', 'clientY'])
@@ -85,7 +85,7 @@ class GenericEventsDocumentation(DetailDocumentation, title='Generic Events', na
             ]
             ui.table(columns, rows, 'name').on('rowClick', ui.notify, [[], ['name'], None])
 
-        @self.add_markdown_demo('Modifiers', '''
+        @self.demo('Modifiers', '''
             You can also include [key modifiers](https://vuejs.org/guide/essentials/event-handling.html#key-modifiers>) (shown in input "A"),
             modifier combinations (shown in input "B"),
             and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mouse-button-modifiers>) (shown in input "C").
@@ -96,7 +96,7 @@ class GenericEventsDocumentation(DetailDocumentation, title='Generic Events', na
                 ui.input('B').classes('w-12').on('keydown.y.shift', lambda: ui.notify('You pressed Shift+Y'))
                 ui.input('C').classes('w-12').on('keydown.once', lambda: ui.notify('You started typing.'))
 
-        @self.add_markdown_demo('Custom events', '''
+        @self.demo('Custom events', '''
             It is fairly easy to emit custom events from JavaScript which can be listened to with `element.on(...)`.
             This can be useful if you want to call Python code when something happens in JavaScript.
             In this example we are listening to the `visibilitychange` event of the browser tab.

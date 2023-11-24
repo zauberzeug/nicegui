@@ -23,7 +23,7 @@ from ...more.timeline_documentation import TimelineDocumentation
 class PageLayoutDocumentation(SectionDocumentation, title='Page *Layout*', name='page_layout'):
 
     def content(self) -> None:
-        @self.add_markdown_demo('Auto-context', '''
+        @self.demo('Auto-context', '''
             In order to allow writing intuitive UI descriptions, NiceGUI automatically tracks the context in which elements are created.
             This means that there is no explicit `parent` parameter.
             Instead the parent context is defined using a `with` statement.
@@ -42,12 +42,12 @@ class PageLayoutDocumentation(SectionDocumentation, title='Page *Layout*', name=
                 ui.button('Add label', on_click=lambda: ui.label('Click!'))
                 ui.timer(1.0, lambda: ui.label('Tick!'), once=True)
 
-        self.add_element_intro(CardDocumentation())
-        self.add_element_intro(ColumnDocumentation())
-        self.add_element_intro(RowDocumentation())
-        self.add_element_intro(GridDocumentation())
+        self.intro(CardDocumentation())
+        self.intro(ColumnDocumentation())
+        self.intro(RowDocumentation())
+        self.intro(GridDocumentation())
 
-        @self.add_markdown_demo('Clear Containers', '''
+        @self.demo('Clear Containers', '''
             To remove all elements from a row, column or card container, use can call
             ```py
             container.clear()
@@ -71,19 +71,19 @@ class PageLayoutDocumentation(SectionDocumentation, title='Page *Layout*', name=
             ui.button('Remove', on_click=lambda: container.remove(0) if list(container) else None)
             ui.button('Clear', on_click=container.clear)
 
-        self.add_element_intro(ExpansionDocumentation())
-        self.add_element_intro(ScrollAreaDocumentation())
-        self.add_element_intro(SeparatorDocumentation())
-        self.add_element_intro(SplitterDocumentation())
-        self.add_element_intro(TabsDocumentation())
-        self.add_element_intro(StepperDocumentation())
-        self.add_element_intro(TimelineDocumentation())
-        self.add_element_intro(CarouselDocumentation())
-        self.add_element_intro(PaginationDocumentation())
-        self.add_element_intro(MenuDocumentation())
-        self.add_element_intro(ContextMenuDocumentation())
+        self.intro(ExpansionDocumentation())
+        self.intro(ScrollAreaDocumentation())
+        self.intro(SeparatorDocumentation())
+        self.intro(SplitterDocumentation())
+        self.intro(TabsDocumentation())
+        self.intro(StepperDocumentation())
+        self.intro(TimelineDocumentation())
+        self.intro(CarouselDocumentation())
+        self.intro(PaginationDocumentation())
+        self.intro(MenuDocumentation())
+        self.intro(ContextMenuDocumentation())
 
-        @self.add_markdown_demo('Tooltips', '''
+        @self.demo('Tooltips', '''
             Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
 
             For more artistic control you can nest tooltip elements and apply props, classes and styles.
@@ -93,5 +93,5 @@ class PageLayoutDocumentation(SectionDocumentation, title='Page *Layout*', name=
             with ui.button(icon='thumb_up'):
                 ui.tooltip('I like this').classes('bg-green')
 
-        self.add_element_intro(NotifyDocumentation())
-        self.add_element_intro(DialogDocumentation())
+        self.intro(NotifyDocumentation())
+        self.intro(DialogDocumentation())

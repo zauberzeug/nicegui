@@ -9,7 +9,7 @@ class ButtonDocumentation(UiElementDocumentation, element=ui.button):
         ui.button('Click me!', on_click=lambda: ui.notify('You clicked me!'))
 
     def more(self) -> None:
-        @self.add_markdown_demo('Icons', '''
+        @self.demo('Icons', '''
             You can also add an icon to a button.
         ''')
         def icons() -> None:
@@ -21,7 +21,7 @@ class ButtonDocumentation(UiElementDocumentation, element=ui.button):
                     ui.image('https://picsum.photos/id/377/640/360') \
                         .classes('rounded-full w-16 h-16 ml-4')
 
-        @self.add_markdown_demo('Await button click', '''
+        @self.demo('Await button click', '''
             Sometimes it is convenient to wait for a button click before continuing the execution.
         ''')
         async def await_button_click() -> None:
@@ -35,7 +35,7 @@ class ButtonDocumentation(UiElementDocumentation, element=ui.button):
                 await b.clicked()
                 ui.label('Three')
 
-        @self.add_markdown_demo('Disable button with a context manager', '''
+        @self.demo('Disable button with a context manager', '''
             This showcases a context manager that can be used to disable a button for the duration of an async process.
         ''')
         def disable_context_manager() -> None:

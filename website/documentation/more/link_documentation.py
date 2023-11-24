@@ -10,7 +10,7 @@ class LinkDocumentation(UiElementDocumentation, element=ui.link):
         ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Navigate on large pages', '''
+        @self.demo('Navigate on large pages', '''
             To jump to a specific location within a page you can place linkable anchors with `ui.link_target('target_name')`
             or simply pass a NiceGUI element as link target.
         ''')
@@ -33,7 +33,7 @@ class LinkDocumentation(UiElementDocumentation, element=ui.link):
                 # ui.link('Goto B', label_B)
                 ui.link('Goto B', '#target_B')  # HIDE
 
-        @self.add_markdown_demo('Links to other pages', '''
+        @self.demo('Links to other pages', '''
             You can link to other pages by providing the link target as path or function reference.
         ''')
         def link_to_other_page():
@@ -45,7 +45,7 @@ class LinkDocumentation(UiElementDocumentation, element=ui.link):
             ui.link('... with path', '/some_other_page')
             ui.link('... with function reference', my_page)
 
-        @self.add_markdown_demo('Link from images and other elements', '''
+        @self.demo('Link from images and other elements', '''
             By nesting elements inside a link you can make the whole element clickable.
             This works with all elements but is most useful for non-interactive elements like 
             [ui.image](/documentation/image), [ui.avatar](/documentation/image) etc.

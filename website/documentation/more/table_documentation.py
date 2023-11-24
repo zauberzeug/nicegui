@@ -18,7 +18,7 @@ class TableDocumentation(UiElementDocumentation, element=ui.table):
         ui.table(columns=columns, rows=rows, row_key='name')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Table with expandable rows', '''
+        @self.demo('Table with expandable rows', '''
             Scoped slots can be used to insert buttons that toggle the expand state of a table row.
             See the [Quasar documentation](https://quasar.dev/vue-components/table#expanding-rows) for more information.
         ''')
@@ -60,7 +60,7 @@ class TableDocumentation(UiElementDocumentation, element=ui.table):
                 </q-tr>
             ''')
 
-        @self.add_markdown_demo('Show and hide columns', '''
+        @self.demo('Show and hide columns', '''
             Here is an example of how to show and hide columns in a table.
         ''')
         def show_and_hide_columns():
@@ -88,7 +88,7 @@ class TableDocumentation(UiElementDocumentation, element=ui.table):
                         ui.switch(column['label'], value=True, on_change=lambda e,
                                   column=column: toggle(column, e.value))
 
-        @self.add_markdown_demo('Table with drop down selection', '''
+        @self.demo('Table with drop down selection', '''
             Here is an example of how to use a drop down selection in a table.
             After emitting a `rename` event from the scoped slot, the `rename` function updates the table rows.
         ''')
@@ -129,7 +129,7 @@ class TableDocumentation(UiElementDocumentation, element=ui.table):
             ''')
             table.on('rename', rename)
 
-        @self.add_markdown_demo('Table from Pandas DataFrame', '''
+        @self.demo('Table from Pandas DataFrame', '''
             You can create a table from a Pandas DataFrame using the `from_pandas` method. 
             This method takes a Pandas DataFrame as input and returns a table.
         ''')
@@ -139,7 +139,7 @@ class TableDocumentation(UiElementDocumentation, element=ui.table):
             df = pd.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
             ui.table.from_pandas(df).classes('max-h-40')
 
-        @self.add_markdown_demo('Adding rows', '''
+        @self.demo('Adding rows', '''
             It's simple to add new rows with the `add_rows(dict)` method.
         ''')
         def adding_rows():
@@ -157,7 +157,7 @@ class TableDocumentation(UiElementDocumentation, element=ui.table):
             ]
             table = ui.table(columns=columns, rows=[], row_key='id').classes('w-full')
 
-        @self.add_markdown_demo('Custom sorting and formatting', '''
+        @self.demo('Custom sorting and formatting', '''
             You can define dynamic column attributes using a `:` prefix.
             This way you can define custom sorting and formatting functions.
 
@@ -187,7 +187,7 @@ class TableDocumentation(UiElementDocumentation, element=ui.table):
             ]
             ui.table(columns=columns, rows=rows, row_key='name')
 
-        @self.add_markdown_demo('Toggle fullscreen', '''
+        @self.demo('Toggle fullscreen', '''
             You can toggle the fullscreen mode of a table using the `toggle_fullscreen()` method.
         ''')
         def toggle_fullscreen():
@@ -202,7 +202,7 @@ class TableDocumentation(UiElementDocumentation, element=ui.table):
                     button.props('icon=fullscreen_exit' if table.is_fullscreen else 'icon=fullscreen')
                 button = ui.button('Toggle fullscreen', icon='fullscreen', on_click=toggle).props('flat')
 
-        @self.add_markdown_demo('Pagination', '''
+        @self.demo('Pagination', '''
             You can provide either a single integer or a dictionary to define pagination.
 
             The dictionary can contain the following keys:
@@ -228,7 +228,7 @@ class TableDocumentation(UiElementDocumentation, element=ui.table):
             ui.table(columns=columns, rows=rows, pagination=3)
             ui.table(columns=columns, rows=rows, pagination={'rowsPerPage': 4, 'sortBy': 'age', 'page': 2})
 
-        @self.add_markdown_demo('Computed fields', '''
+        @self.demo('Computed fields', '''
             You can use functions to compute the value of a column.
             The function receives the row as an argument.
             See the [Quasar documentation](https://quasar.dev/vue-components/table#defining-the-columns) for more information.
@@ -245,7 +245,7 @@ class TableDocumentation(UiElementDocumentation, element=ui.table):
             ]
             ui.table(columns=columns, rows=rows, row_key='name')
 
-        @self.add_markdown_demo('Conditional formatting', '''
+        @self.demo('Conditional formatting', '''
             You can use scoped slots to conditionally format the content of a cell.
             See the [Quasar documentation](https://quasar.dev/vue-components/table#example--body-cell-slot)
             for more information about body-cell slots.
@@ -274,7 +274,7 @@ class TableDocumentation(UiElementDocumentation, element=ui.table):
                 </q-td>
             ''')
 
-        @self.add_markdown_demo('Table cells with links', '''
+        @self.demo('Table cells with links', '''
             Here is a demo of how to insert links into table cells.
             We use the `body-cell-link` slot to insert an `<a>` tag into the `link` column.
         ''')

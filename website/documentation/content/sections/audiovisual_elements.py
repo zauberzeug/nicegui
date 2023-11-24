@@ -12,9 +12,9 @@ from ...more.video_documentation import VideoDocumentation
 class AudiovisualElementsDocumentation(SectionDocumentation, title='*Audiovisual* Elements', name='audiovisual_elements'):
 
     def content(self) -> None:
-        self.add_element_intro(ImageDocumentation())
+        self.intro(ImageDocumentation())
 
-        @self.add_markdown_demo('Captions and Overlays', '''
+        @self.demo('Captions and Overlays', '''
             By nesting elements inside a `ui.image` you can create augmentations.
 
             Use [Quasar classes](https://quasar.dev/vue-components/img) for positioning and styling captions.
@@ -31,13 +31,13 @@ class AudiovisualElementsDocumentation(SectionDocumentation, title='*Audiovisual
                     </svg>
                 ''').classes('bg-transparent')
 
-        self.add_element_intro(InteractiveImageDocumentation())
-        self.add_element_intro(AudioDocumentation())
-        self.add_element_intro(VideoDocumentation())
-        self.add_element_intro(IconDocumentation())
-        self.add_element_intro(AvatarDocumentation())
+        self.intro(InteractiveImageDocumentation())
+        self.intro(AudioDocumentation())
+        self.intro(VideoDocumentation())
+        self.intro(IconDocumentation())
+        self.intro(AvatarDocumentation())
 
-        @self.add_markdown_demo('SVG', '''
+        @self.demo('SVG', '''
             You can add Scalable Vector Graphics using the `ui.html` element.
         ''')
         def svg_demo():

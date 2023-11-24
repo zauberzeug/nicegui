@@ -13,7 +13,7 @@ class SplitterDocumentation(UiElementDocumentation, element=ui.splitter):
                 ui.label('This is some content on the right hand side.').classes('ml-2')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Advanced usage', '''
+        @self.demo('Advanced usage', '''
             This demo shows all the slots and parameters including a tooltip, a custom separator, and a callback.
         ''')
         def advanced_usage() -> None:
@@ -29,7 +29,7 @@ class SplitterDocumentation(UiElementDocumentation, element=ui.splitter):
 
             ui.number('Split value', format='%.1f').bind_value(splitter)
 
-        @self.add_markdown_demo('Image fun', '''
+        @self.demo('Image fun', '''
             This demo shows how to use the splitter to display images side by side.
         ''')
         def image_fun() -> None:

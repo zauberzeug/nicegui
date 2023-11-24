@@ -17,7 +17,7 @@ class InteractiveImageDocumentation(UiElementDocumentation, element=ui.interacti
         ii = ui.interactive_image(src, on_mouse=mouse_handler, events=['mousedown', 'mouseup'], cross=True)
 
     def more(self) -> None:
-        @self.add_markdown_demo('Nesting elements', '''
+        @self.demo('Nesting elements', '''
             You can nest elements inside an interactive image.
             Use Tailwind classes like "absolute top-0 left-0" to position the label absolutely with respect to the image.
             Of course this can be done with plain CSS as well.
@@ -28,7 +28,7 @@ class InteractiveImageDocumentation(UiElementDocumentation, element=ui.interacti
                     .props('flat fab color=white') \
                     .classes('absolute bottom-0 left-0 m-2')
 
-        @self.add_markdown_demo('Force reload', '''
+        @self.demo('Force reload', '''
             You can force an image to reload by calling the `force_reload` method.
             It will append a timestamp to the image URL, which will make the browser reload the image.
         ''')

@@ -12,7 +12,7 @@ class ColumnDocumentation(UiElementDocumentation, element=ui.column):
             ui.label('label 3')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Masonry or Pinterest-Style Layout', '''
+        @self.demo('Masonry or Pinterest-Style Layout', '''
             To create a masonry/Pinterest layout, the normal `ui.column` can not be used.
             But it can be achieved with a few TailwindCSS classes.
         ''')

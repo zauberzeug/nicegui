@@ -12,7 +12,7 @@ class CardDocumentation(UiElementDocumentation, element=ui.card):
                 ui.label('Lorem ipsum dolor sit amet, consectetur adipiscing elit, ...')
 
     def more(self) -> None:
-        @self.add_markdown_demo('Card without shadow', '''
+        @self.demo('Card without shadow', '''
             You can remove the shadow from a card by adding the `no-shadow` class.
             The following demo shows a 1 pixel wide border instead.
         ''')
@@ -20,7 +20,7 @@ class CardDocumentation(UiElementDocumentation, element=ui.card):
             with ui.card().classes('no-shadow border-[1px]'):
                 ui.label('See, no shadow!')
 
-        @self.add_markdown_demo('The issue with nested borders', '''
+        @self.demo('The issue with nested borders', '''
             The following example shows a table nested in a card.
             Cards have a default padding in NiceGUI, so the table is not flush with the card's border.
             The table has the `flat` and `bordered` props set, so it should have a border.
