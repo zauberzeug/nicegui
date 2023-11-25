@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import abc
 from dataclasses import dataclass
-from typing import Callable, Iterator, List, Optional, Union, overload
-
-import docutils.core
+from typing import Callable, Iterator, List, Literal, Optional, Union, overload
 
 from nicegui.dataclasses import KWONLY_SLOTS
-from nicegui.elements.markdown import apply_tailwind, remove_indentation
+from nicegui.elements.markdown import remove_indentation
 
 from . import registry
 
@@ -16,6 +14,7 @@ from . import registry
 class DocumentationPart:
     title: Optional[str] = None
     description: Optional[str] = None
+    description_format: Literal['md', 'rst'] = 'md'
     link: Optional[str] = None
     ui: Optional[Callable] = None
     demo: Optional[Callable] = None
@@ -64,18 +63,21 @@ class Documentation(abc.ABC):
         """Add a demo section to the documentation."""
         if len(args) == 2:
             title, description = args
-        elif isinstance(args[0], type):
-            title, description = args[0].__init__.__doc__.split('\n', 1)  # type: ignore
-        elif callable(args[0]):
-            title, description = args[0].__doc__.split('\n', 1)
+            is_markdown = True
         else:
-            raise ValueError('Invalid arguments')
+            doc = args[0].__init__.__doc__ if isinstance(args[0], type) else args[0].__doc__  # type: ignore
+            title, description = doc.split('\n', 1)
+            is_markdown = False
 
-        description = remove_indentation(description).replace('param ', '')
-        html = apply_tailwind(docutils.core.publish_parts(description, writer_name='html5_polyglot')['html_body'])
+        description = remove_indentation(description)
 
         def decorator(function: Callable) -> Callable:
-            self._content.append(DocumentationPart(title=title, description=html, demo=function))
+            self._content.append(DocumentationPart(
+                title=title,
+                description=description,
+                description_format='md' if is_markdown else 'rst',
+                demo=function,
+            ))
             return function
         return decorator
 

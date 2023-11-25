@@ -24,6 +24,7 @@ app.add_static_file(local_file=svg.PATH / 'logo.png', url_path='/logo.png')
 app.add_static_file(local_file=svg.PATH / 'logo_square.png', url_path='/logo_square.png')
 
 documentation.content.generate()
+documentation.build_search_index()
 
 
 @app.post('/dark_mode')

@@ -1,4 +1,7 @@
+import docutils.core
+
 from nicegui import ui
+from nicegui.elements.markdown import apply_tailwind
 
 from ..header import add_head_html, add_header
 from ..style import section_heading, subheading
@@ -39,7 +42,13 @@ def render_page(documentation: Documentation, *, is_main: bool = False) -> None:
                 link = part.link if part.link != documentation.route else None
                 subheading(part.title, make_menu_entry=not is_main, link=link)
             if part.description:
-                ui.markdown(part.description)
+                if part.description_format == 'rst':
+                    description = part.description.replace('param ', '')
+                    html = docutils.core.publish_parts(description, writer_name='html5_polyglot')['html_body']
+                    html = apply_tailwind(html)
+                    ui.html(html)
+                else:
+                    ui.markdown(part.description)
             if part.ui:
                 part.ui()
             if part.demo:

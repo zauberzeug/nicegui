@@ -1,11 +1,13 @@
 from . import content, registry
 from .intro import create_intro
 from .rendering import render_page
+from .search import build_search_index
 from .windows import bash_window, browser_window, python_window
 
 __all__ = [
     'bash_window',
     'browser_window',
+    'build_search_index',
     'content',
     'create_intro',
     'python_window',
