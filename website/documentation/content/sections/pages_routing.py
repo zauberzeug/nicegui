@@ -3,9 +3,9 @@ import uuid
 from nicegui import app, ui
 
 from ...model import SectionDocumentation
-from ...more.download_documentation import DownloadDocumentation
-from ...more.open_documentation import OpenDocumentation
-from ...more.page_documentation import PageDocumentation
+from ..more.download_documentation import DownloadDocumentation
+from ..more.open_documentation import OpenDocumentation
+from ..more.page_documentation import PageDocumentation
 
 CONSTANT_UUID = str(uuid.uuid4())
 

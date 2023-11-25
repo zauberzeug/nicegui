@@ -1,12 +1,12 @@
 from nicegui import app, ui
 
 from ...model import SectionDocumentation
-from ...more.generic_events_documentation import GenericEventsDocumentation
-from ...more.keyboard_documentation import KeyboardDocumentation
-from ...more.refreshable_documentation import RefreshableDocumentation
-from ...more.run_javascript_documentation import RunJavascriptDocumentation
-from ...more.storage_documentation import StorageDocumentation
-from ...more.timer_documentation import TimerDocumentation
+from ..more.generic_events_documentation import GenericEventsDocumentation
+from ..more.keyboard_documentation import KeyboardDocumentation
+from ..more.refreshable_documentation import RefreshableDocumentation
+from ..more.run_javascript_documentation import RunJavascriptDocumentation
+from ..more.storage_documentation import StorageDocumentation
+from ..more.timer_documentation import TimerDocumentation
 
 
 class ActionEventsDocumentation(SectionDocumentation, title='Action & *Events*', name='action_events'):

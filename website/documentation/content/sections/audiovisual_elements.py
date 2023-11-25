@@ -1,12 +1,12 @@
 from nicegui import ui
 
 from ...model import SectionDocumentation
-from ...more.audio_documentation import AudioDocumentation
-from ...more.avatar_documentation import AvatarDocumentation
-from ...more.icon_documentation import IconDocumentation
-from ...more.image_documentation import ImageDocumentation
-from ...more.interactive_image_documentation import InteractiveImageDocumentation
-from ...more.video_documentation import VideoDocumentation
+from ..more.audio_documentation import AudioDocumentation
+from ..more.avatar_documentation import AvatarDocumentation
+from ..more.icon_documentation import IconDocumentation
+from ..more.image_documentation import ImageDocumentation
+from ..more.interactive_image_documentation import InteractiveImageDocumentation
+from ..more.video_documentation import VideoDocumentation
 
 
 class AudiovisualElementsDocumentation(SectionDocumentation, title='*Audiovisual* Elements', name='audiovisual_elements'):

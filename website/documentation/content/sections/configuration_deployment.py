@@ -1,8 +1,8 @@
 from nicegui import ui
 
 from ...model import SectionDocumentation
-from ...more.run_documentation import RunDocumentation
 from ...windows import bash_window, python_window
+from ..more.run_documentation import RunDocumentation
 
 
 class ConfigurationDeploymentDocumentation(SectionDocumentation, title='Configuration & Deployment', name='configuration_deployment'):

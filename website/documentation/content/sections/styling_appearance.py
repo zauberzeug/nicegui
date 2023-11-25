@@ -2,9 +2,9 @@ from nicegui import events, ui
 
 from ...demo import browser_window, python_window
 from ...model import SectionDocumentation
-from ...more.colors_documentation import ColorsDocumentation
-from ...more.dark_mode_documentation import DarkModeDocumentation
-from ...more.query_documentation import QueryDocumentation
+from ..more.colors_documentation import ColorsDocumentation
+from ..more.dark_mode_documentation import DarkModeDocumentation
+from ..more.query_documentation import QueryDocumentation
 
 
 class StylingAppearanceDocumentation(SectionDocumentation, title='Styling & Appearance', name='styling_appearance'):

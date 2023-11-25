@@ -1,23 +1,23 @@
 from nicegui import ui
 
 from ...model import SectionDocumentation
-from ...more.card_documentation import CardDocumentation
-from ...more.carousel_documentation import CarouselDocumentation
-from ...more.column_documentation import ColumnDocumentation
-from ...more.context_menu_documentation import ContextMenuDocumentation
-from ...more.dialog_documentation import DialogDocumentation
-from ...more.expansion_documentation import ExpansionDocumentation
-from ...more.grid_documentation import GridDocumentation
-from ...more.menu_documentation import MenuDocumentation
-from ...more.notify_documentation import NotifyDocumentation
-from ...more.pagination_documentation import PaginationDocumentation
-from ...more.row_documentation import RowDocumentation
-from ...more.scroll_area_documentation import ScrollAreaDocumentation
-from ...more.separator_documentation import SeparatorDocumentation
-from ...more.splitter_documentation import SplitterDocumentation
-from ...more.stepper_documentation import StepperDocumentation
-from ...more.tabs_documentation import TabsDocumentation
-from ...more.timeline_documentation import TimelineDocumentation
+from ..more.card_documentation import CardDocumentation
+from ..more.carousel_documentation import CarouselDocumentation
+from ..more.column_documentation import ColumnDocumentation
+from ..more.context_menu_documentation import ContextMenuDocumentation
+from ..more.dialog_documentation import DialogDocumentation
+from ..more.expansion_documentation import ExpansionDocumentation
+from ..more.grid_documentation import GridDocumentation
+from ..more.menu_documentation import MenuDocumentation
+from ..more.notify_documentation import NotifyDocumentation
+from ..more.pagination_documentation import PaginationDocumentation
+from ..more.row_documentation import RowDocumentation
+from ..more.scroll_area_documentation import ScrollAreaDocumentation
+from ..more.separator_documentation import SeparatorDocumentation
+from ..more.splitter_documentation import SplitterDocumentation
+from ..more.stepper_documentation import StepperDocumentation
+from ..more.tabs_documentation import TabsDocumentation
+from ..more.timeline_documentation import TimelineDocumentation
 
 
 class PageLayoutDocumentation(SectionDocumentation, title='Page *Layout*', name='page_layout'):
