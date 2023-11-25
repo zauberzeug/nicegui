@@ -1,11 +1,15 @@
+from typing import Callable
+
 from nicegui import ui
 
-from .tools import main_page_demo
+from ..style import subheading
+from .demo import demo
 
 
 def create_intro() -> None:
-    @main_page_demo('Styling',
-                    'While having reasonable defaults, you can still modify the look of your app with CSS as well as Tailwind and Quasar classes.')
+    @_main_page_demo('Styling', '''
+        While having reasonable defaults, you can still modify the look of your app with CSS as well as Tailwind and Quasar classes.
+    ''')
     def formatting_demo():
         ui.icon('thumb_up')
         ui.markdown('This is **Markdown**.')
@@ -16,8 +20,9 @@ def create_intro() -> None:
             ui.label('Quasar').classes('q-ml-xl')
         ui.link('NiceGUI on GitHub', 'https://github.com/zauberzeug/nicegui')
 
-    @main_page_demo('Common UI Elements',
-                    'NiceGUI comes with a collection of commonly used UI elements.')
+    @_main_page_demo('Common UI Elements', '''
+        NiceGUI comes with a collection of commonly used UI elements.
+    ''')
     def common_elements_demo():
         from nicegui.events import ValueChangeEventArguments
 
@@ -35,8 +40,9 @@ def create_intro() -> None:
             ui.select(['One', 'Two'], value='One', on_change=show)
         ui.link('And many more...', '/documentation').classes('mt-8')
 
-    @main_page_demo('Value Binding',
-                    'Binding values between UI elements and data models is built into NiceGUI.')
+    @_main_page_demo('Value Binding', '''
+        Binding values between UI elements and data models is built into NiceGUI.
+    ''')
     def binding_demo():
         class Demo:
             def __init__(self):
@@ -48,3 +54,11 @@ def create_intro() -> None:
             ui.slider(min=1, max=3).bind_value(demo, 'number')
             ui.toggle({1: 'A', 2: 'B', 3: 'C'}).bind_value(demo, 'number')
             ui.number().bind_value(demo, 'number')
+
+
+def _main_page_demo(title: str, explanation: str) -> Callable:
+    def decorator(f: Callable) -> Callable:
+        subheading(title, make_menu_entry=False)
+        ui.markdown(explanation).classes('bold-links arrow-links')
+        return demo(f)
+    return decorator

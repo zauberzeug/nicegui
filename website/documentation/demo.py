@@ -12,14 +12,14 @@ from .windows import browser_window, python_window
 UNCOMMENT_PATTERN = re.compile(r'^(\s*)# ?')
 
 
-def uncomment(text: str) -> str:
-    """non-executed lines should be shown in the code examples"""
-    return UNCOMMENT_PATTERN.sub(r'\1', text)
+def _uncomment(text: str) -> str:
+    return UNCOMMENT_PATTERN.sub(r'\1', text)  # NOTE: non-executed lines should be shown in the code examples
 
 
 def demo(f: Callable) -> Callable:
+    """Render a callable as a demo with Python code and browser window."""
     with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
-        code = inspect.getsource(f).split('# END OF DEMO')[0].strip().splitlines()
+        code = inspect.getsource(f).split('# END OF DEMO', 1)[0].strip().splitlines()
         code = [line for line in code if not line.endswith("# HIDE")]
         while not code[0].strip().startswith('def') and not code[0].strip().startswith('async def'):
             del code[0]
@@ -30,17 +30,17 @@ def demo(f: Callable) -> Callable:
             del code[0]
         indentation = len(code[0]) - len(code[0].lstrip())
         code = [line[indentation:] for line in code]
-        code = ['from nicegui import ui'] + [uncomment(line) for line in code]
+        code = ['from nicegui import ui'] + [_uncomment(line) for line in code]
         code = ['' if line == '#' else line for line in code]
         if not code[-1].startswith('ui.run('):
             code.append('')
             code.append('ui.run()')
-        code = isort.code('\n'.join(code), no_sections=True, lines_after_imports=1)
+        full_code = isort.code('\n'.join(code), no_sections=True, lines_after_imports=1)
         with python_window(classes='w-full max-w-[44rem]'):
             def copy_code():
-                ui.run_javascript('navigator.clipboard.writeText(`' + code + '`)')
+                ui.run_javascript('navigator.clipboard.writeText(`' + full_code + '`)')
                 ui.notify('Copied to clipboard', type='positive', color='primary')
-            ui.markdown(f'````python\n{code}\n````')
+            ui.markdown(f'````python\n{full_code}\n````')
             ui.icon('content_copy', size='xs') \
                 .classes('absolute right-2 top-10 opacity-10 hover:opacity-80 cursor-pointer') \
                 .on('click', copy_code, [])

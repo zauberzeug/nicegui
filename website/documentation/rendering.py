@@ -1,10 +1,10 @@
 from nicegui import ui
 
 from ..header import add_head_html, add_header
-from ..style import section_heading
+from ..style import section_heading, subheading
 from .demo import demo
 from .model import Documentation, UiElementDocumentation
-from .tools import generate_class_doc
+from .reference import generate_class_doc
 
 
 def render_page(documentation: Documentation, *, is_main: bool = False) -> None:
@@ -24,9 +24,6 @@ def render_page(documentation: Documentation, *, is_main: bool = False) -> None:
                 .style('height: calc(100% + 20px) !important') as menu:
             ui.markdown(f'[← back]({documentation.back_link})').classes('bold-links')
             ui.markdown(f'**{documentation.title.replace("*", "")}**').classes('mt-4')
-            for part in documentation:
-                if part.title and part.link_target:
-                    ui.link(part.title, f'#{part.link_target}')
 
     # content
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
@@ -39,11 +36,8 @@ def render_page(documentation: Documentation, *, is_main: bool = False) -> None:
             if part.title:
                 if part.link_target:
                     ui.link_target(part.link_target)
-                if part.link and part.link != documentation.route:
-                    with ui.link(target=part.link):
-                        ui.markdown(f'### {part.title}')
-                else:
-                    ui.markdown(f'### {part.title}')
+                link = part.link if part.link != documentation.route else None
+                subheading(part.title, make_menu_entry=not is_main, link=link)
             if part.description:
                 ui.markdown(part.description)
             if part.ui:
