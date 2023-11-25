@@ -1,4 +1,4 @@
-from . import content, registry
+from . import content, registry, search
 from .intro import create_intro
 from .rendering import render_page
 from .search import build_search_index
@@ -13,4 +13,5 @@ __all__ = [
     'python_window',
     'registry',
     'render_page',
+    'search',
 ]

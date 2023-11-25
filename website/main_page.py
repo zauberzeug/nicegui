@@ -1,6 +1,7 @@
 from nicegui import context, ui
 
 from . import documentation, example_card, svg
+from .examples import examples
 from .header import add_head_html, add_header
 from .style import example_link, features, heading, link_target, section_heading, subtitle, title
 
@@ -155,49 +156,8 @@ def create() -> None:
         link_target('examples', '-50px')
         section_heading('In-depth examples', 'Pick your *solution*')
         with ui.row().classes('w-full text-lg leading-tight grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'):
-            example_link('Slideshow', 'implements a keyboard-controlled image slideshow')
-            example_link('Authentication', 'shows how to use sessions to build a login screen')
-            example_link('Modularization',
-                         'provides an example of how to modularize your application into multiple files and reuse code')
-            example_link('FastAPI', 'illustrates the integration of NiceGUI with an existing FastAPI application')
-            example_link('Map',
-                         'demonstrates wrapping the JavaScript library [leaflet](https://leafletjs.com/) '
-                         'to display a map at specific locations')
-            example_link('AI Interface',
-                         'utilizes the [replicate](https://replicate.com) library to perform voice-to-text '
-                         'transcription and generate images from prompts with Stable Diffusion')
-            example_link('3D Scene', 'creates a webGL view and loads an STL mesh illuminated with a spotlight')
-            example_link('Custom Vue Component', 'shows how to write and integrate a custom Vue component')
-            example_link('Image Mask Overlay', 'shows how to overlay an image with a mask')
-            example_link('Infinite Scroll', 'presents an infinitely scrolling image gallery')
-            example_link('OpenCV Webcam', 'uses OpenCV to capture images from a webcam')
-            example_link('SVG Clock', 'displays an analog clock by updating an SVG with `ui.timer`')
-            example_link('Progress', 'demonstrates a progress bar for heavy computations')
-            example_link('NGINX Subpath', 'shows the setup to serve an app behind a reverse proxy subpath')
-            example_link('Script Executor', 'executes scripts on selection and displays the output')
-            example_link('Local File Picker', 'demonstrates a dialog for selecting files locally on the server')
-            example_link('Search as you type', 'using public API of thecocktaildb.com to search for cocktails')
-            example_link('Menu and Tabs', 'uses Quasar to create foldable menu and tabs inside a header bar')
-            example_link('Todo list', 'shows a simple todo list with checkboxes and text input')
-            example_link('Trello Cards', 'shows Trello-like cards that can be dragged and dropped into columns')
-            example_link('Slots', 'shows how to use scoped slots to customize Quasar elements')
-            example_link('Table and slots', 'shows how to use component slots in a table')
-            example_link('Single Page App', 'navigate without reloading the page')
-            example_link('Chat App', 'a simple chat app')
-            example_link('Chat with AI', 'a simple chat app with AI')
-            example_link('SQLite Database', 'CRUD operations on a SQLite database with async-support through Tortoise ORM')
-            example_link('Pandas DataFrame', 'displays an editable [pandas](https://pandas.pydata.org) DataFrame')
-            example_link('Lightbox', 'A thumbnail gallery where each image can be clicked to enlarge')
-            example_link('ROS2', 'Using NiceGUI as web interface for a ROS2 robot')
-            example_link('Docker Image',
-                         'Demonstrate using the official '
-                         '[zauberzeug/nicegui](https://hub.docker.com/r/zauberzeug/nicegui) docker image')
-            example_link('Download Text as File', 'providing in-memory data like strings as file download')
-            example_link('Generate PDF', 'create SVG preview and PDF download from input form elements')
-            example_link('Custom Binding', 'create a custom binding for a label with a bindable background color')
-            example_link('Descope Auth', 'login form and user profile using [Descope](https://descope.com)')
-            example_link('Editable table', 'editable table allowing to add, edit, delete rows')
-            example_link('Editable AG Grid', 'editable AG Grid allowing to add, edit, delete rows')
+            for example in examples:
+                example_link(example)
 
     with ui.row().classes('dark-box min-h-screen mt-16'):
         link_target('why')

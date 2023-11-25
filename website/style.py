@@ -1,8 +1,9 @@
 import re
-from pathlib import Path
 from typing import List, Optional
 
 from nicegui import context, ui
+
+from .examples import Example
 
 SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 
@@ -36,17 +37,13 @@ def subtitle(content: str) -> ui.markdown:
     return ui.markdown(content).classes('text-xl sm:text-2xl md:text-3xl leading-7')
 
 
-def example_link(title_: str, description: str) -> None:
+def example_link(example: Example) -> None:
     """Render a link to an example."""
-    name = title_.lower().replace(' ', '_')
-    directory = Path(__file__).parent.parent / 'examples' / name
-    content = [p for p in directory.glob('*') if p.name != '__pycache__' and not p.name.startswith('.')]
-    filename = 'main.py' if len(content) == 1 else ''
-    with ui.link(target=f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/{filename}') \
+    with ui.link(target=example.url) \
             .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
             .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
-        ui.label(title_).classes(replace='font-bold')
-        ui.markdown(description).classes(replace='bold-links arrow-links')
+        ui.label(example.title).classes(replace='font-bold')
+        ui.markdown(example.description).classes(replace='bold-links arrow-links')
 
 
 def features(icon: str, title_: str, items: List[str]) -> None:
