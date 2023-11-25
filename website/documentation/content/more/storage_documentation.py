@@ -5,7 +5,7 @@ from nicegui import ui
 
 from ...model import DetailDocumentation
 
-counter: Counter[str] = Counter()
+counter = Counter()  # type: ignore
 start = datetime.now().strftime(r'%H:%M, %d %B %Y')
 
 
