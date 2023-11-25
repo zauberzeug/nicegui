@@ -2,6 +2,7 @@ from nicegui import ui
 
 from ..header import add_head_html, add_header
 from ..style import section_heading
+from .demo import demo
 from .model import Documentation, UiElementDocumentation
 from .tools import generate_class_doc
 
@@ -45,8 +46,10 @@ def render_page(documentation: Documentation, *, is_main: bool = False) -> None:
                     ui.markdown(f'### {part.title}')
             if part.description:
                 ui.markdown(part.description)
-            if part.function:
-                part.function()
+            if part.ui:
+                part.ui()
+            if part.demo:
+                demo(part.demo)
 
         # reference
         if isinstance(documentation, UiElementDocumentation) and isinstance(documentation.element, type) and menu:

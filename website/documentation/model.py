@@ -17,7 +17,8 @@ class DocumentationPart:
     title: Optional[str] = None
     description: Optional[str] = None
     link: Optional[str] = None
-    function: Optional[Callable] = None
+    ui: Optional[Callable] = None
+    demo: Optional[Callable] = None
 
     @property
     def link_target(self) -> Optional[str]:
@@ -74,13 +75,13 @@ class Documentation(abc.ABC):
         html = apply_tailwind(docutils.core.publish_parts(description, writer_name='html5_polyglot')['html_body'])
 
         def decorator(function: Callable) -> Callable:
-            self._content.append(DocumentationPart(title=title, description=html, function=function))
+            self._content.append(DocumentationPart(title=title, description=html, demo=function))
             return function
         return decorator
 
     def ui(self, function: Callable) -> Callable:
         """Add arbitrary UI to the documentation."""
-        self._content.append(DocumentationPart(function=function))
+        self._content.append(DocumentationPart(ui=function))
         return function
 
     def intro(self, documentation: Documentation) -> None:
@@ -140,8 +141,5 @@ class UiElementDocumentation(Documentation):
         """Add more demos for the element here."""
 
     def content(self) -> None:
-        @self.demo(self.element)
-        def demo():
-            self.main_demo()
-
+        self.demo(self.element)(self.main_demo)  # pylint: disable=not-callable
         self.more()
