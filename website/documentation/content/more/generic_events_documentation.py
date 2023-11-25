@@ -38,27 +38,27 @@ class GenericEventsDocumentation(DetailDocumentation, title='Generic Events', na
 
         @self.demo('Specifying event attributes', '''
             **A list of strings** names the attributes of the JavaScript event object:
-                ```py
-                ui.button().on('click', handle_click, ['clientX', 'clientY'])
-                ```
+            ```py
+            ui.button().on('click', handle_click, ['clientX', 'clientY'])
+            ```
 
             **An empty list** requests _no_ attributes:
-                ```py
-                ui.button().on('click', handle_click, [])
-                ```
+            ```py
+            ui.button().on('click', handle_click, [])
+            ```
 
             **The value `None`** represents _all_ attributes (the default):
-                ```py
-                ui.button().on('click', handle_click, None)
-                ```
+            ```py
+            ui.button().on('click', handle_click, None)
+            ```
 
             **If the event is called with multiple arguments** like QTable's "row-click" `(evt, row, index) => void`,
-                you can define a list of argument definitions:
-                ```py
-                ui.table(...).on('rowClick', handle_click, [[], ['name'], None])
-                ```
-                In this example the "row-click" event will omit all arguments of the first `evt` argument,
-                send only the "name" attribute of the `row` argument and send the full `index`.
+            you can define a list of argument definitions:
+            ```py
+            ui.table(...).on('rowClick', handle_click, [[], ['name'], None])
+            ```
+            In this example the "row-click" event will omit all arguments of the first `evt` argument,
+            send only the "name" attribute of the `row` argument and send the full `index`.
 
             If the retrieved list of event arguments has length 1, the argument is automatically unpacked.
             So you can write
