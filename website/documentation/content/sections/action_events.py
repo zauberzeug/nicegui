@@ -9,7 +9,7 @@ from ..more.storage_documentation import StorageDocumentation
 from ..more.timer_documentation import TimerDocumentation
 
 
-class ActionEventsDocumentation(SectionDocumentation, title='Action & *Events*', name='action_events'):
+class ActionEventsDocumentation(SectionDocumentation, title='Action & *Events*', name_='action_events'):
 
     def content(self) -> None:
         self.intro(TimerDocumentation())

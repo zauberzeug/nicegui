@@ -103,9 +103,9 @@ class SectionDocumentation(Documentation):
     _title: str
     _route: str
 
-    def __init_subclass__(cls, title: str, name: str) -> None:
+    def __init_subclass__(cls, title: str, name_: str) -> None:
         cls._title = title
-        cls._route = f'/documentation/section_{name}'
+        cls._route = f'/documentation/section_{name_}'
         return super().__init_subclass__()
 
     def __init__(self) -> None:
@@ -116,9 +116,9 @@ class DetailDocumentation(Documentation):
     _title: str
     _route: str
 
-    def __init_subclass__(cls, title: str, name: str) -> None:
+    def __init_subclass__(cls, title: str, name_: str) -> None:
         cls._title = title
-        cls._route = f'/documentation/{name}'
+        cls._route = f'/documentation/{name_}'
         return super().__init_subclass__()
 
     def __init__(self) -> None:

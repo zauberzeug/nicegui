@@ -3,7 +3,7 @@ from nicegui import ui
 from ...model import DetailDocumentation
 
 
-class RunDocumentation(DetailDocumentation, title='ui.*run*', name='run'):
+class RunDocumentation(DetailDocumentation, title='ui.*run*', name_='run'):
 
     def content(self) -> None:
         @self.demo(ui.run)  # TODO: tab = 'My App'

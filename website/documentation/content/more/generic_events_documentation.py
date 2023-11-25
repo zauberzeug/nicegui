@@ -3,7 +3,7 @@ from nicegui import context, ui
 from ...model import DetailDocumentation
 
 
-class GenericEventsDocumentation(DetailDocumentation, title='Generic Events', name='generic_events'):
+class GenericEventsDocumentation(DetailDocumentation, title='Generic Events', name_='generic_events'):
 
     def content(self) -> None:
         @self.demo('Generic Events', '''

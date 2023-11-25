@@ -20,7 +20,7 @@ from ..more.tabs_documentation import TabsDocumentation
 from ..more.timeline_documentation import TimelineDocumentation
 
 
-class PageLayoutDocumentation(SectionDocumentation, title='Page *Layout*', name='page_layout'):
+class PageLayoutDocumentation(SectionDocumentation, title='Page *Layout*', name_='page_layout'):
 
     def content(self) -> None:
         @self.demo('Auto-context', '''

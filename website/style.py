@@ -73,8 +73,9 @@ def subheading(text: str, *, link: Optional[str] = None) -> None:
             ui.label(text).classes('text-2xl')
         with ui.link(target=f'#{name}').classes('absolute').style('transform: translateX(-150%)'):
             ui.icon('link', size='sm').classes('opacity-10 hover:opacity-80')
-    menu = [element for element in context.get_client().elements.values() if isinstance(element, ui.left_drawer)][0]
-    if menu:
+    drawers = [element for element in context.get_client().elements.values() if isinstance(element, ui.left_drawer)]
+    if drawers:
+        menu = drawers[0]
         with menu:
             async def click():
                 if await ui.run_javascript('!!document.querySelector("div.q-drawer__backdrop")', timeout=5.0):

@@ -5,7 +5,7 @@ from ...windows import bash_window, python_window
 from ..more.run_documentation import RunDocumentation
 
 
-class ConfigurationDeploymentDocumentation(SectionDocumentation, title='Configuration & Deployment', name='configuration_deployment'):
+class ConfigurationDeploymentDocumentation(SectionDocumentation, title='Configuration & Deployment', name_='configuration_deployment'):
 
     def content(self) -> None:
         @self.demo('URLs', '''

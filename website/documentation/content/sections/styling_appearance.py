@@ -7,7 +7,7 @@ from ..more.dark_mode_documentation import DarkModeDocumentation
 from ..more.query_documentation import QueryDocumentation
 
 
-class StylingAppearanceDocumentation(SectionDocumentation, title='Styling & Appearance', name='styling_appearance'):
+class StylingAppearanceDocumentation(SectionDocumentation, title='Styling & Appearance', name_='styling_appearance'):
 
     def content(self) -> None:
         @self.demo('Styling', '''

@@ -19,7 +19,7 @@ from ..more.toggle_documentation import ToggleDocumentation
 from ..more.upload_documentation import UploadDocumentation
 
 
-class ControlsDocumentation(SectionDocumentation, title='*Controls*', name='controls'):
+class ControlsDocumentation(SectionDocumentation, title='*Controls*', name_='controls'):
 
     def content(self) -> None:
         self.intro(ButtonDocumentation())

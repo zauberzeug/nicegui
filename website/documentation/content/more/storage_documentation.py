@@ -9,7 +9,7 @@ counter: Counter[str] = Counter()
 start = datetime.now().strftime(r'%H:%M, %d %B %Y')
 
 
-class StorageDocumentation(DetailDocumentation, title='Storage', name='storage'):
+class StorageDocumentation(DetailDocumentation, title='Storage', name_='storage'):
 
     def content(self) -> None:
         @self.demo('Storage', '''

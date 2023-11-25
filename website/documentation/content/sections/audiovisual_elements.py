@@ -9,7 +9,7 @@ from ..more.interactive_image_documentation import InteractiveImageDocumentation
 from ..more.video_documentation import VideoDocumentation
 
 
-class AudiovisualElementsDocumentation(SectionDocumentation, title='*Audiovisual* Elements', name='audiovisual_elements'):
+class AudiovisualElementsDocumentation(SectionDocumentation, title='*Audiovisual* Elements', name_='audiovisual_elements'):
 
     def content(self) -> None:
         self.intro(ImageDocumentation())

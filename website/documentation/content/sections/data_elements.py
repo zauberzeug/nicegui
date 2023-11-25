@@ -19,7 +19,7 @@ from ..more.table_documentation import TableDocumentation
 from ..more.tree_documentation import TreeDocumentation
 
 
-class DataElementsDocumentation(SectionDocumentation, title='*Data* elements', name='data_elements'):
+class DataElementsDocumentation(SectionDocumentation, title='*Data* elements', name_='data_elements'):
 
     def content(self) -> None:
         self.intro(TableDocumentation())

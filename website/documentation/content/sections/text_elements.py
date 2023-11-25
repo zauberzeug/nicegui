@@ -8,7 +8,7 @@ from ..more.markdown_documentation import MarkdownDocumentation
 from ..more.mermaid_documentation import MermaidDocumentation
 
 
-class TextElementsDocumentation(SectionDocumentation, title='*Text* Elements', name='text_elements'):
+class TextElementsDocumentation(SectionDocumentation, title='*Text* Elements', name_='text_elements'):
 
     def content(self) -> None:
         self.intro(LabelDocumentation())

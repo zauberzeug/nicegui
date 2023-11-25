@@ -5,7 +5,7 @@ from ...model import SectionDocumentation
 date = '2023-01-01'
 
 
-class BindingPropertiesDocumentation(SectionDocumentation, title='*Binding* properties', name='binding_properties'):
+class BindingPropertiesDocumentation(SectionDocumentation, title='*Binding* properties', name_='binding_properties'):
 
     def content(self) -> None:
         @self.demo('Bindings', '''

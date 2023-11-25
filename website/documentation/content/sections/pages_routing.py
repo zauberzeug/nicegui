@@ -10,7 +10,7 @@ from ..more.page_documentation import PageDocumentation
 CONSTANT_UUID = str(uuid.uuid4())
 
 
-class PagesRoutingDocumentation(SectionDocumentation, title='Pages & Routing', name='pages_routing'):
+class PagesRoutingDocumentation(SectionDocumentation, title='Pages & Routing', name_='pages_routing'):
 
     def content(self) -> None:
         self.intro(PageDocumentation())
