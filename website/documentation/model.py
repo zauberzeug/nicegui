@@ -7,6 +7,7 @@ from typing import Callable, Iterator, List, Literal, Optional, Union, overload
 from nicegui.dataclasses import KWONLY_SLOTS
 from nicegui.elements.markdown import remove_indentation
 
+from ..style import create_anchor_name
 from . import registry
 
 
@@ -22,7 +23,7 @@ class DocumentationPart:
     @property
     def link_target(self) -> Optional[str]:
         """Return the link target for in-page navigation."""
-        return self.title.lower().replace(' ', '_') if self.title else None
+        return create_anchor_name(self.title) if self.title else None
 
 
 class Documentation(abc.ABC):

@@ -40,7 +40,7 @@ def render_page(documentation: Documentation, *, is_main: bool = False) -> None:
                 if part.link_target:
                     ui.link_target(part.link_target)
                 link = part.link if part.link != documentation.route else None
-                subheading(part.title, make_menu_entry=not is_main, link=link)
+                subheading(part.title, link=link)
             if part.description:
                 if part.description_format == 'rst':
                     description = part.description.replace('param ', '')
