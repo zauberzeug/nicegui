@@ -51,7 +51,7 @@ class ConfigurationDeploymentDocumentation(SectionDocumentation, title='Configur
 
         # Show a helpful workaround until issue is fixed upstream.
         # For more info see: https://github.com/r0x0r/pywebview/issues/1078
-        ui.markdown('''
+        self.text('', '''
             If webview has trouble finding required libraries, you may get an error relating to "WebView2Loader.dll".
             To work around this issue, try moving the DLL file up a directory, e.g.:
             
