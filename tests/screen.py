@@ -1,8 +1,9 @@
 import os
+import re
 import threading
 import time
 from contextlib import contextmanager
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import pytest
 from selenium import webdriver
@@ -194,14 +195,18 @@ class Screen:
         print(f'Storing screenshot to {filename}')
         self.selenium.get_screenshot_as_file(filename)
 
-    def assert_py_logger(self, level: str, message: str) -> None:
-        """Assert that the Python logger has received a message with the given level and text."""
+    def assert_py_logger(self, level: str, message: Union[str, re.Pattern]) -> None:
+        """Assert that the Python logger has received a message with the given level and text or regex pattern."""
         try:
             assert self.caplog.records, 'Expected a log message'
             record = self.caplog.records[0]
             print(record.levelname, record.message)
             assert record.levelname.strip() == level, f'Expected "{level}" but got "{record.levelname}"'
-            assert record.message.strip() == message, f'Expected "{message}" but got "{record.message}"'
+
+            if isinstance(message, re.Pattern):
+                assert message.search(record.message), f'Expected "{message}" matching regex but got "{record.message}"'
+            else:
+                assert record.message.strip() == message, f'Expected "{message}" but got "{record.message}"'
         finally:
             self.caplog.records.clear()
 
