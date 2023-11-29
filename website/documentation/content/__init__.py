@@ -1,6 +1,7 @@
-from .overview import Overview
+from .doc.page import DocumentationPage
+from .doc import registry
 
-
-def generate() -> None:
-    """Generate documentation content."""
-    Overview()
+__all__ = [
+    'DocumentationPage',
+    'registry',
+]

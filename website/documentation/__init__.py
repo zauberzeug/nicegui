@@ -1,4 +1,4 @@
-from . import content, registry, search
+from .content import overview, registry
 from .intro import create_intro
 from .rendering import render_page
 from .search import build_search_index
@@ -8,10 +8,9 @@ __all__ = [
     'bash_window',
     'browser_window',
     'build_search_index',
-    'content',
     'create_intro',
+    'overview',  # ensure documentation tree is built
     'python_window',
     'registry',
     'render_page',
-    'search',
 ]

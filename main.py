@@ -23,7 +23,6 @@ app.add_static_files('/static', str(Path(__file__).parent / 'website' / 'static'
 app.add_static_file(local_file=svg.PATH / 'logo.png', url_path='/logo.png')
 app.add_static_file(local_file=svg.PATH / 'logo_square.png', url_path='/logo_square.png')
 
-documentation.content.generate()
 documentation.build_search_index()
 
 
@@ -39,12 +38,12 @@ def _main_page() -> None:
 
 @ui.page('/documentation')
 def _documentation_page() -> None:
-    documentation.render_page(documentation.registry.get(''), is_main=True)
+    documentation.render_page(documentation.registry['overview'], is_main=True)
 
 
 @ui.page('/documentation/{name}')
 def _documentation_detail_page(name: str) -> None:
-    documentation.render_page(documentation.registry.get(name))
+    documentation.render_page(documentation.registry[name])
 
 
 @app.get('/status')

@@ -5,12 +5,12 @@ from nicegui.elements.markdown import apply_tailwind
 
 from ..header import add_head_html, add_header
 from ..style import section_heading, subheading
+from .content import DocumentationPage
 from .demo import demo
-from .model import Documentation, UiElementDocumentation
 from .reference import generate_class_doc
 
 
-def render_page(documentation: Documentation, *, is_main: bool = False) -> None:
+def render_page(documentation: DocumentationPage, *, is_main: bool = False) -> None:
     """Render the documentation."""
 
     # header
@@ -19,28 +19,25 @@ def render_page(documentation: Documentation, *, is_main: bool = False) -> None:
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
 
     # menu
-    if is_main:
-        menu = None
-    else:
+    if not is_main:
         with ui.left_drawer() \
                 .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
-                .style('height: calc(100% + 20px) !important') as menu:
+                .style('height: calc(100% + 20px) !important'):
             ui.markdown(f'[← back]({documentation.back_link})').classes('bold-links')
-            ui.markdown(f'**{documentation.title.replace("*", "")}**').classes('mt-4')
+            ui.markdown(f'**{documentation.heading.replace("*", "")}**').classes('mt-4')
 
     # content
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
 
         # heading
-        section_heading(documentation.subtitle, documentation.title)
+        section_heading(documentation.subtitle or '', documentation.heading)
 
         # parts
-        for part in documentation:
+        for part in documentation.parts:
             if part.title:
                 if part.link_target:
                     ui.link_target(part.link_target)
-                link = part.link if part.link != documentation.route else None
-                subheading(part.title, link=link)
+                subheading(part.title, link=part.link)
             if part.description:
                 if part.description_format == 'rst':
                     description = part.description.replace('param ', '')
@@ -53,10 +50,5 @@ def render_page(documentation: Documentation, *, is_main: bool = False) -> None:
                 part.ui()
             if part.demo:
                 demo(part.demo)
-
-        # reference
-        if isinstance(documentation, UiElementDocumentation) and isinstance(documentation.element, type) and menu:
-            with menu:
-                ui.markdown('**Reference**').classes('mt-4')
-            ui.markdown('## Reference').classes('mt-16')
-            generate_class_doc(documentation.element)
+            if part.reference:
+                generate_class_doc(part.reference)
