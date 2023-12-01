@@ -62,15 +62,16 @@ def side_menu() -> ui.left_drawer:
         .style('height: calc(100% + 20px) !important')
 
 
-def subheading(text: str, *, link: Optional[str] = None) -> None:
+def subheading(text: str, *, link: Optional[str] = None, major: bool = False) -> None:
     """Render a subheading with an anchor that can be linked to with a hash."""
     name = create_anchor_name(text)
     ui.html(f'<div id="{name}"></div>').style('position: relative; top: -90px')
     with ui.row().classes('gap-2 items-center relative'):
+        classes = 'text-3xl' if major else 'text-2xl'
         if link:
-            ui.link(text, link).classes('text-2xl')
+            ui.link(text, link).classes(classes)
         else:
-            ui.label(text).classes('text-2xl')
+            ui.label(text).classes(classes)
         with ui.link(target=f'#{name}').classes('absolute').style('transform: translateX(-150%)'):
             ui.icon('link', size='sm').classes('opacity-10 hover:opacity-80')
     drawers = [element for element in context.get_client().elements.values() if isinstance(element, ui.left_drawer)]
@@ -81,7 +82,8 @@ def subheading(text: str, *, link: Optional[str] = None) -> None:
                 if await ui.run_javascript('!!document.querySelector("div.q-drawer__backdrop")', timeout=5.0):
                     menu.hide()
                     ui.open(f'#{name}')
-            ui.link(text, target=f'#{name}').props('data-close-overlay').on('click', click, [])
+            ui.link(text, target=f'#{name}').props('data-close-overlay').on('click', click, []) \
+                .classes('font-bold mt-4' if major else '')
 
 
 def create_anchor_name(text: str) -> str:

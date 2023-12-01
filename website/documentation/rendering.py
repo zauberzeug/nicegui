@@ -40,7 +40,7 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
             if part.title:
                 if part.link_target:
                     ui.link_target(part.link_target)
-                subheading(part.title, link=part.link)
+                subheading(part.title, link=part.link, major=part.reference is not None)
             if part.description:
                 if part.description_format == 'rst':
                     description = part.description.replace('param ', '')
