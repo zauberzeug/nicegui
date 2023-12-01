@@ -23,7 +23,10 @@ def render_page(documentation: DocumentationPage, *, is_main: bool = False) -> N
         with ui.left_drawer() \
                 .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
                 .style('height: calc(100% + 20px) !important'):
-            ui.markdown(f'[← back]({documentation.back_link})').classes('bold-links')
+            if documentation.back_link:
+                ui.markdown(f'[← back]({documentation.back_link or "."})').classes('bold-links')
+            else:
+                ui.markdown('[← Overview](/documentation)').classes('bold-links')
             ui.markdown(f'**{documentation.heading.replace("*", "")}**').classes('mt-4')
 
     # content
