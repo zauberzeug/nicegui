@@ -23,7 +23,7 @@ def build_search_index() -> None:
         {
             'title': f'{documentation.heading.replace("*", "")}: {part.title}',
             'content': part.description or '',
-            'url': f'{documentation.name}#{part.link_target}',
+            'url': f'/documentation/{documentation.name}#{part.link_target}',
         }
         for documentation in registry.values()
         for part in documentation.parts
