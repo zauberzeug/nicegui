@@ -17,7 +17,7 @@ def demo() -> None:
     This works in Chrome, Firefox and Safari.
 ''', tab=lambda: ui.markdown('🚀&nbsp; NiceGUI'))
 def emoji_favicon():
-    ui.label('NiceGUI Rocks!')
+    ui.label('NiceGUI rocks!')
 
     # ui.run(favicon='🚀')
 

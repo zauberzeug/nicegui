@@ -5,7 +5,7 @@ from . import doc
 
 @doc.demo(ui.markdown)
 def main_demo() -> None:
-    ui.markdown('''This is **Markdown**.''')
+    ui.markdown('This is **Markdown**.')
 
 
 @doc.demo('Markdown with indentation', '''
