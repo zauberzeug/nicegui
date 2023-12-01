@@ -1,6 +1,6 @@
 import inspect
 import re
-from typing import Callable
+from typing import Callable, Optional, Union
 
 import isort
 
@@ -16,7 +16,7 @@ def _uncomment(text: str) -> str:
     return UNCOMMENT_PATTERN.sub(r'\1', text)  # NOTE: non-executed lines should be shown in the code examples
 
 
-def demo(f: Callable, *, lazy: bool = True) -> Callable:
+def demo(f: Callable, *, lazy: bool = True, tab: Optional[Union[str, Callable]] = None) -> Callable:
     """Render a callable as a demo with Python code and browser window."""
     with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
         code = inspect.getsource(f).split('# END OF DEMO', 1)[0].strip().splitlines()
@@ -44,7 +44,7 @@ def demo(f: Callable, *, lazy: bool = True) -> Callable:
             ui.icon('content_copy', size='xs') \
                 .classes('absolute right-2 top-10 opacity-10 hover:opacity-80 cursor-pointer') \
                 .on('click', copy_code, [])
-        with browser_window(title=getattr(f, 'tab', None),
+        with browser_window(title=tab,
                             classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window') as window:
             if lazy:
                 spinner = ui.spinner(size='lg').props('thickness=2')

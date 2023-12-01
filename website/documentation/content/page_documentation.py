@@ -66,7 +66,7 @@ def wait_for_connected_demo():
     the router is simply imported and included in the main app.
     See our [modularization example](https://github.com/zauberzeug/nicegui/blob/main/examples/modularization/example_c.py)
     for a multi-file app structure.
-''')  # TODO: tab='/sub-path'
+''', tab='/sub-path')
 def api_router_demo():
     # from nicegui import APIRouter, app
     #

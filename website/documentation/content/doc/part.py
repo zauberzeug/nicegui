@@ -1,6 +1,6 @@
 
 from dataclasses import dataclass
-from typing import Callable, Literal, Optional
+from typing import Callable, Literal, Optional, Union
 
 from nicegui.dataclasses import KWONLY_SLOTS
 
@@ -11,6 +11,7 @@ from ....style import create_anchor_name
 class Demo:
     function: Callable
     lazy: bool = True
+    tab: Optional[Union[str, Callable]] = None
 
 
 @dataclass(**KWONLY_SLOTS)

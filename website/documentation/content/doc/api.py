@@ -88,7 +88,7 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
             title=title_,
             description=description,
             description_format='md' if is_markdown else 'rst',
-            demo=Demo(function=function, lazy=kwargs.get('lazy', True)),
+            demo=Demo(function=function, lazy=kwargs.get('lazy', True), tab=kwargs.get('tab')),
         ))
         return function
     return decorator

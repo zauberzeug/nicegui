@@ -49,6 +49,6 @@ def render_page(documentation: DocumentationPage, *, is_main: bool = False) -> N
             if part.ui:
                 part.ui()
             if part.demo:
-                demo(part.demo.function, lazy=part.demo.lazy)
+                demo(part.demo.function, lazy=part.demo.lazy, tab=part.demo.tab)
             if part.reference:
                 generate_class_doc(part.reference)
