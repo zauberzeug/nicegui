@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing import Any
 
 import inspect
 import sys
@@ -7,7 +6,7 @@ import types
 from copy import deepcopy
 from pathlib import Path
 from types import ModuleType
-from typing import Callable, Dict, Optional, Union, overload
+from typing import Any, Callable, Dict, Optional, Union, overload
 
 from nicegui import app as nicegui_app
 from nicegui import ui as nicegui_ui
@@ -21,7 +20,7 @@ registry: Dict[str, DocumentationPage] = {}
 
 def get_page(documentation: ModuleType) -> DocumentationPage:
     """Return the documentation page for the given documentation module."""
-    target_name = documentation.__name__.split('.')[-1].removesuffix('_documentation')
+    target_name = _removesuffix(documentation.__name__.split('.')[-1], '_documentation')
     assert target_name in registry, f'Documentation page {target_name} does not exist'
     return registry[target_name]
 
@@ -30,7 +29,7 @@ def _get_current_page() -> DocumentationPage:
     frame = sys._getframe(2)  # pylint: disable=protected-access
     module = inspect.getmodule(frame)
     assert module is not None and module.__file__ is not None
-    name = Path(module.__file__).stem.removesuffix('_documentation')
+    name = _removesuffix(Path(module.__file__).stem, '_documentation')
     if name not in registry:
         registry[name] = DocumentationPage(name=name)
     return registry[name]
@@ -134,3 +133,10 @@ def _find_attribute(obj: Any, name: str) -> Optional[str]:
         if attr.lower().replace('_', '') == name.lower().replace('_', ''):
             return attr
     return None
+
+
+def _removesuffix(string: str, suffix: str) -> str:
+    # NOTE: Remove this once we drop Python 3.8 support
+    if string.endswith(suffix):
+        return string[:-len(suffix)]
+    return string
