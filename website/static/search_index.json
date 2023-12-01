@@ -67,7 +67,7 @@
   {
     "title": "Example: NGINX Subpath",
     "content": "shows the setup to serve an app behind a reverse proxy subpath",
-    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/nginx_subpath/main.py"
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/nginx_subpath/"
   },
   {
     "title": "Example: Script Executor",
@@ -175,204 +175,9 @@
     "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/editable_table/main.py"
   },
   {
-    "title": "Example: Editable table using AG Grid",
-    "content": "editable table allowing to add, edit, delete rows, using AG Grid",
-    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/editable_table_aggrid/main.py"
-  },
-  {
-    "title": "Basic Elements",
-    "content": "This is **Markdown**.",
-    "url": "/documentation/#basic_elements"
-  },
-  {
-    "title": "SVG",
-    "content": "You can add Scalable Vector Graphics using the ui.html element.",
-    "url": "/documentation/#svg"
-  },
-  {
-    "title": "Markdown and HTML",
-    "content": "Overview",
-    "url": "/documentation/#markdown_and_html"
-  },
-  {
-    "title": "Captions and Overlays",
-    "content": "By nesting elements inside a ui.image you can create augmentations.  Use Quasar classes for positioning and styling captions. To overlay an SVG, make the viewBox exactly the size of the image and provide 100% width/height to match the actual rendered size.",
-    "url": "/documentation/#captions_and_overlays"
-  },
-  {
-    "title": "Images, Audio and Video",
-    "content": "Overview",
-    "url": "/documentation/#images,_audio_and_video"
-  },
-  {
-    "title": "Data Elements",
-    "content": "Overview",
-    "url": "/documentation/#data_elements"
-  },
-  {
-    "title": "Clear Containers",
-    "content": "To remove all elements from a row, column or card container, use can call ``py container.clear() `  Alternatively, you can remove individual elements by calling  - container.remove(element: Element), - container.remove(index: int), or - element.delete()`.",
-    "url": "/documentation/#clear_containers"
-  },
-  {
-    "title": "Tooltips",
-    "content": "Simply call the tooltip(text:str) method on UI elements to provide a tooltip.  For more artistic control you can nest tooltip elements and apply props, classes and styles.",
-    "url": "/documentation/#tooltips"
-  },
-  {
-    "title": "Layout",
-    "content": "Overview",
-    "url": "/documentation/#layout"
-  },
-  {
-    "title": "Styling",
-    "content": "NiceGUI uses the Quasar Framework version 1.0 and hence has its full design power. Each NiceGUI element provides a props method whose content is passed to the Quasar component: Have a look at the Quasar documentation for all styling props. Props with a leading : can contain JavaScript expressions that are evaluated on the client. You can also apply Tailwind CSS utility classes with the classes method.  If you really need to apply CSS, you can use the style method. Here the delimiter is ; instead of a blank space.  All three functions also provide remove and replace parameters in case the predefined look is not wanted in a particular styling.",
-    "url": "/documentation/#styling"
-  },
-  {
-    "title": "Appearance",
-    "content": "Overview",
-    "url": "/documentation/#appearance"
-  },
-  {
-    "title": "Tailwind CSS",
-    "content": "Tailwind CSS is a CSS framework for rapidly building custom user interfaces. NiceGUI provides a fluent, auto-complete friendly interface for adding Tailwind classes to UI elements.  You can discover available classes by navigating the methods of the tailwind property. The builder pattern allows you to chain multiple classes together (as shown with \"Label A\"). You can also call the tailwind property with a list of classes (as shown with \"Label B\").  Although this is very similar to using the classes method, it is more convenient for Tailwind classes due to auto-completion.  Last but not least, you can also predefine a style and apply it to multiple elements (labels C and D).  Note that sometimes Tailwind is overruled by Quasar styles, e.g. when using ui.button('Button').tailwind('bg-red-500'). This is a known limitation and not fully in our control. But we try to provide solutions like the color parameter: ui.button('Button', color='red-500').",
-    "url": "/documentation/#tailwind_css"
-  },
-  {
-    "title": "Try styling NiceGUI elements!",
-    "content": "Try out how Tailwind CSS classes, Quasar props, and CSS styles affect NiceGUI elements. py from nicegui import ui  element = select_element.options[select_element.value]('element') element.classes(' ') element.props(' ') element.style(' ') py ui.run()",
-    "url": "/documentation/#try_styling_nicegui_elements!"
-  },
-  {
-    "title": "UI Updates",
-    "content": "NiceGUI tries to automatically synchronize the state of UI elements with the client, e.g. when a label text, an input value or style/classes/props of an element have changed. In other cases, you can explicitly call element.update() or ui.update(*elements) to update. The demo code shows both methods for a ui.echart, where it is difficult to automatically detect changes in the options dictionary.",
-    "url": "/documentation/#ui_updates"
-  },
-  {
-    "title": "Async event handlers",
-    "content": "Most elements also support asynchronous event handlers.  Note: You can also pass a functools.partial into the on_click property to wrap async functions with parameters.",
-    "url": "/documentation/#async_event_handlers"
-  },
-  {
-    "title": "Running CPU-bound tasks",
-    "content": "NiceGUI provides a cpu_bound function for running CPU-bound tasks in a separate process. This is useful for long-running computations that would otherwise block the event loop and make the UI unresponsive. The function returns a future that can be awaited.",
-    "url": "/documentation/#running_cpu-bound_tasks"
-  },
-  {
-    "title": "Running I/O-bound tasks",
-    "content": "NiceGUI provides an io_bound function for running I/O-bound tasks in a separate thread. This is useful for long-running I/O operations that would otherwise block the event loop and make the UI unresponsive. The function returns a future that can be awaited.",
-    "url": "/documentation/#running_i/o-bound_tasks"
-  },
-  {
-    "title": "Action",
-    "content": "Overview",
-    "url": "/documentation/#action"
-  },
-  {
-    "title": "Auto-index page",
-    "content": "Pages created with the @ui.page decorator are \"private\". Their content is re-created for each client. Thus, in the demo to the right, the displayed ID on the private page changes when the browser reloads the page.  UI elements that are not wrapped in a decorated page function are placed on an automatically generated index page at route \"/\". This auto-index page is created once on startup and *shared* across all clients that might connect. Thus, each connected client will see the *same* elements. In the demo to the right, the displayed ID on the auto-index page remains constant when the browser reloads the page.",
-    "url": "/documentation/#auto-index_page"
-  },
-  {
-    "title": "Page Layout",
-    "content": "With ui.header, ui.footer, ui.left_drawer and ui.right_drawer you can add additional layout elements to a page. The fixed argument controls whether the element should scroll or stay fixed on the screen. The top_corner and bottom_corner arguments indicate whether a drawer should expand to the top or bottom of the page. See <https://quasar.dev/layout/header-and-footer> and <https://quasar.dev/layout/drawer> for more information about possible props. With ui.page_sticky you can place an element \"sticky\" on the screen. See <https://quasar.dev/layout/page-sticky> for more information.",
-    "url": "/documentation/#page_layout"
-  },
-  {
-    "title": "Parameter injection",
-    "content": "Thanks to FastAPI, a page function accepts optional parameters to provide path parameters, query parameters or the whole incoming request for accessing the body payload, headers, cookies and more.",
-    "url": "/documentation/#parameter_injection"
-  },
-  {
-    "title": "Pages",
-    "content": "Overview",
-    "url": "/documentation/#pages"
-  },
-  {
-    "title": "Routes",
-    "content": "Overview",
-    "url": "/documentation/#routes"
-  },
-  {
-    "title": "Static files",
-    "content": "Add a directory of static files.  add_static_files() makes a local directory available at the specified endpoint, e.g. '/static'. This is useful for providing local data like images to the frontend. Otherwise the browser would not be able to access the files. Do only put non-security-critical files in there, as they are accessible to everyone.  To make a single file accessible, you can use add_static_file(). For media files which should be streamed, you can use add_media_files() or add_media_file() instead.  :param url_path: string that starts with a slash \"/\" and identifies the path at which the files should be served :param local_directory: local folder with files to serve as static content",
-    "url": "/documentation/#static_files"
-  },
-  {
-    "title": "API Responses",
-    "content": "NiceGUI is based on FastAPI. This means you can use all of FastAPI's features. For example, you can implement a RESTful API in addition to your graphical user interface. You simply import the app object from nicegui. Or you can run NiceGUI on top of your own FastAPI app by using ui.run_with(app) instead of starting a server automatically with ui.run().  You can also return any other FastAPI response object inside a page function. For example, you can return a RedirectResponse to redirect the user to another page if certain conditions are met. This is used in our authentication demo.",
-    "url": "/documentation/#api_responses"
-  },
-  {
-    "title": "Media files",
-    "content": "Add directory of media files.  add_media_files() allows a local files to be streamed from a specified endpoint, e.g. '/media'. This should be used for media files to support proper streaming. Otherwise the browser would not be able to access and load the the files incrementally or jump to different positions in the stream. Do only put non-security-critical files in there, as they are accessible to everyone.  To make a single file accessible via streaming, you can use add_media_file(). For small static files, you can use add_static_files() or add_static_file() instead.  :param url_path: string that starts with a slash \"/\" and identifies the path at which the files should be served :param local_directory: local folder with files to serve as media content",
-    "url": "/documentation/#media_files"
-  },
-  {
-    "title": "Events",
-    "content": "You can register coroutines or functions to be called for the following events:  - app.on_startup: called when NiceGUI is started or restarted - app.on_shutdown: called when NiceGUI is shut down or restarted - app.on_connect: called for each client which connects (optional argument: nicegui.Client) - app.on_disconnect: called for each client which disconnects (optional argument: nicegui.Client) - app.on_exception: called when an exception occurs (optional argument: exception)  When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.",
-    "url": "/documentation/#events"
-  },
-  {
-    "title": "Lifecycle",
-    "content": "Overview",
-    "url": "/documentation/#lifecycle"
-  },
-  {
-    "title": "URLs",
-    "content": "You can access the list of all URLs on which the NiceGUI app is available via app.urls. The URLs are not available in app.on_startup because the server is not yet running. Instead, you can access them in a page function or register a callback with app.urls.on_change.",
-    "url": "/documentation/#urls"
-  },
-  {
-    "title": "Shutdown",
-    "content": "Shut down NiceGUI.  This will programmatically stop the server. Only possible when auto-reload is disabled.",
-    "url": "/documentation/#shutdown"
-  },
-  {
-    "title": "Auto-context",
-    "content": "In order to allow writing intuitive UI descriptions, NiceGUI automatically tracks the context in which elements are created. This means that there is no explicit parent parameter. Instead the parent context is defined using a with statement. It is also passed to event handlers and timers.  In the demo, the label \"Card content\" is added to the card. And because the ui.button is also added to the card, the label \"Click!\" will also be created in this context. The label \"Tick!\", which is added once after one second, is also added to the card.  This design decision allows for easily creating modular components that keep working after moving them around in the UI. For example, you can move label and button somewhere else, maybe wrap them in another container, and the code will still work.",
-    "url": "/documentation/#auto-context"
-  },
-  {
-    "title": "NiceGUI Fundamentals",
-    "content": "Overview",
-    "url": "/documentation/#nicegui_fundamentals"
-  },
-  {
-    "title": "Native Mode",
-    "content": "You can enable native mode for NiceGUI by specifying native=True in the ui.run function. To customize the initial window size and display mode, use the window_size and fullscreen parameters respectively. Additionally, you can provide extra keyword arguments via app.native.window_args and app.native.start_args. Pick any parameter as it is defined by the internally used pywebview module for the webview.create_window and webview.start functions. Note that these keyword arguments will take precedence over the parameters defined in ui.run.  In native mode the app.native.main_window object allows you to access the underlying window. It is an async version of Window from pywebview.",
-    "url": "/documentation/#native_mode"
-  },
-  {
-    "title": "Environment Variables",
-    "content": "You can set the following environment variables to configure NiceGUI:  - MATPLOTLIB (default: true) can be set to false to avoid the potentially costly import of Matplotlib. This will make ui.pyplot and ui.line_plot unavailable. - NICEGUI_STORAGE_PATH (default: local \".nicegui\") can be set to change the location of the storage files. - MARKDOWN_CONTENT_CACHE_SIZE (default: 1000): The maximum number of Markdown content snippets that are cached in memory.",
-    "url": "/documentation/#environment_variables"
-  },
-  {
-    "title": "Configuration",
-    "content": "If webview has trouble finding required libraries, you may get an error relating to \"WebView2Loader.dll\". To work around this issue, try moving the DLL file up a directory, e.g.:  * from .venv/Lib/site-packages/webview/lib/x64/WebView2Loader.dll * to .venv/Lib/site-packages/webview/lib/WebView2Loader.dll",
-    "url": "/documentation/#configuration"
-  },
-  {
-    "title": "Deployment",
-    "content": "Overview",
-    "url": "/documentation/#deployment"
-  },
-  {
-    "title": "Server Hosting",
-    "content": "To deploy your NiceGUI app on a server, you will need to execute your main.py (or whichever file contains your ui.run(...)) on your cloud infrastructure. You can, for example, just install the NiceGUI python package via pip and use systemd or similar service to start the main script. In most cases, you will set the port to 80 (or 443 if you want to use HTTPS) with the ui.run command to make it easily accessible from the outside.  A convenient alternative is the use of our pre-built multi-arch Docker image which contains all necessary dependencies. With this command you can launch the script main.py in the current directory on the public port 80: bash docker run -it --restart always \\ -p 80:8080 \\ -e PUID=$(id -u) \\ -e PGID=$(id -g) \\ -v $(pwd)/:/app/ \\ zauberzeug/nicegui:latest The demo assumes main.py uses the port 8080 in the ui.run command (which is the default). The -d tells docker to run in background and --restart always makes sure the container is restarted if the app crashes or the server reboots. Of course this can also be written in a Docker compose file: yaml app: image: zauberzeug/nicegui:latest restart: always ports: - 80:8080 environment: - PUID=1000 # change this to your user id - PGID=1000 # change this to your group id volumes: - ./:/app/ There are other handy features in the Docker image like non-root user execution and signal pass-through. For more details we recommend to have a look at our Docker example. You can provide SSL certificates directly using FastAPI. In production we also like using reverse proxies like Traefik or NGINX to handle these details for us. See our development docker-compose.yml as an example.  You may also have a look at our demo for using a custom FastAPI app. This will allow you to do very flexible deployments as described in the FastAPI documentation. Note that there are additional steps required to allow multiple workers.",
-    "url": "/documentation/#server_hosting"
-  },
-  {
-    "title": "Package for Installation",
-    "content": "NiceGUI apps can also be bundled into an executable with PyInstaller. This allows you to distribute your app as a single file that can be executed on any computer.  Just take care your ui.run command does not use the reload argument. Running the build.py below will create an executable myapp in the dist folder: python from nicegui import native_mode, ui  ui.label('Hello from PyInstaller')  ui.run(reload=False, port=native_mode.find_open_port()) python import os import subprocess from pathlib import Path import nicegui  cmd = [ 'python', '-m', 'PyInstaller', 'main.py', # your main file with ui.run() '--name', 'myapp', # name of your app '--onefile', #'--windowed', # prevent console appearing, only use with ui.run(native=True, ...) '--add-data', f'Path(nicegui.__file__).parentos.pathsepnicegui' ] subprocess.call(cmd) **Packaging Tips**  - When building a PyInstaller app, your main script can use a native window (rather than a browser window) by using ui.run(reload=False, native=True). The native parameter can be True or False depending on whether you want a native window or to launch a page in the user's browser - either will work in the PyInstaller generated app.  - Specifying --windowed to PyInstaller will prevent a terminal console from appearing. However you should only use this option if you have also specified native=True in your ui.run command. Without a terminal console the user won't be able to exit the app by pressing Ctrl-C. With the native=True option, the app will automatically close when the window is closed, as expected.  - Specifying --windowed to PyInstaller will create an .app file on Mac which may be more convenient to distribute. When you double-click the app to run it, it will not show any console output. You can also run the app from the command line with ./myapp.app/Contents/MacOS/myapp to see the console output.  - Specifying --onefile to PyInstaller will create a single executable file. Whilst convenient for distribution, it will be slower to start up. This is not NiceGUI's fault but just the way Pyinstaller zips things into a single file, then unzips everything into a temporary directory before running. You can mitigate this by removing --onefile from the PyInstaller command, and zip up the generated dist directory yourself, distribute it, and your end users can unzip once and be good to go, without the constant expansion of files due to the --onefile flag.  - Summary of user experience for different options:  | PyInstaller              | ui.run(...)  | Explanation | | :---                     | :---           | :---        | | onefile                | native=False | Single executable generated in dist/, runs in browser | | onefile                | native=True  | Single executable generated in dist/, runs in popup window | | onefile and windowed | native=True  | Single executable generated in dist/ (on Mac a proper dist/myapp.app generated incl. icon), runs in popup window, no console appears | | onefile and windowed | native=False | Avoid (no way to exit the app) | | Specify neither          |                | A dist/myapp directory created which can be zipped manually and distributed; run with dist/myapp/myapp |  - If you are using a Python virtual environment, ensure you pip install pyinstaller within your virtual environment so that the correct PyInstaller is used, or you may get broken apps due to the wrong version of PyInstaller being picked up. That is why the build script invokes PyInstaller using python -m PyInstaller rather than just pyinstaller. bash python -m venv venv source venv/bin/activate pip install nicegui pip install pyinstaller **Note:** If you're getting an error \"TypeError: a bytes-like object is required, not 'str'\", try adding the following lines to the top of your main.py file: py import sys sys.stdout = open('logs.txt', 'w')  See <https://github.com/zauberzeug/nicegui/issues/681> for more information.",
-    "url": "/documentation/#package_for_installation"
-  },
-  {
-    "title": "NiceGUI On Air",
-    "content": "By using ui.run(on_air=True) you can share your local app with others over the internet \ud83e\uddde.  When accessing the on-air URL, all libraries (like Vue, Quasar, ...) are loaded from our CDN. Thereby only the raw content and events need to be transmitted by your local app. This makes it blazing fast even if your app only has a poor internet connection (e.g. a mobile robot in the field).  By setting on_air=True you will get a random URL which is valid for 1 hour. If you sign-up at <https://on-air.nicegui.io> you get a token which could be used to identify your device: ui.run(on_air='<your token>'). This will give you a fixed URL and the possibility to protect remote access with a passphrase.  Currently On Air is available as a tech preview and can be used free of charge (for now). We will gradually improve stability, introduce payment options and extend the service with multi-device management, remote terminal access and more. Please let us know your feedback on GitHub, Reddit, or Discord.  **Data Privacy:** We take your privacy very serious. NiceGUI On Air does not log or store any content of the relayed data.",
-    "url": "/documentation/#nicegui_on_air"
+    "title": "Example: Editable AG Grid",
+    "content": "editable AG Grid allowing to add, edit, delete rows",
+    "url": "https://github.com/zauberzeug/nicegui/tree/main/examples/editable_ag_grid/main.py"
   },
   {
     "title": "Icon",
@@ -501,7 +306,7 @@
   },
   {
     "title": "AG Grid",
-    "content": "An element to create a grid using AG Grid <https://www.ag-grid.com/>_.  The methods call_api_method and call_column_api_method can be used to interact with the AG Grid instance on the client.  :param options: dictionary of AG Grid options :param html_columns: list of columns that should be rendered as HTML (default: []) :param theme: AG Grid theme (default: 'balham') :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: True) update call_api_method Call an AG Grid API method.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>_ for a list of methods.  If the function is awaited, the result of the method call is returned. Otherwise, the method is executed without waiting for a response.  :param name: name of the method :param args: arguments to pass to the method  :return: AwaitableResponse that can be awaited to get the result of the method call call_column_api_method Call an AG Grid Column API method.  See AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>_ for a list of methods.  If the function is awaited, the result of the method call is returned. Otherwise, the method is executed without waiting for a response.  :param name: name of the method :param args: arguments to pass to the method  :return: AwaitableResponse that can be awaited to get the result of the method call get_selected_rows Get the currently selected rows.  This method is especially useful when the grid is configured with `rowSelection: 'multiple'.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows>_ for more information.  :return: list of selected row data get_selected_row Get the single currently selected row.  This method is especially useful when the grid is configured with rowSelection: 'single'.  :return: row data of the first selection if any row is selected, otherwise None get_client_data Get the data from the client including any edits made by the client.  This method is especially useful when the grid is configured with 'editable': True.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/accessing-data/>_ for more information.  Note that when editing a cell, the row data is not updated until the cell exits the edit mode. This does not happen when the cell loses focus, unless stopEditingWhenCellsLoseFocus: True is set.  :return: list of row data load_client_data Obtain client data and update the element's row data with it.  This syncs edits made by the client in editable cells to the server.  Note that when editing a cell, the row data is not updated until the cell exits the edit mode. This does not happen when the cell loses focus, unless stopEditingWhenCellsLoseFocus: True` is set.",
+    "content": "An element to create a grid using AG Grid <https://www.ag-grid.com/>_.  The methods call_api_method and call_column_api_method can be used to interact with the AG Grid instance on the client.  :param options: dictionary of AG Grid options :param html_columns: list of columns that should be rendered as HTML (default: []) :param theme: AG Grid theme (default: 'balham') :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: True) update call_api_method Call an AG Grid API method.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>_ for a list of methods.  If the function is awaited, the result of the method call is returned. Otherwise, the method is executed without waiting for a response.  :param name: name of the method :param args: arguments to pass to the method :param timeout: timeout in seconds (default: 1 second) :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)  :return: AwaitableResponse that can be awaited to get the result of the method call call_column_api_method Call an AG Grid Column API method.  See AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>_ for a list of methods.  If the function is awaited, the result of the method call is returned. Otherwise, the method is executed without waiting for a response.  :param name: name of the method :param args: arguments to pass to the method :param timeout: timeout in seconds (default: 1 second) :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)  :return: AwaitableResponse that can be awaited to get the result of the method call get_selected_rows Get the currently selected rows.  This method is especially useful when the grid is configured with `rowSelection: 'multiple'.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows>_ for more information.  :return: list of selected row data get_selected_row Get the single currently selected row.  This method is especially useful when the grid is configured with rowSelection: 'single'.  :return: row data of the first selection if any row is selected, otherwise None get_client_data Get the data from the client including any edits made by the client.  This method is especially useful when the grid is configured with 'editable': True.  See AG Grid API <https://www.ag-grid.com/javascript-data-grid/accessing-data/>_ for more information.  Note that when editing a cell, the row data is not updated until the cell exits the edit mode. This does not happen when the cell loses focus, unless stopEditingWhenCellsLoseFocus: True is set.  :param timeout: timeout in seconds (default: 1 second) :param check_interval: interval in seconds to check for a response (default: 0.01 seconds) :return: list of row data load_client_data Obtain client data and update the element's row data with it.  This syncs edits made by the client in editable cells to the server.  Note that when editing a cell, the row data is not updated until the cell exits the edit mode. This does not happen when the cell loses focus, unless stopEditingWhenCellsLoseFocus: True` is set.",
     "url": "/documentation/aggrid"
   },
   {
@@ -520,8 +325,8 @@
     "url": "/documentation/aggrid#ag_grid_with_conditional_cell_formatting"
   },
   {
-    "title": "Aggrid: Create Grid from Pandas Dataframe",
-    "content": "You can create an AG Grid from a Pandas Dataframe using the from_pandas method. This method takes a Pandas Dataframe as input and returns an AG Grid.",
+    "title": "Aggrid: Create Grid from Pandas DataFrame",
+    "content": "You can create an AG Grid from a Pandas DataFrame using the from_pandas method. This method takes a Pandas DataFrame as input and returns an AG Grid.",
     "url": "/documentation/aggrid#create_grid_from_pandas_dataframe"
   },
   {
@@ -721,13 +526,18 @@
   },
   {
     "title": "Interactive Image",
-    "content": "Create an image with an SVG overlay that handles mouse events and yields image coordinates. It is also the best choice for non-flickering image updates. If the source URL changes faster than images can be loaded by the browser, some images are simply skipped. Thereby repeatedly updating the image source will automatically adapt to the available bandwidth. See OpenCV Webcam <https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam/main.py>_ for an example.  :param source: the source of the image; can be an URL, local file path or a base64 string :param content: SVG content which should be overlaid; viewport has the same dimensions as the image :param on_mouse: callback for mouse events (yields type, image_x and image_y) :param events: list of JavaScript events to subscribe to (default: ['click']) :param cross: whether to show crosshairs (default: False)",
+    "content": "Create an image with an SVG overlay that handles mouse events and yields image coordinates. It is also the best choice for non-flickering image updates. If the source URL changes faster than images can be loaded by the browser, some images are simply skipped. Thereby repeatedly updating the image source will automatically adapt to the available bandwidth. See OpenCV Webcam <https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam/main.py>_ for an example.  :param source: the source of the image; can be an URL, local file path or a base64 string :param content: SVG content which should be overlaid; viewport has the same dimensions as the image :param on_mouse: callback for mouse events (yields type, image_x and image_y) :param events: list of JavaScript events to subscribe to (default: ['click']) :param cross: whether to show crosshairs (default: False) force_reload Force the image to reload from the source.",
     "url": "/documentation/interactive_image"
   },
   {
     "title": "Interactive Image: Nesting elements",
     "content": "You can nest elements inside an interactive image. Use Tailwind classes like \"absolute top-0 left-0\" to position the label absolutely with respect to the image. Of course this can be done with plain CSS as well.",
     "url": "/documentation/interactive_image#nesting_elements"
+  },
+  {
+    "title": "Interactive Image: Force reload",
+    "content": "You can force an image to reload by calling the force_reload method. It will append a timestamp to the image URL, which will make the browser reload the image.",
+    "url": "/documentation/interactive_image#force_reload"
   },
   {
     "title": "Expansion Element",
@@ -781,7 +591,7 @@
   },
   {
     "title": "Table",
-    "content": "A table based on Quasar's QTable <https://quasar.dev/vue-components/table>_ component.  :param columns: list of column objects :param rows: list of row objects :param row_key: name of the column containing unique data identifying the row (default: \"id\") :param title: title of the table :param selection: selection type (\"single\" or \"multiple\"; default: None) :param pagination: A dictionary correlating to a pagination object or number of rows per page (None hides the pagination, 0 means \"infinite\"; default: None). :param on_select: callback which is invoked when the selection changes  If selection is 'single' or 'multiple', then a selected property is accessible containing the selected rows. set_fullscreen Set fullscreen mode.toggle_fullscreen Toggle fullscreen mode.add_rows Add rows to the table.remove_rows Remove rows from the table.",
+    "content": "A table based on Quasar's QTable <https://quasar.dev/vue-components/table>_ component.  :param columns: list of column objects :param rows: list of row objects :param row_key: name of the column containing unique data identifying the row (default: \"id\") :param title: title of the table :param selection: selection type (\"single\" or \"multiple\"; default: None) :param pagination: a dictionary correlating to a pagination object or number of rows per page (None hides the pagination, 0 means \"infinite\"; default: None). :param on_select: callback which is invoked when the selection changes  If selection is 'single' or 'multiple', then a selected property is accessible containing the selected rows. set_fullscreen Set fullscreen mode.toggle_fullscreen Toggle fullscreen mode.add_rows Add rows to the table.remove_rows Remove rows from the table.",
     "url": "/documentation/table"
   },
   {
@@ -800,8 +610,8 @@
     "url": "/documentation/table#table_with_drop_down_selection"
   },
   {
-    "title": "Table: Table from pandas dataframe",
-    "content": "You can create a table from a pandas dataframe using the from_pandas method. This method takes a Pandas Dataframe as input and returns a table.",
+    "title": "Table: Table from Pandas DataFrame",
+    "content": "You can create a table from a Pandas DataFrame using the from_pandas method. This method takes a Pandas DataFrame as input and returns a table.",
     "url": "/documentation/table#table_from_pandas_dataframe"
   },
   {
@@ -956,7 +766,7 @@
   },
   {
     "title": "Generic Element",
-    "content": "This class is the base class for all other UI elements. But you can use it to create elements with arbitrary HTML tags.  :param tag: HTML tag of the element :param _client: client for this element (for internal use only) add_slot Add a slot to the element.  :param name: name of the slot :param template: Vue template of the slot :return: the slot classes Apply, remove, or replace HTML classes.  This allows modifying the look of the element or its layout using Tailwind <https://tailwindcss.com/>_ or Quasar <https://quasar.dev/>_ classes.  Removing or replacing classes can be helpful if predefined classes are not desired.  :param add: whitespace-delimited string of classes :param remove: whitespace-delimited string of classes to remove from the element :param replace: whitespace-delimited string of classes to use instead of existing ones style Apply, remove, or replace CSS definitions.  Removing or replacing styles can be helpful if the predefined style is not desired.  :param add: semicolon-separated list of styles to add to the element :param remove: semicolon-separated list of styles to remove from the element :param replace: semicolon-separated list of styles to use instead of existing ones props Add or remove props.  This allows modifying the look of the element or its layout using Quasar <https://quasar.dev/>_ props. Since props are simply applied as HTML attributes, they can be used with any HTML element.  Boolean properties are assumed `True if no value is specified.  :param add: whitespace-delimited list of either boolean values or key=value pair to add :param remove: whitespace-delimited list of property keys to remove tooltip Add a tooltip to the element.  :param text: text of the tooltip on Subscribe to an event.  :param type: name of the event (e.g. \"click\", \"mousedown\", or \"update:model-value\") :param handler: callback that is called upon occurrence of the event :param args: arguments included in the event message sent to the event handler (default: None meaning all) :param throttle: minimum time (in seconds) between event occurrences (default: 0.0) :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: True) :param trailing_events: whether to trigger the event handler after the last event occurrence (default: True`) update Update the element on the client side.run_method Run a method on the client side.  If the function is awaited, the result of the method call is returned. Otherwise, the method is executed without waiting for a response.  :param name: name of the method :param args: arguments to pass to the method clear Remove all child elements.move Move the element to another container.  :param target_container: container to move the element to (default: the parent container) :param target_index: index within the target slot (default: append to the end) remove Remove a child element.  :param element: either the element instance or its ID delete Delete the element.",
+    "content": "This class is the base class for all other UI elements. But you can use it to create elements with arbitrary HTML tags.  :param tag: HTML tag of the element :param _client: client for this element (for internal use only) add_slot Add a slot to the element.  :param name: name of the slot :param template: Vue template of the slot :return: the slot classes Apply, remove, or replace HTML classes.  This allows modifying the look of the element or its layout using Tailwind <https://tailwindcss.com/>_ or Quasar <https://quasar.dev/>_ classes.  Removing or replacing classes can be helpful if predefined classes are not desired.  :param add: whitespace-delimited string of classes :param remove: whitespace-delimited string of classes to remove from the element :param replace: whitespace-delimited string of classes to use instead of existing ones style Apply, remove, or replace CSS definitions.  Removing or replacing styles can be helpful if the predefined style is not desired.  :param add: semicolon-separated list of styles to add to the element :param remove: semicolon-separated list of styles to remove from the element :param replace: semicolon-separated list of styles to use instead of existing ones props Add or remove props.  This allows modifying the look of the element or its layout using Quasar <https://quasar.dev/>_ props. Since props are simply applied as HTML attributes, they can be used with any HTML element.  Boolean properties are assumed `True if no value is specified.  :param add: whitespace-delimited list of either boolean values or key=value pair to add :param remove: whitespace-delimited list of property keys to remove tooltip Add a tooltip to the element.  :param text: text of the tooltip on Subscribe to an event.  :param type: name of the event (e.g. \"click\", \"mousedown\", or \"update:model-value\") :param handler: callback that is called upon occurrence of the event :param args: arguments included in the event message sent to the event handler (default: None meaning all) :param throttle: minimum time (in seconds) between event occurrences (default: 0.0) :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: True) :param trailing_events: whether to trigger the event handler after the last event occurrence (default: True`) update Update the element on the client side.run_method Run a method on the client side.  If the function is awaited, the result of the method call is returned. Otherwise, the method is executed without waiting for a response.  :param name: name of the method :param args: arguments to pass to the method :param timeout: maximum time to wait for a response (default: 1 second) :param check_interval: time between checks for a response (default: 0.01 seconds) clear Remove all child elements.move Move the element to another container.  :param target_container: container to move the element to (default: the parent container) :param target_index: index within the target slot (default: append to the end) remove Remove a child element.  :param element: either the element instance or its ID delete Delete the element.",
     "url": "/documentation/element"
   },
   {
@@ -1001,7 +811,7 @@
   },
   {
     "title": "Image",
-    "content": "Displays an image. This element is based on Quasar's QImg <https://quasar.dev/vue-components/img>_ component.  :param source: the source of the image; can be a URL, local file path or a base64 string",
+    "content": "Displays an image. This element is based on Quasar's QImg <https://quasar.dev/vue-components/img>_ component.  :param source: the source of the image; can be a URL, local file path or a base64 string force_reload Force the image to reload from the source.",
     "url": "/documentation/image"
   },
   {
@@ -1025,13 +835,18 @@
     "url": "/documentation/image#image_link"
   },
   {
+    "title": "Image: Force reload",
+    "content": "You can force an image to reload by calling the force_reload method. It will append a timestamp to the image URL, which will make the browser reload the image.",
+    "url": "/documentation/image#force_reload"
+  },
+  {
     "title": "Color Theming",
     "content": "Sets the main colors (primary, secondary, accent, ...) used by Quasar <https://quasar.dev/>_.",
     "url": "/documentation/colors"
   },
   {
     "title": "Number Input",
-    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed name for the number input :param placeholder: text to show if no value is entered :param value: the initial value of the field :param min: the minimum value allowed :param max: the maximum value allowed :param step: the step size for the stepper buttons :param prefix: a prefix to prepend to the displayed value :param suffix: a suffix to append to the displayed value :param format: a string like \"%.2f\" to format the displayed value :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. `'Too large!': lambda value: value < 3` sanitize Sanitize the current value to be within the allowed limits.",
+    "content": "This element is based on Quasar's QInput <https://quasar.dev/vue-components/input>_ component.  You can use the validation parameter to define a dictionary of validation rules. The key of the first rule that fails will be displayed as an error message.  :param label: displayed name for the number input :param placeholder: text to show if no value is entered :param value: the initial value of the field :param min: the minimum value allowed :param max: the maximum value allowed :param precision: the number of decimal places allowed (default: no limit, negative: decimal places before the dot) :param step: the step size for the stepper buttons :param prefix: a prefix to prepend to the displayed value :param suffix: a suffix to append to the displayed value :param format: a string like \"%.2f\" to format the displayed value :param on_change: callback to execute when the value changes :param validation: dictionary of validation rules, e.g. `'Too large!': lambda value: value < 3` sanitize Sanitize the current value to be within the allowed limits.",
     "url": "/documentation/number"
   },
   {
@@ -1040,8 +855,13 @@
     "url": "/documentation/number#clearable"
   },
   {
+    "title": "Number: Number of decimal places",
+    "content": "You can specify the number of decimal places using the precision parameter. A negative value means decimal places before the dot. The rounding takes place when the input loses focus, when sanitization parameters like min, max or precision change, or when sanitize() is called manually.",
+    "url": "/documentation/number#number_of_decimal_places"
+  },
+  {
     "title": "Dropdown Selection",
-    "content": "This element is based on Quasar's QSelect <https://quasar.dev/vue-components/select>_ component.  The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call update() to update the options in the UI.  If with_input is True, an input field is shown to filter the options.  If new_value_mode is not None, it implies with_input=True and the user can enter new values in the input field. See Quasar's documentation <https://quasar.dev/vue-components/select#the-new-value-mode-prop>_ for details.  :param options: a list ['value1', ...] or dictionary 'value1':'label1', ... specifying the options :param label: the label to display above the selection :param value: the initial value :param on_change: callback to execute when selection changes :param with_input: whether to show an input field to filter the options :param new_value_mode: handle new values from user input (default: None, i.e. no new values) :param multiple: whether to allow multiple selections :param clearable: whether to add a button to clear the selection",
+    "content": "This element is based on Quasar's QSelect <https://quasar.dev/vue-components/select>_ component.  The options can be specified as a list of values, or as a dictionary mapping values to labels. After manipulating the options, call update() to update the options in the UI.  If with_input is True, an input field is shown to filter the options.  If new_value_mode is not None, it implies with_input=True and the user can enter new values in the input field. See Quasar's documentation <https://quasar.dev/vue-components/select#the-new-value-mode-prop>_ for details. Note that this mode is ineffective when setting the value property programmatically.  :param options: a list ['value1', ...] or dictionary 'value1':'label1', ... specifying the options :param label: the label to display above the selection :param value: the initial value :param on_change: callback to execute when selection changes :param with_input: whether to show an input field to filter the options :param new_value_mode: handle new values from user input (default: None, i.e. no new values) :param multiple: whether to allow multiple selections :param clearable: whether to add a button to clear the selection",
     "url": "/documentation/select"
   },
   {
@@ -1260,6 +1080,11 @@
     "url": "/documentation/chat_message#multi-part_messages"
   },
   {
+    "title": "Chat Message: Chat message with child elements",
+    "content": "You can add child elements to a chat message.",
+    "url": "/documentation/chat_message#chat_message_with_child_elements"
+  },
+  {
     "title": "Knob",
     "content": "This element is based on Quasar's QKnob <https://quasar.dev/vue-components/knob>_ component. The element is used to take a number input from the user through mouse/touch panning.  :param value: the initial value (default: 0.0) :param min: the minimum value (default: 0.0) :param max: the maximum value (default: 1.0) :param step: the step size (default: 0.01) :param color: knob color (either a Quasar, Tailwind, or CSS color or None, default: \"primary\") :param center_color: color name for the center part of the component, examples: primary, teal-10 :param track_color: color name for the track of the component, examples: primary, teal-10 :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem :param show_value: whether to show the value as text :param on_change: callback to execute when the value changes",
     "url": "/documentation/knob"
@@ -1325,4 +1150,3 @@
     "url": "/documentation/query#modify_default_page_padding"
   }
 ]
-
