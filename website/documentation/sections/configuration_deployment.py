@@ -234,6 +234,18 @@ def content() -> None:
         See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
     ''').classes('bold-links arrow-links')
 
+    ui.markdown('''
+        **Common pitfalls on Mac M1**
+        
+        - If new processes are spawned in an endless loop, try adding the following lines at the beginning of your execution code:
+        ```python
+            from multiprocessing import freeze_support
+            freeze_support()
+        ```
+        
+        - If processes are left behind after closing the app, try packaging the app without the --windowed argument.
+    ''')
+
     subheading('NiceGUI On Air')
 
     ui.markdown('''
