@@ -55,3 +55,5 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                 demo(part.demo.function, lazy=part.demo.lazy, tab=part.demo.tab)
             if part.reference:
                 generate_class_doc(part.reference)
+            if part.link:
+                ui.markdown(f'See [more...]({part.link})').classes('bold-links arrow-links')
