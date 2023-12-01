@@ -45,7 +45,7 @@ def run(*,
         prod_js: bool = True,
         endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none',
         storage_secret: Optional[str] = None,
-        welcome_message: Optional[str] = 'NiceGUI ready to go ',
+        welcome_message: str = 'NiceGUI ready to go ',
         **kwargs: Any,
         ) -> None:
     """ui.run

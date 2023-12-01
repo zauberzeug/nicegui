@@ -13,7 +13,7 @@ def _get_all_ips() -> List[str]:
     return ips
 
 
-async def print_message(welcome_message) -> None:
+async def print_message(welcome_message: str) -> None:
     """Print a welcome message with URLs to access the NiceGUI app."""
     print(welcome_message, end='', flush=True)
     host = os.environ['NICEGUI_HOST']
