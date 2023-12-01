@@ -38,7 +38,7 @@ def _main_page() -> None:
 
 @ui.page('/documentation')
 def _documentation_page() -> None:
-    documentation.render_page(documentation.registry['overview'], is_main=True)
+    documentation.render_page(documentation.registry[''], with_menu=False)
 
 
 @ui.page('/documentation/{name}')

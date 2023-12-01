@@ -30,6 +30,8 @@ def _get_current_page() -> DocumentationPage:
     module = inspect.getmodule(frame)
     assert module is not None and module.__file__ is not None
     name = _removesuffix(Path(module.__file__).stem, '_documentation')
+    if name == 'overview':
+        name = ''
     if name not in registry:
         registry[name] = DocumentationPage(name=name)
     return registry[name]

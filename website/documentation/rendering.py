@@ -10,7 +10,7 @@ from .demo import demo
 from .reference import generate_class_doc
 
 
-def render_page(documentation: DocumentationPage, *, is_main: bool = False) -> None:
+def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> None:
     """Render the documentation."""
 
     # header
@@ -19,7 +19,7 @@ def render_page(documentation: DocumentationPage, *, is_main: bool = False) -> N
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
 
     # menu
-    if not is_main:
+    if with_menu:
         with ui.left_drawer() \
                 .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
                 .style('height: calc(100% + 20px) !important'):
