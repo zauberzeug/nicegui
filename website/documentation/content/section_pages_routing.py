@@ -6,7 +6,7 @@ from . import doc, download_documentation, open_documentation, page_documentatio
 
 CONSTANT_UUID = str(uuid.uuid4())
 
-doc.title('Pages & Routing')
+doc.title('*Pages* & Routing')
 
 doc.intro(page_documentation)
 

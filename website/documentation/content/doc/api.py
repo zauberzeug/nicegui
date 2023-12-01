@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Any
 
 import inspect
 import sys
@@ -8,6 +9,8 @@ from pathlib import Path
 from types import ModuleType
 from typing import Callable, Dict, Optional, Union, overload
 
+from nicegui import app as nicegui_app
+from nicegui import ui as nicegui_ui
 from nicegui.elements.markdown import remove_indentation
 
 from .page import DocumentationPage
@@ -73,10 +76,12 @@ def demo(function: Callable, /,
 def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
     """Add a demo section to the current documentation page."""
     if len(args) == 2:
+        element = None
         title_, description = args
         is_markdown = True
     else:
-        doc = args[0].__init__.__doc__ if isinstance(args[0], type) else args[0].__doc__  # type: ignore
+        element = args[0]
+        doc = element.__init__.__doc__ if isinstance(element, type) else element.__doc__  # type: ignore
         title_, description = doc.split('\n', 1)
         is_markdown = False
 
@@ -84,6 +89,13 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
     page = _get_current_page()
 
     def decorator(function: Callable) -> Callable:
+        if not page.parts and element:
+            ui_name = _find_attribute(nicegui_ui, element.__name__)
+            app_name = _find_attribute(nicegui_app, element.__name__)
+            if ui_name:
+                page.title = f'ui.*{ui_name}*'
+            if app_name:
+                page.title = f'app.*{app_name}*'
         page.parts.append(DocumentationPart(
             title=title_,
             description=description,
@@ -115,3 +127,10 @@ def reference(element: type, *,
               ) -> None:
     """Add a reference section to the current documentation page."""
     _get_current_page().parts.append(DocumentationPart(title=title, reference=element))
+
+
+def _find_attribute(obj: Any, name: str) -> Optional[str]:
+    for attr in dir(obj):
+        if attr.lower().replace('_', '') == name.lower().replace('_', ''):
+            return attr
+    return None
