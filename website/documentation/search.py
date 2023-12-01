@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Dict, List
 
 from fastapi.responses import JSONResponse
 
@@ -8,7 +9,7 @@ from ..examples import examples
 from .content import registry
 
 PATH = Path(__file__).parent.parent / 'static' / 'search_index.json'
-search_index: list[dict[str, str]] = []
+search_index: List[Dict[str, str]] = []
 
 
 @app.get('/static/search_index.json')
