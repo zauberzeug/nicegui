@@ -138,6 +138,9 @@ def run(*,
     def split_args(args: str) -> List[str]:
         return [a.strip() for a in args.split(',')]
 
+    if kwargs.get('workers', 1) > 1:
+        raise ValueError('NiceGUI does not support multiple workers yet.')
+
     # NOTE: The following lines are basically a copy of `uvicorn.run`, but keep a reference to the `server`.
 
     config = CustomServerConfig(
