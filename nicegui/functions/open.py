@@ -2,6 +2,7 @@ from typing import Any, Callable, Union
 
 from .. import context
 from ..client import Client
+from ..element import Element
 from ..logging import log
 
 
