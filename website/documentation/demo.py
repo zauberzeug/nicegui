@@ -16,7 +16,7 @@ def _uncomment(text: str) -> str:
     return UNCOMMENT_PATTERN.sub(r'\1', text)  # NOTE: non-executed lines should be shown in the code examples
 
 
-def demo(f: Callable) -> Callable:
+def demo(f: Callable, *, lazy: bool = True) -> Callable:
     """Render a callable as a demo with Python code and browser window."""
     with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
         code = inspect.getsource(f).split('# END OF DEMO', 1)[0].strip().splitlines()
@@ -46,13 +46,18 @@ def demo(f: Callable) -> Callable:
                 .on('click', copy_code, [])
         with browser_window(title=getattr(f, 'tab', None),
                             classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window') as window:
-            spinner = ui.spinner(size='lg').props('thickness=2')
+            if lazy:
+                spinner = ui.spinner(size='lg').props('thickness=2')
 
-            async def handle_intersection():
-                window.remove(spinner)
-                if helpers.is_coroutine_function(f):
-                    await f()
-                else:
-                    f()
-            intersection_observer(on_intersection=handle_intersection)
+                async def handle_intersection():
+                    window.remove(spinner)
+                    if helpers.is_coroutine_function(f):
+                        await f()
+                    else:
+                        f()
+                intersection_observer(on_intersection=handle_intersection)
+            else:
+                assert not helpers.is_coroutine_function(f), 'async functions are not supported in non-lazy demos'
+                f()
+
     return f

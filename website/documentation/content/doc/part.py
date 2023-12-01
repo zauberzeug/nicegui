@@ -8,13 +8,19 @@ from ....style import create_anchor_name
 
 
 @dataclass(**KWONLY_SLOTS)
+class Demo:
+    function: Callable
+    lazy: bool = True
+
+
+@dataclass(**KWONLY_SLOTS)
 class DocumentationPart:
     title: Optional[str] = None
     description: Optional[str] = None
     description_format: Literal['md', 'rst'] = 'md'
     link: Optional[str] = None
     ui: Optional[Callable] = None
-    demo: Optional[Callable] = None
+    demo: Optional[Demo] = None
     reference: Optional[type] = None
 
     @property

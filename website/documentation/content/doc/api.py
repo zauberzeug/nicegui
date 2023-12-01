@@ -11,7 +11,7 @@ from typing import Callable, Dict, Optional, Union, overload
 from nicegui.elements.markdown import remove_indentation
 
 from .page import DocumentationPage
-from .part import DocumentationPart
+from .part import Demo, DocumentationPart
 
 registry: Dict[str, DocumentationPage] = {}
 
@@ -24,7 +24,7 @@ def get_page(documentation: ModuleType) -> DocumentationPage:
 
 
 def _get_current_page() -> DocumentationPage:
-    frame = sys._getframe(2)  # pytlint: disable=protected-access
+    frame = sys._getframe(2)  # pylint: disable=protected-access
     module = inspect.getmodule(frame)
     assert module is not None and module.__file__ is not None
     name = Path(module.__file__).stem.removesuffix('_documentation')
@@ -46,17 +46,27 @@ def text(title_: str, description: str) -> None:
 
 
 @overload
-def demo(title_: str, description: str, /, *, tab: Optional[Union[str, Callable]] = None) -> Callable[[Callable], Callable]:
+def demo(title_: str,
+         description: str, /, *,
+         tab: Optional[Union[str, Callable]] = None,
+         lazy: bool = True,
+         ) -> Callable[[Callable], Callable]:
     ...
 
 
 @overload
-def demo(element: type, /, tab: Optional[Union[str, Callable]] = None) -> Callable[[Callable], Callable]:
+def demo(element: type, /,
+         tab: Optional[Union[str, Callable]] = None,
+         lazy: bool = True,
+         ) -> Callable[[Callable], Callable]:
     ...
 
 
 @overload
-def demo(function: Callable, /, tab: Optional[Union[str, Callable]] = None) -> Callable[[Callable], Callable]:
+def demo(function: Callable, /,
+         tab: Optional[Union[str, Callable]] = None,
+         lazy: bool = True,
+         ) -> Callable[[Callable], Callable]:
     ...
 
 
@@ -78,7 +88,7 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
             title=title_,
             description=description,
             description_format='md' if is_markdown else 'rst',
-            demo=function,
+            demo=Demo(function=function, lazy=kwargs.get('lazy', True)),
         ))
         return function
     return decorator

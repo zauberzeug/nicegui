@@ -8,9 +8,6 @@ def main_demo() -> None:
     ui.image('https://picsum.photos/id/377/640/360')
 
 
-ui.add_body_html('<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>')  # TODO
-
-
 @doc.demo('Local files', '''
     You can use local images as well by passing a path to the image file.
 ''')
@@ -39,9 +36,9 @@ def pil():
 
 @doc.demo('Lottie files', '''
     You can also use [Lottie files](https://lottiefiles.com/) with animations.
-''')
+''', lazy=False)
 def lottie():
-    # ui.add_body_html('<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>')
+    ui.add_body_html('<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>')
 
     src = 'https://assets1.lottiefiles.com/datafiles/HN7OcWNnoqje6iXIiZdWzKxvLIbfeCGTmvXmEm1h/data.json'
     ui.html(f'<lottie-player src="{src}" loop autoplay />').classes('w-full')
