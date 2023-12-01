@@ -4,7 +4,7 @@ from ..element import Element
 from ..events import handle_event
 
 
-class FullCalendar(Element, component='fullcalendar.js', libraries=['lib/fullcalendar/index.global.min.js']):
+class FullCalendar(Element, component='fullcalendar.js', libraries=['lib/fullcalendar/FullCalendar.js']):
     def __init__(self, options: Dict[str, Any], on_click: Optional[Callable] = None) -> None:
         """FullCalendar
 
