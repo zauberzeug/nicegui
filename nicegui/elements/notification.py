@@ -8,7 +8,7 @@ from .timer import Timer
 class Notification(Element, component='notification.js'):
 
     def __init__(self,
-                 message: Any, *,
+                 message: Any = '', *,
                  position: Literal[
                      'top-left',
                      'top-right',
@@ -30,6 +30,8 @@ class Notification(Element, component='notification.js'):
                  ]] = None,
                  color: Optional[str] = None,
                  multi_line: bool = False,
+                 icon: Optional[str] = None,
+                 spinner: bool = False,
                  timeout: float = 5.0,
                  **kwargs: Any,
                  ) -> None:
@@ -55,8 +57,11 @@ class Notification(Element, component='notification.js'):
             'type': type,
             'color': color,
             'multiLine': multi_line,
+            'icon': icon,
+            'spinner': spinner,
             'closeBtn': close_button,
             'timeout': timeout * 1000,
+            'group': False,
         }
         self._props['options'].update(kwargs)
         with self:
@@ -64,3 +69,83 @@ class Notification(Element, component='notification.js'):
                 self.clear()
                 self.delete()
             Timer(timeout, delete, once=True)
+
+    @property
+    def message(self) -> str:
+        """Message text."""
+        return self._props['options']['message']
+
+    @message.setter
+    def message(self, value: Any) -> None:
+        self._props['options']['message'] = str(value)
+        self.update()
+
+    @property
+    def position(self) -> str:
+        """Position on the screen."""
+        return self._props['options']['position']
+
+    @position.setter
+    def position(self, value: str) -> None:
+        self._props['options']['position'] = value
+        self.update()
+
+    @property
+    def type(self) -> Optional[str]:
+        """Type of the notification."""
+        return self._props['options']['type']
+
+    @type.setter
+    def type(self, value: Optional[str]) -> None:
+        self._props['options']['type'] = value
+        self.update()
+
+    @property
+    def color(self) -> Optional[str]:
+        """Color of the notification."""
+        return self._props['options']['color']
+
+    @color.setter
+    def color(self, value: Optional[str]) -> None:
+        self._props['options']['color'] = value
+        self.update()
+
+    @property
+    def multi_line(self) -> bool:
+        """Whether the notification is multi-line."""
+        return self._props['options']['multiLine']
+
+    @multi_line.setter
+    def multi_line(self, value: bool) -> None:
+        self._props['options']['multiLine'] = value
+        self.update()
+
+    @property
+    def icon(self) -> Optional[str]:
+        """Icon of the notification."""
+        return self._props['options']['icon']
+
+    @icon.setter
+    def icon(self, value: Optional[str]) -> None:
+        self._props['options']['icon'] = value
+        self.update()
+
+    @property
+    def spinner(self) -> bool:
+        """Whether the notification is a spinner."""
+        return self._props['options']['spinner']
+
+    @spinner.setter
+    def spinner(self, value: bool) -> None:
+        self._props['options']['spinner'] = value
+        self.update()
+
+    @property
+    def close_button(self) -> Union[bool, str]:
+        """Whether the notification has a close button."""
+        return self._props['options']['closeBtn']
+
+    @close_button.setter
+    def close_button(self, value: Union[bool, str]) -> None:
+        self._props['options']['closeBtn'] = value
+        self.update()
