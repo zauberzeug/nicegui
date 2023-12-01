@@ -296,7 +296,7 @@ def test_warning_about_to_late_responses(screen: Screen):
 
     screen.open('/')
     screen.should_contain('NiceGUI page')
-    screen.assert_py_logger('ERROR', re.compile('it was returned after the html was delivered to the client'))
+    screen.assert_py_logger('ERROR', re.compile('it was returned after the HTML had been delivered to the client'))
 
 
 def test_reconnecting_without_page_reload(screen: Screen):

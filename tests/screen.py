@@ -204,7 +204,7 @@ class Screen:
             assert record.levelname.strip() == level, f'Expected "{level}" but got "{record.levelname}"'
 
             if isinstance(message, re.Pattern):
-                assert message.search(record.message), f'Expected "{message}" matching regex but got "{record.message}"'
+                assert message.search(record.message), f'Expected regex "{message}" but got "{record.message}"'
             else:
                 assert record.message.strip() == message, f'Expected "{message}" but got "{record.message}"'
         finally:

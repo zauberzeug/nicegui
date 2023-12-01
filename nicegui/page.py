@@ -88,9 +88,9 @@ class page:
         core.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
         parameters_of_decorated_func = list(inspect.signature(func).parameters.keys())
 
-        def warn_about_late_returns(task: asyncio.Task) -> None:
-            if task.result():
-                log.error(f'ignoring {task.result()}; it was returned after the html was delivered to the client')
+        def check_for_late_return_value(task: asyncio.Task) -> None:
+            if task.result() is not None:
+                log.error(f'ignoring {task.result()}; it was returned after the HTML had been delivered to the client')
 
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             request = dec_kwargs['request']
@@ -110,7 +110,11 @@ class page:
                     if time.time() > deadline:
                         raise TimeoutError(f'Response not ready after {self.response_timeout} seconds')
                     await asyncio.sleep(0.1)
-                result = task.result() if task.done() else task.add_done_callback(warn_about_late_returns)  # type: ignore
+                if task.done():
+                    result = task.result()
+                else:
+                    result = None
+                    task.add_done_callback(check_for_late_return_value)
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
             binding._refresh_step()  # pylint: disable=protected-access
