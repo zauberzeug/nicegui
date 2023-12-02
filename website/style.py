@@ -19,7 +19,7 @@ def link_target(name: str, offset: str = '0') -> ui.link_target:
 def section_heading(subtitle_: str, title_: str) -> None:
     """Render a section heading with a subtitle."""
     ui.label(subtitle_).classes('md:text-lg font-bold')
-    ui.markdown(title_).classes('text-3xl md:text-5xl font-medium mt-[-12px] title')
+    ui.markdown(title_).classes('text-3xl md:text-5xl font-medium mt-[-12px] fancy-em')
 
 
 def heading(title_: str) -> ui.markdown:
@@ -29,7 +29,7 @@ def heading(title_: str) -> ui.markdown:
 
 def title(content: str) -> ui.markdown:
     """Render a title."""
-    return ui.markdown(content).classes('text-4xl sm:text-5xl md:text-6xl font-medium')
+    return ui.markdown(content).classes('text-4xl sm:text-5xl md:text-6xl font-medium fancy-em')
 
 
 def subtitle(content: str) -> ui.markdown:
