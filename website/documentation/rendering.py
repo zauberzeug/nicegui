@@ -30,7 +30,7 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
             ui.markdown(f'**{documentation.heading.replace("*", "")}**').classes('mt-4')
 
     # content
-    with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
+    with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto documentation'):
 
         # heading
         section_heading(documentation.subtitle or '', documentation.heading)
