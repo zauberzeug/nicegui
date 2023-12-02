@@ -248,6 +248,19 @@ doc.text('', '''
     See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
 ''')
 
+doc.text('', '''
+    **Common pitfalls on Mac M1**
+    
+    - If new processes are spawned in an endless loop, try adding the following lines at the beginning of your code:
+
+        ```python
+        from multiprocessing import freeze_support
+        freeze_support()
+        ```
+    
+    - If processes are left behind after closing the app, try packaging the app without the `--windowed` argument.
+''')
+
 doc.text('NiceGUI On Air', '''
     By using `ui.run(on_air=True)` you can share your local app with others over the internet 🧞.
 
