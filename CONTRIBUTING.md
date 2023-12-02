@@ -110,9 +110,10 @@ If you plan to implement a new element you can follow these suggestions:
 5. Look at other similar elements and how they are implemented in `nicegui/elements`.
 6. Create a new file with your new element alongside the existing ones.
 7. Make sure your element works as expected.
-8. Add documentation in [website/documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/documentation.py).
-   By calling the `element_demo(...)` function with an element as a parameter the docstring is used as a description.
+8. Add a documentation file in `website/documentation/content`.
+   By calling the `@doc.demo(...)` function with an element as a parameter the docstring is used as a description.
    The docstrings are written in restructured-text.
+   Refer to the new documentation page using `@doc.intro(...)` in any documentation section `website/documentation/content/section_*.py`.
 9. Create a pull-request (see below).
 
 ### Additional Demos
