@@ -53,7 +53,7 @@ def run(*,
     Most of them only apply after stopping and fully restarting the app and do not apply with auto-reloading.
 
     :param host: start server with this host (defaults to `'127.0.0.1` in native mode, otherwise `'0.0.0.0'`)
-    :param port: use this port (default to `8080` not in native mode. If not specify, NiceGUI searches for an open port in native mode)
+    :param port: use this port (If not specify, default to `8080` not in native mode. If not specify, NiceGUI searches for an open port in native mode)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
     :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
     :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers)
@@ -125,7 +125,7 @@ def run(*,
         width, height = window_size or (800, 600)
         native_module.activate(host, port, title, width, height, fullscreen, frameless)
     else:
-        port = 8080     
+        port = port or 8080     
         host = host or '0.0.0.0'
     assert host is not None
 
