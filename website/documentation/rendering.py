@@ -32,8 +32,8 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
     # content
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
 
-        with ui.row():
-            with ui.column().classes('w-[65%]' if documentation.extra_column else 'w-full'):
+        with ui.row(wrap=False).classes('gap-8'):
+            with ui.column().classes('w-2/3' if documentation.extra_column else 'w-full'):
                 section_heading(documentation.subtitle or '', documentation.heading)
                 for part in documentation.parts:
                     if part.title:
@@ -57,5 +57,5 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                     if part.link:
                         ui.markdown(f'See [more...]({part.link})').classes('bold-links arrow-links')
             if documentation.extra_column:
-                with ui.column().classes('ml-auto w-[30%]'):
+                with ui.column().classes('w-1/3'):
                     documentation.extra_column()
