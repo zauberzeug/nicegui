@@ -22,7 +22,7 @@ APP_IMPORT_STRING = 'nicegui:app'
 
 def run(*,
         host: Optional[str] = None,
-        port: int = 0,
+        port: Optional[int] = None,
         title: str = 'NiceGUI',
         viewport: str = 'width=device-width, initial-scale=1',
         favicon: Optional[Union[str, Path]] = None,
@@ -53,7 +53,7 @@ def run(*,
     Most of them only apply after stopping and fully restarting the app and do not apply with auto-reloading.
 
     :param host: start server with this host (defaults to `'127.0.0.1` in native mode, otherwise `'0.0.0.0'`)
-    :param port: use this port (If not specify, default to `8080` not in native mode. If not specify, NiceGUI searches for an open port in native mode)
+    :param port: use this port (default: 8080 in normal mode, and an automatically determined open port in native mode)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
     :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
     :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers)
