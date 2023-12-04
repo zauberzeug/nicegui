@@ -55,7 +55,8 @@ class Air:
         @self.relay.on('ready')
         def _handle_ready(data: Dict[str, Any]) -> None:
             core.app.urls.add(data['device_url'])
-            print(f'NiceGUI is on air at {data["device_url"]}', flush=True)
+            if core.app.config.show_welcome_message:
+                print(f'NiceGUI is on air at {data["device_url"]}', flush=True)
 
         @self.relay.on('error')
         def _handleerror(data: Dict[str, Any]) -> None:

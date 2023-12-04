@@ -49,6 +49,7 @@ def run_with(
         reconnect_timeout=reconnect_timeout,
         tailwind=tailwind,
         prod_js=prod_js,
+        show_welcome_message=False,
     )
 
     storage.set_storage_secret(storage_secret)
