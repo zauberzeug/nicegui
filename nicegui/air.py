@@ -1,5 +1,6 @@
 import asyncio
 import gzip
+import json
 import re
 from typing import Any, Dict, Optional
 
@@ -86,8 +87,10 @@ class Air:
             if client_id not in Client.instances:
                 return
             client = Client.instances[client_id]
-            if isinstance(data['msg']['args'], dict) and 'socket_id' in data['msg']['args']:
-                data['msg']['args']['socket_id'] = client_id  # HACK: translate socket_id of ui.scene's init event
+            if data['msg']['args'] and data['msg']['args'][0].startswith('{"socket_id":'):
+                args = json.loads(data['msg']['args'][0])
+                args['socket_id'] = client_id  # HACK: translate socket_id of ui.scene's init event
+                data['msg']['args'][0] = json.dumps(args)
             client.handle_event(data['msg'])
 
         @self.relay.on('javascript_response')

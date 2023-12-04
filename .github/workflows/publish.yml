@@ -33,7 +33,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         id: create_release
         with:
-          draft: false
+          draft: true
           prerelease: false
           name: ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
@@ -115,6 +115,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@v2

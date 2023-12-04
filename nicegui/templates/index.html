@@ -64,7 +64,8 @@
       const loaded_components = new Set();
 
       const raw_elements = String.raw`{{ elements | safe }}`;
-      const elements = JSON.parse(raw_elements.replace(/&#96;/g, '`')
+      const elements = JSON.parse(raw_elements.replace(/&#36;/g, '$')
+                                              .replace(/&#96;/g, '`')
                                               .replace(/&gt;/g, '>')
                                               .replace(/&lt;/g, '<')
                                               .replace(/&amp;/g, '&'));
@@ -208,14 +209,17 @@
         });
       }
 
-      function download(url, filename) {
+      function download(src, filename) {
         const anchor = document.createElement("a");
-        anchor.href = url;
+        anchor.href = typeof src === "string" ? src : URL.createObjectURL(new Blob([src]));
         anchor.target = "_blank";
         anchor.download = filename || "";
         document.body.appendChild(anchor);
         anchor.click();
         document.body.removeChild(anchor);
+        if (typeof src !== "string") {
+          URL.revokeObjectURL(url);
+        }
       }
 
       async function loadDependencies(element) {
@@ -297,7 +301,7 @@
               const target = msg.new_tab ? '_blank' : '_self';
               window.open(url, target);
             },
-            download: (msg) => download(msg.url, msg.filename),
+            download: (msg) => download(msg.src, msg.filename),
             notify: (msg) => Quasar.Notify.create(msg),
           };
           const socketMessageQueue = [];
