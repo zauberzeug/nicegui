@@ -125,9 +125,10 @@ def run(*,
         width, height = window_size or (800, 600)
         native_module.activate(host, port, title, width, height, fullscreen, frameless)
     else:
-        port = port or 8080     
+        port = port or 8080
         host = host or '0.0.0.0'
     assert host is not None
+    assert port is not None
 
     # NOTE: We save host and port in environment variables so the subprocess started in reload mode can access them.
     os.environ['NICEGUI_HOST'] = host
