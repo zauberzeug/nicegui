@@ -4,15 +4,20 @@ import time
 from pathlib import Path
 from typing import Union
 
-from PIL.Image import Image as PIL_Image
-
+from .. import optional_features
 from .mixins.source_element import SourceElement
+
+try:
+    from PIL.Image import Image as PIL_Image
+    optional_features.register('pillow')
+except ImportError:
+    pass
 
 
 class Image(SourceElement, component='image.js'):
     PIL_CONVERT_FORMAT = 'PNG'
 
-    def __init__(self, source: Union[str, Path, PIL_Image] = '') -> None:
+    def __init__(self, source: Union[str, Path, 'PIL_Image'] = '') -> None:
         """Image
 
         Displays an image.
@@ -22,8 +27,8 @@ class Image(SourceElement, component='image.js'):
         """
         super().__init__(source=source)
 
-    def _set_props(self, source: Union[str, Path]) -> None:
-        if isinstance(source, PIL_Image):
+    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:
+        if optional_features.has('pillow') and isinstance(source, PIL_Image):
             source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)
 
@@ -33,7 +38,7 @@ class Image(SourceElement, component='image.js'):
         self.update()
 
 
-def pil_to_base64(pil_image: PIL_Image, image_format: str) -> str:
+def pil_to_base64(pil_image: 'PIL_Image', image_format: str) -> str:
     """Convert a PIL image to a base64 string which can be used as image source.
 
     :param pil_image: the PIL image
