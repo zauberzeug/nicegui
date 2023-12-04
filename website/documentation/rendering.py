@@ -30,32 +30,35 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
             ui.markdown(f'**{documentation.heading.replace("*", "")}**').classes('mt-4')
 
     # content
+    def render_content():
+        section_heading(documentation.subtitle or '', documentation.heading)
+        for part in documentation.parts:
+            if part.title:
+                if part.link_target:
+                    ui.link_target(part.link_target)
+                subheading(part.title, link=part.link, major=part.reference is not None)
+            if part.description:
+                if part.description_format == 'rst':
+                    description = part.description.replace('param ', '')
+                    html = docutils.core.publish_parts(description, writer_name='html5_polyglot')['html_body']
+                    html = apply_tailwind(html)
+                    ui.html(html)
+                else:
+                    ui.markdown(part.description)
+            if part.ui:
+                part.ui()
+            if part.demo:
+                demo(part.demo.function, lazy=part.demo.lazy, tab=part.demo.tab)
+            if part.reference:
+                generate_class_doc(part.reference)
+            if part.link:
+                ui.markdown(f'See [more...]({part.link})').classes('bold-links arrow-links')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
-
-        with ui.row(wrap=False).classes('gap-8'):
-            with ui.column().classes('w-2/3' if documentation.extra_column else 'w-full'):
-                section_heading(documentation.subtitle or '', documentation.heading)
-                for part in documentation.parts:
-                    if part.title:
-                        if part.link_target:
-                            ui.link_target(part.link_target)
-                        subheading(part.title, link=part.link, major=part.reference is not None)
-                    if part.description:
-                        if part.description_format == 'rst':
-                            description = part.description.replace('param ', '')
-                            html = docutils.core.publish_parts(description, writer_name='html5_polyglot')['html_body']
-                            html = apply_tailwind(html)
-                            ui.html(html)
-                        else:
-                            ui.markdown(part.description)
-                    if part.ui:
-                        part.ui()
-                    if part.demo:
-                        demo(part.demo.function, lazy=part.demo.lazy, tab=part.demo.tab)
-                    if part.reference:
-                        generate_class_doc(part.reference)
-                    if part.link:
-                        ui.markdown(f'See [more...]({part.link})').classes('bold-links arrow-links')
-            if documentation.extra_column:
-                with ui.column().classes('w-1/3'):
+        if documentation.extra_column:
+            with ui.grid().classes('grid-cols-[2fr_1fr] max-[600px]:grid-cols-[1fr] gap-x-8 gap-y-16'):
+                with ui.column().classes('w-full'):
+                    render_content()
+                with ui.column():
                     documentation.extra_column()
+        else:
+            render_content()
