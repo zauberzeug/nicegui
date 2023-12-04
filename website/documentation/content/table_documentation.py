@@ -305,4 +305,32 @@ def table_cells_with_links():
     ''')
 
 
+@doc.demo('Table with masonry-like grid', '''
+    You can use the `grid` prop to display the table as a masonry-like grid.
+    See the [Quasar documentation](https://quasar.dev/vue-components/table#grid-style) for more information.
+''')
+def table_with_masonry_like_grid():
+    columns = [
+        {'name': 'name', 'label': 'Name', 'field': 'name'},
+        {'name': 'age', 'label': 'Age', 'field': 'age'},
+    ]
+    rows = [
+        {'name': 'Alice', 'age': 18},
+        {'name': 'Bob', 'age': 21},
+        {'name': 'Carol', 'age': 42},
+    ]
+    table = ui.table(columns=columns, rows=rows, row_key='name').props('grid')
+    table.add_slot('item', r'''
+        <q-card flat bordered :props="props" class="m-1">
+            <q-card-section class="text-center">
+                <strong>{{ props.row.name }}</strong>
+            </q-card-section>
+            <q-separator />
+            <q-card-section class="text-center">
+                <div>{{ props.row.age }} years</div>
+            </q-card-section>
+        </q-card>
+    ''')
+
+
 doc.reference(ui.table)
