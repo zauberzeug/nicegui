@@ -13,21 +13,23 @@ from .reference import generate_class_doc
 def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> None:
     """Render the documentation."""
 
-    # header
-    add_head_html()
-    add_header()
-    ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
-
     # menu
     if with_menu:
         with ui.left_drawer() \
                 .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
-                .style('height: calc(100% + 20px) !important'):
+                .style('height: calc(100% + 20px) !important') as menu:
             if documentation.back_link:
                 ui.markdown(f'[← back]({documentation.back_link or "."})').classes('bold-links')
             else:
                 ui.markdown('[← Overview](/documentation)').classes('bold-links')
             ui.markdown(f'**{documentation.heading.replace("*", "")}**').classes('mt-4')
+    else:
+        menu = None
+
+    # header
+    add_head_html()
+    add_header(menu)
+    ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
 
     # content
     def render_content():
