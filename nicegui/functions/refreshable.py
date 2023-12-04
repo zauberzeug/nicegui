@@ -86,8 +86,12 @@ class refreshable(Generic[_P, _T]):
         self.targets.append(target)
         return target.run(self.func)
 
-    def refresh(self, *args: _P.args, **kwargs: _P.kwargs) -> None:
-        """Refresh the UI elements created by this function."""
+    def refresh(self, *args: Any, **kwargs: Any) -> None:
+        """Refresh the UI elements created by this function.
+
+        This method accepts the same arguments as the function itself or a subset of them.
+        It will combine the arguments passed to the function with the arguments passed to this method.
+        """
         self.prune()
         for target in self.targets:
             if target.instance != self.instance:

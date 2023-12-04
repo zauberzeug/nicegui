@@ -37,7 +37,7 @@ notes: Dict[str, List[str]] = {
 for issue in issues:
     title: str = issue['title']
     user: str = issue['user']['login']
-    body: str = issue['body']
+    body: str = issue['body'] or ''
     labels: list[str] = [label['name'] for label in issue['labels']]
     number_patterns = [r'#(\d+)', r'https://github.com/zauberzeug/nicegui/(?:issues|discussions|pulls)/(\d+)']
     numbers = [issue['number']] + [int(match) for pattern in number_patterns for match in re.findall(pattern, body)]
