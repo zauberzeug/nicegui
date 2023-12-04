@@ -39,6 +39,40 @@ doc.text('Basic concepts', '''
     Or if you prefer, almost anything can be styled with CSS.
 ''')
 
+doc.text('Actions', '''
+    NiceGUI runs an event loop to handle user input and other events like timers and keyboard bindings.
+    You can write asynchronous functions for long-running tasks to keep the UI responsive.
+    The _Actions_ section covers how to work with events.
+''')
+
+doc.text('Implementation', '''
+    NiceGUI is implemented with HTML components served by an HTTP server (FastAPI), even for native windows.
+    If you already know HTML, everything will feel very familiar.
+    If you don't know HTML, that's fine too!
+    NiceGUI abstracts away the details, so you can focus on creating beautiful interfaces without worrying about how they are implemented.
+''')
+
+doc.text('Running NiceGUI Apps', '''
+    There are several options for deploying NiceGUI.
+    By default, NiceGUI runs a server on localhost and runs your app as a private web page on the local machine.
+    When run this way, your app appears in a web browser window.
+    You can also run NiceGUI in a native window separate from a web browser.
+    Or you can run NiceGUI on a server that handles many clients - the website you're reading right now is served from NiceGUI.
+
+    After creating your app pages with components, you call `ui.run()` to start the NiceGUI server.
+    Optional parameters to `ui.run` set things like the network address and port the server binds to, 
+    whether the app runs in native mode, initial window size, and many other options.
+    The section _Configuration and Deployment_ covers the options to the `ui.run()` function and the FastAPI framework it is based on.
+''')
+
+doc.text('Customization', '''
+    If you want more customization in your app, you can use the underlying Tailwind classes and Quasar components
+    to control the style or behavior of your components.
+    You can also extend the available components by subclassing existing NiceGUI components or importing new ones from Quasar.
+    All of this is optional.
+    Out of the box, NiceGUI provides everything you need to make modern, stylish, responsive user interfaces.
+''')
+
 tiles = [
     (section_text_elements, '''
         Elements like `ui.label`, `ui.markdown` and `ui.html` can be used to display text and other content.
@@ -73,49 +107,13 @@ tiles = [
 ]
 
 
-@doc.ui
+@doc.extra_column
 def create_tiles():
-    with ui.grid().classes('grid-cols-[1fr] md:grid-cols-[1fr_1fr] xl:grid-cols-[1fr_1fr_1fr]'):
-        for documentation, description in tiles:
-            page = doc.get_page(documentation)
-            with ui.link(target=f'/documentation/{page.name}') \
-                    .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
-                    .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
-                if page.title:
-                    ui.label(page.title.replace('*', '')).classes(replace='text-2xl')
-                ui.markdown(description).classes(replace='bold-links arrow-links')
-
-
-doc.text('Actions', '''
-    NiceGUI runs an event loop to handle user input and other events like timers and keyboard bindings.
-    You can write asynchronous functions for long-running tasks to keep the UI responsive.
-    The _Actions_ section covers how to work with events.
-''')
-
-doc.text('Implementation', '''
-    NiceGUI is implemented with HTML components served by an HTTP server (FastAPI), even for native windows.
-    If you already know HTML, everything will feel very familiar.
-    If you don't know HTML, that's fine too!
-    NiceGUI abstracts away the details, so you can focus on creating beautiful interfaces without worrying about how they are implemented.
-''')
-
-doc.text('Running NiceGUI Apps', '''
-    There are several options for deploying NiceGUI.
-    By default, NiceGUI runs a server on localhost and runs your app as a private web page on the local machine.
-    When run this way, your app appears in a web browser window.
-    You can also run NiceGUI in a native window separate from a web browser.
-    Or you can run NiceGUI on a server that handles many clients - the website you're reading right now is served from NiceGUI.
-
-    After creating your app pages with components, you call `ui.run()` to start the NiceGUI server.
-    Optional parameters to `ui.run` set things like the network address and port the server binds to, 
-    whether the app runs in native mode, initial window size, and many other options.
-    The section _Configuration and Deployment_ covers the options to the `ui.run()` function and the FastAPI framework it is based on.
-''')
-
-doc.text('Customization', '''
-    If you want more customization in your app, you can use the underlying Tailwind classes and Quasar components
-    to control the style or behavior of your components.
-    You can also extend the available components by subclassing existing NiceGUI components or importing new ones from Quasar.
-    All of this is optional.
-    Out of the box, NiceGUI provides everything you need to make modern, stylish, responsive user interfaces.
-''')
+    for documentation, description in tiles:
+        page = doc.get_page(documentation)
+        with ui.link(target=f'/documentation/{page.name}') \
+                .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
+                .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
+            if page.title:
+                ui.label(page.title.replace('*', '')).classes(replace='text-2xl')
+            ui.markdown(description).classes(replace='bold-links arrow-links')
