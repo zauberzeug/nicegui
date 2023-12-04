@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 from nicegui.dataclasses import KWONLY_SLOTS
 
@@ -13,6 +13,7 @@ class DocumentationPage:
     subtitle: Optional[str] = None
     back_link: Optional[str] = None
     parts: List[DocumentationPart] = field(default_factory=list)
+    extra_column: Optional[Callable] = None
 
     @property
     def heading(self) -> str:

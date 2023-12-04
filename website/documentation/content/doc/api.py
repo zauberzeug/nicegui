@@ -130,6 +130,12 @@ def reference(element: type, *,
     _get_current_page().parts.append(DocumentationPart(title=title, reference=element))
 
 
+def extra_column(function: Callable) -> Callable:
+    """Add an extra column to the current documentation page."""
+    _get_current_page().extra_column = function
+    return function
+
+
 def _find_attribute(obj: Any, name: str) -> Optional[str]:
     for attr in dir(obj):
         if attr.lower().replace('_', '') == name.lower().replace('_', ''):
