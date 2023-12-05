@@ -38,6 +38,12 @@ class Client:
     auto_index_client: Client
     """The client that is used to render the auto-index page."""
 
+    head_html = ''
+    """HTML to be inserted in the <head> of the page template."""
+
+    body_html = ''
+    """HTML to be inserted in the <body> of the page template."""
+
     def __init__(self, page: page, *, shared: bool = False) -> None:
         self.id = str(uuid.uuid4())
         self.created = time.time()
@@ -58,9 +64,6 @@ class Client:
                     self.content = Element('div').classes('nicegui-content')
 
         self.waiting_javascript_commands: Dict[str, Any] = {}
-
-        self.head_html = ''
-        self.body_html = ''
 
         self.page = page
 
