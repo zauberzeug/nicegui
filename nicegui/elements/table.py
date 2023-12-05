@@ -177,8 +177,12 @@ class Table(FilterElement, component='table.js'):
         self.selected[:] = [row for row in self.selected if row[self.row_key] not in keys]
         self.update()
 
-    class row(Element):
+    def set_rows(self, rows: List[Dict]) -> None:
+        self.rows = rows
+        self.selected = []
+        self.update()
 
+    class row(Element):
         def __init__(self) -> None:
             """Row Element
 
