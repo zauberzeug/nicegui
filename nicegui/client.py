@@ -38,6 +38,12 @@ class Client:
     auto_index_client: Client
     """The client that is used to render the auto-index page."""
 
+    shared_head_html = ''
+    """HTML to be inserted in the <head> of every page template."""
+
+    shared_body_html = ''
+    """HTML to be inserted in the <body> of every page template."""
+
     def __init__(self, page: page, *, shared: bool = False) -> None:
         self.id = str(uuid.uuid4())
         self.created = time.time()
@@ -59,8 +65,8 @@ class Client:
 
         self.waiting_javascript_commands: Dict[str, Any] = {}
 
-        self.head_html = ''
-        self.body_html = ''
+        self._head_html = ''
+        self._body_html = ''
 
         self.page = page
 
@@ -83,6 +89,16 @@ class Client:
     def has_socket_connection(self) -> bool:
         """Return True if the client is connected, False otherwise."""
         return self.environ is not None
+
+    @property
+    def head_html(self) -> str:
+        """Return the HTML code to be inserted in the <head> of the page template."""
+        return self.shared_head_html + self._head_html
+
+    @property
+    def body_html(self) -> str:
+        """Return the HTML code to be inserted in the <body> of the page template."""
+        return self.shared_body_html + self._body_html
 
     def __enter__(self):
         self.content.__enter__()
