@@ -31,5 +31,6 @@ class Marker(Layer):
         }
 
     def draggable(self, value: bool = True) -> Self:
+        """Make the marker draggable."""
         self.options['draggable'] = value
         return self

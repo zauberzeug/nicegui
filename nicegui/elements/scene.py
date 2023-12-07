@@ -118,11 +118,6 @@ class Scene(Element,
                 obj.send()
 
     def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
-        """Run a method on the client.
-
-        :param name: name of the method
-        :param args: arguments to pass to the method
-        """
         if not self.is_initialized:
             return NullResponse()
         return super().run_method(name, *args, timeout=timeout, check_interval=check_interval)

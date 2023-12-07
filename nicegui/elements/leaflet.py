@@ -1,6 +1,7 @@
 from typing import Any, List, Tuple, cast
 
-from .. import binding, globals  # pylint: disable=redefined-builtin
+from .. import binding
+from ..awaitable_response import AwaitableResponse, NullResponse
 from ..element import Element
 from ..events import GenericEventArguments
 from .leaflet_layer import Layer
@@ -27,12 +28,12 @@ class Leaflet(Element, component='leaflet.js'):
         self.draw_control = draw_control
 
         self.is_initialized = False
-        self.on('init', self.handle_init)
+        self.on('init', self._handle_init)
         self.on('moveend', lambda e: self.set_location((e.args['lat'], e.args['lng'])))
         self.on('zoomend', lambda e: self.set_zoom(e.args))
 
         self.tile_layer(
-            url_template='http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+            url_template=r'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
             options={'attribution': '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'},
         )
 
@@ -46,21 +47,23 @@ class Leaflet(Element, component='leaflet.js'):
             Layer.current_leaflet = self
         return attribute
 
-    def handle_init(self, e: GenericEventArguments) -> None:
+    def _handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True
-        with globals.socket_id(e.args['socket_id']):
+        with self.client.individual_target(e.args['socket_id']):
             for layer in self.layers:
                 self.run_method('add_layer', layer.to_dict())
 
-    def run_method(self, name: str, *args: Any) -> None:
+    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         if not self.is_initialized:
-            return
-        super().run_method(name, *args)
+            return NullResponse()
+        return super().run_method(name, *args, timeout=timeout, check_interval=check_interval)
 
     def set_location(self, location: Tuple[float, float]) -> None:
+        """Set the location of the map."""
         self.location = location
 
     def set_zoom(self, zoom: int) -> None:
+        """Set the zoom level of the map."""
         self.zoom = zoom
 
     def update(self) -> None:
@@ -74,6 +77,6 @@ class Leaflet(Element, component='leaflet.js'):
         }
         super().update()
 
-    def delete(self) -> None:
+    def _handle_delete(self) -> None:
         binding.remove(self.layers, Layer)
         super().delete()

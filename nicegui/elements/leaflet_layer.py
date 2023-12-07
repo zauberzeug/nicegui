@@ -23,4 +23,4 @@ class Layer:
 
     @abstractmethod
     def to_dict(self) -> dict:
-        pass
+        """Return a dictionary representation of the layer."""
