@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 from typing_extensions import Self
 
@@ -7,7 +7,8 @@ from ...element import Element
 
 
 class TextElement(Element):
-    text = BindableProperty(on_change=lambda sender, text: sender.on_text_change(text))
+    text = BindableProperty(
+        on_change=lambda sender, text: cast(Self, sender)._handle_text_change(text))  # pylint: disable=protected-access
 
     def __init__(self, *, text: str, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -71,7 +72,7 @@ class TextElement(Element):
         """
         self.text = text
 
-    def on_text_change(self, text: str) -> None:
+    def _handle_text_change(self, text: str) -> None:
         """Called when the text of this element changes.
 
         :param text: The new text.

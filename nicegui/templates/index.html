@@ -45,6 +45,15 @@
         const _id = id instanceof HTMLElement ? id.id : id;
         return window.app.$refs["r" + _id];
       }
+      function runMethod(element_id, method_name, args) {
+        const element = getElement(element_id);
+        if (element === null || element === undefined) return;
+        if (method_name in element) {
+          return element[method_name](...args);
+        } else {
+          return element.$refs.qRef[method_name](...args);
+        }
+      }
     </script>
     <script type="module">
       const True = true;
@@ -55,7 +64,8 @@
       const loaded_components = new Set();
 
       const raw_elements = String.raw`{{ elements | safe }}`;
-      const elements = JSON.parse(raw_elements.replace(/&#96;/g, '`')
+      const elements = JSON.parse(raw_elements.replace(/&#36;/g, '$')
+                                              .replace(/&#96;/g, '`')
                                               .replace(/&gt;/g, '>')
                                               .replace(/&lt;/g, '<')
                                               .replace(/&amp;/g, '&'));
@@ -131,8 +141,13 @@
         };
         Object.entries(props).forEach(([key, value]) => {
           if (key.startsWith(':')) {
-            props[key.substring(1)] = eval(value);
-            delete props[key];
+            try {
+              props[key.substring(1)] = eval(value);
+              delete props[key];
+            }
+            catch (e) {
+              console.error(`Error while converting ${key} attribute to function:`, e);
+            }
           }
         });
         element.events.forEach((event) => {
@@ -194,14 +209,17 @@
         });
       }
 
-      function download(url, filename) {
+      function download(src, filename) {
         const anchor = document.createElement("a");
-        anchor.href = url;
+        anchor.href = typeof src === "string" ? src : URL.createObjectURL(new Blob([src]));
         anchor.target = "_blank";
         anchor.download = filename || "";
         document.body.appendChild(anchor);
         anchor.click();
         document.body.removeChild(anchor);
+        if (typeof src !== "string") {
+          URL.revokeObjectURL(url);
+        }
       }
 
       async function loadDependencies(element) {
@@ -242,7 +260,7 @@
             connect: () => {
               window.socket.emit("handshake", window.client_id, (ok) => {
                 if (!ok) {
-                  console.log('reloading because handshake failed')
+                  console.log('reloading because handshake failed for client_id ' + window.client_id)
                   window.location.reload();
                 }
                 document.getElementById('popup').style.opacity = 0;
@@ -277,22 +295,13 @@
                 this.elements[element.id] = element;
               }
             },
-            run_method: (msg) => {
-              const element = getElement(msg.id);
-              if (element === null || element === undefined) return;
-              if (msg.name in element) {
-                element[msg.name](...msg.args);
-              } else {
-                element.$refs.qRef[msg.name](...msg.args);
-              }
-            },
             run_javascript: (msg) => runJavascript(msg['code'], msg['request_id']),
             open: (msg) => {
               const url = msg.path.startsWith('/') ? "{{ prefix | safe }}" + msg.path : msg.path;
               const target = msg.new_tab ? '_blank' : '_self';
               window.open(url, target);
             },
-            download: (msg) => download(msg.url, msg.filename),
+            download: (msg) => download(msg.src, msg.filename),
             notify: (msg) => Quasar.Notify.create(msg),
           };
           const socketMessageQueue = [];

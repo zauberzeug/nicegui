@@ -1,3 +1,4 @@
+import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
@@ -50,6 +51,19 @@ def test_props_parsing():
     assert ui.element._parse_props('href=http://192.168.42.100/') == {'href': 'http://192.168.42.100/'}
     assert ui.element._parse_props('hint="Your \\"given\\" name"') == {'hint': 'Your "given" name'}
     assert ui.element._parse_props('input-style="{ color: #ff0000 }"') == {'input-style': '{ color: #ff0000 }'}
+
+    assert ui.element._parse_props('empty=""') == {'empty': ''}
+    assert ui.element._parse_props("empty=''") == {'empty': ''}
+
+    assert ui.element._parse_props("""hint='Your \\"given\\" name'""") == {'hint': 'Your "given" name'}
+    assert ui.element._parse_props("one two=1 three='abc def'") == {'one': True, 'two': '1', 'three': 'abc def'}
+    assert ui.element._parse_props('''three='abc def' four="hhh jjj"''') == {'three': 'abc def', 'four': 'hhh jjj', }
+    assert ui.element._parse_props('''foo="quote'quote"''') == {'foo': "quote'quote"}
+    assert ui.element._parse_props("""foo='quote"quote'""") == {'foo': 'quote"quote'}
+    assert ui.element._parse_props("""foo="single '" bar='double "'""") == {'foo': "single '", 'bar': 'double "'}
+    assert ui.element._parse_props("""foo="single '" bar='double \\"'""") == {'foo': "single '", 'bar': 'double "'}
+    assert ui.element._parse_props("input-style='{ color: #ff0000 }'") == {'input-style': '{ color: #ff0000 }'}
+    assert ui.element._parse_props("""input-style='{ myquote: "quote" }'""") == {'input-style': '{ myquote: "quote" }'}
 
 
 def test_style(screen: Screen):
@@ -249,3 +263,22 @@ def test_default_style():
     button_f = ui.button()
     assert button_f._style.get('border') == '2px'
     assert button_f._style.get('padding') == '30px'
+
+
+def test_invalid_tags(screen: Screen):
+    good_tags = ['div', 'div-1', 'DIV', 'däv', 'div_x', '🙂']
+    bad_tags = ['<div>', 'hi hi', 'hi/ho', 'foo$bar']
+    for tag in good_tags:
+        ui.element(tag)
+    for tag in bad_tags:
+        with pytest.raises(ValueError):
+            ui.element(tag)
+
+    screen.open('/')
+
+
+def test_bad_characters(screen: Screen):
+    ui.label(r'& <test> ` ${foo}')
+
+    screen.open('/')
+    screen.should_contain(r'& <test> ` ${foo}')

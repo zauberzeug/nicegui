@@ -29,7 +29,8 @@ class Code(Element):
                 .props('round flat size=sm').classes('absolute right-2 top-2 opacity-20 hover:opacity-80')
 
     async def copy_to_clipboard(self) -> None:
-        await run_javascript('navigator.clipboard.writeText(`' + self.content + '`)', respond=False)
+        """Copy the code to the clipboard."""
+        run_javascript('navigator.clipboard.writeText(`' + self.content + '`)')
         self.copy_button.props('icon=check')
         await asyncio.sleep(3.0)
         self.copy_button.props('icon=content_copy')

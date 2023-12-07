@@ -1,45 +1,29 @@
 import os
-import socket
 from typing import List
 
-from . import globals  # pylint: disable=redefined-builtin
-from .run_executor import io_bound
+import ifaddr
 
-try:
-    import netifaces
-    globals.optional_features.add('netifaces')
-except ImportError:
-    pass
+from . import core, run
 
 
-def get_all_ips() -> List[str]:
-    if 'netifaces' not in globals.optional_features:
-        try:
-            hostname = socket.gethostname()
-            return socket.gethostbyname_ex(hostname)[2]
-        except socket.gaierror:
-            return []
-    ips = []
-    for interface in netifaces.interfaces():  # pylint: disable=c-extension-no-member
-        try:
-            ip = netifaces.ifaddresses(interface)[netifaces.AF_INET][0]['addr']  # pylint: disable=c-extension-no-member
-            ips.append(ip)
-        except KeyError:
-            pass
+def _get_all_ips() -> List[str]:
+    ips: List[str] = []
+    for adapter in ifaddr.get_adapters():
+        ips.extend(str(i.ip) for i in adapter.ips if i.is_IPv4)
     return ips
 
 
-async def print_message() -> None:
-    print('NiceGUI ready to go ', end='', flush=True)
-    host = os.environ['NICEGUI_HOST']
-    port = os.environ['NICEGUI_PORT']
-    ips = set((await io_bound(get_all_ips)) if host == '0.0.0.0' else [])
+async def collect_urls() -> None:
+    """Print a welcome message with URLs to access the NiceGUI app."""
+    host = os.environ.get('NICEGUI_HOST')
+    port = os.environ.get('NICEGUI_PORT')
+    if not host or not port:
+        return
+    ips = set((await run.io_bound(_get_all_ips)) if host == '0.0.0.0' else [])
     ips.discard('127.0.0.1')
     urls = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ['localhost'] + sorted(ips)]
-    globals.app.urls.update(urls)
+    core.app.urls.update(urls)
     if len(urls) >= 2:
         urls[-1] = 'and ' + urls[-1]
-    extra = ''
-    if 'netifaces' not in globals.optional_features and os.environ.get('NO_NETIFACES', 'false').lower() != 'true':
-        extra = ' (install netifaces to show all IPs and speedup this message)'
-    print(f'on {", ".join(urls)}' + extra, flush=True)
+    if core.app.config.show_welcome_message:
+        print(f'NiceGUI ready to go on {", ".join(urls)}', flush=True)

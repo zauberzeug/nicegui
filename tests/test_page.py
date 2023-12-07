@@ -1,4 +1,5 @@
 import asyncio
+import re
 from uuid import uuid4
 
 from fastapi.responses import PlainTextResponse
@@ -127,7 +128,7 @@ def test_wait_for_connected(screen: Screen):
 def test_wait_for_disconnect(screen: Screen):
     events = []
 
-    @ui.page('/')
+    @ui.page('/', reconnect_timeout=0)
     async def page(client: Client):
         await client.connected()
         events.append('connected')
@@ -144,7 +145,7 @@ def test_wait_for_disconnect(screen: Screen):
 def test_wait_for_disconnect_without_awaiting_connected(screen: Screen):
     events = []
 
-    @ui.page('/')
+    @ui.page('/', reconnect_timeout=0)
     async def page(client: Client):
         await client.disconnected()
         events.append('disconnected')
@@ -286,11 +287,23 @@ def test_returning_custom_response_async(screen: Screen):
     screen.should_not_contain('normal NiceGUI page')
 
 
+def test_warning_about_to_late_responses(screen: Screen):
+    @ui.page('/')
+    async def page(client: Client):
+        await client.connected()
+        ui.label('NiceGUI page')
+        return PlainTextResponse('custom response')
+
+    screen.open('/')
+    screen.should_contain('NiceGUI page')
+    screen.assert_py_logger('ERROR', re.compile('it was returned after the HTML had been delivered to the client'))
+
+
 def test_reconnecting_without_page_reload(screen: Screen):
     @ui.page('/', reconnect_timeout=3.0)
     def page():
         ui.input('Input').props('autofocus')
-        ui.button('drop connection', on_click=lambda: ui.run_javascript('socket.io.engine.close()', respond=False))
+        ui.button('drop connection', on_click=lambda: ui.run_javascript('socket.io.engine.close()'))
 
     screen.open('/')
     screen.type('hello')

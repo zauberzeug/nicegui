@@ -1,6 +1,10 @@
-from nicegui import ui
+from pathlib import Path
+
+from nicegui import app, ui
 
 from .screen import Screen
+
+example_file = Path(__file__).parent / '../examples/slideshow/slides/slide1.jpg'
 
 
 def test_base64_image(screen: Screen):
@@ -30,3 +34,45 @@ def test_base64_image(screen: Screen):
     screen.wait(0.2)
     image = screen.find_by_class('q-img__image')
     assert 'data:image/png;base64,iVB' in image.get_attribute('src')
+
+
+def test_setting_local_file(screen: Screen):
+    ui.image(example_file)
+
+    screen.open('/')
+    image = screen.find_by_class('q-img__image')
+    screen.should_load_image(image)
+
+
+def test_binding_local_file(screen: Screen):
+    images = {'one': example_file}
+    ui.image().bind_source_from(images, 'one')
+
+    screen.open('/')
+    image = screen.find_by_class('q-img__image')
+    screen.should_load_image(image)
+
+
+def test_set_source_with_local_file(screen: Screen):
+    ui.image().set_source(example_file)
+
+    screen.open('/')
+    image = screen.find_by_class('q-img__image')
+    screen.should_load_image(image)
+
+
+def test_removal_of_generated_routes(screen: Screen):
+    img = ui.image(example_file)
+    ui.button('Slide 2', on_click=lambda: img.set_source(str(example_file).replace('slide1', 'slide2')))
+    ui.button('Slide 3', on_click=lambda: img.set_source(str(example_file).replace('slide1', 'slide3')))
+
+    screen.open('/')
+    number_of_routes = len(app.routes)
+
+    screen.click('Slide 2')
+    screen.wait(0.5)
+    assert len(app.routes) == number_of_routes
+
+    screen.click('Slide 3')
+    screen.wait(0.5)
+    assert len(app.routes) == number_of_routes

@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import Dict, Union
 
-from .. import globals  # pylint: disable=redefined-builtin
+from .. import optional_features
 from ..element import Element
 
 try:
     import plotly.graph_objects as go
-    globals.optional_features.add('plotly')
+    optional_features.register('plotly')
 except ImportError:
     pass
 
@@ -29,7 +29,7 @@ class Plotly(Element, component='plotly.vue', libraries=['lib/plotly/plotly.min.
         :param figure: Plotly figure to be rendered. Can be either a `go.Figure` instance, or
                        a `dict` object with keys `data`, `layout`, `config` (optional).
         """
-        if not 'plotly' in globals.optional_features:
+        if not optional_features.has('plotly'):
             raise ImportError('Plotly is not installed. Please run "pip install nicegui[plotly]".')
 
         super().__init__()

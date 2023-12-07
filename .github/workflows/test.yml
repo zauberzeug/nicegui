@@ -6,7 +6,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11"]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
       fail-fast: false
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -19,9 +19,10 @@ jobs:
       - name: set up Poetry
         uses: abatilo/actions-poetry@v2.0.0
         with:
-          poetry-version: "1.3.1"
+          poetry-version: "1.6.1"
       - name: install dependencies
         run: |
+          set -x
           poetry config virtualenvs.create false
           poetry install --all-extras
           # install packages to run the examples

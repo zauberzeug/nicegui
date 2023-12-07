@@ -44,7 +44,7 @@ def test_emoji(screen: Screen):
     screen.ui_run_kwargs['favicon'] = '👋'
     screen.open('/')
     assert_favicon_url_starts_with(screen, 'data:image/svg+xml')
-    assert_favicon(favicon.char_to_svg('👋'))
+    assert_favicon(favicon._char_to_svg('👋'))
 
 
 def test_data_url(screen: Screen):
@@ -54,7 +54,7 @@ def test_data_url(screen: Screen):
     screen.ui_run_kwargs['favicon'] = icon
     screen.open('/')
     assert_favicon_url_starts_with(screen, 'data:image/png;base64')
-    _, bytes_ = favicon.data_url_to_bytes(icon)
+    _, bytes_ = favicon._data_url_to_bytes(icon)
     assert_favicon(bytes_)
 
 

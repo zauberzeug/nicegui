@@ -17,6 +17,6 @@ class Mermaid(ContentElement,
         """
         super().__init__(content=content)
 
-    def on_content_change(self, content: str) -> None:
+    def _handle_content_change(self, content: str) -> None:
         self._props[self.CONTENT_PROP] = content.strip()
         self.run_method('update', content.strip())

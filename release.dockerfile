@@ -16,7 +16,6 @@ RUN chmod 777 /resources/docker-entrypoint.sh
 
 EXPOSE 8080
 ENV PYTHONUNBUFFERED True
-ENV NO_NETIFACES=true
 
 ENTRYPOINT ["/resources/docker-entrypoint.sh"]
 CMD ["python", "main.py"]
