@@ -12,9 +12,7 @@ from fastapi import Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 
-from nicegui import json
-
-from . import background_tasks, binding, core, helpers, outbox
+from . import background_tasks, binding, core, helpers, json, outbox
 from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element

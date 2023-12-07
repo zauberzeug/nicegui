@@ -1,4 +1,5 @@
-from .. import Client, context
+from .. import context
+from ..client import Client
 
 
 def add_head_html(code: str, *, shared: bool = False) -> None:
