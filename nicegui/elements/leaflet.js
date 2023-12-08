@@ -4,11 +4,13 @@ export default {
   template: "<div></div>",
   props: {
     map_options: Object,
+    resource_path: String,
   },
   async mounted() {
+    await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
     const promisses = [
-      loadResource("https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css"),
-      loadResource("https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js"),
+      loadResource(window.path_prefix + `${this.resource_path}/leaflet.css`),
+      loadResource(window.path_prefix + `${this.resource_path}/leaflet.js`),
     ];
     if (this.map_options.drawControl) {
       promisses.push(loadResource("https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"));

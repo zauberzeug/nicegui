@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, List, Tuple, cast
 
 from .. import binding
@@ -21,6 +22,8 @@ class Leaflet(Element, component='leaflet.js'):
                  draw_control: bool = False,
                  ) -> None:
         super().__init__()
+        self.add_resource(Path(__file__).parent / 'lib' / 'leaflet')
+
         self.layers: List[Layer] = []
 
         self.set_location(location)
