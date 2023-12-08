@@ -8,7 +8,7 @@ from .html import Html
 class ChatMessage(Element):
 
     def __init__(self,
-                 text: Union[str, List[str]] = ..., *,
+                 text: Union[str, List[str]] = ..., *,  # type: ignore
                  name: Optional[str] = None,
                  label: Optional[str] = None,
                  stamp: Optional[str] = None,

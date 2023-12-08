@@ -44,9 +44,9 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                     description = part.description.replace('param ', '')
                     html = docutils.core.publish_parts(description, writer_name='html5_polyglot')['html_body']
                     html = apply_tailwind(html)
-                    ui.html(html)
+                    ui.html(html).classes('bold-links arrow-links')
                 else:
-                    ui.markdown(part.description)
+                    ui.markdown(part.description).classes('bold-links arrow-links')
             if part.ui:
                 part.ui()
             if part.demo:

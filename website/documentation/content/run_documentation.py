@@ -66,3 +66,17 @@ def svg_favicon():
     '''
 
     # ui.run(favicon=smiley)
+
+
+@doc.demo('Custom welcome message', '''
+    You can mute the default welcome message on the command line setting the `show_welcome_message` to `False`.
+    Instead you can print your own welcome message with a custom startup handler.
+''')
+def custom_welcome_message():
+    from nicegui import app
+
+    ui.label('App with custom welcome message')
+    #
+    # app.on_startup(lambda: print('Visit your app on one of these URLs:', app.urls))
+    #
+    # ui.run(show_welcome_message=False)
