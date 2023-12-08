@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 @dataclass(**KWONLY_SLOTS)
 class Layer:
-    current_leaflet: ClassVar[Optional['Leaflet']] = None
+    current_leaflet: ClassVar[Optional[Leaflet]] = None
     leaflet: Leaflet = field(init=False)
 
     def __post_init__(self) -> None:
