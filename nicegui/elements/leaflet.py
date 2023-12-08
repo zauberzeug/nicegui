@@ -47,7 +47,7 @@ class Leaflet(Element, component='leaflet.js'):
         self.on('zoomend', lambda e: self.set_zoom(e.args))
 
         self.tile_layer(
-            url_template=r'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+            url_template=r'https://{s}.tile.osm.org/{z}/{x}/{y}.png',
             options={'attribution': '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'},
         )
 
