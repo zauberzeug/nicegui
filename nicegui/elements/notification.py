@@ -32,7 +32,7 @@ class Notification(Element, component='notification.js'):
                  multi_line: bool = False,
                  icon: Optional[str] = None,
                  spinner: bool = False,
-                 timeout: float = 5.0,
+                 timeout: Optional[float] = 5.0,
                  **kwargs: Any,
                  ) -> None:
         """Notification
@@ -60,15 +60,16 @@ class Notification(Element, component='notification.js'):
             'icon': icon,
             'spinner': spinner,
             'closeBtn': close_button,
-            'timeout': timeout * 1000,
+            'timeout': (timeout or 0) * 1000,
             'group': False,
         }
         self._props['options'].update(kwargs)
-        with self:
-            def delete():
-                self.clear()
-                self.delete()
-            Timer(timeout, delete, once=True)
+        if timeout:
+            with self:
+                def delete():
+                    self.clear()
+                    self.delete()
+                Timer(timeout, delete, once=True)
 
     @property
     def message(self) -> str:
