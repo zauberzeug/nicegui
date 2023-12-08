@@ -62,14 +62,23 @@ class Notification(Element, component='notification.js'):
             'closeBtn': close_button,
             'timeout': (timeout or 0) * 1000,
             'group': False,
+            'attrs': {'data-id': f'nicegui-dialog-{self.id}'},
         }
         self._props['options'].update(kwargs)
-        if timeout:
-            with self:
-                def delete():
-                    self.clear()
-                    self.delete()
+        with self:
+            def delete():
+                self.clear()
+                self.delete()
+
+            async def try_delete():
+                query = f'''!!document.querySelector("[data-id='nicegui-dialog-{self.id}']")'''
+                if not await self.client.run_javascript(query):
+                    delete()
+
+            if timeout:
                 Timer(timeout, delete, once=True)
+            else:
+                Timer(1.0, try_delete)
 
     @property
     def message(self) -> str:
