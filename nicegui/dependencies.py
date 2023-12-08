@@ -103,7 +103,6 @@ def register_resource(path: Path) -> Resource:
         return resources[key]
     assert key not in resources, f'Duplicate resource {key}'
     resources[key] = Resource(key=key, path=path)
-    print(f'Registered resource {resources[key]}')
     return resources[key]
 
 

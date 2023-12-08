@@ -65,16 +65,20 @@
     }
   },
   "leaflet": {
-    "destination": "nicegui/elements/lib",
+    "destination": "nicegui/elements/lib/leaflet",
     "keep": [
-      "package/dist/leaflet(\\.src)?\\.js(\\.map)?",
       "package/dist/leaflet\\.css",
-      "package/dist/images/layers-2x\\.png",
-      "package/dist/images/layers\\.png",
-      "package/dist/images/marker-icon-2x\\.png",
-      "package/dist/images/marker-icon\\.png",
-      "package/dist/images/marker-shadow\\.png"
+      "package/dist/leaflet\\.js",
+      "package/dist/leaflet\\.js\\.map",
+      "package/dist/images/.*"
     ],
+    "rename": {
+      "package/dist/": ""
+    }
+  },
+  "leaflet-draw": {
+    "destination": "nicegui/elements/lib/leaflet",
+    "keep": ["package/dist/leaflet\\.draw\\.css", "package/dist/leaflet\\.draw\\.js", "package/dist/images/.*"],
     "rename": {
       "package/dist/": ""
     }

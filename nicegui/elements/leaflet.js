@@ -9,12 +9,12 @@ export default {
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
     const promisses = [
-      loadResource(window.path_prefix + `${this.resource_path}/leaflet.css`),
-      loadResource(window.path_prefix + `${this.resource_path}/leaflet.js`),
+      loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.css`),
+      loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.js`),
     ];
     if (this.map_options.drawControl) {
-      promisses.push(loadResource("https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"));
-      promisses.push(loadResource("https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"));
+      promisses.push(loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.css`));
+      promisses.push(loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.js`));
     }
     await Promise.all(promisses);
     this.map = L.map(this.$el, this.map_options);
