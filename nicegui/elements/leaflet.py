@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Any, List, Tuple, cast
 
+from typing_extensions import Self
+
 from .. import binding
 from ..awaitable_response import AwaitableResponse, NullResponse
 from ..element import Element
@@ -41,7 +43,7 @@ class Leaflet(Element, component='leaflet.js'):
             options={'attribution': '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'},
         )
 
-    def __enter__(self) -> 'Leaflet':
+    def __enter__(self) -> Self:
         Layer.current_leaflet = self
         return super().__enter__()
 

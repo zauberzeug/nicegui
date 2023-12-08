@@ -161,7 +161,7 @@ class Element(Visibility):
         self.default_slot.__enter__()
         return self
 
-    def __exit__(self, *_):
+    def __exit__(self, *_) -> None:
         self.default_slot.__exit__(*_)
 
     def __iter__(self) -> Iterator[Element]:
