@@ -76,10 +76,7 @@ class Notification(Element, component='notification.js'):
                 if not await self.client.run_javascript(query):
                     delete()
 
-            if timeout:
-                Timer(timeout, delete, once=True)
-            else:
-                Timer(1.0, try_delete)
+            Timer(1.0, try_delete)
 
     @property
     def message(self) -> str:
