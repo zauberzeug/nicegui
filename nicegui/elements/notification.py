@@ -35,9 +35,10 @@ class Notification(Element, component='notification.js'):
                  timeout: Optional[float] = 5.0,
                  **kwargs: Any,
                  ) -> None:
-        """Notification
+        """Notification element
 
         Displays a notification on the screen.
+        In contrast to `ui.notify`, this element allows to update the notification message and other properties once the notification is displayed.
 
         :param message: content of the notification
         :param position: position on the screen ("top-left", "top-right", "bottom-left", "bottom-right", "top", "bottom", "left", "right" or "center", default: "bottom")
