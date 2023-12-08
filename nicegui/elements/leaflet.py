@@ -23,6 +23,7 @@ class Leaflet(Element, component='leaflet.js'):
                  ) -> None:
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib' / 'leaflet')
+        self._classes.append('nicegui-leaflet')
 
         self.layers: List[Layer] = []
 
