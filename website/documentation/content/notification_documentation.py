@@ -17,3 +17,6 @@ def main_demo() -> None:
         n.spinner = False
 
     ui.button('Compute', on_click=compute)
+
+
+doc.reference(ui.notification)
