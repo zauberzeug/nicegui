@@ -4,30 +4,34 @@ from .. import context
 from ..element import Element
 from .timer import Timer
 
+NotificationPosition = Literal[
+    'top-left',
+    'top-right',
+    'bottom-left',
+    'bottom-right',
+    'top',
+    'bottom',
+    'left',
+    'right',
+    'center',
+]
+
+NotificationType = Optional[Literal[
+    'positive',
+    'negative',
+    'warning',
+    'info',
+    'ongoing',
+]]
+
 
 class Notification(Element, component='notification.js'):
 
     def __init__(self,
                  message: Any = '', *,
-                 position: Literal[
-                     'top-left',
-                     'top-right',
-                     'bottom-left',
-                     'bottom-right',
-                     'top',
-                     'bottom',
-                     'left',
-                     'right',
-                     'center',
-                 ] = 'bottom',
+                 position: NotificationPosition = 'bottom',
                  close_button: Union[bool, str] = False,
-                 type: Optional[Literal[  # pylint: disable=redefined-builtin
-                     'positive',
-                     'negative',
-                     'warning',
-                     'info',
-                     'ongoing',
-                 ]] = None,
+                 type: NotificationType = None,  # pylint: disable=redefined-builtin
                  color: Optional[str] = None,
                  multi_line: bool = False,
                  icon: Optional[str] = None,
@@ -89,22 +93,22 @@ class Notification(Element, component='notification.js'):
         self.update()
 
     @property
-    def position(self) -> str:
+    def position(self) -> NotificationPosition:
         """Position on the screen."""
         return self._props['options']['position']
 
     @position.setter
-    def position(self, value: str) -> None:
+    def position(self, value: NotificationPosition) -> None:
         self._props['options']['position'] = value
         self.update()
 
     @property
-    def type(self) -> Optional[str]:
+    def type(self) -> NotificationType:
         """Type of the notification."""
         return self._props['options']['type']
 
     @type.setter
-    def type(self, value: Optional[str]) -> None:
+    def type(self, value: NotificationType) -> None:
         self._props['options']['type'] = value
         self.update()
 
