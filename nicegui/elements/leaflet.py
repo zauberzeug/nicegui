@@ -23,6 +23,14 @@ class Leaflet(Element, component='leaflet.js'):
                  zoom: int = 13,
                  draw_control: bool = False,
                  ) -> None:
+        """Leaflet map
+
+        This element is a wrapper around the `Leaflet <https://leafletjs.com/>`_ JavaScript library.
+
+        :param location: initial location of the map
+        :param zoom: initial zoom level of the map
+        :param draw_control: whether to show the draw control toolbar
+        """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib' / 'leaflet')
         self._classes.append('nicegui-leaflet')
