@@ -6,12 +6,15 @@ export default {
     map_options: Object,
   },
   async mounted() {
-    await loadResource("https://unpkg.com/leaflet@1.6.0/dist/leaflet.css");
-    await loadResource("https://unpkg.com/leaflet@1.6.0/dist/leaflet.js");
+    const promisses = [
+      loadResource("https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css"),
+      loadResource("https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js"),
+    ];
     if (this.map_options.drawControl) {
-      await loadResource("https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css");
-      await loadResource("https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js");
+      promisses.push(loadResource("https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"));
+      promisses.push(loadResource("https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"));
     }
+    await Promise.all(promisses);
     this.map = L.map(this.$el, this.map_options);
     this.map.on("moveend", (e) => this.$emit("moveend", e.target.getCenter()));
     this.map.on("zoomend", (e) => this.$emit("zoomend", e.target.getZoom()));
