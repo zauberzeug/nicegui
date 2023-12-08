@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
-from . import air, background_tasks, binding, core, favicon, helpers, json, outbox, run
+from . import air, background_tasks, binding, core, favicon, helpers, json, outbox, run, welcome
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries
@@ -26,7 +26,7 @@ from .version import __version__
 
 @asynccontextmanager
 async def _lifespan(_: App):
-    _startup()
+    await _startup()
     yield
     await _shutdown()
 
@@ -76,9 +76,8 @@ def _get_component(key: str) -> FileResponse:
     raise HTTPException(status_code=404, detail=f'component "{key}" not found')
 
 
-def _startup() -> None:
+async def _startup() -> None:
     """Handle the startup event."""
-    # NOTE ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
     if not app.config.has_run_config:
         raise RuntimeError('\n\n'
                            'You must call ui.run() to start the server.\n'
@@ -87,6 +86,8 @@ def _startup() -> None:
                            'remove the guard or replace it with\n'
                            '   if __name__ in {"__main__", "__mp_main__"}:\n'
                            'to allow for multiprocessing.')
+    await welcome.collect_urls()
+    # NOTE ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
     sio.eio.ping_interval = max(app.config.reconnect_timeout * 0.8, 4)
     sio.eio.ping_timeout = max(app.config.reconnect_timeout * 0.4, 2)
     if core.app.config.favicon:

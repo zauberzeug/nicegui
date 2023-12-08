@@ -12,6 +12,7 @@ from . import background_tasks, binding, core, helpers
 from .client import Client
 from .favicon import create_favicon_route
 from .language import Language
+from .logging import log
 
 if TYPE_CHECKING:
     from .api_router import APIRouter
@@ -87,6 +88,10 @@ class page:
         core.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
         parameters_of_decorated_func = list(inspect.signature(func).parameters.keys())
 
+        def check_for_late_return_value(task: asyncio.Task) -> None:
+            if task.result() is not None:
+                log.error(f'ignoring {task.result()}; it was returned after the HTML had been delivered to the client')
+
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             request = dec_kwargs['request']
             # NOTE cleaning up the keyword args so the signature is consistent with "func" again
@@ -105,7 +110,11 @@ class page:
                     if time.time() > deadline:
                         raise TimeoutError(f'Response not ready after {self.response_timeout} seconds')
                     await asyncio.sleep(0.1)
-                result = task.result() if task.done() else None
+                if task.done():
+                    result = task.result()
+                else:
+                    result = None
+                    task.add_done_callback(check_for_late_return_value)
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
             binding._refresh_step()  # pylint: disable=protected-access

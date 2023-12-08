@@ -12,9 +12,7 @@ from fastapi import Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 
-from nicegui import json
-
-from . import background_tasks, binding, core, helpers, outbox
+from . import background_tasks, binding, core, helpers, json, outbox
 from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
@@ -38,6 +36,12 @@ class Client:
     auto_index_client: Client
     """The client that is used to render the auto-index page."""
 
+    shared_head_html = ''
+    """HTML to be inserted in the <head> of every page template."""
+
+    shared_body_html = ''
+    """HTML to be inserted in the <body> of every page template."""
+
     def __init__(self, page: page, *, shared: bool = False) -> None:
         self.id = str(uuid.uuid4())
         self.created = time.time()
@@ -59,8 +63,8 @@ class Client:
 
         self.waiting_javascript_commands: Dict[str, Any] = {}
 
-        self.head_html = ''
-        self.body_html = ''
+        self._head_html = ''
+        self._body_html = ''
 
         self.page = page
 
@@ -84,6 +88,16 @@ class Client:
         """Return True if the client is connected, False otherwise."""
         return self.environ is not None
 
+    @property
+    def head_html(self) -> str:
+        """Return the HTML code to be inserted in the <head> of the page template."""
+        return self.shared_head_html + self._head_html
+
+    @property
+    def body_html(self) -> str:
+        """Return the HTML code to be inserted in the <body> of the page template."""
+        return self.shared_body_html + self._body_html
+
     def __enter__(self):
         self.content.__enter__()
         return self
@@ -105,7 +119,8 @@ class Client:
             'elements': elements.replace('&', '&amp;')
                                 .replace('<', '&lt;')
                                 .replace('>', '&gt;')
-                                .replace('`', '&#96;'),
+                                .replace('`', '&#96;')
+                                .replace('$', '&#36;'),
             'head_html': self.head_html,
             'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
             'vue_scripts': '\n'.join(vue_scripts),
@@ -192,9 +207,9 @@ class Client:
         path = target if isinstance(target, str) else self.page_routes[target]
         outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 
-    def download(self, url: str, filename: Optional[str] = None) -> None:
-        """Download a file from the given URL."""
-        outbox.enqueue_message('download', {'url': url, 'filename': filename}, self.id)
+    def download(self, src: Union[str, bytes], filename: Optional[str] = None) -> None:
+        """Download a file from a given URL or raw bytes."""
+        outbox.enqueue_message('download', {'src': src, 'filename': filename}, self.id)
 
     def on_connect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
         """Register a callback to be called when the client connects."""

@@ -20,7 +20,7 @@ html:not(.has-dialog) {
   font-family: "Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
     monospace;
 }
-em:not(.browser-window *) {
+.fancy-em em {
   font-style: normal;
   color: #5898d4;
 }
