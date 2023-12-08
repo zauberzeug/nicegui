@@ -107,37 +107,6 @@
     "rename": {
       "package/": ""
     }
-  },
-  "fullcalendar": {
-    "destination": "nicegui/elements/lib",
-    "keep": ["package/index.global.min.js"],
-    "rename": {
-      "package/": ""
-    }
-  },
-  "fullcalendarvue3": {
-    "package": "@fullcalendar/vue3",
-    "destination": "nicegui/elements/lib",
-    "keep": ["package/dist/index.cjs"
-    ,"package/dist/FullCalendar.js"
-    ,"package/dist/index.global.js"
-    ,"package/dist/index.global.min.js"
-    ,"package/dist/index.js"
-    ,"package/dist/options.js"
-    ,"package/dist/FullCalendar.js.map"
-    ,"package/dist/index.js.map"
-    ,"package/dist/options.js.map"
-    ,"package/README.md"
-    ,"package/dist/FullCalendar.d.ts"
-    ,"package/src/FullCalendar.ts"
-    ,"package/dist/index.d.ts"
-    ,"package/src/index.ts"
-    ,"package/dist/options.d.ts"
-    ,"package/src/options.ts"
-    ,"package/LICENSE.txt"],
-    "rename": {
-      
-    }
   }
 
 }
