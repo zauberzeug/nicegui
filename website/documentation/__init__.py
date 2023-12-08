@@ -1,18 +1,16 @@
-from . import more
-from .content import create_overview, create_section
-from .demo import bash_window, browser_window, python_window
+from .content import overview, registry
 from .intro import create_intro
-from .tools import create_anchor_name, element_demo, generate_class_doc
+from .rendering import render_page
+from .search import build_search_index
+from .windows import bash_window, browser_window, python_window
 
 __all__ = [
     'bash_window',
     'browser_window',
-    'create_anchor_name',
-    'create_overview',
-    'create_section',
-    'more',
+    'build_search_index',
     'create_intro',
-    'element_demo',
-    'generate_class_doc',
+    'overview',  # ensure documentation tree is built
     'python_window',
+    'registry',
+    'render_page',
 ]

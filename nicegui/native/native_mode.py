@@ -21,7 +21,7 @@ try:
         # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
         warnings.filterwarnings('ignore', category=DeprecationWarning)
         import webview
-    optional_features.register('native')
+    optional_features.register('webview')
 except ModuleNotFoundError:
     pass
 
@@ -104,7 +104,7 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
             time.sleep(0.1)
         _thread.interrupt_main()
 
-    if not optional_features.has('native'):
+    if not optional_features.has('webview'):
         log.error('Native mode is not supported in this configuration.\n'
                   'Please run "pip install pywebview" to use it.')
         sys.exit(1)
