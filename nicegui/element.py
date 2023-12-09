@@ -408,6 +408,8 @@ class Element(Visibility):
 
     def update(self) -> None:
         """Update the element on the client side."""
+        if self.is_deleted:
+            return
         outbox.enqueue_update(self)
 
     def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
