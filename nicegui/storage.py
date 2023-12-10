@@ -43,7 +43,10 @@ class PersistentDict(observables.ObservableDict):
 
     def __init__(self, filepath: Path) -> None:
         self.filepath = filepath
-        data = json.loads(filepath.read_text()) if filepath.exists() else {}
+        try:
+            data = json.loads(filepath.read_text()) if filepath.exists() else {}
+        except Exception:
+            data = {}
         super().__init__(data, on_change=self.backup)
 
     def backup(self) -> None:
