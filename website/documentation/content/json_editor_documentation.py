@@ -18,9 +18,11 @@ def main_demo() -> None:
         'time': 1575599819000,
         'string': 'Hello World',
     }
-    ui.json_editor({'content': {'json': json}},
-                   on_select=lambda e: ui.notify(f'Select: {e}'),
-                   on_change=lambda e: ui.notify(f'Change: {e}'))
+    editor = ui.json_editor({'content': {'json': json}},
+                            on_select=lambda e: ui.notify(f'Select: {e}'),
+                            on_change=lambda e: ui.notify(f'Change: {e}'))
+    ui.button('Expand All', on_click=lambda: editor.call_editor_method('expand', 'path => true'))
+    ui.button('Collapse All', on_click=lambda: editor.call_editor_method('expand', 'path => false'))
 
 
 doc.reference(ui.json_editor)
