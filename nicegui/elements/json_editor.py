@@ -42,3 +42,6 @@ class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/va
     def update(self) -> None:
         super().update()
         self.run_method('update_editor')
+
+    def call_editor_method(self, name: str, arg) -> None:
+        self.run_method('call_editor_method', name, arg)

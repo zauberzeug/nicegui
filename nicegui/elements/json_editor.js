@@ -31,6 +31,12 @@ export default {
         this.editor.destroy();
       }
     },
+    call_editor_method(name, arg) {
+      if (this.editor) {
+        this.arg = new Function("return " + arg)();
+        this.editor[name](this.arg);
+      }
+    },
   },
   props: {
     properties: Object,
