@@ -1,10 +1,22 @@
 from dataclasses import dataclass, field
-from typing import Dict, Tuple
+from typing import Any, Dict, Tuple
 
 from typing_extensions import Self
 
 from ..dataclasses import KWONLY_SLOTS
 from .leaflet_layer import Layer
+
+
+@dataclass(**KWONLY_SLOTS)
+class GenericLayer(Layer):
+    name: str
+    args: list[Any] = field(default_factory=list)
+
+    def to_dict(self) -> Dict:
+        return {
+            'type': self.name,
+            'args': self.args,
+        }
 
 
 @dataclass(**KWONLY_SLOTS)

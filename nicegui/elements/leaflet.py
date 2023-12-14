@@ -12,6 +12,7 @@ from .leaflet_layer import Layer
 
 class Leaflet(Element, component='leaflet.js'):
     # pylint: disable=import-outside-toplevel
+    from .leaflet_layers import GenericLayer as generic_layer
     from .leaflet_layers import Marker as marker
     from .leaflet_layers import TileLayer as tile_layer
 
