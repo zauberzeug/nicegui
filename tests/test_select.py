@@ -165,3 +165,17 @@ def test_keep_filtered_options(screen: Screen):
     screen.should_contain('A2')
     screen.should_not_contain('B1')
     screen.should_not_contain('B2')
+
+
+def test_do_not_keep_filtered_options(screen: Screen):
+    # https://github.com/zauberzeug/nicegui/issues/2076
+    ui.select(options=['Alice', 'Bob', 'Carol'], with_input=True)
+
+    screen.open('/')
+    screen.find_by_tag('input').click()
+    screen.click('Alice')
+
+    screen.find_by_tag('input').click()
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_contain('Carol')
