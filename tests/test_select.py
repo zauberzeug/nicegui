@@ -141,8 +141,10 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
             screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C'}" if option_dict else
                                   "options = ['a', 'b', 'c']")
 
-def test_keep_filtered_options_single(screen: Screen):
-    ui.select(options=['A1', 'A2', 'B1', 'B2'], with_input=True)
+
+@pytest.mark.parametrize('multiple', [False, True])
+def test_keep_filtered_options(multiple: bool, screen: Screen):
+    ui.select(options=['A1', 'A2', 'B1', 'B2'], with_input=True, multiple=multiple)
 
     screen.open('/')
     screen.find_by_tag('input').click()
@@ -163,29 +165,9 @@ def test_keep_filtered_options_single(screen: Screen):
     screen.find_by_tag('input').click()
     screen.should_contain('A1')
     screen.should_contain('A2')
-    screen.should_contain('B1')
-    screen.should_contain('B2')
-
-def test_keep_filtered_options_multiple(screen: Screen):
-    ui.select(options=['A1', 'A2', 'B1', 'B2'], with_input=True, multiple=True)
-
-    screen.open('/')
-    screen.find_by_tag('input').click()
-    screen.should_contain('A1')
-    screen.should_contain('A2')
-    screen.should_contain('B1')
-    screen.should_contain('B2')
-
-    screen.find_by_tag('input').send_keys('A')
-    screen.wait(0.5)
-    screen.should_contain('A1')
-    screen.should_contain('A2')
-    screen.should_not_contain('B1')
-    screen.should_not_contain('B2')
-
-    screen.click('A1')
-    screen.wait(0.5)
-    screen.should_contain('A1')
-    screen.should_contain('A2')
-    screen.should_not_contain('B1')
-    screen.should_not_contain('B2')
+    if multiple:
+        screen.should_not_contain('B1')
+        screen.should_not_contain('B2')
+    else:
+        screen.should_contain('B1')
+        screen.should_contain('B2')

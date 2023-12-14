@@ -20,26 +20,20 @@ export default {
   },
   methods: {
     filterFn(val, update, abort) {
-      update(() => {
-        const needle = this.$attrs.multiple
-          ? this.$el.querySelector("input[type=search]")?.value.toLocaleLowerCase()
-          : val.toLocaleLowerCase()
-        this.filteredOptions = this.findFilteredOptions(needle)
-      });
+      update(() => (this.filteredOptions = val ? this.findFilteredOptions() : this.initialOptions));
     },
-    findFilteredOptions(needle) {
+    findFilteredOptions() {
+      const needle = this.$el.querySelector("input[type=search]")?.value.toLocaleLowerCase();
       return needle
         ? this.initialOptions.filter((v) => String(v.label).toLocaleLowerCase().indexOf(needle) > -1)
         : this.initialOptions;
     },
   },
   updated() {
-    if (this.$attrs.multiple) {
-      const needle = this.$el.querySelector("input[type=search]")?.value.toLocaleLowerCase()
-      const newFilteredOptions = this.findFilteredOptions(needle)
-      if (newFilteredOptions.length !== this.filteredOptions.length) {
-        this.filteredOptions = newFilteredOptions;
-      }
+    if (!this.$attrs.multiple) return;
+    const newFilteredOptions = this.findFilteredOptions();
+    if (newFilteredOptions.length !== this.filteredOptions.length) {
+      this.filteredOptions = newFilteredOptions;
     }
   },
   watch: {
