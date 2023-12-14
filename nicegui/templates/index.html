@@ -160,7 +160,7 @@
               listener_id: event.listener_id,
               args: stringifyEventArgs(args, event.args),
             };
-            const emitter = () => window.socket.emit("event", data);
+            const emitter = () => window.socket?.emit("event", data);
             throttle(emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
             if (element.props["loopback"] === False && event.type == "update:model-value") {
               element.props["model-value"] = args;
