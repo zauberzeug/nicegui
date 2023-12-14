@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Tuple
 
 from typing_extensions import Self
 
@@ -10,7 +10,7 @@ from .leaflet_layer import Layer
 @dataclass(**KWONLY_SLOTS)
 class GenericLayer(Layer):
     name: str
-    args: list[Any] = field(default_factory=list)
+    args: List[Any] = field(default_factory=list)
 
     def to_dict(self) -> Dict:
         return {
