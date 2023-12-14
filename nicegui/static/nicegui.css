@@ -71,6 +71,119 @@
   content: ""; /* the gap compensates for the missing vertical padding */
 }
 
+/* revert Tailwind's CSS reset for ui.editor and ui.markdown */
+.nicegui-editor .q-editor__content h1,
+.nicegui-markdown h1 {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 1rem;
+  margin-top: 1.5rem;
+  font-weight: 300;
+}
+.nicegui-editor .q-editor__content h2,
+.nicegui-markdown h2 {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  margin-bottom: 0.75rem;
+  margin-top: 1.25rem;
+  font-weight: 300;
+}
+.nicegui-editor .q-editor__content h3,
+.nicegui-markdown h3 {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+  font-weight: 400;
+}
+.nicegui-editor .q-editor__content h4,
+.nicegui-markdown h4 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  margin-bottom: 0.25rem;
+  margin-top: 0.75rem;
+  font-weight: 400;
+}
+.nicegui-editor .q-editor__content h5,
+.nicegui-markdown h5 {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  margin-bottom: 0.125rem;
+  margin-top: 0.5rem;
+  font-weight: 400;
+}
+.nicegui-editor .q-editor__content h6,
+.nicegui-markdown h6 {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  margin-bottom: 0.125rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+.nicegui-editor .q-editor__content a,
+.nicegui-markdown a {
+  text-decoration-line: underline;
+  color: rgb(37 99 235); /* blue-600 */
+}
+.nicegui-editor .q-editor__content a:hover,
+.nicegui-markdown a:hover {
+  color: rgb(30 64 175); /* blue-800 */
+}
+.nicegui-editor .q-editor__content a:visited,
+.nicegui-markdown a:visited {
+  color: rgb(147 51 234); /* purple-600 */
+}
+.nicegui-editor .q-editor__content hr,
+.nicegui-markdown hr {
+  margin-block-start: 0.5em;
+  margin-block-end: 0.5em;
+  height: 1px;
+  border-style: none;
+  background-color: rgba(128, 128, 128, 0.25);
+}
+.nicegui-editor .q-editor__content ul,
+.nicegui-markdown ul {
+  list-style-type: initial;
+  padding-inline-start: 2.5rem;
+  margin-block-start: 0.25rem;
+  margin-block-end: 0.25rem;
+}
+.nicegui-editor .q-editor__content ol,
+.nicegui-markdown ol {
+  list-style-type: decimal;
+  padding-inline-start: 2.5rem;
+  margin-block-start: 0.25rem;
+  margin-block-end: 0.25rem;
+}
+.nicegui-editor .q-editor__content blockquote,
+.nicegui-markdown blockquote {
+  border-left: 0.25rem solid #8884;
+  padding: 0.25rem 1rem 0.25rem 1rem;
+  margin: 0.5rem 0;
+}
+.nicegui-editor .q-editor__content p,
+.nicegui-markdown p {
+  margin: 0.5rem 0;
+}
+.nicegui-editor .q-editor__content table,
+.nicegui-markdown table {
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+}
+.nicegui-editor .q-editor__content th,
+.nicegui-markdown th {
+  padding: 0.5rem;
+  border: 1px solid #8884;
+}
+.nicegui-editor .q-editor__content td,
+.nicegui-markdown td {
+  padding: 0.5rem;
+  border: 1px solid #8884;
+}
+.nicegui-markdown .codehilite pre {
+  margin: 0.5rem 0;
+}
+
 /* other NiceGUI elements */
 .nicegui-grid {
   display: grid;
@@ -101,19 +214,6 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   opacity: 1 !important;
   cursor: text !important;
-}
-.nicegui-markdown blockquote {
-  border-left: 0.25rem solid #8884;
-  padding: 1rem 1rem 0.5rem 1rem;
-  margin: 1rem 0;
-}
-.nicegui-markdown th {
-  padding: 0.5rem;
-  border: 1px solid #8884;
-}
-.nicegui-markdown td {
-  padding: 0.5rem;
-  border: 1px solid #8884;
 }
 h6.q-timeline__title {
   font-size: 1.25rem;
