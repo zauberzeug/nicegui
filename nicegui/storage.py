@@ -13,6 +13,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from . import background_tasks, context, core, json, observables
+from .logging import log
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
@@ -46,6 +47,7 @@ class PersistentDict(observables.ObservableDict):
         try:
             data = json.loads(filepath.read_text()) if filepath.exists() else {}
         except Exception:
+            log.warning(f'Could not load storage file {filepath}')
             data = {}
         super().__init__(data, on_change=self.backup)
 
