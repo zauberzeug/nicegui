@@ -235,6 +235,18 @@ def pagination() -> None:
     ui.table(columns=columns, rows=rows, pagination={'rowsPerPage': 4, 'sortBy': 'age', 'page': 2})
 
 
+@doc.demo('Handle pagination changes', '''
+    You can handle pagination changes using the `on_pagination_change` parameter.
+''')
+def handle_pagination_changes() -> None:
+    ui.table(
+        columns=[{'id': 'Name', 'label': 'Name', 'field': 'Name', 'align': 'left'}],
+        rows=[{'Name': f'Person {i}'} for i in range(100)],
+        pagination=3,
+        on_pagination_change=lambda e: ui.notify(e.value),
+    )
+
+
 @doc.demo('Computed fields', '''
     You can use functions to compute the value of a column.
     The function receives the row as an argument.
