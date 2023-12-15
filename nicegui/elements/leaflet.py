@@ -36,7 +36,7 @@ class Leaflet(Element, component='leaflet.js'):
         self._classes.append('nicegui-leaflet')
 
         self.layers: List[Layer] = []
-        self._props['map_options'] = ObservableDict()
+        self._props['map_options'] = ObservableDict(on_change=self.update)
         self.set_location(location)
         self.set_zoom(zoom)
         self.draw_control = draw_control
@@ -65,11 +65,6 @@ class Leaflet(Element, component='leaflet.js'):
     def options(self) -> ObservableDict[str, Any]:
         """Options configuring the Leaflet map."""
         return self._props['map_options']
-
-    @options.setter
-    def options(self, value: ObservableDict[str, Any]) -> None:
-        assert isinstance(value, ObservableDict)
-        self._props['map_options'] = value
 
     def _handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True
