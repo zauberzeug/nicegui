@@ -2,7 +2,9 @@ from .. import context, json
 
 
 def page_title(title: str) -> None:
-    """Set the page title for the current client.
+    """Page title
+
+    Set the page title for the current client.
 
     :param title: page title
     """
