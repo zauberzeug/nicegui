@@ -23,11 +23,11 @@ def main_demo() -> None:
     editor = ui.json_editor({'content': {'json': json}},
                             on_select=lambda e: ui.notify(f'Select: {e}'),
                             on_change=lambda e: ui.notify(f'Change: {e}'))
-    ui.button('Expand All', on_click=lambda: editor.call_editor_method('expand', 'path => true'))
-    ui.button('Collapse All', on_click=lambda: editor.call_editor_method('expand', 'path => false'))
+    ui.button('Expand All', on_click=lambda: editor.call_api_method('expand', 'path => true'))
+    ui.button('Collapse All', on_click=lambda: editor.call_api_method('expand', 'path => false'))
 
     async def show_data() -> None:
-        data = await editor.call_editor_method('get')
+        data = await editor.call_api_method('get')
         ui.notify(data)
     ui.button('Show Data', on_click=show_data)
 
