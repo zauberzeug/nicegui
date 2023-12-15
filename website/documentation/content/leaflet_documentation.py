@@ -66,4 +66,34 @@ def vector_layers() -> None:
                     args=[[51.505, -0.09], {'color': 'red', 'radius': 300}])
 
 
+@doc.demo('Draw on Map', '''
+    You can enable a toolbar to draw on the map.
+    The `draw_control` can be used to configure the toolbar.
+    This demo adds markers and polygons by clicking on the map.
+''')
+def draw_on_map() -> None:
+    from nicegui import events
+
+    def handle_draw(e: events.GenericEventArguments):
+        if e.args['layerType'] == 'marker':
+            m.marker(location=(e.args['layer']['_latlng']['lat'],
+                               e.args['layer']['_latlng']['lng']))
+        if e.args['layerType'] == 'polygon':
+            m.generic_layer(name='polygon', args=[e.args['layer']['_latlngs']])
+
+    draw_control = {
+        'draw': {
+            'polygon': True,
+            'marker': True,
+            'circle': False,
+            'rectangle': False,
+            'polyline': False,
+            'circlemarker': False,
+        },
+        'edit': False,
+    }
+    m = ui.leaflet(location=(51.505, -0.09), zoom=13, draw_control=draw_control)
+    m.on('draw:created', handle_draw)
+
+
 doc.reference(ui.leaflet)

@@ -4,6 +4,7 @@ export default {
   template: "<div></div>",
   props: {
     map_options: Object,
+    draw_control: Object,
     resource_path: String,
   },
   async mounted() {
@@ -12,7 +13,7 @@ export default {
       loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.css`),
       loadResource(window.path_prefix + `${this.resource_path}/leaflet/leaflet.js`),
     ]);
-    if (this.map_options.drawControl) {
+    if (this.draw_control) {
       await Promise.all([
         loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.css`),
         loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.js`),
@@ -68,7 +69,7 @@ export default {
         });
       });
     }
-    if (this.map_options.drawControl) {
+    if (this.draw_control) {
       for (const key in L.Draw.Event) {
         const type = L.Draw.Event[key];
         this.map.on(type, (e) => {
@@ -80,10 +81,13 @@ export default {
           });
         });
       }
-    }
-    if (this.map_options.drawControl) {
-      var drawnItems = new L.FeatureGroup();
+      const drawnItems = new L.FeatureGroup();
       this.map.addLayer(drawnItems);
+      const drawControl = new L.Control.Draw({
+        edit: { featureGroup: drawnItems },
+        ...this.draw_control,
+      });
+      this.map.addControl(drawControl);
     }
     const connectInterval = setInterval(async () => {
       if (window.socket.id === undefined) return;
