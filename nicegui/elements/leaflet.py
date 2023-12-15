@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, List, Tuple, Union, cast
+from typing import Any, Dict, List, Tuple, Union, cast
 
 from typing_extensions import Self
 
@@ -16,34 +16,39 @@ class Leaflet(Element, component='leaflet.js'):
     from .leaflet_layers import Marker as marker
     from .leaflet_layers import TileLayer as tile_layer
 
-    center = binding.BindableProperty(lambda sender, _: cast(Leaflet, sender).update())
-    zoom = binding.BindableProperty(lambda sender, _: cast(Leaflet, sender).update())
+    center = binding.BindableProperty(lambda sender, value: cast(Leaflet, sender).set_center(value))
+    zoom = binding.BindableProperty(lambda sender, value: cast(Leaflet, sender).set_zoom(value))
 
     def __init__(self,
-                 center: Tuple[float, float] = (0, 0),
+                 center: Tuple[float, float] = (0.0, 0.0),
                  zoom: int = 13,
                  *,
-                 draw_control: Union[bool, dict] = False,
+                 options: Dict = {},
+                 draw_control: Union[bool, Dict] = False,
                  ) -> None:
         """Leaflet map
 
         This element is a wrapper around the `Leaflet <https://leafletjs.com/>`_ JavaScript library.
 
-        :param center: initial center location of the map
-        :param zoom: initial zoom level of the map
+        :param center: initial center location of the map (latitude/longitude, default: (0.0, 0.0))
+        :param zoom: initial zoom level of the map (default: 13)
         :param draw_control: whether to show the draw toolbar (default: False)
+        :param options: additional options passed to the Leaflet map (default: {})
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib' / 'leaflet')
         self._classes.append('nicegui-leaflet')
 
         self.layers: List[Layer] = []
-
-        self.set_center(center)
-        self.set_zoom(zoom)
-        self.draw_control = draw_control
-
         self.is_initialized = False
+
+        self.center = center
+        self.zoom = zoom
+        self._props['center'] = center
+        self._props['zoom'] = zoom
+        self._props['options'] = options
+        self._props['draw_control'] = draw_control
+
         self.on('init', self._handle_init)
         self.on('map-moveend', lambda e: self.set_center(e.args['center']))
         self.on('map-zoomend', lambda e: self.set_zoom(e.args['zoom']))
@@ -76,22 +81,17 @@ class Leaflet(Element, component='leaflet.js'):
 
     def set_center(self, center: Tuple[float, float]) -> None:
         """Set the center location of the map."""
-        self.center = center
+        if self._props['center'] == center:
+            return
+        self._props['center'] = center
+        self.run_method('setCenter', center)
 
     def set_zoom(self, zoom: int) -> None:
         """Set the zoom level of the map."""
-        self.zoom = zoom
-
-    def update(self) -> None:
-        self._props['map_options'] = {
-            'center': {
-                'lat': self.center[0],
-                'lng': self.center[1],
-            },
-            'zoom': self.zoom,
-        }
-        self._props['draw_control'] = self.draw_control
-        super().update()
+        if self._props['zoom'] != zoom:
+            return
+        self._props['zoom'] = zoom
+        self.run_method('setZoom', zoom)
 
     def _handle_delete(self) -> None:
         binding.remove(self.layers, Layer)

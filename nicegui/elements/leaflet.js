@@ -3,7 +3,9 @@ import { loadResource } from "../../static/utils/resources.js";
 export default {
   template: "<div></div>",
   props: {
-    map_options: Object,
+    center: Array,
+    zoom: Number,
+    options: Object,
     draw_control: Object,
     resource_path: String,
   },
@@ -19,7 +21,11 @@ export default {
         loadResource(window.path_prefix + `${this.resource_path}/leaflet-draw/leaflet.draw.js`),
       ]);
     }
-    this.map = L.map(this.$el, this.map_options);
+    this.map = L.map(this.$el, {
+      ...this.options,
+      center: this.center,
+      zoom: this.zoom,
+    });
     for (const type of [
       "baselayerchange",
       "overlayadd",
@@ -95,10 +101,13 @@ export default {
       clearInterval(connectInterval);
     }, 100);
   },
-  updated() {
-    this.map.setView(L.latLng(this.map_options.center.lat, this.map_options.center.lng), this.map_options.zoom);
-  },
   methods: {
+    setCenter(center) {
+      this.map.panTo(center);
+    },
+    setZoom(zoom) {
+      this.map.setZoom(zoom);
+    },
     add_layer(layer) {
       L[layer.type](...layer.args).addTo(this.map);
     },
