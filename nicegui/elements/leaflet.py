@@ -23,7 +23,7 @@ class Leaflet(Element, component='leaflet.js'):
                  location: Tuple[float, float] = (0, 0),
                  zoom: int = 13,
                  *,
-                 draw_control: bool = False,
+                 show_draw_toolbar: bool = False,
                  ) -> None:
         """Leaflet map
 
@@ -31,7 +31,7 @@ class Leaflet(Element, component='leaflet.js'):
 
         :param location: initial location of the map
         :param zoom: initial zoom level of the map
-        :param draw_control: whether to show the draw control toolbar
+        :param show_draw_toolbar: whether to show the draw control toolbar
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib' / 'leaflet')
@@ -41,7 +41,7 @@ class Leaflet(Element, component='leaflet.js'):
 
         self.set_location(location)
         self.set_zoom(zoom)
-        self.draw_control = draw_control
+        self.show_draw_toolbar = show_draw_toolbar
 
         self.is_initialized = False
         self.on('init', self._handle_init)
@@ -89,7 +89,7 @@ class Leaflet(Element, component='leaflet.js'):
                 'lng': self.location[1],
             },
             'zoom': self.zoom,
-            'drawControl': self.draw_control,
+            'drawControl': self.show_draw_toolbar,
         }
         super().update()
 
