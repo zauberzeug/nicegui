@@ -232,6 +232,9 @@ h6.q-timeline__title {
   box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
   border-radius: 0.25rem;
 }
+.nicegui-code .codehilite {
+  padding: 0 0.5rem;
+}
 
 /* connection popup */
 #popup {
