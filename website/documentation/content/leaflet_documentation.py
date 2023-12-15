@@ -17,8 +17,10 @@ def main_demo() -> None:
 
 
 @doc.demo('Changing the Map Style', '''
-    The default map style is OpenStreetMap. You can find more map styles at <https://leaflet-extras.github.io/leaflet-providers/preview/>.
-    Each call to `tile_layer` stacks upon the previous ones. So if you want to change the map style, you have to remove the default one first.
+    The default map style is OpenStreetMap. 
+    You can find more map styles at <https://leaflet-extras.github.io/leaflet-providers/preview/>.
+    Each call to `tile_layer` stacks upon the previous ones.
+    So if you want to change the map style, you have to remove the default one first.
 ''')
 def map_style() -> None:
     m = ui.leaflet(location=(51.505, -0.090), zoom=3)
@@ -30,12 +32,14 @@ def map_style() -> None:
                  })
 
 
-@doc.demo('Add markers', '''
-    
+@doc.demo('Add Markers on Click', '''
+    You can add markers to the map with `marker`. 
+    The `location` argument is a tuple of latitude and longitude.
+    This demo add markers by clicking on the map.
 ''')
 def markers() -> None:
     m = ui.leaflet(location=(51.505, -0.09)).classes('h-32')
-    ui.button(icon='pin_drop', on_click=lambda: m.marker(location=m.location))
+    m.on('click', lambda e: m.marker(location=e.args['latlng']))
 
 
 doc.reference(ui.leaflet)
