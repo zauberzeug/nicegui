@@ -2,9 +2,9 @@ from nicegui import ui
 
 from . import (card_documentation, carousel_documentation, column_documentation, context_menu_documentation,
                dialog_documentation, doc, expansion_documentation, grid_documentation, menu_documentation,
-               notify_documentation, pagination_documentation, row_documentation, scroll_area_documentation,
-               separator_documentation, splitter_documentation, stepper_documentation, tabs_documentation,
-               timeline_documentation)
+               notification_documentation, notify_documentation, pagination_documentation, row_documentation,
+               scroll_area_documentation, separator_documentation, splitter_documentation, stepper_documentation,
+               tabs_documentation, timeline_documentation)
 
 doc.title('Page *Layout*')
 
@@ -85,4 +85,5 @@ def tooltips_demo():
 
 
 doc.intro(notify_documentation)
+doc.intro(notification_documentation)
 doc.intro(dialog_documentation)

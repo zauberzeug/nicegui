@@ -59,11 +59,11 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
                     self.props(f'type={"text" if is_hidden else "password"}')
                 icon = Icon('visibility_off').classes('cursor-pointer').on('click', toggle_type)
 
-        self._props['autocomplete'] = autocomplete or []
+        self._props['_autocomplete'] = autocomplete or []
 
     def set_autocomplete(self, autocomplete: Optional[List[str]]) -> None:
         """Set the autocomplete list."""
-        self._props['autocomplete'] = autocomplete
+        self._props['_autocomplete'] = autocomplete
         self.update()
 
     def _handle_value_change(self, value: Any) -> None:

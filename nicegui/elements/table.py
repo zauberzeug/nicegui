@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 from .. import optional_features
 from ..element import Element
-from ..events import GenericEventArguments, TableSelectionEventArguments, handle_event
+from ..events import GenericEventArguments, TableSelectionEventArguments, ValueChangeEventArguments, handle_event
 from .mixins.filter_element import FilterElement
 
 try:
@@ -24,6 +24,7 @@ class Table(FilterElement, component='table.js'):
                  selection: Optional[Literal['single', 'multiple']] = None,
                  pagination: Optional[Union[int, dict]] = None,
                  on_select: Optional[Callable[..., Any]] = None,
+                 on_pagination_change: Optional[Callable[..., Any]] = None,
                  ) -> None:
         """Table
 
@@ -36,6 +37,7 @@ class Table(FilterElement, component='table.js'):
         :param selection: selection type ("single" or "multiple"; default: `None`)
         :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
         :param on_select: callback which is invoked when the selection changes
+        :param on_pagination_change: callback which is invoked when the pagination changes
 
         If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
         """
@@ -62,6 +64,13 @@ class Table(FilterElement, component='table.js'):
             arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
             handle_event(on_select, arguments)
         self.on('selection', handle_selection, ['added', 'rows', 'keys'])
+
+        def handle_pagination_change(e: GenericEventArguments) -> None:
+            self.pagination = e.args
+            self.update()
+            arguments = ValueChangeEventArguments(sender=self, client=self.client, value=self.pagination)
+            handle_event(on_pagination_change, arguments)
+        self.on('update:pagination', handle_pagination_change)
 
     @staticmethod
     def from_pandas(df: pd.DataFrame,
@@ -144,6 +153,16 @@ class Table(FilterElement, component='table.js'):
     @selected.setter
     def selected(self, value: List[Dict]) -> None:
         self._props['selected'][:] = value
+        self.update()
+
+    @property
+    def pagination(self) -> dict:
+        """Pagination object."""
+        return self._props['pagination']
+
+    @pagination.setter
+    def pagination(self, value: dict) -> None:
+        self._props['pagination'] = value
         self.update()
 
     @property

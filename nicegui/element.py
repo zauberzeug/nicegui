@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional,
 
 from typing_extensions import Self
 
-from . import context, core, events, json, outbox, storage
+from . import context, core, events, helpers, json, outbox, storage
 from .awaitable_response import AwaitableResponse, NullResponse
 from .dependencies import Component, Library, register_library, register_resource, register_vue_component
 from .elements.mixins.visibility import Visibility
@@ -397,7 +397,7 @@ class Element(Visibility):
         if handler:
             listener = EventListener(
                 element_id=self.id,
-                type=type,
+                type=helpers.kebab_to_camel_case(type),
                 args=[args] if args and isinstance(args[0], str) else args,  # type: ignore
                 handler=handler,
                 throttle=throttle,
@@ -417,6 +417,8 @@ class Element(Visibility):
 
     def update(self) -> None:
         """Update the element on the client side."""
+        if self.is_deleted:
+            return
         outbox.enqueue_update(self)
 
     def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:

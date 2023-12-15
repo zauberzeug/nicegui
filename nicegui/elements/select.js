@@ -20,7 +20,7 @@ export default {
   },
   methods: {
     filterFn(val, update, abort) {
-      update(() => (this.filteredOptions = this.findFilteredOptions()));
+      update(() => (this.filteredOptions = val ? this.findFilteredOptions() : this.initialOptions));
     },
     findFilteredOptions() {
       const needle = this.$el.querySelector("input[type=search]")?.value.toLocaleLowerCase();
@@ -30,6 +30,7 @@ export default {
     },
   },
   updated() {
+    if (!this.$attrs.multiple) return;
     const newFilteredOptions = this.findFilteredOptions();
     if (newFilteredOptions.length !== this.filteredOptions.length) {
       this.filteredOptions = newFilteredOptions;
