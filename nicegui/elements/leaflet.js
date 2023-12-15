@@ -58,11 +58,16 @@ export default {
       "zoomanim",
     ]) {
       this.map.on(type, (e) => {
-        this.$emit(`map-${type}`, { ...e, originalEvent: undefined, target: undefined, sourceTarget: undefined });
+        this.$emit(`map-${type}`, {
+          ...e,
+          originalEvent: undefined,
+          target: undefined,
+          sourceTarget: undefined,
+          location: [e.target.getCenter().lat, e.target.getCenter().lng],
+          zoom: e.target.getZoom(),
+        });
       });
     }
-    this.map.on("moveend", (e) => this.$emit("moveend", e.target.getCenter()));
-    this.map.on("zoomend", (e) => this.$emit("zoomend", e.target.getZoom()));
     if (this.map_options.drawControl) {
       var drawnItems = new L.FeatureGroup();
       this.map.addLayer(drawnItems);

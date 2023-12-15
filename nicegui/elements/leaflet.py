@@ -45,8 +45,8 @@ class Leaflet(Element, component='leaflet.js'):
 
         self.is_initialized = False
         self.on('init', self._handle_init)
-        self.on('moveend', lambda e: self.set_location((e.args['lat'], e.args['lng'])))
-        self.on('zoomend', lambda e: self.set_zoom(e.args))
+        self.on('map-moveend', lambda e: self.set_location(e.args['location']))
+        self.on('map-zoomend', lambda e: self.set_zoom(e.args['zoom']))
 
         self.tile_layer(
             url_template=r'https://{s}.tile.osm.org/{z}/{x}/{y}.png',
