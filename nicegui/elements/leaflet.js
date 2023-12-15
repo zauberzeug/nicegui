@@ -69,6 +69,19 @@ export default {
       });
     }
     if (this.map_options.drawControl) {
+      for (const key in L.Draw.Event) {
+        const type = L.Draw.Event[key];
+        this.map.on(type, (e) => {
+          this.$emit(type, {
+            ...e,
+            layer: e.layer ? { ...e.layer, editing: undefined, _events: undefined } : undefined,
+            target: undefined,
+            sourceTarget: undefined,
+          });
+        });
+      }
+    }
+    if (this.map_options.drawControl) {
       var drawnItems = new L.FeatureGroup();
       this.map.addLayer(drawnItems);
     }
