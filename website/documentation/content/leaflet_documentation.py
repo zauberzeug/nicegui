@@ -47,7 +47,7 @@ def markers() -> None:
     These can be added with the `generic_layer` method.
     We are happy to review any pull requests to add more specific layers to simplify usage.
 ''')
-def markers() -> None:
+def vector_layers() -> None:
     m = ui.leaflet(location=(51.505, -0.09)).classes('h-32')
     m.generic_layer(name='circle',
                     args=[[51.505, -0.09], {'color': 'red', 'radius': 300}])
