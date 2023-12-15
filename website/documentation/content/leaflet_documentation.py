@@ -42,4 +42,15 @@ def markers() -> None:
     m.on('click', lambda e: m.marker(location=e.args['latlng']))
 
 
+@doc.demo('Add Vector Layers', '''
+    Leaflet supports a set of [vector layers](https://leafletjs.com/reference.html#:~:text=VideoOverlay-,Vector%20Layers,-Path) like circle, polygon etc.
+    These can be added with the `generic_layer` method.
+    We are happy to review any pull requests to add more specific layers to simplify usage.
+''')
+def markers() -> None:
+    m = ui.leaflet(location=(51.505, -0.09)).classes('h-32')
+    m.generic_layer(name='circle',
+                    args=[[51.505, -0.09], {'color': 'red', 'radius': 300}])
+
+
 doc.reference(ui.leaflet)
