@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 from nicegui import ui
 
 from . import doc
@@ -23,6 +25,11 @@ def main_demo() -> None:
                             on_change=lambda e: ui.notify(f'Change: {e}'))
     ui.button('Expand All', on_click=lambda: editor.call_editor_method('expand', 'path => true'))
     ui.button('Collapse All', on_click=lambda: editor.call_editor_method('expand', 'path => false'))
+
+    async def show_data() -> None:
+        data = await editor.call_editor_method('get')
+        ui.notify(data)
+    ui.button('Show Data', on_click=show_data)
 
 
 doc.reference(ui.json_editor)

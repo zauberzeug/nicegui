@@ -33,8 +33,12 @@ export default {
     },
     call_editor_method(name, arg) {
       if (this.editor) {
-        this.arg = new Function("return " + arg)();
-        this.editor[name](this.arg);
+        if (arg === null) {
+          return this.editor[name]();
+        } else {
+          this.arg = new Function("return " + arg)();
+          return this.editor[name](this.arg);
+        }
       }
     },
   },
