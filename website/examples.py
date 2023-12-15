@@ -24,8 +24,6 @@ examples: List[Example] = [
     Example('Authentication', 'shows how to use sessions to build a login screen'),
     Example('Modularization', 'provides an example of how to modularize your application into multiple files and reuse code'),
     Example('FastAPI', 'illustrates the integration of NiceGUI with an existing FastAPI application'),
-    Example('Map',
-            'demonstrates wrapping the JavaScript library [leaflet](https://leafletjs.com/) to display a map at specific locations'),
     Example('AI Interface',
             'utilizes the [replicate](https://replicate.com) library to perform voice-to-text transcription and generate images from prompts with Stable Diffusion'),
     Example('3D Scene', 'creates a webGL view and loads an STL mesh illuminated with a spotlight'),
