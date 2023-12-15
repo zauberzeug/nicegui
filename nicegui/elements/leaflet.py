@@ -22,6 +22,7 @@ class Leaflet(Element, component='leaflet.js'):
     def __init__(self,
                  location: Tuple[float, float] = (0, 0),
                  zoom: int = 13,
+                 *,
                  draw_control: bool = False,
                  ) -> None:
         """Leaflet map

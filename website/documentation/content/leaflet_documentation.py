@@ -17,7 +17,7 @@ def main_demo() -> None:
 
 
 @doc.demo('Changing the Map Style', '''
-    The default map style is OpenStreetMap. 
+    The default map style is OpenStreetMap.
     You can find more map styles at <https://leaflet-extras.github.io/leaflet-providers/preview/>.
     Each call to `tile_layer` stacks upon the previous ones.
     So if you want to change the map style, you have to remove the default one first.
@@ -25,21 +25,34 @@ def main_demo() -> None:
 def map_style() -> None:
     m = ui.leaflet(location=(51.505, -0.090), zoom=3)
     del m.layers[0]
-    m.tile_layer(url_template=r'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-                 options={
-                     'maxZoom': 17,
-                     'attribution': 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
-                 })
+    m.tile_layer(
+        url_template=r'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+        options={
+            'maxZoom': 17,
+            'attribution':
+                'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | '
+                'Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+        },
+    )
 
 
 @doc.demo('Add Markers on Click', '''
     You can add markers to the map with `marker`. 
     The `location` argument is a tuple of latitude and longitude.
-    This demo add markers by clicking on the map.
+    This demo adds markers by clicking on the map.
+    Note that the "map-click" event refers to the click event of the map object,
+    while the "click" event refers to the click event of the container div.
 ''')
 def markers() -> None:
-    m = ui.leaflet(location=(51.505, -0.09)).classes('h-32')
-    m.on('click', lambda e: m.marker(location=e.args['latlng']))
+    from nicegui import events
+
+    m = ui.leaflet(location=(51.505, -0.09))
+
+    def handle_click(e: events.GenericEventArguments):
+        lat = e.args['latlng']['lat']
+        lng = e.args['latlng']['lng']
+        m.marker(location=(lat, lng))
+    m.on('map-click', handle_click)
 
 
 @doc.demo('Vector Layers', '''
