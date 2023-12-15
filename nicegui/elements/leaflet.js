@@ -19,14 +19,46 @@ export default {
       ]);
     }
     this.map = L.map(this.$el, this.map_options);
-    for (const type of ["click", "dblclick", "mousedown", "mouseup", "mouseover", "mouseout", "mousemove"]) {
+    for (const type of [
+      "baselayerchange",
+      "overlayadd",
+      "overlayremove",
+      "layeradd",
+      "layerremove",
+      "zoomlevelschange",
+      "resize",
+      "unload",
+      "viewreset",
+      "load",
+      "zoomstart",
+      "movestart",
+      "zoom",
+      "move",
+      "zoomend",
+      "moveend",
+      "popupopen",
+      "popupclose",
+      "autopanstart",
+      "tooltipopen",
+      "tooltipclose",
+      "locationerror",
+      "locationfound",
+      "click",
+      "dblclick",
+      "mousedown",
+      "mouseup",
+      "mouseover",
+      "mouseout",
+      "mousemove",
+      "contextmenu",
+      "keypress",
+      "keydown",
+      "keyup",
+      "preclick",
+      "zoomanim",
+    ]) {
       this.map.on(type, (e) => {
-        this.$emit(`map-${type}`, {
-          type: type,
-          latlng: e.latlng,
-          layerPoint: e.layerPoint,
-          containerPoint: e.containerPoint,
-        });
+        this.$emit(`map-${type}`, { ...e, originalEvent: undefined, target: undefined, sourceTarget: undefined });
       });
     }
     this.map.on("moveend", (e) => this.$emit("moveend", e.target.getCenter()));
