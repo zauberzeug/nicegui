@@ -31,7 +31,7 @@ export default {
         this.editor.destroy();
       }
     },
-    call_api_method(name, arg) {
+    run_api_method(name, arg) {
       if (this.editor) {
         if (arg === null) {
           return this.editor[name]();

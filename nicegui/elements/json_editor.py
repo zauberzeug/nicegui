@@ -44,6 +44,6 @@ class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/va
         super().update()
         self.run_method('update_editor')
 
-    def call_api_method(self, name: str, arg: Optional[str] = None, timeout: float = 1,
-                        check_interval: float = 0.01) -> AwaitableResponse:
-        return self.run_method('call_api_method', name, arg, timeout=timeout, check_interval=check_interval)
+    def run_api_method(self, name: str, arg: Optional[str] = None, timeout: float = 1,
+                       check_interval: float = 0.01) -> AwaitableResponse:
+        return self.run_method('run_api_method', name, arg, timeout=timeout, check_interval=check_interval)
