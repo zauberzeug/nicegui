@@ -1,3 +1,9 @@
+/* variables */
+:root {
+  --nicegui-default-padding: 1rem;
+  --nicegui-default-gap: 1rem;
+}
+
 /* prevent q-layout from getting strange outline when focussed */
 .nicegui-layout {
   outline: 2px solid transparent;
@@ -23,8 +29,8 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 1rem;
-  padding: 1rem;
+  gap: var(--nicegui-default-gap);
+  padding: var(--nicegui-default-padding);
 }
 .nicegui-header,
 .nicegui-footer,
@@ -64,7 +70,7 @@
 
 /* HACK: avoid stutter when expansion item is toggled */
 .nicegui-expansion .q-expansion-item__content {
-  padding: 0 1rem;
+  padding: 0 var(--nicegui-default-padding);
 }
 .nicegui-expansion .q-expansion-item__content::before,
 .nicegui-expansion .q-expansion-item__content::after {
@@ -187,7 +193,7 @@
 /* other NiceGUI elements */
 .nicegui-grid {
   display: grid;
-  gap: 1rem;
+  gap: var(--nicegui-default-gap);
 }
 .nicegui-link:link,
 .nicegui-link:visited {

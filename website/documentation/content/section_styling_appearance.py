@@ -124,4 +124,32 @@ def tailwind_demo():
 
 doc.intro(query_documentation)
 doc.intro(colors_documentation)
+
+
+@doc.demo('CSS Variables', '''
+    You can customize the appearance of NiceGUI by setting CSS variables.
+    Currently, the following variables with their default values are available:
+    
+    - `--nicegui-default-padding: 1rem`
+    - `--nicegui-default-gap: 1rem`
+
+''')
+def css_variables_demo():
+    # ui.add_head_html('''
+    #     <style>
+    #         :root {
+    #             --nicegui-default-padding: 0.5rem;
+    #             --nicegui-default-gap: 3rem;
+    #         }
+    #     </style>
+    # ''')
+    # with ui.card():
+    #     ui.label('small padding')
+    #     ui.label('large gap')
+    # END OF DEMO
+    with ui.card().classes('p-[0.5rem] gap-[3rem]'):
+        ui.label('small padding')
+        ui.label('large gap')
+
+
 doc.intro(dark_mode_documentation)
