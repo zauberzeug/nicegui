@@ -64,7 +64,7 @@ export default {
           originalEvent: undefined,
           target: undefined,
           sourceTarget: undefined,
-          location: [e.target.getCenter().lat, e.target.getCenter().lng],
+          center: [e.target.getCenter().lat, e.target.getCenter().lng],
           zoom: e.target.getZoom(),
         });
       });

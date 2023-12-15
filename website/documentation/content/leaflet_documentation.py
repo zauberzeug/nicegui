@@ -5,13 +5,13 @@ from . import doc
 
 @doc.demo(ui.leaflet)
 def main_demo() -> None:
-    m = ui.leaflet(location=(51.505, -0.09))
-    ui.label().bind_text_from(m, 'location', lambda location: f'Location: {location[0]:.3f}, {location[1]:.3f}')
+    m = ui.leaflet(center=(51.505, -0.09))
+    ui.label().bind_text_from(m, 'center', lambda center: f'Center: {center[0]:.3f}, {center[1]:.3f}')
     ui.label().bind_text_from(m, 'zoom', lambda zoom: f'Zoom: {zoom}')
 
     with ui.grid(columns=2):
-        ui.button('London', on_click=lambda: m.set_location((51.505, -0.090)))
-        ui.button('Berlin', on_click=lambda: m.set_location((52.520, 13.405)))
+        ui.button('London', on_click=lambda: m.set_center((51.505, -0.090)))
+        ui.button('Berlin', on_click=lambda: m.set_center((52.520, 13.405)))
         ui.button(icon='zoom_in', on_click=lambda: m.set_zoom(m.zoom + 1))
         ui.button(icon='zoom_out', on_click=lambda: m.set_zoom(m.zoom - 1))
 
@@ -23,7 +23,7 @@ def main_demo() -> None:
     So if you want to change the map style, you have to remove the default one first.
 ''')
 def map_style() -> None:
-    m = ui.leaflet(location=(51.505, -0.090), zoom=3)
+    m = ui.leaflet(center=(51.505, -0.090), zoom=3)
     del m.layers[0]
     m.tile_layer(
         url_template=r'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
@@ -38,7 +38,7 @@ def map_style() -> None:
 
 @doc.demo('Add Markers on Click', '''
     You can add markers to the map with `marker`. 
-    The `location` argument is a tuple of latitude and longitude.
+    The `center` argument is a tuple of latitude and longitude.
     This demo adds markers by clicking on the map.
     Note that the "map-click" event refers to the click event of the map object,
     while the "click" event refers to the click event of the container div.
@@ -46,12 +46,12 @@ def map_style() -> None:
 def markers() -> None:
     from nicegui import events
 
-    m = ui.leaflet(location=(51.505, -0.09))
+    m = ui.leaflet(center=(51.505, -0.09))
 
     def handle_click(e: events.GenericEventArguments):
         lat = e.args['latlng']['lat']
         lng = e.args['latlng']['lng']
-        m.marker(location=(lat, lng))
+        m.marker(latlng=(lat, lng))
     m.on('map-click', handle_click)
 
 
@@ -61,7 +61,7 @@ def markers() -> None:
     We are happy to review any pull requests to add more specific layers to simplify usage.
 ''')
 def vector_layers() -> None:
-    m = ui.leaflet(location=(51.505, -0.09)).classes('h-32')
+    m = ui.leaflet(center=(51.505, -0.09)).classes('h-32')
     m.generic_layer(name='circle',
                     args=[[51.505, -0.09], {'color': 'red', 'radius': 300}])
 
@@ -76,8 +76,8 @@ def draw_on_map() -> None:
 
     def handle_draw(e: events.GenericEventArguments):
         if e.args['layerType'] == 'marker':
-            m.marker(location=(e.args['layer']['_latlng']['lat'],
-                               e.args['layer']['_latlng']['lng']))
+            m.marker(latlng=(e.args['layer']['_latlng']['lat'],
+                             e.args['layer']['_latlng']['lng']))
         if e.args['layerType'] == 'polygon':
             m.generic_layer(name='polygon', args=[e.args['layer']['_latlngs']])
 
@@ -92,7 +92,7 @@ def draw_on_map() -> None:
         },
         'edit': False,
     }
-    m = ui.leaflet(location=(51.505, -0.09), zoom=13, draw_control=draw_control)
+    m = ui.leaflet(center=(51.505, -0.09), zoom=13, draw_control=draw_control)
     m.on('draw:created', handle_draw)
 
 

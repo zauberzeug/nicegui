@@ -33,13 +33,13 @@ class TileLayer(Layer):
 
 @dataclass(**KWONLY_SLOTS)
 class Marker(Layer):
-    location: Tuple[float, float]
+    latlng: Tuple[float, float]
     options: Dict = field(default_factory=dict)
 
     def to_dict(self) -> Dict:
         return {
             'type': 'marker',
-            'args': [{'lat': self.location[0], 'lng': self.location[1]}, self.options],
+            'args': [{'lat': self.latlng[0], 'lng': self.latlng[1]}, self.options],
         }
 
     def draggable(self, value: bool = True) -> Self:

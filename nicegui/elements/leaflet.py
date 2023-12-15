@@ -16,11 +16,11 @@ class Leaflet(Element, component='leaflet.js'):
     from .leaflet_layers import Marker as marker
     from .leaflet_layers import TileLayer as tile_layer
 
-    location = binding.BindableProperty(lambda sender, _: cast(Leaflet, sender).update())
+    center = binding.BindableProperty(lambda sender, _: cast(Leaflet, sender).update())
     zoom = binding.BindableProperty(lambda sender, _: cast(Leaflet, sender).update())
 
     def __init__(self,
-                 location: Tuple[float, float] = (0, 0),
+                 center: Tuple[float, float] = (0, 0),
                  zoom: int = 13,
                  *,
                  draw_control: Union[bool, dict] = False,
@@ -29,7 +29,7 @@ class Leaflet(Element, component='leaflet.js'):
 
         This element is a wrapper around the `Leaflet <https://leafletjs.com/>`_ JavaScript library.
 
-        :param location: initial location of the map
+        :param center: initial center location of the map
         :param zoom: initial zoom level of the map
         :param draw_control: whether to show the draw toolbar (default: False)
         """
@@ -39,13 +39,13 @@ class Leaflet(Element, component='leaflet.js'):
 
         self.layers: List[Layer] = []
 
-        self.set_location(location)
+        self.set_center(center)
         self.set_zoom(zoom)
         self.draw_control = draw_control
 
         self.is_initialized = False
         self.on('init', self._handle_init)
-        self.on('map-moveend', lambda e: self.set_location(e.args['location']))
+        self.on('map-moveend', lambda e: self.set_center(e.args['center']))
         self.on('map-zoomend', lambda e: self.set_zoom(e.args['zoom']))
 
         self.tile_layer(
@@ -74,9 +74,9 @@ class Leaflet(Element, component='leaflet.js'):
             return NullResponse()
         return super().run_method(name, *args, timeout=timeout, check_interval=check_interval)
 
-    def set_location(self, location: Tuple[float, float]) -> None:
-        """Set the location of the map."""
-        self.location = location
+    def set_center(self, center: Tuple[float, float]) -> None:
+        """Set the center location of the map."""
+        self.center = center
 
     def set_zoom(self, zoom: int) -> None:
         """Set the zoom level of the map."""
@@ -85,8 +85,8 @@ class Leaflet(Element, component='leaflet.js'):
     def update(self) -> None:
         self._props['map_options'] = {
             'center': {
-                'lat': self.location[0],
-                'lng': self.location[1],
+                'lat': self.center[0],
+                'lng': self.center[1],
             },
             'zoom': self.zoom,
         }
