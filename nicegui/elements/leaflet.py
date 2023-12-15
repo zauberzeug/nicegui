@@ -3,6 +3,8 @@ from typing import Any, Dict, List, Tuple, cast
 
 from typing_extensions import Self
 
+from nicegui.observables import ObservableDict
+
 from .. import binding
 from ..awaitable_response import AwaitableResponse, NullResponse
 from ..element import Element
@@ -34,7 +36,7 @@ class Leaflet(Element, component='leaflet.js'):
         self._classes.append('nicegui-leaflet')
 
         self.layers: List[Layer] = []
-        self._props['map_options'] = {}
+        self._props['map_options'] = ObservableDict()
         self.set_location(location)
         self.set_zoom(zoom)
         self.draw_control = draw_control
@@ -60,12 +62,13 @@ class Leaflet(Element, component='leaflet.js'):
         return attribute
 
     @property
-    def options(self) -> Dict[str, Any]:
+    def options(self) -> ObservableDict[str, Any]:
         """Options configuring the Leaflet map."""
         return self._props['map_options']
 
     @options.setter
-    def options(self, value: Dict[str, Any]) -> None:
+    def options(self, value: ObservableDict[str, Any]) -> None:
+        assert isinstance(value, ObservableDict)
         self._props['map_options'] = value
 
     def _handle_init(self, e: GenericEventArguments) -> None:

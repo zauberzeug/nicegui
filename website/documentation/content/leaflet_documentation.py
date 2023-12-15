@@ -61,12 +61,7 @@ def vector_layers() -> None:
 def map_options() -> None:
     m = ui.leaflet(location=(51.505, -0.09)).classes('h-32')
     m.options['zoomControl'] = False
-    m.update()
-
-    def keyboard_zoom(value: bool) -> None:
-        m.options['keyboard'] = value
-        m.update()
-    ui.switch('allow keyboard zoom', value=True, on_change=lambda e: keyboard_zoom(e.value))
+    ui.switch('keyboard zoom', on_change=lambda e: m.options.update({'keyboard': e.value}))
 
 
 doc.reference(ui.leaflet)
