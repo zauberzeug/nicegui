@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, List, Tuple, cast
+from typing import Any, Dict, List, Tuple, cast
 
 from typing_extensions import Self
 
@@ -15,9 +15,6 @@ class Leaflet(Element, component='leaflet.js'):
     from .leaflet_layers import GenericLayer as generic_layer
     from .leaflet_layers import Marker as marker
     from .leaflet_layers import TileLayer as tile_layer
-
-    location = binding.BindableProperty(lambda sender, _: cast(Leaflet, sender).update())
-    zoom = binding.BindableProperty(lambda sender, _: cast(Leaflet, sender).update())
 
     def __init__(self,
                  location: Tuple[float, float] = (0, 0),
@@ -37,7 +34,7 @@ class Leaflet(Element, component='leaflet.js'):
         self._classes.append('nicegui-leaflet')
 
         self.layers: List[Layer] = []
-
+        self._props['map_options'] = {}
         self.set_location(location)
         self.set_zoom(zoom)
         self.draw_control = draw_control
@@ -62,6 +59,15 @@ class Leaflet(Element, component='leaflet.js'):
             Layer.current_leaflet = self
         return attribute
 
+    @property
+    def options(self) -> Dict[str, Any]:
+        """Options configuring the Leaflet map."""
+        return self._props['map_options']
+
+    @options.setter
+    def options(self, value: Dict[str, Any]) -> None:
+        self._props['map_options'] = value
+
     def _handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True
         with self.client.individual_target(e.args['socket_id']):
@@ -75,22 +81,26 @@ class Leaflet(Element, component='leaflet.js'):
 
     def set_location(self, location: Tuple[float, float]) -> None:
         """Set the location of the map."""
-        self.location = location
+        self.options['center'] = {
+            'lat': location[0],
+            'lng': location[1],
+        }
+        self.update()
 
     def set_zoom(self, zoom: int) -> None:
         """Set the zoom level of the map."""
-        self.zoom = zoom
+        self.options['zoom'] = zoom
+        self.update()
 
-    def update(self) -> None:
-        self._props['map_options'] = {
-            'center': {
-                'lat': self.location[0],
-                'lng': self.location[1],
-            },
-            'zoom': self.zoom,
-            'drawControl': self.draw_control,
-        }
-        super().update()
+    @property
+    def location(self) -> Tuple[float, float]:
+        """The current location of the map."""
+        return cast(Tuple[float, float], (self.options['center']['lat'], self.options['center']['lng']))
+
+    @property
+    def zoom(self) -> int:
+        """The current zoom level of the map."""
+        return self.options['zoom']
 
     def _handle_delete(self) -> None:
         binding.remove(self.layers, Layer)

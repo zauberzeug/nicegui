@@ -53,4 +53,20 @@ def vector_layers() -> None:
                     args=[[51.505, -0.09], {'color': 'red', 'radius': 300}])
 
 
+@doc.demo('Changing Map Options', '''
+    You can change the map options with the `options` property.
+    See the [Leaflet documentation](https://leafletjs.com/reference.html#map) for a list of available options.
+    This demo hides the zoom controls and allows toggles weather the map is draggable and whether the zoom control is shown.
+''')
+def map_options() -> None:
+    m = ui.leaflet(location=(51.505, -0.09)).classes('h-32')
+    m.options['zoomControl'] = False
+    m.update()
+
+    def keyboard_zoom(value: bool) -> None:
+        m.options['keyboard'] = value
+        m.update()
+    ui.switch('allow keyboard zoom', value=True, on_change=lambda e: keyboard_zoom(e.value))
+
+
 doc.reference(ui.leaflet)
