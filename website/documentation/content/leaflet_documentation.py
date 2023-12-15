@@ -16,13 +16,26 @@ def main_demo() -> None:
         ui.button(icon='zoom_out', on_click=lambda: m.set_zoom(m.zoom - 1))
 
 
-@doc.demo('Layers and markers', '''
-    The following demo shows how to add custom layers and markers to a map.
+@doc.demo('Changing the Map Style', '''
+    The default map style is OpenStreetMap. You can find more map styles at <https://leaflet-extras.github.io/leaflet-providers/preview/>.
+    Each call to `tile_layer` stacks upon the previous ones. So if you want to change the map style, you have to remove the default one first.
 ''')
-def layers_and_markers() -> None:
-    m = ui.leaflet(location=(51.505, -0.090))
-    m.tile_layer(url_template=r'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png')
-    ui.button(icon='add_location', on_click=lambda: m.marker(location=m.location))
+def map_style() -> None:
+    m = ui.leaflet(location=(51.505, -0.090), zoom=3)
+    del m.layers[0]
+    m.tile_layer(url_template=r'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+                 options={
+                     'maxZoom': 17,
+                     'attribution': 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+                 })
+
+
+@doc.demo('Add markers', '''
+    
+''')
+def markers() -> None:
+    m = ui.leaflet(location=(51.505, -0.09)).classes('h-32')
+    ui.button(icon='pin_drop', on_click=lambda: m.marker(location=m.location))
 
 
 doc.reference(ui.leaflet)
