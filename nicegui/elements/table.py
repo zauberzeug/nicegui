@@ -196,6 +196,17 @@ class Table(FilterElement, component='table.js'):
         self.selected[:] = [row for row in self.selected if row[self.row_key] not in keys]
         self.update()
 
+    def update_rows(self, rows: List[Dict], *, clear_selection: bool = True) -> None:
+        """Update rows in the table.
+
+        :param rows: list of rows to update
+        :param clear_selection: whether to clear the selection (default: True)
+        """
+        self.rows[:] = rows
+        if clear_selection:
+            self.selected.clear()
+        self.update()
+
     class row(Element):
 
         def __init__(self) -> None:
