@@ -189,6 +189,7 @@ class Table(FilterElement, component='table.js'):
         self.update()
 
     class row(Element):
+
         def __init__(self) -> None:
             """Row Element
 
