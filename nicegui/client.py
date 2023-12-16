@@ -63,6 +63,8 @@ class Client:
 
         self.waiting_javascript_commands: Dict[str, Any] = {}
 
+        self.title: Optional[str] = None
+
         self._head_html = ''
         self._body_html = ''
 
@@ -127,7 +129,7 @@ class Client:
             'imports': json.dumps(imports),
             'js_imports': '\n'.join(js_imports),
             'quasar_config': json.dumps(core.app.config.quasar_config),
-            'title': self.page.resolve_title(),
+            'title': self.page.resolve_title() if self.title is None else self.title,
             'viewport': self.page.resolve_viewport(),
             'favicon_url': get_favicon_url(self.page, prefix),
             'dark': str(self.page.resolve_dark()),

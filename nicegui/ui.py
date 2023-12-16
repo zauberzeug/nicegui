@@ -87,6 +87,7 @@ __all__ = [
     'run_javascript',
     'notify',
     'open',
+    'page_title',
     'refreshable',
     'state',
     'update',
@@ -188,6 +189,7 @@ from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
 from .functions.notify import notify
 from .functions.open import open  # pylint: disable=redefined-builtin
+from .functions.page_title import page_title
 from .functions.refreshable import refreshable, state
 from .functions.update import update
 from .page import page
