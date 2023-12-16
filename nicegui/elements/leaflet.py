@@ -50,8 +50,8 @@ class Leaflet(Element, component='leaflet.js'):
         self._props['draw_control'] = draw_control
 
         self.on('init', self._handle_init)
-        self.on('map-moveend', lambda e: self.set_center(e.args['center']))
-        self.on('map-zoomend', lambda e: self.set_zoom(e.args['zoom']))
+        self.on('map-moveend', self._handle_moveend)
+        self.on('map-zoomend', self._handle_zoomend)
 
         self.tile_layer(
             url_template=r'https://{s}.tile.osm.org/{z}/{x}/{y}.png',
@@ -74,6 +74,12 @@ class Leaflet(Element, component='leaflet.js'):
             for layer in self.layers:
                 self.run_method('add_layer', layer.to_dict())
 
+    def _handle_moveend(self, e: GenericEventArguments) -> None:
+        self.center = e.args['center']
+
+    def _handle_zoomend(self, e: GenericEventArguments) -> None:
+        self.zoom = e.args['zoom']
+
     def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         if not self.is_initialized:
             return NullResponse()
@@ -88,7 +94,7 @@ class Leaflet(Element, component='leaflet.js'):
 
     def set_zoom(self, zoom: int) -> None:
         """Set the zoom level of the map."""
-        if self._props['zoom'] != zoom:
+        if self._props['zoom'] == zoom:
             return
         self._props['zoom'] = zoom
         self.run_method('setZoom', zoom)
