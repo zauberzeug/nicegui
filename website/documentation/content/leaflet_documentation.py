@@ -74,6 +74,8 @@ def disable_pan_zoom() -> None:
     options = {
         'zoomControl': False,
         'scrollWheelZoom': False,
+        'doubleClickZoom': False,
+        'boxZoom': False,
         'keyboard': False,
         'dragging': False,
     }
