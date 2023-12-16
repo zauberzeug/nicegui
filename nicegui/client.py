@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterable, Iter
 from fastapi import Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
+from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json, outbox
 from .awaitable_response import AwaitableResponse
@@ -100,11 +101,11 @@ class Client:
         """Return the HTML code to be inserted in the <body> of the page template."""
         return self.shared_body_html + self._body_html
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         self.content.__enter__()
         return self
 
-    def __exit__(self, *_):
+    def __exit__(self, *_) -> None:
         self.content.__exit__()
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:

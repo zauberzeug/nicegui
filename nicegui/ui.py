@@ -37,6 +37,7 @@ __all__ = [
     'keyboard',
     'knob',
     'label',
+    'leaflet',
     'line_plot',
     'link',
     'link_target',
@@ -140,6 +141,7 @@ from .elements.json_editor import JsonEditor as json_editor
 from .elements.keyboard import Keyboard as keyboard
 from .elements.knob import Knob as knob
 from .elements.label import Label as label
+from .elements.leaflet import Leaflet as leaflet
 from .elements.line_plot import LinePlot as line_plot
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target

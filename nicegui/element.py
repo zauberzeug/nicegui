@@ -11,11 +11,12 @@ from typing_extensions import Self
 
 from . import context, core, events, helpers, json, outbox, storage
 from .awaitable_response import AwaitableResponse, NullResponse
-from .dependencies import Component, Library, register_library, register_vue_component
+from .dependencies import Component, Library, register_library, register_resource, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
 from .tailwind import Tailwind
+from .version import __version__
 
 if TYPE_CHECKING:
     from .client import Client
@@ -138,6 +139,14 @@ class Element(Visibility):
         cls._default_classes = copy(cls._default_classes)
         cls._default_style = copy(cls._default_style)
 
+    def add_resource(self, path: Union[str, Path]) -> None:
+        """Add a resource to the element.
+
+        :param path: path to the resource (e.g. folder with CSS and JavaScript files)
+        """
+        resource = register_resource(Path(path))
+        self._props['resource_path'] = f'/_nicegui/{__version__}/resources/{resource.key}'
+
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
 
@@ -152,7 +161,7 @@ class Element(Visibility):
         self.default_slot.__enter__()
         return self
 
-    def __exit__(self, *_):
+    def __exit__(self, *_) -> None:
         self.default_slot.__exit__(*_)
 
     def __iter__(self) -> Iterator[Element]:

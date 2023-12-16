@@ -39,6 +39,12 @@ class JsComponent(Component):
 
 
 @dataclass(**KWONLY_SLOTS)
+class Resource:
+    key: str
+    path: Path
+
+
+@dataclass(**KWONLY_SLOTS)
 class Library:
     key: str
     name: str
@@ -49,6 +55,7 @@ class Library:
 vue_components: Dict[str, VueComponent] = {}
 js_components: Dict[str, JsComponent] = {}
 libraries: Dict[str, Library] = {}
+resources: Dict[str, Resource] = {}
 
 
 def register_vue_component(path: Path) -> Component:
@@ -89,17 +96,30 @@ def register_library(path: Path, *, expose: bool = False) -> Library:
     raise ValueError(f'Unsupported library type "{path.suffix}"')
 
 
+def register_resource(path: Path) -> Resource:
+    """Register a resource."""
+    key = compute_key(path)
+    if key in resources and resources[key].path == path:
+        return resources[key]
+    assert key not in resources, f'Duplicate resource {key}'
+    resources[key] = Resource(key=key, path=path)
+    return resources[key]
+
+
 def compute_key(path: Path) -> str:
     """Compute a key for a given path using a hash function.
 
     If the path is relative to the NiceGUI base directory, the key is computed from the relative path.
     """
     nicegui_base = Path(__file__).parent
+    is_file = path.is_file()
     try:
         path = path.relative_to(nicegui_base)
     except ValueError:
         pass
-    return f'{hash_file_path(path.parent)}/{path.name}'
+    if is_file:
+        return f'{hash_file_path(path.parent)}/{path.name}'
+    return f'{hash_file_path(path)}'
 
 
 def _get_name(path: Path) -> str:

@@ -209,6 +209,7 @@
 }
 .nicegui-aggrid,
 .nicegui-echart,
+.nicegui-leaflet,
 .nicegui-scroll-area {
   width: 100%;
   height: 16rem;
