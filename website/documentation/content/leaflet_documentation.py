@@ -66,6 +66,15 @@ def vector_layers() -> None:
                     args=[[51.505, -0.09], {'color': 'red', 'radius': 300}])
 
 
+@doc.demo('Disable Pan and Zoom', '''
+    There are [several options to configure the map in Leaflet](https://leafletjs.com/reference.html#map).
+    This demo disables the pan and zoom controls.
+''')
+def disable_pan_zoom() -> None:
+    options = {'zoomControl': False, 'keyboard': False, 'dragging': False}
+    ui.leaflet(center=(51.505, -0.09), options=options).classes('h-32')
+
+
 @doc.demo('Draw on Map', '''
     You can enable a toolbar to draw on the map.
     The `draw_control` can be used to configure the toolbar.
