@@ -71,8 +71,13 @@ def vector_layers() -> None:
     This demo disables the pan and zoom controls.
 ''')
 def disable_pan_zoom() -> None:
-    options = {'zoomControl': False, 'keyboard': False, 'dragging': False}
-    ui.leaflet(center=(51.505, -0.09), options=options).classes('h-32')
+    options = {
+        'zoomControl': False,
+        'scrollWheelZoom': False,
+        'keyboard': False,
+        'dragging': False,
+    }
+    ui.leaflet(center=(51.505, -0.09), options=options)
 
 
 @doc.demo('Draw on Map', '''
