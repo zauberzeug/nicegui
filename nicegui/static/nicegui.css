@@ -195,8 +195,7 @@
   display: grid;
   gap: var(--nicegui-default-gap);
 }
-.nicegui-link:link,
-.nicegui-link:visited {
+.nicegui-link {
   text-decoration-line: underline;
   color: rgb(59 130 246);
 }
