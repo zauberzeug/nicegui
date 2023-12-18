@@ -24,7 +24,7 @@ def main_demo() -> None:
 ''')
 def map_style() -> None:
     m = ui.leaflet(center=(51.505, -0.090), zoom=3)
-    del m.layers[0]
+    m.clear_layers()
     m.tile_layer(
         url_template=r'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
         options={
