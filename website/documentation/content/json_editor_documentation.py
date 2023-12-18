@@ -38,8 +38,9 @@ def methods_demo() -> None:
     }
     editor = ui.json_editor({'content': {'json': json}})
 
-    ui.button('Expand All', on_click=lambda: editor.run_editor_method('expand', 'path => true'))
-    ui.button('Collapse All', on_click=lambda: editor.run_editor_method('expand', 'path => false'))
+    ui.button('Expand', on_click=lambda: editor.run_editor_method('expand', 'path => true'))
+    ui.button('Collapse', on_click=lambda: editor.run_editor_method('expand', 'path => false'))
+    ui.button('Readonly', on_click=lambda: editor.run_editor_method('updateProps', r'{readOnly: true}'))
 
     async def get_data() -> None:
         data = await editor.run_editor_method('get')
