@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
+
+from typing_extensions import Self
 
 from .. import optional_features
 from ..element import Element
@@ -72,13 +72,14 @@ class Table(FilterElement, component='table.js'):
             handle_event(on_pagination_change, arguments)
         self.on('update:pagination', handle_pagination_change)
 
-    @staticmethod
-    def from_pandas(df: pd.DataFrame,
+    @classmethod
+    def from_pandas(cls,
+                    df: pd.DataFrame,
                     row_key: str = 'id',
                     title: Optional[str] = None,
                     selection: Optional[Literal['single', 'multiple']] = None,
                     pagination: Optional[Union[int, dict]] = None,
-                    on_select: Optional[Callable[..., Any]] = None) -> Table:
+                    on_select: Optional[Callable[..., Any]] = None) -> Self:
         """Create a table from a Pandas DataFrame.
 
         Note:
@@ -106,7 +107,7 @@ class Table(FilterElement, component='table.js'):
             df[complex_cols] = df[complex_cols].astype(str)
             df[period_cols] = df[period_cols].astype(str)
 
-        return Table(
+        return cls(
             columns=[{'name': col, 'label': col, 'field': col} for col in df.columns],
             rows=df.to_dict('records'),
             row_key=row_key,
