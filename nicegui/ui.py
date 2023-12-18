@@ -97,6 +97,7 @@ __all__ = [
     'footer',
     'header',
     'left_drawer',
+    'on',
     'page_sticky',
     'right_drawer',
     'run',
@@ -190,6 +191,7 @@ from .functions.download import download
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
 from .functions.notify import notify
+from .functions.on import on
 from .functions.open import open  # pylint: disable=redefined-builtin
 from .functions.page_title import page_title
 from .functions.refreshable import refreshable, state

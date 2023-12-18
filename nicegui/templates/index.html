@@ -54,6 +54,9 @@
           return element.$refs.qRef[method_name](...args);
         }
       }
+      function emitEvent(event_name, ...args) {
+        getElement(0).$emit(event_name, ...args);
+      }
     </script>
     <script type="module">
       const True = true;
