@@ -32,7 +32,12 @@ def generate_class_doc(class_obj: type) -> None:
         subheading('Methods')
         with ui.column().classes('gap-2'):
             for name, method in sorted(methods.items()):
-                ui.markdown(f'**`{name}`**`{_generate_method_signature_description(method)}`')
+                decorator = ''
+                if isinstance(class_obj.__dict__.get(name), staticmethod):
+                    decorator += '`@staticmethod`<br />'
+                if isinstance(class_obj.__dict__.get(name), classmethod):
+                    decorator += '`@classmethod`<br />'
+                ui.markdown(f'{decorator}**`{name}`**`{_generate_method_signature_description(method)}`')
                 if method.__doc__:
                     _render_docstring(method.__doc__).classes('ml-8')
     if ancestors:
