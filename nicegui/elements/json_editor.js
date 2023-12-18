@@ -34,7 +34,7 @@ export default {
     run_editor_method(name, ...args) {
       if (this.editor) {
         const evaluated_args = args.map((arg) => new Function("return " + arg)());
-        return this.editor[name](evaluated_args);
+        return this.editor[name](...evaluated_args);
       }
     },
   },
