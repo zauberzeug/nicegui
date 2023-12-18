@@ -45,7 +45,12 @@ def _is_method_or_property(cls: type, attribute_name: str) -> bool:
     return (
         inspect.isfunction(attribute) or
         inspect.ismethod(attribute) or
-        isinstance(attribute, (property, binding.BindableProperty))
+        isinstance(attribute, (
+            staticmethod,
+            classmethod,
+            property,
+            binding.BindableProperty,
+        ))
     )
 
 
