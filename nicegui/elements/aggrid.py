@@ -25,7 +25,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         An element to create a grid using `AG Grid <https://www.ag-grid.com/>`_.
 
-        The methods `call_api_method` and `call_column_api_method` can be used to interact with the AG Grid instance on the client.
+        The methods `run_grid_method` and `run_column_method` can be used to interact with the AG Grid instance on the client.
 
         :param options: dictionary of AG Grid options
         :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
@@ -86,7 +86,11 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         self.run_method('update_grid')
 
     def call_api_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
-        """Call an AG Grid API method.
+        """DEPRECATED: Use `run_grid_method` instead."""
+        return self.run_grid_method(name, *args, timeout=timeout, check_interval=check_interval)
+
+    def run_grid_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+        """Run an AG Grid API method.
 
         See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>`_ for a list of methods.
 
@@ -100,11 +104,15 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('call_api_method', name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_grid_method', name, *args, timeout=timeout, check_interval=check_interval)
 
-    def call_column_api_method(self, name: str, *args,
-                               timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
-        """Call an AG Grid Column API method.
+    def call_column_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+        """DEPRECATED: Use `run_column_method` instead."""
+        return self.run_column_method(name, *args, timeout=timeout, check_interval=check_interval)
+
+    def run_column_method(self, name: str, *args,
+                          timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+        """Run an AG Grid Column API method.
 
         See `AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>`_ for a list of methods.
 
@@ -118,7 +126,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('call_column_api_method', name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_column_method', name, *args, timeout=timeout, check_interval=check_interval)
 
     async def get_selected_rows(self) -> List[Dict]:
         """Get the currently selected rows.
@@ -129,7 +137,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :return: list of selected row data
         """
-        result = await self.call_api_method('getSelectedRows')
+        result = await self.run_grid_method('getSelectedRows')
         return cast(List[Dict], result)
 
     async def get_selected_row(self) -> Optional[Dict]:
