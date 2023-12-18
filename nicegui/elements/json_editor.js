@@ -31,14 +31,10 @@ export default {
         this.editor.destroy();
       }
     },
-    run_api_method(name, arg) {
+    run_editor_method(name, ...args) {
       if (this.editor) {
-        if (arg === null) {
-          return this.editor[name]();
-        } else {
-          this.arg = new Function("return " + arg)();
-          return this.editor[name](this.arg);
-        }
+        const evaluated_args = args.map((arg) => new Function("return " + arg)());
+        return this.editor[name](evaluated_args);
       }
     },
   },
