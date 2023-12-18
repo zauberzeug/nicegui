@@ -99,6 +99,23 @@ class Leaflet(Element, component='leaflet.js'):
         self._props['zoom'] = zoom
         self.run_method('setZoom', zoom)
 
+    def run_map_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+        """Run a method of the Leaflet map instance.
+
+        Refer to the `Leaflet documentation <https://leafletjs.com/reference.html#map-methods-for-modifying-map-state>`_ for a list of methods.
+
+        If the function is awaited, the result of the method call is returned.
+        Otherwise, the method is executed without waiting for a response.
+
+        :param name: name of the method
+        :param args: arguments to pass to the method
+        :param timeout: timeout in seconds (default: 1 second)
+        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
+
+        :return: AwaitableResponse that can be awaited to get the result of the method call
+        """
+        return self.run_method('run_map_method', name, *args, timeout=timeout, check_interval=check_interval)
+
     def _handle_delete(self) -> None:
         binding.remove(self.layers, Layer)
         super().delete()

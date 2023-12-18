@@ -112,4 +112,13 @@ def draw_on_map() -> None:
     m.on('draw:created', handle_draw)
 
 
+@doc.demo('Run Map Methods', '''
+    You can run methods of the Leaflet map object with `run_map_method`.
+    This demo shows how to fit the map to the whole world.
+''')
+def run_map_methods() -> None:
+    m = ui.leaflet(center=(51.505, -0.09)).classes('h-32')
+    ui.button('Fit world', on_click=lambda: m.run_map_method('fitWorld'))
+
+
 doc.reference(ui.leaflet)

@@ -111,5 +111,8 @@ export default {
     add_layer(layer) {
       L[layer.type](...layer.args).addTo(this.map);
     },
+    run_map_method(name, ...args) {
+      return this.map[name](...args);
+    },
   },
 };
