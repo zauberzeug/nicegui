@@ -23,12 +23,24 @@ class FullCalendar(Element, component='fullcalendar.js'):
             self.on('click', lambda e: handle_event(on_click, e))
 
     def add_event(self, title: str, start: str, end: str, **kwargs) -> None:
+        """Add an event to the calendar.
+
+        :param title: title of the event
+        :param start: start time of the event
+        :param end: end time of the event
+        """
         event_dict = {'title': title, 'start': start, 'end': end, **kwargs}
         self._props['options']['events'].append(event_dict)
         self.update()
         self.run_method('update_calendar')
 
     def remove_event(self, title: str, start: str, end: str) -> None:
+        """Remove an event from the calendar.
+
+        :param title: title of the event
+        :param start: start time of the event
+        :param end: end time of the event
+        """
         for event in self._props['options']['events']:
             if event['title'] == title and event['start'] == start and event['end'] == end:
                 self._props['options']['events'].remove(event)
@@ -39,4 +51,5 @@ class FullCalendar(Element, component='fullcalendar.js'):
 
     @property
     def events(self) -> List[Dict]:
+        """List of events currently displayed in the calendar."""
         return self._props['options']['events']

@@ -7,6 +7,8 @@ from . import doc
 def main_demo() -> None:
     options = {
         'initialView': 'dayGridMonth',
+        'headerToolbar': {'left': 'title', 'right': ''},
+        'footerToolbar': {'right': 'prev,next today'},
         'slotMinTime': '05:00:00',
         'slotMaxTime': '22:00:00',
         'allDaySlot': False,
