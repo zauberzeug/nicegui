@@ -5,7 +5,6 @@ from . import doc
 
 @doc.demo(ui.fullcalendar)
 def main_demo() -> None:
-
     options = {
         'initialView': 'dayGridMonth',
         'slotMinTime': '05:00:00',
@@ -16,4 +15,7 @@ def main_demo() -> None:
         'width': 'auto',
         'events': [],
     }
-    calendar = ui.fullcalendar(options, on_click=ui.notify)
+    ui.fullcalendar(options, on_click=ui.notify)
+
+
+doc.reference(ui.fullcalendar)

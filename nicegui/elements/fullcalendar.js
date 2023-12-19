@@ -1,4 +1,3 @@
-
 import FullCalendar from "../../static/utils/index.global.min.js";
 
 export default {
