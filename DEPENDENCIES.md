@@ -15,4 +15,4 @@
 - three: 0.157.0 ([MIT](https://opensource.org/licenses/MIT))
 - tween: 21.0.0 ([MIT](https://opensource.org/licenses/MIT))
 - vanilla-jsoneditor: 0.18.10 ([ISC](https://opensource.org/licenses/ISC))
-- fullcalendar: 6.1.9 ([MIT](https://opensource.org/licenses/MIT))
+- fullcalendar: 6.1.10 ([MIT](https://opensource.org/licenses/MIT))

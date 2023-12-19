@@ -1,10 +1,12 @@
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 from ..element import Element
 from ..events import handle_event
 
 
-class FullCalendar(Element, component='fullcalendar.js', libraries=['lib/fullcalendar/index.global.js']):
+class FullCalendar(Element, component='fullcalendar.js'):
+
     def __init__(self, options: Dict[str, Any], on_click: Optional[Callable] = None) -> None:
         """FullCalendar
 
@@ -14,6 +16,7 @@ class FullCalendar(Element, component='fullcalendar.js', libraries=['lib/fullcal
         :param on_click: callback function that is called when a calendar event is clicked.
         """
         super().__init__()
+        self.add_resource(Path(__file__).parent / 'lib' / 'fullcalendar')
         self._props['options'] = options
 
         if on_click:
