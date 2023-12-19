@@ -21,5 +21,6 @@ class Editor(ValueElement, DisableableElement):
         :param on_change: callback to be invoked when the value changes
         """
         super().__init__(tag='q-editor', value=value, on_value_change=on_change)
+        self._classes.append('nicegui-editor')
         if placeholder is not None:
             self._props['placeholder'] = placeholder

@@ -14,7 +14,7 @@ from fastapi_socketio import SocketManager
 from . import air, background_tasks, binding, core, favicon, helpers, json, outbox, run, welcome
 from .app import App
 from .client import Client
-from .dependencies import js_components, libraries
+from .dependencies import js_components, libraries, resources
 from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
@@ -74,6 +74,17 @@ def _get_component(key: str) -> FileResponse:
         headers = {'Cache-Control': 'public, max-age=3600'}
         return FileResponse(js_components[key].path, media_type='text/javascript', headers=headers)
     raise HTTPException(status_code=404, detail=f'component "{key}" not found')
+
+
+@app.get(f'/_nicegui/{__version__}' + '/resources/{key}/{path:path}')
+def _get_resource(key: str, path: str) -> FileResponse:
+    if key in resources:
+        filepath = resources[key].path / path
+        if filepath.exists():
+            headers = {'Cache-Control': 'public, max-age=3600'}
+            media_type, _ = mimetypes.guess_type(filepath)
+            return FileResponse(filepath, media_type=media_type, headers=headers)
+    raise HTTPException(status_code=404, detail=f'resource "{key}" not found')
 
 
 async def _startup() -> None:

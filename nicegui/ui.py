@@ -38,6 +38,7 @@ __all__ = [
     'keyboard',
     'knob',
     'label',
+    'leaflet',
     'line_plot',
     'link',
     'link_target',
@@ -46,6 +47,7 @@ __all__ = [
     'menu',
     'menu_item',
     'mermaid',
+    'notification',
     'number',
     'pagination',
     'plotly',
@@ -87,6 +89,7 @@ __all__ = [
     'run_javascript',
     'notify',
     'open',
+    'page_title',
     'refreshable',
     'state',
     'update',
@@ -95,6 +98,7 @@ __all__ = [
     'footer',
     'header',
     'left_drawer',
+    'on',
     'page_sticky',
     'right_drawer',
     'run',
@@ -140,6 +144,7 @@ from .elements.json_editor import JsonEditor as json_editor
 from .elements.keyboard import Keyboard as keyboard
 from .elements.knob import Knob as knob
 from .elements.label import Label as label
+from .elements.leaflet import Leaflet as leaflet
 from .elements.line_plot import LinePlot as line_plot
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
@@ -148,6 +153,7 @@ from .elements.markdown import Markdown as markdown
 from .elements.menu import Menu as menu
 from .elements.menu import MenuItem as menu_item
 from .elements.mermaid import Mermaid as mermaid
+from .elements.notification import Notification as notification
 from .elements.number import Number as number
 from .elements.pagination import Pagination as pagination
 from .elements.plotly import Plotly as plotly
@@ -187,7 +193,9 @@ from .functions.download import download
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
 from .functions.notify import notify
+from .functions.on import on
 from .functions.open import open  # pylint: disable=redefined-builtin
+from .functions.page_title import page_title
 from .functions.refreshable import refreshable, state
 from .functions.update import update
 from .page import page

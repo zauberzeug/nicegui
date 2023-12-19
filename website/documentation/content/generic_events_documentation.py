@@ -99,26 +99,28 @@ def modifiers() -> None:
 
 
 @doc.demo('Custom events', '''
-    It is fairly easy to emit custom events from JavaScript which can be listened to with `element.on(...)`.
+    It is fairly easy to emit custom events from JavaScript with `emitEvent(...)` which can be listened to with `ui.on(...)`.
     This can be useful if you want to call Python code when something happens in JavaScript.
     In this example we are listening to the `visibilitychange` event of the browser tab.
 ''')
 async def custom_events() -> None:
-    tabwatch = ui.checkbox('Watch browser tab re-entering') \
-        .on('tabvisible', lambda: ui.notify('Welcome back!') if tabwatch.value else None, args=[])
-    ui.add_head_html(f'''
-        <script>
-        document.addEventListener('visibilitychange', () => {{
-            if (document.visibilityState === 'visible')
-                getElement({tabwatch.id}).$emit('tabvisible');
-        }});
-        </script>
-    ''')
+    tabwatch = ui.checkbox('Watch browser tab re-entering')
+    ui.on('tabvisible', lambda: ui.notify('Welcome back!') if tabwatch.value else None)
+    # ui.add_head_html('''
+    #     <script>
+    #     document.addEventListener('visibilitychange', () => {
+    #         if (document.visibilityState === 'visible') {
+    #             emitEvent('tabvisible');
+    #         }
+    #     });
+    #     </script>
+    # ''')
     # END OF DEMO
     await context.get_client().connected()
-    ui.run_javascript(f'''
-        document.addEventListener('visibilitychange', () => {{
-            if (document.visibilityState === 'visible')
-                getElement({tabwatch.id}).$emit('tabvisible');
-        }});
+    ui.run_javascript('''
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                emitEvent('tabvisible');
+            }
+        });
     ''')

@@ -119,7 +119,7 @@ dl.docinfo dd {
 }
 dl.field-list p,
 dl.docinfo p {
-  margin-bottom: 0;
+  margin: 0;
 }
 
 .dark-box {

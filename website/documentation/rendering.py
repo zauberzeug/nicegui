@@ -1,7 +1,6 @@
 import docutils.core
 
 from nicegui import ui
-from nicegui.elements.markdown import apply_tailwind
 
 from ..header import add_head_html, add_header
 from ..style import section_heading, subheading
@@ -43,8 +42,7 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                 if part.description_format == 'rst':
                     description = part.description.replace('param ', '')
                     html = docutils.core.publish_parts(description, writer_name='html5_polyglot')['html_body']
-                    html = apply_tailwind(html)
-                    ui.html(html).classes('bold-links arrow-links')
+                    ui.html(html).classes('bold-links arrow-links nicegui-markdown')
                 else:
                     ui.markdown(part.description).classes('bold-links arrow-links')
             if part.ui:

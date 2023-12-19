@@ -22,8 +22,10 @@ import requests
 
 parser = ArgumentParser()
 parser.add_argument('path', default='.', help='path to the root of the repository')
+parser.add_argument('--name', nargs='*', help='filter library updates by name')
 args = parser.parse_args()
 root_path = Path(args.path)
+names = args.name or None
 
 
 def prepare(path: Path) -> Path:
@@ -56,6 +58,7 @@ KNOWN_LICENSES = {
     'MIT': 'https://opensource.org/licenses/MIT',
     'ISC': 'https://opensource.org/licenses/ISC',
     'Apache-2.0': 'https://opensource.org/licenses/Apache-2.0',
+    'BSD-2-Clause': 'https://opensource.org/licenses/BSD-2-Clause',
 }
 
 # Create a hidden folder to work in.
@@ -63,6 +66,9 @@ tmp = cleanup(root_path / '.npm')
 
 dependencies: dict[str, dict] = json.loads((root_path / 'npm.json').read_text())
 for key, dependency in dependencies.items():
+    if names is not None and key not in names:
+        continue
+
     # Reset destination folder.
     destination = prepare(root_path / dependency['destination'] / key)
 

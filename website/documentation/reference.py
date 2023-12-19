@@ -5,7 +5,6 @@ from typing import Callable, Optional
 import docutils.core
 
 from nicegui import binding, ui
-from nicegui.elements.markdown import apply_tailwind, remove_indentation
 
 from ..style import subheading
 
@@ -33,14 +32,17 @@ def generate_class_doc(class_obj: type) -> None:
         subheading('Methods')
         with ui.column().classes('gap-2'):
             for name, method in sorted(methods.items()):
-                ui.markdown(f'**`{name}`**`{_generate_method_signature_description(method)}`')
+                decorator = ''
+                if isinstance(class_obj.__dict__.get(name), staticmethod):
+                    decorator += '`@staticmethod`<br />'
+                if isinstance(class_obj.__dict__.get(name), classmethod):
+                    decorator += '`@classmethod`<br />'
+                ui.markdown(f'{decorator}**`{name}`**`{_generate_method_signature_description(method)}`')
                 if method.__doc__:
                     _render_docstring(method.__doc__).classes('ml-8')
     if ancestors:
         subheading('Inherited from')
-        with ui.column().classes('gap-2'):
-            for ancestor in ancestors:
-                ui.markdown(f'- `{ancestor.__name__}`')
+        ui.markdown('\n'.join(f'- `{ancestor.__name__}`' for ancestor in ancestors))
 
 
 def _is_method_or_property(cls: type, attribute_name: str) -> bool:
@@ -48,7 +50,12 @@ def _is_method_or_property(cls: type, attribute_name: str) -> bool:
     return (
         inspect.isfunction(attribute) or
         inspect.ismethod(attribute) or
-        isinstance(attribute, (property, binding.BindableProperty))
+        isinstance(attribute, (
+            staticmethod,
+            classmethod,
+            property,
+            binding.BindableProperty,
+        ))
     )
 
 
@@ -92,10 +99,19 @@ def _generate_method_signature_description(method: Callable) -> str:
 
 
 def _render_docstring(doc: str, with_params: bool = True) -> ui.html:
-    doc = remove_indentation(doc)
+    doc = _remove_indentation_from_docstring(doc)
     doc = doc.replace('param ', '')
     html = docutils.core.publish_parts(doc, writer_name='html5_polyglot')['html_body']
-    html = apply_tailwind(html)
     if not with_params:
         html = re.sub(r'<dl class=".* simple">.*?</dl>', '', html, flags=re.DOTALL)
-    return ui.html(html).classes('documentation bold-links arrow-links')
+    return ui.html(html).classes('bold-links arrow-links nicegui-markdown')
+
+
+def _remove_indentation_from_docstring(text: str) -> str:
+    lines = text.splitlines()
+    if not lines:
+        return ''
+    if len(lines) == 1:
+        return lines[0]
+    indentation = min(len(line) - len(line.lstrip()) for line in lines[1:] if line.strip())
+    return lines[0] + '\n'.join(line[indentation:] for line in lines[1:])
