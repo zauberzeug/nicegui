@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Union, cast
+from typing import Any, Callable, List, Optional, Tuple, Union, cast
 
 from .. import optional_features
 from ..events import GenericEventArguments, MouseEventArguments, handle_event
@@ -24,6 +24,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
     def __init__(self,
                  source: Union[str, Path, 'PIL_Image'] = '', *,
                  content: str = '',
+                 size: Optional[Tuple[int, int]] = None,
                  on_mouse: Optional[Callable[..., Any]] = None,
                  events: List[str] = ['click'],
                  cross: bool = False,
@@ -36,8 +37,12 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         Thereby repeatedly updating the image source will automatically adapt to the available bandwidth.
         See `OpenCV Webcam <https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam/main.py>`_ for an example.
 
-        :param source: the source of the image; can be an URL, local file path or a base64 string
+        You can also pass a tuple of width and height instead of an image source.
+        This will create an empty image with the given size.
+
+        :param source: the source of the image; can be an URL, local file path, a base64 string or just an image size
         :param content: SVG content which should be overlaid; viewport has the same dimensions as the image
+        :param size: size of the image (width, height) in pixels; only used if `source` is not set
         :param on_mouse: callback for mouse events (yields `type`, `image_x` and `image_y`)
         :param events: list of JavaScript events to subscribe to (default: `['click']`)
         :param cross: whether to show crosshairs (default: `False`)
@@ -45,6 +50,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         super().__init__(source=source, content=content)
         self._props['events'] = events
         self._props['cross'] = cross
+        self._props['size'] = size
 
         def handle_mouse(e: GenericEventArguments) -> None:
             if on_mouse is None:
