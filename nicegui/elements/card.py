@@ -22,9 +22,7 @@ class Card(Element):
 
     def tight(self) -> Self:
         """Remove padding and gaps between nested elements."""
-        self._classes.clear()
-        self._style.clear()
-        return self
+        return self.classes('nicegui-card-tight')
 
 
 class CardSection(Element):
