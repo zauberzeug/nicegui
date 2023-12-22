@@ -41,7 +41,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
     @classmethod
     def from_pandas(cls,
-                    df: pd.DataFrame, *,
+                    df: 'pd.DataFrame', *,
                     theme: str = 'balham',
                     auto_size_columns: bool = True,
                     options: Dict = {}) -> Self:
