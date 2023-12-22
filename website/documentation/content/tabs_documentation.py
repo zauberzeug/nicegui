@@ -57,7 +57,7 @@ def switch_tabs():
     ui.button('GoTo 2', on_click=lambda: tabs.set_value('Tab 2'))
 
 
-@doc.demo('Vertical tabs layout', '''
+@doc.demo('Vertical tabs with splitter', '''
     Like in [Quasar's vertical tabs example](https://quasar.dev/vue-components/tabs#vertical),
     we can combine `ui.splitter` and tab elements to create a vertical tabs layout.
 ''')
