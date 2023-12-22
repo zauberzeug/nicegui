@@ -65,8 +65,8 @@ export default {
       }
     },
     updateCrossHair(e) {
-      const width = this.src ? e.target.naturalWidth : this.size[0];
-      const height = this.src ? e.target.naturalHeight : this.size[1];
+      const width = this.src ? e.target.naturalWidth : this.size ? this.size[0] : 1;
+      const height = this.src ? e.target.naturalHeight : this.size ? this.size[1] : 1;
       this.x = (e.offsetX * width) / e.target.clientWidth;
       this.y = (e.offsetY * height) / e.target.clientHeight;
     },
@@ -74,8 +74,8 @@ export default {
       this.viewBox = `0 0 ${e.target.naturalWidth} ${e.target.naturalHeight}`;
     },
     onMouseEvent(type, e) {
-      const width = this.src ? e.target.naturalWidth : this.size[0];
-      const height = this.src ? e.target.naturalHeight : this.size[1];
+      const width = this.src ? e.target.naturalWidth : this.size ? this.size[0] : 1;
+      const height = this.src ? e.target.naturalHeight : this.size ? this.size[1] : 1;
       this.$emit("mouse", {
         mouse_event_type: type,
         image_x: (e.offsetX * width) / e.target.clientWidth,
