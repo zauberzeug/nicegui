@@ -61,6 +61,7 @@ __all__ = [
     'select',
     'separator',
     'slider',
+    'space',
     'spinner',
     'splitter',
     'step',
@@ -166,6 +167,7 @@ from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
 from .elements.slider import Slider as slider
+from .elements.space import Space as space
 from .elements.spinner import Spinner as spinner
 from .elements.splitter import Splitter as splitter
 from .elements.stepper import Step as step
