@@ -50,6 +50,8 @@ class Notification(Element, component='notification.js'):
         :param type: optional type ("positive", "negative", "warning", "info" or "ongoing")
         :param color: optional color name
         :param multi_line: enable multi-line notifications
+        :param icon: optional name of an icon to be displayed in the notification (default: `None`)
+        :param spinner: display a spinner in the notification (default: False)
         :param timeout: optional timeout in seconds after which the notification is dismissed (default: 5.0)
 
         Note: You can pass additional keyword arguments according to `Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>`_.
