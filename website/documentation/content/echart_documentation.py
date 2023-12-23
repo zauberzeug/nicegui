@@ -47,4 +47,24 @@ def dynamic_properties() -> None:
     })
 
 
+@doc.demo('Run methods', '''
+    You can run methods of the EChart instance using the `run_chart_method` method.
+    This demo shows how to show and hide the loading animation and how to get the current width of the chart.
+''')
+def methods_demo() -> None:
+    echart = ui.echart({
+        'xAxis': {'type': 'category', 'data': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']},
+        'yAxis': {'type': 'value'},
+        'series': [{'type': 'line', 'data': [150, 230, 224, 218, 135]}],
+    })
+
+    ui.button('Show Loading', on_click=lambda: echart.run_chart_method('showLoading'))
+    ui.button('Hide Loading', on_click=lambda: echart.run_chart_method('hideLoading'))
+
+    async def get_width():
+        width = await echart.run_chart_method('getWidth')
+        ui.notify(f'Width: {width}')
+    ui.button('Get Width', on_click=get_width)
+
+
 doc.reference(ui.echart)
