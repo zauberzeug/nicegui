@@ -6,9 +6,9 @@ from typing import Dict, Generator
 
 import icecream
 import pytest
-from fastapi.routing import APIRoute
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from starlette.routing import Route
 
 from nicegui import Client, app, binding, core
 from nicegui.page import page
@@ -51,7 +51,7 @@ def capabilities(capabilities: Dict) -> Dict:
 def reset_globals() -> Generator[None, None, None]:
     """Reset the global state of the NiceGUI package."""
     for route in app.routes:
-        if isinstance(route, APIRoute) and route.path.startswith('/_nicegui/auto/static/'):
+        if isinstance(route, Route) and route.path.startswith('/_nicegui/auto/static/'):
             app.remove_route(route.path)
     for path in {'/'}.union(Client.page_routes.values()):
         app.remove_route(path)
@@ -60,7 +60,7 @@ def reset_globals() -> Generator[None, None, None]:
     app.user_middleware.clear()
     # NOTE favicon routes must be removed separately because they are not "pages"
     for route in app.routes:
-        if isinstance(route, APIRoute) and route.path.endswith('/favicon.ico'):
+        if isinstance(route, Route) and route.path.endswith('/favicon.ico'):
             app.routes.remove(route)
     importlib.reload(core)
     Client.instances.clear()
