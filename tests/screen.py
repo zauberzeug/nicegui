@@ -38,7 +38,8 @@ class Screen:
         self.server_thread.start()
 
     @property
-    def is_open(self) -> None:
+    def is_open(self) -> bool:
+        """Check if the browser is open."""
         # https://stackoverflow.com/a/66150779/3419103
         try:
             self.selenium.current_url  # pylint: disable=pointless-statement
@@ -74,31 +75,37 @@ class Screen:
                 if time.time() > deadline:
                     raise
                 time.sleep(0.1)
+                assert self.server_thread is not None
                 if not self.server_thread.is_alive():
                     raise RuntimeError('The NiceGUI server has stopped running') from e
 
     def close(self) -> None:
+        """Close the browser."""
         if self.is_open:
             self.selenium.close()
 
     def switch_to(self, tab_id: int) -> None:
+        """Switch to the tab with the given index, or create it if it does not exist."""
         window_count = len(self.selenium.window_handles)
         if tab_id > window_count:
             raise IndexError(f'Could not go to or create tab {tab_id}, there are only {window_count} tabs')
-        elif tab_id == window_count:
+        if tab_id == window_count:
             self.selenium.switch_to.new_window('tab')
         else:
             self.selenium.switch_to.window(self.selenium.window_handles[tab_id])
 
     def should_contain(self, text: str) -> None:
+        """Assert that the page contains the given text."""
         if self.selenium.title == text:
             return
         self.find(text)
 
     def wait_for(self, text: str) -> None:
+        """Wait until the page contains the given text."""
         self.should_contain(text)
 
     def should_not_contain(self, text: str, wait: float = 0.5) -> None:
+        """Assert that the page does not contain the given text."""
         assert self.selenium.title != text
         self.selenium.implicitly_wait(wait)
         with pytest.raises(AssertionError):
@@ -106,6 +113,7 @@ class Screen:
         self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
 
     def should_contain_input(self, text: str) -> None:
+        """Assert that the page contains an input with the given value."""
         deadline = time.time() + self.IMPLICIT_WAIT
         while time.time() < deadline:
             for input_element in self.find_all_by_tag('input'):
@@ -115,6 +123,7 @@ class Screen:
         raise AssertionError(f'Could not find input with value "{text}"')
 
     def should_load_image(self, image: WebElement, *, timeout: float = 2.0) -> None:
+        """Assert that the given image has loaded."""
         deadline = time.time() + timeout
         while time.time() < deadline:
             js = 'return arguments[0].naturalWidth > 0 && arguments[0].naturalHeight > 0'
@@ -123,6 +132,7 @@ class Screen:
         raise AssertionError(f'Image not loaded: {image.get_attribute("outerHTML")}')
 
     def click(self, target_text: str) -> WebElement:
+        """Click on the element containing the given text."""
         element = self.find(target_text)
         try:
             element.click()
@@ -131,21 +141,25 @@ class Screen:
         return element
 
     def context_click(self, target_text: str) -> WebElement:
+        """Right-click on the element containing the given text."""
         element = self.find(target_text)
         action = ActionChains(self.selenium)
         action.context_click(element).perform()
         return element
 
     def click_at_position(self, element: WebElement, x: int, y: int) -> None:
+        """Click on the given element at the given position."""
         action = ActionChains(self.selenium)
         action.move_to_element_with_offset(element, x, y).click().perform()
 
     def type(self, text: str) -> None:
+        """Type the given text into the currently focused element."""
         self.selenium.execute_script("window.focus();")
         self.wait(0.2)
         self.selenium.switch_to.active_element.send_keys(text)
 
     def find(self, text: str) -> WebElement:
+        """Find the element containing the given text."""
         try:
             query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
             element = self.selenium.find_element(By.XPATH, query)
@@ -161,35 +175,41 @@ class Screen:
             raise AssertionError(f'Could not find "{text}"') from e
 
     def find_all(self, text: str) -> List[WebElement]:
+        """Find all elements containing the given text."""
         query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
         return self.selenium.find_elements(By.XPATH, query)
 
     def find_element(self, element: ui.element) -> WebElement:
+        """Find the given NiceGUI element."""
         return self.selenium.find_element(By.ID, f'c{element.id}')
 
     def find_by_class(self, name: str) -> WebElement:
+        """Find the element with the given CSS class."""
         return self.selenium.find_element(By.CLASS_NAME, name)
 
     def find_all_by_class(self, name: str) -> List[WebElement]:
+        """Find all elements with the given CSS class."""
         return self.selenium.find_elements(By.CLASS_NAME, name)
 
     def find_by_tag(self, name: str) -> WebElement:
+        """Find the element with the given HTML tag."""
         return self.selenium.find_element(By.TAG_NAME, name)
 
     def find_all_by_tag(self, name: str) -> List[WebElement]:
+        """Find all elements with the given HTML tag."""
         return self.selenium.find_elements(By.TAG_NAME, name)
 
     def render_js_logs(self) -> str:
+        """Render the browser console logs as a string."""
         console = '\n'.join(l['message'] for l in self.selenium.get_log('browser'))
         return f'-- console logs ---\n{console}\n---------------------'
 
-    def get_attributes(self, tag: str, attribute: str) -> List[str]:
-        return [t.get_attribute(attribute) for t in self.find_all_by_tag(tag)]
-
     def wait(self, t: float) -> None:
+        """Wait for the given number of seconds."""
         time.sleep(t)
 
     def shot(self, name: str) -> None:
+        """Take a screenshot and store it in the screenshots directory."""
         os.makedirs(self.SCREENSHOT_DIR, exist_ok=True)
         filename = f'{self.SCREENSHOT_DIR}/{name}.png'
         print(f'Storing screenshot to {filename}')
@@ -212,6 +232,7 @@ class Screen:
 
     @contextmanager
     def implicitly_wait(self, t: float) -> None:
+        """Temporarily change the implicit wait time."""
         self.selenium.implicitly_wait(t)
         yield
         self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
