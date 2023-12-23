@@ -33,8 +33,11 @@ export default {
     },
     run_editor_method(name, ...args) {
       if (this.editor) {
-        const evaluated_args = args.map((arg) => new Function("return " + arg)());
-        return this.editor[name](...evaluated_args);
+        if (name.startsWith(":")) {
+          name = name.slice(1);
+          args = args.map((arg) => new Function("return " + arg)());
+        }
+        return this.editor[name](...args);
       }
     },
   },

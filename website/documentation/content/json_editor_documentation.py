@@ -26,6 +26,9 @@ def main_demo() -> None:
 @doc.demo('Run methods', '''
     You can run methods of the JSONEditor instance using the `run_editor_method` method.
     This demo shows how to expand and collapse all nodes and how to get the current data.
+
+    The colon ":" in front of the method name "expand" indicates that the value "path => true" is a JavaScript expression
+    that is evaluated on the client before it is passed to the method.
 ''')
 def methods_demo() -> None:
     json = {
@@ -38,9 +41,9 @@ def methods_demo() -> None:
     }
     editor = ui.json_editor({'content': {'json': json}})
 
-    ui.button('Expand', on_click=lambda: editor.run_editor_method('expand', 'path => true'))
-    ui.button('Collapse', on_click=lambda: editor.run_editor_method('expand', 'path => false'))
-    ui.button('Readonly', on_click=lambda: editor.run_editor_method('updateProps', r'{readOnly: true}'))
+    ui.button('Expand', on_click=lambda: editor.run_editor_method(':expand', 'path => true'))
+    ui.button('Collapse', on_click=lambda: editor.run_editor_method(':expand', 'path => false'))
+    ui.button('Readonly', on_click=lambda: editor.run_editor_method('updateProps', {'readOnly': True}))
 
     async def get_data() -> None:
         data = await editor.run_editor_method('get')

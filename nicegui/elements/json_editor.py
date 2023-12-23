@@ -53,8 +53,8 @@ class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/va
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
-        :param name: name of the method
-        :param args: arguments to pass to the method (must strings containing JavaScript expressions)
+        :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
+        :param args: arguments to pass to the method (Python objects or JavaScript expressions)
         :param timeout: timeout in seconds (default: 1 second)
         :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
