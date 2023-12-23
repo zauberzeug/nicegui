@@ -90,13 +90,13 @@ def test_dynamic_method(screen: Screen):
     assert 48 <= heights[2] <= 50
 
 
-def test_call_api_method_with_argument(screen: Screen):
+def test_run_grid_method_with_argument(screen: Screen):
     grid = ui.aggrid({
         'columnDefs': [{'field': 'name', 'filter': True}],
         'rowData': [{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
     })
     filter_model = {'name': {'filterType': 'text', 'type': 'equals', 'filter': 'Alice'}}
-    ui.button('Filter', on_click=lambda: grid.call_api_method('setFilterModel', filter_model))
+    ui.button('Filter', on_click=lambda: grid.run_grid_method('setFilterModel', filter_model))
 
     screen.open('/')
     screen.should_contain('Alice')
@@ -108,12 +108,12 @@ def test_call_api_method_with_argument(screen: Screen):
     screen.should_not_contain('Carol')
 
 
-def test_call_column_api_method_with_argument(screen: Screen):
+def test_run_column_method_with_argument(screen: Screen):
     grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}, {'field': 'age', 'hide': True}],
         'rowData': [{'name': 'Alice', 'age': '18'}, {'name': 'Bob', 'age': '21'}, {'name': 'Carol', 'age': '42'}],
     })
-    ui.button('Show Age', on_click=lambda: grid.call_column_api_method('setColumnVisible', 'age', True))
+    ui.button('Show Age', on_click=lambda: grid.run_column_method('setColumnVisible', 'age', True))
 
     screen.open('/')
     screen.should_contain('Alice')
@@ -188,7 +188,7 @@ def test_create_dynamically(screen: Screen):
 
 def test_api_method_after_creation(screen: Screen):
     options = {'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]}
-    ui.button('Create', on_click=lambda: ui.aggrid(options).call_api_method('selectAll'))
+    ui.button('Create', on_click=lambda: ui.aggrid(options).run_grid_method('selectAll'))
 
     screen.open('/')
     screen.click('Create')
