@@ -49,7 +49,7 @@ def capabilities(capabilities: Dict) -> Dict:
 
 @pytest.fixture(autouse=True)
 def reset_globals() -> Generator[None, None, None]:
-    """Reset the global state of the nicegui package."""
+    """Reset the global state of the NiceGUI package."""
     for route in app.routes:
         if isinstance(route, APIRoute) and route.path.startswith('/_nicegui/auto/static/'):
             app.remove_route(route.path)
