@@ -4,7 +4,7 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from functools import partial
 from typing import Any, Callable
 
-from . import core, helpers
+from . import context, core, helpers, storage
 
 process_pool = ProcessPoolExecutor()
 thread_pool = ThreadPoolExecutor()
@@ -30,7 +30,20 @@ async def cpu_bound(callback: Callable, *args: Any, **kwargs: Any) -> Any:
 
 async def io_bound(callback: Callable, *args: Any, **kwargs: Any) -> Any:
     """Run an I/O-bound function in a separate thread."""
-    return await _run(thread_pool, callback, *args, **kwargs)
+
+    slot_stack = context.get_slot_stack()
+    request = storage.request_contextvar.get()
+
+    def with_context():
+        storage.request_contextvar.set(request)
+        if slot_stack:
+            parent_slot = slot_stack[-1]
+            with parent_slot:
+                return callback(*args, **kwargs)
+        else:
+            return callback(*args, **kwargs)
+
+    return await _run(thread_pool, with_context)
 
 
 def tear_down() -> None:
