@@ -49,7 +49,11 @@ def dynamic_properties() -> None:
 
 @doc.demo('Run methods', '''
     You can run methods of the EChart instance using the `run_chart_method` method.
-    This demo shows how to show and hide the loading animation and how to get the current width of the chart.
+    This demo shows how to show and hide the loading animation, how to get the current width of the chart,
+    and how to add tooltips with a custom formatter.
+
+    The colon ":" in front of the method name "setOption" indicates that the argument is a JavaScript expression
+    that is evaluated on the client before it is passed to the method.
 ''')
 def methods_demo() -> None:
     echart = ui.echart({
@@ -65,6 +69,10 @@ def methods_demo() -> None:
         width = await echart.run_chart_method('getWidth')
         ui.notify(f'Width: {width}')
     ui.button('Get Width', on_click=get_width)
+
+    ui.button('Set Tooltip', on_click=lambda: echart.run_chart_method(
+        ':setOption', r'{tooltip: {formatter: params => "$" + params.value}}',
+    ))
 
 
 doc.reference(ui.echart)
