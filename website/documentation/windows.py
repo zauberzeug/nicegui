@@ -47,12 +47,12 @@ def _window(type_: WindowType, *, title: str = '', tab: Union[str, Callable] = '
 
 def python_window(title: Optional[str] = None, *, classes: str = '') -> ui.column:
     """Create a window for Python code."""
-    return _window('python', title=title or 'main.py', classes=classes).classes('p-2 python-window')
+    return _window('python', title=title or 'main.py', classes=classes).classes('px-4 py-2 python-window')
 
 
 def bash_window(*, classes: str = '') -> ui.column:
     """Create a window for Bash code."""
-    return _window('bash', title='bash', classes=classes).classes('p-2 bash-window')
+    return _window('bash', title='bash', classes=classes).classes('px-4 py-2 bash-window')
 
 
 def browser_window(title: Optional[Union[str, Callable]] = None, *, classes: str = '') -> ui.column:

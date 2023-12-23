@@ -20,10 +20,10 @@ class ValueElement(Element):
                  **kwargs: Any,
                  ) -> None:
         super().__init__(**kwargs)
+        self._send_update_on_value_change = True
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         self._props['loopback'] = self.LOOPBACK
-        self._send_update_on_value_change = True
         self._change_handler = on_value_change
 
         def handle_change(e: GenericEventArguments) -> None:

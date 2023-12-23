@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 from typing import Dict, List, Optional, cast
+
+from typing_extensions import Self
 
 from .. import optional_features
 from ..awaitable_response import AwaitableResponse
@@ -39,11 +39,12 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         self._classes.append('nicegui-aggrid')
         self._classes.append(f'ag-theme-{theme}')
 
-    @staticmethod
-    def from_pandas(df: pd.DataFrame, *,
+    @classmethod
+    def from_pandas(cls,
+                    df: 'pd.DataFrame', *,
                     theme: str = 'balham',
                     auto_size_columns: bool = True,
-                    options: Dict = {}) -> AgGrid:
+                    options: Dict = {}) -> Self:
         """Create an AG Grid from a Pandas DataFrame.
 
         Note:
@@ -69,7 +70,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
             df[complex_cols] = df[complex_cols].astype(str)
             df[period_cols] = df[period_cols].astype(str)
 
-        return AgGrid({
+        return cls({
             'columnDefs': [{'field': str(col)} for col in df.columns],
             'rowData': df.to_dict('records'),
             'suppressDotNotation': True,

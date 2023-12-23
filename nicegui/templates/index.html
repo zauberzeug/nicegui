@@ -54,6 +54,9 @@
           return element.$refs.qRef[method_name](...args);
         }
       }
+      function emitEvent(event_name, ...args) {
+        getElement(0).$emit(event_name, ...args);
+      }
     </script>
     <script type="module">
       const True = true;
@@ -160,9 +163,9 @@
               listener_id: event.listener_id,
               args: stringifyEventArgs(args, event.args),
             };
-            const emitter = () => window.socket.emit("event", data);
+            const emitter = () => window.socket?.emit("event", data);
             throttle(emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
-            if (element.props["loopback"] === False && event.type == "update:model-value") {
+            if (element.props["loopback"] === False && event.type == "update:modelValue") {
               element.props["model-value"] = args;
             }
           };
@@ -272,13 +275,11 @@
                 window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
               }
             },
-            try_reconnect: () => {
-              const checkAndReload = async () => {
-                await fetch(window.location.href, { headers: { 'NiceGUI-Check': 'try_reconnect' } });
-                console.log('reloading because reconnect was requested')
-                window.location.reload();
-              };
-              setInterval(checkAndReload, 500);
+            try_reconnect: async () => {
+              document.getElementById('popup').style.opacity = 1;
+              await fetch(window.location.href, { headers: { 'NiceGUI-Check': 'try_reconnect' } });
+              console.log('reloading because reconnect was requested')
+              window.location.reload();
             },
             disconnect: () => {
               document.getElementById('popup').style.opacity = 1;

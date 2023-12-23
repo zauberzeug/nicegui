@@ -1,17 +1,17 @@
 export default {
   template: `
-    <div style="position:relative">
+    <div :style="{ position: 'relative', aspectRatio: size ? size[0] / size[1] : undefined }">
       <img
         ref="img"
         :src="computed_src"
-        style="width:100%; height:100%;"
+        :style="{ width: '100%', height: '100%', opacity: src ? 1 : 0 }"
         @load="onImageLoaded"
         v-on="onCrossEvents"
         v-on="onUserEvents"
         draggable="false"
       />
       <svg style="position:absolute;top:0;left:0;pointer-events:none" :viewBox="viewBox">
-        <g v-if="cross" :style="{ display: cssDisplay }">
+        <g v-if="cross" :style="{ display: showCross ? 'block' : 'none' }">
           <line :x1="x" y1="0" :x2="x" y2="100%" stroke="black" />
           <line x1="0" :y1="y" x2="100%" :y2="y" stroke="black" />
         </g>
@@ -25,7 +25,7 @@ export default {
       viewBox: "0 0 0 0",
       x: 100,
       y: 100,
-      cssDisplay: "none",
+      showCross: false,
       computed_src: undefined,
       waiting_source: undefined,
       loading: false,
@@ -60,19 +60,26 @@ export default {
         this.computed_src = new_src;
         this.loading = true;
       }
+      if (!this.src && this.size) {
+        this.viewBox = `0 0 ${this.size[0]} ${this.size[1]}`;
+      }
     },
     updateCrossHair(e) {
-      this.x = (e.offsetX * e.target.naturalWidth) / e.target.clientWidth;
-      this.y = (e.offsetY * e.target.naturalHeight) / e.target.clientHeight;
+      const width = this.src ? e.target.naturalWidth : this.size ? this.size[0] : 1;
+      const height = this.src ? e.target.naturalHeight : this.size ? this.size[1] : 1;
+      this.x = (e.offsetX * width) / e.target.clientWidth;
+      this.y = (e.offsetY * height) / e.target.clientHeight;
     },
     onImageLoaded(e) {
       this.viewBox = `0 0 ${e.target.naturalWidth} ${e.target.naturalHeight}`;
     },
     onMouseEvent(type, e) {
+      const width = this.src ? e.target.naturalWidth : this.size ? this.size[0] : 1;
+      const height = this.src ? e.target.naturalHeight : this.size ? this.size[1] : 1;
       this.$emit("mouse", {
         mouse_event_type: type,
-        image_x: (e.offsetX * e.target.naturalWidth) / e.target.clientWidth,
-        image_y: (e.offsetY * e.target.naturalHeight) / e.target.clientHeight,
+        image_x: (e.offsetX * width) / e.target.clientWidth,
+        image_y: (e.offsetY * height) / e.target.clientHeight,
         button: e.button,
         buttons: e.buttons,
         altKey: e.altKey,
@@ -86,8 +93,8 @@ export default {
     onCrossEvents() {
       if (!this.cross) return {};
       return {
-        mouseenter: () => (this.cssDisplay = "block"),
-        mouseleave: () => (this.cssDisplay = "none"),
+        mouseenter: () => (this.showCross = true),
+        mouseleave: () => (this.showCross = false),
         mousemove: (event) => this.updateCrossHair(event),
       };
     },
@@ -102,6 +109,7 @@ export default {
   props: {
     src: String,
     content: String,
+    size: Object,
     events: Array,
     cross: Boolean,
     t: String,

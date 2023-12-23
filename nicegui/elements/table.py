@@ -1,10 +1,10 @@
-from __future__ import annotations
-
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
+
+from typing_extensions import Self
 
 from .. import optional_features
 from ..element import Element
-from ..events import GenericEventArguments, TableSelectionEventArguments, handle_event
+from ..events import GenericEventArguments, TableSelectionEventArguments, ValueChangeEventArguments, handle_event
 from .mixins.filter_element import FilterElement
 
 try:
@@ -24,6 +24,7 @@ class Table(FilterElement, component='table.js'):
                  selection: Optional[Literal['single', 'multiple']] = None,
                  pagination: Optional[Union[int, dict]] = None,
                  on_select: Optional[Callable[..., Any]] = None,
+                 on_pagination_change: Optional[Callable[..., Any]] = None,
                  ) -> None:
         """Table
 
@@ -36,6 +37,7 @@ class Table(FilterElement, component='table.js'):
         :param selection: selection type ("single" or "multiple"; default: `None`)
         :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
         :param on_select: callback which is invoked when the selection changes
+        :param on_pagination_change: callback which is invoked when the pagination changes
 
         If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
         """
@@ -63,13 +65,21 @@ class Table(FilterElement, component='table.js'):
             handle_event(on_select, arguments)
         self.on('selection', handle_selection, ['added', 'rows', 'keys'])
 
-    @staticmethod
-    def from_pandas(df: pd.DataFrame,
+        def handle_pagination_change(e: GenericEventArguments) -> None:
+            self.pagination = e.args
+            self.update()
+            arguments = ValueChangeEventArguments(sender=self, client=self.client, value=self.pagination)
+            handle_event(on_pagination_change, arguments)
+        self.on('update:pagination', handle_pagination_change)
+
+    @classmethod
+    def from_pandas(cls,
+                    df: 'pd.DataFrame',
                     row_key: str = 'id',
                     title: Optional[str] = None,
                     selection: Optional[Literal['single', 'multiple']] = None,
                     pagination: Optional[Union[int, dict]] = None,
-                    on_select: Optional[Callable[..., Any]] = None) -> Table:
+                    on_select: Optional[Callable[..., Any]] = None) -> Self:
         """Create a table from a Pandas DataFrame.
 
         Note:
@@ -97,7 +107,7 @@ class Table(FilterElement, component='table.js'):
             df[complex_cols] = df[complex_cols].astype(str)
             df[period_cols] = df[period_cols].astype(str)
 
-        return Table(
+        return cls(
             columns=[{'name': col, 'label': col, 'field': col} for col in df.columns],
             rows=df.to_dict('records'),
             row_key=row_key,
@@ -147,6 +157,16 @@ class Table(FilterElement, component='table.js'):
         self.update()
 
     @property
+    def pagination(self) -> dict:
+        """Pagination object."""
+        return self._props['pagination']
+
+    @pagination.setter
+    def pagination(self, value: dict) -> None:
+        self._props['pagination'] = value
+        self.update()
+
+    @property
     def is_fullscreen(self) -> bool:
         """Whether the table is in fullscreen mode."""
         return self._props['fullscreen']
@@ -175,6 +195,17 @@ class Table(FilterElement, component='table.js'):
         keys = [row[self.row_key] for row in rows]
         self.rows[:] = [row for row in self.rows if row[self.row_key] not in keys]
         self.selected[:] = [row for row in self.selected if row[self.row_key] not in keys]
+        self.update()
+
+    def update_rows(self, rows: List[Dict], *, clear_selection: bool = True) -> None:
+        """Update rows in the table.
+
+        :param rows: list of rows to update
+        :param clear_selection: whether to clear the selection (default: True)
+        """
+        self.rows[:] = rows
+        if clear_selection:
+            self.selected.clear()
         self.update()
 
     class row(Element):

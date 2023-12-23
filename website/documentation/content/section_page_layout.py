@@ -2,9 +2,9 @@ from nicegui import ui
 
 from . import (card_documentation, carousel_documentation, column_documentation, context_menu_documentation,
                dialog_documentation, doc, expansion_documentation, grid_documentation, menu_documentation,
-               notify_documentation, pagination_documentation, row_documentation, scroll_area_documentation,
-               separator_documentation, splitter_documentation, stepper_documentation, tabs_documentation,
-               timeline_documentation)
+               notification_documentation, notify_documentation, pagination_documentation, row_documentation,
+               scroll_area_documentation, separator_documentation, space_documentation, splitter_documentation,
+               stepper_documentation, tabs_documentation, timeline_documentation, tooltip_documentation)
 
 doc.title('Page *Layout*')
 
@@ -63,6 +63,7 @@ def clear_containers_demo():
 doc.intro(expansion_documentation)
 doc.intro(scroll_area_documentation)
 doc.intro(separator_documentation)
+doc.intro(space_documentation)
 doc.intro(splitter_documentation)
 doc.intro(tabs_documentation)
 doc.intro(stepper_documentation)
@@ -71,18 +72,7 @@ doc.intro(carousel_documentation)
 doc.intro(pagination_documentation)
 doc.intro(menu_documentation)
 doc.intro(context_menu_documentation)
-
-
-@doc.demo('Tooltips', '''
-    Simply call the `tooltip(text:str)` method on UI elements to provide a tooltip.
-
-    For more artistic control you can nest tooltip elements and apply props, classes and styles.
-''')
-def tooltips_demo():
-    ui.label('Tooltips...').tooltip('...are shown on mouse over')
-    with ui.button(icon='thumb_up'):
-        ui.tooltip('I like this').classes('bg-green')
-
-
+doc.intro(tooltip_documentation)
 doc.intro(notify_documentation)
+doc.intro(notification_documentation)
 doc.intro(dialog_documentation)

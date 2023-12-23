@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional, Union, Tuple, List
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from .value_element import ValueElement
 
@@ -31,20 +31,21 @@ class ValidationElement(ValueElement):
         self._error = None
         self.props(remove='error')
 
-    def validate(self) -> None:
+    def validate(self) -> bool:
         """Validate the current value and set the error message if necessary."""
         if isinstance(self.validation, dict):
             for message, check in self.validation.items():
                 if not check(self.value):
                     self.set_error_message(message)
-                    return
+                    return False
         else:
             for check in self.validation:
                 ret, message = check(self.value)
                 if not ret:
                     self.set_error_message(message)
-                    return
+                    return False
         self.clear_error_message()
+        return True
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)

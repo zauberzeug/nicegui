@@ -11,10 +11,9 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterable, Iter
 from fastapi import Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
+from typing_extensions import Self
 
-from nicegui import json
-
-from . import background_tasks, binding, core, helpers, outbox
+from . import background_tasks, binding, core, helpers, json, outbox
 from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
@@ -38,6 +37,12 @@ class Client:
     auto_index_client: Client
     """The client that is used to render the auto-index page."""
 
+    shared_head_html = ''
+    """HTML to be inserted in the <head> of every page template."""
+
+    shared_body_html = ''
+    """HTML to be inserted in the <body> of every page template."""
+
     def __init__(self, page: page, *, shared: bool = False) -> None:
         self.id = str(uuid.uuid4())
         self.created = time.time()
@@ -59,8 +64,10 @@ class Client:
 
         self.waiting_javascript_commands: Dict[str, Any] = {}
 
-        self.head_html = ''
-        self.body_html = ''
+        self.title: Optional[str] = None
+
+        self._head_html = ''
+        self._body_html = ''
 
         self.page = page
 
@@ -84,11 +91,21 @@ class Client:
         """Return True if the client is connected, False otherwise."""
         return self.environ is not None
 
-    def __enter__(self):
+    @property
+    def head_html(self) -> str:
+        """Return the HTML code to be inserted in the <head> of the page template."""
+        return self.shared_head_html + self._head_html
+
+    @property
+    def body_html(self) -> str:
+        """Return the HTML code to be inserted in the <body> of the page template."""
+        return self.shared_body_html + self._body_html
+
+    def __enter__(self) -> Self:
         self.content.__enter__()
         return self
 
-    def __exit__(self, *_):
+    def __exit__(self, *_) -> None:
         self.content.__exit__()
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
@@ -113,7 +130,7 @@ class Client:
             'imports': json.dumps(imports),
             'js_imports': '\n'.join(js_imports),
             'quasar_config': json.dumps(core.app.config.quasar_config),
-            'title': self.page.resolve_title(),
+            'title': self.page.resolve_title() if self.title is None else self.title,
             'viewport': self.page.resolve_viewport(),
             'favicon_url': get_favicon_url(self.page, prefix),
             'dark': str(self.page.resolve_dark()),

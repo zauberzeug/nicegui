@@ -51,8 +51,7 @@ def features(icon: str, title_: str, items: List[str]) -> None:
     with ui.column().classes('gap-1'):
         ui.icon(icon).classes('max-sm:hidden text-3xl md:text-5xl mb-3 text-primary opacity-80')
         ui.label(title_).classes('font-bold mb-3')
-        for item in items:
-            ui.markdown(f'- {item}').classes('bold-links arrow-links')
+        ui.markdown('\n'.join(f'- {item}' for item in items)).classes('bold-links arrow-links -ml-4')
 
 
 def side_menu() -> ui.left_drawer:

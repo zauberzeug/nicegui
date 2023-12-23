@@ -145,21 +145,31 @@ def test_remove_selection(screen: Screen):
 def test_replace_rows(screen: Screen):
     t = ui.table(columns=columns(), rows=rows())
 
-    def replace_rows():
+    def replace_rows_with_carol():
         t.rows = [{'id': 3, 'name': 'Carol', 'age': 32}]
-    ui.button('Replace rows', on_click=replace_rows)
+
+    def replace_rows_with_daniel():
+        t.update_rows([{'id': 4, 'name': 'Daniel', 'age': 33}])
+
+    ui.button('Replace rows with C.', on_click=replace_rows_with_carol)
+    ui.button('Replace rows with D.', on_click=replace_rows_with_daniel)
 
     screen.open('/')
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_contain('Lionel')
 
-    screen.click('Replace rows')
+    screen.click('Replace rows with C.')
     screen.wait(0.5)
     screen.should_not_contain('Alice')
     screen.should_not_contain('Bob')
     screen.should_not_contain('Lionel')
     screen.should_contain('Carol')
+
+    screen.click('Replace rows with D.')
+    screen.wait(0.5)
+    screen.should_not_contain('Carol')
+    screen.should_contain('Daniel')
 
 
 def test_create_from_pandas(screen: Screen):
