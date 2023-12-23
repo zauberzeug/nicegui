@@ -39,8 +39,8 @@ class ValidationElement(ValueElement):
                     self.set_error_message(message)
                     return False
         else:
-            for check in self.validation:
-                ret, message = check(self.value)
+            for check_ in self.validation:
+                ret, message = check_(self.value)
                 if not ret:
                     self.set_error_message(message)
                     return False
