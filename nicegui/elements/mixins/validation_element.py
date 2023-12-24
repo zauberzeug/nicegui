@@ -7,7 +7,7 @@ class ValidationElement(ValueElement):
 
     def __init__(self, validation: Dict[str, Callable[..., bool]], **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.validation = validation
+        self.validation = validation or {}
         self._error: Optional[str] = None
 
     @property

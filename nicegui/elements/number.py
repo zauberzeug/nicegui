@@ -20,7 +20,7 @@ class Number(ValidationElement, DisableableElement):
                  suffix: Optional[str] = None,
                  format: Optional[str] = None,  # pylint: disable=redefined-builtin
                  on_change: Optional[Callable[..., Any]] = None,
-                 validation: Dict[str, Callable[..., bool]] = {},
+                 validation: Dict[str, Callable[..., bool]] = None,
                  ) -> None:
         """Number Input
 

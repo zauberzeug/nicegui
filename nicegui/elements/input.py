@@ -17,7 +17,7 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
                  password_toggle_button: bool = False,
                  on_change: Optional[Callable[..., Any]] = None,
                  autocomplete: Optional[List[str]] = None,
-                 validation: Dict[str, Callable[..., bool]] = {}) -> None:
+                 validation: Dict[str, Callable[..., bool]] = None) -> None:
         """Text Input
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
