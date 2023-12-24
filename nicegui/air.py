@@ -2,7 +2,8 @@ import asyncio
 import gzip
 import json
 import re
-from typing import Any, Dict, Optional
+from typing import Any, AsyncIterator, Dict, Optional
+from uuid import uuid4
 
 import httpx
 import socketio
@@ -21,13 +22,16 @@ class Air:
         self.token = token
         self.relay = socketio.AsyncClient()
         self.client = httpx.AsyncClient(app=core.app)
+        self.streaming_client = httpx.AsyncClient()
         self.connecting = False
+        self.streams: Dict[str, AsyncIterator[bytes]] = {}
 
         @self.relay.on('http')
         async def _handle_http(data: Dict[str, Any]) -> Dict[str, Any]:
             headers: Dict[str, Any] = data['headers']
             headers.update({'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']})
             url = 'http://test' + data['path']
+            ic(url)
             request = self.client.build_request(
                 data['method'],
                 url,
@@ -52,6 +56,34 @@ class Air:
                 'headers': response.headers.multi_items(),
                 'content': compressed,
             }
+
+        @self.relay.on('range-request')
+        async def _handle_range_request(data: Dict[str, Any]) -> Dict[str, Any]:
+            headers: Dict[str, Any] = data['headers']
+            url = list(u for u in core.app.urls if data['prefix'] not in u)[0] + data['path']
+            request = self.client.build_request(
+                data['method'],
+                url,
+                params=data['params'],
+                headers=headers,
+                content=data['body'],
+            )
+            response = await self.streaming_client.send(request, stream=True)
+            stream_id = uuid4().hex
+            self.streams[stream_id] = response.aiter_bytes()
+            return {
+                'status_code': response.status_code,
+                'headers': response.headers.multi_items(),
+                'stream_id': stream_id,
+            }
+
+        @self.relay.on('read-stream')
+        async def _handle_read_stream(stream_id: str) -> bytes:
+            ic()
+            async for chunk in self.streams[stream_id]:
+                ic('stream', len(chunk))
+                return chunk
+            return b''
 
         @self.relay.on('ready')
         def _handle_ready(data: Dict[str, Any]) -> None:
@@ -139,6 +171,8 @@ class Air:
 
     async def disconnect(self) -> None:
         """Disconnect from the NiceGUI On Air server."""
+        for stream in self.streams.values():
+            await stream.aclose()
         await self.relay.disconnect()
 
     async def emit(self, message_type: str, data: Dict[str, Any], room: str) -> None:
