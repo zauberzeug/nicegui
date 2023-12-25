@@ -23,6 +23,8 @@ export default {
   data() {
     return {
       viewBox: "0 0 0 0",
+      loaded_image_width: 0,
+      loaded_image_height: 0,
       x: 100,
       y: 100,
       showCross: false,
@@ -65,17 +67,19 @@ export default {
       }
     },
     updateCrossHair(e) {
-      const width = this.src ? e.target.naturalWidth : this.size ? this.size[0] : 1;
-      const height = this.src ? e.target.naturalHeight : this.size ? this.size[1] : 1;
+      const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
+      const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
       this.x = (e.offsetX * width) / e.target.clientWidth;
       this.y = (e.offsetY * height) / e.target.clientHeight;
     },
     onImageLoaded(e) {
-      this.viewBox = `0 0 ${e.target.naturalWidth} ${e.target.naturalHeight}`;
+      this.loaded_image_width = e.target.naturalWidth;
+      this.loaded_image_height = e.target.naturalHeight;
+      this.viewBox = `0 0 ${this.loaded_image_width} ${this.loaded_image_height}`;
     },
     onMouseEvent(type, e) {
-      const width = this.src ? e.target.naturalWidth : this.size ? this.size[0] : 1;
-      const height = this.src ? e.target.naturalHeight : this.size ? this.size[1] : 1;
+      const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
+      const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
       this.$emit("mouse", {
         mouse_event_type: type,
         image_x: (e.offsetX * width) / e.target.clientWidth,
