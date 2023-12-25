@@ -26,5 +26,5 @@ class Textarea(Input, component='input.js'):
         :param on_change: callback to execute when the value changes
         :param validation: dictionary of validation rules, e.g. ``{'Too long!': lambda value: len(value) < 3}``
         """
-        super().__init__(label, placeholder=placeholder, value=value, on_change=on_change, validation=validation or {})
+        super().__init__(label, placeholder=placeholder, value=value, on_change=on_change, validation=validation)
         self._props['type'] = 'textarea'

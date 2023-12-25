@@ -43,7 +43,7 @@ class Number(ValidationElement, DisableableElement):
         :param validation: dictionary of validation rules, e.g. ``{'Too large!': lambda value: value < 3}``
         """
         self.format = format
-        super().__init__(tag='q-input', value=value, on_value_change=on_change, validation=validation or {})
+        super().__init__(tag='q-input', value=value, on_value_change=on_change, validation=validation)
         self._props['type'] = 'number'
         if label is not None:
             self._props['label'] = label
