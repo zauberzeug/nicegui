@@ -20,7 +20,7 @@ class Number(ValidationElement, DisableableElement):
                  suffix: Optional[str] = None,
                  format: Optional[str] = None,  # pylint: disable=redefined-builtin
                  on_change: Optional[Callable[..., Any]] = None,
-                 validation: Dict[str, Callable[..., bool]] = None,
+                 validation: Optional[Dict[str, Callable[..., bool]]] = None,
                  ) -> None:
         """Number Input
 
@@ -43,7 +43,7 @@ class Number(ValidationElement, DisableableElement):
         :param validation: dictionary of validation rules, e.g. ``{'Too large!': lambda value: value < 3}``
         """
         self.format = format
-        super().__init__(tag='q-input', value=value, on_value_change=on_change, validation=validation)
+        super().__init__(tag='q-input', value=value, on_value_change=on_change, validation=validation or {})
         self._props['type'] = 'number'
         if label is not None:
             self._props['label'] = label
