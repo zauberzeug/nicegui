@@ -17,7 +17,7 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
                  password_toggle_button: bool = False,
                  on_change: Optional[Callable[..., Any]] = None,
                  autocomplete: Optional[List[str]] = None,
-                 validation: Dict[str, Callable[..., bool]] = {}) -> None:
+                 validation: Optional[Dict[str, Callable[..., bool]]] = None) -> None:
         """Text Input
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
@@ -44,7 +44,7 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
         :param autocomplete: optional list of strings for autocompletion
         :param validation: dictionary of validation rules, e.g. ``{'Too long!': lambda value: len(value) < 3}``
         """
-        super().__init__(value=value, on_value_change=on_change, validation=validation)
+        super().__init__(value=value, on_value_change=on_change, validation=validation or {})
         if label is not None:
             self._props['label'] = label
         if placeholder is not None:
