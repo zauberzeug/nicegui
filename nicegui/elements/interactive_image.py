@@ -24,7 +24,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
     def __init__(self,
                  source: Union[str, Path, 'PIL_Image'] = '', *,
                  content: str = '',
-                 size: Optional[Tuple[int, int]] = None,
+                 size: Optional[Tuple[float, float]] = None,
                  on_mouse: Optional[Callable[..., Any]] = None,
                  events: List[str] = ['click'],
                  cross: bool = False,
