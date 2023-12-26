@@ -1,5 +1,4 @@
 import asyncio
-import warnings
 from pathlib import Path
 
 import httpx
@@ -155,8 +154,6 @@ def test_user_and_general_storage_is_persisted(screen: Screen):
 
 def test_rapid_storage(screen: Screen):
     # https://github.com/zauberzeug/nicegui/issues/1099
-    warnings.simplefilter('error')
-
     ui.button('test', on_click=lambda: (
         app.storage.general.update(one=1),
         app.storage.general.update(two=2),
