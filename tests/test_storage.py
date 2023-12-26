@@ -1,5 +1,4 @@
 import asyncio
-import warnings
 from pathlib import Path
 
 import httpx
@@ -91,7 +90,7 @@ async def test_access_user_storage_from_fastapi(screen: Screen):
         assert response.status_code == 200
         assert response.text == '"OK"'
         await asyncio.sleep(0.5)  # wait for storage to be written
-        assert next(Path('.nicegui').glob('storage_user_*.json')).read_text() == '{"msg":"yes"}'
+        assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"msg":"yes"}'
 
 
 def test_access_user_storage_on_interaction(screen: Screen):
@@ -105,7 +104,7 @@ def test_access_user_storage_on_interaction(screen: Screen):
     screen.open('/')
     screen.click('switch')
     screen.wait(0.5)
-    assert next(Path('.nicegui').glob('storage_user_*.json')).read_text() == '{"test_switch":true}'
+    assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"test_switch":true}'
 
 
 def test_access_user_storage_from_button_click_handler(screen: Screen):
@@ -117,7 +116,7 @@ def test_access_user_storage_from_button_click_handler(screen: Screen):
     screen.open('/')
     screen.click('test')
     screen.wait(1)
-    assert next(Path('.nicegui').glob('storage_user_*.json')).read_text() == '{"inner_function":"works"}'
+    assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"inner_function":"works"}'
 
 
 async def test_access_user_storage_from_background_task(screen: Screen):
@@ -130,7 +129,7 @@ async def test_access_user_storage_from_background_task(screen: Screen):
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
-    assert next(Path('.nicegui').glob('storage_user_*.json')).read_text() == '{"subtask":"works"}'
+    assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"subtask":"works"}'
 
 
 def test_user_and_general_storage_is_persisted(screen: Screen):
@@ -155,8 +154,6 @@ def test_user_and_general_storage_is_persisted(screen: Screen):
 
 def test_rapid_storage(screen: Screen):
     # https://github.com/zauberzeug/nicegui/issues/1099
-    warnings.simplefilter('error')
-
     ui.button('test', on_click=lambda: (
         app.storage.general.update(one=1),
         app.storage.general.update(two=2),
@@ -166,4 +163,4 @@ def test_rapid_storage(screen: Screen):
     screen.open('/')
     screen.click('test')
     screen.wait(0.5)
-    assert Path('.nicegui', 'storage_general.json').read_text() == '{"one":1,"two":2,"three":3}'
+    assert Path('.nicegui', 'storage-general.json').read_text('utf-8') == '{"one":1,"two":2,"three":3}'

@@ -67,4 +67,36 @@ def plot_updates():
     ui.button('Add trace', on_click=add_trace)
 
 
+@doc.demo('Plot events', '''
+    This demo shows how to handle Plotly events.
+    Try clicking on a data point to see the event data.
+
+    Currently, the following events are supported:
+    "plotly\_click",
+    "plotly\_legendclick",
+    "plotly\_selecting",
+    "plotly\_selected",
+    "plotly\_hover",
+    "plotly\_unhover",
+    "plotly\_legenddoubleclick",
+    "plotly\_restyle",
+    "plotly\_relayout",
+    "plotly\_webglcontextlost",
+    "plotly\_afterplot",
+    "plotly\_autosize",
+    "plotly\_deselect",
+    "plotly\_doubleclick",
+    "plotly\_redraw",
+    "plotly\_animated".
+    For more information, see the [Plotly documentation](https://plotly.com/javascript/plotlyjs-events/).
+''')
+def plot_events():
+    import plotly.graph_objects as go
+
+    fig = go.Figure(go.Scatter(x=[1, 2, 3, 4], y=[1, 2, 3, 2.5]))
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+    plot = ui.plotly(fig).classes('w-full h-40')
+    plot.on('plotly_click', ui.notify)
+
+
 doc.reference(ui.plotly)

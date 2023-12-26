@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Union
 
-from .. import core
+from .. import core, helpers
 from ..element import Element
 
 
@@ -27,7 +27,7 @@ class Audio(Element, component='audio.js'):
         for a list of events you can subscribe to using the generic event subscription `on()`.
         """
         super().__init__()
-        if Path(src).is_file():
+        if helpers.is_file(src):
             src = core.app.add_media_file(local_file=src)
         self._props['src'] = src
         self._props['controls'] = controls

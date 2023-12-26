@@ -74,7 +74,7 @@ class Table(FilterElement, component='table.js'):
 
     @classmethod
     def from_pandas(cls,
-                    df: pd.DataFrame,
+                    df: 'pd.DataFrame',
                     row_key: str = 'id',
                     title: Optional[str] = None,
                     selection: Optional[Literal['single', 'multiple']] = None,

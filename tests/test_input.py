@@ -64,11 +64,13 @@ def test_input_validation(screen: Screen):
     element.send_keys('John')
     screen.should_contain('Too short')
     assert input_.error == 'Too short'
+    assert not input_.validate()
 
     element.send_keys(' Doe')
     screen.wait(0.5)
     screen.should_not_contain('Too short')
     assert input_.error is None
+    assert input_.validate()
 
 
 def test_input_with_multi_word_error_message(screen: Screen):

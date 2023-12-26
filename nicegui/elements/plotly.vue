@@ -25,6 +25,42 @@ export default {
         Plotly.newPlot(this.$el.id, this.options.data, this.options.layout, options.config);
       }
 
+      // forward events
+      for (const name of [
+        // source: https://plotly.com/javascript/plotlyjs-events/
+        "plotly_click",
+        "plotly_legendclick",
+        "plotly_selecting",
+        "plotly_selected",
+        "plotly_hover",
+        "plotly_unhover",
+        "plotly_legenddoubleclick",
+        "plotly_restyle",
+        "plotly_relayout",
+        "plotly_webglcontextlost",
+        "plotly_afterplot",
+        "plotly_autosize",
+        "plotly_deselect",
+        "plotly_doubleclick",
+        "plotly_redraw",
+        "plotly_animated",
+      ]) {
+        this.$el.on(name, (event) => {
+          const args = {
+            ...event,
+            points: event?.points?.map((p) => ({
+              ...p,
+              fullData: undefined,
+              xaxis: undefined,
+              yaxis: undefined,
+            })),
+            xaxes: undefined,
+            yaxes: undefined,
+          };
+          this.$emit(name, args);
+        });
+      }
+
       // store last options
       this.last_options = options;
     },

@@ -47,10 +47,10 @@ export default {
       this.grid = new agGrid.Grid(this.$el, this.gridOptions);
       this.gridOptions.api.addGlobalListener(this.handle_event);
     },
-    call_api_method(name, ...args) {
+    run_grid_method(name, ...args) {
       return this.gridOptions.api[name](...args);
     },
-    call_column_api_method(name, ...args) {
+    run_column_method(name, ...args) {
       return this.gridOptions.columnApi[name](...args);
     },
     handle_event(type, args) {

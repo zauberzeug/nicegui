@@ -42,10 +42,11 @@ class ReadOnlyDict(MutableMapping):
 
 class PersistentDict(observables.ObservableDict):
 
-    def __init__(self, filepath: Path) -> None:
+    def __init__(self, filepath: Path, encoding: Optional[str] = None) -> None:
         self.filepath = filepath
+        self.encoding = encoding
         try:
-            data = json.loads(filepath.read_text()) if filepath.exists() else {}
+            data = json.loads(filepath.read_text(encoding)) if filepath.exists() else {}
         except Exception:
             log.warning(f'Could not load storage file {filepath}')
             data = {}
@@ -59,7 +60,7 @@ class PersistentDict(observables.ObservableDict):
             self.filepath.parent.mkdir(exist_ok=True)
 
         async def backup() -> None:
-            async with aiofiles.open(self.filepath, 'w') as f:
+            async with aiofiles.open(self.filepath, 'w', encoding=self.encoding) as f:
                 await f.write(json.dumps(self))
         if core.loop:
             background_tasks.create_lazy(backup(), name=self.filepath.stem)
@@ -93,7 +94,8 @@ class Storage:
 
     def __init__(self) -> None:
         self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
-        self._general = PersistentDict(self.path / 'storage_general.json')
+        self.migrate_to_utf8()
+        self._general = PersistentDict(self.path / 'storage-general.json', encoding='utf-8')
         self._users: Dict[str, PersistentDict] = {}
 
     @property
@@ -132,7 +134,7 @@ class Storage:
             raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
         session_id = request.session['id']
         if session_id not in self._users:
-            self._users[session_id] = PersistentDict(self.path / f'storage_user_{session_id}.json')
+            self._users[session_id] = PersistentDict(self.path / f'storage-user-{session_id}.json', encoding='utf-8')
         return self._users[session_id]
 
     @property
@@ -144,5 +146,16 @@ class Storage:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
-        for filepath in self.path.glob('storage_*.json'):
+        for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()
+
+    def migrate_to_utf8(self) -> None:
+        """Migrates storage files from system's default encoding to UTF-8.
+
+        To distinguish between the old and new encoding, the new files are named with dashes instead of underscores.
+        """
+        for filepath in self.path.glob('storage_*.json'):
+            new_filepath = filepath.with_stem(filepath.stem.replace('_', '-'))
+            data = json.loads(filepath.read_text())
+            filepath.rename(new_filepath)
+            new_filepath.write_text(json.dumps(data), encoding='utf-8')

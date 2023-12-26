@@ -31,6 +31,15 @@ export default {
         this.editor.destroy();
       }
     },
+    run_editor_method(name, ...args) {
+      if (this.editor) {
+        if (name.startsWith(":")) {
+          name = name.slice(1);
+          args = args.map((arg) => new Function("return " + arg)());
+        }
+        return this.editor[name](...args);
+      }
+    },
   },
   props: {
     properties: Object,

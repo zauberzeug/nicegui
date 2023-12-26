@@ -19,6 +19,13 @@ export default {
       convertDynamicProperties(this.options, true);
       this.chart.setOption(this.options, { notMerge: this.chart.options?.series.length != this.options.series.length });
     },
+    run_chart_method(name, ...args) {
+      if (name.startsWith(":")) {
+        name = name.slice(1);
+        args = args.map((arg) => new Function("return " + arg)());
+      }
+      return this.chart[name](...args);
+    },
   },
   props: {
     options: Object,
