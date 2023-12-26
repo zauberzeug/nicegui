@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
-from ..element import Element
-from ..events import handle_event
+from nicegui.element import Element
+from nicegui.events import handle_event
 
 
 class FullCalendar(Element, component='fullcalendar.js'):
@@ -16,7 +16,7 @@ class FullCalendar(Element, component='fullcalendar.js'):
         :param on_click: callback function that is called when a calendar event is clicked.
         """
         super().__init__()
-        self.add_resource(Path(__file__).parent / 'lib' / 'fullcalendar')
+        self.add_resource(Path(__file__).parent / 'lib')
         self._props['options'] = options
 
         if on_click:

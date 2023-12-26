@@ -7,7 +7,6 @@
 - es-module-shims: 1.8.0 ([MIT](https://opensource.org/licenses/MIT))
 - aggrid: 30.2.0 ([MIT](https://opensource.org/licenses/MIT))
 - echarts: 5.4.3 ([Apache-2.0](https://opensource.org/licenses/Apache-2.0))
-- fullcalendar: 6.1.10 ([MIT](https://opensource.org/licenses/MIT))
 - leaflet: 1.9.4 ([BSD-2-Clause](https://opensource.org/licenses/BSD-2-Clause))
 - leaflet-draw: 1.0.4 ([MIT](https://opensource.org/licenses/MIT))
 - mermaid: 10.5.1 ([MIT](https://opensource.org/licenses/MIT))

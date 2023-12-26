@@ -52,13 +52,6 @@
       "package/dist/": ""
     }
   },
-  "fullcalendar": {
-    "destination": "nicegui/elements/lib",
-    "keep": ["package/index.global.min.js"],
-    "rename": {
-      "package/": ""
-    }
-  },
   "leaflet": {
     "destination": "nicegui/elements/lib/leaflet",
     "keep": [
