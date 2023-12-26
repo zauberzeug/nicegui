@@ -196,11 +196,11 @@ class App(FastAPI):
         :param local_directory: local folder with files to serve as media content
         """
         @self.get(url_path + '/{filename:path}')
-        def read_item(request: Request, filename: str) -> StreamingResponse:
+        def read_item(request: Request, filename: str, nicegui_cunk_size: int = 8192) -> StreamingResponse:
             filepath = Path(local_directory) / filename
             if not filepath.is_file():
                 raise HTTPException(status_code=404, detail='Not Found')
-            return get_streaming_response(filepath, request)
+            return get_streaming_response(filepath, request, chunk_size=nicegui_cunk_size)
 
     def add_media_file(self, *,
                        local_file: Union[str, Path],
@@ -226,10 +226,10 @@ class App(FastAPI):
         path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
         @self.get(path)
-        def read_item(request: Request) -> StreamingResponse:
+        def read_item(request: Request, nicegui_cunk_size: int = 8192) -> StreamingResponse:
             if single_use:
                 self.remove_route(path)
-            return get_streaming_response(file, request)
+            return get_streaming_response(file, request, chunk_size=nicegui_cunk_size)
 
         return path
 

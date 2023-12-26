@@ -2,7 +2,8 @@ import asyncio
 import gzip
 import json
 import re
-from typing import Any, AsyncIterator, Dict, Optional
+from dataclasses import dataclass
+from typing import Any, AsyncIterator, Awaitable, Callable, Dict, Optional
 from uuid import uuid4
 
 import httpx
@@ -16,6 +17,12 @@ from .logging import log
 RELAY_HOST = 'https://on-air.nicegui.io/'
 
 
+@dataclass
+class Stream:
+    data: AsyncIterator[bytes]
+    response: httpx.Response
+
+
 class Air:
 
     def __init__(self, token: str) -> None:
@@ -24,7 +31,7 @@ class Air:
         self.client = httpx.AsyncClient(app=core.app)
         self.streaming_client = httpx.AsyncClient()
         self.connecting = False
-        self.streams: Dict[str, AsyncIterator[bytes]] = {}
+        self.streams: Dict[str, Stream] = {}
 
         @self.relay.on('http')
         async def _handle_http(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -61,6 +68,7 @@ class Air:
         async def _handle_range_request(data: Dict[str, Any]) -> Dict[str, Any]:
             headers: Dict[str, Any] = data['headers']
             url = list(u for u in core.app.urls if data['prefix'] not in u)[0] + data['path']
+            data['params']['nicegui_chunk_size'] = 1024
             request = self.client.build_request(
                 data['method'],
                 url,
@@ -70,7 +78,7 @@ class Air:
             )
             response = await self.streaming_client.send(request, stream=True)
             stream_id = uuid4().hex
-            self.streams[stream_id] = response.aiter_bytes()
+            self.streams[stream_id] = Stream(data=response.aiter_bytes(), response=response)
             return {
                 'status_code': response.status_code,
                 'headers': response.headers.multi_items(),
@@ -79,14 +87,21 @@ class Air:
 
         @self.relay.on('read-stream')
         async def _handle_read_stream(stream_id: str) -> bytes:
-            ic()
-            async for chunk in self.streams[stream_id]:
-                ic('stream', len(chunk))
+            async for chunk in self.streams[stream_id].data:
                 return chunk
+            await _handle_close_stream(stream_id)
             return b''
+
+        @self.relay.on('close-stream')
+        async def _handle_close_stream(stream_id: str) -> None:
+            return
+            ic()
+            await self.streams[stream_id].response.aclose()
+            del self.streams[stream_id]
 
         @self.relay.on('ready')
         def _handle_ready(data: Dict[str, Any]) -> None:
+            ic()
             core.app.urls.add(data['device_url'])
             if core.app.config.show_welcome_message:
                 print(f'NiceGUI is on air at {data["device_url"]}', flush=True)
@@ -97,6 +112,7 @@ class Air:
 
         @self.relay.on('handshake')
         def _handle_handshake(data: Dict[str, Any]) -> bool:
+            ic()
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return False
@@ -108,6 +124,7 @@ class Air:
 
         @self.relay.on('client_disconnect')
         def _handle_disconnect(data: Dict[str, Any]) -> None:
+            ic()
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return
@@ -140,10 +157,12 @@ class Air:
 
         @self.relay.on('reconnect')
         async def _handle_reconnect(_: Dict[str, Any]) -> None:
+            ic()
             await self.connect()
 
     async def connect(self) -> None:
         """Connect to the NiceGUI On Air server."""
+        ic()
         if self.connecting:
             return
         self.connecting = True
@@ -171,8 +190,11 @@ class Air:
 
     async def disconnect(self) -> None:
         """Disconnect from the NiceGUI On Air server."""
+        ic()
         for stream in self.streams.values():
-            await stream.aclose()
+            await stream.response.aclose()
+        ic()
+        self.streams.clear()
         await self.relay.disconnect()
 
     async def emit(self, message_type: str, data: Dict[str, Any], room: str) -> None:

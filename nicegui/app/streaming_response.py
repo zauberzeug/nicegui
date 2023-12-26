@@ -8,7 +8,7 @@ from fastapi.responses import StreamingResponse
 mimetypes.init()
 
 
-def get_streaming_response(file: Path, request: Request) -> StreamingResponse:
+def get_streaming_response(file: Path, request: Request, chunk_size: int) -> StreamingResponse:
     """Get a StreamingResponse for the given file and request."""
     file_size = file.stat().st_size
     start = 0
@@ -26,7 +26,7 @@ def get_streaming_response(file: Path, request: Request) -> StreamingResponse:
         'Accept-Ranges': 'bytes',
     }
 
-    def content_reader(file: Path, start: int, end: int, chunk_size: int = 8192) -> Generator[bytes, None, None]:
+    def content_reader(file: Path, start: int, end: int) -> Generator[bytes, None, None]:
         with open(file, 'rb') as data:
             data.seek(start)
             remaining_bytes = end - start + 1
