@@ -6,8 +6,7 @@ from fastapi.responses import PlainTextResponse
 from selenium.webdriver.common.by import By
 
 from nicegui import Client, background_tasks, ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_page(screen: Screen):

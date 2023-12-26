@@ -1,8 +1,7 @@
 import pytest
 
 from nicegui import Client, ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_run_javascript_on_button_press(screen: Screen):

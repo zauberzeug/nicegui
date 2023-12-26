@@ -5,8 +5,7 @@ import pandas as pd
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def columns() -> List:

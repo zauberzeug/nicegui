@@ -1,6 +1,5 @@
 from nicegui import Tailwind, ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_tailwind_builder(screen: Screen):
