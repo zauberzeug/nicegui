@@ -28,7 +28,11 @@ def chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeO
     chrome_options.add_argument('disable-dev-shm-using')
     chrome_options.add_argument('no-sandbox')
     chrome_options.add_argument('headless')
-    chrome_options.add_argument('disable-gpu')
+    # check if we are running on GitHub Actions
+    if 'GITHUB_ACTIONS' in os.environ:
+        chrome_options.add_argument('disable-gpu')
+    else:
+        chrome_options.add_argument('--use-gl=angle')
     chrome_options.add_argument('window-size=600x600')
     chrome_options.add_experimental_option('prefs', {
         "download.default_directory": str(DOWNLOAD_DIR),

@@ -14,7 +14,7 @@ def test_moving_sphere_with_timer(screen: Screen):
 
     screen.open('/')
 
-    def position() -> None:
+    def position() -> float:
         for _ in range(3):
             try:
                 pos = screen.selenium.execute_script(f'return scene_c{scene.id}.getObjectByName("sphere").position.z')
