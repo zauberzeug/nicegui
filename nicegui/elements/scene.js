@@ -179,7 +179,7 @@ export default {
     this.texture_loader = new THREE.TextureLoader();
     this.stl_loader = new STLLoader();
 
-    const connectInterval = setInterval(async () => {
+    const connectInterval = setInterval(() => {
       if (window.socket.id === undefined) return;
       this.$emit("init", { socket_id: window.socket.id });
       clearInterval(connectInterval);

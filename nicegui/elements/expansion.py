@@ -8,7 +8,7 @@ from .mixins.value_element import ValueElement
 class Expansion(TextElement, ValueElement, DisableableElement):
 
     def __init__(self,
-                 text: Optional[str] = None, *,
+                 text: str = '', *,
                  icon: Optional[str] = None,
                  value: bool = False,
                  on_value_change: Optional[Callable[..., Any]] = None
