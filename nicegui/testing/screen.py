@@ -3,6 +3,7 @@ import re
 import threading
 import time
 from contextlib import contextmanager
+from pathlib import Path
 from typing import List, Optional, Union
 
 import pytest
@@ -16,13 +17,11 @@ from selenium.webdriver.remote.webelement import WebElement
 from nicegui import app, ui
 from nicegui.server import Server
 
-from .test_helpers import TEST_DIR
-
 
 class Screen:
     PORT = 3392
     IMPLICIT_WAIT = 4
-    SCREENSHOT_DIR = TEST_DIR / 'screenshots'
+    SCREENSHOT_DIR = Path('screenshots')
 
     def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture) -> None:
         self.selenium = selenium
