@@ -86,16 +86,18 @@ class Air:
             }
 
         @self.relay.on('read-stream')
-        async def _handle_read_stream(stream_id: str) -> bytes:
-            async for chunk in self.streams[stream_id].data:
-                return chunk
-            await _handle_close_stream(stream_id)
-            return b''
+        async def _handle_read_stream(stream_id: str) -> Optional[bytes]:
+            try:
+                return await self.streams[stream_id].data.__anext__()
+            except StopAsyncIteration:
+                await _handle_close_stream(stream_id)
+                return None
+            except Exception:
+                await _handle_close_stream(stream_id)
+                raise
 
         @self.relay.on('close-stream')
         async def _handle_close_stream(stream_id: str) -> None:
-            return
-            ic()
             await self.streams[stream_id].response.aclose()
             del self.streams[stream_id]
 
@@ -221,5 +223,6 @@ def connect() -> None:
 
 def disconnect() -> None:
     """Disconnect from the NiceGUI On Air server if there is an air instance."""
+    ic()
     if instance:
         background_tasks.create(instance.disconnect())
