@@ -1,8 +1,7 @@
 import pytest
 
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 @pytest.mark.parametrize('new_tab', [False, True])

@@ -3,8 +3,7 @@ from typing import Set
 import requests
 
 from nicegui import __version__
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def get_openapi_paths() -> Set[str]:

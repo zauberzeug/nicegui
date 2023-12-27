@@ -6,8 +6,7 @@ from selenium.webdriver.common.by import By
 
 from nicegui import ui
 from nicegui.events import ClickEventArguments
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def click_sync_no_args():

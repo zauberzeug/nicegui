@@ -1,8 +1,7 @@
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_entering_color(screen: Screen):

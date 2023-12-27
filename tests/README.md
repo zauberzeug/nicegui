@@ -61,7 +61,7 @@ Here is a very simple example:
 
 ```py
 from nicegui import ui
-from .screen import Screen
+from nicegui.testing import Screen
 
 def test_hello_world(screen: Screen):
     ui.label('Hello, world')

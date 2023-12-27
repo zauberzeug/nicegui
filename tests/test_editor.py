@@ -1,7 +1,6 @@
 
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_editor(screen: Screen):
