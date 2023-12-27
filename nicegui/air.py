@@ -38,7 +38,6 @@ class Air:
             headers: Dict[str, Any] = data['headers']
             headers.update({'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']})
             url = 'http://test' + data['path']
-            ic(url)
             request = self.client.build_request(
                 data['method'],
                 url,
@@ -103,7 +102,6 @@ class Air:
 
         @self.relay.on('ready')
         def _handle_ready(data: Dict[str, Any]) -> None:
-            ic()
             core.app.urls.add(data['device_url'])
             if core.app.config.show_welcome_message:
                 print(f'NiceGUI is on air at {data["device_url"]}', flush=True)
@@ -114,7 +112,6 @@ class Air:
 
         @self.relay.on('handshake')
         def _handle_handshake(data: Dict[str, Any]) -> bool:
-            ic()
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return False
@@ -126,7 +123,6 @@ class Air:
 
         @self.relay.on('client_disconnect')
         def _handle_disconnect(data: Dict[str, Any]) -> None:
-            ic()
             client_id = data['client_id']
             if client_id not in Client.instances:
                 return
@@ -159,12 +155,10 @@ class Air:
 
         @self.relay.on('reconnect')
         async def _handle_reconnect(_: Dict[str, Any]) -> None:
-            ic()
             await self.connect()
 
     async def connect(self) -> None:
         """Connect to the NiceGUI On Air server."""
-        ic()
         if self.connecting:
             return
         self.connecting = True
@@ -192,10 +186,8 @@ class Air:
 
     async def disconnect(self) -> None:
         """Disconnect from the NiceGUI On Air server."""
-        ic()
         for stream in self.streams.values():
             await stream.response.aclose()
-        ic()
         self.streams.clear()
         await self.relay.disconnect()
 
@@ -223,6 +215,5 @@ def connect() -> None:
 
 def disconnect() -> None:
     """Disconnect from the NiceGUI On Air server if there is an air instance."""
-    ic()
     if instance:
         background_tasks.create(instance.disconnect())
