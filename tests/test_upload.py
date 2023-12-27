@@ -2,8 +2,7 @@ from pathlib import Path
 from typing import List
 
 from nicegui import events, ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 test_path1 = Path('tests/test_upload.py').resolve()
 test_path2 = Path('tests/test_scene.py').resolve()

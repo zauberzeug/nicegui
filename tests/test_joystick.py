@@ -1,8 +1,7 @@
 from selenium.webdriver.common.action_chains import ActionChains
 
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_joystick(screen: Screen):

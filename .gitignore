@@ -4,7 +4,7 @@ __pycache__/
 dist
 /test.py
 *.pickle
-tests/screenshots/
+screenshots/
 tests/media/
 venv
 .idea

@@ -4,8 +4,7 @@ from pathlib import Path
 import httpx
 
 from nicegui import Client, app, background_tasks, ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_browser_data_is_stored_in_the_browser(screen: Screen):

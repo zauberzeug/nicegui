@@ -2,8 +2,7 @@ import pytest
 from selenium.webdriver.common.action_chains import ActionChains
 
 from nicegui import Client, ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_set_source_in_tab(screen: Screen):

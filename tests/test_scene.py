@@ -3,8 +3,7 @@ from selenium.common.exceptions import JavascriptException
 
 from nicegui import ui
 from nicegui.elements.scene_object3d import Object3D
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_moving_sphere_with_timer(screen: Screen):
