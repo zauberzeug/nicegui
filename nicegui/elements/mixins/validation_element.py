@@ -16,7 +16,7 @@ class ValidationElement(ValueElement):
         return self._error
 
     @error.setter
-    def set_error(self, error: Optional[str]) -> None:
+    def error(self, error: Optional[str]) -> None:
         """Sets the error message.
 
         :param error: The optional error message
@@ -33,14 +33,14 @@ class ValidationElement(ValueElement):
         if isinstance(self.validation, dict):
             for message, check in self.validation.items():
                 if not check(self.value):
-                    self.set_error(message)
+                    self.error = message
                     return False
         else:
             message = self.validation(self.value)
             if message is not None:
-                self.set_error(message)
+                self.error = message
                 return False
-        self.set_error(None)
+        self.error = None
         return True
 
     def _handle_value_change(self, value: Any) -> None:
