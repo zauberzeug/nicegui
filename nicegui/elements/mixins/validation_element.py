@@ -1,13 +1,13 @@
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 from .value_element import ValueElement
 
 
 class ValidationElement(ValueElement):
 
-    def __init__(self, validation: Union[List[Callable[..., Tuple[bool, str]]], Dict[str, Callable[..., bool]]], **kwargs: Any) -> None:
+    def __init__(self, validation: Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]], **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.validation = validation
+        self.validation = validation if validation is not None else {}
         self._error: Optional[str] = None
 
     @property
@@ -15,36 +15,32 @@ class ValidationElement(ValueElement):
         """The latest error message from the validation functions."""
         return self._error
 
-    def set_error_message(self, message: str) -> None:
+    @error.setter
+    def set_error(self, error: Optional[str]) -> None:
         """Sets the error message.
 
-        :param message: The error message
+        :param error: The optional error message
         """
-        message = message.replace('\\', '\\\\')
-        message = message.replace('\n', '<br>')
-        message = message.replace('"', '\\"')
-        self._error = message
-        self.props(f'error error-message="{message}"')
-
-    def clear_error_message(self) -> None:
-        """Clears the error message."""
-        self._error = None
-        self.props(remove='error')
+        self._error = error
+        if self._error is None:
+            self.props(remove='error')
+        else:
+            self._props['error-message'] = self._error
+            self.props('error')
 
     def validate(self) -> bool:
         """Validate the current value and set the error message if necessary."""
         if isinstance(self.validation, dict):
             for message, check in self.validation.items():
                 if not check(self.value):
-                    self.set_error_message(message)
+                    self.set_error(message)
                     return False
         else:
-            for check_ in self.validation:
-                ret, message = check_(self.value)
-                if not ret:
-                    self.set_error_message(message)
-                    return False
-        self.clear_error_message()
+            message = self.validation(self.value)
+            if message is not None:
+                self.set_error(message)
+                return False
+        self.set_error(None)
         return True
 
     def _handle_value_change(self, value: Any) -> None:
