@@ -226,7 +226,7 @@ class App(FastAPI):
         path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
         @self.get(path)
-        def read_item(request: Request, nicegui_cunk_size: int = 8192) -> StreamingResponse:
+        def read_item(request: Request, nicegui_cunk_size: int = 8192) -> Response:
             if single_use:
                 self.remove_route(path)
             return get_streaming_response(file, request, chunk_size=nicegui_cunk_size)
