@@ -10,7 +10,7 @@ class Textarea(Input, component='input.js'):
                  placeholder: Optional[str] = None,
                  value: str = '',
                  on_change: Optional[Callable[..., Any]] = None,
-                 validation: Dict[str, Callable[..., bool]] = {},
+                 validation: Optional[Dict[str, Callable[..., bool]]] = None,
                  ) -> None:
         """Textarea
 

@@ -57,4 +57,7 @@ examples: List[Example] = [
     Example('Descope Auth', 'login form and user profile using [Descope](https://descope.com)'),
     Example('Editable table', 'editable table allowing to add, edit, delete rows'),
     Example('Editable AG Grid', 'editable AG Grid allowing to add, edit, delete rows'),
+    Example('FullCalendar',
+            'An interactive calendar display using the [FullCalendar library](https://fullcalendar.io/)'),
+    Example('Pytest', 'test a NiceGUI app with pytest'),
 ]

@@ -1,11 +1,9 @@
 import asyncio
-import warnings
 
 import pytest
 
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 class Counter:
@@ -80,15 +78,17 @@ def test_setting_visibility(screen: Screen, once: bool):
 
 
 def test_awaiting_coroutine(screen: Screen):
-    warnings.simplefilter('error')
+    user = {'name': 'John Doe'}
 
     async def update_user():
         await asyncio.sleep(0.1)
+        user['name'] = 'Jane Doe'
 
     ui.timer(1, update_user)
 
     screen.open('/')
     screen.wait(1)
+    assert user['name'] == 'Jane Doe'
 
 
 def test_timer_on_deleted_container(screen: Screen):

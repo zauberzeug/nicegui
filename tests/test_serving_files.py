@@ -6,8 +6,8 @@ import pytest
 import requests
 
 from nicegui import __version__, app, ui
+from nicegui.testing import Screen
 
-from .screen import Screen
 from .test_helpers import TEST_DIR
 
 IMAGE_FILE = Path(TEST_DIR).parent / 'examples' / 'slideshow' / 'slides' / 'slide1.jpg'
