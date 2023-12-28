@@ -3,8 +3,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Awaitable, Callable, List, Optional, Union
 
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .. import background_tasks, helpers
@@ -196,7 +196,7 @@ class App(FastAPI):
         :param local_directory: local folder with files to serve as media content
         """
         @self.get(url_path + '/{filename:path}')
-        def read_item(request: Request, filename: str, nicegui_cunk_size: int = 8192) -> StreamingResponse:
+        def read_item(request: Request, filename: str, nicegui_cunk_size: int = 8192) -> Response:
             filepath = Path(local_directory) / filename
             if not filepath.is_file():
                 raise HTTPException(status_code=404, detail='Not Found')
