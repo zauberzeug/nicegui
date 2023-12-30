@@ -27,7 +27,7 @@ def get_range_response(file: Path, request: Request, chunk_size: int) -> Respons
     }
     range_header = request.headers.get('range')
     media_type = mimetypes.guess_type(str(file))[0] or 'application/octet-stream'
-    if range_header:
+    if range_header is not None:
         byte1, byte2 = range_header.split('=')[1].split('-')
         start = int(byte1)
         if byte2:
