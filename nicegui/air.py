@@ -32,6 +32,7 @@ class Air:
         self.streaming_client = httpx.AsyncClient()
         self.connecting = False
         self.streams: Dict[str, Stream] = {}
+        self.remote_url: Optional[str] = None
 
         @self.relay.on('http')
         async def _handle_http(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -66,14 +67,13 @@ class Air:
         @self.relay.on('range-request')
         async def _handle_range_request(data: Dict[str, Any]) -> Dict[str, Any]:
             headers: Dict[str, Any] = data['headers']
-            url = list(u for u in core.app.urls if data['prefix'] not in u)[0] + data['path']
+            url = list(u for u in core.app.urls if self.remote_url != u)[0] + data['path']
             data['params']['nicegui_chunk_size'] = 1024
             request = self.client.build_request(
                 data['method'],
                 url,
                 params=data['params'],
                 headers=headers,
-                content=data['body'],
             )
             response = await self.streaming_client.send(request, stream=True)
             stream_id = uuid4().hex
@@ -103,6 +103,7 @@ class Air:
         @self.relay.on('ready')
         def _handle_ready(data: Dict[str, Any]) -> None:
             core.app.urls.add(data['device_url'])
+            self.remote_url = data['device_url']
             if core.app.config.show_welcome_message:
                 print(f'NiceGUI is on air at {data["device_url"]}', flush=True)
 
