@@ -36,3 +36,6 @@ def remove_padding():
     with ui.column().classes('h-full w-full bg-gray-400 justify-between'):  # HIDE
         ui.label('top left')
         ui.label('bottom right').classes('self-end')
+
+
+doc.reference(ui.query)

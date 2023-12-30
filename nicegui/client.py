@@ -116,32 +116,38 @@ class Client:
         })
         socket_io_js_query_params = {**core.app.config.socket_io_js_query_params, 'client_id': self.id}
         vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
-        return templates.TemplateResponse('index.html', {
-            'request': request,
-            'version': __version__,
-            'elements': elements.replace('&', '&amp;')
-                                .replace('<', '&lt;')
-                                .replace('>', '&gt;')
-                                .replace('`', '&#96;')
-                                .replace('$', '&#36;'),
-            'head_html': self.head_html,
-            'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
-            'vue_scripts': '\n'.join(vue_scripts),
-            'imports': json.dumps(imports),
-            'js_imports': '\n'.join(js_imports),
-            'quasar_config': json.dumps(core.app.config.quasar_config),
-            'title': self.page.resolve_title() if self.title is None else self.title,
-            'viewport': self.page.resolve_viewport(),
-            'favicon_url': get_favicon_url(self.page, prefix),
-            'dark': str(self.page.resolve_dark()),
-            'language': self.page.resolve_language(),
-            'prefix': prefix,
-            'tailwind': core.app.config.tailwind,
-            'prod_js': core.app.config.prod_js,
-            'socket_io_js_query_params': socket_io_js_query_params,
-            'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
-            'socket_io_js_transports': core.app.config.socket_io_js_transports,
-        }, status_code, {'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'})
+        return templates.TemplateResponse(
+            request=request,
+            name='index.html',
+            context={
+                'request': request,
+                'version': __version__,
+                'elements': elements.replace('&', '&amp;')
+                                    .replace('<', '&lt;')
+                                    .replace('>', '&gt;')
+                                    .replace('`', '&#96;')
+                                    .replace('$', '&#36;'),
+                'head_html': self.head_html,
+                'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
+                'vue_scripts': '\n'.join(vue_scripts),
+                'imports': json.dumps(imports),
+                'js_imports': '\n'.join(js_imports),
+                'quasar_config': json.dumps(core.app.config.quasar_config),
+                'title': self.page.resolve_title() if self.title is None else self.title,
+                'viewport': self.page.resolve_viewport(),
+                'favicon_url': get_favicon_url(self.page, prefix),
+                'dark': str(self.page.resolve_dark()),
+                'language': self.page.resolve_language(),
+                'prefix': prefix,
+                'tailwind': core.app.config.tailwind,
+                'prod_js': core.app.config.prod_js,
+                'socket_io_js_query_params': socket_io_js_query_params,
+                'socket_io_js_extra_headers': core.app.config.socket_io_js_extra_headers,
+                'socket_io_js_transports': core.app.config.socket_io_js_transports,
+            },
+            status_code=status_code,
+            headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},
+        )
 
     async def connected(self, timeout: float = 3.0, check_interval: float = 0.1) -> None:
         """Block execution until the client is connected."""
@@ -252,7 +258,7 @@ class Client:
         """Forward an event to the corresponding element."""
         with self:
             sender = self.elements.get(msg['id'])
-            if sender:
+            if sender is not None:
                 msg['args'] = [None if arg is None else json.loads(arg) for arg in msg.get('args', [])]
                 if len(msg['args']) == 1:
                     msg['args'] = msg['args'][0]

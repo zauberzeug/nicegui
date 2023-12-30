@@ -3,8 +3,7 @@ from selenium.common.exceptions import JavascriptException
 
 from nicegui import ui
 from nicegui.elements.scene_object3d import Object3D
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_moving_sphere_with_timer(screen: Screen):
@@ -14,7 +13,7 @@ def test_moving_sphere_with_timer(screen: Screen):
 
     screen.open('/')
 
-    def position() -> None:
+    def position() -> float:
         for _ in range(3):
             try:
                 pos = screen.selenium.execute_script(f'return scene_c{scene.id}.getObjectByName("sphere").position.z')

@@ -4,8 +4,7 @@ import pytest
 from selenium.webdriver import Keys
 
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_select(screen: Screen):

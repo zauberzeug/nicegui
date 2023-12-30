@@ -1,6 +1,5 @@
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_adding_toggle_options(screen: Screen):

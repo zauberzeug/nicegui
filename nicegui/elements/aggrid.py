@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 from typing import Dict, List, Optional, cast
+
+from typing_extensions import Self
 
 from .. import optional_features
 from ..awaitable_response import AwaitableResponse
@@ -25,7 +25,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         An element to create a grid using `AG Grid <https://www.ag-grid.com/>`_.
 
-        The methods `call_api_method` and `call_column_api_method` can be used to interact with the AG Grid instance on the client.
+        The methods `run_grid_method` and `run_column_method` can be used to interact with the AG Grid instance on the client.
 
         :param options: dictionary of AG Grid options
         :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
@@ -39,11 +39,12 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         self._classes.append('nicegui-aggrid')
         self._classes.append(f'ag-theme-{theme}')
 
-    @staticmethod
-    def from_pandas(df: pd.DataFrame, *,
+    @classmethod
+    def from_pandas(cls,
+                    df: 'pd.DataFrame', *,
                     theme: str = 'balham',
                     auto_size_columns: bool = True,
-                    options: Dict = {}) -> AgGrid:
+                    options: Dict = {}) -> Self:
         """Create an AG Grid from a Pandas DataFrame.
 
         Note:
@@ -69,7 +70,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
             df[complex_cols] = df[complex_cols].astype(str)
             df[period_cols] = df[period_cols].astype(str)
 
-        return AgGrid({
+        return cls({
             'columnDefs': [{'field': str(col)} for col in df.columns],
             'rowData': df.to_dict('records'),
             'suppressDotNotation': True,
@@ -86,7 +87,11 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         self.run_method('update_grid')
 
     def call_api_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
-        """Call an AG Grid API method.
+        """DEPRECATED: Use `run_grid_method` instead."""
+        return self.run_grid_method(name, *args, timeout=timeout, check_interval=check_interval)
+
+    def run_grid_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+        """Run an AG Grid API method.
 
         See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>`_ for a list of methods.
 
@@ -100,11 +105,15 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('call_api_method', name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_grid_method', name, *args, timeout=timeout, check_interval=check_interval)
 
-    def call_column_api_method(self, name: str, *args,
-                               timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
-        """Call an AG Grid Column API method.
+    def call_column_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+        """DEPRECATED: Use `run_column_method` instead."""
+        return self.run_column_method(name, *args, timeout=timeout, check_interval=check_interval)
+
+    def run_column_method(self, name: str, *args,
+                          timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+        """Run an AG Grid Column API method.
 
         See `AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>`_ for a list of methods.
 
@@ -118,7 +127,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('call_column_api_method', name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_column_method', name, *args, timeout=timeout, check_interval=check_interval)
 
     async def get_selected_rows(self) -> List[Dict]:
         """Get the currently selected rows.
@@ -129,7 +138,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         :return: list of selected row data
         """
-        result = await self.call_api_method('getSelectedRows')
+        result = await self.run_grid_method('getSelectedRows')
         return cast(List[Dict], result)
 
     async def get_selected_row(self) -> Optional[Dict]:

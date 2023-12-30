@@ -42,6 +42,10 @@
 .nicegui-column {
   padding: 0;
 }
+.nicegui-card-tight {
+  padding: 0;
+  gap: 0;
+}
 
 /* original padding for some Quasar elements */
 .nicegui-step .q-stepper__nav {
@@ -195,8 +199,7 @@
   display: grid;
   gap: var(--nicegui-default-gap);
 }
-.nicegui-link:link,
-.nicegui-link:visited {
+.nicegui-link {
   text-decoration-line: underline;
   color: rgb(59 130 246);
 }

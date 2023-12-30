@@ -1,8 +1,7 @@
 from selenium.webdriver.common.by import By
 
 from nicegui import __version__
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_dev_mode(screen: Screen) -> None:

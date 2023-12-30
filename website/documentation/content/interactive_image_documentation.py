@@ -5,9 +5,9 @@ from . import doc
 
 @doc.demo(ui.interactive_image)
 def main_demo() -> None:
-    from nicegui.events import MouseEventArguments
+    from nicegui import events
 
-    def mouse_handler(e: MouseEventArguments):
+    def mouse_handler(e: events.MouseEventArguments):
         color = 'SkyBlue' if e.type == 'mousedown' else 'SteelBlue'
         ii.content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="15" fill="none" stroke="{color}" stroke-width="4" />'
         ui.notify(f'{e.type} at ({e.image_x:.1f}, {e.image_y:.1f})')
@@ -36,6 +36,19 @@ def force_reload():
     img = ui.interactive_image('https://picsum.photos/640/360').classes('w-64')
 
     ui.button('Force reload', on_click=img.force_reload)
+
+
+@doc.demo('Blank canvas', '''
+    You can also create a blank canvas with a given size.
+    This is useful if you want to draw something without loading a background image.
+''')
+def blank_canvas():
+    ui.interactive_image(
+        size=(800, 600), cross=True,
+        on_mouse=lambda e: e.sender.set_content(f'''
+            <circle cx="{e.image_x}" cy="{e.image_y}" r="50" fill="orange" />
+        '''),
+    ).classes('w-64 bg-blue-50')
 
 
 doc.reference(ui.interactive_image)

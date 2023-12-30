@@ -3,8 +3,7 @@ import asyncio
 from selenium.webdriver.common.by import By
 
 from nicegui import Client, background_tasks, ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_adding_element_to_shared_index_page(screen: Screen):

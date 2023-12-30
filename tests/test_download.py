@@ -5,9 +5,7 @@ import pytest
 from fastapi.responses import PlainTextResponse
 
 from nicegui import app, ui
-
-from .conftest import DOWNLOAD_DIR
-from .screen import Screen
+from nicegui.testing import Screen, conftest
 
 
 @pytest.fixture
@@ -27,7 +25,7 @@ def test_download_text_file(screen: Screen, test_route: str):  # pylint: disable
     screen.open('/')
     screen.click('Download')
     screen.wait(0.5)
-    assert (DOWNLOAD_DIR / 'test.txt').read_text() == 'test'
+    assert (conftest.DOWNLOAD_DIR / 'test.txt').read_text() == 'test'
 
 
 def test_downloading_local_file_as_src(screen: Screen):
@@ -38,7 +36,7 @@ def test_downloading_local_file_as_src(screen: Screen):
     route_count_before_download = len(app.routes)
     screen.click('download')
     screen.wait(0.5)
-    assert (DOWNLOAD_DIR / 'slide1.jpg').exists()
+    assert (conftest.DOWNLOAD_DIR / 'slide1.jpg').exists()
     assert len(app.routes) == route_count_before_download
 
 
@@ -48,4 +46,4 @@ def test_download_raw_data(screen: Screen):
     screen.open('/')
     screen.click('download')
     screen.wait(0.5)
-    assert (DOWNLOAD_DIR / 'test.txt').read_text() == 'test'
+    assert (conftest.DOWNLOAD_DIR / 'test.txt').read_text() == 'test'

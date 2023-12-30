@@ -2,8 +2,7 @@ import numpy as np
 import plotly.graph_objects as go
 
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_plotly(screen: Screen):

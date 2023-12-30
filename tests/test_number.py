@@ -2,8 +2,18 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
+from nicegui.testing import Screen
 
-from .screen import Screen
+
+def test_number_input(screen: Screen):
+    ui.number('Number')
+    ui.button('Button')
+
+    screen.open('/')
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Number"]')
+    element.send_keys('42')
+    screen.click('Button')
+    screen.should_contain_input('42')
 
 
 def test_apply_format_on_blur(screen: Screen):

@@ -108,8 +108,19 @@ export default {
     setZoom(zoom) {
       this.map.setZoom(zoom);
     },
-    add_layer(layer) {
-      L[layer.type](...layer.args).addTo(this.map);
+    add_layer(layer, id) {
+      const l = L[layer.type](...layer.args);
+      l.id = id;
+      l.addTo(this.map);
+    },
+    remove_layer(id) {
+      this.map.eachLayer((layer) => layer.id === id && this.map.removeLayer(layer));
+    },
+    clear_layers() {
+      this.map.eachLayer((layer) => this.map.removeLayer(layer));
+    },
+    run_map_method(name, ...args) {
+      return this.map[name](...args);
     },
   },
 };

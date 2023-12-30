@@ -24,7 +24,7 @@ def main_demo() -> None:
 ''')
 def map_style() -> None:
     m = ui.leaflet(center=(51.505, -0.090), zoom=3)
-    del m.layers[0]
+    m.clear_layers()
     m.tile_layer(
         url_template=r'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
         options={
@@ -110,6 +110,15 @@ def draw_on_map() -> None:
     }
     m = ui.leaflet(center=(51.505, -0.09), zoom=13, draw_control=draw_control)
     m.on('draw:created', handle_draw)
+
+
+@doc.demo('Run Map Methods', '''
+    You can run methods of the Leaflet map object with `run_map_method`.
+    This demo shows how to fit the map to the whole world.
+''')
+def run_map_methods() -> None:
+    m = ui.leaflet(center=(51.505, -0.09)).classes('h-32')
+    ui.button('Fit world', on_click=lambda: m.run_map_method('fitWorld'))
 
 
 doc.reference(ui.leaflet)

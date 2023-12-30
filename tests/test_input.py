@@ -1,9 +1,9 @@
+import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_input(screen: Screen):
@@ -54,8 +54,12 @@ def test_toggle_button(screen: Screen):
     assert element.get_attribute('type') == 'password'
 
 
-def test_input_validation(screen: Screen):
-    input_ = ui.input('Name', validation={'Too short': lambda value: len(value) >= 5})
+@pytest.mark.parametrize('use_callable', [False, True])
+def test_input_validation(use_callable: bool, screen: Screen):
+    if use_callable:
+        input_ = ui.input('Name', validation=lambda value: 'Too short' if len(value) < 5 else None)
+    else:
+        input_ = ui.input('Name', validation={'Too short': lambda value: len(value) >= 5})
 
     screen.open('/')
     screen.should_contain('Name')
@@ -64,11 +68,13 @@ def test_input_validation(screen: Screen):
     element.send_keys('John')
     screen.should_contain('Too short')
     assert input_.error == 'Too short'
+    assert not input_.validate()
 
     element.send_keys(' Doe')
     screen.wait(0.5)
     screen.should_not_contain('Too short')
     assert input_.error is None
+    assert input_.validate()
 
 
 def test_input_with_multi_word_error_message(screen: Screen):
