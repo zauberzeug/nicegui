@@ -29,17 +29,19 @@ class ValidationElement(ValueElement):
             self.props('error')
 
     def validate(self) -> bool:
-        """Validate the current value and set the error message if necessary."""
-        if isinstance(self.validation, dict):
-            for message, check in self.validation.items():
-                if not check(self.value):
-                    self.error = message
-                    return False
-        else:
-            message = self.validation(self.value)
-            if message is not None:
+        """Validate the current value and set the error message if necessary.
+
+        :return: True if the value is valid, False otherwise
+        """
+        if callable(self.validation):
+            self.error = self.validation(self.value)
+            return self.error is None
+
+        for message, check in self.validation.items():
+            if not check(self.value):
                 self.error = message
                 return False
+
         self.error = None
         return True
 

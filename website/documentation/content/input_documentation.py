@@ -42,4 +42,15 @@ def styling():
             .props('flat dense').bind_visibility_from(i, 'value')
 
 
+@doc.demo('Input validation', '''
+    You can validate the input in two ways:
+
+    - by passing a callable that returns an error message or `None`, or
+    - by passing a dictionary that maps error messages to callables that return `True` (error) or `False` (no error).
+''')
+def validation():
+    ui.input('Name', validation=lambda value: 'Too short' if len(value) < 5 else None)
+    ui.input('Name', validation={'Too short': lambda value: len(value) >= 5})
+
+
 doc.reference(ui.input)
