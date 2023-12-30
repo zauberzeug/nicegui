@@ -16,6 +16,7 @@ def get_streaming_response(file: Path, request: Request, chunk_size: int) -> Res
     last_modified_time = datetime.utcfromtimestamp(file.stat().st_mtime)
     start = 0
     end = file_size - 1
+    status_code = 200
     e_tag = hashlib.md5((str(last_modified_time) + str(file_size)).encode()).hexdigest()
     if_match_header = request.headers.get('If-None-Match')
     if if_match_header and if_match_header == e_tag:
@@ -24,19 +25,14 @@ def get_streaming_response(file: Path, request: Request, chunk_size: int) -> Res
         'E-Tag': e_tag,
         'Last-Modified': last_modified_time.strftime("%a, %d %b %Y %H:%M:%S GMT")
     }
-    range_header = request.headers.get('Range')
+    range_header = request.headers.get('range')
     media_type = mimetypes.guess_type(str(file))[0] or 'application/octet-stream'
-    if not range_header:
-        return StreamingResponse(
-            file.open('rb'),
-            media_type=media_type,
-            headers=headers,
-            status_code=200,
-        )
-    byte1, byte2 = range_header.split('=')[1].split('-')
-    start = int(byte1)
-    if byte2:
-        end = int(byte2)
+    if range_header:
+        byte1, byte2 = range_header.split('=')[1].split('-')
+        start = int(byte1)
+        if byte2:
+            end = int(byte2)
+        status_code = 206  # Partial Content
     content_length = end - start + 1
     headers.update({
         'Content-Length': str(content_length),
@@ -58,5 +54,5 @@ def get_streaming_response(file: Path, request: Request, chunk_size: int) -> Res
         content_reader(file, start, end),
         media_type=media_type,
         headers=headers,
-        status_code=206,
+        status_code=status_code,
     )
