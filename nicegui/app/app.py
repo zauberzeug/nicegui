@@ -15,7 +15,7 @@ from ..observables import ObservableSet
 from ..server import Server
 from ..storage import Storage
 from .app_config import AppConfig
-from .streaming_response import get_streaming_response
+from .range_response import get_range_response
 
 
 class State(Enum):
@@ -200,7 +200,7 @@ class App(FastAPI):
             filepath = Path(local_directory) / filename
             if not filepath.is_file():
                 raise HTTPException(status_code=404, detail='Not Found')
-            return get_streaming_response(filepath, request, chunk_size=nicegui_cunk_size)
+            return get_range_response(filepath, request, chunk_size=nicegui_cunk_size)
 
     def add_media_file(self, *,
                        local_file: Union[str, Path],
@@ -229,7 +229,7 @@ class App(FastAPI):
         def read_item(request: Request, nicegui_cunk_size: int = 8192) -> Response:
             if single_use:
                 self.remove_route(path)
-            return get_streaming_response(file, request, chunk_size=nicegui_cunk_size)
+            return get_range_response(file, request, chunk_size=nicegui_cunk_size)
 
         return path
 

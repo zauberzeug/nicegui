@@ -10,7 +10,7 @@ from fastapi.responses import Response, StreamingResponse
 mimetypes.init()
 
 
-def get_streaming_response(file: Path, request: Request, chunk_size: int) -> Response:
+def get_range_response(file: Path, request: Request, chunk_size: int) -> Response:
     """Get a Response for the given file, supporting range-requests, E-Tag and Last-Modified."""
     file_size = file.stat().st_size
     last_modified_time = datetime.utcfromtimestamp(file.stat().st_mtime)
