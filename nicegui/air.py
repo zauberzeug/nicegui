@@ -3,7 +3,7 @@ import gzip
 import json
 import re
 from dataclasses import dataclass
-from typing import Any, AsyncIterator, Awaitable, Callable, Dict, Optional
+from typing import Any, AsyncIterator, Dict, Optional
 from uuid import uuid4
 
 import httpx
