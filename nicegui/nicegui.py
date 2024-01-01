@@ -111,7 +111,7 @@ async def _startup() -> None:
     core.loop = asyncio.get_running_loop()
     app.start()
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
-    background_tasks.create(outbox.loop(air.instance), name='send outbox')
+    background_tasks.create(outbox.loop(air.instance, Client.instances), name='send outbox')
     background_tasks.create(Client.prune_instances(), name='prune clients')
     background_tasks.create(Slot.prune_stacks(), name='prune slot stacks')
     air.connect()
