@@ -64,7 +64,7 @@ async def loop(air: Optional[Air], clients: Dict[str, Client]) -> None:
             # process message_queue
             for target_id, message_type, data in message_queue:
                 client = clients.get(target_id)
-                if client is not None and client.has_socket_connection:
+                if client is None or client.has_socket_connection:
                     coros.append(emit(message_type, data, target_id))
                 else:
                     message_delay.append((time.time(), (target_id, message_type, data)))
@@ -74,7 +74,7 @@ async def loop(air: Optional[Air], clients: Dict[str, Client]) -> None:
             indices = []
             for i, (t, (target_id, message_type, data)) in enumerate(message_delay):
                 client = clients.get(target_id)
-                if client is not None and client.has_socket_connection:
+                if client is None or client.has_socket_connection:
                     coros.append(emit(message_type, data, target_id))
                     indices.append(i)
                 elif time.time() > t + 3.0:
