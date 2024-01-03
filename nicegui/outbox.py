@@ -95,13 +95,16 @@ async def loop(air: Optional[Air], clients: Dict[str, Client]) -> None:
             waiting_updates.clear()
 
             # process delayed_messages
-            for i, message in enumerate(list(delayed_messages)):
+            indices: list[int] = []
+            for i, message in enumerate(delayed_messages):
                 client = clients.get(message.target_id)
                 if client is None or client.has_socket_connection:
                     coros.append(emit(message.message_type, message.data, message.target_id))
-                    delayed_messages.pop(i)
+                    indices.append(i)
                 elif time.time() > message.time + 3.0:
-                    delayed_messages.pop(i)
+                    indices.append(i)
+            for i in reversed(indices):
+                delayed_messages.pop(i)
 
             # process waiting_messages
             for target_id, message_type, data in waiting_messages:
