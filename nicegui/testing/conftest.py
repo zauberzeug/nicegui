@@ -69,7 +69,7 @@ def reset_globals() -> Generator[None, None, None]:
     importlib.reload(core)
     Client.instances.clear()
     Client.page_routes.clear()
-    Client.auto_index_client = Client(page('/'), shared=True).__enter__()
+    Client.auto_index_client = Client(page('/'), shared=True).__enter__()  # pylint: disable=unnecessary-dunder-call
     app.reset()
     # NOTE we need to re-add the auto index route because we removed all routes above
     app.get('/')(Client.auto_index_client.build_response)
@@ -86,7 +86,7 @@ def remove_all_screenshots() -> None:
 
 
 @pytest.fixture(scope='function')
-def driver(chrome_options: webdriver.ChromeOptions) -> webdriver.Chrome:
+def driver(chrome_options: webdriver.ChromeOptions) -> Generator[webdriver.Chrome, None, None]:
     """Create a new Chrome driver instance."""
     s = Service()
     driver_ = webdriver.Chrome(service=s, options=chrome_options)

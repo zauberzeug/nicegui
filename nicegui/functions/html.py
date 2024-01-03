@@ -15,7 +15,7 @@ def add_head_html(code: str, *, shared: bool = False) -> None:
     else:
         client = context.get_client()
         if client.has_socket_connection:
-            raise RuntimeError('Cannot add head HTML after the page has been sent to the client.')
+            client.run_javascript(f'document.head.insertAdjacentHTML("beforeend", {code!r});')
         client._head_html += code + '\n'  # pylint: disable=protected-access
 
 
@@ -32,5 +32,5 @@ def add_body_html(code: str, *, shared: bool = False) -> None:
     else:
         client = context.get_client()
         if client.has_socket_connection:
-            raise RuntimeError('Cannot add body HTML after the page has been sent to the client.')
+            client.run_javascript(f'document.querySelector("#app").insertAdjacentHTML("beforebegin", {code!r});')
         client._body_html += code + '\n'  # pylint: disable=protected-access

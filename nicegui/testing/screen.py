@@ -4,7 +4,7 @@ import threading
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Generator, List, Optional, Union
 
 import pytest
 from selenium import webdriver
@@ -230,7 +230,7 @@ class Screen:
             self.caplog.records.clear()
 
     @contextmanager
-    def implicitly_wait(self, t: float) -> None:
+    def implicitly_wait(self, t: float) -> Generator[None, None, None]:
         """Temporarily change the implicit wait time."""
         self.selenium.implicitly_wait(t)
         yield
