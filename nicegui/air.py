@@ -2,7 +2,7 @@ import asyncio
 import gzip
 import json
 import re
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import httpx
 import socketio
@@ -154,16 +154,13 @@ class Air:
         return target_id in core.sio.manager.rooms
 
 
-instance: Optional[Air] = None
-
-
 def connect() -> None:
     """Connect to the NiceGUI On Air server if there is an air instance."""
-    if instance:
-        background_tasks.create(instance.connect())
+    if core.air:
+        background_tasks.create(core.air.connect())
 
 
 def disconnect() -> None:
     """Disconnect from the NiceGUI On Air server if there is an air instance."""
-    if instance:
-        background_tasks.create(instance.disconnect())
+    if core.air:
+        background_tasks.create(core.air.disconnect())
