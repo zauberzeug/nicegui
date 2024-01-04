@@ -121,9 +121,9 @@ async def _shutdown() -> None:
     """Handle the shutdown event."""
     if app.native.main_window:
         app.native.main_window.signal_server_shutdown()
+    air.disconnect()
     app.stop()
     run.tear_down()
-    air.disconnect()
 
 
 @app.exception_handler(404)
