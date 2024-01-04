@@ -23,7 +23,7 @@ def get_range_response(file: Path, request: Request, chunk_size: int) -> Respons
         return Response(status_code=304)  # Not Modified
     headers = {
         'E-Tag': e_tag,
-        'Last-Modified': last_modified_time.strftime("%a, %d %b %Y %H:%M:%S GMT")
+        'Last-Modified': last_modified_time.strftime(r'%a, %d %b %Y %H:%M:%S GMT'),
     }
     range_header = request.headers.get('range')
     media_type = mimetypes.guess_type(str(file))[0] or 'application/octet-stream'

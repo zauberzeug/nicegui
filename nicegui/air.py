@@ -12,12 +12,13 @@ import socketio.exceptions
 
 from . import background_tasks, core
 from .client import Client
+from .dataclasses import KWONLY_SLOTS
 from .logging import log
 
 RELAY_HOST = 'https://on-air.nicegui.io/'
 
 
-@dataclass
+@dataclass(**KWONLY_SLOTS)
 class Stream:
     data: AsyncIterator[bytes]
     response: httpx.Response
@@ -76,7 +77,7 @@ class Air:
                 headers=headers,
             )
             response = await self.streaming_client.send(request, stream=True)
-            stream_id = uuid4().hex
+            stream_id = str(uuid4())
             self.streams[stream_id] = Stream(data=response.aiter_bytes(), response=response)
             return {
                 'status_code': response.status_code,
