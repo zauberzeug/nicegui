@@ -205,7 +205,7 @@ class Client:
             deadline = time.time() + timeout
             while request_id not in self.waiting_javascript_commands:
                 if time.time() > deadline:
-                    raise TimeoutError('JavaScript did not respond in time')
+                    raise TimeoutError(f'JavaScript did not respond within {timeout:.1f} s')
                 await asyncio.sleep(check_interval)
             return self.waiting_javascript_commands.pop(request_id)
 
