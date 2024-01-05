@@ -156,6 +156,10 @@ class Storage:
         """
         for filepath in self.path.glob('storage_*.json'):
             new_filepath = filepath.with_stem(filepath.stem.replace('_', '-'))
-            data = json.loads(filepath.read_text())
+            try:
+                data = json.loads(filepath.read_text())
+            except Exception:
+                log.warning(f'Could not load storage file {filepath}')
+                data = {}
             filepath.rename(new_filepath)
             new_filepath.write_text(json.dumps(data), encoding='utf-8')
