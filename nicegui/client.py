@@ -312,6 +312,7 @@ class Client:
         Normally this should never happen, but has been observed (see #1826).
         """
         self.remove_all_elements()
+        self.outbox.stop()
         del Client.instances[self.id]
 
     @contextmanager

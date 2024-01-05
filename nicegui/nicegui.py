@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi_socketio import SocketManager
 
-from . import air, background_tasks, binding, core, favicon, helpers, json, outbox, run, welcome
+from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries, resources
@@ -111,7 +111,6 @@ async def _startup() -> None:
     core.loop = asyncio.get_running_loop()
     app.start()
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
-    background_tasks.create(outbox.loop(Client.instances), name='send outbox')
     background_tasks.create(Client.prune_instances(), name='prune clients')
     background_tasks.create(Slot.prune_stacks(), name='prune slot stacks')
     air.connect()
