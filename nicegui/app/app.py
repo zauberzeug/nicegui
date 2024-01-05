@@ -132,7 +132,11 @@ class App(FastAPI):
         else:
             Server.instance.should_exit = True
 
-    def add_static_files(self, url_path: str, local_directory: Union[str, Path]) -> None:
+    def add_static_files(self,
+                         url_path: str,
+                         local_directory: Union[str, Path],
+                         *,
+                         follow_symlink: bool = False) -> None:
         """Add a directory of static files.
 
         `add_static_files()` makes a local directory available at the specified endpoint, e.g. `'/static'`.
@@ -145,10 +149,11 @@ class App(FastAPI):
 
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as static content
+        :param follow_symlink: whether to follow symlinks (default: False)
         """
         if url_path == '/':
             raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
-        self.mount(url_path, StaticFiles(directory=str(local_directory)))
+        self.mount(url_path, StaticFiles(directory=str(local_directory), follow_symlink=follow_symlink))
 
     def add_static_file(self, *,
                         local_file: Union[str, Path],
