@@ -71,7 +71,7 @@ def test_multiple_targets(screen: Screen) -> None:
             self.name = name
             self.state = 1
 
-        @ui.refreshable
+        @ui.refreshable_method
         def create_ui(self) -> None:
             nonlocal count
             count += 1
@@ -165,7 +165,7 @@ def test_refresh_with_function_reference(screen: Screen):
             self.count = 0
             self.ui()
 
-        @ui.refreshable
+        @ui.refreshable_method
         def ui(self):
             ui.notify(f'Refreshing {self.name} ({self.count})')
             self.count += 1
