@@ -55,15 +55,25 @@ def _refresh_step() -> None:
         log.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
 
 
-def _propagate(source_obj: Any, source_name: str, visited: Optional[Set[Tuple[int, str]]] = None) -> None:
+def _propagate(source_obj: Any, source_name: str, visited: Optional[Set[int]] = None) -> None:
     if visited is None:
         visited = set()
-    visited.add((id(source_obj), source_name))
-    for _, target_obj, target_name, transform in bindings.get((id(source_obj), source_name), []):
-        if (id(target_obj), target_name) in visited:
+
+    source_obj_id = id(source_obj)
+    if source_obj_id in visited:
+        return
+    visited.add(source_obj_id)
+
+    source_attr_exists = _has_attribute(source_obj, source_name)
+    source_value = _get_attribute(source_obj, source_name) if source_attr_exists else None
+
+    for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
+        target_obj_id = id(target_obj)
+        if target_obj_id in visited:
             continue
-        if _has_attribute(source_obj, source_name):
-            target_value = transform(_get_attribute(source_obj, source_name))
+
+        if source_attr_exists:
+            target_value = transform(source_value)
             if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
                 _set_attribute(target_obj, target_name, target_value)
                 _propagate(target_obj, target_name, visited)
