@@ -18,27 +18,29 @@ def test_open_close_expansion(screen: Screen):
     screen.wait(0.5)
     screen.should_not_contain('Content')
 
+
 def test_caption(screen: Screen):
-    with ui.expansion('Expansion', caption='Caption') as e:
+    with ui.expansion('Expansion', caption='Caption'):
         ui.label('Content')
 
     screen.open('/')
     screen.should_contain('Expansion')
     screen.should_contain('Caption')
     screen.should_not_contain('Content')
-    
+
     screen.click('Expansion')
     screen.wait(0.5)
     screen.should_contain('Expansion')
     screen.should_contain('Caption')
     screen.should_contain('Content')
 
+
 def test_group(screen: Screen):
-    with ui.expansion('Expansion A', group='group') as a:
+    with ui.expansion('Expansion A', group='group'):
         ui.label('Content A')
-    with ui.expansion('Expansion B', group='group') as b:
+    with ui.expansion('Expansion B', group='group'):
         ui.label('Content B')
-    with ui.expansion('Expansion C', group='group') as c:
+    with ui.expansion('Expansion C', group='group'):
         ui.label('Content C')
 
     screen.open('/')
