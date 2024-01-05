@@ -71,8 +71,10 @@ async def loop(clients: Dict[ClientId, Client]) -> None:
     """Send updates and messages to all clients in an endless loop."""
     while True:
         try:
-            for client in clients.values():
-                await client.outbox.send()
+            for client_id in list(clients):
+                client = clients.get(client_id)
+                if client is not None:
+                    await client.outbox.send()
         except Exception as e:
             core.app.handle_exception(e)
             await asyncio.sleep(0.1)
