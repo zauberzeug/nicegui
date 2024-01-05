@@ -1,5 +1,3 @@
-import pytest
-
 from nicegui import Client, ui
 from nicegui.testing import Screen
 
@@ -36,14 +34,13 @@ def test_run_javascript_before_client_connected(screen: Screen):
     @ui.page('/')
     def page():
         ui.label('before js')
-        with pytest.raises(RuntimeError):
-            ui.run_javascript('document.title = "A New Title"')
+        ui.run_javascript('document.title = "New Title"')
         ui.label('after js')
 
     screen.open('/')
-    assert screen.selenium.title == 'NiceGUI'
     screen.should_contain('before js')
     screen.should_contain('after js')
+    screen.should_contain('New Title')
 
 
 def test_response_from_javascript(screen: Screen):

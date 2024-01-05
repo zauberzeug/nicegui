@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional,
 
 from typing_extensions import Self
 
-from . import context, core, events, helpers, json, outbox, storage
+from . import context, core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
 from .dependencies import Component, Library, register_library, register_resource, register_vue_component
 from .elements.mixins.visibility import Visibility
@@ -99,9 +99,9 @@ class Element(Visibility):
 
         self.tailwind = Tailwind(self)
 
-        outbox.enqueue_update(self)
+        self.client.outbox.enqueue_update(self)
         if self.parent_slot:
-            outbox.enqueue_update(self.parent_slot.parent)
+            self.client.outbox.enqueue_update(self.parent_slot.parent)
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
@@ -419,7 +419,7 @@ class Element(Visibility):
         """Update the element on the client side."""
         if self.is_deleted:
             return
-        outbox.enqueue_update(self)
+        self.client.outbox.enqueue_update(self)
 
     def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         """Run a method on the client side.
