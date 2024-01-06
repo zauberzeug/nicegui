@@ -3,7 +3,7 @@ from typing_extensions import Self
 from ..element import Element
 
 
-class Card(Element):
+class Card(Element, component='card.js'):
 
     def __init__(self) -> None:
         """Card
@@ -17,7 +17,7 @@ class Card(Element):
         If you want the original behavior, use the `tight` method.
         If you want the padding and borders for nested children, move the children into another container.
         """
-        super().__init__('q-card')
+        super().__init__()
         self._classes.append('nicegui-card')
 
     def tight(self) -> Self:
