@@ -25,9 +25,9 @@ def setup() -> bool:
         This only works if the correct instance is provided as a query_string parameter.
         """
 
-        def __init__(self, asgi_app: ASGIApp) -> None:
-            super().__init__(asgi_app)
-            self.app = asgi_app
+        def __init__(self, app: ASGIApp) -> None:
+            super().__init__(app)
+            self.app = app
             self.app_name = os.environ.get('FLY_APP_NAME')
 
         async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
