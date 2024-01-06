@@ -3,6 +3,7 @@
     width="200" align="right" alt="Try online!" />
 </a>
 
+[![ReadMeSupportPalestine](https://raw.githubusercontent.com/Safouene1/support-palestine-banner/master/banner-support.svg)](https://techforpalestine.org/learn-more)
 # NiceGUI
 
 NiceGUI is an easy-to-use, Python-based UI framework, which shows up in your web browser.
