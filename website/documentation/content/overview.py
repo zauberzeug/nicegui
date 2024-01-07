@@ -39,10 +39,11 @@ doc.text('Basic concepts', '''
     Or if you prefer, almost anything can be styled with CSS.
 ''')
 
-doc.text('Actions', '''
-    NiceGUI runs an event loop to handle user input and other events like timers and keyboard bindings.
-    You can write asynchronous functions for long-running tasks to keep the UI responsive.
-    The _Actions_ section covers how to work with events.
+doc.text('Actions, Events and Tasks', '''
+    NiceGUI uses an async/await event loop for concurrency which is resource-efficeint and has the great benefit of not having to worry about thread safety.
+    See the _Actions_ section about how user input and other events like timers and keyboard bindings are handled.
+    There are also helper functions described to wrap long-running tasks asynchronous functions to keep the UI responsive.
+    Keep in mind that all UI updates must happen on the main thread with its event loop.
 ''')
 
 doc.text('Implementation', '''
