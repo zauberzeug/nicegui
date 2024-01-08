@@ -40,9 +40,9 @@ doc.text('Basic concepts', '''
 ''')
 
 doc.text('Actions, Events and Tasks', '''
-    NiceGUI uses an async/await event loop for concurrency which is resource-efficeint and has the great benefit of not having to worry about thread safety.
-    See the _Actions_ section about how user input and other events like timers and keyboard bindings are handled.
-    There are also helper functions described to wrap long-running tasks asynchronous functions to keep the UI responsive.
+    NiceGUI uses an async/await event loop for concurrency which is resource-efficient and has the great benefit of not having to worry about thread safety.
+    This section shows how to handle user input and other events like timers and keyboard bindings.
+    It also describes helper functions to wrap long-running tasks in asynchronous functions to keep the UI responsive.
     Keep in mind that all UI updates must happen on the main thread with its event loop.
 ''')
 
