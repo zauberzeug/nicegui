@@ -1,3 +1,4 @@
+import logging
 import os
 from urllib.parse import parse_qs
 
@@ -25,6 +26,7 @@ def setup() -> bool:
         """
 
         def __init__(self, app: ASGIApp) -> None:
+            super().__init__(app)
             self.app = app
             self.app_name = os.environ.get('FLY_APP_NAME')
 
@@ -42,7 +44,13 @@ def setup() -> bool:
                         message['headers'] = []
                     message['headers'].append([b'fly-replay', f'instance={target_instance}'.encode()])
                 await send(message)
-            await self.app(scope, receive, send_wrapper)
+            try:
+                await self.app(scope, receive, send_wrapper)
+            except RuntimeError as e:
+                if 'No response returned.' in str(e):
+                    logging.warning(f'no response returned for {scope["path"]}')
+                else:
+                    logging.exception('could not handle request')
 
         def is_online(self, fly_instance_id: str) -> bool:
             hostname = f'{fly_instance_id}.vm.{self.app_name}.internal'

@@ -9,8 +9,9 @@ from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import air, core, helpers
+from . import core, helpers
 from . import native as native_module
+from .air import Air
 from .client import Client
 from .language import Language
 from .logging import log
@@ -103,7 +104,7 @@ def run(*,
             route.include_in_schema = endpoint_documentation in {'page', 'all'}
 
     if on_air:
-        air.instance = air.Air('' if on_air is True else on_air)
+        core.air = Air('' if on_air is True else on_air)
 
     if multiprocessing.current_process().name != 'MainProcess':
         return

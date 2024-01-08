@@ -69,8 +69,8 @@ def reset_globals() -> Generator[None, None, None]:
     importlib.reload(core)
     Client.instances.clear()
     Client.page_routes.clear()
-    Client.auto_index_client = Client(page('/'), shared=True).__enter__()  # pylint: disable=unnecessary-dunder-call
     app.reset()
+    Client.auto_index_client = Client(page('/'), shared=True).__enter__()  # pylint: disable=unnecessary-dunder-call
     # NOTE we need to re-add the auto index route because we removed all routes above
     app.get('/')(Client.auto_index_client.build_response)
     binding.reset()

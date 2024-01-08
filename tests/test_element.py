@@ -1,7 +1,7 @@
 import pytest
 from selenium.webdriver.common.by import By
 
-from nicegui import ui
+from nicegui import background_tasks, ui
 from nicegui.testing import Screen
 
 
@@ -281,3 +281,16 @@ def test_bad_characters(screen: Screen):
 
     screen.open('/')
     screen.should_contain(r'& <test> ` ${foo}')
+
+
+def test_update_before_client_connection(screen: Screen):
+    @ui.page('/')
+    def page():
+        label = ui.label('Hello world!')
+
+        async def update():
+            label.text = 'Hello again!'
+        background_tasks.create(update())
+
+    screen.open('/')
+    screen.should_contain('Hello again!')

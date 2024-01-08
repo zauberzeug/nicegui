@@ -28,10 +28,19 @@ def tooltip_html_demo():
 @doc.demo('Tooltip with other content', '''
     You can use HTML in tooltips.
 ''')
-def tooltip_html_demo():
+def tooltip_with_other_content():
     with ui.label('Mountains...'):
         with ui.tooltip().classes('bg-transparent'):
             ui.image('https://picsum.photos/id/377/640/360').classes('w-64')
+
+
+@doc.demo('Tooltip on HTML and Markdown', '''
+    Some elements like `ui.html` and `ui.markdown` do not support nested elements.
+    In this case, you can nest such elements inside a container element with a tooltip.
+''')
+def tooltip_on_html_and_markdown():
+    with ui.element().tooltip('...with a tooltip!'):
+        ui.html('This is <u>HTML</u>...')
 
 
 doc.reference(ui.tooltip)

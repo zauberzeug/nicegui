@@ -13,12 +13,13 @@ from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 from typing_extensions import Self
 
-from . import background_tasks, binding, core, helpers, json, outbox
+from . import background_tasks, binding, core, helpers, json
 from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
 from .logging import log
+from .outbox import Outbox
 from .version import __version__
 
 if TYPE_CHECKING:
@@ -56,6 +57,8 @@ class Client:
         self.shared = shared
         self.on_air = False
         self._disconnect_task: Optional[asyncio.Task] = None
+
+        self.outbox = Outbox(self)
 
         with Element('q-layout', _client=self).props('view="hhh lpr fff"').classes('nicegui-layout') as self.layout:
             with Element('q-page-container') as self.page_container:
@@ -198,10 +201,10 @@ class Client:
         target_id = self._temporary_socket_id or self.id
 
         def send_and_forget():
-            outbox.enqueue_message('run_javascript', {'code': code}, target_id)
+            self.outbox.enqueue_message('run_javascript', {'code': code}, target_id)
 
         async def send_and_wait():
-            outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
+            self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
             deadline = time.time() + timeout
             while request_id not in self.waiting_javascript_commands:
                 if time.time() > deadline:
@@ -214,11 +217,11 @@ class Client:
     def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
-        outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
+        self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 
     def download(self, src: Union[str, bytes], filename: Optional[str] = None) -> None:
         """Download a file from a given URL or raw bytes."""
-        outbox.enqueue_message('download', {'src': src, 'filename': filename}, self.id)
+        self.outbox.enqueue_message('download', {'src': src, 'filename': filename}, self.id)
 
     def on_connect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
         """Register a callback to be called when the client connects."""
@@ -296,7 +299,7 @@ class Client:
         for element in elements:
             element._handle_delete()  # pylint: disable=protected-access
             element._deleted = True  # pylint: disable=protected-access
-            outbox.enqueue_delete(element)
+            self.outbox.enqueue_delete(element)
 
     def remove_all_elements(self) -> None:
         """Remove all elements from the client."""
@@ -309,6 +312,7 @@ class Client:
         Normally this should never happen, but has been observed (see #1826).
         """
         self.remove_all_elements()
+        self.outbox.stop()
         del Client.instances[self.id]
 
     @contextmanager

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Awaitable, Callable, ClassVar, Dict, Generic, List, Optional, Tuple, TypeVar, Union, cast
 
-from typing_extensions import ParamSpec, Self
+from typing_extensions import Concatenate, ParamSpec, Self
 
 from .. import background_tasks, core
 from ..client import Client
@@ -11,6 +11,7 @@ from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..helpers import is_coroutine_function
 
+_S = TypeVar('_S')
 _T = TypeVar('_T')
 _P = ParamSpec('_P')
 
@@ -125,6 +126,17 @@ class refreshable(Generic[_P, _T]):
             for target in self.targets
             if target.container.client.id in Client.instances and target.container.id in target.container.client.elements
         ]
+
+
+class refreshable_method(Generic[_S, _P, _T], refreshable[_P, _T]):
+
+    def __init__(self, func: Callable[Concatenate[_S, _P], Union[_T, Awaitable[_T]]]) -> None:
+        """Refreshable UI methods
+
+        The `@ui.refreshable_method` decorator allows you to create methods that have a `refresh` method.
+        This method will automatically delete all elements created by the function and recreate them.
+        """
+        super().__init__(func)  # type: ignore
 
 
 def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
