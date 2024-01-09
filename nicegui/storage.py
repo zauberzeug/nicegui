@@ -155,7 +155,7 @@ class Storage:
         To distinguish between the old and new encoding, the new files are named with dashes instead of underscores.
         """
         for filepath in self.path.glob('storage_*.json'):
-            new_filepath = filepath.with_stem(filepath.stem.replace('_', '-'))
+            new_filepath = filepath.with_name(filepath.name.replace('_', '-'))
             try:
                 data = json.loads(filepath.read_text())
             except Exception:
