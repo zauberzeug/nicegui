@@ -58,15 +58,28 @@ def _refresh_step() -> None:
 def _propagate(source_obj: Any, source_name: str, visited: Optional[Set[Tuple[int, str]]] = None) -> None:
     if visited is None:
         visited = set()
-    visited.add((id(source_obj), source_name))
-    for _, target_obj, target_name, transform in bindings.get((id(source_obj), source_name), []):
+    source_obj_id = id(source_obj)
+    if source_obj_id in visited:
+        return
+    visited.add((source_obj_id, source_name))
+
+    if not _has_attribute(source_obj, source_name):
+        return
+    source_value = _get_attribute(source_obj, source_name)
+
+    for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
         if (id(target_obj), target_name) in visited:
             continue
-        if _has_attribute(source_obj, source_name):
-            target_value = transform(_get_attribute(source_obj, source_name))
-            if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
-                _set_attribute(target_obj, target_name, target_value)
-                _propagate(target_obj, target_name, visited)
+
+        if not _has_attribute(target_obj, target_name):
+            continue
+
+        target_value = transform(source_value)
+        if _get_attribute(target_obj, target_name) == target_value:
+            continue
+
+        _set_attribute(target_obj, target_name, target_value)
+        _propagate(target_obj, target_name, visited)
 
 
 def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forward: Callable[[Any], Any]) -> None:
