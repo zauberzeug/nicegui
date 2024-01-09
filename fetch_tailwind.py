@@ -48,10 +48,8 @@ class Property:
         return '_'.join(word.lower() for word in re.sub(r'[-/ &]', ' ', self.title).split())
 
 
-properties: List[Property] = []
-
-
 def get_soup(url: str) -> BeautifulSoup:
+    """Get the BeautifulSoup object for the given URL."""
     path = Path('/tmp/nicegui_tailwind') / url.split('/')[-1]
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
@@ -63,7 +61,9 @@ def get_soup(url: str) -> BeautifulSoup:
     return BeautifulSoup(html, 'html.parser')
 
 
-def process_properties():
+def collect_properties() -> List[Property]:
+    """Collect all Tailwind properties from the documentation."""
+    properties: List[Property] = []
     soup = get_soup('https://tailwindcss.com/docs')
     for li in soup.select('li[class="mt-12 lg:mt-8"]'):
         title = li.select_one('h5').text
@@ -78,9 +78,11 @@ def process_properties():
             members = soup.select('.mt-10 td[class*=text-sky-400]')
             properties.append(Property(title, description, [p.text.split(' ')[0] for p in members]))
             print(f'\t{title} ({len(members)})')
+    return properties
 
 
-def generate_type_files():
+def generate_type_files(properties: List[Property]) -> None:
+    """Generate the type files for the Tailwind properties."""
     for file in (Path(__file__).parent / 'nicegui' / 'tailwind_types').glob('*.py'):
         file.unlink()
     (Path(__file__).parent / 'nicegui' / 'tailwind_types' / '__init__.py').touch()
@@ -96,7 +98,8 @@ def generate_type_files():
             f.write(']\n')
 
 
-def generate_tailwind_file():
+def generate_tailwind_file(properties: List[Property]) -> None:
+    """Generate the tailwind.py file."""
     with (Path(__file__).parent / 'nicegui' / 'tailwind.py').open('w') as f:
         f.write('# pylint: disable=too-many-lines\n')
         f.write('from __future__ import annotations\n')
@@ -124,7 +127,8 @@ def generate_tailwind_file():
         f.write('class Tailwind:\n')
         f.write('\n')
         f.write("    def __init__(self, _element: Optional[Element] = None) -> None:\n")
-        f.write('        self.element: Union[PseudoElement, Element] = PseudoElement() if _element is None else _element\n')
+        f.write(
+            '        self.element: Union[PseudoElement, Element] = PseudoElement() if _element is None else _element\n')
         f.write('\n')
         f.write('    @overload\n')
         f.write('    def __call__(self, tailwind: Tailwind) -> Tailwind:\n')
@@ -154,7 +158,8 @@ def generate_tailwind_file():
                 f.write(f"    def {property_.snake_title}(self, value: {property_.pascal_title}) -> Tailwind:\n")
                 f.write(f'        """{property_.description}"""\n')
                 if '' in property_.short_members:
-                    f.write(f"        self.element.classes('{prefix}' + value if value else '{prefix.rstrip('''-''')}')\n")
+                    f.write(
+                        f"        self.element.classes('{prefix}' + value if value else '{prefix.rstrip('''-''')}')\n")
                 else:
                     f.write(f"        self.element.classes('{prefix}' + value)\n")
                 f.write(f'        return self\n')  # pylint: disable=f-string-without-interpolation
@@ -165,7 +170,12 @@ def generate_tailwind_file():
                 f.write(f'        return self\n')  # pylint: disable=f-string-without-interpolation
 
 
-if __name__ == "__main__":
-    process_properties()
-    generate_type_files()
-    generate_tailwind_file()
+def main() -> None:
+    """Collect all Tailwind properties from the documentation and generate the Python files."""
+    properties = collect_properties()
+    generate_type_files(properties)
+    generate_tailwind_file(properties)
+
+
+if __name__ == '__main__':
+    main()
