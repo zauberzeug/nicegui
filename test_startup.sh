@@ -42,6 +42,11 @@ do
         continue # until https://github.com/omnilib/aiosqlite/issues/241 is fixed
     fi
 
+    # skip if path is examples/pyserial
+    if test $path = "examples/pyserial"; then
+        continue # because there is no serial port in github actions
+    fi
+
     # install all requirements except nicegui
     if test -f $path/requirements.txt; then
         sed '/^nicegui/d' $path/requirements.txt > $path/requirements.tmp.txt || error=1 # remove nicegui from requirements.txt
