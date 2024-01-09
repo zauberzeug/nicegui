@@ -86,6 +86,7 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forw
     """Bind the property of one object to the property of another object.
 
     The binding works one way only, from the first object to the second.
+    The update happens immediately and whenever a value changes.
 
     :param self_obj: The object to bind from.
     :param self_name: The name of the property to bind from.
@@ -103,6 +104,7 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, ba
     """Bind the property of one object from the property of another object.
 
     The binding works one way only, from the second object to the first.
+    The update happens immediately and whenever a value changes.
 
     :param self_obj: The object to bind to.
     :param self_name: The name of the property to bind to.
@@ -121,6 +123,8 @@ def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
     """Bind the property of one object to the property of another object.
 
     The binding works both ways, from the first object to the second and from the second to the first.
+    The update happens immediately and whenever a value changes.
+    The backward binding takes precedence for the initial synchronization.
 
     :param self_obj: First object to bind.
     :param self_name: The name of the first property to bind.
