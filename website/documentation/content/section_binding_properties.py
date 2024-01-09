@@ -13,6 +13,7 @@ doc.title('*Binding* Properties')
     Each element provides methods like `bind_value` and `bind_visibility` to create a two-way binding with the corresponding property.
     To define a one-way binding use the `_from` and `_to` variants of these methods.
     Just pass a property of the model as parameter to these methods to create the binding.
+    The values will be updated immediately and whenever one of them changes.
 ''')
 def bindings_demo():
     class Demo:
