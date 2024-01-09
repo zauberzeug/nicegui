@@ -71,15 +71,10 @@ def _propagate(source_obj: Any, source_name: str, visited: Optional[Set[Tuple[in
         if (id(target_obj), target_name) in visited:
             continue
 
-        if not _has_attribute(target_obj, target_name):
-            continue
-
         target_value = transform(source_value)
-        if _get_attribute(target_obj, target_name) == target_value:
-            continue
-
-        _set_attribute(target_obj, target_name, target_value)
-        _propagate(target_obj, target_name, visited)
+        if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
+            _set_attribute(target_obj, target_name, target_value)
+            _propagate(target_obj, target_name, visited)
 
 
 def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forward: Callable[[Any], Any]) -> None:
