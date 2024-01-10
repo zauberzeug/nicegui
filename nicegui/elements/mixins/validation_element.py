@@ -21,12 +21,12 @@ class ValidationElement(ValueElement):
 
         :param error: The optional error message
         """
+        if self._error == error:
+            return
         self._error = error
-        if self._error is None:
-            self.props(remove='error')
-        else:
-            self._props['error-message'] = self._error
-            self.props('error')
+        self._props['error'] = error is not None
+        self._props['error-message'] = error
+        self.update()
 
     def validate(self) -> bool:
         """Validate the current value and set the error message if necessary.
