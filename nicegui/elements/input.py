@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
@@ -17,7 +17,7 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
                  password_toggle_button: bool = False,
                  on_change: Optional[Callable[..., Any]] = None,
                  autocomplete: Optional[List[str]] = None,
-                 validation: Optional[Dict[str, Callable[..., bool]]] = None) -> None:
+                 validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None) -> None:
         """Text Input
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
