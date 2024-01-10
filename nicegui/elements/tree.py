@@ -35,7 +35,6 @@ class Tree(Element):
         :param on_expand: callback which is invoked when the node expansion changes
         :param on_tick: callback which is invoked when a node is ticked or unticked
         :param tick_strategy: whether and how to use checkboxes ("leaf", "leaf-filtered" or "strict"; default: ``None``)
-        :param default_expand_all: whether to expand all nodes by default (default: ``False``)
         """
         super().__init__('q-tree')
         self._props['nodes'] = nodes
@@ -104,6 +103,6 @@ class Tree(Element):
         if 'default-expand-all' in self._props:
             # https://github.com/zauberzeug/nicegui/issues/1385
             del self._props['default-expand-all']
-            log.warning('The prop "default_expand_all" is not supported by `ui.tree`.\n'
+            log.warning('The prop "default-expand-all" is not supported by `ui.tree`.\n'
                         'Use ".expand()" instead.')
         return self
