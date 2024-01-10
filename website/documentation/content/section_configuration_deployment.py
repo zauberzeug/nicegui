@@ -176,6 +176,7 @@ def pyinstaller():
                     '--name', 'myapp', # name of your app
                     '--onefile',
                     #'--windowed', # prevent console appearing, only use with ui.run(native=True, ...)
+                    #'--key', 'a string of 16 characters', # encrypt the Python bytecode modules
                     '--add-data', f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui'
                 ]
                 subprocess.call(cmd)
@@ -261,6 +262,81 @@ doc.text('', '''
     - If processes are left behind after closing the app, try packaging the app without the `--windowed` argument.
 ''')
 
+doc.text('', '''
+    **Ways to protect your source code**
+
+    If you want to protect your code further instead of <a href="https://pyinstaller.org/en/v3.5/usage.html?highlight=encrypt#encrypting-python-bytecode">using `--key=key-string` argument on the command line of PyInstaller</a>, you can use <a href="https://github.com/Nuitka/Nuitka">Nuitka</a> or <a href="https://cython.org/">Cython</a> to compile your python source code( *.py file) into Python extension( *.pyd file). However you must learn how to install and use a working C compiler firstly. Please check relevant websites or books for thorough information. A minimal tutorial on how to implement on Windows OS with MingW64 is given in the following.
+
+    For example, you have made a NiceGUI application `main.py`:
+''')
+
+@doc.ui
+def main_for_bundle_with_Nuitka():
+    with python_window(classes='max-w-lg w-full'):
+        ui.markdown('''
+            ```python
+            from nicegui import ui
+
+            def main():
+                ui.label('hello world')
+                ui.run(reload=False, native=True)
+
+            if __name__ == '__main__':
+                main()
+            ```
+        ''')
+
+doc.text('', '''
+    If you run
+''')
+
+@doc.ui
+def compile_extension_with_nuitka():
+    with bash_window(classes='max-w-lg w-full h-42 self-center'):
+        ui.markdown('''
+            ```bash
+            python -m nuitka --mingw64 --show-progress --nofollow-imports --module --output-dir=out main.py
+            ```
+        ''')
+
+
+doc.text('', '''
+    you can get the Python extension under `out` directory, which has a name pattern simliar to `main.cp311-win_amd64.pyd`
+
+    then in `out` directory(in other words, which is the directory where `main.py` lives in), you create another Python code, for example `demo.py` to import and use the extension
+''')
+
+@doc.ui
+def main_for_bundle_with_Nuitka():
+    with python_window(classes='max-w-lg w-full'):
+        ui.markdown('''
+            ```python
+            import nicegui
+            import main
+
+            main.main()
+            ```
+        ''')
+
+doc.text('', '''
+    Last, you can use PyInstaller to bundle `demo.py`(please do not misuse `main.py` in the upper directory) into an executable as stated above.
+
+    P.S. although we can use Nuitka solely to make an executable from `main.py`, we suggest not to do so since there are 2 drawbacks:
+    - a very long processing time
+    - a bigger executable file size
+
+    But if you insist on doing so, you can use the following command line
+''')
+
+@doc.ui
+def compile_extension_with_nuitka():
+    with bash_window(classes='max-w-lg w-full h-42 self-center'):
+        ui.markdown('''
+            ```bash
+            nuitka --mingw64 --standalone --show-progress --nofollow-imports --disable-console --output-dir=out -o test main.py
+            ```
+        ''')
+        
 doc.text('NiceGUI On Air', '''
     By using `ui.run(on_air=True)` you can share your local app with others over the internet 🧞.
 
