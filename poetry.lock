@@ -2684,4 +2684,4 @@ plotly = ["plotly"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "34ac8ab7fa3d0431e4810904d7cb95b50e7bab4b3683515fed644d38bfaa7dd9"
+content-hash = "7de9e029cfe07dc1abc8b3fdf162c71190f991b417e4c647f664de7bef0910be"
