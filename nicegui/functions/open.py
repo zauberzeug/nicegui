@@ -3,7 +3,6 @@ from typing import Any, Callable, Union
 from .. import context
 from ..client import Client
 from ..element import Element
-from ..logging import log
 
 
 def open(target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:  # pylint: disable=redefined-builtin
@@ -28,8 +27,4 @@ def open(target: Union[Callable[..., Any], str, Element], new_tab: bool = False)
         path = f'#c{target.id}'
     elif callable(target):
         path = Client.page_routes[target]
-    client = context.get_client()
-    if client.has_socket_connection:
-        client.open(path, new_tab)
-    else:
-        log.error('Cannot open page because client is not connected, try RedirectResponse from FastAPI instead')
+    context.get_client().open(path, new_tab)
