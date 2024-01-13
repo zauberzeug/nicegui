@@ -1,5 +1,5 @@
 from nicegui import __version__, background_tasks, events, ui
-
+from typing import List, Dict, Any
 
 class Search:
 
@@ -7,7 +7,7 @@ class Search:
         ui.add_head_html(r'''
             <script>
             async function loadSearchData() {
-                const response = await fetch("/static/search_index.json?version=''' + __version__ + r'''");
+                const response = await fetch(`/static/search_index.json?version=${__version__}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -71,3 +71,4 @@ class Search:
                 window.location.href = url;
         ''')
         self.dialog.close()
+
