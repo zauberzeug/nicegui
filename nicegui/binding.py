@@ -163,23 +163,24 @@ def remove(objects: Iterable[Any], type_: Type) -> None:
     :param objects: The objects to remove.
     :param type_: The type of the objects to remove.
     """
+    object_set = set(objects)
     active_links[:] = [
         (source_obj, source_name, target_obj, target_name, transform)
         for source_obj, source_name, target_obj, target_name, transform in active_links
-        if not (isinstance(source_obj, type_) and source_obj in objects or
-                isinstance(target_obj, type_) and target_obj in objects)
+        if not (isinstance(source_obj, type_) and source_obj in object_set or
+                isinstance(target_obj, type_) and target_obj in object_set)
     ]
     for key, binding_list in list(bindings.items()):
         binding_list[:] = [
             (source_obj, target_obj, target_name, transform)
             for source_obj, target_obj, target_name, transform in binding_list
-            if not (isinstance(source_obj, type_) and source_obj in objects or
-                    isinstance(target_obj, type_) and target_obj in objects)
+            if not (isinstance(source_obj, type_) and source_obj in object_set or
+                    isinstance(target_obj, type_) and target_obj in object_set)
         ]
         if not binding_list:
             del bindings[key]
     for (obj_id, name), obj in list(bindable_properties.items()):
-        if isinstance(obj, type_) and obj in objects:
+        if isinstance(obj, type_) and obj in object_set:
             del bindable_properties[(obj_id, name)]
 
 
