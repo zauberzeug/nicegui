@@ -165,12 +165,13 @@ def remove(objects: Iterable[Any], type_: Type) -> None:
     :param objects: The objects to remove.
     :param type_: The type of the objects to remove.
     """
+    object_set = set(objects)
     active_links_copy = active_links
     active_links[:] = [
         (source_obj, source_name, target_obj, target_name, transform)
         for source_obj, source_name, target_obj, target_name, transform in active_links_copy
-        if not (isinstance(source_obj, type_) and source_obj in objects or
-                isinstance(target_obj, type_) and target_obj in objects)
+        if not (isinstance(source_obj, type_) and source_obj in object_set or
+                isinstance(target_obj, type_) and target_obj in object_set)
     ]
 
     bindings_to_del = set()
@@ -179,15 +180,15 @@ def remove(objects: Iterable[Any], type_: Type) -> None:
         binding_list[:] = [
             (source_obj, target_obj, target_name, transform)
             for source_obj, target_obj, target_name, transform in binding_list_copy
-            if not (isinstance(source_obj, type_) and source_obj in objects or
-                    isinstance(target_obj, type_) and target_obj in objects)
+            if not (isinstance(source_obj, type_) and source_obj in object_set or
+                    isinstance(target_obj, type_) and target_obj in object_set)
         ]
         if not binding_list:
             bindings_to_del.add(key)
     for key in bindings_to_del:
         del bindings[key]
 
-    for obj in objects:
+    for obj in object_set:
         for name in bindable_properties_names.pop(id(obj)):
             bindable_properties.pop((id(obj), name), None)
 
