@@ -150,6 +150,17 @@ class Element(Visibility):
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
 
+        NiceGUI is using the slot concept from Vue:
+        Elements can have multiple slots, each possibly with a number of children.
+        Most elements only have one slot, e.g. a `ui.card` (QCard) only has a default slot.
+        But more complex elements like `ui.table` (QTable) can have more slots like "header", "body" and so on.
+        If you nest NiceGUI elements via with `ui.row(): ...` you place new elements inside of the row's default slot.
+        But if you use with `table.add_slot(...): ...`, you enter a different slot.
+
+        The slot stack helps NiceGUI to keep track of which slot is currently used for new elements.
+        The `parent` field holds a reference to its element.
+        Whenever an element is entered via a `with` expression, its default slot is automatically entered as well.
+
         :param name: name of the slot
         :param template: Vue template of the slot
         :return: the slot
