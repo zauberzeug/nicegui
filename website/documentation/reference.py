@@ -114,4 +114,4 @@ def _remove_indentation_from_docstring(text: str) -> str:
     if len(lines) == 1:
         return lines[0]
     indentation = min(len(line) - len(line.lstrip()) for line in lines[1:] if line.strip())
-    return lines[0] + '\n'.join(line[indentation:] for line in lines[1:])
+    return lines[0] + '\n' + '\n'.join(line[indentation:] for line in lines[1:])
