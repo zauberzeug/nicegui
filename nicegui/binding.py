@@ -11,6 +11,7 @@ MAX_PROPAGATION_TIME = 0.01
 
 bindings: DefaultDict[Tuple[int, str], List] = defaultdict(list)
 bindable_properties: Dict[Tuple[int, str], Any] = {}
+bindable_properties_names: DefaultDict[int, List] = defaultdict(list)
 active_links: List[Tuple[Any, str, Any, str, Callable[[Any], Any]]] = []
 
 
@@ -150,6 +151,7 @@ class BindableProperty:
             return
         setattr(owner, '___' + self.name, value)
         bindable_properties[(id(owner), self.name)] = owner
+        bindable_properties_names[id(owner)].append(self.name)
         _propagate(owner, self.name)
         if value_changed and self._change_handler is not None:
             self._change_handler(owner, value)
@@ -163,24 +165,31 @@ def remove(objects: Iterable[Any], type_: Type) -> None:
     :param objects: The objects to remove.
     :param type_: The type of the objects to remove.
     """
+    active_links_copy = active_links
     active_links[:] = [
         (source_obj, source_name, target_obj, target_name, transform)
-        for source_obj, source_name, target_obj, target_name, transform in active_links
+        for source_obj, source_name, target_obj, target_name, transform in active_links_copy
         if not (isinstance(source_obj, type_) and source_obj in objects or
                 isinstance(target_obj, type_) and target_obj in objects)
     ]
-    for key, binding_list in list(bindings.items()):
+
+    bindings_to_del = set()
+    for key, binding_list in bindings.items():
+        binding_list_copy = binding_list
         binding_list[:] = [
             (source_obj, target_obj, target_name, transform)
-            for source_obj, target_obj, target_name, transform in binding_list
+            for source_obj, target_obj, target_name, transform in binding_list_copy
             if not (isinstance(source_obj, type_) and source_obj in objects or
                     isinstance(target_obj, type_) and target_obj in objects)
         ]
         if not binding_list:
-            del bindings[key]
-    for (obj_id, name), obj in list(bindable_properties.items()):
-        if isinstance(obj, type_) and obj in objects:
-            del bindable_properties[(obj_id, name)]
+            bindings_to_del.add(key)
+    for key in bindings_to_del:
+        del bindings[key]
+
+    for obj in objects:
+        for name in bindable_properties_names.pop(id(obj)):
+            bindable_properties.pop((id(obj), name), None)
 
 
 def reset() -> None:
@@ -190,4 +199,5 @@ def reset() -> None:
     """
     bindings.clear()
     bindable_properties.clear()
+    bindable_properties_names.clear()
     active_links.clear()
