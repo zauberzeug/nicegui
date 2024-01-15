@@ -163,3 +163,7 @@ class Notification(Element, component='notification.js'):
     def close_button(self, value: Union[bool, str]) -> None:
         self._props['options']['closeBtn'] = value
         self.update()
+
+    def dismiss(self) -> None:
+        """Dismiss the notification."""
+        self.run_method('dismiss')

@@ -5,6 +5,11 @@ export default {
   updated() {
     this.notification(this.options);
   },
+  methods: {
+    async dismiss() {
+      this.notification();
+    },
+  },
   props: {
     options: Object,
   },
