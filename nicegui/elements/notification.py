@@ -43,7 +43,7 @@ class Notification(Element, component='notification.js'):
 
         Displays a notification on the screen.
         In contrast to `ui.notify`, this element allows to update the notification message and other properties once the notification is displayed.
-        With a timeout of `None`, the notification can be removed with `dismiss()`.
+        The notification can be removed with `dismiss()`.
 
         :param message: content of the notification
         :param position: position on the screen ("top-left", "top-right", "bottom-left", "bottom-right", "top", "bottom", "left", "right" or "center", default: "bottom")

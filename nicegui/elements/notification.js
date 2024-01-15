@@ -6,7 +6,7 @@ export default {
     this.notification(this.options);
   },
   methods: {
-    async dismiss() {
+    dismiss() {
       this.notification();
     },
   },
