@@ -21,7 +21,12 @@ export default {
       if (is_running) return;
       is_running = true;
       while (queue.length) {
-        await mermaid.run({ nodes: [queue.shift()] });
+        try {
+          await mermaid.run({ nodes: [queue.shift()] });
+        } catch (error) {
+          console.error(error);
+          this.$emit("error", error);
+        }
       }
       is_running = false;
     },
