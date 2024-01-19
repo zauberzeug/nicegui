@@ -310,3 +310,13 @@ def test_reconnecting_without_page_reload(screen: Screen):
     screen.wait(2.0)
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
     assert element.get_attribute('value') == 'hello', 'input should be preserved after reconnect (i.e. no page reload)'
+
+
+def test_ip(screen: Screen):
+    @ui.page('/')
+    def page(client: Client):
+        ui.label(client.ip or 'no ip')
+
+    screen.open('/')
+    screen.should_not_contain('no ip')
+    screen.should_contain('127.0.0.1')
