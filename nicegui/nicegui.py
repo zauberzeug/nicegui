@@ -48,7 +48,7 @@ static_files = StaticFiles(
 )
 app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
 
-Client.auto_index_client = Client(page('/')).__enter__()  # pylint: disable=unnecessary-dunder-call
+Client.auto_index_client = Client(page('/'), request=None).__enter__()  # pylint: disable=unnecessary-dunder-call
 
 
 @app.get('/')
@@ -130,7 +130,7 @@ async def _shutdown() -> None:
 @app.exception_handler(404)
 async def _exception_handler_404(request: Request, exception: Exception) -> Response:
     log.warning(f'{request.url} not found')
-    with Client(page('')) as client:
+    with Client(page(''), request=request) as client:
         error_content(404, exception)
     return client.build_response(request, 404)
 
@@ -138,7 +138,7 @@ async def _exception_handler_404(request: Request, exception: Exception) -> Resp
 @app.exception_handler(Exception)
 async def _exception_handler_500(request: Request, exception: Exception) -> Response:
     log.exception(exception)
-    with Client(page('')) as client:
+    with Client(page(''), request=request) as client:
         error_content(500, exception)
     return client.build_response(request, 500)
 

@@ -315,8 +315,7 @@ def test_reconnecting_without_page_reload(screen: Screen):
 def test_ip(screen: Screen):
     @ui.page('/')
     def page(client: Client):
-        ui.label(client.ip or 'no ip')
+        ui.label(client.ip or 'unknown')
 
     screen.open('/')
-    screen.should_not_contain('no ip')
     screen.should_contain('127.0.0.1')

@@ -44,7 +44,7 @@ class Client:
     shared_body_html = ''
     """HTML to be inserted in the <body> of every page template."""
 
-    def __init__(self, page: page, *, request: Optional[Request] = None) -> None:
+    def __init__(self, page: page, *, request: Optional[Request]) -> None:
         self.request: Optional[Request] = request
         self.id = str(uuid.uuid4())
         self.created = time.time()
@@ -87,9 +87,9 @@ class Client:
 
     @property
     def ip(self) -> Optional[str]:
-        """Return the IP address of the client, or None if its an 
+        """Return the IP address of the client, or None if it is an
         `auto-index page <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_."""
-        return self.request.client.host if self.request is not None else None  # mypy: ignore
+        return self.request.client.host if self.request is not None and self.request.client is not None else None
 
     @property
     def has_socket_connection(self) -> bool:
