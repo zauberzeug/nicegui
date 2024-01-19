@@ -5,11 +5,11 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Dict
 
+import socketio
 from fastapi import HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
-from fastapi_socketio import SocketManager
 
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
@@ -32,8 +32,10 @@ async def _lifespan(_: App):
 
 core.app = app = App(default_response_class=NiceGUIJSONResponse, lifespan=_lifespan)
 # NOTE we use custom json module which wraps orjson
-socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=json)
-core.sio = sio = socket_manager._sio  # pylint: disable=protected-access
+core.sio = sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*', json=json)
+sio_app = socketio.ASGIApp(socketio_server=sio, socketio_path='/_nicegui_ws/socket.io')
+app.mount('/_nicegui_ws/', sio_app)
+
 
 mimetypes.add_type('text/javascript', '.js')
 mimetypes.add_type('text/css', '.css')

@@ -58,21 +58,30 @@ def _refresh_step() -> None:
 def _propagate(source_obj: Any, source_name: str, visited: Optional[Set[Tuple[int, str]]] = None) -> None:
     if visited is None:
         visited = set()
-    visited.add((id(source_obj), source_name))
-    for _, target_obj, target_name, transform in bindings.get((id(source_obj), source_name), []):
+    source_obj_id = id(source_obj)
+    if source_obj_id in visited:
+        return
+    visited.add((source_obj_id, source_name))
+
+    if not _has_attribute(source_obj, source_name):
+        return
+    source_value = _get_attribute(source_obj, source_name)
+
+    for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
         if (id(target_obj), target_name) in visited:
             continue
-        if _has_attribute(source_obj, source_name):
-            target_value = transform(_get_attribute(source_obj, source_name))
-            if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
-                _set_attribute(target_obj, target_name, target_value)
-                _propagate(target_obj, target_name, visited)
+
+        target_value = transform(source_value)
+        if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
+            _set_attribute(target_obj, target_name, target_value)
+            _propagate(target_obj, target_name, visited)
 
 
 def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forward: Callable[[Any], Any]) -> None:
     """Bind the property of one object to the property of another object.
 
     The binding works one way only, from the first object to the second.
+    The update happens immediately and whenever a value changes.
 
     :param self_obj: The object to bind from.
     :param self_name: The name of the property to bind from.
@@ -90,6 +99,7 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, ba
     """Bind the property of one object from the property of another object.
 
     The binding works one way only, from the second object to the first.
+    The update happens immediately and whenever a value changes.
 
     :param self_obj: The object to bind to.
     :param self_name: The name of the property to bind to.
@@ -108,6 +118,8 @@ def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
     """Bind the property of one object to the property of another object.
 
     The binding works both ways, from the first object to the second and from the second to the first.
+    The update happens immediately and whenever a value changes.
+    The backward binding takes precedence for the initial synchronization.
 
     :param self_obj: First object to bind.
     :param self_name: The name of the first property to bind.
@@ -151,23 +163,24 @@ def remove(objects: Iterable[Any], type_: Type) -> None:
     :param objects: The objects to remove.
     :param type_: The type of the objects to remove.
     """
+    object_set = set(objects)
     active_links[:] = [
         (source_obj, source_name, target_obj, target_name, transform)
         for source_obj, source_name, target_obj, target_name, transform in active_links
-        if not (isinstance(source_obj, type_) and source_obj in objects or
-                isinstance(target_obj, type_) and target_obj in objects)
+        if not (isinstance(source_obj, type_) and source_obj in object_set or
+                isinstance(target_obj, type_) and target_obj in object_set)
     ]
     for key, binding_list in list(bindings.items()):
         binding_list[:] = [
             (source_obj, target_obj, target_name, transform)
             for source_obj, target_obj, target_name, transform in binding_list
-            if not (isinstance(source_obj, type_) and source_obj in objects or
-                    isinstance(target_obj, type_) and target_obj in objects)
+            if not (isinstance(source_obj, type_) and source_obj in object_set or
+                    isinstance(target_obj, type_) and target_obj in object_set)
         ]
         if not binding_list:
             del bindings[key]
     for (obj_id, name), obj in list(bindable_properties.items()):
-        if isinstance(obj, type_) and obj in objects:
+        if isinstance(obj, type_) and obj in object_set:
             del bindable_properties[(obj_id, name)]
 
 

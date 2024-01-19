@@ -1,3 +1,5 @@
+from typing import Dict
+
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
@@ -93,3 +95,12 @@ def test_binding_refresh_before_page_delivery(screen: Screen):
 
     screen.open('/')
     screen.should_contain('1')
+
+
+def test_missing_target_attribute(screen: Screen):
+    data: Dict = {}
+    ui.label('Hello').bind_text_to(data)
+    ui.label().bind_text_from(data, 'text', lambda text: f'{text=}')
+
+    screen.open('/')
+    screen.should_contain("text='Hello'")

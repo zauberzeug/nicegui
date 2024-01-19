@@ -109,7 +109,7 @@ jobs:
           provider: dockerhub
           short_description: "Web Based User Interface für Python with Buttons, Dialogs, Markdown, 3D Scences and Plots"
 
-  update_citation:
+  update_metadata:
     needs: docker
     runs-on: ubuntu-latest
     steps:
@@ -133,12 +133,15 @@ jobs:
           ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
         run: python .github/workflows/update_citation.py
 
+      - name: Update version in pyproject.toml
+        run: python .github/workflows/update_pyproject.py ${{ steps.prep.outputs.version }}
+
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add CITATION.cff
-          git commit -m "Update citation.cff"
+          git add CITATION.cff pyproject.toml
+          git commit -m "Update citation.cff and pyproject.toml"
           git push origin HEAD:main
 
   verify:

@@ -70,6 +70,11 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
             df[complex_cols] = df[complex_cols].astype(str)
             df[period_cols] = df[period_cols].astype(str)
 
+        if isinstance(df.columns, pd.MultiIndex):
+            raise ValueError('MultiIndex columns are not supported. '
+                             'You can convert them to strings using something like '
+                             '`df.columns = ["_".join(col) for col in df.columns.values]`.')
+
         return cls({
             'columnDefs': [{'field': str(col)} for col in df.columns],
             'rowData': df.to_dict('records'),

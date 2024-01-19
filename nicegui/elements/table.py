@@ -107,6 +107,11 @@ class Table(FilterElement, component='table.js'):
             df[complex_cols] = df[complex_cols].astype(str)
             df[period_cols] = df[period_cols].astype(str)
 
+        if isinstance(df.columns, pd.MultiIndex):
+            raise ValueError('MultiIndex columns are not supported. '
+                             'You can convert them to strings using something like '
+                             '`df.columns = ["_".join(col) for col in df.columns.values]`.')
+
         return cls(
             columns=[{'name': col, 'label': col, 'field': col} for col in df.columns],
             rows=df.to_dict('records'),
