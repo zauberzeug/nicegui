@@ -54,6 +54,7 @@ class Client:
         self.is_waiting_for_connection: bool = False
         self.is_waiting_for_disconnect: bool = False
         self.environ: Optional[Dict[str, Any]] = None
+        self.request: Optional[Request] = None
         self.shared = shared
         self.on_air = False
         self._disconnect_task: Optional[asyncio.Task] = None
@@ -86,8 +87,9 @@ class Client:
 
     @property
     def ip(self) -> Optional[str]:
-        """Return the IP address of the client, or None if the client is not connected."""
-        return self.environ['asgi.scope']['client'][0] if self.environ else None  # pylint: disable=unsubscriptable-object
+        """Return the IP address of the client, or None if its an 
+        `auto-index page <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_."""
+        return self.request.client.host if self.request is not None else None  # mypy: ignore
 
     @property
     def has_socket_connection(self) -> bool:
