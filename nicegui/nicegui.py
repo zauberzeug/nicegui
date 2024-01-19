@@ -48,7 +48,7 @@ static_files = StaticFiles(
 )
 app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
 
-Client.auto_index_client = Client(page('/'), shared=True).__enter__()  # pylint: disable=unnecessary-dunder-call
+Client.auto_index_client = Client(page('/')).__enter__()  # pylint: disable=unnecessary-dunder-call
 
 
 @app.get('/')
