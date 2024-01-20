@@ -8,8 +8,7 @@ from ..element import Element
 from ..events import EChartPointClickEventArguments, GenericEventArguments, handle_event
 
 try:
-    import simplejson as json  # TODO: replace library or add to requirements or optional features
-    from pyecharts.charts.base import default
+    from pyecharts.charts.base import default, json
     from pyecharts.charts.chart import Base as Chart
     from pyecharts.commons.utils import JsCode
     JS_CODE_PREFIX = JsCode('⬌').js_code.split('⬌')[0]
