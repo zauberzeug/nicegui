@@ -46,6 +46,25 @@ def dynamic_properties() -> None:
         'series': [{'type': 'line', 'data': [5, 8, 13, 21, 34, 55]}],
     })
 
+@doc.demo('EChart from pyecharts', '''
+    You can create a echart from pyecharts using the `from_pyecharts` method. 
+    This method takes a pyecharts chart object as input and returns a echart.
+''')
+def echart_from_pyecharts_demo():
+    from pyecharts import options
+    from pyecharts.charts import Bar
+    from pyecharts.commons import utils
+
+    ui.echart.from_pyecharts(
+        Bar()
+        .add_xaxis(['A', 'B', 'C'])
+        .add_yaxis('series A', [0.1,0.2,0.3],)
+        .set_global_opts(
+            xaxis_opts=options.AxisOpts(axislabel_opts={':formatter': r'(val, idx) => `x for ${val}`'}),
+            yaxis_opts=options.AxisOpts(axislabel_opts={'formatter': utils.JsCode(r'(val, idx) => `${val} kg`')}),
+        )
+    )
+
 
 @doc.demo('Run methods', '''
     You can run methods of the EChart instance using the `run_chart_method` method.
