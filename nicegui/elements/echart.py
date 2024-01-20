@@ -51,18 +51,16 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
             ])
 
     @classmethod
-    def from_pyecharts(cls,
-                    chart_object: object,
-                    on_point_click: Optional[Callable] = None) -> Self:
-        """Create a echart from pyecharts.
+    def from_pyecharts(cls, chart_object: object, on_point_click: Optional[Callable] = None) -> Self:
+        """Create an echart element from a pyecharts object.
 
         :param chart_object: pyecharts chart object
         :param on_click_point: callback function that is called when a point is clicked
-       
+
         :return: echart element
         """
         options = _PyechartsUtils.chart2options(chart_object)
-        return cls(options,on_point_click)
+        return cls(options, on_point_click)
 
     @property
     def options(self) -> Dict:
@@ -92,52 +90,46 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
         return self.run_method('run_chart_method', name, *args, timeout=timeout, check_interval=check_interval)
 
 
-
-
 class _PyechartsUtils:
     # pyecharts is not defined as a constant.
     # https://github.com/pyecharts/pyecharts/blob/f92c839a51d3878eeb24504ad191706c9db2c2ed/pyecharts/commons/utils.py#L8
-    JS_CODE_PREFIX = "--x_x--0_0--"
+    JS_CODE_PREFIX = '--x_x--0_0--'
 
-    @staticmethod
-    def chart2options(chart):
+    @classmethod
+    def chart2options(cls, chart) -> Dict:
+        """Convert pyecharts chart object to options dictionary."""
+        # pylint: disable=import-outside-toplevel
         import simplejson as json
         from pyecharts.charts.base import default
         from pyecharts.charts.chart import Base
 
-        assert isinstance(chart, Base), "must be a pyecharts chart object"
+        assert isinstance(chart, Base), 'must be a pyecharts chart object'
 
         dumps_str = json.dumps(chart.get_options(), default=default, ignore_nan=True)
         opts = json.loads(dumps_str)
-        _PyechartsUtils._replace_key_name_of_js_code(opts)
+        cls._replace_key_name_of_js_code(opts)
         return opts
 
-    @staticmethod
-    def _replace_key_name_of_js_code(opts: Dict):
-        stack = [opts] # type: list
-
-        while len(stack) > 0:
+    @classmethod
+    def _replace_key_name_of_js_code(cls, opts: Dict) -> None:
+        stack = [opts]
+        while stack:
             cur = stack.pop()
             if isinstance(cur, list):
                 stack.extend(cur)
             elif isinstance(cur, dict):
                 for key, value in tuple(cur.items()):
-                    if isinstance(value, str) and _PyechartsUtils._is_js_code_str(value):
-                        cur[f":{key}"] = _PyechartsUtils._replace_js_code_fix(value)
+                    if isinstance(value, str) and cls._is_js_code_str(value):
+                        cur[f':{key}'] = cls._replace_js_code_fix(value)
                         del cur[key]
                     else:
                         stack.append(value)
 
-    @staticmethod
-    def _is_js_code_str(text: str):
-        return (
-            len(text) > 2 * len(_PyechartsUtils.JS_CODE_PREFIX)
-            and text[: len(_PyechartsUtils.JS_CODE_PREFIX)] == _PyechartsUtils.JS_CODE_PREFIX
-            and text[-len(_PyechartsUtils.JS_CODE_PREFIX) :] == _PyechartsUtils.JS_CODE_PREFIX
-        )
+    @classmethod
+    def _is_js_code_str(cls, text: str) -> bool:
+        return text[:len(cls.JS_CODE_PREFIX)] == cls.JS_CODE_PREFIX \
+            and text[-len(cls.JS_CODE_PREFIX):] == cls.JS_CODE_PREFIX
 
-    @staticmethod
-    def _replace_js_code_fix(text: str):
-        start = len(_PyechartsUtils.JS_CODE_PREFIX)
-        end = len(text) - len(_PyechartsUtils.JS_CODE_PREFIX)
-        return text[start:end]
+    @classmethod
+    def _replace_js_code_fix(cls, text: str) -> str:
+        return text[len(cls.JS_CODE_PREFIX):-len(cls.JS_CODE_PREFIX)]
