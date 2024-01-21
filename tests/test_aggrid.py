@@ -212,3 +212,19 @@ def test_problematic_datatypes(screen: Screen):
     screen.should_contain('5 days')
     screen.should_contain('(1+2j)')
     screen.should_contain('2021-01')
+
+
+def test_run_row_method(screen: Screen):
+    grid = ui.aggrid({
+        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+        'rowData': [{'id': 'alice', 'name': 'Alice', 'age': 18}],
+    })
+    ui.button('Update', on_click=lambda: grid.run_row_method('alice', 'setDataValue', 'age', 42))
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('18')
+
+    screen.click('Update')
+    screen.should_contain('Alice')
+    screen.should_contain('42')
