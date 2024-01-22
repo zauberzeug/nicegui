@@ -46,22 +46,28 @@ def dynamic_properties() -> None:
         'series': [{'type': 'line', 'data': [5, 8, 13, 21, 34, 55]}],
     })
 
+
 @doc.demo('EChart from pyecharts', '''
-    You can create a echart from pyecharts using the `from_pyecharts` method. 
-    This method takes a pyecharts chart object as input and returns a echart.
+    You can create an EChart element from a pyecharts object using the `from_pyecharts` method.
+    For defining dynamic options like a formatter function, you can use the `JsCode` class from `pyecharts.commons.utils`.
+    Alternatively, you can use a colon ":" to prefix the property name to indicate that the value is a JavaScript expression.
 ''')
 def echart_from_pyecharts_demo():
-    from pyecharts import options
     from pyecharts.charts import Bar
-    from pyecharts.commons import utils
+    from pyecharts.commons.utils import JsCode
+    from pyecharts.options import AxisOpts
 
     ui.echart.from_pyecharts(
         Bar()
         .add_xaxis(['A', 'B', 'C'])
-        .add_yaxis('series A', [0.1,0.2,0.3],)
+        .add_yaxis('ratio', [1, 2, 4])
         .set_global_opts(
-            xaxis_opts=options.AxisOpts(axislabel_opts={':formatter': r'(val, idx) => `x for ${val}`'}),
-            yaxis_opts=options.AxisOpts(axislabel_opts={'formatter': utils.JsCode(r'(val, idx) => `${val} kg`')}),
+            xaxis_opts=AxisOpts(axislabel_opts={
+                ':formatter': r'(val, idx) => `group ${val}`',
+            }),
+            yaxis_opts=AxisOpts(axislabel_opts={
+                'formatter': JsCode(r'(val, idx) => `${val}%`'),
+            }),
         )
     )
 
