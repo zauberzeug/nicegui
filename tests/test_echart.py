@@ -82,37 +82,24 @@ def test_run_method(screen: Screen):
     screen.should_contain('Width: 600px')
 
 
-
 def test_create_from_pyecharts(screen: Screen):
-    xaxis_formatter = r'(val, idx) => `x for ${val}`'
-    yaxis_formatter = r'(val, idx) => `${val} kg`'
-    get_options_js = "echarts.getInstanceByDom(document.querySelector('.nicegui-echart')).getOption()"
+    X_AXIS_FORMATTER = r'(val, idx) => `x for ${val}`'
+    Y_AXIS_FORMATTER = r'(val, idx) => `${val} kg`'
 
     ui.echart.from_pyecharts(
         Bar()
         .add_xaxis(['A', 'B', 'C'])
-        .add_yaxis('series A', [0.1,0.2,0.3],)
+        .add_yaxis('series A', [0.1, 0.2, 0.3],)
         .set_global_opts(
-            xaxis_opts=options.AxisOpts(axislabel_opts={':formatter': xaxis_formatter}),
-            yaxis_opts=options.AxisOpts(axislabel_opts={'formatter': utils.JsCode(yaxis_formatter)}),
+            xaxis_opts=options.AxisOpts(axislabel_opts={':formatter': X_AXIS_FORMATTER}),
+            yaxis_opts=options.AxisOpts(axislabel_opts={'formatter': utils.JsCode(Y_AXIS_FORMATTER)}),
         )
     )
-    
-    label = ui.label('')
-
-    async def get_xAxis_formatter():
-        type_str,formatter= await ui.run_javascript(f"const fm={get_options_js}.xAxis[0].axisLabel.formatter;[typeof fm,fm.toString()]")
-        label.set_text(f"xAxis formatter is {type_str}: {formatter}")
-    ui.button('Get xAxis formatter', on_click=get_xAxis_formatter)
-
-    async def get_yAxis_formatter():
-        type_str,formatter= await ui.run_javascript(f"const fm={get_options_js}.yAxis[0].axisLabel.formatter;[typeof fm,fm.toString()]")
-        label.set_text(f"yAxis formatter is {type_str}: {formatter}")
-    ui.button('Get yAxis formatter', on_click=get_yAxis_formatter)
 
     screen.open('/')
-    screen.click('Get xAxis formatter')
-    screen.should_contain(f"formatter is function: {xaxis_formatter}")
-
-    screen.click('Get yAxis formatter')
-    screen.should_contain(f"formatter is function: {yaxis_formatter}")
+    assert screen.selenium.execute_script('''
+        const chart = echarts.getInstanceByDom(document.querySelector(".nicegui-echart"));
+        const x = chart.getOption().xAxis[0].axisLabel.formatter;
+        const y = chart.getOption().yAxis[0].axisLabel.formatter;
+        return [typeof x, x.toString(), typeof y, y.toString()];
+    ''') == ['function', X_AXIS_FORMATTER, 'function', Y_AXIS_FORMATTER]
