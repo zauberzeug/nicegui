@@ -11,7 +11,7 @@ try:
     from pyecharts.charts.base import default, json
     from pyecharts.charts.chart import Base as Chart
     from pyecharts.commons.utils import JsCode
-    JS_CODE_PREFIX = JsCode('⬌').js_code.split('⬌')[0]
+    JS_CODE_MARKER = JsCode('\n').js_code.split('\n')[0]
     optional_features.register('pyecharts')
 except ImportError:
     pass
@@ -77,8 +77,8 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
                 stack.extend(current)
             elif isinstance(current, dict):
                 for key, value in tuple(current.items()):
-                    if isinstance(value, str) and value.startswith(JS_CODE_PREFIX) and value.endswith(JS_CODE_PREFIX):
-                        current[f':{key}'] = current.pop(key)[len(JS_CODE_PREFIX):-len(JS_CODE_PREFIX)]
+                    if isinstance(value, str) and value.startswith(JS_CODE_MARKER) and value.endswith(JS_CODE_MARKER):
+                        current[f':{key}'] = current.pop(key)[len(JS_CODE_MARKER):-len(JS_CODE_MARKER)]
                     else:
                         stack.append(value)
         return cls(options, on_point_click)
