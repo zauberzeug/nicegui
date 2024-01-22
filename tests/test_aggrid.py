@@ -217,9 +217,10 @@ def test_problematic_datatypes(screen: Screen):
 def test_run_row_method(screen: Screen):
     grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}, {'field': 'age'}],
-        'rowData': [{'id': 'alice', 'name': 'Alice', 'age': 18}],
+        'rowData': [{'name': 'Alice', 'age': 18}],
+        ':getRowId': '(params) => params.data.name',
     })
-    ui.button('Update', on_click=lambda: grid.run_row_method('alice', 'setDataValue', 'age', 42))
+    ui.button('Update', on_click=lambda: grid.run_row_method('Alice', 'setDataValue', 'age', 42))
 
     screen.open('/')
     screen.should_contain('Alice')

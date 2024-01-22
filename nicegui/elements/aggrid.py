@@ -143,7 +143,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
-        :param row_id: id of the row
+        :param row_id: id of the row (as defined by the ``getRowId`` option)
         :param name: name of the method
         :param args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
