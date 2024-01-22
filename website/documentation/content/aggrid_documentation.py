@@ -195,4 +195,30 @@ def aggrid_with_dynamic_row_height():
     }).classes('max-h-40')
 
 
+@doc.demo('Run row methods', '''
+    You can run methods on individual rows by using the `run_row_method` method.
+    This method takes the row ID, the method name and the method arguments as arguments.
+    The row ID is either the row index (as a string) or the value of the `getRowId` function.
+
+    The following demo shows how to use it to update cell values.
+    Note that the row selection is preserved when the value is updated.
+    This would not be the case if the grid was updated using the `update` method.
+''')
+def aggrid_run_row_method():
+    grid = ui.aggrid({
+        'columnDefs': [
+            {'field': 'name', 'checkboxSelection': True},
+            {'field': 'age'},
+        ],
+        'rowData': [
+            {'name': 'Alice', 'age': 18},
+            {'name': 'Bob', 'age': 21},
+            {'name': 'Carol', 'age': 42},
+        ],
+        ':getRowId': '(params) => params.data.name',
+    })
+    ui.button('Update',
+              on_click=lambda: grid.run_row_method('Alice', 'setDataValue', 'age', 99))
+
+
 doc.reference(ui.aggrid)
