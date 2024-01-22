@@ -134,6 +134,25 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         """
         return self.run_method('run_column_method', name, *args, timeout=timeout, check_interval=check_interval)
 
+    def run_row_method(self, row_id: str, name: str, *args,
+                       timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+        """Run an AG Grid API method on a specific row.
+
+        See `AG Grid Row Reference <https://www.ag-grid.com/javascript-data-grid/row-object/>`_ for a list of methods.
+
+        If the function is awaited, the result of the method call is returned.
+        Otherwise, the method is executed without waiting for a response.
+
+        :param row_id: id of the row (as defined by the ``getRowId`` option)
+        :param name: name of the method
+        :param args: arguments to pass to the method
+        :param timeout: timeout in seconds (default: 1 second)
+        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
+
+        :return: AwaitableResponse that can be awaited to get the result of the method call
+        """
+        return self.run_method('run_row_method', row_id, name, *args, timeout=timeout, check_interval=check_interval)
+
     async def get_selected_rows(self) -> List[Dict]:
         """Get the currently selected rows.
 
