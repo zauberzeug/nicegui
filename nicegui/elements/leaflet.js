@@ -120,7 +120,21 @@ export default {
       this.map.eachLayer((layer) => this.map.removeLayer(layer));
     },
     run_map_method(name, ...args) {
+      if (name.startsWith(":")) {
+        name = name.slice(1);
+        args = args.map((arg) => new Function("return " + arg)());
+      }
       return this.map[name](...args);
+    },
+    run_layer_method(id, name, ...args) {
+      this.map.eachLayer((layer) => {
+        if (layer.id !== id) return;
+        if (name.startsWith(":")) {
+          name = name.slice(1);
+          args = args.map((arg) => new Function("return " + arg)());
+        }
+        return layer[name](...args);
+      });
     },
   },
 };
