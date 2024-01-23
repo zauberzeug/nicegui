@@ -122,5 +122,8 @@ export default {
     run_map_method(name, ...args) {
       return this.map[name](...args);
     },
+    run_layer_method(id, name, ...args) {
+      this.map.eachLayer((layer) => layer.id === id && layer[name](...args));
+    },
   },
 };

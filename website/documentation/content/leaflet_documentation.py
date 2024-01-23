@@ -121,4 +121,15 @@ def run_map_methods() -> None:
     ui.button('Fit world', on_click=lambda: m.run_map_method('fitWorld'))
 
 
+@doc.demo('Run Layer Methods', '''
+    You can run methods of the Leaflet layer objects with `run_layer_method`.
+    This demo shows how to change the opacity of a marker.
+''')
+def run_layer_methods() -> None:
+    m = ui.leaflet(center=(51.505, -0.09)).classes('h-32')
+    marker = m.marker(latlng=(51.5, -0.09))
+    ui.button('Hide', on_click=lambda: marker.run_method('setOpacity', 0.3))
+    ui.button('Show', on_click=lambda: marker.run_method('setOpacity', 1.0))
+
+
 doc.reference(ui.leaflet)

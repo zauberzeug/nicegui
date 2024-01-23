@@ -3,8 +3,9 @@ from __future__ import annotations
 import uuid
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
+from ..awaitable_response import AwaitableResponse
 from ..dataclasses import KWONLY_SLOTS
 
 if TYPE_CHECKING:
@@ -27,3 +28,18 @@ class Layer:
     @abstractmethod
     def to_dict(self) -> dict:
         """Return a dictionary representation of the layer."""
+
+    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+        """Run a method of the Leaflet layer.
+
+        If the function is awaited, the result of the method call is returned.
+        Otherwise, the method is executed without waiting for a response.
+
+        :param name: name of the method
+        :param args: arguments to pass to the method
+        :param timeout: timeout in seconds (default: 1 second)
+        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
+
+        :return: AwaitableResponse that can be awaited to get the result of the method call
+        """
+        return self.leaflet.run_method('run_layer_method', self.id, name, *args, timeout=timeout, check_interval=check_interval)
