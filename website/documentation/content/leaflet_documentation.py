@@ -55,6 +55,15 @@ def markers() -> None:
     m.on('map-click', handle_click)
 
 
+@doc.demo('Move Markers', '''
+    You can move markers with the `move` method.
+''')
+def move_markers() -> None:
+    m = ui.leaflet(center=(51.505, -0.09))
+    marker = m.marker(latlng=m.center)
+    ui.button('Move marker', on_click=lambda: marker.move(51.51, -0.09))
+
+
 @doc.demo('Vector Layers', '''
     Leaflet supports a set of [vector layers](https://leafletjs.com/reference.html#:~:text=VideoOverlay-,Vector%20Layers,-Path) like circle, polygon etc.
     These can be added with the `generic_layer` method.
@@ -62,8 +71,7 @@ def markers() -> None:
 ''')
 def vector_layers() -> None:
     m = ui.leaflet(center=(51.505, -0.09)).classes('h-32')
-    m.generic_layer(name='circle',
-                    args=[[51.505, -0.09], {'color': 'red', 'radius': 300}])
+    m.generic_layer(name='circle', args=[m.center, {'color': 'red', 'radius': 300}])
 
 
 @doc.demo('Disable Pan and Zoom', '''
@@ -127,7 +135,7 @@ def run_map_methods() -> None:
 ''')
 def run_layer_methods() -> None:
     m = ui.leaflet(center=(51.505, -0.09)).classes('h-32')
-    marker = m.marker(latlng=(51.5, -0.09))
+    marker = m.marker(latlng=m.center)
     ui.button('Hide', on_click=lambda: marker.run_method('setOpacity', 0.3))
     ui.button('Show', on_click=lambda: marker.run_method('setOpacity', 1.0))
 
