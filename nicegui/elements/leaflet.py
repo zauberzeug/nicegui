@@ -117,7 +117,7 @@ class Leaflet(Element, component='leaflet.js'):
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
-        :param name: name of the method
+        :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
         :param args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
         :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
@@ -133,7 +133,7 @@ class Leaflet(Element, component='leaflet.js'):
         Otherwise, the method is executed without waiting for a response.
 
         :param layer_id: ID of the layer
-        :param name: name of the method
+        :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
         :param args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
         :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
