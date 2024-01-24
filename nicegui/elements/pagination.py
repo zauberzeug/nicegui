@@ -21,9 +21,39 @@ class Pagination(ValueElement, DisableableElement):
         :param value: initial page (defaults to `min` if no value is provided)
         :param on_change: callback to be invoked when the value changes
         """
+        if value is ...:
+            value = min
         super().__init__(tag='q-pagination', value=value, on_value_change=on_change)
         self._props['min'] = min
         self._props['max'] = max
         self._props['direction-links'] = direction_links
-        if value is ...:
-            self.value = min
+
+    @property
+    def min(self) -> int:
+        """Minimum page number"""
+        return self._props['min']
+
+    @min.setter
+    def min(self, value: int) -> None:
+        self._props['min'] = value
+        self.update()
+
+    @property
+    def max(self) -> int:
+        """Maximum page number"""
+        return self._props['max']
+
+    @max.setter
+    def max(self, value: int) -> None:
+        self._props['max'] = value
+        self.update()
+
+    @property
+    def direction_links(self) -> bool:
+        """Whether to show first/last page links"""
+        return self._props['direction-links']
+
+    @direction_links.setter
+    def direction_links(self, value: bool) -> None:
+        self._props['direction-links'] = value
+        self.update()
