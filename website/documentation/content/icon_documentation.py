@@ -8,6 +8,28 @@ def main_demo() -> None:
     ui.icon('thumb_up', color='primary').classes('text-5xl')
 
 
+@doc.demo('Material icons and symbols', '''
+    You can use different sets of Material icons and symbols.
+    The [Quasar documentation](https://quasar.dev/vue-components/icon#webfont-usage)
+    gives an overview of all available icon sets and their name prefix:
+    
+    * None for [filled icons](https://fonts.google.com/icons?icon.set=Material+Icons&icon.style=Filled)
+    * "o\_" for [outline icons](https://fonts.google.com/icons?icon.set=Material+Icons&icon.style=Outlined)
+    * "r\_" for [round icons](https://fonts.google.com/icons?icon.set=Material+Icons&icon.style=Rounded)
+    * "s\_" for [sharp icons](https://fonts.google.com/icons?icon.set=Material+Icons&icon.style=Sharp)
+    * "sym\_o\_" for [outline symbols](https://fonts.google.com/icons?icon.set=Material+Symbols&icon.style=Outlined)
+    * "sym\_r\_" for [round symbols](https://fonts.google.com/icons?icon.set=Material+Symbols&icon.style=Rounded)
+    * "sym\_s\_" for [sharp symbols](https://fonts.google.com/icons?icon.set=Material+Symbols&icon.style=Sharp)
+''')
+def material_icons():
+    with ui.row().classes('text-4xl'):
+        ui.icon('home')
+        ui.icon('o_home')
+        ui.icon('r_home')
+        ui.icon('sym_o_home')
+        ui.icon('sym_r_home')
+
+
 @doc.demo('Eva icons', '''
     You can use [Eva icons](https://akveo.github.io/eva-icons/) in your app.
 ''', lazy=False)
