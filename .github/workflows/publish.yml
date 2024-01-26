@@ -134,7 +134,7 @@ jobs:
         run: python .github/workflows/update_citation.py
 
       - name: Update version in pyproject.toml
-        run: python .github/workflows/update_pyproject.py ${{ steps.prep.outputs.version }}
+        run: python .github/workflows/update_pyproject.py $(echo ${GITHUB_REF/refs\/tags\//})
 
       - name: Commit and push changes
         run: |
