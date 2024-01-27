@@ -108,7 +108,7 @@ class Storage:
         """
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if context.get_client().is_auto_index_client:
+            if self._is_in_auto_index_context():
                 raise RuntimeError('app.storage.browser can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
             raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
@@ -128,7 +128,7 @@ class Storage:
         """
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if context.get_client().is_auto_index_client:
+            if self._is_in_auto_index_context():
                 raise RuntimeError('app.storage.user can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
             raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
@@ -136,6 +136,13 @@ class Storage:
         if session_id not in self._users:
             self._users[session_id] = PersistentDict(self.path / f'storage-user-{session_id}.json', encoding='utf-8')
         return self._users[session_id]
+
+    @staticmethod
+    def _is_in_auto_index_context() -> bool:
+        try:
+            return context.get_client().is_auto_index_client
+        except RuntimeError:
+            return False  # no client
 
     @property
     def general(self) -> Dict:

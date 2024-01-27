@@ -63,6 +63,7 @@ def login() -> Optional[RedirectResponse]:
         username = ui.input('Username').on('keydown.enter', try_login)
         password = ui.input('Password', password=True, password_toggle_button=True).on('keydown.enter', try_login)
         ui.button('Log in', on_click=try_login)
+    return None
 
 
 ui.run(storage_secret='THIS_NEEDS_TO_BE_CHANGED')
