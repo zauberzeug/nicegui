@@ -139,13 +139,10 @@ class Storage:
 
     @staticmethod
     def _is_in_auto_index_context() -> bool:
-        slot_stack = context.get_slot_stack()
-        if not slot_stack:
-            return False
-        client = context.get_client()
-        if not client:
-            return False
-        return client.is_auto_index_client
+        try:
+            return context.get_client().is_auto_index_client
+        except RuntimeError:
+            return False  # no client
 
     @property
     def general(self) -> Dict:
