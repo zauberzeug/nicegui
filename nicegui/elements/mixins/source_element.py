@@ -95,9 +95,9 @@ class SourceElement(Element):
             if self.auto_route:
                 core.app.remove_route(self.auto_route)
             if self.SOURCE_IS_MEDIA_FILE:
-                source = core.app.add_static_file(local_file=source)
-            else:
                 source = core.app.add_media_file(local_file=source)
+            else:
+                source = core.app.add_static_file(local_file=source)
             self.auto_route = source
         self._props['src'] = source
 
