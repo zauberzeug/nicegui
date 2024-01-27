@@ -13,6 +13,8 @@ class SourceElement(Element):
     source = BindableProperty(
         on_change=lambda sender, source: cast(Self, sender)._handle_source_change(source))  # pylint: disable=protected-access
 
+    SOURCE_IS_MEDIA_FILE: bool = False
+
     def __init__(self, *, source: Union[str, Path], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.auto_route: Optional[str] = None
@@ -92,7 +94,10 @@ class SourceElement(Element):
         if is_file(source):
             if self.auto_route:
                 core.app.remove_route(self.auto_route)
-            source = core.app.add_static_file(local_file=source)
+            if self.SOURCE_IS_MEDIA_FILE:
+                source = core.app.add_static_file(local_file=source)
+            else:
+                source = core.app.add_media_file(local_file=source)
             self.auto_route = source
         self._props['src'] = source
 
