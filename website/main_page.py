@@ -127,7 +127,7 @@ def create() -> None:
                 'routing for multiple pages',
                 'auto-reload on code change',
                 'persistent user sessions',
-                'build-in testing framework',
+                'built-in testing framework',
             ])
             features('anchor', 'Foundation', [
                 'generic [Vue](https://vuejs.org/) to Python bridge',
