@@ -119,6 +119,9 @@ class Number(ValidationElement, DisableableElement):
         if value is None:
             return None
         if self.format is None:
+            old_value = float(self._props.get(self.VALUE_PROP) or 0)
+            if old_value == int(old_value) and value == int(value):
+                return str(int(value))  # preserve integer representation
             return str(value)
         if value == '':
             return 0
