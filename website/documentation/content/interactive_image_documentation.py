@@ -51,4 +51,15 @@ def blank_canvas():
     ).classes('w-64 bg-blue-50')
 
 
+@doc.demo('Loaded event', '''
+    You can listen to the `loaded` event to know when the image has been loaded.
+''')
+def loaded_event():
+    import time
+
+    ii = ui.interactive_image('https://picsum.photos/640/360')
+    ii.on('loaded', lambda e: ui.notify(f'loaded {e.args}'))
+    ui.button('Change Source', on_click=lambda: ii.set_source(f'https://picsum.photos/640/360?time={time.time()}'))
+
+
 doc.reference(ui.interactive_image)

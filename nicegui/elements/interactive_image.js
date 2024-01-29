@@ -76,6 +76,7 @@ export default {
       this.loaded_image_width = e.target.naturalWidth;
       this.loaded_image_height = e.target.naturalHeight;
       this.viewBox = `0 0 ${this.loaded_image_width} ${this.loaded_image_height}`;
+      this.$emit("loaded", { width: this.loaded_image_width, height: this.loaded_image_height, source: e.target.src });
     },
     onMouseEvent(type, e) {
       const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
