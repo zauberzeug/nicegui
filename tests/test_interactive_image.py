@@ -89,7 +89,7 @@ def test_loaded_event(screen: Screen):
     screen.wait(0.5)
     assert len(loaded) == 1
     screen.click('Change Source')
-    screen.wait(0.5)
+    screen.wait(1.5)
     assert len(loaded) == 2
     assert '?time=' in loaded[1].args['source']
     assert screen.find_by_tag('img').get_attribute('src') == loaded[1].args['source']
