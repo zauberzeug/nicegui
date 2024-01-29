@@ -52,7 +52,7 @@ def blank_canvas():
 
 
 @doc.demo('Loaded event', '''
-    You can listen to the `loaded` event to know when the image has been loaded.
+    You can listen to the "loaded" event to know when the image has been loaded.
 ''')
 def loaded_event():
     import time
