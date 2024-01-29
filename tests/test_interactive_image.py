@@ -1,3 +1,5 @@
+from typing import List
+
 import pytest
 from selenium.webdriver.common.action_chains import ActionChains
 
@@ -74,3 +76,19 @@ def test_mousemove_event(screen: Screen, cross: bool):
         .pause(0.5) \
         .perform()
     assert counter['value'] > 0
+
+
+def test_loaded_event(screen: Screen):
+    sources: List[str] = []
+    ii = ui.interactive_image('https://picsum.photos/id/29/640/360')
+    ii.on('loaded', lambda e: sources.append(e.args['source']))
+    ui.button('Change Source', on_click=lambda: ii.set_source('https://picsum.photos/id/30/640/360'))
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert len(sources) == 1
+    screen.click('Change Source')
+    screen.wait(1.5)
+    assert len(sources) == 2
+    assert sources[1].endswith('id/30/640/360')
+    assert screen.find_by_tag('img').get_attribute('src') == sources[1]
