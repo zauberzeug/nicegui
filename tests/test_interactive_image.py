@@ -1,7 +1,10 @@
+import time
+from typing import List
+
 import pytest
 from selenium.webdriver.common.action_chains import ActionChains
 
-from nicegui import Client, ui
+from nicegui import Client, events, ui
 from nicegui.testing import Screen
 
 
@@ -74,3 +77,19 @@ def test_mousemove_event(screen: Screen, cross: bool):
         .pause(0.5) \
         .perform()
     assert counter['value'] > 0
+
+
+def test_loaded_event(screen: Screen):
+    loaded: List[events.GenericEventArguments] = []
+    ii = ui.interactive_image('https://picsum.photos/id/29/640/360')
+    ii.on('loaded', loaded.append)
+    ui.button('Change Source', on_click=lambda: ii.set_source(f'https://picsum.photos/640/360?time={time.time()}'))
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert len(loaded) == 1
+    screen.click('Change Source')
+    screen.wait(0.5)
+    assert len(loaded) == 2
+    assert '?time=' in loaded[1].args['source']
+    assert screen.find_by_tag('img').get_attribute('src') == loaded[1].args['source']
