@@ -114,9 +114,9 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                 return None
 
     def _new_value(self) -> Any:
-        if self.new_value_generator:
-            return next(self.new_value_generator) if isinstance(self.new_value_generator,
-                                                                collections.abc.Iterable) else self.new_value_generator()
+        if self.new_value_id_generator:
+            return next(self.new_value_id_generator) if isinstance(self.new_value_id_generator,
+                                                                   collections.abc.Iterable) else self.new_value_id_generator()
         return None
 
 
