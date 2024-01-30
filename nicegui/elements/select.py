@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, Callable, Dict, List, Literal, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Union, Iterator
 
 from ..events import GenericEventArguments
 from .choice_element import ChoiceElement
@@ -19,6 +19,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                  multiple: bool = False,
                  clearable: bool = False,
                  validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
+                 new_value_id_generator: Optional[Union[Callable[[Any], Any], Iterator[Any]]] = None,
                  ) -> None:
         """Dropdown Selection
 
@@ -47,6 +48,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         :param multiple: whether to allow multiple selections
         :param clearable: whether to add a button to clear the selection
         :param validation: dictionary of validation rules or a callable that returns an optional error message
+        :param new_value_id_generator: a callback or iterator to get new value key if options are a dict
         """
         self.multiple = multiple
         if multiple:
@@ -57,6 +59,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         super().__init__(options=options, value=value, on_change=on_change, validation=validation)
         if label is not None:
             self._props['label'] = label
+        self.new_value_id_generator = new_value_id_generator
         if new_value_mode is not None:
             if isinstance(options, dict) and new_value_mode == 'add':
                 raise ValueError('new_value_mode "add" is not supported for dict options')
@@ -87,8 +90,8 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                 return None
             else:
                 if isinstance(e.args, str):
-                    self._handle_new_value(e.args)
-                    return e.args if e.args in self._values else None
+                    new_value = self._handle_new_value(e.args)
+                    return new_value if new_value in self._values else None
                 else:
                     return self._values[e.args['value']]
 
@@ -110,7 +113,14 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
             except ValueError:
                 return None
 
-    def _handle_new_value(self, value: str) -> None:
+    def _new_value(self) -> Any:
+        if self.new_value_generator:
+            return next(self.new_value_generator) if isinstance(self.new_value_generator,
+                                                                collections.abc.Iterable) else self.new_value_generator()
+        return None
+
+
+    def _handle_new_value(self, value: str) -> Any:
         mode = self._props['new-value-mode']
         if isinstance(self.options, list):
             if mode == 'add':
@@ -124,13 +134,18 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                 else:
                     self.options.append(value)
             # NOTE: self._labels and self._values are updated via self.options since they share the same references
+            return value
         else:
+            result = value
             if mode in 'add-unique':
                 if value not in self.options:
-                    self.options[value] = value
+                    result = self._new_value() or value
+                    self.options[result] = value
             elif mode == 'toggle':
                 if value in self.options:
                     self.options.pop(value)
                 else:
-                    self.options.update({value: value})
+                    result = self._new_value() or value
+                    self.options.update({result: value})
             self._update_values_and_labels()
+            return result
