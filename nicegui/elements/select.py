@@ -61,8 +61,8 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
             self._props['label'] = label
         self.new_value_id_generator = new_value_id_generator
         if new_value_mode is not None:
-            if isinstance(options, dict) and new_value_mode == 'add':
-                raise ValueError('new_value_mode "add" is not supported for dict options')
+            if isinstance(options, dict) and new_value_mode == 'add' and new_value_id_generator is None:
+                raise ValueError('new_value_mode "add" is not supported for dict options without new_value_id_generator')
             self._props['new-value-mode'] = new_value_mode
             with_input = True
         if with_input:
