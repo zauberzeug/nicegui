@@ -11,7 +11,7 @@ fly scale count app=1  --region ams -y # Amsterdam, Netherlands
 fly scale count app=1  --region mad -y # Madrid, Spain
 fly scale count app=1  --region cdg -y # Paris, France
 fly scale count app=1  --region lhr -y # London, England (UK)
-fly scale count app=1  --region ist -y # Istanbul, Turkey
+fly scale count app=1  --region otp -y # Bucharest, Romania
 
 fly scale count app=1  --region jnb -y # Johannesburg, South Africa
 
