@@ -9,6 +9,7 @@ class ValidationElement(ValueElement):
         super().__init__(**kwargs)
         self.validation = validation if validation is not None else {}
         self._error: Optional[str] = None
+        self._props['error'] = False  # NOTE: reserve bottom space for error message
 
     @property
     def error(self) -> Optional[str]:
