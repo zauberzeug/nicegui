@@ -29,8 +29,8 @@ def page_layout_demo():
     ui.link('show page with fancy layout', page_layout)
 
 
-doc.reference(ui.header, title='Header')
-doc.reference(ui.left_drawer, title='Left Drawer')
-doc.reference(ui.right_drawer, title='Right Drawer')
-doc.reference(ui.footer, title='Footer')
-doc.reference(ui.page_sticky, title='Page Sticky')
+doc.reference(ui.header, title='Reference for ui.header')
+doc.reference(ui.left_drawer, title='Reference for ui.left_drawer')
+doc.reference(ui.right_drawer, title='Reference for ui.right_drawer')
+doc.reference(ui.footer, title='Reference for ui.footer')
+doc.reference(ui.page_sticky, title='Reference for ui.page_sticky')
