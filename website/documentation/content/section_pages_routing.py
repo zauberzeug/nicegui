@@ -91,6 +91,22 @@ def add_media_files_demo():
     ui.video('https://cdn.coverr.co/videos/coverr-cloudy-sky-2765/1080p.mp4')
 
 
+@doc.demo('Add HTML to the page', '''
+    You can add HTML to the page by calling `ui.add_head_html` or `ui.add_body_html`.
+    This is useful for adding custom CSS styles or JavaScript code.
+''')
+def add_head_html_demo():
+    ui.add_head_html('''
+        <style>
+            .my-red-label {
+                color: Crimson;
+                font-weight: bold;
+            }
+        </style>
+    ''')
+    ui.label('RED').classes('my-red-label')
+
+
 @doc.demo('API Responses', '''
     NiceGUI is based on [FastAPI](https://fastapi.tiangolo.com/).
     This means you can use all of FastAPI's features.
