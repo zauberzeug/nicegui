@@ -47,6 +47,31 @@ def dynamic_properties() -> None:
     })
 
 
+@doc.demo('EChart from pyecharts', '''
+    You can create an EChart element from a pyecharts object using the `from_pyecharts` method.
+    For defining dynamic options like a formatter function, you can use the `JsCode` class from `pyecharts.commons.utils`.
+    Alternatively, you can use a colon ":" to prefix the property name to indicate that the value is a JavaScript expression.
+''')
+def echart_from_pyecharts_demo():
+    from pyecharts.charts import Bar
+    from pyecharts.commons.utils import JsCode
+    from pyecharts.options import AxisOpts
+
+    ui.echart.from_pyecharts(
+        Bar()
+        .add_xaxis(['A', 'B', 'C'])
+        .add_yaxis('ratio', [1, 2, 4])
+        .set_global_opts(
+            xaxis_opts=AxisOpts(axislabel_opts={
+                ':formatter': r'(val, idx) => `group ${val}`',
+            }),
+            yaxis_opts=AxisOpts(axislabel_opts={
+                'formatter': JsCode(r'(val, idx) => `${val}%`'),
+            }),
+        )
+    )
+
+
 @doc.demo('Run methods', '''
     You can run methods of the EChart instance using the `run_chart_method` method.
     This demo shows how to show and hide the loading animation, how to get the current width of the chart,

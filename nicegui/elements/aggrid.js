@@ -53,6 +53,9 @@ export default {
     run_column_method(name, ...args) {
       return this.gridOptions.columnApi[name](...args);
     },
+    run_row_method(row_id, name, ...args) {
+      return this.gridOptions.api.getRowNode(row_id)[name](...args);
+    },
     handle_event(type, args) {
       this.$emit(type, {
         value: args.value,

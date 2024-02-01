@@ -112,7 +112,7 @@ def create() -> None:
                 'flex layout by default',
             ])
             features('insights', 'Visualization', [
-                'charts, diagrams and tables',
+                'charts, diagrams, tables, audio/video',
                 '3D scenes',
                 'straight-forward data binding',
                 'built-in timer for data refresh',
@@ -127,7 +127,7 @@ def create() -> None:
                 'routing for multiple pages',
                 'auto-reload on code change',
                 'persistent user sessions',
-                'Jupyter notebook compatibility',
+                'built-in testing framework',
             ])
             features('anchor', 'Foundation', [
                 'generic [Vue](https://vuejs.org/) to Python bridge',

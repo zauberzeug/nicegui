@@ -63,7 +63,7 @@ def run(*,
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param show: automatically open the UI in a browser tab (default: `True`)
-    :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation#nicegui_on_air>`_ if set to `True` (default: disabled)
+    :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
     :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`)
     :param fullscreen: open the UI in a fullscreen window (default: `False`, also activates `native`)

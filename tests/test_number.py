@@ -1,5 +1,6 @@
 import pytest
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
 from nicegui.testing import Screen
@@ -86,3 +87,23 @@ def test_rounding(precision: int, screen: Screen):
         screen.should_contain('number=_12.3_')
     elif precision == -1:
         screen.should_contain('number=_10.0_')
+
+
+def test_int_float_conversion_on_error1(screen: Screen):
+    ui.number('Number', validation={'Error': lambda value: value == 1}, value=1)
+
+    screen.open('/')
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Number"]')
+    element.send_keys('2')
+    screen.should_contain('Error')
+    assert element.get_attribute('value') == '12'
+
+
+def test_int_float_conversion_on_error2(screen: Screen):
+    ui.number('Number', validation={'Error': lambda value: value == 1.02}, value=1.02)
+
+    screen.open('/')
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Number"]')
+    element.send_keys(Keys.BACKSPACE)
+    screen.should_contain('Error')
+    assert element.get_attribute('value') == '1.0'

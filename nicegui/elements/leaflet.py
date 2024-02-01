@@ -117,7 +117,7 @@ class Leaflet(Element, component='leaflet.js'):
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
-        :param name: name of the method
+        :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
         :param args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
         :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
@@ -125,6 +125,22 @@ class Leaflet(Element, component='leaflet.js'):
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
         return self.run_method('run_map_method', name, *args, timeout=timeout, check_interval=check_interval)
+
+    def run_layer_method(self, layer_id: str, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+        """Run a method of a Leaflet layer.
+
+        If the function is awaited, the result of the method call is returned.
+        Otherwise, the method is executed without waiting for a response.
+
+        :param layer_id: ID of the layer
+        :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
+        :param args: arguments to pass to the method
+        :param timeout: timeout in seconds (default: 1 second)
+        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
+
+        :return: AwaitableResponse that can be awaited to get the result of the method call
+        """
+        return self.run_method('run_layer_method', layer_id, name, *args, timeout=timeout, check_interval=check_interval)
 
     def _handle_delete(self) -> None:
         binding.remove(self.layers, Layer)

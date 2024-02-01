@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import time
+from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union
 
@@ -37,7 +38,7 @@ class page:
         This decorator marks a function to be a page builder.
         Each user accessing the given route will see a new instance of the page.
         This means it is private to the user and not shared with others 
-        (as it is done `when placing elements outside of a page decorator <https://nicegui.io/documentation#auto-index_page>`_).
+        (as it is done `when placing elements outside of a page decorator <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_).
 
         :param path: route of the new page (path must start with '/')
         :param title: optional page title
@@ -92,6 +93,7 @@ class page:
             if task.result() is not None:
                 log.error(f'ignoring {task.result()}; it was returned after the HTML had been delivered to the client')
 
+        @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             request = dec_kwargs['request']
             # NOTE cleaning up the keyword args so the signature is consistent with "func" again
