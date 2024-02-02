@@ -7,24 +7,13 @@ export default {
   async mounted() {
     await this.$nextTick();
     this.update();
+    this.set_handlers();
   },
   updated() {
     this.update();
   },
   methods: {
-    update() {
-      // default responsive to true
-      const options = this.options;
-      if (options.config === undefined) options.config = { responsive: true };
-      if (options.config.responsive === undefined) options.config.responsive = true;
-
-      // re-use plotly instance if config is the same
-      if (JSON.stringify(options.config) == JSON.stringify(this.last_options.config)) {
-        Plotly.react(this.$el.id, this.options.data, this.options.layout);
-      } else {
-        Plotly.newPlot(this.$el.id, this.options.data, this.options.layout, options.config);
-      }
-
+    set_handlers() {
       // forward events
       for (const name of [
         // source: https://plotly.com/javascript/plotlyjs-events/
@@ -59,6 +48,19 @@ export default {
           };
           this.$emit(name, args);
         });
+      }
+    },
+    update() {
+      // default responsive to true
+      const options = this.options;
+      if (options.config === undefined) options.config = { responsive: true };
+      if (options.config.responsive === undefined) options.config.responsive = true;
+
+      // re-use plotly instance if config is the same
+      if (JSON.stringify(options.config) == JSON.stringify(this.last_options.config)) {
+        Plotly.react(this.$el.id, this.options.data, this.options.layout);
+      } else {
+        Plotly.newPlot(this.$el.id, this.options.data, this.options.layout, options.config);
       }
 
       // store last options
