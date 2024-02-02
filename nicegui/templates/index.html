@@ -83,6 +83,9 @@
           }
           else {
             for (let k in arg) {
+              // we filter it out because it's supported in Firefox only and doesn't exist in other browsers. Fixes #2469.
+              if(k == 'originalTarget')
+                continue;              
               if (event_args === null || event_args[i] === null || event_args[i].includes(k)) {
                 filtered[k] = arg[k];
               }
