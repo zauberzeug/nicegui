@@ -86,7 +86,7 @@
               // ignore "Restricted" fields in Firefox (see #2469)
               if (k == 'originalTarget') {
                 try {
-                  JSON.stringify(arg[k]);
+                  arg[k].toString();
                 } catch (e) {
                   continue;
                 }
