@@ -83,6 +83,14 @@
           }
           else {
             for (let k in arg) {
+              // ignore "Restricted" fields in Firefox (see #2469)
+              if (k == 'originalTarget') {
+                try {
+                  arg[k].toString();
+                } catch (e) {
+                  continue;
+                }
+              }
               if (event_args === null || event_args[i] === null || event_args[i].includes(k)) {
                 filtered[k] = arg[k];
               }
