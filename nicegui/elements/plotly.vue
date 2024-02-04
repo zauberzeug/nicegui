@@ -7,7 +7,6 @@ export default {
   async mounted() {
     await this.$nextTick();
     this.update();
-    this.set_handlers();
   },
   updated() {
     this.update();
@@ -24,6 +23,7 @@ export default {
         Plotly.react(this.$el.id, this.options.data, this.options.layout);
       } else {
         Plotly.newPlot(this.$el.id, this.options.data, this.options.layout, options.config);
+        this.set_handlers();
       }
 
       // store last options
