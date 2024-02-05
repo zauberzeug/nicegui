@@ -23,8 +23,13 @@ export default {
         Plotly.react(this.$el.id, this.options.data, this.options.layout);
       } else {
         Plotly.newPlot(this.$el.id, this.options.data, this.options.layout, options.config);
+        this.set_handlers();
       }
 
+      // store last options
+      this.last_options = options;
+    },
+    set_handlers() {
       // forward events
       for (const name of [
         // source: https://plotly.com/javascript/plotlyjs-events/
@@ -60,9 +65,6 @@ export default {
           this.$emit(name, args);
         });
       }
-
-      // store last options
-      this.last_options = options;
     },
   },
   data() {
