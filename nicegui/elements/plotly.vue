@@ -7,6 +7,7 @@ export default {
   async mounted() {
     await this.$nextTick();
     this.update();
+    this.set_handlers();
   },
   updated() {
     this.update();
@@ -18,13 +19,9 @@ export default {
       if (options.config === undefined) options.config = { responsive: true };
       if (options.config.responsive === undefined) options.config.responsive = true;
 
-      // re-use plotly instance if config is the same
-      if (JSON.stringify(options.config) == JSON.stringify(this.last_options.config)) {
-        Plotly.react(this.$el.id, this.options.data, this.options.layout);
-      } else {
-        Plotly.newPlot(this.$el.id, this.options.data, this.options.layout, options.config);
-        this.set_handlers();
-      }
+      // Plotly.react can be used to create a new plot and to update it efficiently
+      // https://plotly.com/javascript/plotlyjs-function-reference/#plotlyreact
+      Plotly.react(this.$el.id, this.options.data, this.options.layout, options.config);
 
       // store last options
       this.last_options = options;
