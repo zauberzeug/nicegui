@@ -19,7 +19,7 @@ export default {
       if (options.config === undefined) options.config = { responsive: true };
       if (options.config.responsive === undefined) options.config.responsive = true;
 
-      // Plotly.react can be used to create new plot and to update it efficiently
+      // Plotly.react can be used to create a new plot and to update it efficiently
       // https://plotly.com/javascript/plotlyjs-function-reference/#plotlyreact
       Plotly.react(this.$el.id, this.options.data, this.options.layout, options.config);
 
