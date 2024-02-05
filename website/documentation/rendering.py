@@ -50,7 +50,7 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
             if part.demo:
                 demo(part.demo.function, lazy=part.demo.lazy, tab=part.demo.tab)
             if part.reference:
-                generate_class_doc(part.reference)
+                generate_class_doc(part.reference, part.title)
             if part.link:
                 ui.markdown(f'See [more...]({part.link})').classes('bold-links arrow-links')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
