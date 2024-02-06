@@ -19,7 +19,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                  multiple: bool = False,
                  clearable: bool = False,
                  validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
-                 new_value_id_generator: Optional[Union[Callable[[Any], Any], Iterator[Any]]] = None,
+                 new_id_generator: Optional[Union[Callable[[Any], Any], Iterator[Any]]] = None,
                  ) -> None:
         """Dropdown Selection
 
@@ -48,7 +48,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         :param multiple: whether to allow multiple selections
         :param clearable: whether to add a button to clear the selection
         :param validation: dictionary of validation rules or a callable that returns an optional error message
-        :param new_value_id_generator: a callback or iterator to get new value key if options are a dict
+        :param new_id_generator: a callback or iterator to get new value key if options are a dict
         """
         self.multiple = multiple
         if multiple:
@@ -59,10 +59,12 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         super().__init__(options=options, value=value, on_change=on_change, validation=validation)
         if label is not None:
             self._props['label'] = label
-        self.new_value_id_generator = new_value_id_generator
+        if isinstance(new_id_generator, collections.abc.Generator):
+            next(new_id_generator)  # prime the generator, prepare it to receive the first value
+        self.new_id_generator = new_id_generator
         if new_value_mode is not None:
-            if isinstance(options, dict) and new_value_mode == 'add' and new_value_id_generator is None:
-                raise ValueError('new_value_mode "add" is not supported for dict options without new_value_id_generator')
+            if isinstance(options, dict) and new_value_mode == 'add' and new_id_generator is None:
+                raise ValueError('new_value_mode "add" is not supported for dict options without new_id_generator')
             self._props['new-value-mode'] = new_value_mode
             with_input = True
         if with_input:
@@ -113,12 +115,12 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
             except ValueError:
                 return None
 
-    def _new_value(self) -> Any:
-        if self.new_value_id_generator:
-            return next(self.new_value_id_generator) if isinstance(self.new_value_id_generator,
-                                                                   collections.abc.Iterable) else self.new_value_id_generator()
+    def _new_id(self, value: str) -> Any:
+        if self.new_id_generator:
+            return self.new_id_generator.send(value) if isinstance(self.new_id_generator, collections.abc.Generator) \
+                else next(self.new_id_generator) if isinstance(self.new_id_generator, collections.abc.Iterable) \
+                    else self.new_id_generator(value)
         return None
-
 
     def _handle_new_value(self, value: str) -> Any:
         mode = self._props['new-value-mode']
@@ -138,14 +140,14 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         else:
             result = value
             if mode in 'add-unique':
-                if value not in self.options:
-                    result = self._new_value() or value
+                if value not in self.options.values():
+                    result = self._new_id(value) or value
                     self.options[result] = value
             elif mode == 'toggle':
                 if value in self.options:
                     self.options.pop(value)
                 else:
-                    result = self._new_value() or value
+                    result = self._new_id(value) or value
                     self.options.update({result: value})
             self._update_values_and_labels()
             return result
