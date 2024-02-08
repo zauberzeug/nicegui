@@ -67,7 +67,7 @@ def plot_updates():
     ui.button('Add trace', on_click=add_trace)
 
 
-@doc.demo('Plot events', '''
+@doc.demo('Plot events', r'''
     This demo shows how to handle Plotly events.
     Try clicking on a data point to see the event data.
 
