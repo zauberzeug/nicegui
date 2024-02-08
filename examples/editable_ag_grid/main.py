@@ -14,7 +14,7 @@ rows = [
 
 
 def add_row():
-    new_id = max(dx['id'] for dx in rows) + 1
+    new_id = max((dx['id'] for dx in rows), default=-1) + 1
     rows.append({'id': new_id, 'name': 'New name', 'age': None})
     ui.notify(f'Added row with ID {new_id}')
     aggrid.update()
