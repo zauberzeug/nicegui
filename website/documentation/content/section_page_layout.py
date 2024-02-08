@@ -34,6 +34,7 @@ doc.intro(card_documentation)
 doc.intro(column_documentation)
 doc.intro(row_documentation)
 doc.intro(grid_documentation)
+doc.intro(list_documentation)
 
 
 @doc.demo('Clear Containers', '''
@@ -77,4 +78,3 @@ doc.intro(tooltip_documentation)
 doc.intro(notify_documentation)
 doc.intro(notification_documentation)
 doc.intro(dialog_documentation)
-doc.intro(list_documentation)
