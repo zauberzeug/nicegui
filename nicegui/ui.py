@@ -32,6 +32,9 @@ __all__ = [
     'image',
     'input',
     'interactive_image',
+    'item',
+    'item_label',
+    'item_section',
     'joystick',
     'json_editor',
     'keyboard',
@@ -41,6 +44,7 @@ __all__ = [
     'line_plot',
     'link',
     'link_target',
+    'list',
     'log',
     'markdown',
     'menu',
@@ -148,6 +152,10 @@ from .elements.leaflet import Leaflet as leaflet
 from .elements.line_plot import LinePlot as line_plot
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
+from .elements.list import List as list  # pylint: disable=redefined-builtin
+from .elements.list import ListItem as item
+from .elements.list import ListItemLabel as item_label
+from .elements.list import ListItemSection as item_section
 from .elements.log import Log as log
 from .elements.markdown import Markdown as markdown
 from .elements.menu import Menu as menu
