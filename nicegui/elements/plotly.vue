@@ -7,7 +7,6 @@ export default {
   async mounted() {
     await this.$nextTick();
     this.update();
-    this.set_handlers();
   },
   updated() {
     this.update();
@@ -21,7 +20,9 @@ export default {
 
       // Plotly.react can be used to create a new plot and to update it efficiently
       // https://plotly.com/javascript/plotlyjs-function-reference/#plotlyreact
-      Plotly.react(this.$el.id, this.options.data, this.options.layout, options.config);
+      Plotly.react(this.$el.id, this.options.data, this.options.layout, options.config).then(() => {
+        this.set_handlers();
+      });
 
       // store last options
       this.last_options = options;
@@ -47,6 +48,7 @@ export default {
         "plotly_redraw",
         "plotly_animated",
       ]) {
+        this.$el.removeAllListeners(name);
         this.$el.on(name, (event) => {
           const args = {
             ...event,
