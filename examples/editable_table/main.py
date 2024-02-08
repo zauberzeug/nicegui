@@ -13,7 +13,7 @@ rows = [
 
 
 def add_row() -> None:
-    new_id = max(dx['id'] for dx in rows) + 1
+    new_id = max((dx['id'] for dx in rows), default=-1) + 1
     rows.append({'id': new_id, 'name': 'New guy', 'age': 21})
     ui.notify(f'Added new row with ID {new_id}')
     table.update()
