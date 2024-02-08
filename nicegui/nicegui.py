@@ -31,22 +31,23 @@ async def _lifespan(_: App):
     await _shutdown()
 
 
-class SocketIOASGIApp(socketio.ASGIApp):
+class SocketIoApp(socketio.ASGIApp):
     """Custom ASGI app to handle root_path.
 
     This is a workaround for https://github.com/miguelgrinberg/python-engineio/pull/345
     """
 
     async def __call__(self, scope, receive, send):
-        if 'root_path' in scope and scope['path'].startswith(scope['root_path']):
-            scope['path'] = scope['path'][len(scope['root_path']):]
+        root_path = scope.get('root_path')
+        if root_path and scope['path'].startswith(root_path):
+            scope['path'] = scope['path'][len(root_path):]
         return await super().__call__(scope, receive, send)
 
 
 core.app = app = App(default_response_class=NiceGUIJSONResponse, lifespan=_lifespan)
 # NOTE we use custom json module which wraps orjson
 core.sio = sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*', json=json)
-sio_app = SocketIOASGIApp(socketio_server=sio, socketio_path='/socket.io')
+sio_app = SocketIoApp(socketio_server=sio, socketio_path='/socket.io')
 app.mount('/_nicegui_ws/', sio_app)
 
 
