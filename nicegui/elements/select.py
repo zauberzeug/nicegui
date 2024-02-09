@@ -1,5 +1,6 @@
+from collections.abc import Generator, Iterable
 from copy import deepcopy
-from typing import Any, Callable, Dict, List, Literal, Optional, Union, Iterator
+from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Union
 
 from ..events import GenericEventArguments
 from .choice_element import ChoiceElement
@@ -59,7 +60,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         super().__init__(options=options, value=value, on_change=on_change, validation=validation)
         if label is not None:
             self._props['label'] = label
-        if isinstance(new_id_generator, collections.abc.Generator):
+        if isinstance(new_id_generator, Generator):
             next(new_id_generator)  # prime the generator, prepare it to receive the first value
         self.new_id_generator = new_id_generator
         if new_value_mode is not None:
@@ -116,10 +117,12 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                 return None
 
     def _new_id(self, value: str) -> Any:
-        if self.new_id_generator:
-            return self.new_id_generator.send(value) if isinstance(self.new_id_generator, collections.abc.Generator) \
-                else next(self.new_id_generator) if isinstance(self.new_id_generator, collections.abc.Iterable) \
-                    else self.new_id_generator(value)
+        if isinstance(self.new_id_generator, Generator):
+            return self.new_id_generator.send(value)
+        if isinstance(self.new_id_generator, Iterable):
+            return next(self.new_id_generator)
+        if callable(self.new_id_generator):
+            return self.new_id_generator(value)
         return None
 
     def _handle_new_value(self, value: str) -> Any:
@@ -138,16 +141,16 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
             # NOTE: self._labels and self._values are updated via self.options since they share the same references
             return value
         else:
-            result = value
+            key = value
             if mode in 'add-unique':
                 if value not in self.options.values():
-                    result = self._new_id(value) or value
-                    self.options[result] = value
+                    key = self._new_id(value) or value
+                    self.options[key] = value
             elif mode == 'toggle':
                 if value in self.options:
                     self.options.pop(value)
                 else:
-                    result = self._new_id(value) or value
-                    self.options.update({result: value})
+                    key = self._new_id(value) or value
+                    self.options.update({key: value})
             self._update_values_and_labels()
-            return result
+            return key
