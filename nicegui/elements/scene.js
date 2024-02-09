@@ -4,6 +4,7 @@ import { CSS3DRenderer, CSS3DObject } from "CSS3DRenderer";
 import { DragControls } from "DragControls";
 import { OrbitControls } from "OrbitControls";
 import { STLLoader } from "STLLoader";
+import { GLTFLoader } from "GLTFLoader";
 
 function texture_geometry(coords) {
   const geometry = new THREE.BufferGeometry();
@@ -178,6 +179,7 @@ export default {
 
     this.texture_loader = new THREE.TextureLoader();
     this.stl_loader = new STLLoader();
+    this.gltf_loader = new GLTFLoader();
 
     const connectInterval = setInterval(() => {
       if (window.socket.id === undefined) return;
@@ -242,6 +244,19 @@ export default {
         geometry.setAttribute("color", new THREE.Float32BufferAttribute(args[1].flat(), 3));
         const material = new THREE.PointsMaterial({ size: args[2], vertexColors: true });
         mesh = new THREE.Points(geometry, material);
+      } else if (type == "gltf") {
+        const url = args[0];
+        mesh = new THREE.Group();
+        this.gltf_loader.load(
+          url,
+          (gltf) => {
+            mesh.add(gltf.scene);
+          },
+          undefined,
+          (error) => {
+            console.error(error);
+          }
+        );
       } else {
         let geometry;
         const wireframe = args.pop();

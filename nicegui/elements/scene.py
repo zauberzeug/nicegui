@@ -40,6 +40,8 @@ class Scene(Element,
                 'lib/three/modules/DragControls.js',
                 'lib/three/modules/OrbitControls.js',
                 'lib/three/modules/STLLoader.js',
+                'lib/three/modules/GLTFLoader.js',
+                'lib/three/modules/BufferGeometryUtils.js',
             ]):
     # pylint: disable=import-outside-toplevel
     from .scene_objects import Box as box
@@ -54,6 +56,7 @@ class Scene(Element,
     from .scene_objects import Sphere as sphere
     from .scene_objects import SpotLight as spot_light
     from .scene_objects import Stl as stl
+    from .scene_objects import Gltf as gltf
     from .scene_objects import Text as text
     from .scene_objects import Text3d as text3d
     from .scene_objects import Texture as texture
