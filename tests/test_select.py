@@ -170,3 +170,12 @@ def test_keep_filtered_options(multiple: bool, screen: Screen):
     else:
         screen.should_contain('B1')
         screen.should_contain('B2')
+
+
+def test_select_validation(screen: Screen):
+    ui.select(['A', 'BC', 'DEF'], value='A', validation={'Too long': lambda v: len(v) < 3})
+
+    screen.open('/')
+    screen.click('A')
+    screen.click('DEF')
+    screen.should_contain('Too long')

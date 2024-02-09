@@ -7,11 +7,13 @@ from . import svg
 from .search import Search
 from .star import add_star
 
+HEADER_HTML = (Path(__file__).parent / 'static' / 'header.html').read_text()
+STYLE_CSS = (Path(__file__).parent / 'static' / 'style.css').read_text()
+
 
 def add_head_html() -> None:
     """Add the code from header.html and reference style.css."""
-    ui.add_head_html((Path(__file__).parent / 'static' / 'header.html').read_text())
-    ui.add_head_html(f"<style>{(Path(__file__).parent / 'static' / 'style.css').read_text()}</style>")
+    ui.add_head_html(HEADER_HTML + f'<style>{STYLE_CSS}</style>')
 
 
 def add_header(menu: Optional[ui.left_drawer] = None) -> None:

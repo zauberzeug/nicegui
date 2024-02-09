@@ -83,6 +83,14 @@
           }
           else {
             for (let k in arg) {
+              // ignore "Restricted" fields in Firefox (see #2469)
+              if (k == 'originalTarget') {
+                try {
+                  arg[k].toString();
+                } catch (e) {
+                  continue;
+                }
+              }
               if (event_args === null || event_args[i] === null || event_args[i].includes(k)) {
                 filtered[k] = arg[k];
               }
@@ -212,13 +220,13 @@
         });
       }
 
-      function download(src, filename) {
+      function download(src, filename, mediaType) {
         const anchor = document.createElement("a");
         if (typeof src === "string") {
           anchor.href = src.startsWith("/") ? "{{ prefix | safe }}" + src : src;
         }
         else {
-          anchor.href = URL.createObjectURL(new Blob([src]))
+          anchor.href = URL.createObjectURL(new Blob([src], {type: mediaType}))
         }
         anchor.target = "_blank";
         anchor.download = filename || "";
@@ -307,7 +315,7 @@
               const target = msg.new_tab ? '_blank' : '_self';
               window.open(url, target);
             },
-            download: (msg) => download(msg.src, msg.filename),
+            download: (msg) => download(msg.src, msg.filename, msg.media_type),
             notify: (msg) => Quasar.Notify.create(msg),
           };
           const socketMessageQueue = [];

@@ -6,10 +6,10 @@ import docutils.core
 
 from nicegui import binding, ui
 
-from ..style import subheading
+from ..style import create_anchor_name, subheading
 
 
-def generate_class_doc(class_obj: type) -> None:
+def generate_class_doc(class_obj: type, part_title: str) -> None:
     """Generate documentation for a class including all its methods and properties."""
     mro = [base for base in class_obj.__mro__ if base.__module__.startswith('nicegui.')]
     ancestors = mro[1:]
@@ -22,14 +22,14 @@ def generate_class_doc(class_obj: type) -> None:
     methods = {name: attribute for name, attribute in attributes.items() if callable(attribute)}
 
     if properties:
-        subheading('Properties')
+        subheading('Properties', anchor_name=create_anchor_name(part_title.replace('Reference', 'Properties')))
         with ui.column().classes('gap-2'):
             for name, property_ in sorted(properties.items()):
                 ui.markdown(f'**`{name}`**`{_generate_property_signature_description(property_)}`')
                 if property_.__doc__:
                     _render_docstring(property_.__doc__).classes('ml-8')
     if methods:
-        subheading('Methods')
+        subheading('Methods', anchor_name=create_anchor_name(part_title.replace('Reference', 'Methods')))
         with ui.column().classes('gap-2'):
             for name, method in sorted(methods.items()):
                 decorator = ''
@@ -41,7 +41,7 @@ def generate_class_doc(class_obj: type) -> None:
                 if method.__doc__:
                     _render_docstring(method.__doc__).classes('ml-8')
     if ancestors:
-        subheading('Inherited from')
+        subheading('Inheritance', anchor_name=create_anchor_name(part_title.replace('Reference', 'Inheritance')))
         ui.markdown('\n'.join(f'- `{ancestor.__name__}`' for ancestor in ancestors))
 
 

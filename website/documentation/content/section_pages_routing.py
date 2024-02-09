@@ -2,7 +2,8 @@ import uuid
 
 from nicegui import app, ui
 
-from . import doc, download_documentation, open_documentation, page_documentation, page_title_documentation
+from . import (doc, download_documentation, open_documentation, page_documentation, page_layout_documentation,
+               page_title_documentation)
 
 CONSTANT_UUID = str(uuid.uuid4())
 
@@ -35,30 +36,7 @@ def auto_index_page():
     ui.link('private page', private_page)
 
 
-@doc.demo('Page Layout', '''
-    With `ui.header`, `ui.footer`, `ui.left_drawer` and `ui.right_drawer` you can add additional layout elements to a page.
-    The `fixed` argument controls whether the element should scroll or stay fixed on the screen.
-    The `top_corner` and `bottom_corner` arguments indicate whether a drawer should expand to the top or bottom of the page.
-    See <https://quasar.dev/layout/header-and-footer> and <https://quasar.dev/layout/drawer> for more information about possible props.
-    With `ui.page_sticky` you can place an element "sticky" on the screen.
-    See <https://quasar.dev/layout/page-sticky> for more information.
-''')
-def page_layout_demo():
-    @ui.page('/page_layout')
-    def page_layout():
-        ui.label('CONTENT')
-        [ui.label(f'Line {i}') for i in range(100)]
-        with ui.header(elevated=True).style('background-color: #3874c8').classes('items-center justify-between'):
-            ui.label('HEADER')
-            ui.button(on_click=lambda: right_drawer.toggle(), icon='menu').props('flat color=white')
-        with ui.left_drawer(top_corner=True, bottom_corner=True).style('background-color: #d7e3f4'):
-            ui.label('LEFT DRAWER')
-        with ui.right_drawer(fixed=False).style('background-color: #ebf1fa').props('bordered') as right_drawer:
-            ui.label('RIGHT DRAWER')
-        with ui.footer().style('background-color: #3874c8'):
-            ui.label('FOOTER')
-
-    ui.link('show page with fancy layout', page_layout)
+doc.intro(page_layout_documentation)
 
 
 @doc.demo('Parameter injection', '''
@@ -111,6 +89,22 @@ def add_media_files_demo():
     # ui.video('/my_videos/clouds.mp4')
     # END OF DEMO
     ui.video('https://cdn.coverr.co/videos/coverr-cloudy-sky-2765/1080p.mp4')
+
+
+@doc.demo('Add HTML to the page', '''
+    You can add HTML to the page by calling `ui.add_head_html` or `ui.add_body_html`.
+    This is useful for adding custom CSS styles or JavaScript code.
+''')
+def add_head_html_demo():
+    ui.add_head_html('''
+        <style>
+            .my-red-label {
+                color: Crimson;
+                font-weight: bold;
+            }
+        </style>
+    ''')
+    ui.label('RED').classes('my-red-label')
 
 
 @doc.demo('API Responses', '''

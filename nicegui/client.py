@@ -221,9 +221,9 @@ class Client:
         path = target if isinstance(target, str) else self.page_routes[target]
         self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 
-    def download(self, src: Union[str, bytes], filename: Optional[str] = None) -> None:
+    def download(self, src: Union[str, bytes], filename: Optional[str] = None, media_type: str = '') -> None:
         """Download a file from a given URL or raw bytes."""
-        self.outbox.enqueue_message('download', {'src': src, 'filename': filename}, self.id)
+        self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type}, self.id)
 
     def on_connect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
         """Register a callback to be called when the client connects."""

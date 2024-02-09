@@ -61,9 +61,9 @@ def side_menu() -> ui.left_drawer:
         .style('height: calc(100% + 20px) !important')
 
 
-def subheading(text: str, *, link: Optional[str] = None, major: bool = False) -> None:
+def subheading(text: str, *, link: Optional[str] = None, major: bool = False, anchor_name: Optional[str] = None) -> None:
     """Render a subheading with an anchor that can be linked to with a hash."""
-    name = create_anchor_name(text)
+    name = anchor_name or create_anchor_name(text)
     ui.html(f'<div id="{name}"></div>').style('position: relative; top: -90px')
     with ui.row().classes('gap-2 items-center relative'):
         classes = 'text-3xl' if major else 'text-2xl'
