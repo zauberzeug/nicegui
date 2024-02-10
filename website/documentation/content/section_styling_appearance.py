@@ -175,4 +175,20 @@ def css_variables_demo():
         ui.label('large gap')
 
 
+@doc.demo("Overwrite Tailwind's Default Style", '''
+    Tailwind resets the default style of HTML elements, like the font size of `h2` elements in this example.
+    You can overwrite these defaults by adding a style tag with type `text/tailwindcss`.
+    Without this type, the style will be evaluated too early and will be overwritten by Tailwind.
+''')
+def overwrite_tailwind_style_demo():
+    ui.add_head_html('''
+        <style type="text/tailwindcss">
+            h2 {
+                font-size: 150%;
+            }
+        </style>
+    ''')
+    ui.html('<h2>Hello world!</h2>')
+
+
 doc.intro(dark_mode_documentation)
