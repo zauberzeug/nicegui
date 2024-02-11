@@ -14,6 +14,7 @@ from nicegui import Client, app, binding, core
 from nicegui.page import page
 
 from .screen import Screen
+from .simulated_screen import SimulatedScreen
 
 # pylint: disable=redefined-outer-name
 
@@ -110,3 +111,9 @@ def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pyt
         shutil.rmtree(DOWNLOAD_DIR)
     if logs:
         pytest.fail('There were unexpected logs. See "Captured log call" below.', pytrace=False)
+
+
+@pytest.fixture
+def simulated_screen() -> SimulatedScreen:
+    """Create a new SimulatedScreen instance."""
+    return SimulatedScreen()
