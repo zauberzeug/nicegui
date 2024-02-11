@@ -115,8 +115,12 @@ def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pyt
 
 
 @pytest.fixture
-async def simulated_screen() -> SimulatedScreen:
+async def simulated_screen(request) -> SimulatedScreen:
     """Create a new SimulatedScreen instance."""
+    marker = request.node.get_closest_marker('module_under_test')
+    if marker is not None:
+        importlib.reload(marker.args[0])
+
     core.app.config.add_run_config(
         reload=False,
         title='Test App',
