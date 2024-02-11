@@ -6,6 +6,7 @@ from typing import Dict, Generator
 
 import icecream
 import pytest
+from fastapi.testclient import TestClient
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from starlette.routing import Route
@@ -114,6 +115,20 @@ def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pyt
 
 
 @pytest.fixture
-def simulated_screen() -> SimulatedScreen:
+async def simulated_screen() -> SimulatedScreen:
     """Create a new SimulatedScreen instance."""
-    return SimulatedScreen()
+    core.app.config.add_run_config(
+        reload=False,
+        title='Test App',
+        viewport='',
+        favicon=None,
+        dark=False,
+        language='en-US',
+        binding_refresh_interval=0.1,
+        reconnect_timeout=3.0,
+        tailwind=True,
+        prod_js=True,
+        show_welcome_message=False,
+    )
+    with TestClient(app)as client:
+        yield SimulatedScreen(client)

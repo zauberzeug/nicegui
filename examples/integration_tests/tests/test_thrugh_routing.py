@@ -34,6 +34,7 @@ def test_with_connected(screen: Screen) -> None:
     importlib.reload(main)
 
     screen.open('/with_connected')
+    screen.wait(1)
     screen.should_contain('This is a subpage')
     screen.wait(1)
     screen.should_contain('Connected!')

@@ -1,16 +1,32 @@
 
+import asyncio
+import functools
+from typing import Callable
+
+from fastapi.testclient import TestClient
+
 from nicegui import Client, app, context, core, ui
 from nicegui.elements.mixins.content_element import ContentElement
 
 
+def app_loop(func: Callable) -> Callable:
+    """Decorator to run ensure a function is run in the event loop of the app."""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if not core.loop:
+            raise RuntimeError("Event loop is not available")
+        core.loop.call_soon(func, *args, **kwargs)
+    return wrapper
+
+
 class SimulatedScreen:
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, test_client: TestClient) -> None:
+        self.test_client = test_client
 
     def open(self, path: str) -> None:
-        routes = dict((v, k) for k, v in Client.page_routes.items())
-        routes[path]()
+        response = self.test_client.get(path)
+        assert response.status_code == 200
 
     def _find(self, element: ui.element, string: str) -> ui.element | None:
         text = element._text or ''
@@ -25,6 +41,7 @@ class SimulatedScreen:
                 return found
         return None
 
+    @app_loop
     def should_contain(self, string: str) -> None:
         if self._find(context.get_client().page_container, string) is not None:
             return
@@ -33,6 +50,7 @@ class SimulatedScreen:
                 return
         raise AssertionError(f'text "{string}" not found on current screen')
 
+    @app_loop
     def click(self, target_text: str) -> None:
         element = self._find(context.get_client().page_container, target_text)
         assert element
