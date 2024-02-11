@@ -2,7 +2,7 @@ import importlib
 import os
 import shutil
 from pathlib import Path
-from typing import Dict, Generator
+from typing import Dict, Generator, Union, get_type_hints
 
 import icecream
 import pytest
@@ -100,39 +100,39 @@ def driver(chrome_options: webdriver.ChromeOptions) -> Generator[webdriver.Chrom
 
 @pytest.fixture
 def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture) \
-        -> Generator[Screen, None, None]:
+        -> Generator[Union[Screen, SimulatedScreen], None, None]:
     """Create a new Screen instance."""
-    screen_ = Screen(driver, caplog)
-    yield screen_
-    if screen_.is_open:
-        screen_.shot(request.node.name)
-    logs = screen_.caplog.get_records('call')
-    screen_.stop_server()
-    if DOWNLOAD_DIR.exists():
-        shutil.rmtree(DOWNLOAD_DIR)
-    if logs:
-        pytest.fail('There were unexpected logs. See "Captured log call" below.', pytrace=False)
+    screen_type_hint = get_type_hints(request.node.function).get('screen')
+    if screen_type_hint == SimulatedScreen:
+        marker = request.node.get_closest_marker('module_under_test')
+        if marker is not None:
+            importlib.reload(marker.args[0])
 
-
-@pytest.fixture
-async def simulated_screen(request) -> SimulatedScreen:
-    """Create a new SimulatedScreen instance."""
-    marker = request.node.get_closest_marker('module_under_test')
-    if marker is not None:
-        importlib.reload(marker.args[0])
-
-    core.app.config.add_run_config(
-        reload=False,
-        title='Test App',
-        viewport='',
-        favicon=None,
-        dark=False,
-        language='en-US',
-        binding_refresh_interval=0.1,
-        reconnect_timeout=3.0,
-        tailwind=True,
-        prod_js=True,
-        show_welcome_message=False,
-    )
-    with TestClient(app)as client:
-        yield SimulatedScreen(client)
+        core.app.config.add_run_config(
+            reload=False,
+            title='Test App',
+            viewport='',
+            favicon=None,
+            dark=False,
+            language='en-US',
+            binding_refresh_interval=0.1,
+            reconnect_timeout=3.0,
+            tailwind=True,
+            prod_js=True,
+            show_welcome_message=False,
+        )
+        with TestClient(app)as client:
+            yield SimulatedScreen(client)
+    elif screen_type_hint == Screen:
+        screen_ = Screen(driver, caplog)
+        yield screen_
+        if screen_.is_open:
+            screen_.shot(request.node.name)
+        logs = screen_.caplog.get_records('call')
+        screen_.stop_server()
+        if DOWNLOAD_DIR.exists():
+            shutil.rmtree(DOWNLOAD_DIR)
+        if logs:
+            pytest.fail('There were unexpected logs. See "Captured log call" below.', pytrace=False)
+    else:
+        raise ValueError(f'Unknown screen type: {screen_type}, expected Screen or SimulatedScreen.')
