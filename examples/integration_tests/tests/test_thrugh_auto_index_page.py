@@ -1,5 +1,7 @@
-from main import main_page
+from nicegui import Client
 from nicegui.testing import Screen
+
+from ..main import main_page, sub_page
 
 
 def test_markdown_message(screen: Screen) -> None:
@@ -15,3 +17,10 @@ def test_button_click(screen: Screen) -> None:
     screen.open('/')
     screen.click('Click me')
     screen.should_contain('Button clicked!')
+
+
+def test_sub_page(screen: Screen) -> None:
+    sub_page()
+
+    screen.open('/')
+    screen.should_contain('This is a subpage')
