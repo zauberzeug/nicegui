@@ -5,7 +5,7 @@ import inspect
 import re
 from copy import copy, deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union, overload, Literal
 
 from typing_extensions import Self
 
@@ -391,6 +391,30 @@ class Element(Visibility):
             tooltip._text = text  # pylint: disable=protected-access
         return self
 
+    @overload
+    def on(self,
+           type: str,  # pylint: disable=redefined-builtin
+           handler: Callable[..., Any],
+           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None, *,
+           throttle: float = 0.0,
+           leading_events: bool = True,
+           trailing_events: bool = True,
+           js_handler: Literal[None] = None,
+           ) -> Self:
+        ...
+
+    @overload
+    def on(self,
+           type: str,  # pylint: disable=redefined-builtin
+           handler: Literal[None] = None,
+           args: Literal[None] = None, *,
+           throttle: Literal[0] = 0,
+           leading_events: Literal[True] = True,
+           trailing_events: Literal[True] = True,
+           js_handler: str,
+           ) -> Self:
+        ...
+
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
            handler: Optional[Callable[..., Any]] = None,
@@ -412,7 +436,7 @@ class Element(Visibility):
         """
         if not ((js_handler is None) ^ (handler is None)):
             raise ValueError('Either handler or js_handler must be specified, but not both')
-        
+
         if handler:
             listener = EventListener(
                 element_id=self.id,
