@@ -28,3 +28,12 @@ def test_sub_page(screen: Screen) -> None:
     screen.open('/subpage')
     screen.wait(1)
     screen.should_contain('This is a subpage')
+
+
+def test_with_connected(screen: Screen) -> None:
+    importlib.reload(main)
+
+    screen.open('/with_connected')
+    screen.should_contain('This is a subpage')
+    screen.wait(1)
+    screen.should_contain('Connected!')
