@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 
 from nicegui import ui
 from nicegui.events import ClickEventArguments
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
 def click_sync_no_args():
@@ -32,7 +32,7 @@ async def click_lambda_with_async_and_parameters(msg: str):
     ui.label(f'click_lambda_with_async_and_parameters: {msg}')
 
 
-def test_click_events(screen: Screen):
+def test_click_events(screen: SeleniumScreen):
     ui.button('click_sync_no_args', on_click=click_sync_no_args)
     ui.button('click_sync_with_args', on_click=click_sync_with_args)
     ui.button('click_async_no_args', on_click=click_async_no_args)
@@ -52,7 +52,7 @@ def test_click_events(screen: Screen):
     screen.should_contain('click_lambda_with_async_and_parameters: works')
 
 
-def test_generic_events(screen: Screen):
+def test_generic_events(screen: SeleniumScreen):
     ui.label('click_sync_no_args').on('click', click_sync_no_args, [])
     ui.label('click_sync_with_args').on('click', click_sync_with_args, [])
     ui.label('click_async_no_args').on('click', click_async_no_args, [])
@@ -69,7 +69,7 @@ def test_generic_events(screen: Screen):
     screen.should_contain('click_async_with_args')
 
 
-def test_event_with_update_before_await(screen: Screen):
+def test_event_with_update_before_await(screen: SeleniumScreen):
     @ui.page('/')
     def page():
         async def update():
@@ -86,7 +86,7 @@ def test_event_with_update_before_await(screen: Screen):
     screen.should_contain('2')
 
 
-def test_event_modifiers(screen: Screen):
+def test_event_modifiers(screen: SeleniumScreen):
     events = []
     ui.input('A').on('keydown', lambda _: events.append('A'), [])
     ui.input('B').on('keydown.x', lambda _: events.append('B'), [])
@@ -101,7 +101,7 @@ def test_event_modifiers(screen: Screen):
     assert events == ['A', 'B', 'C', 'D']
 
 
-def test_throttling(screen: Screen):
+def test_throttling(screen: SeleniumScreen):
     events = []
     ui.button('Test', on_click=lambda: events.append(1)).on('click', lambda: events.append(2), [], throttle=1)
 
@@ -120,7 +120,7 @@ def test_throttling(screen: Screen):
     assert events == [1, 2, 1, 1, 2, 1, 2, 1, 1]
 
 
-def test_throttling_variants(screen: Screen):
+def test_throttling_variants(screen: SeleniumScreen):
     events = []
     value = 0
     ui.button('Both').on('click', lambda: events.append(value), [], throttle=1)
@@ -162,7 +162,7 @@ def test_throttling_variants(screen: Screen):
 
 
 @pytest.mark.parametrize('attribute', ['disabled', 'hidden'])
-def test_server_side_validation(screen: Screen, attribute: Literal['disabled', 'hidden']):
+def test_server_side_validation(screen: SeleniumScreen, attribute: Literal['disabled', 'hidden']):
     b = ui.button('Button', on_click=lambda: ui.label('Success'))
     if attribute == 'disabled':
         b.disable()

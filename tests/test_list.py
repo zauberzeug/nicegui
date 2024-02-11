@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_clicking_items(screen: Screen):
+def test_clicking_items(screen: SeleniumScreen):
     with ui.list():
         with ui.item(on_click=lambda: ui.notify('Clicked item 1')):
             with ui.item_section():

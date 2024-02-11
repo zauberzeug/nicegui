@@ -3,10 +3,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_number_input(screen: Screen):
+def test_number_input(screen: SeleniumScreen):
     ui.number('Number')
     ui.button('Button')
 
@@ -17,7 +17,7 @@ def test_number_input(screen: Screen):
     screen.should_contain_input('42')
 
 
-def test_apply_format_on_blur(screen: Screen):
+def test_apply_format_on_blur(screen: SeleniumScreen):
     ui.number('Number', format='%.4f', value=3.14159)
     ui.button('Button')
 
@@ -30,7 +30,7 @@ def test_apply_format_on_blur(screen: Screen):
     screen.should_contain_input('3.1417')
 
 
-def test_max_value(screen: Screen):
+def test_max_value(screen: SeleniumScreen):
     ui.number('Number', min=0, max=10, value=5)
     ui.button('Button')
 
@@ -43,7 +43,7 @@ def test_max_value(screen: Screen):
     screen.should_contain_input('10')
 
 
-def test_clearable_number(screen: Screen):
+def test_clearable_number(screen: SeleniumScreen):
     number = ui.number(value=42).props('clearable')
     ui.label().bind_text_from(number, 'value', lambda value: f'value: {value}')
 
@@ -56,7 +56,7 @@ def test_clearable_number(screen: Screen):
     screen.should_contain('value: None')
 
 
-def test_out_of_limits(screen: Screen):
+def test_out_of_limits(screen: SeleniumScreen):
     number = ui.number('Number', min=0, max=10, value=5)
     ui.label().bind_text_from(number, 'out_of_limits', lambda value: f'out_of_limits: {value}')
 
@@ -71,7 +71,7 @@ def test_out_of_limits(screen: Screen):
 
 
 @pytest.mark.parametrize('precision', [None, 1, -1])
-def test_rounding(precision: int, screen: Screen):
+def test_rounding(precision: int, screen: SeleniumScreen):
     number = ui.number('Number', value=12, precision=precision)
     ui.label().bind_text_from(number, 'value', lambda value: f'number=_{value}_')
 
@@ -89,7 +89,7 @@ def test_rounding(precision: int, screen: Screen):
         screen.should_contain('number=_10.0_')
 
 
-def test_int_float_conversion_on_error1(screen: Screen):
+def test_int_float_conversion_on_error1(screen: SeleniumScreen):
     ui.number('Number', validation={'Error': lambda value: value == 1}, value=1)
 
     screen.open('/')
@@ -99,7 +99,7 @@ def test_int_float_conversion_on_error1(screen: Screen):
     assert element.get_attribute('value') == '12'
 
 
-def test_int_float_conversion_on_error2(screen: Screen):
+def test_int_float_conversion_on_error2(screen: SeleniumScreen):
     ui.number('Number', validation={'Error': lambda value: value == 1.02}, value=1.02)
 
     screen.open('/')

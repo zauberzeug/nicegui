@@ -1,22 +1,22 @@
 from nicegui import Tailwind, ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_tailwind_builder(screen: Screen):
+def test_tailwind_builder(screen: SeleniumScreen):
     ui.label('A').tailwind('bg-red-500', 'text-white')
 
     screen.open('/')
     assert screen.find('A').get_attribute('class') == 'bg-red-500 text-white'
 
 
-def test_tailwind_call(screen: Screen):
+def test_tailwind_call(screen: SeleniumScreen):
     ui.label('A').tailwind('bg-red-500 text-white')
 
     screen.open('/')
     assert screen.find('A').get_attribute('class') == 'bg-red-500 text-white'
 
 
-def test_tailwind_apply(screen: Screen):
+def test_tailwind_apply(screen: SeleniumScreen):
     style = Tailwind().background_color('red-500').text_color('white')
 
     ui.label('A').tailwind(style)

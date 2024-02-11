@@ -1,8 +1,8 @@
 from nicegui import Client, ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_run_javascript_on_button_press(screen: Screen):
+def test_run_javascript_on_button_press(screen: SeleniumScreen):
     ui.button('change title', on_click=lambda: ui.run_javascript('document.title = "A New Title"'))
 
     screen.open('/')
@@ -12,7 +12,7 @@ def test_run_javascript_on_button_press(screen: Screen):
     screen.should_contain('A New Title')
 
 
-def test_run_javascript_on_value_change(screen: Screen):
+def test_run_javascript_on_value_change(screen: SeleniumScreen):
     @ui.page('/')
     async def page(client: Client):
         ui.radio(['A', 'B'], on_change=lambda e: ui.run_javascript(f'document.title = "Page {e.value}"'))
@@ -30,7 +30,7 @@ def test_run_javascript_on_value_change(screen: Screen):
     screen.should_contain('Page B')
 
 
-def test_run_javascript_before_client_connected(screen: Screen):
+def test_run_javascript_before_client_connected(screen: SeleniumScreen):
     @ui.page('/')
     def page():
         ui.label('before js')
@@ -43,7 +43,7 @@ def test_run_javascript_before_client_connected(screen: Screen):
     screen.should_contain('New Title')
 
 
-def test_response_from_javascript(screen: Screen):
+def test_response_from_javascript(screen: SeleniumScreen):
     async def compute() -> None:
         response = await ui.run_javascript('1 + 41')
         ui.label(response)
@@ -55,7 +55,7 @@ def test_response_from_javascript(screen: Screen):
     screen.should_contain('42')
 
 
-def test_async_javascript(screen: Screen):
+def test_async_javascript(screen: SeleniumScreen):
     async def run():
         result = await ui.run_javascript('await new Promise(r => setTimeout(r, 100)); return 42')
         ui.label(result)
@@ -65,7 +65,7 @@ def test_async_javascript(screen: Screen):
     screen.should_contain('42')
 
 
-def test_simultaneous_async_javascript(screen: Screen):
+def test_simultaneous_async_javascript(screen: SeleniumScreen):
     async def runA():
         result = await ui.run_javascript('await new Promise(r => setTimeout(r, 500)); return 1')
         ui.label(f'A: {result}')

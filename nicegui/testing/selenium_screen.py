@@ -18,7 +18,7 @@ from nicegui import app, ui
 from nicegui.server import Server
 
 
-class Screen:
+class SeleniumScreen:
     PORT = 3392
     IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = Path('screenshots')

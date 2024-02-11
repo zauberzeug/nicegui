@@ -2,13 +2,13 @@ from pathlib import Path
 from typing import List
 
 from nicegui import events, ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 test_path1 = Path('tests/test_upload.py').resolve()
 test_path2 = Path('tests/test_scene.py').resolve()
 
 
-def test_uploading_text_file(screen: Screen):
+def test_uploading_text_file(screen: SeleniumScreen):
     results: List[events.UploadEventArguments] = []
     ui.upload(on_upload=results.append, label='Test Title')
 
@@ -24,7 +24,7 @@ def test_uploading_text_file(screen: Screen):
     assert results[0].content.read() == test_path1.read_bytes()
 
 
-def test_two_upload_elements(screen: Screen):
+def test_two_upload_elements(screen: SeleniumScreen):
     results: List[events.UploadEventArguments] = []
     ui.upload(on_upload=results.append, auto_upload=True, label='Test Title 1')
     ui.upload(on_upload=results.append, auto_upload=True, label='Test Title 2')
@@ -40,7 +40,7 @@ def test_two_upload_elements(screen: Screen):
     assert results[1].name == test_path2.name
 
 
-def test_uploading_from_two_tabs(screen: Screen):
+def test_uploading_from_two_tabs(screen: SeleniumScreen):
     @ui.page('/')
     def page():
         ui.upload(on_upload=lambda e: ui.label(f'uploaded {e.name}'), auto_upload=True)
@@ -55,7 +55,7 @@ def test_uploading_from_two_tabs(screen: Screen):
     screen.should_not_contain(f'uploaded {test_path1.name}')
 
 
-def test_upload_with_header_slot(screen: Screen):
+def test_upload_with_header_slot(screen: SeleniumScreen):
     with ui.upload().add_slot('header'):
         ui.label('Header')
 
@@ -63,7 +63,7 @@ def test_upload_with_header_slot(screen: Screen):
     screen.should_contain('Header')
 
 
-def test_replace_upload(screen: Screen):
+def test_replace_upload(screen: SeleniumScreen):
     with ui.row() as container:
         ui.upload(label='A')
 
@@ -80,7 +80,7 @@ def test_replace_upload(screen: Screen):
     screen.should_not_contain('A')
 
 
-def test_reset_upload(screen: Screen):
+def test_reset_upload(screen: SeleniumScreen):
     upload = ui.upload()
     ui.button('Reset', on_click=upload.reset)
 

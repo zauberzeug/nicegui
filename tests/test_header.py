@@ -1,11 +1,11 @@
 import pytest
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
 @pytest.mark.parametrize('add_scroll_padding', [True, False])
-def test_no_scroll_padding(screen: Screen, add_scroll_padding: bool):
+def test_no_scroll_padding(screen: SeleniumScreen, add_scroll_padding: bool):
     ui.header(add_scroll_padding=add_scroll_padding).classes('h-[50px]')
     for i in range(100):
         with ui.link_target(f'line{i}'):

@@ -1,10 +1,10 @@
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_spinner(screen: Screen):
+def test_spinner(screen: SeleniumScreen):
     ui.spinner(size='3em', thickness=10)
 
     screen.open('/')

@@ -3,10 +3,10 @@ from pyecharts.charts import Bar
 from pyecharts.commons import utils
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_create_dynamically(screen: Screen):
+def test_create_dynamically(screen: SeleniumScreen):
     def create():
         ui.echart({
             'xAxis': {'type': 'value'},
@@ -20,7 +20,7 @@ def test_create_dynamically(screen: Screen):
     assert screen.find_by_tag('canvas')
 
 
-def test_update(screen: Screen):
+def test_update(screen: SeleniumScreen):
     def update():
         chart.options['xAxis'] = {'type': 'value'}
         chart.options['yAxis'] = {'type': 'category', 'data': ['A', 'B', 'C']}
@@ -35,7 +35,7 @@ def test_update(screen: Screen):
     assert screen.find_by_tag('canvas')
 
 
-def test_nested_card(screen: Screen):
+def test_nested_card(screen: SeleniumScreen):
     with ui.card().style('height: 200px; width: 600px'):
         ui.echart({
             'xAxis': {'type': 'value'},
@@ -49,7 +49,7 @@ def test_nested_card(screen: Screen):
     assert canvas.rect['width'] == 568
 
 
-def test_nested_expansion(screen: Screen):
+def test_nested_expansion(screen: SeleniumScreen):
     with ui.expansion() as expansion:
         with ui.card().style('height: 200px; width: 600px'):
             ui.echart({
@@ -66,7 +66,7 @@ def test_nested_expansion(screen: Screen):
     assert canvas.rect['width'] == 568
 
 
-def test_run_method(screen: Screen):
+def test_run_method(screen: SeleniumScreen):
     echart = ui.echart({
         'xAxis': {'type': 'value'},
         'yAxis': {'type': 'category', 'data': ['A', 'B', 'C']},
@@ -82,7 +82,7 @@ def test_run_method(screen: Screen):
     screen.should_contain('Width: 600px')
 
 
-def test_create_from_pyecharts(screen: Screen):
+def test_create_from_pyecharts(screen: SeleniumScreen):
     X_AXIS_FORMATTER = r'(val, idx) => `x for ${val}`'
     Y_AXIS_FORMATTER = r'(val, idx) => `${val} kg`'
 

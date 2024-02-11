@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_splitter(screen: Screen):
+def test_splitter(screen: SeleniumScreen):
     with ui.splitter() as splitter:
         with splitter.before:
             ui.label('Left hand side.')

@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_query_body(screen: Screen):
+def test_query_body(screen: SeleniumScreen):
     ui.label('Hello')
     ui.query('body').classes('bg-orange-100')
     ui.button('Red background', on_click=lambda: ui.query('body').classes(replace='bg-red-100'))
@@ -41,7 +41,7 @@ def test_query_body(screen: Screen):
     assert screen.find_by_tag('body').get_attribute('data-x') == '2'
 
 
-def test_query_multiple_divs(screen: Screen):
+def test_query_multiple_divs(screen: SeleniumScreen):
     ui.label('A')
     ui.label('B')
     ui.button('Add border', on_click=lambda: ui.query('div').style('border: 1px solid black'))
@@ -53,7 +53,7 @@ def test_query_multiple_divs(screen: Screen):
     assert screen.find('B').value_of_css_property('border') == '1px solid rgb(0, 0, 0)'
 
 
-def test_query_with_css_variables(screen: Screen):
+def test_query_with_css_variables(screen: SeleniumScreen):
     ui.add_body_html('<div id="element">Test</div>')
     ui.query('#element').style('--color: red; color: var(--color)')
 

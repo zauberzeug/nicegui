@@ -3,10 +3,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_input(screen: Screen):
+def test_input(screen: SeleniumScreen):
     ui.input('Your name', value='John Doe')
 
     screen.open('/')
@@ -19,7 +19,7 @@ def test_input(screen: Screen):
     assert element.get_attribute('value') == 'John Doe Jr.'
 
 
-def test_password(screen: Screen):
+def test_password(screen: SeleniumScreen):
     ui.input('Your password', value='123456', password=True)
 
     screen.open('/')
@@ -34,7 +34,7 @@ def test_password(screen: Screen):
     assert element.get_attribute('value') == '123456789'
 
 
-def test_toggle_button(screen: Screen):
+def test_toggle_button(screen: SeleniumScreen):
     ui.input('Your password', value='123456', password=True, password_toggle_button=True)
 
     screen.open('/')
@@ -55,7 +55,7 @@ def test_toggle_button(screen: Screen):
 
 
 @pytest.mark.parametrize('use_callable', [False, True])
-def test_input_validation(use_callable: bool, screen: Screen):
+def test_input_validation(use_callable: bool, screen: SeleniumScreen):
     if use_callable:
         input_ = ui.input('Name', validation=lambda x: 'Short' if len(x) < 3 else 'Still short' if len(x) < 5 else None)
     else:
@@ -83,7 +83,7 @@ def test_input_validation(use_callable: bool, screen: Screen):
     assert input_.validate()
 
 
-def test_input_with_multi_word_error_message(screen: Screen):
+def test_input_with_multi_word_error_message(screen: SeleniumScreen):
     input_ = ui.input(label='some input')
     ui.button('set error', on_click=lambda: input_.props('error error-message="Some multi word error message"'))
 
@@ -94,7 +94,7 @@ def test_input_with_multi_word_error_message(screen: Screen):
     screen.should_contain('Some multi word error message')
 
 
-def test_autocompletion(screen: Screen):
+def test_autocompletion(screen: SeleniumScreen):
     input_ = ui.input('Input', autocomplete=['foo', 'bar', 'baz'])
 
     screen.open('/')
@@ -129,7 +129,7 @@ def test_autocompletion(screen: Screen):
     screen.should_contain('ne')
 
 
-def test_clearable_input(screen: Screen):
+def test_clearable_input(screen: SeleniumScreen):
     input_ = ui.input(value='foo').props('clearable')
     ui.label().bind_text_from(input_, 'value', lambda value: f'value: {value}')
 
@@ -139,7 +139,7 @@ def test_clearable_input(screen: Screen):
     screen.should_contain('value: None')
 
 
-def test_update_input(screen: Screen):
+def test_update_input(screen: SeleniumScreen):
     input_ = ui.input('Name', value='Pete')
 
     screen.open('/')
@@ -155,7 +155,7 @@ def test_update_input(screen: Screen):
     assert element.get_attribute('value') == 'Pete'
 
 
-def test_switching_focus(screen: Screen):
+def test_switching_focus(screen: SeleniumScreen):
     input1 = ui.input()
     input2 = ui.input()
     ui.button('focus 1', on_click=lambda: input1.run_method('focus'))

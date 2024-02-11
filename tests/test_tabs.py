@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_with_strings(screen: Screen):
+def test_with_strings(screen: SeleniumScreen):
     with ui.tabs() as tabs:
         ui.tab('One')
         ui.tab('Two')
@@ -19,7 +19,7 @@ def test_with_strings(screen: Screen):
     screen.should_contain('Second tab')
 
 
-def test_with_tab_objects(screen: Screen):
+def test_with_tab_objects(screen: SeleniumScreen):
     with ui.tabs() as tabs:
         tab1 = ui.tab('One')
         tab2 = ui.tab('Two')

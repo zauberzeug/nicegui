@@ -14,7 +14,7 @@ from starlette.routing import Route
 from nicegui import Client, app, binding, core
 from nicegui.page import page
 
-from .screen import Screen
+from .selenium_screen import SeleniumScreen
 from .simulated_screen import SimulatedScreen
 
 # pylint: disable=redefined-outer-name
@@ -82,9 +82,9 @@ def reset_globals() -> Generator[None, None, None]:
 @pytest.fixture(scope='session', autouse=True)
 def remove_all_screenshots() -> None:
     """Remove all screenshots from the screenshot directory before the test session."""
-    if os.path.exists(Screen.SCREENSHOT_DIR):
-        for name in os.listdir(Screen.SCREENSHOT_DIR):
-            os.remove(os.path.join(Screen.SCREENSHOT_DIR, name))
+    if os.path.exists(SeleniumScreen.SCREENSHOT_DIR):
+        for name in os.listdir(SeleniumScreen.SCREENSHOT_DIR):
+            os.remove(os.path.join(SeleniumScreen.SCREENSHOT_DIR, name))
 
 
 @pytest.fixture(scope='function')
@@ -92,7 +92,7 @@ def driver(chrome_options: webdriver.ChromeOptions) -> Generator[webdriver.Chrom
     """Create a new Chrome driver instance."""
     s = Service()
     driver_ = webdriver.Chrome(service=s, options=chrome_options)
-    driver_.implicitly_wait(Screen.IMPLICIT_WAIT)
+    driver_.implicitly_wait(SeleniumScreen.IMPLICIT_WAIT)
     driver_.set_page_load_timeout(4)
     yield driver_
     driver_.quit()
@@ -100,7 +100,7 @@ def driver(chrome_options: webdriver.ChromeOptions) -> Generator[webdriver.Chrom
 
 @pytest.fixture
 def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture) \
-        -> Generator[Union[Screen, SimulatedScreen], None, None]:
+        -> Generator[Union[SeleniumScreen, SimulatedScreen], None, None]:
     """Create a new Screen instance."""
     screen_type_hint = get_type_hints(request.node.function).get('screen')
     if screen_type_hint == SimulatedScreen:
@@ -123,8 +123,8 @@ def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pyt
         )
         with TestClient(app)as client:
             yield SimulatedScreen(client)
-    elif screen_type_hint == Screen:
-        screen_ = Screen(driver, caplog)
+    elif screen_type_hint == SeleniumScreen:
+        screen_ = SeleniumScreen(driver, caplog)
         yield screen_
         if screen_.is_open:
             screen_.shot(request.node.name)
@@ -135,4 +135,4 @@ def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pyt
         if logs:
             pytest.fail('There were unexpected logs. See "Captured log call" below.', pytrace=False)
     else:
-        raise ValueError(f'Unknown screen type: {screen_type}, expected Screen or SimulatedScreen.')
+        raise ValueError(f'Unknown screen type: {screen_type_hint}, expected Screen or SimulatedScreen.')

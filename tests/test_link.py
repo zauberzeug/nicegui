@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_local_target_linking_on_sub_pages(screen: Screen):
+def test_local_target_linking_on_sub_pages(screen: SeleniumScreen):
     '''The issue arose when using <base> tag for reverse-proxy path handling. See https://github.com/zauberzeug/nicegui/pull/188#issuecomment-1336313925'''
     @ui.page('/sub')
     def main():
@@ -18,7 +18,7 @@ def test_local_target_linking_on_sub_pages(screen: Screen):
     screen.should_not_contain('main page')
 
 
-def test_opening_link_in_new_tab(screen: Screen):
+def test_opening_link_in_new_tab(screen: SeleniumScreen):
     @ui.page('/sub')
     def subpage():
         ui.label('the sub-page')
@@ -35,7 +35,7 @@ def test_opening_link_in_new_tab(screen: Screen):
     screen.should_contain('open sub-page')
 
 
-def test_replace_link(screen: Screen):
+def test_replace_link(screen: SeleniumScreen):
     with ui.row() as container:
         ui.link('nicegui.io', 'https://nicegui.io/')
 
@@ -51,7 +51,7 @@ def test_replace_link(screen: Screen):
     assert screen.find('zauberzeug').get_attribute('href') == 'https://zauberzeug.com/'
 
 
-def test_updating_href_prop(screen: Screen):
+def test_updating_href_prop(screen: SeleniumScreen):
     l = ui.link('nicegui.io', 'https://nicegui.io')
     ui.button('change href', on_click=lambda: l.props('href="https://github.com/zauberzeug/nicegui"'))
 
@@ -61,7 +61,7 @@ def test_updating_href_prop(screen: Screen):
     assert screen.find('nicegui.io').get_attribute('href') == 'https://github.com/zauberzeug/nicegui'
 
 
-def test_link_to_elements(screen: Screen):
+def test_link_to_elements(screen: SeleniumScreen):
     navigation = ui.row()
     for i in range(100):
         ui.label(f'label {i}')

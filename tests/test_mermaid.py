@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_mermaid(screen: Screen):
+def test_mermaid(screen: SeleniumScreen):
     m = ui.mermaid('''
         graph TD;
             Node_A --> Node_B;
@@ -19,7 +19,7 @@ graph TD;
     screen.should_not_contain('Node_A')
 
 
-def test_mermaid_with_line_breaks(screen: Screen):
+def test_mermaid_with_line_breaks(screen: SeleniumScreen):
     ui.mermaid('''
         requirementDiagram
 
@@ -39,7 +39,7 @@ def test_mermaid_with_line_breaks(screen: Screen):
     screen.should_contain('Verification: Test')
 
 
-def test_replace_mermaid(screen: Screen):
+def test_replace_mermaid(screen: SeleniumScreen):
     with ui.row() as container:
         ui.mermaid('graph LR; Node_A')
 
@@ -57,7 +57,7 @@ def test_replace_mermaid(screen: Screen):
     screen.should_not_contain('Node_A')
 
 
-def test_create_dynamically(screen: Screen):
+def test_create_dynamically(screen: SeleniumScreen):
     ui.button('Create', on_click=lambda: ui.mermaid('graph LR; Node'))
 
     screen.open('/')
@@ -65,7 +65,7 @@ def test_create_dynamically(screen: Screen):
     screen.should_contain('Node')
 
 
-def test_error(screen: Screen):
+def test_error(screen: SeleniumScreen):
     ui.mermaid('''
     graph LR;
         A --> B;

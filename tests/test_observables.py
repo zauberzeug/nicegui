@@ -3,7 +3,7 @@ import sys
 
 from nicegui import ui
 from nicegui.observables import ObservableDict, ObservableList, ObservableSet
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 # pylint: disable=global-statement
 count = 0
@@ -131,7 +131,7 @@ def test_nested_observables():
     assert count == 6
 
 
-def test_async_handler(screen: Screen):
+def test_async_handler(screen: SeleniumScreen):
     reset_counter()
     data = ObservableList(on_change=increment_counter_slowly)
     ui.button('Append 42', on_click=lambda: data.append(42))

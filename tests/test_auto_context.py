@@ -3,10 +3,10 @@ import asyncio
 from selenium.webdriver.common.by import By
 
 from nicegui import Client, background_tasks, ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_adding_element_to_shared_index_page(screen: Screen):
+def test_adding_element_to_shared_index_page(screen: SeleniumScreen):
     ui.button('add label', on_click=lambda: ui.label('added'))
 
     screen.open('/')
@@ -14,7 +14,7 @@ def test_adding_element_to_shared_index_page(screen: Screen):
     screen.should_contain('added')
 
 
-def test_adding_element_to_private_page(screen: Screen):
+def test_adding_element_to_private_page(screen: SeleniumScreen):
     @ui.page('/')
     def page():
         ui.button('add label', on_click=lambda: ui.label('added'))
@@ -24,7 +24,7 @@ def test_adding_element_to_private_page(screen: Screen):
     screen.should_contain('added')
 
 
-def test_adding_elements_with_async_await(screen: Screen):
+def test_adding_elements_with_async_await(screen: SeleniumScreen):
     async def add_a():
         await asyncio.sleep(1.0)
         ui.label('A')
@@ -48,7 +48,7 @@ def test_adding_elements_with_async_await(screen: Screen):
     cB.find_element(By.XPATH, './/*[contains(text(), "B")]')
 
 
-def test_autoupdate_after_connected(screen: Screen):
+def test_autoupdate_after_connected(screen: SeleniumScreen):
     @ui.page('/')
     async def page(client: Client):
         ui.label('before connected')
@@ -72,7 +72,7 @@ def test_autoupdate_after_connected(screen: Screen):
     screen.wait_for('three')
 
 
-def test_autoupdate_on_async_event_handler(screen: Screen):
+def test_autoupdate_on_async_event_handler(screen: SeleniumScreen):
     async def open_dialog():
         with ui.dialog() as dialog, ui.card():
             l = ui.label('This should be visible')
@@ -88,7 +88,7 @@ def test_autoupdate_on_async_event_handler(screen: Screen):
     screen.should_contain('New text after 1 second')
 
 
-def test_autoupdate_on_async_timer_callback(screen: Screen):
+def test_autoupdate_on_async_timer_callback(screen: SeleniumScreen):
     async def update():
         ui.label('1')
         await asyncio.sleep(1.0)
@@ -105,7 +105,7 @@ def test_autoupdate_on_async_timer_callback(screen: Screen):
     screen.wait_for('2')
 
 
-def test_adding_elements_from_different_tasks(screen: Screen):
+def test_adding_elements_from_different_tasks(screen: SeleniumScreen):
     card1 = ui.card()
     card2 = ui.card()
 

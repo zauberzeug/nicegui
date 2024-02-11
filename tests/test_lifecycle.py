@@ -1,10 +1,10 @@
 from typing import List
 
 from nicegui import Client, app, ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_adding_elements_during_onconnect_on_auto_index_page(screen: Screen):
+def test_adding_elements_during_onconnect_on_auto_index_page(screen: SeleniumScreen):
     connections = []
     ui.label('Adding labels on_connect')
     app.on_connect(lambda _: connections.append(ui.label(f'new connection {len(connections)}')))
@@ -20,7 +20,7 @@ def test_adding_elements_during_onconnect_on_auto_index_page(screen: Screen):
     screen.should_contain('new connection 2')
 
 
-def test_async_connect_handler(screen: Screen):
+def test_async_connect_handler(screen: SeleniumScreen):
     async def run_js():
         result.text = await ui.run_javascript('41 + 1')
     result = ui.label()
@@ -30,7 +30,7 @@ def test_async_connect_handler(screen: Screen):
     screen.should_contain('42')
 
 
-def test_connect_disconnect_is_called_for_each_client(screen: Screen):
+def test_connect_disconnect_is_called_for_each_client(screen: SeleniumScreen):
     events: List[str] = []
 
     @ui.page('/', reconnect_timeout=0)
@@ -48,7 +48,7 @@ def test_connect_disconnect_is_called_for_each_client(screen: Screen):
     assert events == ['connect', 'disconnect', 'connect', 'disconnect', 'connect']
 
 
-def test_startup_and_shutdown_handlers(screen: Screen):
+def test_startup_and_shutdown_handlers(screen: SeleniumScreen):
     events: List[str] = []
 
     def startup():

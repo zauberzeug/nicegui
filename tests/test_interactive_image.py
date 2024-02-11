@@ -4,10 +4,10 @@ import pytest
 from selenium.webdriver.common.action_chains import ActionChains
 
 from nicegui import Client, ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_set_source_in_tab(screen: Screen):
+def test_set_source_in_tab(screen: SeleniumScreen):
     """https://github.com/zauberzeug/nicegui/issues/488"""
     @ui.page('/')
     async def page(client: Client):
@@ -33,7 +33,7 @@ def test_set_source_in_tab(screen: Screen):
 
 
 @pytest.mark.parametrize('cross, number_of_lines', [(True, 2), (False, 0)])
-def test_with_cross(screen: Screen, cross: bool, number_of_lines: int):
+def test_with_cross(screen: SeleniumScreen, cross: bool, number_of_lines: int):
     ii = ui.interactive_image('https://nicegui.io/logo.png', cross=cross)
     ii.content = '<circle cx="100" cy="100" r="15" fill="none" stroke="red" stroke-width="4" />'
 
@@ -44,7 +44,7 @@ def test_with_cross(screen: Screen, cross: bool, number_of_lines: int):
         assert len(screen.find_all_by_tag('circle')) == 1
 
 
-def test_replace_interactive_image(screen: Screen):
+def test_replace_interactive_image(screen: SeleniumScreen):
     with ui.row() as container:
         ui.interactive_image('https://picsum.photos/id/29/640/360')
 
@@ -62,7 +62,7 @@ def test_replace_interactive_image(screen: Screen):
 
 
 @pytest.mark.parametrize('cross', [True, False])
-def test_mousemove_event(screen: Screen, cross: bool):
+def test_mousemove_event(screen: SeleniumScreen, cross: bool):
     counter = {'value': 0}
     ii = ui.interactive_image('https://picsum.photos/id/29/640/360', cross=cross, events=['mousemove'],
                               on_mouse=lambda: counter.update(value=counter['value'] + 1))
@@ -78,7 +78,7 @@ def test_mousemove_event(screen: Screen, cross: bool):
     assert counter['value'] > 0
 
 
-def test_loaded_event(screen: Screen):
+def test_loaded_event(screen: SeleniumScreen):
     sources: List[str] = []
     ii = ui.interactive_image('https://picsum.photos/id/29/640/360')
     ii.on('loaded', lambda e: sources.append(e.args['source']))

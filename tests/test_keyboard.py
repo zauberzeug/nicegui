@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_keyboard(screen: Screen):
+def test_keyboard(screen: SeleniumScreen):
     result = ui.label()
     ui.keyboard(on_key=lambda e: result.set_text(f'{e.key, e.action}'))
 

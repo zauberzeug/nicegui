@@ -1,11 +1,10 @@
 
-import asyncio
 import functools
 from typing import Callable
 
 from fastapi.testclient import TestClient
 
-from nicegui import Client, app, context, core, ui
+from nicegui import context, core, ui
 from nicegui.elements.mixins.content_element import ContentElement
 
 

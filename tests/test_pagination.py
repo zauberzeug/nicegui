@@ -1,8 +1,8 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import SeleniumScreen
 
 
-def test_pagination(screen: Screen):
+def test_pagination(screen: SeleniumScreen):
     p = ui.pagination(1, 10, direction_links=True)
     ui.label().bind_text_from(p, 'value', lambda v: f'Page {v}')
 
