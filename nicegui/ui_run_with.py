@@ -24,6 +24,7 @@ def run_with(
     tailwind: bool = True,
     prod_js: bool = True,
     storage_secret: Optional[str] = None,
+    show_welcome_message: bool = True,
 ) -> None:
     """Run NiceGUI with FastAPI.
 
@@ -40,6 +41,7 @@ def run_with(
     :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
     :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
+    :param show_welcome_message: whether to show the welcome message (default: `True`)
     """
     core.app.config.add_run_config(
         reload=False,
@@ -52,7 +54,7 @@ def run_with(
         reconnect_timeout=reconnect_timeout,
         tailwind=tailwind,
         prod_js=prod_js,
-        show_welcome_message=False,
+        show_welcome_message=show_welcome_message,
     )
 
     storage.set_storage_secret(storage_secret)
