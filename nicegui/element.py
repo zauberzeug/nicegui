@@ -13,7 +13,7 @@ from . import context, core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
 from .dependencies import Component, Library, register_library, register_resource, register_vue_component
 from .elements.mixins.visibility import Visibility
-from .event_listener import EventListener, JsEventListener
+from .event_listener import EventListener
 from .slot import Slot
 from .tailwind import Tailwind
 from .version import __version__
@@ -85,7 +85,6 @@ class Element(Visibility):
         self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
         self._props.update(self._default_props)
         self._event_listeners: Dict[str, EventListener] = {}
-        self._js_event_listeners: List[JsEventListener] = []
         self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
@@ -196,7 +195,7 @@ class Element(Visibility):
             'props': self._props,
             'text': self._text,
             'slots': self._collect_slot_dict(),
-            'events': [listener.to_dict() for listener in list(self._event_listeners.values()) + self._js_event_listeners],
+            'events': [listener.to_dict() for listener in self._event_listeners.values()],
             'component': {
                 'key': self.component.key,
                 'name': self.component.name,
@@ -429,28 +428,22 @@ class Element(Visibility):
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
         :param js_handler: JavaScript code that is executed upon occurrence of the event, e.g. `(evt) => alert(evt)` (default: `None`)
         """
-        if (js_handler is None) == (handler is None):
-            raise ValueError('Either handler or js_handler must be specified, but not both')
+        if handler and js_handler:
+            raise ValueError('Either handler or js_handler can be specified, but not both')
 
-        if handler:
+        if handler or js_handler:
             listener = EventListener(
                 element_id=self.id,
                 type=helpers.kebab_to_camel_case(type),
                 args=[args] if args and isinstance(args[0], str) else args,  # type: ignore
                 handler=handler,
+                js_handler=js_handler,
                 throttle=throttle,
                 leading_events=leading_events,
                 trailing_events=trailing_events,
                 request=storage.request_contextvar.get(),
             )
             self._event_listeners[listener.id] = listener
-            self.update()
-        if js_handler:
-            js_listener = JsEventListener(
-                type=helpers.kebab_to_camel_case(type),
-                js_handler=js_handler,
-            )
-            self._js_event_listeners.append(js_listener)
             self.update()
         return self
 
