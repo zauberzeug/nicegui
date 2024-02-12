@@ -71,10 +71,10 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
                 image_y=args.get('image_y', 0.0),
                 button=args.get('button', 0),
                 buttons=args.get('buttons', 0),
-                alt=args.get('alt', False),
-                ctrl=args.get('ctrl', False),
-                meta=args.get('meta', False),
-                shift=args.get('shift', False),
+                alt=args.get('altKey', False),
+                ctrl=args.get('ctrlKey', False),
+                meta=args.get('metaKey', False),
+                shift=args.get('shiftKey', False),
             )
             handle_event(on_mouse, arguments)
         self.on('mouse', handle_mouse)
