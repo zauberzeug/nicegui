@@ -292,7 +292,7 @@ class Client:
 
     def remove_elements(self, elements: Iterable[Element]) -> None:
         """Remove the given elements from the client."""
-        binding.remove(elements, Element)
+        binding.remove(elements)
         element_ids = [element.id for element in elements]
         for element_id in element_ids:
             del self.elements[element_id]
