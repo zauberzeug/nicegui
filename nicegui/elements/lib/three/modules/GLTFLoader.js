@@ -62,8 +62,7 @@ import {
 	Vector2,
 	Vector3,
 	VectorKeyframeTrack,
-	SRGBColorSpace,
-	InstancedBufferAttribute
+	SRGBColorSpace
 } from 'three';
 import { toTrianglesDrawMode } from 'BufferGeometryUtils';
 
@@ -153,12 +152,6 @@ class GLTFLoader extends Loader {
 
 		this.register( function ( parser ) {
 
-			return new GLTFMaterialsBumpExtension( parser );
-
-		} );
-
-		this.register( function ( parser ) {
-
 			return new GLTFLightsExtension( parser );
 
 		} );
@@ -189,13 +182,7 @@ class GLTFLoader extends Loader {
 
 		} else if ( this.path !== '' ) {
 
-			// If a base path is set, resources will be relative paths from that plus the relative path of the gltf file
-			// Example  path = 'https://my-cnd-server.com/', url = 'assets/models/model.gltf'
-			// resourcePath = 'https://my-cnd-server.com/assets/models/'
-			// referenced resource 'model.bin' will be loaded from 'https://my-cnd-server.com/assets/models/model.bin'
-			// referenced resource '../textures/texture.png' will be loaded from 'https://my-cnd-server.com/assets/textures/texture.png'
-			const relativeUrl = LoaderUtils.extractUrlBase( url );
-			resourcePath = LoaderUtils.resolveURL( relativeUrl, this.path );
+			resourcePath = this.path;
 
 		} else {
 
@@ -374,9 +361,6 @@ class GLTFLoader extends Loader {
 		for ( let i = 0; i < this.pluginCallbacks.length; i ++ ) {
 
 			const plugin = this.pluginCallbacks[ i ]( parser );
-
-			if ( ! plugin.name ) console.error( 'THREE.GLTFLoader: Invalid plugin found: missing name' );
-
 			plugins[ plugin.name ] = plugin;
 
 			// Workaround to avoid determining as unknown extension
@@ -503,7 +487,6 @@ const EXTENSIONS = {
 	KHR_TEXTURE_TRANSFORM: 'KHR_texture_transform',
 	KHR_MESH_QUANTIZATION: 'KHR_mesh_quantization',
 	KHR_MATERIALS_EMISSIVE_STRENGTH: 'KHR_materials_emissive_strength',
-	EXT_MATERIALS_BUMP: 'EXT_materials_bump',
 	EXT_TEXTURE_WEBP: 'EXT_texture_webp',
 	EXT_TEXTURE_AVIF: 'EXT_texture_avif',
 	EXT_MESHOPT_COMPRESSION: 'EXT_meshopt_compression',
@@ -959,7 +942,7 @@ class GLTFMaterialsSheenExtension {
 		if ( extension.sheenColorFactor !== undefined ) {
 
 			const colorFactor = extension.sheenColorFactor;
-			materialParams.sheenColor.setRGB( colorFactor[ 0 ], colorFactor[ 1 ], colorFactor[ 2 ], LinearSRGBColorSpace );
+			materialParams.sheenColor.setRGB( colorFactor[ 0 ], colorFactor[ 1 ], colorFactor [ 2 ], LinearSRGBColorSpace );
 
 		}
 
@@ -1205,61 +1188,6 @@ class GLTFMaterialsSpecularExtension {
 		if ( extension.specularColorTexture !== undefined ) {
 
 			pending.push( parser.assignTexture( materialParams, 'specularColorMap', extension.specularColorTexture, SRGBColorSpace ) );
-
-		}
-
-		return Promise.all( pending );
-
-	}
-
-}
-
-
-/**
- * Materials bump Extension
- *
- * Specification: https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/EXT_materials_bump
- */
-class GLTFMaterialsBumpExtension {
-
-	constructor( parser ) {
-
-		this.parser = parser;
-		this.name = EXTENSIONS.EXT_MATERIALS_BUMP;
-
-	}
-
-	getMaterialType( materialIndex ) {
-
-		const parser = this.parser;
-		const materialDef = parser.json.materials[ materialIndex ];
-
-		if ( ! materialDef.extensions || ! materialDef.extensions[ this.name ] ) return null;
-
-		return MeshPhysicalMaterial;
-
-	}
-
-	extendMaterialParams( materialIndex, materialParams ) {
-
-		const parser = this.parser;
-		const materialDef = parser.json.materials[ materialIndex ];
-
-		if ( ! materialDef.extensions || ! materialDef.extensions[ this.name ] ) {
-
-			return Promise.resolve();
-
-		}
-
-		const pending = [];
-
-		const extension = materialDef.extensions[ this.name ];
-
-		materialParams.bumpScale = extension.bumpFactor !== undefined ? extension.bumpFactor : 1.0;
-
-		if ( extension.bumpTexture !== undefined ) {
-
-			pending.push( parser.assignTexture( materialParams, 'bumpMap', extension.bumpTexture ) );
 
 		}
 
@@ -1751,12 +1679,7 @@ class GLTFMeshGpuInstancing {
 				// Add instance attributes to the geometry, excluding TRS.
 				for ( const attributeName in attributes ) {
 
-					if ( attributeName === '_COLOR_0' ) {
-
-						const attr = attributes[ attributeName ];
-						instancedMesh.instanceColor = new InstancedBufferAttribute( attr.array, attr.itemSize, attr.normalized );
-
-					} else if ( attributeName !== 'TRANSLATION' &&
+					if ( attributeName !== 'TRANSLATION' &&
 						 attributeName !== 'ROTATION' &&
 						 attributeName !== 'SCALE' ) {
 
@@ -1923,7 +1846,7 @@ class GLTFDracoMeshCompressionExtension {
 
 		return parser.getDependency( 'bufferView', bufferViewIndex ).then( function ( bufferView ) {
 
-			return new Promise( function ( resolve, reject ) {
+			return new Promise( function ( resolve ) {
 
 				dracoLoader.decodeDracoFile( bufferView, function ( geometry ) {
 
@@ -1938,7 +1861,7 @@ class GLTFDracoMeshCompressionExtension {
 
 					resolve( geometry );
 
-				}, threeAttributeMap, attributeTypeMap, LinearSRGBColorSpace, reject );
+				}, threeAttributeMap, attributeTypeMap );
 
 			} );
 
