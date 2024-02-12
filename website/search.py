@@ -39,7 +39,8 @@ class Search:
         ui.keyboard(self.handle_keypress)
 
     def create_button(self) -> ui.button:
-        return ui.button(on_click=self.dialog.open, icon='search').props('flat color=white')
+        return ui.button(on_click=self.dialog.open, icon='search').props('flat color=white') \
+            .tooltip('Press Ctrl+K or / to search the documentation')
 
     def handle_keypress(self, e: events.KeyEventArguments) -> None:
         if not e.action.keydown:
