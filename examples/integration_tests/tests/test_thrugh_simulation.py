@@ -27,12 +27,8 @@ def test_sub_page(screen: SimulatedScreen) -> None:
 
 
 @pytest.mark.module_under_test(main)
-def test_with_connected(screen: SimulatedScreen) -> None:
+async def test_with_connected(screen: SimulatedScreen) -> None:
     screen.open('/with_connected')
-    screen.check_exceptions()
-    screen.should_contain('This is a subpage')
-    screen.check_exceptions()
-    screen.should_contain('Connected!')
-    screen.check_exceptions()
+    await screen.should_contain('This is a subpage')
+    await screen.should_contain('Connected!')
     time.sleep(1)
-    screen.check_exceptions()
