@@ -7,9 +7,9 @@ from fastapi import Request
 from .dataclasses import KWONLY_SLOTS
 
 
-def _type_to_dict(type: str) -> Dict[str, Any]:
+def _type_to_dict(type_: str) -> Dict[str, Any]:
     """Convert a type string to a dictionary representation."""
-    words = type.split('.')
+    words = type_.split('.')
     type_ = words.pop(0)
     specials = [w for w in words if w in {'capture', 'once', 'passive'}]
     modifiers = [w for w in words if w in {'stop', 'prevent', 'self', 'ctrl', 'shift', 'alt', 'meta'}]
@@ -51,7 +51,7 @@ class EventListener:
 
 
 @dataclass(**KWONLY_SLOTS)
-class JSEventListener:
+class JsEventListener:
     type: str
     js_handler: str
 

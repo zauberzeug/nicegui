@@ -5,7 +5,7 @@ import inspect
 import re
 from copy import copy, deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union, overload, Literal
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union, overload
 
 from typing_extensions import Self
 
@@ -13,7 +13,7 @@ from . import context, core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
 from .dependencies import Component, Library, register_library, register_resource, register_vue_component
 from .elements.mixins.visibility import Visibility
-from .event_listener import EventListener, JSEventListener
+from .event_listener import EventListener, JsEventListener
 from .slot import Slot
 from .tailwind import Tailwind
 from .version import __version__
@@ -85,7 +85,7 @@ class Element(Visibility):
         self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
         self._props.update(self._default_props)
         self._event_listeners: Dict[str, EventListener] = {}
-        self._js_event_listeners: List[JSEventListener] = []
+        self._js_event_listeners: List[JsEventListener] = []
         self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
@@ -188,8 +188,6 @@ class Element(Visibility):
         }
 
     def _to_dict(self) -> Dict[str, Any]:
-        events = [listener.to_dict() for listener in self._event_listeners.values()]
-        events.extend([listener.to_dict() for listener in self._js_event_listeners])
         return {
             'id': self.id,
             'tag': self.tag,
@@ -198,7 +196,7 @@ class Element(Visibility):
             'props': self._props,
             'text': self._text,
             'slots': self._collect_slot_dict(),
-            'events': events,
+            'events': [listener.to_dict() for listener in list(self._event_listeners.values()) + self._js_event_listeners],
             'component': {
                 'key': self.component.key,
                 'name': self.component.name,
@@ -394,31 +392,28 @@ class Element(Visibility):
     @overload
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
-           handler: Callable[..., Any],
-           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None, *,
-           throttle: float = 0.0,
-           leading_events: bool = True,
-           trailing_events: bool = True,
-           js_handler: Literal[None] = None,
+           *,
+           js_handler: Optional[str] = None,
            ) -> Self:
         ...
 
     @overload
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
-           handler: Literal[None] = None,
-           args: Literal[None] = None, *,
-           throttle: Literal[0] = 0,
-           leading_events: Literal[True] = True,
-           trailing_events: Literal[True] = True,
-           js_handler: str,
+           handler: Optional[Callable[..., Any]] = None,
+           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
+           *,
+           throttle: float = 0.0,
+           leading_events: bool = True,
+           trailing_events: bool = True,
            ) -> Self:
         ...
 
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
            handler: Optional[Callable[..., Any]] = None,
-           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None, *,
+           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
+           *,
            throttle: float = 0.0,
            leading_events: bool = True,
            trailing_events: bool = True,
@@ -434,7 +429,7 @@ class Element(Visibility):
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
         :param js_handler: JavaScript code that is executed upon occurrence of the event, e.g. `(evt) => alert(evt)` (default: `None`)
         """
-        if not ((js_handler is None) ^ (handler is None)):
+        if (js_handler is None) == (handler is None):
             raise ValueError('Either handler or js_handler must be specified, but not both')
 
         if handler:
@@ -451,11 +446,11 @@ class Element(Visibility):
             self._event_listeners[listener.id] = listener
             self.update()
         if js_handler:
-            listener = JSEventListener(
+            js_listener = JsEventListener(
                 type=helpers.kebab_to_camel_case(type),
                 js_handler=js_handler,
             )
-            self._js_event_listeners.append(listener)
+            self._js_event_listeners.append(js_listener)
             self.update()
         return self
 
