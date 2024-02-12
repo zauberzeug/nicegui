@@ -1,7 +1,10 @@
 
+import asyncio
 import functools
+from queue import Empty, Queue
 from typing import Callable
 
+import pytest
 from fastapi.testclient import TestClient
 
 from nicegui import context, core, ui
@@ -20,13 +23,7 @@ def app_loop(func: Callable) -> Callable:
 
 class SimulatedScreen:
 
-    def __init__(self, test_client: TestClient) -> None:
-        self.test_client = test_client
-
-    def open(self, path: str) -> None:
-        """Open the given path."""
-        response = self.test_client.get(path)
-        assert response.status_code == 200
+    exception_queue: Queue[Exception] = Queue()
 
     @app_loop
     def should_contain(self, string: str) -> None:
@@ -59,3 +56,12 @@ class SimulatedScreen:
             if found:
                 return found
         return None
+
+    def check_exceptions(self):
+        """Check if there are any exceptions in the queue and fail the test if there are."""
+        try:
+            exc = self.exception_queue.get_nowait()
+        except Empty:
+            pass
+        else:
+            pytest.fail(f"Exception in event loop: {exc}")

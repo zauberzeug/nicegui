@@ -15,7 +15,7 @@ def sub_page() -> None:
 
 @ui.page('/with_connected')
 async def with_connected(client: Client) -> None:
-    ui.markdown('This is a subpage')
+    ui.markdown('This is an async connection demo')
     await client.connected()
     ui.markdown('Connected!')
 

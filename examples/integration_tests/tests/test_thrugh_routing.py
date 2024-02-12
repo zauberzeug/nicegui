@@ -35,6 +35,6 @@ def test_with_connected(screen: SeleniumScreen) -> None:
 
     screen.open('/with_connected')
     screen.wait(1)
-    screen.should_contain('This is a subpage')
+    screen.should_contain('This is an async connection demo')
     screen.wait(1)
     screen.should_contain('Connected!')
