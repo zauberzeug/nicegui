@@ -249,13 +249,9 @@ export default {
         mesh = new THREE.Group();
         this.gltf_loader.load(
           url,
-          (gltf) => {
-            mesh.add(gltf.scene);
-          },
+          (gltf) => mesh.add(gltf.scene),
           undefined,
-          (error) => {
-            console.error(error);
-          }
+          (error) => console.error(error)
         );
       } else {
         let geometry;

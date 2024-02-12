@@ -182,7 +182,7 @@ class Gltf(Object3D):
                  ) -> None:
         """GLTF
 
-        This element is used to create a mesh from an glTF file.
+        This element is used to create a mesh from a glTF file.
 
         :param url: URL of the glTF file
         """
