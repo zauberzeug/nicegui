@@ -30,23 +30,18 @@ class SimulatedScreen:
         response = await self.http_client.get(path)
         assert response.status_code == 200
         client = list(Client.instances.values())[1]
-        eio: engineio.AsyncServer = core.sio.eio
-        environ: Dict[Any] = {}
-        raw = await eio._handle_connect(environ, 'simulation')
-        eio_sid = json.loads(raw['response'].decode('utf-8')[1:])['sid']
-        await core.sio._handle_eio_connect(eio_sid, environ)
-        result = await core.sio._handle_connect(eio_sid, '/', {})
-        # eio._trigger_event('connect', client.id)
-        await ng._on_handshake(eio_sid, client.id)
+        await ng._on_handshake(f'test-{uuid4()}', client.id)
         return client
 
-    def should_contain(self, string: str) -> None:
+    async def should_contain(self, string: str) -> None:
         """Assert that the page contains an input with the given value."""
-        if self._find(context.get_client().page_container, string) is not None:
-            return
-        for m in context.get_client().outbox.messages:
-            if m[1] == 'notify' and string in m[2]['message']:
+        for _ in range(10):
+            if self._find(context.get_client().page_container, string) is not None:
                 return
+            for m in context.get_client().outbox.messages:
+                if m[1] == 'notify' and string in m[2]['message']:
+                    return
+            await asyncio.sleep(0.1)
         raise AssertionError(f'text "{string}" not found on current screen:\n{self}')
 
     def click(self, target_text: str) -> None:
