@@ -4,9 +4,9 @@ import shutil
 from pathlib import Path
 from typing import Dict, Generator, Union, get_type_hints
 
+import httpx
 import icecream
 import pytest
-from fastapi.testclient import TestClient
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from starlette.routing import Route
@@ -99,7 +99,7 @@ def driver(chrome_options: webdriver.ChromeOptions) -> Generator[webdriver.Chrom
 
 
 @pytest.fixture
-def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture) \
+async def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture) \
         -> Generator[Union[SeleniumScreen, SimulatedScreen], None, None]:
     """Create a new Screen instance."""
     screen_type_hint = get_type_hints(request.node.function).get('screen')
@@ -121,8 +121,9 @@ def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pyt
             prod_js=True,
             show_welcome_message=False,
         )
-        with TestClient(app)as client:
-            yield SimulatedScreen(client)
+        async with core.app.router.lifespan_context(core.app):
+            async with httpx.AsyncClient(app=core.app, base_url='http://test') as client:
+                yield SimulatedScreen(client)
     elif screen_type_hint == SeleniumScreen:
         screen_ = SeleniumScreen(driver, caplog)
         yield screen_

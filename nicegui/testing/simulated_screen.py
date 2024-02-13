@@ -1,31 +1,29 @@
 
 import asyncio
+import contextlib
 import functools
 from queue import Empty, Queue
-from typing import Callable
+from typing import Any, Callable
 
+import httpx
 import pytest
-from fastapi.testclient import TestClient
+from starlette.testclient import TestClient
 
-from nicegui import context, core, ui
+from nicegui import Client, context, core, ui
 from nicegui.elements.mixins.content_element import ContentElement
-
-
-def app_loop(func: Callable) -> Callable:
-    """Decorator to ensure a function is run in the event loop of the app."""
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        if not core.loop:
-            raise RuntimeError("Event loop is not available")
-        core.loop.call_soon(func, *args, **kwargs)
-    return wrapper
 
 
 class SimulatedScreen:
 
-    exception_queue: Queue[Exception] = Queue()
+    def __init__(self, client: httpx.AsyncClient) -> None:
+        self.client = client
 
-    @app_loop
+    async def open(self, path: str) -> Client:
+        """Open the given path."""
+        response = await self.client.get(path)
+        assert response.status_code == 200
+        return list(Client.instances.values())[1]
+
     def should_contain(self, string: str) -> None:
         """Assert that the page contains an input with the given value."""
         if self._find(context.get_client().page_container, string) is not None:
@@ -35,7 +33,6 @@ class SimulatedScreen:
                 return
         raise AssertionError(f'text "{string}" not found on current screen')
 
-    @app_loop
     def click(self, target_text: str) -> None:
         """Click on the element containing the given text."""
         element = self._find(context.get_client().page_container, target_text)
@@ -56,12 +53,3 @@ class SimulatedScreen:
             if found:
                 return found
         return None
-
-    def check_exceptions(self):
-        """Check if there are any exceptions in the queue and fail the test if there are."""
-        try:
-            exc = self.exception_queue.get_nowait()
-        except Empty:
-            pass
-        else:
-            pytest.fail(f"Exception in event loop: {exc}")
