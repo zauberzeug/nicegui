@@ -1,4 +1,4 @@
-from nicegui import __version__, app, background_tasks, events, ui
+from nicegui import __version__, background_tasks, events, ui
 
 
 class Search:
@@ -58,11 +58,12 @@ class Search:
                 for result in results:
                     if result['item']['content']:
                         href: str = result['item']['url']
-                        with ui.element('q-item').props('clickable') \
+                        with ui.link(target=href).props('clickable') \
                                 .on('click', lambda href=href: self.open_url(href), []):
-                            with ui.element('q-item-section'):
-                                ui.label(result['item']['title']).style('font-weight: 500')
-                                ui.label(result['item']['content'][:200] + '...').classes('text-grey')
+                            with ui.element('q-item').props('clickable'):
+                                with ui.element('q-item-section'):
+                                    ui.link(result['item']['title'], target=href).style('font-weight: 500')
+                                    ui.markdown(result['item']['content'][:200] + '...').classes('text-grey-1')
 
         background_tasks.create_lazy(handle_input(), name='handle_search_input')
 
