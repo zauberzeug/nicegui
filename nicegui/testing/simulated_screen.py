@@ -17,6 +17,8 @@ import nicegui.nicegui as ng
 from nicegui import Client, context, core, ui
 from nicegui.elements.mixins.content_element import ContentElement
 
+# pylint: disable=protected-access
+
 
 class SimulatedScreen:
 
@@ -29,7 +31,7 @@ class SimulatedScreen:
         """Open the given path."""
         response = await self.http_client.get(path)
         assert response.status_code == 200
-        client = list(Client.instances.values())[1]
+        client = list(Client.instances.values())[1]  # TODO pick the right client from the list via response
         await ng._on_handshake(f'test-{uuid4()}', client.id)
         return client
 
