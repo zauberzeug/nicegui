@@ -1,3 +1,4 @@
+import "echarts";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
 export default {

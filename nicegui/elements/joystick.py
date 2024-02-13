@@ -4,7 +4,7 @@ from ..element import Element
 from ..events import GenericEventArguments, JoystickEventArguments, handle_event
 
 
-class Joystick(Element, component='joystick.vue', libraries=['lib/nipplejs/nipplejs.js']):
+class Joystick(Element, component='joystick.vue', exposed_libraries=['lib/nipplejs/nipplejs.js']):
 
     def __init__(self, *,
                  on_start: Optional[Callable[..., Any]] = None,

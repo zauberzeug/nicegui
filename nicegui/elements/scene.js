@@ -4,6 +4,7 @@ import { CSS3DRenderer, CSS3DObject } from "CSS3DRenderer";
 import { DragControls } from "DragControls";
 import { OrbitControls } from "OrbitControls";
 import { STLLoader } from "STLLoader";
+import "tween";
 
 function texture_geometry(coords) {
   const geometry = new THREE.BufferGeometry();

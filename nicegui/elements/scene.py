@@ -32,7 +32,6 @@ class SceneObject:
 
 class Scene(Element,
             component='scene.js',
-            libraries=['lib/tween/tween.umd.js'],
             exposed_libraries=[
                 'lib/three/three.module.js',
                 'lib/three/modules/CSS2DRenderer.js',
@@ -40,6 +39,7 @@ class Scene(Element,
                 'lib/three/modules/DragControls.js',
                 'lib/three/modules/OrbitControls.js',
                 'lib/three/modules/STLLoader.js',
+                'lib/tween/tween.umd.js',
             ]):
     # pylint: disable=import-outside-toplevel
     from .scene_objects import Box as box

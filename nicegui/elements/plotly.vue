@@ -5,7 +5,7 @@
 <script>
 export default {
   async mounted() {
-    await this.$nextTick();
+    await import("plotly");
     this.update();
     this.set_handlers();
   },
