@@ -1,3 +1,4 @@
+
 import pytest
 
 from nicegui.testing import SimulatedScreen
@@ -29,5 +30,5 @@ async def test_sub_page(screen: SimulatedScreen) -> None:
 @pytest.mark.module_under_test(main)
 async def test_with_connected(screen: SimulatedScreen) -> None:
     with await screen.open('/with_connected'):
-        screen.should_contain('This is a subpage')
+        screen.should_contain('This is an async connection demo')
         screen.should_contain('Connected!')

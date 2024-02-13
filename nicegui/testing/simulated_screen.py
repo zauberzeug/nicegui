@@ -2,13 +2,18 @@
 import asyncio
 import contextlib
 import functools
+import json
 from queue import Empty, Queue
-from typing import Any, Callable
+from typing import Any, Callable, Dict
+from uuid import uuid4
 
+import engineio
 import httpx
 import pytest
+import socketio
 from starlette.testclient import TestClient
 
+import nicegui.nicegui as ng
 from nicegui import Client, context, core, ui
 from nicegui.elements.mixins.content_element import ContentElement
 
@@ -16,13 +21,24 @@ from nicegui.elements.mixins.content_element import ContentElement
 class SimulatedScreen:
 
     def __init__(self, client: httpx.AsyncClient) -> None:
-        self.client = client
+        self.http_client = client
+        self.sio = socketio.AsyncClient()
+        self.sio.on('connect')
 
     async def open(self, path: str) -> Client:
         """Open the given path."""
-        response = await self.client.get(path)
+        response = await self.http_client.get(path)
         assert response.status_code == 200
-        return list(Client.instances.values())[1]
+        client = list(Client.instances.values())[1]
+        eio: engineio.AsyncServer = core.sio.eio
+        environ: Dict[Any] = {}
+        raw = await eio._handle_connect(environ, 'simulation')
+        eio_sid = json.loads(raw['response'].decode('utf-8')[1:])['sid']
+        await core.sio._handle_eio_connect(eio_sid, environ)
+        result = await core.sio._handle_connect(eio_sid, '/', {})
+        # eio._trigger_event('connect', client.id)
+        await ng._on_handshake(eio_sid, client.id)
+        return client
 
     def should_contain(self, string: str) -> None:
         """Assert that the page contains an input with the given value."""
@@ -31,7 +47,7 @@ class SimulatedScreen:
         for m in context.get_client().outbox.messages:
             if m[1] == 'notify' and string in m[2]['message']:
                 return
-        raise AssertionError(f'text "{string}" not found on current screen')
+        raise AssertionError(f'text "{string}" not found on current screen:\n{self}')
 
     def click(self, target_text: str) -> None:
         """Click on the element containing the given text."""
@@ -53,3 +69,10 @@ class SimulatedScreen:
             if found:
                 return found
         return None
+
+    def __str__(self) -> str:
+        client = context.get_client()
+        result = f'{client.resolve_title()}\n{client.page_container}'
+        for message in client.outbox.messages:
+            result += f'\n{message}'
+        return result

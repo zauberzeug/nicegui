@@ -507,3 +507,10 @@ class Element(Visibility):
     def is_deleted(self) -> bool:
         """Whether the element has been deleted."""
         return self._deleted
+
+    def __str__(self) -> str:
+        result = ''
+        for e in self.default_slot.children:
+            if str(e):
+                result += f'{e}'
+        return result
