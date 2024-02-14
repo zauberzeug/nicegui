@@ -10,7 +10,7 @@ class Mermaid(ContentElement,
     def __init__(self, content: str) -> None:
         """Mermaid Diagrams
 
-        Renders diagrams and charts written in the Markdown-inspired `Mermaid <https://mermaid.js.org/>`_ language.
+        Renders diagrams and charts written in the Markdown-inspired [Mermaid ](https://mermaid.js.org/) language.
         The mermaid syntax can also be used inside Markdown elements by providing the extension string 'mermaid' to the ``ui.markdown`` element.
 
         :param content: the Mermaid content to be displayed

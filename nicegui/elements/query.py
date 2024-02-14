@@ -75,7 +75,7 @@ class Query:
             -> Self:
         """Apply, remove, or replace HTML classes.
 
-        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
+        This allows modifying the look of the element or its layout using [Tailwind <https://tailwindcss.com/>`_ or `Quasar ](https://quasar.dev/) classes.
 
         Removing or replacing classes can be helpful if predefined classes are not desired.
 
@@ -102,7 +102,7 @@ class Query:
     def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
         """Add or remove props.
 
-        This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
+        This allows modifying the look of the element or its layout using [Quasar ](https://quasar.dev/) props.
         Since props are simply applied as HTML attributes, they can be used with any HTML element.
 
         Boolean properties are assumed ``True`` if no value is specified.

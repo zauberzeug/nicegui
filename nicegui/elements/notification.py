@@ -55,7 +55,7 @@ class Notification(Element, component='notification.js'):
         :param spinner: display a spinner in the notification (default: False)
         :param timeout: optional timeout in seconds after which the notification is dismissed (default: 5.0)
 
-        Note: You can pass additional keyword arguments according to `Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>`_.
+        Note: You can pass additional keyword arguments according to [Quasar's Notify API ](https://quasar.dev/quasar-plugins/notify#notify-api).
         """
         with context.get_client().layout:
             super().__init__()

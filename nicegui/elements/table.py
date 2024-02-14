@@ -4,7 +4,12 @@ from typing_extensions import Self
 
 from .. import optional_features
 from ..element import Element
-from ..events import GenericEventArguments, TableSelectionEventArguments, ValueChangeEventArguments, handle_event
+from ..events import (
+    GenericEventArguments,
+    TableSelectionEventArguments,
+    ValueChangeEventArguments,
+    handle_event,
+)
 from .mixins.filter_element import FilterElement
 
 try:
@@ -28,7 +33,7 @@ class Table(FilterElement, component='table.js'):
                  ) -> None:
         """Table
 
-        A table based on Quasar's `QTable <https://quasar.dev/vue-components/table>`_ component.
+        A table based on Quasar's [QTable ](https://quasar.dev/vue-components/table) component.
 
         :param columns: list of column objects
         :param rows: list of row objects
@@ -86,7 +91,7 @@ class Table(FilterElement, component='table.js'):
         If the DataFrame contains non-serializable columns of type `datetime64[ns]`, `timedelta64[ns]`, `complex128` or `period[M]`,
         they will be converted to strings.
         To use a different conversion, convert the DataFrame manually before passing it to this method.
-        See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
+        See [issue 1698 ](https://github.com/zauberzeug/nicegui/issues/1698) for more information.
 
         :param df: Pandas DataFrame
         :param row_key: name of the column containing unique data identifying the row (default: "id")
@@ -218,7 +223,7 @@ class Table(FilterElement, component='table.js'):
         def __init__(self) -> None:
             """Row Element
 
-            This element is based on Quasar's `QTr <https://quasar.dev/vue-components/table#qtr-api>`_ component.
+            This element is based on Quasar's [QTr ](https://quasar.dev/vue-components/table#qtr-api) component.
             """
             super().__init__('q-tr')
 
@@ -227,7 +232,7 @@ class Table(FilterElement, component='table.js'):
         def __init__(self) -> None:
             """Header Element
 
-            This element is based on Quasar's `QTh <https://quasar.dev/vue-components/table#qth-api>`_ component.
+            This element is based on Quasar's [QTh ](https://quasar.dev/vue-components/table#qth-api) component.
             """
             super().__init__('q-th')
 
@@ -236,6 +241,6 @@ class Table(FilterElement, component='table.js'):
         def __init__(self) -> None:
             """Cell Element
 
-            This element is based on Quasar's `QTd <https://quasar.dev/vue-components/table#qtd-api>`_ component.
+            This element is based on Quasar's [QTd ](https://quasar.dev/vue-components/table#qtd-api) component.
             """
             super().__init__('q-td')

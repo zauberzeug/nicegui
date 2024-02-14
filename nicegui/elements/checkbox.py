@@ -10,7 +10,7 @@ class Checkbox(TextElement, ValueElement, DisableableElement):
     def __init__(self, text: str = '', *, value: bool = False, on_change: Optional[Callable[..., Any]] = None) -> None:
         """Checkbox
 
-        This element is based on Quasar's `QCheckbox <https://quasar.dev/vue-components/checkbox>`_ component.
+        This element is based on Quasar's [QCheckbox ](https://quasar.dev/vue-components/checkbox) component.
 
         :param text: the label to display next to the checkbox
         :param value: whether it should be checked initially (default: `False`)

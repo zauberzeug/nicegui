@@ -44,7 +44,7 @@ def notify(message: Any, *,
     :param color: optional color name
     :param multi_line: enable multi-line notifications
 
-    Note: You can pass additional keyword arguments according to `Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>`_.
+    Note: You can pass additional keyword arguments according to [Quasar's Notify API ](https://quasar.dev/quasar-plugins/notify#notify-api).
     """
     options = {ARG_MAP.get(key, key): value for key, value in locals().items() if key != 'kwargs' and value is not None}
     options['message'] = str(message)

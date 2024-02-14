@@ -22,7 +22,7 @@ class Upload(DisableableElement, component='upload.js'):
                  ) -> None:
         """File Upload
 
-        Based on Quasar's `QUploader <https://quasar.dev/vue-components/uploader>`_ component.
+        Based on Quasar's [QUploader ](https://quasar.dev/vue-components/uploader) component.
 
         :param multiple: allow uploading multiple files at once (default: `False`)
         :param max_file_size: maximum file size in bytes (default: `0`)

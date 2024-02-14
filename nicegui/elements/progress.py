@@ -17,7 +17,7 @@ class LinearProgress(ValueElement, TextColorElement):
         """Linear Progress
 
         A linear progress bar wrapping Quasar's
-        `QLinearProgress <https://quasar.dev/vue-components/linear-progress>`_ component.
+        [QLinearProgress ](https://quasar.dev/vue-components/linear-progress) component.
 
         :param value: the initial value of the field (from 0.0 to 1.0)
         :param size: the height of the progress bar (default: "20px" with value label and "4px" without)
@@ -46,7 +46,7 @@ class CircularProgress(ValueElement, TextColorElement):
         """Circular Progress
 
         A circular progress bar wrapping Quasar's
-        `QCircularProgress <https://quasar.dev/vue-components/circular-progress>`_.
+        [QCircularProgress ](https://quasar.dev/vue-components/circular-progress).
 
         :param value: the initial value of the field
         :param min: the minimum value (default: 0.0)

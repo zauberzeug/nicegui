@@ -22,7 +22,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                  ) -> None:
         """Dropdown Selection
 
-        This element is based on Quasar's `QSelect <https://quasar.dev/vue-components/select>`_ component.
+        This element is based on Quasar's [QSelect ](https://quasar.dev/vue-components/select) component.
 
         The options can be specified as a list of values, or as a dictionary mapping values to labels.
         After manipulating the options, call `update()` to update the options in the UI.
@@ -30,7 +30,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         If `with_input` is True, an input field is shown to filter the options.
 
         If `new_value_mode` is not None, it implies `with_input=True` and the user can enter new values in the input field.
-        See `Quasar's documentation <https://quasar.dev/vue-components/select#the-new-value-mode-prop>`_ for details.
+        See [Quasar's documentation ](https://quasar.dev/vue-components/select#the-new-value-mode-prop) for details.
         Note that this mode is ineffective when setting the `value` property programmatically.
 
         You can use the `validation` parameter to define a dictionary of validation rules,

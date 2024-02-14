@@ -28,7 +28,7 @@ class Leaflet(Element, component='leaflet.js'):
                  ) -> None:
         """Leaflet map
 
-        This element is a wrapper around the `Leaflet <https://leafletjs.com/>`_ JavaScript library.
+        This element is a wrapper around the [Leaflet ](https://leafletjs.com/) JavaScript library.
 
         :param center: initial center location of the map (latitude/longitude, default: (0.0, 0.0))
         :param zoom: initial zoom level of the map (default: 13)
@@ -112,7 +112,7 @@ class Leaflet(Element, component='leaflet.js'):
     def run_map_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         """Run a method of the Leaflet map instance.
 
-        Refer to the `Leaflet documentation <https://leafletjs.com/reference.html#map-methods-for-modifying-map-state>`_ for a list of methods.
+        Refer to the [Leaflet documentation ](https://leafletjs.com/reference.html#map-methods-for-modifying-map-state) for a list of methods.
 
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.

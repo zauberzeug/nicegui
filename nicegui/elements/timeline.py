@@ -13,7 +13,7 @@ class Timeline(Element):
                  ) -> None:
         """Timeline
 
-        This element represents `Quasar's QTimeline <https://quasar.dev/vue-components/timeline#qtimeline-api>`_ component.
+        This element represents [Quasar's QTimeline ](https://quasar.dev/vue-components/timeline#qtimeline-api) component.
 
         :param side: Side ("left" or "right"; default: "left").
         :param layout: Layout ("dense", "comfortable" or "loose"; default: "dense").
@@ -42,7 +42,7 @@ class TimelineEntry(Element):
                  ) -> None:
         """Timeline Entry
 
-        This element represents `Quasar's QTimelineEntry <https://quasar.dev/vue-components/timeline#qtimelineentry-api>`_ component.
+        This element represents [Quasar's QTimelineEntry ](https://quasar.dev/vue-components/timeline#qtimelineentry-api) component.
 
         :param body: Body text.
         :param side: Side ("left" or "right"; default: "left").

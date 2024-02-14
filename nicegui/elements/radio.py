@@ -14,7 +14,7 @@ class Radio(ChoiceElement, DisableableElement):
                  ) -> None:
         """Radio Selection
 
-        This element is based on Quasar's `QRadio <https://quasar.dev/vue-components/radio>`_ component.
+        This element is based on Quasar's [QRadio ](https://quasar.dev/vue-components/radio) component.
 
         The options can be specified as a list of values, or as a dictionary mapping values to labels.
         After manipulating the options, call `update()` to update the options in the UI.

@@ -21,7 +21,7 @@ class Tree(Element):
                  ) -> None:
         """Tree
 
-        Display hierarchical data using Quasar's `QTree <https://quasar.dev/vue-components/tree>`_ component.
+        Display hierarchical data using Quasar's [QTree ](https://quasar.dev/vue-components/tree) component.
 
         If using IDs, make sure they are unique within the whole tree.
 

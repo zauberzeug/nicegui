@@ -9,7 +9,7 @@ class Group(Object3D):
     def __init__(self) -> None:
         """Group
 
-        This element is based on Three.js' `Group <https://threejs.org/docs/index.html#api/en/objects/Group>`_ object.
+        This element is based on Three.js' [Group ](https://threejs.org/docs/index.html#api/en/objects/Group) object.
         It is used to group objects together.
         """
         super().__init__('group')
@@ -25,7 +25,7 @@ class Box(Object3D):
                  ) -> None:
         """Box
 
-        This element is based on Three.js' `BoxGeometry <https://threejs.org/docs/index.html#api/en/geometries/BoxGeometry>`_ object.
+        This element is based on Three.js' [BoxGeometry ](https://threejs.org/docs/index.html#api/en/geometries/BoxGeometry) object.
         It is used to create a box-shaped mesh.
 
         :param width: width of the box (default: 1.0)
@@ -46,7 +46,7 @@ class Sphere(Object3D):
                  ) -> None:
         """Sphere
 
-        This element is based on Three.js' `SphereGeometry <https://threejs.org/docs/index.html#api/en/geometries/SphereGeometry>`_ object.
+        This element is based on Three.js' [SphereGeometry ](https://threejs.org/docs/index.html#api/en/geometries/SphereGeometry) object.
         It is used to create a sphere-shaped mesh.
 
         :param radius: radius of the sphere (default: 1.0)
@@ -69,7 +69,7 @@ class Cylinder(Object3D):
                  ) -> None:
         """Cylinder
 
-        This element is based on Three.js' `CylinderGeometry <https://threejs.org/docs/index.html#api/en/geometries/CylinderGeometry>`_ object.
+        This element is based on Three.js' [CylinderGeometry ](https://threejs.org/docs/index.html#api/en/geometries/CylinderGeometry) object.
         It is used to create a cylinder-shaped mesh.
 
         :param top_radius: radius of the top (default: 1.0)
@@ -95,7 +95,7 @@ class Ring(Object3D):
                  ) -> None:
         """Ring
 
-        This element is based on Three.js' `RingGeometry <https://threejs.org/docs/index.html#api/en/geometries/RingGeometry>`_ object.
+        This element is based on Three.js' [RingGeometry ](https://threejs.org/docs/index.html#api/en/geometries/RingGeometry) object.
         It is used to create a ring-shaped mesh.
 
         :param inner_radius: inner radius of the ring (default: 0.5)
@@ -124,7 +124,7 @@ class QuadraticBezierTube(Object3D):
                  ) -> None:
         """Quadratic Bezier Tube
 
-        This element is based on Three.js' `QuadraticBezierCurve3 <https://threejs.org/docs/index.html#api/en/extras/curves/QuadraticBezierCurve3>`_ object.
+        This element is based on Three.js' [QuadraticBezierCurve3 ](https://threejs.org/docs/index.html#api/en/extras/curves/QuadraticBezierCurve3) object.
         It is used to create a tube-shaped mesh.
 
         :param start: start point of the curve
@@ -149,7 +149,7 @@ class Extrusion(Object3D):
                  ) -> None:
         """Extrusion
 
-        This element is based on Three.js' `ExtrudeGeometry <https://threejs.org/docs/index.html#api/en/geometries/ExtrudeGeometry>`_ object.
+        This element is based on Three.js' [ExtrudeGeometry ](https://threejs.org/docs/index.html#api/en/geometries/ExtrudeGeometry) object.
         It is used to create a 3D shape by extruding a 2D shape to a given height.
 
         :param outline: list of points defining the outline of the 2D shape
@@ -183,7 +183,7 @@ class Line(Object3D):
                  ) -> None:
         """Line
 
-        This element is based on Three.js' `Line <https://threejs.org/docs/index.html#api/en/objects/Line>`_ object.
+        This element is based on Three.js' [Line ](https://threejs.org/docs/index.html#api/en/objects/Line) object.
         It is used to create a line segment.
 
         :param start: start point of the line
@@ -203,7 +203,7 @@ class Curve(Object3D):
                  ) -> None:
         """Curve
 
-        This element is based on Three.js' `CubicBezierCurve3 <https://threejs.org/docs/index.html#api/en/extras/curves/CubicBezierCurve3>`_ object.
+        This element is based on Three.js' [CubicBezierCurve3 ](https://threejs.org/docs/index.html#api/en/extras/curves/CubicBezierCurve3) object.
 
         :param start: start point of the curve
         :param control1: first control point of the curve
@@ -286,7 +286,7 @@ class SpotLight(Object3D):
                  ) -> None:
         """Spot Light
 
-        This element is based on Three.js' `SpotLight <https://threejs.org/docs/index.html#api/en/lights/SpotLight>`_ object.
+        This element is based on Three.js' [SpotLight ](https://threejs.org/docs/index.html#api/en/lights/SpotLight) object.
         It is used to add a spot light to the scene.
 
         :param color: CSS color string (default: '#ffffff')
@@ -308,7 +308,7 @@ class PointCloud(Object3D):
                  ) -> None:
         """Point Cloud
 
-        This element is based on Three.js' `Points <https://threejs.org/docs/index.html#api/en/objects/Points>`_ object.
+        This element is based on Three.js' [Points ](https://threejs.org/docs/index.html#api/en/objects/Points) object.
 
         :param points: list of points
         :param colors: list of colors (one per point)

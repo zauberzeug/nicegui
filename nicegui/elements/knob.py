@@ -23,7 +23,7 @@ class Knob(ValueElement, DisableableElement, TextColorElement):
                  ) -> None:
         """Knob
 
-        This element is based on Quasar's `QKnob <https://quasar.dev/vue-components/knob>`_ component.
+        This element is based on Quasar's [QKnob ](https://quasar.dev/vue-components/knob) component.
         The element is used to take a number input from the user through mouse/touch panning.
 
         :param value: the initial value (default: 0.0)

@@ -5,13 +5,29 @@ import inspect
 import re
 from copy import copy, deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Union,
+)
 
 from typing_extensions import Self
 
 from . import context, core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
-from .dependencies import Component, Library, register_library, register_resource, register_vue_component
+from .dependencies import (
+    Component,
+    Library,
+    register_library,
+    register_resource,
+    register_vue_component,
+)
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
@@ -226,7 +242,7 @@ class Element(Visibility):
                 replace: Optional[str] = None) -> Self:
         """Apply, remove, or replace HTML classes.
 
-        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
+        This allows modifying the look of the element or its layout using [Tailwind <https://tailwindcss.com/>`_ or `Quasar ](https://quasar.dev/) classes.
 
         Removing or replacing classes can be helpful if predefined classes are not desired.
 
@@ -247,7 +263,7 @@ class Element(Visibility):
                         replace: Optional[str] = None) -> type[Self]:
         """Apply, remove, or replace default HTML classes.
 
-        This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
+        This allows modifying the look of the element or its layout using [Tailwind <https://tailwindcss.com/>`_ or `Quasar ](https://quasar.dev/) classes.
 
         Removing or replacing classes can be helpful if predefined classes are not desired.
         All elements of this class will share these HTML classes.
@@ -334,7 +350,7 @@ class Element(Visibility):
               remove: Optional[str] = None) -> Self:
         """Add or remove props.
 
-        This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
+        This allows modifying the look of the element or its layout using [Quasar ](https://quasar.dev/) props.
         Since props are simply applied as HTML attributes, they can be used with any HTML element.
 
         Boolean properties are assumed ``True`` if no value is specified.
@@ -361,7 +377,7 @@ class Element(Visibility):
                       remove: Optional[str] = None) -> type[Self]:
         """Add or remove default props.
 
-        This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
+        This allows modifying the look of the element or its layout using [Quasar ](https://quasar.dev/) props.
         Since props are simply applied as HTML attributes, they can be used with any HTML element.
         All elements of this class will share these props.
         These must be defined before element instantiation.

@@ -17,7 +17,7 @@ class Expansion(TextElement, ValueElement, DisableableElement):
                  ) -> None:
         """Expansion Element
 
-        Provides an expandable container based on Quasar's `QExpansionItem <https://quasar.dev/vue-components/expansion-item>`_ component.
+        Provides an expandable container based on Quasar's [QExpansionItem ](https://quasar.dev/vue-components/expansion-item) component.
 
         :param text: title text
         :param caption: optional caption (or sub-label) text

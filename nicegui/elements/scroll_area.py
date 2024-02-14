@@ -10,7 +10,7 @@ class ScrollArea(Element):
         """Scroll Area
 
         A way of customizing the scrollbars by encapsulating your content.
-        This element exposes the Quasar `ScrollArea <https://quasar.dev/vue-components/scroll-area/>`_ component.
+        This element exposes the Quasar [ScrollArea ](https://quasar.dev/vue-components/scroll-area/) component.
 
         :param on_scroll: function to be called when the scroll position changes
         """

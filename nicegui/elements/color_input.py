@@ -18,7 +18,7 @@ class ColorInput(ValueElement, DisableableElement):
                  ) -> None:
         """Color Input
 
-        This element extends Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component with a color picker.
+        This element extends Quasar's [QInput ](https://quasar.dev/vue-components/input) component with a color picker.
 
         :param label: displayed label for the color input
         :param placeholder: text to show if no color is selected

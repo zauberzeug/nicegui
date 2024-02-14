@@ -17,7 +17,7 @@ class Button(TextElement, DisableableElement, BackgroundColorElement):
                  ) -> None:
         """Button
 
-        This element is based on Quasar's `QBtn <https://quasar.dev/vue-components/button>`_ component.
+        This element is based on Quasar's [QBtn ](https://quasar.dev/vue-components/button) component.
 
         The ``color`` parameter accepts a Quasar color, a Tailwind color, or a CSS color.
         If a Quasar color is used, the button will be styled according to the Quasar theme including the color of the text.

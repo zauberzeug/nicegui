@@ -32,7 +32,7 @@ class Header(ValueElement):
                  ) -> None:
         """Header
 
-        This element is based on Quasar's `QHeader <https://quasar.dev/layout/header-and-footer#qheader-api>`_ component.
+        This element is based on Quasar's [QHeader ](https://quasar.dev/layout/header-and-footer#qheader-api) component.
 
         Note: The header is automatically placed above other layout elements in the DOM to improve accessibility.
         To change the order, use the `move` method.
@@ -95,7 +95,7 @@ class Drawer(Element):
                  bottom_corner: bool = False) -> None:
         """Drawer
 
-        This element is based on Quasar's `QDrawer <https://quasar.dev/layout/drawer>`_ component.
+        This element is based on Quasar's [QDrawer ](https://quasar.dev/layout/drawer) component.
 
         Note: Depending on the side, the drawer is automatically placed above or below the main page container in the DOM to improve accessibility.
         To change the order, use the `move` method.
@@ -152,7 +152,7 @@ class LeftDrawer(Drawer):
                  bottom_corner: bool = False) -> None:
         """Left drawer
 
-        This element is based on Quasar's `QDrawer <https://quasar.dev/layout/drawer>`_ component.
+        This element is based on Quasar's [QDrawer ](https://quasar.dev/layout/drawer) component.
 
         Note: The left drawer is automatically placed above the main page container in the DOM to improve accessibility.
         To change the order, use the `move` method.
@@ -184,7 +184,7 @@ class RightDrawer(Drawer):
                  bottom_corner: bool = False) -> None:
         """Right drawer
 
-        This element is based on Quasar's `QDrawer <https://quasar.dev/layout/drawer>`_ component.
+        This element is based on Quasar's [QDrawer ](https://quasar.dev/layout/drawer) component.
 
         Note: The right drawer is automatically placed below the main page container in the DOM to improve accessibility.
         To change the order, use the `move` method.
@@ -216,7 +216,7 @@ class Footer(ValueElement):
                  ) -> None:
         """Footer
 
-        This element is based on Quasar's `QFooter <https://quasar.dev/layout/header-and-footer#qfooter-api>`_ component.
+        This element is based on Quasar's [QFooter ](https://quasar.dev/layout/header-and-footer#qfooter-api) component.
 
         Note: The footer is automatically placed below other layout elements in the DOM to improve accessibility.
         To change the order, use the `move` method.

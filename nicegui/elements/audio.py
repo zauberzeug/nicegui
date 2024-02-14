@@ -23,7 +23,7 @@ class Audio(SourceElement, component='audio.js'):
         :param muted: whether the audio should be initially muted (default: `False`)
         :param loop: whether the audio should loop (default: `False`)
 
-        See `here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#events>`_
+        See [here ](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#events)
         for a list of events you can subscribe to using the generic event subscription `on()`.
         """
         super().__init__(source=src)

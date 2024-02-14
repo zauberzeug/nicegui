@@ -23,7 +23,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
                  ) -> None:
         """AG Grid
 
-        An element to create a grid using `AG Grid <https://www.ag-grid.com/>`_.
+        An element to create a grid using [AG Grid ](https://www.ag-grid.com/).
 
         The methods `run_grid_method` and `run_column_method` can be used to interact with the AG Grid instance on the client.
 
@@ -51,7 +51,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         If the DataFrame contains non-serializable columns of type `datetime64[ns]`, `timedelta64[ns]`, `complex128` or `period[M]`,
         they will be converted to strings.
         To use a different conversion, convert the DataFrame manually before passing it to this method.
-        See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
+        See [issue 1698 ](https://github.com/zauberzeug/nicegui/issues/1698) for more information.
 
         :param df: Pandas DataFrame
         :param theme: AG Grid theme (default: 'balham')
@@ -98,7 +98,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
     def run_grid_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         """Run an AG Grid API method.
 
-        See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>`_ for a list of methods.
+        See [AG Grid API ](https://www.ag-grid.com/javascript-data-grid/grid-api/) for a list of methods.
 
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
@@ -120,7 +120,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
                           timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         """Run an AG Grid Column API method.
 
-        See `AG Grid Column API <https://www.ag-grid.com/javascript-data-grid/column-api/>`_ for a list of methods.
+        See [AG Grid Column API ](https://www.ag-grid.com/javascript-data-grid/column-api/) for a list of methods.
 
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
@@ -138,7 +138,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
                        timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         """Run an AG Grid API method on a specific row.
 
-        See `AG Grid Row Reference <https://www.ag-grid.com/javascript-data-grid/row-object/>`_ for a list of methods.
+        See [AG Grid Row Reference ](https://www.ag-grid.com/javascript-data-grid/row-object/) for a list of methods.
 
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
@@ -158,7 +158,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         This method is especially useful when the grid is configured with ``rowSelection: 'multiple'``.
 
-        See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows>`_ for more information.
+        See [AG Grid API ](https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows) for more information.
 
         :return: list of selected row data
         """
@@ -180,7 +180,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         This method is especially useful when the grid is configured with ``'editable': True``.
 
-        See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/accessing-data/>`_ for more information.
+        See [AG Grid API ](https://www.ag-grid.com/javascript-data-grid/accessing-data/) for more information.
 
         Note that when editing a cell, the row data is not updated until the cell exits the edit mode.
         This does not happen when the cell loses focus, unless ``stopEditingWhenCellsLoseFocus: True`` is set.

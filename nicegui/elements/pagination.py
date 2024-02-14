@@ -13,7 +13,7 @@ class Pagination(ValueElement, DisableableElement):
                  on_change: Optional[Callable[..., Any]] = None) -> None:
         """Pagination
 
-        A pagination element wrapping Quasar's `QPagination <https://quasar.dev/vue-components/pagination>`_ component.
+        A pagination element wrapping Quasar's [QPagination ](https://quasar.dev/vue-components/pagination) component.
 
         :param min: minimum page number
         :param max: maximum page number

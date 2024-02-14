@@ -11,7 +11,7 @@ class List(Element):
     def __init__(self) -> None:
         """List
 
-        A list element based on Quasar's `QList <https://quasar.dev/vue-components/list-and-list-items#qlist-api>`_ component.
+        A list element based on Quasar's [QList ](https://quasar.dev/vue-components/list-and-list-items#qlist-api) component.
         It provides a container for list items.
         """
         super().__init__('q-list')
@@ -22,7 +22,7 @@ class Item(DisableableElement):
     def __init__(self, *, on_click: Optional[Callable[..., Any]] = None) -> None:
         """List Item
 
-        Creates a list item based on Quasar's `QItem <https://quasar.dev/vue-components/list-and-list-items#qitem-api>`_ component.
+        Creates a list item based on Quasar's [QItem ](https://quasar.dev/vue-components/list-and-list-items#qitem-api) component.
         The item should be placed inside a list element.
         """
         super().__init__(tag='q-item')
@@ -38,7 +38,7 @@ class ItemSection(Element):
         """
         List Item Section
 
-        Creates an item section based on Quasar's `QItemList <https://quasar.dev/vue-components/list-and-list-items#qitemsection-api>`_ component.
+        Creates an item section based on Quasar's [QItemList ](https://quasar.dev/vue-components/list-and-list-items#qitemsection-api) component.
         The section should be placed inside a list item element.
         """
         super().__init__('q-item-section')
@@ -50,7 +50,7 @@ class ItemLabel(TextElement):
         """
         List Item Label
 
-        Creates an item label based on Quasar's `QItemLabel <https://quasar.dev/vue-components/list-and-list-items#qitemlabel-api>`_ component.
+        Creates an item label based on Quasar's [QItemLabel ](https://quasar.dev/vue-components/list-and-list-items#qitemlabel-api) component.
 
         :param text: text to be displayed (default: "")
         """

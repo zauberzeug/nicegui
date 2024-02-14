@@ -18,7 +18,7 @@ class Avatar(BackgroundColorElement, TextColorElement):
         """Avatar
 
         A avatar element wrapping Quasar's
-        `QAvatar <https://quasar.dev/vue-components/avatar>`_ component.
+        [QAvatar ](https://quasar.dev/vue-components/avatar) component.
 
         :param icon: name of the icon or image path with "img:" prefix (e.g. "map", "img:path/to/image.png")
         :param color: background color (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")

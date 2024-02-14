@@ -15,7 +15,7 @@ class Tabs(ValueElement):
                  ) -> None:
         """Tabs
 
-        This element represents `Quasar's QTabs <https://quasar.dev/vue-components/tabs#qtabs-api>`_ component.
+        This element represents [Quasar's QTabs ](https://quasar.dev/vue-components/tabs#qtabs-api) component.
         It contains individual tabs.
 
         :param value: `ui.tab`, `ui.tab_panel`, or name of the tab to be initially selected
@@ -32,7 +32,7 @@ class Tab(DisableableElement):
     def __init__(self, name: str, label: Optional[str] = None, icon: Optional[str] = None) -> None:
         """Tab
 
-        This element represents `Quasar's QTab <https://quasar.dev/vue-components/tabs#qtab-api>`_ component.
+        This element represents [Quasar's QTab ](https://quasar.dev/vue-components/tabs#qtab-api) component.
         It is a child of a `ui.tabs` element.
 
         :param name: name of the tab (will be the value of the `ui.tabs` element)
@@ -58,11 +58,11 @@ class TabPanels(ValueElement):
                  ) -> None:
         """Tab Panels
 
-        This element represents `Quasar's QTabPanels <https://quasar.dev/vue-components/tab-panels#qtabpanels-api>`_ component.
+        This element represents [Quasar's QTabPanels ](https://quasar.dev/vue-components/tab-panels#qtabpanels-api) component.
         It contains individual tab panels.
 
         To avoid issues with dynamic elements when switching tabs,
-        this element uses Vue's `keep-alive <https://vuejs.org/guide/built-ins/keep-alive.html>`_ component.
+        this element uses Vue's [keep-alive ](https://vuejs.org/guide/built-ins/keep-alive.html) component.
         If client-side performance is an issue, you can disable this feature.
 
         :param tabs: an optional `ui.tabs` element that controls this element
@@ -86,7 +86,7 @@ class TabPanel(DisableableElement):
     def __init__(self, name: Union[Tab, str]) -> None:
         """Tab Panel
 
-        This element represents `Quasar's QTabPanel <https://quasar.dev/vue-components/tab-panels#qtabpanel-api>`_ component.
+        This element represents [Quasar's QTabPanel ](https://quasar.dev/vue-components/tab-panels#qtabpanel-api) component.
         It is a child of a `TabPanels` element.
 
         :param name: `ui.tab` or the name of a tab element

@@ -13,7 +13,7 @@ class Date(ValueElement, DisableableElement):
                  on_change: Optional[Callable[..., Any]] = None) -> None:
         """Date Input
 
-        This element is based on Quasar's `QDate <https://quasar.dev/vue-components/date>`_ component.
+        This element is based on Quasar's [QDate ](https://quasar.dev/vue-components/date) component.
         The date is a string in the format defined by the `mask` parameter.
 
         You can also use the `range` or `multiple` props to select a range of dates or multiple dates::
