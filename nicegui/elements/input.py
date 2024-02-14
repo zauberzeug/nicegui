@@ -21,7 +21,7 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
                  ) -> None:
         """Text Input
 
-        This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
+        This element is based on Quasar's [QInput ](https://quasar.dev/vue-components/input) component.
 
         The `on_change` event is called on every keystroke and the value updates accordingly.
         If you want to wait until the user confirms the input, you can register a custom event callback, e.g.
@@ -36,7 +36,7 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
         Quasar's `QInput` component is a wrapper around a native `input` element.
         This means that you cannot style the input directly,
         but you can use the `input-class` and `input-style` props to style the native input element.
-        See the "Style" props section on the `QInput <https://quasar.dev/vue-components/input>`_ documentation for more details.
+        See the "Style" props section on the [QInput ](https://quasar.dev/vue-components/input) documentation for more details.
 
         :param label: displayed label for the text input
         :param placeholder: text to show if no value is entered

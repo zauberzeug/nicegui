@@ -2,7 +2,12 @@ from typing import Callable, Dict, Optional
 
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
-from ..events import GenericEventArguments, JsonEditorChangeEventArguments, JsonEditorSelectEventArguments, handle_event
+from ..events import (
+    GenericEventArguments,
+    JsonEditorChangeEventArguments,
+    JsonEditorSelectEventArguments,
+    handle_event,
+)
 
 
 class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/vanilla-jsoneditor/index.js']):
@@ -14,7 +19,7 @@ class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/va
                  ) -> None:
         """JSONEditor
 
-        An element to create a JSON editor using `JSONEditor <https://github.com/josdejong/svelte-jsoneditor>`_.
+        An element to create a JSON editor using [JSONEditor ](https://github.com/josdejong/svelte-jsoneditor).
         Updates can be pushed to the editor by changing the `properties` property.
         After data has changed, call the `update` method to refresh the editor.
 
@@ -48,7 +53,7 @@ class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/va
                           check_interval: float = 0.01) -> AwaitableResponse:
         """Run a method of the JSONEditor instance.
 
-        See the `JSONEditor README <https://github.com/josdejong/svelte-jsoneditor/>`_ for a list of methods.
+        See the [JSONEditor README ](https://github.com/josdejong/svelte-jsoneditor/) for a list of methods.
 
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.

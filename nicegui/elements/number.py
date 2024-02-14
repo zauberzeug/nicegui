@@ -24,7 +24,7 @@ class Number(ValidationElement, DisableableElement):
                  ) -> None:
         """Number Input
 
-        This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
+        This element is based on Quasar's [QInput ](https://quasar.dev/vue-components/input) component.
 
         You can use the `validation` parameter to define a dictionary of validation rules,
         e.g. ``{'Too small!': lambda value: value < 3}``.

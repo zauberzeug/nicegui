@@ -35,7 +35,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         It is also the best choice for non-flickering image updates.
         If the source URL changes faster than images can be loaded by the browser, some images are simply skipped.
         Thereby repeatedly updating the image source will automatically adapt to the available bandwidth.
-        See `OpenCV Webcam <https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam/main.py>`_ for an example.
+        See [OpenCV Webcam ](https://github.com/zauberzeug/nicegui/tree/main/examples/opencv_webcam/main.py) for an example.
 
         The mouse event handler is called with mouse event arguments containing
 

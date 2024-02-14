@@ -18,7 +18,7 @@ class Carousel(ValueElement):
                  ) -> None:
         """Carousel
 
-        This element represents `Quasar's QCarousel <https://quasar.dev/vue-components/carousel#qcarousel-api>`_ component.
+        This element represents [Quasar's QCarousel ](https://quasar.dev/vue-components/carousel#qcarousel-api) component.
         It contains individual carousel slides.
 
         :param value: `ui.carousel_slide` or name of the slide to be initially selected (default: `None` meaning the first slide)
@@ -56,7 +56,7 @@ class CarouselSlide(DisableableElement):
     def __init__(self, name: Optional[str] = None) -> None:
         """Carousel Slide
 
-        This element represents `Quasar's QCarouselSlide <https://quasar.dev/vue-components/carousel#qcarouselslide-api>`_ component.
+        This element represents [Quasar's QCarouselSlide ](https://quasar.dev/vue-components/carousel#qcarouselslide-api) component.
         It is a child of a `ui.carousel` element.
 
         :param name: name of the slide (will be the value of the `ui.carousel` element, auto-generated if `None`)

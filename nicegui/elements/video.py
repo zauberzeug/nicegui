@@ -23,7 +23,7 @@ class Video(SourceElement, component='video.js'):
         :param muted: whether the video should be initially muted (default: `False`)
         :param loop: whether the video should loop (default: `False`)
 
-        See `here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events>`_
+        See [here ](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events)
         for a list of events you can subscribe to using the generic event subscription `on()`.
         """
         super().__init__(source=src)

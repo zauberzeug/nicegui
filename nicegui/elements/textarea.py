@@ -14,7 +14,7 @@ class Textarea(Input, component='input.js'):
                  ) -> None:
         """Textarea
 
-        This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
+        This element is based on Quasar's [QInput ](https://quasar.dev/vue-components/input) component.
         The ``type`` is set to ``textarea`` to create a multi-line text input.
 
         You can use the `validation` parameter to define a dictionary of validation rules,

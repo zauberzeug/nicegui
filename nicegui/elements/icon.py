@@ -14,9 +14,9 @@ class Icon(NameElement, TextColorElement):
                  ) -> None:
         """Icon
 
-        This element is based on Quasar's `QIcon <https://quasar.dev/vue-components/icon>`_ component.
+        This element is based on Quasar's [QIcon ](https://quasar.dev/vue-components/icon) component.
 
-        `Here <https://fonts.google.com/icons?icon.set=Material+Icons>`_ is a reference of possible names.
+        [Here ](https://fonts.google.com/icons?icon.set=Material+Icons) is a reference of possible names.
 
         :param name: name of the icon (snake case, e.g. `add_circle`)
         :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem

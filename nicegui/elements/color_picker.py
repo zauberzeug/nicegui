@@ -10,8 +10,8 @@ class ColorPicker(Menu):
     def __init__(self, *, on_pick: Callable[..., Any], value: bool = False) -> None:
         """Color Picker
 
-        This element is based on Quasar's `QMenu <https://quasar.dev/vue-components/menu>`_ and
-        `QColor <https://quasar.dev/vue-components/color>`_ components.
+        This element is based on Quasar's [QMenu ](https://quasar.dev/vue-components/menu) and
+        [QColor ](https://quasar.dev/vue-components/color) components.
 
         :param on_pick: callback to execute when a color is picked
         :param value: whether the menu is already opened (default: `False`)

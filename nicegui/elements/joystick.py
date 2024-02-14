@@ -14,13 +14,13 @@ class Joystick(Element, component='joystick.vue', libraries=['lib/nipplejs/nippl
                  ** options: Any) -> None:
         """Joystick
 
-        Create a joystick based on `nipple.js <https://yoannmoi.net/nipplejs/>`_.
+        Create a joystick based on [nipple.js ](https://yoannmoi.net/nipplejs/).
 
         :param on_start: callback for when the user touches the joystick
         :param on_move: callback for when the user moves the joystick
         :param on_end: callback for when the user releases the joystick
         :param throttle: throttle interval in seconds for the move event (default: 0.05)
-        :param options: arguments like `color` which should be passed to the `underlying nipple.js library <https://github.com/yoannmoinet/nipplejs#options>`_
+        :param options: arguments like [color` which should be passed to the `underlying nipple.js library ](https://github.com/yoannmoinet/nipplejs#options)
         """
         super().__init__()
         self._props['options'] = options

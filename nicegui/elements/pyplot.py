@@ -22,10 +22,10 @@ class Pyplot(Element):
     def __init__(self, *, close: bool = True, **kwargs: Any) -> None:
         """Pyplot Context
 
-        Create a context to configure a `Matplotlib <https://matplotlib.org/>`_ plot.
+        Create a context to configure a [Matplotlib ](https://matplotlib.org/) plot.
 
         :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later (default: `True`)
-        :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_
+        :param kwargs: arguments like [figsize` which should be passed to `pyplot.figure ](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html)
         """
         if not optional_features.has('matplotlib'):
             raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')

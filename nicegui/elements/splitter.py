@@ -19,7 +19,7 @@ class Splitter(ValueElement, DisableableElement):
         allowing for flexible and responsive layouts in your application.
 
         Based on Quasar's Splitter component:
-        `Splitter <https://quasar.dev/vue-components/splitter>`_
+        [Splitter ](https://quasar.dev/vue-components/splitter)
 
         It provides three customizable slots, ``before``, ``after``, and ``separator``,
         which can be used to embed other elements within the splitter.

@@ -21,7 +21,7 @@ class LinePlot(Pyplot):
         :param limit: maximum number of datapoints per line (new points will displace the oldest)
         :param update_every: update plot only after pushing new data multiple times to save CPU and bandwidth
         :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later (default: `True`)
-        :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_
+        :param kwargs: arguments like [figsize` which should be passed to `pyplot.figure ](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html)
         """
         super().__init__(close=close, **kwargs)
 
@@ -36,7 +36,7 @@ class LinePlot(Pyplot):
         """Add a legend to the plot.
 
         :param titles: list of titles for the lines
-        :param kwargs: additional arguments which should be passed to `pyplot.legend <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html>`_
+        :param kwargs: additional arguments which should be passed to [pyplot.legend ](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html)
         """
         self.fig.gca().legend(titles, **kwargs)
         self._convert_to_html()

@@ -14,7 +14,7 @@ class Editor(ValueElement, DisableableElement):
                  ) -> None:
         """Editor
 
-        A WYSIWYG editor based on `Quasar's QEditor <https://quasar.dev/vue-components/editor>`_.
+        A WYSIWYG editor based on [Quasar's QEditor ](https://quasar.dev/vue-components/editor).
         The value is a string containing the formatted text as HTML code.
 
         :param value: initial value

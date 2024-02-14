@@ -9,7 +9,7 @@ class Dialog(ValueElement):
     def __init__(self, *, value: bool = False) -> None:
         """Dialog
 
-        Creates a dialog based on Quasar's `QDialog <https://quasar.dev/vue-components/dialog>`_ component.
+        Creates a dialog based on Quasar's [QDialog ](https://quasar.dev/vue-components/dialog) component.
         By default it is dismissible by clicking or pressing ESC.
         To make it persistent, set `.props('persistent')` on the dialog element.
 

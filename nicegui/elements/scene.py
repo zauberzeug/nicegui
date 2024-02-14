@@ -7,8 +7,13 @@ from .. import binding
 from ..awaitable_response import AwaitableResponse, NullResponse
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
-from ..events import (GenericEventArguments, SceneClickEventArguments, SceneClickHit, SceneDragEventArguments,
-                      handle_event)
+from ..events import (
+    GenericEventArguments,
+    SceneClickEventArguments,
+    SceneClickHit,
+    SceneDragEventArguments,
+    handle_event,
+)
 from .scene_object3d import Object3D
 
 
@@ -69,7 +74,7 @@ class Scene(Element,
                  ) -> None:
         """3D Scene
 
-        Display a 3D scene using `three.js <https://threejs.org/>`_.
+        Display a 3D scene using [three.js ](https://threejs.org/).
         Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes.
         Objects can be translated, rotated and displayed with different color, opacity or as wireframes.
         They can also be grouped to apply joint movements.

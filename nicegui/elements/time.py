@@ -13,7 +13,7 @@ class Time(ValueElement, DisableableElement):
                  ) -> None:
         """Time Input
 
-        This element is based on Quasar's `QTime <https://quasar.dev/vue-components/date>`_ component.
+        This element is based on Quasar's [QTime ](https://quasar.dev/vue-components/date) component.
         The time is a string in the format defined by the `mask` parameter.
 
         :param value: the initial time

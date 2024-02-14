@@ -22,7 +22,7 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
     def __init__(self, options: Dict, on_point_click: Optional[Callable] = None) -> None:
         """Apache EChart
 
-        An element to create a chart using `ECharts <https://echarts.apache.org/>`_.
+        An element to create a chart using [ECharts ](https://echarts.apache.org/).
         Updates can be pushed to the chart by changing the `options` property.
         After data has changed, call the `update` method to refresh the chart.
 
@@ -96,7 +96,7 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
                          check_interval: float = 0.01) -> AwaitableResponse:
         """Run a method of the JSONEditor instance.
 
-        See the `ECharts documentation <https://echarts.apache.org/en/api.html#echartsInstance>`_ for a list of methods.
+        See the [ECharts documentation ](https://echarts.apache.org/en/api.html#echartsInstance) for a list of methods.
 
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.

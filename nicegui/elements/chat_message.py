@@ -18,7 +18,7 @@ class ChatMessage(Element):
                  ) -> None:
         """Chat Message
 
-        Based on Quasar's `Chat Message <https://quasar.dev/vue-components/chat/>`_ component.
+        Based on Quasar's [Chat Message ](https://quasar.dev/vue-components/chat/) component.
 
         :param text: the message body (can be a list of strings for multiple message parts)
         :param name: the name of the message author

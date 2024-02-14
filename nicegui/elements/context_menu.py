@@ -6,7 +6,7 @@ class ContextMenu(Element):
     def __init__(self) -> None:
         """Context Menu
 
-        Creates a context menu based on Quasar's `QMenu <https://quasar.dev/vue-components/menu>`_ component.
+        Creates a context menu based on Quasar's [QMenu ](https://quasar.dev/vue-components/menu) component.
         The context menu should be placed inside the element where it should be shown.
         It is automatically opened when the user right-clicks on the element and appears at the mouse position.
         """
