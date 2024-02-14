@@ -63,7 +63,7 @@ class Search:
                             with ui.element('q-item').props('clickable'):
                                 with ui.element('q-item-section'):
                                     ui.link(result['item']['title'], target=href).style('font-weight: 500')
-                                    ui.markdown(result['item']['content'][:200] + '...').classes('text-grey-1')
+                                    ui.markdown(result['item']['content'][:200] + '...').classes('text-grey')
 
         background_tasks.create_lazy(handle_input(), name='handle_search_input')
 
