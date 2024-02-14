@@ -60,10 +60,11 @@ class Search:
                         href: str = result['item']['url']
                         with ui.link(target=href).props('clickable') \
                                 .on('click', lambda href=href: self.open_url(href), []):
-                            with ui.element('q-item').props('clickable'):
-                                with ui.element('q-item-section'):
-                                    ui.link(result['item']['title'], target=href).style('font-weight: 500')
-                                    ui.markdown(result['item']['content'][:200] + '...').classes('text-grey')
+                            with ui.list().props('bordered separator clickable'):
+                                ui.item_label(result['item']['title']).style('font-weight: 500; padding: 0.5rem; gap: 0px').classes('text-bold')
+                                with ui.item().props('clickable').style('padding: 0.5rem; gap: 0px'):
+                                    with ui.item_section():
+                                        ui.markdown(result['item']['content'][:200] + '...').classes('text-grey')
 
         background_tasks.create_lazy(handle_input(), name='handle_search_input')
 
