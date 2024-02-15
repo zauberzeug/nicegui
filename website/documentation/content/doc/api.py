@@ -157,10 +157,12 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
     if len(args) == 2:
         element = None
         title_, description = args
+        is_markdown = True
     else:
         element = args[0]
         doc = element.__init__.__doc__ if isinstance(element, type) else element.__doc__  # type: ignore
         title_, description = doc.split('\n', 1)
+        is_markdown = False
 
     description = remove_indentation(description)
     page = _get_current_page()
@@ -176,7 +178,7 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
         page.parts.append(DocumentationPart(
             title=title_,
             description=description,
-            description_format='md',
+            description_format='md' if is_markdown else 'rst',
             demo=Demo(function=function, lazy=kwargs.get('lazy', True), tab=kwargs.get('tab')),
         ))
         return function

@@ -6,29 +6,68 @@ from .html import Html
 
 
 class ChatMessage(Element):
+    """
+    Represents a chat message element.
 
-    def __init__(self,
-                 text: Union[str, List[str]] = ..., *,  # type: ignore
-                 name: Optional[str] = None,
-                 label: Optional[str] = None,
-                 stamp: Optional[str] = None,
-                 avatar: Optional[str] = None,
-                 sent: bool = False,
-                 text_html: bool = False,
-                 ) -> None:
-        """Chat Message
+    This element is used to display a chat message in a graphical user interface.
+    It can be used to show messages from different authors, with timestamps and avatars.
 
-        Based on Quasar's [Chat Message ](https://quasar.dev/vue-components/chat/) component.
+    Args:
+        - text (Union[str, List[str]], optional): The message body. It can be a single string or a list of strings for multiple message parts. Defaults to ... (ellipsis).
+        - name (Optional[str], optional): The name of the message author. Defaults to None.
+        - label (Optional[str], optional): Renders a label header/section only. Defaults to None.
+        - stamp (Optional[str], optional): Timestamp of the message. Defaults to None.
+        - avatar (Optional[str], optional): URL to an avatar. Defaults to None.
+        - sent (bool, optional): Renders the message as a sent message (from the current user). Defaults to False.
+        - text_html (bool, optional): Renders the text as HTML. Defaults to False.
 
-        - text: the message body (can be a list of strings for multiple message parts)
-        - name: the name of the message author
-        - label: renders a label header/section only
-        - stamp: timestamp of the message
-        - avatar: URL to an avatar
-        - sent: render as a sent message (so from current user) (default: False)
-        - text_html: render text as HTML (default: False)
+    Attributes:
+        - _props (Dict[str, Any]): A dictionary containing the properties of the chat message element.
+
+    Example:
+        To create a chat message element with a single line of text:
+
+        ```python
+        message = ChatMessage(text="Hello, world!", name="John Doe", stamp="12:34 PM")
+        ```
+
+        To create a chat message element with multiple lines of text:
+
+        ```python
+        message = ChatMessage(text=["Line 1", "Line 2", "Line 3"], name="John Doe", stamp="12:34 PM")
+        ```
+
+    """
+
+    def __init__(
+        self,
+        text: Union[str, List[str]] = ...,
+        *,
+        name: Optional[str] = None,
+        label: Optional[str] = None,
+        stamp: Optional[str] = None,
+        avatar: Optional[str] = None,
+        sent: bool = False,
+        text_html: bool = False,
+    ) -> None:
         """
-        super().__init__('q-chat-message')
+        Chat Message
+
+        Args:
+        
+            - text (Union[str, List[str]], optional): The message body. It can be a single string or a list of strings for multiple message parts. Defaults to ... (ellipsis).
+            - name (Optional[str], optional): The name of the message author. Defaults to None.
+            - label (Optional[str], optional): Renders a label header/section only. Defaults to None.
+            - stamp (Optional[str], optional): Timestamp of the message. Defaults to None.
+            - avatar (Optional[str], optional): URL to an avatar. Defaults to None.
+            - sent (bool, optional): Renders the message as a sent message (from the current user). Defaults to False.
+            - text_html (bool, optional): Renders the text as HTML. Defaults to False.
+            
+        Returns:
+        
+                - None
+        """
+        super().__init__("q-chat-message")
 
         if text is ...:
             text = []
@@ -36,17 +75,17 @@ class ChatMessage(Element):
             text = [text]
         if not text_html:
             text = [html.escape(part) for part in text]
-            text = [part.replace('\n', '<br />') for part in text]
+            text = [part.replace("\n", "<br />") for part in text]
 
         if name is not None:
-            self._props['name'] = name
+            self._props["name"] = name
         if label is not None:
-            self._props['label'] = label
+            self._props["label"] = label
         if stamp is not None:
-            self._props['stamp'] = stamp
+            self._props["stamp"] = stamp
         if avatar is not None:
-            self._props['avatar'] = avatar
-        self._props['sent'] = sent
+            self._props["avatar"] = avatar
+        self._props["sent"] = sent
 
         with self:
             for line in text:

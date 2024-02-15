@@ -7,7 +7,62 @@ from ..language import Language
 
 
 @dataclass(**KWONLY_SLOTS)
+@dataclass
 class AppConfig:
+    """Represents the configuration for the NiceGUI application.
+
+    The AppConfig class stores various settings and options for the NiceGUI application.
+    It provides a convenient way to configure the behavior of the application.
+
+    Attributes:
+        endpoint_documentation (Literal['none', 'internal', 'page', 'all']): The level of endpoint documentation to display.
+        socket_io_js_query_params (Dict): Additional query parameters to include in the Socket.IO JavaScript connection.
+        socket_io_js_extra_headers (Dict): Additional headers to include in the Socket.IO JavaScript connection.
+        socket_io_js_transports (List[Literal['websocket', 'polling']]): The preferred transports for the Socket.IO JavaScript connection.
+        quasar_config (Dict): Configuration options for the Quasar framework.
+
+        reload (bool): Whether the application should reload on changes.
+        title (str): The title of the application.
+        viewport (str): The viewport meta tag for the application.
+        favicon (Optional[Union[str, Path]]): The path to the favicon file.
+        dark (Optional[bool]): Whether to use a dark theme.
+        language (Language): The language settings for the application.
+        binding_refresh_interval (float): The interval at which to refresh bindings.
+        reconnect_timeout (float): The timeout for reconnection attempts.
+        tailwind (bool): Whether to use the Tailwind CSS framework.
+        prod_js (bool): Whether to use the production JavaScript bundle.
+        show_welcome_message (bool): Whether to show a welcome message.
+
+        _has_run_config (bool): Internal flag indicating whether the run config has been added.
+
+    Methods:
+        add_run_config: Add the run config to the app config.
+        has_run_config: Check if the run config has been added.
+
+    Examples:
+        # Create an instance of AppConfig
+        config = AppConfig()
+
+        # Add a run config
+        config.add_run_config(
+            reload=True,
+            title="My App",
+            viewport="width=device-width, initial-scale=1.0",
+            favicon="path/to/favicon.ico",
+            dark=True,
+            language=Language(),
+            binding_refresh_interval=0.5,
+            reconnect_timeout=10.0,
+            tailwind=True,
+            prod_js=False,
+            show_welcome_message=True
+        )
+
+        # Check if the run config has been added
+        has_run_config = config.has_run_config
+
+    """
+
     endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
     socket_io_js_query_params: Dict = field(default_factory=dict)
     socket_io_js_extra_headers: Dict = field(default_factory=dict)
@@ -51,7 +106,29 @@ class AppConfig:
                        prod_js: bool,
                        show_welcome_message: bool,
                        ) -> None:
-        """Add the run config to the app config."""
+        """Add the run config to the app config.
+
+        This method allows you to add a run configuration to the app config.
+        The run configuration includes various settings and options that control
+        the behavior of the application when it is run.
+
+        Args:
+            reload (bool): Whether the application should reload on changes.
+            title (str): The title of the application.
+            viewport (str): The viewport meta tag for the application.
+            favicon (Optional[Union[str, Path]]): The path to the favicon file.
+            dark (Optional[bool]): Whether to use a dark theme.
+            language (Language): The language settings for the application.
+            binding_refresh_interval (float): The interval at which to refresh bindings.
+            reconnect_timeout (float): The timeout for reconnection attempts.
+            tailwind (bool): Whether to use the Tailwind CSS framework.
+            prod_js (bool): Whether to use the production JavaScript bundle.
+            show_welcome_message (bool): Whether to show a welcome message.
+
+        Returns:
+            None
+
+        """
         self.reload = reload
         self.title = title
         self.viewport = viewport
@@ -67,5 +144,13 @@ class AppConfig:
 
     @property
     def has_run_config(self) -> bool:
-        """Return whether the run config has been added."""
+        """Return whether the run config has been added.
+
+        This property returns a boolean value indicating whether the run config
+        has been added to the app config.
+
+        Returns:
+            bool: True if the run config has been added, False otherwise.
+
+        """
         return self._has_run_config

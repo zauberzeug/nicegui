@@ -8,10 +8,12 @@ class Column(Element):
     It inherits from the `Element` class.
 
     Attributes:
-        _classes (List[str]): A list of CSS classes applied to the column element.
+    
+         - _classes (List[str]): A list of CSS classes applied to the column element.
 
     Args:
-        wrap (bool, optional): Whether to wrap the content within the column. Defaults to False.
+    
+        - wrap (bool, optional): Whether to wrap the content within the column. Defaults to False.
 
     Example:
         column = Column(wrap=True)
@@ -19,11 +21,19 @@ class Column(Element):
     """
 
     def __init__(self, *, wrap: bool = False) -> None:
-        """Initialize the Column element.
+        """Column
+
+        The `Column` class provides a container element that arranges its child elements in a column layout.
+        It inherits from the `Element` class.
+
+        Attributes:
+        
+            _classes (List[str]): A list of CSS classes applied to the column element.
 
         Args:
+        
             wrap (bool, optional): Whether to wrap the content within the column. Defaults to False.
-        """
+    """
         super().__init__('div')
         self._classes.append('nicegui-column')
 
