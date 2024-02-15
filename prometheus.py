@@ -10,6 +10,30 @@ EXCLUDED_USER_AGENTS = {'bot', 'spider', 'crawler', 'monitor', 'curl',
 
 
 def start_monitor(app: FastAPI) -> None:
+    """
+    Starts the Prometheus monitoring for the NiceGUI application.
+
+    This function enables monitoring of page visits using Prometheus. It checks if the Prometheus client library is
+    installed and if not, it logs a message and returns. If the library is installed, it creates a Counter metric
+    named 'nicegui_page_visits' to track the number of real page visits. The metric has three labels: 'path', 'session',
+    and 'origin'.
+
+    The function also defines a PrometheusMiddleware class that extends the BaseHTTPMiddleware class. This middleware
+    is responsible for incrementing the 'nicegui_page_visits' metric for each real page visit. It checks if the
+    'id' key is present in the session, and if not, it generates a new UUID and assigns it to the 'id' key. Then, it
+    checks if the response has the 'x-nicegui-content' header set to 'page'. If it does, it extracts the user agent
+    from the request headers and checks if it matches any of the excluded user agents defined in the
+    EXCLUDED_USER_AGENTS list. If the user agent is not excluded, it retrieves the origin URL from the 'referer'
+    header and increments the 'nicegui_page_visits' metric with the corresponding labels.
+
+    If the code is being executed from the 'spawn.py' file, it starts an HTTP server on port 9062 using the
+    prometheus_client library.
+
+    Finally, the PrometheusMiddleware is added as a middleware to the FastAPI application.
+
+    - app: The FastAPI application object.
+    :type app: FastAPI
+    """
     try:
         import prometheus_client
     except ModuleNotFoundError:

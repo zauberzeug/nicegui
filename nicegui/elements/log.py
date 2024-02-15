@@ -12,7 +12,7 @@ class Log(Element, component='log.js'):
 
         Create a log view that allows to add new lines without re-transmitting the whole history to the client.
 
-        :param max_lines: maximum number of lines before dropping oldest ones (default: `None`)
+        - max_lines: maximum number of lines before dropping oldest ones (default: `None`)
         """
         super().__init__()
         self._props['max_lines'] = max_lines
@@ -24,7 +24,7 @@ class Log(Element, component='log.js'):
     def push(self, line: Any) -> None:
         """Add a new line to the log.
 
-        :param line: the line to add (can contain line breaks)
+        - line: the line to add (can contain line breaks)
         """
         new_lines = [urllib.parse.quote(line) for line in str(line).splitlines()]
         self.lines.extend(new_lines)

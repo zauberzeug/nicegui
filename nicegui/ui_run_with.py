@@ -25,18 +25,32 @@ def run_with(
 ) -> None:
     """Run NiceGUI with FastAPI.
 
-    :param app: FastAPI app
-    :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
-    :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
-    :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers)
-    :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
-    :param language: language for Quasar elements (default: `'en-US'`)
-    :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
-    :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
-    :param mount_path: mount NiceGUI at this path (default: `'/'`)
-    :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
-    :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
-    :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
+    This function allows you to run NiceGUI with a FastAPI application. It sets up the necessary configurations and mounts the NiceGUI app to the specified mount path.
+
+    - app: The FastAPI app instance.
+    :type app: FastAPI
+    - title: The page title. Default is 'NiceGUI'.
+    :type title: str
+    - viewport: The page meta viewport content. Default is 'width=device-width, initial-scale=1'.
+    :type viewport: str
+    - favicon: The relative filepath or absolute URL to a favicon. Default is None, which uses the NiceGUI icon. It can also be an emoji (e.g. '🚀', works for most browsers).
+    :type favicon: Optional[Union[str, Path]]
+    - dark: Whether to use Quasar's dark mode. Default is False. Use None for "auto" mode.
+    :type dark: Optional[bool]
+    - language: The language for Quasar elements. Default is 'en-US'.
+    :type language: Language
+    - binding_refresh_interval: The time between binding updates in seconds. Default is 0.1 seconds. A bigger value is more CPU friendly.
+    :type binding_refresh_interval: float
+    - reconnect_timeout: The maximum time the server waits for the browser to reconnect in seconds. Default is 3.0 seconds.
+    :type reconnect_timeout: float
+    - mount_path: The path at which NiceGUI should be mounted. Default is '/'.
+    :type mount_path: str
+    - tailwind: Whether to use Tailwind CSS. This is experimental. Default is True.
+    :type tailwind: bool
+    - prod_js: Whether to use the production version of Vue and Quasar dependencies. Default is True.
+    :type prod_js: bool
+    - storage_secret: The secret key for browser-based storage. Default is None. A value is required to enable ui.storage.individual and ui.storage.browser.
+    :type storage_secret: Optional[str]
     """
     core.app.config.add_run_config(
         reload=False,

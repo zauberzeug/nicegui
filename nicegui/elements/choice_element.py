@@ -37,8 +37,8 @@ class ChoiceElement(ValueElement):
     def set_options(self, options: Union[List, Dict], *, value: Any = None) -> None:
         """Set the options of this choice element.
 
-        :param options: The new options.
-        :param value: The new value. If not given, the current value is kept.
+        - options: The new options.
+        - value: The new value. If not given, the current value is kept.
         """
         self.options = options
         if value is not None:

@@ -1,7 +1,20 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, ClassVar, Dict, Generic, List, Optional, Tuple, TypeVar, Union, cast
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    ClassVar,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+    cast,
+)
 
 from typing_extensions import Concatenate, ParamSpec, Self
 
@@ -142,7 +155,7 @@ class refreshable_method(Generic[_S, _P, _T], refreshable[_P, _T]):
 def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
     """Create a state variable that automatically updates its refreshable UI container.
 
-    :param value: The initial value of the state variable.
+    - value: The initial value of the state variable.
 
     :return: A tuple containing the current value and a function to update the value.
     """

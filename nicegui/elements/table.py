@@ -35,14 +35,14 @@ class Table(FilterElement, component='table.js'):
 
         A table based on Quasar's [QTable ](https://quasar.dev/vue-components/table) component.
 
-        :param columns: list of column objects
-        :param rows: list of row objects
-        :param row_key: name of the column containing unique data identifying the row (default: "id")
-        :param title: title of the table
-        :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
-        :param on_select: callback which is invoked when the selection changes
-        :param on_pagination_change: callback which is invoked when the pagination changes
+        - columns: list of column objects
+        - rows: list of row objects
+        - row_key: name of the column containing unique data identifying the row (default: "id")
+        - title: title of the table
+        - selection: selection type ("single" or "multiple"; default: `None`)
+        - pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
+        - on_select: callback which is invoked when the selection changes
+        - on_pagination_change: callback which is invoked when the pagination changes
 
         If selection is 'single' or 'multiple', then a `selected` property is accessible containing the selected rows.
         """
@@ -93,12 +93,12 @@ class Table(FilterElement, component='table.js'):
         To use a different conversion, convert the DataFrame manually before passing it to this method.
         See [issue 1698 ](https://github.com/zauberzeug/nicegui/issues/1698) for more information.
 
-        :param df: Pandas DataFrame
-        :param row_key: name of the column containing unique data identifying the row (default: "id")
-        :param title: title of the table
-        :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
-        :param on_select: callback which is invoked when the selection changes
+        - df: Pandas DataFrame
+        - row_key: name of the column containing unique data identifying the row (default: "id")
+        - title: title of the table
+        - selection: selection type ("single" or "multiple"; default: `None`)
+        - pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
+        - on_select: callback which is invoked when the selection changes
         :return: table element
         """
         date_cols = df.columns[df.dtypes == 'datetime64[ns]']
@@ -210,8 +210,8 @@ class Table(FilterElement, component='table.js'):
     def update_rows(self, rows: List[Dict], *, clear_selection: bool = True) -> None:
         """Update rows in the table.
 
-        :param rows: list of rows to update
-        :param clear_selection: whether to clear the selection (default: True)
+        - rows: list of rows to update
+        - clear_selection: whether to clear the selection (default: True)
         """
         self.rows[:] = rows
         if clear_selection:

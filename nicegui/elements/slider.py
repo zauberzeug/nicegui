@@ -17,11 +17,11 @@ class Slider(ValueElement, DisableableElement):
 
         This element is based on Quasar's [QSlider ](https://quasar.dev/vue-components/slider) component.
 
-        :param min: lower bound of the slider
-        :param max: upper bound of the slider
-        :param step: step size
-        :param value: initial value to set position of the slider
-        :param on_change: callback which is invoked when the user releases the slider
+        - min: lower bound of the slider
+        - max: upper bound of the slider
+        - step: step size
+        - value: initial value to set position of the slider
+        - on_change: callback which is invoked when the user releases the slider
         """
         super().__init__(tag='q-slider', value=value, on_value_change=on_change, throttle=0.05)
         self._props['min'] = min

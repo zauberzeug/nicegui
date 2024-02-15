@@ -47,12 +47,12 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         You can also pass a tuple of width and height instead of an image source.
         This will create an empty image with the given size.
 
-        :param source: the source of the image; can be an URL, local file path, a base64 string or just an image size
-        :param content: SVG content which should be overlaid; viewport has the same dimensions as the image
-        :param size: size of the image (width, height) in pixels; only used if `source` is not set
-        :param on_mouse: callback for mouse events (contains image coordinates `image_x` and `image_y` in pixels)
-        :param events: list of JavaScript events to subscribe to (default: `['click']`)
-        :param cross: whether to show crosshairs (default: `False`)
+        - source: the source of the image; can be an URL, local file path, a base64 string or just an image size
+        - content: SVG content which should be overlaid; viewport has the same dimensions as the image
+        - size: size of the image (width, height) in pixels; only used if `source` is not set
+        - on_mouse: callback for mouse events (contains image coordinates `image_x` and `image_y` in pixels)
+        - events: list of JavaScript events to subscribe to (default: `['click']`)
+        - cross: whether to show crosshairs (default: `False`)
         """
         super().__init__(source=source, content=content)
         self._props['events'] = events

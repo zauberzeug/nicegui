@@ -31,9 +31,9 @@ class SourceElement(Element):
         The binding works one way only, from this element to the target.
         The update happens immediately and whenever a value changes.
 
-        :param target_object: The object to bind to.
-        :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
+        - target_object: The object to bind to.
+        - target_name: The name of the property to bind to.
+        - forward: A function to apply to the value before applying it to the target.
         """
         bind_to(self, 'source', target_object, target_name, forward)
         return self
@@ -48,9 +48,9 @@ class SourceElement(Element):
         The binding works one way only, from the target to this element.
         The update happens immediately and whenever a value changes.
 
-        :param target_object: The object to bind from.
-        :param target_name: The name of the property to bind from.
-        :param backward: A function to apply to the value before applying it to this element.
+        - target_object: The object to bind from.
+        - target_name: The name of the property to bind from.
+        - backward: A function to apply to the value before applying it to this element.
         """
         bind_from(self, 'source', target_object, target_name, backward)
         return self
@@ -67,10 +67,10 @@ class SourceElement(Element):
         The update happens immediately and whenever a value changes.
         The backward binding takes precedence for the initial synchronization.
 
-        :param target_object: The object to bind to.
-        :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
-        :param backward: A function to apply to the value before applying it to this element.
+        - target_object: The object to bind to.
+        - target_name: The name of the property to bind to.
+        - forward: A function to apply to the value before applying it to the target.
+        - backward: A function to apply to the value before applying it to this element.
         """
         bind(self, 'source', target_object, target_name, forward=forward, backward=backward)
         return self
@@ -78,14 +78,14 @@ class SourceElement(Element):
     def set_source(self, source: Union[str, Path]) -> None:
         """Set the source of this element.
 
-        :param source: The new source.
+        - source: The new source.
         """
         self.source = source
 
     def _handle_source_change(self, source: Union[str, Path]) -> None:
         """Called when the source of this element changes.
 
-        :param source: The new source.
+        - source: The new source.
         """
         self._set_props(source)
         self.update()

@@ -11,7 +11,20 @@ running_query: Optional[asyncio.Task] = None
 
 
 async def search(e: events.ValueChangeEventArguments) -> None:
-    '''Search for cocktails as you type.'''
+    '''
+    Search for cocktails as you type.
+
+    This function is responsible for performing a search for cocktails based on the user's input. It utilizes an API to retrieve the search results and displays them in a graphical user interface.
+
+    Parameters:
+    - e (events.ValueChangeEventArguments): The event arguments containing the value of the search input.
+
+    Returns:
+    - None
+
+    Usage:
+    - Call this function when the user types in the search field to initiate a search for cocktails. The search results will be displayed in the graphical user interface.
+    '''
     global running_query
     if running_query:
         running_query.cancel()  # cancel the previous query; happens when you type fast

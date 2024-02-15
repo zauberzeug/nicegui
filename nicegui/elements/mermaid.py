@@ -13,7 +13,7 @@ class Mermaid(ContentElement,
         Renders diagrams and charts written in the Markdown-inspired [Mermaid ](https://mermaid.js.org/) language.
         The mermaid syntax can also be used inside Markdown elements by providing the extension string 'mermaid' to the ``ui.markdown`` element.
 
-        :param content: the Mermaid content to be displayed
+        - content: the Mermaid content to be displayed
         """
         super().__init__(content=content)
 

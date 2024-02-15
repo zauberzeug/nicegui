@@ -12,8 +12,8 @@ class Checkbox(TextElement, ValueElement, DisableableElement):
 
         This element is based on Quasar's [QCheckbox ](https://quasar.dev/vue-components/checkbox) component.
 
-        :param text: the label to display next to the checkbox
-        :param value: whether it should be checked initially (default: `False`)
-        :param on_change: callback to execute when value changes
+        - text: the label to display next to the checkbox
+        - value: whether it should be checked initially (default: `False`)
+        - on_change: callback to execute when value changes
         """
         super().__init__(tag='q-checkbox', text=text, value=value, on_value_change=on_change)

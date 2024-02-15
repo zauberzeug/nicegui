@@ -8,6 +8,22 @@ import yaml
 
 
 def get_infos() -> Tuple[str, str, str]:
+    """
+    Retrieves information from Zenodo API about the most recent publication of 'nicegui'.
+
+    Returns:
+        A tuple containing the following information:
+        - DOI (Digital Object Identifier) of the publication.
+        - Version of the publication.
+        - Publication date of the publication.
+
+    Raises:
+        Exception: If there is an error while retrieving the Zenodo information.
+
+    Usage:
+        - Ensure that the 'ZENODO_TOKEN' environment variable is set with the access token for Zenodo API.
+        - Call this function to retrieve the information about the most recent publication of 'nicegui'.
+    """
     headers = {
         'Accept': 'application/json',
     }

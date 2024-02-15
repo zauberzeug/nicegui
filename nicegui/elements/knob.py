@@ -26,16 +26,16 @@ class Knob(ValueElement, DisableableElement, TextColorElement):
         This element is based on Quasar's [QKnob ](https://quasar.dev/vue-components/knob) component.
         The element is used to take a number input from the user through mouse/touch panning.
 
-        :param value: the initial value (default: 0.0)
-        :param min: the minimum value (default: 0.0)
-        :param max: the maximum value (default: 1.0)
-        :param step: the step size (default: 0.01)
-        :param color: knob color (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
-        :param center_color: color name for the center part of the component, examples: primary, teal-10
-        :param track_color: color name for the track of the component, examples: primary, teal-10
-        :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem
-        :param show_value: whether to show the value as text
-        :param on_change: callback to execute when the value changes
+        - value: the initial value (default: 0.0)
+        - min: the minimum value (default: 0.0)
+        - max: the maximum value (default: 1.0)
+        - step: the step size (default: 0.01)
+        - color: knob color (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
+        - center_color: color name for the center part of the component, examples: primary, teal-10
+        - track_color: color name for the track of the component, examples: primary, teal-10
+        - size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem
+        - show_value: whether to show the value as text
+        - on_change: callback to execute when the value changes
         """
         super().__init__(tag='q-knob', value=value, on_value_change=on_change, throttle=0.05, text_color=color)
 

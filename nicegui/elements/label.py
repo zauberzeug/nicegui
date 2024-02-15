@@ -8,6 +8,6 @@ class Label(TextElement):
 
         Displays some text.
 
-        :param text: the content of the label
+        - text: the content of the label
         """
         super().__init__(tag='div', text=text)

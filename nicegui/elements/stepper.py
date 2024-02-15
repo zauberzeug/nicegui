@@ -24,9 +24,9 @@ class Stepper(ValueElement):
         this element uses Vue's [keep-alive ](https://vuejs.org/guide/built-ins/keep-alive.html) component.
         If client-side performance is an issue, you can disable this feature.
 
-        :param value: `ui.step` or name of the step to be initially selected (default: `None` meaning the first step)
-        :param on_value_change: callback to be executed when the selected step changes
-        :param keep_alive: whether to use Vue's keep-alive component on the content (default: `True`)
+        - value: `ui.step` or name of the step to be initially selected (default: `None` meaning the first step)
+        - on_value_change: callback to be executed when the selected step changes
+        - keep_alive: whether to use Vue's keep-alive component on the content (default: `True`)
         """
         super().__init__(tag='q-stepper', value=value, on_value_change=on_value_change)
         self._props['keep-alive'] = keep_alive
@@ -59,9 +59,9 @@ class Step(DisableableElement):
         This element represents [Quasar's QStep ](https://quasar.dev/vue-components/stepper#qstep-api) component.
         It is a child of a `ui.stepper` element.
 
-        :param name: name of the step (will be the value of the `ui.stepper` element)
-        :param title: title of the step (default: `None`, meaning the same as `name`)
-        :param icon: icon of the step (default: `None`)
+        - name: name of the step (will be the value of the `ui.stepper` element)
+        - title: title of the step (default: `None`, meaning the same as `name`)
+        - icon: icon of the step (default: `None`)
         """
         super().__init__(tag='q-step')
         self._props['name'] = name
@@ -81,7 +81,7 @@ class StepperNavigation(Element):
 
         This element represents `Quasar's QStepperNavigation https://quasar.dev/vue-components/stepper#qsteppernavigation-api>`_ component.
 
-        :param wrap: whether to wrap the content (default: `True`)
+        - wrap: whether to wrap the content (default: `True`)
         """
         super().__init__('q-stepper-navigation')
 

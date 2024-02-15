@@ -11,8 +11,33 @@ from nicegui import app
 def setup() -> bool:
     """Setup fly.io specific settings.
 
-    Returns True if running on fly.io, False otherwise.
+    This function is responsible for setting up the fly.io specific settings for the application.
+    It checks if the application is running on fly.io by checking the presence of the 'FLY_ALLOC_ID'
+    environment variable. If the variable is not found, it returns False indicating that the application
+    is not running on fly.io.
+
+    If the application is running on fly.io, it sets up a middleware called FlyReplayMiddleware. This
+    middleware is used to handle requests and ensure that they are routed to the correct fly.io instance.
+    It does this by inspecting the query string of the request and extracting the 'fly_instance_id' parameter.
+    If the 'fly_instance_id' parameter is different from the current fly instance id, the middleware adds
+    a 'fly-replay' header to the request with the correct instance id. This ensures that the request is
+    replayed on the correct instance.
+
+    The FlyReplayMiddleware also provides a method called 'is_online' which checks if a given fly instance
+    is online. It does this by performing a DNS lookup for the instance's hostname. If the DNS lookup is
+    successful, it means that the instance is online.
+
+    After setting up the middleware, the function sets the 'fly-force-instance-id' and 'fly_instance_id'
+    headers in the application's configuration. These headers are used for HTTP long polling and websocket
+    connections respectively.
+
+    Parameters:
+    None
+
+    Returns:
+    bool: True if running on fly.io, False otherwise.
     """
+    
     if 'FLY_ALLOC_ID' not in os.environ:
         return False
 

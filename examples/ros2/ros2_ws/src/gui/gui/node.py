@@ -11,6 +11,39 @@ from nicegui import Client, app, ui, ui_run
 
 
 class NiceGuiNode(Node):
+    """
+    A ROS2 node for controlling a GUI interface.
+
+    This node provides a graphical user interface (GUI) for controlling a robot's movement
+    and visualizing its position in a 3D scene. It subscribes to the 'pose' topic to receive
+    the robot's position and orientation information, and publishes velocity commands to the
+    'cmd_vel' topic to control the robot's movement.
+
+    The GUI consists of three main components:
+    - Control: A joystick for controlling the robot's movement. The user can drag the joystick
+      in the blue field to specify the linear and angular velocities of the robot.
+    - Data: Sliders for adjusting the linear and angular velocities of the robot. The current
+      position of the robot is also displayed.
+    - Visualization: A 3D scene that visualizes the robot's position. The robot is represented
+      as a prism shape that moves and rotates according to the received pose information.
+
+    Usage:
+    1. Create an instance of NiceGuiNode.
+    2. Spin the node to start processing ROS2 messages.
+    3. Interact with the GUI to control the robot's movement and visualize its position.
+
+    Example:
+    ```python
+    from nicegui.examples.ros2.ros2_ws.src.gui.gui.node import NiceGuiNode
+
+    def main():
+        node = NiceGuiNode()
+        node.spin()
+
+    if __name__ == '__main__':
+        main()
+    ```
+    """
 
     def __init__(self) -> None:
         super().__init__('nicegui')
@@ -42,6 +75,13 @@ class NiceGuiNode(Node):
                             self.robot_object = scene.extrusion(prism, 0.4).material('#4488ff', 0.5)
 
     def send_speed(self, x: float, y: float) -> None:
+        """
+        Publishes the linear and angular velocities of the robot.
+
+        Args:
+            x (float): The linear velocity of the robot.
+            y (float): The angular velocity of the robot.
+        """
         msg = Twist()
         msg.linear.x = x
         msg.angular.z = -y
@@ -50,17 +90,52 @@ class NiceGuiNode(Node):
         self.cmd_vel_publisher.publish(msg)
 
     def handle_pose(self, msg: Pose) -> None:
+        """
+        Handles the received pose message.
+
+        Updates the position label and moves/rotates the 3D robot object in the scene.
+
+        Args:
+            msg (Pose): The received pose message.
+        """
         self.position.text = f'x: {msg.position.x:.2f}, y: {msg.position.y:.2f}'
         self.robot_3d.move(msg.position.x, msg.position.y)
         self.robot_3d.rotate(0, 0, 2 * math.atan2(msg.orientation.z, msg.orientation.w))
 
 
 def main() -> None:
-    # NOTE: This function is defined as the ROS entry point in setup.py, but it's empty to enable NiceGUI auto-reloading
+    """
+    This is the main function of the GUI node.
+
+    It serves as the entry point for the ROS2 system and is called by the setup.py file.
+    However, in this implementation, the function is left empty to allow for NiceGUI auto-reloading.
+
+    Usage:
+    - This function is automatically called by the ROS2 system.
+    - It should not be called directly from other parts of the code.
+
+    Note:
+    - The function is intentionally left empty to enable NiceGUI auto-reloading.
+    """
     pass
 
 
 def ros_main() -> None:
+    """
+    Entry point for the ROS node.
+
+    This function initializes the ROS client library, creates a NiceGuiNode instance,
+    and starts spinning the node to process incoming messages.
+
+    Raises:
+        ExternalShutdownException: If an external shutdown signal is received.
+
+    Usage:
+        Call this function to start the ROS node and begin processing messages.
+
+    Example:
+        ros_main()
+    """
     rclpy.init()
     node = NiceGuiNode()
     try:

@@ -7,27 +7,75 @@ from nicegui import ui
 
 @dataclass
 class TodoItem:
+    """
+    Represents a todo item.
+
+    Attributes:
+        name (str): The name of the todo item.
+        done (bool, optional): Indicates whether the todo item is done or not. Defaults to False.
+    """
     name: str
     done: bool = False
 
 
 @dataclass
 class ToDoList:
+    """
+    Represents a to-do list.
+
+    Attributes:
+        title (str): The title of the to-do list.
+        on_change (Callable): A callback function to be called whenever the list changes.
+        items (List[TodoItem]): The list of to-do items.
+
+    Methods:
+        add(name: str, done: bool = False) -> None:
+            Adds a new to-do item to the list.
+        
+        remove(item: TodoItem) -> None:
+            Removes a to-do item from the list.
+    """
+
     title: str
     on_change: Callable
     items: List[TodoItem] = field(default_factory=list)
 
     def add(self, name: str, done: bool = False) -> None:
+        """
+        Adds a new to-do item to the list.
+
+        Args:
+            name (str): The name of the to-do item.
+            done (bool, optional): Whether the item is already done. Defaults to False.
+        """
         self.items.append(TodoItem(name, done))
         self.on_change()
 
     def remove(self, item: TodoItem) -> None:
+        """
+        Removes a to-do item from the list.
+
+        Args:
+            item (TodoItem): The to-do item to be removed.
+        """
         self.items.remove(item)
         self.on_change()
 
 
 @ui.refreshable
 def todo_ui():
+    """
+    Renders a todo list user interface.
+
+    This function displays a todo list user interface using the NiceGUI library. It shows the progress of completed
+    tasks, the number of completed and remaining tasks, and allows the user to mark tasks as done or delete them.
+
+    Usage:
+        - Call this function to render the todo list UI.
+
+    Returns:
+        None
+    """
     if not todos.items:
         ui.label('List is empty.').classes('mx-auto')
         return

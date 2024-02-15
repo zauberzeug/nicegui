@@ -177,6 +177,42 @@ class PseudoElement:
 
 
 class Tailwind:
+    """
+    The `Tailwind` class provides a fluent interface for applying Tailwind CSS classes to HTML elements.
+
+    Usage:
+    ```
+    element = Element()
+    tailwind = Tailwind(element)
+    tailwind.container().flex().justify_content('center')
+    ```
+
+    The `Tailwind` class can be used in two ways:
+    1. As a decorator: When called with a `Tailwind` instance, it applies the classes of the given `Tailwind` instance
+       to the element.
+    2. As a method: When called with one or more class names as strings, it applies the classes to the element.
+
+    Example:
+    ```
+    tailwind = Tailwind()
+    tailwind('container', 'flex', 'justify-center')
+    ```
+
+    The `Tailwind` class provides methods for applying various Tailwind CSS utility classes to the element.
+    Each method returns the `Tailwind` instance itself, allowing for method chaining.
+
+    Note: The `Tailwind` class modifies the element's classes directly. Make sure to call `element.update()` after
+    applying the classes to update the element's appearance.
+
+    Example:
+    ```
+    element = Element()
+    tailwind = Tailwind(element)
+    tailwind.container().flex().justify_content('center')
+    element.update()
+    ```
+
+    """
 
     def __init__(self, _element: Optional[Element] = None) -> None:
         self.element: Union[PseudoElement, Element] = PseudoElement() if _element is None else _element
@@ -199,64 +235,220 @@ class Tailwind:
         return self
 
     def apply(self, element: Element) -> None:
-        """Apply the tailwind classes to the given element."""
+        """
+        Apply the tailwind classes to the given element.
+
+        This method adds the tailwind classes from the current instance to the classes of the given element.
+        It then updates the element to reflect the changes.
+
+        Parameters:
+            element (Element): The element to apply the tailwind classes to.
+
+        Returns:
+            None
+        """
         element._classes.extend(self.element._classes)  # pylint: disable=protected-access
         element.update()
 
     def aspect_ratio(self, value: AspectRatio) -> Tailwind:
-        """Utilities for controlling the aspect ratio of an element."""
-        self.element.classes('aspect-' + value)
-        return self
+            """
+            Set the aspect ratio of an element.
+
+            This method adds a CSS class to the element, which controls its aspect ratio.
+            The aspect ratio can be specified using the `AspectRatio` enum.
+
+            Parameters:
+                value (AspectRatio): The aspect ratio value to be set.
+
+            Returns:
+                Tailwind: The `Tailwind` instance for method chaining.
+            """
+            self.element.classes('aspect-' + value)
+            return self
 
     def container(self) -> Tailwind:
-        """A component for fixing an element's width to the current breakpoint."""
-        self.element.classes('container')
-        return self
+            """
+            A component for fixing an element's width to the current breakpoint.
 
+            This method adds the 'container' class to the element, which sets the maximum width of the element
+            based on the current breakpoint. The container class is part of the Tailwind CSS framework.
+
+            Returns:
+                Tailwind: The Tailwind instance with the 'container' class added to the element.
+
+            Example:
+                # Create a Tailwind instance
+                tw = Tailwind()
+
+                # Add the 'container' class to an element
+                tw.container()
+
+            Note:
+                The 'container' class should be used on a parent element to constrain the width of its child elements.
+                It is typically used to create a responsive layout where the width of the content adjusts based on the
+                screen size.
+
+            """
+            self.element.classes('container')
+            return self
+        
     def columns(self, value: Columns) -> Tailwind:
-        """Utilities for controlling the number of columns within an element."""
-        self.element.classes('columns-' + value)
-        return self
+            """
+            Set the number of columns within an element.
+
+            This method adds the appropriate CSS class to the element to control the number of columns.
+            
+            Parameters:
+                value (Columns): The number of columns to set. Must be one of the values defined in the Columns enum.
+            
+            Returns:
+                Tailwind: The Tailwind object with the updated column settings.
+            """
+            self.element.classes('columns-' + value)
+            return self
 
     def break_after(self, value: BreakAfter) -> Tailwind:
-        """Utilities for controlling how a column or page should break after an element."""
-        self.element.classes('break-after-' + value)
-        return self
+            """
+            Set the break-after property for a column or page element.
+
+            This method adds a CSS class to the element to control how it should break after an element.
+            The `value` parameter specifies the desired break behavior and should be one of the values
+            defined in the `BreakAfter` enum.
+
+            Args:
+                value (BreakAfter): The desired break behavior.
+
+            Returns:
+                Tailwind: The Tailwind object for method chaining.
+            """
+            self.element.classes('break-after-' + value)
+            return self
 
     def break_before(self, value: BreakBefore) -> Tailwind:
-        """Utilities for controlling how a column or page should break before an element."""
-        self.element.classes('break-before-' + value)
-        return self
+            """
+            Set the break-before property for an element.
+
+            This method adds a CSS class to the element to control how a column or page should break before the element.
+
+            Parameters:
+                value (BreakBefore): The desired break-before value. It should be one of the values defined in the BreakBefore enum.
+
+            Returns:
+                Tailwind: The Tailwind object for method chaining.
+
+            Example:
+                tailwind = Tailwind()
+                tailwind.break_before(BreakBefore.AUTO)
+            """
+            self.element.classes('break-before-' + value)
+            return self
 
     def break_inside(self, value: BreakInside) -> Tailwind:
-        """Utilities for controlling how a column or page should break within an element."""
-        self.element.classes('break-inside-' + value)
-        return self
+            """
+            Set the break-inside property for an element.
 
+            This method adds a CSS class to the element to control how a column or page should break within the element.
+
+            Parameters:
+                value (BreakInside): The value to set for the break-inside property. It should be one of the values defined in the BreakInside enum.
+
+            Returns:
+                Tailwind: The Tailwind object with the updated CSS classes.
+            """
+            self.element.classes('break-inside-' + value)
+            return self
+   
     def box_decoration_break(self, value: BoxDecorationBreak) -> Tailwind:
-        """Utilities for controlling how element fragments should be rendered across multiple lines, columns, or pages."""
-        self.element.classes('box-decoration-' + value)
-        return self
+            """
+            Sets the box-decoration-break property for the element.
+
+            This method adds a CSS class to the element, which controls how element fragments should be rendered across multiple lines, columns, or pages.
+
+            Parameters:
+                value (BoxDecorationBreak): The value to set for the box-decoration-break property. It should be one of the values defined in the BoxDecorationBreak enum.
+
+            Returns:
+                Tailwind: The Tailwind object itself, allowing for method chaining.
+
+            Example:
+                tailwind.box_decoration_break(BoxDecorationBreak.SLICE)
+            """
+            self.element.classes('box-decoration-' + value)
+            return self
 
     def box_sizing(self, value: BoxSizing) -> Tailwind:
-        """Utilities for controlling how the browser should calculate an element's total size."""
-        self.element.classes('box-' + value)
-        return self
+            """
+            Set the box-sizing property for the element.
+
+            This method adds a CSS class to the element to control how the browser should calculate the element's total size.
+            The `value` parameter should be one of the values from the `BoxSizing` enum.
+
+            Args:
+                value (BoxSizing): The box-sizing value to set.
+
+            Returns:
+                Tailwind: The Tailwind instance for method chaining.
+
+            Example:
+                tailwind.box_sizing(BoxSizing.BORDER_BOX)
+            """
+            self.element.classes('box-' + value)
+            return self
 
     def display(self, value: Display) -> Tailwind:
-        """Utilities for controlling the display box type of an element."""
+        """
+        Set the display box type of an element.
+
+        Parameters:
+            value (Display): The display box type to be set.
+
+        Returns:
+            Tailwind: The Tailwind object with the updated display box type.
+        """
         self.element.classes('' + value)
         return self
 
     def floats(self, value: Floats) -> Tailwind:
-        """Utilities for controlling the wrapping of content around an element."""
-        self.element.classes('float-' + value)
-        return self
+            """
+            Set the float property of the element.
+
+            This method adds a CSS class to the element to control the wrapping of content around it.
+            The `value` parameter specifies the float value to be applied to the element.
+
+            Parameters:
+                value (Floats): The float value to be applied to the element. Must be one of the following:
+                    - 'none': The element will not float.
+                    - 'left': The element will float to the left.
+                    - 'right': The element will float to the right.
+                    - 'clear-left': The element will clear the left float.
+                    - 'clear-right': The element will clear the right float.
+                    - 'clear-both': The element will clear both left and right floats.
+
+            Returns:
+                Tailwind: The Tailwind object with the updated float property.
+            """
+            self.element.classes('float-' + value)
+            return self
 
     def clear(self, value: Clear) -> Tailwind:
-        """Utilities for controlling the wrapping of content around an element."""
-        self.element.classes('clear-' + value)
-        return self
+            """
+            Set the clear property of the element.
+
+            This method adds a CSS class to the element to control the wrapping of content around it.
+            The `value` parameter specifies the clear property value to be applied.
+
+            Parameters:
+                value (Clear): The clear property value. It can be one of the following:
+                    - Clear.NONE: No floating elements are allowed on either side.
+                    - Clear.LEFT: No floating elements are allowed on the left side.
+                    - Clear.RIGHT: No floating elements are allowed on the right side.
+                    - Clear.BOTH: No floating elements are allowed on either side.
+
+            Returns:
+                Tailwind: The Tailwind object with the updated clear property.
+            """
+            self.element.classes('clear-' + value)
+            return self
 
     def isolation(self, value: Isolation) -> Tailwind:
         """Utilities for controlling whether an element should explicitly create a new stacking context."""

@@ -147,9 +147,9 @@ class App(FastAPI):
         To make a single file accessible, you can use `add_static_file()`.
         For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
 
-        :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
-        :param local_directory: local folder with files to serve as static content
-        :param follow_symlink: whether to follow symlinks (default: False)
+        - url_path: string that starts with a slash "/" and identifies the path at which the files should be served
+        - local_directory: local folder with files to serve as static content
+        - follow_symlink: whether to follow symlinks (default: False)
         """
         if url_path == '/':
             raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
@@ -168,9 +168,9 @@ class App(FastAPI):
         To make a whole folder of files accessible, use `add_static_files()` instead.
         For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
 
-        :param local_file: local file to serve as static content
-        :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
-        :param single_use: whether to remove the route after the file has been downloaded once (default: False)
+        - local_file: local file to serve as static content
+        - url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
+        - single_use: whether to remove the route after the file has been downloaded once (default: False)
         :return: URL path which can be used to access the file
         """
         file = Path(local_file).resolve()
@@ -197,8 +197,8 @@ class App(FastAPI):
         To make a single file accessible via streaming, you can use `add_media_file()`.
         For small static files, you can use `add_static_files()` or `add_static_file()` instead.
 
-        :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
-        :param local_directory: local folder with files to serve as media content
+        - url_path: string that starts with a slash "/" and identifies the path at which the files should be served
+        - local_directory: local folder with files to serve as media content
         """
         @self.get(url_path + '/{filename:path}')
         def read_item(request: Request, filename: str, nicegui_cunk_size: int = 8192) -> Response:
@@ -220,9 +220,9 @@ class App(FastAPI):
         To make a whole folder of media files accessible via streaming, use `add_media_files()` instead.
         For small static files, you can use `add_static_files()` or `add_static_file()` instead.
 
-        :param local_file: local file to serve as media content
-        :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
-        :param single_use: whether to remove the route after the media file has been downloaded once (default: False)
+        - local_file: local file to serve as media content
+        - url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
+        - single_use: whether to remove the route after the media file has been downloaded once (default: False)
         :return: URL path which can be used to access the file
         """
         file = Path(local_file).resolve()

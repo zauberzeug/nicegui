@@ -31,18 +31,18 @@ class Number(ValidationElement, DisableableElement):
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
 
-        :param label: displayed name for the number input
-        :param placeholder: text to show if no value is entered
-        :param value: the initial value of the field
-        :param min: the minimum value allowed
-        :param max: the maximum value allowed
-        :param precision: the number of decimal places allowed (default: no limit, negative: decimal places before the dot)
-        :param step: the step size for the stepper buttons
-        :param prefix: a prefix to prepend to the displayed value
-        :param suffix: a suffix to append to the displayed value
-        :param format: a string like "%.2f" to format the displayed value
-        :param on_change: callback to execute when the value changes
-        :param validation: dictionary of validation rules or a callable that returns an optional error message
+        - label: displayed name for the number input
+        - placeholder: text to show if no value is entered
+        - value: the initial value of the field
+        - min: the minimum value allowed
+        - max: the maximum value allowed
+        - precision: the number of decimal places allowed (default: no limit, negative: decimal places before the dot)
+        - step: the step size for the stepper buttons
+        - prefix: a prefix to prepend to the displayed value
+        - suffix: a suffix to append to the displayed value
+        - format: a string like "%.2f" to format the displayed value
+        - on_change: callback to execute when the value changes
+        - validation: dictionary of validation rules or a callable that returns an optional error message
         """
         self.format = format
         super().__init__(tag='q-input', value=value, on_value_change=on_change, validation=validation)

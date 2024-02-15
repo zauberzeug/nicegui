@@ -27,10 +27,10 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
 
         The methods `run_grid_method` and `run_column_method` can be used to interact with the AG Grid instance on the client.
 
-        :param options: dictionary of AG Grid options
-        :param html_columns: list of columns that should be rendered as HTML (default: `[]`)
-        :param theme: AG Grid theme (default: 'balham')
-        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
+        - options: dictionary of AG Grid options
+        - html_columns: list of columns that should be rendered as HTML (default: `[]`)
+        - theme: AG Grid theme (default: 'balham')
+        - auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
         """
         super().__init__()
         self._props['options'] = options
@@ -53,10 +53,10 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         To use a different conversion, convert the DataFrame manually before passing it to this method.
         See [issue 1698 ](https://github.com/zauberzeug/nicegui/issues/1698) for more information.
 
-        :param df: Pandas DataFrame
-        :param theme: AG Grid theme (default: 'balham')
-        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
-        :param options: dictionary of additional AG Grid options
+        - df: Pandas DataFrame
+        - theme: AG Grid theme (default: 'balham')
+        - auto_size_columns: whether to automatically resize columns to fit the grid width (default: `True`)
+        - options: dictionary of additional AG Grid options
         :return: AG Grid element
         """
         date_cols = df.columns[df.dtypes == 'datetime64[ns]']
@@ -103,10 +103,10 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
-        :param name: name of the method
-        :param args: arguments to pass to the method
-        :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
+        - name: name of the method
+        - args: arguments to pass to the method
+        - timeout: timeout in seconds (default: 1 second)
+        - check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
@@ -125,10 +125,10 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
-        :param name: name of the method
-        :param args: arguments to pass to the method
-        :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
+        - name: name of the method
+        - args: arguments to pass to the method
+        - timeout: timeout in seconds (default: 1 second)
+        - check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
@@ -143,11 +143,11 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
-        :param row_id: id of the row (as defined by the ``getRowId`` option)
-        :param name: name of the method
-        :param args: arguments to pass to the method
-        :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
+        - row_id: id of the row (as defined by the ``getRowId`` option)
+        - name: name of the method
+        - args: arguments to pass to the method
+        - timeout: timeout in seconds (default: 1 second)
+        - check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
@@ -185,8 +185,8 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         Note that when editing a cell, the row data is not updated until the cell exits the edit mode.
         This does not happen when the cell loses focus, unless ``stopEditingWhenCellsLoseFocus: True`` is set.
 
-        :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
+        - timeout: timeout in seconds (default: 1 second)
+        - check_interval: interval in seconds to check for a response (default: 0.01 seconds)
         :return: list of row data
         """
         result = await self.client.run_javascript(f'''

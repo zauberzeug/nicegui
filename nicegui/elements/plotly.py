@@ -26,7 +26,7 @@ class Plotly(Element, component='plotly.vue', libraries=['lib/plotly/plotly.min.
 
         For best performance, use the declarative `dict` approach for creating a Plotly chart.
 
-        :param figure: Plotly figure to be rendered. Can be either a `go.Figure` instance, or
+        - figure: Plotly figure to be rendered. Can be either a `go.Figure` instance, or
                        a `dict` object with keys `data`, `layout`, `config` (optional).
         """
         if not optional_features.has('plotly'):

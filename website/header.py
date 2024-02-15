@@ -12,12 +12,47 @@ STYLE_CSS = (Path(__file__).parent / 'static' / 'style.css').read_text()
 
 
 def add_head_html() -> None:
-    """Add the code from header.html and reference style.css."""
+    """
+    Add the code from header.html and reference style.css.
+
+    This function adds the code from the header.html file and references the style.css file
+    by injecting them into the head section of the HTML document.
+
+    Returns:
+        None
+
+    Example:
+        >>> add_head_html()
+    """
     ui.add_head_html(HEADER_HTML + f'<style>{STYLE_CSS}</style>')
 
-
 def add_header(menu: Optional[ui.left_drawer] = None) -> None:
-    """Create the page header."""
+    """
+    Create the page header.
+
+    This function is responsible for creating the header of the web page. It adds various elements such as a menu,
+    links, buttons, and icons to the header. The header is designed to provide navigation and visual elements to the
+    user interface.
+
+    Parameters:
+        menu (Optional[ui.left_drawer]): An optional parameter representing the left drawer menu. If provided, a menu
+            button will be added to the header, allowing the user to toggle the visibility of the menu.
+
+    Returns:
+        None
+
+    Usage:
+        To use this function, simply call it with an optional `menu` parameter. The `menu` parameter represents the
+        left drawer menu and can be an instance of the `ui.left_drawer` class. If a `menu` is provided, a menu button
+        will be added to the header, allowing the user to toggle the visibility of the menu.
+
+        Example:
+            # Create a left drawer menu
+            menu = ui.left_drawer()
+
+            # Add the header with the menu
+            add_header(menu)
+    """
     menu_items = {
         'Installation': '/#installation',
         'Features': '/#features',

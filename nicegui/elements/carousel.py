@@ -21,11 +21,11 @@ class Carousel(ValueElement):
         This element represents [Quasar's QCarousel ](https://quasar.dev/vue-components/carousel#qcarousel-api) component.
         It contains individual carousel slides.
 
-        :param value: `ui.carousel_slide` or name of the slide to be initially selected (default: `None` meaning the first slide)
-        :param on_value_change: callback to be executed when the selected slide changes
-        :param animated: whether to animate slide transitions (default: `False`)
-        :param arrows: whether to show arrows for manual slide navigation (default: `False`)
-        :param navigation: whether to show navigation dots for manual slide navigation (default: `False`)
+        - value: `ui.carousel_slide` or name of the slide to be initially selected (default: `None` meaning the first slide)
+        - on_value_change: callback to be executed when the selected slide changes
+        - animated: whether to animate slide transitions (default: `False`)
+        - arrows: whether to show arrows for manual slide navigation (default: `False`)
+        - navigation: whether to show navigation dots for manual slide navigation (default: `False`)
         """
         super().__init__(tag='q-carousel', value=value, on_value_change=on_value_change)
         self._props['animated'] = animated
@@ -59,7 +59,7 @@ class CarouselSlide(DisableableElement):
         This element represents [Quasar's QCarouselSlide ](https://quasar.dev/vue-components/carousel#qcarouselslide-api) component.
         It is a child of a `ui.carousel` element.
 
-        :param name: name of the slide (will be the value of the `ui.carousel` element, auto-generated if `None`)
+        - name: name of the slide (will be the value of the `ui.carousel` element, auto-generated if `None`)
         """
         super().__init__(tag='q-carousel-slide')
         self.carousel = cast(ValueElement, context.get_slot().parent)

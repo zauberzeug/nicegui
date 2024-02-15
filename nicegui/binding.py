@@ -2,7 +2,19 @@ import asyncio
 import time
 from collections import defaultdict
 from collections.abc import Mapping
-from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
+from typing import (
+    Any,
+    Callable,
+    DefaultDict,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Type,
+    Union,
+)
 
 from . import core
 from .logging import log
@@ -83,11 +95,11 @@ def bind_to(self_obj: Any, self_name: str, other_obj: Any, other_name: str, forw
     The binding works one way only, from the first object to the second.
     The update happens immediately and whenever a value changes.
 
-    :param self_obj: The object to bind from.
-    :param self_name: The name of the property to bind from.
-    :param other_obj: The object to bind to.
-    :param other_name: The name of the property to bind to.
-    :param forward: A function to apply to the value before applying it.
+    - self_obj: The object to bind from.
+    - self_name: The name of the property to bind from.
+    - other_obj: The object to bind to.
+    - other_name: The name of the property to bind to.
+    - forward: A function to apply to the value before applying it.
     """
     bindings[(id(self_obj), self_name)].append((self_obj, other_obj, other_name, forward))
     if (id(self_obj), self_name) not in bindable_properties:
@@ -101,11 +113,11 @@ def bind_from(self_obj: Any, self_name: str, other_obj: Any, other_name: str, ba
     The binding works one way only, from the second object to the first.
     The update happens immediately and whenever a value changes.
 
-    :param self_obj: The object to bind to.
-    :param self_name: The name of the property to bind to.
-    :param other_obj: The object to bind from.
-    :param other_name: The name of the property to bind from.
-    :param backward: A function to apply to the value before applying it.
+    - self_obj: The object to bind to.
+    - self_name: The name of the property to bind to.
+    - other_obj: The object to bind from.
+    - other_name: The name of the property to bind from.
+    - backward: A function to apply to the value before applying it.
     """
     bindings[(id(other_obj), other_name)].append((other_obj, self_obj, self_name, backward))
     if (id(other_obj), other_name) not in bindable_properties:
@@ -121,12 +133,12 @@ def bind(self_obj: Any, self_name: str, other_obj: Any, other_name: str, *,
     The update happens immediately and whenever a value changes.
     The backward binding takes precedence for the initial synchronization.
 
-    :param self_obj: First object to bind.
-    :param self_name: The name of the first property to bind.
-    :param other_obj: The second object to bind.
-    :param other_name: The name of the second property to bind.
-    :param forward: A function to apply to the value before applying it to the second object.
-    :param backward: A function to apply to the value before applying it to the first object.
+    - self_obj: First object to bind.
+    - self_name: The name of the first property to bind.
+    - other_obj: The second object to bind.
+    - other_name: The name of the second property to bind.
+    - forward: A function to apply to the value before applying it to the second object.
+    - backward: A function to apply to the value before applying it to the first object.
     """
     bind_from(self_obj, self_name, other_obj, other_name, backward=backward)
     bind_to(self_obj, self_name, other_obj, other_name, forward=forward)
@@ -158,7 +170,7 @@ class BindableProperty:
 def remove(objects: Iterable[Any]) -> None:
     """Remove all bindings that involve the given objects.
 
-    :param objects: The objects to remove.
+    - objects: The objects to remove.
     """
     object_ids = set(map(id, objects))
     active_links[:] = [

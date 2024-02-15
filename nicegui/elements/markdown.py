@@ -16,8 +16,8 @@ class Markdown(ContentElement, component='markdown.js'):
 
         Renders Markdown onto the page.
 
-        :param content: the Markdown content to be displayed
-        :param extras: list of [markdown2 extensions ](https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras) (default: `['fenced-code-blocks', 'tables']`)
+        - content: the Markdown content to be displayed
+        - extras: list of [markdown2 extensions ](https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras) (default: `['fenced-code-blocks', 'tables']`)
         """
         self.extras = extras
         super().__init__(content=content)

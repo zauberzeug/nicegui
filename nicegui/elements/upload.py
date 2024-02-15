@@ -24,14 +24,14 @@ class Upload(DisableableElement, component='upload.js'):
 
         Based on Quasar's [QUploader ](https://quasar.dev/vue-components/uploader) component.
 
-        :param multiple: allow uploading multiple files at once (default: `False`)
-        :param max_file_size: maximum file size in bytes (default: `0`)
-        :param max_total_size: maximum total size of all files in bytes (default: `0`)
-        :param max_files: maximum number of files (default: `0`)
-        :param on_upload: callback to execute for each uploaded file (type: nicegui.events.UploadEventArguments)
-        :param on_rejected: callback to execute for each rejected file
-        :param label: label for the uploader (default: `''`)
-        :param auto_upload: automatically upload files when they are selected (default: `False`)
+        - multiple: allow uploading multiple files at once (default: `False`)
+        - max_file_size: maximum file size in bytes (default: `0`)
+        - max_total_size: maximum total size of all files in bytes (default: `0`)
+        - max_files: maximum number of files (default: `0`)
+        - on_upload: callback to execute for each uploaded file (type: nicegui.events.UploadEventArguments)
+        - on_rejected: callback to execute for each rejected file
+        - label: label for the uploader (default: `''`)
+        - auto_upload: automatically upload files when they are selected (default: `False`)
         """
         super().__init__()
         self._props['multiple'] = multiple

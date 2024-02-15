@@ -13,8 +13,8 @@ class AwaitableResponse:
         This class can be used to run one of two different callables, depending on whether the response is awaited or not.
         It must be awaited immediately after creation or not at all.
 
-        :param fire_and_forget: The callable to run if the response is not awaited.
-        :param wait_for_result: The callable to run if the response is awaited.
+        - fire_and_forget: The callable to run if the response is not awaited.
+        - wait_for_result: The callable to run if the response is awaited.
         """
         self.fire_and_forget = fire_and_forget
         self.wait_for_result = wait_for_result

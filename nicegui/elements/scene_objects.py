@@ -28,10 +28,10 @@ class Box(Object3D):
         This element is based on Three.js' [BoxGeometry ](https://threejs.org/docs/index.html#api/en/geometries/BoxGeometry) object.
         It is used to create a box-shaped mesh.
 
-        :param width: width of the box (default: 1.0)
-        :param height: height of the box (default: 1.0)
-        :param depth: depth of the box (default: 1.0)
-        :param wireframe: whether to display the box as a wireframe (default: `False`)
+        - width: width of the box (default: 1.0)
+        - height: height of the box (default: 1.0)
+        - depth: depth of the box (default: 1.0)
+        - wireframe: whether to display the box as a wireframe (default: `False`)
         """
         super().__init__('box', width, height, depth, wireframe)
 
@@ -49,10 +49,10 @@ class Sphere(Object3D):
         This element is based on Three.js' [SphereGeometry ](https://threejs.org/docs/index.html#api/en/geometries/SphereGeometry) object.
         It is used to create a sphere-shaped mesh.
 
-        :param radius: radius of the sphere (default: 1.0)
-        :param width_segments: number of horizontal segments (default: 32)
-        :param height_segments: number of vertical segments (default: 16)
-        :param wireframe: whether to display the sphere as a wireframe (default: `False`)
+        - radius: radius of the sphere (default: 1.0)
+        - width_segments: number of horizontal segments (default: 32)
+        - height_segments: number of vertical segments (default: 16)
+        - wireframe: whether to display the sphere as a wireframe (default: `False`)
         """
         super().__init__('sphere', radius, width_segments, height_segments, wireframe)
 
@@ -72,12 +72,12 @@ class Cylinder(Object3D):
         This element is based on Three.js' [CylinderGeometry ](https://threejs.org/docs/index.html#api/en/geometries/CylinderGeometry) object.
         It is used to create a cylinder-shaped mesh.
 
-        :param top_radius: radius of the top (default: 1.0)
-        :param bottom_radius: radius of the bottom (default: 1.0)
-        :param height: height of the cylinder (default: 1.0)
-        :param radial_segments: number of horizontal segments (default: 8)
-        :param height_segments: number of vertical segments (default: 1)
-        :param wireframe: whether to display the cylinder as a wireframe (default: `False`)
+        - top_radius: radius of the top (default: 1.0)
+        - bottom_radius: radius of the bottom (default: 1.0)
+        - height: height of the cylinder (default: 1.0)
+        - radial_segments: number of horizontal segments (default: 8)
+        - height_segments: number of vertical segments (default: 1)
+        - wireframe: whether to display the cylinder as a wireframe (default: `False`)
         """
         super().__init__('cylinder', top_radius, bottom_radius, height, radial_segments, height_segments, wireframe)
 
@@ -98,13 +98,13 @@ class Ring(Object3D):
         This element is based on Three.js' [RingGeometry ](https://threejs.org/docs/index.html#api/en/geometries/RingGeometry) object.
         It is used to create a ring-shaped mesh.
 
-        :param inner_radius: inner radius of the ring (default: 0.5)
-        :param outer_radius: outer radius of the ring (default: 1.0)
-        :param theta_segments: number of horizontal segments (default: 8, higher means rounder)
-        :param phi_segments: number of vertical segments (default: 1)
-        :param theta_start: start angle in radians (default: 0)
-        :param theta_length: central angle in radians (default: 2π)
-        :param wireframe: whether to display the ring as a wireframe (default: `False`)
+        - inner_radius: inner radius of the ring (default: 0.5)
+        - outer_radius: outer radius of the ring (default: 1.0)
+        - theta_segments: number of horizontal segments (default: 8, higher means rounder)
+        - phi_segments: number of vertical segments (default: 1)
+        - theta_start: start angle in radians (default: 0)
+        - theta_length: central angle in radians (default: 2π)
+        - wireframe: whether to display the ring as a wireframe (default: `False`)
         """
         super().__init__('ring',
                          inner_radius, outer_radius, theta_segments, phi_segments, theta_start, theta_length, wireframe)
@@ -127,14 +127,14 @@ class QuadraticBezierTube(Object3D):
         This element is based on Three.js' [QuadraticBezierCurve3 ](https://threejs.org/docs/index.html#api/en/extras/curves/QuadraticBezierCurve3) object.
         It is used to create a tube-shaped mesh.
 
-        :param start: start point of the curve
-        :param mid: middle point of the curve
-        :param end: end point of the curve
-        :param tubular_segments: number of tubular segments (default: 64)
-        :param radius: radius of the tube (default: 1.0)
-        :param radial_segments: number of radial segments (default: 8)
-        :param closed: whether the tube should be closed (default: `False`)
-        :param wireframe: whether to display the tube as a wireframe (default: `False`)
+        - start: start point of the curve
+        - mid: middle point of the curve
+        - end: end point of the curve
+        - tubular_segments: number of tubular segments (default: 64)
+        - radius: radius of the tube (default: 1.0)
+        - radial_segments: number of radial segments (default: 8)
+        - closed: whether the tube should be closed (default: `False`)
+        - wireframe: whether to display the tube as a wireframe (default: `False`)
         """
         super().__init__('quadratic_bezier_tube',
                          start, mid, end, tubular_segments, radius, radial_segments, closed, wireframe)
@@ -152,9 +152,9 @@ class Extrusion(Object3D):
         This element is based on Three.js' [ExtrudeGeometry ](https://threejs.org/docs/index.html#api/en/geometries/ExtrudeGeometry) object.
         It is used to create a 3D shape by extruding a 2D shape to a given height.
 
-        :param outline: list of points defining the outline of the 2D shape
-        :param height: height of the extrusion
-        :param wireframe: whether to display the extrusion as a wireframe (default: `False`)
+        - outline: list of points defining the outline of the 2D shape
+        - height: height of the extrusion
+        - wireframe: whether to display the extrusion as a wireframe (default: `False`)
         """
         super().__init__('extrusion', outline, height, wireframe)
 
@@ -169,8 +169,8 @@ class Stl(Object3D):
 
         This element is used to create a mesh from an STL file.
 
-        :param url: URL of the STL file
-        :param wireframe: whether to display the STL as a wireframe (default: `False`)
+        - url: URL of the STL file
+        - wireframe: whether to display the STL as a wireframe (default: `False`)
         """
         super().__init__('stl', url, wireframe)
 
@@ -186,8 +186,8 @@ class Line(Object3D):
         This element is based on Three.js' [Line ](https://threejs.org/docs/index.html#api/en/objects/Line) object.
         It is used to create a line segment.
 
-        :param start: start point of the line
-        :param end: end point of the line
+        - start: start point of the line
+        - end: end point of the line
         """
         super().__init__('line', start, end)
 
@@ -205,11 +205,11 @@ class Curve(Object3D):
 
         This element is based on Three.js' [CubicBezierCurve3 ](https://threejs.org/docs/index.html#api/en/extras/curves/CubicBezierCurve3) object.
 
-        :param start: start point of the curve
-        :param control1: first control point of the curve
-        :param control2: second control point of the curve
-        :param end: end point of the curve
-        :param num_points: number of points to use for the curve (default: 20)
+        - start: start point of the curve
+        - control1: first control point of the curve
+        - control2: second control point of the curve
+        - end: end point of the curve
+        - num_points: number of points to use for the curve (default: 20)
         """
         super().__init__('curve', start, control1, control2, end, num_points)
 
@@ -225,8 +225,8 @@ class Text(Object3D):
         This element is used to add 2D text to the scene.
         It can be moved like any other object, but always faces the camera.
 
-        :param text: text to display
-        :param style: CSS style (default: '')
+        - text: text to display
+        - style: CSS style (default: '')
         """
         super().__init__('text', text, style)
 
@@ -242,8 +242,8 @@ class Text3d(Object3D):
         This element is used to add a 3D text mesh to the scene.
         It can be moved and rotated like any other object.
 
-        :param text: text to display
-        :param style: CSS style (default: '')
+        - text: text to display
+        - style: CSS style (default: '')
         """
         super().__init__('text3d', text, style)
 
@@ -258,8 +258,8 @@ class Texture(Object3D):
 
         This element is used to add a texture to a mesh.
 
-        :param url: URL of the texture image
-        :param coordinates: texture coordinates
+        - url: URL of the texture image
+        - coordinates: texture coordinates
         """
         super().__init__('texture', url, coordinates)
 
@@ -289,12 +289,12 @@ class SpotLight(Object3D):
         This element is based on Three.js' [SpotLight ](https://threejs.org/docs/index.html#api/en/lights/SpotLight) object.
         It is used to add a spot light to the scene.
 
-        :param color: CSS color string (default: '#ffffff')
-        :param intensity: light intensity (default: 1.0)
-        :param distance: maximum distance of light (default: 0.0)
-        :param angle: maximum angle of light (default: π/2)
-        :param penumbra: penumbra (default: 0.0)
-        :param decay: decay (default: 2.0)
+        - color: CSS color string (default: '#ffffff')
+        - intensity: light intensity (default: 1.0)
+        - distance: maximum distance of light (default: 0.0)
+        - angle: maximum angle of light (default: π/2)
+        - penumbra: penumbra (default: 0.0)
+        - decay: decay (default: 2.0)
         """
         super().__init__('spot_light', color, intensity, distance, angle, penumbra, decay)
 
@@ -310,8 +310,8 @@ class PointCloud(Object3D):
 
         This element is based on Three.js' [Points ](https://threejs.org/docs/index.html#api/en/objects/Points) object.
 
-        :param points: list of points
-        :param colors: list of colors (one per point)
-        :param point_size: size of the points (default: 1.0)
+        - points: list of points
+        - colors: list of colors (one per point)
+        - point_size: size of the points (default: 1.0)
         """
         super().__init__('point_cloud', points, colors, point_size)

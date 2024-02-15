@@ -20,13 +20,13 @@ class Avatar(BackgroundColorElement, TextColorElement):
         A avatar element wrapping Quasar's
         [QAvatar ](https://quasar.dev/vue-components/avatar) component.
 
-        :param icon: name of the icon or image path with "img:" prefix (e.g. "map", "img:path/to/image.png")
-        :param color: background color (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
-        :param text_color: color name from the Quasar Color Palette (e.g. "primary", "teal-10")
-        :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl) (e.g. "16px", "2rem")
-        :param font_size: size in CSS units, including unit name, of the content (icon, text) (e.g. "18px", "2rem")
-        :param square: removes border-radius so borders are squared (default: False)
-        :param rounded: applies a small standard border-radius for a squared shape of the component (default: False)
+        - icon: name of the icon or image path with "img:" prefix (e.g. "map", "img:path/to/image.png")
+        - color: background color (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
+        - text_color: color name from the Quasar Color Palette (e.g. "primary", "teal-10")
+        - size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl) (e.g. "16px", "2rem")
+        - font_size: size in CSS units, including unit name, of the content (icon, text) (e.g. "18px", "2rem")
+        - square: removes border-radius so borders are squared (default: False)
+        - rounded: applies a small standard border-radius for a squared shape of the component (default: False)
         """
         super().__init__(tag='q-avatar', background_color=color, text_color=text_color)
 

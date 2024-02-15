@@ -11,15 +11,47 @@ from typing import Any, Optional, Tuple, Union
 
 
 def is_pytest() -> bool:
-    """Check if the code is running in pytest."""
+    """
+    Check if the code is running in pytest.
+
+    Returns:
+        bool: True if running in pytest, False otherwise.
+
+    Examples:
+        >>> is_pytest()
+        False
+    """
     return 'pytest' in sys.modules
 
 
 def is_coroutine_function(obj: Any) -> bool:
-    """Check if the object is a coroutine function.
+    """
+    Check if the object is a coroutine function.
 
-    This function is needed because functools.partial is not a coroutine function, but its func attribute is.
-    Note: It will return false for coroutine objects.
+    This function checks if the given object is a coroutine function. It is useful when dealing with objects that may be
+    wrapped in `functools.partial` and need to determine if the underlying function is a coroutine function.
+
+    Parameters:
+        obj (Any): The object to be checked.
+
+    Returns:
+        bool: True if the object is a coroutine function, False otherwise.
+
+    Notes:
+        - This function will return False for coroutine objects.
+        - If the object is a `functools.partial` object, it will unwrap it until it reaches the underlying function.
+
+    Example:
+        >>> async def my_coroutine():
+        ...     pass
+        ...
+        >>> def my_function():
+        ...     pass
+        ...
+        >>> is_coroutine_function(my_coroutine)
+        True
+        >>> is_coroutine_function(my_function)
+        False
     """
     while isinstance(obj, functools.partial):
         obj = obj.func
@@ -27,7 +59,23 @@ def is_coroutine_function(obj: Any) -> bool:
 
 
 def is_file(path: Optional[Union[str, Path]]) -> bool:
-    """Check if the path is a file that exists."""
+    """
+    Check if the path is a file that exists.
+
+    Args:
+        path (Optional[Union[str, Path]]): The path to check.
+
+    Returns:
+        bool: True if the path is a file that exists, False otherwise.
+
+    Raises:
+        None
+
+    Notes:
+        - If the path is None or empty, it will return False.
+        - If the path starts with 'data:', it will return False to avoid passing data URLs to Path.
+        - If an OSError occurs while checking the path, it will return False.
+    """
     if not path:
         return False
     if isinstance(path, str) and path.strip().startswith('data:'):
@@ -39,12 +87,35 @@ def is_file(path: Optional[Union[str, Path]]) -> bool:
 
 
 def hash_file_path(path: Path) -> str:
-    """Hash the given path."""
+    """
+    Hashes the given file path using SHA256 algorithm.
+
+    Args:
+        path (Path): The path of the file to be hashed.
+
+    Returns:
+        str: The hashed value of the file path.
+
+    Raises:
+        None
+    """
     return hashlib.sha256(path.as_posix().encode()).hexdigest()[:32]
 
 
 def is_port_open(host: str, port: int) -> bool:
-    """Check if the port is open by checking if a TCP connection can be established."""
+    """
+    Check if the port is open by attempting to establish a TCP connection.
+
+    Args:
+        host (str): The hostname or IP address of the target.
+        port (int): The port number to check.
+
+    Returns:
+        bool: True if the port is open, False otherwise.
+
+    Raises:
+        None
+    """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         sock.connect((host, port))
@@ -59,18 +130,22 @@ def is_port_open(host: str, port: int) -> bool:
 
 
 def schedule_browser(host: str, port: int) -> Tuple[threading.Thread, threading.Event]:
-    """Wait non-blockingly for the port to be open, then start a webbrowser.
+    """
+    Wait non-blockingly for the port to be open, then start a web browser.
 
     This function launches a thread in order to be non-blocking.
-    This thread then uses `is_port_open` to check when the port opens.
-    When connectivity is confirmed, the webbrowser is launched using `webbrowser.open`.
+    The thread continuously checks if the specified port is open using `is_port_open` function.
+    Once the port is open, it launches a web browser to open the specified URL.
 
-    The thread is created as a daemon thread, in order to not interfere with Ctrl+C.
+    The thread is created as a daemon thread to ensure it does not interfere with Ctrl+C.
 
-    If you need to stop this thread, you can do this by setting the Event, that gets returned.
-    The thread will stop with the next loop without opening the browser.
+    If you need to stop this thread, you can do so by setting the returned Event object.
+    The thread will stop on the next loop iteration without opening the browser.
 
-    :return: A tuple consisting of the actual thread object and an event for stopping the thread.
+    - host: The host address to connect to. If '0.0.0.0', it will be replaced with '127.0.0.1'.
+    - port: The port number to check for connectivity.
+
+    :return: A tuple consisting of the thread object and an event for stopping the thread.
     """
     cancel = threading.Event()
 
@@ -88,5 +163,19 @@ def schedule_browser(host: str, port: int) -> Tuple[threading.Thread, threading.
 
 
 def kebab_to_camel_case(string: str) -> str:
-    """Convert a kebab-case string to camelCase."""
+    """
+    Convert a kebab-case string to camelCase.
+
+    Args:
+        string (str): The kebab-case string to be converted.
+
+    Returns:
+        str: The converted camelCase string.
+
+    Examples:
+        >>> kebab_to_camel_case("hello-world")
+        'helloWorld'
+        >>> kebab_to_camel_case("my-name-is-john")
+        'myNameIsJohn'
+    """
     return ''.join(word.capitalize() if i else word for i, word in enumerate(string.split('-')))

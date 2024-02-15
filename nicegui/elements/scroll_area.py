@@ -12,7 +12,7 @@ class ScrollArea(Element):
         A way of customizing the scrollbars by encapsulating your content.
         This element exposes the Quasar [ScrollArea ](https://quasar.dev/vue-components/scroll-area/) component.
 
-        :param on_scroll: function to be called when the scroll position changes
+        - on_scroll: function to be called when the scroll position changes
         """
         super().__init__('q-scroll-area')
         self._classes.append('nicegui-scroll-area')
@@ -53,10 +53,10 @@ class ScrollArea(Element):
 
         You can add a delay to the actual scroll action with the `duration_ms` parameter.
 
-        :param pixels: scroll position offset from top in pixels
-        :param percent: scroll position offset from top in percentage of the total scrolling size
-        :param axis: scroll axis
-        :param duration: animation duration (in seconds, default: 0.0 means no animation)
+        - pixels: scroll position offset from top in pixels
+        - percent: scroll position offset from top in percentage of the total scrolling size
+        - axis: scroll axis
+        - duration: animation duration (in seconds, default: 0.0 means no animation)
         """
         if pixels is not None and percent is not None:
             raise ValueError('You can only specify one of pixels or percent')

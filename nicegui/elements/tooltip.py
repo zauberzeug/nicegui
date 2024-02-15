@@ -11,6 +11,6 @@ class Tooltip(TextElement):
 
         Instead of passing a string as the first argument, you can also nest other elements inside the tooltip.
 
-        :param text: the content of the tooltip (default: '')
+        - text: the content of the tooltip (default: '')
         """
         super().__init__(tag='q-tooltip', text=text)

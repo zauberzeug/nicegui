@@ -12,13 +12,42 @@ except ImportError:
         def __init__(self, *args, **kwargs) -> None:  # pylint: disable=unused-argument
             """Highcharts chart
 
-            An element to create a chart using [Highcharts ](https://www.highcharts.com/).
-            Updates can be pushed to the chart by changing the `options` property.
-            After data has changed, call the `update` method to refresh the chart.
+            An element to create a chart using Highcharts.
 
-            Due to Highcharts' restrictive license, this element is not part of the standard NiceGUI package.
-            It is maintained in a [separate repository ](https://github.com/zauberzeug/nicegui-highcharts/)
-            and can be installed with `pip install nicegui[highcharts]`.
+            Args:
+                *args: Variable length argument list.
+                **kwargs: Arbitrary keyword arguments.
+
+            Notes:
+                - Updates can be pushed to the chart by changing the `options` property.
+                - After data has changed, call the `update` method to refresh the chart.
+
+            Raises:
+                None
+
+            Examples:
+                To create a basic Highcharts chart:
+
+                ```python
+                chart = highchart()
+                chart.options = {
+                    'chart': {
+                        'type': 'line'
+                    },
+                    'title': {
+                        'text': 'My Chart'
+                    },
+                    'series': [{
+                        'data': [1, 2, 3, 4, 5]
+                    }]
+                }
+                chart.update()
+                ```
+
+            Warnings:
+                Due to Highcharts' restrictive license, this element is not part of the standard NiceGUI package.
+                It is maintained in a separate repository and can be installed with `pip install nicegui[highcharts]`.
+
             """
             super().__init__()
             Markdown('Highcharts is not installed. Please run `pip install nicegui[highcharts]`.')

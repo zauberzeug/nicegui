@@ -23,7 +23,7 @@ class Image(SourceElement, component='image.js'):
         Displays an image.
         This element is based on Quasar's [QImg ](https://quasar.dev/vue-components/img) component.
 
-        :param source: the source of the image; can be a URL, local file path, a base64 string or a PIL image
+        - source: the source of the image; can be a URL, local file path, a base64 string or a PIL image
         """
         super().__init__(source=source)
 
@@ -41,8 +41,8 @@ class Image(SourceElement, component='image.js'):
 def pil_to_base64(pil_image: 'PIL_Image', image_format: str) -> str:
     """Convert a PIL image to a base64 string which can be used as image source.
 
-    :param pil_image: the PIL image
-    :param image_format: the image format
+    - pil_image: the PIL image
+    - image_format: the image format
     :return: the base64 string
     """
     buffer = io.BytesIO()

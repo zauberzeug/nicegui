@@ -9,7 +9,26 @@ from nicegui import ui
 
 
 async def run_command(command: str) -> None:
-    """Run a command in the background and display the output in the pre-created dialog."""
+    """Run a command in the background and display the output in the pre-created dialog.
+
+    Args:
+        command (str): The command to be executed.
+
+    Returns:
+        None
+
+    Raises:
+        OSError: If an error occurs while executing the command.
+
+    Notes:
+        - The function opens a pre-created dialog to display the output of the command.
+        - The command is executed in the background using asyncio.create_subprocess_exec().
+        - The output of the command is read in chunks to prevent blocking.
+        - The content of the markdown element is updated with the new output.
+
+    Example:
+        await run_command('ls -l')
+    """
     dialog.open()
     result.content = ''
     command = command.replace('python3', sys.executable)  # NOTE replace with machine-independent Python path (#1240)
@@ -18,7 +37,6 @@ async def run_command(command: str) -> None:
         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT,
         cwd=os.path.dirname(os.path.abspath(__file__))
     )
-    # NOTE we need to read the output in chunks, otherwise the process will block
     output = ''
     while True:
         new = await process.stdout.read(4096)

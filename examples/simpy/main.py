@@ -10,6 +10,25 @@ start_time = datetime.datetime.now()
 
 
 def clock(env):
+    """
+    A clock generator for simulating time in a simulation environment.
+
+    Parameters:
+    - env (simpy.Environment): The simulation environment.
+
+    Yields:
+    - simpy.Timeout: A timeout event that represents the passage of time.
+
+    Usage:
+    1. Create a simulation environment using simpy.Environment().
+    2. Pass the simulation environment to the clock() function.
+    3. Use the yielded timeout event to advance the simulation time.
+
+    Example:
+    env = simpy.Environment()
+    env.process(clock(env))
+    env.run(until=10)  # Run the simulation for 10 time units.
+    """
     while True:
         simulation_time = start_time + datetime.timedelta(seconds=env.now)
         clock_label.text = simulation_time.strftime('%H:%M:%S')
@@ -17,6 +36,23 @@ def clock(env):
 
 
 def traffic_light(env):
+    """
+    Simulates a traffic light using a generator function.
+
+    The traffic light cycles through three states: green, yellow, and red.
+    It uses the `env.timeout()` function from the SimPy library to introduce delays between state changes.
+
+    Parameters:
+    - env (simpy.Environment): The SimPy environment in which the traffic light is being simulated.
+
+    Yields:
+    - simpy.Timeout: A timeout event that represents the delay between state changes.
+
+    Usage:
+    1. Create a SimPy environment: `env = simpy.Environment()`
+    2. Create a traffic light process: `env.process(traffic_light(env))`
+    3. Run the simulation: `env.run(until=100)`
+    """
     while True:
         light.classes('bg-green-500', remove='bg-red-500')
         yield env.timeout(30)
@@ -27,6 +63,32 @@ def traffic_light(env):
 
 
 async def run_simpy():
+    """
+    Run a simulation using SimPy.
+
+    This function sets up the simulation environment, processes, and runs the simulation until a specified time.
+    It uses an AsyncRealtimeEnvironment with a fast forward factor of 0.1, which means the simulation runs at 1/10th of real-time speed.
+    The simulation includes a traffic_light process and a clock process.
+
+    Parameters:
+        None
+
+    Returns:
+        None
+
+    Raises:
+        asyncio.CancelledError: If the simulation is cancelled.
+
+    Usage:
+        - Import the run_simpy function from this module.
+        - Call the run_simpy function to start the simulation.
+        - The simulation will run until 300 seconds of simulation time have passed.
+        - If the simulation is cancelled, the function will return without raising an exception.
+        - After the simulation completes, a notification will be displayed and the content will fade out.
+
+    Example:
+        await run_simpy()
+    """
     env = AsyncRealtimeEnvironment(factor=0.1)  # fast forward simulation with 1/10th of realtime
     env.process(traffic_light(env))
     env.process(clock(env))

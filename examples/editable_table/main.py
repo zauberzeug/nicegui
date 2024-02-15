@@ -13,6 +13,17 @@ rows = [
 
 
 def add_row() -> None:
+    """
+    Add a new row to the table.
+
+    This function generates a new ID for the row by finding the maximum ID value in the existing rows and incrementing it by 1.
+    It then creates a new row dictionary with default values for 'name' and 'age' fields.
+    The new row is appended to the 'rows' list.
+    Finally, a notification is displayed with the ID of the newly added row and the table is updated.
+
+    Returns:
+        None
+    """
     new_id = max((dx['id'] for dx in rows), default=-1) + 1
     rows.append({'id': new_id, 'name': 'New guy', 'age': 21})
     ui.notify(f'Added new row with ID {new_id}')
@@ -20,6 +31,29 @@ def add_row() -> None:
 
 
 def rename(e: events.GenericEventArguments) -> None:
+    """
+    Updates the rows in the table with the provided event arguments.
+
+    Args:
+        e (events.GenericEventArguments): The event arguments containing the updated row data.
+
+    Returns:
+        None
+
+    Raises:
+        None
+
+    Example:
+        To update the rows in the table, call the rename function with the appropriate event arguments:
+
+        ```
+        event_args = events.GenericEventArguments(id=1, name='John Doe', age=30)
+        rename(event_args)
+        ```
+
+    This function iterates over the rows in the table and updates the row that matches the provided 'id' in the event arguments.
+    After updating the rows, it notifies the user with the updated rows and updates the table UI.
+    """
     for row in rows:
         if row['id'] == e.args['id']:
             row.update(e.args)
@@ -28,6 +62,22 @@ def rename(e: events.GenericEventArguments) -> None:
 
 
 def delete(e: events.GenericEventArguments) -> None:
+    """
+    Deletes a row from the table based on the provided ID.
+
+    Args:
+        e (events.GenericEventArguments): The event arguments containing the ID of the row to be deleted.
+
+    Returns:
+        None
+
+    Raises:
+        None
+
+    Example:
+        To delete a row with ID 5, you can call the delete function as follows:
+        delete(events.GenericEventArguments(args={'id': 5}))
+    """
     rows[:] = [row for row in rows if row['id'] != e.args['id']]
     ui.notify(f'Deleted row with ID {e.args["id"]}')
     table.update()

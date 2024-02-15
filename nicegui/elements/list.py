@@ -52,6 +52,6 @@ class ItemLabel(TextElement):
 
         Creates an item label based on Quasar's [QItemLabel ](https://quasar.dev/vue-components/list-and-list-items#qitemlabel-api) component.
 
-        :param text: text to be displayed (default: "")
+        - text: text to be displayed (default: "")
         """
         super().__init__(tag='q-item-label', text=text)

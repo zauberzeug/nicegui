@@ -45,6 +45,20 @@ options = {
 
 
 def handle_click(event: events.GenericEventArguments):
+    """
+    Handle a click event on the calendar.
+
+    This function is responsible for processing click events on the calendar and displaying the event information.
+
+    Parameters:
+        event (events.GenericEventArguments): The event object containing information about the click event.
+
+    Returns:
+        None
+
+    Example:
+        handle_click(event)
+    """
     if 'info' in event.args:
         ui.notify(event.args['info']['event'])
 

@@ -17,8 +17,8 @@ class Code(Element):
 
         This element displays a code block with syntax highlighting.
 
-        :param content: code to display
-        :param language: language of the code (default: "python")
+        - content: code to display
+        - language: language of the code (default: "python")
         """
         super().__init__()
         self._classes.append('nicegui-code')

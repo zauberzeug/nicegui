@@ -6,7 +6,7 @@ def page_title(title: str) -> None:
 
     Set the page title for the current client.
 
-    :param title: page title
+    - title: page title
     """
     client = context.get_client()
     client.title = title

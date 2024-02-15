@@ -16,9 +16,9 @@ class Time(ValueElement, DisableableElement):
         This element is based on Quasar's [QTime ](https://quasar.dev/vue-components/date) component.
         The time is a string in the format defined by the `mask` parameter.
 
-        :param value: the initial time
-        :param mask: the format of the time string (default: 'HH:mm')
-        :param on_change: callback to execute when changing the time
+        - value: the initial time
+        - mask: the format of the time string (default: 'HH:mm')
+        - on_change: callback to execute when changing the time
         """
         super().__init__(tag='q-time', value=value, on_value_change=on_change)
         self._props['mask'] = mask

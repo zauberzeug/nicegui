@@ -13,6 +13,30 @@ df = pd.DataFrame(data={
 
 
 def update(*, df: pd.DataFrame, r: int, c: int, value):
+    """
+    Update the value at the specified row and column in the given DataFrame.
+
+    Args:
+        df (pd.DataFrame): The DataFrame to update.
+        r (int): The row index.
+        c (int): The column index.
+        value: The new value to set.
+
+    Returns:
+        None
+
+    Raises:
+        None
+
+    Example:
+        >>> df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+        >>> update(df=df, r=1, c=0, value=10)
+        >>> print(df)
+           A  B
+        0  1  4
+        1  10 5
+        2  3  6
+    """
     df.iat[r, c] = value
     ui.notify(f'Set ({r}, {c}) to {value}')
 

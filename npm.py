@@ -29,20 +29,85 @@ names = args.name or None
 
 
 def prepare(path: Path) -> Path:
+    """
+    Create the parent directory for the given path if it doesn't exist.
+
+    Args:
+        path (Path): The path for which the parent directory needs to be created.
+
+    Returns:
+        Path: The input path with the parent directory created.
+
+    Raises:
+        None
+
+    Example:
+        >>> prepare(Path('/d:/Alejandro/Projects/Python/Otros/NiceGUI/nicegui/npm.py'))
+        Path('/d:/Alejandro/Projects/Python/Otros/NiceGUI/nicegui')
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     return path
 
 
 def cleanup(path: Path) -> Path:
+    """
+    Recursively removes a directory and its contents.
+
+    Args:
+        path (Path): The path to the directory to be removed.
+
+    Returns:
+        Path: The path of the removed directory.
+
+    Raises:
+        FileNotFoundError: If the specified directory does not exist.
+        PermissionError: If the user does not have permission to remove the directory.
+
+    Example:
+        >>> cleanup(Path('/path/to/directory'))
+        Path('/path/to/directory')
+    """
     shutil.rmtree(path, ignore_errors=True)
     return path
 
 
 def url_to_filename(url: str) -> str:
+    """
+    Convert a URL to a valid filename by replacing non-alphanumeric characters with underscores.
+
+    Args:
+        url (str): The URL to be converted.
+
+    Returns:
+        str: The converted filename.
+
+    Example:
+        >>> url_to_filename('https://example.com/file?param=value')
+        'https_example_com_file_param_value'
+    """
     return re.sub(r'[^a-zA-Z0-9]', '_', url)
 
 
 def download_buffered(url: str) -> Path:
+    """
+    Downloads a file from the given URL and saves it to a temporary directory.
+
+    Args:
+        url (str): The URL of the file to be downloaded.
+
+    Returns:
+        Path: The path to the downloaded file.
+
+    Raises:
+        requests.exceptions.RequestException: If there is an error while making the request.
+
+    Notes:
+        - The function creates a temporary directory at '/tmp/nicegui_dependencies' if it doesn't exist.
+        - The downloaded file is saved with the same name as the file in the URL.
+        - If the file already exists in the temporary directory, it will not be downloaded again.
+        - The function uses the 'User-Agent' header 'Mozilla/5.0' for the request.
+        - The function has a timeout of 3 seconds for the request.
+    """
     path = Path('/tmp/nicegui_dependencies')
     path.mkdir(exist_ok=True)
     filepath = path / url_to_filename(url)

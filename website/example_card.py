@@ -4,6 +4,19 @@ from . import svg
 
 
 def create() -> None:
+    """
+    Create a card with various UI elements.
+
+    This function creates a card with multiple UI elements such as buttons, inputs, checkboxes, switches, sliders,
+    numbers, selects, toggles, and radios. Each UI element is configured with specific event handlers to update the
+    output label accordingly.
+
+    Usage:
+        create()
+
+    Returns:
+        None
+    """
     with ui.row().style('filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'):
         with ui.card().style(r'clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%)') \
                 .classes('pb-16 no-shadow'), ui.row().classes('no-wrap'):
@@ -29,6 +42,19 @@ def create() -> None:
 
 
 def create_narrow() -> None:
+    """
+    Creates a narrow card with various UI elements.
+
+    This function creates a card with a narrow layout and adds several UI elements to it, including a face SVG, a label,
+    a button, an input field, a number field, a select field, a slider, a toggle, a radio button, a switch, and a checkbox.
+    The UI elements are styled and have event handlers attached to them.
+
+    Usage:
+        create_narrow()
+
+    Returns:
+        None
+    """
     with ui.row().style('filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'):
         with ui.card().style(r'clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%)') \
                 .classes('pb-16 no-shadow'), ui.row().classes('no-wrap'):

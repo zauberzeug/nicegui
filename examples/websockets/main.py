@@ -27,7 +27,23 @@ messages = ui.column().classes('ml-4')
 
 
 async def handle_connect(websocket: WebSocketServerProtocol):
-    """Register the new websocket connection, handle incoming messages and remove the connection when it is closed."""
+    """
+    Register the new websocket connection, handle incoming messages, and remove the connection when it is closed.
+
+    Parameters:
+        websocket (WebSocketServerProtocol): The WebSocket connection object.
+
+    Returns:
+        None
+
+    Raises:
+        N/A
+
+    Usage:
+        This function is used to handle a new websocket connection. It registers the connection, handles incoming
+        messages, and removes the connection when it is closed. The function should be called with a valid
+        WebSocketServerProtocol object as the `websocket` parameter.
+    """
     try:
         CONNECTIONS.add(websocket)
         connections_label.text = len(CONNECTIONS)
@@ -40,6 +56,33 @@ async def handle_connect(websocket: WebSocketServerProtocol):
 
 
 async def start_websocket_server():
+    """
+    Starts a WebSocket server on the localhost at port 8765.
+
+    This function creates a WebSocket server using the `websockets` library and serves incoming connections
+    by calling the `handle_connect` function. It runs asynchronously using the `async with` statement.
+
+    Parameters:
+        None
+
+    Returns:
+        None
+
+    Usage:
+        - Import the `start_websocket_server` function from this module.
+        - Call the `start_websocket_server` function to start the WebSocket server.
+
+    Example:
+        from main import start_websocket_server
+
+        async def handle_connect(websocket, path):
+            # Handle incoming WebSocket connections
+
+        async def main():
+            await start_websocket_server()
+
+        asyncio.run(main())
+    """
     async with websockets.serve(handle_connect, 'localhost', 8765):
         await asyncio.Future()
 

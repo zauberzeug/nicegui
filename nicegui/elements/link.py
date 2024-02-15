@@ -19,9 +19,9 @@ class Link(TextElement, component='link.js'):
         To jump to a specific location within a page you can place linkable anchors with `ui.link_target("name")`
         and link to it with `ui.link(target="#name")`.
 
-        :param text: display text
-        :param target: page function, NiceGUI element on the same page or string that is a an absolute URL or relative path from base URL
-        :param new_tab: open link in new tab (default: False)
+        - text: display text
+        - target: page function, NiceGUI element on the same page or string that is a an absolute URL or relative path from base URL
+        - new_tab: open link in new tab (default: False)
         """
         super().__init__(text=text)
         if isinstance(target, str):
@@ -41,7 +41,7 @@ class LinkTarget(Element):
 
         Create an anchor tag that can be used as inner-page target for links.
 
-        :param name: target name
+        - name: target name
         """
         super().__init__('a')
         self._props['name'] = name

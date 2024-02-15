@@ -45,15 +45,15 @@ class Notification(Element, component='notification.js'):
         In contrast to `ui.notify`, this element allows to update the notification message and other properties once the notification is displayed.
         The notification can be removed with `dismiss()`.
 
-        :param message: content of the notification
-        :param position: position on the screen ("top-left", "top-right", "bottom-left", "bottom-right", "top", "bottom", "left", "right" or "center", default: "bottom")
-        :param close_button: optional label of a button to dismiss the notification (default: `False`)
-        :param type: optional type ("positive", "negative", "warning", "info" or "ongoing")
-        :param color: optional color name
-        :param multi_line: enable multi-line notifications
-        :param icon: optional name of an icon to be displayed in the notification (default: `None`)
-        :param spinner: display a spinner in the notification (default: False)
-        :param timeout: optional timeout in seconds after which the notification is dismissed (default: 5.0)
+        - message: content of the notification
+        - position: position on the screen ("top-left", "top-right", "bottom-left", "bottom-right", "top", "bottom", "left", "right" or "center", default: "bottom")
+        - close_button: optional label of a button to dismiss the notification (default: `False`)
+        - type: optional type ("positive", "negative", "warning", "info" or "ongoing")
+        - color: optional color name
+        - multi_line: enable multi-line notifications
+        - icon: optional name of an icon to be displayed in the notification (default: `None`)
+        - spinner: display a spinner in the notification (default: False)
+        - timeout: optional timeout in seconds after which the notification is dismissed (default: 5.0)
 
         Note: You can pass additional keyword arguments according to [Quasar's Notify API ](https://quasar.dev/quasar-plugins/notify#notify-api).
         """

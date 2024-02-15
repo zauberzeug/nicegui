@@ -15,9 +15,9 @@ class Timeline(Element):
 
         This element represents [Quasar's QTimeline ](https://quasar.dev/vue-components/timeline#qtimeline-api) component.
 
-        :param side: Side ("left" or "right"; default: "left").
-        :param layout: Layout ("dense", "comfortable" or "loose"; default: "dense").
-        :param color: Color of the icons.
+        - side: Side ("left" or "right"; default: "left").
+        - layout: Layout ("dense", "comfortable" or "loose"; default: "dense").
+        - color: Color of the icons.
         """
         super().__init__('q-timeline')
         self._props['side'] = side
@@ -44,15 +44,15 @@ class TimelineEntry(Element):
 
         This element represents [Quasar's QTimelineEntry ](https://quasar.dev/vue-components/timeline#qtimelineentry-api) component.
 
-        :param body: Body text.
-        :param side: Side ("left" or "right"; default: "left").
-        :param heading: Whether the timeline entry is a heading.
-        :param tag: HTML tag name to be used if it is a heading.
-        :param icon: Icon name.
-        :param avatar: Avatar URL.
-        :param title: Title text.
-        :param subtitle: Subtitle text.
-        :param color: Color or the timeline.
+        - body: Body text.
+        - side: Side ("left" or "right"; default: "left").
+        - heading: Whether the timeline entry is a heading.
+        - tag: HTML tag name to be used if it is a heading.
+        - icon: Icon name.
+        - avatar: Avatar URL.
+        - title: Title text.
+        - subtitle: Subtitle text.
+        - color: Color or the timeline.
         """
         super().__init__('q-timeline-entry')
         if body is not None:

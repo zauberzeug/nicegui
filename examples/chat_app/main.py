@@ -10,6 +10,18 @@ messages: List[Tuple[str, str, str, str]] = []
 
 @ui.refreshable
 def chat_messages(own_id: str) -> None:
+    """
+    Display chat messages in the UI.
+
+    This function iterates over the `messages` list and displays each message in the UI using the `ui.chat_message`
+    function. It also scrolls the chat window to the bottom using JavaScript.
+
+    Parameters:
+        own_id (str): The ID of the user who is viewing the chat messages.
+
+    Returns:
+        None
+    """
     for user_id, avatar, text, stamp in messages:
         ui.chat_message(text=text, stamp=stamp, avatar=avatar, sent=own_id == user_id)
     ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)')
@@ -17,7 +29,43 @@ def chat_messages(own_id: str) -> None:
 
 @ui.page('/')
 async def main(client: Client):
+    """
+    Entry point for the chat application.
+
+    Args:
+        client (Client): The client object used for communication with the server.
+
+    Returns:
+        None
+
+    Description:
+        This function sets up the chat application UI and handles user interactions.
+        It creates a unique user ID and generates an avatar image URL using the user ID.
+        The function adds custom CSS styles to the UI and creates the UI components for the chat app.
+        It also connects to the server using the provided client object.
+
+        The user can enter messages in the input field and press Enter to send the message.
+        The sent messages are stored in a list along with the user ID, avatar, message text, and timestamp.
+        The chat messages are displayed in a UI component called `chat_messages`.
+
+        Note:
+            - The `chat_messages` function is assumed to be defined elsewhere.
+            - The `Client` class is assumed to be imported and instantiated before calling this function.
+
+        Example:
+            client = Client()
+            await main(client)
+    """
     def send() -> None:
+        """
+        Sends a message in the chat app.
+
+        This function adds a new message to the chat, including the user ID, avatar, message text, and timestamp.
+        After sending the message, it clears the input field and refreshes the chat messages.
+
+        Returns:
+            None
+        """
         stamp = datetime.utcnow().strftime('%X')
         messages.append((user_id, avatar, text.value, stamp))
         text.value = ''

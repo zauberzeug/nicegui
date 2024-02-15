@@ -20,13 +20,13 @@ class ChatMessage(Element):
 
         Based on Quasar's [Chat Message ](https://quasar.dev/vue-components/chat/) component.
 
-        :param text: the message body (can be a list of strings for multiple message parts)
-        :param name: the name of the message author
-        :param label: renders a label header/section only
-        :param stamp: timestamp of the message
-        :param avatar: URL to an avatar
-        :param sent: render as a sent message (so from current user) (default: False)
-        :param text_html: render text as HTML (default: False)
+        - text: the message body (can be a list of strings for multiple message parts)
+        - name: the name of the message author
+        - label: renders a label header/section only
+        - stamp: timestamp of the message
+        - avatar: URL to an avatar
+        - sent: render as a sent message (so from current user) (default: False)
+        - text_html: render text as HTML (default: False)
         """
         super().__init__('q-chat-message')
 

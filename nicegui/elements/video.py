@@ -17,11 +17,11 @@ class Video(SourceElement, component='video.js'):
 
         Displays a video.
 
-        :param src: URL or local file path of the video source
-        :param controls: whether to show the video controls, like play, pause, and volume (default: `True`)
-        :param autoplay: whether to start playing the video automatically (default: `False`)
-        :param muted: whether the video should be initially muted (default: `False`)
-        :param loop: whether the video should loop (default: `False`)
+        - src: URL or local file path of the video source
+        - controls: whether to show the video controls, like play, pause, and volume (default: `True`)
+        - autoplay: whether to start playing the video automatically (default: `False`)
+        - muted: whether the video should be initially muted (default: `False`)
+        - loop: whether the video should loop (default: `False`)
 
         See [here ](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events)
         for a list of events you can subscribe to using the generic event subscription `on()`.
@@ -35,7 +35,7 @@ class Video(SourceElement, component='video.js'):
     def seek(self, seconds: float) -> None:
         """Seek to a specific position in the video.
 
-        :param seconds: the position in seconds
+        - seconds: the position in seconds
         """
         self.run_method('seek', seconds)
 

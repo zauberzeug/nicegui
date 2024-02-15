@@ -24,10 +24,10 @@ class Button(TextElement, DisableableElement, BackgroundColorElement):
         Note that there are colors like "red" being both a Quasar color and a CSS color.
         In such cases the Quasar color will be used.
 
-        :param text: the label of the button
-        :param on_click: callback which is invoked when button is pressed
-        :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
-        :param icon: the name of an icon to be displayed on the button (default: `None`)
+        - text: the label of the button
+        - on_click: callback which is invoked when button is pressed
+        - color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
+        - icon: the name of an icon to be displayed on the button (default: `None`)
         """
         super().__init__(tag='q-btn', text=text, background_color=color)
 

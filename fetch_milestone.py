@@ -22,7 +22,19 @@ milestone_number = matching_milestones[0]['number']
 
 
 def link(number: int) -> str:
-    # https://stackoverflow.com/a/71309268/3419103
+    """
+    Generate a link to a GitHub issue with the given number.
+
+    Args:
+        number (int): The issue number.
+
+    Returns:
+        str: The formatted link to the GitHub issue.
+
+    Example:
+        >>> link(123)
+        '\x1b]8;;\x1b\\https://github.com/zauberzeug/nicegui/issues/123\x1b]8;;\x1b\\'
+    """
     escape_mask = '\033]8;{};{}\033\\{}\033]8;;\033\\'
     return escape_mask.format('', f'https://github.com/zauberzeug/nicegui/issues/{number}', f'#{number}')
 

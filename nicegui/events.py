@@ -3,7 +3,18 @@ from __future__ import annotations
 from contextlib import nullcontext
 from dataclasses import dataclass
 from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Literal, Optional, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    BinaryIO,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Union,
+)
 
 from . import background_tasks, core
 from .awaitable_response import AwaitableResponse
@@ -377,8 +388,8 @@ def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArgument
     If the handler expects arguments, the arguments are passed to the handler.
     Exceptions are caught and handled globally.
 
-    :param handler: the event handler
-    :param arguments: the event arguments
+    - handler: the event handler
+    - arguments: the event arguments
     """
     if handler is None:
         return

@@ -17,6 +17,32 @@ Message = Tuple[ClientId, MessageType, Any]
 
 
 class Outbox:
+    """
+    The Outbox class is responsible for managing updates and messages to be sent to clients in an endless loop.
+
+    Args:
+        client (Client): The client associated with the outbox.
+
+    Attributes:
+        client (Client): The client associated with the outbox.
+        updates (Dict[ElementId, Optional[Element]]): A dictionary that stores the updates to be sent to clients.
+        messages (Deque[Message]): A deque that stores the messages to be sent to clients.
+        _should_stop (bool): A flag indicating whether the outbox loop should stop.
+
+    Methods:
+        enqueue_update(element: Element) -> None:
+            Enqueues an update for the given element.
+        enqueue_delete(element: Element) -> None:
+            Enqueues a deletion for the given element.
+        enqueue_message(message_type: MessageType, data: Any, target_id: ClientId) -> None:
+            Enqueues a message for the given client.
+        loop() -> None:
+            Sends updates and messages to all clients in an endless loop.
+        _emit(message_type: MessageType, data: Any, target_id: ClientId) -> None:
+            Emits a message to the specified client.
+        stop() -> None:
+            Stops the outbox loop.
+    """
 
     def __init__(self, client: Client) -> None:
         self.client = client
@@ -29,19 +55,38 @@ class Outbox:
             core.app.on_startup(self.loop)
 
     def enqueue_update(self, element: Element) -> None:
-        """Enqueue an update for the given element."""
+        """
+        Enqueues an update for the given element.
+
+        Args:
+            element (Element): The element to be updated.
+        """
         self.updates[element.id] = element
 
     def enqueue_delete(self, element: Element) -> None:
-        """Enqueue a deletion for the given element."""
+        """
+        Enqueues a deletion for the given element.
+
+        Args:
+            element (Element): The element to be deleted.
+        """
         self.updates[element.id] = None
 
     def enqueue_message(self, message_type: MessageType, data: Any, target_id: ClientId) -> None:
-        """Enqueue a message for the given client."""
+        """
+        Enqueues a message for the given client.
+
+        Args:
+            message_type (MessageType): The type of the message.
+            data (Any): The data to be sent in the message.
+            target_id (ClientId): The ID of the target client.
+        """
         self.messages.append((target_id, message_type, data))
 
     async def loop(self) -> None:
-        """Send updates and messages to all clients in an endless loop."""
+        """
+        Sends updates and messages to all clients in an endless loop.
+        """
         while not self._should_stop:
             try:
                 await asyncio.sleep(0.01)
@@ -75,10 +120,20 @@ class Outbox:
                 await asyncio.sleep(0.1)
 
     async def _emit(self, message_type: MessageType, data: Any, target_id: ClientId) -> None:
+        """
+        Emits a message to the specified client.
+
+        Args:
+            message_type (MessageType): The type of the message.
+            data (Any): The data to be sent in the message.
+            target_id (ClientId): The ID of the target client.
+        """
         await core.sio.emit(message_type, data, room=target_id)
         if core.air is not None and core.air.is_air_target(target_id):
             await core.air.emit(message_type, data, room=target_id)
 
     def stop(self) -> None:
-        """Stop the outbox loop."""
+        """
+        Stops the outbox loop.
+        """
         self._should_stop = True

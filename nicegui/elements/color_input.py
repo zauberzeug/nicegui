@@ -20,11 +20,11 @@ class ColorInput(ValueElement, DisableableElement):
 
         This element extends Quasar's [QInput ](https://quasar.dev/vue-components/input) component with a color picker.
 
-        :param label: displayed label for the color input
-        :param placeholder: text to show if no color is selected
-        :param value: the current color value
-        :param on_change: callback to execute when the value changes
-        :param preview: change button background to selected color (default: False)
+        - label: displayed label for the color input
+        - placeholder: text to show if no color is selected
+        - value: the current color value
+        - on_change: callback to execute when the value changes
+        - preview: change button background to selected color (default: False)
         """
         super().__init__(tag='q-input', value=value, on_value_change=on_change)
         if label is not None:

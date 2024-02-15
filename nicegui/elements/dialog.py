@@ -13,7 +13,7 @@ class Dialog(ValueElement):
         By default it is dismissible by clicking or pressing ESC.
         To make it persistent, set `.props('persistent')` on the dialog element.
 
-        :param value: whether the dialog should be opened on creation (default: `False`)
+        - value: whether the dialog should be opened on creation (default: `False`)
         """
         super().__init__(tag='q-dialog', value=value, on_value_change=None)
         self._result: Any = None

@@ -17,7 +17,29 @@ def _uncomment(text: str) -> str:
 
 
 def demo(f: Callable, *, lazy: bool = True, tab: Optional[Union[str, Callable]] = None) -> Callable:
-    """Render a callable as a demo with Python code and browser window."""
+    """
+    Render a callable as a demo with Python code and browser window.
+
+    Args:
+        f (Callable): The callable to be rendered as a demo.
+        lazy (bool, optional): If True, the demo will be rendered lazily, i.e., the code will be executed only when the
+            browser window is visible. If False, the code will be executed immediately. Defaults to True.
+        tab (Optional[Union[str, Callable]], optional): The title of the browser window. If a callable is provided, its
+            return value will be used as the title. Defaults to None.
+
+    Returns:
+        Callable: The original callable.
+
+    Raises:
+        AssertionError: If the provided callable is an async function and lazy is set to False.
+
+    Notes:
+        - The demo function renders the provided callable as a demo with Python code and a browser window.
+        - The Python code is extracted from the callable's source code and displayed in a Python code block.
+        - The browser window displays the result of executing the callable.
+        - If lazy is True, a spinner is shown in the browser window until the callable is executed.
+        - If lazy is False, the callable is executed immediately.
+    """
     with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
         code = inspect.getsource(f).split('# END OF DEMO', 1)[0].strip().splitlines()
         code = [line for line in code if not line.endswith("# HIDE")]

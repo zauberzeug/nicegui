@@ -19,7 +19,7 @@ class ValidationElement(ValueElement):
     def error(self, error: Optional[str]) -> None:
         """Sets the error message.
 
-        :param error: The optional error message
+        - error: The optional error message
         """
         if self._error == error:
             return

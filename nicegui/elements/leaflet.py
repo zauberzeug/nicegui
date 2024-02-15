@@ -30,10 +30,10 @@ class Leaflet(Element, component='leaflet.js'):
 
         This element is a wrapper around the [Leaflet ](https://leafletjs.com/) JavaScript library.
 
-        :param center: initial center location of the map (latitude/longitude, default: (0.0, 0.0))
-        :param zoom: initial zoom level of the map (default: 13)
-        :param draw_control: whether to show the draw toolbar (default: False)
-        :param options: additional options passed to the Leaflet map (default: {})
+        - center: initial center location of the map (latitude/longitude, default: (0.0, 0.0))
+        - zoom: initial zoom level of the map (default: 13)
+        - draw_control: whether to show the draw toolbar (default: False)
+        - options: additional options passed to the Leaflet map (default: {})
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib' / 'leaflet')
@@ -117,10 +117,10 @@ class Leaflet(Element, component='leaflet.js'):
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
-        :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
-        :param args: arguments to pass to the method
-        :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
+        - name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
+        - args: arguments to pass to the method
+        - timeout: timeout in seconds (default: 1 second)
+        - check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
@@ -132,11 +132,11 @@ class Leaflet(Element, component='leaflet.js'):
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
-        :param layer_id: ID of the layer
-        :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
-        :param args: arguments to pass to the method
-        :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
+        - layer_id: ID of the layer
+        - name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
+        - args: arguments to pass to the method
+        - timeout: timeout in seconds (default: 1 second)
+        - check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """

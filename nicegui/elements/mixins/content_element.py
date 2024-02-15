@@ -26,9 +26,9 @@ class ContentElement(Element):
         The binding works one way only, from this element to the target.
         The update happens immediately and whenever a value changes.
 
-        :param target_object: The object to bind to.
-        :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
+        - target_object: The object to bind to.
+        - target_name: The name of the property to bind to.
+        - forward: A function to apply to the value before applying it to the target.
         """
         bind_to(self, 'content', target_object, target_name, forward)
         return self
@@ -43,9 +43,9 @@ class ContentElement(Element):
         The binding works one way only, from the target to this element.
         The update happens immediately and whenever a value changes.
 
-        :param target_object: The object to bind from.
-        :param target_name: The name of the property to bind from.
-        :param backward: A function to apply to the value before applying it to this element.
+        - target_object: The object to bind from.
+        - target_name: The name of the property to bind from.
+        - backward: A function to apply to the value before applying it to this element.
         """
         bind_from(self, 'content', target_object, target_name, backward)
         return self
@@ -62,10 +62,10 @@ class ContentElement(Element):
         The update happens immediately and whenever a value changes.
         The backward binding takes precedence for the initial synchronization.
 
-        :param target_object: The object to bind to.
-        :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
-        :param backward: A function to apply to the value before applying it to this element.
+        - target_object: The object to bind to.
+        - target_name: The name of the property to bind to.
+        - forward: A function to apply to the value before applying it to the target.
+        - backward: A function to apply to the value before applying it to this element.
         """
         bind(self, 'content', target_object, target_name, forward=forward, backward=backward)
         return self
@@ -73,14 +73,14 @@ class ContentElement(Element):
     def set_content(self, content: str) -> None:
         """Set the content of this element.
 
-        :param content: The new content.
+        - content: The new content.
         """
         self.content = content
 
     def _handle_content_change(self, content: str) -> None:
         """Called when the content of this element changes.
 
-        :param content: The new content.
+        - content: The new content.
         """
         if self.CONTENT_PROP == 'innerHTML' and '</script>' in content:
             raise ValueError('HTML elements must not contain <script> tags. Use ui.add_body_html() instead.')

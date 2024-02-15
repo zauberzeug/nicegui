@@ -79,13 +79,13 @@ class Scene(Element,
         Objects can be translated, rotated and displayed with different color, opacity or as wireframes.
         They can also be grouped to apply joint movements.
 
-        :param width: width of the canvas
-        :param height: height of the canvas
-        :param grid: whether to display a grid
-        :param on_click: callback to execute when a 3D object is clicked
-        :param on_drag_start: callback to execute when a 3D object is dragged
-        :param on_drag_end: callback to execute when a 3D object is dropped
-        :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
+        - width: width of the canvas
+        - height: height of the canvas
+        - grid: whether to display a grid
+        - on_click: callback to execute when a 3D object is clicked
+        - on_drag_start: callback to execute when a 3D object is dragged
+        - on_drag_end: callback to execute when a 3D object is dropped
+        - drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
         """
         super().__init__()
         self._props['width'] = width
@@ -178,16 +178,16 @@ class Scene(Element,
                     duration: float = 0.5) -> None:
         """Move the camera to a new position.
 
-        :param x: camera x position
-        :param y: camera y position
-        :param z: camera z position
-        :param look_at_x: camera look-at x position
-        :param look_at_y: camera look-at y position
-        :param look_at_z: camera look-at z position
-        :param up_x: x component of the camera up vector
-        :param up_y: y component of the camera up vector
-        :param up_z: z component of the camera up vector
-        :param duration: duration of the movement in seconds (default: `0.5`)
+        - x: camera x position
+        - y: camera y position
+        - z: camera z position
+        - look_at_x: camera look-at x position
+        - look_at_y: camera look-at y position
+        - look_at_z: camera look-at z position
+        - up_x: x component of the camera up vector
+        - up_y: y component of the camera up vector
+        - up_z: z component of the camera up vector
+        - duration: duration of the movement in seconds (default: `0.5`)
         """
         self.camera.x = self.camera.x if x is None else x
         self.camera.y = self.camera.y if y is None else y
@@ -210,7 +210,7 @@ class Scene(Element,
     def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:
         """Remove objects from the scene.
 
-        :param predicate: function which returns `True` for objects which should be deleted
+        - predicate: function which returns `True` for objects which should be deleted
         """
         for obj in list(self.objects.values()):
             if predicate(obj):

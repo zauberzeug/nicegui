@@ -22,9 +22,9 @@ class Date(ValueElement, DisableableElement):
             ui.date(['2023-01-01', '2023-01-02', '2023-01-03']).props('multiple')
             ui.date([{'from': '2023-01-01', 'to': '2023-01-05'}, '2023-01-07']).props('multiple range')
 
-        :param value: the initial date
-        :param mask: the format of the date string (default: 'YYYY-MM-DD')
-        :param on_change: callback to execute when changing the date
+        - value: the initial date
+        - mask: the format of the date string (default: 'YYYY-MM-DD')
+        - on_change: callback to execute when changing the date
         """
         super().__init__(tag='q-date', value=value, on_value_change=on_change)
         self._props['mask'] = mask

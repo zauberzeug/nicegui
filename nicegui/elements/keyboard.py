@@ -2,8 +2,14 @@ from typing import Any, Callable, List, Literal
 
 from ..binding import BindableProperty
 from ..element import Element
-from ..events import (GenericEventArguments, KeyboardAction, KeyboardKey, KeyboardModifiers, KeyEventArguments,
-                      handle_event)
+from ..events import (
+    GenericEventArguments,
+    KeyboardAction,
+    KeyboardKey,
+    KeyboardModifiers,
+    KeyEventArguments,
+    handle_event,
+)
 
 
 class Keyboard(Element, component='keyboard.js'):
@@ -20,10 +26,10 @@ class Keyboard(Element, component='keyboard.js'):
 
         Adds global keyboard event tracking.
 
-        :param on_key: callback to be executed when keyboard events occur.
-        :param active: boolean flag indicating whether the callback should be executed or not (default: `True`)
-        :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: `True`)
-        :param ignore: ignore keys when one of these element types is focussed (default: `['input', 'select', 'button', 'textarea']`)
+        - on_key: callback to be executed when keyboard events occur.
+        - active: boolean flag indicating whether the callback should be executed or not (default: `True`)
+        - repeating: boolean flag indicating whether held keys should be sent repeatedly (default: `True`)
+        - ignore: ignore keys when one of these element types is focussed (default: `['input', 'select', 'button', 'textarea']`)
         """
         super().__init__()
         self.key_handler = on_key

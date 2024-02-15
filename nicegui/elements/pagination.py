@@ -15,11 +15,11 @@ class Pagination(ValueElement, DisableableElement):
 
         A pagination element wrapping Quasar's [QPagination ](https://quasar.dev/vue-components/pagination) component.
 
-        :param min: minimum page number
-        :param max: maximum page number
-        :param direction_links: whether to show first/last page links
-        :param value: initial page (defaults to `min` if no value is provided)
-        :param on_change: callback to be invoked when the value changes
+        - min: minimum page number
+        - max: maximum page number
+        - direction_links: whether to show first/last page links
+        - value: initial page (defaults to `min` if no value is provided)
+        - on_change: callback to be invoked when the value changes
         """
         if value is ...:
             value = min

@@ -27,14 +27,14 @@ class Tree(Element):
 
         To use checkboxes and ``on_tick``, set the ``tick_strategy`` parameter to "leaf", "leaf-filtered" or "strict".
 
-        :param nodes: hierarchical list of node objects
-        :param node_key: property name of each node object that holds its unique id (default: "id")
-        :param label_key: property name of each node object that holds its label (default: "label")
-        :param children_key: property name of each node object that holds its list of children (default: "children")
-        :param on_select: callback which is invoked when the node selection changes
-        :param on_expand: callback which is invoked when the node expansion changes
-        :param on_tick: callback which is invoked when a node is ticked or unticked
-        :param tick_strategy: whether and how to use checkboxes ("leaf", "leaf-filtered" or "strict"; default: ``None``)
+        - nodes: hierarchical list of node objects
+        - node_key: property name of each node object that holds its unique id (default: "id")
+        - label_key: property name of each node object that holds its label (default: "label")
+        - children_key: property name of each node object that holds its list of children (default: "children")
+        - on_select: callback which is invoked when the node selection changes
+        - on_expand: callback which is invoked when the node expansion changes
+        - on_tick: callback which is invoked when a node is ticked or unticked
+        - tick_strategy: whether and how to use checkboxes ("leaf", "leaf-filtered" or "strict"; default: ``None``)
         """
         super().__init__('q-tree')
         self._props['nodes'] = nodes
@@ -70,7 +70,7 @@ class Tree(Element):
     def expand(self, node_keys: Optional[List[str]] = None) -> Self:
         """Expand the given nodes.
 
-        :param node_keys: list of node keys to expand (default: all nodes)
+        - node_keys: list of node keys to expand (default: all nodes)
         """
         self._props['expanded'][:] = self._find_node_keys(node_keys).union(self._props['expanded'])
         self.update()
@@ -79,7 +79,7 @@ class Tree(Element):
     def collapse(self, node_keys: Optional[List[str]] = None) -> Self:
         """Collapse the given nodes.
 
-        :param node_keys: list of node keys to collapse (default: all nodes)
+        - node_keys: list of node keys to collapse (default: all nodes)
         """
         self._props['expanded'][:] = set(self._props['expanded']).difference(self._find_node_keys(node_keys))
         self.update()

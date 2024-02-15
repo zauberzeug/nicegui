@@ -17,6 +17,22 @@ video_capture = cv2.VideoCapture(0)
 
 
 def convert(frame: np.ndarray) -> bytes:
+    """
+    Convert a frame from OpenCV format to bytes.
+
+    Parameters:
+        frame (np.ndarray): The input frame in OpenCV format.
+
+    Returns:
+        bytes: The converted frame in bytes format.
+
+    Raises:
+        None
+
+    Example:
+        frame = cv2.imread('image.jpg')
+        converted_frame = convert(frame)
+    """
     _, imencode_image = cv2.imencode('.jpg', frame)
     return imencode_image.tobytes()
 
@@ -24,14 +40,28 @@ def convert(frame: np.ndarray) -> bytes:
 @app.get('/video/frame')
 # Thanks to FastAPI's `app.get`` it is easy to create a web route which always provides the latest image from OpenCV.
 async def grab_video_frame() -> Response:
+    """
+    Grabs a frame from the video capture and returns it as a JPEG image.
+
+    Returns:
+        Response: The response object containing the JPEG image.
+
+    Raises:
+        None
+
+    Notes:
+        - This function assumes that `video_capture` is a valid and opened video capture object.
+        - The `video_capture.read` call is a blocking function, so it is run in a separate thread to avoid blocking the event loop.
+        - The `convert` function is a CPU-intensive function, so it is run in a separate process to avoid blocking the event loop and GIL.
+    """
     if not video_capture.isOpened():
         return placeholder
-    # The `video_capture.read` call is a blocking function.
+# The `video_capture.read` call is a blocking function.
     # So we run it in a separate thread (default executor) to avoid blocking the event loop.
     _, frame = await run.io_bound(video_capture.read)
     if frame is None:
         return placeholder
-    # `convert` is a CPU-intensive function, so we run it in a separate process to avoid blocking the event loop and GIL.
+# `convert` is a CPU-intensive function, so we run it in a separate process to avoid blocking the event loop and GIL.
     jpeg = await run.cpu_bound(convert, frame)
     return Response(content=jpeg, media_type='image/jpeg')
 
@@ -44,12 +74,38 @@ ui.timer(interval=0.1, callback=lambda: video_image.set_source(f'/video/frame?{t
 
 
 async def disconnect() -> None:
-    """Disconnect all clients from current running server."""
+    """Disconnect all clients from the current running server.
+
+    This function iterates over all connected clients and disconnects them from the server.
+    It uses the `Client.instances` list to get the IDs of all connected clients.
+
+    Example usage:
+    ```
+    await disconnect()
+    ```
+
+    Returns:
+        None
+    """
     for client_id in Client.instances:
         await core.sio.disconnect(client_id)
 
 
 def handle_sigint(signum, frame) -> None:
+    """
+    Handle the SIGINT signal.
+
+    This function is called when a SIGINT signal (e.g., Ctrl+C) is received. It performs the following actions:
+    1. Calls the `disconnect` function asynchronously from the event loop using `ui.timer`.
+    2. Delays the execution of the default SIGINT handler to allow the disconnect to complete.
+
+    Parameters:
+    - signum (int): The signal number.
+    - frame (frame): The current stack frame.
+
+    Returns:
+    None
+    """
     # `disconnect` is async, so it must be called from the event loop; we use `ui.timer` to do so.
     ui.timer(0.1, disconnect, once=True)
     # Delay the default handler to allow the disconnect to complete.
@@ -57,8 +113,16 @@ def handle_sigint(signum, frame) -> None:
 
 
 async def cleanup() -> None:
-    # This prevents ugly stack traces when auto-reloading on code change,
-    # because otherwise disconnected clients try to reconnect to the newly started server.
+    """
+    Cleans up resources used by the webcam application.
+
+    This function disconnects any connected clients and releases the webcam hardware,
+    allowing it to be used by other applications. It should be called when the webcam
+    application is no longer needed.
+
+    Returns:
+        None
+    """
     await disconnect()
     # Release the webcam hardware so it can be used by other applications again.
     video_capture.release()

@@ -10,7 +10,13 @@ from .reference import generate_class_doc
 
 
 def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> None:
-    """Render the documentation."""
+    """
+    Render the documentation page.
+
+    Args:
+        documentation (DocumentationPage): The documentation page to render.
+        with_menu (bool, optional): Whether to include the menu. Defaults to True.
+    """
 
     # menu
     if with_menu:

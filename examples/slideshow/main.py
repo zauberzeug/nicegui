@@ -12,6 +12,17 @@ index = 0
 
 
 def handle_key(event: KeyEventArguments) -> None:
+    """
+    Handle key events for the slideshow.
+
+    This function updates the index based on the key event and sets the source of the slide accordingly.
+
+    Args:
+        event (KeyEventArguments): The key event arguments.
+
+    Returns:
+        None
+    """
     global index
     if event.action.keydown:
         if event.key.arrow_right:

@@ -11,8 +11,8 @@ SAD_FACE_SVG = (Path(__file__).parent / 'static' / 'sad_face.svg').read_text()
 def error_content(status_code: int, exception: Union[str, Exception] = '') -> None:
     """Create an error page.
 
-    :param status_code: HTTP status code
-    :param exception: exception that caused the error
+    - status_code: HTTP status code
+    - exception: exception that caused the error
     """
     if 400 <= status_code <= 499:
         title = "This page doesn't exist."

@@ -7,8 +7,8 @@ def add_head_html(code: str, *, shared: bool = False) -> None:
 
     Note that this function can only be called before the page is sent to the client.
 
-    :param code: HTML code to add
-    :param shared: if True, the code is added to all pages
+    - code: HTML code to add
+    - shared: if True, the code is added to all pages
     """
     if shared:
         Client.shared_head_html += code + '\n'
@@ -24,8 +24,8 @@ def add_body_html(code: str, *, shared: bool = False) -> None:
 
     Note that this function can only be called before the page is sent to the client.
 
-    :param code: HTML code to add
-    :param shared: if True, the code is added to all pages
+    - code: HTML code to add
+    - shared: if True, the code is added to all pages
     """
     if shared:
         Client.shared_body_html += code + '\n'

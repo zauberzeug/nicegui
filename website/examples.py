@@ -7,16 +7,31 @@ PATH = Path(__file__).parent.parent / 'examples'
 
 @dataclass
 class Example:
-    title: str
-    description: str
-    url: str = field(init=False)
+        """Represents an example with a title, description, and URL.
 
-    def __post_init__(self) -> None:
-        """Post-initialization hook."""
-        name = self.title.lower().replace(' ', '_')
-        content = [p for p in (PATH / name).glob('*') if p.name != '__pycache__' and not p.name.startswith('.')]
-        filename = 'main.py' if len(content) == 1 else ''
-        self.url = f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/{filename}'
+        Attributes:
+                title (str): The title of the example.
+                description (str): The description of the example.
+                url (str): The URL of the example on GitHub.
+
+        Methods:
+                __post_init__(): Post-initialization hook to set the URL based on the example's title.
+
+        Usage:
+                example = Example(title='Example Title', description='Example Description')
+                print(example.url)  # Output: 'https://github.com/zauberzeug/nicegui/tree/main/examples/example_title/main.py'
+        """
+
+        title: str
+        description: str
+        url: str = field(init=False)
+
+        def __post_init__(self) -> None:
+                """Post-initialization hook to set the URL based on the example's title."""
+                name = self.title.lower().replace(' ', '_')
+                content = [p for p in (PATH / name).glob('*') if p.name != '__pycache__' and not p.name.startswith('.')]
+                filename = 'main.py' if len(content) == 1 else ''
+                self.url = f'https://github.com/zauberzeug/nicegui/tree/main/examples/{name}/{filename}'
 
 
 examples: List[Example] = [

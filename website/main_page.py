@@ -3,11 +3,33 @@ from nicegui import context, ui
 from . import documentation, example_card, svg
 from .examples import examples
 from .header import add_head_html, add_header
-from .style import example_link, features, heading, link_target, section_heading, subtitle, title
+from .style import (
+    example_link,
+    features,
+    heading,
+    link_target,
+    section_heading,
+    subtitle,
+    title,
+)
 
 
 def create() -> None:
-    """Create the content of the main page."""
+    """
+    Create the content of the main page.
+
+    This function is responsible for generating the content of the main page of the website.
+    It uses the NiceGUI library to create a responsive and interactive user interface.
+
+    The main page consists of sections such as introduction, installation guide, features, demos, and examples.
+    Each section is constructed using various UI components provided by NiceGUI.
+
+    Usage:
+        To generate the content of the main page, simply call this function.
+
+    Returns:
+        None
+    """
     context.get_client().content.classes('p-0 gap-0')
     add_head_html()
     add_header()

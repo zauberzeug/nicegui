@@ -90,9 +90,9 @@ class Object3D:
     def material(self, color: str = '#ffffff', opacity: float = 1.0, side: Literal['front', 'back', 'both'] = 'front') -> Self:
         """Set the color and opacity of the object.
 
-        :param color: CSS color string (default: '#ffffff')
-        :param opacity: opacity between 0.0 and 1.0 (default: 1.0)
-        :param side: 'front', 'back', or 'double' (default: 'front')
+        - color: CSS color string (default: '#ffffff')
+        - opacity: opacity between 0.0 and 1.0 (default: 1.0)
+        - side: 'front', 'back', or 'double' (default: 'front')
         """
         if self.color != color or self.opacity != opacity or self.side_ != side:
             self.color = color
@@ -104,9 +104,9 @@ class Object3D:
     def move(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> Self:
         """Move the object.
 
-        :param x: x coordinate
-        :param y: y coordinate
-        :param z: z coordinate
+        - x: x coordinate
+        - y: y coordinate
+        - z: z coordinate
         """
         if self.x != x or self.y != y or self.z != z:
             self.x = x
@@ -119,9 +119,9 @@ class Object3D:
     def rotation_matrix_from_euler(r_x: float, r_y: float, r_z: float) -> List[List[float]]:
         """Create a rotation matrix from Euler angles.
 
-        :param r_x: rotation around the x axis in radians
-        :param r_y: rotation around the y axis in radians
-        :param r_z: rotation around the z axis in radians
+        - r_x: rotation around the x axis in radians
+        - r_y: rotation around the y axis in radians
+        - r_z: rotation around the z axis in radians
         """
         sx, cx = math.sin(r_x), math.cos(r_x)
         sy, cy = math.sin(r_y), math.cos(r_y)
@@ -135,16 +135,16 @@ class Object3D:
     def rotate(self, r_x: float, r_y: float, r_z: float) -> Self:
         """Rotate the object.
 
-        :param r_x: rotation around the x axis in radians
-        :param r_y: rotation around the y axis in radians
-        :param r_z: rotation around the z axis in radians
+        - r_x: rotation around the x axis in radians
+        - r_y: rotation around the y axis in radians
+        - r_z: rotation around the z axis in radians
         """
         return self.rotate_R(self.rotation_matrix_from_euler(r_x, r_y, r_z))
 
     def rotate_R(self, R: List[List[float]]) -> Self:
         """Rotate the object.
 
-        :param R: 3x3 rotation matrix
+        - R: 3x3 rotation matrix
         """
         if self.R != R:
             self.R = R
@@ -154,9 +154,9 @@ class Object3D:
     def scale(self, sx: float = 1.0, sy: Optional[float] = None, sz: Optional[float] = None) -> Self:
         """Scale the object.
 
-        :param sx: scale factor for the x axis
-        :param sy: scale factor for the y axis (default: `sx`)
-        :param sz: scale factor for the z axis (default: `sx`)
+        - sx: scale factor for the x axis
+        - sy: scale factor for the y axis (default: `sx`)
+        - sz: scale factor for the z axis (default: `sx`)
         """
         if sy is None:
             sy = sx
@@ -172,7 +172,7 @@ class Object3D:
     def visible(self, value: bool = True) -> Self:
         """Set the visibility of the object.
 
-        :param value: whether the object should be visible (default: `True`)
+        - value: whether the object should be visible (default: `True`)
         """
         if self.visible_ != value:
             self.visible_ = value
@@ -182,7 +182,7 @@ class Object3D:
     def draggable(self, value: bool = True) -> Self:
         """Set whether the object should be draggable.
 
-        :param value: whether the object should be draggable (default: `True`)
+        - value: whether the object should be draggable (default: `True`)
         """
         if self.draggable_ != value:
             self.draggable_ = value

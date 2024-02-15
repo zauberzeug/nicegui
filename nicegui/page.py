@@ -20,6 +20,24 @@ if TYPE_CHECKING:
 
 
 class page:
+    """
+    Represents a page in NiceGUI.
+
+    This decorator marks a function to be a page builder.
+    Each user accessing the given route will see a new instance of the page.
+    This means it is private to the user and not shared with others.
+
+    - path: Route of the new page (path must start with '/')
+    - title: Optional page title
+    - viewport: Optional viewport meta tag content
+    - favicon: Optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
+    - dark: Whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
+    - language: Language of the page (defaults to `language` argument of `run` command)
+    - response_timeout: Maximum time for the decorated function to build the page (default: 3.0 seconds)
+    - reconnect_timeout: Maximum time the server waits for the browser to reconnect (default: 0.0 seconds)
+    - api_router: APIRouter instance to use, can be left `None` to use the default
+    - kwargs: Additional keyword arguments passed to FastAPI's @app.get method
+    """
 
     def __init__(self,
                  path: str, *,
@@ -33,23 +51,19 @@ class page:
                  api_router: Optional[APIRouter] = None,
                  **kwargs: Any,
                  ) -> None:
-        """Page
+        """
+        Initialize a new page instance.
 
-        This decorator marks a function to be a page builder.
-        Each user accessing the given route will see a new instance of the page.
-        This means it is private to the user and not shared with others 
-        (as it is done [when placing elements outside of a page decorator ](https://nicegui.io/documentation/section_pages_routing#auto-index_page)).
-
-        :param path: route of the new page (path must start with '/')
-        :param title: optional page title
-        :param viewport: optional viewport meta tag content
-        :param favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
-        :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
-        :param language: language of the page (defaults to `language` argument of `run` command)
-        :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds)
-        :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 0.0 seconds)
-        :param api_router: APIRouter instance to use, can be left `None` to use the default
-        :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
+        - path: Route of the new page (path must start with '/')
+        - title: Optional page title
+        - viewport: Optional viewport meta tag content
+        - favicon: Optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
+        - dark: Whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
+        - language: Language of the page (defaults to `language` argument of `run` command)
+        - response_timeout: Maximum time for the decorated function to build the page (default: 3.0 seconds)
+        - reconnect_timeout: Maximum time the server waits for the browser to reconnect (default: 0.0 seconds)
+        - api_router: APIRouter instance to use, can be left `None` to use the default
+        - kwargs: Additional keyword arguments passed to FastAPI's @app.get method
         """
         self._path = path
         self.title = title
@@ -66,26 +80,52 @@ class page:
 
     @property
     def path(self) -> str:
-        """The path of the page including the APIRouter's prefix."""
+        """
+        Get the path of the page including the APIRouter's prefix.
+
+        :return: The path of the page including the APIRouter's prefix.
+        """
         return self.api_router.prefix + self._path
 
     def resolve_title(self) -> str:
-        """Return the title of the page."""
+        """
+        Resolve the title of the page.
+
+        :return: The resolved title of the page.
+        """
         return self.title if self.title is not None else core.app.config.title
 
     def resolve_viewport(self) -> str:
-        """Return the viewport of the page."""
+        """
+        Resolve the viewport of the page.
+
+        :return: The resolved viewport of the page.
+        """
         return self.viewport if self.viewport is not None else core.app.config.viewport
 
     def resolve_dark(self) -> Optional[bool]:
-        """Return whether the page should use dark mode."""
+        """
+        Resolve whether the page should use dark mode.
+
+        :return: The resolved value of whether the page should use dark mode.
+        """
         return self.dark if self.dark is not ... else core.app.config.dark
 
     def resolve_language(self) -> Optional[str]:
-        """Return the language of the page."""
+        """
+        Resolve the language of the page.
+
+        :return: The resolved language of the page.
+        """
         return self.language if self.language is not ... else core.app.config.language
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
+        """
+        Call the decorated function.
+
+        - func: The decorated function.
+        :return: The decorated function.
+        """
         core.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
         parameters_of_decorated_func = list(inspect.signature(func).parameters.keys())
 

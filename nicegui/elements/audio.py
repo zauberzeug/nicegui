@@ -17,11 +17,11 @@ class Audio(SourceElement, component='audio.js'):
 
         Displays an audio player.
 
-        :param src: URL or local file path of the audio source
-        :param controls: whether to show the audio controls, like play, pause, and volume (default: `True`)
-        :param autoplay: whether to start playing the audio automatically (default: `False`)
-        :param muted: whether the audio should be initially muted (default: `False`)
-        :param loop: whether the audio should loop (default: `False`)
+        - src: URL or local file path of the audio source
+        - controls: whether to show the audio controls, like play, pause, and volume (default: `True`)
+        - autoplay: whether to start playing the audio automatically (default: `False`)
+        - muted: whether the audio should be initially muted (default: `False`)
+        - loop: whether the audio should loop (default: `False`)
 
         See [here ](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#events)
         for a list of events you can subscribe to using the generic event subscription `on()`.
@@ -35,7 +35,7 @@ class Audio(SourceElement, component='audio.js'):
     def seek(self, seconds: float) -> None:
         """Seek to a specific position in the audio.
 
-        :param seconds: the position in seconds
+        - seconds: the position in seconds
         """
         self.run_method('seek', seconds)
 

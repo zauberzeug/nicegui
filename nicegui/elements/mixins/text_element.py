@@ -25,9 +25,9 @@ class TextElement(Element):
         The binding works one way only, from this element to the target.
         The update happens immediately and whenever a value changes.
 
-        :param target_object: The object to bind to.
-        :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
+        - target_object: The object to bind to.
+        - target_name: The name of the property to bind to.
+        - forward: A function to apply to the value before applying it to the target.
         """
         bind_to(self, 'text', target_object, target_name, forward)
         return self
@@ -42,9 +42,9 @@ class TextElement(Element):
         The binding works one way only, from the target to this element.
         The update happens immediately and whenever a value changes.
 
-        :param target_object: The object to bind from.
-        :param target_name: The name of the property to bind from.
-        :param backward: A function to apply to the value before applying it to this element.
+        - target_object: The object to bind from.
+        - target_name: The name of the property to bind from.
+        - backward: A function to apply to the value before applying it to this element.
         """
         bind_from(self, 'text', target_object, target_name, backward)
         return self
@@ -61,10 +61,10 @@ class TextElement(Element):
         The update happens immediately and whenever a value changes.
         The backward binding takes precedence for the initial synchronization.
 
-        :param target_object: The object to bind to.
-        :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
-        :param backward: A function to apply to the value before applying it to this element.
+        - target_object: The object to bind to.
+        - target_name: The name of the property to bind to.
+        - forward: A function to apply to the value before applying it to the target.
+        - backward: A function to apply to the value before applying it to this element.
         """
         bind(self, 'text', target_object, target_name, forward=forward, backward=backward)
         return self
@@ -72,14 +72,14 @@ class TextElement(Element):
     def set_text(self, text: str) -> None:
         """Set the text of this element.
 
-        :param text: The new text.
+        - text: The new text.
         """
         self.text = text
 
     def _handle_text_change(self, text: str) -> None:
         """Called when the text of this element changes.
 
-        :param text: The new text.
+        - text: The new text.
         """
         self._text_to_model_text(text)
         self.update()

@@ -50,8 +50,8 @@ class Marker(Layer):
     def move(self, lat: float, lng: float) -> None:
         """Move the marker to a new position.
 
-        :param lat: latitude
-        :param lng: longitude
+        - lat: latitude
+        - lng: longitude
         """
         self.latlng = (lat, lng)
         self.run_method('setLatLng', (lat, lng))

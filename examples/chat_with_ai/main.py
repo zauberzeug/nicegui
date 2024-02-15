@@ -12,6 +12,38 @@ OPENAI_API_KEY = 'not-set'  # TODO: set your OpenAI API key here
 
 @ui.page('/')
 def main():
+    """
+    Entry point function for the chat application.
+
+    This function sets up the chat interface using NiceGUI library and handles user interactions.
+    It initializes a ConversationChain object with a ChatOpenAI instance as the language model.
+    The messages exchanged between the user and the bot are stored in the `messages` list.
+    The `thinking` flag is used to indicate whether the bot is processing a message.
+
+    The function defines a `chat_messages` refreshable function that displays the chat messages
+    and the thinking spinner. It also scrolls to the bottom of the chat window if there is a socket connection.
+
+    The `send` async function is called when the user sends a message. It adds the user's message to the `messages`
+    list, sets the `thinking` flag to True, clears the input field, and refreshes the chat messages. It then calls
+    the `arun` method of the ConversationChain object to generate a response from the bot. The response is added
+    to the `messages` list, the `thinking` flag is set to False, and the chat messages are refreshed again.
+
+    The function sets the anchor style for the chat interface and adds it to the head of the HTML document.
+
+    The chat interface is created using NiceGUI tabs. The first tab is for the chat messages and the second tab
+    is for the logs. The chat messages are displayed using the `chat_messages` function. The logs are displayed
+    using the `log` UI component.
+
+    The function also creates a footer with an input field for the user to enter messages. If the OPENAI_API_KEY
+    is not set, a placeholder message is displayed instead. The user can send a message by pressing the Enter key.
+
+    Note: This code assumes that the NiceGUI library and the required dependencies are installed.
+
+    Usage:
+    - Ensure that the NiceGUI library and the required dependencies are installed.
+    - Set the OPENAI_API_KEY variable with your OpenAI API key.
+    - Run the `main` function to start the chat application.
+    """
     llm = ConversationChain(llm=ChatOpenAI(model_name='gpt-3.5-turbo', openai_api_key=OPENAI_API_KEY))
 
     messages: List[Tuple[str, str]] = []

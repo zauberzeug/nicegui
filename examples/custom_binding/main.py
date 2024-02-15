@@ -9,18 +9,45 @@ from nicegui.binding import BindableProperty, bind_from
 
 
 class colorful_label(ui.label):
-    """A label with a bindable background color."""
+    """A label with a bindable background color.
 
-    # This class variable defines what happens when the background property changes.
+    This class represents a label widget that can have a bindable background color.
+    It inherits from the `ui.label` class.
+
+    Attributes:
+        background (BindableProperty): A class variable that defines what happens when the background property changes.
+
+    Methods:
+        __init__(self, text: str = ''): Initializes the colorful_label object.
+        _handle_background_change(self, bg_class: str): Updates the classes of the label when the background property changes.
+
+    Usage:
+        label = colorful_label("Hello, World!")
+        label.background = "bg-red"  # Set the background color to red
+    """
+
     background = BindableProperty(
         on_change=lambda sender, value: cast(Self, sender)._handle_background_change(value))
 
     def __init__(self, text: str = '') -> None:
+        """Initialize the colorful_label object.
+
+        Args:
+            text (str): The text to be displayed on the label. Defaults to an empty string.
+        """
         super().__init__(text)
         self.background: Optional[str] = None  # initialize the background property
 
     def _handle_background_change(self, bg_class: str) -> None:
-        """Update the classes of the label when the background property changes."""
+        """Update the classes of the label when the background property changes.
+
+        This method is called when the background property of the label is changed.
+        It updates the classes of the label by removing any existing background classes
+        and adding the new background class specified.
+
+        Args:
+            bg_class (str): The new background class to be applied to the label.
+        """
         self._classes = [c for c in self._classes if not c.startswith('bg-')]
         self._classes.append(bg_class)
         self.update()

@@ -38,15 +38,15 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
 
-        :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
-        :param label: the label to display above the selection
-        :param value: the initial value
-        :param on_change: callback to execute when selection changes
-        :param with_input: whether to show an input field to filter the options
-        :param new_value_mode: handle new values from user input (default: None, i.e. no new values)
-        :param multiple: whether to allow multiple selections
-        :param clearable: whether to add a button to clear the selection
-        :param validation: dictionary of validation rules or a callable that returns an optional error message
+        - options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
+        - label: the label to display above the selection
+        - value: the initial value
+        - on_change: callback to execute when selection changes
+        - with_input: whether to show an input field to filter the options
+        - new_value_mode: handle new values from user input (default: None, i.e. no new values)
+        - multiple: whether to allow multiple selections
+        - clearable: whether to add a button to clear the selection
+        - validation: dictionary of validation rules or a callable that returns an optional error message
         """
         self.multiple = multiple
         if multiple:

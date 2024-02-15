@@ -24,13 +24,13 @@ class APIRouter(fastapi.APIRouter):
         This means it is private to the user and not shared with others
         (as it is done [when placing elements outside of a page decorator ](https://nicegui.io/documentation/section_pages_routing#auto-index_page)).
 
-        :param path: route of the new page (path must start with '/')
-        :param title: optional page title
-        :param viewport: optional viewport meta tag content
-        :param favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
-        :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
-        :param response_timeout: maximum time for the decorated function to build the page (default: 3.0)
-        :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
+        - path: route of the new page (path must start with '/')
+        - title: optional page title
+        - viewport: optional viewport meta tag content
+        - favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
+        - dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
+        - response_timeout: maximum time for the decorated function to build the page (default: 3.0)
+        - kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
         return ui_page(
             path,

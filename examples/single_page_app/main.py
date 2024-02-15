@@ -7,6 +7,34 @@ from nicegui import ui
 @ui.page('/')  # normal index page (e.g. the entry point of the app)
 @ui.page('/{_:path}')  # all other pages will be handled by the router but must be registered to also show the SPA index page
 def main():
+    """
+    This function initializes a single-page application using the NiceGUI library.
+
+    The function creates a router object and defines three routes using the `@router.add()` decorator.
+    Each route corresponds to a different page in the application.
+    The `show_one()`, `show_two()`, and `show_three()` functions are associated with their respective routes.
+    These functions define the content to be displayed on each page using the `ui.label()` function.
+
+    The function also adds navigation buttons to switch between the different pages.
+    Clicking on a button triggers the corresponding route using the `router.open()` method.
+
+    Finally, the function places the content to be displayed in a frame using the `router.frame()` method.
+
+    Usage:
+    1. Import the necessary modules and libraries.
+    2. Call the `main()` function to start the application.
+
+    Example:
+    ```
+    import nicegui as ui
+    from nicegui.router import Router
+
+    # Define the show_one(), show_two(), and show_three() functions
+
+    if __name__ == '__main__':
+        main()
+    ```
+    """
     router = Router()
 
     @router.add('/')

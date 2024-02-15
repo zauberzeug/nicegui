@@ -7,6 +7,19 @@ app = FastAPI()
 
 @app.get('/')
 def read_root():
+    """
+    Returns a dictionary with a simple 'Hello' message.
+
+    This function is used as a FastAPI endpoint to handle the root route.
+    It returns a dictionary with a key 'Hello' and value 'World'.
+
+    Returns:
+        dict: A dictionary with a 'Hello' message.
+
+    Example:
+        >>> read_root()
+        {'Hello': 'World'}
+    """
     return {'Hello': 'World'}
 
 

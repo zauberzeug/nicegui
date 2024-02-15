@@ -18,8 +18,8 @@ class Tabs(ValueElement):
         This element represents [Quasar's QTabs ](https://quasar.dev/vue-components/tabs#qtabs-api) component.
         It contains individual tabs.
 
-        :param value: `ui.tab`, `ui.tab_panel`, or name of the tab to be initially selected
-        :param on_change: callback to be executed when the selected tab changes
+        - value: `ui.tab`, `ui.tab_panel`, or name of the tab to be initially selected
+        - on_change: callback to be executed when the selected tab changes
         """
         super().__init__(tag='q-tabs', value=value, on_value_change=on_change)
 
@@ -35,9 +35,9 @@ class Tab(DisableableElement):
         This element represents [Quasar's QTab ](https://quasar.dev/vue-components/tabs#qtab-api) component.
         It is a child of a `ui.tabs` element.
 
-        :param name: name of the tab (will be the value of the `ui.tabs` element)
-        :param label: label of the tab (default: `None`, meaning the same as `name`)
-        :param icon: icon of the tab (default: `None`)
+        - name: name of the tab (will be the value of the `ui.tabs` element)
+        - label: label of the tab (default: `None`, meaning the same as `name`)
+        - icon: icon of the tab (default: `None`)
         """
         super().__init__(tag='q-tab')
         self._props['name'] = name
@@ -65,11 +65,11 @@ class TabPanels(ValueElement):
         this element uses Vue's [keep-alive ](https://vuejs.org/guide/built-ins/keep-alive.html) component.
         If client-side performance is an issue, you can disable this feature.
 
-        :param tabs: an optional `ui.tabs` element that controls this element
-        :param value: `ui.tab`, `ui.tab_panel`, or name of the tab panel to be initially visible
-        :param on_change: callback to be executed when the visible tab panel changes
-        :param animated: whether the tab panels should be animated (default: `True`)
-        :param keep_alive: whether to use Vue's keep-alive component on the content (default: `True`)
+        - tabs: an optional `ui.tabs` element that controls this element
+        - value: `ui.tab`, `ui.tab_panel`, or name of the tab panel to be initially visible
+        - on_change: callback to be executed when the visible tab panel changes
+        - animated: whether the tab panels should be animated (default: `True`)
+        - keep_alive: whether to use Vue's keep-alive component on the content (default: `True`)
         """
         super().__init__(tag='q-tab-panels', value=value, on_value_change=on_change)
         if tabs is not None:
@@ -89,7 +89,7 @@ class TabPanel(DisableableElement):
         This element represents [Quasar's QTabPanel ](https://quasar.dev/vue-components/tab-panels#qtabpanel-api) component.
         It is a child of a `TabPanels` element.
 
-        :param name: `ui.tab` or the name of a tab element
+        - name: `ui.tab` or the name of a tab element
         """
         super().__init__(tag='q-tab-panel')
         self._props['name'] = name._props['name'] if isinstance(name, Tab) else name

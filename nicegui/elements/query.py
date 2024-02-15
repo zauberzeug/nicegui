@@ -62,7 +62,7 @@ class Query:
         With the query result you can add classes, styles, and attributes like with every other UI element.
         This can be useful for example to change the background color of the page (e.g. `ui.query('body').classes('bg-green')`).
 
-        :param selector: the CSS selector (e.g. "body", "#my-id", ".my-class", "div > p")
+        - selector: the CSS selector (e.g. "body", "#my-id", ".my-class", "div > p")
         """
         for element in context.get_client().elements.values():
             if isinstance(element, QueryElement) and element._props['selector'] == selector:  # pylint: disable=protected-access
@@ -79,9 +79,9 @@ class Query:
 
         Removing or replacing classes can be helpful if predefined classes are not desired.
 
-        :param add: whitespace-delimited string of classes
-        :param remove: whitespace-delimited string of classes to remove from the element
-        :param replace: whitespace-delimited string of classes to use instead of existing ones
+        - add: whitespace-delimited string of classes
+        - remove: whitespace-delimited string of classes to remove from the element
+        - replace: whitespace-delimited string of classes to use instead of existing ones
         """
         self.element.classes(add, remove=remove, replace=replace)
         return self
@@ -92,9 +92,9 @@ class Query:
 
         Removing or replacing styles can be helpful if the predefined style is not desired.
 
-        :param add: semicolon-separated list of styles to add to the element
-        :param remove: semicolon-separated list of styles to remove from the element
-        :param replace: semicolon-separated list of styles to use instead of existing ones
+        - add: semicolon-separated list of styles to add to the element
+        - remove: semicolon-separated list of styles to remove from the element
+        - replace: semicolon-separated list of styles to use instead of existing ones
         """
         self.element.style(add, remove=remove, replace=replace)
         return self
@@ -107,8 +107,8 @@ class Query:
 
         Boolean properties are assumed ``True`` if no value is specified.
 
-        :param add: whitespace-delimited list of either boolean values or key=value pair to add
-        :param remove: whitespace-delimited list of property keys to remove
+        - add: whitespace-delimited list of either boolean values or key=value pair to add
+        - remove: whitespace-delimited list of property keys to remove
         """
         self.element.props(add, remove=remove)
         return self

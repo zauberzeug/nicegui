@@ -44,6 +44,16 @@ STAR = '''
 
 
 def add_star() -> ui.link:
+    """
+    Adds a star container with a link to the NiceGUI GitHub repository.
+
+    This function creates a star container element with a link to the NiceGUI GitHub repository.
+    It also includes a tooltip with a message encouraging users to star the repository and
+    spread the word about NiceGUI.
+
+    Returns:
+        ui.link: The star container element with the link to the GitHub repository.
+    """
     ui.add_head_html(STYLE)
     with ui.link(target='https://github.com/zauberzeug/nicegui/').classes('star-container') as link:
         with Element('svg').props('viewBox="0 0 24 24"').classes('star'):
