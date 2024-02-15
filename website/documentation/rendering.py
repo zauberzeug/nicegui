@@ -45,7 +45,7 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                     ui.link_target(part.link_target)
                 subheading(part.title, link=part.link, major=part.reference is not None)
             if part.description:
-                if part.description_format == 'rst':
+                if part.description_format == 'md':
                     description = part.description.replace('param ', '')
                     html = docutils.core.publish_parts(description, writer_name='html5_polyglot')['html_body']
                     ui.html(html).classes('bold-links arrow-links nicegui-markdown')
