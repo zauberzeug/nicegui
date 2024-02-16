@@ -55,17 +55,16 @@ class Search:
             with self.results:
                 results = await ui.run_javascript(f'return window.fuse.search("{e.value}").slice(0, 100)', timeout=6)
                 self.results.clear()
-                with ui.list().props('bordered separator clickable'):
+                with ui.list().props('bordered separator'):
                     for result in results:
-                        if result['item']['content']:
-                            href: str = result['item']['url']
-                            with ui.item():
-                                with ui.item_section():
-                                    with ui.link(target=href):
-                                        ui.item_label(result['item']['title']).classes('text-medium')
-                                        with ui.item_label().props('caption'):
-                                            ui.markdown(result['item']['content'][:200] + '...').classes('text-grey')
-
+                        if not result['item']['content']:
+                            continue
+                        with ui.item().props('clickable'):
+                            with ui.item_section():
+                                with ui.link(target=result['item']['url']):
+                                    ui.item_label(result['item']['title'])
+                                    with ui.item_label().props('caption'):
+                                        ui.markdown(result['item']['content'][:200] + '...').classes('text-grey')
         background_tasks.create_lazy(handle_input(), name='handle_search_input')
 
     def open_url(self, url: str) -> None:
