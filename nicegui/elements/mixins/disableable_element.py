@@ -46,7 +46,7 @@ class DisableableElement(Element):
         super().__init__(**kwargs)
         self.enabled = True
         self.ignores_events_when_disabled = True
-
+    @property
     def is_ignoring_events(self) -> bool:
         """
         Returns whether the element is currently ignoring events.
