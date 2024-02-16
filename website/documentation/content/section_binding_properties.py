@@ -43,7 +43,7 @@ def bind_dictionary():
 @doc.demo('Bind to variable', '''
     Here we are binding the value from the datepicker to a bare variable.
     Therefore we use the dictionary `globals()` which contains all global variables.
-    This demo is based on the [official datepicker example](/documentation/date#input_element_with_date_picker).
+    This demo is based on the `official datepicker example </documentation/date#input_element_with_date_picker>`_.
 ''')
 def bind_variable():
     # date = '2023-01-01'
@@ -56,7 +56,7 @@ def bind_variable():
 
 
 @doc.demo('Bind to storage', '''
-    Bindings also work with [`app.storage`](/documentation/storage).
+    Bindings also work with `app.storage </documentation/storage>`_.
     Here we are storing the value of a textarea between visits.
     The note is also shared between all tabs of the same user.
 ''')

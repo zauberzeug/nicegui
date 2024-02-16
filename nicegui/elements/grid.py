@@ -21,11 +21,18 @@ class Grid(Element):
                  rows: Optional[int] = None,
                  columns: Optional[int] = None,
                  ) -> None:
-        """Initialize the Grid element.
+        """Grid
+
+        A container element that arranges its child elements in a grid.
+
+        The Grid element provides a way to organize child elements in a grid layout.
+        It allows you to specify the number of rows and columns in the grid, and
+        automatically adjusts the size of each cell to fit its content.
 
         Args:
-            rows (Optional[int]): The number of rows in the grid.
-            columns (Optional[int]): The number of columns in the grid.
+        
+            - rows (Optional[int]): The number of rows in the grid.
+            - columns (Optional[int]): The number of columns in the grid.
         """
         super().__init__('div')
         self._classes.append('nicegui-grid')

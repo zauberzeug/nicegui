@@ -124,17 +124,17 @@ class Drawer(Element):
                  elevated: bool = False,
                  top_corner: bool = False,
                  bottom_corner: bool = False) -> None:
-        """
-        Drawer element that is based on Quasar's QDrawer component.
-
-        Args:
-            side (DrawerSides): Side of the page where the drawer should be placed (`left` or `right`).
-            value (Optional[bool], optional): Whether the drawer is already opened. Defaults to None.
-            fixed (bool, optional): Whether the drawer is fixed or scrolls with the content. Defaults to True.
-            bordered (bool, optional): Whether the drawer should have a border. Defaults to False.
-            elevated (bool, optional): Whether the drawer should have a shadow. Defaults to False.
-            top_corner (bool, optional): Whether the drawer expands into the top corner. Defaults to False.
-            bottom_corner (bool, optional): Whether the drawer expands into the bottom corner. Defaults to False.
+        """Drawer
+        This element is based on Quasar's [QDrawer](https://quasar.dev/layout/drawer) component.
+        Note: Depending on the side, the drawer is automatically placed above or below the main page container in the DOM to improve accessibility.
+        To change the order, use the `move` method.
+        - side: side of the page where the drawer should be placed (`left` or `right`)
+        - value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
+        - fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
+        - bordered: whether the drawer should have a border (default: `False`)
+        - elevated: whether the drawer should have a shadow (default: `False`)
+        - top_corner: whether the drawer expands into the top corner (default: `False`)
+        - bottom_corner: whether the drawer expands into the bottom corner (default: `False`)
         """
         _check_current_slot(self)
         with context.get_client().layout:
@@ -201,7 +201,7 @@ class Drawer(Element):
 
 class LeftDrawer(Drawer):
     """
-    Represents a left drawer element in a GUI layout.
+    Left Drawer
 
     This element is based on Quasar's QDrawer component (https://quasar.dev/layout/drawer).
 
@@ -304,7 +304,7 @@ class RightDrawer(Drawer):
 
 class Footer(ValueElement):
     """
-    Represents a footer element in a page layout.
+    Footer
 
     This element is based on Quasar's QFooter component.
 
@@ -332,15 +332,17 @@ class Footer(ValueElement):
     """
 
     def __init__(self, *, value: bool = True, fixed: bool = True, bordered: bool = False, elevated: bool = False, wrap: bool = True) -> None:
-        """
-        Initializes a new instance of the Footer class.
-
-        Args:
-            value (bool, optional): Whether the footer is already opened. Defaults to True.
-            fixed (bool, optional): Whether the footer is fixed or scrolls with the content. Defaults to True.
-            bordered (bool, optional): Whether the footer should have a border. Defaults to False.
-            elevated (bool, optional): Whether the footer should have a shadow. Defaults to False.
-            wrap (bool, optional): Whether the footer should wrap its content. Defaults to True.
+        """Footer
+        This element is based on Quasar's `QFooter <https://quasar.dev/layout/header-and-footer#qfooter-api>`_ component.
+        Note: The footer is automatically placed below other layout elements in the DOM to improve accessibility.
+        
+        To change the order, use the `move` method.
+        
+        - value: whether the footer is already opened (default: `True`)
+        - fixed: whether the footer is fixed or scrolls with the content (default: `True`)
+        - bordered: whether the footer should have a border (default: `False`)
+        - elevated: whether the footer should have a shadow (default: `False`)
+        - wrap: whether the footer should wrap its content (default: `True`)
         """
         _check_current_slot(self)
         with context.get_client().layout:
@@ -429,14 +431,14 @@ class PageSticky(Element):
     """
 
     def __init__(self, position: PageStickyPositions = 'bottom-right', x_offset: float = 0, y_offset: float = 0) -> None:
-        """Initialize the PageSticky object.
+        """Page Sticky
 
         Args:
-            position (PageStickyPositions, optional): The position of the sticky element.
+            - position (PageStickyPositions, optional): The position of the sticky element.
                 Defaults to 'bottom-right'.
-            x_offset (float, optional): The horizontal offset of the sticky element.
+            - x_offset (float, optional): The horizontal offset of the sticky element.
                 Defaults to 0.
-            y_offset (float, optional): The vertical offset of the sticky element.
+            - y_offset (float, optional): The vertical offset of the sticky element.
                 Defaults to 0.
         """
         super().__init__('q-page-sticky')
@@ -453,7 +455,7 @@ def _check_current_slot(element: Element) -> None:
     This behavior is deprecated and will raise an exception in NiceGUI 1.5.
 
     Args:
-        element (Element): The element to check.
+        - element (Element): The element to check.
 
     Returns:
         None

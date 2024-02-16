@@ -70,43 +70,47 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
         echart.run_chart_method('resize')
     """
     def __init__(self, options: Dict, on_point_click: Optional[Callable] = None) -> None:
-        """
-        Initialize the EChart element.
+            """EChart
 
-        Args:
-            options (dict): Dictionary of EChart options.
-            on_point_click (Optional[Callable]): Callback function that is called when a point is clicked.
-        """
-        super().__init__()
-        self._props['options'] = options
-        self._classes.append('nicegui-echart')
+            Args:
+            
+                - options (dict): Dictionary of EChart options. This should include all the necessary configurations for the EChart.
+                - on_point_click (Optional[Callable]): Optional callback function that is called when a point is clicked.
+                    The function should accept a single argument, which is an instance of EChartPointClickEventArguments.
 
-        if on_point_click:
-            def handle_point_click(e: GenericEventArguments) -> None:
-                handle_event(on_point_click, EChartPointClickEventArguments(
-                    sender=self,
-                    client=self.client,
-                    component_type=e.args['componentType'],
-                    series_type=e.args['seriesType'],
-                    series_index=e.args['seriesIndex'],
-                    series_name=e.args['seriesName'],
-                    name=e.args['name'],
-                    data_index=e.args['dataIndex'],
-                    data=e.args['data'],
-                    data_type=e.args.get('dataType'),
-                    value=e.args['value'],
-                ))
-            self.on('pointClick', handle_point_click, [
-                'componentType',
-                'seriesType',
-                'seriesIndex',
-                'seriesName',
-                'name',
-                'dataIndex',
-                'data',
-                'dataType',
-                'value',
-            ])
+            Returns:
+                None
+            """
+            super().__init__()
+            self._props['options'] = options
+            self._classes.append('nicegui-echart')
+
+            if on_point_click:
+                def handle_point_click(e: GenericEventArguments) -> None:
+                    handle_event(on_point_click, EChartPointClickEventArguments(
+                        sender=self,
+                        client=self.client,
+                        component_type=e.args['componentType'],
+                        series_type=e.args['seriesType'],
+                        series_index=e.args['seriesIndex'],
+                        series_name=e.args['seriesName'],
+                        name=e.args['name'],
+                        data_index=e.args['dataIndex'],
+                        data=e.args['data'],
+                        data_type=e.args.get('dataType'),
+                        value=e.args['value'],
+                    ))
+                self.on('pointClick', handle_point_click, [
+                    'componentType',
+                    'seriesType',
+                    'seriesIndex',
+                    'seriesName',
+                    'name',
+                    'dataIndex',
+                    'data',
+                    'dataType',
+                    'value',
+                ])
 
     @classmethod
     def from_pyecharts(cls, chart: 'Chart', on_point_click: Optional[Callable] = None) -> Self:

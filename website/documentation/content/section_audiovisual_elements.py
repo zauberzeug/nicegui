@@ -1,19 +1,27 @@
 from nicegui import ui
 
-from . import (audio_documentation, avatar_documentation, doc, icon_documentation, image_documentation,
-               interactive_image_documentation, video_documentation)
+from . import (
+    audio_documentation,
+    avatar_documentation,
+    doc,
+    icon_documentation,
+    image_documentation,
+    interactive_image_documentation,
+    video_documentation,
+)
 
 doc.title('*Audiovisual* Elements')
 
 doc.intro(image_documentation)
 
 
-@doc.demo('Captions and Overlays', '''
+@doc.demo('Captions and Overlays', """
     By nesting elements inside a `ui.image` you can create augmentations.
 
-    Use [Quasar classes](https://quasar.dev/vue-components/img) for positioning and styling captions.
+    Use `Quasar classes <https://quasar.dev/vue-components/img>`_ for positioning and styling captions.
     To overlay an SVG, make the `viewBox` exactly the size of the image and provide `100%` width/height to match the actual rendered size.
-''')
+    """
+)
 def captions_and_overlays_demo():
     with ui.image('https://picsum.photos/id/29/640/360'):
         ui.label('Nice!').classes('absolute-bottom text-subtitle2 text-center')

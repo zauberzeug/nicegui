@@ -51,19 +51,21 @@ class page:
                  api_router: Optional[APIRouter] = None,
                  **kwargs: Any,
                  ) -> None:
-        """
-        Initialize a new page instance.
-
-        - path: Route of the new page (path must start with '/')
-        - title: Optional page title
-        - viewport: Optional viewport meta tag content
-        - favicon: Optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
-        - dark: Whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
-        - language: Language of the page (defaults to `language` argument of `run` command)
-        - response_timeout: Maximum time for the decorated function to build the page (default: 3.0 seconds)
-        - reconnect_timeout: Maximum time the server waits for the browser to reconnect (default: 0.0 seconds)
+        """Page
+        This decorator marks a function to be a page builder.
+        Each user accessing the given route will see a new instance of the page.
+        This means it is private to the user and not shared with others 
+        (as it is done [when placing elements outside of a page decorator](https://nicegui.io/documentation/section_pages_routing#auto-index_page)).
+        - path: route of the new page (path must start with '/')
+        - title: optional page title
+        - viewport: optional viewport meta tag content
+        - favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
+        - dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
+        - language: language of the page (defaults to `language` argument of `run` command)
+        - response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds)
+        - reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 0.0 seconds)
         - api_router: APIRouter instance to use, can be left `None` to use the default
-        - kwargs: Additional keyword arguments passed to FastAPI's @app.get method
+        - kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
         self._path = path
         self.title = title

@@ -46,14 +46,14 @@ class ColorPicker(Menu):
 
     def __init__(self, *, on_pick: Callable[..., Any], value: bool = False) -> None:
         """
-        Initialize the ColorPicker.
+        ColorPicker
 
-        Parameters:
-        -----------
-        on_pick : Callable[..., Any]
+        Args:
+
+        - on_pick : Callable[..., Any]
             A callback function to execute when a color is picked. The function should accept
             a single argument, which is an instance of ColorPickEventArguments.
-        value : bool, optional
+        - value : bool, optional
             Whether the menu is already opened. Default is False.
         """
         super().__init__(value=value)
@@ -66,9 +66,9 @@ class ColorPicker(Menu):
         """
         Set the color of the picker.
 
-        Parameters:
-        -----------
-        color : str
+        Args:
+        
+        - color : str
             The color to set.
         """
         self.q_color.props(f'model-value="{color}"')

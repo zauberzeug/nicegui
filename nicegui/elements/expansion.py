@@ -10,23 +10,24 @@ class Expansion(TextElement, ValueElement, DisableableElement):
     Represents an expandable container based on Quasar's QExpansionItem component.
 
     Args:
-        text (str): The title text of the expansion.
-        caption (str, optional): The optional caption (or sub-label) text. Defaults to None.
-        icon (str, optional): The optional icon. Defaults to None.
-        group (str, optional): The optional group name for coordinated open/close state within the group, also known as "accordion mode". Defaults to None.
-        value (bool, optional): Whether the expansion should be opened on creation. Defaults to False.
-        on_value_change (callable, optional): The callback to execute when the value changes. Defaults to None.
+    
+        - text (str): The title text of the expansion.
+        - caption (str, optional): The optional caption (or sub-label) text. Defaults to None.
+        - icon (str, optional): The optional icon. Defaults to None.
+        - group (str, optional): The optional group name for coordinated open/close state within the group, also known as "accordion mode". Defaults to None.
+        - value (bool, optional): Whether the expansion should be opened on creation. Defaults to False.
+        - on_value_change (callable, optional): The callback to execute when the value changes. Defaults to None.
 
     Attributes:
-        tag (str): The HTML tag for the expansion item.
-        value (bool): Whether the expansion is currently open or closed.
-        _props (dict): The dictionary of additional properties for the expansion item.
-        _classes (list): The list of additional CSS classes for the expansion item.
+        - tag (str): The HTML tag for the expansion item.
+        - value (bool): Whether the expansion is currently open or closed.
+        - _props (dict): The dictionary of additional properties for the expansion item.
+        - _classes (list): The list of additional CSS classes for the expansion item.
 
     Methods:
-        open(): Opens the expansion.
-        close(): Closes the expansion.
-        _text_to_model_text(text: str): Converts the given text to the model text.
+        - open(): Opens the expansion.
+        - close(): Closes the expansion.
+        - _text_to_model_text(text: str): Converts the given text to the model text.
 
     Example:
         # Create an expansion with a title and a caption
@@ -47,17 +48,18 @@ class Expansion(TextElement, ValueElement, DisableableElement):
                  value: bool = False,
                  on_value_change: Optional[Callable[..., Any]] = None
                  ) -> None:
-        """Expansion Element
+        """Expansion
 
         Provides an expandable container based on Quasar's QExpansionItem component.
 
         Args:
-            text (str): The title text of the expansion.
-            caption (str, optional): The optional caption (or sub-label) text. Defaults to None.
-            icon (str, optional): The optional icon. Defaults to None.
-            group (str, optional): The optional group name for coordinated open/close state within the group, also known as "accordion mode". Defaults to None.
-            value (bool, optional): Whether the expansion should be opened on creation. Defaults to False.
-            on_value_change (callable, optional): The callback to execute when the value changes. Defaults to None.
+        
+            - text (str): The title text of the expansion.
+            - caption (str, optional): The optional caption (or sub-label) text. Defaults to None.
+            - icon (str, optional): The optional icon. Defaults to None.
+            - group (str, optional): The optional group name for coordinated open/close state within the group, also known as "accordion mode". Defaults to None.
+            - value (bool, optional): Whether the expansion should be opened on creation. Defaults to False.
+            - on_value_change (callable, optional): The callback to execute when the value changes. Defaults to None.
         """
         super().__init__(tag='q-expansion-item', text=text, value=value, on_value_change=on_value_change)
         if caption is not None:

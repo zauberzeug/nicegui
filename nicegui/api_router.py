@@ -7,7 +7,54 @@ from .page import page as ui_page
 
 
 class APIRouter(fastapi.APIRouter):
+    """
+    Extends the `fastapi.APIRouter` class to provide additional functionality for creating pages in NiceGUI.
 
+    Usage:
+    ------
+    router = APIRouter()
+
+    @router.page(path='/my-page', title='My Page', viewport='width=device-width, initial-scale=1.0')
+    def my_page():
+        # Page logic goes here
+        pass
+
+    Parameters:
+    -----------
+    path : str
+        The route of the new page (path must start with '/').
+    title : Optional[str], default None
+        Optional page title.
+    viewport : Optional[str], default None
+        Optional viewport meta tag content.
+    favicon : Optional[Union[str, Path]], default None
+        Optional relative filepath or absolute URL to a favicon. If not provided, the NiceGUI icon will be used.
+    dark : Optional[bool], default None
+        Whether to use Quasar's dark mode. If not provided, it defaults to the `dark` argument of the `run` command.
+    response_timeout : float, default 3.0
+        Maximum time for the decorated function to build the page.
+    **kwargs : dict
+        Additional keyword arguments passed to FastAPI's `@app.get` method.
+
+    Returns:
+    --------
+    Callable
+        A decorator function that can be used to create a new page at the given route.
+
+    Notes:
+    ------
+    - Each user will see a new instance of the page. This means it is private to the user and not shared with others.
+    - The decorated function should contain the logic for building the page.
+
+    Example:
+    --------
+    router = APIRouter()
+
+    @router.page(path='/my-page', title='My Page', viewport='width=device-width, initial-scale=1.0')
+    def my_page():
+        # Page logic goes here
+        pass
+    """
     def page(self,
              path: str, *,
              title: Optional[str] = None,
@@ -24,13 +71,27 @@ class APIRouter(fastapi.APIRouter):
         This means it is private to the user and not shared with others
         (as it is done [when placing elements outside of a page decorator ](https://nicegui.io/documentation/section_pages_routing#auto-index_page)).
 
-        - path: route of the new page (path must start with '/')
-        - title: optional page title
-        - viewport: optional viewport meta tag content
-        - favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
-        - dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
-        - response_timeout: maximum time for the decorated function to build the page (default: 3.0)
-        - kwargs: additional keyword arguments passed to FastAPI's @app.get method
+        Parameters:
+        -----------
+        path : str
+            The route of the new page (path must start with '/').
+        title : Optional[str], default None
+            Optional page title.
+        viewport : Optional[str], default None
+            Optional viewport meta tag content.
+        favicon : Optional[Union[str, Path]], default None
+            Optional relative filepath or absolute URL to a favicon. If not provided, the NiceGUI icon will be used.
+        dark : Optional[bool], default None
+            Whether to use Quasar's dark mode. If not provided, it defaults to the `dark` argument of the `run` command.
+        response_timeout : float, default 3.0
+            Maximum time for the decorated function to build the page.
+        **kwargs : dict
+            Additional keyword arguments passed to FastAPI's `@app.get` method.
+
+        Returns:
+        --------
+        Callable
+            A decorator function that can be used to create a new page at the given route.
         """
         return ui_page(
             path,
