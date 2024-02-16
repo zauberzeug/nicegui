@@ -51,16 +51,21 @@ class Search:
             self.dialog.open()
 
     def handle_input(self, e: events.ValueChangeEventArguments) -> None:
-        async def handle_input():
+        async def handle_input() -> None:
             with self.results:
-                results = await ui.run_javascript(f'return window.fuse.search("{e.value}").slice(0, 50)', timeout=6)
+                results = await ui.run_javascript(f'return window.fuse.search("{e.value}").slice(0, 100)', timeout=6)
                 self.results.clear()
-                for result in results:
-                    href: str = result['item']['url']
-                    with ui.element('q-item').props('clickable') \
-                            .on('click', lambda href=href: self.open_url(href), []):
-                        with ui.element('q-item-section'):
-                            ui.label(result['item']['title'])
+                with ui.list().props('bordered separator clickable'):
+                    for result in results:
+                        if result['item']['content']:
+                            href: str = result['item']['url']
+                            with ui.item():
+                                with ui.item_section():
+                                    with ui.link(target=href):
+                                        ui.item_label(result['item']['title']).classes('text-medium')
+                                        with ui.item_label().props('caption'):
+                                            ui.markdown(result['item']['content'][:200] + '...').classes('text-grey')
+
         background_tasks.create_lazy(handle_input(), name='handle_search_input')
 
     def open_url(self, url: str) -> None:
