@@ -1,8 +1,18 @@
 from nicegui import ui
 
-from . import (doc, section_action_events, section_audiovisual_elements, section_binding_properties,
-               section_configuration_deployment, section_controls, section_data_elements, section_page_layout,
-               section_pages_routing, section_styling_appearance, section_text_elements)
+from . import (
+    doc,
+    section_action_events,
+    section_audiovisual_elements,
+    section_binding_properties,
+    section_configuration_deployment,
+    section_controls,
+    section_data_elements,
+    section_page_layout,
+    section_pages_routing,
+    section_styling_appearance,
+    section_text_elements,
+)
 
 doc.title('*NiceGUI* Documentation', 'Reference, Demos and more')
 
@@ -76,7 +86,7 @@ doc.text('Customization', '''
 
 tiles = [
     (section_text_elements, '''
-        Elements like `ui.label`, `ui.markdown` and `ui.html` can be used to display text and other content.
+        Elements like `ui.label`, `ui.markdown`, `ui.rst` and `ui.html` can be used to display text and other content.
     '''),
     (section_controls, '''
         NiceGUI provides a variety of elements for user interaction, e.g. `ui.button`, `ui.slider`, `ui.inputs`, etc.
