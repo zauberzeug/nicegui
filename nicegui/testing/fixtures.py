@@ -25,7 +25,8 @@ icecream.install()
 
 
 def pytest_configure(config):
-    config.addinivalue_line("markers", "module_under_test: Mark test to specify the module under test.")
+    config.addinivalue_line(
+        "markers", "module_under_test: specify the module under test which then get's automatically reloaded.")
 
 
 @pytest.fixture
