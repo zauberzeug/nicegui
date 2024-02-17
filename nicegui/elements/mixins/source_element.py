@@ -105,3 +105,6 @@ class SourceElement(Element):
         if self.auto_route:
             core.app.remove_route(self.auto_route)
         return super()._handle_delete()
+
+    def __str__(self) -> str:
+        return super().__str__() + f'{self.source}'

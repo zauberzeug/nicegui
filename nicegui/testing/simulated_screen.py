@@ -16,6 +16,7 @@ from starlette.testclient import TestClient
 import nicegui.nicegui as ng
 from nicegui import Client, context, core, ui
 from nicegui.elements.mixins.content_element import ContentElement
+from nicegui.elements.mixins.source_element import SourceElement
 
 # pylint: disable=protected-access
 
@@ -38,7 +39,7 @@ class SimulatedScreen:
     async def should_contain(self, string: str) -> None:
         """Assert that the page contains an input with the given value."""
         for _ in range(10):
-            if self._find(context.get_client().page_container, string) is not None:
+            if self._find(context.get_client().layout, string) is not None:
                 return
             for m in context.get_client().outbox.messages:
                 if m[1] == 'notify' and string in m[2]['message']:
@@ -48,7 +49,7 @@ class SimulatedScreen:
 
     def click(self, target_text: str) -> None:
         """Click on the element containing the given text."""
-        element = self._find(context.get_client().page_container, target_text)
+        element = self._find(context.get_client().layout, target_text)
         assert element
         for listener in element._event_listeners.values():
             if listener.type == 'click' and listener.element_id == element.id:
@@ -58,7 +59,8 @@ class SimulatedScreen:
         text = element._text or ''
         label = element._props.get('label') or ''
         content = element.content if isinstance(element, ContentElement) else ''
-        for t in [text, label, content]:
+        source = element.source if isinstance(element, SourceElement) else ''
+        for t in [text, label, content, source]:
             if string in t:
                 return element
         for child in element:
@@ -69,7 +71,7 @@ class SimulatedScreen:
 
     def __str__(self) -> str:
         client = context.get_client()
-        result = f'{client.resolve_title()}\n{client.page_container}'
+        result = f'{client.resolve_title()}\n{client.layout}'
         for message in client.outbox.messages:
             result += f'\n{message}'
         return result

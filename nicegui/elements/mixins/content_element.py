@@ -88,4 +88,4 @@ class ContentElement(Element):
         self.update()
 
     def __str__(self) -> str:
-        return super().__str__() + f'{self.content}'
+        return f'{self.content} {super().__str__()}'

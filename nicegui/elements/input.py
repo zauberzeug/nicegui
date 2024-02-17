@@ -73,3 +73,7 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
         super()._handle_value_change(value)
         if self._send_update_on_value_change:
             self.run_method('updateValue')
+
+    def __str__(self) -> str:
+        placeholder = f' (placeholder={self._props["placeholder"]})' if 'placeholder' in self._props else ''
+        return super().__str__() + f'input{placeholder}: {self.value}'

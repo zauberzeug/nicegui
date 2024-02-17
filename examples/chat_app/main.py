@@ -41,4 +41,5 @@ async def main(client: Client):
     with ui.column().classes('w-full max-w-2xl mx-auto items-stretch'):
         chat_messages(user_id)
 
-ui.run()
+if __name__ in {'__main__', '__mp_main__'}:
+    ui.run()

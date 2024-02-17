@@ -511,6 +511,5 @@ class Element(Visibility):
     def __str__(self) -> str:
         result = ''
         for e in self.default_slot.children:
-            if str(e):
-                result += f'{e}'
+            result += f' {e}\n'
         return result
