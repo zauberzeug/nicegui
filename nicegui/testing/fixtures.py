@@ -117,12 +117,12 @@ def screen(request: pytest.FixtureRequest) -> Generator[Union[SeleniumScreen, Si
 
 
 @pytest.fixture
-async def selenium_screen(nicegui_reset_globals,
-                          nicegui_remove_all_screenshots,
-                          nicegui_driver: webdriver.Chrome,
-                          request: pytest.FixtureRequest,
-                          caplog: pytest.LogCaptureFixture,
-                          ) -> Generator[SeleniumScreen, None, None]:
+def selenium_screen(nicegui_reset_globals,
+                    nicegui_remove_all_screenshots,
+                    nicegui_driver: webdriver.Chrome,
+                    request: pytest.FixtureRequest,
+                    caplog: pytest.LogCaptureFixture,
+                    ) -> Generator[SeleniumScreen, None, None]:
     """Create a new SeleniumScreen fixture."""
     screen = SeleniumScreen(nicegui_driver, caplog)
     yield screen
