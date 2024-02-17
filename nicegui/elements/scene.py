@@ -69,6 +69,7 @@ class Scene(Element,
                  on_drag_start: Optional[Callable[..., Any]] = None,
                  on_drag_end: Optional[Callable[..., Any]] = None,
                  drag_constraints: str = '',
+                 parent_scene:Self=None,
                  ) -> None:
         """3D Scene
 
@@ -89,6 +90,7 @@ class Scene(Element,
         self._props['width'] = width
         self._props['height'] = height
         self._props['grid'] = grid
+        self._props['parent_id'] = parent_scene.id if parent_scene is not None else ''
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
