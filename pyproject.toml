@@ -72,3 +72,6 @@ asyncio_mode = "auto"
 
 [tool.mypy]
 ignore_missing_imports = true
+
+[tool.poetry.plugins.pytest11]
+pytest-nicegui = "nicegui.testing"

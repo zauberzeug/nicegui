@@ -24,8 +24,12 @@ DOWNLOAD_DIR = Path(__file__).parent / 'download'
 icecream.install()
 
 
+def pytest_configure(config):
+    config.addinivalue_line("markers", "module_under_test: Mark test to specify the module under test.")
+
+
 @pytest.fixture
-def chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeOptions:
+def nicegui_chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeOptions:
     """Configure the Chrome driver options."""
     chrome_options.add_argument('disable-dev-shm-using')
     chrome_options.add_argument('no-sandbox')
@@ -88,10 +92,11 @@ def remove_all_screenshots() -> None:
 
 
 @pytest.fixture(scope='function')
-def driver(chrome_options: webdriver.ChromeOptions) -> Generator[webdriver.Chrome, None, None]:
+def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator[webdriver.Chrome, None, None]:
     """Create a new Chrome driver instance."""
+    ic()
     s = Service()
-    driver_ = webdriver.Chrome(service=s, options=chrome_options)
+    driver_ = webdriver.Chrome(service=s, options=nicegui_chrome_options)
     driver_.implicitly_wait(SeleniumScreen.IMPLICIT_WAIT)
     driver_.set_page_load_timeout(4)
     yield driver_
@@ -99,41 +104,53 @@ def driver(chrome_options: webdriver.ChromeOptions) -> Generator[webdriver.Chrom
 
 
 @pytest.fixture
-async def screen(driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture) \
-        -> Generator[Union[SeleniumScreen, SimulatedScreen], None, None]:
-    """Create a new Screen instance."""
+def screen(request: pytest.FixtureRequest) -> Generator[Union[SeleniumScreen, SimulatedScreen], None, None]:
+    """Create a new Screen fixture."""
     screen_type_hint = get_type_hints(request.node.function).get('screen')
     if screen_type_hint == SimulatedScreen:
-        marker = request.node.get_closest_marker('module_under_test')
-        if marker is not None:
-            importlib.reload(marker.args[0])
-
-        core.app.config.add_run_config(
-            reload=False,
-            title='Test App',
-            viewport='',
-            favicon=None,
-            dark=False,
-            language='en-US',
-            binding_refresh_interval=0.1,
-            reconnect_timeout=3.0,
-            tailwind=True,
-            prod_js=True,
-            show_welcome_message=False,
-        )
-        async with core.app.router.lifespan_context(core.app):
-            async with httpx.AsyncClient(app=core.app, base_url='http://test') as client:
-                yield SimulatedScreen(client)
+        yield request.getfixturevalue('simulated_screen')
     elif screen_type_hint == SeleniumScreen:
-        screen_ = SeleniumScreen(driver, caplog)
-        yield screen_
-        if screen_.is_open:
-            screen_.shot(request.node.name)
-        logs = screen_.caplog.get_records('call')
-        screen_.stop_server()
-        if DOWNLOAD_DIR.exists():
-            shutil.rmtree(DOWNLOAD_DIR)
-        if logs:
-            pytest.fail('There were unexpected logs. See "Captured log call" below.', pytrace=False)
+        yield request.getfixturevalue('selenium_screen')
     else:
         raise ValueError(f'Unknown screen type: {screen_type_hint}, expected Screen or SimulatedScreen.')
+
+
+@pytest.fixture
+async def selenium_screen(nicegui_driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture) \
+        -> Generator[SeleniumScreen, None, None]:
+    """Create a new SeleniumScreen fixture."""
+    screen_ = SeleniumScreen(nicegui_driver, caplog)
+    yield screen_
+    if screen_.is_open:
+        screen_.shot(request.node.name)
+    logs = screen_.caplog.get_records('call')
+    screen_.stop_server()
+    if DOWNLOAD_DIR.exists():
+        shutil.rmtree(DOWNLOAD_DIR)
+    if logs:
+        pytest.fail('There were unexpected logs. See "Captured log call" below.', pytrace=False)
+
+
+@pytest.fixture
+async def simulated_screen(request: pytest.FixtureRequest) -> Generator[SimulatedScreen, None, None]:
+    """Create a new SimulatedScreen fixture."""
+    marker = request.node.get_closest_marker('module_under_test')
+    if marker is not None:
+        importlib.reload(marker.args[0])
+
+    core.app.config.add_run_config(
+        reload=False,
+        title='Test App',
+        viewport='',
+        favicon=None,
+        dark=False,
+        language='en-US',
+        binding_refresh_interval=0.1,
+        reconnect_timeout=3.0,
+        tailwind=True,
+        prod_js=True,
+        show_welcome_message=False,
+    )
+    async with core.app.router.lifespan_context(core.app):
+        async with httpx.AsyncClient(app=core.app, base_url='http://test') as client:
+            yield SimulatedScreen(client)
