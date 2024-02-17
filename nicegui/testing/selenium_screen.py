@@ -1,3 +1,4 @@
+import asyncio
 import os
 import re
 import threading
@@ -14,7 +15,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from nicegui import app, ui
+from nicegui import app, core, ui
 from nicegui.server import Server
 
 
@@ -54,6 +55,8 @@ class SeleniumScreen:
         Server.instance.should_exit = True
         if self.server_thread:
             self.server_thread.join()
+        assert core.loop
+        assert core.loop.is_closed()
 
     def open(self, path: str, timeout: float = 3.0) -> None:
         """Try to open the page until the server is ready or we time out.
