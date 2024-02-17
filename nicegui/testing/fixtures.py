@@ -1,3 +1,4 @@
+import asyncio
 import importlib
 import os
 import shutil
@@ -58,8 +59,8 @@ def capabilities(capabilities: Dict) -> Dict:
     return capabilities
 
 
-@pytest.fixture(autouse=True)
-def reset_globals() -> Generator[None, None, None]:
+@pytest.fixture
+def nicegui_reset_globals() -> Generator[None, None, None]:
     """Reset the global state of the NiceGUI package."""
     for route in app.routes:
         if isinstance(route, Route) and route.path.startswith('/_nicegui/auto/static/'):
@@ -84,8 +85,8 @@ def reset_globals() -> Generator[None, None, None]:
     yield
 
 
-@pytest.fixture(scope='session', autouse=True)
-def remove_all_screenshots() -> None:
+@pytest.fixture(scope='session')
+def nicegui_remove_all_screenshots() -> None:
     """Remove all screenshots from the screenshot directory before the test session."""
     if os.path.exists(SeleniumScreen.SCREENSHOT_DIR):
         for name in os.listdir(SeleniumScreen.SCREENSHOT_DIR):
@@ -117,15 +118,19 @@ def screen(request: pytest.FixtureRequest) -> Generator[Union[SeleniumScreen, Si
 
 
 @pytest.fixture
-async def selenium_screen(nicegui_driver: webdriver.Chrome, request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture) \
-        -> Generator[SeleniumScreen, None, None]:
+async def selenium_screen(nicegui_reset_globals,
+                          nicegui_remove_all_screenshots,
+                          nicegui_driver: webdriver.Chrome,
+                          request: pytest.FixtureRequest,
+                          caplog: pytest.LogCaptureFixture,
+                          ) -> Generator[SeleniumScreen, None, None]:
     """Create a new SeleniumScreen fixture."""
-    screen_ = SeleniumScreen(nicegui_driver, caplog)
-    yield screen_
-    if screen_.is_open:
-        screen_.shot(request.node.name)
-    logs = screen_.caplog.get_records('call')
-    screen_.stop_server()
+    screen = SeleniumScreen(nicegui_driver, caplog)
+    yield screen
+    if screen.is_open:
+        screen.shot(request.node.name)
+    logs = screen.caplog.get_records('call')
+    screen.stop_server()
     if DOWNLOAD_DIR.exists():
         shutil.rmtree(DOWNLOAD_DIR)
     if logs:
