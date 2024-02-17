@@ -96,7 +96,6 @@ def nicegui_remove_all_screenshots() -> None:
 @pytest.fixture(scope='function')
 def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator[webdriver.Chrome, None, None]:
     """Create a new Chrome driver instance."""
-    ic()
     s = Service()
     driver_ = webdriver.Chrome(service=s, options=nicegui_chrome_options)
     driver_.implicitly_wait(SeleniumScreen.IMPLICIT_WAIT)
