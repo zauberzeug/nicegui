@@ -87,7 +87,7 @@ Alternatively you can use VSCode, open the nicegui.code-workspace file and insta
 Then the formatting rules are applied whenever you save a file.
 
 In our point of view, the Black formatter is sometimes a bit too strict.
-There are case where one or the other arrangement of, e.g., function arguments is more readable than the other.
+There are cases where one or the other arrangement of, e.g., function arguments is more readable than the other.
 Then we like the flexibility to either put all arguments on separate lines or only put the lengthy event handler
 on a second line and leave the other arguments as they are.
 
