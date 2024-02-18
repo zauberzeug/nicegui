@@ -49,7 +49,7 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
         search = Search()
         search.create_button()
 
-        with ui.element().classes('max-[420px]:hidden'):
+        with ui.element().classes('max-[420px]:hidden').tooltip('Cycle theme mode through dark, light, and system/auto.'):
             ui.button(icon='dark_mode', on_click=lambda: dark_mode.set_value(None)) \
                 .props('flat fab-mini color=white').bind_visibility_from(dark_mode, 'value', value=True)
             ui.button(icon='light_mode', on_click=lambda: dark_mode.set_value(True)) \
