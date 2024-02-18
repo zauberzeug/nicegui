@@ -84,6 +84,7 @@ class Element(Visibility):
         self._style.update(self._default_style)
         self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
         self._props.update(self._default_props)
+        self._keys: List[str] = []
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
@@ -378,6 +379,16 @@ class Element(Visibility):
             cls._default_props[key] = value
         return cls
 
+    def keys(self, *keys: str) -> Self:
+        """Set the keys of the element.
+
+        Keys are used to identify elements for querying with :func:`ui.get`.
+
+        :param keys: keys of the element, can be a list of strings or a single string with whitespace-delimited keys
+        """
+        self._keys = [key.strip() for key in ' '.join(keys).split() if key]
+        return self
+
     def tooltip(self, text: str) -> Self:
         """Add a tooltip to the element.
 
@@ -507,6 +518,20 @@ class Element(Visibility):
     def is_deleted(self) -> bool:
         """Whether the element has been deleted."""
         return self._deleted
+
+    def __repr__(self) -> str:
+        return f'<{" ".join(self.representation)}>'
+
+    @property
+    def representation(self) -> List[str]:
+        """Representation of the element."""
+        result = []
+        result.append(self.__class__.__name__ if type(self) != Element else self.tag)
+        if self._classes:
+            result.append(f'classes="{", ".join(self._classes)}"')
+        if hasattr(self, 'text'):
+            result.append(f'text="{self.text}"')
+        return result
 
     def __str__(self) -> str:
         result = ''
