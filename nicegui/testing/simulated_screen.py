@@ -65,7 +65,7 @@ class SimulatedScreen:
         element._handle_event({'listener_id': listener.id, 'args': {}})
 
     def _find(self, element: ui.element, string: str) -> ui.element | None:
-        text = element._text or ''
+        text = element._text or element._props.get('text') or ''
         label = element._props.get('label') or ''
         content = element.content if isinstance(element, ContentElement) else ''
         source = element.source if isinstance(element, SourceElement) else ''

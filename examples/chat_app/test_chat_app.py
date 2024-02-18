@@ -15,7 +15,7 @@ async def test_start_screen(screen: SimulatedScreen) -> None:
         await screen.should_contain('https://robohash.org/')
         await screen.should_contain('message')
         await asyncio.sleep(1)
-        await screen.should_contain('no messages yet')
+        await screen.should_contain('No messages yet')
 
 
 @pytest.mark.module_under_test(main)
