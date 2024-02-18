@@ -55,12 +55,23 @@ class SimulatedScreen:
             if listener.type == 'click' and listener.element_id == element.id:
                 element._handle_event({'listener_id': listener.id, 'args': {}})
 
+    def type(self, *, target: str, content: str, confirmation: str) -> None:
+        """Type the given text into the element."""
+        element = self._find(context.get_client().layout, target)
+        assert element
+        if hasattr(element, 'value'):
+            element.value = content
+        listener = next(l for l in element._event_listeners.values() if l.type == confirmation)
+        element._handle_event({'listener_id': listener.id, 'args': {}})
+
     def _find(self, element: ui.element, string: str) -> ui.element | None:
         text = element._text or ''
         label = element._props.get('label') or ''
         content = element.content if isinstance(element, ContentElement) else ''
         source = element.source if isinstance(element, SourceElement) else ''
-        for t in [text, label, content, source]:
+        placeholder = element._props.get('placeholder') or ''
+        value = element._props.get('value') or ''
+        for t in [text, label, content, source, placeholder, value]:
             if string in t:
                 return element
         for child in element:
