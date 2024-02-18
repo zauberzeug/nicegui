@@ -107,24 +107,24 @@ def test_setting_props(screen: SeleniumScreen):
         assert 'q-btn--flat' in e.get_attribute('class')
 
 
-def test_get_by_key(screen: SeleniumScreen):
+def test_get_by_marker(screen: SeleniumScreen):
     ui.button('button A')
-    ui.button('button B').keys('important')
+    ui.button('button B').mark('important')
 
-    result = list(ui.find(key='important'))
+    result = list(ui.find(marker='important'))
 
     screen.open('/')
     assert len(result) == 1
     assert result[0].text == 'button B'
 
 
-def test_get_by_specific_key(screen: SeleniumScreen):
-    ui.button('button A').keys('test')
-    ui.button('button B').keys('important ', 'test')
-    ui.button('button C').keys(' important test')
+def test_get_by_specific_marker(screen: SeleniumScreen):
+    ui.button('button A').mark('test')
+    ui.button('button B').mark('important ', 'test')
+    ui.button('button C').mark(' important test')
 
-    test = list(ui.find(key='test'))
-    important = list(ui.find(key='important'))
+    test = list(ui.find(marker='test'))
+    important = list(ui.find(marker='important'))
 
     screen.open('/')
     assert len(test) == 3
@@ -136,12 +136,12 @@ def test_get_by_specific_key(screen: SeleniumScreen):
     assert important[1].text == 'button C'
 
 
-def test_get_by_multiple_keys(screen: SeleniumScreen):
-    ui.button('button A').keys('test')
-    ui.button('button B').keys('important ', 'test')
-    ui.button('button C').keys(' important test')
+def test_get_by_multiple_markers(screen: SeleniumScreen):
+    ui.button('button A').mark('test')
+    ui.button('button B').mark('important ', 'test')
+    ui.button('button C').mark(' important test')
 
-    search = ui.find(type=ui.button, key='test important')
+    search = ui.find(type=ui.button, marker='test important')
     result = [b.text for b in search]
     screen.open('/')
     assert result == ['button B', 'button C']
@@ -160,14 +160,14 @@ def test_get_within_type(screen: SeleniumScreen):
     assert result == ['button B']
 
 
-def test_get_within_key(screen: SeleniumScreen):
+def test_get_within_marker(screen: SeleniumScreen):
     ui.button('button A')
     ui.label('label A')
-    with ui.row().keys('horizontal'):
+    with ui.row().mark('horizontal'):
         ui.button('button B')
         ui.label('label B')
 
-    result = [e.text for e in ui.find().within(key='horizontal')]
+    result = [e.text for e in ui.find().within(marker='horizontal')]
 
     screen.open('/')
     assert result == ['button B', 'label B']
@@ -213,13 +213,13 @@ def test_get_with_excluding_type(screen: SeleniumScreen):
     assert result[0].text == 'button A'
 
 
-def test_get_with_excluding_key(screen: SeleniumScreen):
-    ui.button('button A').keys('normal')
-    ui.label('label A').keys('important')
+def test_get_with_excluding_marker(screen: SeleniumScreen):
+    ui.button('button A').mark('normal')
+    ui.label('label A').mark('important')
     ui.button('button B')
-    ui.label('label B').keys('normal')
+    ui.label('label B').mark('normal')
 
-    result = [e for e in ui.find(text=[' ']).exclude(key='normal')]
+    result = [e for e in ui.find(text=[' ']).exclude(marker='normal')]
 
     screen.open('/')
     assert len(result) == 2
@@ -254,14 +254,14 @@ def test_get_not_within_type(screen: SeleniumScreen):
     assert result[0].text == 'button A'
 
 
-def test_get_not_within_key(screen: SeleniumScreen):
+def test_get_not_within_marker(screen: SeleniumScreen):
     ui.button('button A')
     ui.label('label A')
-    with ui.row().keys('horizontal'):
+    with ui.row().mark('horizontal'):
         ui.button('button B')
         ui.label('label B')
 
-    result = [e for e in ui.find(type=ui.button).not_within(key='horizontal')]
+    result = [e for e in ui.find(type=ui.button).not_within(marker='horizontal')]
 
     screen.open('/')
     assert len(result) == 1

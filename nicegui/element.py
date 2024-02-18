@@ -84,7 +84,7 @@ class Element(Visibility):
         self._style.update(self._default_style)
         self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
         self._props.update(self._default_props)
-        self._keys: List[str] = []
+        self._markers: List[str] = []
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
         self.slots: Dict[str, Slot] = {}
@@ -379,14 +379,15 @@ class Element(Visibility):
             cls._default_props[key] = value
         return cls
 
-    def keys(self, *keys: str) -> Self:
-        """Set the keys of the element.
+    def mark(self, *keys: str) -> Self:
+        """Replace markers of the element.
 
-        Keys are used to identify elements for querying with :func:`ui.get`.
+        Markers are used to identify elements for querying with :func:`ui.find` which is heavily used in testing
+        but can also be used to reduce number of global variables or passing of dependencies.
 
-        :param keys: keys of the element, can be a list of strings or a single string with whitespace-delimited keys
+        :param markers: markers of the element, can be a list of strings or a single string with whitespace-delimited keys; will replace existing markers
         """
-        self._keys = [key.strip() for key in ' '.join(keys).split() if key]
+        self._markers = [key.strip() for key in ' '.join(keys).split() if key]
         return self
 
     def tooltip(self, text: str) -> Self:

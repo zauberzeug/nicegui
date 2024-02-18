@@ -8,11 +8,11 @@ def main_demo() -> None:
     with ui.row():
         ui.button('button A')
         ui.label('label A')
-    with ui.row().keys('important'):
+    with ui.row().mark('important'):
         ui.button('button B')
         ui.label('label B').classes('text-xl')  # HIDE
 
-    ui.find(type=ui.label).within(key='important').classes('text-2xl')
+    ui.find(type=ui.label).within(marker='important').classes('text-2xl')
 
 
 @doc.demo('Find all elements with text property', '''
