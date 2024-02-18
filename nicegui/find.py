@@ -22,7 +22,7 @@ class elements(Generic[T], Iterator[T]):
         """Get Elements
 
         Sometimes it's handy to search the element tree of the current page. 
-        `ui.get()` allows powerful filtering of elements by type, key and text.
+        `ui.find()` allows powerful filtering of elements by type, key and text.
         It also provides a fluent interface to apply more filters like excluding elements or filtering for elements within a specific parent.
 
         :param type: filter by type of the elements; the iterator will be of type `type`
@@ -122,4 +122,4 @@ class elements(Generic[T], Iterator[T]):
             element.props(add, remove=remove)
 
 
-get = elements
+find = elements

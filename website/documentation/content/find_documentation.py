@@ -3,7 +3,7 @@ from nicegui import ui
 from . import doc
 
 
-@doc.demo(ui.get)
+@doc.demo(ui.find)
 def main_demo() -> None:
     with ui.row():
         ui.button('button A')
@@ -12,10 +12,10 @@ def main_demo() -> None:
         ui.button('button B')
         ui.label('label B').classes('text-xl')  # HIDE
 
-    ui.get(type=ui.label).within(key='important').classes('text-2xl')
+    ui.find(type=ui.label).within(key='important').classes('text-2xl')
 
 
-@doc.demo('Get all elements with text property', '''
+@doc.demo('Find all elements with text property', '''
     The `text` property is provided by a mixin called `TextElement`.
     All elements that have a text property are also of type `TextElement` and hence can be filtered by this type.
 ''')
@@ -30,4 +30,4 @@ def text_element() -> None:
 
     # ui.label(', '.join([b.text for b in ui.get(type=TextElement)]))
     # END OF DEMO
-    ui.label(', '.join([b.text for b in ui.get(type=TextElement, local_scope=True)]))
+    ui.label(', '.join([b.text for b in ui.find(type=TextElement, local_scope=True)]))
