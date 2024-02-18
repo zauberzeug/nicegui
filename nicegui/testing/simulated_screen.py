@@ -107,8 +107,14 @@ class SimulatedClient(Client):
         self.current = None
 
 
+original_get_slot_stack = ng.Slot.get_stack
+original_prune_slot_stack = ng.Slot.prune_stack
+
+
 def get_stack(_=None) -> List[ng.Slot]:
     """Return the slot stack of the current client."""
+    if SimulatedClient.current is None:
+        return original_get_slot_stack()
     cls = ng.Slot
     client_id = id(SimulatedClient.current)
     if client_id not in cls.stacks:
@@ -118,6 +124,8 @@ def get_stack(_=None) -> List[ng.Slot]:
 
 def prune_stack(cls) -> None:
     """Remove the current slot stack if it is empty."""
+    if SimulatedClient.current is None:
+        return original_prune_slot_stack()
     cls = ng.Slot
     client_id = id(SimulatedClient.current)
     if not cls.stacks[client_id]:
