@@ -1,10 +1,13 @@
 
+from __future__ import annotations
+
 import asyncio
 import contextlib
 import functools
 import json
+import re
 from queue import Empty, Queue
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional, Self
 from uuid import uuid4
 
 import engineio
@@ -27,12 +30,16 @@ class SimulatedScreen:
         self.http_client = client
         self.sio = socketio.AsyncClient()
         self.sio.on('connect')
+        self.task = None
 
     async def open(self, path: str) -> Client:
         """Open the given path."""
         response = await self.http_client.get(path)
         assert response.status_code == 200
-        client = list(Client.instances.values())[1]  # TODO pick the right client from the list via response
+        match = re.search(r"'client_id': '([0-9a-f-]+)'", response.text)
+        assert match is not None
+        client_id = match.group(1)
+        client = Client.instances[client_id]
         await ng._on_handshake(f'test-{uuid4()}', client.id)
         return client
 
@@ -86,3 +93,36 @@ class SimulatedScreen:
         for message in client.outbox.messages:
             result += f'\n{message}'
         return result
+
+
+class SimulatedClient(Client):
+    current: Optional['SimulatedClient'] = None
+
+    def __enter__(self) -> Self:
+        self.current = self
+        return super().__enter__()
+
+    def __exit__(self, *_) -> None:
+        super().__exit__()
+        self.current = None
+
+
+def get_stack(_=None) -> List[ng.Slot]:
+    """Return the slot stack of the current client."""
+    cls = ng.Slot
+    client_id = id(SimulatedClient.current)
+    if client_id not in cls.stacks:
+        cls.stacks[client_id] = []
+    return cls.stacks[client_id]
+
+
+def prune_stack(cls) -> None:
+    """Remove the current slot stack if it is empty."""
+    cls = ng.Slot
+    client_id = id(SimulatedClient.current)
+    if not cls.stacks[client_id]:
+        del cls.stacks[client_id]
+
+
+ng.Slot.get_stack = get_stack
+ng.Slot.prune_stack = prune_stack
