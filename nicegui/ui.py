@@ -32,19 +32,25 @@ __all__ = [
     'image',
     'input',
     'interactive_image',
+    'item',
+    'item_label',
+    'item_section',
     'joystick',
     'json_editor',
     'keyboard',
     'knob',
     'label',
+    'leaflet',
     'line_plot',
     'link',
     'link_target',
+    'list',
     'log',
     'markdown',
     'menu',
     'menu_item',
     'mermaid',
+    'notification',
     'number',
     'pagination',
     'plotly',
@@ -59,6 +65,7 @@ __all__ = [
     'select',
     'separator',
     'slider',
+    'space',
     'spinner',
     'splitter',
     'step',
@@ -86,7 +93,9 @@ __all__ = [
     'run_javascript',
     'notify',
     'open',
+    'page_title',
     'refreshable',
+    'refreshable_method',
     'state',
     'update',
     'page',
@@ -94,6 +103,7 @@ __all__ = [
     'footer',
     'header',
     'left_drawer',
+    'on',
     'page_sticky',
     'right_drawer',
     'run',
@@ -138,21 +148,27 @@ from .elements.json_editor import JsonEditor as json_editor
 from .elements.keyboard import Keyboard as keyboard
 from .elements.knob import Knob as knob
 from .elements.label import Label as label
+from .elements.leaflet import Leaflet as leaflet
 from .elements.line_plot import LinePlot as line_plot
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
+from .elements.list import Item as item
+from .elements.list import ItemLabel as item_label
+from .elements.list import ItemSection as item_section
+from .elements.list import List as list  # pylint: disable=redefined-builtin
 from .elements.log import Log as log
 from .elements.markdown import Markdown as markdown
 from .elements.menu import Menu as menu
 from .elements.menu import MenuItem as menu_item
 from .elements.mermaid import Mermaid as mermaid
+from .elements.notification import Notification as notification
 from .elements.number import Number as number
 from .elements.pagination import Pagination as pagination
 from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
 from .elements.pyplot import Pyplot as pyplot
-from .elements.query import query
+from .elements.query import Query as query
 from .elements.radio import Radio as radio
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
@@ -160,6 +176,7 @@ from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
 from .elements.slider import Slider as slider
+from .elements.space import Space as space
 from .elements.spinner import Spinner as spinner
 from .elements.splitter import Splitter as splitter
 from .elements.stepper import Step as step
@@ -185,8 +202,10 @@ from .functions.download import download
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
 from .functions.notify import notify
+from .functions.on import on
 from .functions.open import open  # pylint: disable=redefined-builtin
-from .functions.refreshable import refreshable, state
+from .functions.page_title import page_title
+from .functions.refreshable import refreshable, refreshable_method, state
 from .functions.update import update
 from .get import get
 from .page import page

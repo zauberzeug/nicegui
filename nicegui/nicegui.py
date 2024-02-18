@@ -5,16 +5,16 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Dict
 
+import socketio
 from fastapi import HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
-from fastapi_socketio import SocketManager
 
-from . import air, background_tasks, binding, core, favicon, helpers, json, outbox, run
+from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
 from .client import Client
-from .dependencies import js_components, libraries
+from .dependencies import js_components, libraries, resources
 from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
@@ -26,14 +26,30 @@ from .version import __version__
 
 @asynccontextmanager
 async def _lifespan(_: App):
-    _startup()
+    await _startup()
     yield
     await _shutdown()
 
+
+class SocketIoApp(socketio.ASGIApp):
+    """Custom ASGI app to handle root_path.
+
+    This is a workaround for https://github.com/miguelgrinberg/python-engineio/pull/345
+    """
+
+    async def __call__(self, scope, receive, send):
+        root_path = scope.get('root_path')
+        if root_path and scope['path'].startswith(root_path):
+            scope['path'] = scope['path'][len(root_path):]
+        return await super().__call__(scope, receive, send)
+
+
 core.app = app = App(default_response_class=NiceGUIJSONResponse, lifespan=_lifespan)
 # NOTE we use custom json module which wraps orjson
-socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=json)
-core.sio = sio = socket_manager._sio  # pylint: disable=protected-access
+core.sio = sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*', json=json)
+sio_app = SocketIoApp(socketio_server=sio, socketio_path='/socket.io')
+app.mount('/_nicegui_ws/', sio_app)
+
 
 mimetypes.add_type('text/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
@@ -76,11 +92,19 @@ def _get_component(key: str) -> FileResponse:
     raise HTTPException(status_code=404, detail=f'component "{key}" not found')
 
 
-def _startup() -> None:
+@app.get(f'/_nicegui/{__version__}' + '/resources/{key}/{path:path}')
+def _get_resource(key: str, path: str) -> FileResponse:
+    if key in resources:
+        filepath = resources[key].path / path
+        if filepath.exists():
+            headers = {'Cache-Control': 'public, max-age=3600'}
+            media_type, _ = mimetypes.guess_type(filepath)
+            return FileResponse(filepath, media_type=media_type, headers=headers)
+    raise HTTPException(status_code=404, detail=f'resource "{key}" not found')
+
+
+async def _startup() -> None:
     """Handle the startup event."""
-    # NOTE ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
-    sio.eio.ping_interval = max(app.config.reconnect_timeout * 0.8, 4)
-    sio.eio.ping_timeout = max(app.config.reconnect_timeout * 0.4, 2)
     if not app.config.has_run_config:
         raise RuntimeError('\n\n'
                            'You must call ui.run() to start the server.\n'
@@ -89,6 +113,10 @@ def _startup() -> None:
                            'remove the guard or replace it with\n'
                            '   if __name__ in {"__main__", "__mp_main__"}:\n'
                            'to allow for multiprocessing.')
+    await welcome.collect_urls()
+    # NOTE ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
+    sio.eio.ping_interval = max(app.config.reconnect_timeout * 0.8, 4)
+    sio.eio.ping_timeout = max(app.config.reconnect_timeout * 0.4, 2)
     if core.app.config.favicon:
         if helpers.is_file(core.app.config.favicon):
             app.add_route('/favicon.ico', lambda _: FileResponse(core.app.config.favicon))  # type: ignore
@@ -99,7 +127,6 @@ def _startup() -> None:
     core.loop = asyncio.get_running_loop()
     app.start()
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
-    background_tasks.create(outbox.loop(air.instance), name='send outbox')
     background_tasks.create(Client.prune_instances(), name='prune clients')
     background_tasks.create(Slot.prune_stacks(), name='prune slot stacks')
     air.connect()
@@ -109,9 +136,9 @@ async def _shutdown() -> None:
     """Handle the shutdown event."""
     if app.native.main_window:
         app.native.main_window.signal_server_shutdown()
+    air.disconnect()
     app.stop()
     run.tear_down()
-    air.disconnect()
 
 
 @app.exception_handler(404)

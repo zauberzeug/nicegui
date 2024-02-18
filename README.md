@@ -1,5 +1,5 @@
 <a href="http://nicegui.io/#about">
-  <img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/ui-elements-narrow.png"
+  <img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/screenshot.png"
     width="200" align="right" alt="Try online!" />
 </a>
 
@@ -39,6 +39,7 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
   - annotate and overlay images
   - interact with tables
   - navigate foldable tree structures
+  - embed video and audio files
 - built-in timer to refresh data in intervals (even every 10 ms)
 - straight-forward data binding and refreshable functions to write even less code
 - notifications, dialogs and menus to provide state of the art user interaction
@@ -51,6 +52,7 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 - runs in Jupyter Notebooks and allows Python's interactive mode
 - auto-complete support for Tailwind CSS
 - SVG, Base64 and emoji favicon support
+- testing framework based on pytest
 
 ## Installation
 

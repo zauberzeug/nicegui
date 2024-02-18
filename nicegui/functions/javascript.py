@@ -32,9 +32,4 @@ def run_javascript(code: str, *,
                          'Now the function always returns an AwaitableResponse that can be awaited. '
                          'Please remove the "respond=False" argument and call the function without awaiting.')
 
-    client = context.get_client()
-    if not client.has_socket_connection:
-        raise RuntimeError('Cannot run JavaScript before client is connected; '
-                           'try "await client.connected()" or "client.on_connect(...)".')
-
-    return client.run_javascript(code, timeout=timeout, check_interval=check_interval)
+    return context.get_client().run_javascript(code, timeout=timeout, check_interval=check_interval)

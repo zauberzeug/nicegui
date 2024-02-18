@@ -11,6 +11,7 @@ export default {
     this.$el.innerHTML = text;
     this.num_lines = text ? text.split("\n").length : 0;
     this.total_count = this.num_lines;
+    this.$el.scrollTop = this.$el.scrollHeight;
   },
   methods: {
     push(line, total_count) {

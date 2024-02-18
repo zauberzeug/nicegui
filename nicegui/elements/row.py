@@ -11,7 +11,7 @@ class Row(Element):
         :param wrap: whether to wrap the content (default: `True`)
         """
         super().__init__('div')
-        self._classes = ['nicegui-row']
+        self._classes.append('nicegui-row')
 
         if wrap:
             self._classes.append('wrap')

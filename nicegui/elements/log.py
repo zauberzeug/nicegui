@@ -17,7 +17,7 @@ class Log(Element, component='log.js'):
         super().__init__()
         self._props['max_lines'] = max_lines
         self._props['lines'] = ''
-        self._classes = ['nicegui-log']
+        self._classes.append('nicegui-log')
         self.lines: deque[str] = deque(maxlen=max_lines)
         self.total_count: int = 0
 

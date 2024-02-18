@@ -31,7 +31,7 @@ class Link(TextElement, component='link.js'):
         elif callable(target):
             self._props['href'] = Client.page_routes[target]
         self._props['target'] = '_blank' if new_tab else '_self'
-        self._classes = ['nicegui-link']
+        self._classes.append('nicegui-link')
 
 
 class LinkTarget(Element):

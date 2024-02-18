@@ -1,7 +1,6 @@
 
 from nicegui import APIRouter, app, ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_prefix(screen: Screen):

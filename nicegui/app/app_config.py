@@ -34,6 +34,7 @@ class AppConfig:
     reconnect_timeout: float = field(init=False)
     tailwind: bool = field(init=False)
     prod_js: bool = field(init=False)
+    show_welcome_message: bool = field(init=False)
     _has_run_config: bool = False
 
     def add_run_config(self,
@@ -48,6 +49,7 @@ class AppConfig:
                        reconnect_timeout: float,
                        tailwind: bool,
                        prod_js: bool,
+                       show_welcome_message: bool,
                        ) -> None:
         """Add the run config to the app config."""
         self.reload = reload
@@ -60,6 +62,7 @@ class AppConfig:
         self.reconnect_timeout = reconnect_timeout
         self.tailwind = tailwind
         self.prod_js = prod_js
+        self.show_welcome_message = show_welcome_message
         self._has_run_config = True
 
     @property

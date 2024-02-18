@@ -85,3 +85,8 @@ def schedule_browser(host: str, port: int) -> Tuple[threading.Thread, threading.
     thread = threading.Thread(target=in_thread, args=(host, port), daemon=True)
     thread.start()
     return thread, cancel
+
+
+def kebab_to_camel_case(string: str) -> str:
+    """Convert a kebab-case string to camelCase."""
+    return ''.join(word.capitalize() if i else word for i, word in enumerate(string.split('-')))

@@ -117,15 +117,10 @@ class Scene(Element,
             for obj in self.objects.values():
                 obj.send()
 
-    def run_method(self, name: str, *args: Any) -> AwaitableResponse:
-        """Run a method on the client.
-
-        :param name: name of the method
-        :param args: arguments to pass to the method
-        """
+    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         if not self.is_initialized:
             return NullResponse()
-        return super().run_method(name, *args)
+        return super().run_method(name, *args, timeout=timeout, check_interval=check_interval)
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
@@ -204,7 +199,7 @@ class Scene(Element,
                         self.camera.up_x, self.camera.up_y, self.camera.up_z, duration)
 
     def _handle_delete(self) -> None:
-        binding.remove(list(self.objects.values()), Object3D)
+        binding.remove(list(self.objects.values()))
         super()._handle_delete()
 
     def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:

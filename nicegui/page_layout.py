@@ -4,6 +4,7 @@ from . import context
 from .element import Element
 from .elements.mixins.value_element import ValueElement
 from .functions.html import add_body_html
+from .logging import log
 
 DrawerSides = Literal['left', 'right']
 
@@ -43,9 +44,10 @@ class Header(ValueElement):
         :param wrap: whether the header should wrap its content (default: `True`)
         :param add_scroll_padding: whether to automatically prevent link targets from being hidden behind the header (default: `True`)
         """
+        _check_current_slot(self)
         with context.get_client().layout:
             super().__init__(tag='q-header', value=value, on_value_change=None)
-        self._classes = ['nicegui-header']
+        self._classes.append('nicegui-header')
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
         if wrap:
@@ -106,6 +108,7 @@ class Drawer(Element):
         :param top_corner: whether the drawer expands into the top corner (default: `False`)
         :param bottom_corner: whether the drawer expands into the bottom corner (default: `False`)
         """
+        _check_current_slot(self)
         with context.get_client().layout:
             super().__init__('q-drawer')
         if value is None:
@@ -115,7 +118,7 @@ class Drawer(Element):
         self._props['side'] = side
         self._props['bordered'] = bordered
         self._props['elevated'] = elevated
-        self._classes = ['nicegui-drawer']
+        self._classes.append('nicegui-drawer')
         code = list(self.client.layout._props['view'])
         code[0 if side == 'left' else 2] = side[0].lower() if top_corner else 'h'
         code[4 if side == 'left' else 6] = side[0].upper() if fixed else side[0].lower()
@@ -224,6 +227,7 @@ class Footer(ValueElement):
         :param elevated: whether the footer should have a shadow (default: `False`)
         :param wrap: whether the footer should wrap its content (default: `True`)
         """
+        _check_current_slot(self)
         with context.get_client().layout:
             super().__init__(tag='q-footer', value=value, on_value_change=None)
         self.classes('nicegui-footer')
@@ -264,3 +268,11 @@ class PageSticky(Element):
         super().__init__('q-page-sticky')
         self._props['position'] = position
         self._props['offset'] = [x_offset, y_offset]
+
+
+def _check_current_slot(element: Element) -> None:
+    parent = context.get_slot().parent
+    if parent != parent.client.content:
+        log.warning(f'Found top level layout element "{element.__class__.__name__}" inside element "{parent.__class__.__name__}". '
+                    'Top level layout elements should not be nested but must be direct children of the page content. '
+                    'This will be raising an exception in NiceGUI 1.5')  # DEPRECATED

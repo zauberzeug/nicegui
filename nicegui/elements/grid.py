@@ -18,7 +18,7 @@ class Grid(Element):
         :param columns: number of columns in the grid
         """
         super().__init__('div')
-        self._classes = ['nicegui-grid']
+        self._classes.append('nicegui-grid')
         if rows is not None:
             self._style['grid-template-rows'] = f'repeat({rows}, minmax(0, 1fr))'
         if columns is not None:

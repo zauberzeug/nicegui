@@ -1,13 +1,13 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Union
 
 from .value_element import ValueElement
 
 
 class ValidationElement(ValueElement):
 
-    def __init__(self, validation: Dict[str, Callable[..., bool]], **kwargs: Any) -> None:
+    def __init__(self, validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]], **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.validation = validation
+        self.validation = validation if validation is not None else {}
         self._error: Optional[str] = None
 
     @property
@@ -15,16 +15,35 @@ class ValidationElement(ValueElement):
         """The latest error message from the validation functions."""
         return self._error
 
-    def validate(self) -> None:
-        """Validate the current value and set the error message if necessary."""
+    @error.setter
+    def error(self, error: Optional[str]) -> None:
+        """Sets the error message.
+
+        :param error: The optional error message
+        """
+        if self._error == error:
+            return
+        self._error = error
+        self._props['error'] = error is not None
+        self._props['error-message'] = error
+        self.update()
+
+    def validate(self) -> bool:
+        """Validate the current value and set the error message if necessary.
+
+        :return: True if the value is valid, False otherwise
+        """
+        if callable(self.validation):
+            self.error = self.validation(self.value)
+            return self.error is None
+
         for message, check in self.validation.items():
             if not check(self.value):
-                self._error = message
-                self.props(f'error error-message="{message}"')
-                break
-        else:
-            self._error = None
-            self.props(remove='error')
+                self.error = message
+                return False
+
+        self.error = None
+        return True
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)

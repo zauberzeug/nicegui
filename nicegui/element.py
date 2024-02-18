@@ -9,13 +9,14 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional,
 
 from typing_extensions import Self
 
-from . import context, core, events, json, outbox, storage
+from . import context, core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
-from .dependencies import Component, Library, register_library, register_vue_component
+from .dependencies import Component, Library, register_library, register_resource, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
 from .tailwind import Tailwind
+from .version import __version__
 
 if TYPE_CHECKING:
     from .client import Client
@@ -99,9 +100,9 @@ class Element(Visibility):
 
         self.tailwind = Tailwind(self)
 
-        outbox.enqueue_update(self)
+        self.client.outbox.enqueue_update(self)
         if self.parent_slot:
-            outbox.enqueue_update(self.parent_slot.parent)
+            self.client.outbox.enqueue_update(self.parent_slot.parent)
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
@@ -139,8 +140,27 @@ class Element(Visibility):
         cls._default_classes = copy(cls._default_classes)
         cls._default_style = copy(cls._default_style)
 
+    def add_resource(self, path: Union[str, Path]) -> None:
+        """Add a resource to the element.
+
+        :param path: path to the resource (e.g. folder with CSS and JavaScript files)
+        """
+        resource = register_resource(Path(path))
+        self._props['resource_path'] = f'/_nicegui/{__version__}/resources/{resource.key}'
+
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
+
+        NiceGUI is using the slot concept from Vue:
+        Elements can have multiple slots, each possibly with a number of children.
+        Most elements only have one slot, e.g. a `ui.card` (QCard) only has a default slot.
+        But more complex elements like `ui.table` (QTable) can have more slots like "header", "body" and so on.
+        If you nest NiceGUI elements via with `ui.row(): ...` you place new elements inside of the row's default slot.
+        But if you use with `table.add_slot(...): ...`, you enter a different slot.
+
+        The slot stack helps NiceGUI to keep track of which slot is currently used for new elements.
+        The `parent` field holds a reference to its element.
+        Whenever an element is entered via a `with` expression, its default slot is automatically entered as well.
 
         :param name: name of the slot
         :param template: Vue template of the slot
@@ -153,7 +173,7 @@ class Element(Visibility):
         self.default_slot.__enter__()
         return self
 
-    def __exit__(self, *_):
+    def __exit__(self, *_) -> None:
         self.default_slot.__exit__(*_)
 
     def __iter__(self) -> Iterator[Element]:
@@ -399,7 +419,7 @@ class Element(Visibility):
         if handler:
             listener = EventListener(
                 element_id=self.id,
-                type=type,
+                type=helpers.kebab_to_camel_case(type),
                 args=[args] if args and isinstance(args[0], str) else args,  # type: ignore
                 handler=handler,
                 throttle=throttle,
@@ -419,9 +439,11 @@ class Element(Visibility):
 
     def update(self) -> None:
         """Update the element on the client side."""
-        outbox.enqueue_update(self)
+        if self.is_deleted:
+            return
+        self.client.outbox.enqueue_update(self)
 
-    def run_method(self, name: str, *args: Any) -> AwaitableResponse:
+    def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         """Run a method on the client side.
 
         If the function is awaited, the result of the method call is returned.
@@ -429,10 +451,13 @@ class Element(Visibility):
 
         :param name: name of the method
         :param args: arguments to pass to the method
+        :param timeout: maximum time to wait for a response (default: 1 second)
+        :param check_interval: time between checks for a response (default: 0.01 seconds)
         """
         if not core.loop:
             return NullResponse()
-        return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})')
+        return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})',
+                                          timeout=timeout, check_interval=check_interval)
 
     def _collect_descendants(self, *, include_self: bool = False) -> List[Element]:
         elements: List[Element] = [self] if include_self else []

@@ -4,9 +4,10 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Union
 from ..events import GenericEventArguments
 from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
+from .mixins.validation_element import ValidationElement
 
 
-class Select(ChoiceElement, DisableableElement, component='select.js'):
+class Select(ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
 
     def __init__(self,
                  options: Union[List, Dict], *,
@@ -17,6 +18,7 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
                  new_value_mode: Optional[Literal['add', 'add-unique', 'toggle']] = None,
                  multiple: bool = False,
                  clearable: bool = False,
+                 validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
                  ) -> None:
         """Dropdown Selection
 
@@ -29,6 +31,12 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
 
         If `new_value_mode` is not None, it implies `with_input=True` and the user can enter new values in the input field.
         See `Quasar's documentation <https://quasar.dev/vue-components/select#the-new-value-mode-prop>`_ for details.
+        Note that this mode is ineffective when setting the `value` property programmatically.
+
+        You can use the `validation` parameter to define a dictionary of validation rules,
+        e.g. ``{'Too long!': lambda value: len(value) < 3}``.
+        The key of the first rule that fails will be displayed as an error message.
+        Alternatively, you can pass a callable that returns an optional error message.
 
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
         :param label: the label to display above the selection
@@ -38,6 +46,7 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
         :param new_value_mode: handle new values from user input (default: None, i.e. no new values)
         :param multiple: whether to allow multiple selections
         :param clearable: whether to add a button to clear the selection
+        :param validation: dictionary of validation rules or a callable that returns an optional error message
         """
         self.multiple = multiple
         if multiple:
@@ -45,7 +54,7 @@ class Select(ChoiceElement, DisableableElement, component='select.js'):
                 value = []
             elif not isinstance(value, list):
                 value = [value]
-        super().__init__(options=options, value=value, on_change=on_change)
+        super().__init__(options=options, value=value, on_change=on_change, validation=validation)
         if label is not None:
             self._props['label'] = label
         if new_value_mode is not None:

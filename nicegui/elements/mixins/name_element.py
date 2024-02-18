@@ -1,6 +1,6 @@
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
-from typing_extensions import Self, cast
+from typing_extensions import Self
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
@@ -23,6 +23,7 @@ class NameElement(Element):
         """Bind the name of this element to the target object's target_name property.
 
         The binding works one way only, from this element to the target.
+        The update happens immediately and whenever a value changes.
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
@@ -39,6 +40,7 @@ class NameElement(Element):
         """Bind the name of this element from the target object's target_name property.
 
         The binding works one way only, from the target to this element.
+        The update happens immediately and whenever a value changes.
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
@@ -56,6 +58,8 @@ class NameElement(Element):
         """Bind the name of this element to the target object's target_name property.
 
         The binding works both ways, from this element to the target and from the target to this element.
+        The update happens immediately and whenever a value changes.
+        The backward binding takes precedence for the initial synchronization.
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.

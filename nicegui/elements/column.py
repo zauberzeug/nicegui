@@ -11,7 +11,7 @@ class Column(Element):
         :param wrap: whether to wrap the content (default: `False`)
         """
         super().__init__('div')
-        self._classes = ['nicegui-column']
+        self._classes.append('nicegui-column')
 
         if wrap:
             self._classes.append('wrap')

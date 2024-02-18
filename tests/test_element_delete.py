@@ -1,6 +1,5 @@
 from nicegui import binding, ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_remove_element_by_reference(screen: Screen):

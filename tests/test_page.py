@@ -1,12 +1,12 @@
 import asyncio
+import re
 from uuid import uuid4
 
 from fastapi.responses import PlainTextResponse
 from selenium.webdriver.common.by import By
 
 from nicegui import Client, background_tasks, ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_page(screen: Screen):
@@ -284,6 +284,18 @@ def test_returning_custom_response_async(screen: Screen):
     screen.open('/?plain=true')
     screen.should_contain('custom response')
     screen.should_not_contain('normal NiceGUI page')
+
+
+def test_warning_about_to_late_responses(screen: Screen):
+    @ui.page('/')
+    async def page(client: Client):
+        await client.connected()
+        ui.label('NiceGUI page')
+        return PlainTextResponse('custom response')
+
+    screen.open('/')
+    screen.should_contain('NiceGUI page')
+    screen.assert_py_logger('ERROR', re.compile('it was returned after the HTML had been delivered to the client'))
 
 
 def test_reconnecting_without_page_reload(screen: Screen):

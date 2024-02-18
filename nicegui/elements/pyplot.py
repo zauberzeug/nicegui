@@ -3,6 +3,8 @@ import io
 import os
 from typing import Any
 
+from typing_extensions import Self
+
 from .. import background_tasks, optional_features
 from ..client import Client
 from ..element import Element
@@ -41,11 +43,11 @@ class Pyplot(Element):
             self.fig.savefig(output, format='svg')
             self._props['innerHTML'] = output.getvalue()
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         plt.figure(self.fig)
         return self
 
-    def __exit__(self, *_):
+    def __exit__(self, *_) -> None:
         self._convert_to_html()
         if self.close:
             plt.close(self.fig)

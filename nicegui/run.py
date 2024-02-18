@@ -24,7 +24,13 @@ async def _run(executor: Any, callback: Callable, *args: Any, **kwargs: Any) -> 
 
 
 async def cpu_bound(callback: Callable, *args: Any, **kwargs: Any) -> Any:
-    """Run a CPU-bound function in a separate process."""
+    """Run a CPU-bound function in a separate process.
+
+    `run.cpu_bound` needs to execute the function in a separate process.
+    For this it needs to transfer the whole state of the passed function to the process (which is done with pickle).
+    It is encouraged to create static methods (or free functions) which get all the data as simple parameters (eg. no class/ui logic)
+    and return the result (instead of writing it in class properties or global variables).
+    """
     return await _run(process_pool, callback, *args, **kwargs)
 
 

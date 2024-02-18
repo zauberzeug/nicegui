@@ -1,8 +1,7 @@
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_no_html(screen: Screen):
@@ -25,3 +24,11 @@ def test_newline(screen: Screen):
 
     screen.open('/')
     assert screen.find('Hello').find_element(By.TAG_NAME, 'br')
+
+
+def test_slot(screen: Screen):
+    with ui.chat_message():
+        ui.label('slot')
+
+    screen.open('/')
+    screen.should_contain('slot')

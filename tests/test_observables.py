@@ -3,8 +3,7 @@ import sys
 
 from nicegui import ui
 from nicegui.observables import ObservableDict, ObservableList, ObservableSet
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 # pylint: disable=global-statement
 count = 0

@@ -1,6 +1,5 @@
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_mermaid(screen: Screen):
@@ -64,3 +63,15 @@ def test_create_dynamically(screen: Screen):
     screen.open('/')
     screen.click('Create')
     screen.should_contain('Node')
+
+
+def test_error(screen: Screen):
+    ui.mermaid('''
+    graph LR;
+        A --> B;
+        A -> C;
+    ''').on('error', lambda e: ui.label(e.args['message']))
+
+    screen.open('/')
+    screen.should_contain('Syntax error in text')
+    screen.should_contain('Parse error on line 3')

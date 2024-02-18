@@ -54,6 +54,9 @@
           return element.$refs.qRef[method_name](...args);
         }
       }
+      function emitEvent(event_name, ...args) {
+        getElement(0).$emit(event_name, ...args);
+      }
     </script>
     <script type="module">
       const True = true;
@@ -64,7 +67,8 @@
       const loaded_components = new Set();
 
       const raw_elements = String.raw`{{ elements | safe }}`;
-      const elements = JSON.parse(raw_elements.replace(/&#96;/g, '`')
+      const elements = JSON.parse(raw_elements.replace(/&#36;/g, '$')
+                                              .replace(/&#96;/g, '`')
                                               .replace(/&gt;/g, '>')
                                               .replace(/&lt;/g, '<')
                                               .replace(/&amp;/g, '&'));
@@ -79,6 +83,14 @@
           }
           else {
             for (let k in arg) {
+              // ignore "Restricted" fields in Firefox (see #2469)
+              if (k == 'originalTarget') {
+                try {
+                  arg[k].toString();
+                } catch (e) {
+                  continue;
+                }
+              }
               if (event_args === null || event_args[i] === null || event_args[i].includes(k)) {
                 filtered[k] = arg[k];
               }
@@ -140,8 +152,13 @@
         };
         Object.entries(props).forEach(([key, value]) => {
           if (key.startsWith(':')) {
-            props[key.substring(1)] = eval(value);
-            delete props[key];
+            try {
+              props[key.substring(1)] = eval(value);
+              delete props[key];
+            }
+            catch (e) {
+              console.error(`Error while converting ${key} attribute to function:`, e);
+            }
           }
         });
         element.events.forEach((event) => {
@@ -154,9 +171,9 @@
               listener_id: event.listener_id,
               args: stringifyEventArgs(args, event.args),
             };
-            const emitter = () => window.socket.emit("event", data);
+            const emitter = () => window.socket?.emit("event", data);
             throttle(emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
-            if (element.props["loopback"] === False && event.type == "update:model-value") {
+            if (element.props["loopback"] === False && event.type == "update:modelValue") {
               element.props["model-value"] = args;
             }
           };
@@ -203,14 +220,22 @@
         });
       }
 
-      function download(url, filename) {
+      function download(src, filename, mediaType) {
         const anchor = document.createElement("a");
-        anchor.href = url;
+        if (typeof src === "string") {
+          anchor.href = src.startsWith("/") ? "{{ prefix | safe }}" + src : src;
+        }
+        else {
+          anchor.href = URL.createObjectURL(new Blob([src], {type: mediaType}))
+        }
         anchor.target = "_blank";
         anchor.download = filename || "";
         document.body.appendChild(anchor);
         anchor.click();
         document.body.removeChild(anchor);
+        if (typeof src !== "string") {
+          URL.revokeObjectURL(url);
+        }
       }
 
       async function loadDependencies(element) {
@@ -263,13 +288,11 @@
                 window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
               }
             },
-            try_reconnect: () => {
-              const checkAndReload = async () => {
-                await fetch(window.location.href, { headers: { 'NiceGUI-Check': 'try_reconnect' } });
-                console.log('reloading because reconnect was requested')
-                window.location.reload();
-              };
-              setInterval(checkAndReload, 500);
+            try_reconnect: async () => {
+              document.getElementById('popup').style.opacity = 1;
+              await fetch(window.location.href, { headers: { 'NiceGUI-Check': 'try_reconnect' } });
+              console.log('reloading because reconnect was requested')
+              window.location.reload();
             },
             disconnect: () => {
               document.getElementById('popup').style.opacity = 1;
@@ -292,7 +315,7 @@
               const target = msg.new_tab ? '_blank' : '_self';
               window.open(url, target);
             },
-            download: (msg) => download(msg.url, msg.filename),
+            download: (msg) => download(msg.src, msg.filename, msg.media_type),
             notify: (msg) => Quasar.Notify.create(msg),
           };
           const socketMessageQueue = [];

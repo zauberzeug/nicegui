@@ -1,6 +1,9 @@
-from nicegui import ui
+from pyecharts import options
+from pyecharts.charts import Bar
+from pyecharts.commons import utils
 
-from .screen import Screen
+from nicegui import ui
+from nicegui.testing import Screen
 
 
 def test_create_dynamically(screen: Screen):
@@ -61,3 +64,42 @@ def test_nested_expansion(screen: Screen):
     canvas = screen.find_by_tag('canvas')
     assert canvas.rect['height'] == 168
     assert canvas.rect['width'] == 568
+
+
+def test_run_method(screen: Screen):
+    echart = ui.echart({
+        'xAxis': {'type': 'value'},
+        'yAxis': {'type': 'category', 'data': ['A', 'B', 'C']},
+        'series': [{'type': 'line', 'data': [0.1, 0.2, 0.3]}],
+    }).classes('w-[600px]')
+
+    async def get_width():
+        ui.label(f'Width: {await echart.run_chart_method("getWidth")}px')
+    ui.button('Get Width', on_click=get_width)
+
+    screen.open('/')
+    screen.click('Get Width')
+    screen.should_contain('Width: 600px')
+
+
+def test_create_from_pyecharts(screen: Screen):
+    X_AXIS_FORMATTER = r'(val, idx) => `x for ${val}`'
+    Y_AXIS_FORMATTER = r'(val, idx) => `${val} kg`'
+
+    ui.echart.from_pyecharts(
+        Bar()
+        .add_xaxis(['A', 'B', 'C'])
+        .add_yaxis('series A', [0.1, 0.2, 0.3],)
+        .set_global_opts(
+            xaxis_opts=options.AxisOpts(axislabel_opts={':formatter': X_AXIS_FORMATTER}),
+            yaxis_opts=options.AxisOpts(axislabel_opts={'formatter': utils.JsCode(Y_AXIS_FORMATTER)}),
+        )
+    )
+
+    screen.open('/')
+    assert screen.selenium.execute_script('''
+        const chart = echarts.getInstanceByDom(document.querySelector(".nicegui-echart"));
+        const x = chart.getOption().xAxis[0].axisLabel.formatter;
+        const y = chart.getOption().yAxis[0].axisLabel.formatter;
+        return [typeof x, x.toString(), typeof y, y.toString()];
+    ''') == ['function', X_AXIS_FORMATTER, 'function', Y_AXIS_FORMATTER]

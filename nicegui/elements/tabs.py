@@ -93,4 +93,4 @@ class TabPanel(DisableableElement):
         """
         super().__init__(tag='q-tab-panel')
         self._props['name'] = name._props['name'] if isinstance(name, Tab) else name
-        self._classes = ['nicegui-tab-panel']
+        self._classes.append('nicegui-tab-panel')

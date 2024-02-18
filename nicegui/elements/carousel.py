@@ -65,6 +65,6 @@ class CarouselSlide(DisableableElement):
         self.carousel = cast(ValueElement, context.get_slot().parent)
         name = name or f'slide_{len(self.carousel.default_slot.children)}'
         self._props['name'] = name
-        self._classes = ['nicegui-carousel-slide']
+        self._classes.append('nicegui-carousel-slide')
         if self.carousel.value is None:
             self.carousel.value = name

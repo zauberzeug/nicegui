@@ -7,7 +7,7 @@ import requests
 import yaml
 
 
-def get_infos() -> Tuple[str]:
+def get_infos() -> Tuple[str, str, str]:
     headers = {
         'Accept': 'application/json',
     }
@@ -24,8 +24,9 @@ def get_infos() -> Tuple[str]:
     except Exception:
         print('Error while getting the Zenodo infos')
         sys.exit(1)
-    data = response.json()[0]['metadata']
-    return data['doi'], data['version'], data['publication_date']
+    data = response.json()
+    metadata = data['hits']['hits'][0]['metadata']
+    return str(metadata['doi']), str(metadata['version']), str(metadata['publication_date'])
 
 
 if __name__ == '__main__':

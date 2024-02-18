@@ -18,7 +18,7 @@ export default {
   `,
   props: {
     id: String,
-    autocomplete: Array,
+    _autocomplete: Array,
     value: String,
   },
   data() {
@@ -41,14 +41,14 @@ export default {
   computed: {
     shadowText() {
       if (!this.inputValue) return "";
-      const matchingOption = this.autocomplete.find((option) =>
+      const matchingOption = this._autocomplete.find((option) =>
         option.toLowerCase().startsWith(this.inputValue.toLowerCase())
       );
       return matchingOption ? matchingOption.slice(this.inputValue.length) : "";
     },
     withDatalist() {
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      return isMobile && this.autocomplete && this.autocomplete.length > 0;
+      return isMobile && this._autocomplete && this._autocomplete.length > 0;
     },
   },
   methods: {

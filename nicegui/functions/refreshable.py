@@ -1,15 +1,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, ClassVar, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Awaitable, Callable, ClassVar, Dict, Generic, List, Optional, Tuple, TypeVar, Union, cast
 
-from typing_extensions import Self
+from typing_extensions import Concatenate, ParamSpec, Self
 
 from .. import background_tasks, core
 from ..client import Client
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
 from ..helpers import is_coroutine_function
+
+_S = TypeVar('_S')
+_T = TypeVar('_T')
+_P = ParamSpec('_P')
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -24,7 +28,7 @@ class RefreshableTarget:
     locals: List[Any] = field(default_factory=list)
     next_index: int = 0
 
-    def run(self, func: Callable[..., Any]) -> Union[Any, Awaitable]:
+    def run(self, func: Callable[..., Union[_T, Awaitable[_T]]]) -> Union[_T, Awaitable[_T]]:
         """Run the function and return the result."""
         RefreshableTarget.current_target = self
         self.next_index = 0
@@ -33,9 +37,11 @@ class RefreshableTarget:
             async def wait_for_result() -> Any:
                 with self.container:
                     if self.instance is None:
-                        return await func(*self.args, **self.kwargs)
+                        result = func(*self.args, **self.kwargs)
                     else:
-                        return await func(self.instance, *self.args, **self.kwargs)
+                        result = func(self.instance, *self.args, **self.kwargs)
+                    assert isinstance(result, Awaitable)
+                    return await result
             return wait_for_result()
         else:
             with self.container:
@@ -49,9 +55,9 @@ class RefreshableContainer(Element, component='refreshable.js'):
     pass
 
 
-class refreshable:
+class refreshable(Generic[_P, _T]):
 
-    def __init__(self, func: Callable[..., Any]) -> None:
+    def __init__(self, func: Callable[_P, Union[_T, Awaitable[_T]]]) -> None:
         """Refreshable UI functions
 
         The `@ui.refreshable` decorator allows you to create functions that have a `refresh` method.
@@ -74,7 +80,7 @@ class refreshable:
             return refresh
         return attribute
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Union[Any, Awaitable]:
+    def __call__(self, *args: _P.args, **kwargs: _P.kwargs) -> Union[_T, Awaitable[_T]]:
         self.prune()
         target = RefreshableTarget(container=RefreshableContainer(), refreshable=self, instance=self.instance,
                                    args=args, kwargs=kwargs)
@@ -82,7 +88,11 @@ class refreshable:
         return target.run(self.func)
 
     def refresh(self, *args: Any, **kwargs: Any) -> None:
-        """Refresh the UI elements created by this function."""
+        """Refresh the UI elements created by this function.
+
+        This method accepts the same arguments as the function itself or a subset of them.
+        It will combine the arguments passed to the function with the arguments passed to this method.
+        """
         self.prune()
         for target in self.targets:
             if target.instance != self.instance:
@@ -100,7 +110,7 @@ class refreshable:
                                     'either as positional or as keyword argument') from e
                 raise
             if is_coroutine_function(self.func):
-                assert result is not None
+                assert isinstance(result, Awaitable)
                 if core.loop and core.loop.is_running():
                     background_tasks.create(result)
                 else:
@@ -116,6 +126,17 @@ class refreshable:
             for target in self.targets
             if target.container.client.id in Client.instances and target.container.id in target.container.client.elements
         ]
+
+
+class refreshable_method(Generic[_S, _P, _T], refreshable[_P, _T]):
+
+    def __init__(self, func: Callable[Concatenate[_S, _P], Union[_T, Awaitable[_T]]]) -> None:
+        """Refreshable UI methods
+
+        The `@ui.refreshable_method` decorator allows you to create methods that have a `refresh` method.
+        This method will automatically delete all elements created by the function and recreate them.
+        """
+        super().__init__(func)  # type: ignore
 
 
 def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
