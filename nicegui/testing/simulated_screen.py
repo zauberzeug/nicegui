@@ -4,7 +4,7 @@ import contextlib
 import functools
 import json
 from queue import Empty, Queue
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 from uuid import uuid4
 
 import engineio
@@ -64,7 +64,7 @@ class SimulatedScreen:
         listener = next(l for l in element._event_listeners.values() if l.type == confirmation)
         element._handle_event({'listener_id': listener.id, 'args': {}})
 
-    def _find(self, element: ui.element, string: str) -> ui.element | None:
+    def _find(self, element: ui.element, string: str) -> Optional[ui.element]:
         text = element._text or element._props.get('text') or ''
         label = element._props.get('label') or ''
         content = element.content if isinstance(element, ContentElement) else ''
