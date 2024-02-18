@@ -93,7 +93,7 @@ def nicegui_remove_all_screenshots() -> None:
             os.remove(os.path.join(SeleniumScreen.SCREENSHOT_DIR, name))
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture()
 def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator[webdriver.Chrome, None, None]:
     """Create a new Chrome driver instance."""
     s = Service()
@@ -105,7 +105,7 @@ def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator
 
 
 @pytest.fixture
-def screen(request: pytest.FixtureRequest, nicegui_reset_globals) -> Generator[Union[SeleniumScreen, SimulatedScreen], None, None]:
+def screen(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generator[Union[SeleniumScreen, SimulatedScreen], None, None]:
     """Create a new Screen fixture."""
     screen_type_hint = get_type_hints(request.node.function).get('screen')
     if screen_type_hint == SimulatedScreen:
