@@ -1,7 +1,8 @@
 import pytest
 
-import main
 from nicegui.testing import SimulatedScreen
+
+from . import main
 
 
 @pytest.mark.module_under_test(main)
