@@ -101,7 +101,7 @@ class AwaitableElementFilter(ElementFilter):
                  marker: Union[str, list[str], None] = None,
                  content: Union[str, list[str], None] = None,
                  ) -> None:
-        super().__init__(element=element, marker=marker, content=content)
+        super().__init__(kind=element, marker=marker, content=content)
         self.check = check
         self._is_fired = False
         self._is_awaited = False

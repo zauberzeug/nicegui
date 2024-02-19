@@ -1,7 +1,7 @@
 from nicegui import app, ui
 
-from . import (doc, find_documentation, generic_events_documentation, keyboard_documentation, refreshable_documentation,
-               run_javascript_documentation, storage_documentation, timer_documentation)
+from . import (doc, element_filter_documentation, generic_events_documentation, keyboard_documentation,
+               refreshable_documentation, run_javascript_documentation, storage_documentation, timer_documentation)
 
 doc.title('Action & *Events*')
 
@@ -151,4 +151,4 @@ def shutdown_demo():
 
 doc.intro(storage_documentation)
 
-doc.intro(find_documentation)
+doc.intro(element_filter_documentation)

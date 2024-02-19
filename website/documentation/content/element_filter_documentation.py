@@ -1,25 +1,28 @@
-from nicegui import ui
+from nicegui import ElementFilter, ui
 
 from . import doc
 
 
-@doc.demo(ui.find)
+@doc.demo(ElementFilter)
 def main_demo() -> None:
+    from nicegui import ElementFilter
+
     with ui.row():
         ui.button('button A')
         ui.label('label A')
     with ui.row().mark('important'):
         ui.button('button B')
-        ui.label('label B').classes('text-xl')  # HIDE
+        ui.label('label B')
 
-    ui.find(type=ui.label).within(marker='important').classes('text-2xl')
+    ElementFilter(kind=ui.label).within(marker='important').classes('text-xl')
 
 
 @doc.demo('Find all elements with text property', '''
     The `text` property is provided by a mixin called `TextElement`.
-    All elements that have a text property are also of type `TextElement` and hence can be filtered by this type.
+    If we filter by such a mixin the ElementFilter itself will provide a typed iterable.
 ''')
 def text_element() -> None:
+    from nicegui import ElementFilter
     from nicegui.elements.mixins.text_element import TextElement
 
     with ui.row():
@@ -28,6 +31,6 @@ def text_element() -> None:
         ui.label('label A')
         ui.label('label B')
 
-    # ui.label(', '.join([b.text for b in ui.get(type=TextElement)]))
+    # ui.label(', '.join([b.text for b in ElementFilter(kind=TextElement)]))
     # END OF DEMO
-    ui.label(', '.join([b.text for b in ui.find(type=TextElement, local_scope=True)]))
+    ui.label(', '.join([b.text for b in ElementFilter(kind=TextElement, local_scope=True)]))
