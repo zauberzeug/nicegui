@@ -1,4 +1,6 @@
-from nicegui import ui
+import asyncio
+
+from nicegui import ElementFilter, ui
 from nicegui.testing import SimulatedScreen
 
 
@@ -11,11 +13,20 @@ async def test_multiple_pages(screen: SimulatedScreen) -> None:
     def other():
         ui.label('Other page')
 
-    with await screen.open('/') as main_screen:
-        await screen.should_contain('Main page')
-    with await screen.open('/other') as other_screen:
-        await screen.should_contain('Other page')
-    with main_screen:
-        await screen.should_contain('Main page')
-    with other_screen:
-        await screen.should_contain('Other page')
+    with await screen.open('/') as userA:
+        userA.should_see(content='Main page')
+    with await screen.open('/other') as userB:
+        userB.should_see(content='Other page')
+    with userA:
+        userA.should_see(content='Main page')
+    with userB:
+        userB.should_see(content='Other page')
+
+
+async def test_source_element(screen: SimulatedScreen) -> None:
+    @ui.page('/')
+    def index():
+        ui.image('https://via.placeholder.com/150')
+
+    with await screen.open('/') as user:
+        user.should_see(content='placeholder.com')

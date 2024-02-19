@@ -7,7 +7,7 @@ import functools
 import json
 import re
 from queue import Empty, Queue
-from typing import Any, Callable, Dict, List, Optional, Self
+from typing import Any, Callable, Dict, List, Optional, Self, Type, TypeVar, Union
 from uuid import uuid4
 
 import engineio
@@ -17,9 +17,9 @@ import socketio
 from starlette.testclient import TestClient
 
 import nicegui.nicegui as ng
-from nicegui import Client, context, core, ui
-from nicegui.elements.mixins.content_element import ContentElement
-from nicegui.elements.mixins.source_element import SourceElement
+from nicegui import Client, ElementFilter, background_tasks, context
+from nicegui.awaitable_response import AwaitableResponse
+from nicegui.element import Element
 
 # pylint: disable=protected-access
 
@@ -32,7 +32,7 @@ class SimulatedScreen:
         self.sio.on('connect')
         self.task = None
 
-    async def open(self, path: str) -> Client:
+    async def open(self, path: str) -> User:
         """Open the given path."""
         response = await self.http_client.get(path)
         assert response.status_code == 200
@@ -41,70 +41,96 @@ class SimulatedScreen:
         client_id = match.group(1)
         client = Client.instances[client_id]
         await ng._on_handshake(f'test-{uuid4()}', client.id)
-        return client
-
-    async def should_contain(self, string: str) -> None:
-        """Assert that the page contains an input with the given value."""
-        for _ in range(10):
-            if self._find(context.get_client().layout, string) is not None:
-                return
-            for m in context.get_client().outbox.messages:
-                if m[1] == 'notify' and string in m[2]['message']:
-                    return
-            await asyncio.sleep(0.1)
-        raise AssertionError(f'text "{string}" not found on current screen:\n{self}')
-
-    def click(self, target_text: str) -> None:
-        """Click on the element containing the given text."""
-        element = self._find(context.get_client().layout, target_text)
-        assert element
-        for listener in element._event_listeners.values():
-            if listener.type == 'click' and listener.element_id == element.id:
-                element._handle_event({'listener_id': listener.id, 'args': {}})
-
-    def type(self, *, target: str, content: str, confirmation: str) -> None:
-        """Type the given text into the element."""
-        element = self._find(context.get_client().layout, target)
-        assert element
-        if hasattr(element, 'value'):
-            element.value = content
-        listener = next(l for l in element._event_listeners.values() if l.type == confirmation)
-        element._handle_event({'listener_id': listener.id, 'args': {}})
-
-    def _find(self, element: ui.element, string: str) -> Optional[ui.element]:
-        text = element._text or element._props.get('text') or ''
-        label = element._props.get('label') or ''
-        content = element.content if isinstance(element, ContentElement) else ''
-        source = element.source if isinstance(element, SourceElement) else ''
-        placeholder = element._props.get('placeholder') or ''
-        value = element._props.get('value') or ''
-        for t in [text, label, content, source, placeholder, value]:
-            if string in t:
-                return element
-        for child in element:
-            found = self._find(child, string)
-            if found:
-                return found
-        return None
-
-    def __str__(self) -> str:
-        client = context.get_client()
-        result = f'{client.resolve_title()}\n{client.layout}'
-        for message in client.outbox.messages:
-            result += f'\n{message}'
-        return result
+        return User(client)
 
 
-class SimulatedClient(Client):
-    current: Optional['SimulatedClient'] = None
+T = TypeVar('T', bound=Element)
+
+
+class User():
+    current_client: Optional['Client'] = None
+
+    def __init__(self, client: Client) -> None:
+        self.client = client
 
     def __enter__(self) -> Self:
-        self.current = self
-        return super().__enter__()
+        self.current_client = self.client
+        self.client.__enter__()
+        return self
 
     def __exit__(self, *_) -> None:
-        super().__exit__()
-        self.current = None
+        self.client.__exit__()
+        self.current_client = None
+
+    def should_see(self, *,
+                   element: Type[T] = Element,
+                   marker: Union[str, list[str], None] = None,
+                   content: Union[str, list[str], None] = None,
+                   ) -> AwaitableElementFilter:
+        """Assert that the page contains an input with the given value."""
+        return AwaitableElementFilter(check=lambda elements: len(elements) > 0, element=element, marker=marker, content=content)
+
+    def type(self, text: str, *, element: Type[T] = Element, marker: Union[str, list[str], None] = None) -> None:
+        """Type the given text into the input."""
+        elements = self.should_see(element=element, marker=marker)
+        element_type = element.__name__
+        marker = f' with {marker=}' if marker is not None else ''
+        assert len(elements) == 1, f'expected to find exactly one element of type {element_type}{marker} on the page'
+        # TODO implement typing into the element; how to "submit"?
+
+    def click(self, *,
+              element: Type[T] = Element,
+              marker: Union[str, list[str], None] = None,
+              content: Union[str, list[str], None] = None,
+              ) -> None:
+        """Click the given element."""
+        elements = self.should_see(element=element, marker=marker, content=content)
+        element_type = element.__name__
+        marker = f' with {marker=}' if marker is not None else ''
+        content = f' with {content=}' if content is not None else ''
+        assert len(elements) == 1, \
+            f'expected to find exactly one element of type {element_type}{marker}{content} on the page'
+        # TODO implement clicking the element
+
+
+class AwaitableElementFilter(ElementFilter):
+
+    def __init__(self, *,
+                 check: Callable[[ElementFilter], bool],
+                 element: Type = Element,
+                 marker: Union[str, list[str], None] = None,
+                 content: Union[str, list[str], None] = None,
+                 ) -> None:
+        super().__init__(element=element, marker=marker, content=content)
+        self.check = check
+        self._is_fired = False
+        self._is_awaited = False
+        self.client = context.get_client()
+        background_tasks.create(self._run_check(), name='run element filter check')
+
+    async def _run_check(self) -> ElementFilter:
+        if self._is_awaited:
+            return await self._check_with_retry()
+        self._is_fired = True
+        if self.check(self):
+            return self
+        else:
+            raise AssertionError('not working')
+
+    async def _check_with_retry(self) -> ElementFilter:
+        with self.client:
+            for _ in range(10):
+                if self.check(self):
+                    return self
+                await asyncio.sleep(0.1)
+        msg = 'not working'  # f'expected to find {type_} with {marker=}, {content=} on the page\n{self.client.layout}'
+        raise AssertionError(msg)
+
+    def __await__(self):
+        if self._is_fired:
+            raise RuntimeError('must be awaited immediately after creation or not at all')
+        self._is_awaited = True
+        return self._check_with_retry().__await__()
 
 
 original_get_slot_stack = ng.Slot.get_stack
@@ -113,10 +139,10 @@ original_prune_slot_stack = ng.Slot.prune_stack
 
 def get_stack(_=None) -> List[ng.Slot]:
     """Return the slot stack of the current client."""
-    if SimulatedClient.current is None:
+    if User.current_client is None:
         return original_get_slot_stack()
     cls = ng.Slot
-    client_id = id(SimulatedClient.current)
+    client_id = id(User.current_client)
     if client_id not in cls.stacks:
         cls.stacks[client_id] = []
     return cls.stacks[client_id]
@@ -124,10 +150,10 @@ def get_stack(_=None) -> List[ng.Slot]:
 
 def prune_stack(cls) -> None:
     """Remove the current slot stack if it is empty."""
-    if SimulatedClient.current is None:
+    if User.current_client is None:
         return original_prune_slot_stack()
     cls = ng.Slot
-    client_id = id(SimulatedClient.current)
+    client_id = id(User.current_client)
     if not cls.stacks[client_id]:
         del cls.stacks[client_id]
 

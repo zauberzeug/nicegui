@@ -1,4 +1,4 @@
-from nicegui import ui
+from nicegui import ElementFilter, ui
 from nicegui.testing import SeleniumScreen
 
 
@@ -9,7 +9,7 @@ def test_get_all(screen: SeleniumScreen):
         ui.button('button B')
         ui.label('label B')
 
-    elements = list(ui.find())
+    elements = list(ElementFilter())
 
     screen.open('/')
     assert len(elements) == 8
@@ -32,7 +32,7 @@ def test_get_by_text_element(screen: SeleniumScreen):
     ui.button('button B')
     ui.label('label B')
 
-    result = [b.text for b in ui.find(type=TextElement)]
+    result = [b.text for b in ElementFilter(element=TextElement)]
 
     screen.open('/')
     assert result == ['button A', 'label A', 'button B', 'label B']
@@ -44,7 +44,7 @@ def test_get_by_type(screen: SeleniumScreen):
     ui.button('button B')
     ui.label('label B')
 
-    result = ', '.join(b.text for b in ui.find(type=ui.button))
+    result = ', '.join(b.text for b in ElementFilter(element=ui.button))
 
     screen.open('/')
     assert result == 'button A, button B'
@@ -56,7 +56,7 @@ def test_get_by_containing_text(screen: SeleniumScreen):
     ui.button('button B')
     ui.label('label B')
 
-    result = ', '.join(b.text for b in ui.find(text='A'))
+    result = ', '.join(b.text for b in ElementFilter(content='A'))
 
     screen.open('/')
     assert result == 'button A, label A'
@@ -68,7 +68,7 @@ def test_get_by_containing_texts(screen: SeleniumScreen):
     ui.button('button B')
     ui.label('label B')
 
-    result = ', '.join(b.text for b in ui.find(text=['A', 'tt']))
+    result = ', '.join(b.text for b in ElementFilter(content=['A', 'tt']))
 
     screen.open('/')
     assert result == 'button A'
@@ -78,7 +78,7 @@ def test_setting_classes(screen: SeleniumScreen):
     ui.label('label A')
     ui.label('label B')
 
-    ui.find(type=ui.label).classes('text-2xl')
+    ElementFilter(element=ui.label).classes('text-2xl')
 
     screen.open('/')
     assert screen.find('label A').get_attribute('class') == 'text-2xl'
@@ -89,7 +89,7 @@ def test_setting_style(screen: SeleniumScreen):
     ui.label('label A')
     ui.label('label B')
 
-    ui.find(type=ui.label).style('color: red')
+    ElementFilter(element=ui.label).style('color: red')
 
     screen.open('/')
     assert screen.find('label A').get_attribute('style') == 'color: red;'
@@ -100,7 +100,7 @@ def test_setting_props(screen: SeleniumScreen):
     ui.button('A')
     ui.button('B')
 
-    ui.find(type=ui.button).props('flat')
+    ElementFilter(element=ui.button).props('flat')
 
     screen.open('/')
     for e in screen.find_all_by_tag('button'):
@@ -111,7 +111,7 @@ def test_get_by_marker(screen: SeleniumScreen):
     ui.button('button A')
     ui.button('button B').mark('important')
 
-    result = list(ui.find(marker='important'))
+    result = list(ElementFilter(marker='important'))
 
     screen.open('/')
     assert len(result) == 1
@@ -123,8 +123,8 @@ def test_get_by_specific_marker(screen: SeleniumScreen):
     ui.button('button B').mark('important ', 'test')
     ui.button('button C').mark(' important test')
 
-    test = list(ui.find(marker='test'))
-    important = list(ui.find(marker='important'))
+    test = list(ElementFilter(marker='test'))
+    important = list(ElementFilter(marker='important'))
 
     screen.open('/')
     assert len(test) == 3
@@ -141,7 +141,7 @@ def test_get_by_multiple_markers(screen: SeleniumScreen):
     ui.button('button B').mark('important ', 'test')
     ui.button('button C').mark(' important test')
 
-    search = ui.find(type=ui.button, marker='test important')
+    search = ElementFilter(element=ui.button, marker='test important')
     result = [b.text for b in search]
     screen.open('/')
     assert result == ['button B', 'button C']
@@ -154,7 +154,7 @@ def test_get_within_type(screen: SeleniumScreen):
         ui.button('button B')
         ui.label('label B')
 
-    result = [b.text for b in ui.find(type=ui.button).within(type=ui.row)]
+    result = [b.text for b in ElementFilter(element=ui.button).within(element=ui.row)]
 
     screen.open('/')
     assert result == ['button B']
@@ -167,7 +167,7 @@ def test_get_within_marker(screen: SeleniumScreen):
         ui.button('button B')
         ui.label('label B')
 
-    result = [e.text for e in ui.find().within(marker='horizontal')]
+    result = [e.text for e in ElementFilter().within(marker='horizontal')]
 
     screen.open('/')
     assert result == ['button B', 'label B']
@@ -180,7 +180,7 @@ def test_get_within_element(screen: SeleniumScreen):
         ui.button('button B')
         ui.label('label B')
 
-    result = [e.text for e in ui.find().within(element=r)]
+    result = [e.text for e in ElementFilter().within(instance=r)]
 
     screen.open('/')
     assert result == ['button B', 'label B']
@@ -194,7 +194,7 @@ def test_get_within_elements(screen: SeleniumScreen):
         ui.button('button B')
         ui.label('label B')
 
-    result = [e.text for e in ui.find().within(element=[r1, r2])]
+    result = [e.text for e in ElementFilter().within(instance=[r1, r2])]
 
     screen.open('/')
     assert result == ['button A', 'label A', 'button B', 'label B']
@@ -206,7 +206,7 @@ def test_get_with_excluding_type(screen: SeleniumScreen):
     ui.button('button B')
     ui.label('label B')
 
-    result = [e for e in ui.find(text='A').exclude(type=ui.label)]
+    result = [e for e in ElementFilter(content='A').exclude(element=ui.label)]
 
     screen.open('/')
     assert len(result) == 1
@@ -219,7 +219,7 @@ def test_get_with_excluding_marker(screen: SeleniumScreen):
     ui.button('button B')
     ui.label('label B').mark('normal')
 
-    result = [e for e in ui.find(text=[' ']).exclude(marker='normal')]
+    result = [e for e in ElementFilter(content=[' ']).exclude(marker='normal')]
 
     screen.open('/')
     assert len(result) == 2
@@ -233,7 +233,7 @@ def test_get_with_excluding_text(screen: SeleniumScreen):
     ui.button('button B')
     ui.label('label B')
 
-    result = [e for e in ui.find(type=ui.button).exclude(text='A')]
+    result = [e for e in ElementFilter(element=ui.button).exclude(content='A')]
 
     screen.open('/')
     assert len(result) == 1
@@ -247,7 +247,7 @@ def test_get_not_within_type(screen: SeleniumScreen):
         ui.button('button B')
         ui.label('label B')
 
-    result = [e for e in ui.find(type=ui.button).not_within(type=ui.row)]
+    result = [e for e in ElementFilter(element=ui.button).not_within(element=ui.row)]
 
     screen.open('/')
     assert len(result) == 1
@@ -261,7 +261,7 @@ def test_get_not_within_marker(screen: SeleniumScreen):
         ui.button('button B')
         ui.label('label B')
 
-    result = [e for e in ui.find(type=ui.button).not_within(marker='horizontal')]
+    result = [e for e in ElementFilter(element=ui.button).not_within(marker='horizontal')]
 
     screen.open('/')
     assert len(result) == 1
@@ -275,7 +275,7 @@ def test_get_not_within_element(screen: SeleniumScreen):
         ui.button('button B')
         ui.label('label B')
 
-    result = [e for e in ui.find(type=ui.button).not_within(element=r)]
+    result = [e for e in ElementFilter(element=ui.button).not_within(instance=r)]
 
     screen.open('/')
     assert len(result) == 1
@@ -288,7 +288,7 @@ def test_get_in_local_scope(screen: SeleniumScreen):
     with ui.row():
         ui.button('button B')
         ui.label('label B')
-        result = [e.text for e in ui.find(local_scope=True)]
+        result = [e.text for e in ElementFilter(local_scope=True)]
 
     screen.open('/')
     assert result == ['button B', 'label B']

@@ -1,5 +1,8 @@
+import asyncio
+
 import pytest
 
+from nicegui import ui
 from nicegui.testing import SimulatedScreen
 
 from . import main
@@ -8,24 +11,24 @@ from . import main
 @pytest.mark.module_under_test(main)
 async def test_basic_startup_appearance(screen: SimulatedScreen) -> None:
     """Test basic appearance of the chat app."""
-    with await screen.open('/'):
-        await screen.should_contain('simple chat app')
-        await screen.should_contain('https://robohash.org/')
-        await screen.should_contain('message')
-        await screen.should_contain('No messages yet')
+    with await screen.open('/') as user:
+        user.should_see(content='simple chat app')
+        user.should_see(content='https://robohash.org/')
+        user.should_see(content='message')
+        await user.should_see(content='No messages yet')
 
 
 @pytest.mark.module_under_test(main)
 async def test_sending_messages(screen: SimulatedScreen) -> None:
     """Test sending messages from two different screens."""
-    with await screen.open('/') as screenA:
-        screen.type(target='message', content='Hello from screen A!', confirmation='keydown.enter')
-        await screen.should_contain('Hello from screen A!')
-        await screen.should_contain('message')
-    with await screen.open('/'):
-        await screen.should_contain('Hello from screen A!')
-        screen.type(target='message', content='Hello, from screen B!', confirmation='keydown.enter')
-        await screen.should_contain('message')
-    with screenA:
-        await screen.should_contain('Hello from screen A!')
-        await screen.should_contain('Hello, from screen B!')
+    with await screen.open('/') as userA:
+        userA.type(text='Hello from screen A!', element=ui.input)
+        userA.should_see(content='Hello from screen A!')
+        userA.should_see(content='message')
+    with await screen.open('/')as userB:
+        userB.should_see(content='Hello from screen A!')
+        userB.type(text='Hello, from screen B!', element=ui.input)
+        userB.should_see(content='message')
+    with userA:
+        userA.should_see(content='Hello from screen A!')
+        userA.should_see(content='Hello, from screen B!')
