@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 
 from fastapi import FastAPI
 
 from . import core, storage
+from .air import Air
 from .language import Language
 from .nicegui import _shutdown, _startup
 
@@ -19,9 +20,11 @@ def run_with(
     binding_refresh_interval: float = 0.1,
     reconnect_timeout: float = 3.0,
     mount_path: str = '/',
+    on_air: Optional[Union[str, Literal[True]]] = None,
     tailwind: bool = True,
     prod_js: bool = True,
     storage_secret: Optional[str] = None,
+    show_welcome_message: bool = True,
 ) -> None:
     """Run NiceGUI with FastAPI.
 
@@ -34,9 +37,11 @@ def run_with(
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param mount_path: mount NiceGUI at this path (default: `'/'`)
+    :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
     :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
+    :param show_welcome_message: whether to show the welcome message (default: `True`)
     """
     core.app.config.add_run_config(
         reload=False,
@@ -49,10 +54,13 @@ def run_with(
         reconnect_timeout=reconnect_timeout,
         tailwind=tailwind,
         prod_js=prod_js,
-        show_welcome_message=False,
+        show_welcome_message=show_welcome_message,
     )
 
     storage.set_storage_secret(storage_secret)
+
+    if on_air:
+        core.air = Air('' if on_air is True else on_air)
 
     app.mount(mount_path, core.app)
     main_app_lifespan = app.router.lifespan_context
