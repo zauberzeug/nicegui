@@ -85,6 +85,7 @@ class Scene(Element,
         :param on_drag_start: callback to execute when a 3D object is dragged
         :param on_drag_end: callback to execute when a 3D object is dropped
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
+        :param parent_scene: specifies the parent scene for rendering the same scene as the parent
         """
         super().__init__()
         self._props['width'] = width

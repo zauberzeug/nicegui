@@ -86,7 +86,24 @@ def draggable_objects() -> None:
     ui.switch('draggable sphere',
               value=sphere.draggable_,
               on_change=lambda e: sphere.draggable(e.value))
+    
+@doc.demo('Multiple cameras', '''
+    You can use the `parent_scene` argument to `ui.scene` to add a element which renders the same scene as the parent.
+    The child scene, is able to use the same methods as the parent, with the only difference, that the cameras are separate.
 
+    It is possible to add as many additional scenes to a parent, but performance may be impacted at some point.
+''')
+def multiple_cameras() -> None:
+
+    with ui.scene().classes('w-2/3 h-64') as scene:
+        teapot = 'https://upload.wikimedia.org/wikipedia/commons/9/93/Utah_teapot_(solid).stl'
+        scene.stl(teapot).scale(0.3)
+    
+    with ui.row().classes('w-full'):
+        with ui.scene(parent_scene=scene).classes('w-1/3 h-32') as child_scene_1:
+            child_scene_1.move_camera(x=1, y=-3, z=5)
+        with ui.scene(parent_scene=scene).classes('w-1/3 h-32') as child_scene_2:
+            child_scene_2.move_camera(x=0, y=3, z=3)
 
 @doc.demo('Rendering point clouds', '''
     You can render point clouds using the `point_cloud` method.
