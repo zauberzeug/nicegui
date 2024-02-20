@@ -1,6 +1,7 @@
 import re
 
 import requests
+import webcolors
 
 
 def get_tailwind_colors():
@@ -94,15 +95,48 @@ def get_quasar_colors():
             color = re.findall(r'\$(.*?) !', line)[0]
             quasar_color += f'{color_name} = "{color}"\n'
 
-    quasar_color = '\n'.join(list(set(quasar_color.split('\n'))))
+    quasar_color = '\n'.join(list(set(quasar_color.split('\n')))) + '\n'
 
     return quasar_color
 
 
+def get_css_colors():
+    """
+    Retrieves a dictionary of CSS color names and their corresponding hexadecimal values.
+
+    This function combines CSS2, CSS2.1, CSS3, and HTML4 color names and their hexadecimal values
+    into a dictionary. The dictionary is then converted into a string representation where each
+    color name is uppercase and assigned its corresponding hexadecimal value.
+
+    Returns:
+        str: A string representation of the CSS color names and their hexadecimal values.
+
+    Example:
+        >>> colors = get_css_colors()
+        >>> print(colors)
+        ALICEBLUE = "#F0F8FF"
+        ANTIQUEWHITE = "#FAEBD7"
+        AQUA = "#00FFFF"
+        ...
+    """
+    # Get all CSS color names
+    css2_colors = webcolors.CSS2_NAMES_TO_HEX  # CSS2 used the same list as HTML 4.
+    css21_colors = webcolors.CSS21_NAMES_TO_HEX  # CSS2.1 added orange.
+    css3_colors = webcolors.CSS3_NAMES_TO_HEX
+    html4_colors = webcolors.HTML4_NAMES_TO_HEX
+    css_colors = {**css2_colors, **css21_colors, **css3_colors, **html4_colors}
+
+    # Convert the dictionary to a string
+    colors = '\n'.join([f'{name.upper()} = "{color}"' for name, color in css_colors.items()])
+
+    return colors
+
+
 tailwind_colors = get_tailwind_colors()
 quasar_colors = get_quasar_colors()
+css_colors = get_css_colors()
 
-colors = tailwind_colors + quasar_colors
+colors = tailwind_colors + quasar_colors + css_colors
 # Remove underscore from color names starting with '_'
 modified_lines = [color[1:] if color.startswith('_') else color for color in colors.split('\n')]
 # Remove duplicate colors and sort the colors alphabetically
