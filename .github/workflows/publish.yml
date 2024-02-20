@@ -136,12 +136,6 @@ jobs:
       - name: Update version in pyproject.toml
         run: python .github/workflows/update_pyproject.py $(echo ${GITHUB_REF/refs\/tags\//})
 
-      - name: Update color.py
-        run: python .github/workflows/update_colors.py
-
-      - name: Update icon.py
-        run: python .github/workflows/update_icons.py
-
       - name: Update version in pyproject.toml
         run: python .github/workflows/update_pyproject.py $(echo ${GITHUB_REF/refs\/tags\//})
 
