@@ -1,18 +1,8 @@
 from nicegui import ui
 
-from . import (
-    doc,
-    section_action_events,
-    section_audiovisual_elements,
-    section_binding_properties,
-    section_configuration_deployment,
-    section_controls,
-    section_data_elements,
-    section_page_layout,
-    section_pages_routing,
-    section_styling_appearance,
-    section_text_elements,
-)
+from . import (doc, section_action_events, section_audiovisual_elements, section_binding_properties,
+               section_configuration_deployment, section_controls, section_data_elements, section_page_layout,
+               section_pages_routing, section_styling_appearance, section_text_elements)
 
 doc.title('*NiceGUI* Documentation', 'Reference, Demos and more')
 

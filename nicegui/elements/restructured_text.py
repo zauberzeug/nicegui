@@ -7,7 +7,7 @@ from .markdown import remove_indentation
 from .mixins.content_element import ContentElement
 
 
-class ReStructuredText(ContentElement, component='rst.js'):
+class ReStructuredText(ContentElement, component='restructured_text.js'):
 
     def __init__(self, content: str = '') -> None:
         """ReStructuredText
@@ -29,8 +29,5 @@ class ReStructuredText(ContentElement, component='rst.js'):
 @lru_cache(maxsize=int(os.environ.get('RST_CONTENT_CACHE_SIZE', '1000')))
 def prepare_content(content: str) -> str:
     """Render ReStructuredText content to HTML."""
-    html = publish_parts(
-        remove_indentation(content),
-        writer_name='html5'
-    )
+    html = publish_parts(remove_indentation(content), writer_name='html5')
     return html["html_body"]

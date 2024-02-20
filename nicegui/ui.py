@@ -59,8 +59,8 @@ __all__ = [
     'pyplot',
     'query',
     'radio',
+    'restructured_text',
     'row',
-    'rst',
     'scene',
     'scroll_area',
     'select',
@@ -171,8 +171,8 @@ from .elements.progress import LinearProgress as linear_progress
 from .elements.pyplot import Pyplot as pyplot
 from .elements.query import Query as query
 from .elements.radio import Radio as radio
+from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
-from .elements.rst import ReStructuredText as rst
 from .elements.scene import Scene as scene
 from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
