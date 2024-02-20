@@ -110,6 +110,9 @@ tiles = [
 
 @doc.extra_column
 def create_tiles():
+    with ui.row().classes('items-center content-between'):
+        ui.label('If you like NiceGUI, go and become a')
+        ui.html('<iframe src="https://github.com/sponsors/zauberzeug/button" title="Sponsor zauberzeug" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>')
     for documentation, description in tiles:
         page = doc.get_page(documentation)
         with ui.link(target=f'/documentation/{page.name}') \
