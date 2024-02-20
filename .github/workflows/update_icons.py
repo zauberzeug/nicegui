@@ -127,7 +127,7 @@ def get_google_icons():
         ICON_NAME_2 = "icon_value_2"
         ...
     """
-    url = "http://fonts.google.com/metadata/icons?incomplete=1&key=material_symbols"
+    url = "https://fonts.google.com/metadata/icons?incomplete=1&key=material_symbols"
 
     r = requests.get(url, timeout=30)
 
