@@ -189,7 +189,13 @@ def get_boostrap_icons():
 google_icons = get_google_icons()
 # bootstrap_icons = get_boostrap_icons()
 
+icons = google_icons  # + bootstrap_icons
+
+
+# Remove underscore from color names starting with '_'
+modified_lines = [icon[1:] if icon.startswith('_') else icon for icon in icons.split('\n')]
+# Remove duplicate colors and sort the colors alphabetically
+icons = '\n'.join(sorted(list(set(modified_lines))))
 
 with open('nicegui/icon.py', 'w') as f:
-    f.write(google_icons)
-    # f.write(bootstrap_icons)
+    f.write(icons)
