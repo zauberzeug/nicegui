@@ -103,13 +103,10 @@ tailwind_colors = get_tailwind_colors()
 quasar_colors = get_quasar_colors()
 
 colors = tailwind_colors + quasar_colors
-# Remove duplicate colors and sort the colors alphabetically
-colors = '\n'.join(sorted(list(set(colors.split('\n')))))
 # Remove underscore from color names starting with '_'
-colors = [color[1:] if color.startswith('_') else color for color in colors.split('\n')]
-
-# Join the modified colors back into a string
-colors = '\n'.join(colors)
+modified_lines = [color[1:] if color.startswith('_') else color for color in colors.split('\n')]
+# Remove duplicate colors and sort the colors alphabetically
+colors = '\n'.join(sorted(list(set(modified_lines))))
 
 with open('nicegui/color.py', 'w') as f:
     f.write(colors)
