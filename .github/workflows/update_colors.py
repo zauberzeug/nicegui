@@ -83,13 +83,15 @@ def get_quasar_colors():
 
     for line in r.split('\n'):
         if line.startswith('.'):
-            color_name = line.split('-')[1:]
+            color_name = line.split('-')
             color_name = '_'.join(color_name).upper()
+
             color_name = re.sub(r'\W+', '', color_name)
+            color_name = color_name.replace("TEXT", "")
+            color_name = color_name.replace("BG", "BACKGROUND")
 
         if color_name and ('color' in line or 'background' in line):
             color = re.findall(r'\$(.*?) !', line)[0]
-
             quasar_color += f'{color_name} = "{color}"\n'
 
     quasar_color = '\n'.join(list(set(quasar_color.split('\n'))))
@@ -103,6 +105,11 @@ quasar_colors = get_quasar_colors()
 colors = tailwind_colors + quasar_colors
 # Remove duplicate colors and sort the colors alphabetically
 colors = '\n'.join(sorted(list(set(colors.split('\n')))))
+# Remove underscore from color names starting with '_'
+colors = [color[1:] if color.startswith('_') else color for color in colors.split('\n')]
+
+# Join the modified colors back into a string
+colors = '\n'.join(colors)
 
 with open('nicegui/color.py', 'w') as f:
     f.write(colors)
