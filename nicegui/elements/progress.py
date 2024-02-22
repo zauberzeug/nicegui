@@ -6,21 +6,21 @@ from .mixins.value_element import ValueElement
 
 
 class LinearProgress(ValueElement, TextColorElement):
-    VALUE_PROP = "value"
+    VALUE_PROP = 'value'
 
     def __init__(
         self,
         value: float = 0.0,
         *,
         min: float = 0.0,  # pylint: disable=redefined-builtin
-        max: Optional[Union[str, int]] = 1.0,  # pylint: disable=redefined-builtin
-        size: Optional[Union[str, int]] = 20,
+        max: Union[float, int] = 1.0,  # pylint: disable=redefined-builtin
+        size: Union[str, int] = 20,
         show_value: bool = True,
-        color: Optional[str] = "primary",
+        color: str = "primary",
         reverse: bool = False,
         buffer: Optional[float] = None,
         track_color=None,
-        text_color: Optional[str] = "white",
+        text_color: str = "white",
         dark: bool = False,
         rounded: bool = False,
         animation_speed: int = 2100,
@@ -103,20 +103,20 @@ class CircularProgress(ValueElement, TextColorElement):
         value: float = 0.0,
         *,
         min: float = 0.0,  # pylint: disable=redefined-builtin
-        max: float = 1.0,  # pylint: disable=redefined-builtin
-        size: Optional[Union[str, int]] = "xl",
-        font_size: Optional[Union[str, int]] = "0.25em",
+        max: Union[float, int],  # pylint: disable=redefined-builtin
+        size: Union[str, int] = "xl",
+        font_size: Union[str, int] = "0.25em",
         show_value: bool = True,
         angle: int = 0,
-        color: Optional[str] = "primary",
-        center_color: Optional[str] = "transparent",
-        track_color: Optional[str] = "grey-4",
-        text_color: Optional[str] = "white",
+        color: str = "primary",
+        center_color: str = "transparent",
+        track_color: str = "grey-4",
+        text_color: str = "white",
         indeterminate: bool = False,
         reverse: bool = False,
         instant_feedback: bool = False,
         rounded: bool = False,
-        thickness: Optional[Union[float, int]] = 0.2,
+        thickness: Union[float, int] = 0.2,
         animation_speed: int = 600,
     ) -> None:
         """Circular Progress
