@@ -13,7 +13,7 @@ class LinearProgress(ValueElement, TextColorElement):
         value: float = 0.0,
         *,
         min: float = 0.0,  # pylint: disable=redefined-builtin
-        max: Union[float, int] = 1.0,  # pylint: disable=redefined-builtin
+        max:  float = 1.0,  # pylint: disable=redefined-builtin
         size: Union[str, int] = 20,
         show_value: bool = True,
         color: str = "primary",
@@ -103,7 +103,7 @@ class CircularProgress(ValueElement, TextColorElement):
         value: float = 0.0,
         *,
         min: float = 0.0,  # pylint: disable=redefined-builtin
-        max: Union[float, int],  # pylint: disable=redefined-builtin
+        max: float = 1.0,  # pylint: disable=redefined-builtin
         size: Union[str, int] = "xl",
         font_size: Union[str, int] = "0.25em",
         show_value: bool = True,
@@ -116,7 +116,7 @@ class CircularProgress(ValueElement, TextColorElement):
         reverse: bool = False,
         instant_feedback: bool = False,
         rounded: bool = False,
-        thickness: Union[float, int] = 0.2,
+        thickness: float = 0.2,
         animation_speed: int = 600,
     ) -> None:
         """Circular Progress
