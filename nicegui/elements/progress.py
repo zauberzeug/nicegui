@@ -14,7 +14,7 @@ class LinearProgress(ValueElement, TextColorElement):
         *,
         min: float = 0.0,  # pylint: disable=redefined-builtin
         max: Optional[Union[str, int]] = 1.0,  # pylint: disable=redefined-builtin
-        size: Optional[Union[str, int]] = None,
+        size: Optional[Union[str, int]] = 20,
         show_value: bool = True,
         color: Optional[str] = "primary",
         reverse: bool = False,
@@ -32,11 +32,24 @@ class LinearProgress(ValueElement, TextColorElement):
 
         A linear progress bar wrapping Quasar's
         `QLinearProgress <https://quasar.dev/vue-components/linear-progress>`_ component.
+        It provides a way to display a progress bar with customizable options.
 
-        :param value: the initial value of the field (from 0.0 to 1.0)
-        :param size: the height of the progress bar (default: "20px" with value label and "4px" without)
-        :param show_value: whether to show a value label in the center (default: `True`)
-        :param color: color (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
+        :param value: The initial value of the progress bar (from 0.0 to 1.0).
+        :param min: The minimum value of the progress bar (default: 0.0).
+        :param max: The maximum value of the progress bar (default: 1.0).
+        :param size: The height of the progress bar (default: None).
+        :param show_value: Whether to show a value label in the center (default: True).
+        :param color: The color of the progress bar (either a Quasar, Tailwind, or CSS color or `None`, default: "primary").
+        :param reverse: Whether to reverse the direction of the progress bar (default: False).
+        :param buffer: The buffer value of the progress bar (default: None).
+        :param track_color: The color of the progress bar track (either a Quasar, Tailwind, or CSS color or `None`, default: None).
+        :param dark: Whether to use dark mode for the progress bar (default: False).
+        :param rounded: Whether to use rounded corners for the progress bar (default: False).
+        :param animation_speed: The animation speed of the progress bar (default: 2100).
+        :param indeterminate: Whether the progress bar is indeterminate (default: False).
+        :param query: Whether the progress bar is in query mode (default: False).
+        :param instant_feedback: Whether to provide instant feedback for the progress bar (default: False).
+        :param stripe: Whether to show a stripe pattern on the progress bar (default: False).
         """
         if max > 1.0:
             value = float(value / max)
@@ -113,8 +126,18 @@ class CircularProgress(ValueElement, TextColorElement):
         :param min: the minimum value (default: 0.0)
         :param max: the maximum value (default: 1.0)
         :param size: the size of the progress circle (default: "xl")
+        :param font_size: the font size of the value label (default: "0.25em")
         :param show_value: whether to show a value label in the center (default: `True`)
-        :param color: color (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
+        :param angle: the starting angle of the progress circle (default: 0)
+        :param color: the color of the progress circle (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
+        :param center_color: the color of the center circle (either a Quasar, Tailwind, or CSS color or `None`, default: None)
+        :param track_color: the color of the track circle (either a Quasar, Tailwind, or CSS color or `None`, default: "grey-4")
+        :param indeterminate: whether the progress is indeterminate (default: False)
+        :param reverse: whether the progress is reversed (default: False)
+        :param instant_feedback: whether to provide instant feedback on value change (default: False)
+        :param rounded: whether to use rounded edges for the progress circle (default: False)
+        :param thickness: the thickness of the progress circle (default: 0.2)
+        :param animation_speed: the speed of the progress animation in milliseconds (default: 600)
         """
         super().__init__(
             tag="q-circular-progress",
