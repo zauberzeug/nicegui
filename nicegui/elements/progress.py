@@ -108,7 +108,7 @@ class CircularProgress(ValueElement, TextColorElement):
         show_value: bool = True,
         angle: int = 0,
         color: Optional[str] = "primary",
-        center_color: Optional[str] = None,
+        center_color: Optional[str] = "transparent",
         track_color: Optional[str] = "grey-4",
         indeterminate: bool = False,
         reverse: bool = False,
