@@ -1,7 +1,8 @@
-from nicegui import Client
 from nicegui.testing import SeleniumScreen
 
 from ..main import main_page, sub_page
+
+# pylint: disable=missing-function-docstring
 
 
 def test_markdown_message(screen: SeleniumScreen) -> None:

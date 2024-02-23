@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from nicegui import Client, ui
 
+# pylint: disable=missing-function-docstring
+
 
 @ui.page('/')
 def main_page() -> None:
