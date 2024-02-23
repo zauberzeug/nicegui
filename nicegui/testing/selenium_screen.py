@@ -167,7 +167,7 @@ class SeleniumScreen:
             element = self.selenium.find_element(By.XPATH, query)
             try:
                 if not element.is_displayed():
-                    self.wait(0.1)  # HACK: repeat check after a short delay to avoid timing issue on fast machines
+                    self.wait(0.3)  # HACK: repeat check after a short delay to avoid timing issue on fast machines
                     if not element.is_displayed():
                         raise AssertionError(f'Found "{text}" but it is hidden')
             except StaleElementReferenceException as e:
