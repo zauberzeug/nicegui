@@ -395,9 +395,9 @@ class Element(Visibility):
 
         :param text: text of the tooltip
         """
+        from .elements.tooltip import Tooltip  # pylint: disable=import-outside-toplevel, cyclic-import
         with self:
-            tooltip = Element('q-tooltip')
-            tooltip._text = text  # pylint: disable=protected-access
+            Tooltip(text)
         return self
 
     def on(self,

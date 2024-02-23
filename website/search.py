@@ -64,7 +64,12 @@ class Search:
                                 with ui.link(target=result['item']['url']):
                                     ui.item_label(result['item']['title'])
                                     with ui.item_label().props('caption'):
-                                        ui.markdown(result['item']['content'][:200] + '...').classes('text-grey')
+                                        intro = result['item']['content'].split(':param')[0]
+                                        if result['item']['format'] == 'md':
+                                            element = ui.markdown(intro)
+                                        else:
+                                            element = ui.restructured_text(intro)
+                                        element.classes('text-grey line-clamp-1')
         background_tasks.create_lazy(handle_input(), name='handle_search_input')
 
     def open_url(self, url: str) -> None:
