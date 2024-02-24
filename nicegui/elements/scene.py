@@ -40,12 +40,15 @@ class Scene(Element,
                 'lib/three/modules/DragControls.js',
                 'lib/three/modules/OrbitControls.js',
                 'lib/three/modules/STLLoader.js',
+                'lib/three/modules/GLTFLoader.js',
+                'lib/three/modules/BufferGeometryUtils.js',
             ]):
     # pylint: disable=import-outside-toplevel
     from .scene_objects import Box as box
     from .scene_objects import Curve as curve
     from .scene_objects import Cylinder as cylinder
     from .scene_objects import Extrusion as extrusion
+    from .scene_objects import Gltf as gltf
     from .scene_objects import Group as group
     from .scene_objects import Line as line
     from .scene_objects import PointCloud as point_cloud
