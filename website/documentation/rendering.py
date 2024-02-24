@@ -1,5 +1,3 @@
-import docutils.core
-
 from nicegui import ui
 
 from ..header import add_head_html, add_header
@@ -40,11 +38,10 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                 subheading(part.title, link=part.link, major=part.reference is not None)
             if part.description:
                 if part.description_format == 'rst':
-                    description = part.description.replace('param ', '')
-                    html = docutils.core.publish_parts(description, writer_name='html5_polyglot')['html_body']
-                    ui.html(html).classes('bold-links arrow-links nicegui-markdown')
+                    element = ui.restructured_text(part.description.replace(':param ', ':'))
                 else:
-                    ui.markdown(part.description).classes('bold-links arrow-links')
+                    element = ui.markdown(part.description)
+                element.classes('bold-links arrow-links rst-param-tables')
             if part.ui:
                 part.ui()
             if part.demo:

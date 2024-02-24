@@ -71,7 +71,9 @@ To view the log output, use the command
 ./docker.sh log
 ```
 
-## Code formatting
+## Coding Style Guide
+
+### Formatting
 
 We use [autopep8](https://github.com/hhatto/autopep8) with a 120 character line length to format our code.
 Before submitting a pull request, please run
@@ -83,6 +85,26 @@ autopep8 --max-line-length=120 --experimental  --in-place --recursive .
 on your code to ensure that it meets our formatting guidelines.
 Alternatively you can use VSCode, open the nicegui.code-workspace file and install the recommended extensions.
 Then the formatting rules are applied whenever you save a file.
+
+In our point of view, the Black formatter is sometimes a bit too strict.
+There are cases where one or the other arrangement of, e.g., function arguments is more readable than the other.
+Then we like the flexibility to either put all arguments on separate lines or only put the lengthy event handler
+on a second line and leave the other arguments as they are.
+
+### Imports
+
+We use `isort` to automatically sort imports.
+
+### Single vs Double Quotes
+
+Regarding single or double quotes: [PEP 8](https://peps.python.org/pep-0008/) doesn't give any recommendation, so we simply chose single quotes and sticked with it.
+On qwerty keyboards it's a bit easier to type, is visually less cluttered, and it works well for strings containing double quotes from the English language.
+
+### F-Strings
+
+We use f-strings where ever possible because they are generally more readable - once you get used to them.
+There are only a few places in the code base where performance really matters and f-strings might not be the best choice.
+These places should be marked with a `# NOTE: ...` comment when diverging from f-string usage.
 
 ## Running tests
 
