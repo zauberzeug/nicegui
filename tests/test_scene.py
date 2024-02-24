@@ -152,4 +152,5 @@ def test_gltf(screen: Screen):
         scene.gltf('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Box/glTF-Binary/Box.glb')
 
     screen.open('/')
+    screen.wait(1.0)
     assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5
