@@ -165,14 +165,16 @@ class SeleniumScreen:
         try:
             query = f'//*[not(self::script) and not(self::style) and text()[contains(., "{text}")]]'
             element = self.selenium.find_element(By.XPATH, query)
-            try:
-                if not element.is_displayed():
-                    self.wait(0.3)  # HACK: repeat check after a short delay to avoid timing issue on fast machines
-                    if not element.is_displayed():
-                        raise AssertionError(f'Found "{text}" but it is hidden')
-            except StaleElementReferenceException as e:
-                raise AssertionError(f'Found "{text}" but it is hidden') from e
-            return element
+            # HACK: repeat check after a short delay to avoid timing issue on fast machines
+            for i in range(5):
+                try:
+                    if element.is_displayed():
+                        return element
+                except StaleElementReferenceException as e:
+                    pass
+                self.wait(0.2)
+            else:
+                raise AssertionError(f'Found "{text}" but it is hidden')
         except NoSuchElementException as e:
             raise AssertionError(f'Could not find "{text}"') from e
 
