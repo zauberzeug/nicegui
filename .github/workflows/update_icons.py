@@ -17,6 +17,9 @@ def clean_names_and_values(name, value=False, google_icons=True):
 
         name = name.replace("SYM_", "_SYM_")
 
+        if name.endswith("SYM_ROUND"):
+            name = name.replace("SYM_ROUND", "")
+
         if google_icons:
             if "TWO_TONE" in name:
                 name = name.replace("TWO_TONE", "")  # two tone icons are not supported so we remove them
