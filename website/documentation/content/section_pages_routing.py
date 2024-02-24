@@ -2,7 +2,7 @@ import uuid
 
 from nicegui import app, ui
 
-from . import (doc, download_documentation, open_documentation, page_documentation, page_layout_documentation,
+from . import (doc, download_documentation, navigate_documentation, page_documentation, page_layout_documentation,
                page_title_documentation)
 
 CONSTANT_UUID = str(uuid.uuid4())
@@ -58,7 +58,7 @@ def parameter_demo():
 
 
 doc.intro(page_title_documentation)
-doc.intro(open_documentation)
+doc.intro(navigate_documentation)
 doc.intro(download_documentation)
 
 
