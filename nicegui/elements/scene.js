@@ -59,7 +59,7 @@ export default {
 
   mounted() {
     const is_new_scene = this.parent_id === ''
-    this.scene = is_new_scene ? new THREE.Scene() : window["scene_c" + this.parent_id];
+    this.scene = is_new_scene ? new THREE.Scene() : getElement(this.parent_id).scene;
     this.objects = new Map();
     this.objects.set("scene", this.scene);
     this.draggable_objects = [];
