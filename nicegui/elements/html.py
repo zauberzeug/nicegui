@@ -3,7 +3,7 @@ from .mixins.content_element import ContentElement
 
 class Html(ContentElement):
 
-    def __init__(self, content: str = '', tag: str = "div" ) -> None:
+    def __init__(self, content: str = '', *, tag: str = 'div') -> None:
         """HTML Element
 
         Renders arbitrary HTML onto the page, wrapped in the specified tag. 
@@ -12,6 +12,6 @@ class Html(ContentElement):
         to add it into the body.
 
         :param content: the HTML code to be displayed
-        :param tag: the HTML tag to wrap the content in (default: div)
+        :param tag: the HTML tag to wrap the content in (default: "div")
         """
         super().__init__(tag=tag, content=content)

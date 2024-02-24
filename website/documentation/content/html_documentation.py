@@ -12,7 +12,7 @@ def main_demo() -> None:
     Use the `tag` parameter to produce something other than a div.
 ''')
 def demo_inline() -> None:
-    ui.html('This is rendered as a paragraph.', tag='p')
+    ui.html('This is <u>emphasized</u>.', tag='em')
 
 
 doc.reference(ui.html)
