@@ -55,4 +55,12 @@ def markdown_tables():
     ''', extras=['tables'])
 
 
+@doc.demo('Change Markdown content', '''
+    You can change the content of a Markdown element by setting its `content` property or calling `set_content`.
+''')
+def markdown_new_content():
+    markdown = ui.markdown('Sample content')
+    ui.button('Change Content', on_click=lambda: markdown.set_content('This is new content'))
+
+
 doc.reference(ui.markdown)

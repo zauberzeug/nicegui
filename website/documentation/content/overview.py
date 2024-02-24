@@ -76,7 +76,7 @@ doc.text('Customization', '''
 
 tiles = [
     (section_text_elements, '''
-        Elements like `ui.label`, `ui.markdown` and `ui.html` can be used to display text and other content.
+        Elements like `ui.label`, `ui.markdown`, `ui.restructured_text` and `ui.html` can be used to display text and other content.
     '''),
     (section_controls, '''
         NiceGUI provides a variety of elements for user interaction, e.g. `ui.button`, `ui.slider`, `ui.inputs`, etc.
