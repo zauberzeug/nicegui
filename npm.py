@@ -117,7 +117,6 @@ for key, dependency in dependencies.items():
             Path(tmp, key, extracted.name).rename(newfile)
 
             if 'GLTFLoader' in filename:
-                print(newfile, flush=True)
                 content = newfile.read_text()
                 MSG = '../utils/BufferGeometryUtils.js'
                 if MSG not in content:
