@@ -143,6 +143,5 @@ class Leaflet(Element, component='leaflet.js'):
         return self.run_method('run_layer_method', layer_id, name, *args, timeout=timeout, check_interval=check_interval)
 
     def _handle_delete(self) -> None:
-        # self.run_method('remove_map')
         binding.remove(self.layers)
         super().delete()

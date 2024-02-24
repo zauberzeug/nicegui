@@ -76,11 +76,8 @@ export default {
     for (const type of ["layeradd", "layerremove"]) {
       this.map.on(type, (e) => {
         this.$emit(`map-${type}`, {
-            originalEvent: undefined,
-            target: undefined,
-            sourceTarget: undefined,
-            id: e.layer.id ? e.layer.id : undefined,
-            leaflet_id: e.layer._leaflet_id,
+          id: e.layer.id,
+          leaflet_id: e.layer._leaflet_id,
         });
       });
     }
@@ -122,9 +119,6 @@ export default {
       l.id = id;
       l.addTo(this.map);
     },
-    remove_map() {
-      this.map.remove();
-    },
     remove_layer(id) {
       this.map.eachLayer((layer) => layer.id === id && this.map.removeLayer(layer));
     },
@@ -139,17 +133,16 @@ export default {
       return this.map[name](...args);
     },
     run_layer_method(id, name, ...args) {
-      var res = null;
+      let result = null;
       this.map.eachLayer((layer) => {
-        if (layer.id == id) {
-          if (name.startsWith(":")) {
-            name = name.slice(1);
-            args = args.map((arg) => new Function("return " + arg)());
-          }
-          res = layer[name](...args);
+        if (layer.id !== id) return;
+        if (name.startsWith(":")) {
+          name = name.slice(1);
+          args = args.map((arg) => new Function("return " + arg)());
         }
+        result = layer[name](...args);
       });
-      return res;
+      return result;
     },
   },
 };
