@@ -48,6 +48,7 @@ class Scene(Element,
     from .scene_objects import Curve as curve
     from .scene_objects import Cylinder as cylinder
     from .scene_objects import Extrusion as extrusion
+    from .scene_objects import Gltf as gltf
     from .scene_objects import Group as group
     from .scene_objects import Line as line
     from .scene_objects import PointCloud as point_cloud
@@ -56,7 +57,6 @@ class Scene(Element,
     from .scene_objects import Sphere as sphere
     from .scene_objects import SpotLight as spot_light
     from .scene_objects import Stl as stl
-    from .scene_objects import Gltf as gltf
     from .scene_objects import Text as text
     from .scene_objects import Text3d as text3d
     from .scene_objects import Texture as texture
@@ -205,7 +205,7 @@ class Scene(Element,
                         self.camera.up_x, self.camera.up_y, self.camera.up_z, duration)
 
     def _handle_delete(self) -> None:
-        binding.remove(list(self.objects.values()), Object3D)
+        binding.remove(list(self.objects.values()))
         super()._handle_delete()
 
     def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:
