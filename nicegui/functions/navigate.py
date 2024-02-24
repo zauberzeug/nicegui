@@ -6,27 +6,25 @@ from ..element import Element
 from .javascript import run_javascript
 
 
-def back():
+def back() -> None:
     """ui.navigate.back
 
     Navigates back in the browser history.
     It is equivalent to clicking the back button in the browser.
-
     """
-    run_javascript("history.back()")
+    run_javascript('history.back()')
 
 
-def forward():
+def forward() -> None:
     """ui.navigate.forward
 
     Navigates forward in the browser history.
     It is equivalent to clicking the forward button in the browser.
-
     """
-    run_javascript("history.forward()")
+    run_javascript('history.forward()')
 
 
-def to(target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:  # pylint: disable=redefined-builtin
+def to(target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:
     """ui.navigate.to
 
     Can be used to programmatically trigger redirects for a specific client.
