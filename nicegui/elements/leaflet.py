@@ -144,4 +144,4 @@ class Leaflet(Element, component='leaflet.js'):
 
     def _handle_delete(self) -> None:
         binding.remove(self.layers)
-        super().delete()
+        super()._handle_delete()

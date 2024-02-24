@@ -116,6 +116,14 @@ for key, dependency in dependencies.items():
             newfile = prepare(Path(destination, filename))
             Path(tmp, key, extracted.name).rename(newfile)
 
+            if 'GLTFLoader' in filename:
+                content = newfile.read_text()
+                MSG = '../utils/BufferGeometryUtils.js'
+                if MSG not in content:
+                    raise ValueError(f'Expected to find "{MSG}" in {download_path}')
+                content = content.replace(MSG, 'BufferGeometryUtils')
+                newfile.write_text(content)
+
     # Delete destination folder if empty.
     if not any(destination.iterdir()):
         destination.rmdir()
