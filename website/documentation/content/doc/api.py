@@ -16,6 +16,7 @@ from .page import DocumentationPage
 from .part import Demo, DocumentationPart
 
 registry: Dict[str, DocumentationPage] = {}
+redirects: Dict[str, str] = {}
 
 
 def get_page(documentation: ModuleType) -> DocumentationPage:

@@ -8,6 +8,11 @@ from .javascript import run_javascript
 
 class Navigate:
 
+    def __init__(self) -> None:
+        """Navigation functions
+
+        These functions allow you to navigate within the browser history and to external URLs."""
+
     @staticmethod
     def back() -> None:
         """ui.navigate.back
@@ -28,13 +33,15 @@ class Navigate:
 
     @staticmethod
     def to(target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:
-        """ui.navigate.to
+        """ui.navigate.to (formerly ui.open)
 
-        Can be used to programmatically trigger redirects for a specific client.
+        Can be used to programmatically open a different page or URL.
 
         When using the `new_tab` parameter, the browser might block the new tab.
         This is a browser setting and cannot be changed by the application.
         You might want to use `ui.link` and its `new_tab` parameter instead.
+
+        This functionality was previously available as `ui.open` which is now deprecated.
 
         Note: When using an `auto-index page </documentation/section_pages_routing#auto-index_page>`_ (e.g. no `@page` decorator), 
         all clients (i.e. browsers) connected to the page will open the target URL unless a socket is specified.
