@@ -143,7 +143,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         else:
             key = value
             if mode in 'add-unique':
-                if value not in self.options.values():
+                if mode == 'add' or value not in self.options.values():
                     key = self._new_id(value) or value
                     self.options[key] = value
             elif mode == 'toggle':
