@@ -3,12 +3,12 @@ from typing import Any, Optional, get_args
 from ...element import Element
 from ...tailwind_types.background_color import BackgroundColor
 
-QUASAR_COLORS = {'primary', 'secondary', 'accent', 'dark', 'positive', 'negative', 'info', 'warning'}
+QUASAR_COLORS = ['primary', 'secondary', 'accent', 'dark', 'positive', 'negative', 'info', 'warning']
 for color in ['red', 'pink', 'purple', 'deep-purple', 'indigo', 'blue', 'light-blue', 'cyan', 'teal', 'green',
               'light-green', 'lime', 'yellow', 'amber', 'orange', 'deep-orange', 'brown', 'grey', 'blue-grey']:
-    QUASAR_COLORS.add(color)
+    QUASAR_COLORS.append(color)
     for i in range(1, 15):
-        QUASAR_COLORS.add(f'{color}-{i}')
+        QUASAR_COLORS.append(f'{color}-{i}')
 
 TAILWIND_COLORS = get_args(BackgroundColor)
 

@@ -1,4 +1,4 @@
-from . import context, elements, run, ui
+from . import color, context, elements, run, ui
 from .api_router import APIRouter
 from .app.app import App
 from .client import Client
@@ -10,6 +10,7 @@ __all__ = [
     'APIRouter',
     'app',
     'App',
+    'color',
     'Client',
     'context',
     'elements',
