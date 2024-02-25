@@ -99,4 +99,14 @@ def point_clouds() -> None:
         scene.point_cloud(points=points, colors=points, point_size=0.1)
 
 
+@doc.demo('Wait for Initialization', '''
+    You can wait for the scene to be initialized with the `initialized` method.
+    This is necessary when you want to run methods like ...
+''')
+async def wait_for_init() -> None:
+    with ui.scene(width=285, height=220) as scene:
+        scene.box().scale(1, 1, 1).move(y=1, z=0).with_name('box')
+        await scene.initialized()
+
+
 doc.reference(ui.scene)
