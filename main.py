@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import os
 from pathlib import Path
+from typing import Optional
 
-from fastapi import Request
+from fastapi import HTTPException, Request
+from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 import prometheus
@@ -42,8 +44,14 @@ def _documentation_page() -> None:
 
 
 @ui.page('/documentation/{name}')
-def _documentation_detail_page(name: str) -> None:
+def _documentation_detail_page(name: str) -> Optional[RedirectResponse]:
+    if name not in documentation.registry:
+        if name in documentation.redirects:
+            return RedirectResponse(documentation.redirects[name])
+        else:
+            raise HTTPException(404, f'documentation for "{name}" could not be found')
     documentation.render_page(documentation.registry[name])
+    return None
 
 
 @app.get('/status')
