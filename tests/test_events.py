@@ -176,3 +176,11 @@ def test_server_side_validation(screen: Screen, attribute: Literal['disabled', '
     screen.click('Hack')
     screen.wait(0.5)
     screen.should_not_contain('Success')
+
+
+def test_js_handler(screen: Screen) -> None:
+    ui.button('Button').on('click', js_handler='() => document.body.appendChild(document.createTextNode("Click!"))')
+
+    screen.open('/')
+    screen.click('Button')
+    screen.should_contain('Click!')

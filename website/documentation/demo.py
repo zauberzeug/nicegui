@@ -38,10 +38,10 @@ def demo(f: Callable, *, lazy: bool = True, tab: Optional[Union[str, Callable]] 
         full_code = isort.code('\n'.join(code), no_sections=True, lines_after_imports=1)
         with python_window(classes='w-full max-w-[44rem]'):
             ui.markdown(f'````python\n{full_code}\n````')
-            icon = ui.icon('content_copy', size='xs') \
+            ui.icon('content_copy', size='xs') \
                 .classes('absolute right-2 top-10 opacity-10 hover:opacity-80 cursor-pointer') \
+                .on('click', js_handler=f'() => navigator.clipboard.writeText(`{full_code}`)') \
                 .on('click', lambda: ui.notify('Copied to clipboard', type='positive', color='primary'), [])
-            icon._props['onclick'] = f'navigator.clipboard.writeText(`{full_code}`)'  # pylint: disable=protected-access
         with browser_window(title=tab,
                             classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window') as window:
             if lazy:

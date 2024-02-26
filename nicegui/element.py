@@ -5,7 +5,7 @@ import inspect
 import re
 from copy import copy, deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union, overload
 
 from typing_extensions import Self
 
@@ -388,13 +388,35 @@ class Element(Visibility):
             Tooltip(text)
         return self
 
+    @overload
+    def on(self,
+           type: str,  # pylint: disable=redefined-builtin
+           *,
+           js_handler: Optional[str] = None,
+           ) -> Self:
+        ...
+
+    @overload
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
            handler: Optional[Callable[..., Any]] = None,
-           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None, *,
+           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
+           *,
            throttle: float = 0.0,
            leading_events: bool = True,
            trailing_events: bool = True,
+           ) -> Self:
+        ...
+
+    def on(self,
+           type: str,  # pylint: disable=redefined-builtin
+           handler: Optional[Callable[..., Any]] = None,
+           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
+           *,
+           throttle: float = 0.0,
+           leading_events: bool = True,
+           trailing_events: bool = True,
+           js_handler: Optional[str] = None,
            ) -> Self:
         """Subscribe to an event.
 
@@ -404,13 +426,18 @@ class Element(Visibility):
         :param throttle: minimum time (in seconds) between event occurrences (default: 0.0)
         :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: `True`)
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
+        :param js_handler: JavaScript code that is executed upon occurrence of the event, e.g. `(evt) => alert(evt)` (default: `None`)
         """
-        if handler:
+        if handler and js_handler:
+            raise ValueError('Either handler or js_handler can be specified, but not both')
+
+        if handler or js_handler:
             listener = EventListener(
                 element_id=self.id,
                 type=helpers.kebab_to_camel_case(type),
                 args=[args] if args and isinstance(args[0], str) else args,  # type: ignore
                 handler=handler,
+                js_handler=js_handler,
                 throttle=throttle,
                 leading_events=leading_events,
                 trailing_events=trailing_events,
