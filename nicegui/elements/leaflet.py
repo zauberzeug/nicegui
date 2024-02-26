@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union, cast
 
@@ -73,6 +74,13 @@ class Leaflet(Element, component='leaflet.js'):
         with self.client.individual_target(e.args['socket_id']):
             for layer in self.layers:
                 self.run_method('add_layer', layer.to_dict(), layer.id)
+
+    async def initialized(self) -> None:
+        """Wait until the map is initialized."""
+        event = asyncio.Event()
+        self.on('init', event.set, [])
+        await self.client.connected()
+        await event.wait()
 
     def _handle_moveend(self, e: GenericEventArguments) -> None:
         self.center = e.args['center']

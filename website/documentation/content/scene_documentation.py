@@ -102,4 +102,15 @@ def point_clouds() -> None:
         scene.point_cloud(points=points, colors=points, point_size=0.1)
 
 
+@doc.demo('Wait for Initialization', '''
+    You can wait for the scene to be initialized with the `initialized` method.
+    This demo animates a camera movement after the scene has been fully loaded.
+''')
+async def wait_for_init() -> None:
+    with ui.scene(width=285, height=220) as scene:
+        scene.sphere()
+        await scene.initialized()
+        scene.move_camera(x=1, y=-1, z=1.5, duration=2)
+
+
 doc.reference(ui.scene)

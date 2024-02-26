@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -119,6 +120,13 @@ class Scene(Element,
             self.move_camera(duration=0)
             for obj in self.objects.values():
                 obj.send()
+
+    async def initialized(self) -> None:
+        """Wait until the scene is initialized."""
+        event = asyncio.Event()
+        self.on('init', event.set, [])
+        await self.client.connected()
+        await event.wait()
 
     def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         if not self.is_initialized:
