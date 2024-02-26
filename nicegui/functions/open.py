@@ -1,7 +1,6 @@
 from typing import Any, Callable, Union
 
 from ..element import Element
-from ..logging import log
 from .navigate import Navigate as navigate
 
 

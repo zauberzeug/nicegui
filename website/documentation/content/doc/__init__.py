@@ -3,9 +3,9 @@ from .api import demo, extra_column, get_page, intro, redirects, reference, regi
 __all__ = [
     'demo',
     'intro',
+    'redirects',
     'reference',
     'registry',
-    'redirects',
     'text',
     'title',
     'ui',

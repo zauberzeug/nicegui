@@ -45,13 +45,12 @@ def _documentation_page() -> None:
 
 @ui.page('/documentation/{name}')
 def _documentation_detail_page(name: str) -> Optional[RedirectResponse]:
-    if name not in documentation.registry:
-        if name in documentation.redirects:
-            return RedirectResponse(documentation.redirects[name])
-        else:
-            raise HTTPException(404, f'documentation for "{name}" could not be found')
-    documentation.render_page(documentation.registry[name])
-    return None
+    if name in documentation.registry:
+        documentation.render_page(documentation.registry[name])
+        return None
+    if name in documentation.redirects:
+        return RedirectResponse(documentation.redirects[name])
+    raise HTTPException(404, f'documentation for "{name}" could not be found')
 
 
 @app.get('/status')

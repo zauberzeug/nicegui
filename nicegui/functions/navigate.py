@@ -7,11 +7,10 @@ from .javascript import run_javascript
 
 
 class Navigate:
+    """Navigation functions
 
-    def __init__(self) -> None:
-        """Navigation functions
-
-        These functions allow you to navigate within the browser history and to external URLs."""
+    These functions allow you to navigate within the browser history and to external URLs.
+    """
 
     @staticmethod
     def back() -> None:
