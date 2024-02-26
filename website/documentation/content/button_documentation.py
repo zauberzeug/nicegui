@@ -62,13 +62,13 @@ def disable_context_manager() -> None:
 
 
 @doc.demo('Custom toggle button', '''
-As with all other elements you can implement your own subclass with specialized logic.
-Like this red/green toggle button with an internal boolean state.
+    As with all other elements, you can implement your own subclass with specialized logic.
+    Like this red/green toggle button with an internal boolean state.
 ''')
 def toggle_button() -> None:
     class ToggleButton(ui.button):
 
-        def __init__(self, *args, **kwargs):
+        def __init__(self, *args, **kwargs) -> None:
             super().__init__(*args, **kwargs)
             self._state = False
             self.on('click', self.toggle)
@@ -78,7 +78,7 @@ def toggle_button() -> None:
             self._state = not self._state
             self.update()
 
-        def update(self):
+        def update(self) -> None:
             self.props(f'color={"green" if self._state else "red"}')
             super().update()
 
