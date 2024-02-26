@@ -50,6 +50,7 @@ __all__ = [
     'menu',
     'menu_item',
     'mermaid',
+    'navigate',
     'notification',
     'number',
     'pagination',
@@ -203,6 +204,7 @@ from .elements.video import Video as video
 from .functions.download import download
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
+from .functions.navigate import Navigate as navigate
 from .functions.notify import notify
 from .functions.on import on
 from .functions.open import open  # pylint: disable=redefined-builtin
