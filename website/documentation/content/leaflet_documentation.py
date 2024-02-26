@@ -153,7 +153,7 @@ async def wait_for_init() -> None:
         (40.767809, -73.981249),
         (40.800273, -73.958291),
         (40.797011, -73.949683),
-        (40.764704, -73.973741)
+        (40.764704, -73.973741),
     ]])
     await m.initialized()
     bounds = await central_park.run_method('getBounds')

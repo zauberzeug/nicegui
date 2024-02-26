@@ -101,12 +101,13 @@ def point_clouds() -> None:
 
 @doc.demo('Wait for Initialization', '''
     You can wait for the scene to be initialized with the `initialized` method.
-    This is necessary when you want to run methods like ...
+    This demo animates a camera movement after the scene has been fully loaded.
 ''')
 async def wait_for_init() -> None:
     with ui.scene(width=285, height=220) as scene:
-        scene.box().scale(1, 1, 1).move(y=1, z=0).with_name('box')
+        scene.sphere()
         await scene.initialized()
+        scene.move_camera(x=1, y=-1, z=1.5, duration=2)
 
 
 doc.reference(ui.scene)
