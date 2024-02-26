@@ -34,9 +34,20 @@ def material_icons():
     You can use [Eva icons](https://akveo.github.io/eva-icons/) in your app.
 ''', lazy=False)
 def eva_icons():
-    ui.add_head_html('<link href="https://unpkg.com/eva-icons@1.1.3/style/eva-icons.css" rel="stylesheet">')
+    ui.add_head_html('<link href="https://unpkg.com/eva-icons@1.1.3/style/eva-icons.css" rel="stylesheet"/>')
 
     ui.element('i').classes('eva eva-github').classes('text-5xl')
+
+
+@doc.demo('Other icon sets', '''
+    You can use the same approach for adding other icon sets to your app. 
+    As a rule of thumb, you reference the corresponding CSS, and it in turn references font files.
+    We will show how to include [Themify icons](https://themify.me/themify-icons):
+''', lazy=False)
+def other_icons():
+    ui.add_head_html('<link rel="stylesheet" href="https://cdn.jsdelivr.net/themify-icons/0.1.2/css/themify-icons.css"/>')
+    
+    ui.icon('ti-car')
 
 
 @doc.demo('Lottie files', '''
