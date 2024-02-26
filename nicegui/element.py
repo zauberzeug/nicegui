@@ -5,16 +5,33 @@ import inspect
 import re
 from copy import copy, deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Union,
+)
 
 from typing_extensions import Self
 
 from . import context, core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
-from .dependencies import Component, Library, register_library, register_resource, register_vue_component
+from .dependencies import (
+    Component,
+    Library,
+    register_library,
+    register_resource,
+    register_vue_component,
+)
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
 from .slot import Slot
+from .style import Style
 from .tailwind import Tailwind
 from .version import __version__
 
@@ -271,7 +288,7 @@ class Element(Visibility):
         return result
 
     def style(self,
-              add: Optional[str] = None, *,
+              add: Optional[Union[str, Style]] = None, *,
               remove: Optional[str] = None,
               replace: Optional[str] = None) -> Self:
         """Apply, remove, or replace CSS definitions.
@@ -285,7 +302,7 @@ class Element(Visibility):
         style_dict = deepcopy(self._style) if replace is None else {}
         for key in self._parse_style(remove):
             style_dict.pop(key, None)
-        style_dict.update(self._parse_style(add))
+        style_dict.update(self._parse_style(str(add)))
         style_dict.update(self._parse_style(replace))
         if self._style != style_dict:
             self._style = style_dict
@@ -294,7 +311,7 @@ class Element(Visibility):
 
     @classmethod
     def default_style(cls,
-                      add: Optional[str] = None, *,
+                      add: Optional[Union[str, Style]] = None, *,
                       remove: Optional[str] = None,
                       replace: Optional[str] = None) -> type[Self]:
         """Apply, remove, or replace default CSS definitions.
@@ -311,7 +328,7 @@ class Element(Visibility):
             cls._default_style.clear()
         for key in cls._parse_style(remove):
             cls._default_style.pop(key, None)
-        cls._default_style.update(cls._parse_style(add))
+        cls._default_style.update(cls._parse_style(str(add)))
         cls._default_style.update(cls._parse_style(replace))
         return cls
 

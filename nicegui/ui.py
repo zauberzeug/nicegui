@@ -1,4 +1,5 @@
 __all__ = [
+    'alignment',
     'element',
     'aggrid',
     'audio',
@@ -72,6 +73,7 @@ __all__ = [
     'step',
     'stepper',
     'stepper_navigation',
+    'Style',
     'switch',
     'table',
     'tab',
@@ -110,7 +112,7 @@ __all__ = [
     'run',
     'run_with',
 ]
-
+from . import alignment
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
 from .elements.audio import Audio as audio
@@ -216,5 +218,6 @@ from .page_layout import Header as header
 from .page_layout import LeftDrawer as left_drawer
 from .page_layout import PageSticky as page_sticky
 from .page_layout import RightDrawer as right_drawer
+from .style import Style
 from .ui_run import run
 from .ui_run_with import run_with
