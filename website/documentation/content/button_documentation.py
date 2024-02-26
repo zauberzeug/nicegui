@@ -61,4 +61,28 @@ def disable_context_manager() -> None:
     ui.button('Get slow response', on_click=lambda e: get_slow_response(e.sender))
 
 
+@doc.demo('Custom toggle button', '''
+    As with all other elements, you can implement your own subclass with specialized logic.
+    Like this red/green toggle button with an internal boolean state.
+''')
+def toggle_button() -> None:
+    class ToggleButton(ui.button):
+
+        def __init__(self, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            self._state = False
+            self.on('click', self.toggle)
+
+        def toggle(self) -> None:
+            """Toggle the button state."""
+            self._state = not self._state
+            self.update()
+
+        def update(self) -> None:
+            self.props(f'color={"green" if self._state else "red"}')
+            super().update()
+
+    ToggleButton('Toggle me')
+
+
 doc.reference(ui.button)
