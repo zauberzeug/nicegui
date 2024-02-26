@@ -1,7 +1,14 @@
 from nicegui import ui
 
-from . import (audio_documentation, avatar_documentation, doc, icon_documentation, image_documentation,
-               interactive_image_documentation, video_documentation)
+from . import (
+    audio_documentation,
+    avatar_documentation,
+    doc,
+    icon_documentation,
+    image_documentation,
+    interactive_image_documentation,
+    video_documentation,
+)
 
 doc.title('*Audiovisual* Elements')
 

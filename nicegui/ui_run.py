@@ -4,10 +4,11 @@ import sys
 from pathlib import Path
 from typing import Any, List, Literal, Optional, Tuple, Union
 
-import __main__
 from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
+
+import __main__
 
 from . import core, helpers
 from . import native as native_module
