@@ -1,7 +1,14 @@
 from nicegui import app, ui
 
-from . import (doc, generic_events_documentation, keyboard_documentation, refreshable_documentation,
-               run_javascript_documentation, storage_documentation, timer_documentation)
+from . import (
+    doc,
+    generic_events_documentation,
+    keyboard_documentation,
+    refreshable_documentation,
+    run_javascript_documentation,
+    storage_documentation,
+    timer_documentation,
+)
 
 doc.title('Action & *Events*')
 

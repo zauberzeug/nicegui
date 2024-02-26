@@ -1,8 +1,24 @@
-from . import (badge_documentation, button_documentation, checkbox_documentation, color_input_documentation,
-               color_picker_documentation, date_documentation, doc, input_documentation, joystick_documentation,
-               knob_documentation, number_documentation, radio_documentation, select_documentation,
-               slider_documentation, switch_documentation, textarea_documentation, time_documentation,
-               toggle_documentation, upload_documentation)
+from . import (
+    badge_documentation,
+    button_documentation,
+    checkbox_documentation,
+    color_input_documentation,
+    color_picker_documentation,
+    date_documentation,
+    doc,
+    input_documentation,
+    joystick_documentation,
+    knob_documentation,
+    number_documentation,
+    radio_documentation,
+    select_documentation,
+    slider_documentation,
+    switch_documentation,
+    textarea_documentation,
+    time_documentation,
+    toggle_documentation,
+    upload_documentation,
+)
 
 doc.title('*Controls*')
 
