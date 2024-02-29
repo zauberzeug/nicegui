@@ -6,9 +6,9 @@ from .value_element import ValueElement
 class ValidationElement(ValueElement):
 
     def __init__(self, validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]], **kwargs: Any) -> None:
-        super().__init__(**kwargs)
         self.validation = validation if validation is not None else {}
         self._error: Optional[str] = None
+        super().__init__(**kwargs)
 
     @property
     def error(self) -> Optional[str]:
