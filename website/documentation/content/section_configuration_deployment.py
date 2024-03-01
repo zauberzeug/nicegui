@@ -270,10 +270,10 @@ doc.text('NiceGUI On Air', '''
     This makes it blazing fast even if your app only has a poor internet connection (e.g. a mobile robot in the field).
 
     By setting `on_air=True` you will get a random URL which is valid for 1 hour.
-    If you sign-up at <https://on-air.nicegui.io> you can setup an organization and device name to get a 
-    fixed URL (`https://on-air.nicegui.io/<my-org>/<my_device_name>`).
-    The device is then identified by a unique, private token which you can use instead of a boolean flag: `ui.run(on_air='<your token>'`).
-    If you [sponsor us](https://github.com/sponsors/zauberzeug), 
+    If you sign-up at <https://on-air.nicegui.io>, you can setup an organization and device name to get a fixed URL:
+    `https://on-air.nicegui.io/<my-org>/<my_device_name>`.
+    The device is then identified by a unique, private token which you can use instead of a boolean flag: `ui.run(on_air='<your token>')`.
+    If you [sponsor us](https://github.com/sponsors/zauberzeug),
     we will enable multi-device management and provide built-in passphrase protection for each device.
 
     Currently On Air is available as a tech preview and can be used free of charge.
