@@ -62,17 +62,24 @@ class User():
         self.client.__exit__()
         self.current_client = None
 
-    def should_see(self, *,
-                   element: Type[T] = Element,
-                   marker: Union[str, list[str], None] = None,
-                   content: Union[str, list[str], None] = None,
-                   ) -> AwaitableElementFilter:
+    async def should_see(self, *,
+                         kind: Type[T] = Element,
+                         marker: Union[str, list[str], None] = None,
+                         content: Union[str, list[str], None] = None,
+                         retries: int = 3,
+                         ) -> ElementFilter:
         """Assert that the page contains an input with the given value."""
-        return AwaitableElementFilter(check=lambda elements: len(elements) > 0, element=element, marker=marker, content=content)
+        elements = ElementFilter(kind=kind, marker=marker, content=content)
+        for _ in range(retries):
+            if len(elements) > 0:
+                return elements
+            await asyncio.sleep(0.1)
+        assert elements, f'expected to find an element of type {kind.__name__} with {marker=} and {content=} on the page'
+        return elements
 
     def type(self, text: str, *, element: Type[T] = Element, marker: Union[str, list[str], None] = None) -> None:
         """Type the given text into the input."""
-        elements = self.should_see(element=element, marker=marker)
+        elements = self.should_see(kind=element, marker=marker)
         element_type = element.__name__
         marker = f' with {marker=}' if marker is not None else ''
         assert len(elements) == 1, f'expected to find exactly one element of type {element_type}{marker} on the page'
@@ -84,53 +91,13 @@ class User():
               content: Union[str, list[str], None] = None,
               ) -> None:
         """Click the given element."""
-        elements = self.should_see(element=element, marker=marker, content=content)
+        elements = self.should_see(kind=element, marker=marker, content=content)
         element_type = element.__name__
         marker = f' with {marker=}' if marker is not None else ''
         content = f' with {content=}' if content is not None else ''
         assert len(elements) == 1, \
             f'expected to find exactly one element of type {element_type}{marker}{content} on the page'
         # TODO implement clicking the element
-
-
-class AwaitableElementFilter(ElementFilter):
-
-    def __init__(self, *,
-                 check: Callable[[ElementFilter], bool],
-                 element: Type = Element,
-                 marker: Union[str, list[str], None] = None,
-                 content: Union[str, list[str], None] = None,
-                 ) -> None:
-        super().__init__(kind=element, marker=marker, content=content)
-        self.check = check
-        self._is_fired = False
-        self._is_awaited = False
-        self.client = context.get_client()
-        background_tasks.create(self._run_check(), name='run element filter check')
-
-    async def _run_check(self) -> ElementFilter:
-        if self._is_awaited:
-            return await self._check_with_retry()
-        self._is_fired = True
-        if self.check(self):
-            return self
-        else:
-            raise AssertionError('not working')
-
-    async def _check_with_retry(self) -> ElementFilter:
-        with self.client:
-            for _ in range(10):
-                if self.check(self):
-                    return self
-                await asyncio.sleep(0.1)
-        msg = 'not working'  # f'expected to find {type_} with {marker=}, {content=} on the page\n{self.client.layout}'
-        raise AssertionError(msg)
-
-    def __await__(self):
-        if self._is_fired:
-            raise RuntimeError('must be awaited immediately after creation or not at all')
-        self._is_awaited = True
-        return self._check_with_retry().__await__()
 
 
 original_get_slot_stack = ng.Slot.get_stack
