@@ -50,18 +50,19 @@ async def test_assertion_raised_when_element_not_found(screen: SimulatedScreen) 
     @ui.page('/')
     def index():
         ui.label('Hello')
-    ui.run()
 
     with await screen.open('/') as user:
         with pytest.raises(AssertionError):
             await user.should_see(content='World')
 
 
-async def test_storage_browser(screen: SimulatedScreen) -> None:
+@pytest.mark.parametrize('storage_builder', [lambda:app.storage.browser, lambda:app.storage.user])
+async def test_storage(screen: SimulatedScreen, storage_builder) -> None:
     @ui.page('/')
     def page():
-        app.storage.browser['count'] = app.storage.browser.get('count', 0) + 1
-        ui.label().bind_text_from(app.storage.browser, 'count')
+        storage = storage_builder()
+        storage['count'] = storage.get('count', 0) + 1
+        ui.label().bind_text_from(storage, 'count')
 
     with await screen.open('/') as user:
         await user.should_see(content='1')

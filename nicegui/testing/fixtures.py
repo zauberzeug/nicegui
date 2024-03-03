@@ -12,6 +12,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from starlette.routing import Route
 
+import nicegui.storage
 from nicegui import Client, app, binding, core
 from nicegui.page import page
 
@@ -159,6 +160,8 @@ async def simulated_screen(nicegui_reset_globals, request: pytest.FixtureRequest
         prod_js=True,
         show_welcome_message=False,
     )
+    nicegui.storage.set_storage_secret('simulated secret')
+
     async with core.app.router.lifespan_context(core.app):
         async with httpx.AsyncClient(app=core.app, base_url='http://test') as client:
             yield SimulatedScreen(client)
