@@ -22,4 +22,31 @@ def main_demo() -> None:
                 ui.button('Back', on_click=stepper.previous).props('flat')
 
 
+@doc.demo('Storage', '''
+    Steps can be added dynamically and positioned via `ui.move()`.
+''')
+def dynamic_stepper() -> None:
+    def next_step() -> None:
+        if extra_step.value and len(stepper.default_slot.children) == 2:
+            with stepper:
+                with ui.step('extra') as extra:
+                    ui.label('Extra')
+                    with ui.stepper_navigation():
+                        ui.button('Back', on_click=stepper.previous).props('flat')
+                        ui.button('Next', on_click=stepper.next)
+                extra.move(target_index=1)
+        stepper.next()
+
+    with ui.stepper().props('vertical').classes('w-full') as stepper:
+        with ui.step('start'):
+            ui.label('Start')
+            extra_step = ui.checkbox('do extra step')
+            with ui.stepper_navigation():
+                ui.button('Next', on_click=next_step)
+        with ui.step('finish'):
+            ui.label('Finish')
+            with ui.stepper_navigation():
+                ui.button('Back', on_click=stepper.previous).props('flat')
+
+
 doc.reference(ui.stepper)
