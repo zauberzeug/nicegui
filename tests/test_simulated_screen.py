@@ -3,6 +3,8 @@ import asyncio
 from nicegui import ElementFilter, ui
 from nicegui.testing import SimulatedScreen
 
+# pylint: disable=missing-function-docstring
+
 
 async def test_multiple_pages(screen: SimulatedScreen) -> None:
     @ui.page('/')

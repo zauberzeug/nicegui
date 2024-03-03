@@ -70,7 +70,6 @@ class SeleniumScreen:
         self.connected.clear()
         while True:
             try:
-                ic(self.url + path)
                 self.selenium.get(self.url + path)
                 self.selenium.find_element(By.XPATH, '//body')  # ensure page and JS are loaded
                 self.connected.wait(1)  # Ensure that the client has connected to the API
