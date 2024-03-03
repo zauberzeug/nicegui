@@ -147,7 +147,7 @@ def test_clearing_scene(screen: SeleniumScreen):
     assert len(scene.objects) == 0
 
 
-def test_gltf(screen: Screen):
+def test_gltf(screen: SeleniumScreen):
     with ui.scene() as scene:
         scene.gltf('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Box/glTF-Binary/Box.glb')
 
