@@ -31,6 +31,7 @@ class SeleniumScreen:
         self.ui_run_kwargs = {'port': self.PORT, 'show': False, 'reload': False}
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
+        self.url = f'http://localhost:{self.PORT}/'
 
     def start_server(self) -> None:
         """Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script."""
@@ -69,7 +70,8 @@ class SeleniumScreen:
         self.connected.clear()
         while True:
             try:
-                self.selenium.get(f'http://localhost:{self.PORT}{path}')
+                ic(self.url + path)
+                self.selenium.get(self.url + path)
                 self.selenium.find_element(By.XPATH, '//body')  # ensure page and JS are loaded
                 self.connected.wait(1)  # Ensure that the client has connected to the API
                 break
