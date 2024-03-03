@@ -36,12 +36,14 @@ class SimulatedScreen:
         """Open the given path."""
         response = await self.http_client.get(path)
         assert response.status_code == 200
-        match = re.search(r"'client_id': '([0-9a-f-]+)'", response.text)
-        assert match is not None
-        client_id = match.group(1)
-        client = Client.instances[client_id]
-        await ng._on_handshake(f'test-{uuid4()}', client.id)
-        return User(client)
+        if response.headers.get('X-Nicegui-Content') == 'page':
+            match = re.search(r"'client_id': '([0-9a-f-]+)'", response.text)
+            assert match is not None
+            client_id = match.group(1)
+            client = Client.instances[client_id]
+            await ng._on_handshake(f'test-{uuid4()}', client.id)
+            return User(client)
+        raise ValueError(f'Expected a page response, got {response.text}')
 
 
 T = TypeVar('T', bound=Element)
