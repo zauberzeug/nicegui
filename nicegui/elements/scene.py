@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -40,12 +41,15 @@ class Scene(Element,
                 'lib/three/modules/DragControls.js',
                 'lib/three/modules/OrbitControls.js',
                 'lib/three/modules/STLLoader.js',
+                'lib/three/modules/GLTFLoader.js',
+                'lib/three/modules/BufferGeometryUtils.js',
             ]):
     # pylint: disable=import-outside-toplevel
     from .scene_objects import Box as box
     from .scene_objects import Curve as curve
     from .scene_objects import Cylinder as cylinder
     from .scene_objects import Extrusion as extrusion
+    from .scene_objects import Gltf as gltf
     from .scene_objects import Group as group
     from .scene_objects import Line as line
     from .scene_objects import PointCloud as point_cloud
@@ -116,6 +120,13 @@ class Scene(Element,
             self.move_camera(duration=0)
             for obj in self.objects.values():
                 obj.send()
+
+    async def initialized(self) -> None:
+        """Wait until the scene is initialized."""
+        event = asyncio.Event()
+        self.on('init', event.set, [])
+        await self.client.connected()
+        await event.wait()
 
     def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         if not self.is_initialized:

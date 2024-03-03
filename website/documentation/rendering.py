@@ -27,6 +27,8 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
     add_head_html()
     add_header(menu)
     ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
+    title = (documentation.title or '').replace('*', '')
+    ui.page_title('NiceGUI' if not title else title if title.split()[0] == 'NiceGUI' else f'{title} | NiceGUI')
 
     # content
     def render_content():

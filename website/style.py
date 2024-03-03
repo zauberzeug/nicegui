@@ -80,7 +80,7 @@ def subheading(text: str, *, link: Optional[str] = None, major: bool = False, an
             async def click():
                 if await ui.run_javascript('!!document.querySelector("div.q-drawer__backdrop")', timeout=5.0):
                     menu.hide()
-                    ui.open(f'#{name}')
+                    ui.navigate.to(f'#{name}')
             ui.link(text, target=f'#{name}').props('data-close-overlay').on('click', click, []) \
                 .classes('font-bold mt-4' if major else '')
 

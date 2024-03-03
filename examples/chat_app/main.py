@@ -33,7 +33,7 @@ async def main(client: Client):
     ui.add_head_html(f'<style>{anchor_style}</style>')
     with ui.footer().classes('bg-white'), ui.column().classes('w-full max-w-3xl mx-auto my-6'):
         with ui.row().classes('w-full no-wrap items-center'):
-            with ui.avatar().on('click', lambda: ui.open(main)):
+            with ui.avatar().on('click', lambda: ui.navigate.to(main)):
                 ui.image(avatar)
             text = ui.input(placeholder='message').on('keydown.enter', send) \
                 .props('rounded outlined input-class=mx-3').classes('flex-grow')
