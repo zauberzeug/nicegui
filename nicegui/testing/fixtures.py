@@ -70,6 +70,8 @@ def nicegui_reset_globals() -> Generator[None, None, None]:
     app.openapi_schema = None
     app.middleware_stack = None
     app.user_middleware.clear()
+    app.urls.clear()
+    core.air = None
     # NOTE favicon routes must be removed separately because they are not "pages"
     for route in app.routes:
         if isinstance(route, Route) and route.path.endswith('/favicon.ico'):
@@ -118,7 +120,8 @@ def screen(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generator[U
 
 
 @pytest.fixture
-def selenium_screen(nicegui_remove_all_screenshots,
+def selenium_screen(nicegui_reset_globals,
+                    nicegui_remove_all_screenshots,
                     nicegui_driver: webdriver.Chrome,
                     request: pytest.FixtureRequest,
                     caplog: pytest.LogCaptureFixture,
@@ -137,7 +140,7 @@ def selenium_screen(nicegui_remove_all_screenshots,
 
 
 @pytest.fixture
-async def simulated_screen(request: pytest.FixtureRequest) -> Generator[SimulatedScreen, None, None]:
+async def simulated_screen(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generator[SimulatedScreen, None, None]:
     """Create a new SimulatedScreen fixture."""
     marker = request.node.get_closest_marker('module_under_test')
     if marker is not None:
