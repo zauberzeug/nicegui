@@ -124,3 +124,15 @@ async def custom_events() -> None:
             }
         });
     ''')
+
+
+@doc.demo('Pure JavaScript events', '''
+    You can also use the `on` method to register a pure JavaScript event handler.
+    This can be useful if you want to call JavaScript code without sending any data to the server.
+    In this example we are using the `navigator.clipboard` API to copy a string to the clipboard.
+''')
+def pure_javascript() -> None:
+    ui.button('Copy to clipboard') \
+        .on('click', js_handler='''() => {
+            navigator.clipboard.writeText("Hello, NiceGUI!");
+        }''')

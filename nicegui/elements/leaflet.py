@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union, cast
 
@@ -74,6 +75,13 @@ class Leaflet(Element, component='leaflet.js'):
             for layer in self.layers:
                 self.run_method('add_layer', layer.to_dict(), layer.id)
 
+    async def initialized(self) -> None:
+        """Wait until the map is initialized."""
+        event = asyncio.Event()
+        self.on('init', event.set, [])
+        await self.client.connected()
+        await event.wait()
+
     def _handle_moveend(self, e: GenericEventArguments) -> None:
         self.center = e.args['center']
 
@@ -143,5 +151,5 @@ class Leaflet(Element, component='leaflet.js'):
         return self.run_method('run_layer_method', layer_id, name, *args, timeout=timeout, check_interval=check_interval)
 
     def _handle_delete(self) -> None:
-        binding.remove(self.layers, Layer)
-        super().delete()
+        binding.remove(self.layers)
+        super()._handle_delete()

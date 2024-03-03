@@ -13,7 +13,8 @@ class EventListener:
     element_id: int
     type: str
     args: Sequence[Optional[Sequence[str]]]
-    handler: Callable
+    handler: Optional[Callable]
+    js_handler: Optional[str]
     throttle: float
     leading_events: bool
     trailing_events: bool
@@ -39,4 +40,5 @@ class EventListener:
             'throttle': self.throttle,
             'leading_events': self.leading_events,
             'trailing_events': self.trailing_events,
+            'js_handler': self.js_handler,
         }

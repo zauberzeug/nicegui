@@ -2,7 +2,7 @@ import asyncio
 import time
 from collections import defaultdict
 from collections.abc import Mapping
-from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 from . import core
 from .logging import log
@@ -155,32 +155,27 @@ class BindableProperty:
             self._change_handler(owner, value)
 
 
-def remove(objects: Iterable[Any], type_: Type) -> None:
+def remove(objects: Iterable[Any]) -> None:
     """Remove all bindings that involve the given objects.
 
-    The ``type_`` argument is as a quick pre-filter.
-
     :param objects: The objects to remove.
-    :param type_: The type of the objects to remove.
     """
-    object_set = set(objects)
+    object_ids = set(map(id, objects))
     active_links[:] = [
         (source_obj, source_name, target_obj, target_name, transform)
         for source_obj, source_name, target_obj, target_name, transform in active_links
-        if not (isinstance(source_obj, type_) and source_obj in object_set or
-                isinstance(target_obj, type_) and target_obj in object_set)
+        if id(source_obj) not in object_ids and id(target_obj) not in object_ids
     ]
     for key, binding_list in list(bindings.items()):
         binding_list[:] = [
             (source_obj, target_obj, target_name, transform)
             for source_obj, target_obj, target_name, transform in binding_list
-            if not (isinstance(source_obj, type_) and source_obj in object_set or
-                    isinstance(target_obj, type_) and target_obj in object_set)
+            if id(source_obj) not in object_ids and id(target_obj) not in object_ids
         ]
         if not binding_list:
             del bindings[key]
     for (obj_id, name), obj in list(bindable_properties.items()):
-        if isinstance(obj, type_) and obj in object_set:
+        if id(obj) in object_ids:
             del bindable_properties[(obj_id, name)]
 
 

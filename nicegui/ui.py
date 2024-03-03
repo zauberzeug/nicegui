@@ -50,6 +50,7 @@ __all__ = [
     'menu',
     'menu_item',
     'mermaid',
+    'navigate',
     'notification',
     'number',
     'pagination',
@@ -59,6 +60,7 @@ __all__ = [
     'pyplot',
     'query',
     'radio',
+    'restructured_text',
     'row',
     'scene',
     'scroll_area',
@@ -170,6 +172,7 @@ from .elements.progress import LinearProgress as linear_progress
 from .elements.pyplot import Pyplot as pyplot
 from .elements.query import Query as query
 from .elements.radio import Radio as radio
+from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
 from .elements.scroll_area import ScrollArea as scroll_area
@@ -201,6 +204,7 @@ from .elements.video import Video as video
 from .functions.download import download
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
+from .functions.navigate import Navigate as navigate
 from .functions.notify import notify
 from .functions.on import on
 from .functions.open import open  # pylint: disable=redefined-builtin

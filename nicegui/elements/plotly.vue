@@ -22,9 +22,6 @@ export default {
       // Plotly.react can be used to create a new plot and to update it efficiently
       // https://plotly.com/javascript/plotlyjs-function-reference/#plotlyreact
       Plotly.react(this.$el.id, this.options.data, this.options.layout, options.config);
-
-      // store last options
-      this.last_options = options;
     },
     set_handlers() {
       // forward events
@@ -63,11 +60,6 @@ export default {
         });
       }
     },
-  },
-  data() {
-    return {
-      last_options: {},
-    };
   },
   props: {
     options: Object,

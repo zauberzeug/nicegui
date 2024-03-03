@@ -28,8 +28,8 @@ class Code(Element):
         with self:
             self.markdown = markdown(f'```{language}\n{self.content}\n```').classes('overflow-auto')
             self.copy_button = button(icon='content_copy', on_click=self.show_checkmark) \
-                .props('round flat size=sm').classes('absolute right-2 top-2 opacity-20 hover:opacity-80')
-            self.copy_button._props['onclick'] = f'navigator.clipboard.writeText({json.dumps(self.content)})'
+                .props('round flat size=sm').classes('absolute right-2 top-2 opacity-20 hover:opacity-80') \
+                .on('click', js_handler=f'() => navigator.clipboard.writeText({json.dumps(self.content)})')
 
         self._last_scroll: float = 0.0
         self.markdown.on('scroll', self._handle_scroll)

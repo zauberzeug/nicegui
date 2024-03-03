@@ -294,14 +294,14 @@ class Client:
 
     def remove_elements(self, elements: Iterable[Element]) -> None:
         """Remove the given elements from the client."""
-        binding.remove(elements, Element)
+        binding.remove(elements)
         element_ids = [element.id for element in elements]
-        for element_id in element_ids:
-            del self.elements[element_id]
         for element in elements:
             element._handle_delete()  # pylint: disable=protected-access
             element._deleted = True  # pylint: disable=protected-access
             self.outbox.enqueue_delete(element)
+        for element_id in element_ids:
+            del self.elements[element_id]
 
     def remove_all_elements(self) -> None:
         """Remove all elements from the client."""
