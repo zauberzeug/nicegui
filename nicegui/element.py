@@ -562,7 +562,7 @@ class Element(Visibility):
         return result
 
     def __str__(self) -> str:
-        result = ''
+        result = ', '.join(self._markers) if self._markers else ''
         for e in self.default_slot.children:
             result += f' {e}\n'
         return result
