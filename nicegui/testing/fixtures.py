@@ -108,9 +108,10 @@ def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator
 def screen(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generator[Union[SeleniumScreen, SimulatedScreen], None, None]:
     """Create a new Screen fixture."""
     screen_type_hint = get_type_hints(request.node.function).get('screen')
-    if screen_type_hint == SimulatedScreen:
+    assert isinstance(screen_type_hint, type)
+    if issubclass(screen_type_hint, SimulatedScreen):
         yield request.getfixturevalue('simulated_screen')
-    elif screen_type_hint == SeleniumScreen:
+    elif issubclass(screen_type_hint, SeleniumScreen):
         yield request.getfixturevalue('selenium_screen')
     else:
         raise ValueError(f'Unknown screen type: {screen_type_hint}, expected Screen or SimulatedScreen.')
