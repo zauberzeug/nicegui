@@ -137,11 +137,11 @@ async def user(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generat
 
 
 @pytest.fixture
-async def user_builder(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generator[Callable[None, User], None, None]:
+async def create_user(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generator[Callable[None, User], None, None]:
+
     prepare_simulation(request)
     async with core.app.router.lifespan_context(core.app):
-        async with httpx.AsyncClient(app=core.app, base_url='http://test') as client:
-            yield lambda: User(client)
+        yield lambda: User(httpx.AsyncClient(app=core.app, base_url='http://test'))
 
 
 def prepare_simulation(request: pytest.FixtureRequest) -> None:

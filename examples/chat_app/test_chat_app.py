@@ -19,18 +19,18 @@ async def test_basic_startup_appearance(user: User) -> None:
 
 
 @pytest.mark.module_under_test(main)
-async def test_sending_messages(user_builder) -> None:
+async def test_sending_messages(create_user) -> None:
     """Test sending messages from two different screens."""
 
-    userA = user_builder()
-    userB = user_builder()
+    userA = create_user()
+    userB = create_user()
     await userA.open('/')
-    userA.type(text='Hello from screen A!', element=ui.input)
+    await userA.type(text='Hello from screen A!', kind=ui.input)
     await userA.should_see(content='Hello from screen A!')
     await userA.should_see(content='message')
     await userB.open('/')
     await userB.should_see(content='Hello from screen A!')
-    userB.type(text='Hello, from screen B!', element=ui.input)
+    await userB.type(text='Hello, from screen B!', kind=ui.input)
     await userB.should_see(content='message')
 
     userA.activate()

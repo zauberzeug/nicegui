@@ -9,7 +9,7 @@ from nicegui.testing import User
 # pylint: disable=missing-function-docstring
 
 
-async def test_multiple_pages(user_builder) -> None:
+async def test_multiple_pages(create_user) -> None:
     @ui.page('/')
     def index():
         ui.label('Main page')
@@ -18,8 +18,8 @@ async def test_multiple_pages(user_builder) -> None:
     def other():
         ui.label('Other page')
 
-    userA = user_builder()
-    userB = user_builder()
+    userA = create_user()
+    userB = create_user()
 
     await userA.open('/')
     await userA.should_see(content='Main page')

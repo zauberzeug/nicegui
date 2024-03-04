@@ -21,6 +21,7 @@ import nicegui.nicegui as ng
 from nicegui import Client, ElementFilter, background_tasks, context, ui
 from nicegui.awaitable_response import AwaitableResponse
 from nicegui.element import Element
+from nicegui.elements.mixins.value_element import ValueElement
 
 # pylint: disable=protected-access
 
@@ -85,16 +86,20 @@ class User():
             assert elements, f'expected to find an element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
             return elements
 
-    def type(self, text: str, *, element: Type[T] = Element, marker: Union[str, list[str], None] = None) -> None:
+    async def type(self, text: str, *, kind: Type[T] = Element, marker: Union[str, list[str], None] = None) -> None:
         """Type the given text into the input."""
+        assert issubclass(kind, ValueElement)
         assert self.client
         with self.client:
-            elements = self.should_see(kind=element, marker=marker)
-            element_type = element.__name__
+            elements = await self.should_see(kind=kind, marker=marker)
+            element_type = kind.__name__
             marker = f' with {marker=}' if marker is not None else ''
             assert len(elements) == 1, \
                 f'expected to find exactly one element of type {element_type}{marker} on the page:\n{self.current_page}'
-            # TODO implement typing into the element; how to "submit"?
+            element = elements[0]
+            element.value = text
+            listener = next(l for l in element._event_listeners.values() if l.type == 'keydown.enter')
+            element._handle_event({'listener_id': listener.id, 'args': {}})
 
     async def click(self, *,
                     element: Type[T] = Element,
