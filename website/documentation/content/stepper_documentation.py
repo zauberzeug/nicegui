@@ -22,7 +22,7 @@ def main_demo() -> None:
                 ui.button('Back', on_click=stepper.previous).props('flat')
 
 
-@doc.demo('Storage', '''
+@doc.demo('Dynamic Stepper', '''
     Steps can be added dynamically and positioned via `ui.move()`.
 ''')
 def dynamic_stepper() -> None:
