@@ -519,10 +519,9 @@ class Element(Visibility):
         self.update()
 
     def delete(self) -> None:
-        """Delete the element."""
-        self.client.remove_elements([self])
+        """Delete the element and all its children."""
         assert self.parent_slot is not None
-        self.parent_slot.children.remove(self)
+        self.parent_slot.parent.remove(self)
 
     def _handle_delete(self) -> None:
         """Called when the element is deleted.
