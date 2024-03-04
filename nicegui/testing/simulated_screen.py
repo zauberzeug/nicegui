@@ -82,9 +82,14 @@ class User():
             for _ in range(retries):
                 if len(elements) > 0:
                     return elements
+                for m in context.get_client().outbox.messages:
+                    if content is not None and m[1] == 'notify' and content in m[2]['message']:
+                        return elements
+                if elements:
+                    return elements
                 await asyncio.sleep(0.1)
-            assert elements, f'expected to find an element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
-            return elements
+            msg = f'expected to find an element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
+            raise AssertionError(msg)
 
     async def type(self, text: str, *, kind: Type[T] = Element, marker: Union[str, list[str], None] = None) -> None:
         """Type the given text into the input."""

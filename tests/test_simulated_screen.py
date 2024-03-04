@@ -101,3 +101,13 @@ async def test_navigation(user: User) -> None:
     await user.click(content='go to')
     await asyncio.sleep(1)
     await user.should_see(content='Other page')
+
+
+async def test_notification(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.button('notify', on_click=lambda: ui.notify('Hello'))
+
+    await user.open('/')
+    await user.click(content='notify')
+    await user.should_see(content='Hello')
