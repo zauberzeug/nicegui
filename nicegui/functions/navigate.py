@@ -31,6 +31,15 @@ class Navigate:
         run_javascript('history.forward()')
 
     @staticmethod
+    def reload() -> None:
+        """ui.navigate.reload
+
+        Navigates 0 step in the browser history (i.e reload the current page).
+        It is equivalent to clicking the reload button in the browser.
+        """
+        run_javascript('history.go(0)')
+
+    @staticmethod
     def to(target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:
         """ui.navigate.to (formerly ui.open)
 
