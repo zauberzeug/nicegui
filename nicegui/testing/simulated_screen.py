@@ -58,7 +58,8 @@ class User():
             self.current_user.deactivate()
         self.current_user = self
         assert self.client
-        ui.navigate.to = lambda path: self.open(path)
+        ui.navigate.to = lambda path, target=None: background_tasks.create(
+            self.open(path))
         self.client.__enter__()
         return self
 
@@ -66,7 +67,7 @@ class User():
         assert self.client
         self.client.__exit__()
         msg = 'navigate.to unavailable in pytest simulation outside of an active client'
-        ui.navigate.to = lambda _: log.warning(msg)
+        ui.navigate.to = lambda path, target=None: log.warning(msg)
         self.current_user = None
 
     async def should_see(self, *,
@@ -85,8 +86,6 @@ class User():
                 for m in context.get_client().outbox.messages:
                     if content is not None and m[1] == 'notify' and content in m[2]['message']:
                         return elements
-                if elements:
-                    return elements
                 await asyncio.sleep(0.1)
             msg = f'expected to find an element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
             raise AssertionError(msg)
