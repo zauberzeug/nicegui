@@ -6,6 +6,7 @@ import contextlib
 import functools
 import json
 import re
+from logging import log
 from queue import Empty, Queue
 from typing import Any, Callable, Dict, List, Optional, Self, Type, TypeVar, Union
 from uuid import uuid4
@@ -17,52 +18,55 @@ import socketio
 from starlette.testclient import TestClient
 
 import nicegui.nicegui as ng
-from nicegui import Client, ElementFilter, background_tasks, context
+from nicegui import Client, ElementFilter, background_tasks, context, ui
 from nicegui.awaitable_response import AwaitableResponse
 from nicegui.element import Element
 
 # pylint: disable=protected-access
 
 
-class SimulatedScreen:
-
-    def __init__(self, client: httpx.AsyncClient) -> None:
-        self.http_client = client
-        self.sio = socketio.AsyncClient()
-        self.sio.on('connect')
-        self.task = None
-
-    async def open(self, path: str) -> User:
-        """Open the given path."""
-        response = await self.http_client.get(path)
-        assert response.status_code == 200
-        if response.headers.get('X-Nicegui-Content') == 'page':
-            match = re.search(r"'client_id': '([0-9a-f-]+)'", response.text)
-            assert match is not None
-            client_id = match.group(1)
-            client = Client.instances[client_id]
-            await ng._on_handshake(f'test-{uuid4()}', client.id)
-            return User(client)
-        raise ValueError(f'Expected a page response, got {response.text}')
-
-
 T = TypeVar('T', bound=Element)
 
 
 class User():
-    current_client: Optional['Client'] = None
+    current_user: Optional['User'] = None
 
-    def __init__(self, client: Client) -> None:
+    def __init__(self, client: httpx.AsyncClient) -> None:
+        self.http_client = client
+        self.sio = socketio.AsyncClient()
+        self.client: Optional[Client] = None
+
+    async def open(self, path: str) -> None:
+        """Open the given path."""
+        response = await self.http_client.get(path)
+        assert response.status_code == 200
+        if response.headers.get('X-Nicegui-Content') != 'page':
+            raise ValueError(f'Expected a page response, got {response.text}')
+
+        match = re.search(r"'client_id': '([0-9a-f-]+)'", response.text)
+        assert match is not None
+        client_id = match.group(1)
+        client = Client.instances[client_id]
+        self.sio.on('connect')
+        await ng._on_handshake(f'test-{uuid4()}', client.id)
         self.client = client
+        self.activate()
 
-    def __enter__(self) -> Self:
-        self.current_client = self.client
+    def activate(self) -> Self:
+        if self.current_user:
+            self.current_user.deactivate()
+        self.current_user = self
+        assert self.client
+        ui.navigate.to = lambda path: self.open(path)
         self.client.__enter__()
         return self
 
-    def __exit__(self, *_) -> None:
+    def deactivate(self, *_) -> None:
+        assert self.client
         self.client.__exit__()
-        self.current_client = None
+        msg = 'navigate.to unavailable in pytest simulation outside of an active client'
+        ui.navigate.to = lambda _: log.warning(msg)
+        self.current_user = None
 
     async def should_see(self, *,
                          kind: Type[T] = Element,
@@ -71,35 +75,50 @@ class User():
                          retries: int = 3,
                          ) -> ElementFilter:
         """Assert that the page contains an input with the given value."""
-        elements = ElementFilter(kind=kind, marker=marker, content=content)
-        for _ in range(retries):
-            if len(elements) > 0:
-                return elements
-            await asyncio.sleep(0.1)
-        assert elements, f'expected to find an element of type {kind.__name__} with {marker=} and {content=} on the page'
-        return elements
+        assert self.client
+        with self.client:
+            elements = ElementFilter(kind=kind, marker=marker, content=content)
+            for _ in range(retries):
+                if len(elements) > 0:
+                    return elements
+                await asyncio.sleep(0.1)
+            assert elements, f'expected to find an element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_page}'
+            return elements
 
     def type(self, text: str, *, element: Type[T] = Element, marker: Union[str, list[str], None] = None) -> None:
         """Type the given text into the input."""
-        elements = self.should_see(kind=element, marker=marker)
-        element_type = element.__name__
-        marker = f' with {marker=}' if marker is not None else ''
-        assert len(elements) == 1, f'expected to find exactly one element of type {element_type}{marker} on the page'
-        # TODO implement typing into the element; how to "submit"?
+        assert self.client
+        with self.client:
+            elements = self.should_see(kind=element, marker=marker)
+            element_type = element.__name__
+            marker = f' with {marker=}' if marker is not None else ''
+            assert len(elements) == 1, \
+                f'expected to find exactly one element of type {element_type}{marker} on the page:\n{self.current_page}'
+            # TODO implement typing into the element; how to "submit"?
 
-    def click(self, *,
-              element: Type[T] = Element,
-              marker: Union[str, list[str], None] = None,
-              content: Union[str, list[str], None] = None,
-              ) -> None:
+    async def click(self, *,
+                    element: Type[T] = Element,
+                    marker: Union[str, list[str], None] = None,
+                    content: Union[str, list[str], None] = None,
+                    ) -> None:
         """Click the given element."""
-        elements = self.should_see(kind=element, marker=marker, content=content)
-        element_type = element.__name__
-        marker = f' with {marker=}' if marker is not None else ''
-        content = f' with {content=}' if content is not None else ''
-        assert len(elements) == 1, \
-            f'expected to find exactly one element of type {element_type}{marker}{content} on the page'
-        # TODO implement clicking the element
+        assert self.client
+        with self.client:
+            elements = await self.should_see(kind=element, marker=marker, content=content)
+            element_type = element.__name__
+            marker = f' with {marker=}' if marker is not None else ''
+            content = f' with {content=}' if content is not None else ''
+            assert len(elements) == 1, \
+                f'expected to find exactly one element of type {element_type}{marker}{content} on the page:\n{self.current_page}'
+            element = elements[0]
+            for listener in element._event_listeners.values():
+                if listener.type == 'click' and listener.element_id == element.id:
+                    element._handle_event({'listener_id': listener.id, 'args': {}})
+
+    @property
+    def current_page(self) -> Element:
+        """Return the current page."""
+        return self.client.layout
 
 
 original_get_slot_stack = ng.Slot.get_stack
@@ -108,10 +127,10 @@ original_prune_slot_stack = ng.Slot.prune_stack
 
 def get_stack(_=None) -> List[ng.Slot]:
     """Return the slot stack of the current client."""
-    if User.current_client is None:
+    if User.current_user is None:
         return original_get_slot_stack()
     cls = ng.Slot
-    client_id = id(User.current_client)
+    client_id = id(User.current_user)
     if client_id not in cls.stacks:
         cls.stacks[client_id] = []
     return cls.stacks[client_id]
@@ -119,10 +138,10 @@ def get_stack(_=None) -> List[ng.Slot]:
 
 def prune_stack(cls) -> None:
     """Remove the current slot stack if it is empty."""
-    if User.current_client is None:
+    if User.current_user is None:
         return original_prune_slot_stack()
     cls = ng.Slot
-    client_id = id(User.current_client)
+    client_id = id(User.current_user)
     if not cls.stacks[client_id]:
         del cls.stacks[client_id]
 

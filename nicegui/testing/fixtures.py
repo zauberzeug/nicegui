@@ -3,7 +3,7 @@ import importlib
 import os
 import shutil
 from pathlib import Path
-from typing import Dict, Generator, Union, get_type_hints
+from typing import Callable, Dict, Generator, Union, get_type_hints
 
 import httpx
 import icecream
@@ -13,11 +13,11 @@ from selenium.webdriver.chrome.service import Service
 from starlette.routing import Route
 
 import nicegui.storage
-from nicegui import Client, app, binding, core
+from nicegui import Client, app, binding, core, ui
 from nicegui.page import page
 
 from .selenium_screen import SeleniumScreen
-from .simulated_screen import SimulatedScreen
+from .simulated_screen import User
 
 # pylint: disable=redefined-outer-name
 
@@ -108,25 +108,12 @@ def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator
 
 
 @pytest.fixture
-def screen(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generator[Union[SeleniumScreen, SimulatedScreen], None, None]:
-    """Create a new Screen fixture."""
-    screen_type_hint = get_type_hints(request.node.function).get('screen')
-    assert isinstance(screen_type_hint, type)
-    if issubclass(screen_type_hint, SimulatedScreen):
-        yield request.getfixturevalue('simulated_screen')
-    elif issubclass(screen_type_hint, SeleniumScreen):
-        yield request.getfixturevalue('selenium_screen')
-    else:
-        raise ValueError(f'Unknown screen type: {screen_type_hint}, expected Screen or SimulatedScreen.')
-
-
-@pytest.fixture
-def selenium_screen(nicegui_reset_globals,
-                    nicegui_remove_all_screenshots,
-                    nicegui_driver: webdriver.Chrome,
-                    request: pytest.FixtureRequest,
-                    caplog: pytest.LogCaptureFixture,
-                    ) -> Generator[SeleniumScreen, None, None]:
+def screen(nicegui_reset_globals,
+           nicegui_remove_all_screenshots,
+           nicegui_driver: webdriver.Chrome,
+           request: pytest.FixtureRequest,
+           caplog: pytest.LogCaptureFixture,
+           ) -> Generator[SeleniumScreen, None, None]:
     """Create a new SeleniumScreen fixture."""
     screen = SeleniumScreen(nicegui_driver, caplog)
     yield screen
@@ -141,8 +128,23 @@ def selenium_screen(nicegui_reset_globals,
 
 
 @pytest.fixture
-async def simulated_screen(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generator[SimulatedScreen, None, None]:
+async def user(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generator[User, None, None]:
     """Create a new SimulatedScreen fixture."""
+    prepare_simulation(request)
+    async with core.app.router.lifespan_context(core.app):
+        async with httpx.AsyncClient(app=core.app, base_url='http://test') as client:
+            yield User(client)
+
+
+@pytest.fixture
+async def user_builder(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generator[Callable[None, User], None, None]:
+    prepare_simulation(request)
+    async with core.app.router.lifespan_context(core.app):
+        async with httpx.AsyncClient(app=core.app, base_url='http://test') as client:
+            yield lambda: User(client)
+
+
+def prepare_simulation(request: pytest.FixtureRequest) -> None:
     marker = request.node.get_closest_marker('module_under_test')
     if marker is not None:
         importlib.reload(marker.args[0])
@@ -161,7 +163,3 @@ async def simulated_screen(nicegui_reset_globals, request: pytest.FixtureRequest
         show_welcome_message=False,
     )
     nicegui.storage.set_storage_secret('simulated secret')
-
-    async with core.app.router.lifespan_context(core.app):
-        async with httpx.AsyncClient(app=core.app, base_url='http://test') as client:
-            yield SimulatedScreen(client)

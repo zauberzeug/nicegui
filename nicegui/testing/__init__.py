@@ -1,9 +1,9 @@
 from .fixtures import *
 from .selenium_screen import SeleniumScreen
-from .simulated_screen import SimulatedScreen
+from .simulated_screen import User
 
 __all__ = [
     'fixtures',
     'SeleniumScreen',
-    'SimulatedScreen',
+    'User',
 ]
