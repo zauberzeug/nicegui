@@ -20,7 +20,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                  multiple: bool = False,
                  clearable: bool = False,
                  validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
-                 new_id_generator: Optional[Union[Callable[[Any], Any], Iterator[Any]]] = None,
+                 key_generator: Optional[Union[Callable[[Any], Any], Iterator[Any]]] = None,
                  ) -> None:
         """Dropdown Selection
 
@@ -49,7 +49,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         :param multiple: whether to allow multiple selections
         :param clearable: whether to add a button to clear the selection
         :param validation: dictionary of validation rules or a callable that returns an optional error message
-        :param new_id_generator: a callback or iterator to get new value key if options are a dict
+        :param key_generator: a callback or iterator to generate a dictionary key for new values
         """
         self.multiple = multiple
         if multiple:
@@ -60,12 +60,12 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         super().__init__(options=options, value=value, on_change=on_change, validation=validation)
         if label is not None:
             self._props['label'] = label
-        if isinstance(new_id_generator, Generator):
-            next(new_id_generator)  # prime the generator, prepare it to receive the first value
-        self.new_id_generator = new_id_generator
+        if isinstance(key_generator, Generator):
+            next(key_generator)  # prime the key generator, prepare it to receive the first value
+        self.key_generator = key_generator
         if new_value_mode is not None:
-            if isinstance(options, dict) and new_value_mode == 'add' and new_id_generator is None:
-                raise ValueError('new_value_mode "add" is not supported for dict options without new_id_generator')
+            if isinstance(options, dict) and new_value_mode == 'add' and key_generator is None:
+                raise ValueError('new_value_mode "add" is not supported for dict options without key_generator')
             self._props['new-value-mode'] = new_value_mode
             with_input = True
         if with_input:
@@ -116,14 +116,14 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
             except ValueError:
                 return None
 
-    def _new_id(self, value: str) -> Any:
-        if isinstance(self.new_id_generator, Generator):
-            return self.new_id_generator.send(value)
-        if isinstance(self.new_id_generator, Iterable):
-            return next(self.new_id_generator)
-        if callable(self.new_id_generator):
-            return self.new_id_generator(value)
-        return None
+    def _generate_key(self, value: str) -> Any:
+        if isinstance(self.key_generator, Generator):
+            return self.key_generator.send(value)
+        if isinstance(self.key_generator, Iterable):
+            return next(self.key_generator)
+        if callable(self.key_generator):
+            return self.key_generator(value)
+        return value
 
     def _handle_new_value(self, value: str) -> Any:
         mode = self._props['new-value-mode']
@@ -142,15 +142,18 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
             return value
         else:
             key = value
-            if mode in {'add', 'add-unique'}:
-                if mode == 'add' or value not in self.options.values():
-                    key = self._new_id(value) or value
+            if mode == 'add':
+                key = self._generate_key(value)
+                self.options[key] = value
+            elif mode == 'add-unique':
+                if value not in self.options.values():
+                    key = self._generate_key(value)
                     self.options[key] = value
             elif mode == 'toggle':
                 if value in self.options:
                     self.options.pop(value)
                 else:
-                    key = self._new_id(value) or value
+                    key = self._generate_key(value)
                     self.options.update({key: value})
             self._update_values_and_labels()
             return key

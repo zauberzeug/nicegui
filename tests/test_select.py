@@ -143,7 +143,7 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
 
 def test_id_generator(screen: Screen):
     options = {'a': 'A', 'b': 'B', 'c': 'C'}
-    select = ui.select(options, value='b', new_value_mode='add', new_id_generator=lambda _: len(options))
+    select = ui.select(options, value='b', new_value_mode='add', key_generator=lambda _: len(options))
     ui.label().bind_text_from(select, 'options', lambda v: f'options = {v}')
 
     screen.open('/')
