@@ -46,7 +46,7 @@ class ValidationElement(ValueElement):
         self.error = None
         return True
 
-    def disable_auto_validation(self) -> None:
+    def without_auto_validation(self) -> None:
         """Disable automatic validation on value change."""
         self._auto_validation = False
 
