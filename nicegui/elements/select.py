@@ -142,7 +142,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
             return value
         else:
             key = value
-            if mode in 'add-unique':
+            if mode in {'add', 'add-unique'}:
                 if mode == 'add' or value not in self.options.values():
                     key = self._new_id(value) or value
                     self.options[key] = value
