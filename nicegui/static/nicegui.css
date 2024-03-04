@@ -16,7 +16,7 @@
 .nicegui-footer,
 .nicegui-drawer,
 .nicegui-tab-panel,
-.nicegui-card,
+.nicegui-card > div,
 .nicegui-carousel-slide,
 .nicegui-step .q-stepper__nav,
 .nicegui-step .q-stepper__step-inner,
@@ -42,7 +42,11 @@
 .nicegui-column {
   padding: 0;
 }
-.nicegui-card-tight {
+.nicegui-card > div {
+  width: 100%;
+  height: 100%;
+}
+.nicegui-card-tight > div {
   padding: 0;
   gap: 0;
 }
