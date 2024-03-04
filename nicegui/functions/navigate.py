@@ -34,7 +34,7 @@ class Navigate:
     def reload() -> None:
         """ui.navigate.reload
 
-        Navigates 0 step in the browser history (i.e reload the current page).
+        Reload the current page.
         It is equivalent to clicking the reload button in the browser.
         """
         run_javascript('history.go(0)')
