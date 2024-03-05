@@ -141,6 +141,18 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
                                   "options = ['a', 'b', 'c']")
 
 
+def test_id_generator(screen: Screen):
+    options = {'a': 'A', 'b': 'B', 'c': 'C'}
+    select = ui.select(options, value='b', new_value_mode='add', key_generator=lambda _: len(options))
+    ui.label().bind_text_from(select, 'options', lambda v: f'options = {v}')
+
+    screen.open('/')
+    screen.find_by_tag('input').send_keys(Keys.BACKSPACE + 'd')
+    screen.wait(0.5)
+    screen.find_by_tag('input').send_keys(Keys.ENTER)
+    screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 3: 'd'}")
+
+
 @pytest.mark.parametrize('multiple', [False, True])
 def test_keep_filtered_options(multiple: bool, screen: Screen):
     ui.select(options=['A1', 'A2', 'B1', 'B2'], with_input=True, multiple=multiple)
