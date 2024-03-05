@@ -172,10 +172,17 @@ def test_keep_filtered_options(multiple: bool, screen: Screen):
         screen.should_contain('B2')
 
 
-def test_select_validation(screen: Screen):
-    ui.select(['A', 'BC', 'DEF'], value='A', validation={'Too long': lambda v: len(v) < 3})
+@pytest.mark.parametrize('auto_validation', [True, False])
+def test_select_validation(auto_validation: bool, screen: Screen):
+    select = ui.select(['A', 'BC', 'DEF'], value='A', validation={'Too long': lambda v: len(v) < 3})
+    if not auto_validation:
+        select.without_auto_validation()
 
     screen.open('/')
     screen.click('A')
     screen.click('DEF')
-    screen.should_contain('Too long')
+    screen.wait(0.5)
+    if auto_validation:
+        screen.should_contain('Too long')
+    else:
+        screen.should_not_contain('Too long')

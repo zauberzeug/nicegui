@@ -37,6 +37,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         e.g. ``{'Too long!': lambda value: len(value) < 3}``.
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
+        To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
 
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
         :param label: the label to display above the selection

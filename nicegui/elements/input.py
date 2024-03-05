@@ -31,6 +31,7 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
         e.g. ``{'Too long!': lambda value: len(value) < 3}``.
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
+        To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
 
         Note about styling the input:
         Quasar's `QInput` component is a wrapper around a native `input` element.
