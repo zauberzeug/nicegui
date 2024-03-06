@@ -173,7 +173,8 @@ class Client:
 
     def run_javascript(self, code: str, *,
                        respond: Optional[bool] = None,  # DEPRECATED
-                       timeout: float = 1.0, check_interval: float = 0.01) -> AwaitableResponse:
+                       timeout: float = 1.0, check_interval: float = 0.01,
+                       return_exclusions: list[str] | None = None) -> AwaitableResponse:
         """Execute JavaScript on the client.
 
         The client connection must be established before this method is called.
@@ -185,6 +186,7 @@ class Client:
         :param code: JavaScript code to run
         :param timeout: timeout in seconds (default: `1.0`)
         :param check_interval: interval in seconds to check for a response (default: `0.01`)
+        :param return_exclusions: list of dotted paths to exclude from the result (default: `[]`)
 
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """
@@ -199,12 +201,16 @@ class Client:
 
         request_id = str(uuid.uuid4())
         target_id = self._temporary_socket_id or self.id
+        if return_exclusions is None:
+            return_exclusions = []
 
         def send_and_forget():
             self.outbox.enqueue_message('run_javascript', {'code': code}, target_id)
 
         async def send_and_wait():
-            self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
+            self.outbox.enqueue_message('run_javascript',
+                                        {'code': code, 'request_id': request_id, 'return_exclusions': return_exclusions},
+                                        target_id)
             deadline = time.time() + timeout
             while request_id not in self.waiting_javascript_commands:
                 if time.time() > deadline:

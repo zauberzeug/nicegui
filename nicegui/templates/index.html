@@ -215,7 +215,25 @@
         return Vue.h(Vue.resolveComponent(element.tag), props, slots);
       }
 
-      function runJavascript(code, request_id) {
+      function cloneWithExclusions(source, exclusions) {
+          const exclusionSet = new Set(exclusions);
+
+          const isExcluded = (path) => exclusionSet.has(path);
+
+          function cloneObject(obj, currentPath = '') {
+            if (typeof obj !== 'object' || obj === null) return obj;
+            return Object.entries(obj).reduce((acc, [key, value]) => {
+              const newPath = currentPath ? `${currentPath}.${key}` : key;
+              if (isExcluded(newPath)) return acc;
+              acc[key] = cloneObject(value, newPath);
+              return acc;
+            }, Array.isArray(obj) ? [] : {});
+          }
+
+          return cloneObject(source);
+      }
+
+      function runJavascript(code, request_id, return_exclusions = []) {
         (new Promise((resolve) =>resolve(eval(code)))).catch((reason) => {
           if(reason instanceof SyntaxError)
             return eval(`(async() => {${code}})()`);
@@ -223,6 +241,7 @@
             throw reason;
         }).then((result) => {
           if (request_id) {
+            if (return_exclusions.length > 0) result = cloneWithExclusions(result, return_exclusions);
             window.socket.emit("javascript_response", {request_id, client_id: window.client_id, result});
           }
         });
@@ -317,7 +336,7 @@
                 this.elements[element.id] = element;
               }
             },
-            run_javascript: (msg) => runJavascript(msg['code'], msg['request_id']),
+            run_javascript: (msg) => runJavascript(msg['code'], msg['request_id'], msg['return_exclusions']),
             open: (msg) => {
               const url = msg.path.startsWith('/') ? "{{ prefix | safe }}" + msg.path : msg.path;
               const target = msg.new_tab ? '_blank' : '_self';

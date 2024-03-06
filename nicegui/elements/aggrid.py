@@ -95,7 +95,8 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         """DEPRECATED: Use `run_grid_method` instead."""
         return self.run_grid_method(name, *args, timeout=timeout, check_interval=check_interval)
 
-    def run_grid_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+    def run_grid_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01,
+                        return_exclusions: list[str] | None = None) -> AwaitableResponse:
         """Run an AG Grid API method.
 
         See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>`_ for a list of methods.
@@ -107,10 +108,12 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         :param args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
         :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
+        :param return_exclusions: list of dotted paths to exclude from the result (default: `[]`)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
-        return self.run_method('run_grid_method', name, *args, timeout=timeout, check_interval=check_interval)
+        return self.run_method('run_grid_method', name, *args, timeout=timeout, check_interval=check_interval,
+                               return_exclusions=return_exclusions)
 
     def call_column_method(self, name: str, *args, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         """DEPRECATED: Use `run_column_method` instead."""
