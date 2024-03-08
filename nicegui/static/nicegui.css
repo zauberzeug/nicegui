@@ -217,13 +217,13 @@
   width: 100%;
   height: 16rem;
 }
-.nicegui-log {
-  padding: 0.25rem;
+.nicegui-log .q-scrollarea__content {
+  padding: 0.5rem;
+  gap: 0;
   border-width: 1px;
   white-space: pre;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  opacity: 1 !important;
-  cursor: text !important;
+  background-color: rgba(127, 159, 191, 0.05);
 }
 h6.q-timeline__title {
   font-size: 1.25rem;
