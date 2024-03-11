@@ -59,7 +59,35 @@ export default {
 
   mounted() {
     const is_new_scene = this.parent_id === ''
-    this.scene = is_new_scene ? new THREE.Scene() : getElement(this.parent_id).scene;
+    function waitForElement(id, timeout = 10000) {
+      return new Promise((resolve, reject) => {
+        const startTime = Date.now();
+        const checkElement = () => {
+          let element = getElement(id);
+          if (element) {
+            resolve(element);
+          } else if (Date.now() - startTime >= timeout) {
+            reject(new Error(`Element with ${id} not found within timeout`));
+          } else {
+            setTimeout(checkElement, 100); // Check again after 100 milliseconds
+          }
+        };
+        checkElement();
+      });
+    }
+    if (!is_new_scene)
+      waitForElement(this.parent_id)
+        .then((element) => {
+          this.scene = element.scene;
+          this.objects.set("scene", this.scene);
+          window["scene_" + this.$el.id] = this.scene;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+
+    this.scene = new THREE.Scene();
+
     this.objects = new Map();
     this.objects.set("scene", this.scene);
     this.draggable_objects = [];
