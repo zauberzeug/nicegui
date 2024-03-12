@@ -1,10 +1,10 @@
 from typing import Any, Optional
 
+from ..element import Element
 from .label import Label
-from .scroll_area import ScrollArea
 
 
-class Log(ScrollArea):
+class Log(Element):
 
     def __init__(self, max_lines: Optional[int] = None) -> None:
         """Log View
@@ -27,4 +27,3 @@ class Log(ScrollArea):
                 Label(text)
         while self.max_lines is not None and len(self.default_slot.children) > self.max_lines:
             self.remove(0)
-        self.scroll_to(percent=100)

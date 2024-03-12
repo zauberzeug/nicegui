@@ -213,21 +213,23 @@
 .nicegui-aggrid,
 .nicegui-echart,
 .nicegui-leaflet,
+.nicegui-log,
 .nicegui-scroll-area {
   width: 100%;
   height: 16rem;
 }
-.nicegui-log.q-scrollarea {
-  contain: unset;
-  outline: 1px solid rgba(127, 159, 191, 0.15);
-}
-.nicegui-log.q-scrollarea .q-scrollarea__content {
-  position: unset;
+.nicegui-log {
   padding: 0.5rem;
-  gap: 0;
-  white-space: pre;
+  scroll-padding-bottom: 0.5rem;
+  scroll-snap-type: y proximity;
+  overflow-y: scroll;
+  outline: 1px solid rgba(127, 159, 191, 0.15);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  white-space: pre;
   background-color: rgba(127, 159, 191, 0.05);
+}
+.nicegui-log > :last-child {
+  scroll-snap-align: end;
 }
 h6.q-timeline__title {
   font-size: 1.25rem;
