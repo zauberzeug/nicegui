@@ -8,7 +8,7 @@ from typing import Callable, Generator
 from nicegui import app, background_tasks, run, ui
 
 
-class Computer:
+class Worker:
 
     def __init__(self) -> None:
         self._queue: Queue
@@ -50,15 +50,15 @@ def heavy_computation() -> Generator[float, None, None]:
         yield i / n
 
 
-computer = Computer()
+worker = Worker()
 
 
 @ui.page('/')
 def main_page():
-    ui.button('compute', on_click=lambda: computer.run(heavy_computation))
+    ui.button('compute', on_click=lambda: worker.run(heavy_computation))
     ui.linear_progress().props('instant-feedback') \
-        .bind_value_from(computer, 'progress') \
-        .bind_visibility_from(computer, 'is_running')
+        .bind_value_from(worker, 'progress') \
+        .bind_visibility_from(worker, 'is_running')
 
 
 ui.run()
