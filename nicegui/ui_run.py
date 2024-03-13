@@ -110,7 +110,7 @@ def run(*,
         return
 
     if reload and not hasattr(__main__, '__file__'):
-        log.warning('auto-reloading is only supported when running from a file')
+        log.warning('disabling auto-reloading because is is only supported when running from a file')
         core.app.config.reload = reload = False
 
     if fullscreen:
