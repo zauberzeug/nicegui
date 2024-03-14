@@ -153,9 +153,9 @@
         element.libraries.forEach((library) => loaded_libraries.add(library.name));
 
         const props = {
-          id: 'c' + element.id,
-          ref: 'r' + element.id,
-          key: element.id,  // HACK: workaround for #600 and #898
+          id: 'c' + id,
+          ref: 'r' + id,
+          key: id,  // HACK: workaround for #600 and #898
           class: element.class.join(' ') || undefined,
           style: Object.entries(element.style).reduce((str, [p, val]) => `${str}${p}:${val};`, '') || undefined,
           ...element.props,
@@ -182,7 +182,7 @@
           else {
             handler = (...args) => {
               const data = {
-                id: element.id,
+                id: id,
                 client_id: window.client_id,
                 listener_id: event.listener_id,
                 args: stringifyEventArgs(args, event.args),
@@ -330,7 +330,7 @@
                 if (element.component || element.libraries) {
                   await loadDependencies(element);
                 }
-                this.elements[element.id] = element;
+                this.elements[id] = element;
               }
             },
             run_javascript: (msg) => runJavascript(msg['code'], msg['request_id']),
