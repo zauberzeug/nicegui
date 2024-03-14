@@ -139,6 +139,15 @@
             return;
         }
 
+        element.class ??= [];
+        element.style ??= {};
+        element.props ??= {};
+        element.text ??= null;
+        element.slots ??= {};
+        element.events ??= [];
+        element.component ??= null;
+        element.libraries ??= [];
+
         // @todo: Try avoid this with better handling of initial page load.
         if (element.component) loaded_components.add(element.component.name);
         element.libraries.forEach((library) => loaded_libraries.add(library.name));
@@ -255,10 +264,12 @@
             loaded_components.add(name);
           }
         }
-        for (const {name, key} of element.libraries) {
-          if (loaded_libraries.has(name)) continue;
-          await import(`{{ prefix | safe }}/_nicegui/{{version}}/libraries/${key}`);
-          loaded_libraries.add(name);
+        if (element.libraries) {
+          for (const {name, key} of element.libraries) {
+            if (loaded_libraries.has(name)) continue;
+            await import(`{{ prefix | safe }}/_nicegui/{{version}}/libraries/${key}`);
+            loaded_libraries.add(name);
+          }
         }
       }
 
@@ -311,7 +322,7 @@
                   delete this.elements[id];
                   continue;
                 }
-                if (element.component || element.libraries.length > 0) {
+                if (element.component || element.libraries) {
                   await loadDependencies(element);
                 }
                 this.elements[element.id] = element;

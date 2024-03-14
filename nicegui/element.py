@@ -190,23 +190,29 @@ class Element(Visibility):
         return {
             'id': self.id,
             'tag': self.tag,
-            'class': self._classes,
-            'style': self._style,
-            'props': self._props,
-            'text': self._text,
-            'slots': self._collect_slot_dict(),
-            'events': [listener.to_dict() for listener in self._event_listeners.values()],
-            'component': {
-                'key': self.component.key,
-                'name': self.component.name,
-                'tag': self.component.tag
-            } if self.component else None,
-            'libraries': [
-                {
-                    'key': library.key,
-                    'name': library.name,
-                } for library in self.libraries
-            ],
+            **{
+                key: value
+                for key, value in {
+                    'class': self._classes,
+                    'style': self._style,
+                    'props': self._props,
+                    'text': self._text,
+                    'slots': self._collect_slot_dict(),
+                    'events': [listener.to_dict() for listener in self._event_listeners.values()],
+                    'component': {
+                        'key': self.component.key,
+                        'name': self.component.name,
+                        'tag': self.component.tag
+                    } if self.component else None,
+                    'libraries': [
+                        {
+                            'key': library.key,
+                            'name': library.name,
+                        } for library in self.libraries
+                    ],
+                }.items()
+                if value
+            },
         }
 
     @staticmethod
