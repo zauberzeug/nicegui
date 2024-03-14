@@ -82,7 +82,7 @@ class Element(Visibility):
         self._classes.extend(self._default_classes)
         self._style: Dict[str, str] = {}
         self._style.update(self._default_style)
-        self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
+        self._props: Dict[str, Any] = {}
         self._props.update(self._default_props)
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None

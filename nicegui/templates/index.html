@@ -155,6 +155,7 @@
         const props = {
           id: 'c' + element.id,
           ref: 'r' + element.id,
+          key: element.id,  // HACK: workaround for #600 and #898
           class: element.class.join(' ') || undefined,
           style: Object.entries(element.style).reduce((str, [p, val]) => `${str}${p}:${val};`, '') || undefined,
           ...element.props,
