@@ -182,8 +182,12 @@ class Element(Visibility):
 
     def _collect_slot_dict(self) -> Dict[str, Any]:
         return {
-            name: {'template': slot.template, 'ids': [child.id for child in slot]}
+            name: {
+                'ids': [child.id for child in slot],
+                **({'template': slot.template} if slot.template is not None else {}),
+            }
             for name, slot in self.slots.items()
+            if slot != self.default_slot
         }
 
     def _to_dict(self) -> Dict[str, Any]:
@@ -198,6 +202,7 @@ class Element(Visibility):
                     'style': self._style,
                     'props': self._props,
                     'slots': self._collect_slot_dict(),
+                    'children': [child.id for child in self.default_slot.children],
                     'events': [listener.to_dict() for listener in self._event_listeners.values()],
                     'component': {
                         'key': self.component.key,

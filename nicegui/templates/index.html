@@ -204,7 +204,11 @@
           }
         });
         const slots = {};
-        Object.entries(element.slots).forEach(([name, data]) => {
+        const element_slots = {
+          default: { ids: element.children || [] },
+          ...element.slots,
+        };
+        Object.entries(element_slots).forEach(([name, data]) => {
           slots[name] = (props) => {
             const rendered = [];
             if (data.template) {
