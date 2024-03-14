@@ -200,7 +200,7 @@ class Screen:
 
     def render_js_logs(self) -> str:
         """Render the browser console logs as a string."""
-        console = '\n'.join(l['message'] for l in self.selenium.get_log('browser'))
+        console = '\n'.join(log['message'] for log in self.selenium.get_log('browser'))
         return f'-- console logs ---\n{console}\n---------------------'
 
     def wait(self, t: float) -> None:
