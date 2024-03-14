@@ -190,13 +190,13 @@ class Element(Visibility):
         return {
             'id': self.id,
             'tag': self.tag,
+            **({'text': self._text} if self._text is not None else {}),
             **{
                 key: value
                 for key, value in {
                     'class': self._classes,
                     'style': self._style,
                     'props': self._props,
-                    'text': self._text,
                     'slots': self._collect_slot_dict(),
                     'events': [listener.to_dict() for listener in self._event_listeners.values()],
                     'component': {
