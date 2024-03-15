@@ -32,28 +32,27 @@ class App():
         self.connected = False
         self.setup()
 
-    # Build the nicegui UI and initialize plotting area
+    # Build the nicegui UI 
     def setup(self):
-
         with ui.card().classes("bg-grey-9"):
             with ui.column().classes('w-full justify-center'):
                 self.butt_conn = ui.button('Connect', on_click=self.connect)                                                                                  
                 self.butt_on = ui.button('LED On', on_click=LED_on)
                 self.butt_off = ui.button('LED Off', on_click=LED_off)
                 self.butt_disconn = ui.button('Disconnect', on_click=self.disconnect)
-
                 self.butt_on.disable()
                 self.butt_off.disable()
-
+                self.butt_disconn.disable()
+                
         # Pipe external JS script into page body
         with open("script.js") as f:
             ui.add_body_html('<script>' + f.read() + '</script>')
 
         ui.query('body').style('background-color: #8c8c8c')
-        ui.on('readevent', lambda e: self.update_plot(e.args))
+        ui.on('readevent', lambda e: self.custom_event(e.args))
 
-    def update_plot(self, args):
-        ui.notify("Button pressed!")
+    def custom_event(self, counts):
+        ui.notify(f"Button pressed {counts} times!")
 
         
     async def disconnect(self):
