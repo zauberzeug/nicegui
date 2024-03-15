@@ -46,7 +46,7 @@
         return window.app.$refs["r" + _id];
       }
       function runMethod(target, method_name, args) {
-        if (typeof target !== "object") {
+        if (typeof target === "object") {
           if (Object.hasOwn(target, method_name)) {
             return target[method_name](...args);
           } else {
