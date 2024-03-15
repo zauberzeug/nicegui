@@ -24,57 +24,26 @@ def LED_off():
     ui.run_javascript("writeStream('0')")
 
 
-def set_rate(rate):
-    ui.run_javascript(f"writeStream('f{rate}')")
 
 
 class App():
     def __init__(self, samp_rate=5, pnts=20):
-        self.samp_rate = samp_rate
-        self.x = None
-        self.y = None
-        self.line = None
-        self.main_plot = None
-        self.pnts = pnts
         self.available = False
         self.connected = False
         self.setup()
 
     # Build the nicegui UI and initialize plotting area
     def setup(self):
-        self.x = np.arange(self.pnts)
-        self.y = list(np.zeros(self.pnts))
 
         with ui.card().classes("bg-grey-9"):
-            with ui.row().classes('w-full justify-center'):
-                self.butt_conn = ui.button('Connect', on_click=self.connect)
-                self.input_rate = ui.input(label='Rate [Hz]', value=self.samp_rate).props(
-                    'rounded outlined dense bg-color=yellow-1').classes('w-32').on('keydown.enter',
-                                                                                   lambda e: set_rate(e.sender.value))
+            with ui.column().classes('w-full justify-center'):
+                self.butt_conn = ui.button('Connect', on_click=self.connect)                                                                                  
                 self.butt_on = ui.button('LED On', on_click=LED_on)
                 self.butt_off = ui.button('LED Off', on_click=LED_off)
                 self.butt_disconn = ui.button('Disconnect', on_click=self.disconnect)
 
                 self.butt_on.disable()
                 self.butt_off.disable()
-                self.input_rate.disable()
-                self.butt_disconn.disable()
-
-            with ui.row():
-                self.main_plot = ui.pyplot(figsize=(7, 5))
-                with self.main_plot:
-                    self.main_plot.fig.patch.set_facecolor('#ffffe6')
-                    self.line, = plt.plot(self.x, self.y)
-                    ax = plt.gca()
-                    ax.set_facecolor('#ffffe6')
-                    plt.ylim(0, 1023)
-                    plt.xticks(np.arange(0, self.pnts, 5))
-                    plt.yticks(np.arange(0, 1023, 128))
-                    plt.margins(x=0, y=0, tight=True)
-                    plt.grid()
-                    plt.title("Light Intensity")
-                    plt.xlabel("Sample")
-                    plt.ylabel("ADC Value")
 
         # Pipe external JS script into page body
         with open("script.js") as f:
@@ -83,18 +52,16 @@ class App():
         ui.query('body').style('background-color: #8c8c8c')
         ui.on('readevent', lambda e: self.update_plot(e.args))
 
-    def update_plot(self, new_val):
-        self.y = [*self.y[1:], int(new_val)]
-        with self.main_plot:
-            self.line.set_ydata(self.y)
+    def update_plot(self, args):
+        ui.notify("Button pressed!")
 
-    def disconnect(self):
-        ui.run_javascript('disconnect()')
+        
+    async def disconnect(self):
+        await ui.run_javascript('disconnect()', timeout=5)
         self.butt_on.disable()
         self.butt_off.disable()
-        self.input_rate.disable()
-        self.butt_conn.enable()
         self.butt_disconn.disable()
+        self.butt_conn.enable()
 
     async def connect(self):
         self.available = await ui.run_javascript('check_compatability()')
@@ -103,10 +70,8 @@ class App():
             if self.connected:
                 self.butt_on.enable()
                 self.butt_off.enable()
-                self.input_rate.enable()
                 self.butt_conn.disable()
                 self.butt_disconn.enable()
-                set_rate(self.samp_rate)
                 ui.run_javascript('readLoop()')
             else:
                 ui.notify('No port selected or availble')
