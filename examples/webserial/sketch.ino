@@ -1,48 +1,53 @@
-#include <Adafruit_Arcada.h>
+const int BUTTON = 2;
+const int LED = 3;
 
-Adafruit_Arcada arcada;
-String inData;
-
-void timercallback(void) {
-  Serial.println(arcada.readLightSensor());
-}
-
-void setup() {  
+// Variables will change:
+int buttonState = 0;        // current state of the button
+int lastButtonState = 0;    // previous state of the button
+int count = 0;              // count button presses
+void  setup()
+{
+  pinMode(BUTTON, INPUT);
+  pinMode(LED, OUTPUT);
   Serial.begin(9600);
-  arcada.arcadaBegin();
 }
+
 
 void loop() {
-    while (Serial.available() > 0)
-    {
-        char recieved = Serial.read();
-        inData += recieved; 
 
-        // Process message when new line character is recieved
-        if (recieved == '\n')
-        {
-            //Serial.print("Arduino Received: ");
-            //Serial.println(inData);
-            switch (inData[0]) {
-              case 'f':
-                arcada.timerCallback(inData.substring(1).toFloat(), timercallback);                
-                break;
-
-              case '1': //LED on
-                for(int32_t i=0; i< arcada.pixels.numPixels(); i++) {
-                  arcada.pixels.setPixelColor(i, arcada.pixels.Color(25, 25, 100));
-                }
-                arcada.pixels.show();
-                break;
-
-              case '0': //LED off
-                for(int32_t i=0; i< arcada.pixels.numPixels(); i++) {
-                  arcada.pixels.setPixelColor(i, arcada.pixels.Color(0, 0, 0));
-                }
-                arcada.pixels.show();
-                break;
-            }
-            inData = ""; // Clear recieved buffer
-        }
+  if (Serial.available() > 0) {
+    char received = Serial.read();
+    switch (received) {
+      case '1':
+        digitalWrite(LED, HIGH);
+        break;
+      case '0':
+        digitalWrite(LED, LOW);
+        break;
     }
+  }
+
+  // read the pushbutton input pin
+  buttonState = digitalRead(BUTTON);
+
+  // compare the buttonState to its previous state
+  if (buttonState != lastButtonState) {
+    // if the state has changed, increment the counter
+    if (buttonState == HIGH) {
+      // if the current state is HIGH then the button went from off to on
+      count++;
+      Serial.println(count);
+    } else {
+      // if the current state is LOW then the button went from on to off
+      // Serial.println("off");
+    }
+    // Delay a little bit to avoid bouncing
+    delay(50);
+  }
+  // save the current state as the last state, for next time through the loop
+  lastButtonState = buttonState;
 }
+
+
+
+

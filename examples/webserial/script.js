@@ -4,12 +4,12 @@
 'use strict';
 
 // Global variables
-let port = null; //object
-let outputDone;
-let outputStream;
-let reader;
-let inputDone;
-let inputStream;
+let port 
+let outputDone
+let outputStream 
+let reader 
+let inputDone 
+let inputStream
 
 // check if broswer supports webserial
 function check_compatability() {
@@ -39,35 +39,36 @@ async function disconnect() {
     outputDone = null;
   }
 
-  await port.close();
-  port = null;
-  console.log('port closed');
-
+  if (port) {
+    await port.close();
+    port = null;
+    console.log('port closed');
+  };
+  // console.log('made it here');
+  return true;
 };
 
 
 // Connect serial port
 async function connect() {
-  try { //Prompt user to pick serial (COM) port
-    port = await navigator.serial.requestPort();
-    try { //If successful, proceed to open COM port and enable read & write streams
-      await port.open({ 'baudRate': 9600 });
-      const encoder = new TextEncoderStream();
-      outputDone = encoder.readable.pipeTo(port.writable);
-      outputStream = encoder.writable;
-      let decoder = new TextDecoderStream();
-      inputDone = port.readable.pipeTo(decoder.writable);
-      inputStream = decoder.readable;      
-      reader = inputStream.getReader();      
-      return true;      
-    } catch (err) { //Could not open port
-      console.error('Error opening port:', err)
+    try {
+        port = await navigator.serial.requestPort();    
+        await port.open({ 'baudRate': 9600 });
+    } catch (err) {
+        console.log(err);
+        return false;
     }
-  }
-  catch (err) { //User closed/cancelled out of prompt
-    console.error('User cancelled selection:', err)
-  }
-  return false;
+    
+    const encoder = new TextEncoderStream();
+    outputDone = encoder.readable.pipeTo(port.writable);
+    outputStream = encoder.writable;
+    
+    let decoder = new TextDecoderStream();
+    inputDone = port.readable.pipeTo(decoder.writable);
+    inputStream = decoder.readable;      
+    reader = inputStream.getReader();      
+    
+    return true;      
 }
 
 // Write a character to the stream (and the port)
@@ -99,6 +100,7 @@ async function readLoop() {
       break;
     }
   }
+  return false;
 }
   
 
