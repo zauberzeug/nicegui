@@ -45,13 +45,22 @@
         const _id = id instanceof HTMLElement ? id.id : id;
         return window.app.$refs["r" + _id];
       }
-      function runMethod(element_id, method_name, args) {
-        const element = getElement(element_id);
+      function runMethod(target, method_name, args) {
+        if (typeof target !== "object") {
+          if (Object.hasOwn(target, method_name)) {
+            return target[method_name](...args);
+          } else {
+            return eval(method_name)(target, ...args);
+          }
+        }
+        const element = getElement(target);
         if (element === null || element === undefined) return;
-        if (method_name in element) {
+        if (Object.hasOwn(element, method_name)) {
           return element[method_name](...args);
-        } else {
+        } else if (method_name in element.$refs.qRef) {
           return element.$refs.qRef[method_name](...args);
+        } else {
+          return eval(method_name)(element, ...args);
         }
       }
       function emitEvent(event_name, ...args) {

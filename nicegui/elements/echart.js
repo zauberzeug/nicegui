@@ -24,7 +24,7 @@ export default {
         name = name.slice(1);
         args = args.map((arg) => new Function("return " + arg)());
       }
-      return this.chart[name](...args);
+      return runMethod(this.chart, name, args);
     },
   },
   props: {
