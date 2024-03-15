@@ -1,8 +1,11 @@
-from typing import Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional
+
+from typing_extensions import Self
 
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
-from ..events import GenericEventArguments, JsonEditorChangeEventArguments, JsonEditorSelectEventArguments, handle_event
+from ..events import (GenericEventArguments, JsonEditorChangeEventArguments,
+                      JsonEditorSelectEventArguments, handle_event)
 
 
 class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/vanilla-jsoneditor/index.js']):
@@ -26,14 +29,24 @@ class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/va
         self._props['properties'] = properties
 
         if on_select:
-            def handle_on_select(e: GenericEventArguments) -> None:
-                handle_event(on_select, JsonEditorSelectEventArguments(sender=self, client=self.client, **e.args))
-            self.on('select', handle_on_select, ['selection'])
+            self.on_select(on_select)
 
         if on_change:
-            def handle_on_change(e: GenericEventArguments) -> None:
-                handle_event(on_change, JsonEditorChangeEventArguments(sender=self, client=self.client, **e.args))
-            self.on('change', handle_on_change, ['content', 'errors'])
+            self.on_change(on_change)
+
+    def on_change(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the content changes."""
+        def handle_on_change(e: GenericEventArguments) -> None:
+            handle_event(callback, JsonEditorChangeEventArguments(sender=self, client=self.client, **e.args))
+        self.on('change', handle_on_change, ['content', 'errors'])
+        return self
+
+    def on_select(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when some of the content has been selected."""
+        def handle_on_select(e: GenericEventArguments) -> None:
+            handle_event(callback, JsonEditorSelectEventArguments(sender=self, client=self.client, **e.args))
+        self.on('select', handle_on_select, ['selection'])
+        return self
 
     @property
     def properties(self) -> Dict:
