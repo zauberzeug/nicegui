@@ -250,16 +250,19 @@ doc.text('', '''
 ''')
 
 doc.text('', '''
-    **Common pitfalls on Mac M1**
+    **macOS Packaging**
     
-    - If new processes are spawned in an endless loop, try adding the following lines at the beginning of your code:
+    Add the following snippet before anything else in your main app's file, to prevent new processes from being spawned in an endless loop:
 
-        ```python
-        from multiprocessing import freeze_support
-        freeze_support()
-        ```
+    ```python
+    # macOS packaging support
+    from multiprocessing import freeze_support  # noqa
+    freeze_support()  # noqa
+
+    # all your other imports and code
+    ```
     
-    - If processes are left behind after closing the app, try packaging the app without the `--windowed` argument.
+    The `# noqa` comment instructs Pylance or autopep8 to not apply any pep rule on those two lines, guaranteeing they remain on top of anything else. This is key to prevent process spawning.
 ''')
 
 doc.text('NiceGUI On Air', '''
