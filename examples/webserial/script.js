@@ -5,11 +5,11 @@
 
 // Global variables
 let port = null; //object
-let outputDone;
-let outputStream;
-let reader;
-let inputDone;
-let inputStream;
+let outputDone = null;
+let outputStream = null;
+let reader = null;
+let inputDone = null;
+let inputStream = null;
 
 // check if broswer supports webserial
 function check_compatability() {
@@ -39,10 +39,13 @@ async function disconnect() {
     outputDone = null;
   }
 
-  await port.close();
-  port = null;
-  console.log('port closed');
-
+  if (port) {
+    await port.close();
+    port = null;
+    console.log('port closed');
+  };
+  // console.log('made it here');
+  return true;
 };
 
 
