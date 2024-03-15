@@ -24,26 +24,24 @@ def LED_off():
     ui.run_javascript("writeStream('0')")
 
 
-
-
 class App():
     def __init__(self, samp_rate=5, pnts=20):
         self.available = False
         self.connected = False
         self.setup()
 
-    # Build the nicegui UI 
+    # Build the nicegui UI
     def setup(self):
         with ui.card().classes("bg-grey-9"):
             with ui.column().classes('w-full justify-center'):
-                self.butt_conn = ui.button('Connect', on_click=self.connect)                                                                                  
+                self.butt_conn = ui.button('Connect', on_click=self.connect)
                 self.butt_on = ui.button('LED On', on_click=LED_on)
                 self.butt_off = ui.button('LED Off', on_click=LED_off)
                 self.butt_disconn = ui.button('Disconnect', on_click=self.disconnect)
                 self.butt_on.disable()
                 self.butt_off.disable()
                 self.butt_disconn.disable()
-                
+
         # Pipe external JS script into page body
         with open("script.js") as f:
             ui.add_body_html('<script>' + f.read() + '</script>')
@@ -54,7 +52,6 @@ class App():
     def custom_event(self, counts):
         ui.notify(f"Button pressed {counts} times!")
 
-        
     async def disconnect(self):
         await ui.run_javascript('disconnect()', timeout=5)
         self.butt_on.disable()
