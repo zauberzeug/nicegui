@@ -35,7 +35,11 @@ class Button(TextElement, DisableableElement, BackgroundColorElement):
             self._props['icon'] = icon
 
         if on_click:
-            self.on('click', lambda _: handle_event(on_click, ClickEventArguments(sender=self, client=self.client)), [])
+            self.on_click(on_click)
+
+    def on_click(self, callback: Callable[..., Any]) -> None:
+        """Set a callback to be invoked when the button is clicked."""
+        self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
 
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text
