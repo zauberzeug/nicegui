@@ -32,9 +32,10 @@ class ValueElement(Element):
             self._send_update_on_value_change = True
         self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
 
-    def on_value_change(self, callback: Callable[..., Any]) -> None:
-        """Set a callback to be invoked when the value changes."""
+    def on_value_change(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the value changes."""
         self._change_handlers.append(callback)
+        return self
 
     def bind_value_to(self,
                       target_object: Any,
