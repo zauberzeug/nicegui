@@ -4,7 +4,7 @@ const int LED = 3;
 // Variables will change:
 int buttonState = 0;        // current state of the button
 int lastButtonState = 0;    // previous state of the button
-
+int count = 0;              // count button presses
 void  setup()
 {
   pinMode(BUTTON, INPUT);
@@ -35,7 +35,8 @@ void loop() {
     // if the state has changed, increment the counter
     if (buttonState == HIGH) {
       // if the current state is HIGH then the button went from off to on
-      Serial.println("1");
+      count++;
+      Serial.println(count);
     } else {
       // if the current state is LOW then the button went from on to off
       // Serial.println("off");
