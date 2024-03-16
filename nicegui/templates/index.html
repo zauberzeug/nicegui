@@ -47,7 +47,7 @@
       }
       function runMethod(target, method_name, args) {
         if (typeof target === "object") {
-          if (Object.hasOwn(target, method_name)) {
+          if (method_name in target) {
             return target[method_name](...args);
           } else {
             return eval(method_name)(target, ...args);
@@ -55,7 +55,7 @@
         }
         const element = getElement(target);
         if (element === null || element === undefined) return;
-        if (Object.hasOwn(element, method_name)) {
+        if (method_name in element) {
           return element[method_name](...args);
         } else if (method_name in element.$refs.qRef) {
           return element.$refs.qRef[method_name](...args);
