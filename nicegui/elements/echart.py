@@ -1,11 +1,12 @@
-from typing import Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from typing_extensions import Self
 
 from .. import optional_features
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
-from ..events import EChartPointClickEventArguments, GenericEventArguments, handle_event
+from ..events import (EChartPointClickEventArguments, GenericEventArguments,
+                      handle_event)
 
 try:
     from pyecharts.charts.base import default, json
@@ -34,31 +35,35 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
         self._classes.append('nicegui-echart')
 
         if on_point_click:
-            def handle_point_click(e: GenericEventArguments) -> None:
-                handle_event(on_point_click, EChartPointClickEventArguments(
-                    sender=self,
-                    client=self.client,
-                    component_type=e.args['componentType'],
-                    series_type=e.args['seriesType'],
-                    series_index=e.args['seriesIndex'],
-                    series_name=e.args['seriesName'],
-                    name=e.args['name'],
-                    data_index=e.args['dataIndex'],
-                    data=e.args['data'],
-                    data_type=e.args.get('dataType'),
-                    value=e.args['value'],
-                ))
-            self.on('pointClick', handle_point_click, [
-                'componentType',
-                'seriesType',
-                'seriesIndex',
-                'seriesName',
-                'name',
-                'dataIndex',
-                'data',
-                'dataType',
-                'value',
-            ])
+            self.on_point_click(on_point_click)
+
+    def on_point_click(self, callback: Callable[..., Any]) -> Self:
+        def handle_point_click(e: GenericEventArguments) -> None:
+            handle_event(callback, EChartPointClickEventArguments(
+                sender=self,
+                client=self.client,
+                component_type=e.args['componentType'],
+                series_type=e.args['seriesType'],
+                series_index=e.args['seriesIndex'],
+                series_name=e.args['seriesName'],
+                name=e.args['name'],
+                data_index=e.args['dataIndex'],
+                data=e.args['data'],
+                data_type=e.args.get('dataType'),
+                value=e.args['value'],
+            ))
+        self.on('pointClick', handle_point_click, [
+            'componentType',
+            'seriesType',
+            'seriesIndex',
+            'seriesName',
+            'name',
+            'dataIndex',
+            'data',
+            'dataType',
+            'value',
+        ])
+        return self
 
     @classmethod
     def from_pyecharts(cls, chart: 'Chart', on_point_click: Optional[Callable] = None) -> Self:
