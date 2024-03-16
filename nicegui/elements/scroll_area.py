@@ -1,5 +1,7 @@
 from typing import Any, Callable, Literal, Optional
 
+from typing_extensions import Self
+
 from ..element import Element
 from ..events import GenericEventArguments, ScrollEventArguments, handle_event
 
@@ -18,16 +20,20 @@ class ScrollArea(Element):
         self._classes.append('nicegui-scroll-area')
 
         if on_scroll:
-            self.on('scroll', lambda e: self._handle_scroll(on_scroll, e), args=[
-                'verticalPosition',
-                'verticalPercentage',
-                'verticalSize',
-                'verticalContainerSize',
-                'horizontalPosition',
-                'horizontalPercentage',
-                'horizontalSize',
-                'horizontalContainerSize',
-            ])
+            self.on_scroll(on_scroll)
+
+    def on_scroll(self, callback: Callable[..., Any]) -> Self:
+        self.on('scroll', lambda e: self._handle_scroll(on_scroll, e), args=[
+            'verticalPosition',
+            'verticalPercentage',
+            'verticalSize',
+            'verticalContainerSize',
+            'horizontalPosition',
+            'horizontalPercentage',
+            'horizontalSize',
+            'horizontalContainerSize',
+        ])
+        return self
 
     def _handle_scroll(self, handler: Optional[Callable[..., Any]], e: GenericEventArguments) -> None:
         handle_event(handler, ScrollEventArguments(
