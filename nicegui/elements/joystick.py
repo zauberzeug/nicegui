@@ -1,7 +1,10 @@
 from typing import Any, Callable, Optional
 
+from typing_extensions import Self
+
 from ..element import Element
-from ..events import GenericEventArguments, JoystickEventArguments, handle_event
+from ..events import (GenericEventArguments, JoystickEventArguments,
+                      handle_event)
 
 
 class Joystick(Element, component='joystick.vue', libraries=['lib/nipplejs/nipplejs.js']):
@@ -26,26 +29,49 @@ class Joystick(Element, component='joystick.vue', libraries=['lib/nipplejs/nippl
         self._props['options'] = options
         self.active = False
 
+        self._start_handlers = [on_start] if on_start else []
+        self._move_handlers = [on_move] if on_move else []
+        self._end_handlers = [on_end] if on_end else []
+
         def handle_start() -> None:
             self.active = True
-            handle_event(on_start, JoystickEventArguments(sender=self,
-                                                          client=self.client,
-                                                          action='start'))
+            args = JoystickEventArguments(sender=self, client=self.client, action='start')
+            for handler in self._start_handlers:
+                handle_event(handler, args)
 
         def handle_move(e: GenericEventArguments) -> None:
             if self.active:
-                handle_event(on_move, JoystickEventArguments(sender=self,
-                                                             client=self.client,
-                                                             action='move',
-                                                             x=float(e.args['data']['vector']['x']),
-                                                             y=float(e.args['data']['vector']['y'])))
+                args = JoystickEventArguments(sender=self,
+                                              client=self.client,
+                                              action='move',
+                                              x=float(e.args['data']['vector']['x']),
+                                              y=float(e.args['data']['vector']['y']))
+                for handler in self._move_handlers:
+                    handle_event(handler, args)
 
         def handle_end() -> None:
             self.active = False
-            handle_event(on_end, JoystickEventArguments(sender=self,
-                                                        client=self.client,
-                                                        action='end'))
+            args = JoystickEventArguments(sender=self,
+                                          client=self.client,
+                                          action='end')
+            for handler in self._end_handlers:
+                handle_event(handler, args)
 
         self.on('start', handle_start, [])
         self.on('move', handle_move, ['data'], throttle=throttle)
         self.on('end', handle_end, [])
+
+    def on_start(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the user touches the joystick."""
+        self._start_handlers.append(callback)
+        return self
+
+    def on_move(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the user moves the joystick."""
+        self._move_handlers.append(callback)
+        return self
+
+    def on_end(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the user releases the joystick."""
+        self._end_handlers.append(callback)
+        return self
