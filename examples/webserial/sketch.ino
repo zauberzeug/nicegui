@@ -1,20 +1,16 @@
 const int BUTTON = 2;
 const int LED = 3;
 
-// Variables will change:
-int buttonState = 0;        // current state of the button
-int lastButtonState = 0;    // previous state of the button
-int count = 0;              // count button presses
-void  setup()
+int buttonPressCount = 0;
+
+void setup()
 {
   pinMode(BUTTON, INPUT);
   pinMode(LED, OUTPUT);
-  Serial.begin(9600);
+  Serial.begin(115200);
 }
 
-
 void loop() {
-
   if (Serial.available() > 0) {
     char received = Serial.read();
     switch (received) {
@@ -27,27 +23,9 @@ void loop() {
     }
   }
 
-  // read the pushbutton input pin
-  buttonState = digitalRead(BUTTON);
-
-  // compare the buttonState to its previous state
-  if (buttonState != lastButtonState) {
-    // if the state has changed, increment the counter
-    if (buttonState == HIGH) {
-      // if the current state is HIGH then the button went from off to on
-      count++;
-      Serial.println(count);
-    } else {
-      // if the current state is LOW then the button went from on to off
-      // Serial.println("off");
-    }
-    // Delay a little bit to avoid bouncing
-    delay(50);
+  if (digitalRead(BUTTON) == HIGH) {
+    buttonPressCount++;
+    Serial.println(buttonPressCount);
+    delay(50); // avoid bouncing
   }
-  // save the current state as the last state, for next time through the loop
-  lastButtonState = buttonState;
 }
-
-
-
-
