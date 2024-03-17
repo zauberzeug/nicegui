@@ -28,7 +28,7 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
     # header
     add_head_html()
     add_header(menu)
-    ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
+    ui.add_style('html {scroll-behavior: auto}')
 
     # content
     def render_content():

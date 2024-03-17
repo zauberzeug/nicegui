@@ -135,13 +135,11 @@ doc.intro(colors_documentation)
 
 ''')
 def css_variables_demo():
-    # ui.add_head_html('''
-    #     <style>
-    #         :root {
-    #             --nicegui-default-padding: 0.5rem;
-    #             --nicegui-default-gap: 3rem;
-    #         }
-    #     </style>
+    # ui.add_style('''
+    #     :root {
+    #         --nicegui-default-padding: 0.5rem;
+    #         --nicegui-default-gap: 3rem;
+    #     }
     # ''')
     # with ui.card():
     #     ui.label('small padding')
