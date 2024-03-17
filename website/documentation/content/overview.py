@@ -76,7 +76,7 @@ doc.text('Customization', '''
 
 tiles = [
     (section_text_elements, '''
-        Elements like `ui.label`, `ui.markdown` and `ui.html` can be used to display text and other content.
+        Elements like `ui.label`, `ui.markdown`, `ui.restructured_text` and `ui.html` can be used to display text and other content.
     '''),
     (section_controls, '''
         NiceGUI provides a variety of elements for user interaction, e.g. `ui.button`, `ui.slider`, `ui.inputs`, etc.
@@ -110,6 +110,9 @@ tiles = [
 
 @doc.extra_column
 def create_tiles():
+    with ui.row().classes('items-center content-between'):
+        ui.label('If you like NiceGUI, go and become a')
+        ui.html('<iframe src="https://github.com/sponsors/zauberzeug/button" title="Sponsor zauberzeug" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>')
     for documentation, description in tiles:
         page = doc.get_page(documentation)
         with ui.link(target=f'/documentation/{page.name}') \

@@ -59,16 +59,15 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         :param options: dictionary of additional AG Grid options
         :return: AG Grid element
         """
-        date_cols = df.columns[df.dtypes == 'datetime64[ns]']
-        time_cols = df.columns[df.dtypes == 'timedelta64[ns]']
-        complex_cols = df.columns[df.dtypes == 'complex128']
-        period_cols = df.columns[df.dtypes == 'period[M]']
-        if len(date_cols) != 0 or len(time_cols) != 0 or len(complex_cols) != 0 or len(period_cols) != 0:
+        def is_special_dtype(dtype):
+            return (pd.api.types.is_datetime64_any_dtype(dtype) or
+                    pd.api.types.is_timedelta64_dtype(dtype) or
+                    pd.api.types.is_complex_dtype(dtype) or
+                    pd.api.types.is_period_dtype(dtype))
+        special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
+        if not special_cols.empty:
             df = df.copy()
-            df[date_cols] = df[date_cols].astype(str)
-            df[time_cols] = df[time_cols].astype(str)
-            df[complex_cols] = df[complex_cols].astype(str)
-            df[period_cols] = df[period_cols].astype(str)
+            df[special_cols] = df[special_cols].astype(str)
 
         if isinstance(df.columns, pd.MultiIndex):
             raise ValueError('MultiIndex columns are not supported. '

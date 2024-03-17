@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -7,7 +7,9 @@ from .mixins.value_element import ValueElement
 class Date(ValueElement, DisableableElement):
 
     def __init__(self,
-                 value: Optional[str] = None,
+                 value: Optional[
+                     Union[str, Dict[str, str], List[str], List[Union[str, Dict[str, str]]]]
+                 ] = None,
                  *,
                  mask: str = 'YYYY-MM-DD',
                  on_change: Optional[Callable[..., Any]] = None) -> None:

@@ -2,7 +2,7 @@ import uuid
 
 from nicegui import app, ui
 
-from . import (doc, download_documentation, open_documentation, page_documentation, page_layout_documentation,
+from . import (doc, download_documentation, navigate_documentation, page_documentation, page_layout_documentation,
                page_title_documentation)
 
 CONSTANT_UUID = str(uuid.uuid4())
@@ -58,7 +58,14 @@ def parameter_demo():
 
 
 doc.intro(page_title_documentation)
-doc.intro(open_documentation)
+doc.intro(navigate_documentation)
+
+doc.redirects['open'] = 'navigate#ui_navigate_to_(formerly_ui_open)'
+doc.text('ui.open', f'''
+    The `ui.open` function is deprecated.
+    Use [`ui.navigate.to`]({doc.redirects["open"]}) instead.
+''')
+
 doc.intro(download_documentation)
 
 
@@ -128,4 +135,5 @@ def fastapi_demo():
         return {'min': 0, 'max': max, 'value': random.randint(0, max)}
 
     max = ui.number('max', value=100)
-    ui.button('generate random number', on_click=lambda: ui.open(f'/random/{max.value:.0f}'))
+    ui.button('generate random number',
+              on_click=lambda: ui.navigate.to(f'/random/{max.value:.0f}'))

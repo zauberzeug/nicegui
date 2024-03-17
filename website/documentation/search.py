@@ -24,6 +24,7 @@ def build_search_index() -> None:
         {
             'title': f'{documentation.heading.replace("*", "")}: {part.title}',
             'content': part.description or '',
+            'format': part.description_format,
             'url': f'/documentation/{documentation.name}#{part.link_target}',
         }
         for documentation in registry.values()
@@ -33,6 +34,7 @@ def build_search_index() -> None:
         {
             'title': f'Example: {example.title}',
             'content': example.description,
+            'format': 'md',
             'url': example.url,
         }
         for example in examples
