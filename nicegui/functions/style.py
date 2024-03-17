@@ -8,7 +8,9 @@ from .html import add_head_html
 
 
 def add_style(content: Union[str, Path], indented: bool = False) -> None:
-    """Add a style to the head of the HTML page.
+    """Add style definitions to the page.
+
+    This function can be used to add CSS, SCSS, or SASS style definitions to the head of the HTML page.
 
     :param content: style content (string or file path)
     :param indented: whether the content is indented (SASS) or not (SCSS/CSS) (default: `False`)

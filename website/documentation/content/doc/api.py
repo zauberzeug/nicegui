@@ -84,6 +84,7 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
         element = args[0]
         doc = element.__init__.__doc__ if isinstance(element, type) else element.__doc__  # type: ignore
         title_, description = doc.split('\n', 1)
+        title_ = title_.rstrip('.')
         is_markdown = False
 
     description = remove_indentation(description)
