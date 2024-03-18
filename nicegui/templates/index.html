@@ -139,13 +139,23 @@
             return;
         }
 
+        element.class ??= [];
+        element.style ??= {};
+        element.props ??= {};
+        element.text ??= null;
+        element.slots ??= {};
+        element.events ??= [];
+        element.component ??= null;
+        element.libraries ??= [];
+
         // @todo: Try avoid this with better handling of initial page load.
         if (element.component) loaded_components.add(element.component.name);
         element.libraries.forEach((library) => loaded_libraries.add(library.name));
 
         const props = {
-          id: 'c' + element.id,
-          ref: 'r' + element.id,
+          id: 'c' + id,
+          ref: 'r' + id,
+          key: id,  // HACK: workaround for #600 and #898
           class: element.class.join(' ') || undefined,
           style: Object.entries(element.style).reduce((str, [p, val]) => `${str}${p}:${val};`, '') || undefined,
           ...element.props,
@@ -172,7 +182,7 @@
           else {
             handler = (...args) => {
               const data = {
-                id: element.id,
+                id: id,
                 client_id: window.client_id,
                 listener_id: event.listener_id,
                 args: stringifyEventArgs(args, event.args),
@@ -194,7 +204,11 @@
           }
         });
         const slots = {};
-        Object.entries(element.slots).forEach(([name, data]) => {
+        const element_slots = {
+          default: { ids: element.children || [] },
+          ...element.slots,
+        };
+        Object.entries(element_slots).forEach(([name, data]) => {
           slots[name] = (props) => {
             const rendered = [];
             if (data.template) {
@@ -255,10 +269,12 @@
             loaded_components.add(name);
           }
         }
-        for (const {name, key} of element.libraries) {
-          if (loaded_libraries.has(name)) continue;
-          await import(`{{ prefix | safe }}/_nicegui/{{version}}/libraries/${key}`);
-          loaded_libraries.add(name);
+        if (element.libraries) {
+          for (const {name, key} of element.libraries) {
+            if (loaded_libraries.has(name)) continue;
+            await import(`{{ prefix | safe }}/_nicegui/{{version}}/libraries/${key}`);
+            loaded_libraries.add(name);
+          }
         }
       }
 
@@ -311,10 +327,10 @@
                   delete this.elements[id];
                   continue;
                 }
-                if (element.component || element.libraries.length > 0) {
+                if (element.component || element.libraries) {
                   await loadDependencies(element);
                 }
-                this.elements[element.id] = element;
+                this.elements[id] = element;
               }
             },
             run_javascript: (msg) => runJavascript(msg['code'], msg['request_id']),
