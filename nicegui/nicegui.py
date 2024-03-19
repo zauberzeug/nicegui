@@ -144,6 +144,7 @@ async def _shutdown() -> None:
 @app.exception_handler(404)
 async def _exception_handler_404(request: Request, exception: Exception) -> Response:
     log.warning(f'{request.url} not found')
+    request.scope['root_path'] = ''
     with Client(page('')) as client:
         error_content(404, exception)
     return client.build_response(request, 404)
