@@ -262,7 +262,8 @@ doc.text('', '''
     # all your other imports and code
     ```
     
-    The `# noqa` comment instructs Pylance or autopep8 to not apply any pep rule on those two lines, guaranteeing they remain on top of anything else. This is key to prevent process spawning.
+    The `# noqa` comment instructs Pylance or autopep8 to not apply any PEP rule on those two lines, guaranteeing they remain on top of anything else.
+    This is key to prevent process spawning.
 ''')
 
 doc.text('NiceGUI On Air', '''
