@@ -82,8 +82,9 @@ def test_auto_serving_file_from_video_source(screen: Screen):
     screen.open('/')
     video = screen.find_by_tag('video')
     assert '/_nicegui/auto/media/' in video.get_attribute('src')
-    screen.wait(0.5)
+    screen.wait(1.0)
     assert_video_file_streaming(video.get_attribute('src'))
+    screen.wait(1.0)
 
 
 def test_mimetypes_of_static_files(screen: Screen):
