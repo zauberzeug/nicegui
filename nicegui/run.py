@@ -2,17 +2,22 @@ import asyncio
 import sys
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from functools import partial
-from typing import Any, Callable
+from typing import Any, Callable, TypeVar, cast
+
+from typing_extensions import ParamSpec
 
 from . import core, helpers
 
 process_pool = ProcessPoolExecutor()
 thread_pool = ThreadPoolExecutor()
 
+P = ParamSpec('P')
+R = TypeVar('R')
 
-async def _run(executor: Any, callback: Callable, *args: Any, **kwargs: Any) -> Any:
+
+async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
     if core.app.is_stopping:
-        return
+        return  # type: ignore  # the assumption is that the user's code no longer cares about this value
     try:
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(executor, partial(callback, *args, **kwargs))
@@ -21,9 +26,10 @@ async def _run(executor: Any, callback: Callable, *args: Any, **kwargs: Any) -> 
             raise
     except asyncio.exceptions.CancelledError:
         pass
+    return  # type: ignore  # the assumption is that the user's code no longer cares about this value
 
 
-async def cpu_bound(callback: Callable, *args: Any, **kwargs: Any) -> Any:
+async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
     """Run a CPU-bound function in a separate process.
 
     `run.cpu_bound` needs to execute the function in a separate process.
@@ -34,7 +40,7 @@ async def cpu_bound(callback: Callable, *args: Any, **kwargs: Any) -> Any:
     return await _run(process_pool, callback, *args, **kwargs)
 
 
-async def io_bound(callback: Callable, *args: Any, **kwargs: Any) -> Any:
+async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
     """Run an I/O-bound function in a separate thread."""
     return await _run(thread_pool, callback, *args, **kwargs)
 
