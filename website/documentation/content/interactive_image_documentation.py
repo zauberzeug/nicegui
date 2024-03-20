@@ -62,4 +62,12 @@ def loaded_event():
     ui.button('Change Source', on_click=lambda: ii.set_source(f'https://picsum.photos/640/360?time={time.time()}'))
 
 
+@doc.demo('Crosshairs', '''
+    You can show crosshairs by passing `cross=True`.
+    You can also change the color of the crosshairs by passing a color string.
+''')
+def crosshairs():
+    ui.interactive_image('https://picsum.photos/id/565/640/360', cross='red')
+
+
 doc.reference(ui.interactive_image)
