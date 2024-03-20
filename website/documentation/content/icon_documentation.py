@@ -8,9 +8,9 @@ def main_demo() -> None:
     ui.icon('thumb_up', color='primary').classes('text-5xl')
 
 
-@doc.demo('Material icons and symbols', '''
+@doc.demo('Material icons and symbols', r'''
     You can use different sets of Material icons and symbols.
-    The [Quasar documentation](https://quasar.dev/vue-components/icon#webfont-usage)
+    The [Quasar documentation](https://quasar.dev/vue-components/icon\#webfont-usage)
     gives an overview of all available icon sets and their name prefix:
     
     * None for [filled icons](https://fonts.google.com/icons?icon.set=Material+Icons&icon.style=Filled)
