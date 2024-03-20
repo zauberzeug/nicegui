@@ -30,6 +30,7 @@ httpx = ">=0.24.0"
 nicegui-highcharts = { version = "^1.0.1", optional = true }
 ifaddr = ">=0.2.0"
 aiohttp = ">=3.9.2" # https://github.com/zauberzeug/nicegui/security/dependabot/25 and 26
+libsass = ">=0.23.0"
 docutils = "^0.19"
 
 [tool.poetry.extras]

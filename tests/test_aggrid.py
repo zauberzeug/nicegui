@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 from selenium.webdriver.common.action_chains import ActionChains
@@ -197,6 +197,7 @@ def test_api_method_after_creation(screen: Screen):
 def test_problematic_datatypes(screen: Screen):
     df = pd.DataFrame({
         'datetime_col': [datetime(2020, 1, 1)],
+        'datetime_col_tz': [datetime(2020, 1, 1, tzinfo=timezone.utc)],
         'timedelta_col': [timedelta(days=5)],
         'complex_col': [1 + 2j],
         'period_col': pd.Series([pd.Period('2021-01')]),
@@ -205,6 +206,7 @@ def test_problematic_datatypes(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Datetime_col')
+    screen.should_contain('Datetime_col_tz')
     screen.should_contain('Timedelta_col')
     screen.should_contain('Complex_col')
     screen.should_contain('Period_col')

@@ -99,6 +99,7 @@ __all__ = [
     'refreshable',
     'refreshable_method',
     'state',
+    'add_style',
     'update',
     'page',
     'drawer',
@@ -210,6 +211,7 @@ from .functions.on import on
 from .functions.open import open  # pylint: disable=redefined-builtin
 from .functions.page_title import page_title
 from .functions.refreshable import refreshable, refreshable_method, state
+from .functions.style import add_style
 from .functions.update import update
 from .page import page
 from .page_layout import Drawer as drawer
