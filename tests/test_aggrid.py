@@ -229,3 +229,16 @@ def test_run_row_method(screen: Screen):
     screen.click('Update')
     screen.should_contain('Alice')
     screen.should_contain('42')
+
+
+def test_run_method_with_function(screen: Screen):
+    grid = ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}, {'name': 'Bob'}]})
+
+    async def print_row(index: int) -> None:
+        ui.label(f'Row {index}: {await grid.run_grid_method(f"(g) => g.getDisplayedRowAtIndex({index}).data")}')
+
+    ui.button('Print Row 0', on_click=lambda: print_row(0))
+
+    screen.open('/')
+    screen.click('Print Row 0')
+    screen.should_contain("Row 0: {'name': 'Alice'}")
