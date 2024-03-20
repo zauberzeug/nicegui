@@ -30,12 +30,13 @@ def assert_video_file_streaming(path: str) -> None:
         r = http_client.get(
             path if 'http' in path else f'http://localhost:{Screen.PORT}{path}',
             headers={'Range': 'bytes=0-1000'},
+            timeout=1,
         )
-        assert r.status_code == 206
-        assert r.headers['Accept-Ranges'] == 'bytes'
-        assert r.headers['Content-Range'].startswith('bytes 0-1000/')
-        assert r.headers['Content-Length'] == '1001'
-        assert r.headers['Content-Type'] == 'video/mp4'
+    assert r.status_code == 206
+    assert r.headers['Accept-Ranges'] == 'bytes'
+    assert r.headers['Content-Range'].startswith('bytes 0-1000/')
+    assert r.headers['Content-Length'] == '1001'
+    assert r.headers['Content-Type'] == 'video/mp4'
 
 
 def test_media_files_can_be_streamed(screen: Screen):
@@ -81,7 +82,9 @@ def test_auto_serving_file_from_video_source(screen: Screen):
     screen.open('/')
     video = screen.find_by_tag('video')
     assert '/_nicegui/auto/media/' in video.get_attribute('src')
+    screen.wait(1.0)
     assert_video_file_streaming(video.get_attribute('src'))
+    screen.wait(1.0)
 
 
 def test_mimetypes_of_static_files(screen: Screen):
