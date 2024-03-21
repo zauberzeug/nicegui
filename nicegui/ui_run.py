@@ -92,6 +92,7 @@ def run(*,
         tailwind=tailwind,
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
+        root_path=""
     )
     core.app.config.endpoint_documentation = endpoint_documentation
 

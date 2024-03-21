@@ -55,6 +55,7 @@ def run_with(
         tailwind=tailwind,
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
+        root_path=mount_path
     )
 
     storage.set_storage_secret(storage_secret)
