@@ -70,4 +70,17 @@ def crosshairs():
     ui.interactive_image('https://picsum.photos/id/565/640/360', cross='red')
 
 
+@doc.demo('SVG content', '''
+    You can overlay SVG content on top of the image.
+    The SVG content is positioned absolutely with respect to the image.
+    You can also access SVG events by passing a callback to `on_pointer`.
+          ''')
+def svg_content():
+    image = ui.interactive_image(
+        size=(800, 600), cross=True, on_pointer=lambda e : ui.notify(e)).classes('w-64 bg-blue-50')
+    image.content = '''
+                    <circle cx="125" cy="80" r="50" fill="black" pointer-events="all" />
+                    <circle cx="250" cy="80" r="50" fill="black" pointer-events="all" />
+                    '''
+
 doc.reference(ui.interactive_image)

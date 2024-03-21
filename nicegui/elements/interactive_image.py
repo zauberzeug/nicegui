@@ -28,6 +28,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
                  on_mouse: Optional[Callable[..., Any]] = None,
                  events: List[str] = ['click'],
                  cross: Union[bool, str] = False,
+                 on_pointer : Optional[Callable[..., Any]] = None,
                  ) -> None:
         """Interactive Image
 
@@ -53,6 +54,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         :param on_mouse: callback for mouse events (contains image coordinates `image_x` and `image_y` in pixels)
         :param events: list of JavaScript events to subscribe to (default: `['click']`)
         :param cross: whether to show crosshairs or a color string (default: `False`)
+        :param on_pointer: callback for pointer events (contains image coordinates `image_x` and `image_y` in pixels, and `type` of the event)
         """
         super().__init__(source=source, content=content)
         self._props['events'] = events
@@ -77,7 +79,28 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
                 shift=args.get('shiftKey', False),
             )
             handle_event(on_mouse, arguments)
+        
+        def handle_move(e) -> None:
+            args = cast(dict, e.args)
+            arguments =  MouseEventArguments(
+                sender=self,
+                client=self.client,
+                type= args.get('type', ''), 
+                image_x = args.get('image_x', 0.0),
+                image_y=  args.get('image_y', 0.0),
+                button =0,
+                buttons = 0,
+                alt=args.get('altKey', False),
+                ctrl=args.get('ctrlKey', False),
+                meta=args.get('metaKey', False),
+                shift=args.get('shiftKey', False),
+            )
+            
+            handle_event(on_pointer, arguments)
+
+        self.on('pointer', handle_move)
         self.on('mouse', handle_mouse)
+
 
     def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):

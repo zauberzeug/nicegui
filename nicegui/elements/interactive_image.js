@@ -10,7 +10,18 @@ export default {
         v-on="onUserEvents"
         draggable="false"
       />
-      <svg style="position:absolute;top:0;left:0;pointer-events:none" :viewBox="viewBox">
+      <svg 
+        style="position:absolute;top:0;left:0;pointer-events:none" 
+        :viewBox="viewBox"
+        @pointermove="onPointerMove"
+        @pointerdown="onPointerDown"
+        @pointerup="onPointerUp"
+        @pointerover="onPointerOver"
+        @pointerout="onPointerOut"
+        @pointerenter="onPointerEnter"
+        @pointerleave="onPointerLeave"
+        @pointercancel="onPointerCancel"
+      >
         <g v-if="cross" :style="{ display: showCross ? 'block' : 'none' }">
           <line :x1="x" y1="0" :x2="x" y2="100%" :stroke="cross === true ? 'black' : cross" />
           <line x1="0" :y1="y" x2="100%" :y2="y" :stroke="cross === true ? 'black' : cross" />
@@ -20,6 +31,7 @@ export default {
       <slot></slot>
     </div>
   `,
+
   data() {
     return {
       viewBox: "0 0 0 0",
@@ -91,6 +103,78 @@ export default {
         ctrlKey: e.ctrlKey,
         metaKey: e.metaKey,
         shiftKey: e.shiftKey,
+      });
+    },
+    onPointerMove(event) {
+      const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
+      const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
+
+      this.$emit("pointer", {
+        type: "mousemove",
+        image_x: (event.offsetX * width) / event.x,
+        image_y: (event.offsetY * height) / event.x,
+      });
+    },
+    onPointerDown(event) {
+      const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
+      const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
+      this.$emit("pointer", {
+        type: "mousedown",
+        image_x: (event.offsetX * width) / event.x,
+        image_y: (event.offsetY * height) / event.x,
+      });
+    },
+    onPointerUp(event) {
+      const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
+      const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
+      this.$emit("pointer", {
+        type: "mouseup",
+        image_x: (event.offsetX * width) / event.x,
+        image_y: (event.offsetY * height) / event.x,
+      });
+    },
+    onPointerOver(event) {
+      const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
+      const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
+      this.$emit("pointer", {
+        image_x: (event.offsetX * width) / event.x,
+        image_y: (event.offsetY * height) / event.x,
+      });
+    },
+    onPointerOut(event) {
+      const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
+      const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
+      this.$emit("pointer", {
+        type: "mouseout",
+        image_x: (event.offsetX * width) / event.x,
+        image_y: (event.offsetY * height) / event.x,
+      });
+    },
+    onPointerEnter(event) {
+      const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
+      const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
+      this.$emit("pointer", {
+        type: "mouseenter",
+        image_x: (event.offsetX * width) / event.x,
+        image_y: (event.offsetY * height) / event.x,
+      });
+    },
+    onPointerLeave(event) {
+      const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
+      const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
+      this.$emit("pointer", {
+        type: "mouseleave",
+        image_x: (event.offsetX * width) / event.x,
+        image_y: (event.offsetY * height) / event.x,
+      });
+    },
+    onPointerCancel(event) {
+      const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
+      const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
+      this.$emit("pointer", {
+        type: "mousecancel",
+        image_x: (event.offsetX * width) / event.x,
+        image_y: (event.offsetY * height) / event.x,
       });
     },
   },
