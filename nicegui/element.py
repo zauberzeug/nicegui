@@ -177,8 +177,7 @@ class Element(Visibility):
 
     def __iter__(self) -> Iterator[Element]:
         for slot in self.slots.values():
-            for child in slot:
-                yield child
+            yield from slot
 
     def _collect_slot_dict(self) -> Dict[str, Any]:
         return {
