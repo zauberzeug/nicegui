@@ -24,13 +24,22 @@ function getElement(id) {
   return mounted_app.$refs["r" + _id];
 }
 
-function runMethod(element_id, method_name, args) {
-  const element = getElement(element_id);
+function runMethod(target, method_name, args) {
+  if (typeof target === "object") {
+    if (method_name in target) {
+      return target[method_name](...args);
+    } else {
+      return eval(method_name)(target, ...args);
+    }
+  }
+  const element = getElement(target);
   if (element === null || element === undefined) return;
   if (method_name in element) {
     return element[method_name](...args);
-  } else {
+  } else if (method_name in element.$refs.qRef) {
     return element.$refs.qRef[method_name](...args);
+  } else {
+    return eval(method_name)(element, ...args);
   }
 }
 
