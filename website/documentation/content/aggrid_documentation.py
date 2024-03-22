@@ -221,4 +221,21 @@ def aggrid_run_row_method():
               on_click=lambda: grid.run_row_method('Alice', 'setDataValue', 'age', 99))
 
 
+@doc.demo('Filter return values', '''
+    You can filter the return values of method calls by passing string that defines a JavaScript function.
+    This demo runs the grid method "getDisplayedRowAtIndex" and returns the "data" property of the result.
+''')
+def aggrid_filter_return_values():
+    grid = ui.aggrid({
+        'columnDefs': [{'field': 'name'}],
+        'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
+    })
+
+    async def get_first_name() -> None:
+        row = await grid.run_grid_method('(g) => g.getDisplayedRowAtIndex(0).data')
+        ui.notify(row['name'])
+
+    ui.button('Get First Name', on_click=get_first_name)
+
+
 doc.reference(ui.aggrid)

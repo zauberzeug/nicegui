@@ -37,7 +37,7 @@ export default {
           name = name.slice(1);
           args = args.map((arg) => new Function("return " + arg)());
         }
-        return this.editor[name](...args);
+        return runMethod(this.editor, name, args);
       }
     },
   },
