@@ -10,11 +10,7 @@ export default {
         v-on="onUserEvents"
         draggable="false"
       />
-      <svg 
-        style="position:absolute;top:0;left:0;pointer-events:none" 
-        :viewBox="viewBox"
-
-      >
+      <svg ref="svg" style="position:absolute;top:0;left:0;pointer-events:none" :viewBox="viewBox">
         <g v-if="cross" :style="{ display: showCross ? 'block' : 'none' }">
           <line :x1="x" y1="0" :x2="x" y2="100%" :stroke="cross === true ? 'black' : cross" />
           <line x1="0" :y1="y" x2="100%" :y2="y" :stroke="cross === true ? 'black' : cross" />
@@ -24,7 +20,6 @@ export default {
       <slot></slot>
     </div>
   `,
-
   data() {
     return {
       viewBox: "0 0 0 0",
@@ -60,7 +55,7 @@ export default {
       "pointerleave",
       "pointercancel",
     ]) {
-      // make it so that it calls onPointerEvent with the event type if there is an SVG event
+      this.$refs.svg.addEventListener(event, (e) => this.onPointerEvent(event, e));
     }
   },
   updated() {
@@ -110,7 +105,6 @@ export default {
         shiftKey: e.shiftKey,
       });
     },
-
     onPointerEvent(event_type, event) {
       const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
       const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
