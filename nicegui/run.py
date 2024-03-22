@@ -2,7 +2,7 @@ import asyncio
 import sys
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from functools import partial
-from typing import Any, Callable, TypeVar, cast
+from typing import Any, Callable, TypeVar
 
 from typing_extensions import ParamSpec
 
