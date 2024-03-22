@@ -77,7 +77,7 @@ def crosshairs():
           ''')
 def svg_content():
     image = ui.interactive_image(
-        size=(800, 600), cross=True, on_pointer=lambda e : ui.notify(e)).classes('w-64 bg-blue-50')
+        size=(800, 600), cross=True).classes('w-64 bg-blue-50').on('pointer:mousemove'  , lambda e: ui.notify(f'mousemove at ({e.image_x:.1f}, {e.image_y:.1f})'))
     image.content = '''
                     <circle cx="125" cy="80" r="50" fill="black" pointer-events="all" />
                     <circle cx="250" cy="80" r="50" fill="black" pointer-events="all" />
