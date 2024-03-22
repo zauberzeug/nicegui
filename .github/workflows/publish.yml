@@ -25,23 +25,23 @@ jobs:
         run: echo "VERSION=$(echo ${GITHUB_REF/refs\/tags\//})" >> $GITHUB_ENV
       - name: set version
         run: poetry version ${{ env.VERSION }}
-      # - name: publish
-      #   env:
-      #     POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
-      #   run: poetry publish --build
-      # - name: Create GitHub release entry
-      #   uses: softprops/action-gh-release@v1
-      #   id: create_release
-      #   with:
-      #     draft: true
-      #     prerelease: false
-      #     name: ${{ env.VERSION }}
-      #     tag_name: ${{ env.VERSION }}
-      #   env:
-      #     GITHUB_TOKEN: ${{ github.token }}
-      # - name: verify
-      #   shell: bash
-      #   run: for i in {1..100}; do sleep 2; python -m pip install 'nicegui==${{ env.VERSION }}' && break; done; sleep 5
+      - name: publish
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
+        run: poetry publish --build
+      - name: Create GitHub release entry
+        uses: softprops/action-gh-release@v1
+        id: create_release
+        with:
+          draft: true
+          prerelease: false
+          name: ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: verify
+        shell: bash
+        run: for i in {1..100}; do sleep 2; python -m pip install 'nicegui==${{ env.VERSION }}' && break; done; sleep 5
 
   docker:
     needs: pypi
