@@ -1,0 +1,38 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+
+  - repo: https://github.com/hhatto/autopep8
+    rev: "v2.0.4"
+    hooks:
+      - id: autopep8
+        args: [--max-line-length=120, --experimental, --in-place, --recursive, .]
+
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.2.1
+    hooks:
+      - id: ruff
+        args: [--select=I, --fix] # isort
+      - id: ruff-format
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: "v3.15.0"
+    hooks:
+      - id: pyupgrade
+        args: [--py38-plus]
+
+  - repo: https://github.com/ikamensh/flynt/
+    rev: "1.0.1"
+    hooks:
+      - id: flynt
