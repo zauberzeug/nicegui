@@ -108,7 +108,7 @@ export default {
     onPointerEvent(event_type, event) {
       const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
       const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
-      this.$emit(`svg:${event}`, {
+      this.$emit(`svg:${event_type}`, {
         type: event_type,
         image_x: (event.offsetX * width) / event.x,
         image_y: (event.offsetY * height) / event.x,
