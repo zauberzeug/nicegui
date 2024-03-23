@@ -36,7 +36,7 @@ function runMethod(target, method_name, args) {
   if (element === null || element === undefined) return;
   if (method_name in element) {
     return element[method_name](...args);
-  } else if (method_name in element.$refs.qRef) {
+  } else if (method_name in (element.$refs.qRef || [])) {
     return element.$refs.qRef[method_name](...args);
   } else {
     return eval(method_name)(element, ...args);
