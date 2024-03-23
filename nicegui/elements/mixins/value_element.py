@@ -10,6 +10,7 @@ from ...events import GenericEventArguments, ValueChangeEventArguments, handle_e
 class ValueElement(Element):
     VALUE_PROP: str = 'model-value'
     LOOPBACK: bool = True
+    SHORTCUT: bool = False
     value = BindableProperty(
         on_change=lambda sender, value: cast(Self, sender)._handle_value_change(value))  # pylint: disable=protected-access
 
@@ -23,7 +24,7 @@ class ValueElement(Element):
         self._send_update_on_value_change = True
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
-        self._props['loopback'] = self.LOOPBACK
+        self._props['shortcut'] = self.SHORTCUT
         self._change_handler = on_value_change
 
         def handle_change(e: GenericEventArguments) -> None:
