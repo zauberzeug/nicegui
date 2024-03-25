@@ -130,7 +130,7 @@ export default {
         name = name.slice(1);
         args = args.map((arg) => new Function("return " + arg)());
       }
-      return this.map[name](...args);
+      return runMethod(this.map, name, args);
     },
     run_layer_method(id, name, ...args) {
       let result = null;
@@ -140,7 +140,7 @@ export default {
           name = name.slice(1);
           args = args.map((arg) => new Function("return " + arg)());
         }
-        result = layer[name](...args);
+        result = runMethod(layer, name, args);
       });
       return result;
     },

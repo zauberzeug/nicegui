@@ -72,8 +72,11 @@ class Number(ValidationElement, DisableableElement):
 
     @min.setter
     def min(self, value: float) -> None:
+        if self._props['min'] == value:
+            return
         self._props['min'] = value
         self.sanitize()
+        self.update()
 
     @property
     def max(self) -> float:
@@ -82,8 +85,11 @@ class Number(ValidationElement, DisableableElement):
 
     @max.setter
     def max(self, value: float) -> None:
+        if self._props['max'] == value:
+            return
         self._props['max'] = value
         self.sanitize()
+        self.update()
 
     @property
     def precision(self) -> Optional[int]:

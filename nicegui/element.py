@@ -82,7 +82,7 @@ class Element(Visibility):
         self._classes.extend(self._default_classes)
         self._style: Dict[str, str] = {}
         self._style.update(self._default_style)
-        self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
+        self._props: Dict[str, Any] = {}
         self._props.update(self._default_props)
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
@@ -177,36 +177,45 @@ class Element(Visibility):
 
     def __iter__(self) -> Iterator[Element]:
         for slot in self.slots.values():
-            for child in slot:
-                yield child
+            yield from slot
 
     def _collect_slot_dict(self) -> Dict[str, Any]:
         return {
-            name: {'template': slot.template, 'ids': [child.id for child in slot]}
+            name: {
+                'ids': [child.id for child in slot],
+                **({'template': slot.template} if slot.template is not None else {}),
+            }
             for name, slot in self.slots.items()
+            if slot != self.default_slot
         }
 
     def _to_dict(self) -> Dict[str, Any]:
         return {
-            'id': self.id,
             'tag': self.tag,
-            'class': self._classes,
-            'style': self._style,
-            'props': self._props,
-            'text': self._text,
-            'slots': self._collect_slot_dict(),
-            'events': [listener.to_dict() for listener in self._event_listeners.values()],
-            'component': {
-                'key': self.component.key,
-                'name': self.component.name,
-                'tag': self.component.tag
-            } if self.component else None,
-            'libraries': [
-                {
-                    'key': library.key,
-                    'name': library.name,
-                } for library in self.libraries
-            ],
+            **({'text': self._text} if self._text is not None else {}),
+            **{
+                key: value
+                for key, value in {
+                    'class': self._classes,
+                    'style': self._style,
+                    'props': self._props,
+                    'slots': self._collect_slot_dict(),
+                    'children': [child.id for child in self.default_slot.children],
+                    'events': [listener.to_dict() for listener in self._event_listeners.values()],
+                    'component': {
+                        'key': self.component.key,
+                        'name': self.component.name,
+                        'tag': self.component.tag
+                    } if self.component else None,
+                    'libraries': [
+                        {
+                            'key': library.key,
+                            'name': library.name,
+                        } for library in self.libraries
+                    ],
+                }.items()
+                if value
+            },
         }
 
     @staticmethod
