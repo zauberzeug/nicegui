@@ -90,3 +90,39 @@ def test_reset_upload(screen: Screen):
     screen.click('Reset')
     screen.wait(0.5)
     screen.should_not_contain(test_path1.name)
+
+
+def test_two_upload_elements_with_upload_all(screen: Screen):
+    counter = 0
+    results: List[events.UploadEventArguments] = []
+
+    def upload(event: events.UploadEventArguments):
+        results.append(event)
+        nonlocal counter
+        counter += 1
+
+    def upload_all(event: events.UploadEventArguments):
+        results.append(event)
+        nonlocal counter
+        counter += 1
+    ui.upload(on_upload=upload, auto_upload=False, label='Test Title 1')
+    ui.upload(on_upload_all=upload_all, auto_upload=False, label='Test Title 2')
+
+    screen.open('/')
+    screen.should_contain('Test Title 1')
+    screen.should_contain('Test Title 2')
+    screen.find_by_class('q-uploader__input').send_keys(str(test_path1))
+    screen.wait(0.1)
+    assert len(results) == 0
+    screen.find_by_class('q-uploader__input').send_keys(str(test_path2))
+    screen.wait(0.1)
+    screen.find_all_by_class('q-btn')[1].click()
+    screen.wait(0.1)
+    assert len(results) == 2
+    assert counter == 1
+    screen.find_all_by_class('q-btn')[0].click()
+    screen.wait(0.1)
+    assert len(results) == 4
+    assert counter == 3
+    assert results[0].name == test_path1.name
+    assert results[1].name == test_path2.name

@@ -16,11 +16,12 @@ class Upload(DisableableElement, component='upload.js'):
                  max_total_size: Optional[int] = None,
                  max_files: Optional[int] = None,
                  on_upload: Optional[Callable[..., Any]] = None,
+                 on_upload_all: Optional[Callable[..., Any]] = None,
                  on_rejected: Optional[Callable[..., Any]] = None,
                  label: str = '',
                  auto_upload: bool = False,
                  ) -> None:
-        """File Upload
+        """File Upload 
 
         Based on Quasar's `QUploader <https://quasar.dev/vue-components/uploader>`_ component.
 
@@ -50,16 +51,33 @@ class Upload(DisableableElement, component='upload.js'):
 
         @app.post(self._props['url'])
         async def upload_route(request: Request) -> Dict[str, str]:
+            if multiple and on_upload_all:
+                content_list = []
+                name_list = []
+                type_list = []
             for data in (await request.form()).values():
                 assert isinstance(data, UploadFile)
                 args = UploadEventArguments(
                     sender=self,
                     client=self.client,
-                    content=data.file,
+                    content=[data.file],
                     name=data.filename or '',
                     type=data.content_type or '',
                 )
                 handle_event(on_upload, args)
+                if multiple and on_upload_all:
+                    content_list.append(data.file)
+                    name_list.append(data.filename or '')
+                    type_list.append(data.content_type or '')
+            if on_upload_all:
+                upload_all_args = UploadEventArguments(
+                    sender=self,
+                    client=self.client,
+                    content=content_list,
+                    name=name_list,
+                    type=type_list,
+                )
+                handle_event(on_upload_all, upload_all_args)
             return {'upload': 'success'}
 
         if on_rejected:
