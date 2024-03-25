@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from typing_extensions import Self
 
@@ -9,7 +9,10 @@ from .menu import Menu
 
 class ColorPicker(Menu):
 
-    def __init__(self, *, on_pick: Callable[..., Any], value: bool = False) -> None:
+    def __init__(self, *,
+                 on_pick: Optional[Callable[..., Any]] = None,
+                 value: bool = False,
+                 ) -> None:
         """Color Picker
 
         This element is based on Quasar's `QMenu <https://quasar.dev/vue-components/menu>`_ and
@@ -19,7 +22,7 @@ class ColorPicker(Menu):
         :param value: whether the menu is already opened (default: `False`)
         """
         super().__init__(value=value)
-        self._pick_handlers = [on_pick]
+        self._pick_handlers = [on_pick] if on_pick else []
         with self:
             def handle_change(e: GenericEventArguments):
                 for handler in self._pick_handlers:

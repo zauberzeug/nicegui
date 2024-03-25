@@ -1,4 +1,4 @@
-from typing import Any, Callable, List, Literal
+from typing import Any, Callable, List, Literal, Optional
 
 from typing_extensions import Self
 
@@ -12,7 +12,7 @@ class Keyboard(Element, component='keyboard.js'):
     active = BindableProperty()
 
     def __init__(self,
-                 on_key: Callable[..., Any], *,
+                 on_key: Optional[Callable[..., Any]] = None, *,
                  active: bool = True,
                  repeating: bool = True,
                  ignore: List[Literal['input', 'select', 'button', 'textarea']] = [
@@ -28,7 +28,7 @@ class Keyboard(Element, component='keyboard.js'):
         :param ignore: ignore keys when one of these element types is focussed (default: `['input', 'select', 'button', 'textarea']`)
         """
         super().__init__()
-        self._key_handlers = [on_key]
+        self._key_handlers = [on_key] if on_key else []
         self.active = active
         self._props['events'] = ['keydown', 'keyup']
         self._props['repeating'] = repeating
