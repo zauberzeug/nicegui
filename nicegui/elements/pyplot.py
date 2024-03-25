@@ -11,6 +11,7 @@ from ..element import Element
 
 try:
     if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
+        import matplotlib.figure
         import matplotlib.pyplot as plt
         optional_features.register('matplotlib')
 except ImportError:
@@ -57,3 +58,32 @@ class Pyplot(Element):
         while self.client.id in Client.instances:
             await asyncio.sleep(1.0)
         plt.close(self.fig)
+
+
+class MplFigure(Element):
+
+    def __init__(self, **kwargs: Any) -> None:
+        """Matplotlib Figure
+
+        Create a `Matplotlib <https://matplotlib.org/>`_ figure.
+
+        :param kwargs: arguments like `figsize` which should be passed to `matplotlib.figure.Figure <https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure>`_
+        """
+        if not optional_features.has('matplotlib'):
+            raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
+
+        super().__init__('div')
+        self.fig: matplotlib.figure.Figure = matplotlib.figure.Figure(**kwargs)
+        self._convert_to_html()
+
+    def _convert_to_html(self) -> None:
+        with io.StringIO() as output:
+            self.fig.savefig(output, format='svg')
+            self._props['innerHTML'] = output.getvalue()
+
+    def __enter__(self) -> matplotlib.figure.Figure:
+        return self.fig
+
+    def __exit__(self, *_) -> None:
+        self._convert_to_html()
+        self.update()
