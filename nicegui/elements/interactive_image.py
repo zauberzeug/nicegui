@@ -78,9 +78,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
                 shift=args.get('shiftKey', False),
             )
             handle_event(on_mouse, arguments)
-                    
         self.on('mouse', handle_mouse)
-
 
     def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):

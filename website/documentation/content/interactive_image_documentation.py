@@ -70,17 +70,26 @@ def crosshairs():
     ui.interactive_image('https://picsum.photos/id/565/640/360', cross='red')
 
 
-@doc.demo('SVG content', '''
-    You can overlay SVG content on top of the image.
-    The SVG content is positioned absolutely with respect to the image.
-    You can also access SVG events by passing a callback to `on_pointer`.
-          ''')
+@doc.demo('SVG events', '''
+    You can subscribe to events of the SVG elements by using the `on` method with an "svg:" prefix.
+    Make sure to set `pointer-events="all"` for the SVG elements you want to receive events from.
+
+    Currently the following SVG events are supported:
+
+    - pointermove
+    - pointerdown
+    - pointerup
+    - pointerover
+    - pointerout
+    - pointerenter
+    - pointerleave
+    - pointercancel
+''')
 def svg_content():
-    image = ui.interactive_image(
-        size=(800, 600), cross=True).classes('w-64 bg-blue-50').on('svg:pointermove'  , lambda e : ui.notify("Mouse move!"))
-    image.content = '''
-                    <circle cx="125" cy="80" r="50" fill="black" pointer-events="all" />
-                    <circle cx="250" cy="80" r="50" fill="black" pointer-events="all" />
-                    '''
+    ui.interactive_image('https://picsum.photos/id/565/640/360', cross=True, content='''
+        <rect x="85" y="70" width="80" height="60" fill="none" stroke="red" pointer-events="all" cursor="pointer" />
+        <rect x="180" y="70" width="80" height="60" fill="none" stroke="red" pointer-events="all" cursor="pointer" />
+    ''').on('svg:pointerdown', lambda e: ui.notify(f'SVG clicked: {e.args}'))
+
 
 doc.reference(ui.interactive_image)
