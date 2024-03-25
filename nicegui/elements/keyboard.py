@@ -1,5 +1,7 @@
 from typing import Any, Callable, List, Literal
 
+from typing_extensions import Self
+
 from ..binding import BindableProperty
 from ..element import Element
 from ..events import (GenericEventArguments, KeyboardAction, KeyboardKey, KeyboardModifiers, KeyEventArguments,
@@ -26,7 +28,7 @@ class Keyboard(Element, component='keyboard.js'):
         :param ignore: ignore keys when one of these element types is focussed (default: `['input', 'select', 'button', 'textarea']`)
         """
         super().__init__()
-        self.key_handler = on_key
+        self._key_handlers = [on_key]
         self.active = active
         self._props['events'] = ['keydown', 'keyup']
         self._props['repeating'] = repeating
@@ -60,4 +62,10 @@ class Keyboard(Element, component='keyboard.js'):
             modifiers=modifiers,
             key=key,
         )
-        handle_event(self.key_handler, arguments)
+        for handler in self._key_handlers:
+            handle_event(handler, arguments)
+
+    def on_key(self, handler: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when keyboard events occur."""
+        self._key_handlers.append(handler)
+        return self

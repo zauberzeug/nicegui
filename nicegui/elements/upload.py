@@ -2,6 +2,7 @@ from typing import Any, Callable, Dict, Optional
 
 from fastapi import Request
 from starlette.datastructures import UploadFile
+from typing_extensions import Self
 
 from ..events import UiEventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
@@ -48,6 +49,8 @@ class Upload(DisableableElement, component='upload.js'):
         if max_files is not None:
             self._props['max-files'] = max_files
 
+        self._upload_handlers = [on_upload] if on_upload else []
+
         @app.post(self._props['url'])
         async def upload_route(request: Request) -> Dict[str, str]:
             for data in (await request.form()).values():
@@ -59,12 +62,22 @@ class Upload(DisableableElement, component='upload.js'):
                     name=data.filename or '',
                     type=data.content_type or '',
                 )
-                handle_event(on_upload, args)
+                for handler in self._upload_handlers:
+                    handle_event(handler, args)
             return {'upload': 'success'}
 
         if on_rejected:
-            self.on('rejected', lambda _: handle_event(on_rejected, UiEventArguments(sender=self, client=self.client)),
-                    args=[])
+            self.on_rejected(on_rejected)
+
+    def on_upload(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a file is uploaded."""
+        self._upload_handlers.append(callback)
+        return self
+
+    def on_rejected(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a file is rejected."""
+        self.on('rejected', lambda: handle_event(callback, UiEventArguments(sender=self, client=self.client)), args=[])
+        return self
 
     def reset(self) -> None:
         """Clear the upload queue."""
