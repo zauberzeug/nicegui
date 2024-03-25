@@ -8,6 +8,7 @@ from .mixins.value_element import ValueElement
 
 class ColorInput(ValueElement, DisableableElement):
     LOOPBACK = False
+    SHORTCUT = True
 
     def __init__(self,
                  label: Optional[str] = None, *,
