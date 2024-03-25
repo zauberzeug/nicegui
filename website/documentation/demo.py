@@ -4,7 +4,7 @@ from typing import Callable, Optional, Union
 
 import isort
 
-from nicegui import helpers, ui
+from nicegui import helpers, json, ui
 
 from .intersection_observer import IntersectionObserver as intersection_observer
 from .windows import browser_window, python_window
@@ -40,7 +40,7 @@ def demo(f: Callable, *, lazy: bool = True, tab: Optional[Union[str, Callable]] 
             ui.markdown(f'````python\n{full_code}\n````')
             ui.icon('content_copy', size='xs') \
                 .classes('absolute right-2 top-10 opacity-10 hover:opacity-80 cursor-pointer') \
-                .on('click', js_handler=f'() => navigator.clipboard.writeText(`{full_code}`)') \
+                .on('click', js_handler=f'() => navigator.clipboard.writeText({json.dumps(full_code)})') \
                 .on('click', lambda: ui.notify('Copied to clipboard', type='positive', color='primary'), [])
         with browser_window(title=tab,
                             classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window') as window:

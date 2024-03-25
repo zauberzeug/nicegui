@@ -29,7 +29,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
                  size: Optional[Tuple[float, float]] = None,
                  on_mouse: Optional[Callable[..., Any]] = None,
                  events: List[str] = ['click'],
-                 cross: bool = False,
+                 cross: Union[bool, str] = False,
                  ) -> None:
         """Interactive Image
 
@@ -54,7 +54,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         :param size: size of the image (width, height) in pixels; only used if `source` is not set
         :param on_mouse: callback for mouse events (contains image coordinates `image_x` and `image_y` in pixels)
         :param events: list of JavaScript events to subscribe to (default: `['click']`)
-        :param cross: whether to show crosshairs (default: `False`)
+        :param cross: whether to show crosshairs or a color string (default: `False`)
         """
         super().__init__(source=source, content=content)
         self._props['events'] = events

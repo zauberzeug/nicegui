@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List
 
 import pandas as pd
@@ -187,6 +187,7 @@ def test_create_from_pandas(screen: Screen):
 def test_problematic_datatypes(screen: Screen):
     df = pd.DataFrame({
         'Datetime_col': [datetime(2020, 1, 1)],
+        'Datetime_col_tz': [datetime(2020, 1, 1, tzinfo=timezone.utc)],
         'Timedelta_col': [timedelta(days=5)],
         'Complex_col': [1 + 2j],
         'Period_col': pd.Series([pd.Period('2021-01')]),
@@ -195,6 +196,7 @@ def test_problematic_datatypes(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Datetime_col')
+    screen.should_contain('Datetime_col_tz')
     screen.should_contain('Timedelta_col')
     screen.should_contain('Complex_col')
     screen.should_contain('Period_col')
