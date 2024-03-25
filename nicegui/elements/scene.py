@@ -8,8 +8,8 @@ from .. import binding
 from ..awaitable_response import AwaitableResponse, NullResponse
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
-from ..events import (GenericEventArguments, SceneClickEventArguments,
-                      SceneClickHit, SceneDragEventArguments, handle_event)
+from ..events import (GenericEventArguments, SceneClickEventArguments, SceneClickHit, SceneDragEventArguments,
+                      handle_event)
 from .scene_object3d import Object3D
 
 
@@ -183,11 +183,7 @@ class Scene(Element,
         if arguments.type == 'dragend':
             self.objects[arguments.object_id].move(arguments.x, arguments.y, arguments.z)
 
-        for handler in (
-            self._drag_start_handlers
-            if arguments.type == 'dragstart'
-            else self._drag_end_handlers
-        ):
+        for handler in (self._drag_start_handlers if arguments.type == 'dragstart' else self._drag_end_handlers):
             handle_event(handler, arguments)
 
     def __len__(self) -> int:

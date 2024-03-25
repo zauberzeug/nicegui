@@ -4,8 +4,7 @@ from typing_extensions import Self
 
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
-from ..events import (GenericEventArguments, JsonEditorChangeEventArguments,
-                      JsonEditorSelectEventArguments, handle_event)
+from ..events import GenericEventArguments, JsonEditorChangeEventArguments, JsonEditorSelectEventArguments, handle_event
 
 
 class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/vanilla-jsoneditor/index.js']):
@@ -22,8 +21,8 @@ class JsonEditor(Element, component='json_editor.js', exposed_libraries=['lib/va
         After data has changed, call the `update` method to refresh the editor.
 
         :param properties: dictionary of JSONEditor properties
-        :param on_select: callback function that is called when some of the content has been selected
-        :param on_change: callback function that is called when the content has changed
+        :param on_select: callback which is invoked when some of the content has been selected
+        :param on_change: callback which is invoked when the content has changed
         """
         super().__init__()
         self._props['properties'] = properties

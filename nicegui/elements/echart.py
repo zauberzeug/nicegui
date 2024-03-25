@@ -5,8 +5,7 @@ from typing_extensions import Self
 from .. import optional_features
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
-from ..events import (EChartPointClickEventArguments, GenericEventArguments,
-                      handle_event)
+from ..events import EChartPointClickEventArguments, GenericEventArguments, handle_event
 
 try:
     from pyecharts.charts.base import default, json
@@ -28,7 +27,7 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
         After data has changed, call the `update` method to refresh the chart.
 
         :param options: dictionary of EChart options
-        :param on_click_point: callback function that is called when a point is clicked
+        :param on_click_point: callback that is invoked when a point is clicked
         """
         super().__init__()
         self._props['options'] = options
@@ -38,6 +37,7 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
             self.on_point_click(on_point_click)
 
     def on_point_click(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a point is clicked."""
         def handle_point_click(e: GenericEventArguments) -> None:
             handle_event(callback, EChartPointClickEventArguments(
                 sender=self,
@@ -70,7 +70,7 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
         """Create an echart element from a pyecharts object.
 
         :param chart: pyecharts chart object
-        :param on_click_point: callback function that is called when a point is clicked
+        :param on_click_point: callback which is invoked when a point is clicked
 
         :return: echart element
         """

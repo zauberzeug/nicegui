@@ -63,10 +63,10 @@ class MenuItem(TextElement):
         super().__init__(tag='q-item', text=text)
         self.menu = context.get_slot().parent
         self._props['clickable'] = True
-        self._on_click_handlers = [on_click] if on_click else []
+        self._click_handlers = [on_click] if on_click else []
 
         def handle_click(_) -> None:
-            for handler in self._on_click_handlers:
+            for handler in self._click_handlers:
                 handle_event(handler, ClickEventArguments(sender=self, client=self.client))
             if auto_close:
                 assert isinstance(self.menu, (Menu, ContextMenu))
@@ -75,5 +75,5 @@ class MenuItem(TextElement):
 
     def on_click(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when the menu item is clicked."""
-        self._on_click_handlers.append(callback)
+        self._click_handlers.append(callback)
         return self

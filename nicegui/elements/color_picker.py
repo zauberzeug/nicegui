@@ -19,10 +19,10 @@ class ColorPicker(Menu):
         :param value: whether the menu is already opened (default: `False`)
         """
         super().__init__(value=value)
-        self._handlers = [on_pick]
+        self._pick_handlers = [on_pick]
         with self:
             def handle_change(e: GenericEventArguments):
-                for handler in self._handlers:
+                for handler in self._pick_handlers:
                     handle_event(handler, ColorPickEventArguments(sender=self, client=self.client, color=e.args))
             self.q_color = Element('q-color').on('change', handle_change)
 
@@ -35,5 +35,5 @@ class ColorPicker(Menu):
 
     def on_pick(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when a color is picked."""
-        self._handlers.append(callback)
+        self._pick_handlers.append(callback)
         return self

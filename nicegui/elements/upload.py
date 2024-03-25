@@ -49,7 +49,7 @@ class Upload(DisableableElement, component='upload.js'):
         if max_files is not None:
             self._props['max-files'] = max_files
 
-        self._on_upload_handlers = [on_upload] if on_upload else []
+        self._upload_handlers = [on_upload] if on_upload else []
 
         @app.post(self._props['url'])
         async def upload_route(request: Request) -> Dict[str, str]:
@@ -62,7 +62,7 @@ class Upload(DisableableElement, component='upload.js'):
                     name=data.filename or '',
                     type=data.content_type or '',
                 )
-                for handler in self._on_upload_handlers:
+                for handler in self._upload_handlers:
                     handle_event(handler, args)
             return {'upload': 'success'}
 
@@ -71,13 +71,12 @@ class Upload(DisableableElement, component='upload.js'):
 
     def on_upload(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when a file is uploaded."""
-        self._on_upload_handlers.append(callback)
+        self._upload_handlers.append(callback)
         return self
 
     def on_rejected(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when a file is rejected."""
-        self.on('rejected', lambda _: handle_event(callback, UiEventArguments(sender=self, client=self.client)),
-                args=[])
+        self.on('rejected', lambda: handle_event(callback, UiEventArguments(sender=self, client=self.client)), args=[])
         return self
 
     def reset(self) -> None:

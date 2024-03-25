@@ -64,16 +64,16 @@ class Table(FilterElement, component='table.js'):
                 self.selected = [row for row in self.selected if row[row_key] not in e.args['keys']]
             self.update()
             arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
-            for on_select in self._selection_handlers:
-                handle_event(on_select, arguments)
+            for handler in self._selection_handlers:
+                handle_event(handler, arguments)
         self.on('selection', handle_selection, ['added', 'rows', 'keys'])
 
         def handle_pagination_change(e: GenericEventArguments) -> None:
             self.pagination = e.args
             self.update()
             arguments = ValueChangeEventArguments(sender=self, client=self.client, value=self.pagination)
-            for on_pagination_change in self._pagination_change_handlers:
-                handle_event(on_pagination_change, arguments)
+            for handler in self._pagination_change_handlers:
+                handle_event(handler, arguments)
         self.on('update:pagination', handle_pagination_change)
 
     def on_select(self, callback: Callable[..., Any]) -> Self:

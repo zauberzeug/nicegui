@@ -65,6 +65,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
             self.on_mouse(on_mouse)
 
     def on_mouse(self, on_mouse: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a mouse event occurs."""
         def handle_mouse(e: GenericEventArguments) -> None:
             args = cast(dict, e.args)
             arguments = MouseEventArguments(

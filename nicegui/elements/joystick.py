@@ -3,8 +3,7 @@ from typing import Any, Callable, Optional
 from typing_extensions import Self
 
 from ..element import Element
-from ..events import (GenericEventArguments, JoystickEventArguments,
-                      handle_event)
+from ..events import GenericEventArguments, JoystickEventArguments, handle_event
 
 
 class Joystick(Element, component='joystick.vue', libraries=['lib/nipplejs/nipplejs.js']):

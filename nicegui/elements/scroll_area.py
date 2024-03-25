@@ -23,7 +23,8 @@ class ScrollArea(Element):
             self.on_scroll(on_scroll)
 
     def on_scroll(self, callback: Callable[..., Any]) -> Self:
-        self.on('scroll', lambda e: self._handle_scroll(on_scroll, e), args=[
+        """Add a callback to be invoked when the scroll position changes."""
+        self.on('scroll', lambda e: self._handle_scroll(callback, e), args=[
             'verticalPosition',
             'verticalPercentage',
             'verticalSize',
