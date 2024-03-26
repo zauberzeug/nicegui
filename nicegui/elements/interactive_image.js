@@ -111,16 +111,6 @@ export default {
       const image_x = event.offsetX * zoom_factor;
       const image_y = event.offsetY * zoom_factor;
 
-      if (event_type == "pointerdown") {
-        console.log(event_type);
-        const svgNS = this.$refs.svg.namespaceURI;
-        const circle = document.createElementNS(svgNS, "circle");
-        circle.setAttribute("cx", image_x);
-        circle.setAttribute("cy", image_y);
-        circle.setAttribute("r", 5);
-        circle.setAttribute("fill", "red");
-        this.$refs.svg.appendChild(circle);
-      }
       this.$emit(`svg:${event_type}`, {
         type: event_type,
         image_x: image_x,
