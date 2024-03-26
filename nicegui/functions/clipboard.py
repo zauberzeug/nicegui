@@ -1,42 +1,14 @@
 from .javascript import run_javascript
 
 
-def read():
-    """
-    Read the data from the clipboard.
-    """
-
-    return run_javascript('navigator.clipboard.read()')
+async def read() -> str:
+    """Read text from the clipboard."""
+    return await run_javascript('navigator.clipboard.readText()')
 
 
-def readText():
-    """
-    Reads the text from the clipboard.
+def write(text: str) -> None:
+    """Write text to the clipboard.
 
-    Returns:
-        str: The text from the clipboard.
-    """
-    return run_javascript('navigator.clipboard.readText()')
-
-
-def write(data):
-    """
-    Writes the specified data to the clipboard.
-
-    Parameters:
-        data: The data to be written to the clipboard.
-    """
-    run_javascript(f'navigator.clipboard.write(`{data}`)')
-
-
-def writeText(text):
-    """
-    Writes the specified text to the clipboard.
-
-    Parameters:
-        text (str): The text to be written to the clipboard.
-
-    Example:
-    >>> ui.clipboard.writeText("Hello, world!")
+    :param text: text to write
     """
     run_javascript(f'navigator.clipboard.writeText(`{text}`)')
