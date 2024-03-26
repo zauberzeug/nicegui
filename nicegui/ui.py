@@ -60,6 +60,7 @@ __all__ = [
     'pyplot',
     'query',
     'radio',
+    'range',
     'restructured_text',
     'row',
     'scene',
@@ -173,6 +174,7 @@ from .elements.progress import LinearProgress as linear_progress
 from .elements.pyplot import Pyplot as pyplot
 from .elements.query import Query as query
 from .elements.radio import Radio as radio
+from .elements.range import Range as range
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
