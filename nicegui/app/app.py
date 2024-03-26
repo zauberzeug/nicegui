@@ -153,7 +153,12 @@ class App(FastAPI):
         """
         if url_path == '/':
             raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
-        self.mount(url_path, StaticFiles(directory=str(local_directory), follow_symlink=follow_symlink))
+
+        handler = StaticFiles(directory=local_directory, follow_symlink=follow_symlink)
+
+        @self.get(url_path + '/{path:path}')
+        async def static_file(request: Request, path: str = '') -> Response:
+            return await handler.get_response(path, request.scope)
 
     def add_static_file(self, *,
                         local_file: Union[str, Path],

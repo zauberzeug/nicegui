@@ -1,4 +1,5 @@
 
+import re
 from pathlib import Path
 
 import httpx
@@ -30,13 +31,12 @@ def assert_video_file_streaming(path: str) -> None:
         r = http_client.get(
             path if 'http' in path else f'http://localhost:{Screen.PORT}{path}',
             headers={'Range': 'bytes=0-1000'},
-            timeout=1,
         )
-    assert r.status_code == 206
-    assert r.headers['Accept-Ranges'] == 'bytes'
-    assert r.headers['Content-Range'].startswith('bytes 0-1000/')
-    assert r.headers['Content-Length'] == '1001'
-    assert r.headers['Content-Type'] == 'video/mp4'
+        assert r.status_code == 206
+        assert r.headers['Accept-Ranges'] == 'bytes'
+        assert r.headers['Content-Range'].startswith('bytes 0-1000/')
+        assert r.headers['Content-Length'] == '1001'
+        assert r.headers['Content-Type'] == 'video/mp4'
 
 
 def test_media_files_can_be_streamed(screen: Screen):
@@ -51,6 +51,27 @@ def test_adding_single_media_file(screen: Screen):
 
     screen.open('/')
     assert_video_file_streaming(url_path)
+
+
+@pytest.mark.parametrize('url_path', ['/static', '/static/'])
+def test_get_from_static_files_dir(url_path: str, screen: Screen):
+    app.add_static_files(url_path, Path(TEST_DIR).parent)
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        r = http_client.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg')
+        assert r.status_code == 200
+
+
+def test_404_for_non_existing_static_file(screen: Screen):
+    app.add_static_files('/static', Path(TEST_DIR))
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        r = http_client.get(f'http://localhost:{Screen.PORT}/static/does_not_exist.jpg')
+        screen.assert_py_logger('WARNING', re.compile('.*does_not_exist.jpg not found'))
+        assert r.status_code == 404
+        assert 'static/_nicegui' not in r.text, 'should use root_path, see https://github.com/zauberzeug/nicegui/issues/2570'
 
 
 def test_adding_single_static_file(screen: Screen):
@@ -81,13 +102,8 @@ def test_auto_serving_file_from_video_source(screen: Screen):
 
     screen.open('/')
     video = screen.find_by_tag('video')
-    src = video.get_attribute('src')
-    assert src is not None
-    ic()
-    assert '/_nicegui/auto/media/' in src
-    ic()
-    assert_video_file_streaming(src)
-    ic()
+    assert '/_nicegui/auto/media/' in video.get_attribute('src')
+    assert_video_file_streaming(video.get_attribute('src'))
 
 
 def test_mimetypes_of_static_files(screen: Screen):
