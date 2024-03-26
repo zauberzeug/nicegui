@@ -106,12 +106,25 @@ export default {
       });
     },
     onPointerEvent(event_type, event) {
-      const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
-      const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
+      const svgRect = this.$refs.svg.getBoundingClientRect();
+      const zoom_factor = this.loaded_image_width / svgRect.width;
+      const image_x = event.offsetX * zoom_factor;
+      const image_y = event.offsetY * zoom_factor;
+
+      if (event_type == "pointerdown") {
+        console.log(event_type);
+        const svgNS = this.$refs.svg.namespaceURI;
+        const circle = document.createElementNS(svgNS, "circle");
+        circle.setAttribute("cx", image_x);
+        circle.setAttribute("cy", image_y);
+        circle.setAttribute("r", 5);
+        circle.setAttribute("fill", "red");
+        this.$refs.svg.appendChild(circle);
+      }
       this.$emit(`svg:${event_type}`, {
         type: event_type,
-        image_x: (event.offsetX * width) / event.x,
-        image_y: (event.offsetY * height) / event.x,
+        image_x: image_x,
+        image_y: image_y,
       });
     },
   },
