@@ -91,12 +91,12 @@ export default {
       this.$emit("loaded", { width: this.loaded_image_width, height: this.loaded_image_height, source: e.target.src });
     },
     onMouseEvent(type, e) {
-      const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
-      const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
+      const imageWidth = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
+      const imageHeight = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
       this.$emit("mouse", {
         mouse_event_type: type,
-        image_x: (e.offsetX * width) / e.target.clientWidth,
-        image_y: (e.offsetY * height) / e.target.clientHeight,
+        image_x: (e.offsetX * imageWidth) / this.$refs.img.clientWidth,
+        image_y: (e.offsetY * imageHeight) / this.$refs.img.clientHeight,
         button: e.button,
         buttons: e.buttons,
         altKey: e.altKey,
@@ -105,16 +105,13 @@ export default {
         shiftKey: e.shiftKey,
       });
     },
-    onPointerEvent(event_type, event) {
-      const svgRect = this.$refs.svg.getBoundingClientRect();
-      const zoom_factor = this.loaded_image_width / svgRect.width;
-      const image_x = event.offsetX * zoom_factor;
-      const image_y = event.offsetY * zoom_factor;
-
-      this.$emit(`svg:${event_type}`, {
-        type: event_type,
-        image_x: image_x,
-        image_y: image_y,
+    onPointerEvent(type, e) {
+      const imageWidth = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
+      const imageHeight = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
+      this.$emit(`svg:${type}`, {
+        type: type,
+        image_x: (e.offsetX * imageWidth) / this.$refs.svg.clientWidth,
+        image_y: (e.offsetY * imageHeight) / this.$refs.svg.clientHeight,
       });
     },
   },
