@@ -93,15 +93,16 @@ def test_reset_upload(screen: Screen):
 
 
 def test_multi_upload_event(screen: Screen):
-    single_events: List[events.UploadEventArguments] = []
-    multi_events: List[events.MultiUploadEventArguments] = []
-    ui.upload(on_upload=single_events.append, on_multi_upload=multi_events.append, multiple=True)
+    results: List[events.MultiUploadEventArguments] = []
+    ui.upload(on_multi_upload=results.append, multiple=True)
 
     screen.open('/')
     screen.find_by_class('q-uploader__input').send_keys(f'{test_path1}\n{test_path2}')
     screen.wait(0.1)
     screen.click('cloud_upload')
     screen.wait(0.1)
-    assert len(single_events) == 2
-    assert len(multi_events) == 1
-    # TODO: check contents
+
+    assert len(results) == 1
+    assert results[0].names == [test_path1.name, test_path2.name]
+    assert results[0].contents[0].read() == test_path1.read_bytes()
+    assert results[0].contents[1].read() == test_path2.read_bytes()

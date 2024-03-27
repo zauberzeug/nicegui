@@ -50,6 +50,9 @@ class Upload(DisableableElement, component='upload.js'):
         if max_files is not None:
             self._props['max-files'] = max_files
 
+        if multiple and on_multi_upload:
+            self._props['batch'] = True
+
         @app.post(self._props['url'])
         async def upload_route(request: Request) -> Dict[str, str]:
             form = await request.form()
