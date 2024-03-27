@@ -110,6 +110,7 @@ export default {
       const imageHeight = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
       this.$emit(`svg:${type}`, {
         type: type,
+        element_id: e.target.id,
         image_x: (e.offsetX * imageWidth) / this.$refs.svg.clientWidth,
         image_y: (e.offsetY * imageHeight) / this.$refs.svg.clientHeight,
       });

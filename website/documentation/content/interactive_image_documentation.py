@@ -87,8 +87,8 @@ def crosshairs():
 ''')
 def svg_content():
     ui.interactive_image('https://picsum.photos/id/565/640/360', cross=True, content='''
-        <rect x="85" y="70" width="80" height="60" fill="none" stroke="red" pointer-events="all" cursor="pointer" />
-        <rect x="180" y="70" width="80" height="60" fill="none" stroke="red" pointer-events="all" cursor="pointer" />
+        <rect id="A" x="85" y="70" width="80" height="60" fill="none" stroke="red" pointer-events="all" cursor="pointer" />
+        <rect id="B" x="180" y="70" width="80" height="60" fill="none" stroke="red" pointer-events="all" cursor="pointer" />
     ''').on('svg:pointerdown', lambda e: ui.notify(f'SVG clicked: {e.args}'))
 
 
