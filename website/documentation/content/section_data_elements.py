@@ -1,10 +1,10 @@
 from nicegui import optional_features
 
-from . import (aggrid_documentation, circular_progress_documentation, code_documentation, doc, echart_documentation,
-               editor_documentation, highchart_documentation, json_editor_documentation, leaflet_documentation,
-               line_plot_documentation, linear_progress_documentation, log_documentation, plotly_documentation,
-               pyplot_documentation, scene_documentation, spinner_documentation, table_documentation,
-               tree_documentation)
+from . import (aggrid_documentation, circular_progress_documentation, code_documentation, codemirror_documentation, doc,
+               echart_documentation, editor_documentation, highchart_documentation, json_editor_documentation,
+               leaflet_documentation, line_plot_documentation, linear_progress_documentation, log_documentation,
+               plotly_documentation, pyplot_documentation, scene_documentation, spinner_documentation,
+               table_documentation, tree_documentation)
 
 doc.title('*Data* Elements')
 
@@ -28,3 +28,4 @@ doc.intro(log_documentation)
 doc.intro(editor_documentation)
 doc.intro(code_documentation)
 doc.intro(json_editor_documentation)
+doc.intro(codemirror_documentation)
