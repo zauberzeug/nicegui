@@ -55,6 +55,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         :param on_mouse: callback for mouse events (contains image coordinates `image_x` and `image_y` in pixels)
         :param events: list of JavaScript events to subscribe to (default: `['click']`)
         :param cross: whether to show crosshairs or a color string (default: `False`)
+        :param on_pointer: callback for pointer events (contains image coordinates `image_x` and `image_y` in pixels, and `type` of the event)
         """
         super().__init__(source=source, content=content)
         self._props['events'] = events

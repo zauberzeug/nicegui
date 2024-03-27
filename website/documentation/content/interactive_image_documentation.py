@@ -70,4 +70,26 @@ def crosshairs():
     ui.interactive_image('https://picsum.photos/id/565/640/360', cross='red')
 
 
+@doc.demo('SVG events', '''
+    You can subscribe to events of the SVG elements by using the `on` method with an "svg:" prefix.
+    Make sure to set `pointer-events="all"` for the SVG elements you want to receive events from.
+
+    Currently the following SVG events are supported:
+
+    - pointermove
+    - pointerdown
+    - pointerup
+    - pointerover
+    - pointerout
+    - pointerenter
+    - pointerleave
+    - pointercancel
+''')
+def svg_content():
+    ui.interactive_image('https://picsum.photos/id/565/640/360', cross=True, content='''
+        <rect id="A" x="85" y="70" width="80" height="60" fill="none" stroke="red" pointer-events="all" cursor="pointer" />
+        <rect id="B" x="180" y="70" width="80" height="60" fill="none" stroke="red" pointer-events="all" cursor="pointer" />
+    ''').on('svg:pointerdown', lambda e: ui.notify(f'SVG clicked: {e.args}'))
+
+
 doc.reference(ui.interactive_image)
