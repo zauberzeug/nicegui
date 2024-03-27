@@ -112,9 +112,16 @@ class JoystickEventArguments(UiEventArguments):
 
 @dataclass(**KWONLY_SLOTS)
 class UploadEventArguments(UiEventArguments):
-    content: Union[BinaryIO, List[BinaryIO]]
-    name: Union[str, list[str]]
-    type: Union[str, list[str]]
+    content: BinaryIO
+    name: str
+    type: str
+
+
+@dataclass(**KWONLY_SLOTS)
+class MultiUploadEventArguments(UiEventArguments):
+    contents: List[BinaryIO]
+    names: List[str]
+    types: List[str]
 
 
 @dataclass(**KWONLY_SLOTS)
