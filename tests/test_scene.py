@@ -123,6 +123,16 @@ def test_object_creation_via_context(screen: Screen):
     screen.wait(0.5)
     assert screen.selenium.execute_script(f'return scene_c{scene.id}.children[4].name') == 'box'
 
+def test_multiple_scenes(screen: Screen):
+    with ui.scene() as parent:
+        parent.box().with_name('box_parent')
+    with ui.scene(parent_scene=parent) as child:
+        child.box().with_name('box_child')
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script(f'return scene_c{child.id}.children[4].name') == 'box_parent'
+    assert screen.selenium.execute_script(f'return scene_c{child.id}.children[5].name') == 'box_child'
 
 def test_object_creation_via_attribute(screen: Screen):
     scene = ui.scene()

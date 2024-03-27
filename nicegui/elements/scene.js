@@ -58,7 +58,36 @@ export default {
     </div>`,
 
   mounted() {
+    const is_new_scene = this.parent_id === ''
+    function waitForElement(id, timeout = 10000) {
+      return new Promise((resolve, reject) => {
+        const startTime = Date.now();
+        const checkElement = () => {
+          let element = window.app.$refs ? getElement(id) : undefined; // Condition to handle not fully initialized app
+          if (element) {
+            resolve(element);
+          } else if (Date.now() - startTime >= timeout) {
+            reject(new Error(`Element with ${id} not found within timeout`));
+          } else {
+            setTimeout(checkElement, 100); // Check again after 100 milliseconds
+          }
+        };
+        checkElement();
+      });
+    }
+    if (!is_new_scene)
+      waitForElement(this.parent_id)
+        .then((element) => {
+          this.scene = element.scene;
+          this.objects.set("scene", this.scene);
+          window["scene_" + this.$el.id] = this.scene;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+
     this.scene = new THREE.Scene();
+
     this.objects = new Map();
     this.objects.set("scene", this.scene);
     this.draggable_objects = [];
@@ -71,10 +100,12 @@ export default {
     this.camera.up = new THREE.Vector3(0, 0, 1);
     this.camera.position.set(0, -3, 5);
 
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.7 * Math.PI));
-    const light = new THREE.DirectionalLight(0xffffff, 0.3 * Math.PI);
-    light.position.set(5, 10, 40);
-    this.scene.add(light);
+    if (is_new_scene) {
+      this.scene.add(new THREE.AmbientLight(0xffffff, 0.7 * Math.PI));
+      const light = new THREE.DirectionalLight(0xffffff, 0.3 * Math.PI);
+      light.position.set(5, 10, 40);
+      this.scene.add(light);
+    }
 
     this.renderer = undefined;
     try {
@@ -107,41 +138,43 @@ export default {
     this.$nextTick(() => this.resize());
     window.addEventListener("resize", this.resize, false);
 
-    if (this.grid) {
-      const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: "#eee" }));
-      ground.translateZ(-0.01);
-      ground.object_id = "ground";
-      this.scene.add(ground);
+    if (is_new_scene) {
+      if (this.grid) {
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: "#eee" }));
+        ground.translateZ(-0.01);
+        ground.object_id = "ground";
+        this.scene.add(ground);
 
-      const grid = new THREE.GridHelper(100, 100);
-      grid.material.transparent = true;
-      grid.material.opacity = 0.2;
-      grid.rotateX(Math.PI / 2);
-      this.scene.add(grid);
+        const grid = new THREE.GridHelper(100, 100);
+        grid.material.transparent = true;
+        grid.material.opacity = 0.2;
+        grid.rotateX(Math.PI / 2);
+        this.scene.add(grid);
+      }
+      this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+      this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
+      const applyConstraint = (constraint, position) => {
+        if (!constraint) return;
+        const [variable, expression] = constraint.split("=").map((s) => s.trim());
+        position[variable] = eval(expression.replace(/x|y|z/g, (match) => `(${position[match]})`));
+      };
+      const handleDrag = (event) => {
+        this.drag_constraints.split(",").forEach((constraint) => applyConstraint(constraint, event.object.position));
+        if (event.type === "drag") return;
+        this.$emit(event.type, {
+          type: event.type,
+          object_id: event.object.object_id,
+          object_name: event.object.name,
+          x: event.object.position.x,
+          y: event.object.position.y,
+          z: event.object.position.z,
+        });
+        this.controls.enabled = event.type == "dragend";
+      };
+      this.drag_controls.addEventListener("dragstart", handleDrag);
+      this.drag_controls.addEventListener("drag", handleDrag);
+      this.drag_controls.addEventListener("dragend", handleDrag);
     }
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
-    const applyConstraint = (constraint, position) => {
-      if (!constraint) return;
-      const [variable, expression] = constraint.split("=").map((s) => s.trim());
-      position[variable] = eval(expression.replace(/x|y|z/g, (match) => `(${position[match]})`));
-    };
-    const handleDrag = (event) => {
-      this.drag_constraints.split(",").forEach((constraint) => applyConstraint(constraint, event.object.position));
-      if (event.type === "drag") return;
-      this.$emit(event.type, {
-        type: event.type,
-        object_id: event.object.object_id,
-        object_name: event.object.name,
-        x: event.object.position.x,
-        y: event.object.position.y,
-        z: event.object.position.z,
-      });
-      this.controls.enabled = event.type == "dragend";
-    };
-    this.drag_controls.addEventListener("dragstart", handleDrag);
-    this.drag_controls.addEventListener("drag", handleDrag);
-    this.drag_controls.addEventListener("dragend", handleDrag);
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
@@ -400,7 +433,8 @@ export default {
           this.camera.up.set(p[3], p[4], p[5]); // NOTE: before calling lookAt
           this.look_at.set(p[6], p[7], p[8]);
           this.camera.lookAt(p[6], p[7], p[8]);
-          this.controls.target.set(p[6], p[7], p[8]);
+          if (this.controls !== undefined)
+            this.controls.target.set(p[6], p[7], p[8]);
         })
         .start();
     },
@@ -415,6 +449,7 @@ export default {
   },
 
   props: {
+    parent_id: String,
     width: Number,
     height: Number,
     grid: Boolean,

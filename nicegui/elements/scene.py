@@ -70,6 +70,7 @@ class Scene(Element,
                  on_drag_start: Optional[Callable[..., Any]] = None,
                  on_drag_end: Optional[Callable[..., Any]] = None,
                  drag_constraints: str = '',
+                 parent_scene:Self=None,
                  ) -> None:
         """3D Scene
 
@@ -85,11 +86,13 @@ class Scene(Element,
         :param on_drag_start: callback to execute when a 3D object is dragged
         :param on_drag_end: callback to execute when a 3D object is dropped
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
+        :param parent_scene: specifies the parent scene for rendering the same scene as the parent
         """
         super().__init__()
         self._props['width'] = width
         self._props['height'] = height
         self._props['grid'] = grid
+        self._props['parent_id'] = parent_scene.id if parent_scene is not None else ''
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
