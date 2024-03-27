@@ -93,15 +93,30 @@ class Scene(Element,
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
-        self._click_handler = on_click
-        self._drag_start_handler = on_drag_start
-        self._drag_end_handler = on_drag_end
+        self._click_handlers = [on_click] if on_click else []
+        self._drag_start_handlers = [on_drag_start] if on_drag_start else []
+        self._drag_end_handlers = [on_drag_end] if on_drag_end else []
         self.is_initialized = False
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
         self._props['drag_constraints'] = drag_constraints
+
+    def on_click(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a 3D object is clicked."""
+        self._click_handlers.append(callback)
+        return self
+
+    def on_drag_start(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a 3D object is dragged."""
+        self._drag_start_handlers.append(callback)
+        return self
+
+    def on_drag_end(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a 3D object is dropped."""
+        self._drag_end_handlers.append(callback)
+        return self
 
     def __enter__(self) -> Self:
         Object3D.current_scene = self
@@ -151,7 +166,8 @@ class Scene(Element,
                 z=hit['point']['z'],
             ) for hit in e.args['hits']],
         )
-        handle_event(self._click_handler, arguments)
+        for handler in self._click_handlers:
+            handle_event(handler, arguments)
 
     def _handle_drag(self, e: GenericEventArguments) -> None:
         arguments = SceneDragEventArguments(
@@ -166,7 +182,9 @@ class Scene(Element,
         )
         if arguments.type == 'dragend':
             self.objects[arguments.object_id].move(arguments.x, arguments.y, arguments.z)
-        handle_event(self._drag_start_handler if arguments.type == 'dragstart' else self._drag_end_handler, arguments)
+
+        for handler in (self._drag_start_handlers if arguments.type == 'dragstart' else self._drag_end_handlers):
+            handle_event(handler, arguments)
 
     def __len__(self) -> int:
         return len(self.objects)

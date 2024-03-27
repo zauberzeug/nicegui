@@ -224,11 +224,11 @@ class Client:
         self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type}, self.id)
 
     def on_connect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
-        """Register a callback to be called when the client connects."""
+        """Add a callback to be invoked when the client connects."""
         self.connect_handlers.append(handler)
 
     def on_disconnect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
-        """Register a callback to be called when the client disconnects."""
+        """Add a callback to be invoked when the client disconnects."""
         self.disconnect_handlers.append(handler)
 
     def handle_handshake(self) -> None:

@@ -2,6 +2,7 @@ from typing import Any, Callable, Dict, Optional, cast
 
 from fastapi import Request
 from starlette.datastructures import UploadFile
+from typing_extensions import Self
 
 from ..events import MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
@@ -53,19 +54,23 @@ class Upload(DisableableElement, component='upload.js'):
         if multiple and on_multi_upload:
             self._props['batch'] = True
 
+        self._upload_handlers = [on_upload] if on_upload else []
+        self._multi_upload_handlers = [on_multi_upload] if on_multi_upload else []
+
         @app.post(self._props['url'])
         async def upload_route(request: Request) -> Dict[str, str]:
             form = await request.form()
             for data in form.values():
-                handle_event(on_upload, UploadEventArguments(
-                    sender=self,
-                    client=self.client,
-                    content=cast(UploadFile, data).file,
-                    name=cast(UploadFile, data).filename or '',
-                    type=cast(UploadFile, data).content_type or '',
-                ))
-            if multiple and on_multi_upload:
-                handle_event(on_multi_upload, MultiUploadEventArguments(
+                for upload_handler in self._upload_handlers:
+                    handle_event(upload_handler, UploadEventArguments(
+                        sender=self,
+                        client=self.client,
+                        content=cast(UploadFile, data).file,
+                        name=cast(UploadFile, data).filename or '',
+                        type=cast(UploadFile, data).content_type or '',
+                    ))
+            for multi_upload_handler in self._multi_upload_handlers:
+                handle_event(multi_upload_handler, MultiUploadEventArguments(
                     sender=self,
                     client=self.client,
                     contents=[cast(UploadFile, data).file for data in form.values()],
@@ -75,8 +80,22 @@ class Upload(DisableableElement, component='upload.js'):
             return {'upload': 'success'}
 
         if on_rejected:
-            self.on('rejected', lambda _: handle_event(on_rejected, UiEventArguments(sender=self, client=self.client)),
-                    args=[])
+            self.on_rejected(on_rejected)
+
+    def on_upload(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a file is uploaded."""
+        self._upload_handlers.append(callback)
+        return self
+
+    def on_multi_upload(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when multiple files have been uploaded."""
+        self._multi_upload_handlers.append(callback)
+        return self
+
+    def on_rejected(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a file is rejected."""
+        self.on('rejected', lambda: handle_event(callback, UiEventArguments(sender=self, client=self.client)), args=[])
+        return self
 
     def reset(self) -> None:
         """Clear the upload queue."""

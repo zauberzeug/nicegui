@@ -24,13 +24,18 @@ class ValueElement(Element):
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         self._props['loopback'] = self.LOOPBACK
-        self._change_handler = on_value_change
+        self._change_handlers: list[Callable[..., Any]] = [on_value_change] if on_value_change else []
 
         def handle_change(e: GenericEventArguments) -> None:
             self._send_update_on_value_change = self.LOOPBACK
             self.set_value(self._event_args_to_value(e))
             self._send_update_on_value_change = True
         self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
+
+    def on_value_change(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the value changes."""
+        self._change_handlers.append(callback)
+        return self
 
     def bind_value_to(self,
                       target_object: Any,
@@ -98,7 +103,8 @@ class ValueElement(Element):
         if self._send_update_on_value_change:
             self.update()
         args = ValueChangeEventArguments(sender=self, client=self.client, value=self._value_to_event_value(value))
-        handle_event(self._change_handler, args)
+        for handler in self._change_handlers:
+            handle_event(handler, args)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         return e.args
