@@ -63,7 +63,7 @@ export default {
       return new Promise((resolve, reject) => {
         const startTime = Date.now();
         const checkElement = () => {
-          let element = getElement(id);
+          let element = window.app.$refs ? getElement(id) : undefined; // Condition to handle not fully initialized app
           if (element) {
             resolve(element);
           } else if (Date.now() - startTime >= timeout) {
