@@ -16,6 +16,7 @@ __all__ = [
     'checkbox',
     'clipboard',
     'code',
+    'codemirror'
     'color_input',
     'color_picker',
     'colors',
@@ -140,6 +141,7 @@ from .elements.chart import chart
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
 from .elements.code import Code as code
+from .elements.codemirror import CodeMirror as code_mirror
 from .elements.color_input import ColorInput as color_input
 from .elements.color_picker import ColorPicker as color_picker
 from .elements.colors import Colors as colors
