@@ -46,6 +46,9 @@ class Tree(Element):
         self._props['ticked'] = []
         if tick_strategy is not None:
             self._props['tick-strategy'] = tick_strategy
+        self._select_handlers = [on_select] if on_select else []
+        self._expand_handlers = [on_expand] if on_expand else []
+        self._tick_handlers = [on_tick] if on_tick else []
 
         def update_prop(name: str, value: Any) -> None:
             if self._props[name] != value:
@@ -54,18 +57,36 @@ class Tree(Element):
 
         def handle_selected(e: GenericEventArguments) -> None:
             update_prop('selected', e.args)
-            handle_event(on_select, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
+            for handler in self._select_handlers:
+                handle_event(handler, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
         self.on('update:selected', handle_selected)
 
         def handle_expanded(e: GenericEventArguments) -> None:
             update_prop('expanded', e.args)
-            handle_event(on_expand, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
+            for handler in self._expand_handlers:
+                handle_event(handler, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
         self.on('update:expanded', handle_expanded)
 
         def handle_ticked(e: GenericEventArguments) -> None:
             update_prop('ticked', e.args)
-            handle_event(on_tick, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
+            for handler in self._tick_handlers:
+                handle_event(handler, ValueChangeEventArguments(sender=self, client=self.client, value=e.args))
         self.on('update:ticked', handle_ticked)
+
+    def on_select(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the selection changes."""
+        self._select_handlers.append(callback)
+        return self
+
+    def on_expand(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the expansion changes."""
+        self._expand_handlers.append(callback)
+        return self
+
+    def on_tick(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a node is ticked or unticked."""
+        self._tick_handlers.append(callback)
+        return self
 
     def expand(self, node_keys: Optional[List[str]] = None) -> Self:
         """Expand the given nodes.

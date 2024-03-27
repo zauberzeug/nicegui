@@ -52,6 +52,8 @@ class Table(FilterElement, component='table.js'):
         self._props['selection'] = selection or 'none'
         self._props['selected'] = []
         self._props['fullscreen'] = False
+        self._selection_handlers = [on_select] if on_select else []
+        self._pagination_change_handlers = [on_pagination_change] if on_pagination_change else []
 
         def handle_selection(e: GenericEventArguments) -> None:
             if e.args['added']:
@@ -62,15 +64,27 @@ class Table(FilterElement, component='table.js'):
                 self.selected = [row for row in self.selected if row[row_key] not in e.args['keys']]
             self.update()
             arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
-            handle_event(on_select, arguments)
+            for handler in self._selection_handlers:
+                handle_event(handler, arguments)
         self.on('selection', handle_selection, ['added', 'rows', 'keys'])
 
         def handle_pagination_change(e: GenericEventArguments) -> None:
             self.pagination = e.args
             self.update()
             arguments = ValueChangeEventArguments(sender=self, client=self.client, value=self.pagination)
-            handle_event(on_pagination_change, arguments)
+            for handler in self._pagination_change_handlers:
+                handle_event(handler, arguments)
         self.on('update:pagination', handle_pagination_change)
+
+    def on_select(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the selection changes."""
+        self._selection_handlers.append(callback)
+        return self
+
+    def on_pagination_change(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the pagination changes."""
+        self._pagination_change_handlers.append(callback)
+        return self
 
     @classmethod
     def from_pandas(cls,
