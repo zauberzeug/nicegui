@@ -159,7 +159,7 @@ function renderRecursively(elements, id) {
         };
         const emitter = () => window.socket?.emit("event", data);
         throttle(emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
-        if (element.props["shortcut"] === true && event.type == "update:modelValue") {
+        if (element.props["loopback"] === False && event.type == "update:modelValue") {
           element.props["model-value"] = args;
         }
       };

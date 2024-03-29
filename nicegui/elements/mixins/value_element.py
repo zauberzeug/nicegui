@@ -9,8 +9,16 @@ from ...events import GenericEventArguments, ValueChangeEventArguments, handle_e
 
 class ValueElement(Element):
     VALUE_PROP: str = 'model-value'
-    LOOPBACK: bool = True
-    SHORTCUT: bool = False
+    """Name of the prop that holds the value of the element"""
+
+    LOOPBACK: Optional[bool] = True
+    """Whether to set the new value directly on the client or after getting an update from the server.
+    
+    - ``True``: The value is updated by sending a change event to the server which responds with an update.
+    - ``False``: The value is updated by setting the VALUE_PROP directly on the client.
+    - ``None``: The value is updated automatically by the Vue element.
+    """
+
     value = BindableProperty(
         on_change=lambda sender, value: cast(Self, sender)._handle_value_change(value))  # pylint: disable=protected-access
 
@@ -24,11 +32,11 @@ class ValueElement(Element):
         self._send_update_on_value_change = True
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
-        self._props['shortcut'] = self.SHORTCUT
+        self._props['loopback'] = self.LOOPBACK
         self._change_handler = on_value_change
 
         def handle_change(e: GenericEventArguments) -> None:
-            self._send_update_on_value_change = self.LOOPBACK
+            self._send_update_on_value_change = self.LOOPBACK is True
             self.set_value(self._event_args_to_value(e))
             self._send_update_on_value_change = True
         self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
