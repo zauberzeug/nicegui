@@ -1,13 +1,11 @@
-
-
 from nicegui import ui
 
 from . import doc
 
 
-@doc.demo(ui.code_mirror)
+@doc.demo(ui.codemirror)
 def main_demo() -> None:
-    ui.code_mirror()    
+    ui.codemirror()
 
 
-doc.reference(ui.code_mirror)
+doc.reference(ui.codemirror)
