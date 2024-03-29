@@ -1,7 +1,7 @@
 from nicegui.element import Element
 
 
-class CodeMirror(Element, component='code_mirror.js'):
+class CodeMirror(Element, component='codemirror.js'):
 
     def __init__(self) -> None:
         """CodeMirror
