@@ -129,5 +129,12 @@
     "rename": {
       "package/": ""
     }
+  },
+  "monaco-editor": {
+    "destination": "nicegui/elements/lib",
+    "keep": ["package/min/vs/editor/editor\\.main\\.js"],
+    "rename": {
+      "package/min/": ""
+    }
   }
 }

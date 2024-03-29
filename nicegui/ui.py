@@ -50,6 +50,7 @@ __all__ = [
     'menu',
     'menu_item',
     'mermaid',
+    'monaco',
     'navigate',
     'notification',
     'number',
@@ -165,6 +166,7 @@ from .elements.markdown import Markdown as markdown
 from .elements.menu import Menu as menu
 from .elements.menu import MenuItem as menu_item
 from .elements.mermaid import Mermaid as mermaid
+from .elements.monaco import Monaco as monaco
 from .elements.notification import Notification as notification
 from .elements.number import Number as number
 from .elements.pagination import Pagination as pagination
