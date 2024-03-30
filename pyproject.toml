@@ -73,3 +73,6 @@ asyncio_mode = "auto"
 
 [tool.mypy]
 ignore_missing_imports = true
+
+[tool.poetry.scripts]
+nicegui_package_build = "nicegui.build_package:main"
