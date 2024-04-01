@@ -224,11 +224,11 @@ class Client:
         self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type}, self.id)
 
     def on_connect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
-        """Register a callback to be called when the client connects."""
+        """Add a callback to be invoked when the client connects."""
         self.connect_handlers.append(handler)
 
     def on_disconnect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
-        """Register a callback to be called when the client disconnects."""
+        """Add a callback to be invoked when the client disconnects."""
         self.disconnect_handlers.append(handler)
 
     def handle_handshake(self) -> None:
@@ -294,12 +294,12 @@ class Client:
         """Remove the given elements from the client."""
         binding.remove(elements)
         element_ids = [element.id for element in elements]
-        for element_id in element_ids:
-            del self.elements[element_id]
         for element in elements:
             element._handle_delete()  # pylint: disable=protected-access
             element._deleted = True  # pylint: disable=protected-access
             self.outbox.enqueue_delete(element)
+        for element_id in element_ids:
+            del self.elements[element_id]
 
     def remove_all_elements(self) -> None:
         """Remove all elements from the client."""

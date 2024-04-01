@@ -8,7 +8,7 @@ from nicegui import ui
 
 @user.login_page
 def login():
-    user.login_form().on('success', lambda: ui.open('/'))
+    user.login_form().on('success', lambda: ui.navigate.to('/'))
 
 
 @user.page('/')

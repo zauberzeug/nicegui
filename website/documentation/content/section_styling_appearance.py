@@ -1,7 +1,7 @@
 from nicegui import events, ui
 
 from ..windows import browser_window, python_window
-from . import colors_documentation, dark_mode_documentation, doc, query_documentation
+from . import add_style_documentation, colors_documentation, dark_mode_documentation, doc, query_documentation
 
 doc.title('Styling & Appearance')
 
@@ -158,13 +158,11 @@ doc.intro(colors_documentation)
 
 ''')
 def css_variables_demo():
-    # ui.add_head_html('''
-    #     <style>
-    #         :root {
-    #             --nicegui-default-padding: 0.5rem;
-    #             --nicegui-default-gap: 3rem;
-    #         }
-    #     </style>
+    # ui.add_style('''
+    #     :root {
+    #         --nicegui-default-padding: 0.5rem;
+    #         --nicegui-default-gap: 3rem;
+    #     }
     # ''')
     # with ui.card():
     #     ui.label('small padding')
@@ -192,3 +190,4 @@ def overwrite_tailwind_style_demo():
 
 
 doc.intro(dark_mode_documentation)
+doc.intro(add_style_documentation)

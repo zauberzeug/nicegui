@@ -33,6 +33,7 @@ examples: List[Example] = [
     Example('OpenCV Webcam', 'uses OpenCV to capture images from a webcam'),
     Example('SVG Clock', 'displays an analog clock by updating an SVG with `ui.timer`'),
     Example('Progress', 'demonstrates a progress bar for heavy computations'),
+    Example('Global Worker', 'demonstrates a global worker for heavy computations with progress feedback'),
     Example('NGINX Subpath', 'shows the setup to serve an app behind a reverse proxy subpath'),
     Example('Script Executor', 'executes scripts on selection and displays the output'),
     Example('Local File Picker', 'demonstrates a dialog for selecting files locally on the server'),
@@ -61,5 +62,6 @@ examples: List[Example] = [
     Example('FullCalendar', 'show an interactive calendar using the [FullCalendar library](https://fullcalendar.io/)'),
     Example('Pytest', 'test a NiceGUI app with pytest'),
     Example('Pyserial', 'communicate with a serial device'),
+    Example('Webserial', 'communicate with a serial device using the WebSerial API'),
     Example('Websockets', 'use [websockets library](https://websockets.readthedocs.io/) to start a websocket server'),
 ]

@@ -1,6 +1,6 @@
 from . import (badge_documentation, button_documentation, checkbox_documentation, color_input_documentation,
                color_picker_documentation, date_documentation, doc, input_documentation, joystick_documentation,
-               knob_documentation, number_documentation, radio_documentation, select_documentation,
+               knob_documentation, number_documentation, radio_documentation, range_documentation, select_documentation,
                slider_documentation, switch_documentation, textarea_documentation, time_documentation,
                toggle_documentation, upload_documentation)
 
@@ -14,6 +14,7 @@ doc.intro(select_documentation)
 doc.intro(checkbox_documentation)
 doc.intro(switch_documentation)
 doc.intro(slider_documentation)
+doc.intro(range_documentation)
 doc.intro(joystick_documentation)
 doc.intro(input_documentation)
 doc.intro(textarea_documentation)

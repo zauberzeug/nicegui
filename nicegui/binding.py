@@ -2,7 +2,7 @@ import asyncio
 import time
 from collections import defaultdict
 from collections.abc import Mapping
-from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 from . import core
 from .logging import log

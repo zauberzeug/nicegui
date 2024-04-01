@@ -16,6 +16,7 @@ from .page import DocumentationPage
 from .part import Demo, DocumentationPart
 
 registry: Dict[str, DocumentationPage] = {}
+redirects: Dict[str, str] = {}
 
 
 def get_page(documentation: ModuleType) -> DocumentationPage:
@@ -82,8 +83,11 @@ def demo(*args, **kwargs) -> Callable[[Callable], Callable]:
         is_markdown = True
     else:
         element = args[0]
-        doc = element.__init__.__doc__ if isinstance(element, type) else element.__doc__  # type: ignore
+        doc = element.__doc__
+        if isinstance(element, type) and not doc:
+            doc = element.__init__.__doc__  # type: ignore
         title_, description = doc.split('\n', 1)
+        title_ = title_.rstrip('.')
         is_markdown = False
 
     description = remove_indentation(description)

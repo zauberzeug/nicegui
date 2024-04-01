@@ -52,6 +52,8 @@ class Table(FilterElement, component='table.js'):
         self._props['selection'] = selection or 'none'
         self._props['selected'] = []
         self._props['fullscreen'] = False
+        self._selection_handlers = [on_select] if on_select else []
+        self._pagination_change_handlers = [on_pagination_change] if on_pagination_change else []
 
         def handle_selection(e: GenericEventArguments) -> None:
             if e.args['added']:
@@ -62,15 +64,27 @@ class Table(FilterElement, component='table.js'):
                 self.selected = [row for row in self.selected if row[row_key] not in e.args['keys']]
             self.update()
             arguments = TableSelectionEventArguments(sender=self, client=self.client, selection=self.selected)
-            handle_event(on_select, arguments)
+            for handler in self._selection_handlers:
+                handle_event(handler, arguments)
         self.on('selection', handle_selection, ['added', 'rows', 'keys'])
 
         def handle_pagination_change(e: GenericEventArguments) -> None:
             self.pagination = e.args
             self.update()
             arguments = ValueChangeEventArguments(sender=self, client=self.client, value=self.pagination)
-            handle_event(on_pagination_change, arguments)
+            for handler in self._pagination_change_handlers:
+                handle_event(handler, arguments)
         self.on('update:pagination', handle_pagination_change)
+
+    def on_select(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the selection changes."""
+        self._selection_handlers.append(callback)
+        return self
+
+    def on_pagination_change(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the pagination changes."""
+        self._pagination_change_handlers.append(callback)
+        return self
 
     @classmethod
     def from_pandas(cls,
@@ -96,16 +110,15 @@ class Table(FilterElement, component='table.js'):
         :param on_select: callback which is invoked when the selection changes
         :return: table element
         """
-        date_cols = df.columns[df.dtypes == 'datetime64[ns]']
-        time_cols = df.columns[df.dtypes == 'timedelta64[ns]']
-        complex_cols = df.columns[df.dtypes == 'complex128']
-        period_cols = df.columns[df.dtypes == 'period[M]']
-        if len(date_cols) != 0 or len(time_cols) != 0 or len(complex_cols) != 0 or len(period_cols) != 0:
+        def is_special_dtype(dtype):
+            return (pd.api.types.is_datetime64_any_dtype(dtype) or
+                    pd.api.types.is_timedelta64_dtype(dtype) or
+                    pd.api.types.is_complex_dtype(dtype) or
+                    pd.api.types.is_period_dtype(dtype))
+        special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
+        if not special_cols.empty:
             df = df.copy()
-            df[date_cols] = df[date_cols].astype(str)
-            df[time_cols] = df[time_cols].astype(str)
-            df[complex_cols] = df[complex_cols].astype(str)
-            df[period_cols] = df[period_cols].astype(str)
+            df[special_cols] = df[special_cols].astype(str)
 
         if isinstance(df.columns, pd.MultiIndex):
             raise ValueError('MultiIndex columns are not supported. '

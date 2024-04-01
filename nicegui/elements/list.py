@@ -1,5 +1,7 @@
 from typing import Any, Callable, Optional
 
+from typing_extensions import Self
+
 from ..element import Element
 from ..events import ClickEventArguments, handle_event
 from .mixins.disableable_element import DisableableElement
@@ -28,8 +30,13 @@ class Item(DisableableElement):
         super().__init__(tag='q-item')
 
         if on_click:
-            self._props['clickable'] = True
-            self.on('click', lambda _: handle_event(on_click, ClickEventArguments(sender=self, client=self.client)))
+            self.on_click(on_click)
+
+    def on_click(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the List Item is clicked."""
+        self._props['clickable'] = True  # idempotent
+        self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)))
+        return self
 
 
 class ItemSection(Element):

@@ -37,7 +37,7 @@ async def logout() -> None:
     else:
         logging.error(f'Logout failed: {result}')
         ui.notify('Logout failed', type='negative')
-    ui.open(page.LOGIN_PATH)
+    ui.navigate.to(page.LOGIN_PATH)
 
 
 class page(ui.page):
@@ -65,11 +65,11 @@ class page(ui.page):
             if await self._is_logged_in():
                 if self.path == self.LOGIN_PATH:
                     self._refresh()
-                    ui.open('/')
+                    ui.navigate.to('/')
                     return
             else:
                 if self.path != self.LOGIN_PATH:
-                    ui.open(self.LOGIN_PATH)
+                    ui.navigate.to(self.LOGIN_PATH)
                     return
                 ui.timer(self.SESSION_TOKEN_REFRESH_INTERVAL, self._refresh)
 

@@ -30,8 +30,6 @@ export default {
       "baselayerchange",
       "overlayadd",
       "overlayremove",
-      "layeradd",
-      "layerremove",
       "zoomlevelschange",
       "resize",
       "unload",
@@ -72,6 +70,14 @@ export default {
           sourceTarget: undefined,
           center: [e.target.getCenter().lat, e.target.getCenter().lng],
           zoom: e.target.getZoom(),
+        });
+      });
+    }
+    for (const type of ["layeradd", "layerremove"]) {
+      this.map.on(type, (e) => {
+        this.$emit(`map-${type}`, {
+          id: e.layer.id,
+          leaflet_id: e.layer._leaflet_id,
         });
       });
     }
@@ -124,17 +130,19 @@ export default {
         name = name.slice(1);
         args = args.map((arg) => new Function("return " + arg)());
       }
-      return this.map[name](...args);
+      return runMethod(this.map, name, args);
     },
     run_layer_method(id, name, ...args) {
+      let result = null;
       this.map.eachLayer((layer) => {
         if (layer.id !== id) return;
         if (name.startsWith(":")) {
           name = name.slice(1);
           args = args.map((arg) => new Function("return " + arg)());
         }
-        return layer[name](...args);
+        result = runMethod(layer, name, args);
       });
+      return result;
     },
   },
 };

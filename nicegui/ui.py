@@ -51,6 +51,7 @@ __all__ = [
     'menu',
     'menu_item',
     'mermaid',
+    'navigate',
     'notification',
     'number',
     'pagination',
@@ -60,6 +61,7 @@ __all__ = [
     'pyplot',
     'query',
     'radio',
+    'range',
     'restructured_text',
     'row',
     'scene',
@@ -99,6 +101,7 @@ __all__ = [
     'refreshable',
     'refreshable_method',
     'state',
+    'add_style',
     'update',
     'page',
     'drawer',
@@ -172,6 +175,7 @@ from .elements.progress import LinearProgress as linear_progress
 from .elements.pyplot import Pyplot as pyplot
 from .elements.query import Query as query
 from .elements.radio import Radio as radio
+from .elements.range import Range as range
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
@@ -205,11 +209,13 @@ from .functions import clipboard
 from .functions.download import download
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
+from .functions.navigate import Navigate as navigate
 from .functions.notify import notify
 from .functions.on import on
 from .functions.open import open  # pylint: disable=redefined-builtin
 from .functions.page_title import page_title
 from .functions.refreshable import refreshable, refreshable_method, state
+from .functions.style import add_style
 from .functions.update import update
 from .page import page
 from .page_layout import Drawer as drawer
