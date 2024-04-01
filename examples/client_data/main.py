@@ -17,7 +17,7 @@ def index():
 
 
 @page('/perClient')
-def index():
+def per_client():
     def increment():
         data = app.storage.client
         counter = data['counter'] = data.get('counter', 0) + 1
