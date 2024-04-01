@@ -13,14 +13,17 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from . import background_tasks, context, core, json, observables
+from .context import get_slot_stack
 from .logging import log
 
-request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
+request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar(
+    'request_var', default=None)
 
 
 class ReadOnlyDict(MutableMapping):
 
-    def __init__(self, data: Dict[Any, Any], write_error_message: str = 'Read-only dict') -> None:
+    def __init__(self, data: Dict[Any, Any],
+                 write_error_message: str = 'Read-only dict') -> None:
         self._data: Dict[Any, Any] = data
         self._write_error_message: str = write_error_message
 
@@ -62,6 +65,7 @@ class PersistentDict(observables.ObservableDict):
         async def backup() -> None:
             async with aiofiles.open(self.filepath, 'w', encoding=self.encoding) as f:
                 await f.write(json.dumps(self))
+
         if core.loop:
             background_tasks.create_lazy(backup(), name=self.filepath.stem)
         else:
@@ -70,7 +74,8 @@ class PersistentDict(observables.ObservableDict):
 
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
 
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+    async def dispatch(self, request: Request,
+                       call_next: RequestResponseEndpoint) -> Response:
         request_contextvar.set(request)
         if 'id' not in request.session:
             request.session['id'] = str(uuid.uuid4())
@@ -95,7 +100,8 @@ class Storage:
     def __init__(self) -> None:
         self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
         self.migrate_to_utf8()
-        self._general = PersistentDict(self.path / 'storage-general.json', encoding='utf-8')
+        self._general = PersistentDict(self.path / 'storage-general.json',
+                                       encoding='utf-8')
         self._users: Dict[str, PersistentDict] = {}
 
     @property
@@ -109,9 +115,11 @@ class Storage:
         request: Optional[Request] = request_contextvar.get()
         if request is None:
             if self._is_in_auto_index_context():
-                raise RuntimeError('app.storage.browser can only be used with page builder functions '
-                                   '(https://nicegui.io/documentation/page)')
-            raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
+                raise RuntimeError(
+                    'app.storage.browser can only be used with page builder functions '
+                    '(https://nicegui.io/documentation/page)')
+            raise RuntimeError(
+                'app.storage.browser needs a storage_secret passed in ui.run()')
         if request.state.responded:
             return ReadOnlyDict(
                 request.session,
@@ -129,13 +137,26 @@ class Storage:
         request: Optional[Request] = request_contextvar.get()
         if request is None:
             if self._is_in_auto_index_context():
-                raise RuntimeError('app.storage.user can only be used with page builder functions '
-                                   '(https://nicegui.io/documentation/page)')
-            raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
+                raise RuntimeError(
+                    'app.storage.user can only be used with page builder functions '
+                    '(https://nicegui.io/documentation/page)')
+            raise RuntimeError(
+                'app.storage.user needs a storage_secret passed in ui.run()')
         session_id = request.session['id']
         if session_id not in self._users:
-            self._users[session_id] = PersistentDict(self.path / f'storage-user-{session_id}.json', encoding='utf-8')
+            self._users[session_id] = PersistentDict(
+                self.path / f'storage-user-{session_id}.json', encoding='utf-8')
         return self._users[session_id]
+
+    @property
+    def client(self) -> Dict:
+        """Volatile client storage that is persisted on the server (where NiceGUI is
+        executed) on a per client/per connection basis.
+
+        Note that this kind of storage can only be used in single page applications
+        where the client connection is preserved between page changes."""
+        client = context.get_client()
+        return client.state
 
     @staticmethod
     def _is_in_auto_index_context() -> bool:
@@ -153,6 +174,8 @@ class Storage:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
+        if get_slot_stack():
+            self.client.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()
 
