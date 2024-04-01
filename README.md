@@ -104,14 +104,16 @@ and the ASGI webserver [Uvicorn](https://www.uvicorn.org/)
 because of their great performance and ease of use.
 
 ## Sponsors
-Maintenance of this project is made possible by all the [contributors](https://github.com/JamesIves/github-pages-deploy-action/graphs/contributors) and [sponsors](https://github.com/sponsors/zauberzeug). If you'd like to support this project and have your avatar or company logo appear below please [sponsor us](https://github.com/sponsors/zauberzeug). 💖
+
+Maintenance of this project is made possible by all the [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors) and [sponsors](https://github.com/sponsors/zauberzeug).
+If you would like to support this project and have your avatar or company logo appear below, please [sponsor us](https://github.com/sponsors/zauberzeug). 💖
 
 <p align="center">
-   <a href="https://github.com/lechler-gmbh"><img src="https://github.com/lechler-gmbh.png" width="50px" alt="lechler-gmbh" /></a>
+   <a href="https://github.com/lechler-gmbh"><img src="https://github.com/lechler-gmbh.png" width="50px" alt="Lechler GmbH" /></a>
 </p>
 
-Consider this low-barrier form of contribution yourself. Your [support](https://github.com/sponsors/zauberzeug) is much appreciated.
-
+Consider this low-barrier form of contribution yourself.
+Your [support](https://github.com/sponsors/zauberzeug) is much appreciated.
 
 ## Contributing
 
