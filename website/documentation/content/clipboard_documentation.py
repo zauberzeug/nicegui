@@ -13,3 +13,17 @@ def main_demo() -> None:
     async def read() -> None:
         ui.notify(await ui.clipboard.read())
     ui.button('Read', on_click=read)
+
+
+@doc.demo('Client-side clipboard', '''
+    In order to avoid the round-trip to the server, you can also use the client-side clipboard API directly.
+    This might be supported by more browsers because the clipboard access is directly triggered by a user action.
+''')
+def client_side_clipboard() -> None:
+    ui.button('Write').on('click', js_handler='''
+        () => navigator.clipboard.writeText("Ho!")
+    ''')
+    ui.button('Read').on('click', js_handler='''
+        async () => emitEvent("clipboard", await navigator.clipboard.readText())
+    ''')
+    ui.on('clipboard', lambda e: ui.notify(e.args))
