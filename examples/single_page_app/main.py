@@ -11,13 +11,9 @@ def add_links():
     ui.link('Four', '/four')
 
 
-@ui.page('/four')  # normal index page (e.g. the entry point of the app)
-def show_four():
-    ui.label('Content Four').classes('text-2xl')
-    add_links()
-
 
 @ui.page('/')  # normal index page (e.g. the entry point of the app)
+@ui.page('/{_:path}')  # all other pages will be handled by the router but must be registered to also show the SPA index page
 def main():
     router = Router()
 
@@ -34,6 +30,11 @@ def main():
     @router.add('/three')
     def show_three():
         ui.label('Content Three').classes('text-2xl')
+        add_links()
+
+    @router.add('/four')
+    def show_four():
+        ui.label('Content Four').classes('text-2xl')
         add_links()
 
     # this places the content which should be displayed
