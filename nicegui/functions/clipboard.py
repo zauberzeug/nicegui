@@ -1,3 +1,4 @@
+from .. import json
 from .javascript import run_javascript
 
 
@@ -11,4 +12,4 @@ def write(text: str) -> None:
 
     :param text: text to write
     """
-    run_javascript(f'navigator.clipboard.writeText(`{text}`)')
+    run_javascript(f'navigator.clipboard.writeText({json.dumps(text)})')
