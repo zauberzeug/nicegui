@@ -15,7 +15,7 @@ def login():
                     'user3': 'pw3'}
 
     if app.storage.session['username'] in fake_pw_dict and app.storage.session['password'] == fake_pw_dict[
-        app.storage.session['username']]:
+            app.storage.session['username']]:
         ui.navigate.to("/secret_content")
         return True
     return False
