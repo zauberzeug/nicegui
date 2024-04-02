@@ -34,6 +34,7 @@ class Markdown(ContentElement, component='markdown.js'):
         html = prepare_content(content, extras=' '.join(self.extras))
         if self._props.get('innerHTML') != html:
             self._props['innerHTML'] = html
+            self.update()
             self.run_method('update', html)
 
 
