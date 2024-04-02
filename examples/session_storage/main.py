@@ -6,12 +6,13 @@
 from nicegui import ui
 from nicegui.page import page
 from nicegui import app
+from nicegui.single_page import SinglePageRouter
 
 
 def login():
-    fake_pw_dict = {'user1': 'password1',
-                    'user2': 'password2',
-                    'user3': 'password3'}
+    fake_pw_dict = {'user1': 'pw1',
+                    'user2': 'pw2',
+                    'user3': 'pw3'}
 
     if app.storage.session['username'] in fake_pw_dict and app.storage.session['password'] == fake_pw_dict[
         app.storage.session['username']]:
@@ -31,11 +32,14 @@ def index():
     password.bind_value(app.storage.session, "password")
     feedback = ui.label('')
     ui.button('Login', on_click=handle_login)
+    ui.link('Logout', '/secret_content')  # TODO remove me
 
 
-@page('/secret_content')
+@page('/secret_content', title='Secret Content')
 def secret_content():
-    ui.label(f'This is secret content, welcome {app.storage.session["username"]}')
+    ui.label(f'This is secret content, welcome {app.storage.session.get("username", "unknown user")}!')
 
 
-ui.run()
+if __name__ in {"__main__", "__mp_main__"}:
+    sp = SinglePageRouter("/")
+    ui.run(show=False)

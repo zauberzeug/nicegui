@@ -6,17 +6,16 @@ export default {
             // Check if the clicked element is a link
             if (e.target.tagName === 'A') {
                 const href = e.target.getAttribute('href'); // Get the link's href value
-                if (href.startsWith('/')) {
+                if (href.startsWith(router.base_path)) { // internal links only
                     e.preventDefault(); // Prevent the default link behavior
-                    window.history.pushState({page: href}, "", href);
+                    window.history.pushState({page: href}, '', href);
                     router.$emit("open", href);
                 }
             }
         });
         window.addEventListener("popstate", (event) => {
-            if (event.state?.page) {
-                this.$emit("open", event.state.page);
-            }
+            let new_page = window.location.pathname;
+            this.$emit("open", new_page);
         });
         const connectInterval = setInterval(async () => {
             if (window.socket.id === undefined) return;
@@ -24,5 +23,7 @@ export default {
             clearInterval(connectInterval);
         }, 10);
     },
-    props: {},
+    props: {
+        base_path: String
+    },
 };

@@ -106,6 +106,7 @@ class page:
                 async def wait_for_result() -> None:
                     with client:
                         return await result
+
                 task = background_tasks.create(wait_for_result())
                 deadline = time.time() + self.response_timeout
                 while task and not client.is_waiting_for_connection and not task.done():
@@ -134,4 +135,5 @@ class page:
 
         self.api_router.get(self._path, **self.kwargs)(decorated)
         Client.page_routes[func] = self.path
+        func.__setattr__("__ng_page", self)
         return func

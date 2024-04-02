@@ -32,6 +32,9 @@ class Client:
     page_routes: Dict[Callable[..., Any], str] = {}
     """Maps page builders to their routes."""
 
+    single_page_routes: Dict[str, Any] = {}
+    """Maps paths to the associated single page routers."""
+
     instances: Dict[str, Client] = {}
     """Maps client IDs to clients."""
 
@@ -94,7 +97,8 @@ class Client:
     @property
     def ip(self) -> Optional[str]:
         """Return the IP address of the client, or None if the client is not connected."""
-        return self.environ['asgi.scope']['client'][0] if self.environ else None  # pylint: disable=unsubscriptable-object
+        return self.environ['asgi.scope']['client'][
+            0] if self.environ else None  # pylint: disable=unsubscriptable-object
 
     @property
     def has_socket_connection(self) -> bool:
@@ -133,12 +137,13 @@ class Client:
                 'request': request,
                 'version': __version__,
                 'elements': elements.replace('&', '&amp;')
-                                    .replace('<', '&lt;')
-                                    .replace('>', '&gt;')
-                                    .replace('`', '&#96;')
-                                    .replace('$', '&#36;'),
+                .replace('<', '&lt;')
+                .replace('>', '&gt;')
+                .replace('`', '&#96;')
+                .replace('$', '&#36;'),
                 'head_html': self.head_html,
-                'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
+                'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(
+                    vue_html),
                 'vue_scripts': '\n'.join(vue_scripts),
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
@@ -224,6 +229,9 @@ class Client:
     def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
+        if path in self.single_page_routes:
+            self.single_page_routes[path].open(target, server_side=True)
+            return
         self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 
     def download(self, src: Union[str, bytes], filename: Optional[str] = None, media_type: str = '') -> None:
@@ -250,6 +258,7 @@ class Client:
 
     def handle_disconnect(self) -> None:
         """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't."""
+
         async def handle_disconnect() -> None:
             if self.page.reconnect_timeout is not None:
                 delay = self.page.reconnect_timeout
@@ -262,6 +271,7 @@ class Client:
                 self.safe_invoke(t)
             if not self.shared:
                 self.delete()
+
         self._disconnect_task = background_tasks.create(handle_disconnect())
 
     def handle_event(self, msg: Dict) -> None:
@@ -285,6 +295,7 @@ class Client:
                 async def func_with_client():
                     with self:
                         await func
+
                 background_tasks.create(func_with_client())
             else:
                 with self:
@@ -293,6 +304,7 @@ class Client:
                     async def result_with_client():
                         with self:
                             await result
+
                     background_tasks.create(result_with_client())
         except Exception as e:
             core.app.handle_exception(e)
