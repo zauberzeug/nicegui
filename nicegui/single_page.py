@@ -56,6 +56,8 @@ class SinglePageRouter:
             target = {v: k for k, v in self.routes.items()}[target]
             builder = target
         else:
+            if target not in self.routes:
+                return
             builder = self.routes[target]
 
         if "__ng_page" in builder.__dict__:
@@ -65,6 +67,9 @@ class SinglePageRouter:
 
         if server_side:
             ui.run_javascript(f'window.history.pushState({{page: "{target}"}}, "", "{target}");')
+
+        if self.content is None:
+            return
 
         async def build() -> None:
             with self.content:
