@@ -1,20 +1,20 @@
+from typing import Any, Callable
+
+from fastapi.routing import APIRoute
+from starlette.routing import Route
+
 from nicegui import ui
-from nicegui.page import page
 from nicegui.page_builder import PageBuilder, PageRouter
+from nicegui.single_page import SinglePageRouter
+from nicegui import core
+
+from sub_page import sub_page
 
 
-class DemoPage(PageBuilder):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def build(self):
-        ui.link('Go to /about', '/about')
+@ui.page('/some_page')
+def some_page():
+    ui.label('Some Page').classes('text-2xl')
 
 
-@page('/')
-def index():
-    router = PageRouter()
-    router.add('/', DemoPage, default=True)
-
-
+sp = SinglePageRouter("/")
 ui.run(show=False)

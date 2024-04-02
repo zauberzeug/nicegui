@@ -149,7 +149,7 @@ class Storage:
         return self._users[session_id]
 
     @property
-    def client(self) -> Dict:
+    def session(self) -> Dict:
         """Volatile client storage that is persisted on the server (where NiceGUI is
         executed) on a per client/per connection basis.
 
@@ -175,7 +175,7 @@ class Storage:
         self._general.clear()
         self._users.clear()
         if get_slot_stack():
-            self.client.clear()
+            self.session.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()
 

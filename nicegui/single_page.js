@@ -1,5 +1,5 @@
 export default {
-    template: "<div><slot></slot></div>",
+    template: "<slot></slot>",
     mounted() {
         let router = this;
         document.addEventListener('click', function (e) {
