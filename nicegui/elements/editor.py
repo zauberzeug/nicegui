@@ -5,6 +5,7 @@ from .mixins.value_element import ValueElement
 
 
 class Editor(ValueElement, DisableableElement):
+    LOOPBACK = None
 
     def __init__(self,
                  *,
