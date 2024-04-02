@@ -5,6 +5,7 @@ __all__ = [
     'avatar',
     'badge',
     'button',
+    'button_group',
     'card',
     'card_actions',
     'card_section',
@@ -122,6 +123,7 @@ from .elements.avatar import Avatar as avatar
 from .elements.badge import Badge as badge
 from .elements.button import Button as button
 from .elements.button_dropdown import DropdownButton as dropdown_button
+from .elements.button_group import ButtonGroup as button_group
 from .elements.card import Card as card
 from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section
