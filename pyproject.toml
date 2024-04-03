@@ -38,6 +38,7 @@ native = ["pywebview"]
 plotly = ["plotly"]
 matplotlib = ["matplotlib"]
 highcharts = ["nicegui-highcharts"]
+sass = ["libsass"]
 
 [tool.poetry.group.dev.dependencies]
 icecream = "^2.1.0"
