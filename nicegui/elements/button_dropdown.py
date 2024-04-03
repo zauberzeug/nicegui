@@ -14,7 +14,7 @@ class DropdownButton(Button, ValueElement):
                  color: Optional[str] = 'primary',
                  icon: Optional[str] = None,
                  ) -> None:
-        """Drop Down Button
+        """Dropdown Button
 
         This element is based on Quasar's `QBtnDropDown <https://quasar.dev/vue-components/button-dropdown>`_ component.
 
