@@ -134,5 +134,5 @@ class page:
 
         self.api_router.get(self._path, **self.kwargs)(decorated)
         Client.page_routes[func] = self.path
-        func.__setattr__("__ng_page", self)
+        Client.page_configs[func] = self
         return func

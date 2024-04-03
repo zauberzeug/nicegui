@@ -32,6 +32,9 @@ class Client:
     page_routes: Dict[Callable[..., Any], str] = {}
     """Maps page builders to their routes."""
 
+    page_configs: Dict[Callable[..., Any], "page"] = {}
+    """Maps page builders to their page configuration."""
+
     single_page_routes: Dict[str, Any] = {}
     """Maps paths to the associated single page routers."""
 

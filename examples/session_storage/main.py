@@ -7,7 +7,7 @@ from nicegui import app
 from nicegui.single_page import SinglePageRouter
 
 
-@page('/')
+@page('/', title="Welcome!")
 def index():
     username = app.storage.session.get('username', '')
     if username == '':  # redirect to login page
@@ -19,7 +19,7 @@ def index():
     ui.link('Logout', '/logout')
 
 
-@page('/login')
+@page('/login', title="Login")
 def login_page():
     def login():
         fake_pw_dict = {'user1': 'pw1',
@@ -45,7 +45,7 @@ def login_page():
     ui.html("<small>Psst... try user1/pw1, user2/pw2, user3/pw3</small>")
 
 
-@page('/logout')
+@page('/logout', title="Logout")
 def logout():
     app.storage.session['username'] = ''
     app.storage.session['password'] = ''
