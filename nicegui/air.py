@@ -2,7 +2,6 @@ import asyncio
 import gzip
 import json
 import re
-import signal
 from dataclasses import dataclass
 from typing import Any, AsyncIterator, Dict, Optional
 from uuid import uuid4
@@ -10,6 +9,8 @@ from uuid import uuid4
 import httpx
 import socketio
 import socketio.exceptions
+
+from nicegui import ui
 
 from . import background_tasks, core
 from .client import Client
@@ -35,6 +36,8 @@ class Air:
         self.connecting = False
         self.streams: Dict[str, Stream] = {}
         self.remote_url: Optional[str] = None
+
+        ui.timer(5, self.connect)  # ensure we stay connected
 
         @self.relay.on('http')
         async def _handle_http(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -162,7 +165,7 @@ class Air:
 
     async def connect(self) -> None:
         """Connect to the NiceGUI On Air server."""
-        if self.connecting:
+        if self.connecting or self.relay.connected:
             return
         self.connecting = True
         backoff_time = 1
