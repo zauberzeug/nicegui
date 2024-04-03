@@ -1,9 +1,10 @@
+import asyncio
 import inspect
 from typing import Callable, Dict, Union
 
 from fastapi.routing import APIRoute
 
-from nicegui import background_tasks, helpers, ui, core, Client
+from nicegui import background_tasks, helpers, ui, core, Client, app
 from nicegui.app import AppConfig
 
 
@@ -19,16 +20,17 @@ class SinglePageRouter:
         super().__init__()
 
         self.routes: Dict[str, Callable] = {}
-        self.content: Union[ui.element, None] = None
+        # async access lock
         self.base_path = path
         self.find_api_routes()
 
-        print("Configuring SinglePageRouter with path:", path)
-
         @ui.page(path, **kwargs)
         @ui.page(f'{path}' + '{_:path}', **kwargs)  # all other pages
-        def root_page():
-            self.frame()
+        async def root_page(client: Client):
+            await client.connected()
+            if app.storage.session.get('__pageContent', None) is None:
+                content: Union[ui.element, None] = RouterFrame(self.base_path).on('open', lambda e: self.open(e.args))
+                app.storage.session['__pageContent'] = content
 
     def find_api_routes(self):
         page_routes = set()
@@ -39,7 +41,7 @@ class SinglePageRouter:
                 Client.single_page_routes[route] = self
                 self.routes[route] = key
 
-        for route in core.app.routes:
+        for route in core.app.routes.copy():
             if isinstance(route, APIRoute):
                 if route.path in page_routes:
                     core.app.routes.remove(route)
@@ -68,18 +70,13 @@ class SinglePageRouter:
         if server_side:
             ui.run_javascript(f'window.history.pushState({{page: "{target}"}}, "", "{target}");')
 
-        if self.content is None:
-            return
-
-        async def build() -> None:
-            with self.content:
+        async def build(content_element) -> None:
+            with content_element:
                 result = builder()
                 if helpers.is_coroutine_function(builder):
                     await result
 
-        self.content.clear()
-        background_tasks.create(build())
+        content = app.storage.session['__pageContent']
+        content.clear()
 
-    def frame(self) -> ui.element:
-        self.content = RouterFrame(self.base_path).on('open', lambda e: self.open(e.args))
-        return self.content
+        background_tasks.create(build(content))
