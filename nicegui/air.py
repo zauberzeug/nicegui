@@ -166,34 +166,36 @@ class Air:
             return
         self.connecting = True
         backoff_time = 1
-        while True:
-            try:
-                if self.relay.connected:
-                    await self.relay.disconnect()
-                await self.relay.connect(
-                    f'{RELAY_HOST}?device_token={self.token}',
-                    socketio_path='/on_air/socket.io',
-                    transports=['websocket', 'polling'],  # favor websocket over polling
-                )
-                break
-            except socketio.exceptions.ConnectionError:
-                pass
-            except ValueError:  # NOTE this sometimes happens when the internal socketio client is not yet ready
-                await self.relay.disconnect()
-            except Exception:
-                log.exception('Could not connect to NiceGUI On Air server.')
+        try:
+            while True:
+                try:
+                    if self.relay.connected:
+                        await self.relay.disconnect()
+                    await self.relay.connect(
+                        f'{RELAY_HOST}?device_token={self.token}',
+                        socketio_path='/on_air/socket.io',
+                        transports=['websocket', 'polling'],  # favor websocket over polling
+                    )
+                    break
+                except socketio.exceptions.ConnectionError:
+                    pass
+                except ValueError:  # NOTE this sometimes happens when the internal socketio client is not yet ready
+                    pass
+                except Exception:
+                    log.exception('Could not connect to NiceGUI On Air server.')
 
-            await asyncio.sleep(backoff_time)
-            backoff_time = min(backoff_time * 2, 32)
-        self.connecting = False
+                await asyncio.sleep(backoff_time)
+                backoff_time = min(backoff_time * 2, 32)
+        finally:
+            self.connecting = False
 
     async def disconnect(self) -> None:
         """Disconnect from the NiceGUI On Air server."""
-        await self.relay.disconnect()
+        if self.relay.connected:
+            await self.relay.disconnect()
         for stream in self.streams.values():
             await stream.response.aclose()
         self.streams.clear()
-        await self.relay.disconnect()
 
     async def emit(self, message_type: str, data: Dict[str, Any], room: str) -> None:
         """Emit a message to the NiceGUI On Air server."""
