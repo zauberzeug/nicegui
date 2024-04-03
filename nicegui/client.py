@@ -231,7 +231,7 @@ class Client:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
         if path in self.single_page_routes:
-            self.single_page_routes[path].open(target, server_side=True)
+            self.single_page_routes[path].open(target)
             return
         self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 

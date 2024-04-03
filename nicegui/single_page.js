@@ -9,17 +9,17 @@ export default {
                 if (href.startsWith(router.base_path)) { // internal links only
                     e.preventDefault(); // Prevent the default link behavior
                     window.history.pushState({page: href}, '', href);
-                    router.$emit("open", href);
+                    router.$emit("open", href, false);
                 }
             }
         });
         window.addEventListener("popstate", (event) => {
             let new_page = window.location.pathname;
-            this.$emit("open", new_page);
+            this.$emit("open", new_page, false);
         });
         const connectInterval = setInterval(async () => {
             if (window.socket.id === undefined) return;
-            this.$emit("open", window.location.pathname);
+            this.$emit("open", window.location.pathname, false);
             clearInterval(connectInterval);
         }, 10);
     },
