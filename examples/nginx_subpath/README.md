@@ -9,7 +9,7 @@ For a Traeffic example have a look at https://github.com/zauberzeug/nicegui/blob
 Just run
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 Then you can access http://localhost/nicegui/.
