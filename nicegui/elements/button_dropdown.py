@@ -38,7 +38,6 @@ class DropdownButton(TextElement, DisableableElement, BackgroundColorElement, Va
         :param split: whether to split the dropdown icon into a separate button (default: `False`)
         """
         super().__init__(text=text, background_color=color, value=value, on_value_change=on_value_change)
-        self.tag = 'q-btn-dropdown'
 
         if icon:
             self._props['icon'] = icon
