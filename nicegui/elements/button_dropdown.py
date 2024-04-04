@@ -37,7 +37,8 @@ class DropdownButton(TextElement, DisableableElement, BackgroundColorElement, Va
         :param auto_close: whether the dropdown should close automatically when an item is clicked (default: `False`)
         :param split: whether to split the dropdown icon into a separate button (default: `False`)
         """
-        super().__init__(text=text, background_color=color, value=value, on_value_change=on_value_change)
+        super().__init__(tag='q-btn-dropdown',
+                         text=text, background_color=color, value=value, on_value_change=on_value_change)
 
         if icon:
             self._props['icon'] = icon
