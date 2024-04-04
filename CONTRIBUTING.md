@@ -79,7 +79,7 @@ We use [autopep8](https://github.com/hhatto/autopep8) with a 120 character line 
 Before submitting a pull request, please run
 
 ```bash
-autopep8 --max-line-length=120 --experimental  --in-place --recursive .
+autopep8 --max-line-length=120 --in-place --recursive .
 ```
 
 on your code to ensure that it meets our formatting guidelines.

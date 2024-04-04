@@ -101,6 +101,9 @@ __all__ = [
     'refreshable',
     'refreshable_method',
     'state',
+    'add_css',
+    'add_sass',
+    'add_scss',
     'add_style',
     'update',
     'page',
@@ -175,7 +178,7 @@ from .elements.progress import LinearProgress as linear_progress
 from .elements.pyplot import Pyplot as pyplot
 from .elements.query import Query as query
 from .elements.radio import Radio as radio
-from .elements.range import Range as range
+from .elements.range import Range as range  # pylint: disable=redefined-builtin
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
@@ -215,7 +218,7 @@ from .functions.on import on
 from .functions.open import open  # pylint: disable=redefined-builtin
 from .functions.page_title import page_title
 from .functions.refreshable import refreshable, refreshable_method, state
-from .functions.style import add_style
+from .functions.style import add_css, add_sass, add_scss, add_style
 from .functions.update import update
 from .page import page
 from .page_layout import Drawer as drawer
