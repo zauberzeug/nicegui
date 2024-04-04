@@ -38,6 +38,7 @@ def test_with_cross(screen: Screen, cross: bool, number_of_lines: int):
     ii.content = '<circle cx="100" cy="100" r="15" fill="none" stroke="red" stroke-width="4" />'
 
     screen.open('/')
+    screen.wait(0.5)
     screen.find_by_tag('svg')
     with screen.implicitly_wait(0.5):
         assert len(screen.find_all_by_tag('line')) == number_of_lines
@@ -55,6 +56,7 @@ def test_replace_interactive_image(screen: Screen):
     ui.button('Replace', on_click=replace)
 
     screen.open('/')
+    screen.wait(0.5)
     assert screen.find_by_tag('img').get_attribute('src').endswith('id/29/640/360')
     screen.click('Replace')
     screen.wait(0.5)
