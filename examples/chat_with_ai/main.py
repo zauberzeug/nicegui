@@ -39,7 +39,7 @@ def main():
         thinking = False
         chat_messages.refresh()
 
-    ui.add_style(r'a:link, a:visited {color: inherit !important; text-decoration: none; font-weight: 500}')
+    ui.add_css(r'a:link, a:visited {color: inherit !important; text-decoration: none; font-weight: 500}')
 
     # the queries below are used to expand the contend down to the footer (content can then use flex-grow to expand)
     ui.query('.q-page').classes('flex')
