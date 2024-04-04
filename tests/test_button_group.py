@@ -2,34 +2,21 @@ from nicegui import ui
 from nicegui.testing import Screen
 
 
-def test_group_with_buttons(screen: Screen):
+def test_button_group(screen: Screen):
     with ui.button_group():
-        ui.button('Button 1')
-        ui.button('Button 2')
-        ui.button('Button 3')
-
-    screen.open('/')
-    screen.should_contain('Button 1')
-    screen.should_contain('Button 2')
-    screen.should_contain('Button 3')
-
-
-def test_group_with_dropdown(screen: Screen):
-    clicks = []
-    with ui.button_group():
-        ui.button('Button 1')
-        ui.button('Button 2')
-        with ui.dropdown_button('Dropdown').props('auto-close'):
+        ui.button('Button 1', on_click=lambda: ui.label('Button 1 clicked'))
+        ui.button('Button 2', on_click=lambda: ui.label('Button 2 clicked'))
+        with ui.dropdown_button('Button 3', on_click=lambda: ui.label('Button 3 clicked')):
             with ui.list():
-                with ui.item(on_click=lambda: clicks.append(1)):
-                    ui.item_label('Add 1')
-                with ui.item(on_click=lambda: clicks.append(2)):
-                    ui.item_label('Add 2')
+                with ui.item(on_click=lambda: ui.label('Item clicked')):
+                    ui.item_label('Item')
 
     screen.open('/')
-    screen.click('Dropdown')
-    screen.click('Add 1')
-    assert clicks == [1]
-    screen.click('Dropdown')
-    screen.click('Add 2')
-    assert clicks == [1, 2]
+    screen.click('Button 1')
+    screen.should_contain('Button 1 clicked')
+    screen.click('Button 2')
+    screen.should_contain('Button 2 clicked')
+    screen.click('Button 3')
+    screen.should_contain('Button 3 clicked')
+    screen.click('Item')
+    screen.should_contain('Item clicked')
