@@ -73,6 +73,7 @@ class Client:
         self._body_html = ''
 
         self.page = page
+        self.state = {}
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
@@ -83,6 +84,12 @@ class Client:
     def is_auto_index_client(self) -> bool:
         """Return True if this client is the auto-index client."""
         return self is self.auto_index_client
+
+    @staticmethod
+    def current_client() -> Optional[Client]:
+        """Returns the current client if obtainable from the current context."""
+        from .context import get_client
+        return get_client()
 
     @property
     def ip(self) -> Optional[str]:

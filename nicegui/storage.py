@@ -13,6 +13,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from . import background_tasks, context, core, json, observables
+from .context import get_slot_stack
 from .logging import log
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
@@ -149,10 +150,21 @@ class Storage:
         """General storage shared between all users that is persisted on the server (where NiceGUI is executed)."""
         return self._general
 
+    @property
+    def session(self) -> Dict:
+        """Volatile client storage that is persisted on the server (where NiceGUI is
+        executed) on a per client/per connection basis.
+        Note that this kind of storage can only be used in single page applications
+        where the client connection is preserved between page changes."""
+        client = context.get_client()
+        return client.state
+
     def clear(self) -> None:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
+        if get_slot_stack():
+            self.session.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()
 
