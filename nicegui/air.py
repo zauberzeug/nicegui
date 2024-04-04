@@ -10,11 +10,10 @@ import httpx
 import socketio
 import socketio.exceptions
 
-from nicegui import ui
-
 from . import background_tasks, core
 from .client import Client
 from .dataclasses import KWONLY_SLOTS
+from .elements.timer import Timer as timer
 from .logging import log
 
 RELAY_HOST = 'https://on-air.nicegui.io/'
@@ -37,7 +36,7 @@ class Air:
         self.streams: Dict[str, Stream] = {}
         self.remote_url: Optional[str] = None
 
-        ui.timer(5, self.connect)  # ensure we stay connected
+        timer(5, self.connect)  # ensure we stay connected
 
         @self.relay.on('http')
         async def _handle_http(data: Dict[str, Any]) -> Dict[str, Any]:
