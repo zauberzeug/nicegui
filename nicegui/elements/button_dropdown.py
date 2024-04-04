@@ -1,10 +1,13 @@
 from typing import Any, Callable, Optional
 
-from .button import Button
+from ..events import ClickEventArguments, handle_event
+from .mixins.color_elements import BackgroundColorElement
+from .mixins.disableable_element import DisableableElement
+from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
 
-class DropdownButton(Button, ValueElement):
+class DropdownButton(TextElement, DisableableElement, BackgroundColorElement, ValueElement):
 
     def __init__(self,
                  text: str = '', *,
@@ -38,11 +41,20 @@ class DropdownButton(Button, ValueElement):
                          value=value, on_value_change=on_value_change)
         self.tag = 'q-btn-dropdown'
 
+        if icon:
+            self._props['icon'] = icon
+
         if auto_close:
             self._props['auto-close'] = True
 
         if split:
             self._props['split'] = True
+
+        if on_click:
+            self.on('click', lambda _: handle_event(on_click, ClickEventArguments(sender=self, client=self.client)), [])
+
+    def _text_to_model_text(self, text: str) -> None:
+        self._props['label'] = text
 
     def open(self) -> None:
         """Open the dropdown."""
