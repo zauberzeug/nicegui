@@ -21,21 +21,23 @@ def with_dropdown() -> None:
         with ui.dropdown_button('Dropdown'):
             with ui.list():
                 with ui.item(on_click=lambda: ui.notify('Item 1')):
-                    ui.item_label('Item 1')
+                    with ui.item_section():
+                        ui.item_label('Item 1')
                 with ui.item(on_click=lambda: ui.notify('Item 2')):
-                    ui.item_label('Item 2')
+                    with ui.item_section():
+                        ui.item_label('Item 2')
 
 
 @doc.demo('Button group styling', '''
-    You can apply the same styling options to a button group as to a button. However you must always use
-    the same design props (flat, outline, push, ...) for the button groups and the buttons it contains.
+    You can apply the same styling options to a button group as to a button, like "flat", "outline", "push", ...
+    However, you must always use the same design props for the button group and its containing buttons.
 ''')
 def styling() -> None:
     with ui.button_group().props('rounded'):
         ui.button('One')
         ui.button('Two')
         ui.button('Three')
-    with ui.button_group().props('push glossy').classes('text-black'):
+    with ui.button_group().props('push glossy'):
         ui.button('One', color='red').props('push')
         ui.button('Two', color='orange').props('push text-color=black')
         ui.button('Three', color='yellow').props('push text-color=black')
