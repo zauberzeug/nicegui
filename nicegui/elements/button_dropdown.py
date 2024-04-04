@@ -14,6 +14,7 @@ class DropdownButton(Button, ValueElement):
                  color: Optional[str] = 'primary',
                  icon: Optional[str] = None,
                  auto_close: Optional[bool] = False,
+                 split: Optional[bool] = False,
                  ) -> None:
         """Dropdown Button
 
@@ -31,6 +32,7 @@ class DropdownButton(Button, ValueElement):
         :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
         :param icon: the name of an icon to be displayed on the button (default: `None`)
         :param auto_close: whether the dropdown should close automatically when an item is clicked (default: `False`)
+        :param split: whether to split the dropdown icon into a separate button (default: `False`)
         """
         super().__init__(text=text, on_click=on_click, color=color, icon=icon,
                          value=value, on_value_change=on_value_change)
@@ -38,6 +40,9 @@ class DropdownButton(Button, ValueElement):
 
         if auto_close:
             self._props['auto-close'] = True
+
+        if split:
+            self._props['split'] = True
 
     def open(self) -> None:
         """Open the dropdown."""
