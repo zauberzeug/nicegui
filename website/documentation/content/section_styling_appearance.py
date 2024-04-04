@@ -158,7 +158,7 @@ doc.intro(colors_documentation)
 
 ''')
 def css_variables_demo():
-    # ui.add_style('''
+    # ui.add_css('''
     #     :root {
     #         --nicegui-default-padding: 0.5rem;
     #         --nicegui-default-gap: 3rem;

@@ -16,7 +16,7 @@ def test_add_head_html(screen: Screen) -> None:
 
 
 def test_css(screen: Screen):
-    ui.add_style('''
+    ui.add_css('''
         .red {
             color: red;
         }
@@ -28,7 +28,7 @@ def test_css(screen: Screen):
 
 
 def test_scss(screen: Screen):
-    ui.add_style('''
+    ui.add_scss('''
         .green {
             background-color: lightgreen;
             .blue {
@@ -44,12 +44,12 @@ def test_scss(screen: Screen):
 
 
 def test_sass(screen: Screen):
-    ui.add_style('''
+    ui.add_sass('''
         .yellow
             background-color: yellow
             .purple
                 color: purple
-    ''', indented=True)
+    ''')
     with ui.element().classes('yellow'):
         ui.label('This is purple on yellow with SASS.').classes('purple')
 
