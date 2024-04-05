@@ -12,15 +12,18 @@ from .mixins.value_element import ValueElement
 
 class Menu(ValueElement):
 
-    def __init__(self, *, value: bool = False) -> None:
+    def __init__(self, *, value: bool = False, auto_close: bool = False) -> None:
         """Menu
 
         Creates a menu based on Quasar's `QMenu <https://quasar.dev/vue-components/menu>`_ component.
         The menu should be placed inside the element where it should be shown.
 
         :param value: whether the menu is already opened (default: `False`)
+        :param auto_close: whether the menu should be closed after a click on one of its items (default: `False`)
         """
         super().__init__(tag='q-menu', value=value, on_value_change=None)
+        if auto_close:
+            self._props['auto-close'] = True
 
     def open(self) -> None:
         """Open the menu."""
@@ -50,8 +53,10 @@ class MenuItem(TextElement):
                  text: str = '',
                  on_click: Optional[Callable[..., Any]] = None, *,
                  auto_close: bool = True,
-                 ) -> None:
+                 ) -> None:  # DEPRECATED
         """Menu Item
+
+        This element is deprecated. Please use `ui.item` and the `auto_close` parameter of the menu itself instead.
 
         A menu item to be added to a menu.
         This element is based on Quasar's `QItem <https://quasar.dev/vue-components/list-and-list-items#qitem-api>`_ component.
