@@ -87,7 +87,7 @@ def _start_window_method_executor(window: webview.Window,
                     else:
                         log.error(f'window.{method_name} is not callable')
             except queue.Empty:
-                time.sleep(0.01)
+                time.sleep(0.016)  # NOTE: avoid issue https://github.com/zauberzeug/nicegui/issues/2482 on Windows
             except Exception:
                 log.exception(f'error in window.{method_name}')
 
