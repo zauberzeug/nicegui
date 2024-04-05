@@ -4,7 +4,7 @@ export default {
     this.ensure_codehilite_css();
     if (this.use_mermaid) {
       this.mermaid = (await import("mermaid")).default;
-      this.update(this.$el.innerHTML);
+      this.renderMermaid();
     }
   },
   data() {
@@ -12,9 +12,11 @@ export default {
       mermaid: null,
     };
   },
+  updated() {
+    this.renderMermaid();
+  },
   methods: {
-    update(content) {
-      this.$el.innerHTML = content;
+    renderMermaid() {
       this.$el.querySelectorAll(".mermaid-pre").forEach(async (pre, i) => {
         await this.mermaid.run({ nodes: [pre.children[0]] });
       });
