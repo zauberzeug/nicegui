@@ -75,4 +75,4 @@ asyncio_mode = "auto"
 ignore_missing_imports = true
 
 [tool.poetry.scripts]
-nicegui_package_build = "nicegui.build_package:main"
+nicegui-pack = "nicegui.scripts.pack:main"
