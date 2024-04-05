@@ -155,6 +155,9 @@ from .elements.icon import Icon as icon
 from .elements.image import Image as image
 from .elements.input import Input as input  # pylint: disable=redefined-builtin
 from .elements.interactive_image import InteractiveImage as interactive_image
+from .elements.item import Item as item
+from .elements.item import ItemLabel as item_label
+from .elements.item import ItemSection as item_section
 from .elements.joystick import Joystick as joystick
 from .elements.json_editor import JsonEditor as json_editor
 from .elements.keyboard import Keyboard as keyboard
@@ -164,9 +167,6 @@ from .elements.leaflet import Leaflet as leaflet
 from .elements.line_plot import LinePlot as line_plot
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
-from .elements.list import Item as item
-from .elements.list import ItemLabel as item_label
-from .elements.list import ItemSection as item_section
 from .elements.list import List as list  # pylint: disable=redefined-builtin
 from .elements.log import Log as log
 from .elements.markdown import Markdown as markdown
