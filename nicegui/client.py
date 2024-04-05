@@ -15,10 +15,12 @@ from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json
 from .awaitable_response import AwaitableResponse
+from .context import get_client
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
 from .logging import log
+from .observables import ObservableDict
 from .outbox import Outbox
 from .version import __version__
 
@@ -79,7 +81,7 @@ class Client:
         self._body_html = ''
 
         self.page = page
-        self.state = {}
+        self.state = ObservableDict()
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
@@ -100,7 +102,6 @@ class Client:
     @staticmethod
     def current_client() -> Optional[Client]:
         """Returns the current client if obtainable from the current context."""
-        from .context import get_client
         return get_client()
 
     @property

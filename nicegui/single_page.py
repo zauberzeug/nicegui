@@ -1,10 +1,13 @@
+import inspect
+import urllib.parse
 from typing import Callable, Dict, Union, Optional, Tuple
 
+from fastapi import HTTPException
 from fastapi.routing import APIRoute
 
 from nicegui import background_tasks, helpers, ui, core, Client, app
 
-SPR_PAGE_BODY = '__pageContent'
+SPR_PAGE_BODY = '__singlePageContent'
 
 
 class SinglePageRouterFrame(ui.element, component='single_page.js'):
@@ -32,6 +35,65 @@ class SinglePageRouterEntry:
         self.path = path
         self.builder = builder
         self.title = title
+
+
+class UrlParameterResolver:
+    """The UrlParameterResolver is a helper class which is used to resolve the path and query parameters of an URL to
+    find the matching SinglePageRouterEntry and convert the parameters to the expected types of the builder function"""
+
+    def __init__(self, routes: Dict[str, SinglePageRouterEntry], path: str):
+        """
+        :param routes: The routes of the single page router
+        :param path: The path of the URL
+        """
+        components = path.split("?")
+        path = components[0].rstrip("/")
+        self.routes = routes
+        self.query_string = components[1] if len(components) > 1 else ""
+        self.query_args = {}
+        self.path = path
+        self.path_args = {}
+        self.parse_query()
+        self.entry = self.resolve_path()
+        if self.entry is not None:
+            self.convert_arguments()
+
+    def resolve_path(self) -> Optional[SinglePageRouterEntry]:
+        """Splits the path into its components, tries to match it with the routes and extracts the path arguments
+        into their corresponding variables.
+        """
+        for route, entry in self.routes.items():
+            route_elements = route.lstrip('/').split("/")
+            path_elements = self.path.lstrip('/').split("/")
+            if len(route_elements) != len(path_elements):  # can't match
+                continue
+            match = True
+            for i, route_element_path in enumerate(route_elements):
+                if route_element_path.startswith("{") and route_element_path.endswith("}") and len(
+                        route_element_path) > 2:
+                    self.path_args[route_element_path[1:-1]] = path_elements[i]
+                elif path_elements[i] != route_element_path:
+                    match = False
+                    break
+            if match:
+                return entry
+        return None
+
+    def parse_query(self):
+        """Parses the query string of the URL into a dictionary of key-value pairs"""
+        self.query_args = urllib.parse.parse_qs(self.query_string)
+
+    def convert_arguments(self):
+        """Converts the path and query arguments to the expected types of the builder function"""
+        sig = inspect.signature(self.entry.builder)
+        for name, param in sig.parameters.items():
+            for params in [self.path_args, self.query_args]:
+                if name in params:
+                    # Convert parameter to the expected type
+                    try:
+                        params[name] = param.annotation(params[name])
+                    except ValueError as e:
+                        raise ValueError(f"Could not convert parameter {name}: {e}")
 
 
 class SinglePageRouter:
@@ -127,7 +189,7 @@ class SinglePageRouter:
         :param builder: The builder function
         :param title: Optional title of the page
         """
-        self.routes[path] = SinglePageRouterEntry(path, builder, title)
+        self.routes[path] = SinglePageRouterEntry(path.rstrip("/"), builder, title)
 
     def add_router_entry(self, entry: SinglePageRouterEntry) -> None:
         """Adds a fully configured SinglePageRouterEntry to the router
@@ -136,7 +198,7 @@ class SinglePageRouter:
         """
         self.routes[entry.path] = entry
 
-    def get_router_entry(self, target: Union[Callable, str]) -> Union[SinglePageRouterEntry, None]:
+    def get_router_entry(self, target: Union[Callable, str]) -> Tuple[Optional[SinglePageRouterEntry], dict, dict]:
         """Returns the SinglePageRouterEntry for the given target URL or builder function
 
         :param target: The target URL or builder function
@@ -145,9 +207,14 @@ class SinglePageRouter:
         if isinstance(target, Callable):
             for path, entry in self.routes.items():
                 if entry.builder == target:
-                    return entry
+                    return entry, {}, {}
         else:
-            return self.routes.get(target, None)
+            target = target.rstrip("/")
+            entry = self.routes.get(target, None)
+            if entry is None:
+                parser = UrlParameterResolver(self.routes, target)
+                return parser.entry, parser.path_args, parser.query_args
+            return entry, {}, {}
 
     def open(self, target: Union[Callable, str, Tuple[str, bool]]) -> None:
         """Open a new page in the browser by exchanging the content of the root page's slot element
@@ -158,21 +225,24 @@ class SinglePageRouter:
             target, server_side = target  # unpack the list
         else:
             server_side = True
-        entry = self.get_router_entry(target)
+        entry, route_args, query_args = self.get_router_entry(target)
+        if entry is None:
+            entry = ui.label(f"Page not found: {target}").classes("text-red-500")  # Could be beautified
         title = entry.title if entry.title is not None else core.app.config.title
         ui.run_javascript(f'document.title = "{title}"')
         if server_side:
             ui.run_javascript(f'window.history.pushState({{page: "{target}"}}, "", "{target}");')
 
-        async def build(content_element) -> None:
+        async def build(content_element, kwargs) -> None:
             with content_element:
-                result = entry.builder()
+                result = entry.builder(**kwargs)
                 if helpers.is_coroutine_function(entry.builder):
                     await result
 
         content = app.storage.session[SPR_PAGE_BODY]
         content.clear()
-        background_tasks.create(build(content))
+        combined_dict = {**route_args, **query_args}
+        background_tasks.create(build(content, combined_dict))
 
     def _find_api_routes(self):
         """Find all API routes already defined via the @page decorator, remove them and redirect them to the
@@ -186,6 +256,7 @@ class SinglePageRouter:
                 title = None
                 if key in Client.page_configs:
                     title = Client.page_configs[key].title
+                route = route.rstrip("/")
                 self.routes[route] = SinglePageRouterEntry(route, builder=key, title=title)
         for route in core.app.routes.copy():
             if isinstance(route, APIRoute):
