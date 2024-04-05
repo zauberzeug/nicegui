@@ -5,11 +5,18 @@ export default {
         document.addEventListener('click', function (e) {
             // Check if the clicked element is a link
             if (e.target.tagName === 'A') {
-                const href = e.target.getAttribute('href'); // Get the link's href value
-                if (href.startsWith(router.base_path)) { // internal links only
+                let href = e.target.getAttribute('href'); // Get the link's href value
+                // check if the link ends with / and remove it
+                if (href.endsWith("/")) href = href.slice(0, -1);
+                // for all valid path masks
+                for (let mask of router.valid_path_masks) {
+                    // apply filename matching with * and ? wildcards
+                    let regex = new RegExp(mask.replace(/\?/g, ".").replace(/\*/g, ".*"));
+                    if (!regex.test(href)) continue;
                     e.preventDefault(); // Prevent the default link behavior
-                    window.history.pushState({page: href}, '', href);
+                    if (router.use_browser_history) window.history.pushState({page: href}, '', href);
                     router.$emit("open", href, false);
+                    return
                 }
             }
         });
@@ -24,6 +31,7 @@ export default {
         }, 10);
     },
     props: {
-        base_path: String
+        valid_path_masks: [],
+        use_browser_history: {type: Boolean, default: true}
     },
 };

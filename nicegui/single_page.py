@@ -1,11 +1,11 @@
-import inspect
-import urllib.parse
-from typing import Callable, Dict, Union, Optional, Tuple
+import fnmatch
+import re
+from typing import Callable, Dict, Union, Optional, Tuple, Self, List, Set
 
-from fastapi import HTTPException
 from fastapi.routing import APIRoute
 
 from nicegui import background_tasks, helpers, ui, core, Client, app
+from nicegui.single_page_url_parser import UrlParser
 
 SPR_PAGE_BODY = '__singlePageContent'
 
@@ -15,12 +15,14 @@ class SinglePageRouterFrame(ui.element, component='single_page.js'):
     current page with the content of the new page. It serves as container and overrides the browser's history
     management to prevent the browser from reloading the whole page."""
 
-    def __init__(self, base_path: str):
+    def __init__(self, valid_path_masks: list[str], use_browser_history: bool = True):
         """
-        :param base_path: The base path of the single page router which shall be tracked (e.g. when clicking on links)
+        :param valid_path_masks: A list of valid path masks which shall be allowed to be opened by the router
+        :param use_browser_history: Optional flag to enable or disable the browser history management. Default is True.
         """
         super().__init__()
-        self._props["base_path"] = base_path
+        self._props["valid_path_masks"] = valid_path_masks
+        self._props["browser_history"] = use_browser_history
 
 
 class SinglePageRouterEntry:
@@ -36,64 +38,20 @@ class SinglePageRouterEntry:
         self.builder = builder
         self.title = title
 
-
-class UrlParameterResolver:
-    """The UrlParameterResolver is a helper class which is used to resolve the path and query parameters of an URL to
-    find the matching SinglePageRouterEntry and convert the parameters to the expected types of the builder function"""
-
-    def __init__(self, routes: Dict[str, SinglePageRouterEntry], path: str):
+    def verify(self) -> Self:
+        """Verifies a SinglePageRouterEntry for correctness. Raises a ValueError if the entry is invalid.
         """
-        :param routes: The routes of the single page router
-        :param path: The path of the URL
-        """
-        components = path.split("?")
-        path = components[0].rstrip("/")
-        self.routes = routes
-        self.query_string = components[1] if len(components) > 1 else ""
-        self.query_args = {}
-        self.path = path
-        self.path_args = {}
-        self.parse_query()
-        self.entry = self.resolve_path()
-        if self.entry is not None:
-            self.convert_arguments()
-
-    def resolve_path(self) -> Optional[SinglePageRouterEntry]:
-        """Splits the path into its components, tries to match it with the routes and extracts the path arguments
-        into their corresponding variables.
-        """
-        for route, entry in self.routes.items():
-            route_elements = route.lstrip('/').split("/")
-            path_elements = self.path.lstrip('/').split("/")
-            if len(route_elements) != len(path_elements):  # can't match
-                continue
-            match = True
-            for i, route_element_path in enumerate(route_elements):
-                if route_element_path.startswith("{") and route_element_path.endswith("}") and len(
-                        route_element_path) > 2:
-                    self.path_args[route_element_path[1:-1]] = path_elements[i]
-                elif path_elements[i] != route_element_path:
-                    match = False
-                    break
-            if match:
-                return entry
-        return None
-
-    def parse_query(self):
-        """Parses the query string of the URL into a dictionary of key-value pairs"""
-        self.query_args = urllib.parse.parse_qs(self.query_string)
-
-    def convert_arguments(self):
-        """Converts the path and query arguments to the expected types of the builder function"""
-        sig = inspect.signature(self.entry.builder)
-        for name, param in sig.parameters.items():
-            for params in [self.path_args, self.query_args]:
-                if name in params:
-                    # Convert parameter to the expected type
-                    try:
-                        params[name] = param.annotation(params[name])
-                    except ValueError as e:
-                        raise ValueError(f"Could not convert parameter {name}: {e}")
+        path = self.path
+        if "{" in path:
+            # verify only a single open and close curly bracket is present
+            elements = path.split("/")
+            for cur_element in elements:
+                if "{" in cur_element:
+                    if cur_element.count("{") != 1 or cur_element.count("}") != 1 or len(cur_element) < 3 or \
+                            not (cur_element.startswith("{") and cur_element.endswith("}")):
+                        raise ValueError("Only simple path parameters are supported. /path/{value}/{another_value}\n"
+                                         f"failed for path: {path}")
+        return self
 
 
 class SinglePageRouter:
@@ -103,44 +61,51 @@ class SinglePageRouter:
     This enables the development of complex web applications with dynamic per-user data (all types of Python classes)
     which are kept alive for the duration of the connection.
 
-    Example:
-        ```
-        from nicegui import ui
-        from nicegui.page import page
-        from nicegui.single_page import SinglePageRouter
+    For examples see examples/single_page_router"""
 
-        @page('/', title="Welcome!")
-        def index():
-            ui.label("Welcome to the single page router example!")
-            ui.link("About", "/about")
-
-        @page('/about', title="About")
-        def about():
-            ui.label("This is the about page")
-            ui.link("Index", "/")
-
-        router = SinglePageRouter("/").setup_page_routes()
-        ui.run()
-        ```
-    """
-
-    def __init__(self, path: str, on_session_created: Optional[Callable] = None) -> None:
+    def __init__(self,
+                 path: str,
+                 browser_history: bool = True,
+                 included: Union[List[Union[Callable, str]], str, Callable] = "/*",
+                 excluded: Union[List[Union[Callable, str]], str, Callable] = "",
+                 on_session_created: Optional[Callable] = None) -> None:
         """
         :param path: the base path of the single page router.
+        :param browser_history: Optional flag to enable or disable the browser history management. Default is True.
+        :param included: Optional list of masks and callables of paths to include. Default is "/*" which includes all.
+        If you do not want to include all relative paths, you can specify a list of masks or callables to refine the
+        included paths. If a callable is passed, it must be decorated with a page.
+        :param excluded: Optional list of masks and callables of paths to exclude. Default is "" which excludes none.
+        Explicitly included paths (without wildcards) and Callables are always included, even if they match an
+        exclusion mask.
         :param on_session_created: Optional callback which is called when a new session is created.
         """
         super().__init__()
         self.routes: Dict[str, SinglePageRouterEntry] = {}
         self.base_path = path
-        self._find_api_routes()
+        # list of masks and callables of paths to include
+        self.included: List[Union[Callable, str]] = [included] if not isinstance(included, list) else included
+        # list of masks and callables of paths to exclude
+        self.excluded: List[Union[Callable, str]] = [excluded] if not isinstance(excluded, list) else excluded
+        # low level system paths which are excluded by default
+        self.system_excluded = ["/docs", "/redoc", "/openapi.json", "_*"]
+        # set of all registered paths which were finally included for verification w/ mask matching in the browser
+        self.included_paths: Set[str] = set()
         self.content_area_class = SinglePageRouterFrame
         self.on_session_created: Optional[Callable] = on_session_created
+        self.use_browser_history = browser_history
+        self._setup_configured = False
 
     def setup_page_routes(self, **kwargs):
         """Registers the SinglePageRouter with the @page decorator to handle all routes defined by the router
 
         :param kwargs: Additional arguments for the @page decorators
         """
+        if self._setup_configured:
+            raise ValueError("The SinglePageRouter is already configured")
+        self._setup_configured = True
+        self._update_masks()
+        self._find_api_routes()
 
         @ui.page(self.base_path, **kwargs)
         @ui.page(f'{self.base_path}' + '{_:path}', **kwargs)  # all other pages
@@ -178,7 +143,8 @@ class SinglePageRouter:
 
         :return: The content area element
         """
-        content = self.content_area_class(self.base_path).on('open', lambda e: self.open(e.args))
+        content = self.content_area_class(
+            list(self.included_paths), self.use_browser_history).on('open', lambda e: self.open(e.args))
         app.storage.session[SPR_PAGE_BODY] = content
         return content
 
@@ -189,14 +155,14 @@ class SinglePageRouter:
         :param builder: The builder function
         :param title: Optional title of the page
         """
-        self.routes[path] = SinglePageRouterEntry(path.rstrip("/"), builder, title)
+        self.routes[path] = SinglePageRouterEntry(path.rstrip("/"), builder, title).verify()
 
     def add_router_entry(self, entry: SinglePageRouterEntry) -> None:
         """Adds a fully configured SinglePageRouterEntry to the router
 
         :param entry: The SinglePageRouterEntry to add
         """
-        self.routes[entry.path] = entry
+        self.routes[entry.path] = entry.verify()
 
     def get_router_entry(self, target: Union[Callable, str]) -> Tuple[Optional[SinglePageRouterEntry], dict, dict]:
         """Returns the SinglePageRouterEntry for the given target URL or builder function
@@ -212,7 +178,7 @@ class SinglePageRouter:
             target = target.rstrip("/")
             entry = self.routes.get(target, None)
             if entry is None:
-                parser = UrlParameterResolver(self.routes, target)
+                parser = UrlParser(self.routes, target)
                 return parser.entry, parser.path_args, parser.query_args
             return entry, {}, {}
 
@@ -230,7 +196,7 @@ class SinglePageRouter:
             entry = ui.label(f"Page not found: {target}").classes("text-red-500")  # Could be beautified
         title = entry.title if entry.title is not None else core.app.config.title
         ui.run_javascript(f'document.title = "{title}"')
-        if server_side:
+        if server_side and self.use_browser_history:
             ui.run_javascript(f'window.history.pushState({{page: "{target}"}}, "", "{target}");')
 
         async def build(content_element, kwargs) -> None:
@@ -244,20 +210,48 @@ class SinglePageRouter:
         combined_dict = {**route_args, **query_args}
         background_tasks.create(build(content, combined_dict))
 
-    def _find_api_routes(self):
+    def _is_excluded(self, path: str) -> bool:
+        """Checks if a path is excluded by the exclusion masks
+
+        :param path: The path to check
+        :return: True if the path is excluded, False otherwise"""
+        for element in self.included:
+            if path == element:  # if it is a perfect, explicit match: allow
+                return False
+            if fnmatch.fnmatch(path, element):  # if it is just a mask match: verify it is not excluded
+                for ex_element in self.excluded:
+                    if fnmatch.fnmatch(path, ex_element):
+                        return True  # inclusion mask matched but also exclusion mask
+                return False  # inclusion mask matched
+        return True  # no inclusion mask matched
+
+    def _update_masks(self) -> None:
+        """Updates the inclusion and exclusion masks and resolves Callables to the actual paths"""
+        for cur_list in [self.included, self.excluded]:
+            for index, element in enumerate(cur_list):
+                if isinstance(element, Callable):
+                    if element in Client.page_routes:
+                        cur_list[index] = Client.page_routes[element]
+                    else:
+                        raise ValueError(
+                            f"Invalid target page in inclusion/exclusion list, no @page assigned to element")
+
+    def _find_api_routes(self) -> None:
         """Find all API routes already defined via the @page decorator, remove them and redirect them to the
         single page router"""
         page_routes = set()
         for key, route in Client.page_routes.items():
-            if (route.startswith(self.base_path) and
-                    not route[len(self.base_path):].startswith("_")):
+            if route.startswith(self.base_path) and not self._is_excluded(route):
                 page_routes.add(route)
                 Client.single_page_routes[route] = self
                 title = None
                 if key in Client.page_configs:
                     title = Client.page_configs[key].title
                 route = route.rstrip("/")
-                self.routes[route] = SinglePageRouterEntry(route, builder=key, title=title)
+                self.add_router_entry(SinglePageRouterEntry(route, builder=key, title=title))
+                # /site/{value}/{other_value} --> /site/*/* for easy matching in JavaScript
+                route_mask = re.sub(r'{[^}]+}', '*', route)
+                self.included_paths.add(route_mask)
         for route in core.app.routes.copy():
             if isinstance(route, APIRoute):
                 if route.path in page_routes:
