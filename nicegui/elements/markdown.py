@@ -35,7 +35,6 @@ class Markdown(ContentElement, component='markdown.js'):
         if self._props.get('innerHTML') != html:
             self._props['innerHTML'] = html
             self.update()
-            self.run_method('update', html)
 
 
 @lru_cache(maxsize=int(os.environ.get('MARKDOWN_CONTENT_CACHE_SIZE', '1000')))
