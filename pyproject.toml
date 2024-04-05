@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "1.4.19-dev"
+version = "1.4.20-dev"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -30,7 +30,7 @@ httpx = ">=0.24.0"
 nicegui-highcharts = { version = "^1.0.1", optional = true }
 ifaddr = ">=0.2.0"
 aiohttp = ">=3.9.2" # https://github.com/zauberzeug/nicegui/security/dependabot/25 and 26
-libsass = ">=0.23.0"
+libsass = { version = "^0.23.0", optional = true }
 docutils = "^0.19"
 
 [tool.poetry.extras]
@@ -38,6 +38,7 @@ native = ["pywebview"]
 plotly = ["plotly"]
 matplotlib = ["matplotlib"]
 highcharts = ["nicegui-highcharts"]
+sass = ["libsass"]
 
 [tool.poetry.group.dev.dependencies]
 icecream = "^2.1.0"
