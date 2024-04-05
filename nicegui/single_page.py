@@ -6,7 +6,7 @@ from fastapi.routing import APIRoute
 
 from nicegui import background_tasks, helpers, ui, core, Client, app
 
-SPR_PAGE_BODY = '__pageContent'
+SPR_PAGE_BODY = '__singlePageContent'
 
 
 class SinglePageRouterFrame(ui.element, component='single_page.js'):
@@ -60,8 +60,6 @@ class UrlParameterResolver:
     def resolve_path(self) -> Optional[SinglePageRouterEntry]:
         """Splits the path into its components, tries to match it with the routes and extracts the path arguments
         into their corresponding variables.
-
-        :param path: The path to resolve
         """
         for route, entry in self.routes.items():
             route_elements = route.lstrip('/').split("/")
