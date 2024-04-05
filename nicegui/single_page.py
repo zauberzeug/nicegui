@@ -2,6 +2,7 @@ import inspect
 import urllib.parse
 from typing import Callable, Dict, Union, Optional, Tuple
 
+from fastapi import HTTPException
 from fastapi.routing import APIRoute
 
 from nicegui import background_tasks, helpers, ui, core, Client, app
@@ -225,6 +226,8 @@ class SinglePageRouter:
         else:
             server_side = True
         entry, route_args, query_args = self.get_router_entry(target)
+        if entry is None:
+            entry = ui.label(f"Page not found: {target}").classes("text-red-500")  # Could be beautified
         title = entry.title if entry.title is not None else core.app.config.title
         ui.run_javascript(f'document.title = "{title}"')
         if server_side:
