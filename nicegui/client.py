@@ -81,18 +81,13 @@ class Client:
         self._body_html = ''
 
         self.page = page
+        self.single_page_content = None
         self.state = ObservableDict()
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
 
         self._temporary_socket_id: Optional[str] = None
-
-    @staticmethod
-    def current_client() -> Optional[Client]:
-        """Returns the current client if obtainable from the current context."""
-        from .context import get_client
-        return get_client()
 
     @property
     def is_auto_index_client(self) -> bool:
@@ -237,7 +232,7 @@ class Client:
     def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
-        if path in self.single_page_routes:
+        if path in self.single_page_routes and self.single_page_content is not None:  # moving from SPR to SPR?
             self.single_page_routes[path].open(target)
             return
         self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)

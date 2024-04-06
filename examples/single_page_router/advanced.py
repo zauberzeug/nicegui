@@ -26,7 +26,20 @@ def index():
 
 @page('/about', title="About")
 def about():
-    ui.label("This is the about page").classes("text-2xl")
+    ui.label("This is the about page testing local references").classes("text-2xl")
+    ui.label("Top").classes("text-lg").props("id=ltop")
+    ui.link("Bottom", "#lbottom")
+    ui.link("Center", "#lcenter")
+    for i in range(30):
+        ui.label(f"Lorem ipsum dolor sit amet, consectetur adipiscing elit. {i}")
+    ui.label("Center").classes("text-lg").props("id=lcenter")
+    ui.link("Top", "#ltop")
+    ui.link("Bottom", "#lbottom")
+    for i in range(30):
+        ui.label(f"Lorem ipsum dolor sit amet, consectetur adipiscing elit. {i}")
+    ui.label("Bottom").classes("text-lg").props("id=lbottom")
+    ui.link("Top", "#ltop")
+    ui.link("Center", "#lcenter")
 
 
 @page('/contact', title="Contact")  # this page will not be hosted as SPA

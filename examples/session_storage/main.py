@@ -20,7 +20,7 @@ class UserData(BaseModel):  # Example for per-session user data
 
     @staticmethod
     def get_current() -> "UserData":  # Returns the UserData instance for the current session ("browser tab")
-        return app.storage.session["userData"]
+        return app.storage.client["userData"]
 
 
 def login() -> bool:  # Fake login function. Evaluate the user data updates the logged_in flag on success
@@ -77,7 +77,7 @@ def about_page():
 
 
 def setup_new_session():  # Initialize the user data for a new session
-    app.storage.session["userData"] = UserData()
+    app.storage.client["userData"] = UserData()
 
 
 # setups a single page router at / (and all sub-paths)

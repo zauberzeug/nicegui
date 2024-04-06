@@ -6,6 +6,9 @@ export default {
             // Check if the clicked element is a link
             if (e.target.tagName === 'A') {
                 let href = e.target.getAttribute('href'); // Get the link's href value
+                // remove query and anchor
+                const org_href = href;
+                href = href.split("?")[0].split("#")[0]
                 // check if the link ends with / and remove it
                 if (href.endsWith("/")) href = href.slice(0, -1);
                 // for all valid path masks
@@ -14,8 +17,8 @@ export default {
                     let regex = new RegExp(mask.replace(/\?/g, ".").replace(/\*/g, ".*"));
                     if (!regex.test(href)) continue;
                     e.preventDefault(); // Prevent the default link behavior
-                    if (router.use_browser_history) window.history.pushState({page: href}, '', href);
-                    router.$emit("open", href, false);
+                    if (router.use_browser_history) window.history.pushState({page: org_href}, '', org_href);
+                    router.$emit("open", org_href, false);
                     return
                 }
             }
@@ -26,7 +29,9 @@ export default {
         });
         const connectInterval = setInterval(async () => {
             if (window.socket.id === undefined) return;
-            this.$emit("open", window.location.pathname, false);
+            let target = window.location.pathname;
+            if (window.location.hash !== "") target += window.location.hash;
+            this.$emit("open", target, false);
             clearInterval(connectInterval);
         }, 10);
     },

@@ -5,7 +5,7 @@ from typing import Callable, Dict, Union, Optional, Tuple, Self, List, Set
 from fastapi.routing import APIRoute
 
 from nicegui import background_tasks, helpers, ui, core, Client, app
-from nicegui.single_page_url_parser import UrlParser
+from nicegui.single_page_url import SinglePageUrl
 
 SPR_PAGE_BODY = '__singlePageContent'
 
@@ -128,8 +128,8 @@ class SinglePageRouter:
         Example:
             ```
             def setup_root_page(self):
-                app.storage.session["menu"] = ui.left_drawer()
-                with app.storage.session["menu"] :
+                app.storage.client["menu"] = ui.left_drawer()
+                with app.storage.client["menu"] :
                     ... setup navigation
                 with ui.column():
                     self.setup_content_area()
@@ -145,7 +145,7 @@ class SinglePageRouter:
         """
         content = self.content_area_class(
             list(self.included_paths), self.use_browser_history).on('open', lambda e: self.open(e.args))
-        app.storage.session[SPR_PAGE_BODY] = content
+        Client.current_client().single_page_content = content
         return content
 
     def add_page(self, path: str, builder: Callable, title: Optional[str] = None) -> None:
@@ -164,23 +164,19 @@ class SinglePageRouter:
         """
         self.routes[entry.path] = entry.verify()
 
-    def get_router_entry(self, target: Union[Callable, str]) -> Tuple[Optional[SinglePageRouterEntry], dict, dict]:
+    def get_target_url(self, target: Union[Callable, str]) -> SinglePageUrl:
         """Returns the SinglePageRouterEntry for the given target URL or builder function
 
         :param target: The target URL or builder function
-        :return: The SinglePageRouterEntry or None if not found
+        :return: The SinglePageUrl object with the parsed route and query arguments
         """
         if isinstance(target, Callable):
             for path, entry in self.routes.items():
                 if entry.builder == target:
-                    return entry, {}, {}
+                    return SinglePageUrl(entry=entry)
         else:
-            target = target.rstrip("/")
-            entry = self.routes.get(target, None)
-            if entry is None:
-                parser = UrlParser(self.routes, target)
-                return parser.entry, parser.path_args, parser.query_args
-            return entry, {}, {}
+            parser = SinglePageUrl(target)
+            return parser.parse_single_page_route(self.routes, target)
 
     def open(self, target: Union[Callable, str, Tuple[str, bool]]) -> None:
         """Open a new page in the browser by exchanging the content of the root page's slot element
@@ -191,24 +187,30 @@ class SinglePageRouter:
             target, server_side = target  # unpack the list
         else:
             server_side = True
-        entry, route_args, query_args = self.get_router_entry(target)
+        target_url = self.get_target_url(target)
+        entry = target_url.entry
         if entry is None:
+            if target_url.fragment is not None:
+                ui.run_javascript(f'window.location.href = "#{target_url.fragment}";')  # go to fragment
+                return
             entry = ui.label(f"Page not found: {target}").classes("text-red-500")  # Could be beautified
         title = entry.title if entry.title is not None else core.app.config.title
         ui.run_javascript(f'document.title = "{title}"')
         if server_side and self.use_browser_history:
             ui.run_javascript(f'window.history.pushState({{page: "{target}"}}, "", "{target}");')
 
-        async def build(content_element, kwargs) -> None:
+        async def build(content_element, fragment, kwargs) -> None:
             with content_element:
                 result = entry.builder(**kwargs)
                 if helpers.is_coroutine_function(entry.builder):
                     await result
+                if fragment is not None:
+                    await ui.run_javascript(f'window.location.href = "#{fragment}";')
 
-        content = app.storage.session[SPR_PAGE_BODY]
+        content = Client.current_client().single_page_content
         content.clear()
-        combined_dict = {**route_args, **query_args}
-        background_tasks.create(build(content, combined_dict))
+        combined_dict = {**target_url.path_args, **target_url.query_args}
+        background_tasks.create(build(content, target_url.fragment, combined_dict))
 
     def _is_excluded(self, path: str) -> bool:
         """Checks if a path is excluded by the exclusion masks
