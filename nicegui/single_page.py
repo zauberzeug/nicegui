@@ -4,10 +4,8 @@ from typing import Callable, Dict, Union, Optional, Tuple, Self, List, Set
 
 from fastapi.routing import APIRoute
 
-from nicegui import background_tasks, helpers, ui, core, Client, app
+from nicegui import background_tasks, helpers, ui, core, Client
 from nicegui.single_page_url import SinglePageUrl
-
-SPR_PAGE_BODY = '__singlePageContent'
 
 
 class SinglePageRouterFrame(ui.element, component='single_page.js'):
