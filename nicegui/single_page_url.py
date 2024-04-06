@@ -10,7 +10,7 @@ class SinglePageUrl:
     """Aa helper class which is used to parse the path and query parameters of an URL to  find the matching
     SinglePageRouterEntry and convert the parameters to the expected types of the builder function"""
 
-    def __init__(self, path: Optional[str] = None, entry: Optional["SinglePageRouterEntry"] = None,
+    def __init__(self, path: Optional[str] = None, entry: Optional['SinglePageRouterEntry'] = None,
                  fragment: Optional[str] = None, query_string: Optional[str] = None):
         """
         :param path: The path of the URL
@@ -25,7 +25,7 @@ class SinglePageUrl:
         self.query_args = urllib.parse.parse_qs(self.query_string)
         self.entry = entry
 
-    def parse_single_page_route(self, routes: Dict[str, "SinglePageRouterEntry"], path: str) -> Self:
+    def parse_single_page_route(self, routes: Dict[str, 'SinglePageRouterEntry'], path: str) -> Self:
         """
         :param routes: All routes of the single page router
         :param path: The path of the URL
@@ -44,18 +44,18 @@ class SinglePageUrl:
             self.convert_arguments()
         return self
 
-    def parse_path(self) -> Optional["SinglePageRouterEntry"]:
+    def parse_path(self) -> Optional['SinglePageRouterEntry']:
         """Splits the path into its components, tries to match it with the routes and extracts the path arguments
         into their corresponding variables.
         """
         for route, entry in self.routes.items():
-            route_elements = route.lstrip('/').split("/")
-            path_elements = self.path.lstrip('/').rstrip("/").split("/")
+            route_elements = route.lstrip('/').split('/')
+            path_elements = self.path.lstrip('/').rstrip('/').split('/')
             if len(route_elements) != len(path_elements):  # can't match
                 continue
             match = True
             for i, route_element_path in enumerate(route_elements):
-                if route_element_path.startswith("{") and route_element_path.endswith("}") and len(
+                if route_element_path.startswith('{') and route_element_path.endswith('}') and len(
                         route_element_path) > 2:
                     self.path_args[route_element_path[1:-1]] = path_elements[i]
                 elif path_elements[i] != route_element_path:
@@ -75,4 +75,4 @@ class SinglePageUrl:
                         params[func_param_name] = func_param_info.annotation(
                             params[func_param_name])  # Convert parameter to the expected type
                     except ValueError as e:
-                        raise ValueError(f"Could not convert parameter {func_param_name}: {e}")
+                        raise ValueError(f'Could not convert parameter {func_param_name}: {e}')

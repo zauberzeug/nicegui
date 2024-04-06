@@ -19,8 +19,8 @@ class SinglePageRouterFrame(ui.element, component='single_page.js'):
         :param use_browser_history: Optional flag to enable or disable the browser history management. Default is True.
         """
         super().__init__()
-        self._props["valid_path_masks"] = valid_path_masks
-        self._props["browser_history"] = use_browser_history
+        self._props['valid_path_masks'] = valid_path_masks
+        self._props['browser_history'] = use_browser_history
 
 
 class SinglePageRouterEntry:
@@ -39,15 +39,15 @@ class SinglePageRouterEntry:
     def verify(self) -> Self:
         """Verifies a SinglePageRouterEntry for correctness. Raises a ValueError if the entry is invalid."""
         path = self.path
-        if "{" in path:
+        if '{' in path:
             # verify only a single open and close curly bracket is present
-            elements = path.split("/")
+            elements = path.split('/')
             for cur_element in elements:
-                if "{" in cur_element:
-                    if cur_element.count("{") != 1 or cur_element.count("}") != 1 or len(cur_element) < 3 or \
-                            not (cur_element.startswith("{") and cur_element.endswith("}")):
-                        raise ValueError("Only simple path parameters are supported. /path/{value}/{another_value}\n"
-                                         f"failed for path: {path}")
+                if '{' in cur_element:
+                    if cur_element.count('{') != 1 or cur_element.count('}') != 1 or len(cur_element) < 3 or \
+                            not (cur_element.startswith('{') and cur_element.endswith('}')):
+                        raise ValueError('Only simple path parameters are supported. /path/{value}/{another_value}\n'
+                                         f'failed for path: {path}')
         return self
 
 
@@ -64,8 +64,8 @@ class SinglePageRouter:
     def __init__(self,
                  path: str,
                  browser_history: bool = True,
-                 included: Union[List[Union[Callable, str]], str, Callable] = "/*",
-                 excluded: Union[List[Union[Callable, str]], str, Callable] = "",
+                 included: Union[List[Union[Callable, str]], str, Callable] = '/*',
+                 excluded: Union[List[Union[Callable, str]], str, Callable] = '',
                  on_instance_created: Optional[Callable] = None) -> None:
         """
         :param path: the base path of the single page router.
@@ -87,7 +87,7 @@ class SinglePageRouter:
         # list of masks and callables of paths to exclude
         self.excluded: List[Union[Callable, str]] = [excluded] if not isinstance(excluded, list) else excluded
         # low level system paths which are excluded by default
-        self.system_excluded = ["/docs", "/redoc", "/openapi.json", "_*"]
+        self.system_excluded = ['/docs', '/redoc', '/openapi.json', '_*']
         # set of all registered paths which were finally included for verification w/ mask matching in the browser
         self.included_paths: Set[str] = set()
         self.content_area_class = SinglePageRouterFrame
@@ -101,7 +101,7 @@ class SinglePageRouter:
         :param kwargs: Additional arguments for the @page decorators
         """
         if self._setup_configured:
-            raise ValueError("The SinglePageRouter is already configured")
+            raise ValueError('The SinglePageRouter is already configured')
         self._setup_configured = True
         self._update_masks()
         self._find_api_routes()
@@ -153,7 +153,7 @@ class SinglePageRouter:
         :param builder: The builder function
         :param title: Optional title of the page
         """
-        self.routes[path] = SinglePageRouterEntry(path.rstrip("/"), builder, title).verify()
+        self.routes[path] = SinglePageRouterEntry(path.rstrip('/'), builder, title).verify()
 
     def add_router_entry(self, entry: SinglePageRouterEntry) -> None:
         """Adds a fully configured SinglePageRouterEntry to the router
@@ -234,7 +234,7 @@ class SinglePageRouter:
                         cur_list[index] = Client.page_routes[element]
                     else:
                         raise ValueError(
-                            f"Invalid target page in inclusion/exclusion list, no @page assigned to element")
+                            f'Invalid target page in inclusion/exclusion list, no @page assigned to element')
 
     def _find_api_routes(self) -> None:
         """Find all API routes already defined via the @page decorator, remove them and redirect them to the
@@ -247,7 +247,7 @@ class SinglePageRouter:
                 title = None
                 if key in Client.page_configs:
                     title = Client.page_configs[key].title
-                route = route.rstrip("/")
+                route = route.rstrip('/')
                 self.add_router_entry(SinglePageRouterEntry(route, builder=key, title=title))
                 # /site/{value}/{other_value} --> /site/*/* for easy matching in JavaScript
                 route_mask = re.sub(r'{[^}]+}', '*', route)
