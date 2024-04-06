@@ -15,6 +15,7 @@ from starlette.responses import Response
 from . import background_tasks, context, core, json, observables
 from .context import get_slot_stack
 from .logging import log
+from .observables import ObservableDict
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
@@ -151,11 +152,16 @@ class Storage:
         return self._general
 
     @property
-    def session(self) -> Dict:
-        """Volatile client storage that is persisted on the server (where NiceGUI is
-        executed) on a per client/per connection basis.
-        Note that this kind of storage can only be used in single page applications
-        where the client connection is preserved between page changes."""
+    def client(self) -> ObservableDict:
+        """Client storage that is persisted on the server (where NiceGUI is executed) on a per client
+        connection basis.
+
+        The data is lost when the client disconnects through reloading the page, closing the tab or
+        navigating away from the page. It can be used to store data that is only relevant for the current view such
+        as filter settings on a dashboard or in-page navigation. As the data is not persisted it also allows the
+        storage of data structures such as database connections, pandas tables, numpy arrays, user specific ML models
+        or other living objects that are not serializable to JSON.
+        """
         client = context.get_client()
         return client.state
 
@@ -164,7 +170,7 @@ class Storage:
         self._general.clear()
         self._users.clear()
         if get_slot_stack():
-            self.session.clear()
+            self.client.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()
 
