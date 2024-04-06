@@ -98,14 +98,14 @@ class Leaflet(Element, component='leaflet.js'):
         if self._props['center'] == center:
             return
         self._props['center'] = center
-        self.run_method('setCenter', center)
+        self.update()
 
     def set_zoom(self, zoom: int) -> None:
         """Set the zoom level of the map."""
         if self._props['zoom'] == zoom:
             return
         self._props['zoom'] = zoom
-        self.run_method('setZoom', zoom)
+        self.update()
 
     def remove_layer(self, layer: Layer) -> None:
         """Remove a layer from the map."""
@@ -128,7 +128,6 @@ class Leaflet(Element, component='leaflet.js'):
         :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
         :param args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
@@ -144,7 +143,6 @@ class Leaflet(Element, component='leaflet.js'):
         :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
         :param args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
