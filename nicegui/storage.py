@@ -96,6 +96,7 @@ class Storage:
         self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
         self.migrate_to_utf8()
         self._general = PersistentDict(self.path / 'storage-general.json', encoding='utf-8')
+        self.tabs: Dict[str, observables.ObservableDict] = {}
         self._users: Dict[str, PersistentDict] = {}
 
     @property
@@ -148,6 +149,25 @@ class Storage:
     def general(self) -> Dict:
         """General storage shared between all users that is persisted on the server (where NiceGUI is executed)."""
         return self._general
+
+    @property
+    def tab(self) -> Dict:
+        """A volatile storage that is only kept during the current tab session."""
+        request: Optional[Request] = request_contextvar.get()
+        if request is None:
+            if self._is_in_auto_index_context():
+                raise RuntimeError('app.storage.tab can only be used with page builder functions '
+                                   '(https://nicegui.io/documentation/page)')
+        client = context.get_client()
+        if not client.has_socket_connection:
+            raise RuntimeError('app.storage.tab can only be used with a client connection; '
+                               'see https://nicegui.io/documentation/page#wait_for_client_connection to await it')
+        tab_id = client.tab_id
+        assert tab_id is not None
+        ic(tab_id)
+        if tab_id not in self.tabs:
+            self.tabs[tab_id] = observables.ObservableDict()
+        return self.tabs[tab_id]
 
     def clear(self) -> None:
         """Clears all storage."""
