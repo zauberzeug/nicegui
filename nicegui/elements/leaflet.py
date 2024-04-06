@@ -98,14 +98,14 @@ class Leaflet(Element, component='leaflet.js'):
         if self._props['center'] == center:
             return
         self._props['center'] = center
-        self.run_method('setCenter', center)
+        self.update()
 
     def set_zoom(self, zoom: int) -> None:
         """Set the zoom level of the map."""
         if self._props['zoom'] == zoom:
             return
         self._props['zoom'] = zoom
-        self.run_method('setZoom', zoom)
+        self.update()
 
     def remove_layer(self, layer: Layer) -> None:
         """Remove a layer from the map."""
