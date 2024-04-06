@@ -13,9 +13,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from . import background_tasks, context, core, json, observables
-from .context import get_slot_stack
 from .logging import log
-from .observables import ObservableDict
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
 
@@ -155,8 +153,6 @@ class Storage:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
-        if get_slot_stack():
-            self.client.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()
 

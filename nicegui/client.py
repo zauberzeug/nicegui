@@ -15,13 +15,11 @@ from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json
 from .awaitable_response import AwaitableResponse
-from .context import get_client
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
 from .javascript_request import JavaScriptRequest
 from .logging import log
-from .observables import ObservableDict
 from .outbox import Outbox
 from .version import __version__
 

@@ -9,8 +9,8 @@ from nicegui.single_page_url import SinglePageUrl
 
 
 class SinglePageRouterFrame(ui.element, component='single_page.js'):
-    """The RouterFrame is a special element which is used by the SinglePageRouter to exchange the content of the
-    current page with the content of the new page. It serves as container and overrides the browser's history
+    """The SinglePageRouterFrame is a special element which is used by the SinglePageRouter to exchange the content of
+    the current page with the content of the new page. It serves as container and overrides the browser's history
     management to prevent the browser from reloading the whole page."""
 
     def __init__(self, valid_path_masks: list[str], use_browser_history: bool = True):
@@ -37,8 +37,7 @@ class SinglePageRouterEntry:
         self.title = title
 
     def verify(self) -> Self:
-        """Verifies a SinglePageRouterEntry for correctness. Raises a ValueError if the entry is invalid.
-        """
+        """Verifies a SinglePageRouterEntry for correctness. Raises a ValueError if the entry is invalid."""
         path = self.path
         if "{" in path:
             # verify only a single open and close curly bracket is present
@@ -56,8 +55,9 @@ class SinglePageRouter:
     """The SinglePageRouter allows the development of a Single Page Application (SPA) which maintains a
     persistent connection to the server and only updates the content of the page instead of reloading the whole page.
 
-    This enables the development of complex web applications with dynamic per-user data (all types of Python classes)
-    which are kept alive for the duration of the connection.
+    This allows faster page switches and a more dynamic user experience because instead of reloading the whole page,
+    only the content area is updated. The SinglePageRouter is a high-level abstraction which manages the routing
+    and content area of the SPA.
 
     For examples see examples/single_page_router"""
 
@@ -66,7 +66,7 @@ class SinglePageRouter:
                  browser_history: bool = True,
                  included: Union[List[Union[Callable, str]], str, Callable] = "/*",
                  excluded: Union[List[Union[Callable, str]], str, Callable] = "",
-                 on_session_created: Optional[Callable] = None) -> None:
+                 on_instance_created: Optional[Callable] = None) -> None:
         """
         :param path: the base path of the single page router.
         :param browser_history: Optional flag to enable or disable the browser history management. Default is True.
@@ -76,7 +76,8 @@ class SinglePageRouter:
         :param excluded: Optional list of masks and callables of paths to exclude. Default is "" which excludes none.
         Explicitly included paths (without wildcards) and Callables are always included, even if they match an
         exclusion mask.
-        :param on_session_created: Optional callback which is called when a new session is created.
+        :param on_instance_created: Optional callback which is called when a new instance is created. Each browser tab
+        or window is a new instance. This can be used to initialize the state of the application.
         """
         super().__init__()
         self.routes: Dict[str, SinglePageRouterEntry] = {}
@@ -90,7 +91,7 @@ class SinglePageRouter:
         # set of all registered paths which were finally included for verification w/ mask matching in the browser
         self.included_paths: Set[str] = set()
         self.content_area_class = SinglePageRouterFrame
-        self.on_session_created: Optional[Callable] = on_session_created
+        self.on_instance_created: Optional[Callable] = on_instance_created
         self.use_browser_history = browser_history
         self._setup_configured = False
 
@@ -108,14 +109,14 @@ class SinglePageRouter:
         @ui.page(self.base_path, **kwargs)
         @ui.page(f'{self.base_path}' + '{_:path}', **kwargs)  # all other pages
         async def root_page():
-            self.handle_session_created()
+            self.handle_instance_created()
             self.setup_root_page()
 
-    def handle_session_created(self):
-        """Is called when ever a new session is created such as when the user opens the page for the first time or
-        in a new tab. Can be used to initialize session data"""
-        if self.on_session_created is not None:
-            self.on_session_created()
+    def handle_instance_created(self):
+        """Is called when ever a new instance is created such as when the user opens the page for the first time or
+        in a new tab"""
+        if self.on_instance_created is not None:
+            self.on_instance_created()
 
     def setup_root_page(self):
         """Builds the root page of the single page router and initializes the content area.
@@ -161,19 +162,19 @@ class SinglePageRouter:
         """
         self.routes[entry.path] = entry.verify()
 
-    def get_target_url(self, target: Union[Callable, str]) -> SinglePageUrl:
-        """Returns the SinglePageRouterEntry for the given target URL or builder function
+    def get_target_url(self, path: Union[Callable, str]) -> SinglePageUrl:
+        """Returns the SinglePageRouterEntry for the given URL path or builder function
 
-        :param target: The target URL or builder function
-        :return: The SinglePageUrl object with the parsed route and query arguments
+        :param path: The URL path to open or a builder function
+        :return: The SinglePageUrl object which contains the parsed route, query arguments and fragment
         """
-        if isinstance(target, Callable):
+        if isinstance(path, Callable):
             for path, entry in self.routes.items():
-                if entry.builder == target:
+                if entry.builder == path:
                     return SinglePageUrl(entry=entry)
         else:
-            parser = SinglePageUrl(target)
-            return parser.parse_single_page_route(self.routes, target)
+            parser = SinglePageUrl(path)
+            return parser.parse_single_page_route(self.routes, path)
 
     def open(self, target: Union[Callable, str, Tuple[str, bool]]) -> None:
         """Open a new page in the browser by exchanging the content of the root page's slot element
