@@ -107,13 +107,10 @@ export default {
       clearInterval(connectInterval);
     }, 100);
   },
+  updated() {
+    this.map?.setView(this.center, this.zoom);
+  },
   methods: {
-    setCenter(center) {
-      this.map.panTo(center);
-    },
-    setZoom(zoom) {
-      this.map.setZoom(zoom);
-    },
     add_layer(layer, id) {
       const l = L[layer.type](...layer.args);
       l.id = id;
