@@ -14,6 +14,7 @@ def test_clipboard(screen: Screen):
     screen.selenium.set_permissions('clipboard-write', 'granted')
 
     screen.click('Copy to clipboard')
+    screen.wait(0.5)
     assert screen.selenium.execute_script('return navigator.clipboard.readText()') == 'Hello, World!'
 
     screen.click('Read from clipboard')

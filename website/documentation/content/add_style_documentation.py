@@ -3,9 +3,9 @@ from nicegui import ui
 from . import doc
 
 
-@doc.demo(ui.add_style)
+@doc.demo(ui.add_css)
 def main_demo() -> None:
-    ui.add_style('''
+    ui.add_css('''
         .red {
             color: red;
         }
@@ -13,11 +13,9 @@ def main_demo() -> None:
     ui.label('This is red with CSS.').classes('red')
 
 
-@doc.demo('Add SCSS', '''
-    You can also use SCSS to define styles.
-''')
+@doc.demo(ui.add_scss)
 def scss_demo() -> None:
-    ui.add_style('''
+    ui.add_scss('''
         .green {
             background-color: lightgreen;
             .blue {
@@ -29,15 +27,13 @@ def scss_demo() -> None:
         ui.label('This is blue on green with SCSS.').classes('blue')
 
 
-@doc.demo('Add SASS', '''
-    You can also use the indented SASS syntax by setting the `indented` parameter to `True`.
-''')
+@doc.demo(ui.add_sass)
 def sass_demo() -> None:
-    ui.add_style('''
+    ui.add_sass('''
         .yellow
             background-color: yellow
             .purple
                 color: purple
-    ''', indented=True)
+    ''')
     with ui.element().classes('yellow'):
         ui.label('This is purple on yellow with SASS.').classes('purple')

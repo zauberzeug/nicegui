@@ -10,6 +10,7 @@ FEATURE = Literal[
     'plotly',
     'pyecharts',
     'webview',
+    'sass',
 ]
 
 
