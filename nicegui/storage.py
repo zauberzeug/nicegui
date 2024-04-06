@@ -151,20 +151,6 @@ class Storage:
         """General storage shared between all users that is persisted on the server (where NiceGUI is executed)."""
         return self._general
 
-    @property
-    def client(self) -> ObservableDict:
-        """Client storage that is persisted on the server (where NiceGUI is executed) on a per client
-        connection basis.
-
-        The data is lost when the client disconnects through reloading the page, closing the tab or
-        navigating away from the page. It can be used to store data that is only relevant for the current view such
-        as filter settings on a dashboard or in-page navigation. As the data is not persisted it also allows the
-        storage of data structures such as database connections, pandas tables, numpy arrays, user specific ML models
-        or other living objects that are not serializable to JSON.
-        """
-        client = context.get_client()
-        return client.state
-
     def clear(self) -> None:
         """Clears all storage."""
         self._general.clear()

@@ -4,7 +4,7 @@ from typing import Callable, Dict, Union, Optional, Tuple, Self, List, Set
 
 from fastapi.routing import APIRoute
 
-from nicegui import background_tasks, helpers, ui, core, Client
+from nicegui import background_tasks, helpers, ui, core, context, Client
 from nicegui.single_page_url import SinglePageUrl
 
 
@@ -126,8 +126,7 @@ class SinglePageRouter:
         Example:
             ```
             def setup_root_page(self):
-                app.storage.client["menu"] = ui.left_drawer()
-                with app.storage.client["menu"] :
+                with ui.left_drawer():
                     ... setup navigation
                 with ui.column():
                     self.setup_content_area()
@@ -143,7 +142,7 @@ class SinglePageRouter:
         """
         content = self.content_area_class(
             list(self.included_paths), self.use_browser_history).on('open', lambda e: self.open(e.args))
-        Client.current_client().single_page_content = content
+        context.get_client().single_page_content = content
         return content
 
     def add_page(self, path: str, builder: Callable, title: Optional[str] = None) -> None:
@@ -205,7 +204,7 @@ class SinglePageRouter:
                 if fragment is not None:
                     await ui.run_javascript(f'window.location.href = "#{fragment}";')
 
-        content = Client.current_client().single_page_content
+        content = context.get_client().single_page_content
         content.clear()
         combined_dict = {**target_url.path_args, **target_url.query_args}
         background_tasks.create(build(content, target_url.fragment, combined_dict))
