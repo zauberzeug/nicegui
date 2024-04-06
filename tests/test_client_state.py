@@ -3,13 +3,13 @@ from nicegui.testing import Screen
 
 
 def test_session_state(screen: Screen):
-    app.storage.session["counter"] = 123
+    app.storage.client["counter"] = 123
 
     def increment():
-        app.storage.session["counter"] = app.storage.session["counter"] + 1
+        app.storage.client["counter"] = app.storage.client["counter"] + 1
 
     ui.button("Increment").on_click(increment)
-    ui.label().bind_text(app.storage.session, "counter")
+    ui.label().bind_text(app.storage.client, "counter")
 
     screen.open('/')
     screen.should_contain('123')
