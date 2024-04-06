@@ -164,7 +164,6 @@ class Storage:
                                'see https://nicegui.io/documentation/page#wait_for_client_connection to await it')
         tab_id = client.tab_id
         assert tab_id is not None
-        ic(tab_id)
         if tab_id not in self.tabs:
             self.tabs[tab_id] = observables.ObservableDict()
         return self.tabs[tab_id]

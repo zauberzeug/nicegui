@@ -158,7 +158,7 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 
 @sio.on('handshake')
-async def _on_handshake(sid: str, data: dict[str, str]) -> bool:
+async def _on_handshake(sid: str, data: Dict[str, str]) -> bool:
     client = Client.instances.get(data['client_id'])
     if not client:
         return False
