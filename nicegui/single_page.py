@@ -191,7 +191,7 @@ class SinglePageRouter:
             if target_url.fragment is not None:
                 ui.run_javascript(f'window.location.href = "#{target_url.fragment}";')  # go to fragment
                 return
-            entry = ui.label(f"Page not found: {target}").classes("text-red-500")  # Could be beautified
+            return
         title = entry.title if entry.title is not None else core.app.config.title
         ui.run_javascript(f'document.title = "{title}"')
         if server_side and self.use_browser_history:
