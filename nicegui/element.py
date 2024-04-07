@@ -477,7 +477,6 @@ class Element(Visibility):
         :param name: name of the method
         :param args: arguments to pass to the method
         :param timeout: maximum time to wait for a response (default: 1 second)
-        :param check_interval: time between checks for a response (default: 0.01 seconds)
         """
         if not core.loop:
             return NullResponse()

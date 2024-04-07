@@ -18,6 +18,7 @@ from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
+from .javascript_request import JavaScriptRequest
 from .logging import log
 from .outbox import Outbox
 from .version import __version__
@@ -64,8 +65,6 @@ class Client:
             with Element('q-page-container') as self.page_container:
                 with Element('q-page'):
                     self.content = Element('div').classes('nicegui-content')
-
-        self.waiting_javascript_commands: Dict[str, Any] = {}
 
         self.title: Optional[str] = None
 
@@ -173,7 +172,9 @@ class Client:
 
     def run_javascript(self, code: str, *,
                        respond: Optional[bool] = None,  # DEPRECATED
-                       timeout: float = 1.0, check_interval: float = 0.01) -> AwaitableResponse:
+                       timeout: float = 1.0,
+                       check_interval: float = 0.01,  # DEPRECATED
+                       ) -> AwaitableResponse:
         """Execute JavaScript on the client.
 
         The client connection must be established before this method is called.
@@ -184,7 +185,6 @@ class Client:
 
         :param code: JavaScript code to run
         :param timeout: timeout in seconds (default: `1.0`)
-        :param check_interval: interval in seconds to check for a response (default: `0.01`)
 
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """
@@ -196,6 +196,10 @@ class Client:
             raise ValueError('The "respond" argument of run_javascript() has been removed. '
                              'Now the method always returns an AwaitableResponse that can be awaited. '
                              'Please remove the "respond=False" argument and call the method without awaiting.')
+        if check_interval != 0.01:
+            log.warning('The "check_interval" argument of run_javascript() and similar methods has been removed. '
+                        'Now the method automatically returns when receiving a response without checking regularly in an interval. '
+                        'Please remove the "check_interval" argument.')
 
         request_id = str(uuid.uuid4())
         target_id = self._temporary_socket_id or self.id
@@ -205,12 +209,7 @@ class Client:
 
         async def send_and_wait():
             self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
-            deadline = time.time() + timeout
-            while request_id not in self.waiting_javascript_commands:
-                if time.time() > deadline:
-                    raise TimeoutError(f'JavaScript did not respond within {timeout:.1f} s')
-                await asyncio.sleep(check_interval)
-            return self.waiting_javascript_commands.pop(request_id)
+            return await JavaScriptRequest(request_id, timeout=timeout)
 
         return AwaitableResponse(send_and_forget, send_and_wait)
 
@@ -269,7 +268,7 @@ class Client:
 
     def handle_javascript_response(self, msg: Dict) -> None:
         """Store the result of a JavaScript command."""
-        self.waiting_javascript_commands[msg['request_id']] = msg['result']
+        JavaScriptRequest.resolve(msg['request_id'], msg['result'])
 
     def safe_invoke(self, func: Union[Callable[..., Any], Awaitable]) -> None:
         """Invoke the potentially async function in the client context and catch any exceptions."""
