@@ -15,7 +15,6 @@ from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json
 from .awaitable_response import AwaitableResponse
-from .context import get_client
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url

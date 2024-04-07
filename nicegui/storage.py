@@ -170,7 +170,7 @@ class Storage:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
-        if get_slot_stack() and not self._is_in_auto_index_context():
+        if not self._is_in_auto_index_context() and get_slot_stack():
             self.client.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()
