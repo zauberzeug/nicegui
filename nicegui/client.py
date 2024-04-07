@@ -86,11 +86,6 @@ class Client:
         """Return True if this client is the auto-index client."""
         return self is self.auto_index_client
 
-    @staticmethod
-    def current_client() -> Optional[Client]:
-        """Returns the current client if obtainable from the current context."""
-        return get_client()
-
     @property
     def ip(self) -> Optional[str]:
         """Return the IP address of the client, or None if the client is not connected."""

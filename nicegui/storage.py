@@ -153,23 +153,24 @@ class Storage:
 
     @property
     def client(self) -> ObservableDict:
-        """Client storage that is persisted on the server (where NiceGUI is executed) on a per client
-        connection basis.
-
-        The data is lost when the client disconnects through reloading the page, closing the tab or
-        navigating away from the page. It can be used to store data that is only relevant for the current view such
-        as filter settings on a dashboard or in-page navigation. As the data is not persisted it also allows the
-        storage of data structures such as database connections, pandas tables, numpy arrays, user specific ML models
-        or other living objects that are not serializable to JSON.
-        """
+        """A volatile storage that is only kept during the current connection to the client.
+        
+        Like `app.storage.tab` data is unique per browser tab but is even more volatile as it is already discarded
+        when the connection to the client is lost through a page reload or a navigation."""
+        if self._is_in_auto_index_context():
+            raise RuntimeError('app.storage.client can only be used with page builder functions '
+                               '(https://nicegui.io/documentation/page)')
         client = context.get_client()
+        if not client.has_socket_connection:
+            raise RuntimeError('app.storage.client can only be used with a client connection; '
+                               'see https://nicegui.io/documentation/page#wait_for_client_connection to await it')
         return client.state
 
     def clear(self) -> None:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
-        if get_slot_stack():
+        if get_slot_stack() and not self._is_in_auto_index_context():
             self.client.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()
