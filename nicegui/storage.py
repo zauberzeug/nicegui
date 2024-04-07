@@ -158,11 +158,9 @@ class Storage:
     @property
     def tab(self) -> Dict:
         """A volatile storage that is only kept during the current tab session."""
-        request: Optional[Request] = request_contextvar.get()
-        if request is None:
-            if self._is_in_auto_index_context():
-                raise RuntimeError('app.storage.tab can only be used with page builder functions '
-                                   '(https://nicegui.io/documentation/page)')
+        if self._is_in_auto_index_context():
+            raise RuntimeError('app.storage.tab can only be used with page builder functions '
+                               '(https://nicegui.io/documentation/page)')
         client = context.get_client()
         if not client.has_socket_connection:
             raise RuntimeError('app.storage.tab can only be used with a client connection; '
