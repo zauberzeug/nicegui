@@ -129,6 +129,8 @@ async def _startup() -> None:
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
     background_tasks.create(Client.prune_instances(), name='prune clients')
     background_tasks.create(Slot.prune_stacks(), name='prune slot stacks')
+    prune_tab_storages = core.app.storage._prune_tab_storage  # pylint: disable=protected-access
+    background_tasks.create(prune_tab_storages(), name='prune tab storages')
     air.connect()
 
 

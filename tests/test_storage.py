@@ -1,9 +1,12 @@
 import asyncio
+from datetime import timedelta
 from pathlib import Path
 
 import httpx
 
-from nicegui import Client, app, background_tasks, ui
+from nicegui import Client, app, background_tasks, context
+from nicegui import storage as storage_module
+from nicegui import ui
 from nicegui.testing import Screen
 
 
@@ -163,3 +166,41 @@ def test_rapid_storage(screen: Screen):
     screen.click('test')
     screen.wait(0.5)
     assert Path('.nicegui', 'storage-general.json').read_text('utf-8') == '{"one":1,"two":2,"three":3}'
+
+
+def test_tab_storage_is_local(screen: Screen):
+    @ui.page('/')
+    async def page():
+        await context.get_client().connected()
+        app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
+        ui.label().bind_text_from(app.storage.tab, 'count')
+
+    screen.open('/')
+    screen.should_contain('1')
+    screen.open('/')
+    screen.should_contain('2')
+    screen.switch_to(1)
+    screen.open('/')
+    screen.should_contain('1')
+    screen.switch_to(0)
+    screen.open('/')
+    screen.should_contain('3')
+
+
+def test_tab_storage_is_auto_removed(screen: Screen):
+    storage_module.PURGE_INTERVAL = timedelta(seconds=0.1)
+    app.storage.max_tab_storage_age = timedelta(seconds=0.5)
+
+    @ui.page('/')
+    async def page():
+        await context.get_client().connected()
+        app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
+        ui.label().bind_text_from(app.storage.tab, 'count')
+
+    screen.open('/')
+    screen.should_contain('1')
+    screen.open('/')
+    screen.should_contain('2')
+    screen.wait(1)
+    screen.open('/')
+    screen.should_contain('1')

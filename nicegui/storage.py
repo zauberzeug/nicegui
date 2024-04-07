@@ -1,7 +1,9 @@
+import asyncio
 import contextvars
 import os
 import uuid
 from collections.abc import MutableMapping
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, Iterator, Optional, Union
 
@@ -16,6 +18,8 @@ from . import background_tasks, context, core, json, observables
 from .logging import log
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
+
+PURGE_INTERVAL = timedelta(minutes=5)
 
 
 class ReadOnlyDict(MutableMapping):
@@ -94,9 +98,10 @@ class Storage:
 
     def __init__(self) -> None:
         self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
-        self.migrate_to_utf8()
+        self.migrate_to_utf8()  # TODO remove this in 2.0 release
+        self.max_tab_storage_age: timedelta = timedelta(days=30)
         self._general = PersistentDict(self.path / 'storage-general.json', encoding='utf-8')
-        self.tabs: Dict[str, observables.ObservableDict] = {}
+        self._tabs: Dict[str, observables.ObservableDict] = {}
         self._users: Dict[str, PersistentDict] = {}
 
     @property
@@ -164,9 +169,17 @@ class Storage:
                                'see https://nicegui.io/documentation/page#wait_for_client_connection to await it')
         tab_id = client.tab_id
         assert tab_id is not None
-        if tab_id not in self.tabs:
-            self.tabs[tab_id] = observables.ObservableDict()
-        return self.tabs[tab_id]
+        if tab_id not in self._tabs:
+            self._tabs[tab_id] = observables.ObservableDict()
+        return self._tabs[tab_id]
+
+    async def _prune_tab_storage(self) -> None:
+        while True:
+            await asyncio.sleep(PURGE_INTERVAL.total_seconds())
+            for tab_id, last_modified in {k: v.last_modified for k, v in self._tabs.items()}.items():
+                deadline = datetime.now() - self.max_tab_storage_age
+                if last_modified < deadline:
+                    del self._tabs[tab_id]
 
     def clear(self) -> None:
         """Clears all storage."""
