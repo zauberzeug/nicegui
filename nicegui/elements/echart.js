@@ -64,7 +64,7 @@ export default {
     run_chart_method(name, ...args) {
       if (name.startsWith(":")) {
         name = name.slice(1);
-        args = args.map((arg) => new Function("return " + arg)());
+        args = args.map((arg) => new Function(`return (${arg})`)());
       }
       return runMethod(this.chart, name, args);
     },
