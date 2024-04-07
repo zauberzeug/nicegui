@@ -185,6 +185,7 @@ class Storage:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
+        self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()
 

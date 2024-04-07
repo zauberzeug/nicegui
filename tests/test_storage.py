@@ -204,3 +204,22 @@ def test_tab_storage_is_auto_removed(screen: Screen):
     screen.wait(1)
     screen.open('/')
     screen.should_contain('1')
+
+
+def test_clear_tab_storage(screen: Screen):
+    storage_module.PURGE_INTERVAL = timedelta(minutes=1)
+
+    @ui.page('/')
+    async def page():
+        await context.get_client().connected()
+        app.storage.tab['test'] = '123'
+        ic()
+        ui.button('clear', on_click=app.storage.clear)
+
+    screen.open('/')
+    screen.wait(1)
+    tab_storages = app.storage._tabs  # pylint: disable=protected-access
+    assert len(tab_storages.values()) == 1
+    assert list(tab_storages.values())[0]['test'] == '123'
+    screen.click('clear')
+    assert len(list(tab_storages.values())) == 0
