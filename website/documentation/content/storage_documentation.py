@@ -22,12 +22,12 @@ doc.title('Storage')
         This storage is only available within [page builder functions](/documentation/page) 
         and requires an established connection, obtainable via [`await client.connected()`](/documentation/page#wait_for_client_connection).
     - `app.storage.client`:
-        Also stored server-side in memory, this dictionary is unique to each client connection and can hold arbitrary 
-        objects. Data will be discarded when the page is reloaded or the user navigates to another page.
+        Also stored server-side in memory, this dictionary is unique to each client connection and can hold arbitrary objects.
+        Data will be discarded when the page is reloaded or the user navigates to another page.
         Unlike data stored in `app.storage.tab` which can be persisted on the server even for days, 
-        `app.storage.client` helps caching resource-hungry objects such as a streaming or database connection you 
-        need to keep alive for dynamic site updates but would like to discard as soon as the user leaves the page or 
-        closes the browser. This storage is only available within [page builder functions](/documentation/page).
+        `app.storage.client` helps caching resource-hungry objects such as a streaming or database connection you need to keep alive 
+        for dynamic site updates but would like to discard as soon as the user leaves the page or closes the browser. 
+        This storage is only available within [page builder functions](/documentation/page).
     - `app.storage.user`:
         Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie.
         Unique to each user, this storage is accessible across all their browser tabs.
@@ -114,17 +114,18 @@ def tab_storage():
     with ui.column():  # HIDE
         app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
         ui.label(f'Tab reloaded {app.storage.tab["count"]} times')
+        ui.button("Reload page", on_click=lambda: ui.navigate.reload())
 
 
 @doc.demo('Short-term memory', '''
           The goal of `app.storage.client` is to store data only for the duration of the current page visit.
-          In difference to data stored in `app.storage.tab` - which is persisted between page changes and even 
-          browser restarts as long as the tab is kept open - the data in `app.storage.client` will be discarded 
-          if the user closes the browser, reloads the page or navigates to another page.
-          This is may be beneficial for resource hungry or intentionally very short lived data such as a database 
-          connection which should be closed as soon as the user leaves the page, sensitive data or if you on purpose
-          want to return a page with the default settings every time the user reloads the page while keeping the
-          data alive during in-page navigation or when updating elements on the site in intervals such as a live feed.
+          In difference to data stored in `app.storage.tab` 
+          - which is persisted between page changes and even browser restarts as long as the tab is kept open - 
+          the data in `app.storage.client` will be discarded if the user closes the browser, reloads the page or navigates to another page.
+          This is beneficial for resource hungry or intentionally very short lived data such as a database connection 
+          which should be closed as soon as the user leaves the page, sensitive data or 
+          if you on purpose want to return a page with the default settings every time the user reloads the page 
+          while keeping the data alive during in-page navigation or when updating elements on the site in intervals such as a live feed.
           ''')
 def short_term_memory():
     from nicegui import app
@@ -132,10 +133,10 @@ def short_term_memory():
     # @ui.page('/')
     # async def index(client):
     with ui.column():  # HIDE
-        app.storage.client['counter'] = 0
-        ui.label().bind_text_from(app.storage.client, 'counter',
+        cache = app.storage.client
+        cache['counter'] = 0
+        ui.label().bind_text_from(cache, 'counter',
                                   backward=lambda n: f'Content updated {n} times')
         ui.button('Update content',
-                  on_click=lambda: app.storage.client.update(
-                      {"counter": app.storage.client["counter"] + 1}))
+                  on_click=lambda: cache.update({"counter": cache["counter"] + 1}))
         ui.button("Reload page", on_click=lambda: ui.navigate.reload())
