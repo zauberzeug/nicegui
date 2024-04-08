@@ -24,7 +24,7 @@ doc.title('Storage')
     - `app.storage.client`:
         Also stored server-side in memory, this dictionary is unique to each client connection and can hold arbitrary 
         objects. Data will be discarded when the page is reloaded or the user navigates to another page.
-        Unlike data stored in  `app.storage.tab` which can be persisted on the server even for days, 
+        Unlike data stored in `app.storage.tab` which can be persisted on the server even for days, 
         `app.storage.client` helps caching resource-hungry objects such as a streaming or database connection you 
         need to keep alive for dynamic site updates but would like to discard as soon as the user leaves the page or 
         closes the browser. This storage is only available within [page builder functions](/documentation/page).
