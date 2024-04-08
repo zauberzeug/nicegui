@@ -125,7 +125,7 @@ export default {
     run_map_method(name, ...args) {
       if (name.startsWith(":")) {
         name = name.slice(1);
-        args = args.map((arg) => new Function("return " + arg)());
+        args = args.map((arg) => new Function(`return (${arg})`)());
       }
       return runMethod(this.map, name, args);
     },
@@ -135,7 +135,7 @@ export default {
         if (layer.id !== id) return;
         if (name.startsWith(":")) {
           name = name.slice(1);
-          args = args.map((arg) => new Function("return " + arg)());
+          args = args.map((arg) => new Function(`return (${arg})`)());
         }
         result = runMethod(layer, name, args);
       });
