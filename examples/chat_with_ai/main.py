@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-import logging
-
-from langchain.chains import ConversationChain
 from langchain_openai import ChatOpenAI
 from log_callback_handler import NiceGuiLogElementCallbackHandler
 
@@ -12,7 +9,7 @@ OPENAI_API_KEY = 'not-set'  # TODO: set your OpenAI API key here
 
 @ui.page('/')
 def main():
-    llm=ChatOpenAI(model_name='gpt-3.5-turbo', streaming=True, openai_api_key=OPENAI_API_KEY)
+    llm = ChatOpenAI(model_name='gpt-3.5-turbo', streaming=True, openai_api_key=OPENAI_API_KEY)
 
     async def send() -> None:
         question = text.value
@@ -24,19 +21,12 @@ def main():
             spinner = ui.spinner(type='dots')
 
         response = ''
-        try:
-            async for chunk in llm.astream(question, config={"callbacks": [NiceGuiLogElementCallbackHandler(log)]}):
-                response += chunk.content
-                print('-', chunk.content)
-                response_message.clear()
-                with response_message:
-                    ui.html(response)
-                ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)')
-        except Exception as e:
-            logging.exception('failed to generate response')
+        async for chunk in llm.astream(question, config={'callbacks': [NiceGuiLogElementCallbackHandler(log)]}):
+            response += chunk.content
+            response_message.clear()
             with response_message:
-                ui.icon('error', size='2em')
-            ui.notification(f'Error: {e}', type='negative')
+                ui.html(response)
+            ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)')
         message_container.remove(spinner)
 
     ui.add_css(r'a:link, a:visited {color: inherit !important; text-decoration: none; font-weight: 500}')
@@ -64,4 +54,3 @@ def main():
 
 
 ui.run(title='Chat with GPT-3 (example)')
-
