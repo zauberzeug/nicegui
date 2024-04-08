@@ -23,10 +23,10 @@ doc.title('Storage')
         and requires an established connection, obtainable via [`await client.connected()`](/documentation/page#wait_for_client_connection).
     - `app.storage.client`:
         Also stored server-side in memory, this dictionary is unique to each client connection and can hold arbitrary 
-        objects. Data will be lost when the page is reloaded or the user navigates to another page.
+        objects. Data will be discarded when the page is reloaded or the user navigates to another page.
         Unlike data stored in  `app.storage.tab` which can be persisted on the server even for days, 
-        `app.storage.client` helps caching resource-intensive objects such as a streaming or database connection you 
-        need to keep alive for dynamic site updates but would like to close as soon as the user leaves the page or 
+        `app.storage.client` helps caching resource-hungry objects such as a streaming or database connection you 
+        need to keep alive for dynamic site updates but would like to discard as soon as the user leaves the page or 
         closes the browser. This storage is only available within [page builder functions](/documentation/page).
     - `app.storage.user`:
         Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie.
@@ -134,7 +134,7 @@ def short_term_memory():
     with ui.column():  # HIDE
         app.storage.client['counter'] = 0
         ui.label().bind_text_from(app.storage.client, 'counter',
-                                  backward=lambda n: f'Updates: {n}')
+                                  backward=lambda n: f'Content updated {n} times')
         ui.button('Update content',
                   on_click=lambda: app.storage.client.update(
                       {"counter": app.storage.client["counter"] + 1}))
