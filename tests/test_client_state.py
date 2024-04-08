@@ -10,7 +10,6 @@ def test_session_state(screen: Screen):
 
     @ui.page('/')
     async def page():
-        await context.get_client().connected()
         app.storage.client['counter'] = 123
         ui.button('Increment').on_click(increment)
         ui.label().bind_text(app.storage.client, 'counter')
@@ -26,16 +25,6 @@ def test_session_state(screen: Screen):
     screen.should_contain('123')
     screen.switch_to(0)
     screen.should_contain('124')
-
-
-def test_no_connection(screen: Screen):
-    @ui.page('/')
-    async def page():
-        with pytest.raises(RuntimeError):  # no connection yet
-            app.storage.client['counter'] = 123
-
-    screen.open('/')
-
 
 def test_clear(screen: Screen):
     with pytest.raises(RuntimeError):  # no context (auto index)

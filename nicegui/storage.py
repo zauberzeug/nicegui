@@ -161,9 +161,6 @@ class Storage:
             raise RuntimeError('app.storage.client can only be used with page builder functions '
                                '(https://nicegui.io/documentation/page)')
         client = context.get_client()
-        if not client.has_socket_connection:
-            raise RuntimeError('app.storage.client can only be used with a client connection; '
-                               'see https://nicegui.io/documentation/page#wait_for_client_connection to await it')
         return client.state
 
     def clear(self) -> None:

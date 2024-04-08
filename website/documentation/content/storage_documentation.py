@@ -14,14 +14,15 @@ doc.title('Storage')
 
 @doc.demo('Storage', '''
     NiceGUI offers a straightforward method for data persistence within your application. 
-    It features three built-in storage types:
+    It features four built-in storage types:
 
     - `app.storage.client`:
         Stored server-side in memory, this dictionary is unique to each client connection and can hold arbitrary 
-        objects.
-        Data will be lost when the connection is closed due to a page reload or navigation to another page.
-        This storage is only available within [page builder functions](/documentation/page) 
-        and requires an established connection, obtainable via [`await client.connected()`](/documentation/page#wait_for_client_connection).
+        objects. Data will be lost when the page is reloaded or the user navigates to another page.
+        Unlike data stored in  `app.storage.tab` which can be persisted on the server even for days, 
+        `app.storage.client` helps caching resource-intensive objects such as a streaming or database connection you 
+        need to keep alive for dynamic site updates but would like to close as soon as the user leaves the page or 
+        closes the browser. This storage is only available within [page builder functions](/documentation/page).
     - `app.storage.user`:
         Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie.
         Unique to each user, this storage is accessible across all their browser tabs.
@@ -95,8 +96,7 @@ def ui_state():
 
 
 @doc.demo('Short-term memory', '''
-          The goal of `app.storage.client` is to store data only for the duration of the current page visit and
-          only as long as the client is connected.
+          The goal of `app.storage.client` is to store data only for the duration of the current page visit.
           In difference to data stored in `app.storage.tab` - which is persisted between page changes and even 
           browser restarts as long as the tab is kept open - the data in `app.storage.client` will be discarded 
           if the user closes the browser, reloads the page or navigates to another page.
@@ -105,34 +105,16 @@ def ui_state():
           want to return a page with the default settings every time the user reloads the page while keeping the
           data alive during in-page navigation or when updating elements on the site in intervals such as a live feed.
           ''')
-def tab_storage():
-    from nicegui import app, context
-
-    class DbConnection:  # dummy class to simulate a database connection
-        def __init__(self):
-            self.connection_id = random.randint(0, 9999)
-
-        def status(self) -> str:
-            return random.choice(['healthy', 'unhealthy'])
-
-    def get_db_connection():  # per-client db connection
-        cs = app.storage.client
-        if 'connection' in cs:
-            return cs['connection']
-        cs['connection'] = DbConnection()
-        return cs['connection']
+def short_term_memory():
+    from nicegui import app
 
     # @ui.page('/')
     # async def index(client):
-    #     await client.connected()
-    with ui.row():  # HIDE
-        status = ui.markdown('DB status')
-        def update_status():
-            db_con = get_db_connection()
-            status.set_content('**Database connection ID**: '
-                               f'{db_con.connection_id}\n\n'
-                               f'**Status**: {db_con.status()}')
-        with ui.row():
-            ui.button('Refresh', on_click=update_status)
-            ui.button("Reload page", on_click=lambda: ui.navigate.reload())
-        update_status()
+    with ui.column():  # HIDE
+        app.storage.client['counter'] = 0
+        ui.label().bind_text_from(app.storage.client, 'counter',
+                                  backward=lambda n: f'Updates: {n}')
+        ui.button('Update content',
+                  on_click=lambda: app.storage.client.update(
+                      {"counter": app.storage.client["counter"] + 1}))
+        ui.button("Reload page", on_click=lambda: ui.navigate.reload())
