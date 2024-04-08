@@ -93,7 +93,7 @@ on a second line and leave the other arguments as they are.
 
 ### Imports
 
-We use `isort` to automatically sort imports.
+We use `ruff` to automatically sort imports. Run `ruff check . --fix` to sort imports.
 
 ### Single vs Double Quotes
 

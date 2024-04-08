@@ -8,8 +8,13 @@ from .. import binding
 from ..awaitable_response import AwaitableResponse, NullResponse
 from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
-from ..events import (GenericEventArguments, SceneClickEventArguments, SceneClickHit, SceneDragEventArguments,
-                      handle_event)
+from ..events import (
+    GenericEventArguments,
+    SceneClickEventArguments,
+    SceneClickHit,
+    SceneDragEventArguments,
+    handle_event,
+)
 from .scene_object3d import Object3D
 
 

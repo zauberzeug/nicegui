@@ -2,7 +2,6 @@
   "autopep8.args": ["--max-line-length=120"],
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
-  "isort.args": ["--line-length", "120"],
   "prettier.printWidth": 120,
   "pylint.args": [
     "--disable=C0103", // Invalid name (e.g., variable/function/class naming conventions)
@@ -31,6 +30,7 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.autopep8",
     "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
       "source.organizeImports": "explicit"
     }
   }

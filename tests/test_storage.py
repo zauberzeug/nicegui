@@ -3,9 +3,8 @@ from pathlib import Path
 
 import httpx
 
-from nicegui import Client, app, background_tasks, context
+from nicegui import Client, app, background_tasks, context, ui
 from nicegui import storage as storage_module
-from nicegui import ui
 from nicegui.testing import Screen
 
 

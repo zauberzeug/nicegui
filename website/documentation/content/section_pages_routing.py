@@ -2,8 +2,14 @@ import uuid
 
 from nicegui import app, ui
 
-from . import (doc, download_documentation, navigate_documentation, page_documentation, page_layout_documentation,
-               page_title_documentation)
+from . import (
+    doc,
+    download_documentation,
+    navigate_documentation,
+    page_documentation,
+    page_layout_documentation,
+    page_title_documentation,
+)
 
 CONSTANT_UUID = str(uuid.uuid4())
 
