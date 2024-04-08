@@ -5,6 +5,7 @@
     }
   ],
   "settings": {
+    "ruff.enable": true,
     "files.associations": {
       "*.html": "jinja-html"
     }
