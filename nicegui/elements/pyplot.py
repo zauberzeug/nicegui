@@ -89,7 +89,7 @@ class Matplotlib(Element):
             raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
 
         super().__init__('div')
-        self.figure: matplotlib.figure.Figure = MatplotlibFigure(self, **kwargs)
+        self.figure = MatplotlibFigure(self, **kwargs)
         self._convert_to_html()
 
     def _convert_to_html(self) -> None:
