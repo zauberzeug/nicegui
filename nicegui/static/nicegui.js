@@ -153,7 +153,7 @@ function renderRecursively(elements, id) {
       handler = (...args) => {
         const data = {
           id: id,
-          client_id: window.client_id,
+          client_id: window.clientId,
           listener_id: event.listener_id,
           args: stringifyEventArgs(args, event.args),
         };
@@ -212,7 +212,7 @@ function runJavascript(code, request_id) {
     })
     .then((result) => {
       if (request_id) {
-        window.socket.emit("javascript_response", { request_id, client_id: window.client_id, result });
+        window.socket.emit("javascript_response", { request_id, client_id: window.clientId, result });
       }
     });
 }
@@ -264,7 +264,7 @@ function createApp(elements, options) {
     },
     mounted() {
       mounted_app = this;
-      window.client_id = options.query.client_id;
+      window.clientId = options.query.client_id;
       const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
       window.path_prefix = options.prefix;
       window.socket = io(url, {
@@ -275,9 +275,14 @@ function createApp(elements, options) {
       });
       const messageHandlers = {
         connect: () => {
-          window.socket.emit("handshake", window.client_id, (ok) => {
+          let tabId = sessionStorage.getItem("__nicegui_tab_id");
+          if (!tabId) {
+            tabId = crypto.randomUUID();
+            sessionStorage.setItem("__nicegui_tab_id", tabId);
+          }
+          window.socket.emit("handshake", { client_id: window.clientId, tab_id: tabId }, (ok) => {
             if (!ok) {
-              console.log("reloading because handshake failed for client_id " + window.client_id);
+              console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
             }
             document.getElementById("popup").style.opacity = 0;

@@ -129,6 +129,7 @@ async def _startup() -> None:
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
     background_tasks.create(Client.prune_instances(), name='prune clients')
     background_tasks.create(Slot.prune_stacks(), name='prune slot stacks')
+    background_tasks.create(core.app.storage.prune_tab_storage(), name='prune tab storage')
     air.connect()
 
 
@@ -158,11 +159,12 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 
 @sio.on('handshake')
-async def _on_handshake(sid: str, client_id: str) -> bool:
-    client = Client.instances.get(client_id)
+async def _on_handshake(sid: str, data: Dict[str, str]) -> bool:
+    client = Client.instances.get(data['client_id'])
     if not client:
         return False
     client.environ = sio.get_environ(sid)
+    client.tab_id = data['tab_id']
     await sio.enter_room(sid, client.id)
     client.handle_handshake()
     return True
