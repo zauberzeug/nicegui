@@ -16,7 +16,6 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from . import background_tasks, context, core, json, observables
-from .context import get_slot_stack
 from .logging import log
 from .observables import ObservableDict
 
@@ -163,12 +162,12 @@ class Storage:
         """A volatile storage that is only kept during the current connection to the client.
 
         Like `app.storage.tab` data is unique per browser tab but is even more volatile as it is already discarded
-        when the connection to the client is lost through a page reload or a navigation."""
+        when the connection to the client is lost through a page reload or a navigation.
+        """
         if self._is_in_auto_index_context():
             raise RuntimeError('app.storage.client can only be used with page builder functions '
                                '(https://nicegui.io/documentation/page)')
-        client = context.get_client()
-        return client.state
+        return context.get_client().state
 
     @property
     def tab(self) -> observables.ObservableDict:
@@ -197,7 +196,7 @@ class Storage:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
-        if not self._is_in_auto_index_context() and get_slot_stack():
+        if not self._is_in_auto_index_context() and context.get_slot_stack():
             self.client.clear()
         self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):
