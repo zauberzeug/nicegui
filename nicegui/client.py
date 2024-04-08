@@ -59,6 +59,7 @@ class Client:
         self.shared = shared
         self.on_air = False
         self._disconnect_task: Optional[asyncio.Task] = None
+        self.tab_id: Optional[str] = None
 
         self.outbox = Outbox(self)
 
