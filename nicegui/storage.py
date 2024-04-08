@@ -154,7 +154,7 @@ class Storage:
             return False  # no client
 
     @property
-    def general(self) -> Dict:
+    def general(self) -> PersistentDict:
         """General storage shared between all users that is persisted on the server (where NiceGUI is executed)."""
         return self._general
 
