@@ -32,7 +32,6 @@ ifaddr = ">=0.2.0"
 aiohttp = ">=3.9.2" # https://github.com/zauberzeug/nicegui/security/dependabot/25 and 26
 libsass = { version = "^0.23.0", optional = true }
 docutils = "^0.19"
-ruff = "^0.3.5"
 
 [tool.poetry.extras]
 native = ["pywebview"]
@@ -60,6 +59,7 @@ selenium = "^4.11.2"
 beautifulsoup4 = "^4.12.2"
 urllib3 = ">=1.26.18,^1.26 || >=2.0.7" # https://github.com/zauberzeug/nicegui/security/dependabot/23
 pyecharts = "^2.0.4"
+ruff = ">=0.3.5"
 
 [build-system]
 requires = [
@@ -81,11 +81,10 @@ target-version = 'py311'
 line-length = 120
 
 [tool.ruff.lint]
-# See complete list : https://beta.ruff.rs/docs/rules
+# See complete list: https://beta.ruff.rs/docs/rules
 select = [
-    "I",     # isort
+    "I",  # isort
 ]
-
 fixable = [
-    "I",
+    "I",  # isort
 ]

@@ -8,6 +8,7 @@
   "customizations": {
     "vscode": {
       "extensions": [
+        "charliermarsh.ruff",
         "cschleiden.vscode-github-actions",
         "esbenp.prettier-vscode",
         "littlefoxteam.vscode-python-test-adapter",
@@ -17,8 +18,7 @@
         "ms-python.python",
         "ms-python.vscode-pylance",
         "samuelcolvin.jinjahtml",
-        "Vue.volar",
-        "charliermarsh.ruff"
+        "Vue.volar"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",

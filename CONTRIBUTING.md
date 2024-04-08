@@ -93,7 +93,11 @@ on a second line and leave the other arguments as they are.
 
 ### Imports
 
-We use `ruff` to automatically sort imports. Run `ruff check . --fix` to sort imports.
+We use [ruff](https://docs.astral.sh/ruff/) to automatically sort imports:
+
+```bash
+ruff check . --fix
+```
 
 ### Single vs Double Quotes
 

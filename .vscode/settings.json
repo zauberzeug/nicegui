@@ -30,8 +30,7 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.autopep8",
     "editor.codeActionsOnSave": {
-      "source.fixAll.ruff": "explicit",
-      "source.organizeImports": "explicit"
+      "source.fixAll.ruff": "always"
     }
   }
 }
