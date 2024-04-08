@@ -12,7 +12,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description='Build a package of your NiceGUI app')
     parser.add_argument('--name', type=str, help='Name of your app', default='Your App Name')
     parser.add_argument('--add-data', type=str, help='Additional data to include', action='append', default=[
-        str(Path(nicegui.__file__).parent / 'nicegui'),
+        str(Path(nicegui.__file__).parent),
     ])
     parser.add_argument('--dry-run', action='store_true', help='Dry run', default=False)
     parser.add_argument('main', help='Main file with ui.run()', default='main.py')
