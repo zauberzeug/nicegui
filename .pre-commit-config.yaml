@@ -1,0 +1,13 @@
+default_language_version:
+  python: python3.11
+default_install_hook_types: [pre-commit,pre-push]
+default_stages: [commit]
+
+repos:
+  - repo: local
+    hooks:
+      - id: ruff lint
+        name: ruff lint
+        entry: ruff check
+        language: system
+        types_or: [python]
