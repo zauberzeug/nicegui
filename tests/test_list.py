@@ -5,8 +5,7 @@ from nicegui.testing import Screen
 def test_clicking_items(screen: Screen):
     with ui.list():
         ui.item('Item 1', on_click=lambda: ui.notify('Clicked item 1'))
-        with ui.item(on_click=lambda: ui.notify('Clicked item 2')):
-            ui.item_section('Item 2')
+        with ui.item('Item 2', on_click=lambda: ui.notify('Clicked item 2')):
             with ui.item_section():
                 ui.button('Button').on('click.stop', lambda: ui.notify('Clicked button!'))
 

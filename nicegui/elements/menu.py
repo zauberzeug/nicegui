@@ -78,6 +78,9 @@ class MenuItem(TextElement):
                 self.menu.close()
         self.on('click', handle_click, [])
 
+        log.warning('The `ui.menu_item` element is deprecated. '
+                    'Please use `ui.item` and the `auto_close` parameter of the menu itself instead.')
+
     def on_click(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when the menu item is clicked."""
         self._click_handlers.append(callback)
