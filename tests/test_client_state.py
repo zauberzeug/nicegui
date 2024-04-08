@@ -26,13 +26,13 @@ def test_session_state(screen: Screen):
     screen.switch_to(0)
     screen.should_contain('124')
 
+
 def test_clear(screen: Screen):
     with pytest.raises(RuntimeError):  # no context (auto index)
         app.storage.client.clear()
 
     @ui.page('/')
     async def page():
-        await context.get_client().connected()
         app.storage.client['counter'] = 123
         app.storage.client.clear()
         assert 'counter' not in app.storage.client
