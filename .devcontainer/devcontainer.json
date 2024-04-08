@@ -21,6 +21,7 @@
         "Vue.volar"
       ],
       "settings": {
+        "ruff.enable": true,
         "terminal.integrated.defaultProfile.linux": "bash",
         "terminal.integrated.shell.linux": "bash",
         "terminal.integrated.profiles.linux": {
