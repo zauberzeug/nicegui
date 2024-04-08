@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import io
 import os
@@ -14,6 +16,19 @@ try:
         import matplotlib.figure
         import matplotlib.pyplot as plt
         optional_features.register('matplotlib')
+
+        class MatplotlibFigure(matplotlib.figure.Figure):
+
+            def __init__(self, element: Matplotlib, *args: Any, **kwargs: Any) -> None:
+                super().__init__(*args, **kwargs)
+                self.element = element
+
+            def __enter__(self) -> Self:
+                return self
+
+            def __exit__(self, *_) -> None:
+                self.element.update()
+
 except ImportError:
     pass
 
@@ -60,12 +75,13 @@ class Pyplot(Element):
         plt.close(self.fig)
 
 
-class MplFigure(Element):
+class Matplotlib(Element):
 
     def __init__(self, **kwargs: Any) -> None:
-        """Matplotlib Figure
+        """Matplotlib
 
-        Create a `Matplotlib <https://matplotlib.org/>`_ figure.
+        Create a `Matplotlib <https://matplotlib.org/>`_ element rendering a Matplotlib figure.
+        The figure is automatically updated when leaving the figure context.
 
         :param kwargs: arguments like `figsize` which should be passed to `matplotlib.figure.Figure <https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure>`_
         """
@@ -73,17 +89,14 @@ class MplFigure(Element):
             raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
 
         super().__init__('div')
-        self.fig: matplotlib.figure.Figure = matplotlib.figure.Figure(**kwargs)
+        self.figure: matplotlib.figure.Figure = MatplotlibFigure(self, **kwargs)
         self._convert_to_html()
 
     def _convert_to_html(self) -> None:
         with io.StringIO() as output:
-            self.fig.savefig(output, format='svg')
+            self.figure.savefig(output, format='svg')
             self._props['innerHTML'] = output.getvalue()
 
-    def __enter__(self) -> matplotlib.figure.Figure:
-        return self.fig
-
-    def __exit__(self, *_) -> None:
+    def update(self) -> None:
         self._convert_to_html()
-        self.update()
+        return super().update()

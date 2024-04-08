@@ -47,6 +47,7 @@ __all__ = [
     'list',
     'log',
     'markdown',
+    'matplotlib',
     'menu',
     'menu_item',
     'mermaid',
@@ -167,6 +168,7 @@ from .elements.pagination import Pagination as pagination
 from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
+from .elements.pyplot import Matplotlib as matplotlib
 from .elements.pyplot import Pyplot as pyplot
 from .elements.query import Query as query
 from .elements.radio import Radio as radio
