@@ -70,4 +70,4 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
             with ui.button(icon='more_vert').props('flat color=white round'):
                 with ui.menu().classes('bg-primary text-white text-lg'):
                     for title_, target in menu_items.items():
-                        ui.menu_item(title_, on_click=lambda target=target: ui.navigate.to(target))
+                        ui.item(title_, on_click=lambda target=target: ui.navigate.to(target))
