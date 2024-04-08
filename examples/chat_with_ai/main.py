@@ -12,7 +12,7 @@ OPENAI_API_KEY = 'not-set'  # TODO: set your OpenAI API key here
 
 @ui.page('/')
 def main():
-    llm = ConversationChain(llm=ChatOpenAI(model_name='gpt-3.5-turbo', streaming=True, openai_api_key=OPENAI_API_KEY))
+    llm=ChatOpenAI(model_name='gpt-3.5-turbo', streaming=True, openai_api_key=OPENAI_API_KEY)
 
     async def send() -> None:
         question = text.value
@@ -25,9 +25,9 @@ def main():
 
         response = ''
         try:
-            async for chunk in llm.astream(question, callbacks=[NiceGuiLogElementCallbackHandler(log)]):
-                response += chunk['response']
-                print('-', chunk['response'])
+            async for chunk in llm.astream(question, config={"callbacks": [NiceGuiLogElementCallbackHandler(log)]}):
+                response += chunk.content
+                print('-', chunk.content)
                 response_message.clear()
                 with response_message:
                     ui.html(response)
@@ -64,3 +64,4 @@ def main():
 
 
 ui.run(title='Chat with GPT-3 (example)')
+
