@@ -18,7 +18,7 @@ doc.title('Storage')
 
     - `app.storage.tab`:
         Stored server-side in memory, this dictionary is unique to each tab session and can hold arbitrary objects.
-        Data will be lost on restarting the server until <https://github.com/zauberzeug/nicegui/discussions/2841> is implemented.
+        Data will be lost when restarting the server until <https://github.com/zauberzeug/nicegui/discussions/2841> is implemented.
         This storage is only available within [page builder functions](/documentation/page) 
         and requires an established connection, obtainable via [`await client.connected()`](/documentation/page#wait_for_client_connection).
     - `app.storage.user`:
@@ -94,16 +94,16 @@ def ui_state():
 
 
 @doc.demo('Storing data per browser tab', '''
-          When storing data in `app.storage.tab` a single user can open multiple tabs of the same app, each with it's own storage data. 
-          This may be beneficial in certain scenarios like search or when performing data analysis.
-          It is also more secure to use such a volatile storage for scenarios like logging into a bank account or accessing a password manager.
-          ''')
+    When storing data in `app.storage.tab`, a single user can open multiple tabs of the same app, each with its own storage data.
+    This may be beneficial in certain scenarios like search or when performing data analysis.
+    It is also more secure to use such a volatile storage for scenarios like logging into a bank account or accessing a password manager.
+''')
 def tab_storage():
     from nicegui import app
 
     # @ui.page('/')
     # async def index(client):
     #     await client.connected()
-    with ui.row():  # HIDE
+    with ui.column():  # HIDE
         app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
         ui.label(f'Tab reloaded {app.storage.tab["count"]} times')

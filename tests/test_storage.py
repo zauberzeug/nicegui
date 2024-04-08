@@ -1,5 +1,4 @@
 import asyncio
-from datetime import timedelta
 from pathlib import Path
 
 import httpx
@@ -179,17 +178,19 @@ def test_tab_storage_is_local(screen: Screen):
     screen.should_contain('1')
     screen.open('/')
     screen.should_contain('2')
+
     screen.switch_to(1)
     screen.open('/')
     screen.should_contain('1')
+
     screen.switch_to(0)
     screen.open('/')
     screen.should_contain('3')
 
 
 def test_tab_storage_is_auto_removed(screen: Screen):
-    storage_module.PURGE_INTERVAL = timedelta(seconds=0.1)
-    app.storage.max_tab_storage_age = timedelta(seconds=0.5)
+    storage_module.PURGE_INTERVAL = 0.1
+    app.storage.max_tab_storage_age = 0.5
 
     @ui.page('/')
     async def page():
@@ -201,25 +202,28 @@ def test_tab_storage_is_auto_removed(screen: Screen):
     screen.should_contain('1')
     screen.open('/')
     screen.should_contain('2')
+
     screen.wait(1)
     screen.open('/')
     screen.should_contain('1')
 
 
 def test_clear_tab_storage(screen: Screen):
-    storage_module.PURGE_INTERVAL = timedelta(minutes=1)
+    storage_module.PURGE_INTERVAL = 60
 
     @ui.page('/')
     async def page():
         await context.get_client().connected()
         app.storage.tab['test'] = '123'
-        ic()
         ui.button('clear', on_click=app.storage.clear)
 
     screen.open('/')
-    screen.wait(1)
+    screen.should_contain('clear')
+
     tab_storages = app.storage._tabs  # pylint: disable=protected-access
-    assert len(tab_storages.values()) == 1
-    assert list(tab_storages.values())[0]['test'] == '123'
+    assert len(tab_storages) == 1
+    assert list(tab_storages.values())[0] == {'test': '123'}
+
     screen.click('clear')
-    assert len(list(tab_storages.values())) == 0
+    screen.wait(0.5)
+    assert not tab_storages
