@@ -239,8 +239,6 @@ def test_client_storage(screen: Screen):
         app.storage.client['counter'] = 123
         ui.button('Increment').on_click(increment)
         ui.label().bind_text(app.storage.client, 'counter')
-        ui.button('Increment').on_click(increment)
-        ui.label().bind_text(app.storage.client, 'counter')
 
     screen.open('/')
     screen.should_contain('123')
