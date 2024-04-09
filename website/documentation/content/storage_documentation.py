@@ -42,6 +42,16 @@ doc.title('Storage')
     The user storage and browser storage are only available within `page builder functions </documentation/page>`_
     because they are accessing the underlying `Request` object from FastAPI.
     Additionally these two types require the `storage_secret` parameter in`ui.run()` to encrypt the browser session cookie.
+    
+    | Storage type                | `tab`  | `client` | `user` | `general` | `browser` |
+    |-----------------------------|--------|----------|--------|-----------|-----------|
+    | Location                    | Server | Server   | Server | Server    | Browser   |
+    | Across tabs                 | No     | No       | Yes    | Yes       | Yes       |
+    | Across browsers             | No     | No       | No     | Yes       | No        |
+    | Across page reloads         | Yes    | No       | Yes    | Yes       | Yes       |
+    | Needs page builder function | Yes    | Yes      | Yes    | No        | Yes       |
+    | Needs client connection     | Yes    | No       | No     | No        | No        |
+    | Write only before response  | No     | No       | No     | No        | Yes       |
 ''')
 def storage_demo():
     from nicegui import app

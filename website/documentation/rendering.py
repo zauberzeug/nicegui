@@ -43,7 +43,9 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                     element = ui.restructured_text(part.description.replace(':param ', ':'))
                 else:
                     element = ui.markdown(part.description)
-                element.classes('bold-links arrow-links rst-param-tables')
+                element.classes('bold-links arrow-links')
+                if ':param' in part.description:
+                    element.classes('rst-param-tables')
             if part.ui:
                 part.ui()
             if part.demo:
