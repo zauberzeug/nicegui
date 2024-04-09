@@ -199,7 +199,7 @@ class Storage:
         try:
             client = context.get_client()
         except RuntimeError:
-            pass  # no client, could a pytest
+            pass  # no client, could be a pytest
         else:
             client.state.clear()
         self._tabs.clear()
