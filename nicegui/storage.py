@@ -167,7 +167,7 @@ class Storage:
         if self._is_in_auto_index_context():
             raise RuntimeError('app.storage.client can only be used with page builder functions '
                                '(https://nicegui.io/documentation/page)')
-        return context.get_client().state
+        return context.get_client().storage
 
     @property
     def tab(self) -> observables.ObservableDict:
@@ -201,7 +201,7 @@ class Storage:
         except RuntimeError:
             pass  # no client, could be a pytest
         else:
-            client.state.clear()
+            client.storage.clear()
         self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()

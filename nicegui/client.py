@@ -74,7 +74,7 @@ class Client:
         self._body_html = ''
 
         self.page = page
-        self.state = ObservableDict()
+        self.storage = ObservableDict()
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
