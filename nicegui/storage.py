@@ -196,8 +196,12 @@ class Storage:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
-        if not self._is_in_auto_index_context() and context.get_slot_stack():
-            self.client.clear()
+        try:
+            client = context.get_client()
+        except RuntimeError:
+            pass  # no client, could a pytest
+        else:
+            client.state.clear()
         self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()
