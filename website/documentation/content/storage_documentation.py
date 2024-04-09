@@ -116,37 +116,37 @@ def ui_state():
     It is also more secure to use such a volatile storage for scenarios like logging into a bank account or accessing a password manager.
 ''')
 def tab_storage():
-    from nicegui import app
+    from nicegui import app, Client
 
     # @ui.page('/')
-    # async def index(client):
+    # async def index(client: Client):
     #     await client.connected()
     with ui.column():  # HIDE
         app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
         ui.label(f'Tab reloaded {app.storage.tab["count"]} times')
-        ui.button("Reload page", on_click=lambda: ui.navigate.reload())
+        ui.button('Reload page', on_click=ui.navigate.reload)
 
 
 @doc.demo('Short-term memory', '''
-          The goal of `app.storage.client` is to store data only for the duration of the current page visit.
-          In difference to data stored in `app.storage.tab` 
-          - which is persisted between page changes and even browser restarts as long as the tab is kept open - 
-          the data in `app.storage.client` will be discarded if the user closes the browser, reloads the page or navigates to another page.
-          This is beneficial for resource hungry or intentionally very short lived data such as a database connection 
-          which should be closed as soon as the user leaves the page, sensitive data or 
-          if you on purpose want to return a page with the default settings every time the user reloads the page 
-          while keeping the data alive during in-page navigation or when updating elements on the site in intervals such as a live feed.
-          ''')
+    The goal of `app.storage.client` is to store data only for the duration of the current page visit.
+    In difference to data stored in `app.storage.tab`
+    - which is persisted between page changes and even browser restarts as long as the tab is kept open -
+    the data in `app.storage.client` will be discarded if the user closes the browser, reloads the page or navigates to another page.
+    This is beneficial for resource-hungry, intentionally short-lived or sensitive data.
+    An example is a database connection, which should be closed as soon as the user leaves the page.
+    Additionally, this storage useful if you want to return a page with default settings every time a user reloads.
+    Meanwhile, it keeps the data alive during in-page navigation.
+    This is also helpful when updating elements on the site at intervals, such as a live feed.
+''')
 def short_term_memory():
     from nicegui import app
 
     # @ui.page('/')
-    # async def index(client):
+    # async def index():
     with ui.column():  # HIDE
         cache = app.storage.client
-        cache['counter'] = 0
-        ui.label().bind_text_from(cache, 'counter',
-                                  backward=lambda n: f'Content updated {n} times')
+        cache['count'] = 0
+        ui.label().bind_text_from(cache, 'count', lambda n: f'Updated {n} times')
         ui.button('Update content',
-                  on_click=lambda: cache.update({"counter": cache["counter"] + 1}))
-        ui.button("Reload page", on_click=lambda: ui.navigate.reload())
+                  on_click=lambda: cache.update(count=cache['count'] + 1))
+        ui.button('Reload page', on_click=ui.navigate.reload)
