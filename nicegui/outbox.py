@@ -60,7 +60,7 @@ class Outbox:
                 await asyncio.sleep(0.005)
                 
                 if not self.client.has_socket_connection:
-                    await self.client.connected(timeout=99999999)
+                    await self.client.connected(timeout=2**30)
                 
                 self._enqueue_event.clear()
                 coros = []
