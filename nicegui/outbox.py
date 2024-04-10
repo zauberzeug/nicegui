@@ -58,11 +58,11 @@ class Outbox:
             try:
                 await self._enqueue_event.wait()
                 await asyncio.sleep(0.005)
-                self._enqueue_event.clear()
-
+                
                 if not self.client.has_socket_connection:
                     await self.client.connected(timeout=99999999)
-
+                
+                self._enqueue_event.clear()
                 coros = []
                 data = {
                     element_id: None if element is None else element._to_dict()  # pylint: disable=protected-access
