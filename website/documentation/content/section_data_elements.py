@@ -2,9 +2,9 @@ from nicegui import optional_features
 
 from . import (aggrid_documentation, circular_progress_documentation, code_documentation, doc, echart_documentation,
                editor_documentation, highchart_documentation, json_editor_documentation, leaflet_documentation,
-               line_plot_documentation, linear_progress_documentation, log_documentation, plotly_documentation,
-               pyplot_documentation, scene_documentation, spinner_documentation, table_documentation,
-               tree_documentation)
+               line_plot_documentation, linear_progress_documentation, log_documentation, matplotlib_documentation,
+               plotly_documentation, pyplot_documentation, scene_documentation, spinner_documentation,
+               table_documentation, tree_documentation)
 
 doc.title('*Data* Elements')
 
@@ -15,6 +15,7 @@ if optional_features.has('highcharts'):
 doc.intro(echart_documentation)
 if optional_features.has('matplotlib'):
     doc.intro(pyplot_documentation)
+    doc.intro(matplotlib_documentation)
     doc.intro(line_plot_documentation)
 if optional_features.has('plotly'):
     doc.intro(plotly_documentation)
