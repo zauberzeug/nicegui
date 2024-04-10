@@ -20,6 +20,7 @@ from .element import Element
 from .favicon import get_favicon_url
 from .javascript_request import JavaScriptRequest
 from .logging import log
+from .observables import ObservableDict
 from .outbox import Outbox
 from .version import __version__
 
@@ -58,6 +59,7 @@ class Client:
         self.shared = shared
         self.on_air = False
         self._disconnect_task: Optional[asyncio.Task] = None
+        self.tab_id: Optional[str] = None
 
         self.outbox = Outbox(self)
 
@@ -72,6 +74,7 @@ class Client:
         self._body_html = ''
 
         self.page = page
+        self.storage = ObservableDict()
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []

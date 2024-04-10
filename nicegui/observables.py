@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import abc
+import time
 from typing import Any, Callable, Collection, Dict, Iterable, List, Optional, SupportsIndex, Union
 
 from . import events
@@ -16,6 +17,7 @@ class ObservableCollection(abc.ABC):
                  ) -> None:
         super().__init__(factory() if data is None else data)  # type: ignore
         self._parent = _parent
+        self.last_modified = time.time()
         self._change_handlers: List[Callable] = [on_change] if on_change else []
 
     @property
@@ -27,6 +29,7 @@ class ObservableCollection(abc.ABC):
         return change_handlers
 
     def _handle_change(self) -> None:
+        self.last_modified = time.time()
         for handler in self.change_handlers:
             events.handle_event(handler, events.ObservableChangeEventArguments(sender=self))
 
