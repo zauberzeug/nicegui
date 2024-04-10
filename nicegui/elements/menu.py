@@ -67,8 +67,14 @@ class MenuItem(Item):
         self._props['clickable'] = True
 
         self.menu = self._find_menu()
-        if auto_close and self.menu:
-            self.on_click(self.menu.close)
+        if self.menu:
+            if not auto_close and self.menu._props.get('auto-close'):
+                log.warning('The parameter "auto_close" on this `ui.menu_item` has no effect because the parent '
+                            '`ui.menu` is set to "auto_close=True".\n'
+                            'Use only the `auto_close` parameter on the `ui.menu_item`s if you want to have different '
+                            'behaviors on your `menu_item`s.')
+            if auto_close:
+                self.on_click(self.menu.close)
 
     def _find_menu(self) -> Optional[Union[Menu, ContextMenu]]:
         element: Element = self
