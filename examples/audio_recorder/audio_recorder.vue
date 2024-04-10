@@ -14,7 +14,7 @@ export default {
       mediaRecorder: null,
       stream: null,
       audioURL: null,
-      audioBlob: null
+      audioBlob: null,
     };
   },
   mounted() {
@@ -25,14 +25,14 @@ export default {
       if (newBlob && newBlob !== oldBlob) {
         this.emitBlob(); // Emit the blob when it's non-null and changes
       }
-    }
+    },
   },
   methods: {
     async requestMicrophonePermission() {
       try {
         this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       } catch (error) {
-        console.error('Error accessing microphone:', error);
+        console.error("Error accessing microphone:", error);
       }
     },
     async startRecording() {
@@ -42,7 +42,7 @@ export default {
         }
         this.audioChunks = [];
         this.mediaRecorder = new MediaRecorder(this.stream);
-        this.mediaRecorder.addEventListener('dataavailable', event => {
+        this.mediaRecorder.addEventListener("dataavailable", (event) => {
           if (event.data.size > 0) {
             this.audioChunks.push(event.data);
           }
@@ -50,12 +50,12 @@ export default {
         this.mediaRecorder.start();
         this.isRecording = true;
       } catch (error) {
-        console.error('Error accessing microphone:', error);
+        console.error("Error accessing microphone:", error);
       }
     },
     stopRecording() {
       if (this.isRecording) {
-        this.mediaRecorder.addEventListener('stop', () => {
+        this.mediaRecorder.addEventListener("stop", () => {
           this.isRecording = false;
           this.saveBlob();
           // this.playRecordedAudio();
@@ -69,17 +69,17 @@ export default {
       this.$refs.audioPlayer.play();
     },
     saveBlob() {
-      this.audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
+      this.audioBlob = new Blob(this.audioChunks, { type: "audio/wav" });
     },
     emitBlob() {
       const reader = new FileReader();
       reader.onload = () => {
-        const base64Data = reader.result.split(',')[1]; // Extracting base64 data from the result
-        this.$emit('audio_ready', { audioBlobBase64: base64Data });
+        const base64Data = reader.result.split(",")[1]; // Extracting base64 data from the result
+        this.$emit("audio_ready", { audioBlobBase64: base64Data });
       };
       reader.readAsDataURL(this.audioBlob);
-    }
-  }
+    },
+  },
 };
 </script>
 
