@@ -84,7 +84,11 @@ line-length = 120
 # See complete list: https://beta.ruff.rs/docs/rules
 select = [
     "I",  # isort
+    "E",  # pycodestyle
 ]
 fixable = [
     "I",  # isort
+]
+ignore = [
+    "E501", # line too long
 ]
