@@ -4,7 +4,7 @@ from nicegui.testing import Screen
 
 def test_context_menu(screen: Screen):
     with ui.label('Right-click me'):
-        with ui.context_menu(auto_close=True):
+        with ui.context_menu():
             ui.item('Item 1', on_click=lambda: ui.label('Item 1 clicked'))
             ui.item('Item 2')
 

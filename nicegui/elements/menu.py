@@ -11,18 +11,16 @@ from .mixins.value_element import ValueElement
 
 class Menu(ValueElement):
 
-    def __init__(self, *, value: bool = False, auto_close: bool = False) -> None:
+    def __init__(self, *, value: bool = False) -> None:
         """Menu
 
         Creates a menu based on Quasar's `QMenu <https://quasar.dev/vue-components/menu>`_ component.
         The menu should be placed inside the element where it should be shown.
 
         :param value: whether the menu is already opened (default: `False`)
-        :param auto_close: whether the menu should be closed after a click on one of its items (default: `False`)
         """
         super().__init__(tag='q-menu', value=value, on_value_change=None)
-        if auto_close:
-            self._props['auto-close'] = True
+        self._props['auto-close'] = True
 
     def open(self) -> None:
         """Open the menu."""
@@ -68,13 +66,10 @@ class MenuItem(Item):
 
         self.menu = self._find_menu()
         if self.menu:
-            if not auto_close and self.menu._props.get('auto-close'):
-                log.warning('The parameter "auto_close" on this `ui.menu_item` has no effect because the parent '
-                            '`ui.menu` is set to "auto_close=True".\n'
-                            'Use only the `auto_close` parameter on the `ui.menu_item`s if you want to have different '
-                            'behaviors on your `menu_item`s.')
             if auto_close:
                 self.on_click(self.menu.close)
+            else:
+                self.menu.props(remove='auto-close')
 
     def _find_menu(self) -> Optional[Union[Menu, ContextMenu]]:
         element: Element = self
