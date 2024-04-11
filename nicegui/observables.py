@@ -7,7 +7,7 @@ from typing import Any, Callable, Collection, Dict, Iterable, List, Optional, Su
 from . import events
 
 
-class ObservableCollection(abc.ABC):
+class ObservableCollection(abc.ABC):  # noqa: B024
 
     def __init__(self, *,
                  factory: Callable,

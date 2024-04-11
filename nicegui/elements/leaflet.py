@@ -24,7 +24,7 @@ class Leaflet(Element, component='leaflet.js'):
                  center: Tuple[float, float] = (0.0, 0.0),
                  zoom: int = 13,
                  *,
-                 options: Dict = {},
+                 options: Dict = {},  # noqa: B006
                  draw_control: Union[bool, Dict] = False,
                  ) -> None:
         """Leaflet map
@@ -47,7 +47,7 @@ class Leaflet(Element, component='leaflet.js'):
         self.zoom = zoom
         self._props['center'] = center
         self._props['zoom'] = zoom
-        self._props['options'] = options
+        self._props['options'] = {**options}
         self._props['draw_control'] = draw_control
 
         self.on('init', self._handle_init)

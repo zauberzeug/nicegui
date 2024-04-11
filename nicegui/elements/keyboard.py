@@ -21,8 +21,8 @@ class Keyboard(Element, component='keyboard.js'):
                  on_key: Optional[Callable[..., Any]] = None, *,
                  active: bool = True,
                  repeating: bool = True,
-                 ignore: List[Literal['input', 'select', 'button', 'textarea']] = [
-                     'input', 'select', 'button', 'textarea'],
+                 ignore: List[Literal['input', 'select', 'button', 'textarea']] =
+                     ['input', 'select', 'button', 'textarea'],  # noqa: B006
                  ) -> None:
         """Keyboard
 
@@ -38,7 +38,7 @@ class Keyboard(Element, component='keyboard.js'):
         self.active = active
         self._props['events'] = ['keydown', 'keyup']
         self._props['repeating'] = repeating
-        self._props['ignore'] = ignore
+        self._props['ignore'] = ignore[:]
         self.on('key', self._handle_key)
 
     def _handle_key(self, e: GenericEventArguments) -> None:

@@ -81,10 +81,12 @@ indent-width = 4
 line-length = 120
 
 [tool.ruff.lint]
-# See complete list: https://beta.ruff.rs/docs/rules
+# See complete list: https://docs.astral.sh/ruff/rules/
 select = [
     "I",  # isort
     "E",  # pycodestyle
+    "W",  # pycodestyle
+    "B",  # bugbear
     "F",  # pyflakes
     "UP", # pyupgrade
 ]

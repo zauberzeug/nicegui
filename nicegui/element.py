@@ -105,9 +105,9 @@ class Element(Visibility):
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
-                          libraries: List[Union[str, Path]] = [],
-                          exposed_libraries: List[Union[str, Path]] = [],
-                          extra_libraries: List[Union[str, Path]] = [],
+                          libraries: List[Union[str, Path]] = [],  # noqa: B006
+                          exposed_libraries: List[Union[str, Path]] = [],  # noqa: B006
+                          extra_libraries: List[Union[str, Path]] = [],  # noqa: B006
                           ) -> None:
         super().__init_subclass__()
         base = Path(inspect.getfile(cls)).parent

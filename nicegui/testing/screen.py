@@ -44,7 +44,7 @@ class Screen:
         """Check if the browser is open."""
         # https://stackoverflow.com/a/66150779/3419103
         try:
-            self.selenium.current_url  # pylint: disable=pointless-statement
+            self.selenium.current_url  # pylint: disable=pointless-statement # noqa: B018
             return True
         except Exception as e:
             print(e)
