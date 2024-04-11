@@ -11,7 +11,7 @@ def main_demo() -> None:
 
 
 @doc.demo('Clearable', '''
-    The `clearable` prop from [Quasar](https://quasar.dev/) adds a button to the input that clears the text.    
+    The `clearable` prop from [Quasar](https://quasar.dev/) adds a button to the input that clears the text.
 ''')
 def clearable():
     i = ui.number(value=42).props('clearable')

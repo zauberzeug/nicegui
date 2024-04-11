@@ -28,7 +28,7 @@ def move_elements() -> None:
 @doc.demo('Default props', '''
     You can set default props for all elements of a certain class.
     This way you can avoid repeating the same props over and over again.
-    
+
     Default props only apply to elements created after the default props were set.
     Subclasses inherit the default props of their parent class.
 ''')
@@ -43,7 +43,7 @@ def default_props() -> None:
 @doc.demo('Default classes', '''
     You can set default classes for all elements of a certain class.
     This way you can avoid repeating the same classes over and over again.
-    
+
     Default classes only apply to elements created after the default classes were set.
     Subclasses inherit the default classes of their parent class.
 ''')
@@ -58,7 +58,7 @@ def default_classes() -> None:
 @doc.demo('Default style', '''
     You can set a default style for all elements of a certain class.
     This way you can avoid repeating the same style over and over again.
-    
+
     A default style only applies to elements created after the default style was set.
     Subclasses inherit the default style of their parent class.
 ''')

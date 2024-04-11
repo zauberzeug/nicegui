@@ -1,12 +1,11 @@
 import asyncio
 from pathlib import Path
-import pytest
 
 import httpx
+import pytest
 
-from nicegui import Client, app, background_tasks, context
+from nicegui import Client, app, background_tasks, context, ui
 from nicegui import storage as storage_module
-from nicegui import ui
 from nicegui.testing import Screen
 
 

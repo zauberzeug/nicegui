@@ -36,7 +36,7 @@ def rst_with_indentation():
 def rst_with_code_blocks():
     ui.restructured_text('''
         .. code-block:: python3
-        
+
             from nicegui import ui
 
             ui.label('Hello World!')

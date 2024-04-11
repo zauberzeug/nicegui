@@ -4,8 +4,14 @@ from typing_extensions import Self
 
 from ..binding import BindableProperty
 from ..element import Element
-from ..events import (GenericEventArguments, KeyboardAction, KeyboardKey, KeyboardModifiers, KeyEventArguments,
-                      handle_event)
+from ..events import (
+    GenericEventArguments,
+    KeyboardAction,
+    KeyboardKey,
+    KeyboardModifiers,
+    KeyEventArguments,
+    handle_event,
+)
 
 
 class Keyboard(Element, component='keyboard.js'):

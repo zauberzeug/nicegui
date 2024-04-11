@@ -91,8 +91,8 @@ def test_auto_serving_file_from_image_source(screen: Screen):
     img = screen.find_by_tag('img')
     assert '/_nicegui/auto/static/' in img.get_attribute('src')
     assert screen.selenium.execute_script("""
-    return arguments[0].complete && 
-        typeof arguments[0].naturalWidth != "undefined" && 
+    return arguments[0].complete &&
+        typeof arguments[0].naturalWidth != "undefined" &&
         arguments[0].naturalWidth > 0
     """, img), 'image should load successfully'
 

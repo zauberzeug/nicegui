@@ -127,7 +127,7 @@ def table_with_drop_down_selection():
 
 
 @doc.demo('Table from Pandas DataFrame', '''
-    You can create a table from a Pandas DataFrame using the `from_pandas` method. 
+    You can create a table from a Pandas DataFrame using the `from_pandas` method.
     This method takes a Pandas DataFrame as input and returns a table.
 ''')
 def table_from_pandas_demo():
@@ -264,7 +264,7 @@ def computed_fields():
     You can use scoped slots to conditionally format the content of a cell.
     See the [Quasar documentation](https://quasar.dev/vue-components/table#example--body-cell-slot)
     for more information about body-cell slots.
-    
+
     In this demo we use a `q-badge` to display the age in red if the person is under 21 years old.
     We use the `body-cell-age` slot to insert the `q-badge` into the `age` column.
     The ":color" attribute of the `q-badge` is set to "red" if the age is under 21, otherwise it is set to "green".

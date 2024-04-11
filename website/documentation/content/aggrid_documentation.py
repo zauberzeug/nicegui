@@ -77,7 +77,7 @@ def aggrid_with_selectable_rows():
 @doc.demo('Filter Rows using Mini Filters', '''
     You can add [mini filters](https://ag-grid.com/javascript-data-grid/filter-set-mini-filter/)
     to the header of each column to filter the rows.
-    
+
     Note how the "agTextColumnFilter" matches individual characters, like "a" in "Alice" and "Carol",
     while the "agNumberColumnFilter" matches the entire number, like "18" and "21", but not "1".
 ''')

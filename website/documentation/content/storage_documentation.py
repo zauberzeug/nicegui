@@ -13,20 +13,20 @@ doc.title('Storage')
 
 
 @doc.demo('Storage', '''
-    NiceGUI offers a straightforward mechanism for data persistence within your application. 
+    NiceGUI offers a straightforward mechanism for data persistence within your application.
     It features five built-in storage types:
 
     - `app.storage.tab`:
         Stored server-side in memory, this dictionary is unique to each tab session and can hold arbitrary objects.
         Data will be lost when restarting the server until <https://github.com/zauberzeug/nicegui/discussions/2841> is implemented.
-        This storage is only available within [page builder functions](/documentation/page) 
+        This storage is only available within [page builder functions](/documentation/page)
         and requires an established connection, obtainable via [`await client.connected()`](/documentation/page#wait_for_client_connection).
     - `app.storage.client`:
         Also stored server-side in memory, this dictionary is unique to each client connection and can hold arbitrary objects.
         Data will be discarded when the page is reloaded or the user navigates to another page.
-        Unlike data stored in `app.storage.tab` which can be persisted on the server even for days, 
-        `app.storage.client` helps caching resource-hungry objects such as a streaming or database connection you need to keep alive 
-        for dynamic site updates but would like to discard as soon as the user leaves the page or closes the browser. 
+        Unlike data stored in `app.storage.tab` which can be persisted on the server even for days,
+        `app.storage.client` helps caching resource-hungry objects such as a streaming or database connection you need to keep alive
+        for dynamic site updates but would like to discard as soon as the user leaves the page or closes the browser.
         This storage is only available within [page builder functions](/documentation/page).
     - `app.storage.user`:
         Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie.
@@ -42,7 +42,7 @@ doc.title('Storage')
     The user storage and browser storage are only available within `page builder functions </documentation/page>`_
     because they are accessing the underlying `Request` object from FastAPI.
     Additionally these two types require the `storage_secret` parameter in`ui.run()` to encrypt the browser session cookie.
-    
+
     | Storage type                | `tab`  | `client` | `user` | `general` | `browser` |
     |-----------------------------|--------|----------|--------|-----------|-----------|
     | Location                    | Server | Server   | Server | Server    | Browser   |
@@ -116,7 +116,7 @@ def ui_state():
     It is also more secure to use such a volatile storage for scenarios like logging into a bank account or accessing a password manager.
 ''')
 def tab_storage():
-    from nicegui import app, Client
+    from nicegui import Client, app
 
     # @ui.page('/')
     # async def index(client: Client):
