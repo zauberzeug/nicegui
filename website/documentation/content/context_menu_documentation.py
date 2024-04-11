@@ -7,11 +7,10 @@ from . import doc
 def main_demo() -> None:
     with ui.image('https://picsum.photos/id/377/640/360'):
         with ui.context_menu():
-            with ui.list():
-                ui.menu_item('Flip horizontally').props('clickable')
-                ui.menu_item('Flip vertically').props('clickable')
-                ui.separator()
-                ui.menu_item('Reset', auto_close=False).props('clickable')
+            ui.menu_item('Flip horizontally')
+            ui.menu_item('Flip vertically')
+            ui.separator()
+            ui.menu_item('Reset', auto_close=False)
 
 
 doc.reference(ui.context_menu)
