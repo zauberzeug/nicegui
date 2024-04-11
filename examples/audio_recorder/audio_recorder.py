@@ -1,7 +1,7 @@
-from typing import Callable, Optional
 import base64
+from typing import Callable, Optional
 
-from nicegui import ui, events
+from nicegui import events, ui
 
 
 class AudioRecorder(ui.element, component='audio_recorder.vue'):

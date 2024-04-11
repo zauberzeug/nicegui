@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from audio_recorder import AudioRecorder
+
 from nicegui import ui
 
 with ui.row().classes('w-full justify-center'):

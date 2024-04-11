@@ -1,7 +1,7 @@
 import asyncio
 import time
 from contextlib import nullcontext
-from typing import Any, Callable, Optional, Awaitable
+from typing import Any, Awaitable, Callable, Optional
 
 from .. import background_tasks, core
 from ..awaitable_response import AwaitableResponse
