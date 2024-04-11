@@ -24,7 +24,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
     PIL_CONVERT_FORMAT = 'PNG'
 
     def __init__(self,
-                 source: Union[str, Path, 'PIL_Image'] = '', *,
+                 source: Union[str, Path, 'PIL_Image'] = '', *,  # noqa: UP037
                  content: str = '',
                  size: Optional[Tuple[float, float]] = None,
                  on_mouse: Optional[Callable[..., Any]] = None,
@@ -86,7 +86,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         self.on('mouse', handle_mouse)
         return self
 
-    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:
+    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
             source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)

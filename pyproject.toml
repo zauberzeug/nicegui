@@ -85,10 +85,13 @@ line-length = 120
 select = [
     "I",  # isort
     "E",  # pycodestyle
+    "UP", # pyupgrade
 ]
 fixable = [
     "I",  # isort
 ]
 ignore = [
     "E501", # line too long
+    "UP006", # use pipe for union type annotation
+    "UP007", # use pipe for union type annotation
 ]
