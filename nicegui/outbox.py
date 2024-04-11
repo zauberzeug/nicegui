@@ -60,7 +60,11 @@ class Outbox:
                 await asyncio.sleep(0.005)
                 
                 if not self.client.has_socket_connection:
-                    await self.client.connected(timeout=60)
+                    try:
+                        await self.client.connected(timeout=60)
+                    except TimeoutError:
+                        log.error('Outbox.loop() is exiting because client is not connected after 60 seconds')
+                        return
                 
                 self._enqueue_event.clear()
                 coros = []
