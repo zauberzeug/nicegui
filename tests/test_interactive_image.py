@@ -1,9 +1,10 @@
+from typing import List
+
 import pytest
 from selenium.webdriver.common.action_chains import ActionChains
 
 from nicegui import Client, ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_set_source_in_tab(screen: Screen):
@@ -20,26 +21,26 @@ def test_set_source_in_tab(screen: Screen):
             with ui.tab_panel('B'):
                 ui.label('Tab B')
         await client.connected()
-        img.set_source('https://nicegui.io/logo.png')
+        img.set_source('https://picsum.photos/id/29/640/360')
 
     screen.open('/')
     screen.wait(0.5)
-    assert screen.find_by_tag('img').get_attribute('src') == 'https://nicegui.io/logo.png'
+    assert screen.find_by_tag('img').get_attribute('src') == 'https://picsum.photos/id/29/640/360'
     screen.click('B')
     screen.wait(0.5)
     screen.click('A')
-    assert screen.find_by_tag('img').get_attribute('src') == 'https://nicegui.io/logo.png'
+    assert screen.find_by_tag('img').get_attribute('src') == 'https://picsum.photos/id/29/640/360'
 
 
-@pytest.mark.parametrize('cross, number_of_lines', [(True, 2), (False, 0)])
-def test_with_cross(screen: Screen, cross: bool, number_of_lines: int):
-    ii = ui.interactive_image('https://nicegui.io/logo.png', cross=cross)
-    ii.content = '<circle cx="100" cy="100" r="15" fill="none" stroke="red" stroke-width="4" />'
+@pytest.mark.parametrize('cross', [True, False])
+def test_with_cross(screen: Screen, cross: bool):
+    ui.interactive_image('https://picsum.photos/id/29/640/360',
+                         content='<circle cx="100" cy="100" r="15" />', cross=cross)
 
     screen.open('/')
     screen.find_by_tag('svg')
     with screen.implicitly_wait(0.5):
-        assert len(screen.find_all_by_tag('line')) == number_of_lines
+        assert len(screen.find_all_by_tag('line')) == (2 if cross else 0)
         assert len(screen.find_all_by_tag('circle')) == 1
 
 
@@ -54,10 +55,10 @@ def test_replace_interactive_image(screen: Screen):
     ui.button('Replace', on_click=replace)
 
     screen.open('/')
-    assert screen.find_by_tag('img').get_attribute('src').endswith('id/29/640/360')
+    assert (screen.find_by_tag('img').get_attribute('src') or '').endswith('id/29/640/360')
     screen.click('Replace')
     screen.wait(0.5)
-    assert screen.find_by_tag('img').get_attribute('src').endswith('id/30/640/360')
+    assert (screen.find_by_tag('img').get_attribute('src') or '').endswith('id/30/640/360')
 
 
 @pytest.mark.parametrize('cross', [True, False])
@@ -75,3 +76,19 @@ def test_mousemove_event(screen: Screen, cross: bool):
         .pause(0.5) \
         .perform()
     assert counter['value'] > 0
+
+
+def test_loaded_event(screen: Screen):
+    sources: List[str] = []
+    ii = ui.interactive_image('https://picsum.photos/id/29/640/360')
+    ii.on('loaded', lambda e: sources.append(e.args['source']))
+    ui.button('Change Source', on_click=lambda: ii.set_source('https://picsum.photos/id/30/640/360'))
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert len(sources) == 1
+    screen.click('Change Source')
+    screen.wait(1.5)
+    assert len(sources) == 2
+    assert sources[1].endswith('id/30/640/360')
+    assert screen.find_by_tag('img').get_attribute('src') == sources[1]

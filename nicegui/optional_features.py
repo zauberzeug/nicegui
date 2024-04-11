@@ -8,7 +8,9 @@ FEATURE = Literal[
     'pandas',
     'pillow',
     'plotly',
+    'pyecharts',
     'webview',
+    'sass',
 ]
 
 

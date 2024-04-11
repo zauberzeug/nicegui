@@ -19,6 +19,7 @@
     "--disable=R0913", // Too many arguments
     "--disable=R0914", // Too many local variables
     "--disable=R0915", // Too many statements
+    "--disable=R1705", // Unnecessary "else" after "return"
     "--disable=W0102", // Dangerous default value as argument
     "--disable=W0718", // Catching too general exception
     "--disable=W1203", // Use % formatting in logging functions

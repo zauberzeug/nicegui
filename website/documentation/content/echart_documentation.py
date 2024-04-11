@@ -47,6 +47,31 @@ def dynamic_properties() -> None:
     })
 
 
+@doc.demo('EChart from pyecharts', '''
+    You can create an EChart element from a pyecharts object using the `from_pyecharts` method.
+    For defining dynamic options like a formatter function, you can use the `JsCode` class from `pyecharts.commons.utils`.
+    Alternatively, you can use a colon ":" to prefix the property name to indicate that the value is a JavaScript expression.
+''')
+def echart_from_pyecharts_demo():
+    from pyecharts.charts import Bar
+    from pyecharts.commons.utils import JsCode
+    from pyecharts.options import AxisOpts
+
+    ui.echart.from_pyecharts(
+        Bar()
+        .add_xaxis(['A', 'B', 'C'])
+        .add_yaxis('ratio', [1, 2, 4])
+        .set_global_opts(
+            xaxis_opts=AxisOpts(axislabel_opts={
+                ':formatter': r'(val, idx) => `group ${val}`',
+            }),
+            yaxis_opts=AxisOpts(axislabel_opts={
+                'formatter': JsCode(r'(val, idx) => `${val}%`'),
+            }),
+        )
+    )
+
+
 @doc.demo('Run methods', '''
     You can run methods of the EChart instance using the `run_chart_method` method.
     This demo shows how to show and hide the loading animation, how to get the current width of the chart,
@@ -73,6 +98,23 @@ def methods_demo() -> None:
     ui.button('Set Tooltip', on_click=lambda: echart.run_chart_method(
         ':setOption', r'{tooltip: {formatter: params => "$" + params.value}}',
     ))
+
+
+@doc.demo('Arbitrary chart events', '''
+    You can register arbitrary event listeners for the chart using the `on` method and a "chart:" prefix.
+    This demo shows how to register a callback for the "selectchanged" event which is triggered when the user selects a point.
+''')
+def events_demo() -> None:
+    ui.echart({
+        'toolbox': {'feature': {'brush': {'type': ['rect']}}},
+        'brush': {},
+        'xAxis': {'type': 'category'},
+        'yAxis': {'type': 'value'},
+        'series': [{'type': 'line', 'data': [1, 2, 3]}],
+    }).on('chart:selectchanged', lambda e: label.set_text(
+        f'Selected point {e.args["fromActionPayload"]["dataIndexInside"]}'
+    ))
+    label = ui.label()
 
 
 doc.reference(ui.echart)

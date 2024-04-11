@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -40,12 +41,15 @@ class Scene(Element,
                 'lib/three/modules/DragControls.js',
                 'lib/three/modules/OrbitControls.js',
                 'lib/three/modules/STLLoader.js',
+                'lib/three/modules/GLTFLoader.js',
+                'lib/three/modules/BufferGeometryUtils.js',
             ]):
     # pylint: disable=import-outside-toplevel
     from .scene_objects import Box as box
     from .scene_objects import Curve as curve
     from .scene_objects import Cylinder as cylinder
     from .scene_objects import Extrusion as extrusion
+    from .scene_objects import Gltf as gltf
     from .scene_objects import Group as group
     from .scene_objects import Line as line
     from .scene_objects import PointCloud as point_cloud
@@ -89,15 +93,30 @@ class Scene(Element,
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
-        self._click_handler = on_click
-        self._drag_start_handler = on_drag_start
-        self._drag_end_handler = on_drag_end
+        self._click_handlers = [on_click] if on_click else []
+        self._drag_start_handlers = [on_drag_start] if on_drag_start else []
+        self._drag_end_handlers = [on_drag_end] if on_drag_end else []
         self.is_initialized = False
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
         self._props['drag_constraints'] = drag_constraints
+
+    def on_click(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a 3D object is clicked."""
+        self._click_handlers.append(callback)
+        return self
+
+    def on_drag_start(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a 3D object is dragged."""
+        self._drag_start_handlers.append(callback)
+        return self
+
+    def on_drag_end(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a 3D object is dropped."""
+        self._drag_end_handlers.append(callback)
+        return self
 
     def __enter__(self) -> Self:
         Object3D.current_scene = self
@@ -116,6 +135,13 @@ class Scene(Element,
             self.move_camera(duration=0)
             for obj in self.objects.values():
                 obj.send()
+
+    async def initialized(self) -> None:
+        """Wait until the scene is initialized."""
+        event = asyncio.Event()
+        self.on('init', event.set, [])
+        await self.client.connected()
+        await event.wait()
 
     def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         if not self.is_initialized:
@@ -140,7 +166,8 @@ class Scene(Element,
                 z=hit['point']['z'],
             ) for hit in e.args['hits']],
         )
-        handle_event(self._click_handler, arguments)
+        for handler in self._click_handlers:
+            handle_event(handler, arguments)
 
     def _handle_drag(self, e: GenericEventArguments) -> None:
         arguments = SceneDragEventArguments(
@@ -155,7 +182,9 @@ class Scene(Element,
         )
         if arguments.type == 'dragend':
             self.objects[arguments.object_id].move(arguments.x, arguments.y, arguments.z)
-        handle_event(self._drag_start_handler if arguments.type == 'dragstart' else self._drag_end_handler, arguments)
+
+        for handler in (self._drag_start_handlers if arguments.type == 'dragstart' else self._drag_end_handlers):
+            handle_event(handler, arguments)
 
     def __len__(self) -> int:
         return len(self.objects)
@@ -199,7 +228,7 @@ class Scene(Element,
                         self.camera.up_x, self.camera.up_y, self.camera.up_z, duration)
 
     def _handle_delete(self) -> None:
-        binding.remove(list(self.objects.values()), Object3D)
+        binding.remove(list(self.objects.values()))
         super()._handle_delete()
 
     def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:

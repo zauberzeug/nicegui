@@ -55,6 +55,15 @@ def markers() -> None:
     m.on('map-click', handle_click)
 
 
+@doc.demo('Move Markers', '''
+    You can move markers with the `move` method.
+''')
+def move_markers() -> None:
+    m = ui.leaflet(center=(51.505, -0.09))
+    marker = m.marker(latlng=m.center)
+    ui.button('Move marker', on_click=lambda: marker.move(51.51, -0.09))
+
+
 @doc.demo('Vector Layers', '''
     Leaflet supports a set of [vector layers](https://leafletjs.com/reference.html#:~:text=VideoOverlay-,Vector%20Layers,-Path) like circle, polygon etc.
     These can be added with the `generic_layer` method.
@@ -62,8 +71,7 @@ def markers() -> None:
 ''')
 def vector_layers() -> None:
     m = ui.leaflet(center=(51.505, -0.09)).classes('h-32')
-    m.generic_layer(name='circle',
-                    args=[[51.505, -0.09], {'color': 'red', 'radius': 300}])
+    m.generic_layer(name='circle', args=[m.center, {'color': 'red', 'radius': 300}])
 
 
 @doc.demo('Disable Pan and Zoom', '''
@@ -120,5 +128,35 @@ def run_map_methods() -> None:
     m = ui.leaflet(center=(51.505, -0.09)).classes('h-32')
     ui.button('Fit world', on_click=lambda: m.run_map_method('fitWorld'))
 
+
+@doc.demo('Run Layer Methods', '''
+    You can run methods of the Leaflet layer objects with `run_layer_method`.
+    This demo shows how to change the opacity of a marker or change its icon.
+''')
+def run_layer_methods() -> None:
+    m = ui.leaflet(center=(51.505, -0.09)).classes('h-32')
+    marker = m.marker(latlng=m.center)
+    ui.button('Hide', on_click=lambda: marker.run_method('setOpacity', 0.3))
+    ui.button('Show', on_click=lambda: marker.run_method('setOpacity', 1.0))
+
+    icon = 'L.icon({iconUrl: "http://leafletjs.com/examples/custom-icons/leaf-green.png"})'
+    ui.button('Change icon', on_click=lambda: marker.run_method(':setIcon', icon))
+
+
+@doc.demo('Wait for Initialization', '''
+    You can wait for the map to be initialized with the `initialized` method.
+    This is necessary when you want to run methods like fitting the bounds of the map right after the map is created.
+''')
+async def wait_for_init() -> None:
+    m = ui.leaflet(zoom=5)
+    central_park = m.generic_layer(name='polygon', args=[[
+        (40.767809, -73.981249),
+        (40.800273, -73.958291),
+        (40.797011, -73.949683),
+        (40.764704, -73.973741),
+    ]])
+    await m.initialized()
+    bounds = await central_park.run_method('getBounds')
+    m.run_map_method('fitBounds', [[bounds['_southWest'], bounds['_northEast']]])
 
 doc.reference(ui.leaflet)

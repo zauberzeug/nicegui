@@ -5,13 +5,13 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Dict
 
+import socketio
 from fastapi import HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
-from fastapi_socketio import SocketManager
 
-from . import air, background_tasks, binding, core, favicon, helpers, json, outbox, run, welcome
+from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
 from .client import Client
 from .dependencies import js_components, libraries, resources
@@ -30,10 +30,26 @@ async def _lifespan(_: App):
     yield
     await _shutdown()
 
+
+class SocketIoApp(socketio.ASGIApp):
+    """Custom ASGI app to handle root_path.
+
+    This is a workaround for https://github.com/miguelgrinberg/python-engineio/pull/345
+    """
+
+    async def __call__(self, scope, receive, send):
+        root_path = scope.get('root_path')
+        if root_path and scope['path'].startswith(root_path):
+            scope['path'] = scope['path'][len(root_path):]
+        return await super().__call__(scope, receive, send)
+
+
 core.app = app = App(default_response_class=NiceGUIJSONResponse, lifespan=_lifespan)
 # NOTE we use custom json module which wraps orjson
-socket_manager = SocketManager(app=app, mount_location='/_nicegui_ws/', json=json)
-core.sio = sio = socket_manager._sio  # pylint: disable=protected-access
+core.sio = sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*', json=json)
+sio_app = SocketIoApp(socketio_server=sio, socketio_path='/socket.io')
+app.mount('/_nicegui_ws/', sio_app)
+
 
 mimetypes.add_type('text/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
@@ -111,9 +127,9 @@ async def _startup() -> None:
     core.loop = asyncio.get_running_loop()
     app.start()
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
-    background_tasks.create(outbox.loop(air.instance), name='send outbox')
     background_tasks.create(Client.prune_instances(), name='prune clients')
     background_tasks.create(Slot.prune_stacks(), name='prune slot stacks')
+    background_tasks.create(core.app.storage.prune_tab_storage(), name='prune tab storage')
     air.connect()
 
 
@@ -121,9 +137,9 @@ async def _shutdown() -> None:
     """Handle the shutdown event."""
     if app.native.main_window:
         app.native.main_window.signal_server_shutdown()
+    air.disconnect()
     app.stop()
     run.tear_down()
-    air.disconnect()
 
 
 @app.exception_handler(404)
@@ -143,11 +159,12 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 
 @sio.on('handshake')
-async def _on_handshake(sid: str, client_id: str) -> bool:
-    client = Client.instances.get(client_id)
+async def _on_handshake(sid: str, data: Dict[str, str]) -> bool:
+    client = Client.instances.get(data['client_id'])
     if not client:
         return False
     client.environ = sio.get_environ(sid)
+    client.tab_id = data['tab_id']
     await sio.enter_room(sid, client.id)
     client.handle_handshake()
     return True

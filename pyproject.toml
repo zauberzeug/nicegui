@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "1.4.0"
+version = "1.4.20-dev"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -11,44 +11,46 @@ keywords = ["gui", "ui", "web", "interface", "live"]
 [tool.poetry.dependencies]
 python = "^3.8"
 typing-extensions = ">=4.0.0"
-markdown2 = ">=2.4.7,<2.4.11"
+markdown2 = ">=2.4.7,!=2.4.11"
 Pygments = ">=2.15.1,<3.0.0"
-uvicorn = {extras = ["standard"], version = "^0.22.0"}
-fastapi = ">=0.93,<1.0.0"
-fastapi-socketio = "^0.0.10"
-python-socketio = ">=5.10.0" # https://github.com/zauberzeug/nicegui/issues/1809
+uvicorn = {extras = ["standard"], version = ">=0.22.0"}
+fastapi = ">=0.109.1,<0.110.0" # https://github.com/zauberzeug/nicegui/security/dependabot/27
+python-socketio = {extras = ["asyncio-client"], version = ">=5.10.0"} # version min: see https://github.com/zauberzeug/nicegui/issues/1809
 vbuild = ">=0.8.2"
-watchfiles = ">=0.18.1,<1.0.0"
-jinja2 = "^3.1.2"
-python-multipart = "^0.0.6"
-orjson = {version = "^3.8.6", markers = "platform_machine != 'i386' and platform_machine != 'i686'"} # orjson does not support 32bit
+watchfiles = ">=0.18.1"
+jinja2 = "^3.1.3" # https://github.com/zauberzeug/nicegui/security/dependabot/24
+python-multipart = ">=0.0.7"
+orjson = {version = ">=3.9.15", markers = "platform_machine != 'i386' and platform_machine != 'i686'"} # https://github.com/zauberzeug/nicegui/security/dependabot/29, orjson does not support 32bit
 itsdangerous = "^2.1.2"
-aiofiles = "^23.1.0"
+aiofiles = ">=23.1.0"
 pywebview = { version = "^4.4.0", optional = true }
 plotly = { version = "^5.13.0", optional = true }
 matplotlib = { version = "^3.5.0", optional = true }
-httpx = ">=0.24.0,<1.0.0"
+httpx = ">=0.24.0"
 nicegui-highcharts = { version = "^1.0.1", optional = true }
-ifaddr = "^0.2.0"
+ifaddr = ">=0.2.0"
+aiohttp = ">=3.9.2" # https://github.com/zauberzeug/nicegui/security/dependabot/25 and 26
+libsass = { version = "^0.23.0", optional = true }
+docutils = "^0.19"
 
 [tool.poetry.extras]
 native = ["pywebview"]
 plotly = ["plotly"]
 matplotlib = ["matplotlib"]
 highcharts = ["nicegui-highcharts"]
+sass = ["libsass"]
 
 [tool.poetry.group.dev.dependencies]
 icecream = "^2.1.0"
 autopep8 = "^1.5.7"
 debugpy = "^1.3.0"
 pytest-selenium = "^4.0.0"
-pytest-asyncio = "^0.19.0"
-pytest = "6.2.5"
+pytest-asyncio = ">=0.19.0"
+pytest = ">=6.2.5,<8"
 itsdangerous = "^2.1.2" # required by SessionMiddleware (see https://fastapi.tiangolo.com/?h=itsdangerous#optional-dependencies)
 isort = "^5.11.4"
-docutils = "^0.19"
 pandas = "^2.0.0"
-secure = "^0.3.0"
+secure = ">=0.3.0"
 webdriver-manager = "^3.8.6"
 numpy = [
     {version = "^1.24.0", python = "~3.8"},
@@ -57,6 +59,7 @@ numpy = [
 selenium = "^4.11.2"
 beautifulsoup4 = "^4.12.2"
 urllib3 = ">=1.26.18,^1.26 || >=2.0.7" # https://github.com/zauberzeug/nicegui/security/dependabot/23
+pyecharts = "^2.0.4"
 
 [build-system]
 requires = [

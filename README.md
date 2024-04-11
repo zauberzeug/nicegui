@@ -1,5 +1,5 @@
 <a href="http://nicegui.io/#about">
-  <img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/sceenshots/ui-elements-narrow.png"
+  <img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/screenshot.png"
     width="200" align="right" alt="Try online!" />
 </a>
 
@@ -39,6 +39,7 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
   - annotate and overlay images
   - interact with tables
   - navigate foldable tree structures
+  - embed video and audio files
 - built-in timer to refresh data in intervals (even every 10 ms)
 - straight-forward data binding and refreshable functions to write even less code
 - notifications, dialogs and menus to provide state of the art user interaction
@@ -51,6 +52,7 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 - runs in Jupyter Notebooks and allows Python's interactive mode
 - auto-complete support for Tailwind CSS
 - SVG, Base64 and emoji favicon support
+- testing framework based on pytest
 
 ## Installation
 
@@ -101,6 +103,18 @@ which itself is based on the ASGI framework [Starlette](https://www.starlette.io
 and the ASGI webserver [Uvicorn](https://www.uvicorn.org/)
 because of their great performance and ease of use.
 
+## Sponsors
+
+Maintenance of this project is made possible by all the [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors) and [sponsors](https://github.com/sponsors/zauberzeug).
+If you would like to support this project and have your avatar or company logo appear below, please [sponsor us](https://github.com/sponsors/zauberzeug). 💖
+
+<p align="center">
+   <a href="https://github.com/lechler-gmbh"><img src="https://github.com/lechler-gmbh.png" width="50px" alt="Lechler GmbH" /></a>
+</p>
+
+Consider this low-barrier form of contribution yourself.
+Your [support](https://github.com/sponsors/zauberzeug) is much appreciated.
+
 ## Contributing
 
 Thank you for your interest in contributing to NiceGUI! We are thrilled to have you on board and appreciate your efforts to make this project even better.
@@ -111,6 +125,6 @@ We have provided a detailed guide on how to contribute to NiceGUI in our [CONTRI
 
 If you have any questions or need help with anything, please don't hesitate to reach out to us. We are always here to support and guide you through the contribution process.
 
-### Included Web Dependencies
+## Included Web Dependencies
 
 See [DEPENDENCIES.md](https://github.com/zauberzeug/nicegui/blob/main/DEPENDENCIES.md) for a list of web frameworks NiceGUI depends on.

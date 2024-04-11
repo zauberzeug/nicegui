@@ -13,6 +13,8 @@ class SourceElement(Element):
     source = BindableProperty(
         on_change=lambda sender, source: cast(Self, sender)._handle_source_change(source))  # pylint: disable=protected-access
 
+    SOURCE_IS_MEDIA_FILE: bool = False
+
     def __init__(self, *, source: Union[str, Path], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.auto_route: Optional[str] = None
@@ -27,6 +29,7 @@ class SourceElement(Element):
         """Bind the source of this element to the target object's target_name property.
 
         The binding works one way only, from this element to the target.
+        The update happens immediately and whenever a value changes.
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
@@ -43,6 +46,7 @@ class SourceElement(Element):
         """Bind the source of this element from the target object's target_name property.
 
         The binding works one way only, from the target to this element.
+        The update happens immediately and whenever a value changes.
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
@@ -60,6 +64,8 @@ class SourceElement(Element):
         """Bind the source of this element to the target object's target_name property.
 
         The binding works both ways, from this element to the target and from the target to this element.
+        The update happens immediately and whenever a value changes.
+        The backward binding takes precedence for the initial synchronization.
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
@@ -88,7 +94,10 @@ class SourceElement(Element):
         if is_file(source):
             if self.auto_route:
                 core.app.remove_route(self.auto_route)
-            source = core.app.add_static_file(local_file=source)
+            if self.SOURCE_IS_MEDIA_FILE:
+                source = core.app.add_media_file(local_file=source)
+            else:
+                source = core.app.add_static_file(local_file=source)
             self.auto_route = source
         self._props['src'] = source
 

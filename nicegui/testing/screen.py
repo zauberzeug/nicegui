@@ -3,7 +3,8 @@ import re
 import threading
 import time
 from contextlib import contextmanager
-from typing import List, Optional, Union
+from pathlib import Path
+from typing import Generator, List, Optional, Union
 
 import pytest
 from selenium import webdriver
@@ -16,13 +17,11 @@ from selenium.webdriver.remote.webelement import WebElement
 from nicegui import app, ui
 from nicegui.server import Server
 
-from .test_helpers import TEST_DIR
-
 
 class Screen:
     PORT = 3392
     IMPLICIT_WAIT = 4
-    SCREENSHOT_DIR = TEST_DIR / 'screenshots'
+    SCREENSHOT_DIR = Path('screenshots')
 
     def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture) -> None:
         self.selenium = selenium
@@ -201,7 +200,7 @@ class Screen:
 
     def render_js_logs(self) -> str:
         """Render the browser console logs as a string."""
-        console = '\n'.join(l['message'] for l in self.selenium.get_log('browser'))
+        console = '\n'.join(log['message'] for log in self.selenium.get_log('browser'))
         return f'-- console logs ---\n{console}\n---------------------'
 
     def wait(self, t: float) -> None:
@@ -231,7 +230,7 @@ class Screen:
             self.caplog.records.clear()
 
     @contextmanager
-    def implicitly_wait(self, t: float) -> None:
+    def implicitly_wait(self, t: float) -> Generator[None, None, None]:
         """Temporarily change the implicit wait time."""
         self.selenium.implicitly_wait(t)
         yield

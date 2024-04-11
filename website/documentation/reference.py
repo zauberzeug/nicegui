@@ -6,10 +6,10 @@ import docutils.core
 
 from nicegui import binding, ui
 
-from ..style import subheading
+from ..style import create_anchor_name, subheading
 
 
-def generate_class_doc(class_obj: type) -> None:
+def generate_class_doc(class_obj: type, part_title: str) -> None:
     """Generate documentation for a class including all its methods and properties."""
     mro = [base for base in class_obj.__mro__ if base.__module__.startswith('nicegui.')]
     ancestors = mro[1:]
@@ -22,14 +22,14 @@ def generate_class_doc(class_obj: type) -> None:
     methods = {name: attribute for name, attribute in attributes.items() if callable(attribute)}
 
     if properties:
-        subheading('Properties')
+        subheading('Properties', anchor_name=create_anchor_name(part_title.replace('Reference', 'Properties')))
         with ui.column().classes('gap-2'):
             for name, property_ in sorted(properties.items()):
                 ui.markdown(f'**`{name}`**`{_generate_property_signature_description(property_)}`')
                 if property_.__doc__:
                     _render_docstring(property_.__doc__).classes('ml-8')
     if methods:
-        subheading('Methods')
+        subheading('Methods', anchor_name=create_anchor_name(part_title.replace('Reference', 'Methods')))
         with ui.column().classes('gap-2'):
             for name, method in sorted(methods.items()):
                 decorator = ''
@@ -41,7 +41,7 @@ def generate_class_doc(class_obj: type) -> None:
                 if method.__doc__:
                     _render_docstring(method.__doc__).classes('ml-8')
     if ancestors:
-        subheading('Inherited from')
+        subheading('Inheritance', anchor_name=create_anchor_name(part_title.replace('Reference', 'Inheritance')))
         ui.markdown('\n'.join(f'- `{ancestor.__name__}`' for ancestor in ancestors))
 
 
@@ -98,13 +98,9 @@ def _generate_method_signature_description(method: Callable) -> str:
     return description
 
 
-def _render_docstring(doc: str, with_params: bool = True) -> ui.html:
+def _render_docstring(doc: str) -> ui.restructured_text:
     doc = _remove_indentation_from_docstring(doc)
-    doc = doc.replace('param ', '')
-    html = docutils.core.publish_parts(doc, writer_name='html5_polyglot')['html_body']
-    if not with_params:
-        html = re.sub(r'<dl class=".* simple">.*?</dl>', '', html, flags=re.DOTALL)
-    return ui.html(html).classes('bold-links arrow-links nicegui-markdown')
+    return ui.restructured_text(doc).classes('bold-links arrow-links rst-param-tables')
 
 
 def _remove_indentation_from_docstring(text: str) -> str:
@@ -114,4 +110,4 @@ def _remove_indentation_from_docstring(text: str) -> str:
     if len(lines) == 1:
         return lines[0]
     indentation = min(len(line) - len(line.lstrip()) for line in lines[1:] if line.strip())
-    return lines[0] + '\n'.join(line[indentation:] for line in lines[1:])
+    return lines[0] + '\n' + '\n'.join(line[indentation:] for line in lines[1:])

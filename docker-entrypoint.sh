@@ -35,6 +35,9 @@ fi
 if [ -d "/usr/local/share/fonts" ]; then
   chmod -R 777 /usr/local/share/fonts
 fi
+
+export PATH=/home/appuser/.local/bin:$PATH
+
 # Switch to appuser and execute the Docker CMD or passed in command-line arguments.
 # Using setpriv let's it run as PID 1 which is required for proper signal handling (similar to gosu/su-exec).
 exec setpriv --reuid=$PUID --regid=$PGID --init-groups $@

@@ -195,4 +195,47 @@ def aggrid_with_dynamic_row_height():
     }).classes('max-h-40')
 
 
+@doc.demo('Run row methods', '''
+    You can run methods on individual rows by using the `run_row_method` method.
+    This method takes the row ID, the method name and the method arguments as arguments.
+    The row ID is either the row index (as a string) or the value of the `getRowId` function.
+
+    The following demo shows how to use it to update cell values.
+    Note that the row selection is preserved when the value is updated.
+    This would not be the case if the grid was updated using the `update` method.
+''')
+def aggrid_run_row_method():
+    grid = ui.aggrid({
+        'columnDefs': [
+            {'field': 'name', 'checkboxSelection': True},
+            {'field': 'age'},
+        ],
+        'rowData': [
+            {'name': 'Alice', 'age': 18},
+            {'name': 'Bob', 'age': 21},
+            {'name': 'Carol', 'age': 42},
+        ],
+        ':getRowId': '(params) => params.data.name',
+    })
+    ui.button('Update',
+              on_click=lambda: grid.run_row_method('Alice', 'setDataValue', 'age', 99))
+
+
+@doc.demo('Filter return values', '''
+    You can filter the return values of method calls by passing string that defines a JavaScript function.
+    This demo runs the grid method "getDisplayedRowAtIndex" and returns the "data" property of the result.
+''')
+def aggrid_filter_return_values():
+    grid = ui.aggrid({
+        'columnDefs': [{'field': 'name'}],
+        'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
+    })
+
+    async def get_first_name() -> None:
+        row = await grid.run_grid_method('(g) => g.getDisplayedRowAtIndex(0).data')
+        ui.notify(row['name'])
+
+    ui.button('Get First Name', on_click=get_first_name)
+
+
 doc.reference(ui.aggrid)

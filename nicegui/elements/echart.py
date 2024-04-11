@@ -1,8 +1,20 @@
-from typing import Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
+from typing_extensions import Self
+
+from .. import optional_features
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
 from ..events import EChartPointClickEventArguments, GenericEventArguments, handle_event
+
+try:
+    from pyecharts.charts.base import default, json
+    from pyecharts.charts.chart import Base as Chart
+    from pyecharts.commons.utils import JsCode
+    JS_CODE_MARKER = JsCode('\n').js_code.split('\n')[0]
+    optional_features.register('pyecharts')
+except ImportError:
+    pass
 
 
 class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min.js']):
@@ -15,38 +27,66 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
         After data has changed, call the `update` method to refresh the chart.
 
         :param options: dictionary of EChart options
-        :param on_click_point: callback function that is called when a point is clicked
+        :param on_click_point: callback that is invoked when a point is clicked
         """
         super().__init__()
         self._props['options'] = options
         self._classes.append('nicegui-echart')
 
         if on_point_click:
-            def handle_point_click(e: GenericEventArguments) -> None:
-                handle_event(on_point_click, EChartPointClickEventArguments(
-                    sender=self,
-                    client=self.client,
-                    component_type=e.args['componentType'],
-                    series_type=e.args['seriesType'],
-                    series_index=e.args['seriesIndex'],
-                    series_name=e.args['seriesName'],
-                    name=e.args['name'],
-                    data_index=e.args['dataIndex'],
-                    data=e.args['data'],
-                    data_type=e.args.get('dataType'),
-                    value=e.args['value'],
-                ))
-            self.on('pointClick', handle_point_click, [
-                'componentType',
-                'seriesType',
-                'seriesIndex',
-                'seriesName',
-                'name',
-                'dataIndex',
-                'data',
-                'dataType',
-                'value',
-            ])
+            self.on_point_click(on_point_click)
+
+    def on_point_click(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a point is clicked."""
+        def handle_point_click(e: GenericEventArguments) -> None:
+            handle_event(callback, EChartPointClickEventArguments(
+                sender=self,
+                client=self.client,
+                component_type=e.args['componentType'],
+                series_type=e.args['seriesType'],
+                series_index=e.args['seriesIndex'],
+                series_name=e.args['seriesName'],
+                name=e.args['name'],
+                data_index=e.args['dataIndex'],
+                data=e.args['data'],
+                data_type=e.args.get('dataType'),
+                value=e.args['value'],
+            ))
+        self.on('pointClick', handle_point_click, [
+            'componentType',
+            'seriesType',
+            'seriesIndex',
+            'seriesName',
+            'name',
+            'dataIndex',
+            'data',
+            'dataType',
+            'value',
+        ])
+        return self
+
+    @classmethod
+    def from_pyecharts(cls, chart: 'Chart', on_point_click: Optional[Callable] = None) -> Self:
+        """Create an echart element from a pyecharts object.
+
+        :param chart: pyecharts chart object
+        :param on_click_point: callback which is invoked when a point is clicked
+
+        :return: echart element
+        """
+        options = json.loads(json.dumps(chart.get_options(), default=default, ignore_nan=True))
+        stack = [options]
+        while stack:
+            current = stack.pop()
+            if isinstance(current, list):
+                stack.extend(current)
+            elif isinstance(current, dict):
+                for key, value in tuple(current.items()):
+                    if isinstance(value, str) and value.startswith(JS_CODE_MARKER) and value.endswith(JS_CODE_MARKER):
+                        current[f':{key}'] = current.pop(key)[len(JS_CODE_MARKER):-len(JS_CODE_MARKER)]
+                    else:
+                        stack.append(value)
+        return cls(options, on_point_click)
 
     @property
     def options(self) -> Dict:
@@ -69,7 +109,6 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
         :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
         :param args: arguments to pass to the method (Python objects or JavaScript expressions)
         :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """

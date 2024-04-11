@@ -46,3 +46,12 @@ class Marker(Layer):
         """Make the marker draggable."""
         self.options['draggable'] = value
         return self
+
+    def move(self, lat: float, lng: float) -> None:
+        """Move the marker to a new position.
+
+        :param lat: latitude
+        :param lng: longitude
+        """
+        self.latlng = (lat, lng)
+        self.run_method('setLatLng', (lat, lng))

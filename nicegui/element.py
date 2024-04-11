@@ -5,11 +5,11 @@ import inspect
 import re
 from copy import copy, deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union, overload
 
 from typing_extensions import Self
 
-from . import context, core, events, helpers, json, outbox, storage
+from . import context, core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
 from .dependencies import Component, Library, register_library, register_resource, register_vue_component
 from .elements.mixins.visibility import Visibility
@@ -82,7 +82,7 @@ class Element(Visibility):
         self._classes.extend(self._default_classes)
         self._style: Dict[str, str] = {}
         self._style.update(self._default_style)
-        self._props: Dict[str, Any] = {'key': self.id}  # HACK: workaround for #600 and #898
+        self._props: Dict[str, Any] = {}
         self._props.update(self._default_props)
         self._event_listeners: Dict[str, EventListener] = {}
         self._text: Optional[str] = None
@@ -99,9 +99,9 @@ class Element(Visibility):
 
         self.tailwind = Tailwind(self)
 
-        outbox.enqueue_update(self)
+        self.client.outbox.enqueue_update(self)
         if self.parent_slot:
-            outbox.enqueue_update(self.parent_slot.parent)
+            self.client.outbox.enqueue_update(self.parent_slot.parent)
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
@@ -150,6 +150,17 @@ class Element(Visibility):
     def add_slot(self, name: str, template: Optional[str] = None) -> Slot:
         """Add a slot to the element.
 
+        NiceGUI is using the slot concept from Vue:
+        Elements can have multiple slots, each possibly with a number of children.
+        Most elements only have one slot, e.g. a `ui.card` (QCard) only has a default slot.
+        But more complex elements like `ui.table` (QTable) can have more slots like "header", "body" and so on.
+        If you nest NiceGUI elements via with `ui.row(): ...` you place new elements inside of the row's default slot.
+        But if you use with `table.add_slot(...): ...`, you enter a different slot.
+
+        The slot stack helps NiceGUI to keep track of which slot is currently used for new elements.
+        The `parent` field holds a reference to its element.
+        Whenever an element is entered via a `with` expression, its default slot is automatically entered as well.
+
         :param name: name of the slot
         :param template: Vue template of the slot
         :return: the slot
@@ -166,36 +177,45 @@ class Element(Visibility):
 
     def __iter__(self) -> Iterator[Element]:
         for slot in self.slots.values():
-            for child in slot:
-                yield child
+            yield from slot
 
     def _collect_slot_dict(self) -> Dict[str, Any]:
         return {
-            name: {'template': slot.template, 'ids': [child.id for child in slot]}
+            name: {
+                'ids': [child.id for child in slot],
+                **({'template': slot.template} if slot.template is not None else {}),
+            }
             for name, slot in self.slots.items()
+            if slot != self.default_slot
         }
 
     def _to_dict(self) -> Dict[str, Any]:
         return {
-            'id': self.id,
             'tag': self.tag,
-            'class': self._classes,
-            'style': self._style,
-            'props': self._props,
-            'text': self._text,
-            'slots': self._collect_slot_dict(),
-            'events': [listener.to_dict() for listener in self._event_listeners.values()],
-            'component': {
-                'key': self.component.key,
-                'name': self.component.name,
-                'tag': self.component.tag
-            } if self.component else None,
-            'libraries': [
-                {
-                    'key': library.key,
-                    'name': library.name,
-                } for library in self.libraries
-            ],
+            **({'text': self._text} if self._text is not None else {}),
+            **{
+                key: value
+                for key, value in {
+                    'class': self._classes,
+                    'style': self._style,
+                    'props': self._props,
+                    'slots': self._collect_slot_dict(),
+                    'children': [child.id for child in self.default_slot.children],
+                    'events': [listener.to_dict() for listener in self._event_listeners.values()],
+                    'component': {
+                        'key': self.component.key,
+                        'name': self.component.name,
+                        'tag': self.component.tag
+                    } if self.component else None,
+                    'libraries': [
+                        {
+                            'key': library.key,
+                            'name': library.name,
+                        } for library in self.libraries
+                    ],
+                }.items()
+                if value
+            },
         }
 
     @staticmethod
@@ -372,18 +392,40 @@ class Element(Visibility):
 
         :param text: text of the tooltip
         """
+        from .elements.tooltip import Tooltip  # pylint: disable=import-outside-toplevel, cyclic-import
         with self:
-            tooltip = Element('q-tooltip')
-            tooltip._text = text  # pylint: disable=protected-access
+            Tooltip(text)
         return self
+
+    @overload
+    def on(self,
+           type: str,  # pylint: disable=redefined-builtin
+           *,
+           js_handler: Optional[str] = None,
+           ) -> Self:
+        ...
+
+    @overload
+    def on(self,
+           type: str,  # pylint: disable=redefined-builtin
+           handler: Optional[Callable[..., Any]] = None,
+           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
+           *,
+           throttle: float = 0.0,
+           leading_events: bool = True,
+           trailing_events: bool = True,
+           ) -> Self:
+        ...
 
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
            handler: Optional[Callable[..., Any]] = None,
-           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None, *,
+           args: Union[None, Sequence[str], Sequence[Optional[Sequence[str]]]] = None,
+           *,
            throttle: float = 0.0,
            leading_events: bool = True,
            trailing_events: bool = True,
+           js_handler: Optional[str] = None,
            ) -> Self:
         """Subscribe to an event.
 
@@ -393,13 +435,18 @@ class Element(Visibility):
         :param throttle: minimum time (in seconds) between event occurrences (default: 0.0)
         :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: `True`)
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
+        :param js_handler: JavaScript code that is executed upon occurrence of the event, e.g. `(evt) => alert(evt)` (default: `None`)
         """
-        if handler:
+        if handler and js_handler:
+            raise ValueError('Either handler or js_handler can be specified, but not both')
+
+        if handler or js_handler:
             listener = EventListener(
                 element_id=self.id,
                 type=helpers.kebab_to_camel_case(type),
                 args=[args] if args and isinstance(args[0], str) else args,  # type: ignore
                 handler=handler,
+                js_handler=js_handler,
                 throttle=throttle,
                 leading_events=leading_events,
                 trailing_events=trailing_events,
@@ -419,7 +466,7 @@ class Element(Visibility):
         """Update the element on the client side."""
         if self.is_deleted:
             return
-        outbox.enqueue_update(self)
+        self.client.outbox.enqueue_update(self)
 
     def run_method(self, name: str, *args: Any, timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
         """Run a method on the client side.
@@ -430,7 +477,6 @@ class Element(Visibility):
         :param name: name of the method
         :param args: arguments to pass to the method
         :param timeout: maximum time to wait for a response (default: 1 second)
-        :param check_interval: time between checks for a response (default: 0.01 seconds)
         """
         if not core.loop:
             return NullResponse()
@@ -481,10 +527,9 @@ class Element(Visibility):
         self.update()
 
     def delete(self) -> None:
-        """Delete the element."""
-        self.client.remove_elements([self])
+        """Delete the element and all its children."""
         assert self.parent_slot is not None
-        self.parent_slot.children.remove(self)
+        self.parent_slot.parent.remove(self)
 
     def _handle_delete(self) -> None:
         """Called when the element is deleted.

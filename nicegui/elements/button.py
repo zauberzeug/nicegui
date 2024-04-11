@@ -1,6 +1,8 @@
 import asyncio
 from typing import Any, Callable, Optional
 
+from typing_extensions import Self
+
 from ..events import ClickEventArguments, handle_event
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
@@ -35,7 +37,12 @@ class Button(TextElement, DisableableElement, BackgroundColorElement):
             self._props['icon'] = icon
 
         if on_click:
-            self.on('click', lambda _: handle_event(on_click, ClickEventArguments(sender=self, client=self.client)), [])
+            self.on_click(on_click)
+
+    def on_click(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the button is clicked."""
+        self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
+        return self
 
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text

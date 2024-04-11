@@ -1,11 +1,11 @@
 from pathlib import Path
 from typing import Union
 
-from .. import core, helpers
-from ..element import Element
+from .mixins.source_element import SourceElement
 
 
-class Video(Element, component='video.js'):
+class Video(SourceElement, component='video.js'):
+    SOURCE_IS_MEDIA_FILE = True
 
     def __init__(self, src: Union[str, Path], *,
                  controls: bool = True,
@@ -26,10 +26,7 @@ class Video(Element, component='video.js'):
         See `here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events>`_
         for a list of events you can subscribe to using the generic event subscription `on()`.
         """
-        super().__init__()
-        if helpers.is_file(src):
-            src = core.app.add_media_file(local_file=src)
-        self._props['src'] = src
+        super().__init__(source=src)
         self._props['controls'] = controls
         self._props['autoplay'] = autoplay
         self._props['muted'] = muted

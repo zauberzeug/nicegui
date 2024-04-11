@@ -9,8 +9,9 @@ from starlette.routing import Route
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
 
-from . import air, core, helpers
+from . import core, helpers
 from . import native as native_module
+from .air import Air
 from .client import Client
 from .language import Language
 from .logging import log
@@ -62,7 +63,7 @@ def run(*,
     :param binding_refresh_interval: time between binding updates (default: `0.1` seconds, bigger is more CPU friendly)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param show: automatically open the UI in a browser tab (default: `True`)
-    :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation#nicegui_on_air>`_ if set to `True` (default: disabled)
+    :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
     :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
     :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`)
     :param fullscreen: open the UI in a fullscreen window (default: `False`, also activates `native`)
@@ -103,13 +104,13 @@ def run(*,
             route.include_in_schema = endpoint_documentation in {'page', 'all'}
 
     if on_air:
-        air.instance = air.Air('' if on_air is True else on_air)
+        core.air = Air('' if on_air is True else on_air)
 
     if multiprocessing.current_process().name != 'MainProcess':
         return
 
     if reload and not hasattr(__main__, '__file__'):
-        log.warning('auto-reloading is only supported when running from a file')
+        log.warning('disabling auto-reloading because is is only supported when running from a file')
         core.app.config.reload = reload = False
 
     if fullscreen:

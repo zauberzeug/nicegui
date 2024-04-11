@@ -13,9 +13,14 @@ doc.title('Storage')
 
 
 @doc.demo('Storage', '''
-    NiceGUI offers a straightforward method for data persistence within your application. 
-    It features three built-in storage types:
+    NiceGUI offers a straightforward mechanism for data persistence within your application. 
+    It features four built-in storage types:
 
+    - `app.storage.tab`:
+        Stored server-side in memory, this dictionary is unique to each tab session and can hold arbitrary objects.
+        Data will be lost when restarting the server until <https://github.com/zauberzeug/nicegui/discussions/2841> is implemented.
+        This storage is only available within [page builder functions](/documentation/page) 
+        and requires an established connection, obtainable via [`await client.connected()`](/documentation/page#wait_for_client_connection).
     - `app.storage.user`:
         Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie.
         Unique to each user, this storage is accessible across all their browser tabs.
@@ -86,3 +91,19 @@ def ui_state():
     #         .classes('w-full').bind_value(app.storage.user, 'note')
     # END OF DEMO
     ui.textarea('This note is kept between visits').classes('w-full').bind_value(app.storage.user, 'note')
+
+
+@doc.demo('Storing data per browser tab', '''
+    When storing data in `app.storage.tab`, a single user can open multiple tabs of the same app, each with its own storage data.
+    This may be beneficial in certain scenarios like search or when performing data analysis.
+    It is also more secure to use such a volatile storage for scenarios like logging into a bank account or accessing a password manager.
+''')
+def tab_storage():
+    from nicegui import app
+
+    # @ui.page('/')
+    # async def index(client):
+    #     await client.connected()
+    with ui.column():  # HIDE
+        app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
+        ui.label(f'Tab reloaded {app.storage.tab["count"]} times')

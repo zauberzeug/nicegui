@@ -1,7 +1,10 @@
+import asyncio
 import contextvars
 import os
+import time
 import uuid
 from collections.abc import MutableMapping
+from datetime import timedelta
 from pathlib import Path
 from typing import Any, Dict, Iterator, Optional, Union
 
@@ -16,6 +19,8 @@ from . import background_tasks, context, core, json, observables
 from .logging import log
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
+
+PURGE_INTERVAL = timedelta(minutes=5).total_seconds()
 
 
 class ReadOnlyDict(MutableMapping):
@@ -94,9 +99,11 @@ class Storage:
 
     def __init__(self) -> None:
         self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
-        self.migrate_to_utf8()
+        self.migrate_to_utf8()  # DEPRECATED: remove this in 2.0 release
+        self.max_tab_storage_age = timedelta(days=30).total_seconds()
         self._general = PersistentDict(self.path / 'storage-general.json', encoding='utf-8')
         self._users: Dict[str, PersistentDict] = {}
+        self._tabs: Dict[str, observables.ObservableDict] = {}
 
     @property
     def browser(self) -> Union[ReadOnlyDict, Dict]:
@@ -108,7 +115,7 @@ class Storage:
         """
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if context.get_client().is_auto_index_client:
+            if self._is_in_auto_index_context():
                 raise RuntimeError('app.storage.browser can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
             raise RuntimeError('app.storage.browser needs a storage_secret passed in ui.run()')
@@ -120,7 +127,7 @@ class Storage:
         return request.session
 
     @property
-    def user(self) -> Dict:
+    def user(self) -> PersistentDict:
         """Individual user storage that is persisted on the server (where NiceGUI is executed).
 
         The data is stored in a file on the server.
@@ -128,7 +135,7 @@ class Storage:
         """
         request: Optional[Request] = request_contextvar.get()
         if request is None:
-            if context.get_client().is_auto_index_client:
+            if self._is_in_auto_index_context():
                 raise RuntimeError('app.storage.user can only be used with page builder functions '
                                    '(https://nicegui.io/documentation/page)')
             raise RuntimeError('app.storage.user needs a storage_secret passed in ui.run()')
@@ -137,15 +144,46 @@ class Storage:
             self._users[session_id] = PersistentDict(self.path / f'storage-user-{session_id}.json', encoding='utf-8')
         return self._users[session_id]
 
+    @staticmethod
+    def _is_in_auto_index_context() -> bool:
+        try:
+            return context.get_client().is_auto_index_client
+        except RuntimeError:
+            return False  # no client
+
     @property
-    def general(self) -> Dict:
+    def general(self) -> PersistentDict:
         """General storage shared between all users that is persisted on the server (where NiceGUI is executed)."""
         return self._general
+
+    @property
+    def tab(self) -> observables.ObservableDict:
+        """A volatile storage that is only kept during the current tab session."""
+        if self._is_in_auto_index_context():
+            raise RuntimeError('app.storage.tab can only be used with page builder functions '
+                               '(https://nicegui.io/documentation/page)')
+        client = context.get_client()
+        if not client.has_socket_connection:
+            raise RuntimeError('app.storage.tab can only be used with a client connection; '
+                               'see https://nicegui.io/documentation/page#wait_for_client_connection to await it')
+        assert client.tab_id is not None
+        if client.tab_id not in self._tabs:
+            self._tabs[client.tab_id] = observables.ObservableDict()
+        return self._tabs[client.tab_id]
+
+    async def prune_tab_storage(self) -> None:
+        """Regularly prune tab storage that is older than the configured `max_tab_storage_age`."""
+        while True:
+            for tab_id, tab in list(self._tabs.items()):
+                if time.time() > tab.last_modified + self.max_tab_storage_age:
+                    del self._tabs[tab_id]
+            await asyncio.sleep(PURGE_INTERVAL)
 
     def clear(self) -> None:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
+        self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()
 
@@ -155,7 +193,11 @@ class Storage:
         To distinguish between the old and new encoding, the new files are named with dashes instead of underscores.
         """
         for filepath in self.path.glob('storage_*.json'):
-            new_filepath = filepath.with_stem(filepath.stem.replace('_', '-'))
-            data = json.loads(filepath.read_text())
+            new_filepath = filepath.with_name(filepath.name.replace('_', '-'))
+            try:
+                data = json.loads(filepath.read_text())
+            except Exception:
+                log.warning(f'Could not load storage file {filepath}')
+                data = {}
             filepath.rename(new_filepath)
             new_filepath.write_text(json.dumps(data), encoding='utf-8')

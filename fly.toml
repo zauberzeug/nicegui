@@ -24,9 +24,9 @@ kill_timeout = "5s"
   protocol = "tcp"
   internal_port = 8080
   processes = ["app"]
-  auto_stop_machines = true
+  auto_stop_machines = false
   auto_start_machines = true
-  min_machines_running = 10
+  min_machines_running = 18
 
   [[services.ports]]
     port = 80
@@ -37,9 +37,9 @@ kill_timeout = "5s"
     port = 443
     handlers = ["tls", "http"]
   [services.concurrency]
-    type = "connections"
-    hard_limit = 35
-    soft_limit = 10
+    type = "requests"
+    hard_limit = 120
+    soft_limit = 50
 
   [[services.tcp_checks]]
     interval = "10s"

@@ -1,8 +1,7 @@
 import asyncio
 
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_refreshable(screen: Screen) -> None:
@@ -72,7 +71,7 @@ def test_multiple_targets(screen: Screen) -> None:
             self.name = name
             self.state = 1
 
-        @ui.refreshable
+        @ui.refreshable_method
         def create_ui(self) -> None:
             nonlocal count
             count += 1
@@ -163,24 +162,25 @@ def test_refresh_with_function_reference(screen: Screen):
 
         def __init__(self, name):
             self.name = name
+            self.count = 0
             self.ui()
 
-        @ui.refreshable
+        @ui.refreshable_method
         def ui(self):
-            ui.notify(f'Refreshing {self.name}')
+            ui.notify(f'Refreshing {self.name} ({self.count})')
+            self.count += 1
             ui.button(self.name, on_click=self.ui.refresh)
 
     Test('A')
-    screen.assert_py_logger('WARNING', 'Ignoring notification "Refreshing A" because the client is not connected.')
-
     Test('B')
-    screen.assert_py_logger('WARNING', 'Ignoring notification "Refreshing B" because the client is not connected.')
 
     screen.open('/')
+    screen.should_contain('Refreshing A (0)')
+    screen.should_contain('Refreshing B (0)')
     screen.click('A')
-    screen.should_contain('Refreshing A')
+    screen.should_contain('Refreshing A (1)')
     screen.click('B')
-    screen.should_contain('Refreshing B')
+    screen.should_contain('Refreshing B (1)')
 
 
 def test_refreshable_with_state(screen: Screen):

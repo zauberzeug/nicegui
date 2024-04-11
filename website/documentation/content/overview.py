@@ -39,10 +39,11 @@ doc.text('Basic concepts', '''
     Or if you prefer, almost anything can be styled with CSS.
 ''')
 
-doc.text('Actions', '''
-    NiceGUI runs an event loop to handle user input and other events like timers and keyboard bindings.
-    You can write asynchronous functions for long-running tasks to keep the UI responsive.
-    The _Actions_ section covers how to work with events.
+doc.text('Actions, Events and Tasks', '''
+    NiceGUI uses an async/await event loop for concurrency which is resource-efficient and has the great benefit of not having to worry about thread safety.
+    This section shows how to handle user input and other events like timers and keyboard bindings.
+    It also describes helper functions to wrap long-running tasks in asynchronous functions to keep the UI responsive.
+    Keep in mind that all UI updates must happen on the main thread with its event loop.
 ''')
 
 doc.text('Implementation', '''
@@ -75,7 +76,7 @@ doc.text('Customization', '''
 
 tiles = [
     (section_text_elements, '''
-        Elements like `ui.label`, `ui.markdown` and `ui.html` can be used to display text and other content.
+        Elements like `ui.label`, `ui.markdown`, `ui.restructured_text` and `ui.html` can be used to display text and other content.
     '''),
     (section_controls, '''
         NiceGUI provides a variety of elements for user interaction, e.g. `ui.button`, `ui.slider`, `ui.inputs`, etc.
@@ -109,6 +110,9 @@ tiles = [
 
 @doc.extra_column
 def create_tiles():
+    with ui.row().classes('items-center content-between'):
+        ui.label('If you like NiceGUI, go and become a')
+        ui.html('<iframe src="https://github.com/sponsors/zauberzeug/button" title="Sponsor zauberzeug" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>')
     for documentation, description in tiles:
         page = doc.get_page(documentation)
         with ui.link(target=f'/documentation/{page.name}') \

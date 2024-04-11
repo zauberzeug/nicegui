@@ -1,9 +1,9 @@
+import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_input(screen: Screen):
@@ -54,21 +54,31 @@ def test_toggle_button(screen: Screen):
     assert element.get_attribute('type') == 'password'
 
 
-def test_input_validation(screen: Screen):
-    input_ = ui.input('Name', validation={'Too short': lambda value: len(value) >= 5})
+@pytest.mark.parametrize('use_callable', [False, True])
+def test_input_validation(use_callable: bool, screen: Screen):
+    if use_callable:
+        input_ = ui.input('Name', validation=lambda x: 'Short' if len(x) < 3 else 'Still short' if len(x) < 5 else None)
+    else:
+        input_ = ui.input('Name', validation={'Short': lambda x: len(x) >= 3, 'Still short': lambda x: len(x) >= 5})
 
     screen.open('/')
     screen.should_contain('Name')
 
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Name"]')
-    element.send_keys('John')
-    screen.should_contain('Too short')
-    assert input_.error == 'Too short'
+    element.send_keys('Jo')
+    screen.should_contain('Short')
+    assert input_.error == 'Short'
+    assert not input_.validate()
+
+    element.send_keys('hn')
+    screen.should_contain('Still short')
+    assert input_.error == 'Still short'
     assert not input_.validate()
 
     element.send_keys(' Doe')
-    screen.wait(0.5)
-    screen.should_not_contain('Too short')
+    screen.wait(1.0)
+    screen.should_not_contain('Short')
+    screen.should_not_contain('Still short')
     assert input_.error is None
     assert input_.validate()
 

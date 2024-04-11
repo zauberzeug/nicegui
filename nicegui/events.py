@@ -118,6 +118,13 @@ class UploadEventArguments(UiEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
+class MultiUploadEventArguments(UiEventArguments):
+    contents: List[BinaryIO]
+    names: List[str]
+    types: List[str]
+
+
+@dataclass(**KWONLY_SLOTS)
 class ValueChangeEventArguments(UiEventArguments):
     value: Any
 
@@ -181,7 +188,7 @@ class KeyboardKey:
     @property
     def enter(self) -> bool:
         """Whether the key is the enter key."""
-        return self.name == 'enter'
+        return self.name == 'Enter'
 
     @property
     def shift(self) -> bool:

@@ -1,7 +1,7 @@
 from nicegui import events, ui
 
 from ..windows import browser_window, python_window
-from . import colors_documentation, dark_mode_documentation, doc, query_documentation
+from . import add_style_documentation, colors_documentation, dark_mode_documentation, doc, query_documentation
 
 doc.title('Styling & Appearance')
 
@@ -122,6 +122,29 @@ def tailwind_demo():
     ui.label('Label D').tailwind(red_style)
 
 
+@doc.demo('Tailwind CSS Layers', '''
+    Tailwind CSS' `@layer` directive allows you to define custom classes that can be used in your HTML.
+    NiceGUI supports this feature by allowing you to add custom classes to the `components` layer.
+    This way, you can define your own classes and use them in your UI elements.
+    In the example below, we define a custom class `blue-box` and apply it to two labels.
+    Note that the style tag is of type `text/tailwindcss` and not `text/css`.
+''')
+def tailwind_layers():
+    ui.add_head_html('''
+        <style type="text/tailwindcss">
+            @layer components {
+                .blue-box {
+                    @apply bg-blue-500 p-12 text-center shadow-lg rounded-lg text-white;
+                }
+            }
+        </style>
+    ''')
+
+    with ui.row():
+        ui.label('Hello').classes('blue-box')
+        ui.label('world').classes('blue-box')
+
+
 doc.intro(query_documentation)
 doc.intro(colors_documentation)
 
@@ -135,13 +158,11 @@ doc.intro(colors_documentation)
 
 ''')
 def css_variables_demo():
-    # ui.add_head_html('''
-    #     <style>
-    #         :root {
-    #             --nicegui-default-padding: 0.5rem;
-    #             --nicegui-default-gap: 3rem;
-    #         }
-    #     </style>
+    # ui.add_css('''
+    #     :root {
+    #         --nicegui-default-padding: 0.5rem;
+    #         --nicegui-default-gap: 3rem;
+    #     }
     # ''')
     # with ui.card():
     #     ui.label('small padding')
@@ -152,4 +173,21 @@ def css_variables_demo():
         ui.label('large gap')
 
 
+@doc.demo("Overwrite Tailwind's Default Style", '''
+    Tailwind resets the default style of HTML elements, like the font size of `h2` elements in this example.
+    You can overwrite these defaults by adding a style tag with type `text/tailwindcss`.
+    Without this type, the style will be evaluated too early and will be overwritten by Tailwind.
+''')
+def overwrite_tailwind_style_demo():
+    ui.add_head_html('''
+        <style type="text/tailwindcss">
+            h2 {
+                font-size: 150%;
+            }
+        </style>
+    ''')
+    ui.html('<h2>Hello world!</h2>')
+
+
 doc.intro(dark_mode_documentation)
+doc.intro(add_style_documentation)

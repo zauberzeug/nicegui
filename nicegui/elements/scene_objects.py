@@ -175,6 +175,20 @@ class Stl(Object3D):
         super().__init__('stl', url, wireframe)
 
 
+class Gltf(Object3D):
+
+    def __init__(self,
+                 url: str,
+                 ) -> None:
+        """GLTF
+
+        This element is used to create a mesh from a glTF file.
+
+        :param url: URL of the glTF file
+        """
+        super().__init__('gltf', url)
+
+
 class Line(Object3D):
 
     def __init__(self,

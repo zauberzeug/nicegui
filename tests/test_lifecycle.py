@@ -1,8 +1,7 @@
 from typing import List
 
 from nicegui import Client, app, ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_adding_elements_during_onconnect_on_auto_index_page(screen: Screen):

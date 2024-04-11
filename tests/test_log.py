@@ -1,6 +1,5 @@
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_log(screen: Screen):
@@ -54,29 +53,3 @@ def test_special_characters(screen: Screen):
     screen.should_contain('50%')
     screen.click('push')
     screen.should_contain('100%')
-
-
-def test_line_duplication_bug_906(screen: Screen):
-    ui.button('Log', on_click=lambda: ui.log().push('Hi!'))
-
-    screen.open('/')
-    screen.click('Log')
-    screen.should_contain('Hi!')
-    screen.should_not_contain('Hi!\nHi!')
-
-
-def test_another_duplication_bug_1173(screen: Screen):
-    log1 = ui.log()
-
-    def test():
-        log1.push('A')
-        log2 = ui.log()
-        log2.push('C')
-        log2.push('D')
-    ui.button('test', on_click=test)
-
-    screen.open('/')
-    screen.click('test')
-    screen.should_contain('A')
-    screen.should_contain('C\nD')
-    screen.should_not_contain('C\nD\nC\nD')

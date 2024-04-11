@@ -1,12 +1,12 @@
 import asyncio
-import warnings
 from pathlib import Path
 
 import httpx
 
-from nicegui import Client, app, background_tasks, ui
-
-from .screen import Screen
+from nicegui import Client, app, background_tasks, context
+from nicegui import storage as storage_module
+from nicegui import ui
+from nicegui.testing import Screen
 
 
 def test_browser_data_is_stored_in_the_browser(screen: Screen):
@@ -155,8 +155,6 @@ def test_user_and_general_storage_is_persisted(screen: Screen):
 
 def test_rapid_storage(screen: Screen):
     # https://github.com/zauberzeug/nicegui/issues/1099
-    warnings.simplefilter('error')
-
     ui.button('test', on_click=lambda: (
         app.storage.general.update(one=1),
         app.storage.general.update(two=2),
@@ -167,3 +165,65 @@ def test_rapid_storage(screen: Screen):
     screen.click('test')
     screen.wait(0.5)
     assert Path('.nicegui', 'storage-general.json').read_text('utf-8') == '{"one":1,"two":2,"three":3}'
+
+
+def test_tab_storage_is_local(screen: Screen):
+    @ui.page('/')
+    async def page():
+        await context.get_client().connected()
+        app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
+        ui.label().bind_text_from(app.storage.tab, 'count')
+
+    screen.open('/')
+    screen.should_contain('1')
+    screen.open('/')
+    screen.should_contain('2')
+
+    screen.switch_to(1)
+    screen.open('/')
+    screen.should_contain('1')
+
+    screen.switch_to(0)
+    screen.open('/')
+    screen.should_contain('3')
+
+
+def test_tab_storage_is_auto_removed(screen: Screen):
+    storage_module.PURGE_INTERVAL = 0.1
+    app.storage.max_tab_storage_age = 0.5
+
+    @ui.page('/')
+    async def page():
+        await context.get_client().connected()
+        app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
+        ui.label().bind_text_from(app.storage.tab, 'count')
+
+    screen.open('/')
+    screen.should_contain('1')
+    screen.open('/')
+    screen.should_contain('2')
+
+    screen.wait(1)
+    screen.open('/')
+    screen.should_contain('1')
+
+
+def test_clear_tab_storage(screen: Screen):
+    storage_module.PURGE_INTERVAL = 60
+
+    @ui.page('/')
+    async def page():
+        await context.get_client().connected()
+        app.storage.tab['test'] = '123'
+        ui.button('clear', on_click=app.storage.clear)
+
+    screen.open('/')
+    screen.should_contain('clear')
+
+    tab_storages = app.storage._tabs  # pylint: disable=protected-access
+    assert len(tab_storages) == 1
+    assert list(tab_storages.values())[0] == {'test': '123'}
+
+    screen.click('clear')
+    screen.wait(0.5)
+    assert not tab_storages

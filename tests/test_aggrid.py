@@ -1,12 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_update_table(screen: Screen):
@@ -198,6 +197,7 @@ def test_api_method_after_creation(screen: Screen):
 def test_problematic_datatypes(screen: Screen):
     df = pd.DataFrame({
         'datetime_col': [datetime(2020, 1, 1)],
+        'datetime_col_tz': [datetime(2020, 1, 1, tzinfo=timezone.utc)],
         'timedelta_col': [timedelta(days=5)],
         'complex_col': [1 + 2j],
         'period_col': pd.Series([pd.Period('2021-01')]),
@@ -206,6 +206,7 @@ def test_problematic_datatypes(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Datetime_col')
+    screen.should_contain('Datetime_col_tz')
     screen.should_contain('Timedelta_col')
     screen.should_contain('Complex_col')
     screen.should_contain('Period_col')
@@ -213,3 +214,33 @@ def test_problematic_datatypes(screen: Screen):
     screen.should_contain('5 days')
     screen.should_contain('(1+2j)')
     screen.should_contain('2021-01')
+
+
+def test_run_row_method(screen: Screen):
+    grid = ui.aggrid({
+        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+        'rowData': [{'name': 'Alice', 'age': 18}],
+        ':getRowId': '(params) => params.data.name',
+    })
+    ui.button('Update', on_click=lambda: grid.run_row_method('Alice', 'setDataValue', 'age', 42))
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('18')
+
+    screen.click('Update')
+    screen.should_contain('Alice')
+    screen.should_contain('42')
+
+
+def test_run_method_with_function(screen: Screen):
+    grid = ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}, {'name': 'Bob'}]})
+
+    async def print_row(index: int) -> None:
+        ui.label(f'Row {index}: {await grid.run_grid_method(f"(g) => g.getDisplayedRowAtIndex({index}).data")}')
+
+    ui.button('Print Row 0', on_click=lambda: print_row(0))
+
+    screen.open('/')
+    screen.click('Print Row 0')
+    screen.should_contain("Row 0: {'name': 'Alice'}")

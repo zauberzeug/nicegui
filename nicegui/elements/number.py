@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Union
 
 from ..events import GenericEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -20,14 +20,17 @@ class Number(ValidationElement, DisableableElement):
                  suffix: Optional[str] = None,
                  format: Optional[str] = None,  # pylint: disable=redefined-builtin
                  on_change: Optional[Callable[..., Any]] = None,
-                 validation: Dict[str, Callable[..., bool]] = {},
+                 validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
                  ) -> None:
         """Number Input
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
 
-        You can use the `validation` parameter to define a dictionary of validation rules.
+        You can use the `validation` parameter to define a dictionary of validation rules,
+        e.g. ``{'Too small!': lambda value: value < 3}``.
         The key of the first rule that fails will be displayed as an error message.
+        Alternatively, you can pass a callable that returns an optional error message.
+        To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
 
         :param label: displayed name for the number input
         :param placeholder: text to show if no value is entered
@@ -40,7 +43,7 @@ class Number(ValidationElement, DisableableElement):
         :param suffix: a suffix to append to the displayed value
         :param format: a string like "%.2f" to format the displayed value
         :param on_change: callback to execute when the value changes
-        :param validation: dictionary of validation rules, e.g. ``{'Too large!': lambda value: value < 3}``
+        :param validation: dictionary of validation rules or a callable that returns an optional error message
         """
         self.format = format
         super().__init__(tag='q-input', value=value, on_value_change=on_change, validation=validation)
@@ -69,8 +72,11 @@ class Number(ValidationElement, DisableableElement):
 
     @min.setter
     def min(self, value: float) -> None:
+        if self._props['min'] == value:
+            return
         self._props['min'] = value
         self.sanitize()
+        self.update()
 
     @property
     def max(self) -> float:
@@ -79,8 +85,11 @@ class Number(ValidationElement, DisableableElement):
 
     @max.setter
     def max(self, value: float) -> None:
+        if self._props['max'] == value:
+            return
         self._props['max'] = value
         self.sanitize()
+        self.update()
 
     @property
     def precision(self) -> Optional[int]:
@@ -117,6 +126,9 @@ class Number(ValidationElement, DisableableElement):
         if value is None:
             return None
         if self.format is None:
+            old_value = float(self._props.get(self.VALUE_PROP) or 0)
+            if old_value == int(old_value) and value == int(value):
+                return str(int(value))  # preserve integer representation
             return str(value)
         if value == '':
             return 0

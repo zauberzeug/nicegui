@@ -7,11 +7,13 @@ from . import svg
 from .search import Search
 from .star import add_star
 
+HEADER_HTML = (Path(__file__).parent / 'static' / 'header.html').read_text()
+STYLE_CSS = (Path(__file__).parent / 'static' / 'style.css').read_text()
+
 
 def add_head_html() -> None:
     """Add the code from header.html and reference style.css."""
-    ui.add_head_html((Path(__file__).parent / 'static' / 'header.html').read_text())
-    ui.add_head_html(f"<style>{(Path(__file__).parent / 'static' / 'style.css').read_text()}</style>")
+    ui.add_head_html(HEADER_HTML + f'<style>{STYLE_CSS}</style>')
 
 
 def add_header(menu: Optional[ui.left_drawer] = None) -> None:
@@ -47,7 +49,7 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
         search = Search()
         search.create_button()
 
-        with ui.element().classes('max-[420px]:hidden'):
+        with ui.element().classes('max-[420px]:hidden').tooltip('Cycle theme mode through dark, light, and system/auto.'):
             ui.button(icon='dark_mode', on_click=lambda: dark_mode.set_value(None)) \
                 .props('flat fab-mini color=white').bind_visibility_from(dark_mode, 'value', value=True)
             ui.button(icon='light_mode', on_click=lambda: dark_mode.set_value(True)) \
@@ -68,4 +70,4 @@ def add_header(menu: Optional[ui.left_drawer] = None) -> None:
             with ui.button(icon='more_vert').props('flat color=white round'):
                 with ui.menu().classes('bg-primary text-white text-lg'):
                     for title_, target in menu_items.items():
-                        ui.menu_item(title_, on_click=lambda target=target: ui.open(target))
+                        ui.menu_item(title_, on_click=lambda target=target: ui.navigate.to(target))

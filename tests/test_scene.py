@@ -3,8 +3,7 @@ from selenium.common.exceptions import JavascriptException
 
 from nicegui import ui
 from nicegui.elements.scene_object3d import Object3D
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_moving_sphere_with_timer(screen: Screen):
@@ -14,7 +13,7 @@ def test_moving_sphere_with_timer(screen: Screen):
 
     screen.open('/')
 
-    def position() -> None:
+    def position() -> float:
         for _ in range(3):
             try:
                 pos = screen.selenium.execute_script(f'return scene_c{scene.id}.getObjectByName("sphere").position.z')
@@ -146,3 +145,12 @@ def test_clearing_scene(screen: Screen):
     screen.click('Clear')
     screen.wait(0.5)
     assert len(scene.objects) == 0
+
+
+def test_gltf(screen: Screen):
+    with ui.scene() as scene:
+        scene.gltf('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Box/glTF-Binary/Box.glb')
+
+    screen.open('/')
+    screen.wait(1.0)
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5

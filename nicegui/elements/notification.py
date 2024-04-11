@@ -43,6 +43,7 @@ class Notification(Element, component='notification.js'):
 
         Displays a notification on the screen.
         In contrast to `ui.notify`, this element allows to update the notification message and other properties once the notification is displayed.
+        The notification can be removed with `dismiss()`.
 
         :param message: content of the notification
         :param position: position on the screen ("top-left", "top-right", "bottom-left", "bottom-right", "top", "bottom", "left", "right" or "center", default: "bottom")
@@ -61,16 +62,19 @@ class Notification(Element, component='notification.js'):
         self._props['options'] = {
             'message': str(message),
             'position': position,
-            'type': type,
-            'color': color,
             'multiLine': multi_line,
-            'icon': icon,
             'spinner': spinner,
             'closeBtn': close_button,
             'timeout': (timeout or 0) * 1000,
             'group': False,
             'attrs': {'data-id': f'nicegui-dialog-{self.id}'},
         }
+        if type is not None:
+            self._props['options']['type'] = type
+        if color is not None:
+            self._props['options']['color'] = color
+        if icon is not None:
+            self._props['options']['icon'] = icon
         self._props['options'].update(kwargs)
         with self:
             def delete():
@@ -107,21 +111,27 @@ class Notification(Element, component='notification.js'):
     @property
     def type(self) -> NotificationType:
         """Type of the notification."""
-        return self._props['options']['type']
+        return self._props['options'].get('type')
 
     @type.setter
     def type(self, value: NotificationType) -> None:
-        self._props['options']['type'] = value
+        if value is None:
+            self._props['options'].pop('type', None)
+        else:
+            self._props['options']['type'] = value
         self.update()
 
     @property
     def color(self) -> Optional[str]:
         """Color of the notification."""
-        return self._props['options']['color']
+        return self._props['options'].get('color')
 
     @color.setter
     def color(self, value: Optional[str]) -> None:
-        self._props['options']['color'] = value
+        if value is None:
+            self._props['options'].pop('color', None)
+        else:
+            self._props['options']['color'] = value
         self.update()
 
     @property
@@ -137,11 +147,14 @@ class Notification(Element, component='notification.js'):
     @property
     def icon(self) -> Optional[str]:
         """Icon of the notification."""
-        return self._props['options']['icon']
+        return self._props['options'].get('icon')
 
     @icon.setter
     def icon(self, value: Optional[str]) -> None:
-        self._props['options']['icon'] = value
+        if value is None:
+            self._props['options'].pop('icon', None)
+        else:
+            self._props['options']['icon'] = value
         self.update()
 
     @property
@@ -163,3 +176,7 @@ class Notification(Element, component='notification.js'):
     def close_button(self, value: Union[bool, str]) -> None:
         self._props['options']['closeBtn'] = value
         self.update()
+
+    def dismiss(self) -> None:
+        """Dismiss the notification."""
+        self.run_method('dismiss')

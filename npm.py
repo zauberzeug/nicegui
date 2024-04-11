@@ -84,7 +84,16 @@ for key, dependency in dependencies.items():
     # Handle the special case of tailwind. Hopefully remove this soon.
     if 'download' in dependency:
         download_path = download_buffered(dependency['download'])
-        shutil.copyfile(download_path, prepare(destination / dependency['rename']))
+        content = download_path.read_text()
+        MSG = (
+            'console.warn("cdn.tailwindcss.com should not be used in production. '
+            'To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: '
+            'https://tailwindcss.com/docs/installation");'
+        )
+        if MSG not in content:
+            raise ValueError(f'Expected to find "{MSG}" in {download_path}')
+        content = content.replace(MSG, '')
+        prepare(destination / dependency['rename']).write_text(content)
 
     # Download and extract.
     tgz_file = prepare(Path(tmp, key, f'{key}.tgz'))
@@ -106,6 +115,14 @@ for key, dependency in dependencies.items():
 
             newfile = prepare(Path(destination, filename))
             Path(tmp, key, extracted.name).rename(newfile)
+
+            if 'GLTFLoader' in filename:
+                content = newfile.read_text()
+                MSG = '../utils/BufferGeometryUtils.js'
+                if MSG not in content:
+                    raise ValueError(f'Expected to find "{MSG}" in {download_path}')
+                content = content.replace(MSG, 'BufferGeometryUtils')
+                newfile.write_text(content)
 
     # Delete destination folder if empty.
     if not any(destination.iterdir()):

@@ -1,4 +1,5 @@
 
+import re
 from pathlib import Path
 
 import httpx
@@ -6,8 +7,8 @@ import pytest
 import requests
 
 from nicegui import __version__, app, ui
+from nicegui.testing import Screen
 
-from .screen import Screen
 from .test_helpers import TEST_DIR
 
 IMAGE_FILE = Path(TEST_DIR).parent / 'examples' / 'slideshow' / 'slides' / 'slide1.jpg'
@@ -50,6 +51,27 @@ def test_adding_single_media_file(screen: Screen):
 
     screen.open('/')
     assert_video_file_streaming(url_path)
+
+
+@pytest.mark.parametrize('url_path', ['/static', '/static/'])
+def test_get_from_static_files_dir(url_path: str, screen: Screen):
+    app.add_static_files(url_path, Path(TEST_DIR).parent)
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        r = http_client.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg')
+        assert r.status_code == 200
+
+
+def test_404_for_non_existing_static_file(screen: Screen):
+    app.add_static_files('/static', Path(TEST_DIR))
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        r = http_client.get(f'http://localhost:{Screen.PORT}/static/does_not_exist.jpg')
+        screen.assert_py_logger('WARNING', re.compile('.*does_not_exist.jpg not found'))
+        assert r.status_code == 404
+        assert 'static/_nicegui' not in r.text, 'should use root_path, see https://github.com/zauberzeug/nicegui/issues/2570'
 
 
 def test_adding_single_static_file(screen: Screen):

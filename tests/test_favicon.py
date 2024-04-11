@@ -5,8 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from nicegui import favicon, ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 DEFAULT_FAVICON_PATH = Path(__file__).parent.parent / 'nicegui' / 'static' / 'favicon.ico'
 LOGO_FAVICON_PATH = Path(__file__).parent.parent / 'website' / 'static' / 'logo_square.png'

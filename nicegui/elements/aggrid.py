@@ -59,16 +59,20 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         :param options: dictionary of additional AG Grid options
         :return: AG Grid element
         """
-        date_cols = df.columns[df.dtypes == 'datetime64[ns]']
-        time_cols = df.columns[df.dtypes == 'timedelta64[ns]']
-        complex_cols = df.columns[df.dtypes == 'complex128']
-        period_cols = df.columns[df.dtypes == 'period[M]']
-        if len(date_cols) != 0 or len(time_cols) != 0 or len(complex_cols) != 0 or len(period_cols) != 0:
+        def is_special_dtype(dtype):
+            return (pd.api.types.is_datetime64_any_dtype(dtype) or
+                    pd.api.types.is_timedelta64_dtype(dtype) or
+                    pd.api.types.is_complex_dtype(dtype) or
+                    pd.api.types.is_period_dtype(dtype))
+        special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
+        if not special_cols.empty:
             df = df.copy()
-            df[date_cols] = df[date_cols].astype(str)
-            df[time_cols] = df[time_cols].astype(str)
-            df[complex_cols] = df[complex_cols].astype(str)
-            df[period_cols] = df[period_cols].astype(str)
+            df[special_cols] = df[special_cols].astype(str)
+
+        if isinstance(df.columns, pd.MultiIndex):
+            raise ValueError('MultiIndex columns are not supported. '
+                             'You can convert them to strings using something like '
+                             '`df.columns = ["_".join(col) for col in df.columns.values]`.')
 
         return cls({
             'columnDefs': [{'field': str(col)} for col in df.columns],
@@ -101,7 +105,6 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         :param name: name of the method
         :param args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
@@ -123,11 +126,28 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         :param name: name of the method
         :param args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
         return self.run_method('run_column_method', name, *args, timeout=timeout, check_interval=check_interval)
+
+    def run_row_method(self, row_id: str, name: str, *args,
+                       timeout: float = 1, check_interval: float = 0.01) -> AwaitableResponse:
+        """Run an AG Grid API method on a specific row.
+
+        See `AG Grid Row Reference <https://www.ag-grid.com/javascript-data-grid/row-object/>`_ for a list of methods.
+
+        If the function is awaited, the result of the method call is returned.
+        Otherwise, the method is executed without waiting for a response.
+
+        :param row_id: id of the row (as defined by the ``getRowId`` option)
+        :param name: name of the method
+        :param args: arguments to pass to the method
+        :param timeout: timeout in seconds (default: 1 second)
+
+        :return: AwaitableResponse that can be awaited to get the result of the method call
+        """
+        return self.run_method('run_row_method', row_id, name, *args, timeout=timeout, check_interval=check_interval)
 
     async def get_selected_rows(self) -> List[Dict]:
         """Get the currently selected rows.
@@ -162,7 +182,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
         This does not happen when the cell loses focus, unless ``stopEditingWhenCellsLoseFocus: True`` is set.
 
         :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
+
         :return: list of row data
         """
         result = await self.client.run_javascript(f'''

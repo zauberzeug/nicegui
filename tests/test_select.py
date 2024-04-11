@@ -4,8 +4,7 @@ import pytest
 from selenium.webdriver import Keys
 
 from nicegui import ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 def test_select(screen: Screen):
@@ -142,6 +141,18 @@ def test_add_new_values(screen:  Screen, option_dict: bool, multiple: bool, new_
                                   "options = ['a', 'b', 'c']")
 
 
+def test_id_generator(screen: Screen):
+    options = {'a': 'A', 'b': 'B', 'c': 'C'}
+    select = ui.select(options, value='b', new_value_mode='add', key_generator=lambda _: len(options))
+    ui.label().bind_text_from(select, 'options', lambda v: f'options = {v}')
+
+    screen.open('/')
+    screen.find_by_tag('input').send_keys(Keys.BACKSPACE + 'd')
+    screen.wait(0.5)
+    screen.find_by_tag('input').send_keys(Keys.ENTER)
+    screen.should_contain("options = {'a': 'A', 'b': 'B', 'c': 'C', 3: 'd'}")
+
+
 @pytest.mark.parametrize('multiple', [False, True])
 def test_keep_filtered_options(multiple: bool, screen: Screen):
     ui.select(options=['A1', 'A2', 'B1', 'B2'], with_input=True, multiple=multiple)
@@ -171,3 +182,19 @@ def test_keep_filtered_options(multiple: bool, screen: Screen):
     else:
         screen.should_contain('B1')
         screen.should_contain('B2')
+
+
+@pytest.mark.parametrize('auto_validation', [True, False])
+def test_select_validation(auto_validation: bool, screen: Screen):
+    select = ui.select(['A', 'BC', 'DEF'], value='A', validation={'Too long': lambda v: len(v) < 3})
+    if not auto_validation:
+        select.without_auto_validation()
+
+    screen.open('/')
+    screen.click('A')
+    screen.click('DEF')
+    screen.wait(0.5)
+    if auto_validation:
+        screen.should_contain('Too long')
+    else:
+        screen.should_not_contain('Too long')

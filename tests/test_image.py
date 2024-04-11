@@ -1,8 +1,7 @@
 from pathlib import Path
 
 from nicegui import app, ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 example_file = Path(__file__).parent / '../examples/slideshow/slides/slide1.jpg'
 
