@@ -91,7 +91,7 @@ def styling_demo():
                         ```
                     ''')
             with browser_window(classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
-                element: ui.element = select_element.value("element")
+                element: ui.element = select_element.value('element')
     live_demo_ui()
 
 

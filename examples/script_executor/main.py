@@ -14,7 +14,7 @@ async def run_command(command: str) -> None:
     result.content = ''
     command = command.replace('python3', sys.executable)  # NOTE replace with machine-independent Python path (#1240)
     process = await asyncio.create_subprocess_exec(
-        *shlex.split(command, posix="win" not in sys.platform.lower()),
+        *shlex.split(command, posix='win' not in sys.platform.lower()),
         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT,
         cwd=os.path.dirname(os.path.abspath(__file__))
     )

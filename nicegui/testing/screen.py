@@ -156,7 +156,7 @@ class Screen:
 
     def type(self, text: str) -> None:
         """Type the given text into the currently focused element."""
-        self.selenium.execute_script("window.focus();")
+        self.selenium.execute_script('window.focus();')
         self.wait(0.2)
         self.selenium.switch_to.active_element.send_keys(text)
 

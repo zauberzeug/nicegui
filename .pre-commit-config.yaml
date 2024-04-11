@@ -32,3 +32,4 @@ repos:
         <<: *exclusions
       - id: end-of-file-fixer
         <<: *exclusions
+      - id: double-quote-string-fixer
