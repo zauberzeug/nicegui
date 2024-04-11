@@ -5,8 +5,7 @@ from typing import Awaitable, Generator, Optional
 import pytest
 
 from nicegui import app, run, ui
-
-from .screen import Screen
+from nicegui.testing import Screen
 
 
 @pytest.fixture(scope='module', autouse=True)
