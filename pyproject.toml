@@ -60,7 +60,7 @@ beautifulsoup4 = "^4.12.2"
 urllib3 = ">=1.26.18,^1.26 || >=2.0.7" # https://github.com/zauberzeug/nicegui/security/dependabot/23
 pyecharts = "^2.0.4"
 ruff = ">=0.3.5"
-pre-commit = "<3.7.0"
+pre-commit = ">=3.7.0"
 
 [build-system]
 requires = [
