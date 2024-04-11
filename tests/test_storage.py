@@ -2,6 +2,7 @@ import asyncio
 from pathlib import Path
 
 import httpx
+import pytest
 
 from nicegui import Client, app, background_tasks, context, ui
 from nicegui import storage as storage_module
@@ -226,3 +227,39 @@ def test_clear_tab_storage(screen: Screen):
     screen.click('clear')
     screen.wait(0.5)
     assert not tab_storages
+
+
+def test_client_storage(screen: Screen):
+    def increment():
+        app.storage.client['counter'] = app.storage.client['counter'] + 1
+
+    @ui.page('/')
+    def page():
+        app.storage.client['counter'] = 123
+        ui.button('Increment').on_click(increment)
+        ui.label().bind_text(app.storage.client, 'counter')
+
+    screen.open('/')
+    screen.should_contain('123')
+    screen.click('Increment')
+    screen.wait_for('124')
+
+    screen.switch_to(1)
+    screen.open('/')
+    screen.should_contain('123')
+
+    screen.switch_to(0)
+    screen.should_contain('124')
+
+
+def test_clear_client_storage(screen: Screen):
+    with pytest.raises(RuntimeError):  # no context (auto index)
+        app.storage.client.clear()
+
+    @ui.page('/')
+    def page():
+        app.storage.client['counter'] = 123
+        app.storage.client.clear()
+        assert app.storage.client == {}
+
+    screen.open('/')

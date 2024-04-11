@@ -6,18 +6,10 @@ from . import doc
 @doc.demo(ui.list)
 def main_demo() -> None:
     with ui.list().props('dense separator'):
-        with ui.item():
-            with ui.item_section():
-                ui.item_label('3 Apples')
-        with ui.item():
-            with ui.item_section():
-                ui.item_label('5 Bananas')
-        with ui.item():
-            with ui.item_section():
-                ui.item_label('8 Strawberries')
-        with ui.item():
-            with ui.item_section():
-                ui.item_label('13 Walnuts')
+        ui.item('3 Apples')
+        ui.item('5 Bananas')
+        ui.item('8 Strawberries')
+        ui.item('13 Walnuts')
 
 
 @doc.demo('Items, Sections and Labels', '''

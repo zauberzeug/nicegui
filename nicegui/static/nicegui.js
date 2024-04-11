@@ -252,6 +252,17 @@ async function loadDependencies(element, prefix, version) {
   }
 }
 
+function createRandomUUID() {
+  try {
+    return crypto.randomUUID();
+  } catch (e) {
+    // https://stackoverflow.com/a/2117523/3419103
+    return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
+      (+c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16)
+    );
+  }
+}
+
 function createApp(elements, options) {
   return (app = Vue.createApp({
     data() {
@@ -277,7 +288,7 @@ function createApp(elements, options) {
         connect: () => {
           let tabId = sessionStorage.getItem("__nicegui_tab_id");
           if (!tabId) {
-            tabId = crypto.randomUUID();
+            tabId = createRandomUUID();
             sessionStorage.setItem("__nicegui_tab_id", tabId);
           }
           window.socket.emit("handshake", { client_id: window.clientId, tab_id: tabId }, (ok) => {

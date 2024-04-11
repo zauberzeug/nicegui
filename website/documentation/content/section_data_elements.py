@@ -13,6 +13,7 @@ from . import (
     line_plot_documentation,
     linear_progress_documentation,
     log_documentation,
+    matplotlib_documentation,
     plotly_documentation,
     pyplot_documentation,
     scene_documentation,
@@ -30,6 +31,7 @@ if optional_features.has('highcharts'):
 doc.intro(echart_documentation)
 if optional_features.has('matplotlib'):
     doc.intro(pyplot_documentation)
+    doc.intro(matplotlib_documentation)
     doc.intro(line_plot_documentation)
 if optional_features.has('plotly'):
     doc.intro(plotly_documentation)

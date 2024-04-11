@@ -13,6 +13,7 @@ class ContextMenu(Element):
         super().__init__('q-menu')
         self._props['context-menu'] = True
         self._props['touch-position'] = True
+        self._props['auto-close'] = True
 
     def open(self) -> None:
         """Open the context menu."""

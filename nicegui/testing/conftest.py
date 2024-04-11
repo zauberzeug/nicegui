@@ -25,7 +25,7 @@ icecream.install()
 @pytest.fixture
 def chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeOptions:
     """Configure the Chrome driver options."""
-    chrome_options.add_argument('disable-dev-shm-using')
+    chrome_options.add_argument('disable-dev-shm-usage')
     chrome_options.add_argument('no-sandbox')
     chrome_options.add_argument('headless')
     # check if we are running on GitHub Actions
