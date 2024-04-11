@@ -273,7 +273,7 @@ class Element(Visibility):
     def _parse_style(text: Optional[str]) -> Dict[str, str]:
         result = {}
         for word in (text or '').split(';'):
-            word = word.strip()
+            word = word.strip()  # noqa: PLW2901
             if word:
                 key, value = word.split(':', 1)
                 result[key.strip()] = value.strip()

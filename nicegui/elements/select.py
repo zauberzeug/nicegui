@@ -79,7 +79,6 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         self._props['clearable'] = clearable
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
-        # pylint: disable=no-else-return
         if self.multiple:
             if e.args is None:
                 return []
@@ -89,10 +88,10 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                     if isinstance(arg, str):
                         self._handle_new_value(arg)
                 return [arg for arg in args if arg in self._values]
-        else:
+        else:  # noqa: PLR5501
             if e.args is None:
                 return None
-            else:
+            else:  # noqa: PLR5501
                 if isinstance(e.args, str):
                     new_value = self._handle_new_value(e.args)
                     return new_value if new_value in self._values else None

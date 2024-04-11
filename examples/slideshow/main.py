@@ -8,22 +8,21 @@ ui.query('.nicegui-content').classes('p-0')  # remove padding from the main cont
 
 folder = Path(__file__).parent / 'slides'  # image source: https://pixabay.com/
 files = sorted(f.name for f in folder.glob('*.jpg'))
-index = 0
+state = {'index': 0}
 
 
 def handle_key(event: KeyEventArguments) -> None:
-    global index
     if event.action.keydown:
         if event.key.arrow_right:
-            index += 1
+            state['index'] += 1
         if event.key.arrow_left:
-            index -= 1
-        index = index % len(files)
-        slide.set_source(f'slides/{files[index]}')
+            state['index'] -= 1
+        state['index'] %= len(files)
+        slide.set_source(f'slides/{files[state["index"]]}')
 
 
 app.add_static_files('/slides', folder)  # serve all files in this folder
-slide = ui.image(f'slides/{files[index]}')  # show the first image
+slide = ui.image(f'slides/{files[state["index"]]}')  # show the first image
 ui.keyboard(on_key=handle_key)  # handle keyboard events
 
 ui.run()
