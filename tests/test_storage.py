@@ -222,7 +222,7 @@ def test_clear_tab_storage(screen: Screen):
 
     tab_storages = app.storage._tabs  # pylint: disable=protected-access
     assert len(tab_storages) == 1
-    assert list(tab_storages.values())[0] == {'test': '123'}
+    assert next(iter(tab_storages.values())) == {'test': '123'}
 
     screen.click('clear')
     screen.wait(0.5)

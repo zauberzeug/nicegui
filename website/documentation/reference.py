@@ -82,7 +82,7 @@ def _generate_method_signature_description(method: Callable) -> str:
             param_type = inspect.formatannotation(param.annotation)
             param_string += f''': {param_type.strip("'")}'''
         if param.default != inspect.Parameter.empty:
-            param_string += ' = [...]' if callable(param.default) else f' = {repr(param.default)}'
+            param_string += ' = [...]' if callable(param.default) else f' = {param.default!r}'
         if param.kind == inspect.Parameter.VAR_POSITIONAL:
             param_string = f'*{param_string}'
         param_strings.append(param_string)

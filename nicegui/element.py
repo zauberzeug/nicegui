@@ -5,7 +5,7 @@ import inspect
 import re
 from copy import copy, deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union, overload
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, overload
 
 from typing_extensions import Self
 
@@ -55,12 +55,12 @@ TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 
 class Element(Visibility):
     component: Optional[Component] = None
-    libraries: List[Library] = []
-    extra_libraries: List[Library] = []
-    exposed_libraries: List[Library] = []
-    _default_props: Dict[str, Any] = {}
-    _default_classes: List[str] = []
-    _default_style: Dict[str, str] = {}
+    libraries: ClassVar[List[Library]] = []
+    extra_libraries: ClassVar[List[Library]] = []
+    exposed_libraries: ClassVar[List[Library]] = []
+    _default_props: ClassVar[Dict[str, Any]] = {}
+    _default_classes: ClassVar[List[str]] = []
+    _default_style: ClassVar[Dict[str, str]] = {}
 
     def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
         """Generic Element

@@ -89,6 +89,7 @@ select = [
     "B",  # bugbear
     "F",  # pyflakes
     "UP", # pyupgrade
+    "RUF", # ruff
 ]
 fixable = [
     "I",  # isort

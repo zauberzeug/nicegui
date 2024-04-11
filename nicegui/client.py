@@ -6,7 +6,7 @@ import time
 import uuid
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterable, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, ClassVar, Dict, Iterable, Iterator, List, Optional, Union
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -31,10 +31,10 @@ templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
 
 class Client:
-    page_routes: Dict[Callable[..., Any], str] = {}
+    page_routes: ClassVar[Dict[Callable[..., Any], str]] = {}
     """Maps page builders to their routes."""
 
-    instances: Dict[str, Client] = {}
+    instances: ClassVar[Dict[str, Client]] = {}
     """Maps client IDs to clients."""
 
     auto_index_client: Client

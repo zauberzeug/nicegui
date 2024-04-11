@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import abc
 import time
-from typing import Any, Callable, Collection, Dict, Iterable, List, Optional, SupportsIndex, Union
+from typing import Any, Callable, Collection, Dict, Iterable, List, Optional, Set, SupportsIndex, Union
 
 from . import events
 
@@ -50,7 +50,7 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 class ObservableDict(ObservableCollection, dict):
 
     def __init__(self,
-                 data: Dict = None,  # type: ignore
+                 data: Optional[Dict] = None,
                  *,
                  on_change: Optional[Callable] = None,
                  _parent: Optional[ObservableCollection] = None,
@@ -102,7 +102,7 @@ class ObservableDict(ObservableCollection, dict):
 class ObservableList(ObservableCollection, list):
 
     def __init__(self,
-                 data: List = None,  # type: ignore
+                 data: Optional[List] = None,
                  *,
                  on_change: Optional[Callable] = None,
                  _parent: Optional[ObservableCollection] = None,
@@ -164,7 +164,7 @@ class ObservableList(ObservableCollection, list):
 class ObservableSet(ObservableCollection, set):
 
     def __init__(self,
-                 data: set = None,  # type: ignore
+                 data: Optional[Set] = None,
                  *,
                  on_change: Optional[Callable] = None,
                  _parent: Optional[ObservableCollection] = None,
