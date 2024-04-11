@@ -4,8 +4,7 @@ from nicegui.testing import Screen
 
 def test_dropdown_button(screen: Screen):
     with ui.dropdown_button('Button', on_click=lambda: ui.label('Button clicked')):
-        with ui.list():
-            ui.item('Item', on_click=lambda: ui.label('Item clicked'))
+        ui.item('Item', on_click=lambda: ui.label('Item clicked'))
 
     screen.open('/')
     screen.click('Button')

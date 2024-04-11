@@ -19,9 +19,8 @@ def with_dropdown() -> None:
         ui.button('One')
         ui.button('Two')
         with ui.dropdown_button('Dropdown'):
-            with ui.list():
-                ui.item('Item 1', on_click=lambda: ui.notify('Item 1'))
-                ui.item('Item 2', on_click=lambda: ui.notify('Item 2'))
+            ui.item('Item 1', on_click=lambda: ui.notify('Item 1'))
+            ui.item('Item 2', on_click=lambda: ui.notify('Item 2'))
 
 
 @doc.demo('Button group styling', '''

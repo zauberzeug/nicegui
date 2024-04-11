@@ -16,10 +16,10 @@ class Item(DisableableElement):
         `QItem <https://quasar.dev/vue-components/list-and-list-items#qitem-api>`_ component.
         The item should be placed inside a ``ui.list`` or ``ui.menu`` element.
         If the text parameter is provided, an item section will be created with the given text.
-        If you wand to customize how the text is displayed, you need to create your own item section and label elements.
+        If you want to customize how the text is displayed, you need to create your own item section and label elements.
 
         :param text: text to be displayed (default: "")
-        :param on_click: callback to be executed when clicking on item
+        :param on_click: callback to be executed when clicking on the item (sets the "clickable" prop to True)
         """
         super().__init__(tag='q-item')
 
