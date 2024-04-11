@@ -21,8 +21,8 @@ doc.text('Overview', '''
     It has a very gentle learning curve while still offering the option for advanced customizations.
     NiceGUI follows a backend-first philosophy:
     It handles all the web development details.
-    You can focus on writing Python code. 
-    This makes it ideal for a wide range of projects including short 
+    You can focus on writing Python code.
+    This makes it ideal for a wide range of projects including short
     scripts, dashboards, robotics projects, IoT solutions, smart home automation, and machine learning.
 ''')
 
@@ -71,7 +71,7 @@ doc.text('Running NiceGUI Apps', '''
     Or you can run NiceGUI on a server that handles many clients - the website you're reading right now is served from NiceGUI.
 
     After creating your app pages with components, you call `ui.run()` to start the NiceGUI server.
-    Optional parameters to `ui.run` set things like the network address and port the server binds to, 
+    Optional parameters to `ui.run` set things like the network address and port the server binds to,
     whether the app runs in native mode, initial window size, and many other options.
     The section _Configuration and Deployment_ covers the options to the `ui.run()` function and the FastAPI framework it is based on.
 ''')

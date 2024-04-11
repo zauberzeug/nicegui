@@ -13,13 +13,13 @@ doc.title('Storage')
 
 
 @doc.demo('Storage', '''
-    NiceGUI offers a straightforward mechanism for data persistence within your application. 
+    NiceGUI offers a straightforward mechanism for data persistence within your application.
     It features four built-in storage types:
 
     - `app.storage.tab`:
         Stored server-side in memory, this dictionary is unique to each tab session and can hold arbitrary objects.
         Data will be lost when restarting the server until <https://github.com/zauberzeug/nicegui/discussions/2841> is implemented.
-        This storage is only available within [page builder functions](/documentation/page) 
+        This storage is only available within [page builder functions](/documentation/page)
         and requires an established connection, obtainable via [`await client.connected()`](/documentation/page#wait_for_client_connection).
     - `app.storage.user`:
         Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie.

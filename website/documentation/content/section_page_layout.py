@@ -62,7 +62,7 @@ doc.intro(list_documentation)
     ```
 
     Alternatively, you can remove individual elements by calling
-    
+
     - `container.remove(element: Element)`,
     - `container.remove(index: int)`, or
     - `element.delete()`.

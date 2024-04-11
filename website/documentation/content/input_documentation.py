@@ -21,7 +21,7 @@ def autocomplete_demo():
 
 
 @doc.demo('Clearable', '''
-    The `clearable` prop from [Quasar](https://quasar.dev/) adds a button to the input that clears the text.    
+    The `clearable` prop from [Quasar](https://quasar.dev/) adds a button to the input that clears the text.
 ''')
 def clearable():
     i = ui.input(value='some text').props('clearable')

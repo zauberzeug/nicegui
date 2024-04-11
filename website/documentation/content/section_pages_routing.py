@@ -47,7 +47,7 @@ doc.intro(page_layout_documentation)
 
 @doc.demo('Parameter injection', '''
     Thanks to FastAPI, a page function accepts optional parameters to provide
-    [path parameters](https://fastapi.tiangolo.com/tutorial/path-params/), 
+    [path parameters](https://fastapi.tiangolo.com/tutorial/path-params/),
     [query parameters](https://fastapi.tiangolo.com/tutorial/query-params/) or the whole incoming
     [request](https://fastapi.tiangolo.com/advanced/using-request-directly/) for accessing
     the body payload, headers, cookies and more.

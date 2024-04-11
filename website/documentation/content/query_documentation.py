@@ -16,7 +16,7 @@ def main_demo() -> None:
 
 
 @doc.demo('Set background gradient', '''
-    It's easy to set a background gradient, image or similar. 
+    It's easy to set a background gradient, image or similar.
     See [w3schools.com](https://www.w3schools.com/cssref/pr_background-image.php) for more information about setting background with CSS.
 ''')
 def background_image():
