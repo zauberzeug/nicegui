@@ -5,6 +5,7 @@ from collections import deque
 from typing import TYPE_CHECKING, Any, Deque, Dict, Optional, Tuple
 
 from . import background_tasks, core
+from .logging import log
 
 if TYPE_CHECKING:
     from .client import Client
