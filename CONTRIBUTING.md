@@ -76,16 +76,20 @@ To view the log output, use the command
 ### Formatting
 
 We use [pre-commit](https://github.com/pre-commit/pre-commit) to make sure the coding style is enforced.
-You first need to install pre-commit by running the following command:
+You first need to install pre-commit and the corresponding git commit hooks by running the following commands:
 
 ```bash
-pre-commit --install
+python3 -m pip install pre-commit
+pre-commit install
 ```
+
 After that you can make sure your code satisfies the coding style by running the following command:
 
 ```bash
 pre-commit run --all-files
 ```
+
+These checks will also run automatically before every commit.
 
 ### Formatting
 
