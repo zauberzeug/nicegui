@@ -162,12 +162,12 @@ def generate_tailwind_file(properties: List[Property]) -> None:
                         f"        self.element.classes('{prefix}' + value if value else '{prefix.rstrip('''-''')}')\n")
                 else:
                     f.write(f"        self.element.classes('{prefix}' + value)\n")
-                f.write(f'        return self\n')  # pylint: disable=f-string-without-interpolation
+                f.write('        return self\n')
             else:
                 f.write(f'    def {property_.snake_title}(self) -> Tailwind:\n')
                 f.write(f'        """{property_.description}"""\n')
                 f.write(f"        self.element.classes('{prefix}')\n")
-                f.write(f'        return self\n')  # pylint: disable=f-string-without-interpolation
+                f.write('        return self\n')
 
 
 def main() -> None:

@@ -1,8 +1,5 @@
 import inspect
-import re
 from typing import Callable, Optional
-
-import docutils.core
 
 from nicegui import binding, ui
 

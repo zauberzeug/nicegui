@@ -85,6 +85,7 @@ line-length = 120
 select = [
     "I",  # isort
     "E",  # pycodestyle
+    "F",  # pyflakes
     "UP", # pyupgrade
 ]
 fixable = [
@@ -94,4 +95,7 @@ ignore = [
     "E501", # line too long
     "UP006", # use pipe for union type annotation
     "UP007", # use pipe for union type annotation
+]
+exclude = [
+    "website/documentation/content/*",
 ]
