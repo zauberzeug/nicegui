@@ -5,7 +5,6 @@ from collections import deque
 from typing import TYPE_CHECKING, Any, Deque, Dict, Optional, Tuple
 
 from . import background_tasks, core
-from .logging import log
 
 if TYPE_CHECKING:
     from .client import Client
@@ -24,13 +23,13 @@ class Outbox:
         self.updates: Dict[ElementId, Optional[Element]] = {}
         self.messages: Deque[Message] = deque()
         self._should_stop = False
-        self._enqueue_event = None
+        self._enqueue_event: Optional[asyncio.Event] = None
         if core.app.is_started:
             background_tasks.create(self.loop(), name=f'outbox loop {client.id}')
         else:
             core.app.on_startup(self.loop)
 
-    def _set_enqueue_event(self):
+    def _set_enqueue_event(self) -> None:
         """Set the enqueue event while accounting for lazy initialization."""
         if self._enqueue_event:
             self._enqueue_event.set()
@@ -57,17 +56,17 @@ class Outbox:
 
         while not self._should_stop:
             try:
-                await self._enqueue_event.wait()
-                await asyncio.sleep(0.005)
+                try:
+                    await asyncio.wait_for(self._enqueue_event.wait(), timeout=1.0)
+                except TimeoutError:
+                    continue
 
                 if not self.client.has_socket_connection:
-                    try:
-                        await self.client.connected(timeout=60)
-                    except TimeoutError:
-                        log.error('Outbox.loop() is exiting because client is not connected after 60 seconds')
-                        return
+                    await asyncio.sleep(0.1)
+                    continue
 
                 self._enqueue_event.clear()
+
                 coros = []
                 data = {
                     element_id: None if element is None else element._to_dict()  # pylint: disable=protected-access
