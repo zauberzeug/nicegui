@@ -13,7 +13,7 @@ class ValueElement(Element):
 
     LOOPBACK: Optional[bool] = True
     """Whether to set the new value directly on the client or after getting an update from the server.
-    
+
     - ``True``: The value is updated by sending a change event to the server which responds with an update.
     - ``False``: The value is updated by setting the VALUE_PROP directly on the client.
     - ``None``: The value is updated automatically by the Vue element.

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "1.4.20-dev"
+version = "1.4.21-dev"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -48,7 +48,6 @@ pytest-selenium = "^4.0.0"
 pytest-asyncio = ">=0.19.0"
 pytest = ">=6.2.5,<8"
 itsdangerous = "^2.1.2" # required by SessionMiddleware (see https://fastapi.tiangolo.com/?h=itsdangerous#optional-dependencies)
-isort = "^5.11.4"
 pandas = "^2.0.0"
 secure = ">=0.3.0"
 webdriver-manager = "^3.8.6"
@@ -60,6 +59,8 @@ selenium = "^4.11.2"
 beautifulsoup4 = "^4.12.2"
 urllib3 = ">=1.26.18,^1.26 || >=2.0.7" # https://github.com/zauberzeug/nicegui/security/dependabot/23
 pyecharts = "^2.0.4"
+ruff = ">=0.3.5"
+pre-commit = ">=3.5.0"
 
 [build-system]
 requires = [
@@ -74,3 +75,36 @@ asyncio_mode = "auto"
 
 [tool.mypy]
 ignore_missing_imports = true
+
+[tool.ruff]
+indent-width = 4
+line-length = 120
+
+[tool.ruff.lint]
+# See complete list: https://docs.astral.sh/ruff/rules/
+select = [
+    "I",  # isort
+    "E",  # pycodestyle
+    "W",  # pycodestyle
+    "B",  # bugbear
+    "F",  # pyflakes
+    "UP", # pyupgrade
+    "RUF", # ruff
+    "PL", # pylint
+]
+fixable = [
+    "I",  # isort
+]
+ignore = [
+    "E501", # line too long
+    "UP006", # use pipe for union type annotation
+    "UP007", # use pipe for union type annotation
+    "PLR0911", # too many return statements
+    "PLR0912", # too many branches
+    "PLR0913", # too many arguments
+    "PLR0915", # too many statements
+    "PLR2004", # magic value comparison
+]
+exclude = [
+    "website/documentation/content/*",
+]

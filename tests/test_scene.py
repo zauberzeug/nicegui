@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 from selenium.common.exceptions import JavascriptException
 
@@ -43,7 +45,7 @@ def test_no_object_duplication_on_index_client(screen: Screen):
 
 
 def test_no_object_duplication_with_page_builder(screen: Screen):
-    scene: ui.scene
+    scene: Optional[ui.scene] = None
 
     @ui.page('/')
     def page():
@@ -58,6 +60,7 @@ def test_no_object_duplication_with_page_builder(screen: Screen):
     screen.open('/')
     screen.switch_to(0)
     screen.wait(0.2)
+    assert scene
     assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5
     screen.switch_to(1)
     assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5

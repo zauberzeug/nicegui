@@ -31,7 +31,7 @@ class column(ui.column):
         self.classes(remove='bg-blue-grey-3', add='bg-blue-grey-2')
 
     def move_card(self) -> None:
-        global dragged
+        global dragged  # pylint: disable=global-statement # noqa: PLW0603
         self.unhighlight()
         dragged.parent_slot.parent.remove(dragged)
         with self:
@@ -50,5 +50,5 @@ class card(ui.card):
         self.on('dragstart', self.handle_dragstart)
 
     def handle_dragstart(self) -> None:
-        global dragged
+        global dragged  # pylint: disable=global-statement # noqa: PLW0603
         dragged = self

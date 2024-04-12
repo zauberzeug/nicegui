@@ -50,6 +50,7 @@ __all__ = [
     'list',
     'log',
     'markdown',
+    'matplotlib',
     'menu',
     'menu_item',
     'mermaid',
@@ -155,6 +156,9 @@ from .elements.icon import Icon as icon
 from .elements.image import Image as image
 from .elements.input import Input as input  # pylint: disable=redefined-builtin
 from .elements.interactive_image import InteractiveImage as interactive_image
+from .elements.item import Item as item
+from .elements.item import ItemLabel as item_label
+from .elements.item import ItemSection as item_section
 from .elements.joystick import Joystick as joystick
 from .elements.json_editor import JsonEditor as json_editor
 from .elements.keyboard import Keyboard as keyboard
@@ -164,9 +168,6 @@ from .elements.leaflet import Leaflet as leaflet
 from .elements.line_plot import LinePlot as line_plot
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
-from .elements.list import Item as item
-from .elements.list import ItemLabel as item_label
-from .elements.list import ItemSection as item_section
 from .elements.list import List as list  # pylint: disable=redefined-builtin
 from .elements.log import Log as log
 from .elements.markdown import Markdown as markdown
@@ -179,6 +180,7 @@ from .elements.pagination import Pagination as pagination
 from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
+from .elements.pyplot import Matplotlib as matplotlib
 from .elements.pyplot import Pyplot as pyplot
 from .elements.query import Query as query
 from .elements.radio import Radio as radio
