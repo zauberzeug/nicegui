@@ -63,7 +63,7 @@ class AgGrid(Element, component='aggrid.js', libraries=['lib/aggrid/ag-grid-comm
             return (pd.api.types.is_datetime64_any_dtype(dtype) or
                     pd.api.types.is_timedelta64_dtype(dtype) or
                     pd.api.types.is_complex_dtype(dtype) or
-                    pd.api.types.is_period_dtype(dtype))
+                    isinstance(dtype, pd.PeriodDtype))
         special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
         if not special_cols.empty:
             df = df.copy()
