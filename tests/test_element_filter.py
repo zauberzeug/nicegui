@@ -1,5 +1,6 @@
 from nicegui import ElementFilter, ui
 from nicegui.testing import SeleniumScreen
+from nicegui.elements.mixins.text_element import TextElement
 
 
 def test_get_all(screen: SeleniumScreen):
@@ -219,7 +220,7 @@ def test_get_with_excluding_marker(screen: SeleniumScreen):
     ui.button('button B')
     ui.label('label B').mark('normal')
 
-    result = [e for e in ElementFilter(content=[' ']).exclude(marker='normal')]
+    result = list(ElementFilter(kind=TextElement).exclude(marker='normal'))
 
     screen.open('/')
     assert len(result) == 2
