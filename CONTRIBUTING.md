@@ -75,6 +75,24 @@ To view the log output, use the command
 
 ### Formatting
 
+We use [pre-commit](https://github.com/pre-commit/pre-commit) to make sure the coding style is enforced.
+You first need to install pre-commit and the corresponding git commit hooks by running the following commands:
+
+```bash
+python3 -m pip install pre-commit
+pre-commit install
+```
+
+After that you can make sure your code satisfies the coding style by running the following command:
+
+```bash
+pre-commit run --all-files
+```
+
+These checks will also run automatically before every commit.
+
+### Formatting
+
 We use [autopep8](https://github.com/hhatto/autopep8) with a 120 character line length to format our code.
 Before submitting a pull request, please run
 
@@ -93,7 +111,11 @@ on a second line and leave the other arguments as they are.
 
 ### Imports
 
-We use `isort` to automatically sort imports.
+We use [ruff](https://docs.astral.sh/ruff/) to automatically sort imports:
+
+```bash
+ruff check . --fix
+```
 
 ### Single vs Double Quotes
 

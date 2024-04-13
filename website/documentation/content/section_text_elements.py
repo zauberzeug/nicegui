@@ -1,5 +1,14 @@
-from . import (chat_message_documentation, doc, element_documentation, html_documentation, label_documentation,
-               link_documentation, markdown_documentation, mermaid_documentation, restructured_text_documentation)
+from . import (
+    chat_message_documentation,
+    doc,
+    element_documentation,
+    html_documentation,
+    label_documentation,
+    link_documentation,
+    markdown_documentation,
+    mermaid_documentation,
+    restructured_text_documentation,
+)
 
 doc.title('*Text* Elements')
 

@@ -7,7 +7,7 @@ class RouterFrame(ui.element, component='router_frame.js'):
     pass
 
 
-class Router():
+class Router:
 
     def __init__(self) -> None:
         self.routes: Dict[str, Callable] = {}

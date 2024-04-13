@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Dict
+from typing import Any, ClassVar, Dict
 
 
 class JavaScriptRequest:
-    _instances: Dict[str, JavaScriptRequest] = {}
+    _instances: ClassVar[Dict[str, JavaScriptRequest]] = {}
 
     def __init__(self, request_id: str, *, timeout: float) -> None:
         self.request_id = request_id

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import abc
-from typing import Any, Callable, Collection, Dict, Iterable, List, Optional, SupportsIndex, Union
+import time
+from typing import Any, Callable, Collection, Dict, Iterable, List, Optional, Set, SupportsIndex, Union
 
 from . import events
 
 
-class ObservableCollection(abc.ABC):
+class ObservableCollection(abc.ABC):  # noqa: B024
 
     def __init__(self, *,
                  factory: Callable,
@@ -16,6 +17,7 @@ class ObservableCollection(abc.ABC):
                  ) -> None:
         super().__init__(factory() if data is None else data)  # type: ignore
         self._parent = _parent
+        self.last_modified = time.time()
         self._change_handlers: List[Callable] = [on_change] if on_change else []
 
     @property
@@ -27,6 +29,7 @@ class ObservableCollection(abc.ABC):
         return change_handlers
 
     def _handle_change(self) -> None:
+        self.last_modified = time.time()
         for handler in self.change_handlers:
             events.handle_event(handler, events.ObservableChangeEventArguments(sender=self))
 
@@ -47,7 +50,7 @@ class ObservableCollection(abc.ABC):
 class ObservableDict(ObservableCollection, dict):
 
     def __init__(self,
-                 data: Dict = None,  # type: ignore
+                 data: Optional[Dict] = None,
                  *,
                  on_change: Optional[Callable] = None,
                  _parent: Optional[ObservableCollection] = None,
@@ -99,7 +102,7 @@ class ObservableDict(ObservableCollection, dict):
 class ObservableList(ObservableCollection, list):
 
     def __init__(self,
-                 data: List = None,  # type: ignore
+                 data: Optional[List] = None,
                  *,
                  on_change: Optional[Callable] = None,
                  _parent: Optional[ObservableCollection] = None,
@@ -161,7 +164,7 @@ class ObservableList(ObservableCollection, list):
 class ObservableSet(ObservableCollection, set):
 
     def __init__(self,
-                 data: set = None,  # type: ignore
+                 data: Optional[Set] = None,
                  *,
                  on_change: Optional[Callable] = None,
                  _parent: Optional[ObservableCollection] = None,

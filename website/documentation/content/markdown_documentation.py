@@ -20,7 +20,7 @@ def markdown_with_indentation():
 
             This block is indented.
             Thus it is rendered as source code.
-        
+
         This is normal text again.
     ''')
 

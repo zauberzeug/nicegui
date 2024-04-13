@@ -37,7 +37,7 @@ def map_style() -> None:
 
 
 @doc.demo('Add Markers on Click', '''
-    You can add markers to the map with `marker`. 
+    You can add markers to the map with `marker`.
     The `center` argument is a tuple of latitude and longitude.
     This demo adds markers by clicking on the map.
     Note that the "map-click" event refers to the click event of the map object,

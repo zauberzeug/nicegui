@@ -32,4 +32,4 @@ def prepare_content(content: str) -> str:
         writer_name='html4',
         settings_overrides={'syntax_highlight': 'short'},
     )
-    return html["html_body"].replace('<div class="document"', '<div class="codehilite"')
+    return html['html_body'].replace('<div class="document"', '<div class="codehilite"')

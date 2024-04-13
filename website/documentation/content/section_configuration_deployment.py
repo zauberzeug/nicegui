@@ -55,7 +55,7 @@ def native_mode_demo():
 doc.text('', '''
     If webview has trouble finding required libraries, you may get an error relating to "WebView2Loader.dll".
     To work around this issue, try moving the DLL file up a directory, e.g.:
-    
+
     * from `.venv/Lib/site-packages/webview/lib/x64/WebView2Loader.dll`
     * to `.venv/Lib/site-packages/webview/lib/WebView2Loader.dll`
 ''')
@@ -209,7 +209,7 @@ doc.text('', '''
     and zip up the generated `dist` directory yourself, distribute it,
     and your end users can unzip once and be good to go,
     without the constant expansion of files due to the `--onefile` flag.
-    
+
     - Summary of user experience for different options:
 
         | PyInstaller              | `ui.run(...)`  | Explanation |
@@ -251,7 +251,7 @@ doc.text('', '''
 
 doc.text('', '''
     **macOS Packaging**
-    
+
     Add the following snippet before anything else in your main app's file, to prevent new processes from being spawned in an endless loop:
 
     ```python
@@ -261,7 +261,7 @@ doc.text('', '''
 
     # all your other imports and code
     ```
-    
+
     The `# noqa` comment instructs Pylance or autopep8 to not apply any PEP rule on those two lines, guaranteeing they remain on top of anything else.
     This is key to prevent process spawning.
 ''')

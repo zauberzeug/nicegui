@@ -25,7 +25,7 @@ def main_demo() -> None:
 
 @doc.demo('Name, label, icon', '''
     The `ui.tab` element has a `label` property that can be used to display a different text than the `name`.
-    The `name` can also be used instead of the `ui.tab` objects to associate a `ui.tab` with a `ui.tab_panel`. 
+    The `name` can also be used instead of the `ui.tab` objects to associate a `ui.tab` with a `ui.tab_panel`.
     Additionally each tab can have an `icon`.
 ''')
 def name_and_label():

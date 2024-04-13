@@ -6,7 +6,7 @@ import time
 import uuid
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterable, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, ClassVar, Dict, Iterable, Iterator, List, Optional, Union
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -20,6 +20,7 @@ from .element import Element
 from .favicon import get_favicon_url
 from .javascript_request import JavaScriptRequest
 from .logging import log
+from .observables import ObservableDict
 from .outbox import Outbox
 from .version import __version__
 
@@ -30,7 +31,7 @@ templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
 
 class Client:
-    page_routes: Dict[Callable[..., Any], str] = {}
+    page_routes: ClassVar[Dict[Callable[..., Any], str]] = {}
     """Maps page builders to their routes."""
 
     page_configs: Dict[Callable[..., Any], "page"] = {}
@@ -39,7 +40,7 @@ class Client:
     single_page_routes: Dict[str, Any] = {}
     """Maps paths to the associated single page routers."""
 
-    instances: Dict[str, Client] = {}
+    instances: ClassVar[Dict[str, Client]] = {}
     """Maps client IDs to clients."""
 
     auto_index_client: Client
@@ -64,6 +65,7 @@ class Client:
         self.shared = shared
         self.on_air = False
         self._disconnect_task: Optional[asyncio.Task] = None
+        self.tab_id: Optional[str] = None
 
         self.outbox = Outbox(self)
 
@@ -78,6 +80,7 @@ class Client:
         self._body_html = ''
 
         self.page = page
+        self.storage = ObservableDict()
         self.single_page_content = None
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []

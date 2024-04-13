@@ -24,11 +24,11 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
     PIL_CONVERT_FORMAT = 'PNG'
 
     def __init__(self,
-                 source: Union[str, Path, 'PIL_Image'] = '', *,
+                 source: Union[str, Path, 'PIL_Image'] = '', *,  # noqa: UP037
                  content: str = '',
                  size: Optional[Tuple[float, float]] = None,
                  on_mouse: Optional[Callable[..., Any]] = None,
-                 events: List[str] = ['click'],
+                 events: List[str] = ['click'],  # noqa: B006
                  cross: Union[bool, str] = False,
                  ) -> None:
         """Interactive Image
@@ -58,7 +58,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         :param on_pointer: callback for pointer events (contains image coordinates `image_x` and `image_y` in pixels, and `type` of the event)
         """
         super().__init__(source=source, content=content)
-        self._props['events'] = events
+        self._props['events'] = events[:]
         self._props['cross'] = cross
         self._props['size'] = size
 
@@ -86,7 +86,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         self.on('mouse', handle_mouse)
         return self
 
-    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:
+    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
             source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)

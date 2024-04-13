@@ -1,0 +1,35 @@
+default_language_version:
+  python: python3.8
+default_install_hook_types: [pre-commit, pre-push]
+default_stages: [commit]
+
+exclusions: &exclusions
+  exclude: |
+    (?x)^(
+      nicegui/elements/lib/.*|
+      nicegui/static/es-module-shims\.js|
+      nicegui/static/fonts/.*|
+      nicegui/static/fonts\.css|
+      nicegui/static/lang/.*|
+      nicegui/static/quasar\..*|
+      nicegui/static/socket\..*|
+      nicegui/static/tailwindcss\..*|
+      nicegui/static/vue\..*|
+      website/static/fuse\.js\@.*|
+      examples/fullcalendar/lib/.*
+    )$
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.5
+    hooks:
+      - id: ruff
+        args: [--fix]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        <<: *exclusions
+      - id: end-of-file-fixer
+        <<: *exclusions
+      - id: double-quote-string-fixer

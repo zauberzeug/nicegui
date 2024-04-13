@@ -59,7 +59,7 @@ class page(ui.page):
                 <script>
                     const sdk = Descope({{ projectId: '{DESCOPE_ID}', persistTokens: true, autoRefresh: true }});
                     const sessionToken = sdk.getSessionToken()
-                </script>                 
+                </script>
             ''')
             await client.connected()
             if await self._is_logged_in():
