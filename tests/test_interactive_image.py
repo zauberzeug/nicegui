@@ -21,26 +21,26 @@ def test_set_source_in_tab(screen: SeleniumScreen):
             with ui.tab_panel('B'):
                 ui.label('Tab B')
         await client.connected()
-        img.set_source('https://nicegui.io/logo.png')
+        img.set_source('https://picsum.photos/id/29/640/360')
 
     screen.open('/')
     screen.wait(0.5)
-    assert screen.find_by_tag('img').get_attribute('src') == 'https://nicegui.io/logo.png'
+    assert screen.find_by_tag('img').get_attribute('src') == 'https://picsum.photos/id/29/640/360'
     screen.click('B')
     screen.wait(0.5)
     screen.click('A')
-    assert screen.find_by_tag('img').get_attribute('src') == 'https://nicegui.io/logo.png'
+    assert screen.find_by_tag('img').get_attribute('src') == 'https://picsum.photos/id/29/640/360'
 
 
-@pytest.mark.parametrize('cross, number_of_lines', [(True, 2), (False, 0)])
-def test_with_cross(screen: SeleniumScreen, cross: bool, number_of_lines: int):
-    ii = ui.interactive_image('https://nicegui.io/logo.png', cross=cross)
-    ii.content = '<circle cx="100" cy="100" r="15" fill="none" stroke="red" stroke-width="4" />'
+@pytest.mark.parametrize('cross', [True, False])
+def test_with_cross(screen: SeleniumScreen, cross: bool):
+    ui.interactive_image('https://picsum.photos/id/29/640/360',
+                         content='<circle cx="100" cy="100" r="15" />', cross=cross)
 
     screen.open('/')
     screen.find_by_tag('svg')
     with screen.implicitly_wait(0.5):
-        assert len(screen.find_all_by_tag('line')) == number_of_lines
+        assert len(screen.find_all_by_tag('line')) == (2 if cross else 0)
         assert len(screen.find_all_by_tag('circle')) == 1
 
 
@@ -55,10 +55,10 @@ def test_replace_interactive_image(screen: SeleniumScreen):
     ui.button('Replace', on_click=replace)
 
     screen.open('/')
-    assert screen.find_by_tag('img').get_attribute('src').endswith('id/29/640/360')
+    assert (screen.find_by_tag('img').get_attribute('src') or '').endswith('id/29/640/360')
     screen.click('Replace')
     screen.wait(0.5)
-    assert screen.find_by_tag('img').get_attribute('src').endswith('id/30/640/360')
+    assert (screen.find_by_tag('img').get_attribute('src') or '').endswith('id/30/640/360')
 
 
 @pytest.mark.parametrize('cross', [True, False])

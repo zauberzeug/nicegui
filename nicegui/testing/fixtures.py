@@ -33,8 +33,7 @@ def pytest_configure(config):
 
 @pytest.fixture
 def nicegui_chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeOptions:
-    """Configure the Chrome driver options."""
-    chrome_options.add_argument('disable-dev-shm-using')
+    chrome_options.add_argument('disable-dev-shm-usage')
     chrome_options.add_argument('no-sandbox')
     chrome_options.add_argument('headless')
     # check if we are running on GitHub Actions
@@ -44,9 +43,9 @@ def nicegui_chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver
         chrome_options.add_argument('--use-gl=angle')
     chrome_options.add_argument('window-size=600x600')
     chrome_options.add_experimental_option('prefs', {
-        "download.default_directory": str(DOWNLOAD_DIR),
-        "download.prompt_for_download": False,  # To auto download the file
-        "download.directory_upgrade": True,
+        'download.default_directory': str(DOWNLOAD_DIR),
+        'download.prompt_for_download': False,  # To auto download the file
+        'download.directory_upgrade': True,
     })
     if 'CHROME_BINARY_LOCATION' in os.environ:
         chrome_options.binary_location = os.environ['CHROME_BINARY_LOCATION']

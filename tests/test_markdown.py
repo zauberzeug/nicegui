@@ -34,7 +34,7 @@ def test_markdown_with_mermaid(screen: SeleniumScreen):
 
     m.set_content('''
         New:
-        
+
         ```mermaid
         graph TD;
             Node_C --> Node_D;

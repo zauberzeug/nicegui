@@ -31,6 +31,15 @@ class Navigate:
         run_javascript('history.forward()')
 
     @staticmethod
+    def reload() -> None:
+        """ui.navigate.reload
+
+        Reload the current page.
+        It is equivalent to clicking the reload button in the browser.
+        """
+        run_javascript('history.go(0)')
+
+    @staticmethod
     def to(target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:
         """ui.navigate.to (formerly ui.open)
 
@@ -42,7 +51,7 @@ class Navigate:
 
         This functionality was previously available as `ui.open` which is now deprecated.
 
-        Note: When using an `auto-index page </documentation/section_pages_routing#auto-index_page>`_ (e.g. no `@page` decorator), 
+        Note: When using an `auto-index page </documentation/section_pages_routing#auto-index_page>`_ (e.g. no `@page` decorator),
         all clients (i.e. browsers) connected to the page will open the target URL unless a socket is specified.
         User events like button clicks provide such a socket.
 

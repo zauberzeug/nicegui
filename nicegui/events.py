@@ -118,6 +118,13 @@ class UploadEventArguments(UiEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
+class MultiUploadEventArguments(UiEventArguments):
+    contents: List[BinaryIO]
+    names: List[str]
+    types: List[str]
+
+
+@dataclass(**KWONLY_SLOTS)
 class ValueChangeEventArguments(UiEventArguments):
     value: Any
 

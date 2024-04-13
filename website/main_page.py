@@ -82,7 +82,7 @@ def create() -> None:
         with ui.expansion('...or use Docker to run your main.py').classes('w-full gap-2 bold-links arrow-links'):
             with ui.row().classes('mt-8 w-full justify-center items-center gap-8'):
                 ui.markdown('''
-                    With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) 
+                    With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui)
                     you can start the server without installing any packages.
 
                     The command searches for `main.py` in in your current directory and makes the app available at http://localhost:8888.

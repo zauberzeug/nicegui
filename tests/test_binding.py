@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional, Tuple
 
 from selenium.webdriver.common.keys import Keys
 
@@ -8,13 +8,13 @@ from nicegui.testing import SeleniumScreen
 
 def test_ui_select_with_tuple_as_key(screen: SeleniumScreen):
     class Model:
-        selection = None
+        selection: Optional[Tuple[int, int]] = None
     data = Model()
     options = {
         (2, 1): 'option A',
         (1, 2): 'option B',
     }
-    data.selection = list(options.keys())[0]
+    data.selection = next(iter(options))
     ui.select(options).bind_value(data, 'selection')
 
     screen.open('/')

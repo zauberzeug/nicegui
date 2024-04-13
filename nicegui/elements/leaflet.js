@@ -107,13 +107,10 @@ export default {
       clearInterval(connectInterval);
     }, 100);
   },
+  updated() {
+    this.map?.setView(this.center, this.zoom);
+  },
   methods: {
-    setCenter(center) {
-      this.map.panTo(center);
-    },
-    setZoom(zoom) {
-      this.map.setZoom(zoom);
-    },
     add_layer(layer, id) {
       const l = L[layer.type](...layer.args);
       l.id = id;
@@ -128,9 +125,9 @@ export default {
     run_map_method(name, ...args) {
       if (name.startsWith(":")) {
         name = name.slice(1);
-        args = args.map((arg) => new Function("return " + arg)());
+        args = args.map((arg) => new Function(`return (${arg})`)());
       }
-      return this.map[name](...args);
+      return runMethod(this.map, name, args);
     },
     run_layer_method(id, name, ...args) {
       let result = null;
@@ -138,9 +135,9 @@ export default {
         if (layer.id !== id) return;
         if (name.startsWith(":")) {
           name = name.slice(1);
-          args = args.map((arg) => new Function("return " + arg)());
+          args = args.map((arg) => new Function(`return (${arg})`)());
         }
-        result = layer[name](...args);
+        result = runMethod(layer, name, args);
       });
       return result;
     },

@@ -52,8 +52,8 @@ def test_replace_link(screen: SeleniumScreen):
 
 
 def test_updating_href_prop(screen: SeleniumScreen):
-    l = ui.link('nicegui.io', 'https://nicegui.io')
-    ui.button('change href', on_click=lambda: l.props('href="https://github.com/zauberzeug/nicegui"'))
+    label = ui.link('nicegui.io', 'https://nicegui.io')
+    ui.button('change href', on_click=lambda: label.props('href="https://github.com/zauberzeug/nicegui"'))
 
     screen.open('/')
     assert screen.find('nicegui.io').get_attribute('href') == 'https://nicegui.io/'

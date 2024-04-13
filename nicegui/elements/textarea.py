@@ -21,6 +21,7 @@ class Textarea(Input, component='input.js'):
         e.g. ``{'Too long!': lambda value: len(value) < 3}``.
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
+        To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
 
         :param label: displayed name for the textarea
         :param placeholder: text to show if no value is entered

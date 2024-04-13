@@ -1,4 +1,5 @@
 
+import re
 from pathlib import Path
 
 import httpx
@@ -52,6 +53,48 @@ def test_adding_single_media_file(screen: SeleniumScreen):
     assert_video_file_streaming(url_path)
 
 
+@pytest.mark.parametrize('url_path', ['/static', '/static/'])
+def test_get_from_static_files_dir(url_path: str, screen: SeleniumScreen):
+    app.add_static_files(url_path, Path(TEST_DIR).parent)
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        r = http_client.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg')
+        assert r.status_code == 200
+
+
+def test_404_for_non_existing_static_file(screen: SeleniumScreen):
+    app.add_static_files('/static', Path(TEST_DIR))
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        r = http_client.get(f'http://localhost:{SeleniumScreen.PORT}/static/does_not_exist.jpg')
+        screen.assert_py_logger('WARNING', re.compile('.*does_not_exist.jpg not found'))
+        assert r.status_code == 404
+        assert 'static/_nicegui' not in r.text, 'should use root_path, see https://github.com/zauberzeug/nicegui/issues/2570'
+
+
+@pytest.mark.parametrize('url_path', ['/static', '/static/'])
+def test_get_from_static_files_dir(url_path: str, screen: SeleniumScreen):
+    app.add_static_files(url_path, Path(TEST_DIR).parent)
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        r = http_client.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg')
+        assert r.status_code == 200
+
+
+def test_404_for_non_existing_static_file(screen: SeleniumScreen):
+    app.add_static_files('/static', Path(TEST_DIR))
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        r = http_client.get(f'http://localhost:{SeleniumScreen.PORT}/static/does_not_exist.jpg')
+        screen.assert_py_logger('WARNING', re.compile('.*does_not_exist.jpg not found'))
+        assert r.status_code == 404
+        assert 'static/_nicegui' not in r.text, 'should use root_path, see https://github.com/zauberzeug/nicegui/issues/2570'
+
+
 def test_adding_single_static_file(screen: SeleniumScreen):
     url_path = app.add_static_file(local_file=IMAGE_FILE)
 
@@ -69,8 +112,8 @@ def test_auto_serving_file_from_image_source(screen: SeleniumScreen):
     img = screen.find_by_tag('img')
     assert '/_nicegui/auto/static/' in img.get_attribute('src')
     assert screen.selenium.execute_script("""
-    return arguments[0].complete && 
-        typeof arguments[0].naturalWidth != "undefined" && 
+    return arguments[0].complete &&
+        typeof arguments[0].naturalWidth != "undefined" &&
         arguments[0].naturalWidth > 0
     """, img), 'image should load successfully'
 

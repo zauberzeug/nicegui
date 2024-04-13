@@ -49,7 +49,7 @@ class User():
         client_id = match.group(1)
         client = Client.instances[client_id]
         self.sio.on('connect')
-        await ng._on_handshake(f'test-{uuid4()}', client.id)
+        await ng._on_handshake(f'test-{uuid4()}', {'client_id': client.id, 'tab_id': str(uuid4())})
         self.client = client
         self.activate()
 

@@ -11,8 +11,8 @@ running_query: Optional[asyncio.Task] = None
 
 
 async def search(e: events.ValueChangeEventArguments) -> None:
-    '''Search for cocktails as you type.'''
-    global running_query
+    """Search for cocktails as you type."""
+    global running_query  # pylint: disable=global-statement # noqa: PLW0603
     if running_query:
         running_query.cancel()  # cancel the previous query; happens when you type fast
     search_field.classes('mt-2', remove='mt-24')  # move the search field up

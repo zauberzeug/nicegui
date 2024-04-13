@@ -126,7 +126,7 @@ def generate_tailwind_file(properties: List[Property]) -> None:
         f.write('\n')
         f.write('class Tailwind:\n')
         f.write('\n')
-        f.write("    def __init__(self, _element: Optional[Element] = None) -> None:\n")
+        f.write('    def __init__(self, _element: Optional[Element] = None) -> None:\n')
         f.write(
             '        self.element: Union[PseudoElement, Element] = PseudoElement() if _element is None else _element\n')
         f.write('\n')
@@ -147,7 +147,7 @@ def generate_tailwind_file(properties: List[Property]) -> None:
         f.write("            self.element.classes(' '.join(args))\n")
         f.write('        return self\n')
         f.write('\n')
-        f.write("    def apply(self, element: Element) -> None:\n")
+        f.write('    def apply(self, element: Element) -> None:\n')
         f.write('        """Apply the tailwind classes to the given element."""\n')
         f.write('        element._classes.extend(self.element._classes)  # pylint: disable=protected-access\n')
         f.write('        element.update()\n')
@@ -155,19 +155,19 @@ def generate_tailwind_file(properties: List[Property]) -> None:
             f.write('\n')
             prefix = property_.common_prefix
             if property_.members:
-                f.write(f"    def {property_.snake_title}(self, value: {property_.pascal_title}) -> Tailwind:\n")
+                f.write(f'    def {property_.snake_title}(self, value: {property_.pascal_title}) -> Tailwind:\n')
                 f.write(f'        """{property_.description}"""\n')
                 if '' in property_.short_members:
                     f.write(
                         f"        self.element.classes('{prefix}' + value if value else '{prefix.rstrip('''-''')}')\n")
                 else:
                     f.write(f"        self.element.classes('{prefix}' + value)\n")
-                f.write(f'        return self\n')  # pylint: disable=f-string-without-interpolation
+                f.write('        return self\n')
             else:
-                f.write(f"    def {property_.snake_title}(self) -> Tailwind:\n")
+                f.write(f'    def {property_.snake_title}(self) -> Tailwind:\n')
                 f.write(f'        """{property_.description}"""\n')
                 f.write(f"        self.element.classes('{prefix}')\n")
-                f.write(f'        return self\n')  # pylint: disable=f-string-without-interpolation
+                f.write('        return self\n')
 
 
 def main() -> None:

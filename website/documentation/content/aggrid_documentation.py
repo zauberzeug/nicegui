@@ -77,7 +77,7 @@ def aggrid_with_selectable_rows():
 @doc.demo('Filter Rows using Mini Filters', '''
     You can add [mini filters](https://ag-grid.com/javascript-data-grid/filter-set-mini-filter/)
     to the header of each column to filter the rows.
-    
+
     Note how the "agTextColumnFilter" matches individual characters, like "a" in "Alice" and "Carol",
     while the "agNumberColumnFilter" matches the entire number, like "18" and "21", but not "1".
 ''')
@@ -219,6 +219,23 @@ def aggrid_run_row_method():
     })
     ui.button('Update',
               on_click=lambda: grid.run_row_method('Alice', 'setDataValue', 'age', 99))
+
+
+@doc.demo('Filter return values', '''
+    You can filter the return values of method calls by passing string that defines a JavaScript function.
+    This demo runs the grid method "getDisplayedRowAtIndex" and returns the "data" property of the result.
+''')
+def aggrid_filter_return_values():
+    grid = ui.aggrid({
+        'columnDefs': [{'field': 'name'}],
+        'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
+    })
+
+    async def get_first_name() -> None:
+        row = await grid.run_grid_method('(g) => g.getDisplayedRowAtIndex(0).data')
+        ui.notify(row['name'])
+
+    ui.button('Get First Name', on_click=get_first_name)
 
 
 doc.reference(ui.aggrid)

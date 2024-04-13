@@ -96,6 +96,10 @@ def _get_component(key: str) -> FileResponse:
 def _get_resource(key: str, path: str) -> FileResponse:
     if key in resources:
         filepath = resources[key].path / path
+        try:
+            filepath.resolve().relative_to(resources[key].path.resolve())  # NOTE: use is_relative_to() in Python 3.9
+        except ValueError as e:
+            raise HTTPException(status_code=403, detail='forbidden') from e
         if filepath.exists():
             headers = {'Cache-Control': 'public, max-age=3600'}
             media_type, _ = mimetypes.guess_type(filepath)
@@ -129,6 +133,7 @@ async def _startup() -> None:
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
     background_tasks.create(Client.prune_instances(), name='prune clients')
     background_tasks.create(Slot.prune_stacks(), name='prune slot stacks')
+    background_tasks.create(core.app.storage.prune_tab_storage(), name='prune tab storage')
     air.connect()
 
 
@@ -158,10 +163,11 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 
 @sio.on('handshake')
-async def _on_handshake(sid: str, client_id: str) -> bool:
-    client = Client.instances.get(client_id)
+async def _on_handshake(sid: str, data: Dict[str, str]) -> bool:
+    client = Client.instances.get(data['client_id'])
     if not client:
         return False
+    client.tab_id = data['tab_id']
     if 'test-' != sid[:5]:
         await sio.enter_room(sid, client.id)
         client.environ = sio.get_environ(sid)

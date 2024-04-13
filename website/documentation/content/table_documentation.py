@@ -113,26 +113,21 @@ def table_with_drop_down_selection():
                 row['name'] = e.args['name']
         ui.notify(f'Table.rows is now: {table.rows}')
 
-    table = ui.table(columns=columns, rows=rows, row_key='name').classes('w-full')
-    table.add_slot('body', r'''
-        <q-tr :props="props">
-            <q-td key="name" :props="props">
-                <q-select
-                    v-model="props.row.name"
-                    :options="''' + str(name_options) + r'''"
-                    @update:model-value="() => $parent.$emit('rename', props.row)"
-                />
-            </q-td>
-            <q-td key="age" :props="props">
-                {{ props.row.age }}
-            </q-td>
-        </q-tr>
+    table = ui.table(columns=columns, rows=rows).classes('w-full')
+    table.add_slot('body-cell-name', r'''
+        <q-td key="name" :props="props">
+            <q-select
+                v-model="props.row.name"
+                :options="''' + str(name_options) + r'''"
+                @update:model-value="() => $parent.$emit('rename', props.row)"
+            />
+        </q-td>
     ''')
     table.on('rename', rename)
 
 
 @doc.demo('Table from Pandas DataFrame', '''
-    You can create a table from a Pandas DataFrame using the `from_pandas` method. 
+    You can create a table from a Pandas DataFrame using the `from_pandas` method.
     This method takes a Pandas DataFrame as input and returns a table.
 ''')
 def table_from_pandas_demo():
@@ -269,7 +264,7 @@ def computed_fields():
     You can use scoped slots to conditionally format the content of a cell.
     See the [Quasar documentation](https://quasar.dev/vue-components/table#example--body-cell-slot)
     for more information about body-cell slots.
-    
+
     In this demo we use a `q-badge` to display the age in red if the person is under 21 years old.
     We use the `body-cell-age` slot to insert the `q-badge` into the `age` column.
     The ":color" attribute of the `q-badge` is set to "red" if the age is under 21, otherwise it is set to "green".

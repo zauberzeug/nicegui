@@ -2,7 +2,6 @@ import asyncio
 import gzip
 import json
 import re
-import signal
 from dataclasses import dataclass
 from typing import Any, AsyncIterator, Dict, Optional
 from uuid import uuid4
@@ -14,6 +13,7 @@ import socketio.exceptions
 from . import background_tasks, core
 from .client import Client
 from .dataclasses import KWONLY_SLOTS
+from .elements.timer import Timer as timer
 from .logging import log
 
 RELAY_HOST = 'https://on-air.nicegui.io/'
@@ -35,6 +35,8 @@ class Air:
         self.connecting = False
         self.streams: Dict[str, Stream] = {}
         self.remote_url: Optional[str] = None
+
+        timer(5, self.connect)  # ensure we stay connected
 
         @self.relay.on('http')
         async def _handle_http(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -69,7 +71,7 @@ class Air:
         @self.relay.on('range-request')
         async def _handle_range_request(data: Dict[str, Any]) -> Dict[str, Any]:
             headers: Dict[str, Any] = data['headers']
-            url = list(u for u in core.app.urls if self.remote_url != u)[0] + data['path']
+            url = next(iter(u for u in core.app.urls if self.remote_url != u)) + data['path']
             data['params']['nicegui_chunk_size'] = 1024
             request = self.client.build_request(
                 data['method'],
@@ -168,37 +170,40 @@ class Air:
             signal.signal(signal.SIGTERM, lambda signum, frame: disconnect())
         except Exception:
             pass
-        if self.connecting:
+        if self.connecting or self.relay.connected:
             return
         self.connecting = True
         backoff_time = 1
-        while True:
-            try:
-                if self.relay.connected:
-                    await self.relay.disconnect()
-                await self.relay.connect(
-                    f'{RELAY_HOST}?device_token={self.token}',
-                    socketio_path='/on_air/socket.io',
-                    transports=['websocket', 'polling'],  # favor websocket over polling
-                )
-                break
-            except socketio.exceptions.ConnectionError:
-                pass
-            except ValueError:  # NOTE this sometimes happens when the internal socketio client is not yet ready
-                await self.relay.disconnect()
-            except Exception:
-                log.exception('Could not connect to NiceGUI On Air server.')
+        try:
+            while True:
+                try:
+                    if self.relay.connected:
+                        await self.relay.disconnect()
+                    await self.relay.connect(
+                        f'{RELAY_HOST}?device_token={self.token}',
+                        socketio_path='/on_air/socket.io',
+                        transports=['websocket', 'polling'],  # favor websocket over polling
+                    )
+                    break
+                except socketio.exceptions.ConnectionError:
+                    pass
+                except ValueError:  # NOTE this sometimes happens when the internal socketio client is not yet ready
+                    pass
+                except Exception:
+                    log.exception('Could not connect to NiceGUI On Air server.')
 
-            await asyncio.sleep(backoff_time)
-            backoff_time = min(backoff_time * 2, 32)
-        self.connecting = False
+                await asyncio.sleep(backoff_time)
+                backoff_time = min(backoff_time * 2, 32)
+        finally:
+            self.connecting = False
 
     async def disconnect(self) -> None:
         """Disconnect from the NiceGUI On Air server."""
+        if self.relay.connected:
+            await self.relay.disconnect()
         for stream in self.streams.values():
             await stream.response.aclose()
         self.streams.clear()
-        await self.relay.disconnect()
 
     async def emit(self, message_type: str, data: Dict[str, Any], room: str) -> None:
         """Emit a message to the NiceGUI On Air server."""

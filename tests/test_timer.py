@@ -105,3 +105,27 @@ def test_timer_on_deleted_container(screen: SeleniumScreen):
     count = state['count']
     screen.wait(0.5)
     assert state['count'] == count, 'timer is not running anymore after deleting the container'
+
+
+def test_different_callbacks(screen: SeleniumScreen):
+    def sync_function():
+        ui.label('a synchronous function')
+
+    async def async_function():
+        await asyncio.sleep(0.1)
+        ui.label('an asynchronous function')
+
+    async def async_lambda(msg: str):
+        await asyncio.sleep(0.1)
+        ui.label(f'an asynchronous lambda: {msg}')
+
+    ui.timer(0.1, sync_function, once=True)
+    ui.timer(0.1, async_function, once=True)
+    ui.timer(0.1, lambda: ui.label('a synchronous lambda'), once=True)
+    ui.timer(0.1, lambda: async_lambda('Hi!'), once=True)
+
+    screen.open('/')
+    screen.should_contain('a synchronous function')
+    screen.should_contain('an asynchronous function')
+    screen.should_contain('a synchronous lambda')
+    screen.should_contain('an asynchronous lambda: Hi!')

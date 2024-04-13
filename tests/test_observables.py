@@ -10,17 +10,17 @@ count = 0
 
 
 def reset_counter():
-    global count
+    global count  # noqa: PLW0603
     count = 0
 
 
 def increment_counter():
-    global count
+    global count  # noqa: PLW0603
     count += 1
 
 
 async def increment_counter_slowly(_):
-    global count
+    global count  # noqa: PLW0603
     await asyncio.sleep(0.1)
     count += 1
 

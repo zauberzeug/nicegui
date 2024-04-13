@@ -1,4 +1,3 @@
-import asyncio
 import os
 import re
 import threading
@@ -9,8 +8,11 @@ from typing import Generator, List, Optional, Union
 
 import pytest
 from selenium import webdriver
-from selenium.common.exceptions import (ElementNotInteractableException, NoSuchElementException,
-                                        StaleElementReferenceException)
+from selenium.common.exceptions import (
+    ElementNotInteractableException,
+    NoSuchElementException,
+    StaleElementReferenceException,
+)
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
@@ -31,7 +33,7 @@ class SeleniumScreen:
         self.ui_run_kwargs = {'port': self.PORT, 'show': False, 'reload': False}
         self.connected = threading.Event()
         app.on_connect(self.connected.set)
-        self.url = f'http://localhost:{self.PORT}/'
+        self.url = f'http://localhost:{self.PORT}'
 
     def start_server(self) -> None:
         """Start the webserver in a separate thread. This is the equivalent of `ui.run()` in a normal script."""
@@ -43,7 +45,7 @@ class SeleniumScreen:
         """Check if the browser is open."""
         # https://stackoverflow.com/a/66150779/3419103
         try:
-            self.selenium.current_url  # pylint: disable=pointless-statement
+            self.selenium.current_url  # pylint: disable=pointless-statement # noqa: B018
             return True
         except Exception as e:
             print(e)
@@ -157,7 +159,7 @@ class SeleniumScreen:
 
     def type(self, text: str) -> None:
         """Type the given text into the currently focused element."""
-        self.selenium.execute_script("window.focus();")
+        self.selenium.execute_script('window.focus();')
         self.wait(0.2)
         self.selenium.switch_to.active_element.send_keys(text)
 
@@ -206,7 +208,7 @@ class SeleniumScreen:
 
     def render_js_logs(self) -> str:
         """Render the browser console logs as a string."""
-        console = '\n'.join(l['message'] for l in self.selenium.get_log('browser'))
+        console = '\n'.join(log['message'] for log in self.selenium.get_log('browser'))
         return f'-- console logs ---\n{console}\n---------------------'
 
     def wait(self, t: float) -> None:
