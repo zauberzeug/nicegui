@@ -227,7 +227,7 @@ class Client:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
         if path in self.single_page_routes and self.single_page_content is not None:  # moving from SPR to SPR?
-            self.single_page_routes[path].open(target)
+            self.single_page_routes[path].navigate_to(target)
             return
         self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 

@@ -18,20 +18,20 @@ export default {
                     if (!regex.test(href)) continue;
                     e.preventDefault(); // Prevent the default link behavior
                     if (router.use_browser_history) window.history.pushState({page: org_href}, '', org_href);
-                    router.$emit('open', org_href, false);
+                    router.$emit('open', org_href);
                     return
                 }
             }
         });
         window.addEventListener('popstate', (event) => {
             let new_page = window.location.pathname;
-            this.$emit('open', new_page, false);
+            this.$emit('open', new_page);
         });
         const connectInterval = setInterval(async () => {
             if (window.socket.id === undefined) return;
             let target = window.location.pathname;
             if (window.location.hash !== '') target += window.location.hash;
-            this.$emit('open', target, false);
+            this.$emit('open', target);
             clearInterval(connectInterval);
         }, 10);
     },

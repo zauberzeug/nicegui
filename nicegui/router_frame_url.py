@@ -3,7 +3,7 @@ import urllib.parse
 from typing import Dict, Optional, TYPE_CHECKING, Self
 
 if TYPE_CHECKING:
-    from nicegui.single_page import SinglePageRouterEntry
+    from nicegui.outlet import SinglePageRouterEntry
 
 
 class SinglePageUrl:

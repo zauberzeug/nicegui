@@ -1,26 +1,13 @@
 import fnmatch
 import re
-from typing import Callable, Dict, Union, Optional, Tuple, Self, List, Set
+from functools import wraps
+from typing import Callable, Dict, Union, Optional, Tuple, Self, List, Set, Any, Generator
 
 from fastapi.routing import APIRoute
 
-from nicegui import background_tasks, helpers, ui, core, context, Client
-from nicegui.single_page_url import SinglePageUrl
-
-
-class SinglePageRouterFrame(ui.element, component='single_page.js'):
-    """The SinglePageRouterFrame is a special element which is used by the SinglePageRouter to exchange the content of
-    the current page with the content of the new page. It serves as container and overrides the browser's history
-    management to prevent the browser from reloading the whole page."""
-
-    def __init__(self, valid_path_masks: list[str], use_browser_history: bool = True):
-        """
-        :param valid_path_masks: A list of valid path masks which shall be allowed to be opened by the router
-        :param use_browser_history: Optional flag to enable or disable the browser history management. Default is True.
-        """
-        super().__init__()
-        self._props['valid_path_masks'] = valid_path_masks
-        self._props['browser_history'] = use_browser_history
+from nicegui import background_tasks, helpers, ui, core, context
+from nicegui.elements.router_frame import RouterFrame
+from nicegui.router_frame_url import SinglePageUrl
 
 
 class SinglePageRouterEntry:
@@ -51,7 +38,17 @@ class SinglePageRouterEntry:
         return self
 
 
-class SinglePageRouter:
+class SinglePageRouteFrame:
+    def open(self, target: Union[Callable, str, Tuple[str, bool]]) -> None:
+        """Open a new page in the browser by exchanging the content of the root page's slot element
+
+        :param target: the target route or builder function. If a list is passed, the second element is a boolean
+                        indicating whether the navigation should be server side only and not update the browser."""
+        if isinstance(target, list):
+            target, server_side = target
+
+
+class outlet:
     """The SinglePageRouter allows the development of a Single Page Application (SPA) which maintains a
     persistent connection to the server and only updates the content of the page instead of reloading the whole page.
 
@@ -66,7 +63,8 @@ class SinglePageRouter:
                  browser_history: bool = True,
                  included: Union[List[Union[Callable, str]], str, Callable] = '/*',
                  excluded: Union[List[Union[Callable, str]], str, Callable] = '',
-                 on_instance_created: Optional[Callable] = None) -> None:
+                 on_instance_created: Optional[Callable] = None,
+                 **kwargs) -> None:
         """
         :param path: the base path of the single page router.
         :param browser_history: Optional flag to enable or disable the browser history management. Default is True.
@@ -78,6 +76,7 @@ class SinglePageRouter:
         exclusion mask.
         :param on_instance_created: Optional callback which is called when a new instance is created. Each browser tab
         or window is a new instance. This can be used to initialize the state of the application.
+        :param kwargs: Additional arguments for the @page decorators
         """
         super().__init__()
         self.routes: Dict[str, SinglePageRouterEntry] = {}
@@ -90,10 +89,35 @@ class SinglePageRouter:
         self.system_excluded = ['/docs', '/redoc', '/openapi.json', '_*']
         # set of all registered paths which were finally included for verification w/ mask matching in the browser
         self.included_paths: Set[str] = set()
-        self.content_area_class = SinglePageRouterFrame
         self.on_instance_created: Optional[Callable] = on_instance_created
         self.use_browser_history = browser_history
         self._setup_configured = False
+        self.outlet_builder: Optional[Callable] = None
+        self.page_kwargs = kwargs
+
+    def __call__(self, func: Callable[..., Any]) -> Self:
+        """Decorator for the outlet function"""
+        self.outlet_builder = func
+        self._setup_routing_pages()
+        return self
+
+    def _setup_routing_pages(self):
+        @ui.page(self.base_path, **self.page_kwargs)
+        @ui.page(f'{self.base_path}' + '{_:path}', **self.page_kwargs)  # all other pages
+        async def root_page():
+            content = self.outlet_builder()
+            client = context.get_client()
+            while True:
+                try:
+                    next(content)
+                    if client.single_page_content is None:
+                        client.single_page_content = self._setup_content_area()
+                except StopIteration:
+                    break
+
+    def view(self, path: str) -> "OutletView":
+        """Decorator for the view function"""
+        return OutletView(path, self)
 
     def setup_page_routes(self, **kwargs):
         """Registers the SinglePageRouter with the @page decorator to handle all routes defined by the router
@@ -106,43 +130,13 @@ class SinglePageRouter:
         self._update_masks()
         self._find_api_routes()
 
-        @ui.page(self.base_path, **kwargs)
-        @ui.page(f'{self.base_path}' + '{_:path}', **kwargs)  # all other pages
-        async def root_page():
-            self.handle_instance_created()
-            self.setup_root_page()
-
-    def handle_instance_created(self):
-        """Is called when ever a new instance is created such as when the user opens the page for the first time or
-        in a new tab"""
-        if self.on_instance_created is not None:
-            self.on_instance_created()
-
-    def setup_root_page(self):
-        """Builds the root page of the single page router and initializes the content area.
-
-        Is only calling the setup_content_area method by default but can be overridden to customize the root page
-        for example with a navigation bar, footer or embedding the content area within a container element.
-
-        Example:
-            ```
-            def setup_root_page(self):
-                with ui.left_drawer():
-                    ... setup navigation
-                with ui.column():
-                    self.setup_content_area()
-                ... footer
-            ```
-        """
-        self.setup_content_area()
-
-    def setup_content_area(self) -> SinglePageRouterFrame:
+    def _setup_content_area(self) -> RouterFrame:
         """Setups the content area for the single page router
 
         :return: The content area element
         """
-        content = self.content_area_class(
-            list(self.included_paths), self.use_browser_history).on('open', lambda e: self.open(e.args))
+        content = RouterFrame(list(self.included_paths), self.use_browser_history)
+        content.on_resolve(self.get_target_url)
         context.get_client().single_page_content = content
         return content
 
@@ -153,7 +147,8 @@ class SinglePageRouter:
         :param builder: The builder function
         :param title: Optional title of the page
         """
-        self.routes[path] = SinglePageRouterEntry(path.rstrip('/'), builder, title).verify()
+        self.included_paths.add(path.rstrip('/'))
+        self.routes[path] = SinglePageRouterEntry(path, builder, title).verify()
 
     def add_router_entry(self, entry: SinglePageRouterEntry) -> None:
         """Adds a fully configured SinglePageRouterEntry to the router
@@ -176,40 +171,6 @@ class SinglePageRouter:
             parser = SinglePageUrl(path)
             return parser.parse_single_page_route(self.routes, path)
 
-    def open(self, target: Union[Callable, str, Tuple[str, bool]]) -> None:
-        """Open a new page in the browser by exchanging the content of the root page's slot element
-
-        :param target: the target route or builder function. If a list is passed, the second element is a boolean
-                        indicating whether the navigation should be server side only and not update the browser."""
-        if isinstance(target, list):
-            target, server_side = target  # unpack the list
-        else:
-            server_side = True
-        target_url = self.get_target_url(target)
-        entry = target_url.entry
-        if entry is None:
-            if target_url.fragment is not None:
-                ui.run_javascript(f'window.location.href = "#{target_url.fragment}";')  # go to fragment
-                return
-            return
-        title = entry.title if entry.title is not None else core.app.config.title
-        ui.run_javascript(f'document.title = "{title}"')
-        if server_side and self.use_browser_history:
-            ui.run_javascript(f'window.history.pushState({{page: "{target}"}}, "", "{target}");')
-
-        async def build(content_element, fragment, kwargs) -> None:
-            with content_element:
-                result = entry.builder(**kwargs)
-                if helpers.is_coroutine_function(entry.builder):
-                    await result
-                if fragment is not None:
-                    await ui.run_javascript(f'window.location.href = "#{fragment}";')
-
-        content = context.get_client().single_page_content
-        content.clear()
-        combined_dict = {**target_url.path_args, **target_url.query_args}
-        background_tasks.create(build(content, target_url.fragment, combined_dict))
-
     def _is_excluded(self, path: str) -> bool:
         """Checks if a path is excluded by the exclusion masks
 
@@ -227,6 +188,7 @@ class SinglePageRouter:
 
     def _update_masks(self) -> None:
         """Updates the inclusion and exclusion masks and resolves Callables to the actual paths"""
+        from nicegui.page import Client
         for cur_list in [self.included, self.excluded]:
             for index, element in enumerate(cur_list):
                 if isinstance(element, Callable):
@@ -239,6 +201,7 @@ class SinglePageRouter:
     def _find_api_routes(self) -> None:
         """Find all API routes already defined via the @page decorator, remove them and redirect them to the
         single page router"""
+        from nicegui.page import Client
         page_routes = set()
         for key, route in Client.page_routes.items():
             if route.startswith(self.base_path) and not self._is_excluded(route):
@@ -256,3 +219,15 @@ class SinglePageRouter:
             if isinstance(route, APIRoute):
                 if route.path in page_routes:
                     core.app.routes.remove(route)
+
+
+class OutletView:
+
+    def __init__(self, path: str, parent_outlet: outlet):
+        self.path = path
+        self.parent_outlet = parent_outlet
+
+    def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
+        self.parent_outlet.add_page(
+            self.parent_outlet.base_path.rstrip('/') + self.path, func)
+        return func

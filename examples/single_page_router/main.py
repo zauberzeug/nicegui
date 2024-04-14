@@ -2,7 +2,7 @@
 
 from nicegui import ui
 from nicegui.page import page
-from nicegui.single_page import SinglePageRouter
+from nicegui.outlet import SinglePageRouter
 
 
 @page('/', title='Welcome!')
