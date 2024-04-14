@@ -26,6 +26,7 @@ from .version import __version__
 
 if TYPE_CHECKING:
     from .page import page
+    from .outlet import Outlet as outlet
 
 templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
@@ -81,7 +82,7 @@ class Client:
 
         self.page = page
         self.storage = ObservableDict()
-        self.single_page_content = None
+        self.outlets: Dict[str, "outlet"] = {}
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
@@ -226,9 +227,11 @@ class Client:
     def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
-        if path in self.single_page_routes and self.single_page_content is not None:  # moving from SPR to SPR?
-            self.single_page_routes[path].navigate_to(target)
-            return
+        for cur_outlet in self.outlets.values():
+            target = cur_outlet.resolve_target(target)
+            if target.valid:
+                cur_outlet.navigate_to(path)
+                return
         self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 
     def download(self, src: Union[str, bytes], filename: Optional[str] = None, media_type: str = '') -> None:

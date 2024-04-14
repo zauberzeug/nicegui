@@ -1,7 +1,7 @@
 from nicegui import ui
 
 
-@ui.outlet('/')
+ui.outlet('/')
 def spa1():
     ui.label("spa1 header")
     yield
@@ -9,7 +9,7 @@ def spa1():
 
 
 # SPA outlet routers can be defined side by side
-@ui.outlet('/spa2')
+ui.outlet('/spa2')
 def spa2():
     ui.label('spa2')
     yield

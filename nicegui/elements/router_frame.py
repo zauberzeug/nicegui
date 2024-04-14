@@ -1,7 +1,7 @@
 from typing import Union, Callable, Tuple, Any, Optional, Self
 
 from nicegui import ui, helpers, context, background_tasks, core
-from nicegui.router_frame_url import SinglePageUrl
+from nicegui.router_frame_url import SinglePageTarget
 
 
 class RouterFrame(ui.element, component='router_frame.js'):
@@ -22,17 +22,17 @@ class RouterFrame(ui.element, component='router_frame.js'):
         self._props['browser_history'] = use_browser_history
         self.use_browser_history = use_browser_history
         self.change_title = False
-        self._on_resolve: Optional[Callable[[Any], SinglePageUrl]] = None
+        self._on_resolve: Optional[Callable[[Any], SinglePageTarget]] = None
         self.on('open', lambda e: self.navigate_to(e.args))
 
-    def on_resolve(self, on_resolve: Callable[[Any], SinglePageUrl]) -> Self:
+    def on_resolve(self, on_resolve: Callable[[Any], SinglePageTarget]) -> Self:
         """Set the on_resolve function which is used to resolve the target to a SinglePageUrl
         :param on_resolve: The on_resolve function which receives a target object such as an URL or Callable and
             returns a SinglePageUrl object."""
         self._on_resolve = on_resolve
         return self
 
-    def get_target_url(self, target: Any) -> SinglePageUrl:
+    def resolve_target(self, target: Any) -> SinglePageTarget:
         if self._on_resolve is not None:
             return self._on_resolve(target)
         raise NotImplementedError
@@ -43,7 +43,7 @@ class RouterFrame(ui.element, component='router_frame.js'):
             indicating whether the navigation should be server side only and not update the browser.
         :param _server_side: Optional flag which defines if the call is originated on the server side and thus
             the browser history should be updated. Default is False."""
-        target_url = self.get_target_url(target)
+        target_url = self.resolve_target(target)
         entry = target_url.entry
         if entry is None:
             if target_url.fragment is not None:
@@ -64,7 +64,6 @@ class RouterFrame(ui.element, component='router_frame.js'):
                 if fragment is not None:
                     await ui.run_javascript(f'window.location.href = "#{fragment}";')
 
-        content = context.get_client().single_page_content
-        content.clear()
+        self.clear()
         combined_dict = {**target_url.path_args, **target_url.query_args}
-        background_tasks.create(build(content, target_url.fragment, combined_dict))
+        background_tasks.create(build(self, target_url.fragment, combined_dict))

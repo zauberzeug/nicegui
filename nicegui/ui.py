@@ -230,7 +230,7 @@ from .functions.refreshable import refreshable, refreshable_method, state
 from .functions.style import add_css, add_sass, add_scss, add_style
 from .functions.update import update
 from .page import page
-from .outlet import outlet
+from .outlet import Outlet as outlet
 from .page_layout import Drawer as drawer
 from .page_layout import Footer as footer
 from .page_layout import Header as header

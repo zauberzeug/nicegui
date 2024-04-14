@@ -7,7 +7,7 @@ from fastapi.routing import APIRoute
 
 from nicegui import background_tasks, helpers, ui, core, context
 from nicegui.elements.router_frame import RouterFrame
-from nicegui.router_frame_url import SinglePageUrl
+from nicegui.router_frame_url import SinglePageTarget
 
 
 class SinglePageRouterEntry:
@@ -48,7 +48,7 @@ class SinglePageRouteFrame:
             target, server_side = target
 
 
-class outlet:
+class Outlet:
     """The SinglePageRouter allows the development of a Single Page Application (SPA) which maintains a
     persistent connection to the server and only updates the content of the page instead of reloading the whole page.
 
@@ -105,17 +105,9 @@ class outlet:
         @ui.page(self.base_path, **self.page_kwargs)
         @ui.page(f'{self.base_path}' + '{_:path}', **self.page_kwargs)  # all other pages
         async def root_page():
-            content = self.outlet_builder()
-            client = context.get_client()
-            while True:
-                try:
-                    next(content)
-                    if client.single_page_content is None:
-                        client.single_page_content = self._setup_content_area()
-                except StopIteration:
-                    break
+            self._setup_content_area()
 
-    def view(self, path: str) -> "OutletView":
+    def view(self, path: str) -> 'OutletView':
         """Decorator for the view function"""
         return OutletView(path, self)
 
@@ -129,16 +121,6 @@ class outlet:
         self._setup_configured = True
         self._update_masks()
         self._find_api_routes()
-
-    def _setup_content_area(self) -> RouterFrame:
-        """Setups the content area for the single page router
-
-        :return: The content area element
-        """
-        content = RouterFrame(list(self.included_paths), self.use_browser_history)
-        content.on_resolve(self.get_target_url)
-        context.get_client().single_page_content = content
-        return content
 
     def add_page(self, path: str, builder: Callable, title: Optional[str] = None) -> None:
         """Add a new route to the single page router
@@ -157,19 +139,46 @@ class outlet:
         """
         self.routes[entry.path] = entry.verify()
 
-    def get_target_url(self, path: Union[Callable, str]) -> SinglePageUrl:
-        """Returns the SinglePageRouterEntry for the given URL path or builder function
+    def resolve_target(self, target: Union[Callable, str]) -> SinglePageTarget:
+        """Tries to resolve a target such as a builder function or an URL path w/ route and query parameters.
 
-        :param path: The URL path to open or a builder function
-        :return: The SinglePageUrl object which contains the parsed route, query arguments and fragment
+        :param target: The URL path to open or a builder function
+        :return: The resolved target. Defines .valid if the target is valid
         """
-        if isinstance(path, Callable):
-            for path, entry in self.routes.items():
-                if entry.builder == path:
-                    return SinglePageUrl(entry=entry)
+        if isinstance(target, Callable):
+            for target, entry in self.routes.items():
+                if entry.builder == target:
+                    return SinglePageTarget(entry=entry)
         else:
-            parser = SinglePageUrl(path)
-            return parser.parse_single_page_route(self.routes, path)
+            parser = SinglePageTarget(target)
+            return parser.parse_single_page_route(self.routes, target)
+
+    def navigate_to(self, target: Union[Callable, str, SinglePageTarget]) -> bool:
+        """Navigate to a target
+
+        :param target: The target to navigate to
+        """
+        if not isinstance(target, SinglePageTarget):
+            target = self.resolve_target(target)
+        if not target.valid:
+            return False
+        # TODO find right content area
+        return True
+
+    def _setup_content_area(self):
+        """Setups the content area for the single page router
+
+        :return: The content area element
+        """
+        frame = self.outlet_builder()
+        next(frame)  # execute top layout components till first yield
+        content = RouterFrame(list(self.included_paths), self.use_browser_history)  # exchangeable content of the page
+        content.on_resolve(self.resolve_target)
+        while True:  # execute the rest of the outlets ui setup yield by yield
+            try:
+                next(frame)
+            except StopIteration:
+                break
 
     def _is_excluded(self, path: str) -> bool:
         """Checks if a path is excluded by the exclusion masks
@@ -223,7 +232,7 @@ class outlet:
 
 class OutletView:
 
-    def __init__(self, path: str, parent_outlet: outlet):
+    def __init__(self, path: str, parent_outlet: Outlet):
         self.path = path
         self.parent_outlet = parent_outlet
 

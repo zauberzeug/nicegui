@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from nicegui.outlet import SinglePageRouterEntry
 
 
-class SinglePageUrl:
+class SinglePageTarget:
     """Aa helper class which is used to parse the path and query parameters of an URL to  find the matching
     SinglePageRouterEntry and convert the parameters to the expected types of the builder function"""
 
@@ -24,6 +24,7 @@ class SinglePageUrl:
         self.path_args = {}
         self.query_args = urllib.parse.parse_qs(self.query_string)
         self.entry = entry
+        self.valid = entry is not None
 
     def parse_single_page_route(self, routes: Dict[str, 'SinglePageRouterEntry'], path: str) -> Self:
         """
@@ -38,10 +39,12 @@ class SinglePageUrl:
         self.path_args = {}
         self.query_args = urllib.parse.parse_qs(self.query_string)
         if self.fragment is not None and len(self.path) == 0:
+            self.valid = True
             return self
         self.entry = self.parse_path()
         if self.entry is not None:
             self.convert_arguments()
+            self.valid = True
         return self
 
     def parse_path(self) -> Optional['SinglePageRouterEntry']:
