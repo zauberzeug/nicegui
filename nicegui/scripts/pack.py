@@ -38,10 +38,12 @@ def main() -> None:
     command.extend(['--windowed'])
     command.extend([args.main])
 
+    print('PyInstaller command:')
+    print(' ', ' '.join(command))
     if args.dry_run:
-        print(' '.join(command))
-    else:
-        subprocess.call(command)
+        return
+
+    subprocess.call(command)
 
 
 if __name__ == '__main__':
