@@ -2,7 +2,7 @@
 
 from nicegui import ui
 from nicegui.page import page
-from nicegui.outlet import SinglePageRouter
+from nicegui.single_page_router import SinglePageRouter
 
 
 @page('/', title='Welcome!')
@@ -17,5 +17,5 @@ def about():
     ui.link('Index', '/')
 
 
-router = SinglePageRouter('/').setup_page_routes()
+router = SinglePageRouter('/').reroute_pages()
 ui.run()

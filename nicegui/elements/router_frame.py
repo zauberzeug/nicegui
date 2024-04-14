@@ -1,7 +1,7 @@
 from typing import Union, Callable, Tuple, Any, Optional, Self
 
 from nicegui import ui, helpers, context, background_tasks, core
-from nicegui.router_frame_url import SinglePageTarget
+from nicegui.single_page_target import SinglePageTarget
 
 
 class RouterFrame(ui.element, component='router_frame.js'):

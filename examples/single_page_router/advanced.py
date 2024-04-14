@@ -4,7 +4,7 @@ from typing import Callable
 
 from nicegui import ui
 from nicegui.page import page
-from nicegui.outlet import SinglePageRouter
+from nicegui.single_page_router import SinglePageRouter
 
 
 def setup_page_layout(content: Callable):

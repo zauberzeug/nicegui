@@ -26,7 +26,7 @@ from .version import __version__
 
 if TYPE_CHECKING:
     from .page import page
-    from .outlet import Outlet as outlet
+    from .elements.router_frame import RouterFrame
 
 templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
@@ -82,7 +82,7 @@ class Client:
 
         self.page = page
         self.storage = ObservableDict()
-        self.outlets: Dict[str, "outlet"] = {}
+        self.single_page_router_frame: Optional[RouterFrame] = None
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
@@ -227,10 +227,10 @@ class Client:
     def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
-        for cur_outlet in self.outlets.values():
-            target = cur_outlet.resolve_target(target)
+        for cur_spr in self.single_page_routes.values():
+            target = cur_spr.resolve_target(target)
             if target.valid:
-                cur_outlet.navigate_to(path)
+                cur_spr.navigate_to(path)
                 return
         self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 

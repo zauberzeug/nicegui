@@ -272,7 +272,7 @@ class PageSticky(Element):
 
 def _check_current_slot(element: Element) -> None:
     parent = context.get_slot().parent
-    if parent != parent.client.content and parent != parent.client.single_page_content:
+    if parent != parent.client.content:
         log.warning(f'Found top level layout element "{element.__class__.__name__}" inside element "{parent.__class__.__name__}". '
                     'Top level layout elements should not be nested but must be direct children of the page content. '
                     'This will be raising an exception in NiceGUI 1.5')  # DEPRECATED

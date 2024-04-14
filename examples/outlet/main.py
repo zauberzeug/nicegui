@@ -1,7 +1,7 @@
 from nicegui import ui
 
 
-ui.outlet('/')
+@ui.outlet('/')
 def spa1():
     ui.label("spa1 header")
     yield
@@ -9,7 +9,7 @@ def spa1():
 
 
 # SPA outlet routers can be defined side by side
-ui.outlet('/spa2')
+@ui.outlet('/spa2')
 def spa2():
     ui.label('spa2')
     yield
@@ -20,11 +20,33 @@ def spa2():
 def spa1_index():
     ui.label('content of spa1')
     ui.link('more', '/more')
+    ui.link('nested', '/nested')
+
 
 @spa1.view('/more')
 def spa1_more():
     ui.label('more content of spa1')
     ui.link('main', '/')
+    ui.link('nested', '/nested')
+
+
+@spa1.outlet('/nested')
+def nested():
+    ui.label('nested outlet')
+    yield
+
+
+@nested.view('/')
+def nested_index():
+    ui.label('content of nested')
+    ui.link('nested other', '/nested/other')
+
+
+@nested.view('/other')
+def nested_other():
+    ui.label('other nested')
+    ui.link('nested index', '/nested')
+
 
 '''
 # the view is a function upon the decorated function of the outlet (same technique as "refreshable.refresh")
