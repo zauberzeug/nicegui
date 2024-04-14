@@ -1,6 +1,6 @@
 import asyncio
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 from typing_extensions import Self
 
@@ -71,6 +71,7 @@ class Scene(Element,
                  width: int = 400,
                  height: int = 300,
                  grid: bool = True,
+                 camera_type: Literal['perspective', 'orthographic'] = 'perspective',
                  on_click: Optional[Callable[..., Any]] = None,
                  on_drag_start: Optional[Callable[..., Any]] = None,
                  on_drag_end: Optional[Callable[..., Any]] = None,
@@ -86,6 +87,7 @@ class Scene(Element,
         :param width: width of the canvas
         :param height: height of the canvas
         :param grid: whether to display a grid
+        :param camera_type: type of camera to use (``'perspective'`` or ``'orthographic'``)
         :param on_click: callback to execute when a 3D object is clicked
         :param on_drag_start: callback to execute when a 3D object is dragged
         :param on_drag_end: callback to execute when a 3D object is dropped
@@ -95,6 +97,7 @@ class Scene(Element,
         self._props['width'] = width
         self._props['height'] = height
         self._props['grid'] = grid
+        self._props['camera_type'] = camera_type
         self.objects: Dict[str, Object3D] = {}
         self.stack: List[Union[Object3D, SceneObject]] = [SceneObject()]
         self.camera: SceneCamera = SceneCamera()
