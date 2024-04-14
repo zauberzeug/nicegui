@@ -1,7 +1,14 @@
 from nicegui import ui
 
-from . import (audio_documentation, avatar_documentation, doc, icon_documentation, image_documentation,
-               interactive_image_documentation, video_documentation)
+from . import (
+    audio_documentation,
+    avatar_documentation,
+    doc,
+    icon_documentation,
+    image_documentation,
+    interactive_image_documentation,
+    video_documentation,
+)
 
 doc.title('*Audiovisual* Elements')
 
@@ -21,9 +28,9 @@ def captions_and_overlays_demo():
     with ui.image('https://cdn.stocksnap.io/img-thumbs/960w/airplane-sky_DYPWDEEILG.jpg'):
         ui.html('''
             <svg viewBox="0 0 960 638" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="445" cy="300" r="100" fill="none" stroke="red" stroke-width="20" />
+            <circle cx="445" cy="300" r="100" fill="none" stroke="red" stroke-width="10" />
             </svg>
-        ''').classes('bg-transparent')
+        ''').classes('w-full bg-transparent')
 
 
 doc.intro(interactive_image_documentation)

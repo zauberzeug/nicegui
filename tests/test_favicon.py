@@ -13,7 +13,7 @@ LOGO_FAVICON_PATH = Path(__file__).parent.parent / 'website' / 'static' / 'logo_
 
 def assert_favicon_url_starts_with(screen: Screen, content: str):
     soup = BeautifulSoup(screen.selenium.page_source, 'html.parser')
-    icon_link = soup.find("link", rel="icon")
+    icon_link = soup.find('link', rel='icon')
     assert icon_link['href'].startswith(content)
 
 

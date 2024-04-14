@@ -1,5 +1,6 @@
 import asyncio
 import re
+from typing import Optional
 from uuid import uuid4
 
 from fastapi.responses import PlainTextResponse
@@ -102,15 +103,17 @@ def test_shared_and_private_pages(screen: Screen):
 
 
 def test_wait_for_connected(screen: Screen):
-    label: ui.label
+    label: Optional[ui.label] = None
 
     async def load() -> None:
+        assert label
         label.text = 'loading...'
         # NOTE we can not use asyncio.create_task() here because we are on a different thread than the NiceGUI event loop
         background_tasks.create(takes_a_while())
 
     async def takes_a_while() -> None:
         await asyncio.sleep(0.1)
+        assert label
         label.text = 'delayed data has been loaded'
 
     @ui.page('/')

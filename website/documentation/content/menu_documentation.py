@@ -14,7 +14,7 @@ def main_demo() -> None:
                 ui.menu_item('Menu item 3 (keep open)',
                              lambda: result.set_text('Selected item 3'), auto_close=False)
                 ui.separator()
-                ui.menu_item('Close', on_click=menu.close)
+                ui.menu_item('Close', menu.close)
 
 
 doc.reference(ui.menu)

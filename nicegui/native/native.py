@@ -70,6 +70,9 @@ try:
         def resize(self, width: int, height: int, fix_point: FixPoint = FixPoint.NORTH | FixPoint.WEST) -> None:
             self._send(width, height, fix_point)
 
+        def maximize(self) -> None:
+            self._send()
+
         def minimize(self) -> None:
             self._send()
 

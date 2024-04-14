@@ -59,7 +59,7 @@ table.add_slot('body', r'''
         </q-td>
         <q-td key="age" :props="props">
             {{ props.row.age }}
-            <q-popup-edit v-model="props.row.age" v-slot="scope" 
+            <q-popup-edit v-model="props.row.age" v-slot="scope"
                 @update:model-value="() => $parent.$emit('rename', props.row)"
             >
                 <q-input v-model.number="scope.value" type="number" dense autofocus counter @keyup.enter="scope.set" />

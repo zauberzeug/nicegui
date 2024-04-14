@@ -64,12 +64,12 @@ def click_events() -> None:
     You can make objects draggable using the `.draggable` method.
     There is an optional `on_drag_start` and `on_drag_end` argument to `ui.scene` to handle drag events.
     The callbacks receive a `SceneDragEventArguments` object with the following attributes:
-    
+
     - `type`: the type of drag event ("dragstart" or "dragend").
     - `object_id`: the id of the object that was dragged.
     - `object_name`: the name of the object that was dragged.
     - `x`, `y`, `z`: the x, y and z coordinates of the dragged object.
-        
+
     You can also use the `drag_constraints` argument to set comma-separated JavaScript expressions
     for constraining positions of dragged objects.
 ''')
@@ -111,6 +111,14 @@ async def wait_for_init() -> None:
         scene.sphere()
         await scene.initialized()
         scene.move_camera(x=1, y=-1, z=1.5, duration=2)
+
+
+@doc.demo('Orthographic Camera', '''
+    You can use the `camera_type` argument to `ui.scene` to use an orthographic instead of a perspective camera.
+''')
+def orthographic_camera() -> None:
+    with ui.scene(camera_type='orthographic').classes('w-full h-64') as scene:
+        scene.box()
 
 
 doc.reference(ui.scene)

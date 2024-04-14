@@ -153,7 +153,7 @@ function renderRecursively(elements, id) {
       handler = (...args) => {
         const data = {
           id: id,
-          client_id: window.client_id,
+          client_id: window.clientId,
           listener_id: event.listener_id,
           args: stringifyEventArgs(args, event.args),
         };
@@ -212,7 +212,7 @@ function runJavascript(code, request_id) {
     })
     .then((result) => {
       if (request_id) {
-        window.socket.emit("javascript_response", { request_id, client_id: window.client_id, result });
+        window.socket.emit("javascript_response", { request_id, client_id: window.clientId, result });
       }
     });
 }
@@ -252,6 +252,17 @@ async function loadDependencies(element, prefix, version) {
   }
 }
 
+function createRandomUUID() {
+  try {
+    return crypto.randomUUID();
+  } catch (e) {
+    // https://stackoverflow.com/a/2117523/3419103
+    return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
+      (+c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16)
+    );
+  }
+}
+
 function createApp(elements, options) {
   return (app = Vue.createApp({
     data() {
@@ -264,7 +275,7 @@ function createApp(elements, options) {
     },
     mounted() {
       mounted_app = this;
-      window.client_id = options.query.client_id;
+      window.clientId = options.query.client_id;
       const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
       window.path_prefix = options.prefix;
       window.socket = io(url, {
@@ -275,9 +286,14 @@ function createApp(elements, options) {
       });
       const messageHandlers = {
         connect: () => {
-          window.socket.emit("handshake", window.client_id, (ok) => {
+          let tabId = sessionStorage.getItem("__nicegui_tab_id");
+          if (!tabId) {
+            tabId = createRandomUUID();
+            sessionStorage.setItem("__nicegui_tab_id", tabId);
+          }
+          window.socket.emit("handshake", { client_id: window.clientId, tab_id: tabId }, (ok) => {
             if (!ok) {
-              console.log("reloading because handshake failed for client_id " + window.client_id);
+              console.log("reloading because handshake failed for clientId " + window.clientId);
               window.location.reload();
             }
             document.getElementById("popup").style.opacity = 0;

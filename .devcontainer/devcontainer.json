@@ -8,11 +8,11 @@
   "customizations": {
     "vscode": {
       "extensions": [
+        "charliermarsh.ruff",
         "cschleiden.vscode-github-actions",
         "esbenp.prettier-vscode",
         "littlefoxteam.vscode-python-test-adapter",
         "ms-python.autopep8",
-        "ms-python.isort",
         "ms-python.mypy-type-checker",
         "ms-python.pylint",
         "ms-python.python",
@@ -21,6 +21,7 @@
         "Vue.volar"
       ],
       "settings": {
+        "ruff.enable": true,
         "terminal.integrated.defaultProfile.linux": "bash",
         "terminal.integrated.shell.linux": "bash",
         "terminal.integrated.profiles.linux": {

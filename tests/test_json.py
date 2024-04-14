@@ -12,7 +12,7 @@ import pytest
 
 try:
     # try to import module, only run test if succeeded
-    import orjson  # pylint: disable=unused-import
+    import orjson  # noqa: F401
 except ImportError:
     pass
 

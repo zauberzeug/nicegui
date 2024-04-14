@@ -26,7 +26,7 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
     # header
     add_head_html()
     add_header(menu)
-    ui.add_style('html {scroll-behavior: auto}')
+    ui.add_css('html {scroll-behavior: auto}')
     title = (documentation.title or '').replace('*', '')
     ui.page_title('NiceGUI' if not title else title if title.split()[0] == 'NiceGUI' else f'{title} | NiceGUI')
 
@@ -43,7 +43,9 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                     element = ui.restructured_text(part.description.replace(':param ', ':'))
                 else:
                     element = ui.markdown(part.description)
-                element.classes('bold-links arrow-links rst-param-tables')
+                element.classes('bold-links arrow-links')
+                if ':param' in part.description:
+                    element.classes('rst-param-tables')
             if part.ui:
                 part.ui()
             if part.demo:

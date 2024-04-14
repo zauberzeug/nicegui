@@ -5,7 +5,7 @@ import inspect
 import re
 from copy import copy, deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Sequence, Union, overload
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, Union, overload
 
 from typing_extensions import Self
 
@@ -55,12 +55,12 @@ TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 
 class Element(Visibility):
     component: Optional[Component] = None
-    libraries: List[Library] = []
-    extra_libraries: List[Library] = []
-    exposed_libraries: List[Library] = []
-    _default_props: Dict[str, Any] = {}
-    _default_classes: List[str] = []
-    _default_style: Dict[str, str] = {}
+    libraries: ClassVar[List[Library]] = []
+    extra_libraries: ClassVar[List[Library]] = []
+    exposed_libraries: ClassVar[List[Library]] = []
+    _default_props: ClassVar[Dict[str, Any]] = {}
+    _default_classes: ClassVar[List[str]] = []
+    _default_style: ClassVar[Dict[str, str]] = {}
 
     def __init__(self, tag: Optional[str] = None, *, _client: Optional[Client] = None) -> None:
         """Generic Element
@@ -105,9 +105,9 @@ class Element(Visibility):
 
     def __init_subclass__(cls, *,
                           component: Union[str, Path, None] = None,
-                          libraries: List[Union[str, Path]] = [],
-                          exposed_libraries: List[Union[str, Path]] = [],
-                          extra_libraries: List[Union[str, Path]] = [],
+                          libraries: List[Union[str, Path]] = [],  # noqa: B006
+                          exposed_libraries: List[Union[str, Path]] = [],  # noqa: B006
+                          extra_libraries: List[Union[str, Path]] = [],  # noqa: B006
                           ) -> None:
         super().__init_subclass__()
         base = Path(inspect.getfile(cls)).parent
@@ -273,7 +273,7 @@ class Element(Visibility):
     def _parse_style(text: Optional[str]) -> Dict[str, str]:
         result = {}
         for word in (text or '').split(';'):
-            word = word.strip()
+            word = word.strip()  # noqa: PLW2901
             if word:
                 key, value = word.split(':', 1)
                 result[key.strip()] = value.strip()
@@ -477,7 +477,6 @@ class Element(Visibility):
         :param name: name of the method
         :param args: arguments to pass to the method
         :param timeout: maximum time to wait for a response (default: 1 second)
-        :param check_interval: time between checks for a response (default: 0.01 seconds)
         """
         if not core.loop:
             return NullResponse()

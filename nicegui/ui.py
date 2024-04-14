@@ -5,6 +5,7 @@ __all__ = [
     'avatar',
     'badge',
     'button',
+    'button_group',
     'card',
     'card_actions',
     'card_section',
@@ -13,6 +14,7 @@ __all__ = [
     'chart',
     'chat_message',
     'checkbox',
+    'clipboard',
     'code',
     'color_input',
     'color_picker',
@@ -22,6 +24,7 @@ __all__ = [
     'dark_mode',
     'date',
     'dialog',
+    'dropdown_button',
     'echart',
     'editor',
     'expansion',
@@ -47,6 +50,7 @@ __all__ = [
     'list',
     'log',
     'markdown',
+    'matplotlib',
     'menu',
     'menu_item',
     'mermaid',
@@ -100,6 +104,9 @@ __all__ = [
     'refreshable',
     'refreshable_method',
     'state',
+    'add_css',
+    'add_sass',
+    'add_scss',
     'add_style',
     'update',
     'page',
@@ -120,6 +127,8 @@ from .elements.audio import Audio as audio
 from .elements.avatar import Avatar as avatar
 from .elements.badge import Badge as badge
 from .elements.button import Button as button
+from .elements.button_dropdown import DropdownButton as dropdown_button
+from .elements.button_group import ButtonGroup as button_group
 from .elements.card import Card as card
 from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section
@@ -147,6 +156,9 @@ from .elements.icon import Icon as icon
 from .elements.image import Image as image
 from .elements.input import Input as input  # pylint: disable=redefined-builtin
 from .elements.interactive_image import InteractiveImage as interactive_image
+from .elements.item import Item as item
+from .elements.item import ItemLabel as item_label
+from .elements.item import ItemSection as item_section
 from .elements.joystick import Joystick as joystick
 from .elements.json_editor import JsonEditor as json_editor
 from .elements.keyboard import Keyboard as keyboard
@@ -156,9 +168,6 @@ from .elements.leaflet import Leaflet as leaflet
 from .elements.line_plot import LinePlot as line_plot
 from .elements.link import Link as link
 from .elements.link import LinkTarget as link_target
-from .elements.list import Item as item
-from .elements.list import ItemLabel as item_label
-from .elements.list import ItemSection as item_section
 from .elements.list import List as list  # pylint: disable=redefined-builtin
 from .elements.log import Log as log
 from .elements.markdown import Markdown as markdown
@@ -171,10 +180,11 @@ from .elements.pagination import Pagination as pagination
 from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
+from .elements.pyplot import Matplotlib as matplotlib
 from .elements.pyplot import Pyplot as pyplot
 from .elements.query import Query as query
 from .elements.radio import Radio as radio
-from .elements.range import Range as range
+from .elements.range import Range as range  # pylint: disable=redefined-builtin
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
@@ -204,6 +214,7 @@ from .elements.tooltip import Tooltip as tooltip
 from .elements.tree import Tree as tree
 from .elements.upload import Upload as upload
 from .elements.video import Video as video
+from .functions import clipboard
 from .functions.download import download
 from .functions.html import add_body_html, add_head_html
 from .functions.javascript import run_javascript
@@ -213,7 +224,7 @@ from .functions.on import on
 from .functions.open import open  # pylint: disable=redefined-builtin
 from .functions.page_title import page_title
 from .functions.refreshable import refreshable, refreshable_method, state
-from .functions.style import add_style
+from .functions.style import add_css, add_sass, add_scss, add_style
 from .functions.update import update
 from .page import page
 from .page_layout import Drawer as drawer
