@@ -25,9 +25,9 @@ We're always looking for bug fixes, performance improvements, and new features.
 
 The simplest way to setup a fully functioning development environment is to start our Dev Container in VS Code:
 
-1. Ensure you have VS Code, Docker and the Remote-Containers extension installed.
+1. Ensure you have VS Code, Docker and the Dev Containers extension installed.
 2. Open the project root directory in VS Code.
-3. Press `F1`, type `Remote-Containers: Open Folder in Container`, and hit enter (or use the bottom-left corner icon in VS Code to reopen in container).
+3. Press `F1`, type `Dev Containers: Open Folder in Container`, and hit enter (or use the bottom-left corner icon in VS Code to reopen in container).
 4. Wait until image has been build.
 5. Happy coding.
 
