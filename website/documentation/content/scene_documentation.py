@@ -113,12 +113,12 @@ async def wait_for_init() -> None:
         scene.move_camera(x=1, y=-1, z=1.5, duration=2)
 
 
-@doc.demo('Orthographic Camera', '''
-    You can use the `camera_type` argument to `ui.scene` to use an orthographic instead of a perspective camera.
-''')
-def orthographic_camera() -> None:
-    with ui.scene(camera_type='orthographic').classes('w-full h-64') as scene:
-        scene.box()
+# @doc.demo('Orthographic Camera', '''
+#     You can use the `camera_type` argument to `ui.scene` to use an orthographic instead of a perspective camera.
+# ''')
+# def orthographic_camera() -> None:
+#     with ui.scene(camera_type='orthographic').classes('w-full h-64') as scene:
+#         scene.box()
 
 
 doc.reference(ui.scene)
