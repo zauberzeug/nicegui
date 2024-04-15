@@ -17,4 +17,14 @@ def main_demo() -> None:
                 ui.menu_item('Close', menu.close)
 
 
+@doc.demo('Client-side auto-close', '''
+    Use the `auto-close` prop to automatically close the menu on any click event directly without a server round-trip.
+''')
+def auto_close():
+    with ui.button(icon='menu'):
+        with ui.menu().props('auto-close'):
+            toggle = ui.toggle(['fastfood', 'cake', 'icecream'], value='fastfood')
+    ui.icon('', size='md').bind_name_from(toggle, 'value')
+
+
 doc.reference(ui.menu)
