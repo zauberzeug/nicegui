@@ -1,6 +1,6 @@
 from typing import Any, Literal, Optional, Union
 
-from .. import context
+from ..context import context
 
 ARG_MAP = {
     'close_button': 'closeBtn',

@@ -9,8 +9,9 @@ from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List,
 
 from typing_extensions import Self
 
-from . import context, core, events, helpers, json, storage
+from . import core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
+from .context import context
 from .dependencies import Component, Library, register_library, register_resource, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener

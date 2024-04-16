@@ -1,7 +1,7 @@
 from typing import Optional
 
-from .. import context
 from ..awaitable_response import AwaitableResponse
+from ..context import context
 
 
 def run_javascript(code: str, *,

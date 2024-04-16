@@ -1,7 +1,8 @@
 from pathlib import Path
 from typing import Optional, Union
 
-from .. import context, core, helpers
+from .. import core, helpers
+from ..context import context
 
 
 def download(src: Union[str, Path, bytes], filename: Optional[str] = None, media_type: str = '') -> None:

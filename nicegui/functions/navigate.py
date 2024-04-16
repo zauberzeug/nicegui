@@ -1,7 +1,7 @@
 from typing import Any, Callable, Union
 
-from .. import context
 from ..client import Client
+from ..context import context
 from ..element import Element
 from .javascript import run_javascript
 

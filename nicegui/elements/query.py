@@ -2,7 +2,7 @@ from typing import Optional
 
 from typing_extensions import Self
 
-from .. import context
+from ..context import context
 from ..element import Element
 
 

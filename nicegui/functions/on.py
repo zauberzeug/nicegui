@@ -1,6 +1,6 @@
 from typing import Any, Callable, Optional, Sequence, Union
 
-from .. import context
+from ..context import context
 
 
 def on(type: str,  # pylint: disable=redefined-builtin

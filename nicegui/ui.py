@@ -122,7 +122,7 @@ __all__ = [
     'run_with',
 ]
 
-from . import context
+from .context import context
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
 from .elements.audio import Audio as audio

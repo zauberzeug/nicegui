@@ -1,6 +1,6 @@
 from typing import Literal, Optional
 
-from . import context
+from .context import context
 from .element import Element
 from .elements.mixins.value_element import ValueElement
 from .functions.html import add_body_html

@@ -1,6 +1,6 @@
 from typing import Any, Literal, Optional, Union
 
-from .. import context
+from ..context import context
 from ..element import Element
 from .timer import Timer
 
