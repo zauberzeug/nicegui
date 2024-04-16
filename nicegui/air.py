@@ -122,6 +122,7 @@ class Air:
                 return False
             client = Client.instances[client_id]
             client.environ = data['environ']
+            client.tab_id = data['tab_id']
             client.on_air = True
             client.handle_handshake()
             return True
