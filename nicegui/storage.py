@@ -15,7 +15,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from . import background_tasks, context, core, json, observables
+from . import background_tasks, core, json, observables
+from .context import context
 from .logging import log
 from .observables import ObservableDict
 
