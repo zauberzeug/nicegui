@@ -20,7 +20,7 @@ def test_set_source_in_tab(screen: Screen):
                 img = ui.interactive_image()
             with ui.tab_panel('B'):
                 ui.label('Tab B')
-        await ui.context.get_client().connected()
+        await ui.context.client.connected()
         img.set_source('https://picsum.photos/id/29/640/360')
 
     screen.open('/')

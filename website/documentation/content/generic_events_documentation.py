@@ -116,7 +116,7 @@ async def custom_events() -> None:
     #     </script>
     # ''')
     # END OF DEMO
-    await context.get_client().connected()
+    await context.client.connected()
     ui.run_javascript('''
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {

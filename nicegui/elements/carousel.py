@@ -62,7 +62,7 @@ class CarouselSlide(DisableableElement):
         :param name: name of the slide (will be the value of the `ui.carousel` element, auto-generated if `None`)
         """
         super().__init__(tag='q-carousel-slide')
-        self.carousel = cast(ValueElement, context.get_slot().parent)
+        self.carousel = cast(ValueElement, context.slot.parent)
         name = name or f'slide_{len(self.carousel.default_slot.children)}'
         self._props['name'] = name
         self._classes.append('nicegui-carousel-slide')

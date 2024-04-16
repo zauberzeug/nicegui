@@ -44,7 +44,7 @@ class Tab(DisableableElement):
         self._props['label'] = label if label is not None else name
         if icon:
             self._props['icon'] = icon
-        self.tabs = context.get_slot().parent
+        self.tabs = context.slot.parent
 
 
 class TabPanels(ValueElement):

@@ -69,7 +69,7 @@ class Step(DisableableElement):
         self._classes.append('nicegui-step')
         if icon:
             self._props['icon'] = icon
-        self.stepper = cast(ValueElement, context.get_slot().parent)
+        self.stepper = cast(ValueElement, context.slot.parent)
         if self.stepper.value is None:
             self.stepper.value = name
 

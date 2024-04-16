@@ -21,4 +21,4 @@ def run_javascript(code: str, *,
 
     :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
     """
-    return context.get_client().run_javascript(code, respond=respond, timeout=timeout, check_interval=check_interval)
+    return context.client.run_javascript(code, respond=respond, timeout=timeout, check_interval=check_interval)

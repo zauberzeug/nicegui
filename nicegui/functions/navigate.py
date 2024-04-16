@@ -64,4 +64,4 @@ class Navigate:
             path = f'#c{target.id}'
         elif callable(target):
             path = Client.page_routes[target]
-        context.get_client().open(path, new_tab)
+        context.client.open(path, new_tab)
