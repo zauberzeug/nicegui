@@ -71,6 +71,9 @@ doc.intro(generic_events_documentation)
     NiceGUI provides a `cpu_bound` function for running CPU-bound tasks in a separate process.
     This is useful for long-running computations that would otherwise block the event loop and make the UI unresponsive.
     The function returns a future that can be awaited.
+    NOTE: The function needs to transfer the whole state of the passed function to the process (which is done with pickle).
+    It is encouraged to create static methods (or free functions) which get all the data as simple parameters (eg. no class/ui logic)
+    and return the result (instead of writing it in class properties or global variables).
 ''')
 def cpu_bound_demo():
     import time
