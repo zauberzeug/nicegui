@@ -40,6 +40,7 @@ def test_run_javascript_before_client_connected(screen: Screen):
     screen.open('/')
     screen.should_contain('before js')
     screen.should_contain('after js')
+    screen.wait(0.5)
     screen.should_contain('New Title')
 
 
