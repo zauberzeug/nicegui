@@ -1,4 +1,4 @@
-from nicegui import context, ui
+from nicegui import ui
 
 from . import doc
 
@@ -22,7 +22,7 @@ def main_demo() -> None:
 def background_image():
     # ui.query('body').classes('bg-gradient-to-t from-blue-400 to-blue-100')
     # END OF DEMO
-    context.slot_stack[-1].parent.classes('bg-gradient-to-t from-blue-400 to-blue-100')
+    ui.context.slot_stack[-1].parent.classes('bg-gradient-to-t from-blue-400 to-blue-100')
 
 
 @doc.demo('Modify default page padding', '''
@@ -31,7 +31,7 @@ def background_image():
 ''')
 def remove_padding():
     # ui.query('.nicegui-content').classes('p-0')
-    context.slot_stack[-1].parent.classes(remove='p-4')  # HIDE
+    ui.context.slot_stack[-1].parent.classes(remove='p-4')  # HIDE
     # with ui.column().classes('h-screen w-full bg-gray-400 justify-between'):
     with ui.column().classes('h-full w-full bg-gray-400 justify-between'):  # HIDE
         ui.label('top left')

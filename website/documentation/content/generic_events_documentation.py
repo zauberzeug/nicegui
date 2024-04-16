@@ -1,4 +1,4 @@
-from nicegui import context, ui
+from nicegui import ui
 
 from . import doc
 
@@ -116,7 +116,7 @@ async def custom_events() -> None:
     #     </script>
     # ''')
     # END OF DEMO
-    await context.client.connected()
+    await ui.context.client.connected()
     ui.run_javascript('''
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
