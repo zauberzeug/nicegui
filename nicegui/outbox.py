@@ -56,10 +56,11 @@ class Outbox:
 
         while not self._should_stop:
             try:
-                try:
-                    await asyncio.wait_for(self._enqueue_event.wait(), timeout=1.0)
-                except (TimeoutError, asyncio.TimeoutError):
-                    continue
+                if not self._enqueue_event.is_set():
+                    try:
+                        await asyncio.wait_for(self._enqueue_event.wait(), timeout=1.0)
+                    except (TimeoutError, asyncio.TimeoutError):
+                        continue
 
                 if not self.client.has_socket_connection:
                     await asyncio.sleep(0.1)
