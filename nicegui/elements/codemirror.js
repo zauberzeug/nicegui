@@ -7,39 +7,45 @@ export default {
     </div>
   `,
   props: {
-    resource_path: String,
+    value: String,
+    mode: String,
+    theme: String,
+  },
+  updated() {
+    if (this.codemirror && this.codemirror.getValue() !== this.value) this.codemirror.setValue(this.value);
   },
   async mounted() {
-    // Load CodeMirror resources and initialize it
-    await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
+    // NOTE: both of these are actually CodeMirror v5
+    const base6 = "https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7";
+    const base5 = "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1";
+
     await Promise.all([
-      loadResource("https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"),
-      loadResource("https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css"),
-      loadResource("https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/theme/dracula.min.css"),
-      loadResource("https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/python/python.min.js"),
-      loadResource("https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/closebrackets.min.js"),
-      loadResource("https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/fold/foldcode.min.js"),
-      loadResource("https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/fold/foldgutter.min.css"),
-      loadResource("https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/fold/foldgutter.min.js"),
+      loadResource(base6 + "/codemirror.min.css"),
+      loadResource(base5 + `/theme/${this.theme}.min.css`),
+      // codemirror.min.js must be loaded before any other codemirror .js files
+      loadResource(base6 + "/codemirror.min.js").then(() =>
+        Promise.all([
+          loadResource(`${base6}/mode/${this.mode}/${this.mode}.min.js`),
+          loadResource(base6 + "/addon/edit/closebrackets.min.js"),
+        ])
+      ),
     ]);
-    // Initialize CodeMirror
+
     const myTextarea = this.$refs.myTextarea;
-    const myCodeMirror = CodeMirror.fromTextArea(myTextarea, {
-      language: "python",
+    this.codemirror = CodeMirror.fromTextArea(myTextarea, {
+      language: this.mode,
+      theme: this.theme,
       lineNumbers: true,
-      theme: "dracula",
       autoCloseBrackets: true,
-      indentWithTabs: true,
-      foldGutter: false,
-      gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-      extraKeys: {
-        "Ctrl-.": function (cm) {
-          // Shortcut for folding
-          console.log("Folding!");
-          cm.foldCode(cm.getCursor());
-        },
-      },
+      indentWithTabs: false,
+      indentUnit: 4,
+      tabSize: 4,
+      smartIndent: true,
     });
-    myCodeMirror.setGutterMarker(0, "CodeMirror-foldgutter", document.createTextNode("+"));
+    this.codemirror.on("change", () => {
+      const value = this.codemirror.getValue();
+      this.$emit("change", value);
+      this.$emit("update:value", value);
+    });
   },
 };
