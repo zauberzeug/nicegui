@@ -48,10 +48,12 @@ doc.title('Storage')
     | Location                    | Server | Server   | Server | Server    | Browser   |
     | Across tabs                 | No     | No       | Yes    | Yes       | Yes       |
     | Across browsers             | No     | No       | No     | Yes       | No        |
+    | Across server restarts      | No     | No       | No     | Yes       | No        |
     | Across page reloads         | Yes    | No       | Yes    | Yes       | Yes       |
     | Needs page builder function | Yes    | Yes      | Yes    | No        | Yes       |
     | Needs client connection     | Yes    | No       | No     | No        | No        |
     | Write only before response  | No     | No       | No     | No        | Yes       |
+    | Needs serializable data     | No     | No       | Yes    | Yes       | Yes       |
 ''')
 def storage_demo():
     from nicegui import app
