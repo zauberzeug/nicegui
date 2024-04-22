@@ -132,9 +132,9 @@ def test_wait_for_disconnect(screen: Screen):
 
     @ui.page('/', reconnect_timeout=0)
     async def page():
-        await ui.context.get_client().connected()
+        await ui.context.client.connected()
         events.append('connected')
-        await ui.context.get_client().disconnected()
+        await ui.context.client.disconnected()
         events.append('disconnected')
 
     screen.open('/')
@@ -149,7 +149,7 @@ def test_wait_for_disconnect_without_awaiting_connected(screen: Screen):
 
     @ui.page('/', reconnect_timeout=0)
     async def page():
-        await ui.context.get_client().disconnected()
+        await ui.context.client.disconnected()
         events.append('disconnected')
 
     screen.open('/')
@@ -163,7 +163,7 @@ def test_adding_elements_after_connected(screen: Screen):
     @ui.page('/')
     async def page():
         ui.label('before')
-        await ui.context.get_client().connected()
+        await ui.context.client.connected()
         ui.label('after')
 
     screen.open('/')
@@ -185,7 +185,7 @@ def test_exception(screen: Screen):
 def test_exception_after_connected(screen: Screen):
     @ui.page('/')
     async def page():
-        await ui.context.get_client().connected()
+        await ui.context.client.connected()
         ui.label('this is shown')
         raise RuntimeError('some exception')
 
@@ -207,7 +207,7 @@ def test_adding_elements_during_onconnect(screen: Screen):
     @ui.page('/')
     def page():
         ui.label('Label 1')
-        ui.context.get_client().on_connect(lambda: ui.label('Label 2'))
+        ui.context.client.on_connect(lambda: ui.label('Label 2'))
 
     screen.open('/')
     screen.should_contain('Label 2')
@@ -219,7 +219,7 @@ def test_async_connect_handler(screen: Screen):
         async def run_js():
             result.text = await ui.run_javascript('41 + 1')
         result = ui.label()
-        ui.context.get_client().on_connect(run_js)
+        ui.context.client.on_connect(run_js)
 
     screen.open('/')
     screen.should_contain('42')
@@ -292,7 +292,7 @@ def test_returning_custom_response_async(screen: Screen):
 def test_warning_about_to_late_responses(screen: Screen):
     @ui.page('/')
     async def page():
-        await ui.context.get_client().connected()
+        await ui.context.client.connected()
         ui.label('NiceGUI page')
         return PlainTextResponse('custom response')
 

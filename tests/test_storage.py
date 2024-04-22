@@ -50,7 +50,7 @@ def test_browser_storage_supports_asyncio(screen: Screen):
 def test_browser_storage_modifications_after_page_load_are_forbidden(screen: Screen):
     @ui.page('/')
     async def page():
-        await ui.context.get_client().connected()
+        await ui.context.client.connected()
         try:
             app.storage.browser['test'] = 'data'
         except TypeError as e:
@@ -65,7 +65,7 @@ def test_user_storage_modifications(screen: Screen):
     @ui.page('/')
     async def page(delayed: bool = False):
         if delayed:
-            await ui.context.get_client().connected()
+            await ui.context.client.connected()
         app.storage.user['count'] = app.storage.user.get('count', 0) + 1
         ui.label().bind_text_from(app.storage.user, 'count')
 
