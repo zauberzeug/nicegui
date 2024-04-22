@@ -48,10 +48,12 @@ doc.title('Storage')
     | Location                    | Server | Server   | Server | Server    | Browser   |
     | Across tabs                 | No     | No       | Yes    | Yes       | Yes       |
     | Across browsers             | No     | No       | No     | Yes       | No        |
+    | Across server restarts      | No     | No       | No     | Yes       | No        |
     | Across page reloads         | Yes    | No       | Yes    | Yes       | Yes       |
     | Needs page builder function | Yes    | Yes      | Yes    | No        | Yes       |
     | Needs client connection     | Yes    | No       | No     | No        | No        |
     | Write only before response  | No     | No       | No     | No        | Yes       |
+    | Needs serializable data     | No     | No       | Yes    | Yes       | Yes       |
 ''')
 def storage_demo():
     from nicegui import app
@@ -120,7 +122,7 @@ def tab_storage():
 
     # @ui.page('/')
     # async def index():
-    #     await ui.context.client.connected()
+    #     await ui.context.get_client().connected()
     with ui.column():  # HIDE
         app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
         ui.label(f'Tab reloaded {app.storage.tab["count"]} times')

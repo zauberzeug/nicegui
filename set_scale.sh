@@ -16,7 +16,7 @@ fly scale count app=1  --region otp -y # Bucharest, Romania
 fly scale count app=1  --region jnb -y # Johannesburg, South Africa
 
 fly scale count app=1  --region bom -y # Mumbai, India
-fly scale count app=1  --region nrt -y # Tokyo, Japan
+fly scale count app=3  --region nrt -y # Tokyo, Japan
 fly scale count app=1  --region sin -y # Singapor
 fly scale count app=3  --region hkg -y # Hong Kong
 
