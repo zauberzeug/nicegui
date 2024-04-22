@@ -61,7 +61,7 @@ class page(ui.page):
                     const sessionToken = sdk.getSessionToken()
                 </script>
             ''')
-            await ui.context.get_client().connected()
+            await ui.context.client.connected()
             if await self._is_logged_in():
                 if self.path == self.LOGIN_PATH:
                     self._refresh()

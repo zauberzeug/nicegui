@@ -122,7 +122,7 @@ def tab_storage():
 
     # @ui.page('/')
     # async def index():
-    #     await ui.context.get_client().connected()
+    #     await ui.context.client.connected()
     with ui.column():  # HIDE
         app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
         ui.label(f'Tab reloaded {app.storage.tab["count"]} times')

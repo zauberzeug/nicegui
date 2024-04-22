@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional, Union, cast
 
-from .. import context
+from ..context import context
 from ..element import Element
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
@@ -69,7 +69,7 @@ class Step(DisableableElement):
         self._classes.append('nicegui-step')
         if icon:
             self._props['icon'] = icon
-        self.stepper = cast(ValueElement, context.get_slot().parent)
+        self.stepper = cast(ValueElement, context.slot.parent)
         if self.stepper.value is None:
             self.stepper.value = name
 

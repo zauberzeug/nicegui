@@ -1,4 +1,5 @@
-from .. import context, json
+from .. import json
+from ..context import context
 
 
 def page_title(title: str) -> None:
@@ -8,7 +9,7 @@ def page_title(title: str) -> None:
 
     :param title: page title
     """
-    client = context.get_client()
+    client = context.client
     client.title = title
     if client.has_socket_connection:
         client.run_javascript(f'document.title = {json.dumps(title)}')

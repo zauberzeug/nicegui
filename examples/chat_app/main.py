@@ -36,7 +36,7 @@ async def main():
         ui.markdown('simple chat app built with [NiceGUI](https://nicegui.io)') \
             .classes('text-xs self-end mr-8 m-[-1em] text-primary')
 
-    await ui.context.get_client().connected()  # chat_messages(...) uses run_javascript which is only possible after connecting
+    await ui.context.client.connected()  # chat_messages(...) uses run_javascript which is only possible after connecting
     with ui.column().classes('w-full max-w-2xl mx-auto items-stretch'):
         chat_messages(user_id)
 
