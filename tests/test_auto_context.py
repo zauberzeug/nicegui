@@ -50,9 +50,9 @@ def test_adding_elements_with_async_await(screen: Screen):
 
 def test_autoupdate_after_connected(screen: Screen):
     @ui.page('/')
-    async def page(client: Client):
+    async def page():
         ui.label('before connected')
-        await client.connected()
+        await ui.context.get_client().connected()
         ui.label('after connected')
         await asyncio.sleep(1)
         ui.label('one')

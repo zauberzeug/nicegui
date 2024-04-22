@@ -18,7 +18,7 @@ def main_demo() -> None:
 
 
 @doc.demo('Pages with Path Parameters', '''
-    Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/>).
+    Page routes can contain parameters like [FastAPI](https://fastapi.tiangolo.com/tutorial/path-params/).
     If type-annotated, they are automatically converted to bool, int, float and complex values.
     If the page function expects a `request` argument, the request object is automatically provided.
     The `client` argument provides access to the websocket connection, layout, etc.
@@ -42,15 +42,13 @@ def page_with_path_parameters_demo():
 def wait_for_connected_demo():
     import asyncio
 
-    from nicegui import Client
-
     @ui.page('/wait_for_connection')
-    async def wait_for_connection(client: Client):
+    async def wait_for_connection():
         ui.label('This text is displayed immediately.')
-        await client.connected()
+        await ui.context.get_client().connected()
         await asyncio.sleep(2)
         ui.label('This text is displayed 2 seconds after the page has been fully loaded.')
-        ui.label(f'The IP address {client.ip} was obtained from the websocket.')
+        ui.label(f'The IP address {ui.context.get_client().ip} was obtained from the websocket.')
 
     ui.link('wait for connection', wait_for_connection)
 
