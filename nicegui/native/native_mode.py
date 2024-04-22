@@ -40,14 +40,15 @@ def _open_window(
         'height': height,
         'fullscreen': fullscreen,
         'frameless': frameless,
-        **core.app.native.window_args,
+        **core.app.native.window_args
     }
-    webview.settings['ALLOW_DOWNLOADS'] = True
+
     window = webview.create_window(**window_kwargs)
     closed = Event()
     window.events.closed += closed.set
     _start_window_method_executor(window, method_queue, response_queue, closed)
-    webview.start(storage_path=tempfile.mkdtemp(), **core.app.native.start_args)
+    webview_args = {**core.app.native.start_args, **core.app.native.settings}
+    webview.start(storage_path=tempfile.mkdtemp(), server_args=webview_args)
 
 
 def _start_window_method_executor(window: webview.Window,
