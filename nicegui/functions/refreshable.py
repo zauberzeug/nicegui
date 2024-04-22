@@ -154,6 +154,8 @@ def state(value: Any) -> Tuple[Any, Callable[[Any], None]]:
         value = target.locals[target.next_index]
 
     def set_value(new_value: Any, index=target.next_index) -> None:
+        if target.locals[index] == new_value:
+            return
         target.locals[index] = new_value
         target.refreshable.refresh()
 
