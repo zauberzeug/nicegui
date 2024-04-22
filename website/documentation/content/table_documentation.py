@@ -139,21 +139,18 @@ def table_from_pandas_demo():
 
 @doc.demo('Adding rows', '''
     It's simple to add new rows with the `add_rows(dict)` method.
-    With the `virtual-scroll` prop set, the table can be programmatically scrolled with the `scrollTo` JavaScript function.
+    With the "virtual-scroll" prop set, the table can be programmatically scrolled with the `scrollTo` JavaScript function.
 ''')
 def adding_rows():
     from datetime import datetime
 
     def add():
-        table.add_rows({'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
+        table.add_rows({'date': datetime.now().strftime('%c')})
         table.run_method('scrollTo', len(table.rows)-1)
 
-    ui.button('add', on_click=add)
-    columns = [
-        {'name': 'date', 'label': 'Date', 'field': 'date'},
-    ]
-    table = ui.table(columns=columns, rows=[], row_key='id') \
-        .classes('h-52').props('virtual-scroll')
+    columns = [{'name': 'date', 'label': 'Date', 'field': 'date'}]
+    table = ui.table(columns=columns, rows=[]).classes('h-52').props('virtual-scroll')
+    ui.button('Add row', on_click=add)
 
 
 @doc.demo('Custom sorting and formatting', '''
