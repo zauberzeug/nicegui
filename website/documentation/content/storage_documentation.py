@@ -118,11 +118,11 @@ def ui_state():
     It is also more secure to use such a volatile storage for scenarios like logging into a bank account or accessing a password manager.
 ''')
 def tab_storage():
-    from nicegui import Client, app
+    from nicegui import app
 
     # @ui.page('/')
-    # async def index(client: Client):
-    #     await client.connected()
+    # async def index():
+    #     await ui.context.get_client().connected()
     with ui.column():  # HIDE
         app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
         ui.label(f'Tab reloaded {app.storage.tab["count"]} times')

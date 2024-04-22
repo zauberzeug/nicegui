@@ -20,6 +20,7 @@ __all__ = [
     'color_picker',
     'colors',
     'column',
+    'context',
     'context_menu',
     'dark_mode',
     'date',
@@ -121,6 +122,7 @@ __all__ = [
     'run_with',
 ]
 
+from . import context
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
 from .elements.audio import Audio as audio

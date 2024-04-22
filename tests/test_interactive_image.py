@@ -3,14 +3,14 @@ from typing import List
 import pytest
 from selenium.webdriver.common.action_chains import ActionChains
 
-from nicegui import Client, ui
+from nicegui import ui
 from nicegui.testing import Screen
 
 
 def test_set_source_in_tab(screen: Screen):
     """https://github.com/zauberzeug/nicegui/issues/488"""
     @ui.page('/')
-    async def page(client: Client):
+    async def page():
         with ui.tabs() as tabs:
             ui.tab('A')
             ui.tab('B')
@@ -20,7 +20,7 @@ def test_set_source_in_tab(screen: Screen):
                 img = ui.interactive_image()
             with ui.tab_panel('B'):
                 ui.label('Tab B')
-        await client.connected()
+        await ui.context.get_client().connected()
         img.set_source('https://picsum.photos/id/29/640/360')
 
     screen.open('/')
