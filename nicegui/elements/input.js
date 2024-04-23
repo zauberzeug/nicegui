@@ -6,6 +6,7 @@ export default {
       v-model="inputValue"
       :shadow-text="shadowText"
       @keydown.tab="perform_autocomplete"
+      @keydown.enter="keydownEvent"
       :list="id + '-datalist'"
     >
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
@@ -60,6 +61,9 @@ export default {
         this.inputValue += this.shadowText;
         e.preventDefault();
       }
+    },
+    keydownEvent(e) {
+      this.$emit(`keydown:${e.key.toLowerCase()}`);
     },
   },
 };

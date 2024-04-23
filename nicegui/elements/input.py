@@ -1,5 +1,7 @@
 from typing import Any, Callable, Dict, List, Optional, Union
 
+from typing_extensions import Self
+
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
 from .mixins.validation_element import ValidationElement
@@ -18,6 +20,7 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
                  on_change: Optional[Callable[..., Any]] = None,
                  autocomplete: Optional[List[str]] = None,
                  validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
+                 on_enter: Optional[Callable[..., Any]] = None,
                  ) -> None:
         """Text Input
 
@@ -47,6 +50,7 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
         :param on_change: callback to execute when the value changes
         :param autocomplete: optional list of strings for autocompletion
         :param validation: dictionary of validation rules or a callable that returns an optional error message
+        :param on_enter: callback to execute when the user presses the Enter key while the input is focused
         """
         super().__init__(value=value, on_value_change=on_change, validation=validation)
         if label is not None:
@@ -65,6 +69,9 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
 
         self._props['_autocomplete'] = autocomplete or []
 
+        if on_enter:
+            self.on_enter(on_enter)
+
     def set_autocomplete(self, autocomplete: Optional[List[str]]) -> None:
         """Set the autocomplete list."""
         self._props['_autocomplete'] = autocomplete
@@ -74,3 +81,8 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
         super()._handle_value_change(value)
         if self._send_update_on_value_change:
             self.run_method('updateValue')
+
+    def on_enter(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when the user presses the Enter key while the input is focused."""
+        self.on('keydown:enter', lambda _: callback(), [])
+        return self
