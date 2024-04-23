@@ -3,6 +3,7 @@ from typing import Any, Callable, List, Optional
 
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
+from nicegui.events import GenericEventArguments
 
 
 class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
@@ -14,7 +15,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
         value: str = '',
         *,
         on_change: Optional[Callable[..., Any]] = None,
-        language: str = 'Python',
+        language: str = 'plaintext',
         theme: str = 'basicDark',
         indent: str = ' ' * 4,
         line_wrapping: bool = False,
@@ -37,7 +38,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
-        :param language: initial language of the editor. Case-insensitive (default: "Python")
+        :param language: initial language of the editor. Case-insensitive (default: "plaintext")
         :param theme: initial theme of the editor (default: "basicDark")
         :param indent: string to use for indentation. Can be any string consisting entirely of the same whitespace character. (default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
@@ -82,11 +83,93 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
     async def supported_languages(self, *, timeout: float = 10) -> List[str]:
         """Get the list of supported languages."""
         await self.client.connected()
-        values = await self.run_method('get_languages', timeout=timeout)
+        values = await self.run_method('getLanguages', timeout=timeout)
         return sorted(values)
 
     async def supported_themes(self, *, timeout: float = 10) -> List[str]:
         """Get the list of supported themes."""
         await self.client.connected()
-        values = await self.run_method('get_themes', timeout=timeout)
+        values = await self.run_method('getThemes', timeout=timeout)
         return sorted(values)
+
+    def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+        """The event contains a change set which is applied to the current value."""
+        changeset = _ChangeSet(sections=e.args['sections'], inserted=e.args['inserted'])
+        new_value = changeset.apply(self.value)
+        return new_value
+
+
+# Below is a Python implementation of relevant parts of https://github.com/codemirror/state/blob/main/src/change.ts
+# to apply a ChangeSet to a text document.
+
+class _ChangeSet:
+    """A change set represents a group of modifications to a document."""
+
+    def __init__(self, sections: List[int], inserted: List[List[str]]):
+        # From https://github.com/codemirror/state/blob/main/src/change.ts#L21:
+        # Sections are encoded as pairs of integers. The first is the
+        # length in the current document, and the second is -1 for
+        # unaffected sections, and the length of the replacement content
+        # otherwise. So an insertion would be (0, n>0), a deletion (n>0,
+        # 0), and a replacement two positive numbers.
+        self.sections: List[int] = sections
+        self.inserted: List[str] = ['\n'.join(ins) for ins in inserted]
+
+    def length(self) -> int:
+        """Calculate the length of the document before the change."""
+        result = 0
+        i = 0
+        while i < len(self.sections):
+            result += self.sections[i]
+            i += 2
+        return result
+
+    def apply(self, doc: str) -> str:
+        """Apply the changes to a document, returning the modified document."""
+        if self.length() != len(doc):
+            raise ValueError('Applying change set to a document with the wrong length')
+        return _iter_changes(self, doc, _replacement_func, individual=False)
+
+    def __str__(self) -> str:
+        return f'ChangeSet(sections={self.sections}, inserted={self.inserted})'
+
+
+def _iter_changes(changeset: _ChangeSet, doc: str, func: Callable[[str, int, int, int, int, str], str], individual: bool):
+    inserted = changeset.inserted
+    posA, posB, i = 0, 0, 0
+
+    while i < len(changeset.sections):
+        len_ = changeset.sections[i]
+        i += 1
+        ins = changeset.sections[i]
+        i += 1
+
+        if ins < 0:
+            posA += len_
+            posB += len_
+        else:
+            endA, endB = posA, posB
+            text = ''
+            while True:
+                endA += len_
+                endB += ins
+                if ins and inserted:
+                    text = text + inserted[(i - 2) // 2]
+                if individual or i == len(changeset.sections) or changeset.sections[i + 1] < 0:
+                    break
+                len_ = changeset.sections[i]
+                i += 1
+                ins = changeset.sections[i]
+                i += 1
+            doc = func(doc, posA, endA, posB, endB, text)
+            posA, posB = endA, endB
+
+    return doc
+
+
+def _replace_range(doc: str, from_: int, to: int, new: str) -> str:
+    return doc[:from_] + new + doc[to:]
+
+
+def _replacement_func(doc: str, from_a: int, to_a: int, from_b: int, _to_b: int, text: str) -> str:
+    return _replace_range(doc, from_b, from_b + (to_a - from_a), text)

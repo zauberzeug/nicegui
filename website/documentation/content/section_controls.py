@@ -4,6 +4,7 @@ from . import (
     button_dropdown_documentation,
     button_group_documentation,
     checkbox_documentation,
+    codemirror_documentation,
     color_input_documentation,
     color_picker_documentation,
     date_documentation,
@@ -39,6 +40,7 @@ doc.intro(range_documentation)
 doc.intro(joystick_documentation)
 doc.intro(input_documentation)
 doc.intro(textarea_documentation)
+doc.intro(codemirror_documentation)
 doc.intro(number_documentation)
 doc.intro(knob_documentation)
 doc.intro(color_input_documentation)

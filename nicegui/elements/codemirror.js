@@ -16,21 +16,23 @@ export default {
     highlightWhitespace: Boolean,
   },
   watch: {
-    value(new_value) {
-      this.set_editor_value(new_value);
+    value(newValue) {
+      this.setEditorValue(newValue);
     },
-    language(new_language) {
-      this.set_language(new_language);
+    language(newLanguage) {
+      this.setLanguage(newLanguage);
     },
-    theme(new_theme) {
-      this.set_theme(new_theme);
+    theme(newTheme) {
+      this.setTheme(newTheme);
     },
-    disable(new_disable) {
-      this.set_disabled(new_disable);
+    disable(newDisable) {
+      this.setDisabled(newDisable);
     },
   },
   data() {
     return {
+      // To let other methods wait for the editor to be created because
+      // they might be called by the server before the editor is created.
       editorPromise: new Promise((resolve) => {
         this.resolveEditor = resolve;
       }),
@@ -38,23 +40,32 @@ export default {
   },
   methods: {
     // Find the language's extension by its name. Case insensitive.
-    find_language(name) {
+    findLanguage(name) {
       for (const language of this.languages)
         for (const alias of [language.name, ...language.alias])
           if (name.toLowerCase() === alias.toLowerCase()) return language;
 
       console.error(`Language not found: ${this.language}`);
-      console.info("Supported languages names:", languages.map((lang) => lang.name).join(", "));
+      console.info("Supported language names:", languages.map((lang) => lang.name).join(", "));
       return null;
     },
     // Get the names of all supported languages
-    async get_languages() {
+    async getLanguages() {
       if (!this.editor) await this.editorPromise;
       // Over 100 supported languages: https://github.com/codemirror/language-data/blob/main/src/language-data.ts
-      return this.languages.map((lang) => lang.name);
+      const names = this.languages.map((lang) => lang.name);
+      names.push("plaintext");
+      return names;
     },
-    set_language(language) {
-      const lang_description = this.find_language(language, this.languages);
+    setLanguage(language) {
+      if (("" + language).toLowerCase() === "plaintext") {
+        this.editor.dispatch({
+          effects: this.languageConfig.reconfigure([]),
+        });
+        return;
+      }
+
+      const lang_description = this.findLanguage(language, this.languages);
       if (!lang_description) {
         console.error("Language not found:", language);
         return;
@@ -66,13 +77,13 @@ export default {
         });
       });
     },
-    async get_themes() {
+    async getThemes() {
       if (!this.editor) await this.editorPromise;
       // `this.themes` also contains some non-theme objects
       // The real themes are Arrays
       return Object.keys(this.themes).filter((key) => Array.isArray(this.themes[key]));
     },
-    set_theme(theme) {
+    setTheme(theme) {
       const new_theme = this.themes[theme];
       if (new_theme === undefined) {
         console.error("Theme not found:", theme);
@@ -82,7 +93,7 @@ export default {
         effects: this.themeConfig.reconfigure([new_theme]),
       });
     },
-    set_editor_value(value) {
+    setEditorValue(value) {
       if (!this.editor) return;
       if (this.editor.state.doc.toString() === value) return;
 
@@ -90,86 +101,93 @@ export default {
       this.editor.dispatch({ changes: { from: 0, to: this.editor.state.doc.length, insert: value } });
       this.emitting = true;
     },
-    set_disabled(disabled) {
+    setDisabled(disabled) {
       this.editor.dispatch({
         effects: this.editableConfig.reconfigure(this.editableStates[!disabled]),
       });
     },
-  },
-  async mounted() {
-    const {
-      EditorView,
-      Compartment,
-      basicSetup,
-      keymap,
-      indentWithTab,
-      languages,
-      themes,
-      oneDark,
-      indentUnit,
-      highlightWhitespace,
-    } = await import(`${this.resource_path}/editor.js`);
+    setupExtensions() {
+      const CM = this.CM;
 
-    // This flag is used to prevent emitting the same value
-    // again when the editor was just updated from the server
-    this.emitting = true;
+      let self = this;
 
-    const changeListener = EditorView.updateListener.of((update) => {
-      if (!this.emitting) return;
-      if (!update.docChanged) return;
-      const value = update.state.doc.toString();
-      this.$emit("update:value", value);
-    });
+      // Sends a ChangeSet https://codemirror.net/docs/ref/#state.ChangeSet
+      // containing only the changes made to the document.
+      // This could potentially be optimized further by sending updates
+      // periodically instead of on every change and accumulating changesets
+      // with ChangeSet.compose.
+      const changeSender = this.CM.ViewPlugin.fromClass(
+        class {
+          update(update) {
+            if (!update.docChanged) return;
+            if (!self.emitting) return;
+            self.$emit("update:value", update.changes);
+          }
+        }
+      );
 
-    // The Compartments are used to change the properties of the editor ("extensions") dynamically
-    this.themes = { ...themes, oneDark: oneDark };
-    this.themeConfig = new Compartment();
-    this.languages = languages;
-    this.languageConfig = new Compartment();
-    this.editableConfig = new Compartment();
-    this.editableStates = { true: EditorView.editable.of(true), false: EditorView.editable.of(false) };
+      const extensions = [
+        CM.basicSetup,
+        changeSender,
+        // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
+        CM.keymap.of([CM.indentWithTab]),
+        // Sets indentation https://codemirror.net/docs/ref/#language.indentUnit
+        CM.indentUnit.of(this.indent),
+        // We will set these Compartments later and dynamically through props
+        this.themeConfig.of([]),
+        this.languageConfig.of([]),
+        this.editableConfig.of([]),
+      ];
 
-    const extensions = [
-      basicSetup,
-      changeListener,
-      // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
-      keymap.of([indentWithTab]),
-      // Sets indentation https://codemirror.net/docs/ref/#language.indentUnit
-      indentUnit.of(this.indent),
-      // We will set these compartments later and dynamically through props
-      this.themeConfig.of([]),
-      this.languageConfig.of([]),
-      this.editableConfig.of([]),
-    ];
+      if (this.lineWrapping) extensions.push(CM.EditorView.lineWrapping);
+      if (this.highlightWhitespace) extensions.push([CM.highlightWhitespace()]);
 
-    if (this.lineWrapping) extensions.push(EditorView.lineWrapping);
-    if (this.highlightWhitespace) extensions.push([highlightWhitespace()]);
+      // Convenience function to add theme properties below
+      const addToTheme = (content) => {
+        extensions.push(CM.EditorView.theme(content));
+      };
 
-    // Convenience function to add theme properties below
-    const addToTheme = (content) => {
-      extensions.push(EditorView.theme(content));
-    };
-
-    // Setting the height properly through tailwind is likely not possible,
-    // so we use the recommended ways from https://codemirror.net/examples/styling/
-    if (this.fixedHeight) {
-      addToTheme({
-        "&": { height: this.fixedHeight },
-        ".cm-scroller": { overflow: "auto" },
-      });
-    } else {
-      if (this.maxHeight)
+      // Setting the height properly through tailwind is likely not possible,
+      // so we use the recommended ways from https://codemirror.net/examples/styling/
+      if (this.fixedHeight) {
         addToTheme({
-          "&": { "max-height": this.maxHeight },
+          "&": { height: this.fixedHeight },
           ".cm-scroller": { overflow: "auto" },
         });
-      if (this.minHeight)
-        addToTheme({
-          ".cm-content, .cm-gutter": { minHeight: this.minHeight },
-        });
-    }
+      } else {
+        if (this.maxHeight)
+          addToTheme({
+            "&": { "max-height": this.maxHeight },
+            ".cm-scroller": { overflow: "auto" },
+          });
+        if (this.minHeight)
+          addToTheme({
+            ".cm-content, .cm-gutter": { minHeight: this.minHeight },
+          });
+      }
 
-    this.editor = new EditorView({
+      return extensions;
+    },
+  },
+  async mounted() {
+    this.CM = await import(`${this.resource_path}/editor.js`);
+    const CM = this.CM;
+
+    // This is used to prevent emitting the value we just
+    // received from the server.
+    this.emitting = true;
+
+    // The Compartments are used to change the properties of the editor ("extensions") dynamically
+    this.themes = { ...CM.themes, oneDark: CM.oneDark };
+    this.themeConfig = new CM.Compartment();
+    this.languages = CM.languages;
+    this.languageConfig = new CM.Compartment();
+    this.editableConfig = new CM.Compartment();
+    this.editableStates = { true: CM.EditorView.editable.of(true), false: CM.EditorView.editable.of(false) };
+
+    const extensions = this.setupExtensions();
+
+    this.editor = new CM.EditorView({
       doc: this.value,
       extensions: extensions,
       parent: this.$el,
@@ -177,8 +195,8 @@ export default {
 
     this.resolveEditor(this.editor);
 
-    this.set_language(this.language);
-    this.set_theme(this.theme);
-    this.set_disabled(this.disable);
+    this.setLanguage(this.language);
+    this.setTheme(this.theme);
+    this.setDisabled(this.disable);
   },
 };
