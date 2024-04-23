@@ -89,7 +89,7 @@ class Scene(Element,
         :param width: width of the canvas
         :param height: height of the canvas
         :param grid: whether to display a grid
-        :param camera: camera definition, either ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
+        :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked
         :param on_drag_start: callback to execute when a 3D object is dragged
         :param on_drag_end: callback to execute when a 3D object is dropped
@@ -140,7 +140,7 @@ class Scene(Element,
         return SceneCamera(type='perspective', params={'fov': fov, 'near': near, 'far': far})
 
     @staticmethod
-    def orthographic_camera(*, size: float = 10.0, near: float = 0.1, far: float = 1000) -> SceneCamera:
+    def orthographic_camera(*, size: float = 10, near: float = 0.1, far: float = 1000) -> SceneCamera:
         """Create a orthographic camera.
 
         The size defines the vertical size of the view volume, i.e. the distance between the top and bottom clipping planes.
