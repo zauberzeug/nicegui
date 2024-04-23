@@ -65,13 +65,24 @@ export default {
 
     window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
 
-    this.look_at = new THREE.Vector3(0, 0, 0);
-    const aspect = this.width / this.height;
     if (this.camera_type === "perspective") {
-      this.camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+      this.camera = new THREE.PerspectiveCamera(
+        this.camera_params.fov,
+        this.width / this.height,
+        this.camera_params.near,
+        this.camera_params.far
+      );
     } else {
-      this.camera = new THREE.OrthographicCamera(-aspect, aspect, 1, -1, 0.1, 1000);
+      this.camera = new THREE.OrthographicCamera(
+        (-this.camera_params.size / 2) * (this.width / this.height),
+        (this.camera_params.size / 2) * (this.width / this.height),
+        this.camera_params.size / 2,
+        -this.camera_params.size / 2,
+        this.camera_params.near,
+        this.camera_params.far
+      );
     }
+    this.look_at = new THREE.Vector3(0, 0, 0);
     this.camera.lookAt(this.look_at);
     this.camera.up = new THREE.Vector3(0, 0, 1);
     this.camera.position.set(0, -3, 5);
@@ -416,8 +427,8 @@ export default {
       this.text3d_renderer.setSize(clientWidth, clientHeight);
       this.camera.aspect = clientWidth / clientHeight;
       if (this.camera_type === "orthographic") {
-        this.camera.left = -this.camera.aspect;
-        this.camera.right = this.camera.aspect;
+        this.camera.left = (-this.camera.aspect * this.camera_params.size) / 2;
+        this.camera.right = (this.camera.aspect * this.camera_params.size) / 2;
       }
       this.camera.updateProjectionMatrix();
     },
@@ -428,6 +439,7 @@ export default {
     height: Number,
     grid: Boolean,
     camera_type: String,
+    camera_params: Object,
     drag_constraints: String,
   },
 };
