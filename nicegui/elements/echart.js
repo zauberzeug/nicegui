@@ -47,16 +47,8 @@ export default {
     ]) {
       this.chart.on(event, (e) => this.$emit(`chart:${event}`, e));
     }
-
-    // Prevent interruption of chart animations due to resize operations.
-    // Note that it's recommended to register the callbacks for such an event before setOption
-    const finishedCallback = () => {
-      new ResizeObserver(this.chart.resize).observe(this.$el);
-      this.chart.off('finished', finishedCallback);
-    }
-    this.chart.on('finished', finishedCallback);
-
     this.update_chart();
+    new ResizeObserver(this.chart.resize).observe(this.$el);
   },
   beforeDestroy() {
     this.chart.dispose();
