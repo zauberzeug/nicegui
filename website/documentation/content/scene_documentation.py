@@ -31,7 +31,6 @@ def main_demo() -> None:
         scene.text('2D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(z=2)
         scene.text3d('3D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(y=-2).scale(.05)
 
-
 @doc.demo('Handling Click Events', '''
     You can use the `on_click` argument to `ui.scene` to handle click events.
     The callback receives a `SceneClickEventArguments` object with the following attributes:
@@ -112,6 +111,17 @@ async def wait_for_init() -> None:
         await scene.initialized()
         scene.move_camera(x=1, y=-1, z=1.5, duration=2)
 
+@doc.demo(ui.scene_view)
+def multipleScenes():
+    with ui.scene().classes('w-full h-64') as scene:
+        teapot = 'https://upload.wikimedia.org/wikipedia/commons/9/93/Utah_teapot_(solid).stl'
+        scene.stl(teapot).scale(0.3)
+
+    with ui.row().classes('flex-nowrap w-full'):
+        with ui.scene_view(scene).classes('h-32 w-1/2 overflow-x-hidden') as scene_view1:
+            scene_view1.move_camera(x=1, y=-3, z=5)
+        with ui.scene_view(scene).classes('h-32 w-1/2 overflow-x-hidden') as scene_view2:
+            scene_view2.move_camera(x=0, y=3, z=3)
 
 # @doc.demo('Orthographic Camera', '''
 #     You can use the `camera_type` argument to `ui.scene` to use an orthographic instead of a perspective camera.

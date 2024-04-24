@@ -43,7 +43,7 @@ class SceneView(Element,
                  height: int = 300,
                  on_click: Optional[Callable[..., Any]] = None,
                  ) -> None:
-        """3D Scene View
+        """Scene View
 
         Display a additial view of a 3D scene using `three.js <https://threejs.org/>`_.
         This component can only show a scene and not modify it. You can however independly move the camera.
