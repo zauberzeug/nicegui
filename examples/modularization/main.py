@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 import api_router_example
-import function_example
 import class_example
+import function_example
 import home_page
 import theme
 
 from nicegui import app, ui
 
 
-# Example 1: using custom page decorator directly and putting the content creation into a separate function
+# Example 1: use a custom page decorator directly and putting the content creation into a separate function
 @ui.page('/')
 def index_page() -> None:
     with theme.frame('Homepage'):

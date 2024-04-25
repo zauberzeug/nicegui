@@ -11,12 +11,14 @@ router = APIRouter(prefix='/c')
 def example_page():
     with theme.frame('- Page C -'):
         message('Page C')
-        for i in range(1, 4):
-            ui.link(f'Item {i}', f'/c/items/{i}').classes('text-xl text-grey-8')
+        ui.label('This page and its subpages are created using an APIRouter.')
+        ui.link('Item 1', '/c/items/1').classes('text-xl text-grey-8')
+        ui.link('Item 2', '/c/items/2').classes('text-xl text-grey-8')
+        ui.link('Item 3', '/c/items/3').classes('text-xl text-grey-8')
 
 
 @router.page('/items/{id}', dark=True)
-def item(id: str):
-    with theme.frame(f'- Page C{id} -'):
-        message(f'Item  #{id}')
+def item(item_id: str):
+    with theme.frame(f'- Page C{item_id} -'):
+        message(f'Item  #{item_id}')
         ui.link('go back', router.prefix).classes('text-xl text-grey-8')

@@ -9,3 +9,4 @@ def create() -> None:
     def page_a():
         with theme.frame('- Page A -'):
             message('Page A')
+            ui.label('This page is defined in a function.')
