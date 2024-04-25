@@ -2,7 +2,6 @@ import * as THREE from "three";
 import { CSS2DRenderer } from "CSS2DRenderer";
 import { CSS3DRenderer } from "CSS3DRenderer";
 
-
 function waitForElement(id, timeout = 10000) {
   return new Promise((resolve, reject) => {
     const startTime = Date.now();

@@ -15,6 +15,7 @@ from ..events import (
 )
 from .scene import Scene
 
+
 @dataclass(**KWONLY_SLOTS)
 class SceneCamera:
     x: float = 0
@@ -27,15 +28,15 @@ class SceneCamera:
     up_y: float = 0
     up_z: float = 1
 
+
 class SceneView(Element,
-            component='scene_view.js',
-            libraries=['lib/tween/tween.umd.js'],
-            exposed_libraries=[
-                'lib/three/three.module.js',
-                'lib/three/modules/CSS2DRenderer.js',
-                'lib/three/modules/CSS3DRenderer.js',
-                'lib/three/modules/OrbitControls.js',
-            ]):
+                component='scene_view.js',
+                libraries=['lib/tween/tween.umd.js'],
+                exposed_libraries=[
+                    'lib/three/three.module.js',
+                    'lib/three/modules/CSS2DRenderer.js',
+                    'lib/three/modules/CSS3DRenderer.js',
+                ]):
 
     def __init__(self,
                  scene: Scene,
@@ -45,8 +46,9 @@ class SceneView(Element,
                  ) -> None:
         """Scene View
 
-        Display a additial view of a 3D scene using `three.js <https://threejs.org/>`_.
-        This component can only show a scene and not modify it. You can however independly move the camera.
+        Display an additional view of a 3D scene using `three.js <https://threejs.org/>`_.
+        This component can only show a scene and not modify it.
+        You can, however, independently move the camera.
 
         :param scene: the scene which will be shown on the canvas
         :param width: width of the canvas
@@ -68,10 +70,6 @@ class SceneView(Element,
         """Add a callback to be invoked when a 3D object is clicked."""
         self._click_handlers.append(callback)
         return self
-
-    def __getattribute__(self, name: str) -> Any:
-        attribute = super().__getattribute__(name)
-        return attribute
 
     def _handle_init(self, e: GenericEventArguments) -> None:
         self.is_initialized = True
