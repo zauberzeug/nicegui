@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import asyncio
 import random
 
@@ -6,24 +7,15 @@ import zmq.asyncio
 
 context = zmq.asyncio.Context()
 socket = context.socket(zmq.PUSH)
-socket.bind("tcp://localhost:5555")
+socket.bind('tcp://localhost:5555')
 
 
 async def send_loop():
     while True:
-        # Generate a random number.
-        rand_int = random.randint(0, 100)
-        # Send an integer to the client.
-        await socket.send_multipart([str(rand_int).encode('ascii')])
-
-        print("Sent Number: ", rand_int)
+        number = random.randint(0, 100)
+        print(f'Sending number {number}')
+        await socket.send(str(number).encode('ascii'))
         await asyncio.sleep(0.1)
 
 
-asyncio.run(
-    asyncio.wait(
-        [
-            send_loop(),
-        ]
-    )
-)
+asyncio.run(send_loop())
