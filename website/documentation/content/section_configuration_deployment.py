@@ -243,7 +243,7 @@ def install_pyinstaller():
 
 
 doc.text('', '''
-    **Note:**
+    Note:
     If you're getting an error "TypeError: a bytes-like object is required, not 'str'", try adding the following lines to the top of your `main.py` file:
     ```py
     import sys
