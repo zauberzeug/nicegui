@@ -197,12 +197,12 @@ class Element(Visibility):
             **{
                 key: value
                 for key, value in {
-                    'style': self._style,
-                    'slots': self._collect_slot_dict(),
-                    'events': [listener.to_dict() for listener in self._event_listeners.values()],
                     'class': self._classes,
+                    'style': self._style,
                     'props': self._props,
+                    'slots': self._collect_slot_dict(),
                     'children': [child.id for child in self.default_slot.children],
+                    'events': [listener.to_dict() for listener in self._event_listeners.values()],
                     'component': {
                         'key': self.component.key,
                         'name': self.component.name,
