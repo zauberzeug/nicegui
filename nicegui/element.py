@@ -193,13 +193,13 @@ class Element(Visibility):
     def _to_dict(self) -> Dict[str, Any]:
         return {
             'tag': self.tag,
-            'text': self._text,
-            'style': self._style,
-            'slots': self._collect_slot_dict(),
-            'events': [listener.to_dict() for listener in self._event_listeners.values()],
+            **({'text': self._text} if self._text is not None else {}),
             **{
                 key: value
                 for key, value in {
+                    'style': self._style,
+                    'slots': self._collect_slot_dict(),
+                    'events': [listener.to_dict() for listener in self._event_listeners.values()],
                     'class': self._classes,
                     'props': self._props,
                     'children': [child.id for child in self.default_slot.children],
