@@ -31,7 +31,7 @@ def labels():
             on_chip_change()
         label.value = ''
 
-    with ui.input('Add label', on_enter=add_chip).props('filled') as label:
+    with ui.input('Add label').props('filled') as label:
         with label.add_slot('prepend'):
             ui.icon('label', color='primary')
         with label.add_slot('append'):
@@ -39,6 +39,8 @@ def labels():
 
     with ui.row().classes('gap-0') as label_chips:
         ui.chip('Label 1', icon='label', color='gray', removable=True, on_value_change=on_chip_change)
+
+    label.on('keydown.enter', add_chip)
 
     ui.button('Restore', on_click=lambda: [chip.set_value(True) for chip in label_chips.default_slot.children])
 
