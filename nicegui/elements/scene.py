@@ -78,6 +78,7 @@ class Scene(Element,
                  on_drag_start: Optional[Callable[..., Any]] = None,
                  on_drag_end: Optional[Callable[..., Any]] = None,
                  drag_constraints: str = '',
+                 clear_color: str = '#eee'
                  ) -> None:
         """3D Scene
 
@@ -94,11 +95,13 @@ class Scene(Element,
         :param on_drag_start: callback to execute when a 3D object is dragged
         :param on_drag_end: callback to execute when a 3D object is dropped
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
+        :param clear_color: sets the clear color (the "background" color of the scene, default: "#eee")
         """
         super().__init__()
         self._props['width'] = width
         self._props['height'] = height
         self._props['grid'] = grid
+        self._props['clear_color'] = clear_color
         self.camera = camera or self.perspective_camera()
         self._props['camera_type'] = self.camera.type
         self._props['camera_params'] = self.camera.params

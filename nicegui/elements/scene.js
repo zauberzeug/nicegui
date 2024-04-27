@@ -107,7 +107,7 @@ export default {
       this.$el.style.border = "1px solid silver";
       return;
     }
-    this.renderer.setClearColor("#eee");
+    this.renderer.setClearColor(this.clear_color);
     this.renderer.setSize(this.width, this.height);
 
     this.text_renderer = new CSS2DRenderer({
@@ -124,7 +124,10 @@ export default {
     window.addEventListener("resize", this.resize, false);
 
     if (this.grid) {
-      const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: "#eee" }));
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(100, 100),
+        new THREE.MeshPhongMaterial({ color: this.clear_color })
+      );
       ground.translateZ(-0.01);
       ground.object_id = "ground";
       this.scene.add(ground);
@@ -441,5 +444,6 @@ export default {
     camera_type: String,
     camera_params: Object,
     drag_constraints: String,
+    clear_color: String,
   },
 };
