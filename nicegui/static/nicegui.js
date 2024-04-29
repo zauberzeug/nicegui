@@ -19,6 +19,25 @@ function parseElements(raw_elements) {
   );
 }
 
+function replaceUndefinedAttributes(elements, id) {
+  const element = elements[id];
+  if (element === undefined) {
+    return;
+  }
+  element.class ??= [];
+  element.style ??= {};
+  element.props ??= {};
+  element.text ??= null;
+  element.events ??= [];
+  element.component ??= null;
+  element.libraries ??= [];
+  element.slots = {
+    default: { ids: element.children || [] },
+    ...(element.slots ?? {}),
+  };
+  Object.values(element.slots).forEach((slot) => slot.ids.forEach((id) => replaceUndefinedAttributes(elements, id)));
+}
+
 function getElement(id) {
   const _id = id instanceof HTMLElement ? id.id : id;
   return mounted_app.$refs["r" + _id];
@@ -110,15 +129,6 @@ function renderRecursively(elements, id) {
   if (element === undefined) {
     return;
   }
-
-  element.class ??= [];
-  element.style ??= {};
-  element.props ??= {};
-  element.text ??= null;
-  element.slots ??= {};
-  element.events ??= [];
-  element.component ??= null;
-  element.libraries ??= [];
 
   // @todo: Try avoid this with better handling of initial page load.
   if (element.component) loaded_components.add(element.component.name);
@@ -264,6 +274,7 @@ function createRandomUUID() {
 }
 
 function createApp(elements, options) {
+  replaceUndefinedAttributes(elements, 0);
   return (app = Vue.createApp({
     data() {
       return {
@@ -324,6 +335,7 @@ function createApp(elements, options) {
               await loadDependencies(element, options.prefix, options.version);
             }
             this.elements[id] = element;
+            replaceUndefinedAttributes(this.elements, id);
           }
         },
         run_javascript: (msg) => runJavascript(msg["code"], msg["request_id"]),
