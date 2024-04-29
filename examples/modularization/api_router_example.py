@@ -17,7 +17,7 @@ def example_page():
         ui.link('Item 3', '/c/items/3').classes('text-xl text-grey-8')
 
 
-@router.page('/items/{id}', dark=True)
+@router.page('/items/{item_id}', dark=True)
 def item(item_id: str):
     with theme.frame(f'- Page C{item_id} -'):
         message(f'Item  #{item_id}')
