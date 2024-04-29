@@ -21,7 +21,7 @@ def date():
     with ui.input('Date') as date:
         with date.add_slot('append'):
             ui.icon('edit_calendar').on('click', lambda: menu.open()).classes('cursor-pointer')
-        with ui.menu() as menu:
+        with ui.menu().props(remove="auto-close") as menu:
             ui.date().bind_value(date)
 
 
