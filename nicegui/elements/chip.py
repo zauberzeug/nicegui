@@ -1,4 +1,3 @@
-import asyncio
 from typing import Any, Callable, List, Optional
 
 from typing_extensions import Self
@@ -36,9 +35,9 @@ class Chip(ValueElement, TextElement, BackgroundColorElement, TextColorElement, 
         :param removable: whether the chip is removable. Shows a small "x" button if True (default: `False`)
         :param color: the color name for component (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
         :param text_color: text color (either a Quasar, Tailwind, or CSS color or `None`, default: `None`)
-        :param on_click: callback which is invoked when chip is clicked. Makes the chip clickable if set (default: `None`)
-        :param on_selection_change: callback which is invoked when the chip's selection state is changed (default: `None`)
-        :param on_value_change: callback which is invoked when the chip is removed or unremoved (default: `None`)
+        :param on_click: callback which is invoked when chip is clicked. Makes the chip clickable if set
+        :param on_selection_change: callback which is invoked when the chip's selection state is changed
+        :param on_value_change: callback which is invoked when the chip is removed or unremoved
         """
         super().__init__(tag='q-chip', value=True, on_value_change=on_value_change,
                          text=text, text_color=text_color, background_color=color)
@@ -56,8 +55,6 @@ class Chip(ValueElement, TextElement, BackgroundColorElement, TextColorElement, 
         if on_selection_change:
             self.on_selection_change(on_selection_change)
 
-    # Button-like behavior (on_click, clicked)
-
     def on_click(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when the chip is clicked."""
         # clickable prop is required to make the chip clickable
@@ -65,15 +62,6 @@ class Chip(ValueElement, TextElement, BackgroundColorElement, TextColorElement, 
         self.update()
         self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
         return self
-
-    async def clicked(self) -> None:
-        """Wait until the button is clicked."""
-        event = asyncio.Event()
-        self.on('click', event.set, [])
-        await self.client.connected()
-        await event.wait()
-
-    # Selection behavior
 
     @property
     def selected(self) -> bool:
@@ -104,8 +92,7 @@ class Chip(ValueElement, TextElement, BackgroundColorElement, TextColorElement, 
 
     def _make_selectable(self) -> None:
         if 'selected' in self._props:
-            # If "selected" already exists, the chip is already selectable
-            return
+            return  # chip is already selectable
 
         def toggle_selected(e):
             # The update:selected event has no value, so we treat it as a toggle event
