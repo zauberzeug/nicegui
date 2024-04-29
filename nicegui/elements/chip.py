@@ -57,7 +57,6 @@ class Chip(ValueElement, TextElement, BackgroundColorElement, TextColorElement, 
 
     def on_click(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when the chip is clicked."""
-        # clickable prop is required to make the chip clickable
         self._props['clickable'] = True
         self.update()
         self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
@@ -94,17 +93,16 @@ class Chip(ValueElement, TextElement, BackgroundColorElement, TextColorElement, 
         if 'selected' in self._props:
             return  # chip is already selectable
 
-        def toggle_selected(e):
-            # The update:selected event has no value, so we treat it as a toggle event
-            self._props['selected'] = not self._props['selected']
+        def handle_selection(e: GenericEventArguments) -> None:
+            self._props['selected'] = e.args
             self.update()
-            self._handle_selection_change(e)
+            self._handle_selection_change()
 
-        self.on('update:selected', toggle_selected)
+        self.on('update:selected', handle_selection)
         self._props['selected'] = False
         self.update()
 
-    def _handle_selection_change(self, _: Optional[GenericEventArguments] = None) -> None:
+    def _handle_selection_change(self) -> None:
         args = ValueChangeEventArguments(sender=self, client=self.client, value=self._props['selected'])
         for handler in self._selection_change_handlers:
             handle_event(handler, args)
