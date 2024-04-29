@@ -124,7 +124,7 @@ def orthographic_camera() -> None:
 
 
 @doc.demo('Custom Background', '''
-          You can set a custom background color using the `background_color` parameter of `ui.scene`.
+    You can set a custom background color using the `background_color` parameter of `ui.scene`.
 ''')
 def custom_background() -> None:
     with ui.scene(background_color='#222').classes('w-full h-64') as scene:
