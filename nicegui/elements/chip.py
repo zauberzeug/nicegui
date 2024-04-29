@@ -17,7 +17,6 @@ class Chip(ValueElement, TextElement, BackgroundColorElement, TextColorElement, 
                  text: str = '',
                  *,
                  icon: Optional[str] = None,
-                 clickable: bool = False,
                  selectable: bool = False,
                  removable: bool = False,
                  color: Optional[str] = 'primary',
@@ -33,7 +32,6 @@ class Chip(ValueElement, TextElement, BackgroundColorElement, TextColorElement, 
 
         :param text: the initial value of the text field (default: "")
         :param icon: the name of an icon to be displayed on the chip (default: `None`)
-        :param clickable: whether the chip is clickable (default: `False`)
         :param selectable: whether the chip is selectable (default: `False`)
         :param removable: whether the chip is removable. Shows a small "x" button if True (default: `False`)
         :param color: the color name for component (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
@@ -47,7 +45,6 @@ class Chip(ValueElement, TextElement, BackgroundColorElement, TextColorElement, 
         if icon:
             self._props['icon'] = icon
 
-        self._props['clickable'] = clickable
         self._props['removable'] = removable
 
         if on_click:
