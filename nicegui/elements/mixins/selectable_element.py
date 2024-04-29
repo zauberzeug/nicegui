@@ -23,6 +23,7 @@ class SelectableElement(Element):
         self._props['selectable'] = selectable
 
         self.selected = selected
+        self._props['selected'] = selected
         self.set_selected(selected)
         self.on('update:selected', lambda e: self.set_selected(e.args))
 
