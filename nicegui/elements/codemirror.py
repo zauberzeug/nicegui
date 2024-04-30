@@ -1,9 +1,34 @@
 from pathlib import Path
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List, Literal, Optional, get_args
 
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
 from nicegui.events import GenericEventArguments
+
+SUPPORTED_LANGUAGES = Literal[
+    'APL', 'ASN.1', 'Angular Template', 'Asterisk', 'Brainfuck', 'C', 'C#', 'C++', 'CMake', 'CQL', 'CSS', 'Clojure',
+    'ClojureScript', 'Closure Stylesheets (GSS)', 'Cobol', 'CoffeeScript', 'Common Lisp', 'Crystal', 'Cypher', 'Cython',
+    'D', 'DTD', 'Dart', 'Dockerfile', 'Dylan', 'EBNF', 'ECL', 'Eiffel', 'Elm', 'Erlang', 'Esper', 'F#', 'FCL', 'Factor',
+    'Forth', 'Fortran', 'Gas', 'Gherkin', 'Go', 'Groovy', 'HTML', 'HTTP', 'HXML', 'Haskell', 'Haxe', 'IDL', 'JSON',
+    'JSON-LD', 'JSX', 'Java', 'JavaScript', 'Jinja2', 'Julia', 'Kotlin', 'LESS', 'LaTeX', 'Liquid', 'LiveScript', 'Lua',
+    'MS SQL', 'MUMPS', 'MariaDB SQL', 'Markdown', 'Mathematica', 'Mbox', 'Modelica', 'MsGenny', 'MscGen', 'MySQL',
+    'NSIS', 'NTriples', 'Nginx', 'OCaml', 'Objective-C', 'Objective-C++', 'Octave', 'Oz', 'PGP', 'PHP', 'PLSQL',
+    'Pascal', 'Perl', 'Pig', 'PostgreSQL', 'PowerShell', 'Properties files', 'ProtoBuf', 'Pug', 'Puppet', 'Python', 'Q',
+    'R', 'RPM Changes', 'RPM Spec', 'Ruby', 'Rust', 'SAS', 'SCSS', 'SML', 'SPARQL', 'SQL', 'SQLite', 'Sass', 'Scala',
+    'Scheme', 'Shell', 'Sieve', 'Smalltalk', 'Solr', 'Spreadsheet', 'Squirrel', 'Stylus', 'Swift', 'SystemVerilog',
+    'TOML', 'TSX', 'TTCN', 'TTCN_CFG', 'Tcl', 'Textile', 'TiddlyWiki', 'Tiki wiki', 'Troff', 'Turtle', 'TypeScript',
+    'VB.NET', 'VBScript', 'VHDL', 'Velocity', 'Verilog', 'Vue', 'Web IDL', 'WebAssembly', 'XML', 'XQuery', 'Xù', 'YAML',
+    'Yacas', 'Z80', 'diff', 'edn', 'mIRC', 'plaintext', 'sTeX',
+]
+
+SUPPORTED_THEMES = Literal[
+    'abcdef', 'abyss', 'androidstudio', 'andromeda', 'atomone', 'aura', 'basicDark', 'basicLight', 'bbedit', 'bespin',
+    'consoleDark', 'consoleLight', 'copilot', 'darcula', 'dracula', 'duotoneDark', 'duotoneLight', 'eclipse',
+    'githubDark', 'githubLight', 'gruvboxDark', 'gruvboxLight', 'kimbie', 'material', 'materialDark', 'materialLight',
+    'monokai', 'monokaiDimmed', 'noctisLilac', 'nord', 'okaidia', 'oneDark', 'quietlight', 'red', 'solarizedDark',
+    'solarizedLight', 'sublime', 'tokyoNight', 'tokyoNightDay', 'tokyoNightStorm', 'tomorrowNightBlue', 'vscodeDark',
+    'whiteDark', 'whiteLight', 'xcodeDark', 'xcodeLight',
+]
 
 
 class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
@@ -15,8 +40,8 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
         value: str = '',
         *,
         on_change: Optional[Callable[..., Any]] = None,
-        language: str = 'plaintext',
-        theme: str = 'basicLight',
+        language: Optional[SUPPORTED_LANGUAGES] = None,
+        theme: SUPPORTED_THEMES = 'basicLight',
         indent: str = ' ' * 4,
         line_wrapping: bool = False,
         highlight_whitespace: bool = False,
@@ -35,8 +60,8 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
-        :param language: initial language of the editor (case-insensitive, default: "plaintext")
-        :param theme: initial theme of the editor (default: "materialLight")
+        :param language: initial language of the editor (case-insensitive, default: `None`)
+        :param theme: initial theme of the editor (default: "basicLight")
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
@@ -68,6 +93,11 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
         self.update()
 
     @property
+    def supported_themes(self) -> List[str]:
+        """List of supported themes."""
+        return list(get_args(SUPPORTED_THEMES))
+
+    @property
     def language(self) -> str:
         """The current language of the editor."""
         return self._props['language']
@@ -82,17 +112,10 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
         self._props['language'] = language
         self.update()
 
-    async def supported_languages(self, *, timeout: float = 10) -> List[str]:
-        """Get the list of supported languages."""
-        await self.client.connected()
-        values = await self.run_method('getLanguages', timeout=timeout)
-        return sorted(values)
-
-    async def supported_themes(self, *, timeout: float = 10) -> List[str]:
-        """Get the list of supported themes."""
-        await self.client.connected()
-        values = await self.run_method('getThemes', timeout=timeout)
-        return sorted(values)
+    @property
+    def supported_languages(self) -> List[str]:
+        """List of supported languages."""
+        return list(get_args(SUPPORTED_LANGUAGES))
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""

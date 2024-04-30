@@ -50,12 +50,10 @@ export default {
     async getLanguages() {
       if (!this.editor) await this.editorPromise;
       // Over 100 supported languages: https://github.com/codemirror/language-data/blob/main/src/language-data.ts
-      const names = this.languages.map((lang) => lang.name);
-      names.push("plaintext");
-      return names;
+      return this.languages.map((lang) => lang.name);
     },
     setLanguage(language) {
-      if (("" + language).toLowerCase() === "plaintext") {
+      if (!language) {
         this.editor.dispatch({
           effects: this.languageConfig.reconfigure([]),
         });
