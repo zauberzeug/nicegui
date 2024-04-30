@@ -27,3 +27,7 @@ rm -rf ../../nicegui/elements/lib/codemirror/*
 
 # Bundle with rollup
 npx rollup -c rollup.config.mjs --validate
+
+# Print the installed version
+echo "Installed CodeMirror version:"
+npm list codemirror
