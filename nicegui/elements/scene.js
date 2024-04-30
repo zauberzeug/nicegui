@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { CSS2DRenderer, CSS2DObject } from "CSS2DRenderer";
 import { CSS3DRenderer, CSS3DObject } from "CSS3DRenderer";
 import { DragControls } from "DragControls";
+import { GLTFLoader } from "GLTFLoader";
 import { OrbitControls } from "OrbitControls";
 import { STLLoader } from "STLLoader";
 import "tween";
@@ -65,8 +66,24 @@ export default {
 
     window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
 
+    if (this.camera_type === "perspective") {
+      this.camera = new THREE.PerspectiveCamera(
+        this.camera_params.fov,
+        this.width / this.height,
+        this.camera_params.near,
+        this.camera_params.far
+      );
+    } else {
+      this.camera = new THREE.OrthographicCamera(
+        (-this.camera_params.size / 2) * (this.width / this.height),
+        (this.camera_params.size / 2) * (this.width / this.height),
+        this.camera_params.size / 2,
+        -this.camera_params.size / 2,
+        this.camera_params.near,
+        this.camera_params.far
+      );
+    }
     this.look_at = new THREE.Vector3(0, 0, 0);
-    this.camera = new THREE.PerspectiveCamera(75, this.width / this.height, 0.1, 1000);
     this.camera.lookAt(this.look_at);
     this.camera.up = new THREE.Vector3(0, 0, 1);
     this.camera.position.set(0, -3, 5);
@@ -91,7 +108,7 @@ export default {
       this.$el.style.border = "1px solid silver";
       return;
     }
-    this.renderer.setClearColor("#eee");
+    this.renderer.setClearColor(this.background_color);
     this.renderer.setSize(this.width, this.height);
 
     this.text_renderer = new CSS2DRenderer({
@@ -108,7 +125,10 @@ export default {
     window.addEventListener("resize", this.resize, false);
 
     if (this.grid) {
-      const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: "#eee" }));
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(100, 100),
+        new THREE.MeshPhongMaterial({ color: this.background_color })
+      );
       ground.translateZ(-0.01);
       ground.object_id = "ground";
       this.scene.add(ground);
@@ -179,6 +199,7 @@ export default {
 
     this.texture_loader = new THREE.TextureLoader();
     this.stl_loader = new STLLoader();
+    this.gltf_loader = new GLTFLoader();
 
     const connectInterval = setInterval(() => {
       if (window.socket.id === undefined) return;
@@ -243,6 +264,15 @@ export default {
         geometry.setAttribute("color", new THREE.Float32BufferAttribute(args[1].flat(), 3));
         const material = new THREE.PointsMaterial({ size: args[2], vertexColors: true });
         mesh = new THREE.Points(geometry, material);
+      } else if (type == "gltf") {
+        const url = args[0];
+        mesh = new THREE.Group();
+        this.gltf_loader.load(
+          url,
+          (gltf) => mesh.add(gltf.scene),
+          undefined,
+          (error) => console.error(error)
+        );
       } else {
         let geometry;
         const wireframe = args.pop();
@@ -400,6 +430,10 @@ export default {
       this.text_renderer.setSize(clientWidth, clientHeight);
       this.text3d_renderer.setSize(clientWidth, clientHeight);
       this.camera.aspect = clientWidth / clientHeight;
+      if (this.camera_type === "orthographic") {
+        this.camera.left = (-this.camera.aspect * this.camera_params.size) / 2;
+        this.camera.right = (this.camera.aspect * this.camera_params.size) / 2;
+      }
       this.camera.updateProjectionMatrix();
     },
   },
@@ -408,6 +442,9 @@ export default {
     width: Number,
     height: Number,
     grid: Boolean,
+    camera_type: String,
+    camera_params: Object,
     drag_constraints: String,
+    background_color: String,
   },
 };

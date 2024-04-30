@@ -43,6 +43,19 @@ a:active:not(.browser-window *) {
   vertical-align: -10%;
 }
 
+.rst-param-tables table {
+  text-align: left;
+  table-layout: auto;
+}
+.rst-param-tables table th,
+.rst-param-tables table td {
+  border-width: 0;
+  padding: 0;
+}
+.rst-param-tables table th {
+  padding-right: 1em;
+}
+
 .q-header {
   height: 70px;
   background-color: #5898d4;

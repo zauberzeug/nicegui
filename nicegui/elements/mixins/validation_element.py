@@ -1,14 +1,17 @@
 from typing import Any, Callable, Dict, Optional, Union
 
+from typing_extensions import Self
+
 from .value_element import ValueElement
 
 
 class ValidationElement(ValueElement):
 
     def __init__(self, validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]], **kwargs: Any) -> None:
-        super().__init__(**kwargs)
         self.validation = validation if validation is not None else {}
+        self._auto_validation = True
         self._error: Optional[str] = None
+        super().__init__(**kwargs)
 
     @property
     def error(self) -> Optional[str]:
@@ -45,6 +48,12 @@ class ValidationElement(ValueElement):
         self.error = None
         return True
 
+    def without_auto_validation(self) -> Self:
+        """Disable automatic validation on value change."""
+        self._auto_validation = False
+        return self
+
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
-        self.validate()
+        if self._auto_validation:
+            self.validate()

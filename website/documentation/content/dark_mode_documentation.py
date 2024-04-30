@@ -11,15 +11,15 @@ def main_demo() -> None:
     # ui.button('Dark', on_click=dark.enable)
     # ui.button('Light', on_click=dark.disable)
     # END OF DEMO
-    l = ui.label('Switch mode:')
-    c = l.parent_slot.parent
+    label = ui.label('Switch mode:')
+    container = label.parent_slot.parent
     ui.button('Dark', on_click=lambda: (
-        l.style('color: white'),
-        c.style(f'background-color: {WINDOW_BG_COLORS["browser"][1]}'),
+        label.style('color: white'),
+        container.style(f'background-color: {WINDOW_BG_COLORS["browser"][1]}'),
     ))
     ui.button('Light', on_click=lambda: (
-        l.style('color: black'),
-        c.style(f'background-color: {WINDOW_BG_COLORS["browser"][0]}'),
+        label.style('color: black'),
+        container.style(f'background-color: {WINDOW_BG_COLORS["browser"][0]}'),
     ))
 
 

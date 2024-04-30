@@ -30,8 +30,6 @@ export default {
       "baselayerchange",
       "overlayadd",
       "overlayremove",
-      "layeradd",
-      "layerremove",
       "zoomlevelschange",
       "resize",
       "unload",
@@ -75,6 +73,14 @@ export default {
         });
       });
     }
+    for (const type of ["layeradd", "layerremove"]) {
+      this.map.on(type, (e) => {
+        this.$emit(`map-${type}`, {
+          id: e.layer.id,
+          leaflet_id: e.layer._leaflet_id,
+        });
+      });
+    }
     if (this.draw_control) {
       for (const key in L.Draw.Event) {
         const type = L.Draw.Event[key];
@@ -101,13 +107,10 @@ export default {
       clearInterval(connectInterval);
     }, 100);
   },
+  updated() {
+    this.map?.setView(this.center, this.zoom);
+  },
   methods: {
-    setCenter(center) {
-      this.map.panTo(center);
-    },
-    setZoom(zoom) {
-      this.map.setZoom(zoom);
-    },
     add_layer(layer, id) {
       const l = L[layer.type](...layer.args);
       l.id = id;
@@ -122,19 +125,21 @@ export default {
     run_map_method(name, ...args) {
       if (name.startsWith(":")) {
         name = name.slice(1);
-        args = args.map((arg) => new Function("return " + arg)());
+        args = args.map((arg) => new Function(`return (${arg})`)());
       }
-      return this.map[name](...args);
+      return runMethod(this.map, name, args);
     },
     run_layer_method(id, name, ...args) {
+      let result = null;
       this.map.eachLayer((layer) => {
         if (layer.id !== id) return;
         if (name.startsWith(":")) {
           name = name.slice(1);
-          args = args.map((arg) => new Function("return " + arg)());
+          args = args.map((arg) => new Function(`return (${arg})`)());
         }
-        return layer[name](...args);
+        result = runMethod(layer, name, args);
       });
+      return result;
     },
   },
 };

@@ -1,20 +1,28 @@
-from typing import Any, Callable, List, Literal
+from typing import Any, Callable, List, Literal, Optional
+
+from typing_extensions import Self
 
 from ..binding import BindableProperty
 from ..element import Element
-from ..events import (GenericEventArguments, KeyboardAction, KeyboardKey, KeyboardModifiers, KeyEventArguments,
-                      handle_event)
+from ..events import (
+    GenericEventArguments,
+    KeyboardAction,
+    KeyboardKey,
+    KeyboardModifiers,
+    KeyEventArguments,
+    handle_event,
+)
 
 
 class Keyboard(Element, component='keyboard.js'):
     active = BindableProperty()
 
     def __init__(self,
-                 on_key: Callable[..., Any], *,
+                 on_key: Optional[Callable[..., Any]] = None, *,
                  active: bool = True,
                  repeating: bool = True,
-                 ignore: List[Literal['input', 'select', 'button', 'textarea']] = [
-                     'input', 'select', 'button', 'textarea'],
+                 ignore: List[Literal['input', 'select', 'button', 'textarea']] =
+                     ['input', 'select', 'button', 'textarea'],  # noqa: B006
                  ) -> None:
         """Keyboard
 
@@ -26,11 +34,11 @@ class Keyboard(Element, component='keyboard.js'):
         :param ignore: ignore keys when one of these element types is focussed (default: `['input', 'select', 'button', 'textarea']`)
         """
         super().__init__()
-        self.key_handler = on_key
+        self._key_handlers = [on_key] if on_key else []
         self.active = active
         self._props['events'] = ['keydown', 'keyup']
         self._props['repeating'] = repeating
-        self._props['ignore'] = ignore
+        self._props['ignore'] = ignore[:]
         self.on('key', self._handle_key)
 
     def _handle_key(self, e: GenericEventArguments) -> None:
@@ -60,4 +68,10 @@ class Keyboard(Element, component='keyboard.js'):
             modifiers=modifiers,
             key=key,
         )
-        handle_event(self.key_handler, arguments)
+        for handler in self._key_handlers:
+            handle_event(handler, arguments)
+
+    def on_key(self, handler: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when keyboard events occur."""
+        self._key_handlers.append(handler)
+        return self

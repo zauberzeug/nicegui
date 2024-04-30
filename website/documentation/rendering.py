@@ -1,5 +1,3 @@
-import docutils.core
-
 from nicegui import ui
 
 from ..header import add_head_html, add_header
@@ -28,7 +26,9 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
     # header
     add_head_html()
     add_header(menu)
-    ui.add_head_html('<style>html {scroll-behavior: auto;}</style>')
+    ui.add_css('html {scroll-behavior: auto}')
+    title = (documentation.title or '').replace('*', '')
+    ui.page_title('NiceGUI' if not title else title if title.split()[0] == 'NiceGUI' else f'{title} | NiceGUI')
 
     # content
     def render_content():
@@ -40,11 +40,12 @@ def render_page(documentation: DocumentationPage, *, with_menu: bool = True) -> 
                 subheading(part.title, link=part.link, major=part.reference is not None)
             if part.description:
                 if part.description_format == 'rst':
-                    description = part.description.replace('param ', '')
-                    html = docutils.core.publish_parts(description, writer_name='html5_polyglot')['html_body']
-                    ui.html(html).classes('bold-links arrow-links nicegui-markdown')
+                    element = ui.restructured_text(part.description.replace(':param ', ':'))
                 else:
-                    ui.markdown(part.description).classes('bold-links arrow-links')
+                    element = ui.markdown(part.description)
+                element.classes('bold-links arrow-links')
+                if ':param' in part.description:
+                    element.classes('rst-param-tables')
             if part.ui:
                 part.ui()
             if part.demo:

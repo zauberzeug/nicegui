@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Union
 
+import pytest
 import requests
 from bs4 import BeautifulSoup
 
@@ -13,7 +14,7 @@ LOGO_FAVICON_PATH = Path(__file__).parent.parent / 'website' / 'static' / 'logo_
 
 def assert_favicon_url_starts_with(screen: Screen, content: str):
     soup = BeautifulSoup(screen.selenium.page_source, 'html.parser')
-    icon_link = soup.find("link", rel="icon")
+    icon_link = soup.find('link', rel='icon')
     assert icon_link['href'].startswith(content)
 
 
@@ -37,13 +38,14 @@ def test_default(screen: Screen):
     assert_favicon(DEFAULT_FAVICON_PATH)
 
 
-def test_emoji(screen: Screen):
+@pytest.mark.parametrize('emoji', ['👋', '⚔️'])
+def test_emoji(emoji: str, screen: Screen):
     ui.label('Hello, world')
 
-    screen.ui_run_kwargs['favicon'] = '👋'
+    screen.ui_run_kwargs['favicon'] = emoji
     screen.open('/')
     assert_favicon_url_starts_with(screen, 'data:image/svg+xml')
-    assert_favicon(favicon._char_to_svg('👋'))
+    assert_favicon(favicon._char_to_svg(emoji))
 
 
 def test_data_url(screen: Screen):

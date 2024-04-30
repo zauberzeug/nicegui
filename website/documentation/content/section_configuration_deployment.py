@@ -33,6 +33,8 @@ doc.intro(run_documentation)
     for the `webview.create_window` and `webview.start` functions.
     Note that these keyword arguments will take precedence over the parameters defined in `ui.run`.
 
+    Additionally, you can change `webview.settings` via `app.native.settings`.
+
     In native mode the `app.native.main_window` object allows you to access the underlying window.
     It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/guide/api.html#window-object).
 ''', tab=lambda: ui.label('NiceGUI'))
@@ -41,6 +43,7 @@ def native_mode_demo():
 
     app.native.window_args['resizable'] = False
     app.native.start_args['debug'] = True
+    app.native.settings['ALLOW_DOWNLOADS'] = True
 
     ui.label('app running in native mode')
     # ui.button('enlarge', on_click=lambda: app.native.main_window.resize(1000, 700))
@@ -55,7 +58,7 @@ def native_mode_demo():
 doc.text('', '''
     If webview has trouble finding required libraries, you may get an error relating to "WebView2Loader.dll".
     To work around this issue, try moving the DLL file up a directory, e.g.:
-    
+
     * from `.venv/Lib/site-packages/webview/lib/x64/WebView2Loader.dll`
     * to `.venv/Lib/site-packages/webview/lib/WebView2Loader.dll`
 ''')
@@ -68,6 +71,7 @@ doc.text('', '''
         This will make `ui.pyplot` and `ui.line_plot` unavailable.
     - `NICEGUI_STORAGE_PATH` (default: local ".nicegui") can be set to change the location of the storage files.
     - `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.
+    - `RST_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of ReStructuredText content snippets that are cached in memory.
 ''')
 def env_var_demo():
     from nicegui.elements import markdown
@@ -208,7 +212,7 @@ doc.text('', '''
     and zip up the generated `dist` directory yourself, distribute it,
     and your end users can unzip once and be good to go,
     without the constant expansion of files due to the `--onefile` flag.
-    
+
     - Summary of user experience for different options:
 
         | PyInstaller              | `ui.run(...)`  | Explanation |
@@ -239,7 +243,7 @@ def install_pyinstaller():
 
 
 doc.text('', '''
-    **Note:**
+    Note:
     If you're getting an error "TypeError: a bytes-like object is required, not 'str'", try adding the following lines to the top of your `main.py` file:
     ```py
     import sys
@@ -249,16 +253,20 @@ doc.text('', '''
 ''')
 
 doc.text('', '''
-    **Common pitfalls on Mac M1**
-    
-    - If new processes are spawned in an endless loop, try adding the following lines at the beginning of your code:
+    **macOS Packaging**
 
-        ```python
-        from multiprocessing import freeze_support
-        freeze_support()
-        ```
-    
-    - If processes are left behind after closing the app, try packaging the app without the `--windowed` argument.
+    Add the following snippet before anything else in your main app's file, to prevent new processes from being spawned in an endless loop:
+
+    ```python
+    # macOS packaging support
+    from multiprocessing import freeze_support  # noqa
+    freeze_support()  # noqa
+
+    # all your other imports and code
+    ```
+
+    The `# noqa` comment instructs Pylance or autopep8 to not apply any PEP rule on those two lines, guaranteeing they remain on top of anything else.
+    This is key to prevent process spawning.
 ''')
 
 doc.text('NiceGUI On Air', '''
@@ -269,11 +277,14 @@ doc.text('NiceGUI On Air', '''
     This makes it blazing fast even if your app only has a poor internet connection (e.g. a mobile robot in the field).
 
     By setting `on_air=True` you will get a random URL which is valid for 1 hour.
-    If you sign-up at <https://on-air.nicegui.io> you get a token which could be used to identify your device: `ui.run(on_air='<your token>'`).
-    This will give you a fixed URL and the possibility to protect remote access with a passphrase.
+    If you sign-up at <https://on-air.nicegui.io>, you can setup an organization and device name to get a fixed URL:
+    `https://on-air.nicegui.io/<my-org>/<my_device_name>`.
+    The device is then identified by a unique, private token which you can use instead of a boolean flag: `ui.run(on_air='<your token>')`.
+    If you [sponsor us](https://github.com/sponsors/zauberzeug),
+    we will enable multi-device management and provide built-in passphrase protection for each device.
 
-    Currently On Air is available as a tech preview and can be used free of charge (for now).
-    We will gradually improve stability, introduce payment options and extend the service with multi-device management, remote terminal access and more.
+    Currently On Air is available as a tech preview and can be used free of charge.
+    We will gradually improve stability and extend the service with usage statistics, remote terminal access and more.
     Please let us know your feedback on [GitHub](https://github.com/zauberzeug/nicegui/discussions),
     [Reddit](https://www.reddit.com/r/nicegui/), or [Discord](https://discord.gg/TEpFeAaF4f).
 

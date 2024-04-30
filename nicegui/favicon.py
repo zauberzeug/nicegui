@@ -66,7 +66,7 @@ def _is_remote_url(favicon: str) -> bool:
 
 
 def _is_char(favicon: str) -> bool:
-    return len(favicon) == 1
+    return len(favicon) == 1 or '\ufe0f' in favicon
 
 
 def _is_svg(favicon: str) -> bool:

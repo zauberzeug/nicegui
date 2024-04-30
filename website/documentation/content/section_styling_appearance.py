@@ -1,7 +1,7 @@
 from nicegui import events, ui
 
 from ..windows import browser_window, python_window
-from . import colors_documentation, dark_mode_documentation, doc, query_documentation
+from . import add_style_documentation, colors_documentation, dark_mode_documentation, doc, query_documentation
 
 doc.title('Styling & Appearance')
 
@@ -91,14 +91,14 @@ def styling_demo():
                         ```
                     ''')
             with browser_window(classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
-                element: ui.element = select_element.value("element")
+                element: ui.element = select_element.value('element')
     live_demo_ui()
 
 
 @doc.demo('Tailwind CSS', '''
     [Tailwind CSS](https://tailwindcss.com/) is a CSS framework for rapidly building custom user interfaces.
     NiceGUI provides a fluent, auto-complete friendly interface for adding Tailwind classes to UI elements.
-    
+
     You can discover available classes by navigating the methods of the `tailwind` property.
     The builder pattern allows you to chain multiple classes together (as shown with "Label A").
     You can also call the `tailwind` property with a list of classes (as shown with "Label B").
@@ -106,7 +106,7 @@ def styling_demo():
     Although this is very similar to using the `classes` method, it is more convenient for Tailwind classes due to auto-completion.
 
     Last but not least, you can also predefine a style and apply it to multiple elements (labels C and D).
-        
+
     Note that sometimes Tailwind is overruled by Quasar styles, e.g. when using `ui.button('Button').tailwind('bg-red-500')`.
     This is a known limitation and not fully in our control.
     But we try to provide solutions like the `color` parameter: `ui.button('Button', color='red-500')`.
@@ -152,19 +152,17 @@ doc.intro(colors_documentation)
 @doc.demo('CSS Variables', '''
     You can customize the appearance of NiceGUI by setting CSS variables.
     Currently, the following variables with their default values are available:
-    
+
     - `--nicegui-default-padding: 1rem`
     - `--nicegui-default-gap: 1rem`
 
 ''')
 def css_variables_demo():
-    # ui.add_head_html('''
-    #     <style>
-    #         :root {
-    #             --nicegui-default-padding: 0.5rem;
-    #             --nicegui-default-gap: 3rem;
-    #         }
-    #     </style>
+    # ui.add_css('''
+    #     :root {
+    #         --nicegui-default-padding: 0.5rem;
+    #         --nicegui-default-gap: 3rem;
+    #     }
     # ''')
     # with ui.card():
     #     ui.label('small padding')
@@ -192,3 +190,4 @@ def overwrite_tailwind_style_demo():
 
 
 doc.intro(dark_mode_documentation)
+doc.intro(add_style_documentation)

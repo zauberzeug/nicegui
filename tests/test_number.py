@@ -7,14 +7,15 @@ from nicegui.testing import Screen
 
 
 def test_number_input(screen: Screen):
-    ui.number('Number')
+    ui.number('Number', value=42)
     ui.button('Button')
 
     screen.open('/')
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Number"]')
-    element.send_keys('42')
-    screen.click('Button')
     screen.should_contain_input('42')
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Number"]')
+    element.send_keys('00')
+    screen.click('Button')
+    screen.should_contain_input('4200')
 
 
 def test_apply_format_on_blur(screen: Screen):
@@ -107,3 +108,21 @@ def test_int_float_conversion_on_error2(screen: Screen):
     element.send_keys(Keys.BACKSPACE)
     screen.should_contain('Error')
     assert element.get_attribute('value') == '1.0'
+
+
+def test_changing_limits(screen: Screen):
+    number = ui.number('Number', max=0, value=0)
+    ui.button('Raise max', on_click=lambda: setattr(number, 'max', 1))
+    ui.button('Step up', on_click=lambda: number.run_method('(e) => e.getNativeElement().stepUp()'))
+
+    screen.open('/')
+    screen.should_contain_input('0')
+
+    screen.click('Step up')
+    screen.should_contain_input('0')
+
+    screen.click('Raise max')
+    screen.should_contain_input('0')
+
+    screen.click('Step up')
+    screen.should_contain_input('1')

@@ -113,26 +113,21 @@ def table_with_drop_down_selection():
                 row['name'] = e.args['name']
         ui.notify(f'Table.rows is now: {table.rows}')
 
-    table = ui.table(columns=columns, rows=rows, row_key='name').classes('w-full')
-    table.add_slot('body', r'''
-        <q-tr :props="props">
-            <q-td key="name" :props="props">
-                <q-select
-                    v-model="props.row.name"
-                    :options="''' + str(name_options) + r'''"
-                    @update:model-value="() => $parent.$emit('rename', props.row)"
-                />
-            </q-td>
-            <q-td key="age" :props="props">
-                {{ props.row.age }}
-            </q-td>
-        </q-tr>
+    table = ui.table(columns=columns, rows=rows).classes('w-full')
+    table.add_slot('body-cell-name', r'''
+        <q-td key="name" :props="props">
+            <q-select
+                v-model="props.row.name"
+                :options="''' + str(name_options) + r'''"
+                @update:model-value="() => $parent.$emit('rename', props.row)"
+            />
+        </q-td>
     ''')
     table.on('rename', rename)
 
 
 @doc.demo('Table from Pandas DataFrame', '''
-    You can create a table from a Pandas DataFrame using the `from_pandas` method. 
+    You can create a table from a Pandas DataFrame using the `from_pandas` method.
     This method takes a Pandas DataFrame as input and returns a table.
 ''')
 def table_from_pandas_demo():
@@ -144,21 +139,18 @@ def table_from_pandas_demo():
 
 @doc.demo('Adding rows', '''
     It's simple to add new rows with the `add_rows(dict)` method.
+    With the "virtual-scroll" prop set, the table can be programmatically scrolled with the `scrollTo` JavaScript function.
 ''')
 def adding_rows():
-    import os
-    import random
+    from datetime import datetime
 
     def add():
-        item = os.urandom(10 // 2).hex()
-        table.add_rows({'id': item, 'count': random.randint(0, 100)})
+        table.add_rows({'date': datetime.now().strftime('%c')})
+        table.run_method('scrollTo', len(table.rows)-1)
 
-    ui.button('add', on_click=add)
-    columns = [
-        {'name': 'id', 'label': 'ID', 'field': 'id'},
-        {'name': 'count', 'label': 'Count', 'field': 'count'},
-    ]
-    table = ui.table(columns=columns, rows=[], row_key='id').classes('w-full')
+    columns = [{'name': 'date', 'label': 'Date', 'field': 'date'}]
+    table = ui.table(columns=columns, rows=[]).classes('h-52').props('virtual-scroll')
+    ui.button('Add row', on_click=add)
 
 
 @doc.demo('Custom sorting and formatting', '''
@@ -269,7 +261,7 @@ def computed_fields():
     You can use scoped slots to conditionally format the content of a cell.
     See the [Quasar documentation](https://quasar.dev/vue-components/table#example--body-cell-slot)
     for more information about body-cell slots.
-    
+
     In this demo we use a `q-badge` to display the age in red if the person is under 21 years old.
     We use the `body-cell-age` slot to insert the `q-badge` into the `age` column.
     The ":color" attribute of the `q-badge` is set to "red" if the age is under 21, otherwise it is set to "green".

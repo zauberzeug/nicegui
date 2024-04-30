@@ -4,6 +4,8 @@ import time
 from pathlib import Path
 from typing import Any, Callable, List, Optional, Tuple, Union, cast
 
+from typing_extensions import Self
+
 from .. import optional_features
 from ..events import GenericEventArguments, MouseEventArguments, handle_event
 from .image import pil_to_base64
@@ -22,12 +24,12 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
     PIL_CONVERT_FORMAT = 'PNG'
 
     def __init__(self,
-                 source: Union[str, Path, 'PIL_Image'] = '', *,
+                 source: Union[str, Path, 'PIL_Image'] = '', *,  # noqa: UP037
                  content: str = '',
                  size: Optional[Tuple[float, float]] = None,
                  on_mouse: Optional[Callable[..., Any]] = None,
-                 events: List[str] = ['click'],
-                 cross: bool = False,
+                 events: List[str] = ['click'],  # noqa: B006
+                 cross: Union[bool, str] = False,
                  ) -> None:
         """Interactive Image
 
@@ -52,16 +54,23 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         :param size: size of the image (width, height) in pixels; only used if `source` is not set
         :param on_mouse: callback for mouse events (contains image coordinates `image_x` and `image_y` in pixels)
         :param events: list of JavaScript events to subscribe to (default: `['click']`)
-        :param cross: whether to show crosshairs (default: `False`)
+        :param cross: whether to show crosshairs or a color string (default: `False`)
+        :param on_pointer: callback for pointer events (contains image coordinates `image_x` and `image_y` in pixels, and `type` of the event)
         """
         super().__init__(source=source, content=content)
-        self._props['events'] = events
+        self._props['events'] = events[:]
         self._props['cross'] = cross
         self._props['size'] = size
 
+        if on_mouse:
+            self.on_mouse(on_mouse)
+
+    def set_source(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
+        return super().set_source(source)
+
+    def on_mouse(self, on_mouse: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a mouse event occurs."""
         def handle_mouse(e: GenericEventArguments) -> None:
-            if on_mouse is None:
-                return
             args = cast(dict, e.args)
             arguments = MouseEventArguments(
                 sender=self,
@@ -78,8 +87,9 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
             )
             handle_event(on_mouse, arguments)
         self.on('mouse', handle_mouse)
+        return self
 
-    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:
+    def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
             source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)

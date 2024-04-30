@@ -16,7 +16,7 @@ def test_uploading_text_file(screen: Screen):
     screen.should_contain('Test Title')
     screen.find_by_class('q-uploader__input').send_keys(str(test_path1))
     screen.wait(0.1)
-    screen.find_all_by_class('q-btn')[1].click()
+    screen.click('cloud_upload')
     screen.wait(0.1)
     assert len(results) == 1
     assert results[0].name == test_path1.name
@@ -32,7 +32,7 @@ def test_two_upload_elements(screen: Screen):
     screen.open('/')
     screen.should_contain('Test Title 1')
     screen.should_contain('Test Title 2')
-    screen.find_by_class('q-uploader__input').send_keys(str(test_path1))
+    screen.find_all_by_class('q-uploader__input')[0].send_keys(str(test_path1))
     screen.find_all_by_class('q-uploader__input')[1].send_keys(str(test_path2))
     screen.wait(0.1)
     assert len(results) == 2
@@ -90,3 +90,19 @@ def test_reset_upload(screen: Screen):
     screen.click('Reset')
     screen.wait(0.5)
     screen.should_not_contain(test_path1.name)
+
+
+def test_multi_upload_event(screen: Screen):
+    results: List[events.MultiUploadEventArguments] = []
+    ui.upload(on_multi_upload=results.append, multiple=True)
+
+    screen.open('/')
+    screen.find_by_class('q-uploader__input').send_keys(f'{test_path1}\n{test_path2}')
+    screen.wait(0.1)
+    screen.click('cloud_upload')
+    screen.wait(0.1)
+
+    assert len(results) == 1
+    assert results[0].names == [test_path1.name, test_path2.name]
+    assert results[0].contents[0].read() == test_path1.read_bytes()
+    assert results[0].contents[1].read() == test_path2.read_bytes()

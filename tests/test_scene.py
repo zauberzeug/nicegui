@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 from selenium.common.exceptions import JavascriptException
 
@@ -43,7 +45,7 @@ def test_no_object_duplication_on_index_client(screen: Screen):
 
 
 def test_no_object_duplication_with_page_builder(screen: Screen):
-    scene: ui.scene
+    scene: Optional[ui.scene] = None
 
     @ui.page('/')
     def page():
@@ -58,6 +60,7 @@ def test_no_object_duplication_with_page_builder(screen: Screen):
     screen.open('/')
     screen.switch_to(0)
     screen.wait(0.2)
+    assert scene
     assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5
     screen.switch_to(1)
     assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5
@@ -145,3 +148,12 @@ def test_clearing_scene(screen: Screen):
     screen.click('Clear')
     screen.wait(0.5)
     assert len(scene.objects) == 0
+
+
+def test_gltf(screen: Screen):
+    with ui.scene() as scene:
+        scene.gltf('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Box/glTF-Binary/Box.glb')
+
+    screen.open('/')
+    screen.wait(1.0)
+    assert screen.selenium.execute_script(f'return scene_c{scene.id}.children.length') == 5

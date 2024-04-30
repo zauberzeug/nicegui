@@ -13,7 +13,7 @@ class FullCalendar(Element, component='fullcalendar.js'):
         An element that integrates the FullCalendar library (https://fullcalendar.io/) to create an interactive calendar display.
 
         :param options: dictionary of FullCalendar properties for customization, such as "initialView", "slotMinTime", "slotMaxTime", "allDaySlot", "timeZone", "height", and "events".
-        :param on_click: callback function that is called when a calendar event is clicked.
+        :param on_click: callback that is called when a calendar event is clicked.
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib')

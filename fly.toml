@@ -7,6 +7,8 @@ app = "nicegui"
 primary_region = "fra"
 kill_signal = "SIGTERM"
 kill_timeout = "5s"
+swap_size_mb = 2048
+
 
 [build]
   dockerfile = "fly.dockerfile"
@@ -17,16 +19,13 @@ kill_timeout = "5s"
 [processes]
   app = ""
 
-[env]
-  SWAP = "true"
-
 [[services]]
   protocol = "tcp"
   internal_port = 8080
   processes = ["app"]
-  auto_stop_machines = true
+  auto_stop_machines = false
   auto_start_machines = true
-  min_machines_running = 10
+  min_machines_running = 18
 
   [[services.ports]]
     port = 80
@@ -37,9 +36,9 @@ kill_timeout = "5s"
     port = 443
     handlers = ["tls", "http"]
   [services.concurrency]
-    type = "connections"
-    hard_limit = 80
-    soft_limit = 40
+    type = "requests"
+    hard_limit = 120
+    soft_limit = 50
 
   [[services.tcp_checks]]
     interval = "10s"

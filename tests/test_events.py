@@ -169,10 +169,18 @@ def test_server_side_validation(screen: Screen, attribute: Literal['disabled', '
     else:
         b.set_visibility(False)
     ui.button('Hack', on_click=lambda: ui.run_javascript(f'''
-        getElement({b.id}).$emit("click", {{"id": {b.id}, "listener_id": "{list(b._event_listeners.keys())[0]}"}});
+        getElement({b.id}).$emit("click", {{"id": {b.id}, "listener_id": "{next(iter(b._event_listeners))}"}});
     '''))  # pylint: disable=protected-access
 
     screen.open('/')
     screen.click('Hack')
     screen.wait(0.5)
     screen.should_not_contain('Success')
+
+
+def test_js_handler(screen: Screen) -> None:
+    ui.button('Button').on('click', js_handler='() => document.body.appendChild(document.createTextNode("Click!"))')
+
+    screen.open('/')
+    screen.click('Button')
+    screen.should_contain('Click!')

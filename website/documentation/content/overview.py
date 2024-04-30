@@ -1,8 +1,18 @@
 from nicegui import ui
 
-from . import (doc, section_action_events, section_audiovisual_elements, section_binding_properties,
-               section_configuration_deployment, section_controls, section_data_elements, section_page_layout,
-               section_pages_routing, section_styling_appearance, section_text_elements)
+from . import (
+    doc,
+    section_action_events,
+    section_audiovisual_elements,
+    section_binding_properties,
+    section_configuration_deployment,
+    section_controls,
+    section_data_elements,
+    section_page_layout,
+    section_pages_routing,
+    section_styling_appearance,
+    section_text_elements,
+)
 
 doc.title('*NiceGUI* Documentation', 'Reference, Demos and more')
 
@@ -11,8 +21,8 @@ doc.text('Overview', '''
     It has a very gentle learning curve while still offering the option for advanced customizations.
     NiceGUI follows a backend-first philosophy:
     It handles all the web development details.
-    You can focus on writing Python code. 
-    This makes it ideal for a wide range of projects including short 
+    You can focus on writing Python code.
+    This makes it ideal for a wide range of projects including short
     scripts, dashboards, robotics projects, IoT solutions, smart home automation, and machine learning.
 ''')
 
@@ -61,7 +71,7 @@ doc.text('Running NiceGUI Apps', '''
     Or you can run NiceGUI on a server that handles many clients - the website you're reading right now is served from NiceGUI.
 
     After creating your app pages with components, you call `ui.run()` to start the NiceGUI server.
-    Optional parameters to `ui.run` set things like the network address and port the server binds to, 
+    Optional parameters to `ui.run` set things like the network address and port the server binds to,
     whether the app runs in native mode, initial window size, and many other options.
     The section _Configuration and Deployment_ covers the options to the `ui.run()` function and the FastAPI framework it is based on.
 ''')
@@ -76,7 +86,7 @@ doc.text('Customization', '''
 
 tiles = [
     (section_text_elements, '''
-        Elements like `ui.label`, `ui.markdown` and `ui.html` can be used to display text and other content.
+        Elements like `ui.label`, `ui.markdown`, `ui.restructured_text` and `ui.html` can be used to display text and other content.
     '''),
     (section_controls, '''
         NiceGUI provides a variety of elements for user interaction, e.g. `ui.button`, `ui.slider`, `ui.inputs`, etc.
@@ -110,6 +120,9 @@ tiles = [
 
 @doc.extra_column
 def create_tiles():
+    with ui.row().classes('items-center content-between'):
+        ui.label('If you like NiceGUI, go and become a')
+        ui.html('<iframe src="https://github.com/sponsors/zauberzeug/button" title="Sponsor zauberzeug" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>')
     for documentation, description in tiles:
         page = doc.get_page(documentation)
         with ui.link(target=f'/documentation/{page.name}') \

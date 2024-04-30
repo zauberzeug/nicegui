@@ -1,4 +1,4 @@
-from nicegui import context, ui
+from nicegui import ui
 
 from . import documentation, example_card, svg
 from .examples import examples
@@ -8,7 +8,7 @@ from .style import example_link, features, heading, link_target, section_heading
 
 def create() -> None:
     """Create the content of the main page."""
-    context.get_client().content.classes('p-0 gap-0')
+    ui.context.client.content.classes('p-0 gap-0')
     add_head_html()
     add_header()
 
@@ -82,7 +82,7 @@ def create() -> None:
         with ui.expansion('...or use Docker to run your main.py').classes('w-full gap-2 bold-links arrow-links'):
             with ui.row().classes('mt-8 w-full justify-center items-center gap-8'):
                 ui.markdown('''
-                    With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui) 
+                    With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui)
                     you can start the server without installing any packages.
 
                     The command searches for `main.py` in in your current directory and makes the app available at http://localhost:8888.

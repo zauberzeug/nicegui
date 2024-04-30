@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict
 
 from descope import AuthException, DescopeClient
 
-from nicegui import Client, app, helpers, ui
+from nicegui import app, helpers, ui
 
 DESCOPE_ID = os.environ.get('DESCOPE_PROJECT_ID', '')
 
@@ -37,7 +37,7 @@ async def logout() -> None:
     else:
         logging.error(f'Logout failed: {result}')
         ui.notify('Logout failed', type='negative')
-    ui.open(page.LOGIN_PATH)
+    ui.navigate.to(page.LOGIN_PATH)
 
 
 class page(ui.page):
@@ -52,24 +52,24 @@ class page(ui.page):
     LOGIN_PATH = '/login'
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
-        async def content(client: Client):
+        async def content():
             ui.add_head_html('<script src="https://unpkg.com/@descope/web-component@latest/dist/index.js"></script>')
             ui.add_head_html('<script src="https://unpkg.com/@descope/web-js-sdk@latest/dist/index.umd.js"></script>')
             ui.add_body_html(f'''
                 <script>
                     const sdk = Descope({{ projectId: '{DESCOPE_ID}', persistTokens: true, autoRefresh: true }});
                     const sessionToken = sdk.getSessionToken()
-                </script>                 
+                </script>
             ''')
-            await client.connected()
+            await ui.context.client.connected()
             if await self._is_logged_in():
                 if self.path == self.LOGIN_PATH:
                     self._refresh()
-                    ui.open('/')
+                    ui.navigate.to('/')
                     return
             else:
                 if self.path != self.LOGIN_PATH:
-                    ui.open(self.LOGIN_PATH)
+                    ui.navigate.to(self.LOGIN_PATH)
                     return
                 ui.timer(self.SESSION_TOKEN_REFRESH_INTERVAL, self._refresh)
 

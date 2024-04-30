@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union, cast
 
@@ -23,7 +24,7 @@ class Leaflet(Element, component='leaflet.js'):
                  center: Tuple[float, float] = (0.0, 0.0),
                  zoom: int = 13,
                  *,
-                 options: Dict = {},
+                 options: Dict = {},  # noqa: B006
                  draw_control: Union[bool, Dict] = False,
                  ) -> None:
         """Leaflet map
@@ -46,7 +47,7 @@ class Leaflet(Element, component='leaflet.js'):
         self.zoom = zoom
         self._props['center'] = center
         self._props['zoom'] = zoom
-        self._props['options'] = options
+        self._props['options'] = {**options}
         self._props['draw_control'] = draw_control
 
         self.on('init', self._handle_init)
@@ -74,6 +75,13 @@ class Leaflet(Element, component='leaflet.js'):
             for layer in self.layers:
                 self.run_method('add_layer', layer.to_dict(), layer.id)
 
+    async def initialized(self) -> None:
+        """Wait until the map is initialized."""
+        event = asyncio.Event()
+        self.on('init', event.set, [])
+        await self.client.connected()
+        await event.wait()
+
     def _handle_moveend(self, e: GenericEventArguments) -> None:
         self.center = e.args['center']
 
@@ -90,14 +98,14 @@ class Leaflet(Element, component='leaflet.js'):
         if self._props['center'] == center:
             return
         self._props['center'] = center
-        self.run_method('setCenter', center)
+        self.update()
 
     def set_zoom(self, zoom: int) -> None:
         """Set the zoom level of the map."""
         if self._props['zoom'] == zoom:
             return
         self._props['zoom'] = zoom
-        self.run_method('setZoom', zoom)
+        self.update()
 
     def remove_layer(self, layer: Layer) -> None:
         """Remove a layer from the map."""
@@ -120,7 +128,6 @@ class Leaflet(Element, component='leaflet.js'):
         :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
         :param args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
@@ -136,7 +143,6 @@ class Leaflet(Element, component='leaflet.js'):
         :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
         :param args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
@@ -144,4 +150,4 @@ class Leaflet(Element, component='leaflet.js'):
 
     def _handle_delete(self) -> None:
         binding.remove(self.layers)
-        super().delete()
+        super()._handle_delete()

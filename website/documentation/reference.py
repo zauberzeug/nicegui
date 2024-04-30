@@ -1,8 +1,5 @@
 import inspect
-import re
 from typing import Callable, Optional
-
-import docutils.core
 
 from nicegui import binding, ui
 
@@ -85,7 +82,7 @@ def _generate_method_signature_description(method: Callable) -> str:
             param_type = inspect.formatannotation(param.annotation)
             param_string += f''': {param_type.strip("'")}'''
         if param.default != inspect.Parameter.empty:
-            param_string += ' = [...]' if callable(param.default) else f' = {repr(param.default)}'
+            param_string += ' = [...]' if callable(param.default) else f' = {param.default!r}'
         if param.kind == inspect.Parameter.VAR_POSITIONAL:
             param_string = f'*{param_string}'
         param_strings.append(param_string)
@@ -98,13 +95,9 @@ def _generate_method_signature_description(method: Callable) -> str:
     return description
 
 
-def _render_docstring(doc: str, with_params: bool = True) -> ui.html:
+def _render_docstring(doc: str) -> ui.restructured_text:
     doc = _remove_indentation_from_docstring(doc)
-    doc = doc.replace('param ', '')
-    html = docutils.core.publish_parts(doc, writer_name='html5_polyglot')['html_body']
-    if not with_params:
-        html = re.sub(r'<dl class=".* simple">.*?</dl>', '', html, flags=re.DOTALL)
-    return ui.html(html).classes('bold-links arrow-links nicegui-markdown')
+    return ui.restructured_text(doc).classes('bold-links arrow-links rst-param-tables')
 
 
 def _remove_indentation_from_docstring(text: str) -> str:

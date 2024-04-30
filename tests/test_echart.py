@@ -103,3 +103,14 @@ def test_create_from_pyecharts(screen: Screen):
         const y = chart.getOption().yAxis[0].axisLabel.formatter;
         return [typeof x, x.toString(), typeof y, y.toString()];
     ''') == ['function', X_AXIS_FORMATTER, 'function', Y_AXIS_FORMATTER]
+
+
+def test_chart_events(screen: Screen):
+    ui.echart({
+        'xAxis': {'type': 'category'},
+        'yAxis': {'type': 'value'},
+        'series': [{'type': 'line', 'data': [1, 2, 3]}],
+    }).on('chart:rendered', lambda: ui.label('Chart rendered.'))
+
+    screen.open('/')
+    screen.should_contain('Chart rendered.')

@@ -6,7 +6,7 @@ import time
 import uuid
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Iterable, Iterator, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, ClassVar, Dict, Iterable, Iterator, List, Optional, Union
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -18,7 +18,9 @@ from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
+from .javascript_request import JavaScriptRequest
 from .logging import log
+from .observables import ObservableDict
 from .outbox import Outbox
 from .version import __version__
 
@@ -29,10 +31,10 @@ templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
 
 class Client:
-    page_routes: Dict[Callable[..., Any], str] = {}
+    page_routes: ClassVar[Dict[Callable[..., Any], str]] = {}
     """Maps page builders to their routes."""
 
-    instances: Dict[str, Client] = {}
+    instances: ClassVar[Dict[str, Client]] = {}
     """Maps client IDs to clients."""
 
     auto_index_client: Client
@@ -57,6 +59,7 @@ class Client:
         self.shared = shared
         self.on_air = False
         self._disconnect_task: Optional[asyncio.Task] = None
+        self.tab_id: Optional[str] = None
 
         self.outbox = Outbox(self)
 
@@ -65,14 +68,13 @@ class Client:
                 with Element('q-page'):
                     self.content = Element('div').classes('nicegui-content')
 
-        self.waiting_javascript_commands: Dict[str, Any] = {}
-
         self.title: Optional[str] = None
 
         self._head_html = ''
         self._body_html = ''
 
         self.page = page
+        self.storage = ObservableDict()
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
@@ -113,6 +115,7 @@ class Client:
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         """Build a FastAPI response for the client."""
+        self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
         elements = json.dumps({
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
@@ -173,7 +176,9 @@ class Client:
 
     def run_javascript(self, code: str, *,
                        respond: Optional[bool] = None,  # DEPRECATED
-                       timeout: float = 1.0, check_interval: float = 0.01) -> AwaitableResponse:
+                       timeout: float = 1.0,
+                       check_interval: float = 0.01,  # DEPRECATED
+                       ) -> AwaitableResponse:
         """Execute JavaScript on the client.
 
         The client connection must be established before this method is called.
@@ -184,7 +189,6 @@ class Client:
 
         :param code: JavaScript code to run
         :param timeout: timeout in seconds (default: `1.0`)
-        :param check_interval: interval in seconds to check for a response (default: `0.01`)
 
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """
@@ -196,6 +200,10 @@ class Client:
             raise ValueError('The "respond" argument of run_javascript() has been removed. '
                              'Now the method always returns an AwaitableResponse that can be awaited. '
                              'Please remove the "respond=False" argument and call the method without awaiting.')
+        if check_interval != 0.01:
+            log.warning('The "check_interval" argument of run_javascript() and similar methods has been removed. '
+                        'Now the method automatically returns when receiving a response without checking regularly in an interval. '
+                        'Please remove the "check_interval" argument.')
 
         request_id = str(uuid.uuid4())
         target_id = self._temporary_socket_id or self.id
@@ -205,12 +213,7 @@ class Client:
 
         async def send_and_wait():
             self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
-            deadline = time.time() + timeout
-            while request_id not in self.waiting_javascript_commands:
-                if time.time() > deadline:
-                    raise TimeoutError(f'JavaScript did not respond within {timeout:.1f} s')
-                await asyncio.sleep(check_interval)
-            return self.waiting_javascript_commands.pop(request_id)
+            return await JavaScriptRequest(request_id, timeout=timeout)
 
         return AwaitableResponse(send_and_forget, send_and_wait)
 
@@ -224,11 +227,11 @@ class Client:
         self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type}, self.id)
 
     def on_connect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
-        """Register a callback to be called when the client connects."""
+        """Add a callback to be invoked when the client connects."""
         self.connect_handlers.append(handler)
 
     def on_disconnect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
-        """Register a callback to be called when the client disconnects."""
+        """Add a callback to be invoked when the client disconnects."""
         self.disconnect_handlers.append(handler)
 
     def handle_handshake(self) -> None:
@@ -269,7 +272,7 @@ class Client:
 
     def handle_javascript_response(self, msg: Dict) -> None:
         """Store the result of a JavaScript command."""
-        self.waiting_javascript_commands[msg['request_id']] = msg['result']
+        JavaScriptRequest.resolve(msg['request_id'], msg['result'])
 
     def safe_invoke(self, func: Union[Callable[..., Any], Awaitable]) -> None:
         """Invoke the potentially async function in the client context and catch any exceptions."""
@@ -294,12 +297,12 @@ class Client:
         """Remove the given elements from the client."""
         binding.remove(elements)
         element_ids = [element.id for element in elements]
-        for element_id in element_ids:
-            del self.elements[element_id]
         for element in elements:
             element._handle_delete()  # pylint: disable=protected-access
             element._deleted = True  # pylint: disable=protected-access
             self.outbox.enqueue_delete(element)
+        for element_id in element_ids:
+            del self.elements[element_id]
 
     def remove_all_elements(self) -> None:
         """Remove all elements from the client."""

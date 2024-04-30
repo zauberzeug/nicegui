@@ -100,4 +100,21 @@ def methods_demo() -> None:
     ))
 
 
+@doc.demo('Arbitrary chart events', '''
+    You can register arbitrary event listeners for the chart using the `on` method and a "chart:" prefix.
+    This demo shows how to register a callback for the "selectchanged" event which is triggered when the user selects a point.
+''')
+def events_demo() -> None:
+    ui.echart({
+        'toolbox': {'feature': {'brush': {'type': ['rect']}}},
+        'brush': {},
+        'xAxis': {'type': 'category'},
+        'yAxis': {'type': 'value'},
+        'series': [{'type': 'line', 'data': [1, 2, 3]}],
+    }).on('chart:selectchanged', lambda e: label.set_text(
+        f'Selected point {e.args["fromActionPayload"]["dataIndexInside"]}'
+    ))
+    label = ui.label()
+
+
 doc.reference(ui.echart)

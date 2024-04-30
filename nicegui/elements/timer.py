@@ -1,9 +1,10 @@
 import asyncio
 import time
 from contextlib import nullcontext
-from typing import Any, Callable, Optional
+from typing import Any, Awaitable, Callable, Optional
 
-from .. import background_tasks, core, helpers
+from .. import background_tasks, core
+from ..awaitable_response import AwaitableResponse
 from ..binding import BindableProperty
 from ..client import Client
 from ..element import Element
@@ -91,7 +92,7 @@ class Timer(Element, component='timer.js'):
         try:
             assert self.callback is not None
             result = self.callback()
-            if helpers.is_coroutine_function(self.callback):
+            if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
                 await result
         except Exception as e:
             core.app.handle_exception(e)

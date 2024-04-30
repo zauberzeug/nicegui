@@ -17,7 +17,7 @@ class AgGrid(Element, component='aggrid.js', exposed_libraries=['lib/aggrid/ag-g
 
     def __init__(self,
                  options: Dict, *,
-                 html_columns: List[int] = [],
+                 html_columns: List[int] = [],  # noqa: B006
                  theme: str = 'balham',
                  auto_size_columns: bool = True,
                  ) -> None:
@@ -34,7 +34,7 @@ class AgGrid(Element, component='aggrid.js', exposed_libraries=['lib/aggrid/ag-g
         """
         super().__init__()
         self._props['options'] = options
-        self._props['html_columns'] = html_columns
+        self._props['html_columns'] = html_columns[:]
         self._props['auto_size_columns'] = auto_size_columns
         self._classes.append('nicegui-aggrid')
         self._classes.append(f'ag-theme-{theme}')
@@ -44,7 +44,7 @@ class AgGrid(Element, component='aggrid.js', exposed_libraries=['lib/aggrid/ag-g
                     df: 'pd.DataFrame', *,
                     theme: str = 'balham',
                     auto_size_columns: bool = True,
-                    options: Dict = {}) -> Self:
+                    options: Dict = {}) -> Self:  # noqa: B006
         """Create an AG Grid from a Pandas DataFrame.
 
         Note:
@@ -59,16 +59,15 @@ class AgGrid(Element, component='aggrid.js', exposed_libraries=['lib/aggrid/ag-g
         :param options: dictionary of additional AG Grid options
         :return: AG Grid element
         """
-        date_cols = df.columns[df.dtypes == 'datetime64[ns]']
-        time_cols = df.columns[df.dtypes == 'timedelta64[ns]']
-        complex_cols = df.columns[df.dtypes == 'complex128']
-        period_cols = df.columns[df.dtypes == 'period[M]']
-        if len(date_cols) != 0 or len(time_cols) != 0 or len(complex_cols) != 0 or len(period_cols) != 0:
+        def is_special_dtype(dtype):
+            return (pd.api.types.is_datetime64_any_dtype(dtype) or
+                    pd.api.types.is_timedelta64_dtype(dtype) or
+                    pd.api.types.is_complex_dtype(dtype) or
+                    isinstance(dtype, pd.PeriodDtype))
+        special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
+        if not special_cols.empty:
             df = df.copy()
-            df[date_cols] = df[date_cols].astype(str)
-            df[time_cols] = df[time_cols].astype(str)
-            df[complex_cols] = df[complex_cols].astype(str)
-            df[period_cols] = df[period_cols].astype(str)
+            df[special_cols] = df[special_cols].astype(str)
 
         if isinstance(df.columns, pd.MultiIndex):
             raise ValueError('MultiIndex columns are not supported. '
@@ -106,7 +105,6 @@ class AgGrid(Element, component='aggrid.js', exposed_libraries=['lib/aggrid/ag-g
         :param name: name of the method
         :param args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
@@ -128,7 +126,6 @@ class AgGrid(Element, component='aggrid.js', exposed_libraries=['lib/aggrid/ag-g
         :param name: name of the method
         :param args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
@@ -147,7 +144,6 @@ class AgGrid(Element, component='aggrid.js', exposed_libraries=['lib/aggrid/ag-g
         :param name: name of the method
         :param args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """
@@ -186,7 +182,7 @@ class AgGrid(Element, component='aggrid.js', exposed_libraries=['lib/aggrid/ag-g
         This does not happen when the cell loses focus, unless ``stopEditingWhenCellsLoseFocus: True`` is set.
 
         :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
+
         :return: list of row data
         """
         result = await self.client.run_javascript(f'''
