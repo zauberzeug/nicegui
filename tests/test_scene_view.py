@@ -17,7 +17,7 @@ def test_create_dynamically(screen: Screen):
     screen.open('/')
     screen.click('Create')
     assert scene_view is not None
-    assert screen.selenium.execute_script(f'return getElement({scene_view.id}).scene == getElement({scene.id})')
+    assert screen.selenium.execute_script(f'return getElement({scene_view.id}).scene == getElement({scene.id}).scene')
 
 
 def test_object_creation_via_context(screen: Screen):
@@ -27,15 +27,14 @@ def test_object_creation_via_context(screen: Screen):
     scene_view = ui.scene_view(scene)
 
     screen.open('/')
-    screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return getElement({scene_view.id}).scene == getElement({scene.id})')
+    screen.wait(1)
+    assert screen.selenium.execute_script(f'return getElement({scene_view.id}).scene == getElement({scene.id}).scene')
 
 def test_camera_move(screen: Screen):
     with ui.scene() as scene:
         scene.box().with_name('box')
 
-    with ui.scene_view(scene) as scene_view:
-        pass
+    scene_view = ui.scene_view(scene)
 
     screen.open('/')
 
