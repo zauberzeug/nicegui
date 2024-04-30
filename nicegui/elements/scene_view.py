@@ -1,6 +1,6 @@
 import asyncio
 from dataclasses import dataclass
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Literal, Dict
 
 from typing_extensions import Self
 
@@ -18,6 +18,8 @@ from .scene import Scene
 
 @dataclass(**KWONLY_SLOTS)
 class SceneCamera:
+    type: Literal['perspective', 'orthographic']
+    params: Dict[str, float]
     x: float = 0
     y: float = -3
     z: float = 5
@@ -42,6 +44,7 @@ class SceneView(Element,
                  scene: Scene,
                  width: int = 400,
                  height: int = 300,
+                 camera: Optional[SceneCamera] = None,
                  on_click: Optional[Callable[..., Any]] = None,
                  ) -> None:
         """Scene View
@@ -53,18 +56,40 @@ class SceneView(Element,
         :param scene: the scene which will be shown on the canvas
         :param width: width of the canvas
         :param height: height of the canvas
+        :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked
         """
         super().__init__()
         self._props['width'] = width
         self._props['height'] = height
         self._props['scene_id'] = scene.id
-        self._props['camera_type'] = 'perspective'
-        self.camera: SceneCamera = SceneCamera()
+        self.camera = camera or self.perspective_camera()
+        self._props['camera_type'] = self.camera.type
+        self._props['camera_params'] = self.camera.params
         self._click_handlers = [on_click] if on_click else []
         self.is_initialized = False
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
+    
+    @staticmethod
+    def perspective_camera(*, fov: float = 75, near: float = 0.1, far: float = 1000) -> SceneCamera:
+        """Create a perspective camera.
+        :param fov: vertical field of view in degrees
+        :param near: near clipping plane
+        :param far: far clipping plane
+        """
+        return SceneCamera(type='perspective', params={'fov': fov, 'near': near, 'far': far})
+
+    @staticmethod
+    def orthographic_camera(*, size: float = 10, near: float = 0.1, far: float = 1000) -> SceneCamera:
+        """Create a orthographic camera.
+        The size defines the vertical size of the view volume, i.e. the distance between the top and bottom clipping planes.
+        The left and right clipping planes are set such that the aspect ratio matches the viewport.
+        :param size: vertical size of the view volume
+        :param near: near clipping plane
+        :param far: far clipping plane
+        """
+        return SceneCamera(type='orthographic', params={'size': size, 'near': near, 'far': far})
 
     def on_click(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
