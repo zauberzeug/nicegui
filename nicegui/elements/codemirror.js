@@ -50,10 +50,13 @@ export default {
     async getLanguages() {
       if (!this.editor) await this.editorPromise;
       // Over 100 supported languages: https://github.com/codemirror/language-data/blob/main/src/language-data.ts
-      return this.languages.map((lang) => lang.name);
+      var langs = this.languages.map((lang) => lang.name);
+      langs.push("plaintext");
+      langs.sort(Intl.Collator("en").compare);
+      return langs;
     },
     setLanguage(language) {
-      if (!language) {
+      if (!language || language === "plaintext") {
         this.editor.dispatch({
           effects: this.languageConfig.reconfigure([]),
         });
@@ -76,7 +79,9 @@ export default {
       if (!this.editor) await this.editorPromise;
       // `this.themes` also contains some non-theme objects
       // The real themes are Arrays
-      return Object.keys(this.themes).filter((key) => Array.isArray(this.themes[key]));
+      return Object.keys(this.themes)
+        .filter((key) => Array.isArray(this.themes[key]))
+        .sort(Intl.Collator("en").compare);
     },
     setTheme(theme) {
       const new_theme = this.themes[theme];
