@@ -38,16 +38,15 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
-        :param language: initial language of the editor. Case-insensitive (default: "plaintext")
+        :param language: initial language of the editor (case-insensitive, default: "plaintext")
         :param theme: initial theme of the editor (default: "basicDark")
-        :param indent: string to use for indentation. Can be any string consisting entirely of the same whitespace character. (default: "    ")
+        :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
-        :param min_height: minimum height of the editor. Can be any valid CSS height value (default: "")
-        :param max_height: maximum height of the editor. Can be any valid CSS height value (default: "")
-        :param fixed_height: fixed height of the editor. If set, min/max height are ignored (default: "")
+        :param min_height: minimum height of the editor (CSS height value, default: "")
+        :param max_height: maximum height of the editor (CSS height value, default: "")
+        :param fixed_height: fixed height of the editor (CSS height value, overrules `min_height` and `max_height`, default: "")
         """
-
         super().__init__(value=value, on_value_change=on_change)
         self.add_resource(Path(__file__).parent / 'lib' / 'codemirror')
 
@@ -65,6 +64,11 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
         """The current theme of the editor."""
         return self._props['theme']
 
+    @theme.setter
+    def theme(self, theme: str) -> None:
+        self._props['theme'] = theme
+        self.update()
+
     def set_theme(self, theme: str) -> None:
         """Sets the theme of the editor."""
         self._props['theme'] = theme
@@ -74,6 +78,11 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
     def language(self) -> str:
         """The current language of the editor."""
         return self._props['language']
+
+    @language.setter
+    def language(self, language: str) -> None:
+        self._props['language'] = language
+        self.update()
 
     def set_language(self, language: str) -> None:
         """Sets the language of the editor (case-insensitive)."""
@@ -92,7 +101,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
         values = await self.run_method('getThemes', timeout=timeout)
         return sorted(values)
 
-    def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+    def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
         changeset = _ChangeSet(sections=e.args['sections'], inserted=e.args['inserted'])
         new_value = changeset.apply(self.value)
@@ -105,7 +114,7 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
 class _ChangeSet:
     """A change set represents a group of modifications to a document."""
 
-    def __init__(self, sections: List[int], inserted: List[List[str]]):
+    def __init__(self, sections: List[int], inserted: List[List[str]]) -> None:
         # From https://github.com/codemirror/state/blob/main/src/change.ts#L21:
         # Sections are encoded as pairs of integers. The first is the
         # length in the current document, and the second is -1 for
@@ -117,24 +126,19 @@ class _ChangeSet:
 
     def length(self) -> int:
         """Calculate the length of the document before the change."""
-        result = 0
-        i = 0
-        while i < len(self.sections):
-            result += self.sections[i]
-            i += 2
-        return result
+        return sum(self.sections[::2])
 
     def apply(self, doc: str) -> str:
         """Apply the changes to a document, returning the modified document."""
         if self.length() != len(doc):
-            raise ValueError('Applying change set to a document with the wrong length')
+            raise ValueError('Cannot apply change set to a document with the wrong length')
         return _iter_changes(self, doc, _replacement_func, individual=False)
 
     def __str__(self) -> str:
         return f'ChangeSet(sections={self.sections}, inserted={self.inserted})'
 
 
-def _iter_changes(changeset: _ChangeSet, doc: str, func: Callable[[str, int, int, int, int, str], str], individual: bool):
+def _iter_changes(changeset: _ChangeSet, doc: str, func: Callable[[str, int, int, int, int, str], str], individual: bool) -> str:
     inserted = changeset.inserted
     posA, posB, i = 0, 0, 0
 

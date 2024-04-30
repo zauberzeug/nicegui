@@ -173,8 +173,7 @@ export default {
     this.CM = await import(`${this.resource_path}/editor.js`);
     const CM = this.CM;
 
-    // This is used to prevent emitting the value we just
-    // received from the server.
+    // This is used to prevent emitting the value we just received from the server.
     this.emitting = true;
 
     // The Compartments are used to change the properties of the editor ("extensions") dynamically
