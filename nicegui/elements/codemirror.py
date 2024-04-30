@@ -16,13 +16,10 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
         *,
         on_change: Optional[Callable[..., Any]] = None,
         language: str = 'plaintext',
-        theme: str = 'basicDark',
+        theme: str = 'basicLight',
         indent: str = ' ' * 4,
         line_wrapping: bool = False,
         highlight_whitespace: bool = False,
-        min_height: str = '',
-        max_height: str = '',
-        fixed_height: str = '',
     ) -> None:
         """CodeMirror
 
@@ -39,25 +36,21 @@ class CodeMirror(ValueElement, DisableableElement, component='codemirror.js'):
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
         :param language: initial language of the editor (case-insensitive, default: "plaintext")
-        :param theme: initial theme of the editor (default: "basicDark")
+        :param theme: initial theme of the editor (default: "materialLight")
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
-        :param min_height: minimum height of the editor (CSS height value, default: "")
-        :param max_height: maximum height of the editor (CSS height value, default: "")
-        :param fixed_height: fixed height of the editor (CSS height value, overrules `min_height` and `max_height`, default: "")
         """
         super().__init__(value=value, on_value_change=on_change)
         self.add_resource(Path(__file__).parent / 'lib' / 'codemirror')
+
+        self._classes.append('nicegui-codemirror')
 
         self._props['language'] = language
         self._props['theme'] = theme
         self._props['indent'] = indent
         self._props['lineWrapping'] = line_wrapping
         self._props['highlightWhitespace'] = highlight_whitespace
-        self._props['minHeight'] = min_height
-        self._props['maxHeight'] = max_height
-        self._props['fixedHeight'] = fixed_height
 
     @property
     def theme(self) -> str:

@@ -8,9 +8,6 @@ export default {
     theme: String,
     resource_path: String,
     lineWrapping: Boolean,
-    minHeight: String,
-    fixedHeight: String,
-    maxHeight: String,
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
@@ -109,7 +106,7 @@ export default {
     setupExtensions() {
       const CM = this.CM;
 
-      let self = this;
+      const self = this;
 
       // Sends a ChangeSet https://codemirror.net/docs/ref/#state.ChangeSet
       // containing only the changes made to the document.
@@ -137,34 +134,14 @@ export default {
         this.themeConfig.of([]),
         this.languageConfig.of([]),
         this.editableConfig.of([]),
+        CM.EditorView.theme({
+          "&": { height: "100%" },
+          ".cm-scroller": { overflow: "auto" },
+        }),
       ];
 
       if (this.lineWrapping) extensions.push(CM.EditorView.lineWrapping);
       if (this.highlightWhitespace) extensions.push([CM.highlightWhitespace()]);
-
-      // Convenience function to add theme properties below
-      const addToTheme = (content) => {
-        extensions.push(CM.EditorView.theme(content));
-      };
-
-      // Setting the height properly through tailwind is likely not possible,
-      // so we use the recommended ways from https://codemirror.net/examples/styling/
-      if (this.fixedHeight) {
-        addToTheme({
-          "&": { height: this.fixedHeight },
-          ".cm-scroller": { overflow: "auto" },
-        });
-      } else {
-        if (this.maxHeight)
-          addToTheme({
-            "&": { "max-height": this.maxHeight },
-            ".cm-scroller": { overflow: "auto" },
-          });
-        if (this.minHeight)
-          addToTheme({
-            ".cm-content, .cm-gutter": { minHeight: this.minHeight },
-          });
-      }
 
       return extensions;
     },
