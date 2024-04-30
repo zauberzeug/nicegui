@@ -29,11 +29,12 @@ export default {
 
   mounted() {
     this.scene = new THREE.Scene();
+    window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
 
     waitForElement(this.scene_id)
       .then((element) => {
-        console.log(element);
         this.scene = element.scene;
+        window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
       })
       .catch((error) => {
         console.error(error);
