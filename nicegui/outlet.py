@@ -10,6 +10,7 @@ class Outlet(SinglePageRouter):
     def __init__(self,
                  path: str,
                  browser_history: bool = True,
+                 parent: Optional["SinglePageRouter"] = None,
                  on_instance_created: Optional[Callable] = None,
                  **kwargs) -> None:
         """
@@ -20,12 +21,14 @@ class Outlet(SinglePageRouter):
         :param on_instance_created: Optional callback which is called when a new instance is created. Each browser tab
         or window is a new instance. This can be used to initialize the state of the application.
         :param parent: The parent outlet of this outlet.
-        :param kwargs: Additional arguments for the @page decorators
+        :param kwargs: Additional arguments fsetup_pages(or the @page decorators
         """
-        super().__init__(path, browser_history=browser_history, on_instance_created=on_instance_created, **kwargs)
+        super().__init__(path, browser_history=browser_history, on_instance_created=on_instance_created,
+                         parent=parent, **kwargs)
 
     def __call__(self, func: Callable[..., Any]) -> Self:
         """Decorator for the layout builder / "outlet" function"""
+
         def outlet_view():
             self.setup_content_area()
 
@@ -70,6 +73,7 @@ class OutletView:
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         """Decorator for the view function"""
+        abs_path = (self.parent_outlet.base_path + self.path).rstrip('/')
         self.parent_outlet.add_view(
-            self.parent_outlet.base_path.rstrip('/') + self.path, func, title=self.title)
+            abs_path, func, title=self.title)
         return func

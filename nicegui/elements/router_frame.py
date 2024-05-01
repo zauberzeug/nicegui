@@ -9,19 +9,27 @@ class RouterFrame(ui.element, component='router_frame.js'):
     the current page with the content of the new page. It serves as container and overrides the browser's history
     management to prevent the browser from reloading the whole page."""
 
-    def __init__(self, valid_path_masks: list[str],
+    def __init__(self,
+                 base_path: str = "",
+                 valid_path_masks: Optional[list[str]] = None,
                  use_browser_history: bool = True,
-                 change_title: bool = False):
+                 change_title: bool = False,
+                 parent_router_frame: "RouterFrame" = None):
         """
+        :param base_path: The base url path of this router frame
         :param valid_path_masks: A list of valid path masks which shall be allowed to be opened by the router
         :param use_browser_history: Optional flag to enable or disable the browser history management. Default is True.
         :param change_title: Optional flag to enable or disable the title change. Default is False.
         """
         super().__init__()
-        self._props['valid_path_masks'] = valid_path_masks
+        self._props['valid_path_masks'] = valid_path_masks if valid_path_masks is not None else []
         self._props['browser_history'] = use_browser_history
+        self.child_frames: dict[str, "RouterFrame"] = {}
         self.use_browser_history = use_browser_history
-        self.change_title = False
+        self.change_title = change_title
+        self.parent_frame = parent_router_frame
+        if parent_router_frame is not None:
+            parent_router_frame._register_sub_frame(valid_path_masks[0], self)
         self._on_resolve: Optional[Callable[[Any], SinglePageTarget]] = None
         self.on('open', lambda e: self.navigate_to(e.args))
 
@@ -43,6 +51,11 @@ class RouterFrame(ui.element, component='router_frame.js'):
             indicating whether the navigation should be server side only and not update the browser.
         :param _server_side: Optional flag which defines if the call is originated on the server side and thus
             the browser history should be updated. Default is False."""
+        # check if sub router is active and might handle the target
+        for path_mask, frame in self.child_frames.items():
+            if path_mask == target or target.startswith(path_mask + "/"):
+                frame.navigate_to(target, _server_side)
+                return
         target_url = self.resolve_target(target)
         entry = target_url.entry
         if entry is None:
@@ -67,3 +80,14 @@ class RouterFrame(ui.element, component='router_frame.js'):
         self.clear()
         combined_dict = {**target_url.path_args, **target_url.query_args}
         background_tasks.create(build(self, target_url.fragment, combined_dict))
+
+    def clear(self) -> None:
+        self.child_frames.clear()
+        super().clear()
+
+    def _register_sub_frame(self, path: str, frame: "RouterFrame") -> None:
+        """Registers a sub frame to the router frame
+
+        :param path: The path of the sub frame
+        :param frame: The sub frame"""
+        self.child_frames[path] = frame

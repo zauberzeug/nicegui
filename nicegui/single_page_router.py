@@ -80,6 +80,9 @@ class SinglePageRouter:
         self._setup_configured = False
         self.outlet_builder: Optional[Callable] = outlet_builder
         self.parent_router = parent
+        if self.parent_router is not None:
+            self.parent_router._register_child_router(self)
+        self.child_routers: List["SinglePageRouter"] = []
         self.page_kwargs = kwargs
 
     def setup_pages(self):
@@ -117,6 +120,10 @@ class SinglePageRouter:
                 if entry.builder == target:
                     return SinglePageTarget(entry=entry)
         else:
+            for cur_router in self.child_routers:
+                if target.startswith((cur_router.base_path.rstrip("/")+"/")) or target == cur_router.base_path:
+                    target = cur_router.base_path
+                    break
             parser = SinglePageTarget(target)
             return parser.parse_single_page_route(self.routes, target)
 
@@ -127,7 +134,7 @@ class SinglePageRouter:
         """
         if not isinstance(target, SinglePageTarget):
             target = self.resolve_target(target)
-        router_frame = context.get_client().single_page_router_frames.get(self.base_path, None)
+        router_frame = context.get_client().single_page_router_frame
         if not target.valid or router_frame is None:
             return False
         router_frame.navigate_to(target)
@@ -144,11 +151,23 @@ class SinglePageRouter:
             raise ValueError('The outlet builder must be a generator function and contain a yield statement'
                              ' to separate the layout from the content area.')
         next(frame)  # insert ui elements before yield
-        content = RouterFrame(list(self.included_paths), self.use_browser_history)  # exchangeable content of the page
-        content.on_resolve(self.resolve_target)
-        if self.parent_router is None:
+        parent_router_frame = None
+        for slot in reversed(context.get_slot_stack()):  # we need to inform the parent router frame abot
+            if isinstance(slot.parent, RouterFrame):  # our existence so it can navigate to our pages
+                parent_router_frame = slot.parent
+                break
+        content = RouterFrame(base_path=self.base_path,
+                              valid_path_masks=list(self.included_paths),
+                              use_browser_history=self.use_browser_history,
+                              parent_router_frame=parent_router_frame)  # exchangeable content of the page
+        if parent_router_frame is None:  # register root routers to the client
             context.get_client().single_page_router_frame = content
+        content.on_resolve(self.resolve_target)
         try:
             next(frame)  # if provided insert ui elements after yield
         except StopIteration:
             pass
+
+    def _register_child_router(self, router: "SinglePageRouter") -> None:
+        """Registers a child router to the parent router"""
+        self.child_routers.append(router)
