@@ -27,7 +27,7 @@ def create(coroutine: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task:
     return task
 
 
-def create_lazy(coroutine: Awaitable, *, name: str) -> None:
+def create_lazy(coroutine: Awaitable, *, name: str) -> asyncio.Task:
     """Wraps a create call and ensures a second task with the same name is delayed until the first one is done.
 
     If a third task with the same name is created while the first one is still running, the second one is discarded.
