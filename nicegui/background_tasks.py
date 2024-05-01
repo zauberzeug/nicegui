@@ -45,6 +45,7 @@ def create_lazy(coroutine: Awaitable, *, name: str) -> None:
     task = create(coroutine, name=name)
     lazy_tasks_running[name] = task
     task.add_done_callback(lambda _: finalize(name))
+    return task
 
 
 def _handle_task_result(task: asyncio.Task) -> None:
