@@ -94,7 +94,7 @@ class Client:
     @property
     def has_socket_connection(self) -> bool:
         """Return True if the client is connected, False otherwise."""
-        return self.environ is not None
+        return self.tab_id is not None
 
     @property
     def head_html(self) -> str:
