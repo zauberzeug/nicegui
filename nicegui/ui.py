@@ -14,6 +14,7 @@ __all__ = [
     'chart',
     'chat_message',
     'checkbox',
+    'chip',
     'clipboard',
     'code',
     'codemirror',
@@ -140,6 +141,7 @@ from .elements.carousel import CarouselSlide as carousel_slide
 from .elements.chart import chart
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
+from .elements.chip import Chip as chip
 from .elements.code import Code as code
 from .elements.codemirror import CodeMirror as codemirror
 from .elements.color_input import ColorInput as color_input

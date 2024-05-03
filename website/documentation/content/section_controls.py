@@ -5,6 +5,7 @@ from . import (
     button_group_documentation,
     checkbox_documentation,
     codemirror_documentation,
+    chip_documentation,
     color_input_documentation,
     color_picker_documentation,
     date_documentation,
@@ -30,6 +31,7 @@ doc.intro(button_documentation)
 doc.intro(button_group_documentation)
 doc.intro(button_dropdown_documentation)
 doc.intro(badge_documentation)
+doc.intro(chip_documentation)
 doc.intro(toggle_documentation)
 doc.intro(radio_documentation)
 doc.intro(select_documentation)
