@@ -39,33 +39,13 @@ class SceneView(Element,
         self._props['width'] = width
         self._props['height'] = height
         self._props['scene_id'] = scene.id
-        self.camera = camera or self.perspective_camera()
+        self.camera = camera or Scene.perspective_camera()
         self._props['camera_type'] = self.camera.type
         self._props['camera_params'] = self.camera.params
         self._click_handlers = [on_click] if on_click else []
         self.is_initialized = False
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
-
-    @staticmethod
-    def perspective_camera(*, fov: float = 75, near: float = 0.1, far: float = 1000) -> SceneCamera:
-        """Create a perspective camera.
-        :param fov: vertical field of view in degrees
-        :param near: near clipping plane
-        :param far: far clipping plane
-        """
-        return SceneCamera(type='perspective', params={'fov': fov, 'near': near, 'far': far})
-
-    @staticmethod
-    def orthographic_camera(*, size: float = 10, near: float = 0.1, far: float = 1000) -> SceneCamera:
-        """Create a orthographic camera.
-        The size defines the vertical size of the view volume, i.e. the distance between the top and bottom clipping planes.
-        The left and right clipping planes are set such that the aspect ratio matches the viewport.
-        :param size: vertical size of the view volume
-        :param near: near clipping plane
-        :param far: far clipping plane
-        """
-        return SceneCamera(type='orthographic', params={'size': size, 'near': near, 'far': far})
 
     def on_click(self, callback: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
