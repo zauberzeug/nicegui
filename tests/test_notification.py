@@ -17,6 +17,8 @@ def test_close_button(screen: Screen):
     screen.click('Notify')
     screen.should_contain('Hi!')
     assert len(b.client.layout.default_slot.children) == 2
+    screen.wait_for('Close')
+    screen.wait(0.1)  # NOTE: wait for button to become clickable
     screen.click('Close')
     screen.wait(1.5)
     screen.should_not_contain('Hi!')
