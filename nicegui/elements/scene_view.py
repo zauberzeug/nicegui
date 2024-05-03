@@ -27,6 +27,8 @@ class SceneView(Element,
         This component can only show a scene and not modify it.
         You can, however, independently move the camera.
 
+        Current limitation: 2D and 3D text objects are not supported and will not be displayed in the scene view.
+
         :param scene: the scene which will be shown on the canvas
         :param width: width of the canvas
         :param height: height of the canvas
