@@ -17,6 +17,7 @@ def test_create_dynamically(screen: Screen):
 
     screen.open('/')
     screen.click('Create')
+    screen.wait(0.5)
     assert scene_view is not None
     assert screen.selenium.execute_script(f'return getElement({scene_view.id}).scene == getElement({scene.id}).scene')
 
