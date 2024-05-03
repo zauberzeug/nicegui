@@ -65,6 +65,9 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         if on_mouse:
             self.on_mouse(on_mouse)
 
+    def set_source(self, source: Union[str, Path, 'PIL_Image']) -> None:  # noqa: UP037
+        return super().set_source(source)
+
     def on_mouse(self, on_mouse: Callable[..., Any]) -> Self:
         """Add a callback to be invoked when a mouse event occurs."""
         def handle_mouse(e: GenericEventArguments) -> None:

@@ -35,7 +35,7 @@ def test_connect_disconnect_is_called_for_each_client(screen: Screen):
 
     @ui.page('/', reconnect_timeout=0)
     def page():
-        ui.label(f'client id: {ui.context.get_client().id}')
+        ui.label(f'client id: {ui.context.client.id}')
     app.on_connect(lambda: events.append('connect'))
     app.on_disconnect(lambda: events.append('disconnect'))
 

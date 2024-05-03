@@ -8,7 +8,7 @@ authors:
   given-names: Rodja
   orcid: https://orcid.org/0009-0009-4735-6227
 title: 'NiceGUI: Web-based user interfaces with Python. The nice way.'
-version: v1.4.22
-date-released: '2024-04-15'
+version: v1.4.23
+date-released: '2024-04-25'
 url: https://github.com/zauberzeug/nicegui
-doi: 10.5281/zenodo.10973178
+doi: 10.5281/zenodo.11068110

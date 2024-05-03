@@ -1,6 +1,6 @@
 from typing import Any, Callable, Optional, Sequence, Union
 
-from .. import context
+from ..context import context
 
 
 def on(type: str,  # pylint: disable=redefined-builtin
@@ -19,5 +19,5 @@ def on(type: str,  # pylint: disable=redefined-builtin
     :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: `True`)
     :param trailing_events: whether to trigger the event handler after the last event occurrence (default: `True`)
     """
-    context.get_client().layout.on(type, handler, args,
-                                   throttle=throttle, leading_events=leading_events, trailing_events=trailing_events)
+    context.client.layout.on(type, handler, args,
+                             throttle=throttle, leading_events=leading_events, trailing_events=trailing_events)

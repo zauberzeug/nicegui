@@ -16,7 +16,7 @@ def test_run_javascript_on_value_change(screen: Screen):
     @ui.page('/')
     async def page():
         ui.radio(['A', 'B'], on_change=lambda e: ui.run_javascript(f'document.title = "Page {e.value}"'))
-        await ui.context.get_client().connected()
+        await ui.context.client.connected()
         ui.run_javascript('document.title = "Initial Title"')
 
     screen.open('/')

@@ -123,12 +123,22 @@ def multipleScenes():
         with ui.scene_view(scene).classes('h-32 w-1/2 overflow-x-hidden') as scene_view2:
             scene_view2.move_camera(x=0, y=3, z=3)
 
-# @doc.demo('Orthographic Camera', '''
-#     You can use the `camera_type` argument to `ui.scene` to use an orthographic instead of a perspective camera.
-# ''')
-# def orthographic_camera() -> None:
-#     with ui.scene(camera_type='orthographic').classes('w-full h-64') as scene:
-#         scene.box()
+@doc.demo('Camera Parameters', '''
+    You can use the `camera` argument to `ui.scene` to use a custom camera.
+    This allows you to set the field of view of a perspective camera or the size of an orthographic camera.
+''')
+def orthographic_camera() -> None:
+    with ui.scene(camera=ui.scene.orthographic_camera(size=2)) \
+            .classes('w-full h-64') as scene:
+        scene.box()
+
+
+@doc.demo('Custom Background', '''
+    You can set a custom background color using the `background_color` parameter of `ui.scene`.
+''')
+def custom_background() -> None:
+    with ui.scene(background_color='#222').classes('w-full h-64') as scene:
+        scene.box()
 
 
 doc.reference(ui.scene)

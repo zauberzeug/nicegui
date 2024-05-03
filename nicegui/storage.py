@@ -15,7 +15,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from . import background_tasks, context, core, json, observables
+from . import background_tasks, core, json, observables
+from .context import context
 from .logging import log
 from .observables import ObservableDict
 
@@ -148,7 +149,7 @@ class Storage:
     @staticmethod
     def _is_in_auto_index_context() -> bool:
         try:
-            return context.get_client().is_auto_index_client
+            return context.client.is_auto_index_client
         except RuntimeError:
             return False  # no client
 
@@ -167,7 +168,7 @@ class Storage:
         if self._is_in_auto_index_context():
             raise RuntimeError('app.storage.client can only be used with page builder functions '
                                '(https://nicegui.io/documentation/page)')
-        return context.get_client().storage
+        return context.client.storage
 
     @property
     def tab(self) -> observables.ObservableDict:
@@ -175,7 +176,7 @@ class Storage:
         if self._is_in_auto_index_context():
             raise RuntimeError('app.storage.tab can only be used with page builder functions '
                                '(https://nicegui.io/documentation/page)')
-        client = context.get_client()
+        client = context.client
         if not client.has_socket_connection:
             raise RuntimeError('app.storage.tab can only be used with a client connection; '
                                'see https://nicegui.io/documentation/page#wait_for_client_connection to await it')
@@ -197,7 +198,7 @@ class Storage:
         self._general.clear()
         self._users.clear()
         try:
-            client = context.get_client()
+            client = context.client
         except RuntimeError:
             pass  # no client, could be a pytest
         else:

@@ -42,6 +42,7 @@ def _open_window(
         'frameless': frameless,
         **core.app.native.window_args,
     }
+    webview.settings.update(**core.app.native.settings)
     window = webview.create_window(**window_kwargs)
     closed = Event()
     window.events.closed += closed.set

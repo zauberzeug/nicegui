@@ -33,6 +33,8 @@ doc.intro(run_documentation)
     for the `webview.create_window` and `webview.start` functions.
     Note that these keyword arguments will take precedence over the parameters defined in `ui.run`.
 
+    Additionally, you can change `webview.settings` via `app.native.settings`.
+
     In native mode the `app.native.main_window` object allows you to access the underlying window.
     It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/guide/api.html#window-object).
 ''', tab=lambda: ui.label('NiceGUI'))
@@ -41,6 +43,7 @@ def native_mode_demo():
 
     app.native.window_args['resizable'] = False
     app.native.start_args['debug'] = True
+    app.native.settings['ALLOW_DOWNLOADS'] = True
 
     ui.label('app running in native mode')
     # ui.button('enlarge', on_click=lambda: app.native.main_window.resize(1000, 700))
@@ -240,7 +243,7 @@ def install_pyinstaller():
 
 
 doc.text('', '''
-    **Note:**
+    Note:
     If you're getting an error "TypeError: a bytes-like object is required, not 'str'", try adding the following lines to the top of your `main.py` file:
     ```py
     import sys

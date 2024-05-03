@@ -9,8 +9,9 @@ from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List,
 
 from typing_extensions import Self
 
-from . import context, core, events, helpers, json, storage
+from . import core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
+from .context import context
 from .dependencies import Component, Library, register_library, register_resource, register_vue_component
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
@@ -72,7 +73,7 @@ class Element(Visibility):
         :param _client: client for this element (for internal use only)
         """
         super().__init__()
-        self.client = _client or context.get_client()
+        self.client = _client or context.client
         self.id = self.client.next_element_id
         self.client.next_element_id += 1
         self.tag = tag if tag else self.component.tag if self.component else 'div'
@@ -92,7 +93,7 @@ class Element(Visibility):
 
         self.client.elements[self.id] = self
         self.parent_slot: Optional[Slot] = None
-        slot_stack = context.get_slot_stack()
+        slot_stack = context.slot_stack
         if slot_stack:
             self.parent_slot = slot_stack[-1]
             self.parent_slot.children.append(self)

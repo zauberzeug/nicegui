@@ -1,6 +1,6 @@
 from typing import Any, Literal, Optional, Union
 
-from .. import context
+from ..context import context
 from ..element import Element
 from .timer import Timer
 
@@ -57,7 +57,7 @@ class Notification(Element, component='notification.js'):
 
         Note: You can pass additional keyword arguments according to `Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>`_.
         """
-        with context.get_client().layout:
+        with context.client.layout:
             super().__init__()
         self._props['options'] = {
             'message': str(message),
