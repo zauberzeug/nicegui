@@ -1,6 +1,4 @@
 import * as THREE from "three";
-// import { CSS2DRenderer } from "CSS2DRenderer";
-// import { CSS3DRenderer } from "CSS3DRenderer";
 
 function waitForElement(id, timeout = 10000) {
   return new Promise((resolve, reject) => {
@@ -23,8 +21,6 @@ export default {
   template: `
     <div style="position:relative">
       <canvas style="position:relative"></canvas>
-      <div style="position:absolute;pointer-events:none;top:0"></div>
-      <div style="position:absolute;pointer-events:none;top:0"></div>
     </div>`,
 
   mounted() {
@@ -78,18 +74,6 @@ export default {
     this.renderer.setClearColor("#eee");
     this.renderer.setSize(this.width, this.height);
 
-    /*
-    this.text_renderer = new CSS2DRenderer({
-      element: this.$el.children[1],
-    });
-    this.text_renderer.setSize(this.width, this.height);
-
-    this.text3d_renderer = new CSS3DRenderer({
-      element: this.$el.children[2],
-    });
-    this.text3d_renderer.setSize(this.width, this.height);
-    */
-
     this.$nextTick(() => this.resize());
     window.addEventListener("resize", this.resize, false);
 
@@ -97,8 +81,6 @@ export default {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / 20));
       TWEEN.update();
       this.renderer.render(this.scene, this.camera);
-      // this.text_renderer.render(this.scene, this.camera);
-      // this.text3d_renderer.render(this.scene, this.camera);
     };
     render();
 
@@ -177,8 +159,6 @@ export default {
     resize() {
       const { clientWidth, clientHeight } = this.$el;
       this.renderer.setSize(clientWidth, clientHeight);
-      // this.text_renderer.setSize(clientWidth, clientHeight);
-      // this.text3d_renderer.setSize(clientWidth, clientHeight);
       this.camera.aspect = clientWidth / clientHeight;
       if (this.camera_type === "orthographic") {
         this.camera.left = (-this.camera.aspect * this.camera_params.size) / 2;
