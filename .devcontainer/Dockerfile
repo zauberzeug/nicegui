@@ -27,8 +27,8 @@ ENV CHROME_BINARY_LOCATION=/usr/bin/chromium
 
 # Install nicegui
 RUN pip install -U pip && pip install poetry==$POETRY_VERSION
-COPY pyproject.toml poetry.lock README.md ./
-RUN poetry install --all-extras --no-root
+COPY nicegui pyproject.toml poetry.lock README.md ./
+RUN poetry install --all-extras
 
 USER $USERNAME
 
