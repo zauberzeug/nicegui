@@ -157,7 +157,7 @@ class SinglePageRouter:
                 parent_router_frame = slot.parent
                 break
         content = RouterFrame(base_path=self.base_path,
-                              valid_path_masks=list(self.included_paths),
+                              valid_path_masks=sorted(list(self.included_paths)),
                               use_browser_history=self.use_browser_history,
                               parent_router_frame=parent_router_frame)  # exchangeable content of the page
         if parent_router_frame is None:  # register root routers to the client

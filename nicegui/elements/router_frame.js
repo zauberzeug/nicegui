@@ -1,6 +1,8 @@
 export default {
     template: '<slot></slot>',
     mounted() {
+        if(this._debug) console.log('Mounted RouterFrame ' + this.base_path);
+
         let router = this;
 
         function validate_path(path) {
@@ -17,6 +19,17 @@ export default {
             return false;
         }
 
+        function is_handled_by_child_frame(path) {
+            // check child frames
+            for (let frame of router.child_frame_paths) {
+                if (path.startsWith(frame + '/') || (path === frame)) {
+                    console.log(path + ' handled by child RouterFrame ' + frame + ', skipping...');
+                    return true;
+                }
+            }
+            return false;
+        }
+
         const connectInterval = setInterval(async () => {
             if (window.socket.id === undefined) return;
             let target = window.location.pathname;
@@ -24,29 +37,42 @@ export default {
             this.$emit('open', target);
             clearInterval(connectInterval);
         }, 10);
-        document.addEventListener('click', function (e) {
+
+        this.clickEventListener = function (e) {
             // Check if the clicked element is a link
             if (e.target.tagName === 'A') {
                 let href = e.target.getAttribute('href'); // Get the link's href value
                 // remove query and anchor
                 if (validate_path(href)) {
                     e.preventDefault(); // Prevent the default link behavior
-                    if (router.use_browser_history) window.history.pushState({page: href}, '', href);
-                    // TODO BUG: Path is valid for the root router and the sub router for /.
-                    // Only one of both is allowed to push the state, otherwise the browser history is broken.
+                    if (!is_handled_by_child_frame(href) && router.use_browser_history) {
+                        window.history.pushState({page: href}, '', href);
+                        if (router._debug) console.log('RouterFrame pushing state ' + href + ' by ' + router.base_path);
+                    }
                     router.$emit('open', href);
                 }
             }
-        });
-        window.addEventListener('popstate', (event) => {
-            let new_page = window.location.pathname;
-            if (validate_path(new_page)) {
-                this.$emit('open', new_page);
+        };
+        this.popstateEventListener = function (event) {
+            let href = window.location.pathname;
+            if (validate_path(href) && !is_handled_by_child_frame(href)) {
+                router.$emit('open', href);
             }
-        });
+        };
+
+        document.addEventListener('click', this.clickEventListener);
+        window.addEventListener('popstate', this.popstateEventListener);
+    },
+    unmounted() {
+        document.removeEventListener('click', this.clickEventListener);
+        window.removeEventListener('popstate', this.popstateEventListener);
+        if (this._debug) console.log('Unmounted RouterFrame ' + this.base_path);
     },
     props: {
+        base_path: {type: String},
         valid_path_masks: [],
-        use_browser_history: {type: Boolean, default: true}
+        use_browser_history: {type: Boolean, default: true},
+        child_frame_paths: [],
+        _debug: {type: Boolean, default: true},
     },
 };

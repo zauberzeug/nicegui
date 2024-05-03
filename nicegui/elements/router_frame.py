@@ -23,7 +23,9 @@ class RouterFrame(ui.element, component='router_frame.js'):
         """
         super().__init__()
         self._props['valid_path_masks'] = valid_path_masks if valid_path_masks is not None else []
+        self._props['base_path'] = base_path
         self._props['browser_history'] = use_browser_history
+        self._props['child_frames'] = []
         self.child_frames: dict[str, "RouterFrame"] = {}
         self.use_browser_history = use_browser_history
         self.change_title = change_title
@@ -83,6 +85,7 @@ class RouterFrame(ui.element, component='router_frame.js'):
 
     def clear(self) -> None:
         self.child_frames.clear()
+        self._props['child_frame_paths'] = []
         super().clear()
 
     def _register_sub_frame(self, path: str, frame: "RouterFrame") -> None:
@@ -91,3 +94,4 @@ class RouterFrame(ui.element, component='router_frame.js'):
         :param path: The path of the sub frame
         :param frame: The sub frame"""
         self.child_frames[path] = frame
+        self._props['child_frame_paths'] = list(self.child_frames.keys())

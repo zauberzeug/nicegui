@@ -1,6 +1,12 @@
 from nicegui import ui
 
 
+@ui.outlet('/spa2')  # TODO Can not be opened yet, if / is already intercepting links due to valid pattern match
+def spa2():
+    ui.label('spa2')
+    yield
+
+
 @ui.outlet('/')
 def spa1():
     ui.label("spa1 header")
@@ -9,11 +15,6 @@ def spa1():
 
 
 # SPA outlet routers can be defined side by side
-@ui.outlet('/spa2')
-def spa2():
-    ui.label('spa2')
-    yield
-
 
 # views are defined with relative path to their outlet
 @spa1.view('/')
@@ -21,6 +22,7 @@ def spa1_index():
     ui.label('content of spa1')
     ui.link('more', '/more')
     ui.link('nested', '/nested')
+    ui.link('Other outlet', '/spa2')
 
 
 @spa1.view('/more')
