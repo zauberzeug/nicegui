@@ -91,7 +91,6 @@ SUPPORTED_LANGUAGES = Literal[
     'PGP',
     'PHP',
     'Pig',
-    'plaintext',
     'PLSQL',
     'PostgreSQL',
     'PowerShell',
