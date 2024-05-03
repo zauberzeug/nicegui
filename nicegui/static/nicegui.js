@@ -40,7 +40,7 @@ function replaceUndefinedAttributes(elements, id) {
 
 function getElement(id) {
   const _id = id instanceof HTMLElement ? id.id : id;
-  return mounted_app?.$refs["r" + _id];
+  return mounted_app.$refs["r" + _id];
 }
 
 function runMethod(target, method_name, args) {
