@@ -1,34 +1,12 @@
 import asyncio
-from dataclasses import dataclass
-from typing import Any, Callable, Optional, Literal, Dict
+from typing import Any, Callable, Optional
 
 from typing_extensions import Self
 
 from ..awaitable_response import AwaitableResponse, NullResponse
-from ..dataclasses import KWONLY_SLOTS
 from ..element import Element
-from ..events import (
-    GenericEventArguments,
-    SceneClickEventArguments,
-    SceneClickHit,
-    handle_event,
-)
-from .scene import Scene
-
-
-@dataclass(**KWONLY_SLOTS)
-class SceneCamera:
-    type: Literal['perspective', 'orthographic']
-    params: Dict[str, float]
-    x: float = 0
-    y: float = -3
-    z: float = 5
-    look_at_x: float = 0
-    look_at_y: float = 0
-    look_at_z: float = 0
-    up_x: float = 0
-    up_y: float = 0
-    up_z: float = 1
+from ..events import GenericEventArguments, SceneClickEventArguments, SceneClickHit, handle_event
+from .scene import Scene, SceneCamera
 
 
 class SceneView(Element,
@@ -70,7 +48,7 @@ class SceneView(Element,
         self.is_initialized = False
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
-    
+
     @staticmethod
     def perspective_camera(*, fov: float = 75, near: float = 0.1, far: float = 1000) -> SceneCamera:
         """Create a perspective camera.

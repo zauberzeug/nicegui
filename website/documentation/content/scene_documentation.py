@@ -31,6 +31,7 @@ def main_demo() -> None:
         scene.text('2D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(z=2)
         scene.text3d('3D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(y=-2).scale(.05)
 
+
 @doc.demo('Handling Click Events', '''
     You can use the `on_click` argument to `ui.scene` to handle click events.
     The callback receives a `SceneClickEventArguments` object with the following attributes:
@@ -110,6 +111,7 @@ async def wait_for_init() -> None:
         scene.sphere()
         await scene.initialized()
         scene.move_camera(x=1, y=-1, z=1.5, duration=2)
+
 
 @doc.demo(ui.scene_view)
 def multipleScenes():
