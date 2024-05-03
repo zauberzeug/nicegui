@@ -1,7 +1,7 @@
 from typing import Any, Callable, Union
 
-from .. import context
 from ..client import Client
+from ..context import context
 from ..element import Element
 from .javascript import run_javascript
 
@@ -64,4 +64,4 @@ class Navigate:
             path = f'#c{target.id}'
         elif callable(target):
             path = Client.page_routes[target]
-        context.get_client().open(path, new_tab)
+        context.client.open(path, new_tab)

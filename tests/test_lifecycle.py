@@ -1,6 +1,6 @@
 from typing import List
 
-from nicegui import Client, app, ui
+from nicegui import app, ui
 from nicegui.testing import Screen
 
 
@@ -34,8 +34,8 @@ def test_connect_disconnect_is_called_for_each_client(screen: Screen):
     events: List[str] = []
 
     @ui.page('/', reconnect_timeout=0)
-    def page(client: Client):
-        ui.label(f'client id: {client.id}')
+    def page():
+        ui.label(f'client id: {ui.context.client.id}')
     app.on_connect(lambda: events.append('connect'))
     app.on_disconnect(lambda: events.append('disconnect'))
 

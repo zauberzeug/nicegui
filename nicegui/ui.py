@@ -14,12 +14,14 @@ __all__ = [
     'chart',
     'chat_message',
     'checkbox',
+    'chip',
     'clipboard',
     'code',
     'color_input',
     'color_picker',
     'colors',
     'column',
+    'context',
     'context_menu',
     'dark_mode',
     'date',
@@ -123,6 +125,7 @@ __all__ = [
     'router_frame'
 ]
 
+from .context import context
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
 from .elements.audio import Audio as audio
@@ -139,6 +142,7 @@ from .elements.carousel import CarouselSlide as carousel_slide
 from .elements.chart import chart
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
+from .elements.chip import Chip as chip
 from .elements.code import Code as code
 from .elements.color_input import ColorInput as color_input
 from .elements.color_picker import ColorPicker as color_picker

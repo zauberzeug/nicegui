@@ -1,4 +1,4 @@
-from nicegui import context, ui
+from nicegui import ui
 
 from . import documentation, example_card, svg
 from .examples import examples
@@ -8,7 +8,7 @@ from .style import example_link, features, heading, link_target, section_heading
 
 def create() -> None:
     """Create the content of the main page."""
-    context.get_client().content.classes('p-0 gap-0')
+    ui.context.client.content.classes('p-0 gap-0')
     add_head_html()
     add_header()
 

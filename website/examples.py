@@ -65,4 +65,5 @@ examples: List[Example] = [
     Example('Webserial', 'communicate with a serial device using the WebSerial API'),
     Example('Websockets', 'use [websockets library](https://websockets.readthedocs.io/) to start a websocket server'),
     Example('Audio Recorder', 'Record audio, play it back or download it'),
+    Example('ZeroMQ', 'Simple ZeroMQ PUSH/PULL server and client'),
 ]

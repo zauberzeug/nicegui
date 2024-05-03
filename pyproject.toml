@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nicegui"
-version = "1.4.21-dev"
+version = "1.4.23-dev"
 description = "Create web-based user interfaces with Python. The nice way."
 authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
 license = "MIT"
@@ -61,6 +61,9 @@ urllib3 = ">=1.26.18,^1.26 || >=2.0.7" # https://github.com/zauberzeug/nicegui/s
 pyecharts = "^2.0.4"
 ruff = ">=0.3.5"
 pre-commit = ">=3.5.0"
+
+[tool.poetry.scripts]
+nicegui-pack = "nicegui.scripts.pack:main"
 
 [build-system]
 requires = [

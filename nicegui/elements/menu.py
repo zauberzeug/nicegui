@@ -17,10 +17,12 @@ class Menu(ValueElement):
         Creates a menu based on Quasar's `QMenu <https://quasar.dev/vue-components/menu>`_ component.
         The menu should be placed inside the element where it should be shown.
 
+        Advanced tip:
+        Use the `auto-close` prop to automatically close the menu on any click event directly without a server round-trip.
+
         :param value: whether the menu is already opened (default: `False`)
         """
         super().__init__(tag='q-menu', value=value, on_value_change=None)
-        self._props['auto-close'] = True
 
     def open(self) -> None:
         """Open the menu."""
@@ -65,11 +67,8 @@ class MenuItem(Item):
         self._props['clickable'] = True
 
         self.menu = self._find_menu()
-        if self.menu:
-            if auto_close:
-                self.on_click(self.menu.close)
-            else:
-                self.menu.props(remove='auto-close')
+        if self.menu and auto_close:
+            self.on_click(self.menu.close)
 
     def _find_menu(self) -> Optional[Union[Menu, ContextMenu]]:
         element: Element = self

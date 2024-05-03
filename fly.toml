@@ -7,6 +7,8 @@ app = "nicegui"
 primary_region = "fra"
 kill_signal = "SIGTERM"
 kill_timeout = "5s"
+swap_size_mb = 2048
+
 
 [build]
   dockerfile = "fly.dockerfile"
@@ -16,9 +18,6 @@ kill_timeout = "5s"
 
 [processes]
   app = ""
-
-[env]
-  SWAP = "true"
 
 [[services]]
   protocol = "tcp"
