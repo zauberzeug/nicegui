@@ -1,38 +1,14 @@
 import * as THREE from "three";
 
-function waitForElement(id, timeout = 10000) {
-  return new Promise((resolve, reject) => {
-    const startTime = Date.now();
-    const checkElement = () => {
-      let element = getElement(id);
-      if (element) {
-        resolve(element);
-      } else if (Date.now() - startTime >= timeout) {
-        reject(new Error(`Element with ${id} not found within timeout`));
-      } else {
-        setTimeout(checkElement, 100); // Check again after 100 milliseconds
-      }
-    };
-    checkElement();
-  });
-}
-
 export default {
   template: `
     <div style="position:relative">
       <canvas style="position:relative"></canvas>
     </div>`,
 
-  mounted() {
-    this.scene = new THREE.Scene();
-
-    waitForElement(this.scene_id)
-      .then((element) => {
-        this.scene = element.scene;
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+  async mounted() {
+    await this.$nextTick();
+    this.scene = getElement(this.scene_id).scene;
 
     if (this.camera_type === "perspective") {
       this.camera = new THREE.PerspectiveCamera(
