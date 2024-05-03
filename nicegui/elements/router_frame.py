@@ -1,3 +1,4 @@
+import inspect
 from typing import Union, Callable, Tuple, Any, Optional, Self
 
 from nicegui import ui, helpers, context, background_tasks, core
@@ -16,14 +17,14 @@ class RouterFrame(ui.element, component='router_frame.js'):
                  use_browser_history: bool = True,
                  change_title: bool = True,
                  parent_router_frame: "RouterFrame" = None,
-                 initial_path: Optional[str] = None):
+                 target_url: Optional[str] = None):
         """
         :param base_path: The base url path of this router frame
         :param included_paths: A list of valid path masks which shall be allowed to be opened by the router
         :param excluded_paths: A list of path masks which shall be excluded from the router
         :param use_browser_history: Optional flag to enable or disable the browser history management. Default is True.
         :param change_title: Optional flag to enable or disable the title change. Default is True.
-        :param initial_path: The initial path of the router frame
+        :param target_url: The initial url of the router frame
         """
         super().__init__()
         included_masks = []
@@ -38,9 +39,12 @@ class RouterFrame(ui.element, component='router_frame.js'):
                 cleaned = path.rstrip('/')
                 excluded_masks.append(cleaned)
                 excluded_masks.append(cleaned + "/*")
-        if initial_path is None:
-            initial_path = base_path
-        self._props['initial_path'] = initial_path
+        if target_url is None:
+            if parent_router_frame is not None and parent_router_frame._props['target_url'] is not None:
+                target_url = parent_router_frame._props['target_url']
+            else:
+                target_url = base_path
+        self._props['target_url'] = target_url
         self._props['included_path_masks'] = included_masks
         self._props['excluded_path_masks'] = excluded_masks
         self._props['base_path'] = base_path
@@ -53,7 +57,6 @@ class RouterFrame(ui.element, component='router_frame.js'):
         if parent_router_frame is not None:
             parent_router_frame._register_sub_frame(included_paths[0], self)
         self._on_resolve: Optional[Callable[[Any], SinglePageTarget]] = None
-        print("Router frame with base path", base_path)
         self.on('open', lambda e: self.navigate_to(e.args, server_side=False))
 
     def on_resolve(self, on_resolve: Callable[[Any], SinglePageTarget]) -> Self:
@@ -76,7 +79,6 @@ class RouterFrame(ui.element, component='router_frame.js'):
         :param server_side: Optional flag which defines if the call is originated on the server side and thus
             the browser history should be updated. Default is False."""
         # check if sub router is active and might handle the target
-        print("Navigation to target", target)
         for path_mask, frame in self.child_frames.items():
             if path_mask == target or target.startswith(path_mask + "/"):
                 frame.navigate_to(target, server_side)
@@ -88,6 +90,8 @@ class RouterFrame(ui.element, component='router_frame.js'):
                 ui.run_javascript(f'window.location.href = "#{target_url.fragment}";')  # go to fragment
                 return
             return
+
+        self._props["target_url"] = target_url.original_path
         if self.change_title:
             title = entry.title if entry.title is not None else core.app.config.title
             ui.page_title(title)
@@ -95,17 +99,19 @@ class RouterFrame(ui.element, component='router_frame.js'):
             ui.run_javascript(
                 f'window.history.pushState({{page: "{target_url.original_path}"}}, "", "{target_url.original_path}");')
 
-        async def build(content_element, fragment, kwargs) -> None:
+        async def build(content_element, target_url, kwargs) -> None:
             with content_element:
+                args = inspect.signature(entry.builder).parameters.keys()
+                kwargs = {k: v for k, v in kwargs.items() if k in args}
                 result = entry.builder(**kwargs)
                 if helpers.is_coroutine_function(entry.builder):
                     await result
-                if fragment is not None:
-                    await ui.run_javascript(f'window.location.href = "#{fragment}";')
+                if target_url.fragment is not None:
+                    await ui.run_javascript(f'window.location.href = "#{target_url.fragment}";')
 
         self.clear()
         combined_dict = {**target_url.path_args, **target_url.query_args}
-        background_tasks.create(build(self, target_url.fragment, combined_dict))
+        background_tasks.create(build(self, target_url, combined_dict))
 
     def clear(self) -> None:
         self.child_frames.clear()

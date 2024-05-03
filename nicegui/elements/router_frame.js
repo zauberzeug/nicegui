@@ -39,8 +39,9 @@ export default {
 
         const connectInterval = setInterval(async () => {
             if (window.socket.id === undefined) return;
-            let target = router.initial_path
+            let target = router.target_url
             this.$emit('open', target);
+            if (router._debug) console.log('Initial opening ' + target + ' by ' + router.base_path);
             clearInterval(connectInterval);
         }, 10);
 
@@ -67,9 +68,15 @@ export default {
             }
         };
         this.popstateEventListener = function (event) {
+            let state = event.state;
             let href = window.location.pathname;
+            event.preventDefault();
+            if (window.location.hash) {
+                return;
+            }
             if (validate_path(href) && !is_handled_by_child_frame(href)) {
                 router.$emit('open', href);
+                if (router._debug) console.log('Pop opening ' + href + ' by ' + router.base_path);
             }
         };
 
@@ -83,7 +90,7 @@ export default {
     },
     props: {
         base_path: {type: String},
-        initial_path: {type: String},
+        target_url: {type: String},
         included_path_masks: [],
         excluded_path_masks: [],
         use_browser_history: {type: Boolean, default: true},

@@ -86,7 +86,8 @@ class SinglePageRouter:
 
     def setup_pages(self, force=False) -> Self:
         for key, route in Client.page_routes.items():
-            if route.startswith(self.base_path.rstrip("/") + "/"):  # '/' after '/sub_router' - do not intercept links
+            if route.startswith(
+                    self.base_path.rstrip("/") + "/") and route.rstrip("/") not in self.included_paths:
                 self.excluded_paths.add(route)
             if force:
                 continue
@@ -97,8 +98,14 @@ class SinglePageRouter:
 
         @ui.page(self.base_path, **self.page_kwargs)
         @ui.page(f'{self.base_path}' + '{_:path}', **self.page_kwargs)  # all other pages
-        async def root_page():
-            self.build_page()
+        async def root_page(request_data=None):
+            initial_url = None
+            if request_data is not None:
+                initial_url = request_data["url"]["path"]
+                query = request_data["url"].get("query", {})
+                if query:
+                    initial_url += "?" + query
+            self.build_page(initial_url=initial_url)
 
         return self
 
@@ -132,8 +139,9 @@ class SinglePageRouter:
                     return SinglePageTarget(entry=entry, router=self)
         else:
             resolved = None
+            path = target.split("#")[0].split("?")[0]
             for cur_router in self.child_routers:
-                if target.startswith((cur_router.base_path.rstrip("/") + "/")) or target == cur_router.base_path:
+                if path.startswith((cur_router.base_path.rstrip("/") + "/")) or path == cur_router.base_path:
                     resolved = cur_router.resolve_target(target)
                     if resolved.valid:
                         target = cur_router.base_path
@@ -169,19 +177,19 @@ class SinglePageRouter:
         else:
             raise ValueError('No page template generator function provided.')
 
-    def build_page(self):
+    def build_page(self, initial_url: Optional[str] = None):
         template = self.build_page_template()
         if not isinstance(template, Generator):
             raise ValueError('The page template method must yield a value to separate the layout from the content '
                              'area.')
         next(template)
-        self.insert_content_area()
+        self.insert_content_area(initial_url)
         try:
             next(template)
         except StopIteration:
             pass
 
-    def insert_content_area(self):
+    def insert_content_area(self, initial_url: Optional[str] = None):
         """Setups the content area"""
         parent_router_frame = None
         for slot in reversed(context.slot_stack):  # we need to inform the parent router frame about
@@ -192,7 +200,8 @@ class SinglePageRouter:
                               included_paths=sorted(list(self.included_paths)),
                               excluded_paths=sorted(list(self.excluded_paths)),
                               use_browser_history=self.use_browser_history,
-                              parent_router_frame=parent_router_frame)  # exchangeable content of the page
+                              parent_router_frame=parent_router_frame,
+                              target_url=initial_url)
         # TODO Correction of initial base path when opening the page programmatically
         if parent_router_frame is None:  # register root routers to the client
             context.client.single_page_router_frame = content
