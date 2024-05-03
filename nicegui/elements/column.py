@@ -14,4 +14,4 @@ class Column(Element):
         self._classes.append('nicegui-column')
 
         if wrap:
-            self._classes.append('wrap')
+            self._style['flex-wrap'] = 'wrap'
