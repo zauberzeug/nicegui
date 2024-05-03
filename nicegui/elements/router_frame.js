@@ -1,7 +1,7 @@
 export default {
     template: '<slot></slot>',
     mounted() {
-        if(this._debug) console.log('Mounted RouterFrame ' + this.base_path);
+        if (this._debug) console.log('Mounted RouterFrame ' + this.base_path);
 
         let router = this;
 
@@ -9,8 +9,15 @@ export default {
             let href = path.split('?')[0].split('#')[0]
             // check if the link ends with / and remove it
             if (href.endsWith('/')) href = href.slice(0, -1);
-            // for all valid path masks
-            for (let mask of router.valid_path_masks) {
+            // for all excluded path masks
+            for (let mask of router.excluded_path_masks) {
+                // apply filename matching with * and ? wildcards
+                let regex = new RegExp(mask.replace(/\?/g, '.').replace(/\*/g, '.*'));
+                if (!regex.test(href)) continue;
+                return false;
+            }
+            // for all included path masks
+            for (let mask of router.included_path_masks) {
                 // apply filename matching with * and ? wildcards
                 let regex = new RegExp(mask.replace(/\?/g, '.').replace(/\*/g, '.*'));
                 if (!regex.test(href)) continue;
@@ -32,8 +39,7 @@ export default {
 
         const connectInterval = setInterval(async () => {
             if (window.socket.id === undefined) return;
-            let target = window.location.pathname;
-            if (window.location.hash !== '') target += window.location.hash;
+            let target = router.initial_path
             this.$emit('open', target);
             clearInterval(connectInterval);
         }, 10);
@@ -42,14 +48,21 @@ export default {
             // Check if the clicked element is a link
             if (e.target.tagName === 'A') {
                 let href = e.target.getAttribute('href'); // Get the link's href value
+                if (href === "#") {
+                    e.preventDefault();
+                    return;
+                }
                 // remove query and anchor
                 if (validate_path(href)) {
                     e.preventDefault(); // Prevent the default link behavior
-                    if (!is_handled_by_child_frame(href) && router.use_browser_history) {
-                        window.history.pushState({page: href}, '', href);
-                        if (router._debug) console.log('RouterFrame pushing state ' + href + ' by ' + router.base_path);
+                    if (!is_handled_by_child_frame(href)) {
+                        if (router.use_browser_history) {
+                            window.history.pushState({page: href}, '', href);
+                            if (router._debug) console.log('RouterFrame pushing state ' + href + ' by ' + router.base_path);
+                        }
+                        router.$emit('open', href);
+                        if (router._debug) console.log('Opening ' + href + ' by ' + router.base_path);
                     }
-                    router.$emit('open', href);
                 }
             }
         };
@@ -70,7 +83,9 @@ export default {
     },
     props: {
         base_path: {type: String},
-        valid_path_masks: [],
+        initial_path: {type: String},
+        included_path_masks: [],
+        excluded_path_masks: [],
         use_browser_history: {type: Boolean, default: true},
         child_frame_paths: [],
         _debug: {type: Boolean, default: true},

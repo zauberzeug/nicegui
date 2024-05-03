@@ -1,11 +1,9 @@
-import fnmatch
 import re
-from functools import wraps
-from typing import Callable, Dict, Union, Optional, Tuple, Self, List, Set, Any, Generator
+from typing import Callable, Dict, Union, Optional, Self, List, Set, Generator
 
-from fastapi.routing import APIRoute
-
-from nicegui import background_tasks, helpers, ui, core, context
+from nicegui import ui
+from nicegui.context import context
+from nicegui.client import Client
 from nicegui.elements.router_frame import RouterFrame
 from nicegui.single_page_target import SinglePageTarget
 
@@ -56,17 +54,17 @@ class SinglePageRouter:
 
     def __init__(self,
                  path: str,
-                 outlet_builder: Optional[Callable] = None,
                  browser_history: bool = True,
                  parent: Optional["SinglePageRouter"] = None,
+                 page_template: Optional[Callable[[], Generator]] = None,
                  on_instance_created: Optional[Callable] = None,
                  **kwargs) -> None:
         """
         :param path: the base path of the single page router.
-        :param outlet_builder: A layout definition function which defines the layout of the page. The layout builder
-            must be a generator function and contain a yield statement to separate the layout from the content area.
         :param browser_history: Optional flag to enable or disable the browser history management. Default is True.
         :param parent: The parent router of this router if this router is a nested router.
+        :param page_template: Optional page template generator function which defines the layout of the page. It
+            needs to yield a value to separate the layout from the content area.
         :param on_instance_created: Optional callback which is called when a new instance is created. Each browser tab
         or window is a new instance. This can be used to initialize the state of the application.
         :param kwargs: Additional arguments for the @page decorators
@@ -75,21 +73,34 @@ class SinglePageRouter:
         self.routes: Dict[str, SinglePageRouterEntry] = {}
         self.base_path = path
         self.included_paths: Set[str] = set()
+        self.excluded_paths: Set[str] = set()
         self.on_instance_created: Optional[Callable] = on_instance_created
         self.use_browser_history = browser_history
+        self.page_template = page_template
         self._setup_configured = False
-        self.outlet_builder: Optional[Callable] = outlet_builder
         self.parent_router = parent
         if self.parent_router is not None:
             self.parent_router._register_child_router(self)
         self.child_routers: List["SinglePageRouter"] = []
         self.page_kwargs = kwargs
 
-    def setup_pages(self):
+    def setup_pages(self, force=False) -> Self:
+        for key, route in Client.page_routes.items():
+            if route.startswith(self.base_path.rstrip("/") + "/"):  # '/' after '/sub_router' - do not intercept links
+                self.excluded_paths.add(route)
+            if force:
+                continue
+            if self.base_path.startswith(route.rstrip("/") + "/"):  # '/sub_router' after '/' - forbidden
+                raise ValueError(f'Another router with path "{route.rstrip("/")}/*" is already registered which '
+                                 f'includes this router\'s base path "{self.base_path}". You can declare the nested '
+                                 f'router first to prioritize it and avoid this issue.')
+
         @ui.page(self.base_path, **self.page_kwargs)
         @ui.page(f'{self.base_path}' + '{_:path}', **self.page_kwargs)  # all other pages
         async def root_page():
-            self.setup_content_area()
+            self.build_page()
+
+        return self
 
     def add_view(self, path: str, builder: Callable, title: Optional[str] = None) -> None:
         """Add a new route to the single page router
@@ -118,55 +129,74 @@ class SinglePageRouter:
         if isinstance(target, Callable):
             for target, entry in self.routes.items():
                 if entry.builder == target:
-                    return SinglePageTarget(entry=entry)
+                    return SinglePageTarget(entry=entry, router=self)
         else:
+            resolved = None
             for cur_router in self.child_routers:
-                if target.startswith((cur_router.base_path.rstrip("/")+"/")) or target == cur_router.base_path:
-                    target = cur_router.base_path
-                    break
-            parser = SinglePageTarget(target)
-            return parser.parse_single_page_route(self.routes, target)
+                if target.startswith((cur_router.base_path.rstrip("/") + "/")) or target == cur_router.base_path:
+                    resolved = cur_router.resolve_target(target)
+                    if resolved.valid:
+                        target = cur_router.base_path
+                        break
+            parser = SinglePageTarget(target, router=self)
+            result = parser.parse_single_page_route(self.routes, target)
+            if resolved is not None:
+                result.original_path = resolved.original_path
+            return result
 
-    def navigate_to(self, target: Union[Callable, str, SinglePageTarget]) -> bool:
+    def navigate_to(self, target: Union[Callable, str, SinglePageTarget], server_side=True) -> bool:
         """Navigate to a target
 
         :param target: The target to navigate to
+        :param server_side: Optional flag which defines if the call is originated on the server side
         """
+        org_target = target
         if not isinstance(target, SinglePageTarget):
             target = self.resolve_target(target)
-        router_frame = context.get_client().single_page_router_frame
+        router_frame = context.client.single_page_router_frame
         if not target.valid or router_frame is None:
             return False
-        router_frame.navigate_to(target)
+        router_frame.navigate_to(org_target, server_side=server_side)
         return True
 
-    def setup_content_area(self):
-        """Setups the content area for the single page router
-        """
-        if self.outlet_builder is None:
-            raise ValueError('The outlet builder function is not defined. Use the @outlet decorator to define it or'
-                             ' pass it as an argument to the SinglePageRouter constructor.')
-        frame = self.outlet_builder()
-        if not isinstance(frame, Generator):
-            raise ValueError('The outlet builder must be a generator function and contain a yield statement'
-                             ' to separate the layout from the content area.')
-        next(frame)  # insert ui elements before yield
+    def build_page_template(self) -> Generator:
+        """Builds the page template. Needs to call insert_content_area at some point which defines the exchangeable
+        content of the page.
+
+        :return: The page template generator function"""
+        if self.build_page_template is not None:
+            return self.page_template()
+        else:
+            raise ValueError('No page template generator function provided.')
+
+    def build_page(self):
+        template = self.build_page_template()
+        if not isinstance(template, Generator):
+            raise ValueError('The page template method must yield a value to separate the layout from the content '
+                             'area.')
+        next(template)
+        self.insert_content_area()
+        try:
+            next(template)
+        except StopIteration:
+            pass
+
+    def insert_content_area(self):
+        """Setups the content area"""
         parent_router_frame = None
-        for slot in reversed(context.get_slot_stack()):  # we need to inform the parent router frame abot
+        for slot in reversed(context.slot_stack):  # we need to inform the parent router frame about
             if isinstance(slot.parent, RouterFrame):  # our existence so it can navigate to our pages
                 parent_router_frame = slot.parent
                 break
         content = RouterFrame(base_path=self.base_path,
-                              valid_path_masks=sorted(list(self.included_paths)),
+                              included_paths=sorted(list(self.included_paths)),
+                              excluded_paths=sorted(list(self.excluded_paths)),
                               use_browser_history=self.use_browser_history,
                               parent_router_frame=parent_router_frame)  # exchangeable content of the page
+        # TODO Correction of initial base path when opening the page programmatically
         if parent_router_frame is None:  # register root routers to the client
-            context.get_client().single_page_router_frame = content
+            context.client.single_page_router_frame = content
         content.on_resolve(self.resolve_target)
-        try:
-            next(frame)  # if provided insert ui elements after yield
-        except StopIteration:
-            pass
 
     def _register_child_router(self, router: "SinglePageRouter") -> None:
         """Registers a child router to the parent router"""

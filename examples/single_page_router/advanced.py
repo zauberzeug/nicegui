@@ -4,19 +4,8 @@ from typing import Callable
 
 from nicegui import ui
 from nicegui.page import page
+from nicegui.single_page_app import SinglePageApp
 from nicegui.single_page_router import SinglePageRouter
-
-
-def setup_page_layout(content: Callable):
-    with ui.header():
-        ui.label('My Company').classes('text-2xl')
-    with ui.left_drawer():
-        ui.button('Home', on_click=lambda: ui.navigate.to('/'))
-        ui.button('About', on_click=lambda: ui.navigate.to('/about'))
-        ui.button('Contact', on_click=lambda: ui.navigate.to('/contact'))
-    content()  # <-- The individual pages will be rendered here
-    with ui.footer() as footer:
-        ui.label('Copyright 2023 by My Company')
 
 
 @page('/', title='Welcome!')
@@ -44,17 +33,20 @@ def about():
 
 @page('/contact', title='Contact')  # this page will not be hosted as SPA
 def contact():
-    def custom_content_area():
-        ui.label('This is the contact page').classes('text-2xl')
-
-    setup_page_layout(content=custom_content_area)
+    ui.label('This is the contact page').classes('text-2xl')
 
 
-class CustomRouter(SinglePageRouter):
-    def setup_root_page(self, **kwargs):
-        setup_page_layout(content=self.setup_content_area)
+def page_template():
+    with ui.header():
+        ui.label('My Company').classes('text-2xl')
+    with ui.left_drawer():
+        ui.button('Home', on_click=lambda: ui.navigate.to('/'))
+        ui.button('About', on_click=lambda: ui.navigate.to('/about'))
+        ui.button('Contact', on_click=lambda: ui.navigate.to('/contact'))
+    yield
+    with ui.footer() as footer:
+        ui.label('Copyright 2024 by My Company')
 
 
-router = CustomRouter('/', included=[index, about], excluded=[contact])
-router.setup_page_routes()
+spa = SinglePageApp("/", page_template=page_template).setup()
 ui.run()

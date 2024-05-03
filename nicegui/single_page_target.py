@@ -3,7 +3,7 @@ import urllib.parse
 from typing import Dict, Optional, TYPE_CHECKING, Self
 
 if TYPE_CHECKING:
-    from nicegui.single_page_router import SinglePageRouterEntry
+    from nicegui.single_page_router import SinglePageRouterEntry, SinglePageRouter
 
 
 class SinglePageTarget:
@@ -11,13 +11,17 @@ class SinglePageTarget:
     SinglePageRouterEntry and convert the parameters to the expected types of the builder function"""
 
     def __init__(self, path: Optional[str] = None, entry: Optional['SinglePageRouterEntry'] = None,
-                 fragment: Optional[str] = None, query_string: Optional[str] = None):
+                 fragment: Optional[str] = None, query_string: Optional[str] = None,
+                 router: Optional['SinglePageRouter'] = None):
         """
         :param path: The path of the URL
         :param entry: Predefined entry, e.g. targeting a Callable
         :param fragment: The fragment of the URL
+        :param query_string: The query string of the URL
+        :param router: The SinglePageRouter by which the URL was resolved
         """
         self.routes = {}  # all valid routes
+        self.original_path = path
         self.path = path  # url path w/o query
         self.fragment = fragment
         self.query_string = query_string
@@ -25,6 +29,7 @@ class SinglePageTarget:
         self.query_args = urllib.parse.parse_qs(self.query_string)
         self.entry = entry
         self.valid = entry is not None
+        self.router = router
 
     def parse_single_page_route(self, routes: Dict[str, 'SinglePageRouterEntry'], path: str) -> Self:
         """

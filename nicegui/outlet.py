@@ -1,5 +1,6 @@
-from typing import Callable, Any, Self, Optional
+from typing import Callable, Any, Self, Optional, Generator
 
+from nicegui.client import Client
 from nicegui.single_page_router import SinglePageRouter
 
 
@@ -9,28 +10,50 @@ class Outlet(SinglePageRouter):
 
     def __init__(self,
                  path: str,
+                 outlet_builder: Optional[Callable] = None,
                  browser_history: bool = True,
                  parent: Optional["SinglePageRouter"] = None,
                  on_instance_created: Optional[Callable] = None,
                  **kwargs) -> None:
         """
         :param path: the base path of the single page router.
+        :param outlet_builder: A layout definition function which defines the layout of the page. The layout builder
+            must be a generator function and contain a yield statement to separate the layout from the content area.
         :param layout_builder: A layout builder function which defines the layout of the page. The layout builder
             must be a generator function and contain a yield statement to separate the layout from the content area.
         :param browser_history: Optional flag to enable or disable the browser history management. Default is True.
         :param on_instance_created: Optional callback which is called when a new instance is created. Each browser tab
         or window is a new instance. This can be used to initialize the state of the application.
         :param parent: The parent outlet of this outlet.
-        :param kwargs: Additional arguments fsetup_pages(or the @page decorators
+        :param kwargs: Additional arguments
         """
         super().__init__(path, browser_history=browser_history, on_instance_created=on_instance_created,
                          parent=parent, **kwargs)
+        self.outlet_builder: Optional[Callable] = outlet_builder
+        if parent is None:
+            Client.single_page_routes[path] = self
+
+    def build_page_template(self):
+        """Setups the content area for the single page router"""
+        if self.outlet_builder is None:
+            raise ValueError('The outlet builder function is not defined. Use the @outlet decorator to define it or'
+                             ' pass it as an argument to the SinglePageRouter constructor.')
+        frame = self.outlet_builder()
+        if not isinstance(frame, Generator):
+            raise ValueError('The outlet builder must be a generator function and contain a yield statement'
+                             ' to separate the layout from the content area.')
+        next(frame)  # insert ui elements before yield
+        yield
+        try:
+            next(frame)  # if provided insert ui elements after yield
+        except StopIteration:
+            pass
 
     def __call__(self, func: Callable[..., Any]) -> Self:
         """Decorator for the layout builder / "outlet" function"""
 
         def outlet_view():
-            self.setup_content_area()
+            self.build_page()
 
         self.outlet_builder = func
         if self.parent_router is None:
@@ -71,9 +94,14 @@ class OutletView:
         self.title = title
         self.parent_outlet = parent_outlet
 
+    @property
+    def url(self) -> str:
+        """The absolute URL of the view"""
+        return (self.parent_outlet.base_path.rstrip("/") + "/" + self.path.lstrip("/")).rstrip('/')
+
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         """Decorator for the view function"""
-        abs_path = (self.parent_outlet.base_path + self.path).rstrip('/')
+        abs_path = self.url
         self.parent_outlet.add_view(
             abs_path, func, title=self.title)
-        return func
+        return self

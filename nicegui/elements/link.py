@@ -3,6 +3,7 @@ from typing import Any, Callable, Union
 from ..client import Client
 from ..element import Element
 from .mixins.text_element import TextElement
+from ..outlet import OutletView
 
 
 class Link(TextElement, component='link.js'):
@@ -28,8 +29,14 @@ class Link(TextElement, component='link.js'):
             self._props['href'] = target
         elif isinstance(target, Element):
             self._props['href'] = f'#c{target.id}'
+        elif isinstance(target, OutletView):
+            self._props['href'] = target.url
         elif callable(target):
-            self._props['href'] = Client.page_routes[target]
+            if target in Client.page_routes:
+                self._props['href'] = Client.page_routes[target]
+            else:
+                self._props['href'] = "#"
+                self.on('click', lambda: target())
         self._props['target'] = '_blank' if new_tab else '_self'
         self._classes.append('nicegui-link')
 

@@ -1,7 +1,7 @@
 from nicegui import ui
 
 
-@ui.outlet('/spa2')  # TODO Can not be opened yet, if / is already intercepting links due to valid pattern match
+@ui.outlet('/spa2')
 def spa2():
     ui.label('spa2')
     yield
@@ -21,8 +21,10 @@ def spa1():
 def spa1_index():
     ui.label('content of spa1')
     ui.link('more', '/more')
-    ui.link('nested', '/nested')
+    ui.link('nested', nested_index)
     ui.link('Other outlet', '/spa2')
+    ui.link("Click me", lambda: ui.notification("Hello!"))
+    ui.button("Click me", on_click=lambda: ui.navigate.to('/nested/sub_page'))
 
 
 @spa1.view('/more')
@@ -42,6 +44,11 @@ def nested():
 def nested_index():
     ui.label('content of nested')
     ui.link('nested other', '/nested/other')
+
+
+@nested.view('/sub_page')
+def nested_sub():
+    ui.label('content of nested sub page')
 
 
 @nested.view('/other')
