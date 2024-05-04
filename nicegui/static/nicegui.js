@@ -325,6 +325,9 @@ function createApp(elements, options) {
         disconnect: () => {
           document.getElementById("popup").style.opacity = 1;
         },
+        messages: (msg) => {
+          msg.forEach(([type, data]) => messageHandlers[type](data));
+        },
         update: async (msg) => {
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) {
