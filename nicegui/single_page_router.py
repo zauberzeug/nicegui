@@ -164,7 +164,7 @@ class SinglePageRouter:
         router_frame = context.client.single_page_router_frame
         if not target.valid or router_frame is None:
             return False
-        router_frame.navigate_to(org_target, server_side=server_side)
+        router_frame.navigate_to(org_target, _server_side=server_side)
         return True
 
     def build_page_template(self) -> Generator:
@@ -196,16 +196,18 @@ class SinglePageRouter:
             if isinstance(slot.parent, RouterFrame):  # our existence so it can navigate to our pages
                 parent_router_frame = slot.parent
                 break
-        content = RouterFrame(base_path=self.base_path,
+        content = RouterFrame(router=self,
                               included_paths=sorted(list(self.included_paths)),
                               excluded_paths=sorted(list(self.excluded_paths)),
                               use_browser_history=self.use_browser_history,
                               parent_router_frame=parent_router_frame,
                               target_url=initial_url)
-        # TODO Correction of initial base path when opening the page programmatically
+        content.on_resolve(self.resolve_target)
         if parent_router_frame is None:  # register root routers to the client
             context.client.single_page_router_frame = content
-        content.on_resolve(self.resolve_target)
+        initial_url = content.target_url
+        if initial_url is not None:
+            content.navigate_to(initial_url, _server_side=False, _sync=True)
 
     def _register_child_router(self, router: "SinglePageRouter") -> None:
         """Registers a child router to the parent router"""

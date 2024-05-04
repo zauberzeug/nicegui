@@ -1,5 +1,5 @@
 import fnmatch
-from typing import Union, List, Callable, re, Generator
+from typing import Union, List, Callable, Generator
 
 from fastapi.routing import APIRoute
 

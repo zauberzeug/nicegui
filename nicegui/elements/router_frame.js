@@ -5,10 +5,14 @@ export default {
 
         let router = this;
 
-        function validate_path(path) {
+        function normalize_path(path) {
             let href = path.split('?')[0].split('#')[0]
-            // check if the link ends with / and remove it
             if (href.endsWith('/')) href = href.slice(0, -1);
+            return href;
+        }
+
+        function validate_path(path) {
+            let href = normalize_path(path);
             // for all excluded path masks
             for (let mask of router.excluded_path_masks) {
                 // apply filename matching with * and ? wildcards
@@ -28,22 +32,15 @@ export default {
 
         function is_handled_by_child_frame(path) {
             // check child frames
+            let href = normalize_path(path);
             for (let frame of router.child_frame_paths) {
-                if (path.startsWith(frame + '/') || (path === frame)) {
-                    console.log(path + ' handled by child RouterFrame ' + frame + ', skipping...');
+                if (path.startsWith(frame + '/') || (href === frame)) {
+                    console.log(href + ' handled by child RouterFrame ' + frame + ', skipping...');
                     return true;
                 }
             }
             return false;
         }
-
-        const connectInterval = setInterval(async () => {
-            if (window.socket.id === undefined) return;
-            let target = router.target_url
-            this.$emit('open', target);
-            if (router._debug) console.log('Initial opening ' + target + ' by ' + router.base_path);
-            clearInterval(connectInterval);
-        }, 10);
 
         this.clickEventListener = function (e) {
             // Check if the clicked element is a link
