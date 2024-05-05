@@ -42,10 +42,10 @@ class Object3D:
         self._name()
         return self
 
-    def send(self) -> None:
-        """Send the object to the client."""
-        self.scene.run_method(
-            'init',
+    @property
+    def data(self) -> List[Any]:
+        """Data to be sent to the frontend."""
+        return [
             self.type, self.id, self.parent.id, self.args,
             self.name,
             self.color, self.opacity, self.side_,
@@ -54,7 +54,7 @@ class Object3D:
             self.sx, self.sy, self.sz,
             self.visible_,
             self.draggable_,
-        )
+        ]
 
     def __enter__(self) -> Self:
         self.scene.stack.append(self)
