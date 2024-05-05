@@ -44,14 +44,17 @@ class Object3D:
 
     def send(self) -> None:
         """Send the object to the client."""
-        self._create()
-        self._name()
-        self._material()
-        self._move()
-        self._rotate()
-        self._scale()
-        self._visible()
-        self._draggable()
+        self.scene.run_method(
+            'init',
+            self.type, self.id, self.parent.id, self.args,
+            self.name,
+            self.color, self.opacity, self.side_,
+            self.x, self.y, self.z,
+            self.R,
+            self.sx, self.sy, self.sz,
+            self.visible_,
+            self.draggable_,
+        )
 
     def __enter__(self) -> Self:
         self.scene.stack.append(self)
