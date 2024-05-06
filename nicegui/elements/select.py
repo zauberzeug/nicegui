@@ -58,6 +58,8 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                 value = []
             elif not isinstance(value, list):
                 value = [value]
+            else:
+                value = value[:]  # NOTE: avoid modifying the original list which could be the list of options (#3014)
         super().__init__(options=options, value=value, on_change=on_change, validation=validation)
         if label is not None:
             self._props['label'] = label
