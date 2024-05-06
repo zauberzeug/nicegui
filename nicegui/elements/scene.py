@@ -170,8 +170,7 @@ class Scene(Element,
         self.is_initialized = True
         with self.client.individual_target(e.args['socket_id']):
             self.move_camera(duration=0)
-            for obj in self.objects.values():
-                obj.send()
+            self.run_method('init_objects', [obj.data for obj in self.objects.values()])
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""

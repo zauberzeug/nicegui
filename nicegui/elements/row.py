@@ -11,7 +11,7 @@ class Row(Element):
         :param wrap: whether to wrap the content (default: `True`)
         """
         super().__init__('div')
-        self._classes.append('nicegui-row')
+        self._classes.append('nicegui-row row')  # NOTE: 'row' class for compatibility with Quasar's col-* classes
 
-        if wrap:
-            self._classes.append('wrap')
+        if not wrap:
+            self._style['flex-wrap'] = 'nowrap'
