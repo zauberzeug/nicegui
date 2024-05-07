@@ -71,7 +71,7 @@ __all__ = [
     'restructured_text',
     'row',
     'scene',
-    'scene_view'
+    'scene_view',
     'scroll_area',
     'select',
     'separator',
