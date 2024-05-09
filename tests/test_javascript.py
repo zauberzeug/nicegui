@@ -1,4 +1,4 @@
-from nicegui import Client, ui
+from nicegui import ui
 from nicegui.testing import SeleniumScreen
 
 
@@ -14,9 +14,9 @@ def test_run_javascript_on_button_press(screen: SeleniumScreen):
 
 def test_run_javascript_on_value_change(screen: SeleniumScreen):
     @ui.page('/')
-    async def page(client: Client):
+    async def page():
         ui.radio(['A', 'B'], on_change=lambda e: ui.run_javascript(f'document.title = "Page {e.value}"'))
-        await client.connected()
+        await ui.context.client.connected()
         ui.run_javascript('document.title = "Initial Title"')
 
     screen.open('/')
@@ -40,6 +40,7 @@ def test_run_javascript_before_client_connected(screen: SeleniumScreen):
     screen.open('/')
     screen.should_contain('before js')
     screen.should_contain('after js')
+    screen.wait(0.5)
     screen.should_contain('New Title')
 
 

@@ -122,11 +122,12 @@ def test_autocompletion(screen: SeleniumScreen):
     assert element.get_attribute('value') == 'fx'
     assert input_.value == 'fx'
 
-    input_.set_autocomplete(['one', 'two'])
+    input_.set_autocomplete(['once', 'twice'])
+    screen.wait(0.2)
     element.send_keys(Keys.BACKSPACE)
     element.send_keys(Keys.BACKSPACE)
     element.send_keys('o')
-    screen.should_contain('ne')
+    screen.should_contain('nce')
 
 
 def test_clearable_input(screen: SeleniumScreen):

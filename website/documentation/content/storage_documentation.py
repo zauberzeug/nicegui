@@ -48,10 +48,12 @@ doc.title('Storage')
     | Location                    | Server | Server   | Server | Server    | Browser   |
     | Across tabs                 | No     | No       | Yes    | Yes       | Yes       |
     | Across browsers             | No     | No       | No     | Yes       | No        |
+    | Across server restarts      | No     | No       | No     | Yes       | No        |
     | Across page reloads         | Yes    | No       | Yes    | Yes       | Yes       |
     | Needs page builder function | Yes    | Yes      | Yes    | No        | Yes       |
     | Needs client connection     | Yes    | No       | No     | No        | No        |
     | Write only before response  | No     | No       | No     | No        | Yes       |
+    | Needs serializable data     | No     | No       | Yes    | Yes       | Yes       |
 ''')
 def storage_demo():
     from nicegui import app
@@ -116,11 +118,11 @@ def ui_state():
     It is also more secure to use such a volatile storage for scenarios like logging into a bank account or accessing a password manager.
 ''')
 def tab_storage():
-    from nicegui import Client, app
+    from nicegui import app
 
     # @ui.page('/')
-    # async def index(client: Client):
-    #     await client.connected()
+    # async def index():
+    #     await ui.context.client.connected()
     with ui.column():  # HIDE
         app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
         ui.label(f'Tab reloaded {app.storage.tab["count"]} times')

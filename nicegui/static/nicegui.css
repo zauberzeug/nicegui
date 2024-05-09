@@ -211,6 +211,7 @@
   width: 100%;
 }
 .nicegui-aggrid,
+.nicegui-codemirror,
 .nicegui-echart,
 .nicegui-leaflet,
 .nicegui-log,
@@ -244,6 +245,11 @@ h6.q-timeline__title {
 }
 .nicegui-code .codehilite {
   padding: 0 0.5rem;
+}
+
+/* CodeMirror */
+.nicegui-codemirror .cm-editor.cm-focused {
+  outline: none;
 }
 
 /* connection popup */

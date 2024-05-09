@@ -1,7 +1,7 @@
 import re
 from typing import List, Optional
 
-from nicegui import context, ui
+from nicegui import ui
 
 from .examples import Example
 
@@ -73,7 +73,7 @@ def subheading(text: str, *, link: Optional[str] = None, major: bool = False, an
             ui.label(text).classes(classes)
         with ui.link(target=f'#{name}').classes('absolute').style('transform: translateX(-150%)'):
             ui.icon('link', size='sm').classes('opacity-10 hover:opacity-80')
-    drawers = [element for element in context.get_client().elements.values() if isinstance(element, ui.left_drawer)]
+    drawers = [element for element in ui.context.client.elements.values() if isinstance(element, ui.left_drawer)]
     if drawers:
         menu = drawers[0]
         with menu:

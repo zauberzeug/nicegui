@@ -4,7 +4,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from nicegui import Client, app, background_tasks, context, ui
+from nicegui import app, background_tasks, context, ui
 from nicegui import storage as storage_module
 from nicegui.testing import SeleniumScreen
 
@@ -49,8 +49,8 @@ def test_browser_storage_supports_asyncio(screen: SeleniumScreen):
 
 def test_browser_storage_modifications_after_page_load_are_forbidden(screen: SeleniumScreen):
     @ui.page('/')
-    async def page(client: Client):
-        await client.connected()
+    async def page():
+        await ui.context.client.connected()
         try:
             app.storage.browser['test'] = 'data'
         except TypeError as e:
@@ -63,9 +63,9 @@ def test_browser_storage_modifications_after_page_load_are_forbidden(screen: Sel
 
 def test_user_storage_modifications(screen: SeleniumScreen):
     @ui.page('/')
-    async def page(client: Client, delayed: bool = False):
+    async def page(delayed: bool = False):
         if delayed:
-            await client.connected()
+            await ui.context.client.connected()
         app.storage.user['count'] = app.storage.user.get('count', 0) + 1
         ui.label().bind_text_from(app.storage.user, 'count')
 
@@ -170,7 +170,7 @@ def test_rapid_storage(screen: SeleniumScreen):
 def test_tab_storage_is_local(screen: SeleniumScreen):
     @ui.page('/')
     async def page():
-        await context.get_client().connected()
+        await context.client.connected()
         app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
         ui.label().bind_text_from(app.storage.tab, 'count')
 
@@ -194,7 +194,7 @@ def test_tab_storage_is_auto_removed(screen: SeleniumScreen):
 
     @ui.page('/')
     async def page():
-        await context.get_client().connected()
+        await context.client.connected()
         app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
         ui.label().bind_text_from(app.storage.tab, 'count')
 
@@ -213,7 +213,7 @@ def test_clear_tab_storage(screen: SeleniumScreen):
 
     @ui.page('/')
     async def page():
-        await context.get_client().connected()
+        await context.client.connected()
         app.storage.tab['test'] = '123'
         ui.button('clear', on_click=app.storage.clear)
 

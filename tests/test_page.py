@@ -6,7 +6,7 @@ from uuid import uuid4
 from fastapi.responses import PlainTextResponse
 from selenium.webdriver.common.by import By
 
-from nicegui import Client, background_tasks, ui
+from nicegui import background_tasks, ui
 from nicegui.testing import SeleniumScreen
 
 
@@ -117,10 +117,10 @@ def test_wait_for_connected(screen: SeleniumScreen):
         label.text = 'delayed data has been loaded'
 
     @ui.page('/')
-    async def page(client: Client):
+    async def page():
         nonlocal label
         label = ui.label()
-        await client.connected()
+        await ui.context.client.connected()
         await load()
 
     screen.open('/')
@@ -131,10 +131,10 @@ def test_wait_for_disconnect(screen: SeleniumScreen):
     events = []
 
     @ui.page('/', reconnect_timeout=0)
-    async def page(client: Client):
-        await client.connected()
+    async def page():
+        await ui.context.client.connected()
         events.append('connected')
-        await client.disconnected()
+        await ui.context.client.disconnected()
         events.append('disconnected')
 
     screen.open('/')
@@ -148,8 +148,8 @@ def test_wait_for_disconnect_without_awaiting_connected(screen: SeleniumScreen):
     events = []
 
     @ui.page('/', reconnect_timeout=0)
-    async def page(client: Client):
-        await client.disconnected()
+    async def page():
+        await ui.context.client.disconnected()
         events.append('disconnected')
 
     screen.open('/')
@@ -161,9 +161,9 @@ def test_wait_for_disconnect_without_awaiting_connected(screen: SeleniumScreen):
 
 def test_adding_elements_after_connected(screen: SeleniumScreen):
     @ui.page('/')
-    async def page(client: Client):
+    async def page():
         ui.label('before')
-        await client.connected()
+        await ui.context.client.connected()
         ui.label('after')
 
     screen.open('/')
@@ -184,8 +184,8 @@ def test_exception(screen: SeleniumScreen):
 
 def test_exception_after_connected(screen: SeleniumScreen):
     @ui.page('/')
-    async def page(client: Client):
-        await client.connected()
+    async def page():
+        await ui.context.client.connected()
         ui.label('this is shown')
         raise RuntimeError('some exception')
 
@@ -205,9 +205,9 @@ def test_page_with_args(screen: SeleniumScreen):
 
 def test_adding_elements_during_onconnect(screen: SeleniumScreen):
     @ui.page('/')
-    def page(client: Client):
+    def page():
         ui.label('Label 1')
-        client.on_connect(lambda: ui.label('Label 2'))
+        ui.context.client.on_connect(lambda: ui.label('Label 2'))
 
     screen.open('/')
     screen.should_contain('Label 2')
@@ -215,11 +215,11 @@ def test_adding_elements_during_onconnect(screen: SeleniumScreen):
 
 def test_async_connect_handler(screen: SeleniumScreen):
     @ui.page('/')
-    def page(client: Client):
+    def page():
         async def run_js():
             result.text = await ui.run_javascript('41 + 1')
         result = ui.label()
-        client.on_connect(run_js)
+        ui.context.client.on_connect(run_js)
 
     screen.open('/')
     screen.should_contain('42')
@@ -291,8 +291,8 @@ def test_returning_custom_response_async(screen: SeleniumScreen):
 
 def test_warning_about_to_late_responses(screen: SeleniumScreen):
     @ui.page('/')
-    async def page(client: Client):
-        await client.connected()
+    async def page():
+        await ui.context.client.connected()
         ui.label('NiceGUI page')
         return PlainTextResponse('custom response')
 

@@ -33,6 +33,8 @@ doc.intro(run_documentation)
     for the `webview.create_window` and `webview.start` functions.
     Note that these keyword arguments will take precedence over the parameters defined in `ui.run`.
 
+    Additionally, you can change `webview.settings` via `app.native.settings`.
+
     In native mode the `app.native.main_window` object allows you to access the underlying window.
     It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/guide/api.html#window-object).
 ''', tab=lambda: ui.label('NiceGUI'))
@@ -41,6 +43,7 @@ def native_mode_demo():
 
     app.native.window_args['resizable'] = False
     app.native.start_args['debug'] = True
+    app.native.settings['ALLOW_DOWNLOADS'] = True
 
     ui.label('app running in native mode')
     # ui.button('enlarge', on_click=lambda: app.native.main_window.resize(1000, 700))
@@ -141,11 +144,11 @@ doc.text('', '''
 ''')
 
 doc.text('Package for Installation', '''
-    NiceGUI apps can also be bundled into an executable with [PyInstaller](https://www.pyinstaller.org/).
+    NiceGUI apps can also be bundled into an executable with `nicegui-pack` which is based on [PyInstaller](https://www.pyinstaller.org/).
     This allows you to distribute your app as a single file that can be executed on any computer.
 
     Just take care your `ui.run` command does not use the `reload` argument.
-    Running the `build.py` below will create an executable `myapp` in the `dist` folder:
+    Running the `nicegui-pack` command below will create an executable `myapp` in the `dist` folder:
 ''')
 
 
@@ -162,24 +165,10 @@ def pyinstaller():
                 ui.run(reload=False, port=native.find_open_port())
                 ```
             ''')
-        with python_window('build.py', classes='max-w-lg w-full'):
+        with bash_window(classes='max-w-lg w-full'):
             ui.markdown('''
-                ```python
-                import os
-                import subprocess
-                from pathlib import Path
-                import nicegui
-
-                cmd = [
-                    'python',
-                    '-m', 'PyInstaller',
-                    'main.py', # your main file with ui.run()
-                    '--name', 'myapp', # name of your app
-                    '--onefile',
-                    #'--windowed', # prevent console appearing, only use with ui.run(native=True, ...)
-                    '--add-data', f'{Path(nicegui.__file__).parent}{os.pathsep}nicegui'
-                ]
-                subprocess.call(cmd)
+                ```bash
+                nicegui-pack --onefile --name "myapp" main.py
                 ```
             ''')
 
@@ -192,27 +181,27 @@ doc.text('', '''
     The `native` parameter can be `True` or `False` depending on whether you want a native window or to launch a
     page in the user's browser - either will work in the PyInstaller generated app.
 
-    - Specifying `--windowed` to PyInstaller will prevent a terminal console from appearing.
+    - Specifying `--windowed` to `nicegui-pack` will prevent a terminal console from appearing.
     However you should only use this option if you have also specified `native=True` in your `ui.run` command.
     Without a terminal console the user won't be able to exit the app by pressing Ctrl-C.
     With the `native=True` option, the app will automatically close when the window is closed, as expected.
 
-    - Specifying `--windowed` to PyInstaller will create an `.app` file on Mac which may be more convenient to distribute.
+    - Specifying `--windowed` to `nicegui-pack` will create an `.app` file on Mac which may be more convenient to distribute.
     When you double-click the app to run it, it will not show any console output.
     You can also run the app from the command line with `./myapp.app/Contents/MacOS/myapp` to see the console output.
 
-    - Specifying `--onefile` to PyInstaller will create a single executable file.
+    - Specifying `--onefile` to `nicegui-pack` will create a single executable file.
     Whilst convenient for distribution, it will be slower to start up.
     This is not NiceGUI's fault but just the way Pyinstaller zips things into a single file, then unzips everything
     into a temporary directory before running.
-    You can mitigate this by removing `--onefile` from the PyInstaller command,
+    You can mitigate this by removing `--onefile` from the `nicegui-pack` command,
     and zip up the generated `dist` directory yourself, distribute it,
     and your end users can unzip once and be good to go,
     without the constant expansion of files due to the `--onefile` flag.
 
     - Summary of user experience for different options:
 
-        | PyInstaller              | `ui.run(...)`  | Explanation |
+        | `nicegui-pack`           | `ui.run(...)`  | Explanation |
         | :---                     | :---           | :---        |
         | `onefile`                | `native=False` | Single executable generated in `dist/`, runs in browser |
         | `onefile`                | `native=True`  | Single executable generated in `dist/`, runs in popup window |
@@ -222,7 +211,7 @@ doc.text('', '''
 
     - If you are using a Python virtual environment, ensure you `pip install pyinstaller` within your virtual environment
     so that the correct PyInstaller is used, or you may get broken apps due to the wrong version of PyInstaller being picked up.
-    That is why the build script invokes PyInstaller using `python -m PyInstaller` rather than just `pyinstaller`.
+    That is why the `nicegui-pack` invokes PyInstaller using `python -m PyInstaller` rather than just `pyinstaller`.
 ''')
 
 
@@ -240,7 +229,7 @@ def install_pyinstaller():
 
 
 doc.text('', '''
-    **Note:**
+    Note:
     If you're getting an error "TypeError: a bytes-like object is required, not 'str'", try adding the following lines to the top of your `main.py` file:
     ```py
     import sys

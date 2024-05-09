@@ -14,12 +14,15 @@ __all__ = [
     'chart',
     'chat_message',
     'checkbox',
+    'chip',
     'clipboard',
     'code',
+    'codemirror',
     'color_input',
     'color_picker',
     'colors',
     'column',
+    'context',
     'context_menu',
     'dark_mode',
     'date',
@@ -68,6 +71,7 @@ __all__ = [
     'restructured_text',
     'row',
     'scene',
+    'scene_view',
     'scroll_area',
     'select',
     'separator',
@@ -121,6 +125,7 @@ __all__ = [
     'run_with',
 ]
 
+from .context import context
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
 from .elements.audio import Audio as audio
@@ -137,7 +142,9 @@ from .elements.carousel import CarouselSlide as carousel_slide
 from .elements.chart import chart
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
+from .elements.chip import Chip as chip
 from .elements.code import Code as code
+from .elements.codemirror import CodeMirror as codemirror
 from .elements.color_input import ColorInput as color_input
 from .elements.color_picker import ColorPicker as color_picker
 from .elements.colors import Colors as colors
@@ -188,6 +195,7 @@ from .elements.range import Range as range  # pylint: disable=redefined-builtin
 from .elements.restructured_text import ReStructuredText as restructured_text
 from .elements.row import Row as row
 from .elements.scene import Scene as scene
+from .elements.scene_view import SceneView as scene_view
 from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
 from .elements.separator import Separator as separator

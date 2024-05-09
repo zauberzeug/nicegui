@@ -1,5 +1,4 @@
-from pathlib import Path
-from typing import Any, Callable, Optional, Union, cast
+from typing import Any, Callable, Optional, cast
 
 from typing_extensions import Self
 
@@ -15,7 +14,7 @@ class SourceElement(Element):
 
     SOURCE_IS_MEDIA_FILE: bool = False
 
-    def __init__(self, *, source: Union[str, Path], **kwargs: Any) -> None:
+    def __init__(self, *, source: Any, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.auto_route: Optional[str] = None
         self.source = source
@@ -75,14 +74,14 @@ class SourceElement(Element):
         bind(self, 'source', target_object, target_name, forward=forward, backward=backward)
         return self
 
-    def set_source(self, source: Union[str, Path]) -> None:
+    def set_source(self, source: Any) -> None:
         """Set the source of this element.
 
         :param source: The new source.
         """
         self.source = source
 
-    def _handle_source_change(self, source: Union[str, Path]) -> None:
+    def _handle_source_change(self, source: Any) -> None:
         """Called when the source of this element changes.
 
         :param source: The new source.
@@ -90,7 +89,7 @@ class SourceElement(Element):
         self._set_props(source)
         self.update()
 
-    def _set_props(self, source: Union[str, Path]) -> None:
+    def _set_props(self, source: Any) -> None:
         if is_file(source):
             if self.auto_route:
                 core.app.remove_route(self.auto_route)

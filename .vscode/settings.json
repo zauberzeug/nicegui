@@ -10,6 +10,7 @@
     "--disable=C0301", // Line too long (exceeds character limit)
     "--disable=C0302", // Too many lines in module
     "--disable=R0801", // Similar lines in files
+    "--disable=R0901", // Too many ancestors
     "--disable=R0902", // Too many instance attributes
     "--disable=R0903", // Too few public methods
     "--disable=R0904", // Too many public methods
