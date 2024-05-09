@@ -1,9 +1,8 @@
-import asyncio
 import importlib
 import os
 import shutil
 from pathlib import Path
-from typing import Callable, Dict, Generator, Union, get_type_hints
+from typing import Callable, Dict, Generator
 
 import httpx
 import icecream
@@ -13,7 +12,7 @@ from selenium.webdriver.chrome.service import Service
 from starlette.routing import Route
 
 import nicegui.storage
-from nicegui import Client, app, binding, core, ui
+from nicegui import Client, app, binding, core
 from nicegui.page import page
 
 from .selenium_screen import SeleniumScreen
@@ -28,7 +27,9 @@ icecream.install()
 
 def pytest_configure(config):
     config.addinivalue_line(
-        "markers", "module_under_test: specify the module under test which then get's automatically reloaded.")
+        'markers',
+        'module_under_test: specify the module under test which then gets automatically reloaded.'
+    )
 
 
 @pytest.fixture
