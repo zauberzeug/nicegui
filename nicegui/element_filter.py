@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Generic, Iterator, List, Optional, Type, TypeVar, Union
 
-from icecream import ic
 from typing_extensions import Self
 
 from nicegui import context
@@ -46,7 +45,7 @@ class ElementFilter(Generic[T], Iterator[T]):
         self._exclude_kinds: list[Element] = []
         self._exclude_markers: list[str] = []
         self._exclude_content: list[str] = []
-        self._scope = context.get_slot().parent if local_scope else context.get_client().layout
+        self._scope = context.slot.parent if local_scope else context.client.layout
 
     def __iter__(self) -> Iterator[T]:
         return self.iterate(self._scope)
