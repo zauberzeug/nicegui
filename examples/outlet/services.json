@@ -1,0 +1,173 @@
+{
+  "compute": {
+    "title": "Compute",
+    "emoji": "🖥️",
+    "description": "Powerful virtual machines",
+    "sub_services": {
+      "vm_instances": {
+        "title": "VM Instances",
+        "description": "Scalable virtual machines available in seconds."
+      },
+      "kubernetes_services": {
+        "title": "Kubernetes Services",
+        "description": "Managed Kubernetes clusters to orchestrate containers."
+      },
+      "serverless_functions": {
+        "title": "Serverless Functions",
+        "description": "Run code without provisioning servers."
+      }
+    }
+  },
+  "storage": {
+    "title": "Storage",
+    "emoji": "🗄️",
+    "description": "Secure and scalable object storage",
+    "sub_services": {
+      "blob_storage": {
+        "title": "Blob Storage",
+        "description": "Massively scalable object storage for unstructured data."
+      },
+      "file_storage": {
+        "title": "File Storage",
+        "description": "Managed file shares for cloud or on-premises deployments."
+      },
+      "queue_storage": {
+        "title": "Queue Storage",
+        "description": "A messaging store for reliable messaging between application components."
+      }
+    }
+  },
+  "networking": {
+    "title": "Networking",
+    "emoji": "🔗",
+    "description": "Private networks and connectivity",
+    "sub_services": {
+      "vnetwork": {
+        "title": "Virtual Network",
+        "description": "Provision private networks, optionally connect to on-premises datacenters."
+      },
+      "load_balancer": {
+        "title": "Load Balancer",
+        "description": "Deliver high availability and network performance to your applications."
+      },
+      "vpn_gateway": {
+        "title": "VPN Gateway",
+        "description": "Establish secure, cross-premises connectivity."
+      }
+    }
+  },
+  "database": {
+    "title": "Database",
+    "emoji": "💾",
+    "description": "Managed SQL and NoSQL databases",
+    "sub_services": {
+      "sql_database": {
+        "title": "SQL Database",
+        "description": "Managed, intelligent SQL in the cloud."
+      },
+      "cosmos_db": {
+        "title": "Cosmos DB",
+        "description": "Globally distributed, multi-model database service."
+      },
+      "database_migration": {
+        "title": "Database Migration",
+        "description": "Simplify on-premises database migration to the cloud."
+      }
+    }
+  },
+  "ai": {
+    "title": "AI & Machine Learning",
+    "emoji": "🤖",
+    "description": "AI services to build machine learning models",
+    "sub_services": {
+      "machine_learning": {
+        "title": "Machine Learning",
+        "description": "Build, train, and deploy models from the cloud to the edge."
+      },
+      "cognitive_services": {
+        "title": "Cognitive Services",
+        "description": "Infuse your apps, websites and bots with intelligent algorithms."
+      },
+      "bot_services": {
+        "title": "Bot Services",
+        "description": "Develop intelligent, enterprise-grade bots."
+      }
+    }
+  },
+  "analytics": {
+    "title": "Analytics",
+    "emoji": "📊",
+    "description": "Big data processing and analytics",
+    "sub_services": {
+      "hdinsight": {
+        "title": "HDInsight",
+        "description": "Provision cloud Hadoop, Spark, R Server, HBase, and Storm clusters."
+      },
+      "data_lake_analytics": {
+        "title": "Data Lake Analytics",
+        "description": "On-demand analytics job service using a simple developer experience."
+      },
+      "stream_analytics": {
+        "title": "Stream Analytics",
+        "description": "Real-time data stream processing from millions of IoT devices."
+      }
+    }
+  },
+  "devops": {
+    "title": "DevOps",
+    "emoji": "🛠️",
+    "description": "Tools and services for CI/CD",
+    "sub_services": {
+      "devops_pipelines": {
+        "title": "DevOps Pipelines",
+        "description": "CI/CD that works with any language, platform, and cloud."
+      },
+      "artifacts": {
+        "title": "Artifacts",
+        "description": "Create, host, and share packages with your team."
+      },
+      "source_repositories": {
+        "title": "Source Repositories",
+        "description": "Host private Git repositories."
+      }
+    }
+  },
+  "security": {
+    "title": "Security & Identity",
+    "emoji": "🔒",
+    "description": "Identity management and threat detection",
+    "sub_services": {
+      "identity_services": {
+        "title": "Identity Services",
+        "description": "Protect and manage identities as a primary security perimeter."
+      },
+      "threat_protection": {
+        "title": "Threat Protection",
+        "description": "Advanced threat detection and protection across cloud services."
+      },
+      "information_protection": {
+        "title": "Information Protection",
+        "description": "Secure sensitive data everywhere it resides."
+      }
+    }
+  },
+  "iot": {
+    "title": "Internet of Things",
+    "emoji": "🌐",
+    "description": "Internet of Things services",
+    "sub_services": {
+      "iot_hub": {
+        "title": "IoT Hub",
+        "description": "Connect, monitor and manage billions of IoT assets."
+      },
+      "iot_edge": {
+        "title": "IoT Edge",
+        "description": "Deploy cloud intelligence directly on IoT devices to operate in offline mode."
+      },
+      "digital_twins": {
+        "title": "Digital Twins",
+        "description": "Create digital representations of connected environments."
+      }
+    }
+  }
+}

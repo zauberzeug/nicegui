@@ -1,7 +1,9 @@
+import inspect
 from typing import Callable, Any, Self, Optional, Generator
 
 from nicegui.client import Client
 from nicegui.single_page_router import SinglePageRouter
+from nicegui.elements.router_frame import RouterFrame
 
 
 class Outlet(SinglePageRouter):
@@ -33,27 +35,36 @@ class Outlet(SinglePageRouter):
         if parent is None:
             Client.single_page_routes[path] = self
 
-    def build_page_template(self):
+    def build_page_template(self, **kwargs):
         """Setups the content area for the single page router"""
         if self.outlet_builder is None:
             raise ValueError('The outlet builder function is not defined. Use the @outlet decorator to define it or'
                              ' pass it as an argument to the SinglePageRouter constructor.')
-        frame = self.outlet_builder()
+        frame = RouterFrame.run_safe(self.outlet_builder, **kwargs)
         if not isinstance(frame, Generator):
             raise ValueError('The outlet builder must be a generator function and contain a yield statement'
                              ' to separate the layout from the content area.')
-        next(frame)  # insert ui elements before yield
-        yield
+        properties = {}
+
+        def add_properties(result):
+            if isinstance(result, dict):
+                properties.update(result)
+
+        router_frame = RouterFrame.get_current_frame()
+        add_properties(next(frame))  # insert ui elements before yield
+        if router_frame is not None:
+            router_frame.update_user_data(properties)
+        yield properties
         try:
-            next(frame)  # if provided insert ui elements after yield
+            add_properties(next(frame))  # if provided insert ui elements after yield
         except StopIteration:
             pass
 
     def __call__(self, func: Callable[..., Any]) -> Self:
         """Decorator for the layout builder / "outlet" function"""
 
-        def outlet_view():
-            self.build_page()
+        def outlet_view(**kwargs):
+            self.build_page(**kwargs)
 
         self.outlet_builder = func
         if self.parent_router is None:

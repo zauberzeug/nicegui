@@ -44,23 +44,26 @@ export default {
 
         this.clickEventListener = function (e) {
             // Check if the clicked element is a link
-            if (e.target.tagName === 'A') {
-                let href = e.target.getAttribute('href'); // Get the link's href value
-                if (href === "#") {
-                    e.preventDefault();
-                    return;
-                }
-                // remove query and anchor
-                if (validate_path(href)) {
-                    e.preventDefault(); // Prevent the default link behavior
-                    if (!is_handled_by_child_frame(href)) {
-                        if (router.use_browser_history) {
-                            window.history.pushState({page: href}, '', href);
-                            if (router._debug) console.log('RouterFrame pushing state ' + href + ' by ' + router.base_path);
-                        }
-                        router.$emit('open', href);
-                        if (router._debug) console.log('Opening ' + href + ' by ' + router.base_path);
+             // Use closest to find the nearest parent <a> tag
+            let link = e.target.closest('a');
+
+            // If there's no <a> tag, or the <a> tag has no href attribute, do nothing
+            if (!link || !link.hasAttribute('href')) return;
+            let href = link.getAttribute('href');
+            if (href === "#") {
+                e.preventDefault();
+                return;
+            }
+            // remove query and anchor
+            if (validate_path(href)) {
+                e.preventDefault(); // Prevent the default link behavior
+                if (!is_handled_by_child_frame(href)) {
+                    if (router.use_browser_history) {
+                        window.history.pushState({page: href}, '', href);
+                        if (router._debug) console.log('RouterFrame pushing state ' + href + ' by ' + router.base_path);
                     }
+                    router.$emit('open', href);
+                    if (router._debug) console.log('Opening ' + href + ' by ' + router.base_path);
                 }
             }
         };

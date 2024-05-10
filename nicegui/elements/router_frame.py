@@ -1,11 +1,11 @@
 import inspect
-import typing
-from typing import Callable, Any, Optional, Self
+from typing import Callable, Any, Optional, Self, Dict, TYPE_CHECKING
 
 from nicegui import ui, helpers, background_tasks, core
+from nicegui.context import context
 from nicegui.single_page_target import SinglePageTarget
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from nicegui.single_page_router import SinglePageRouter
 
 
@@ -55,6 +55,7 @@ class RouterFrame(ui.element, component='router_frame.js'):
         self._props['base_path'] = self.router.base_path
         self._props['browser_history'] = use_browser_history
         self._props['child_frames'] = []
+        self.user_data = {}
         self.child_frames: dict[str, "RouterFrame"] = {}
         self.use_browser_history = use_browser_history
         self.change_title = change_title
@@ -119,6 +120,8 @@ class RouterFrame(ui.element, component='router_frame.js'):
         if "url_path" not in builder_kwargs:
             builder_kwargs["url_path"] = target_url.original_path
         target_fragment = target_url.fragment
+        recursive_user_data = RouterFrame.get_user_data() | self.user_data
+        builder_kwargs.update(recursive_user_data)
         self.update_content(builder, builder_kwargs, title, target_fragment, _sync=_sync)
 
     def update_content(self, builder, builder_kwargs, title, target_fragment, _sync=False):
@@ -133,9 +136,7 @@ class RouterFrame(ui.element, component='router_frame.js'):
 
         def exec_builder():
             """Execute the builder function with the given keyword arguments"""
-            args = inspect.signature(builder).parameters.keys()
-            kwargs = {k: v for k, v in builder_kwargs.items() if k in args}
-            return builder(**kwargs)
+            self.run_safe(builder, **builder_kwargs)
 
         async def build() -> None:
             with self:
@@ -160,6 +161,31 @@ class RouterFrame(ui.element, component='router_frame.js'):
         self._props['child_frame_paths'] = []
         super().clear()
 
+    def update_user_data(self, new_data: dict) -> None:
+        """Update the user data of the router frame
+
+        :param new_data: The new user data to set"""
+        self.user_data.update(new_data)
+
+    @staticmethod
+    def get_user_data() -> Dict:
+        """Returns a combined dictionary of all user data of the parent router frames"""
+        result_dict = {}
+        for slot in context.slot_stack:
+            if isinstance(slot.parent, RouterFrame):
+                result_dict.update(slot.parent.user_data)
+        return result_dict
+
+    @staticmethod
+    def get_current_frame() -> Optional["RouterFrame"]:
+        """Get the current router frame from the context stack
+
+        :return: The current router frame or None if no router frame is in the context stack"""
+        for slot in reversed(context.slot_stack):  # we need to inform the parent router frame about
+            if isinstance(slot.parent, RouterFrame):  # our existence so it can navigate to our pages
+                return slot.parent
+        return None
+
     def _register_sub_frame(self, path: str, frame: "RouterFrame") -> None:
         """Registers a sub frame to the router frame
 
@@ -174,3 +200,16 @@ class RouterFrame(ui.element, component='router_frame.js'):
         """
         ui.label(f'Oops! Page Not Found 🚧').classes('text-3xl')
         ui.label(f'Sorry, the page you are looking for could not be found. 😔')
+
+    @staticmethod
+    def run_safe(builder, **kwargs) -> Any:
+        """Run a builder function but only pass the keyword arguments which are expected by the builder function
+
+        :param builder: The builder function
+        :param kwargs: The keyword arguments to pass to the builder function
+        """
+        args = inspect.signature(builder).parameters.keys()
+        has_kwargs = any([param.kind == inspect.Parameter.VAR_KEYWORD for param in
+                          inspect.signature(builder).parameters.values()])
+        filtered = {k: v for k, v in kwargs.items() if k in args} if not has_kwargs else kwargs
+        return builder(**filtered)

@@ -79,6 +79,8 @@ class SinglePageTarget:
         for func_param_name, func_param_info in sig.parameters.items():
             for params in [self.path_args, self.query_args]:
                 if func_param_name in params:
+                    if func_param_info.annotation is inspect.Parameter.empty:
+                        continue
                     try:
                         params[func_param_name] = func_param_info.annotation(
                             params[func_param_name])  # Convert parameter to the expected type

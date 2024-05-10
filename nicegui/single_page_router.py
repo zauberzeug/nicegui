@@ -1,4 +1,5 @@
 import re
+from fnmatch import fnmatch
 from typing import Callable, Dict, Union, Optional, Self, List, Set, Generator
 
 from nicegui import ui
@@ -141,10 +142,15 @@ class SinglePageRouter:
             resolved = None
             path = target.split("#")[0].split("?")[0]
             for cur_router in self.child_routers:
-                if path.startswith((cur_router.base_path.rstrip("/") + "/")) or path == cur_router.base_path:
+                # replace {} placeholders with * to match the fnmatch pattern
+                mask = SinglePageRouterEntry.create_path_mask(cur_router.base_path.rstrip("/") + "/*")
+                if fnmatch(path, mask) or path == cur_router.base_path:
                     resolved = cur_router.resolve_target(target)
                     if resolved.valid:
                         target = cur_router.base_path
+                        if "*" in mask:
+                            # isolate the real path elements and update target accordingly
+                            target = "/".join(path.split("/")[:len(cur_router.base_path.split("/"))])
                         break
             parser = SinglePageTarget(target, router=self)
             result = parser.parse_single_page_route(self.routes, target)
@@ -177,25 +183,26 @@ class SinglePageRouter:
         else:
             raise ValueError('No page template generator function provided.')
 
-    def build_page(self, initial_url: Optional[str] = None):
-        template = self.build_page_template()
+    def build_page(self, initial_url: Optional[str] = None, **kwargs):
+        template = RouterFrame.run_safe(self.build_page_template, **kwargs)
         if not isinstance(template, Generator):
             raise ValueError('The page template method must yield a value to separate the layout from the content '
                              'area.')
-        next(template)
+        properties = {}
+        new_properties = next(template)
+        if isinstance(new_properties, dict):
+            properties.update(new_properties)
         self.insert_content_area(initial_url)
         try:
-            next(template)
+            new_properties = next(template)
+            if isinstance(new_properties, dict):
+                properties.update(new_properties)
         except StopIteration:
             pass
 
     def insert_content_area(self, initial_url: Optional[str] = None):
         """Setups the content area"""
-        parent_router_frame = None
-        for slot in reversed(context.slot_stack):  # we need to inform the parent router frame about
-            if isinstance(slot.parent, RouterFrame):  # our existence so it can navigate to our pages
-                parent_router_frame = slot.parent
-                break
+        parent_router_frame = RouterFrame.get_current_frame()
         content = RouterFrame(router=self,
                               included_paths=sorted(list(self.included_paths)),
                               excluded_paths=sorted(list(self.excluded_paths)),

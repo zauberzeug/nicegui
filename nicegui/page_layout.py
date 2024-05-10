@@ -3,6 +3,7 @@ from typing import Literal, Optional
 from .context import context
 from .element import Element
 from .elements.mixins.value_element import ValueElement
+from .elements.router_frame import RouterFrame
 from .functions.html import add_body_html
 from .logging import log
 
@@ -272,7 +273,7 @@ class PageSticky(Element):
 
 def _check_current_slot(element: Element) -> None:
     parent = context.slot.parent
-    if parent != parent.client.content:
+    if parent != parent.client.content and not isinstance(parent, RouterFrame):
         log.warning(f'Found top level layout element "{element.__class__.__name__}" inside element "{parent.__class__.__name__}". '
                     'Top level layout elements should not be nested but must be direct children of the page content. '
                     'This will be raising an exception in NiceGUI 1.5')  # DEPRECATED

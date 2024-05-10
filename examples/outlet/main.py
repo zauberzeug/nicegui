@@ -1,95 +1,99 @@
+import json
+import os.path
+
 from nicegui import ui
 
+# load service definition file of imaginary cloud services
+services = json.load(open(os.path.dirname(__file__) + '/services.json'))
 
-@ui.outlet('/spa2')
-def spa2():
-    ui.label('spa2')
+
+@ui.outlet('/other_app')
+def other_app():
+    ui.label('Other app header').classes('text-h2')
+    ui.html('<hr>')
     yield
+    ui.html('<hr>')
+    ui.label('Other app footer')
+
+
+@other_app.view('/')
+def other_app_index():
+    ui.label('Welcome to the index page of the other application')
 
 
 @ui.outlet('/')
-def spa1():
-    ui.label("spa1 header")
-    yield
-    ui.label("spa1 footer")
+def main_router():
+    with ui.header():
+        with ui.link("", '/') as lnk:
+            ui.html('<span style="color:white">Nice</span>'
+                    '<span style="color:black">CLOUD</span>').classes('text-h3')
+            lnk.style('text-decoration: none; color: inherit;')
+    with ui.footer():
+        ui.label("Copyright 2024 by My Company")
+
+    with ui.element().classes('p-8'):
+        yield
 
 
-# SPA outlet routers can be defined side by side
+@main_router.view('/')
+def main_app_index():
+    ui.label("Welcome to NiceCLOUD!").classes('text-3xl')
+    ui.html("<br>")
+    with ui.grid(columns=3) as grid:
+        grid.classes('gap-8')
+        for key, info in services.items():
+            link = f'/services/{key}'
+            with ui.element():
+                with ui.row():
+                    ui.label(info['emoji']).classes('text-2xl')
+                    with ui.link("", link) as lnk:
+                        ui.label(info['title']).classes('text-2xl')
+                        lnk.style('text-decoration: none; color: inherit;')
+                ui.label(info['description'])
 
-# views are defined with relative path to their outlet
-@spa1.view('/')
-def spa1_index():
-    ui.label('content of spa1')
-    ui.link('more', '/more')
-    ui.link('nested', nested_index)
-    ui.link('Other outlet', '/spa2')
-    ui.link("Click me", lambda: ui.notification("Hello!"))
-    ui.button("Click me", on_click=lambda: ui.navigate.to('/nested/sub_page'))
-
-
-@spa1.view('/more')
-def spa1_more():
-    ui.label('more content of spa1')
-    ui.link('main', '/')
-    ui.link('nested', '/nested')
-
-
-@spa1.outlet('/nested')
-def nested():
-    ui.label('nested outlet')
-    yield
+    ui.html("<br><br>")
+    # add a link to the other app
+    ui.link("Other App", '/other_app')
 
 
-@nested.view('/')
-def nested_index():
-    ui.label('content of nested')
-    ui.link('nested other', '/nested/other')
+@main_router.outlet('/services/{service_name}')
+def services_router(service_name: str):
+    service_config = services[service_name]
+    with ui.left_drawer(bordered=True) as menu_drawer:
+        menu_drawer.classes('bg-primary')
+        title = service_config['title']
+        ui.label(title).classes('text-2xl text-white')
+        # add menu items
+        menu_items = service_config['sub_services']
+        for key, info in menu_items.items():
+            title = info['title']
+            with ui.button(title) as btn:
+                btn.classes('text-white bg-secondary').on_click(lambda sn=service_name, k=key:
+                                                                ui.navigate.to(f'/services/{sn}/{k}'))
+
+    yield {'service': services[service_name]}
 
 
-@nested.view('/sub_page')
-def nested_sub():
-    ui.label('content of nested sub page')
+@services_router.outlet('/{sub_service_name}')
+def sub_service(service, sub_service_name: str):
+    service_title = service['title']
+    sub_service = service["sub_services"][sub_service_name]
+    ui.label(f'{service_title} > {sub_service["title"]}').classes('text-h4')
+    ui.html("<br>")
+    yield {'sub_service': sub_service}
 
 
-@nested.view('/other')
-def nested_other():
-    ui.label('other nested')
-    ui.link('nested index', '/nested')
+@sub_service.view('/')
+def sub_service_index(sub_service):
+    ui.label(sub_service["description"])
 
 
-'''
-# the view is a function upon the decorated function of the outlet (same technique as "refreshable.refresh")
-@spa2.view('/')
-def spa2_index():
-    ui.label('content of spa2')
-    ui.link('more', '/more')
+@services_router.view('/')
+def show_index(service_name, **kwargs):
+    service_info = services[service_name]
+    ui.label(service_info["title"]).classes("text-h2")
+    ui.html("<br>")
+    ui.label(service_info["description"])
 
-
-@spa2.view('/more')
-def spa2_more():
-    ui.label('more content of spa2')
-    ui.link('main', '/')
-
-
-# spa outlets can also be nested (by calling outlet function upon the decorated function of the outlet)
-@spa2.outlet('/nested')
-def nested():
-    ui.label('nested outled')
-    yield
-
-
-@nested.view('/')
-def nested_index():
-    ui.label('content of nested')
-    ui.link('main', '/')
-
-
-# normal pages are still available
-@ui.page('/')
-def index():
-    ui.link('spa1', '/spa1')
-    ui.link('spa2', '/spa2')
-    ui.link('nested', '/spa2/nested')
-'''
 
 ui.run(show=False)
