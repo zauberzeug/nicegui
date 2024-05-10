@@ -93,12 +93,14 @@ class RouterFrame(ui.element, component='router_frame.js'):
             return self._on_resolve(target)
         raise NotImplementedError
 
-    def navigate_to(self, target: [SinglePageTarget, str], _server_side=True, _sync=False) -> None:
+    def navigate_to(self, target: [SinglePageTarget, str], _server_side=True, sync=False) -> None:
         """Open a new page in the browser by exchanging the content of the router frame
 
         :param target: The target page or url.
         :param _server_side: Optional flag which defines if the call is originated on the server side and thus
-            the browser history should be updated. Default is False."""
+            the browser history should be updated. Default is False.
+        :param sync: Optional flag to define if the content should be updated synchronously. Default is False.
+        """
         # check if sub router is active and might handle the target
         for path_mask, frame in self.child_frames.items():
             if path_mask == target or target.startswith(path_mask + '/'):
@@ -110,7 +112,7 @@ class RouterFrame(ui.element, component='router_frame.js'):
             if target_url.fragment is not None:
                 ui.run_javascript(f'window.location.href = "#{target_url.fragment}";')  # go to fragment
                 return
-            title = "Page not found"
+            title = 'Page not found'
             builder = self._page_not_found
         else:
             builder = entry.builder
@@ -119,19 +121,20 @@ class RouterFrame(ui.element, component='router_frame.js'):
             ui.run_javascript(
                 f'window.history.pushState({{page: "{target_url.original_path}"}}, "", "{target_url.original_path}");')
         self._props['target_url'] = target_url.original_path
-        builder_kwargs = {**target_url.path_args, **target_url.query_args, "url_path": target_url.original_path}
+        builder_kwargs = {**target_url.path_args, **target_url.query_args, 'url_path': target_url.original_path}
         target_fragment = target_url.fragment
         recursive_user_data = RouterFrame.get_user_data() | self.user_data
         builder_kwargs.update(recursive_user_data)
-        self.update_content(builder, builder_kwargs, title, target_fragment, _sync=_sync)
+        self.update_content(builder, builder_kwargs, title, target_fragment, sync=sync)
 
-    def update_content(self, builder, builder_kwargs, title, target_fragment, _sync=False):
+    def update_content(self, builder, builder_kwargs, title, target_fragment, sync=False):
         """Update the content of the router frame
 
         :param builder: The builder function which builds the content of the page
         :param builder_kwargs: The keyword arguments to pass to the builder function
         :param title: The title of the page
-        :param target_fragment: The fragment to navigate to after the content has been loaded"""
+        :param target_fragment: The fragment to navigate to after the content has been loaded
+        :param sync: Optional flag to define if the content should be updated synchronously. Default is False."""
         if self.change_title:
             ui.page_title(title if title is not None else core.app.config.title)
 
@@ -141,14 +144,12 @@ class RouterFrame(ui.element, component='router_frame.js'):
 
         async def build() -> None:
             with self:
-                result = exec_builder()
-                if helpers.is_coroutine_function(builder):
-                    await result
+                exec_builder()
                 if target_fragment is not None:
                     await ui.run_javascript(f'window.location.href = "#{target_fragment}";')
 
         self.clear()
-        if _sync:
+        if sync:
             with self:
                 exec_builder()
                 if target_fragment is not None:

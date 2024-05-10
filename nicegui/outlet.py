@@ -1,4 +1,3 @@
-import inspect
 from typing import Callable, Any, Self, Optional, Generator
 
 from nicegui.client import Client
@@ -7,14 +6,23 @@ from nicegui.elements.router_frame import RouterFrame
 
 
 class Outlet(SinglePageRouter):
-    """An outlet function defines the page layout of a single page application into which dynamic content can be
-    inserted. It is a high-level abstraction which manages the routing and content area of the SPA."""
+    """An outlet allows the creation of single page applications which do not reload the page when navigating between
+    different views. The outlet is a container for multiple views and can contain nested outlets.
+
+    To define a new outlet, use the @ui.outlet decorator on a function which defines the layout of the outlet.
+    The layout function must be a generator function and contain a yield statement to separate the layout from the
+    content area. The yield can also be used to pass properties to the content are by return a dictionary with the
+    properties. Each property can be received as function argument in all nested views and outlets.
+
+    Once the outlet is defined, multiple views can be added to the outlet using the @outlet.view decorator on
+    a function.
+    """
 
     def __init__(self,
                  path: str,
                  outlet_builder: Optional[Callable] = None,
                  browser_history: bool = True,
-                 parent: Optional["SinglePageRouter"] = None,
+                 parent: Optional['SinglePageRouter'] = None,
                  on_instance_created: Optional[Callable] = None,
                  **kwargs) -> None:
         """
@@ -78,7 +86,11 @@ class Outlet(SinglePageRouter):
         return self
 
     def view(self, path: str, title: Optional[str] = None) -> 'OutletView':
-        """Decorator for the view function
+        """Decorator for the view function.
+
+        With the view function you define the actual content of the page. The view function is called when the user
+        navigates to the specified path relative to the outlet's base path.
+
         :param path: The path of the view, relative to the base path of the outlet
         :param title: Optional title of the view. If a title is set, it will be displayed in the browser tab
             when the view is active, otherwise the default title of the application is displayed.
@@ -123,8 +135,11 @@ class OutletView:
 
     @property
     def url(self) -> str:
-        """The absolute URL of the view"""
-        return (self.parent_outlet.base_path.rstrip("/") + "/" + self.path.lstrip("/")).rstrip('/')
+        """The absolute URL of the view
+
+        :return: The absolute URL of the view
+        """
+        return (self.parent_outlet.base_path.rstrip('/') + '/' + self.path.lstrip('/')).rstrip('/')
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         """Decorator for the view function"""

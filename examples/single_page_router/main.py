@@ -1,9 +1,10 @@
-# Minimal example of a single page router with two pages
+# Basic example of the SinglePageApp class which allows the fast conversion of already existing multi-page NiceGUI
+# applications into a single page applications. Note that if you want more control over the routing, nested outlets or
+# custom page setups,you should use the ui.outlet class instead which allows more flexibility.
 
 from nicegui import ui
 from nicegui.page import page
 from nicegui.single_page_app import SinglePageApp
-from nicegui.single_page_router import SinglePageRouter
 
 
 @page('/', title='Welcome!')
@@ -18,5 +19,11 @@ def about():
     ui.link('Index', '/')
 
 
-router = SinglePageApp('/').reroute_pages()
+def page_template():
+    with ui.header():
+        ui.label('My Company').classes('text-2xl')
+    yield  # your content goes here
+
+
+router = SinglePageApp('/', page_template=page_template).setup()
 ui.run()

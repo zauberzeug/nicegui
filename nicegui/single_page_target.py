@@ -7,11 +7,14 @@ if TYPE_CHECKING:
 
 
 class SinglePageTarget:
-    """Aa helper class which is used to parse the path and query parameters of an URL to  find the matching
-    SinglePageRouterEntry and convert the parameters to the expected types of the builder function"""
+    """A helper class which is used to resolve and URL path and it's query and fragment parameters to find the matching
+    SinglePageRouterEntry and extract path and query parameters."""
 
-    def __init__(self, path: Optional[str] = None, entry: Optional['SinglePageRouterEntry'] = None,
-                 fragment: Optional[str] = None, query_string: Optional[str] = None,
+    def __init__(self,
+                 path: Optional[str] = None,
+                 entry: Optional['SinglePageRouterEntry'] = None,
+                 fragment: Optional[str] = None,
+                 query_string: Optional[str] = None,
                  router: Optional['SinglePageRouter'] = None):
         """
         :param path: The path of the URL
@@ -31,12 +34,13 @@ class SinglePageTarget:
         self.valid = entry is not None
         self.router = router
 
-    def parse_single_page_route(self, routes: Dict[str, 'SinglePageRouterEntry'], path: str) -> Self:
+    def parse_url_path(self, routes: Dict[str, 'SinglePageRouterEntry']) -> Self:
         """
+        Parses the route using the provided routes dictionary and path.
+
         :param routes: All routes of the single page router
-        :param path: The path of the URL
         """
-        parsed_url = urllib.parse.urlparse(urllib.parse.unquote(path))
+        parsed_url = urllib.parse.urlparse(urllib.parse.unquote(self.path))
         self.routes = routes  # all valid routes
         self.path = parsed_url.path  # url path w/o query
         self.fragment = parsed_url.fragment if len(parsed_url.fragment) > 0 else None

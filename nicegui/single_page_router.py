@@ -152,8 +152,7 @@ class SinglePageRouter:
                             # isolate the real path elements and update target accordingly
                             target = "/".join(path.split("/")[:len(cur_router.base_path.split("/"))])
                         break
-            parser = SinglePageTarget(target, router=self)
-            result = parser.parse_single_page_route(self.routes, target)
+            result = SinglePageTarget(target, router=self).parse_url_path(routes=self.routes)
             if resolved is not None:
                 result.original_path = resolved.original_path
             return result
@@ -178,10 +177,14 @@ class SinglePageRouter:
         content of the page.
 
         :return: The page template generator function"""
-        if self.build_page_template is not None:
+
+        def default_template():
+            yield
+
+        if self.page_template is not None:
             return self.page_template()
         else:
-            raise ValueError('No page template generator function provided.')
+            return default_template()
 
     def build_page(self, initial_url: Optional[str] = None, **kwargs):
         kwargs['url_path'] = initial_url
@@ -202,9 +205,13 @@ class SinglePageRouter:
             pass
         content_area.update_user_data(new_user_data)
 
-    def insert_content_area(self, initial_url: Optional[str] = None,
+    def insert_content_area(self,
+                            initial_url: Optional[str] = None,
                             user_data: Optional[Dict] = None) -> RouterFrame:
-        """Setups the content area"""
+        """Inserts the content area in form of a RouterFrame into the page
+
+        :param initial_url: The initial URL to initialize the router's content with
+        :param user_data: Optional user data to pass to the content area"""
         parent_router_frame = RouterFrame.get_current_frame()
         content = RouterFrame(router=self,
                               included_paths=sorted(list(self.included_paths)),
@@ -218,7 +225,7 @@ class SinglePageRouter:
             context.client.single_page_router_frame = content
         initial_url = content.target_url
         if initial_url is not None:
-            content.navigate_to(initial_url, _server_side=False, _sync=True)
+            content.navigate_to(initial_url, _server_side=False, sync=True)
         return content
 
     def _register_child_router(self, router: "SinglePageRouter") -> None:
