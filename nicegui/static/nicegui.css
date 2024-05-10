@@ -265,7 +265,6 @@ h6.q-timeline__title {
   display: flex;
   flex-direction: column;
   gap: 1em;
-  opacity: 0;
   transition-duration: 500ms;
   pointer-events: none;
   z-index: 1000;
@@ -276,7 +275,13 @@ h6.q-timeline__title {
 .body--light #popup {
   background-color: white;
 }
-#popup[style*="opacity: 1;"] {
+#popup[aria-hidden="true"] {
+  opacity: 0;
+  visibility: hidden;
+}
+#popup[aria-hidden="false"] {
+  opacity: 1;
+  visibility: visible;
   transition-delay: 2000ms;
 }
 #popup > span:first-child {
