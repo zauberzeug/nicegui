@@ -4,6 +4,8 @@ import abc
 import time
 from typing import Any, Callable, Collection, Dict, Iterable, List, Optional, Set, SupportsIndex, Union
 
+from typing_extensions import Self
+
 from . import events
 
 
@@ -45,6 +47,18 @@ class ObservableCollection(abc.ABC):  # noqa: B024
         if isinstance(data, set):
             return ObservableSet(data, _parent=self)
         return data
+
+    def __copy__(self) -> Self:
+        if isinstance(self, dict):
+            return ObservableDict(self, _parent=self)
+        if isinstance(self, list):
+            return ObservableList(self, _parent=self)
+        if isinstance(self, set):
+            return ObservableSet(self, _parent=self)
+        raise NotImplementedError(f'ObservableCollection.__copy__ not implemented for {type(self)}')
+
+    def __deepcopy__(self, memo: Dict) -> Self:
+        return self.__copy__()
 
 
 class ObservableDict(ObservableCollection, dict):
