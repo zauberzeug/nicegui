@@ -435,6 +435,36 @@ export default {
       }
       this.camera.updateProjectionMatrix();
     },
+    init_objects(data) {
+      for (const [
+        type,
+        id,
+        parent_id,
+        args,
+        name,
+        color,
+        opacity,
+        side,
+        x,
+        y,
+        z,
+        R,
+        sx,
+        sy,
+        sz,
+        visible,
+        draggable,
+      ] of data) {
+        this.create(type, id, parent_id, ...args);
+        this.name(id, name);
+        this.material(id, color, opacity, side);
+        this.move(id, x, y, z);
+        this.rotate(id, R);
+        this.scale(id, sx, sy, sz);
+        this.visible(id, visible);
+        this.draggable(id, draggable);
+      }
+    },
   },
 
   props: {

@@ -32,6 +32,9 @@ class Video(SourceElement, component='video.js'):
         self._props['muted'] = muted
         self._props['loop'] = loop
 
+    def set_source(self, source: Union[str, Path]) -> None:
+        return super().set_source(source)
+
     def seek(self, seconds: float) -> None:
         """Seek to a specific position in the video.
 

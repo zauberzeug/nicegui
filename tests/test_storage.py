@@ -1,4 +1,5 @@
 import asyncio
+import copy
 from pathlib import Path
 
 import httpx
@@ -263,3 +264,17 @@ def test_clear_client_storage(screen: Screen):
         assert app.storage.client == {}
 
     screen.open('/')
+
+
+def test_deepcopy(screen: Screen):
+    # https://github.com/zauberzeug/nicegui/issues/3023
+    @ui.page('/')
+    def page():
+        app.storage.general['a'] = {'b': 0}
+        copy.deepcopy(app.storage.general['a'])
+        ui.label('Loaded')
+
+    screen.open('/')
+    screen.should_contain('Loaded')
+    screen.wait(0.5)
+    assert Path('.nicegui', 'storage-general.json').read_text('utf-8') == '{"a":{"b":0}}'
