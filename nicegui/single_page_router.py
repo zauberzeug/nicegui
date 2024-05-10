@@ -16,8 +16,7 @@ class SinglePageRouterEntry:
         """
         :param path: The path of the route
         :param builder: The builder function which is called when the route is opened
-        :param title: Optional title of the page
-        """
+        :param title: Optional title of the page"""
         self.path = path
         self.builder = builder
         self.title = title
@@ -42,8 +41,7 @@ class SinglePageRouterEntry:
 
         /site/{value}/{other_value} --> /site/*/*
         :param path: The path to convert
-        :return: The mask with all path parameters replaced by a wildcard
-        """
+        :return: The mask with all path parameters replaced by a wildcard"""
         return re.sub(r'{[^}]+}', '*', path)
 
 
@@ -60,16 +58,14 @@ class SinglePageRouter:
                  page_template: Optional[Callable[[], Generator]] = None,
                  on_instance_created: Optional[Callable] = None,
                  **kwargs) -> None:
-        """
-        :param path: the base path of the single page router.
+        """:param path: the base path of the single page router.
         :param browser_history: Optional flag to enable or disable the browser history management. Default is True.
         :param parent: The parent router of this router if this router is a nested router.
         :param page_template: Optional page template generator function which defines the layout of the page. It
             needs to yield a value to separate the layout from the content area.
         :param on_instance_created: Optional callback which is called when a new instance is created. Each browser tab
         or window is a new instance. This can be used to initialize the state of the application.
-        :param kwargs: Additional arguments for the @page decorators
-        """
+        :param kwargs: Additional arguments for the @page decorators"""
         super().__init__()
         self.routes: Dict[str, SinglePageRouterEntry] = {}
         self.base_path = path
@@ -82,17 +78,17 @@ class SinglePageRouter:
         self.parent_router = parent
         if self.parent_router is not None:
             self.parent_router._register_child_router(self)
-        self.child_routers: List["SinglePageRouter"] = []
+        self.child_routers: List['SinglePageRouter'] = []
         self.page_kwargs = kwargs
 
     def setup_pages(self, force=False) -> Self:
         for key, route in Client.page_routes.items():
             if route.startswith(
-                    self.base_path.rstrip("/") + "/") and route.rstrip("/") not in self.included_paths:
+                    self.base_path.rstrip('/') + '/') and route.rstrip('/') not in self.included_paths:
                 self.excluded_paths.add(route)
             if force:
                 continue
-            if self.base_path.startswith(route.rstrip("/") + "/"):  # '/sub_router' after '/' - forbidden
+            if self.base_path.startswith(route.rstrip('/') + '/'):  # '/sub_router' after '/' - forbidden
                 raise ValueError(f'Another router with path "{route.rstrip("/")}/*" is already registered which '
                                  f'includes this router\'s base path "{self.base_path}". You can declare the nested '
                                  f'router first to prioritize it and avoid this issue.')
@@ -102,10 +98,10 @@ class SinglePageRouter:
         async def root_page(request_data=None):
             initial_url = None
             if request_data is not None:
-                initial_url = request_data["url"]["path"]
-                query = request_data["url"].get("query", {})
+                initial_url = request_data['url']['path']
+                query = request_data['url'].get('query', {})
                 if query:
-                    initial_url += "?" + query
+                    initial_url += '?' + query
             self.build_page(initial_url=initial_url)
 
         return self
@@ -115,8 +111,7 @@ class SinglePageRouter:
 
         :param path: The path of the route, including FastAPI path parameters
         :param builder: The builder function (the view to be displayed)
-        :param title: Optional title of the page
-        """
+        :param title: Optional title of the page"""
         path_mask = SinglePageRouterEntry.create_path_mask(path.rstrip('/'))
         self.included_paths.add(path_mask)
         self.routes[path] = SinglePageRouterEntry(path, builder, title).verify()
@@ -124,33 +119,31 @@ class SinglePageRouter:
     def add_router_entry(self, entry: SinglePageRouterEntry) -> None:
         """Adds a fully configured SinglePageRouterEntry to the router
 
-        :param entry: The SinglePageRouterEntry to add
-        """
+        :param entry: The SinglePageRouterEntry to add"""
         self.routes[entry.path] = entry.verify()
 
     def resolve_target(self, target: Union[Callable, str]) -> SinglePageTarget:
         """Tries to resolve a target such as a builder function or an URL path w/ route and query parameters.
 
         :param target: The URL path to open or a builder function
-        :return: The resolved target. Defines .valid if the target is valid
-        """
+        :return: The resolved target. Defines .valid if the target is valid"""
         if isinstance(target, Callable):
             for target, entry in self.routes.items():
                 if entry.builder == target:
                     return SinglePageTarget(entry=entry, router=self)
         else:
             resolved = None
-            path = target.split("#")[0].split("?")[0]
+            path = target.split('#')[0].split('?')[0]
             for cur_router in self.child_routers:
                 # replace {} placeholders with * to match the fnmatch pattern
-                mask = SinglePageRouterEntry.create_path_mask(cur_router.base_path.rstrip("/") + "/*")
+                mask = SinglePageRouterEntry.create_path_mask(cur_router.base_path.rstrip('/') + '/*')
                 if fnmatch(path, mask) or path == cur_router.base_path:
                     resolved = cur_router.resolve_target(target)
                     if resolved.valid:
                         target = cur_router.base_path
-                        if "*" in mask:
+                        if '*' in mask:
                             # isolate the real path elements and update target accordingly
-                            target = "/".join(path.split("/")[:len(cur_router.base_path.split("/"))])
+                            target = '/'.join(path.split('/')[:len(cur_router.base_path.split('/'))])
                         break
             result = SinglePageTarget(target, router=self).parse_url_path(routes=self.routes)
             if resolved is not None:
@@ -161,8 +154,7 @@ class SinglePageRouter:
         """Navigate to a target
 
         :param target: The target to navigate to
-        :param server_side: Optional flag which defines if the call is originated on the server side
-        """
+        :param server_side: Optional flag which defines if the call is originated on the server side"""
         org_target = target
         if not isinstance(target, SinglePageTarget):
             target = self.resolve_target(target)
@@ -228,6 +220,6 @@ class SinglePageRouter:
             content.navigate_to(initial_url, _server_side=False, sync=True)
         return content
 
-    def _register_child_router(self, router: "SinglePageRouter") -> None:
+    def _register_child_router(self, router: 'SinglePageRouter') -> None:
         """Registers a child router to the parent router"""
         self.child_routers.append(router)
