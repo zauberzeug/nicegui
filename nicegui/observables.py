@@ -63,7 +63,7 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 
     def __deepcopy__(self, memo: Dict) -> Self:
         if isinstance(self, dict):
-            return ObservableDict({key: deepcopy(value) for key, value in self}, _parent=self._parent)
+            return ObservableDict({key: deepcopy(self[key]) for key in self}, _parent=self._parent)
         if isinstance(self, list):
             return ObservableList([deepcopy(item) for item in self], _parent=self._parent)
         if isinstance(self, set):
