@@ -113,6 +113,20 @@ async def wait_for_init() -> None:
         scene.move_camera(x=1, y=-1, z=1.5, duration=2)
 
 
+@doc.demo(ui.scene_view)
+def scene_views():
+    with ui.grid(columns=2).classes('w-full'):
+        with ui.scene().classes('h-64 col-span-2') as scene:
+            teapot = 'https://upload.wikimedia.org/wikipedia/commons/9/93/Utah_teapot_(solid).stl'
+            scene.stl(teapot).scale(0.3)
+
+        with ui.scene_view(scene).classes('h-32') as scene_view1:
+            scene_view1.move_camera(x=1, y=-3, z=5)
+
+        with ui.scene_view(scene).classes('h-32') as scene_view2:
+            scene_view2.move_camera(x=0, y=4, z=3)
+
+
 @doc.demo('Camera Parameters', '''
     You can use the `camera` argument to `ui.scene` to use a custom camera.
     This allows you to set the field of view of a perspective camera or the size of an orthographic camera.

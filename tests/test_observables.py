@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import sys
 
 from nicegui import ui
@@ -153,3 +154,15 @@ def test_setting_change_handler():
     data.on_change(increment_counter)
     data.append(2)
     assert count == 1
+
+
+def test_copy():
+    a = ObservableList([[1, 2, 3], [4, 5, 6]])
+    b = copy.copy(a)
+    c = copy.deepcopy(a)
+    a.append([7, 8, 9])
+    a[0][0] = 0
+
+    assert a == [[0, 2, 3], [4, 5, 6], [7, 8, 9]]
+    assert b == [[0, 2, 3], [4, 5, 6]]
+    assert c == [[1, 2, 3], [4, 5, 6]]
