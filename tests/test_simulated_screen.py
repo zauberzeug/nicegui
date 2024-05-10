@@ -3,7 +3,7 @@ import asyncio
 import pytest
 from fastapi.responses import PlainTextResponse
 
-from nicegui import ElementFilter, app, context, ui
+from nicegui import app, ui
 from nicegui.testing import User
 
 # pylint: disable=missing-function-docstring
@@ -111,3 +111,10 @@ async def test_notification(user: User) -> None:
     await user.open('/')
     await user.click(content='notify')
     await user.should_see(content='Hello')
+
+
+async def test_auto_index_page(user: User) -> None:
+    ui.label('Main page')
+
+    await user.open('/')
+    await user.should_see(content='Main page')

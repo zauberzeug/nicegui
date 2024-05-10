@@ -1,3 +1,4 @@
+import asyncio
 import importlib
 import os
 import shutil
@@ -129,7 +130,7 @@ def screen(nicegui_reset_globals,
 
 @pytest.fixture
 async def user(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generator[User, None, None]:
-    """Create a new SimulatedScreen fixture."""
+    """Create a new user fixture."""
     prepare_simulation(request)
     async with core.app.router.lifespan_context(core.app):
         async with httpx.AsyncClient(app=core.app, base_url='http://test') as client:
@@ -138,13 +139,29 @@ async def user(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generat
 
 @pytest.fixture
 async def create_user(nicegui_reset_globals, request: pytest.FixtureRequest) -> Generator[Callable[None, User], None, None]:
-
+    """Create a fixture for building new users."""
     prepare_simulation(request)
     async with core.app.router.lifespan_context(core.app):
         yield lambda: User(httpx.AsyncClient(app=core.app, base_url='http://test'))
 
 
+@pytest.fixture(autouse=True, scope="function")
+def prepare_auto_index_client(request):
+    original_test = request.node._obj
+    if asyncio.iscoroutinefunction(original_test):
+        async def wrapped_test(*args, **kwargs):
+            with Client.auto_index_client:
+                return await original_test(*args, **kwargs)
+        request.node._obj = wrapped_test
+    else:
+        def wrapped_test(*args, **kwargs):
+            Client.auto_index_client.__enter__()
+            return original_test(*args, **kwargs)
+        request.node._obj = wrapped_test
+
+
 def prepare_simulation(request: pytest.FixtureRequest) -> None:
+    """Prepare a simulation to be started -- by using the "module_under_test" marker you can specify the main entry point of the app."""
     marker = request.node.get_closest_marker('module_under_test')
     if marker is not None:
         importlib.reload(marker.args[0])

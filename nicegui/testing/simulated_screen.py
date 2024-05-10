@@ -2,24 +2,16 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
-import functools
-import json
 import re
 from logging import log
-from queue import Empty, Queue
-from typing import Any, Callable, Dict, List, Optional, Self, Type, TypeVar, Union
+from typing import List, Optional, Self, Type, TypeVar, Union
 from uuid import uuid4
 
-import engineio
 import httpx
-import pytest
 import socketio
-from starlette.testclient import TestClient
 
 import nicegui.nicegui as ng
 from nicegui import Client, ElementFilter, background_tasks, context, ui
-from nicegui.awaitable_response import AwaitableResponse
 from nicegui.element import Element
 from nicegui.elements.mixins.value_element import ValueElement
 
@@ -29,8 +21,8 @@ from nicegui.elements.mixins.value_element import ValueElement
 T = TypeVar('T', bound=Element)
 
 
-class User():
-    current_user: Optional['User'] = None
+class User:
+    current_user: Optional[User] = None
 
     def __init__(self, client: httpx.AsyncClient) -> None:
         self.http_client = client
@@ -39,8 +31,8 @@ class User():
 
     async def open(self, path: str) -> None:
         """Open the given path."""
-        response = await self.http_client.get(path)
-        assert response.status_code == 200
+        response = await self.http_client.get(path, follow_redirects=True)
+        assert response.status_code == 200, f'Expected status code 200, got {response.status_code}'
         if response.headers.get('X-Nicegui-Content') != 'page':
             raise ValueError(f'Expected a page response, got {response.text}')
 
@@ -83,7 +75,7 @@ class User():
             for _ in range(retries):
                 if len(elements) > 0:
                     return elements
-                for m in context.get_client().outbox.messages:
+                for m in context.client.outbox.messages:
                     if content is not None and m[1] == 'notify' and content in m[2]['message']:
                         return elements
                 await asyncio.sleep(0.1)
