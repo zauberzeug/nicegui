@@ -1,14 +1,39 @@
-import json
-import os.path
+import os
+from typing import Dict
+
+from pydantic import BaseModel, Field
 
 from nicegui import ui
-
-# load service definition file of imaginary cloud services
-services = json.load(open(os.path.dirname(__file__) + '/services.json'))
+from nicegui.page_layout import LeftDrawer
 
 
-@ui.outlet('/other_app')
-def other_app():
+# --- Load service data for fake cloud provider portal
+
+class SubServiceDefinition(BaseModel):
+    title: str = Field(..., description="The title of the sub-service", examples=["Digital Twin"])
+    emoji: str = Field(..., description="An emoji representing the sub-service", examples=["🤖"])
+    description: str = Field(..., description="A short description of the sub-service",
+                             examples=["Manage your digital twin"])
+
+
+class ServiceDefinition(BaseModel):
+    title: str = Field(..., description="The title of the cloud service", examples=["Virtual Machines"])
+    emoji: str = Field(..., description="An emoji representing the cloud service", examples=["💻"])
+    description: str
+    sub_services: Dict[str, SubServiceDefinition]
+
+
+class ServiceDefinitions(BaseModel):
+    services: Dict[str, ServiceDefinition]
+
+
+services = ServiceDefinitions.parse_file(os.path.join(os.path.dirname(__file__), 'services.json')).services
+
+
+# --- Other app ---
+
+@ui.outlet('/other_app')  # Needs to be defined before the main outlet / to avoid conflicts
+def other_app_router():
     ui.label('Other app header').classes('text-h2')
     ui.html('<hr>')
     yield
@@ -16,84 +41,103 @@ def other_app():
     ui.label('Other app footer')
 
 
-@other_app.view('/')
+@other_app_router.view('/')
 def other_app_index():
     ui.label('Welcome to the index page of the other application')
 
 
-@ui.outlet('/')
-def main_router():
+# --- Main app ---
+
+@ui.outlet('/')  # main app outlet
+def main_router(url_path: str):
     with ui.header():
         with ui.link("", '/') as lnk:
             ui.html('<span style="color:white">Nice</span>'
                     '<span style="color:black">CLOUD</span>').classes('text-h3')
             lnk.style('text-decoration: none; color: inherit;')
+    menu_visible = "/services/" in url_path  # the service will make the menu visible anyway - suppresses animation
+    with ui.left_drawer(bordered=True, value=menu_visible, fixed=True) as menu_drawer:
+        menu_drawer.classes('bg-primary')
     with ui.footer():
         ui.label("Copyright 2024 by My Company")
 
     with ui.element().classes('p-8'):
-        yield
+        yield {'menu_drawer': menu_drawer}
 
 
 @main_router.view('/')
-def main_app_index():
+def main_app_index(menu_drawer: LeftDrawer):  # main app index page
+    menu_drawer.clear()  # clear drawer
+    menu_drawer.hide()  # hide drawer
     ui.label("Welcome to NiceCLOUD!").classes('text-3xl')
     ui.html("<br>")
     with ui.grid(columns=3) as grid:
-        grid.classes('gap-8')
+        grid.classes('gap-16')
         for key, info in services.items():
             link = f'/services/{key}'
             with ui.element():
                 with ui.row():
-                    ui.label(info['emoji']).classes('text-2xl')
                     with ui.link("", link) as lnk:
-                        ui.label(info['title']).classes('text-2xl')
+                        ui.label(info.emoji).classes('text-2xl')
+                        ui.label(info.title).classes('text-2xl')
                         lnk.style('text-decoration: none; color: inherit;')
-                ui.label(info['description'])
+                ui.label(info.description)
 
     ui.html("<br><br>")
     # add a link to the other app
-    ui.link("Other App", '/other_app')
+    ui.link("Click here to go to other Single Page App", '/other_app')
+    # add page url
+    ui.html(f'<br><br>Current page url: {main_router.current_url}')
 
 
-@main_router.outlet('/services/{service_name}')
-def services_router(service_name: str):
-    service_config = services[service_name]
-    with ui.left_drawer(bordered=True) as menu_drawer:
-        menu_drawer.classes('bg-primary')
-        title = service_config['title']
-        ui.label(title).classes('text-2xl text-white')
+@main_router.outlet('/services/{service_name}')  # service outlet
+def services_router(service_name: str, menu_drawer: LeftDrawer):
+    service: ServiceDefinition = services[service_name]
+    menu_drawer.clear()  # clear drawer
+    with ((((menu_drawer)))):
+        menu_drawer.show()
+        with ui.row() as row:
+            ui.label(service.emoji)
+            ui.label(service.title)
+            row.classes('text-h5 text-white').style('text-shadow: 2px 2px #00000070;')
+        ui.html("<br>")
         # add menu items
-        menu_items = service_config['sub_services']
+        menu_items = service.sub_services
         for key, info in menu_items.items():
-            title = info['title']
-            with ui.button(title) as btn:
-                btn.classes('text-white bg-secondary').on_click(lambda sn=service_name, k=key:
-                                                                ui.navigate.to(f'/services/{sn}/{k}'))
+            with ui.row() as service_element:
+                ui.label(info.emoji)
+                ui.label(info.title)
+                service_element.classes('text-white text-h6 bg-gray cursor-pointer')
+                service_element.style('text-shadow: 2px 2px #00000070;')
+                service_element.on("click", lambda sn=service_name, k=key: ui.navigate.to(f'/services/{sn}/{k}'))
+    yield {'service': service}
 
-    yield {'service': services[service_name]}
+
+@services_router.view('/')  # service index page
+def show_index(service: ServiceDefinition):
+    with ui.row() as row:
+        ui.label(service.emoji).classes('text-h4 vertical-middle')
+        with ui.column():
+            ui.label(service.title).classes('text-h2')
+            ui.label(service.description)
+    ui.html("<br>")
 
 
-@services_router.outlet('/{sub_service_name}')
-def sub_service(service, sub_service_name: str):
-    service_title = service['title']
-    sub_service = service["sub_services"][sub_service_name]
-    ui.label(f'{service_title} > {sub_service["title"]}').classes('text-h4')
+@services_router.outlet('/{sub_service_name}')  # sub service outlet
+def sub_service_router(service: ServiceDefinition, sub_service_name: str):
+    sub_service: SubServiceDefinition = service.sub_services[sub_service_name]
+    ui.label(f'{service.title} > {sub_service.title}').classes('text-h4')
     ui.html("<br>")
     yield {'sub_service': sub_service}
+    # add page url
 
 
-@sub_service.view('/')
-def sub_service_index(sub_service):
-    ui.label(sub_service["description"])
-
-
-@services_router.view('/')
-def show_index(service_name, **kwargs):
-    service_info = services[service_name]
-    ui.label(service_info["title"]).classes("text-h2")
+@sub_service_router.view('/')  # sub service index page
+def sub_service_index(sub_service: SubServiceDefinition):
+    ui.label(sub_service.emoji).classes('text-h1')
     ui.html("<br>")
-    ui.label(service_info["description"])
+    ui.label(sub_service.description)
+    ui.html(f'<br><br>Current page url: {main_router.current_url}')
 
 
 ui.run(show=False)

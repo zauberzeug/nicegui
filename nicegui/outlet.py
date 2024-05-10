@@ -55,8 +55,11 @@ class Outlet(SinglePageRouter):
         if router_frame is not None:
             router_frame.update_user_data(properties)
         yield properties
+        router_frame = RouterFrame.get_current_frame()
         try:
             add_properties(next(frame))  # if provided insert ui elements after yield
+            if router_frame is not None:
+                router_frame.update_user_data(properties)
         except StopIteration:
             pass
 
@@ -89,6 +92,19 @@ class Outlet(SinglePageRouter):
         """
         abs_path = self.base_path.rstrip('/') + path
         return Outlet(abs_path, parent=self)
+
+    @property
+    def current_url(self) -> str:
+        """Returns the current URL of the outlet.
+        
+        Only works when called from within the outlet or view builder function.
+
+        :return: The current URL of the outlet"""
+        cur_router = RouterFrame.get_current_frame()
+        if cur_router is None:
+            raise ValueError('The current URL can only be retrieved from within a nested outlet or view builder '
+                             'function.')
+        return cur_router.target_url
 
 
 class OutletView:

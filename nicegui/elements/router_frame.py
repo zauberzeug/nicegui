@@ -21,7 +21,9 @@ class RouterFrame(ui.element, component='router_frame.js'):
                  use_browser_history: bool = True,
                  change_title: bool = True,
                  parent_router_frame: "RouterFrame" = None,
-                 target_url: Optional[str] = None):
+                 target_url: Optional[str] = None,
+                 user_data: Optional[Dict] = None
+                 ):
         """
         :param router: The SinglePageRouter which controls this router frame
         :param included_paths: A list of valid path masks which shall be allowed to be opened by the router
@@ -29,6 +31,7 @@ class RouterFrame(ui.element, component='router_frame.js'):
         :param use_browser_history: Optional flag to enable or disable the browser history management. Default is True.
         :param change_title: Optional flag to enable or disable the title change. Default is True.
         :param target_url: The initial url of the router frame
+        :param user_data: Optional user data which is passed to the builder functions of the router frame
         """
         super().__init__()
         self.router = router
@@ -55,7 +58,7 @@ class RouterFrame(ui.element, component='router_frame.js'):
         self._props['base_path'] = self.router.base_path
         self._props['browser_history'] = use_browser_history
         self._props['child_frames'] = []
-        self.user_data = {}
+        self.user_data = user_data
         self.child_frames: dict[str, "RouterFrame"] = {}
         self.use_browser_history = use_browser_history
         self.change_title = change_title
@@ -116,9 +119,7 @@ class RouterFrame(ui.element, component='router_frame.js'):
             ui.run_javascript(
                 f'window.history.pushState({{page: "{target_url.original_path}"}}, "", "{target_url.original_path}");')
         self._props['target_url'] = target_url.original_path
-        builder_kwargs = {**target_url.path_args, **target_url.query_args}
-        if "url_path" not in builder_kwargs:
-            builder_kwargs["url_path"] = target_url.original_path
+        builder_kwargs = {**target_url.path_args, **target_url.query_args, "url_path": target_url.original_path}
         target_fragment = target_url.fragment
         recursive_user_data = RouterFrame.get_user_data() | self.user_data
         builder_kwargs.update(recursive_user_data)

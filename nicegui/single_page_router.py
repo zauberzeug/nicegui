@@ -184,23 +184,26 @@ class SinglePageRouter:
             raise ValueError('No page template generator function provided.')
 
     def build_page(self, initial_url: Optional[str] = None, **kwargs):
+        kwargs['url_path'] = initial_url
         template = RouterFrame.run_safe(self.build_page_template, **kwargs)
         if not isinstance(template, Generator):
             raise ValueError('The page template method must yield a value to separate the layout from the content '
                              'area.')
-        properties = {}
+        new_user_data = {}
         new_properties = next(template)
         if isinstance(new_properties, dict):
-            properties.update(new_properties)
-        self.insert_content_area(initial_url)
+            new_user_data.update(new_properties)
+        content_area = self.insert_content_area(initial_url, user_data=new_user_data)
         try:
             new_properties = next(template)
             if isinstance(new_properties, dict):
-                properties.update(new_properties)
+                new_user_data.update(new_properties)
         except StopIteration:
             pass
+        content_area.update_user_data(new_user_data)
 
-    def insert_content_area(self, initial_url: Optional[str] = None):
+    def insert_content_area(self, initial_url: Optional[str] = None,
+                            user_data: Optional[Dict] = None) -> RouterFrame:
         """Setups the content area"""
         parent_router_frame = RouterFrame.get_current_frame()
         content = RouterFrame(router=self,
@@ -208,13 +211,15 @@ class SinglePageRouter:
                               excluded_paths=sorted(list(self.excluded_paths)),
                               use_browser_history=self.use_browser_history,
                               parent_router_frame=parent_router_frame,
-                              target_url=initial_url)
+                              target_url=initial_url,
+                              user_data=user_data)
         content.on_resolve(self.resolve_target)
         if parent_router_frame is None:  # register root routers to the client
             context.client.single_page_router_frame = content
         initial_url = content.target_url
         if initial_url is not None:
             content.navigate_to(initial_url, _server_side=False, _sync=True)
+        return content
 
     def _register_child_router(self, router: "SinglePageRouter") -> None:
         """Registers a child router to the parent router"""
