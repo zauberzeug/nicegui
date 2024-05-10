@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import abc
 import time
+from copy import deepcopy
 from typing import Any, Callable, Collection, Dict, Iterable, List, Optional, Set, SupportsIndex, Union
 
 from typing_extensions import Self
@@ -40,6 +41,9 @@ class ObservableCollection(abc.ABC):  # noqa: B024
         self._change_handlers.append(handler)
 
     def _observe(self, data: Any) -> Any:
+        if isinstance(data, ObservableCollection):
+            data.on_change(self._handle_change)
+            return data
         if isinstance(data, dict):
             return ObservableDict(data, _parent=self)
         if isinstance(data, list):
@@ -50,15 +54,21 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 
     def __copy__(self) -> Self:
         if isinstance(self, dict):
-            return ObservableDict(self, _parent=self)
+            return ObservableDict(self, _parent=self._parent)
         if isinstance(self, list):
-            return ObservableList(self, _parent=self)
+            return ObservableList(self, _parent=self._parent)
         if isinstance(self, set):
-            return ObservableSet(self, _parent=self)
+            return ObservableSet(self, _parent=self._parent)
         raise NotImplementedError(f'ObservableCollection.__copy__ not implemented for {type(self)}')
 
     def __deepcopy__(self, memo: Dict) -> Self:
-        return self.__copy__()
+        if isinstance(self, dict):
+            return ObservableDict({key: deepcopy(value) for key, value in self}, _parent=self._parent)
+        if isinstance(self, list):
+            return ObservableList([deepcopy(item) for item in self], _parent=self._parent)
+        if isinstance(self, set):
+            return ObservableSet({deepcopy(item) for item in self}, _parent=self._parent)
+        raise NotImplementedError(f'ObservableCollection.__deepcopy__ not implemented for {type(self)}')
 
 
 class ObservableDict(ObservableCollection, dict):
