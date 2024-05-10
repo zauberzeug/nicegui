@@ -9,6 +9,13 @@ from nicegui.testing import User
 # pylint: disable=missing-function-docstring
 
 
+async def test_auto_index_page(user: User) -> None:
+    ui.label('Main page')
+
+    await user.open('/')
+    await user.should_see(content='Main page')
+
+
 async def test_multiple_pages(create_user) -> None:
     @ui.page('/')
     def index():
@@ -113,8 +120,15 @@ async def test_notification(user: User) -> None:
     await user.should_see(content='Hello')
 
 
-async def test_auto_index_page(user: User) -> None:
-    ui.label('Main page')
+async def test_checkbox(user: User) -> None:
+    checkbox = ui.checkbox('my checkbox', on_change=lambda e: ui.notify(f'Changed: {e.value}'))
+    ui.label().bind_text_from(checkbox, 'value', lambda v: 'enabled' if v else 'disabled')
 
     await user.open('/')
-    await user.should_see(content='Main page')
+    await user.should_see(content='disabled')
+    await user.click(content='checkbox')
+    await user.should_see(content='enabled')
+    await user.should_see(content='Changed: True')
+    await user.click(content='checkbox')
+    await user.should_see(content='disabled')
+    await user.should_see(content='Changed: False')

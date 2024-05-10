@@ -11,7 +11,7 @@ import httpx
 import socketio
 
 import nicegui.nicegui as ng
-from nicegui import Client, ElementFilter, background_tasks, context, ui
+from nicegui import Client, ElementFilter, background_tasks, context, events, ui
 from nicegui.element import Element
 from nicegui.elements.mixins.value_element import ValueElement
 
@@ -112,9 +112,15 @@ class User:
             assert len(elements) == 1, \
                 f'expected to find exactly one element of type {element_type}{marker}{content} on the page:\n{self.current_page}'
             element = elements[0]
+            assert isinstance(element, ui.element)
             for listener in element._event_listeners.values():
-                if listener.type == 'click' and listener.element_id == element.id:
-                    element._handle_event({'listener_id': listener.id, 'args': {}})
+                if listener.element_id != element.id:
+                    continue
+                args = None
+                if isinstance(element, ui.checkbox):
+                    args = not element.value
+                events.handle_event(listener.handler, events.GenericEventArguments(
+                    sender=element, client=self.client, args=args))
 
     @property
     def current_page(self) -> Element:

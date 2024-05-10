@@ -164,7 +164,8 @@ def prepare_simulation(request: pytest.FixtureRequest) -> None:
     """Prepare a simulation to be started -- by using the "module_under_test" marker you can specify the main entry point of the app."""
     marker = request.node.get_closest_marker('module_under_test')
     if marker is not None:
-        importlib.reload(marker.args[0])
+        with Client.auto_index_client:
+            importlib.reload(marker.args[0])
 
     core.app.config.add_run_config(
         reload=False,
