@@ -1,0 +1,16 @@
+name: 'check reminders 🔔'
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+
+permissions:
+  issues: write
+
+jobs:
+  reminder:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: check reminders and notify
+        uses: agrc/reminder-action@v1.0.12
