@@ -122,19 +122,21 @@ def test_run_column_method_with_argument(screen: Screen):
 
 
 def test_get_selected_rows(screen: Screen):
-    grid = ui.aggrid({
-        'columnDefs': [{'field': 'name'}],
-        'rowData': [{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
-        'rowSelection': 'multiple',
-    })
+    @ui.page('/')
+    def page():
+        grid = ui.aggrid({
+            'columnDefs': [{'field': 'name'}],
+            'rowData': [{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}],
+            'rowSelection': 'multiple',
+        })
 
-    async def get_selected_rows():
-        ui.label(str(await grid.get_selected_rows()))
-    ui.button('Get selected rows', on_click=get_selected_rows)
+        async def get_selected_rows():
+            ui.label(str(await grid.get_selected_rows()))
+        ui.button('Get selected rows', on_click=get_selected_rows)
 
-    async def get_selected_row():
-        ui.label(str(await grid.get_selected_row()))
-    ui.button('Get selected row', on_click=get_selected_row)
+        async def get_selected_row():
+            ui.label(str(await grid.get_selected_row()))
+        ui.button('Get selected row', on_click=get_selected_row)
 
     screen.open('/')
     screen.click('Alice')
@@ -234,12 +236,14 @@ def test_run_row_method(screen: Screen):
 
 
 def test_run_method_with_function(screen: Screen):
-    grid = ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}, {'name': 'Bob'}]})
+    @ui.page('/')
+    def page():
+        grid = ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}, {'name': 'Bob'}]})
 
-    async def print_row(index: int) -> None:
-        ui.label(f'Row {index}: {await grid.run_grid_method(f"(g) => g.getDisplayedRowAtIndex({index}).data")}')
+        async def print_row(index: int) -> None:
+            ui.label(f'Row {index}: {await grid.run_grid_method(f"(g) => g.getDisplayedRowAtIndex({index}).data")}')
 
-    ui.button('Print Row 0', on_click=lambda: print_row(0))
+        ui.button('Print Row 0', on_click=lambda: print_row(0))
 
     screen.open('/')
     screen.click('Print Row 0')
