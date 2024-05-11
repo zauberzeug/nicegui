@@ -4,7 +4,7 @@ from typing import Union, List, Callable, Generator
 from fastapi.routing import APIRoute
 
 from nicegui import core
-from nicegui.single_page_router_config import SinglePageRouterConfig, SinglePageRouterEntry
+from nicegui.single_page_router_config import SinglePageRouterConfig, SinglePageRouterPath
 
 
 class SinglePageApp:
@@ -83,8 +83,8 @@ class SinglePageApp:
                 if key in Client.page_configs:
                     title = Client.page_configs[key].title
                 route = route.rstrip('/')
-                self.single_page_router.add_router_entry(SinglePageRouterEntry(route, builder=key, title=title))
-                route_mask = SinglePageRouterEntry.create_path_mask(route)
+                self.single_page_router.add_router_entry(SinglePageRouterPath(route, builder=key, title=title))
+                route_mask = SinglePageRouterPath.create_path_mask(route)
                 self.single_page_router.included_paths.add(route_mask)
         for route in core.app.routes.copy():
             if isinstance(route, APIRoute):

@@ -1,47 +1,46 @@
 import inspect
 import urllib.parse
-from typing import Dict, Optional, TYPE_CHECKING, Self
+from typing import Dict, Optional, TYPE_CHECKING, Self, Callable
 
 if TYPE_CHECKING:
-    from nicegui.single_page_router_config import SinglePageRouterEntry, SinglePageRouterConfig
+    from nicegui.single_page_router_config import SinglePageRouterPath
 
 
 class SinglePageTarget:
     """A helper class which is used to resolve and URL path and it's query and fragment parameters to find the matching
-    SinglePageRouterEntry and extract path and query parameters."""
+    SinglePageRouterPath and extract path and query parameters."""
 
     def __init__(self,
                  path: Optional[str] = None,
-                 entry: Optional['SinglePageRouterEntry'] = None,
                  fragment: Optional[str] = None,
                  query_string: Optional[str] = None,
-                 router: Optional['SinglePageRouterConfig'] = None):
+                 builder: Optional[Callable] = None,
+                 title: Optional[str] = None):
         """
-        :param path: The path of the URL
-        :param entry: Predefined entry, e.g. targeting a Callable
+        :param builder: The builder function to be called when the URL is opened
+        :param path: The path of the URL (to be shown in the browser)
         :param fragment: The fragment of the URL
         :param query_string: The query string of the URL
-        :param router: The SinglePageRouter by which the URL was resolved
+        :param title: The title of the URL to be displayed in the browser tab
         """
-        self.routes = {}  # all valid routes
         self.original_path = path
-        self.path = path  # url path w/o query
+        self.path = path
+        self.path_args = {}
+        self.path_elements = []
         self.fragment = fragment
         self.query_string = query_string
-        self.path_args = {}
         self.query_args = urllib.parse.parse_qs(self.query_string)
-        self.entry = entry
-        self.valid = entry is not None
-        self.router = router
+        self.title = title
+        self.builder = builder
+        self.valid = builder is not None
 
-    def parse_url_path(self, routes: Dict[str, 'SinglePageRouterEntry']) -> Self:
+    def parse_url_path(self, routes: Dict[str, 'SinglePageRouterPath']) -> Self:
         """
         Parses the route using the provided routes dictionary and path.
 
         :param routes: All routes of the single page router
         """
         parsed_url = urllib.parse.urlparse(urllib.parse.unquote(self.path))
-        self.routes = routes  # all valid routes
         self.path = parsed_url.path  # url path w/o query
         self.fragment = parsed_url.fragment if len(parsed_url.fragment) > 0 else None
         self.query_string = parsed_url.query if len(parsed_url.query) > 0 else None
@@ -50,19 +49,28 @@ class SinglePageTarget:
         if self.fragment is not None and len(self.path) == 0:
             self.valid = True
             return self
-        self.entry = self.parse_path()
-        if self.entry is not None:
+        entry = self.parse_path(routes)
+        if entry is not None:
+            self.builder = entry.builder
+            self.title = entry.title
             self.convert_arguments()
             self.valid = True
+        else:
+            self.builder = None
+            self.title = None
+            self.valid = False
         return self
 
-    def parse_path(self) -> Optional['SinglePageRouterEntry']:
+    def parse_path(self, routes) -> Optional['SinglePageRouterPath']:
         """Splits the path into its components, tries to match it with the routes and extracts the path arguments
         into their corresponding variables.
+
+        :param routes: All valid routes of the single page router
         """
-        for route, entry in self.routes.items():
+        path_elements = self.path.lstrip('/').rstrip('/').split('/')
+        self.path_elements = path_elements
+        for route, entry in routes.items():
             route_elements = route.lstrip('/').split('/')
-            path_elements = self.path.lstrip('/').rstrip('/').split('/')
             if len(route_elements) != len(path_elements):  # can't match
                 continue
             match = True
@@ -79,7 +87,9 @@ class SinglePageTarget:
 
     def convert_arguments(self):
         """Converts the path and query arguments to the expected types of the builder function"""
-        sig = inspect.signature(self.entry.builder)
+        if not self.builder:
+            return
+        sig = inspect.signature(self.builder)
         for func_param_name, func_param_info in sig.parameters.items():
             for params in [self.path_args, self.query_args]:
                 if func_param_name in params:

@@ -26,7 +26,7 @@ from .version import __version__
 
 if TYPE_CHECKING:
     from .page import page
-    from .elements.router_frame import RouterFrame
+    from .single_page_router import SinglePageRouter
 
 templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
@@ -82,7 +82,7 @@ class Client:
 
         self.page = page
         self.storage = ObservableDict()
-        self.single_page_router_frame: Optional[RouterFrame] = None
+        self.single_page_router: Optional[SinglePageRouter] = None
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
         self.disconnect_handlers: List[Union[Callable[..., Any], Awaitable]] = []

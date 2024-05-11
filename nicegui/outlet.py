@@ -1,6 +1,7 @@
 from typing import Callable, Any, Self, Optional, Generator
 
 from nicegui.client import Client
+from nicegui.single_page_router import SinglePageRouter
 from nicegui.single_page_router_config import SinglePageRouterConfig
 from nicegui.elements.router_frame import RouterFrame
 
@@ -58,12 +59,12 @@ class Outlet(SinglePageRouterConfig):
             if isinstance(result, dict):
                 properties.update(result)
 
-        router_frame = RouterFrame.get_current_frame()
+        router_frame = SinglePageRouter.get_current_frame()
         add_properties(next(frame))  # insert ui elements before yield
         if router_frame is not None:
             router_frame.update_user_data(properties)
         yield properties
-        router_frame = RouterFrame.get_current_frame()
+        router_frame = SinglePageRouter.get_current_frame()
         try:
             add_properties(next(frame))  # if provided insert ui elements after yield
             if router_frame is not None:
@@ -112,7 +113,7 @@ class Outlet(SinglePageRouterConfig):
         Only works when called from within the outlet or view builder function.
 
         :return: The current URL of the outlet"""
-        cur_router = RouterFrame.get_current_frame()
+        cur_router = SinglePageRouter.get_current_frame()
         if cur_router is None:
             raise ValueError('The current URL can only be retrieved from within a nested outlet or view builder '
                              'function.')
