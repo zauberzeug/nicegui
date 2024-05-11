@@ -114,4 +114,4 @@ exclude = [
 ]
 
 [tool.poetry.plugins.pytest11]
-pytest-nicegui = "nicegui.testing"
+pytest-nicegui = "nicegui.testing.fixtures"
