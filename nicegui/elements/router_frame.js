@@ -50,7 +50,7 @@ export default {
             // If there's no <a> tag, or the <a> tag has no href attribute, do nothing
             if (!link || !link.hasAttribute('href')) return;
             let href = link.getAttribute('href');
-            if (href === "#") {
+            if (href === '#') {
                 e.preventDefault();
                 return;
             }
@@ -58,11 +58,7 @@ export default {
             if (validate_path(href)) {
                 e.preventDefault(); // Prevent the default link behavior
                 if (!is_handled_by_child_frame(href)) {
-                    if (router.use_browser_history) {
-                        window.history.pushState({page: href}, '', href);
-                        if (router._debug) console.log('RouterFrame pushing state ' + href + ' by ' + router.base_path);
-                    }
-                    router.$emit('open', href);
+                    router.$emit('open', href, true);
                     if (router._debug) console.log('Opening ' + href + ' by ' + router.base_path);
                 }
             }
@@ -75,7 +71,7 @@ export default {
                 return;
             }
             if (validate_path(href) && !is_handled_by_child_frame(href)) {
-                router.$emit('open', href);
+                router.$emit('open', href, false);
                 if (router._debug) console.log('Pop opening ' + href + ' by ' + router.base_path);
             }
         };

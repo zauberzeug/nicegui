@@ -5,6 +5,8 @@ from nicegui.context import context
 from nicegui.elements.router_frame import RouterFrame
 from nicegui.single_page_target import SinglePageTarget
 
+PATH_RESOLVING_MAX_RECURSION = 100
+
 if TYPE_CHECKING:
     from nicegui.single_page_router_config import SinglePageRouterConfig
 
@@ -20,12 +22,12 @@ class SinglePageRouter:
     See @ui.outlet or SinglePageApp for more information."""
 
     def __init__(self,
-                 config: "SinglePageRouterConfig",
+                 config: 'SinglePageRouterConfig',
                  included_paths: Optional[list[str]] = None,
                  excluded_paths: Optional[list[str]] = None,
                  use_browser_history: bool = True,
                  change_title: bool = True,
-                 parent_router: "SinglePageRouter" = None,
+                 parent_router: 'SinglePageRouter' = None,
                  target_url: Optional[str] = None,
                  user_data: Optional[Dict] = None
                  ):
@@ -39,12 +41,12 @@ class SinglePageRouter:
         :param user_data: Optional user data which is passed to the builder functions of the router frame
         """
         super().__init__()
-        self.router = config
+        self.router_config = config
         if target_url is None:
             if parent_router is not None and parent_router.target_url is not None:
                 target_url = parent_router.target_url
             else:
-                target_url = self.router.base_path
+                target_url = self.router_config.base_path
         self.user_data = user_data
         self.child_frames: dict[str, "SinglePageRouter"] = {}
         self.use_browser_history = use_browser_history
@@ -52,73 +54,103 @@ class SinglePageRouter:
         self.parent_frame = parent_router
         if parent_router is not None:
             parent_router._register_sub_frame(included_paths[0], self)
-        self._on_resolve: Optional[Callable[[Any], SinglePageTarget]] = None
-        self.router_frame = RouterFrame(base_path=self.router.base_path,
+        self.router_frame = RouterFrame(base_path=self.router_config.base_path,
                                         target_url=target_url,
                                         included_paths=included_paths,
                                         excluded_paths=excluded_paths,
                                         use_browser_history=use_browser_history,
-                                        on_navigate=lambda url: self.navigate_to(url, _server_side=False),
-                                        user_data={"router": self})
+                                        on_navigate=lambda url, history: self.navigate_to(url, history=history),
+                                        user_data={'router': self})
+        self._on_navigate: Optional[Callable[[str], Optional[str]]] = None
+        self._on_resolve: Optional[Callable[[str], SinglePageTarget]] = None
 
     @property
     def target_url(self) -> str:
-        """The current target url of the router frame"""
+        """The current target url of the router frame
+
+        :return: The target url of the router frame"""
         return self.router_frame.target_url
 
-    def on_resolve(self, on_resolve: Callable[[Any], SinglePageTarget]) -> Self:
-        """Set the on_resolve function which is used to resolve the target to a SinglePageUrl
-
-        :param on_resolve: The on_resolve function which receives a target object such as an URL or Callable and
-            returns a SinglePageUrl object."""
-        self._on_resolve = on_resolve
-        return self
-
-    def resolve_target(self, target: Any) -> SinglePageTarget:
+    def resolve_target(self, target: Any, user_data: Optional[Dict] = None) -> SinglePageTarget:
         """Resolves a URL or SPA target to a SinglePageUrl which contains details about the builder function to
         be called and the arguments to pass to the builder function.
 
         :param target: The target object such as a URL or Callable
+        :param user_data: Optional user data which is passed to the resolver functions
         :return: The resolved SinglePageUrl object"""
         if isinstance(target, SinglePageTarget):
             return target
-        if self._on_resolve is not None:
-            target = self._on_resolve(target)
-            if target.valid and target.router is None:
-                target.router = self
-            return target
-        raise NotImplementedError
+        target = self.router_config.resolve_target(target)
+        if target.valid and target.router is None:
+            target.router = self
+        if target is None:
+            raise NotImplementedError
+        if target.router_path is not None:
+            rp = target.router_path
+            original_path = target.original_path
+            if rp.on_open is not None:
+                target = rp.on_open(target, **user_data)
+                if target.original_path != original_path:
+                    return self.resolve_target(target, user_data)
+        return target
 
-    def navigate_to(self, target: [SinglePageTarget, str], _server_side=True, sync=False) -> None:
+    def handle_navigate(self, target: str) -> Optional[str]:
+        """
+        Is called when there was a navigation event in the browser or by the navigate_to method.
+
+        By default the original target is returned. The SinglePageRouter and the router config (the outlet) can
+        manipulate the target before it is resolved. If the target is None, the navigation is suppressed.
+
+        :param target: The target URL
+        :return: The target URL or None if the navigation is suppressed
+        """
+        cur_config = self.router_config
+        while cur_config is not None:
+            if cur_config.on_navigate is not None:
+                new_target = cur_config.on_navigate(target)
+                if new_target is None or new_target != target:
+                    return new_target
+            cur_config = cur_config.parent_config
+        return target
+
+    def navigate_to(self, target: [SinglePageTarget, str], server_side=True, sync=False,
+                    history: bool = True) -> None:
         """Open a new page in the browser by exchanging the content of the router frame
 
         :param target: The target page or url.
-        :param _server_side: Optional flag which defines if the call is originated on the server side and thus
+        :param server_side: Optional flag which defines if the call is originated on the server side and thus
             the browser history should be updated. Default is False.
         :param sync: Optional flag to define if the content should be updated synchronously. Default is False.
+        :param history: Optional flag defining if the history setting shall be respected. Default is True.
         """
         # check if sub router is active and might handle the target
         for path_mask, frame in self.child_frames.items():
             if path_mask == target or target.startswith(path_mask + '/'):
-                frame.navigate_to(target, _server_side)
+                frame.navigate_to(target, server_side)
+                return
+        if isinstance(target, str):
+            target = self.handle_navigate(target)
+            if target is None:
                 return
         recursive_user_data = SinglePageRouter.get_user_data() | self.user_data | self.router_frame.user_data
-        target = self.resolve_target(target)
-        if target.router_path is not None:
-            rp = target.router_path
-            if rp.on_resolve is not None:
-                target = rp.on_resolve(target, **recursive_user_data)
-
+        target = self.resolve_target(target, user_data=recursive_user_data)
+        if target is None or not target.valid:  # navigation suppressed
+            return
+        original_path = target.original_path
+        if history and not server_side and self.use_browser_history:  # triggered by the browser
+            ui.run_javascript(f'window.history.pushState({{page: "{original_path}"}}, "", "{original_path}");')
+            print("X Navigating to ", original_path)
         if target.builder is None:
             if target.fragment is not None:
                 ui.run_javascript(f'window.location.href = "#{target.fragment}";')  # go to fragment
                 return
             target = SinglePageTarget(builder=self._page_not_found, title='Page not found')
-        if _server_side and self.use_browser_history:
+        if server_side and self.use_browser_history and history:
             ui.run_javascript(
-                f'window.history.pushState({{page: "{target.original_path}"}}, "", "{target.original_path}");')
+                f'window.history.pushState({{page: "{original_path}"}}, "", "{original_path}");')
+            print("Y Navigating to ", original_path)
         self.router_frame.target_url = target.original_path
-        builder_kwargs = {**target.path_args, **target.query_args, 'url_path': target.original_path}
+        builder_kwargs = {**target.path_args, **target.query_args, 'url_path': original_path}
         target_fragment = target.fragment
         builder_kwargs.update(recursive_user_data)
         self.router_frame.update_content(target.builder, builder_kwargs, target.title, target_fragment, sync)

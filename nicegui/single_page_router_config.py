@@ -1,4 +1,5 @@
 import re
+import typing
 from fnmatch import fnmatch
 from typing import Callable, Dict, Union, Optional, Self, List, Set, Generator, Any
 
@@ -8,6 +9,9 @@ from nicegui.client import Client
 from nicegui.elements.router_frame import RouterFrame
 from nicegui.single_page_router import SinglePageRouter
 from nicegui.single_page_target import SinglePageTarget
+
+if typing.TYPE_CHECKING:
+    from nicegui.single_page_router import SinglePageRouter
 
 
 class SinglePageRouterConfig:
@@ -19,9 +23,9 @@ class SinglePageRouterConfig:
     def __init__(self,
                  path: str,
                  browser_history: bool = True,
-                 parent: Optional["SinglePageRouterConfig"] = None,
+                 parent: Optional['SinglePageRouterConfig'] = None,
                  page_template: Optional[Callable[[], Generator]] = None,
-                 on_instance_created: Optional[Callable] = None,
+                 on_instance_created: Optional[Callable[['SinglePageRouter'], None]] = None,
                  **kwargs) -> None:
         """:param path: the base path of the single page router.
         :param browser_history: Optional flag to enable or disable the browser history management. Default is True.
@@ -37,12 +41,15 @@ class SinglePageRouterConfig:
         self.included_paths: Set[str] = set()
         self.excluded_paths: Set[str] = set()
         self.on_instance_created: Optional[Callable] = on_instance_created
+        self.on_resolve: Optional[Callable[[str], Optional[SinglePageTarget]]] = None
+        self.on_open: Optional[Callable[[SinglePageTarget], SinglePageTarget]] = None
+        self.on_navigate: Optional[Callable[[str], Optional[str]]] = None
         self.use_browser_history = browser_history
         self.page_template = page_template
         self._setup_configured = False
-        self.parent_router = parent
-        if self.parent_router is not None:
-            self.parent_router._register_child_config(self)
+        self.parent_config = parent
+        if self.parent_config is not None:
+            self.parent_config._register_child_config(self)
         self.child_routers: List['SinglePageRouterConfig'] = []
         self.page_kwargs = kwargs
 
@@ -72,17 +79,17 @@ class SinglePageRouterConfig:
         return self
 
     def add_view(self, path: str, builder: Callable, title: Optional[str] = None,
-                 on_resolve: Optional[Callable[[SinglePageTarget], SinglePageTarget]] = None) -> None:
+                 on_open: Optional[Callable[[SinglePageTarget], SinglePageTarget]] = None) -> None:
         """Add a new route to the single page router
 
         :param path: The path of the route, including FastAPI path parameters
         :param builder: The builder function (the view to be displayed)
         :param title: Optional title of the page
-        :param on_resolve: Optional on_resolve function which is called when this path was selected.
+        :param on_open: Optional on_resolve function which is called when this path was selected.
         """
         path_mask = SinglePageRouterPath.create_path_mask(path.rstrip('/'))
         self.included_paths.add(path_mask)
-        self.routes[path] = SinglePageRouterPath(path, builder, title, on_resolve=on_resolve).verify()
+        self.routes[path] = SinglePageRouterPath(path, builder, title, on_open=on_open).verify()
 
     def add_router_entry(self, entry: "SinglePageRouterPath") -> None:
         """Adds a fully configured SinglePageRouterPath to the router
@@ -95,12 +102,15 @@ class SinglePageRouterConfig:
 
         :param target: The URL path to open or a builder function
         :return: The resolved target. Defines .valid if the target is valid"""
-        resolve_handler = None
         if isinstance(target, Callable):
             for target, entry in self.routes.items():
                 if entry.builder == target:
                     return SinglePageTarget(router_path=entry)
         else:
+            if self.on_resolve is not None:
+                resolved = self.on_resolve(target)
+                if resolved is not None:
+                    return resolved
             resolved = None
             path = target.split('#')[0].split('?')[0]
             for cur_router in self.child_routers:
@@ -117,6 +127,8 @@ class SinglePageRouterConfig:
             result = SinglePageTarget(target).parse_url_path(routes=self.routes)
             if resolved is not None:
                 result.original_path = resolved.original_path
+            if self.on_open:
+                result = self.on_open(result)
             return result
 
     def navigate_to(self, target: Union[Callable, str, SinglePageTarget], server_side=True) -> bool:
@@ -130,7 +142,7 @@ class SinglePageRouterConfig:
         router = context.client.single_page_router
         if not target.valid or router is None:
             return False
-        router.navigate_to(org_target, _server_side=server_side)
+        router.navigate_to(org_target, server_side=server_side)
         return True
 
     def build_page_template(self) -> Generator:
@@ -186,12 +198,13 @@ class SinglePageRouterConfig:
                                    parent_router=parent_router,
                                    target_url=initial_url,
                                    user_data=user_data)
-        content.on_resolve(self.resolve_target)
         if parent_router is None:  # register root routers to the client
             context.client.single_page_router = content
         initial_url = content.target_url
+        if self.on_instance_created is not None:
+            self.on_instance_created(content)
         if initial_url is not None:
-            content.navigate_to(initial_url, _server_side=False, sync=True)
+            content.navigate_to(initial_url, server_side=False, sync=True, history=False)
         return content
 
     def _register_child_config(self, router_config: 'SinglePageRouterConfig') -> None:
@@ -203,16 +216,16 @@ class SinglePageRouterPath:
     """The SinglePageRouterPath is a data class which holds the configuration of one router path"""
 
     def __init__(self, path: str, builder: Callable, title: Union[str, None] = None,
-                 on_resolve: Optional[Callable[[SinglePageTarget, Any], SinglePageTarget]] = None):
+                 on_open: Optional[Callable[[SinglePageTarget, Any], SinglePageTarget]] = None):
         """
         :param path: The path of the route
         :param builder: The builder function which is called when the route is opened
         :param title: Optional title of the page
-        :param on_resolve: Optional on_resolve function which is called when this path was selected."""
+        :param on_open: Optional on_resolve function which is called when this path was selected."""
         self.path = path
         self.builder = builder
         self.title = title
-        self.on_resolve = on_resolve
+        self.on_open = on_open
 
     def verify(self) -> Self:
         """Verifies a SinglePageRouterPath for correctness. Raises a ValueError if the entry is invalid."""

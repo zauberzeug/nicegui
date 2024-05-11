@@ -86,7 +86,7 @@ def main_app_index(menu_drawer: LeftDrawer):  # main app index page
                 ui.label(info.description)
     ui.html('<br><br>')
     # add a link to the other app
-    ui.markdown("Click [here](/other_app) to visit the other app.")
+    ui.markdown('Click [here](/other_app) to visit the other app.')
 
 
 @main_router.outlet('/services/{service_name}')  # service outlet
@@ -119,7 +119,7 @@ def update_title(target: SinglePageTarget,
     return target
 
 
-@services_router.view('/', on_resolved=update_title)  # service index page
+@services_router.view('/', on_open=update_title)  # service index page
 def show_index(service: ServiceDefinition):
     with ui.row() as row:
         ui.label(service.emoji).classes('text-h4 vertical-middle')
@@ -137,7 +137,7 @@ def sub_service_router(service: ServiceDefinition, sub_service_name: str):
     yield {'sub_service': sub_service}  # pass sub service to all sub elements (views and outlets)
 
 
-@sub_service_router.view('/', on_resolved=update_title)  # sub service index page
+@sub_service_router.view('/', on_open=update_title)  # sub service index page
 def sub_service_index(sub_service: SubServiceDefinition):
     ui.label(sub_service.emoji).classes('text-h1')
     ui.html('<br>')

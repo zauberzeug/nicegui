@@ -16,7 +16,7 @@ class RouterFrame(ui.element, component='router_frame.js'):
                  excluded_paths: Optional[list[str]] = None,
                  use_browser_history: bool = True,
                  change_title: bool = True,
-                 on_navigate: Optional[Callable[[str], Any]] = None,
+                 on_navigate: Optional[Callable[[str, Optional[bool]], Any]] = None,
                  user_data: Optional[dict] = None
                  ):
         """
@@ -49,16 +49,18 @@ class RouterFrame(ui.element, component='router_frame.js'):
         self._props['base_path'] = base_path
         self._props['browser_history'] = use_browser_history
         self._props['child_frames'] = []
-        self.on('open', lambda e: self.handle_navigate(e.args))
+        self.on('open', lambda e: self.handle_navigate(e.args[0], e.args[1]))
         self.on_navigate = on_navigate
         self.user_data = user_data if user_data is not None else {}
 
-    def handle_navigate(self, url: str):
+    def handle_navigate(self, url: str, history=True):
         """Navigate to a new url
 
-        :param url: The url to navigate to"""
+        :param url: The url to navigate to
+        :param history: Optional flag to enable or disable the browser history management. Default is True.
+        """
         if self.on_navigate is not None:
-            self.on_navigate(url)
+            self.on_navigate(url, history)
 
     @property
     def target_url(self) -> str:
