@@ -4,11 +4,12 @@ from __future__ import annotations
 import asyncio
 import re
 from logging import log
-from typing import List, Optional, Self, Type, TypeVar, Union
+from typing import List, Optional, Type, TypeVar, Union
 from uuid import uuid4
 
 import httpx
 import socketio
+from typing_extensions import Self
 
 import nicegui.nicegui as ng
 from nicegui import Client, ElementFilter, background_tasks, context, events, ui
