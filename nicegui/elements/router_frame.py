@@ -119,14 +119,28 @@ class RouterFrame(ui.element, component='router_frame.js'):
         self._props['child_frame_paths'] = paths
 
     @staticmethod
-    def run_safe(builder, **kwargs) -> Any:
+    def run_safe(builder, type_check: bool = True, **kwargs) -> Any:
         """Run a builder function but only pass the keyword arguments which are expected by the builder function
 
         :param builder: The builder function
+        :param type_check: Optional flag to enable or disable the type checking of the keyword arguments.
+            Default is True.
         :param kwargs: The keyword arguments to pass to the builder function
         """
-        args = inspect.signature(builder).parameters.keys()
+        sig = inspect.signature(builder)
+        args = sig.parameters.keys()
         has_kwargs = any([param.kind == inspect.Parameter.VAR_KEYWORD for param in
                           inspect.signature(builder).parameters.values()])
+        if type_check:
+            for func_param_name, func_param_info in sig.parameters.items():
+                if func_param_name not in kwargs:
+                    continue
+                if func_param_info.annotation is inspect.Parameter.empty:
+                    continue
+                # ensure type is correct
+                if not isinstance(kwargs[func_param_name], func_param_info.annotation):
+                    raise ValueError(f'Invalid type for parameter {func_param_name}, '
+                                     f'expected {func_param_info.annotation}')
+
         filtered = {k: v for k, v in kwargs.items() if k in args} if not has_kwargs else kwargs
         return builder(**filtered)

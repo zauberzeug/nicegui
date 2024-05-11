@@ -1,6 +1,6 @@
 import re
 from fnmatch import fnmatch
-from typing import Callable, Dict, Union, Optional, Self, List, Set, Generator
+from typing import Callable, Dict, Union, Optional, Self, List, Set, Generator, Any
 
 from nicegui import ui
 from nicegui.context import context
@@ -71,15 +71,18 @@ class SinglePageRouterConfig:
 
         return self
 
-    def add_view(self, path: str, builder: Callable, title: Optional[str] = None) -> None:
+    def add_view(self, path: str, builder: Callable, title: Optional[str] = None,
+                 on_resolve: Optional[Callable[[SinglePageTarget], SinglePageTarget]] = None) -> None:
         """Add a new route to the single page router
 
         :param path: The path of the route, including FastAPI path parameters
         :param builder: The builder function (the view to be displayed)
-        :param title: Optional title of the page"""
+        :param title: Optional title of the page
+        :param on_resolve: Optional on_resolve function which is called when this path was selected.
+        """
         path_mask = SinglePageRouterPath.create_path_mask(path.rstrip('/'))
         self.included_paths.add(path_mask)
-        self.routes[path] = SinglePageRouterPath(path, builder, title).verify()
+        self.routes[path] = SinglePageRouterPath(path, builder, title, on_resolve=on_resolve).verify()
 
     def add_router_entry(self, entry: "SinglePageRouterPath") -> None:
         """Adds a fully configured SinglePageRouterPath to the router
@@ -92,10 +95,11 @@ class SinglePageRouterConfig:
 
         :param target: The URL path to open or a builder function
         :return: The resolved target. Defines .valid if the target is valid"""
+        resolve_handler = None
         if isinstance(target, Callable):
             for target, entry in self.routes.items():
                 if entry.builder == target:
-                    return SinglePageTarget(builder=entry.builder, title=entry.path)
+                    return SinglePageTarget(router_path=entry)
         else:
             resolved = None
             path = target.split('#')[0].split('?')[0]
@@ -198,14 +202,17 @@ class SinglePageRouterConfig:
 class SinglePageRouterPath:
     """The SinglePageRouterPath is a data class which holds the configuration of one router path"""
 
-    def __init__(self, path: str, builder: Callable, title: Union[str, None] = None):
+    def __init__(self, path: str, builder: Callable, title: Union[str, None] = None,
+                 on_resolve: Optional[Callable[[SinglePageTarget, Any], SinglePageTarget]] = None):
         """
         :param path: The path of the route
         :param builder: The builder function which is called when the route is opened
-        :param title: Optional title of the page"""
+        :param title: Optional title of the page
+        :param on_resolve: Optional on_resolve function which is called when this path was selected."""
         self.path = path
         self.builder = builder
         self.title = title
+        self.on_resolve = on_resolve
 
     def verify(self) -> Self:
         """Verifies a SinglePageRouterPath for correctness. Raises a ValueError if the entry is invalid."""

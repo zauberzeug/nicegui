@@ -83,7 +83,10 @@ class SinglePageRouter:
         if isinstance(target, SinglePageTarget):
             return target
         if self._on_resolve is not None:
-            return self._on_resolve(target)
+            target = self._on_resolve(target)
+            if target.valid and target.router is None:
+                target.router = self
+            return target
         raise NotImplementedError
 
     def navigate_to(self, target: [SinglePageTarget, str], _server_side=True, sync=False) -> None:
@@ -99,7 +102,13 @@ class SinglePageRouter:
             if path_mask == target or target.startswith(path_mask + '/'):
                 frame.navigate_to(target, _server_side)
                 return
+        recursive_user_data = SinglePageRouter.get_user_data() | self.user_data | self.router_frame.user_data
         target = self.resolve_target(target)
+        if target.router_path is not None:
+            rp = target.router_path
+            if rp.on_resolve is not None:
+                target = rp.on_resolve(target, **recursive_user_data)
+
         if target.builder is None:
             if target.fragment is not None:
                 ui.run_javascript(f'window.location.href = "#{target.fragment}";')  # go to fragment
@@ -111,7 +120,6 @@ class SinglePageRouter:
         self.router_frame.target_url = target.original_path
         builder_kwargs = {**target.path_args, **target.query_args, 'url_path': target.original_path}
         target_fragment = target.fragment
-        recursive_user_data = SinglePageRouter.get_user_data() | self.user_data | self.router_frame.user_data
         builder_kwargs.update(recursive_user_data)
         self.router_frame.update_content(target.builder, builder_kwargs, target.title, target_fragment, sync)
 

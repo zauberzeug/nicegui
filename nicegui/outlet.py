@@ -1,9 +1,11 @@
+import inspect
 from typing import Callable, Any, Self, Optional, Generator
 
 from nicegui.client import Client
 from nicegui.single_page_router import SinglePageRouter
 from nicegui.single_page_router_config import SinglePageRouterConfig
 from nicegui.elements.router_frame import RouterFrame
+from nicegui.single_page_target import SinglePageTarget
 
 
 class Outlet(SinglePageRouterConfig):
@@ -86,7 +88,11 @@ class Outlet(SinglePageRouterConfig):
             OutletView(self.parent_router, relative_path)(outlet_view)
         return self
 
-    def view(self, path: str, title: Optional[str] = None) -> 'OutletView':
+    def view(self,
+             path: str,
+             title: Optional[str] = None,
+             on_resolved: Optional[Callable[[SinglePageTarget, Any], SinglePageTarget]] = None
+             ) -> 'OutletView':
         """Decorator for the view function.
 
         With the view function you define the actual content of the page. The view function is called when the user
@@ -95,8 +101,10 @@ class Outlet(SinglePageRouterConfig):
         :param path: The path of the view, relative to the base path of the outlet
         :param title: Optional title of the view. If a title is set, it will be displayed in the browser tab
             when the view is active, otherwise the default title of the application is displayed.
+        :param on_resolved: Optional callback which is called when the target is resolved to this view. It can be used
+            to modify the target before the view is displayed.
         """
-        return OutletView(self, path, title=title)
+        return OutletView(self, path, title=title, on_resolved=on_resolved)
 
     def outlet(self, path: str) -> 'Outlet':
         """Defines a nested outlet
@@ -123,16 +131,20 @@ class Outlet(SinglePageRouterConfig):
 class OutletView:
     """Defines a single view / "content page" which is displayed in an outlet"""
 
-    def __init__(self, parent_outlet: SinglePageRouterConfig, path: str, title: Optional[str] = None):
+    def __init__(self, parent_outlet: SinglePageRouterConfig, path: str, title: Optional[str] = None,
+                 on_resolved: Optional[Callable[[SinglePageTarget, Any], SinglePageTarget]] = None):
         """
         :param parent_outlet: The parent outlet in which this view is displayed
         :param path: The path of the view, relative to the base path of the outlet
         :param title: Optional title of the view. If a title is set, it will be displayed in the browser tab
             when the view is active, otherwise the default title of the application is displayed.
+        :param on_resolved: Optional callback which is called when the target is resolved to this view. It can be used
+            to modify the target before the view is displayed.
         """
         self.path = path
         self.title = title
         self.parent_outlet = parent_outlet
+        self.on_resolved = on_resolved
 
     @property
     def url(self) -> str:
@@ -142,9 +154,20 @@ class OutletView:
         """
         return (self.parent_outlet.base_path.rstrip('/') + '/' + self.path.lstrip('/')).rstrip('/')
 
+    def handle_resolve(self, target: SinglePageTarget, **kwargs) -> SinglePageTarget:
+        """Is called when the target is resolved to this view
+
+        :param target: The resolved target
+        :return: The resolved target or a modified target
+        """
+        if self.on_resolved is not None:
+            RouterFrame.run_safe(self.on_resolved, **kwargs | {'target': target},
+                                 type_check=True)
+        return target
+
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         """Decorator for the view function"""
         abs_path = self.url
         self.parent_outlet.add_view(
-            abs_path, func, title=self.title)
+            abs_path, func, title=self.title, on_resolve=self.handle_resolve)
         return self

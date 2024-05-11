@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 from nicegui import ui
 from nicegui.page_layout import LeftDrawer
+from nicegui.single_page_target import SinglePageTarget
 
 
 # --- Load service data for fake cloud provider portal
@@ -110,7 +111,15 @@ def services_router(service_name: str, menu_drawer: LeftDrawer):
     yield {'service': service}  # pass service to all sub elements (views and outlets)
 
 
-@services_router.view('/')  # service index page
+def update_title(target: SinglePageTarget,
+                 service: ServiceDefinition = None,
+                 sub_service: SubServiceDefinition = None) -> SinglePageTarget:
+    if target.router is not None:
+        target.title = 'NiceCLOUD - ' + (f'{sub_service.title}' if sub_service else f'{service.title}')
+    return target
+
+
+@services_router.view('/', on_resolved=update_title)  # service index page
 def show_index(service: ServiceDefinition):
     with ui.row() as row:
         ui.label(service.emoji).classes('text-h4 vertical-middle')
@@ -128,7 +137,7 @@ def sub_service_router(service: ServiceDefinition, sub_service_name: str):
     yield {'sub_service': sub_service}  # pass sub service to all sub elements (views and outlets)
 
 
-@sub_service_router.view('/')  # sub service index page
+@sub_service_router.view('/', on_resolved=update_title)  # sub service index page
 def sub_service_index(sub_service: SubServiceDefinition):
     ui.label(sub_service.emoji).classes('text-h1')
     ui.html('<br>')

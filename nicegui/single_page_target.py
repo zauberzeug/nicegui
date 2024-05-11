@@ -4,6 +4,7 @@ from typing import Dict, Optional, TYPE_CHECKING, Self, Callable
 
 if TYPE_CHECKING:
     from nicegui.single_page_router_config import SinglePageRouterPath
+    from nicegui.single_page_router import SinglePageRouter
 
 
 class SinglePageTarget:
@@ -15,13 +16,17 @@ class SinglePageTarget:
                  fragment: Optional[str] = None,
                  query_string: Optional[str] = None,
                  builder: Optional[Callable] = None,
-                 title: Optional[str] = None):
+                 title: Optional[str] = None,
+                 router: Optional["SinglePageRouter"] = None,
+                 router_path: Optional["SinglePageRouterPath"] = None):
         """
         :param builder: The builder function to be called when the URL is opened
         :param path: The path of the URL (to be shown in the browser)
         :param fragment: The fragment of the URL
         :param query_string: The query string of the URL
         :param title: The title of the URL to be displayed in the browser tab
+        :param router: The SinglePageRouter which is used to resolve the URL
+        :param router_path: The SinglePageRouterPath which is matched by the URL
         """
         self.original_path = path
         self.path = path
@@ -33,6 +38,12 @@ class SinglePageTarget:
         self.title = title
         self.builder = builder
         self.valid = builder is not None
+        self.router = router
+        self.router_path: Optional["SinglePageRouterPath"] = router_path
+        if router_path is not None and router_path.builder is not None:
+            self.builder = router_path.builder
+            self.title = router_path.title
+            self.valid = True
 
     def parse_url_path(self, routes: Dict[str, 'SinglePageRouterPath']) -> Self:
         """
@@ -50,6 +61,7 @@ class SinglePageTarget:
             self.valid = True
             return self
         entry = self.parse_path(routes)
+        self.router_path = entry
         if entry is not None:
             self.builder = entry.builder
             self.title = entry.title
