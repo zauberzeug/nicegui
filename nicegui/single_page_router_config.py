@@ -45,8 +45,8 @@ class SinglePageRouterEntry:
         return re.sub(r'{[^}]+}', '*', path)
 
 
-class SinglePageRouter:
-    """The SinglePageRouter allows the development of a Single Page Application (SPA).
+class SinglePageRouterConfig:
+    """The SinglePageRouterConfig allows the development of a Single Page Application (SPA).
 
     SPAs are web applications which load a single HTML page and dynamically update the content of the page.
     This allows faster page switches and a more dynamic user experience."""
@@ -54,7 +54,7 @@ class SinglePageRouter:
     def __init__(self,
                  path: str,
                  browser_history: bool = True,
-                 parent: Optional["SinglePageRouter"] = None,
+                 parent: Optional["SinglePageRouterConfig"] = None,
                  page_template: Optional[Callable[[], Generator]] = None,
                  on_instance_created: Optional[Callable] = None,
                  **kwargs) -> None:
@@ -78,7 +78,7 @@ class SinglePageRouter:
         self.parent_router = parent
         if self.parent_router is not None:
             self.parent_router._register_child_router(self)
-        self.child_routers: List['SinglePageRouter'] = []
+        self.child_routers: List['SinglePageRouterConfig'] = []
         self.page_kwargs = kwargs
 
     def setup_pages(self, force=False) -> Self:
@@ -220,6 +220,6 @@ class SinglePageRouter:
             content.navigate_to(initial_url, _server_side=False, sync=True)
         return content
 
-    def _register_child_router(self, router: 'SinglePageRouter') -> None:
+    def _register_child_router(self, router: 'SinglePageRouterConfig') -> None:
         """Registers a child router to the parent router"""
         self.child_routers.append(router)

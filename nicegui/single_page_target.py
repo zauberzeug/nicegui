@@ -3,7 +3,7 @@ import urllib.parse
 from typing import Dict, Optional, TYPE_CHECKING, Self
 
 if TYPE_CHECKING:
-    from nicegui.single_page_router import SinglePageRouterEntry, SinglePageRouter
+    from nicegui.single_page_router_config import SinglePageRouterEntry, SinglePageRouterConfig
 
 
 class SinglePageTarget:
@@ -15,7 +15,7 @@ class SinglePageTarget:
                  entry: Optional['SinglePageRouterEntry'] = None,
                  fragment: Optional[str] = None,
                  query_string: Optional[str] = None,
-                 router: Optional['SinglePageRouter'] = None):
+                 router: Optional['SinglePageRouterConfig'] = None):
         """
         :param path: The path of the URL
         :param entry: Predefined entry, e.g. targeting a Callable

@@ -1,11 +1,11 @@
 from typing import Callable, Any, Self, Optional, Generator
 
 from nicegui.client import Client
-from nicegui.single_page_router import SinglePageRouter
+from nicegui.single_page_router_config import SinglePageRouterConfig
 from nicegui.elements.router_frame import RouterFrame
 
 
-class Outlet(SinglePageRouter):
+class Outlet(SinglePageRouterConfig):
     """An outlet allows the creation of single page applications which do not reload the page when navigating between
     different views. The outlet is a container for multiple views and can contain nested outlets.
 
@@ -22,7 +22,7 @@ class Outlet(SinglePageRouter):
                  path: str,
                  outlet_builder: Optional[Callable] = None,
                  browser_history: bool = True,
-                 parent: Optional['SinglePageRouter'] = None,
+                 parent: Optional['SinglePageRouterConfig'] = None,
                  on_instance_created: Optional[Callable] = None,
                  **kwargs) -> None:
         """
@@ -122,7 +122,7 @@ class Outlet(SinglePageRouter):
 class OutletView:
     """Defines a single view / "content page" which is displayed in an outlet"""
 
-    def __init__(self, parent_outlet: SinglePageRouter, path: str, title: Optional[str] = None):
+    def __init__(self, parent_outlet: SinglePageRouterConfig, path: str, title: Optional[str] = None):
         """
         :param parent_outlet: The parent outlet in which this view is displayed
         :param path: The path of the view, relative to the base path of the outlet

@@ -5,7 +5,7 @@ from typing import Callable
 from nicegui import ui
 from nicegui.page import page
 from nicegui.single_page_app import SinglePageApp
-from nicegui.single_page_router import SinglePageRouter
+from nicegui.single_page_router_config import SinglePageRouterConfig
 
 
 @page('/', title='Welcome!')

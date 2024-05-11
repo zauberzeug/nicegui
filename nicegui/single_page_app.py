@@ -4,19 +4,20 @@ from typing import Union, List, Callable, Generator
 from fastapi.routing import APIRoute
 
 from nicegui import core
-from nicegui.single_page_router import SinglePageRouter, SinglePageRouterEntry
+from nicegui.single_page_router_config import SinglePageRouterConfig, SinglePageRouterEntry
 
 
 class SinglePageApp:
 
     def __init__(self,
-                 target: Union[SinglePageRouter, str],
+                 target: Union[SinglePageRouterConfig, str],
                  page_template: Callable[[], Generator] = None,
                  included: Union[List[Union[Callable, str]], str, Callable] = '/*',
                  excluded: Union[List[Union[Callable, str]], str, Callable] = '') -> None:
         """
-        :param target: The SinglePageRouter which shall be used as the main router for the single page application.
-            Alternatively, you can pass the root path of the pages which shall be redirected to the single page router.
+        :param target: The SinglePageRouterConfig which shall be used as the main router for the single page
+            application. Alternatively, you can pass the root path of the pages which shall be redirected to the
+            single page router.
         :param included: Optional list of masks and callables of paths to include. Default is "/*" which includes all.
         If you do not want to include all relative paths, you can specify a list of masks or callables to refine the
         included paths. If a callable is passed, it must be decorated with a page.
@@ -25,14 +26,14 @@ class SinglePageApp:
         exclusion mask.
         """
         if isinstance(target, str):
-            target = SinglePageRouter(target, page_template=page_template)
+            target = SinglePageRouterConfig(target, page_template=page_template)
         self.single_page_router = target
         self.included: List[Union[Callable, str]] = [included] if not isinstance(included, list) else included
         self.excluded: List[Union[Callable, str]] = [excluded] if not isinstance(excluded, list) else excluded
         self.system_excluded = ['/docs', '/redoc', '/openapi.json', '_*']
 
     def setup(self):
-        """Registers the SinglePageRouter with the @page decorator to handle all routes defined by the router"""
+        """Registers the SinglePageRouterConfig with the @page decorator to handle all routes defined by the router"""
         self.reroute_pages()
         self.single_page_router.setup_pages(force=True)
 

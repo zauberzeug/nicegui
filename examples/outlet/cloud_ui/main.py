@@ -1,3 +1,6 @@
+# Advanced demo showing how to use the ui.outlet and outlet.view decorators to create a nested multi-page app with a
+# static header, footer and menu which is shared across all pages and hidden when the user navigates to the root page.
+
 import os
 from typing import Dict
 
@@ -54,7 +57,7 @@ def main_router(url_path: str):
         with ui.link('', '/').style('text-decoration: none; color: inherit;') as lnk:
             ui.html('<span style="color:white">Nice</span>'
                     '<span style="color:black">CLOUD</span>').classes('text-h3')
-    menu_visible = '/services/' in url_path  # the service will make the menu visible anyway - suppresses animation
+    menu_visible = '/services/' in url_path  # make instantly visible if the initial path is a service
     menu_drawer = ui.left_drawer(bordered=True, value=menu_visible, fixed=True).classes('bg-primary')
     with ui.footer():
         ui.label('Copyright 2024 by My Company')
@@ -80,7 +83,6 @@ def main_app_index(menu_drawer: LeftDrawer):  # main app index page
                         ui.label(info.title)
                     lnk.style('text-decoration: none; color: inherit;')
                 ui.label(info.description)
-
     ui.html('<br><br>')
     # add a link to the other app
     ui.markdown("Click [here](/other_app) to visit the other app.")
@@ -89,7 +91,6 @@ def main_app_index(menu_drawer: LeftDrawer):  # main app index page
 @main_router.outlet('/services/{service_name}')  # service outlet
 def services_router(service_name: str, menu_drawer: LeftDrawer):
     service: ServiceDefinition = services[service_name]
-    # update menu drawer
     menu_drawer.clear()
     with menu_drawer:
         menu_drawer.show()
@@ -134,4 +135,4 @@ def sub_service_index(sub_service: SubServiceDefinition):
     ui.label(sub_service.description)
 
 
-ui.run(show=False)
+ui.run(show=False, title='NiceCLOUD Portal')

@@ -6,7 +6,7 @@ from nicegui.context import context
 from nicegui.single_page_target import SinglePageTarget
 
 if TYPE_CHECKING:
-    from nicegui.single_page_router import SinglePageRouter
+    from nicegui.single_page_router_config import SinglePageRouterConfig
 
 
 class RouterFrame(ui.element, component='router_frame.js'):
@@ -15,7 +15,7 @@ class RouterFrame(ui.element, component='router_frame.js'):
     management to prevent the browser from reloading the whole page."""
 
     def __init__(self,
-                 router: "SinglePageRouter",
+                 router: "SinglePageRouterConfig",
                  included_paths: Optional[list[str]] = None,
                  excluded_paths: Optional[list[str]] = None,
                  use_browser_history: bool = True,
