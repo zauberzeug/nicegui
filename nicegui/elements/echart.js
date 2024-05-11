@@ -2,7 +2,10 @@ import { convertDynamicProperties } from "../../static/utils/dynamic_properties.
 
 export default {
   template: "<div></div>",
-  mounted() {
+  async mounted() {
+    // the tailwind classes are not applied until the next tick(https://github.com/zauberzeug/nicegui/pull/2932) 
+    await this.$nextTick();
+
     this.chart = echarts.init(this.$el);
     this.chart.on("click", (e) => this.$emit("pointClick", e));
     for (const event of [
