@@ -111,12 +111,14 @@ def services_router(service_name: str, menu_drawer: LeftDrawer):
                 service_element.classes('text-white text-h6 bg-gray cursor-pointer')
                 service_element.style('text-shadow: 2px 2px #00000070;')
                 service_element.on('click', lambda url=f'/services/{service_name}/{key}': ui.navigate.to(url))
-    yield {'service': service}  # pass service to all sub elements (views and outlets)
+    yield {'service': service}  # pass service object to all sub elements (views and outlets)
 
 
 def update_title(target: SinglePageTarget,
                  service: ServiceDefinition = None,
                  sub_service: SubServiceDefinition = None) -> SinglePageTarget:
+    # Is called for every page within the service_router and sub_service_router via the on_load callback
+    # and updates the title of each page
     if target.router is not None:
         target.title = 'NiceCLOUD - ' + (f'{sub_service.title}' if sub_service else f'{service.title}')
     return target
@@ -137,7 +139,7 @@ def sub_service_router(service: ServiceDefinition, sub_service_name: str):
     sub_service: SubServiceDefinition = service.sub_services[sub_service_name]
     ui.label(f'{service.title} > {sub_service.title}').classes('text-h4')
     ui.html('<br>')
-    yield {'sub_service': sub_service}  # pass sub service to all sub elements (views and outlets)
+    yield {'sub_service': sub_service}  # pass sub_service object to all sub elements (views and outlets)
 
 
 @sub_service_router.view('/', on_open=update_title)  # sub service index page

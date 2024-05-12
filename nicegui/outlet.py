@@ -117,13 +117,14 @@ class Outlet(SinglePageRouterConfig):
         """
         return OutletView(self, path, title=title, on_open=on_open)
 
-    def outlet(self, path: str) -> 'Outlet':
+    def outlet(self, path: str, **kwargs) -> 'Outlet':
         """Defines a nested outlet
 
         :param path: The relative path of the outlet
+        :param kwargs: Additional arguments for the nested ui.outlet
         """
         abs_path = self.base_path.rstrip('/') + path
-        return Outlet(abs_path, parent=self)
+        return Outlet(abs_path, parent=self, **kwargs)
 
     @property
     def current_url(self) -> str:
