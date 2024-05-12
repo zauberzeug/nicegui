@@ -100,4 +100,4 @@ def secret_area_index():
         ui.button('Logout').on_click(logout)
 
 
-ui.run(show=False, storage_secret='secret', title='NiceCLOUD')
+ui.run(storage_secret='secret', title='NiceCLOUD')
