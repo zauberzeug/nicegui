@@ -1,3 +1,4 @@
+import asyncio
 from typing import List
 
 from nicegui import app, ui
@@ -22,12 +23,13 @@ def test_adding_elements_during_onconnect_on_auto_index_page(screen: Screen):
 
 def test_async_connect_handler(screen: Screen):
     async def run_js():
-        result.text = await ui.run_javascript('41 + 1')
-    result = ui.label()
+        await asyncio.sleep(0.1)
+        status.text = 'Connected'
+    status = ui.label()
     app.on_connect(run_js)
 
     screen.open('/')
-    screen.should_contain('42')
+    screen.should_contain('Connected')
 
 
 def test_connect_disconnect_is_called_for_each_client(screen: Screen):

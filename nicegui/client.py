@@ -220,6 +220,9 @@ class Client:
             self.outbox.enqueue_message('run_javascript', {'code': code}, target_id)
 
         async def send_and_wait():
+            if self is self.auto_index_client:
+                raise RuntimeError('Cannot await JavaScript responses on the auto-index page. '
+                                   'There could be multiple clients connected and it is not clear which one to wait for.')
             self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
             return await JavaScriptRequest(request_id, timeout=timeout)
 
