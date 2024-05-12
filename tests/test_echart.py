@@ -56,11 +56,13 @@ def test_nested_expansion(screen: Screen):
                 'xAxis': {'type': 'value'},
                 'yAxis': {'type': 'category', 'data': ['A', 'B', 'C']},
                 'series': [{'type': 'line', 'data': [0.1, 0.2, 0.3]}],
+                'animationDuration': 100,
             })
     ui.button('Open', on_click=expansion.open)
 
     screen.open('/')
     screen.click('Open')
+    screen.wait(0.5)
     canvas = screen.find_by_tag('canvas')
     assert canvas.rect['height'] == 168
     assert canvas.rect['width'] == 568
