@@ -94,7 +94,7 @@ class Client:
     @property
     def has_socket_connection(self) -> bool:
         """Return True if the client is connected, False otherwise."""
-        return self.environ is not None
+        return self.tab_id is not None
 
     @property
     def head_html(self) -> str:
@@ -115,6 +115,7 @@ class Client:
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         """Build a FastAPI response for the client."""
+        self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', request.scope.get('root_path', ''))
         elements = json.dumps({
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
@@ -211,6 +212,9 @@ class Client:
             self.outbox.enqueue_message('run_javascript', {'code': code}, target_id)
 
         async def send_and_wait():
+            if self is self.auto_index_client:
+                raise RuntimeError('Cannot await JavaScript responses on the auto-index page. '
+                                   'There could be multiple clients connected and it is not clear which one to wait for.')
             self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
             return await JavaScriptRequest(request_id, timeout=timeout)
 

@@ -72,7 +72,7 @@ doc.intro(generic_events_documentation)
     This is useful for long-running computations that would otherwise block the event loop and make the UI unresponsive.
     The function returns a future that can be awaited.
 
-    **Note:**
+    Note:
     The function needs to transfer the whole state of the passed function to the process, which is done with pickle.
     It is encouraged to create free functions or static methods which get all the data as simple parameters (i.e. no class or UI logic)
     and return the result, instead of writing it in class properties or global variables.

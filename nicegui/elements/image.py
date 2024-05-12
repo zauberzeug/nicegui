@@ -27,6 +27,9 @@ class Image(SourceElement, component='image.js'):
         """
         super().__init__(source=source)
 
+    def set_source(self, source: Union[str, Path, 'PIL_Image']) -> None:
+        return super().set_source(source)
+
     def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:
         if optional_features.has('pillow') and isinstance(source, PIL_Image):
             source = pil_to_base64(source, self.PIL_CONVERT_FORMAT)

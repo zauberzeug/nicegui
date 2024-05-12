@@ -9,4 +9,5 @@ from .native import WindowProxy
 class NativeConfig:
     start_args: Dict[str, Any] = field(default_factory=dict)
     window_args: Dict[str, Any] = field(default_factory=dict)
+    settings: Dict[str, Any] = field(default_factory=dict)
     main_window: Optional[WindowProxy] = None
