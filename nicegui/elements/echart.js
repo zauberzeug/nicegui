@@ -3,8 +3,7 @@ import { convertDynamicProperties } from "../../static/utils/dynamic_properties.
 export default {
   template: "<div></div>",
   async mounted() {
-    // the tailwind classes are not applied until the next tick(https://github.com/zauberzeug/nicegui/pull/2932) 
-    await this.$nextTick();
+    await this.$nextTick(); // wait for Tailwind classes to be applied
 
     this.chart = echarts.init(this.$el);
     this.chart.on("click", (e) => this.$emit("pointClick", e));
@@ -52,12 +51,12 @@ export default {
     }
 
     // Prevent interruption of chart animations due to resize operations.
-    // Note that it's recommended to register the callbacks for such an event before setOption
-    const finishedCallback = () => {
+    // It is recommended to register the callbacks for such an event before setOption.
+    const createResizeObserver = () => {
       new ResizeObserver(this.chart.resize).observe(this.$el);
-      this.chart.off('finished', finishedCallback);
-    }
-    this.chart.on('finished', finishedCallback);
+      this.chart.off("finished", createResizeObserver);
+    };
+    this.chart.on("finished", createResizeObserver);
 
     this.update_chart();
   },
