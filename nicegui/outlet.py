@@ -26,7 +26,10 @@ class Outlet(SinglePageRouterConfig):
                  outlet_builder: Optional[Callable] = None,
                  browser_history: bool = True,
                  parent: Optional['SinglePageRouterConfig'] = None,
-                 on_instance_created: Optional[Callable] = None,
+                 on_instance_created: Optional[Callable[['SinglePageRouter'], None]] = None,
+                 on_resolve: Optional[Callable[[str], Optional[SinglePageTarget]]] = None,
+                 on_open: Optional[Callable[[SinglePageTarget], SinglePageTarget]] = None,
+                 on_navigate: Optional[Callable[[str], Optional[str]]] = None,
                  **kwargs) -> None:
         """
         :param path: the base path of the single page router.
@@ -37,10 +40,18 @@ class Outlet(SinglePageRouterConfig):
         :param browser_history: Optional flag to enable or disable the browser history management. Default is True.
         :param on_instance_created: Optional callback which is called when a new instance is created. Each browser tab
         or window is a new instance. This can be used to initialize the state of the application.
+        :param on_resolve: Optional callback which is called when a URL path is resolved to a target. Can be used
+            to resolve or redirect a URL path to a target.
+        :param on_open: Optional callback which is called when a target is opened. Can be used to modify the target
+            such as title or the actually called builder function.
+        :param on_navigate: Optional callback which is called when a navigation event is triggered. Can be used to
+            prevent or modify the navigation. Return the new URL if the navigation should be allowed, modify the URL
+            or return None to prevent the navigation.
         :param parent: The parent outlet of this outlet.
         :param kwargs: Additional arguments
         """
         super().__init__(path, browser_history=browser_history, on_instance_created=on_instance_created,
+                         on_resolve=on_resolve, on_open=on_open, on_navigate=on_navigate,
                          parent=parent, **kwargs)
         self.outlet_builder: Optional[Callable] = outlet_builder
         if parent is None:
@@ -61,12 +72,12 @@ class Outlet(SinglePageRouterConfig):
             if isinstance(result, dict):
                 properties.update(result)
 
-        router_frame = SinglePageRouter.get_current_frame()
+        router_frame = SinglePageRouter.get_current_router()
         add_properties(next(frame))  # insert ui elements before yield
         if router_frame is not None:
             router_frame.update_user_data(properties)
         yield properties
-        router_frame = SinglePageRouter.get_current_frame()
+        router_frame = SinglePageRouter.get_current_router()
         try:
             add_properties(next(frame))  # if provided insert ui elements after yield
             if router_frame is not None:
@@ -121,7 +132,7 @@ class Outlet(SinglePageRouterConfig):
         Only works when called from within the outlet or view builder function.
 
         :return: The current URL of the outlet"""
-        cur_router = SinglePageRouter.get_current_frame()
+        cur_router = SinglePageRouter.get_current_router()
         if cur_router is None:
             raise ValueError('The current URL can only be retrieved from within a nested outlet or view builder '
                              'function.')

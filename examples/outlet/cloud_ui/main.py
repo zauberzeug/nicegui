@@ -23,12 +23,15 @@ class SubServiceDefinition(BaseModel):
 class ServiceDefinition(BaseModel):
     title: str = Field(..., description='The title of the cloud service', examples=['Virtual Machines'])
     emoji: str = Field(..., description='An emoji representing the cloud service', examples=['💻'])
-    description: str
-    sub_services: Dict[str, SubServiceDefinition]
+    description: str = Field(..., description='A short description of the cloud service',
+                             examples=['Create and manage virtual machines'])
+    sub_services: Dict[str, SubServiceDefinition] = Field(...,
+                                                          description='The sub-services of the cloud service')
 
 
 class ServiceDefinitions(BaseModel):
-    services: Dict[str, ServiceDefinition]
+    services: Dict[str, ServiceDefinition] = Field(...,
+                                                   description='The cloud services provided by the cloud provider')
 
 
 services = ServiceDefinitions.parse_file(os.path.join(os.path.dirname(__file__), 'services.json')).services
@@ -144,4 +147,4 @@ def sub_service_index(sub_service: SubServiceDefinition):
     ui.label(sub_service.description)
 
 
-ui.run(show=False, title='NiceCLOUD Portal')
+ui.run(title='NiceCLOUD Portal')

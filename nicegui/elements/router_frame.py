@@ -1,7 +1,7 @@
 import inspect
 from typing import Optional, Any, Callable
 
-from nicegui import ui, background_tasks, core
+from nicegui import ui, background_tasks
 
 
 class RouterFrame(ui.element, component='router_frame.js'):
@@ -15,7 +15,6 @@ class RouterFrame(ui.element, component='router_frame.js'):
                  included_paths: Optional[list[str]] = None,
                  excluded_paths: Optional[list[str]] = None,
                  use_browser_history: bool = True,
-                 change_title: bool = True,
                  on_navigate: Optional[Callable[[str, Optional[bool]], Any]] = None,
                  user_data: Optional[dict] = None
                  ):
@@ -24,13 +23,11 @@ class RouterFrame(ui.element, component='router_frame.js'):
         :param included_paths: A list of valid path masks which shall be allowed to be opened by the router
         :param excluded_paths: A list of path masks which shall be excluded from the router
         :param use_browser_history: Optional flag to enable or disable the browser history management. Default is True.
-        :param change_title: Optional flag to enable or disable the title change. Default is True.
         :param target_url: The initial url of the router frame
         :param on_navigate: Optional callback which is called when the browser / JavaScript navigates to a new url
         :param user_data: Optional user data which is passed to the builder functions of the router frame
         """
         super().__init__()
-        self.change_title = change_title
         included_masks = []
         excluded_masks = []
         if included_paths is not None:
@@ -81,8 +78,6 @@ class RouterFrame(ui.element, component='router_frame.js'):
         :param title: The title of the page
         :param target_fragment: The fragment to navigate to after the content has been loaded
         :param sync: Optional flag to define if the content should be updated synchronously. Default is False."""
-        if self.change_title:
-            ui.page_title(title if title is not None else core.app.config.title)
 
         def exec_builder():
             """Execute the builder function with the given keyword arguments"""
@@ -94,7 +89,6 @@ class RouterFrame(ui.element, component='router_frame.js'):
                 if target_fragment is not None:
                     await ui.run_javascript(f'window.location.href = "#{target_fragment}";')
 
-        self.clear()
         if sync:
             with self:
                 exec_builder()

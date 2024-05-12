@@ -26,6 +26,9 @@ class SinglePageRouterConfig:
                  parent: Optional['SinglePageRouterConfig'] = None,
                  page_template: Optional[Callable[[], Generator]] = None,
                  on_instance_created: Optional[Callable[['SinglePageRouter'], None]] = None,
+                 on_resolve: Optional[Callable[[str], Optional[SinglePageTarget]]] = None,
+                 on_open: Optional[Callable[[SinglePageTarget], SinglePageTarget]] = None,
+                 on_navigate: Optional[Callable[[str], Optional[str]]] = None,
                  **kwargs) -> None:
         """:param path: the base path of the single page router.
         :param browser_history: Optional flag to enable or disable the browser history management. Default is True.
@@ -33,6 +36,13 @@ class SinglePageRouterConfig:
         :param page_template: Optional page template generator function which defines the layout of the page. It
             needs to yield a value to separate the layout from the content area.
         :param on_instance_created: Optional callback which is called when a new router instance is created. Each
+        :param on_resolve: Optional callback which is called when a URL path is resolved to a target. Can be used
+            to resolve or redirect a URL path to a target.
+        :param on_open: Optional callback which is called when a target is opened. Can be used to modify the target
+            such as title or the actually called builder function.
+        :param on_navigate: Optional callback which is called when a navigation event is triggered. Can be used to
+            prevent or modify the navigation. Return the new URL if the navigation should be allowed, modify the URL
+            or return None to prevent the navigation.
         browser tab or window is a new instance. This can be used to initialize the state of the application.
         :param kwargs: Additional arguments for the @page decorators"""
         super().__init__()
@@ -41,9 +51,9 @@ class SinglePageRouterConfig:
         self.included_paths: Set[str] = set()
         self.excluded_paths: Set[str] = set()
         self.on_instance_created: Optional[Callable] = on_instance_created
-        self.on_resolve: Optional[Callable[[str], Optional[SinglePageTarget]]] = None
-        self.on_open: Optional[Callable[[SinglePageTarget], SinglePageTarget]] = None
-        self.on_navigate: Optional[Callable[[str], Optional[str]]] = None
+        self.on_resolve: Optional[Callable[[str], Optional[SinglePageTarget]]] = on_resolve
+        self.on_open: Optional[Callable[[SinglePageTarget], SinglePageTarget]] = on_open
+        self.on_navigate: Optional[Callable[[str], Optional[str]]] = on_navigate
         self.use_browser_history = browser_history
         self.page_template = page_template
         self._setup_configured = False
@@ -53,12 +63,17 @@ class SinglePageRouterConfig:
         self.child_routers: List['SinglePageRouterConfig'] = []
         self.page_kwargs = kwargs
 
-    def setup_pages(self, force=False) -> Self:
+    def setup_pages(self, overwrite=False) -> Self:
+        """Setups the NiceGUI page endpoints and their base UI structure for the root routers
+        
+        :param overwrite: Optional flag to force the setup of a given page even if one with a conflicting path is
+            already existing. Default is False. Classes such as SinglePageApp use this flag to avoid conflicts with
+            other routers and resolve those conflicts by rerouting the pages."""
         for key, route in Client.page_routes.items():
             if route.startswith(
                     self.base_path.rstrip('/') + '/') and route.rstrip('/') not in self.included_paths:
                 self.excluded_paths.add(route)
-            if force:
+            if overwrite:
                 continue
             if self.base_path.startswith(route.rstrip('/') + '/'):  # '/sub_router' after '/' - forbidden
                 raise ValueError(f'Another router with path "{route.rstrip("/")}/*" is already registered which '
@@ -91,7 +106,7 @@ class SinglePageRouterConfig:
         self.included_paths.add(path_mask)
         self.routes[path] = SinglePageRouterPath(path, builder, title, on_open=on_open).verify()
 
-    def add_router_entry(self, entry: "SinglePageRouterPath") -> None:
+    def add_router_entry(self, entry: 'SinglePageRouterPath') -> None:
         """Adds a fully configured SinglePageRouterPath to the router
 
         :param entry: The SinglePageRouterPath to add"""
@@ -107,10 +122,13 @@ class SinglePageRouterConfig:
                 if entry.builder == target:
                     return SinglePageTarget(router_path=entry)
         else:
-            if self.on_resolve is not None:
-                resolved = self.on_resolve(target)
-                if resolved is not None:
-                    return resolved
+            cur_config = self
+            while cur_config is not None:  # try custom on_resolve functions first for manual resolution
+                if cur_config.on_resolve is not None:
+                    resolved = cur_config.on_resolve(target)
+                    if resolved is not None:
+                        return resolved
+                cur_config = cur_config.parent_config
             resolved = None
             path = target.split('#')[0].split('?')[0]
             for cur_router in self.child_routers:
@@ -127,8 +145,6 @@ class SinglePageRouterConfig:
             result = SinglePageTarget(target).parse_url_path(routes=self.routes)
             if resolved is not None:
                 result.original_path = resolved.original_path
-            if self.on_open:
-                result = self.on_open(result)
             return result
 
     def navigate_to(self, target: Union[Callable, str, SinglePageTarget], server_side=True) -> bool:
@@ -144,6 +160,19 @@ class SinglePageRouterConfig:
             return False
         router.navigate_to(org_target, server_side=server_side)
         return True
+
+    def handle_navigate(self, url: str) -> Optional[str]:
+        """Handles a navigation event and returns the new URL if the navigation should be allowed
+
+        :param url: The URL to navigate to
+        :return: The new URL if the navigation should be allowed, None otherwise"""
+        if self.on_navigate is not None:
+            new_url = self.on_navigate(url)
+            if new_url != url:
+                return new_url
+        if self.parent_config is not None:
+            return self.parent_config.handle_navigate(url)
+        return url
 
     def build_page_template(self) -> Generator:
         """Builds the page template. Needs to call insert_content_area at some point which defines the exchangeable
@@ -190,7 +219,7 @@ class SinglePageRouterConfig:
         :param initial_url: The initial URL to initialize the router's content with
         :param user_data: Optional user data to pass to the content area
         :return: The created router instance"""
-        parent_router = SinglePageRouter.get_current_frame()
+        parent_router = SinglePageRouter.get_current_router()
         content = SinglePageRouter(config=self,
                                    included_paths=sorted(list(self.included_paths)),
                                    excluded_paths=sorted(list(self.excluded_paths)),
@@ -204,7 +233,7 @@ class SinglePageRouterConfig:
         if self.on_instance_created is not None:
             self.on_instance_created(content)
         if initial_url is not None:
-            content.navigate_to(initial_url, server_side=False, sync=True, history=False)
+            content.navigate_to(initial_url, server_side=True, sync=True, history=False)
         return content
 
     def _register_child_config(self, router_config: 'SinglePageRouterConfig') -> None:

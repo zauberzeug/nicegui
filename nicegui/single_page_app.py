@@ -10,7 +10,7 @@ from nicegui.single_page_router_config import SinglePageRouterConfig, SinglePage
 class SinglePageApp:
 
     def __init__(self,
-                 target: Union[SinglePageRouterConfig, str],
+                 target: Union[SinglePageRouterConfig, str] = '/',
                  page_template: Callable[[], Generator] = None,
                  included: Union[List[Union[Callable, str]], str, Callable] = '/*',
                  excluded: Union[List[Union[Callable, str]], str, Callable] = '') -> None:
@@ -35,7 +35,7 @@ class SinglePageApp:
     def setup(self):
         """Registers the SinglePageRouterConfig with the @page decorator to handle all routes defined by the router"""
         self.reroute_pages()
-        self.single_page_router.setup_pages(force=True)
+        self.single_page_router.setup_pages(overwrite=True)
 
     def reroute_pages(self):
         """Registers the SinglePageRouter with the @page decorator to handle all routes defined by the router"""

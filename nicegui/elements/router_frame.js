@@ -35,7 +35,7 @@ export default {
             let href = normalize_path(path);
             for (let frame of router.child_frame_paths) {
                 if (path.startsWith(frame + '/') || (href === frame)) {
-                    console.log(href + ' handled by child RouterFrame ' + frame + ', skipping...');
+                    if (router._debug) console.log(href + ' handled by child RouterFrame ' + frame + ', skipping...');
                     return true;
                 }
             }
@@ -91,6 +91,6 @@ export default {
         excluded_path_masks: [],
         use_browser_history: {type: Boolean, default: true},
         child_frame_paths: [],
-        _debug: {type: Boolean, default: true},
+        _debug: {type: Boolean, default: false},
     },
 };

@@ -1,6 +1,6 @@
 import inspect
 import urllib.parse
-from typing import Dict, Optional, TYPE_CHECKING, Self, Callable
+from typing import Dict, Optional, TYPE_CHECKING, Self, Callable, Any
 
 if TYPE_CHECKING:
     from nicegui.single_page_router_config import SinglePageRouterPath
@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 
 class SinglePageTarget:
-    """A helper class which is used to resolve and URL path and it's query and fragment parameters to find the matching
+    """A helper class which is used to resolve and URL path, it's query and fragment parameters to find the matching
     SinglePageRouterPath and extract path and query parameters."""
 
     def __init__(self,
@@ -17,8 +17,11 @@ class SinglePageTarget:
                  query_string: Optional[str] = None,
                  builder: Optional[Callable] = None,
                  title: Optional[str] = None,
-                 router: Optional["SinglePageRouter"] = None,
-                 router_path: Optional["SinglePageRouterPath"] = None):
+                 router: Optional['SinglePageRouter'] = None,
+                 router_path: Optional['SinglePageRouterPath'] = None,
+                 on_pre_update: Optional[Callable[[Any], None]] = None,
+                 on_post_update: Optional[Callable[[Any], None]] = None
+                 ):
         """
         :param builder: The builder function to be called when the URL is opened
         :param path: The path of the URL (to be shown in the browser)
@@ -27,6 +30,11 @@ class SinglePageTarget:
         :param title: The title of the URL to be displayed in the browser tab
         :param router: The SinglePageRouter which is used to resolve the URL
         :param router_path: The SinglePageRouterPath which is matched by the URL
+        :param on_pre_update: Optional callback which is called before content is updated. It can be used to modify the
+            target or execute JavaScript code before the content is updated.
+        :param on_post_update: Optional callback which is called after content is updated. It can be used to modify the
+            target or execute JavaScript code after the content is updated, e.g. showing a message box or redirecting
+            the user to another page.
         """
         self.original_path = path
         self.path = path
@@ -40,6 +48,8 @@ class SinglePageTarget:
         self.valid = builder is not None
         self.router = router
         self.router_path: Optional["SinglePageRouterPath"] = router_path
+        self.on_pre_update = on_pre_update
+        self.on_post_update = on_post_update
         if router_path is not None and router_path.builder is not None:
             self.builder = router_path.builder
             self.title = router_path.title
@@ -77,8 +87,7 @@ class SinglePageTarget:
         """Splits the path into its components, tries to match it with the routes and extracts the path arguments
         into their corresponding variables.
 
-        :param routes: All valid routes of the single page router
-        """
+        :param routes: All valid routes of the single page router"""
         path_elements = self.path.lstrip('/').rstrip('/').split('/')
         self.path_elements = path_elements
         for route, entry in routes.items():
