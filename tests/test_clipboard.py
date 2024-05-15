@@ -3,11 +3,13 @@ from nicegui.testing import SeleniumScreen
 
 
 def test_clipboard(screen: SeleniumScreen):
-    ui.button('Copy to clipboard', on_click=lambda: ui.clipboard.write('Hello, World!'))
+    @ui.page('/')
+    def page():
+        ui.button('Copy to clipboard', on_click=lambda: ui.clipboard.write('Hello, World!'))
 
-    async def read_clipboard():
-        ui.notify('Clipboard: ' + await ui.clipboard.read())
-    ui.button('Read from clipboard', on_click=read_clipboard)
+        async def read_clipboard():
+            ui.notify('Clipboard: ' + await ui.clipboard.read())
+        ui.button('Read from clipboard', on_click=read_clipboard)
 
     screen.open('/')
     screen.selenium.set_permissions('clipboard-read', 'granted')

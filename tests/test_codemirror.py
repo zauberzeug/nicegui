@@ -13,16 +13,21 @@ def test_codemirror(screen: SeleniumScreen):
 
 def test_supported_values(screen: SeleniumScreen):
     values: dict[str, List[str]] = {}
-    editor = ui.codemirror()
 
-    async def fetch():
-        values['languages'] = await editor.run_method('getLanguages')
-        values['themes'] = await editor.run_method('getThemes')
-        ui.label('Done')
-    ui.button('Fetch', on_click=fetch)
+    @ui.page('/')
+    def page():
+        editor = ui.codemirror()
+
+        async def fetch():
+            values['languages'] = await editor.run_method('getLanguages')
+            values['themes'] = await editor.run_method('getThemes')
+            values['supported_themes'] = editor.supported_themes
+            values['supported_languages'] = editor.supported_languages
+            ui.label('Done')
+        ui.button('Fetch', on_click=fetch)
 
     screen.open('/')
     screen.click('Fetch')
     screen.wait_for('Done')
-    assert values['languages'] == editor.supported_languages
-    assert values['themes'] == editor.supported_themes
+    assert values['languages'] == values['supported_languages']
+    assert values['themes'] == values['supported_themes']

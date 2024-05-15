@@ -56,26 +56,30 @@ def test_nested_expansion(screen: SeleniumScreen):
                 'xAxis': {'type': 'value'},
                 'yAxis': {'type': 'category', 'data': ['A', 'B', 'C']},
                 'series': [{'type': 'line', 'data': [0.1, 0.2, 0.3]}],
+                'animationDuration': 100,
             })
     ui.button('Open', on_click=expansion.open)
 
     screen.open('/')
     screen.click('Open')
+    screen.wait(0.5)
     canvas = screen.find_by_tag('canvas')
     assert canvas.rect['height'] == 168
     assert canvas.rect['width'] == 568
 
 
 def test_run_method(screen: SeleniumScreen):
-    echart = ui.echart({
-        'xAxis': {'type': 'value'},
-        'yAxis': {'type': 'category', 'data': ['A', 'B', 'C']},
-        'series': [{'type': 'line', 'data': [0.1, 0.2, 0.3]}],
-    }).classes('w-[600px]')
+    @ui.page('/')
+    def page():
+        echart = ui.echart({
+            'xAxis': {'type': 'value'},
+            'yAxis': {'type': 'category', 'data': ['A', 'B', 'C']},
+            'series': [{'type': 'line', 'data': [0.1, 0.2, 0.3]}],
+        }).classes('w-[600px]')
 
-    async def get_width():
-        ui.label(f'Width: {await echart.run_chart_method("getWidth")}px')
-    ui.button('Get Width', on_click=get_width)
+        async def get_width():
+            ui.label(f'Width: {await echart.run_chart_method("getWidth")}px')
+        ui.button('Get Width', on_click=get_width)
 
     screen.open('/')
     screen.click('Get Width')

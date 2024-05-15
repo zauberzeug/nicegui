@@ -45,11 +45,13 @@ def test_run_javascript_before_client_connected(screen: SeleniumScreen):
 
 
 def test_response_from_javascript(screen: SeleniumScreen):
-    async def compute() -> None:
-        response = await ui.run_javascript('1 + 41')
-        ui.label(response)
+    @ui.page('/')
+    def page():
+        async def compute() -> None:
+            response = await ui.run_javascript('1 + 41')
+            ui.label(response)
 
-    ui.button('compute', on_click=compute)
+        ui.button('compute', on_click=compute)
 
     screen.open('/')
     screen.click('compute')
@@ -57,27 +59,46 @@ def test_response_from_javascript(screen: SeleniumScreen):
 
 
 def test_async_javascript(screen: SeleniumScreen):
-    async def run():
-        result = await ui.run_javascript('await new Promise(r => setTimeout(r, 100)); return 42')
-        ui.label(result)
-    ui.button('run', on_click=run)
+    @ui.page('/')
+    def page():
+        async def run():
+            result = await ui.run_javascript('await new Promise(r => setTimeout(r, 100)); return 42')
+            ui.label(result)
+
+        ui.button('run', on_click=run)
+
     screen.open('/')
     screen.click('run')
     screen.should_contain('42')
 
 
 def test_simultaneous_async_javascript(screen: SeleniumScreen):
-    async def runA():
-        result = await ui.run_javascript('await new Promise(r => setTimeout(r, 500)); return 1')
-        ui.label(f'A: {result}')
+    @ui.page('/')
+    def page():
+        async def runA():
+            result = await ui.run_javascript('await new Promise(r => setTimeout(r, 500)); return 1')
+            ui.label(f'A: {result}')
 
-    async def runB():
-        result = await ui.run_javascript('await new Promise(r => setTimeout(r, 250)); return 2')
-        ui.label(f'B: {result}')
-    ui.button('runA', on_click=runA)
-    ui.button('runB', on_click=runB)
+        async def runB():
+            result = await ui.run_javascript('await new Promise(r => setTimeout(r, 250)); return 2')
+            ui.label(f'B: {result}')
+
+        ui.button('runA', on_click=runA)
+        ui.button('runB', on_click=runB)
+
     screen.open('/')
     screen.click('runA')
     screen.click('runB')
     screen.should_contain('A: 1')
     screen.should_contain('B: 2')
+
+
+def test_raise_on_auto_index_page(screen: Screen):
+    async def await_answer():
+        await ui.run_javascript('return 42')
+    ui.button('Ask', on_click=await_answer)
+
+    screen.open('/')
+    screen.click('Ask')
+    screen.assert_py_logger('ERROR', 'Cannot await JavaScript responses on the auto-index page. '
+                            'There could be multiple clients connected and it is not clear which one to wait for.')
