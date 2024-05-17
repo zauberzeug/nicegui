@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import itertools
 from collections import deque
 from typing import TYPE_CHECKING, Any, Deque, Dict, Optional, Tuple
 
@@ -76,8 +77,8 @@ class Outbox:
                 coros.append(self._emit('update', data, self.client.id))
                 self.updates.clear()
 
-                for target_id, message_type, data in self.messages:
-                    coros.append(self._emit(message_type, data, target_id))
+                for target_id, messages in itertools.groupby(self.messages, key=lambda x: x[0]):
+                    coros.append(self._emit('messages', [(type_, data) for _, type_, data in messages], target_id))
                 self.messages.clear()
 
                 for coro in coros:
