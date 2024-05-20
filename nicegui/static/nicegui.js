@@ -7,16 +7,40 @@ let mounted_app = undefined;
 
 const loaded_libraries = new Set();
 const loaded_components = new Set();
+const eval_identifier = "_nicegui_need_to_eval_:";
+const import_identifier = "_nicegui_js_import:";
 
-function parseElements(raw_elements) {
-  return JSON.parse(
+async function parseElements(raw_elements) {
+  let importRefs = [];
+  let parsedElements = JSON.parse(
     raw_elements
       .replace(/&#36;/g, "$")
       .replace(/&#96;/g, "`")
       .replace(/&gt;/g, ">")
       .replace(/&lt;/g, "<")
-      .replace(/&amp;/g, "&")
+      .replace(/&amp;/g, "&"),
+    (_, val) => {
+      if (typeof val === "string" && val.startsWith(eval_identifier)) {
+        return eval(val.slice(eval_identifier.length));
+      } else if (typeof val === "string" && val.startsWith(import_identifier)) {
+        const js_import = JSON.parse(val.slice(import_identifier.length));
+        importRefs.push(js_import);
+        return js_import;
+      } else {
+        return val;
+      }
+    }
   );
+  // JSON.parse reviver cannot be async so we perform this hacky way to import the module
+  let ref = importRefs[0];
+  let url = ref.url;
+  let obj = ref.obj;
+  let prop = ref.prop;
+  Object.keys(ref).forEach((key) => delete ref[key]);
+  ref[prop] = (await import(url))[obj];
+
+  console.log(parsedElements);
+  return parsedElements;
 }
 
 function replaceUndefinedAttributes(elements, id) {
@@ -124,6 +148,7 @@ function throttle(callback, time, leading, trailing, id) {
     }
   }
 }
+
 function renderRecursively(elements, id) {
   const element = elements[id];
   if (element === undefined) {
@@ -142,16 +167,6 @@ function renderRecursively(elements, id) {
     style: Object.entries(element.style).reduce((str, [p, val]) => `${str}${p}:${val};`, "") || undefined,
     ...element.props,
   };
-  Object.entries(props).forEach(([key, value]) => {
-    if (key.startsWith(":")) {
-      try {
-        props[key.substring(1)] = eval(value);
-        delete props[key];
-      } catch (e) {
-        console.error(`Error while converting ${key} attribute to function:`, e);
-      }
-    }
-  });
   element.events.forEach((event) => {
     let event_name = "on" + event.type[0].toLocaleUpperCase() + event.type.substring(1);
     event.specials.forEach((s) => (event_name += s[0].toLocaleUpperCase() + s.substring(1)));

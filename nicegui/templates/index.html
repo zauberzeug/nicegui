@@ -42,7 +42,7 @@
       <span>Trying to reconnect...</span>
     </div>
     <script type="module">
-      const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
+      const app = createApp(await parseElements(String.raw`{{ elements | safe }}`), {
         version: "{{ version }}",
         prefix: "{{ prefix | safe }}",
         query: {{ socket_io_js_query_params | safe }},
