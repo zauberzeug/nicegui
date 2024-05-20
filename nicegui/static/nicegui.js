@@ -32,13 +32,13 @@ async function parseElements(raw_elements) {
     }
   );
   // JSON.parse reviver cannot be async so we perform this hacky way to import the module
-  let ref = importRefs[0];
-  let url = ref.url;
-  let obj = ref.obj;
-  let prop = ref.prop;
-  Object.keys(ref).forEach((key) => delete ref[key]);
-  ref[prop] = (await import(url))[obj];
-
+  for (let ref of importRefs) {
+    let url = ref.url;
+    let obj = ref.obj;
+    let prop = ref.prop;
+    Object.keys(ref).forEach((key) => delete ref[key]);
+    ref[prop] = (await import(url))[obj];
+  }
   console.log(parsedElements);
   return parsedElements;
 }
