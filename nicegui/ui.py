@@ -235,6 +235,7 @@ from .functions.page_title import page_title
 from .functions.refreshable import refreshable, refreshable_method, state
 from .functions.style import add_css, add_sass, add_scss, add_style
 from .functions.update import update
+from .js import js
 from .page import page
 from .page_layout import Drawer as drawer
 from .page_layout import Footer as footer
@@ -244,4 +245,3 @@ from .page_layout import PageSticky as page_sticky
 from .page_layout import RightDrawer as right_drawer
 from .ui_run import run
 from .ui_run_with import run_with
-from .js import js
