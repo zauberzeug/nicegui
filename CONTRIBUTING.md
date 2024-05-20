@@ -168,7 +168,7 @@ Please help us grow the number of insightful demos by following these easy steps
 1. Clone the NiceGUI repository and launch `main.py` in the root directory.
 2. Run `python3 -m pip install -e .` in the repository as explained above.
 3. In the newly opened browser window you can navigate to the documentation page where you want to change something.
-4. Open the code in your editor (for example [website/more_documentation/table_documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/more_documentation/table_documentation.py)).
+4. Open the code in your editor (for example [website/documentation/content/table_documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/documentation/content/table_documentation.py)).
 5. In the `more()` function insert an inner function containing your demo code.
 6. Add the `@text_demo` decorator to explain the demo.
 7. Make sure the result looks as expected in the rendered documentation.

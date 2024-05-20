@@ -22,4 +22,14 @@ def control_demo() -> None:
     ui.button('Jump to 0:30', on_click=lambda: a.seek(30))
 
 
+@doc.demo('Event subscription', '''
+    This demo shows how to subscribe to some of the [available events](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#events).  
+''')
+def event_demo() -> None:
+    a = ui.audio('https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab41b.mp3')
+    a.on('play', lambda _: ui.notify('Started'))
+    a.on('pause', lambda _: ui.notify('Paused'))
+    a.on('ended', lambda _: ui.notify('Completed'))
+
+
 doc.reference(ui.audio)
