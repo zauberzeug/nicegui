@@ -1,36 +1,12 @@
 #!/usr/bin/env python3
 import time
-import typing as ty
-from nicegui.elements.aggrid import AgGrid
-import random 
-from pathlib import Path
 
-from nicegui import ui, app
+from nicegui import ui
 
-
-
-def str_time_prop(start, end, time_format, prop):
-    """Get a time at a proportion of a range of two formatted times.
-
-    start and end should be strings specifying times formatted in the
-    given format (strftime-style), giving an interval [start, end].
-    prop specifies how a proportion of the interval to be taken after
-    start.  The returned time will be in the specified format.
-    """
-
-    stime = time.mktime(time.strptime(start, time_format))
-    etime = time.mktime(time.strptime(end, time_format))
-
-    ptime = stime + prop * (etime - stime)
-
-    return time.strftime(time_format, time.localtime(ptime))
-
-
-def random_date(start, end, prop):
-    return str_time_prop(start, end, '%m/%d/%Y %I:%M %p', prop)
-
-
-
+columns = [
+    {'name': 'name', 'label': 'Name', 'field': 'name', 'required': True},
+    {'name': 'age', 'label': 'Age', 'field': 'age', 'sortable': True},
+]
 rows = [
     {'id': 0, 'name': 'Alice', 'age': 18},
     {'id': 1, 'name': 'Bob', 'age': 21},
@@ -41,40 +17,25 @@ rows = [
     {'id': 6, 'name': 'Carol'},
 ]
 
-def get_default_column_defs(
-    columns: ty.Iterable[str], date_columns: ty.Iterable[str]
-):
-    column_defs = []
-    for i, col in enumerate(columns):
-        col_def = dict(
-            headerName=col.upper().replace("_", " "),
-            checkboxSelection=True if i == 0 else False,
-            field=col,
-            filter="agDateColumnFilter" if col in date_columns else "agTextColumnFilter",
-        )
-        if col in date_columns:
-            col_def["valueFormatter"] = ui.js("(value) => { value ? new Date(Date.parse(value)) : null }")
-            col_def["filterParams"] = ui.js(
-                obj="comparator", 
-                file=Path(__file__).parent / "test.js", 
-                prop="comparator"
-            )
-        column_defs.append(col_def)
-    return column_defs
+with ui.table(title='My Team', columns=columns, rows=rows, selection='multiple', pagination=10).classes('w-96') as table:
+    with table.add_slot('top-right'):
+        with ui.input(placeholder='Search').props('type=search').bind_value(table, 'filter').add_slot('append'):
+            ui.icon('search')
+    with table.add_slot('bottom-row'):
+        with table.row():
+            with table.cell():
+                ui.button(on_click=lambda: (
+                    table.add_rows({'id': time.time(), 'name': new_name.value, 'age': new_age.value}),
+                    new_name.set_value(None),
+                    new_age.set_value(None),
+                ), icon='add').props('flat fab-mini')
+            with table.cell():
+                new_name = ui.input('Name')
+            with table.cell():
+                new_age = ui.number('Age')
 
-
-grid = ui.aggrid(
-    options={
-        "columnDefs": get_default_column_defs(["name", "birthday"], ["birthday"]),
-        "rowData": [
-            dict(name=name, birthday=random_date("1/1/2008 1:30 PM", "1/1/2024 4:50 AM", random.random())) 
-            for name in ["Joe", "Ashlynn", "Dave", "Bill", "Steve"]
-        ],
-        "defaultColDef": dict(sortable=True, resizable=True),
-        "pagination": "true",
-        "rowSelection": "single",
-        "onGridReady": ui.js("(params) => params.columnApi.autoSizeAllColumns()"),
-    },
-)
+ui.label().bind_text_from(table, 'selected', lambda val: f'Current selection: {val}')
+ui.button('Remove', on_click=lambda: table.remove_rows(*table.selected)) \
+    .bind_visibility_from(table, 'selected', backward=lambda val: bool(val))
 
 ui.run()
