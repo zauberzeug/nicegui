@@ -69,16 +69,18 @@ class Outbox:
                 self._enqueue_event.clear()
 
                 coros = []
-                data = {
-                    element_id: None if element is None else element._to_dict()  # pylint: disable=protected-access
-                    for element_id, element in self.updates.items()
-                }
-                coros.append(self._emit('update', data, self.client.id))
-                self.updates.clear()
+                if self.updates:
+                    data = {
+                        element_id: None if element is None else element._to_dict()  # pylint: disable=protected-access
+                        for element_id, element in self.updates.items()
+                    }
+                    coros.append(self._emit('update', data, self.client.id))
+                    self.updates.clear()
 
-                for target_id, message_type, data in self.messages:
-                    coros.append(self._emit(message_type, data, target_id))
-                self.messages.clear()
+                if self.messages:
+                    for target_id, message_type, data in self.messages:
+                        coros.append(self._emit(message_type, data, target_id))
+                    self.messages.clear()
 
                 for coro in coros:
                     try:
