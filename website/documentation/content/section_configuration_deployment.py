@@ -147,7 +147,7 @@ doc.text('Package for Installation', '''
     NiceGUI apps can also be bundled into an executable with `nicegui-pack` which is based on [PyInstaller](https://www.pyinstaller.org/).
     This allows you to distribute your app as a single file that can be executed on any computer.
 
-    Just take care your `ui.run` command does not use the `reload` argument.
+    Just make sure to call `ui.run` with `reload=False` in your main script to disable the auto-reload feature.
     Running the `nicegui-pack` command below will create an executable `myapp` in the `dist` folder:
 ''')
 
