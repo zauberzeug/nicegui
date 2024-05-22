@@ -78,6 +78,21 @@ addopts = "--driver Chrome"
 asyncio_mode = "auto"
 
 [tool.mypy]
+python_version = "3.8"
+
+[[tool.mypy.overrides]]
+module = [
+    "icecream",
+    "markdown2",
+    "matplotlib.*",
+    "nicegui_highcharts",
+    "plotly.*",
+    "pyecharts.*",
+    "sass",
+    "socketio.*",
+    "vbuild",
+    "webview.*", # can be removed with next pywebview release
+]
 ignore_missing_imports = true
 
 [tool.ruff]
