@@ -10,37 +10,46 @@ const loaded_components = new Set();
 const eval_identifier = "_nicegui_need_to_eval_:";
 const import_identifier = "_nicegui_js_import:";
 
+async function transformObj(item, transformer) {
+  if (Array.isArray(item)) {
+    let newArr = [];
+    for (const val of item) {
+      let result = await transformer(val);
+      newArr.push(await transformObj(result, transformer));
+    }
+    return newArr;
+  } else if (typeof item === "object") {
+    let newObj = {};
+    for (const k in item) {
+      newObj[k] = await transformObj(await transformer(item[k]), transformer);
+    }
+    return newObj;
+  } else {
+    let v = await transformer(item);
+    return v;
+  }
+}
+
 async function parseElements(raw_elements) {
-  let importRefs = [];
   let parsedElements = JSON.parse(
     raw_elements
       .replace(/&#36;/g, "$")
       .replace(/&#96;/g, "`")
       .replace(/&gt;/g, ">")
       .replace(/&lt;/g, "<")
-      .replace(/&amp;/g, "&"),
-    (_, val) => {
-      if (typeof val === "string" && val.startsWith(eval_identifier)) {
-        return eval(val.slice(eval_identifier.length));
-      } else if (typeof val === "string" && val.startsWith(import_identifier)) {
-        const js_import = JSON.parse(val.slice(import_identifier.length));
-        importRefs.push(js_import);
-        return js_import;
-      } else {
-        return val;
-      }
-    }
+      .replace(/&amp;/g, "&")
   );
-  // JSON.parse reviver cannot be async so we perform this hacky way to import the module
-  for (let ref of importRefs) {
-    let url = ref.url;
-    let obj = ref.obj;
-    let prop = ref.prop;
-    Object.keys(ref).forEach((key) => delete ref[key]);
-    ref[prop] = (await import(url))[obj];
-  }
-  console.log(parsedElements);
-  return parsedElements;
+  const parsedElementsWithJs = await transformObj(parsedElements, async (val) => {
+    if (typeof val === "string" && val.startsWith(eval_identifier)) {
+      return eval(val.slice(eval_identifier.length));
+    } else if (typeof val === "string" && val.startsWith(import_identifier)) {
+      const js_import = JSON.parse(val.slice(import_identifier.length));
+      return (await import(js_import.url))[js_import.obj];
+    } else {
+      return val;
+    }
+  });
+  return parsedElementsWithJs;
 }
 
 function replaceUndefinedAttributes(elements, id) {
