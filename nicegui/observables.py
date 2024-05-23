@@ -115,10 +115,17 @@ class ObservableDict(ObservableCollection, dict):
         self._handle_change()
 
     def __or__(self, other: Any) -> Any:
-        return ObservableDict({**self, **other})  # NOTE: Use super().__or__(other) when switching to Python 3.9
+        try:
+            return super().__or__(other)  # type: ignore # pylint: disable=no-member
+        except TypeError:
+            return ObservableDict({**self, **other})  # NOTE: remove this when switching to Python 3.9
 
     def __ior__(self, other: Any) -> Any:
-        self.update(self._observe(dict(other)))  # NOTE: Use super().__ior__(other) when switching to Python 3.9
+        other_dict = self._observe(dict(other))
+        try:
+            super().__ior__(other_dict)  # type: ignore # pylint: disable=no-member
+        except TypeError:
+            self.update(other_dict)  # NOTE: remove this when switching to Python 3.9
         self._handle_change()
         return self
 
