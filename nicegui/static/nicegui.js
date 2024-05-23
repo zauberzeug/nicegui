@@ -8,9 +8,10 @@ let mounted_app = undefined;
 const loaded_libraries = new Set();
 const loaded_components = new Set();
 const eval_identifier = "_nicegui_need_to_eval_:";
-const import_identifier = "_nicegui_js_import:";
+const import_identifier = "_nicegui_need_to_import_:";
 
 async function transformObj(item, transformer) {
+  // check if object is array first, since Arrays are also objects.
   if (Array.isArray(item)) {
     let newArr = [];
     for (const val of item) {
@@ -30,16 +31,31 @@ async function transformObj(item, transformer) {
   }
 }
 
-async function parseElements(raw_elements) {
-  let parsedElements = JSON.parse(
-    raw_elements
-      .replace(/&#36;/g, "$")
-      .replace(/&#96;/g, "`")
-      .replace(/&gt;/g, ">")
-      .replace(/&lt;/g, "<")
-      .replace(/&amp;/g, "&")
-  );
-  const parsedElementsWithJs = await transformObj(parsedElements, async (val) => {
+async function evalDynamicProps(parsedElements) {
+  return await transformObj(parsedElements, (val) => {
+    if (typeof val === "object" && !Array.isArray(val)) {
+      let newObj = {};
+      Object.keys(val).forEach((key) => {
+        // check if it's a dynamic property
+        if (key.startsWith(":")) {
+          try {
+            newObj[key.substring(1)] = eval(val[key]);
+          } catch (e) {
+            console.error(`Error while converting ${key} attribute to function:`, e);
+          }
+        } else {
+          newObj[key] = val[key];
+        }
+      });
+      return newObj;
+    } else {
+      return val;
+    }
+  });
+}
+
+async function evalJsValues(parsedElements) {
+  return await transformObj(parsedElements, async (val) => {
     if (typeof val === "string" && val.startsWith(eval_identifier)) {
       return eval(val.slice(eval_identifier.length));
     } else if (typeof val === "string" && val.startsWith(import_identifier)) {
@@ -49,7 +65,18 @@ async function parseElements(raw_elements) {
       return val;
     }
   });
-  return parsedElementsWithJs;
+}
+
+async function parseElements(raw_elements) {
+  let parsedElements = JSON.parse(
+    raw_elements
+      .replace(/&#36;/g, "$")
+      .replace(/&#96;/g, "`")
+      .replace(/&gt;/g, ">")
+      .replace(/&lt;/g, "<")
+      .replace(/&amp;/g, "&")
+  );
+  return await evalDynamicProps(await evalJsValues(parsedElements));
 }
 
 function replaceUndefinedAttributes(elements, id) {
