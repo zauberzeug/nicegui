@@ -86,4 +86,4 @@ def test_is_file():
     assert not helpers.is_file('data:image/png;base64,...')
     assert not helpers.is_file(None)
     assert not helpers.is_file('x' * 100_000), 'a very long filepath should not lead to OSError 63'
-    assert not helpers.is_file('http://nicegui.io/logo.png')
+    assert not helpers.is_file('https://nicegui.io/logo.png')
