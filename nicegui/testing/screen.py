@@ -4,7 +4,7 @@ import threading
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator, List, Optional, Union
+from typing import Callable, Generator, List, Optional, Union, overload
 
 import pytest
 from selenium import webdriver
@@ -102,17 +102,35 @@ class Screen:
             return
         self.find(text)
 
-    def wait_for(self, text: str) -> None:
+    @overload
+    def wait_for(self, target: str) -> None:
         """Wait until the page contains the given text."""
-        self.should_contain(text)
+
+    @overload
+    def wait_for(self, target: Callable[..., bool]) -> None:
+        """Wait until the given condition is met."""
+
+    def wait_for(self, target: Union[str, Callable[..., bool]]) -> None:
+        """Wait until the page contains the given text or the given condition is met."""
+        if isinstance(target, str):
+            self.should_contain(target)
+        if callable(target):
+            deadline = time.time() + self.IMPLICIT_WAIT
+            while time.time() < deadline:
+                if target():
+                    return
+                self.wait(0.1)
+            raise AssertionError('Condition not met')
 
     def should_not_contain(self, text: str, wait: float = 0.5) -> None:
         """Assert that the page does not contain the given text."""
         assert self.selenium.title != text
-        self.selenium.implicitly_wait(wait)
-        with pytest.raises(AssertionError):
-            self.find(text)
-        self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
+        try:
+            self.selenium.implicitly_wait(wait)
+            with pytest.raises(AssertionError):
+                self.find(text)
+        finally:
+            self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
 
     def should_contain_input(self, text: str) -> None:
         """Assert that the page contains an input with the given value."""
