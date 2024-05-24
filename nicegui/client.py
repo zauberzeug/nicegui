@@ -59,6 +59,7 @@ class Client:
         self.shared = shared
         self.on_air = False
         self._disconnect_task: Optional[asyncio.Task] = None
+        self._deleted = False
         self.tab_id: Optional[str] = None
 
         self.outbox = Outbox(self)
@@ -318,6 +319,12 @@ class Client:
         self.remove_all_elements()
         self.outbox.stop()
         del Client.instances[self.id]
+        self._deleted = True
+
+    def check_existence(self) -> None:
+        """Check if the client still exists and print a warning if it doesn't."""
+        if self._deleted:
+            log.warning('Client has been deleted but is still being used. This is a bug in the application code.')
 
     @contextmanager
     def individual_target(self, socket_id: str) -> Iterator[None]:
