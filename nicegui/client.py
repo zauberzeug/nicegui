@@ -205,17 +205,15 @@ class Client:
                         'Now the method automatically returns when receiving a response without checking regularly in an interval. '
                         'Please remove the "check_interval" argument.')
 
-        request_id = str(uuid.uuid4())
-        target_id = self._temporary_socket_id or self.id
-
         def send_and_forget():
-            self.outbox.enqueue_message('run_javascript', {'code': code}, target_id)
+            self.outbox.enqueue_message('run_javascript', {'code': code})
 
         async def send_and_wait():
             if self is self.auto_index_client:
                 raise RuntimeError('Cannot await JavaScript responses on the auto-index page. '
                                    'There could be multiple clients connected and it is not clear which one to wait for.')
-            self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
+            request_id = str(uuid.uuid4())
+            self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id})
             return await JavaScriptRequest(request_id, timeout=timeout)
 
         return AwaitableResponse(send_and_forget, send_and_wait)
@@ -223,11 +221,11 @@ class Client:
     def open(self, target: Union[Callable[..., Any], str], new_tab: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
-        self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
+        self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab})
 
     def download(self, src: Union[str, bytes], filename: Optional[str] = None, media_type: str = '') -> None:
         """Download a file from a given URL or raw bytes."""
-        self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type}, self.id)
+        self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type})
 
     def on_connect(self, handler: Union[Callable[..., Any], Awaitable]) -> None:
         """Add a callback to be invoked when the client connects."""

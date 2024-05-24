@@ -44,8 +44,9 @@ class Outbox:
         self.updates[element.id] = None
         self._set_enqueue_event()
 
-    def enqueue_message(self, message_type: MessageType, data: Any, target_id: ClientId) -> None:
+    def enqueue_message(self, message_type: MessageType, data: Any) -> None:
         """Enqueue a message for the given client."""
+        target_id = self.client._temporary_socket_id or self.client.id  # pylint: disable=protected-access
         self.messages.append((target_id, message_type, data))
         self._set_enqueue_event()
 
