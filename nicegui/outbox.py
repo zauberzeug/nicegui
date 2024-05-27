@@ -36,16 +36,19 @@ class Outbox:
 
     def enqueue_update(self, element: Element) -> None:
         """Enqueue an update for the given element."""
+        self.client.check_existence()
         self.updates[element.id] = element
         self._set_enqueue_event()
 
     def enqueue_delete(self, element: Element) -> None:
         """Enqueue a deletion for the given element."""
+        self.client.check_existence()
         self.updates[element.id] = None
         self._set_enqueue_event()
 
     def enqueue_message(self, message_type: MessageType, data: Any, target_id: ClientId) -> None:
         """Enqueue a message for the given client."""
+        self.client.check_existence()
         self.messages.append((target_id, message_type, data))
         self._set_enqueue_event()
 
