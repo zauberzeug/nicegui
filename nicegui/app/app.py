@@ -177,14 +177,12 @@ class App(FastAPI):
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the file has been downloaded once (default: False)
-        :return: URL path in encoded form which can be used to access the file
+        :return: encoded URL which can be used to access the file
         """
         file = Path(local_file).resolve()
         if not file.is_file():
             raise ValueError(f'File not found: {file}')
-
         path = f'/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
-        encoded_url = urllib.parse.quote(path)
 
         @self.get(path)
         def read_item() -> FileResponse:
@@ -192,7 +190,7 @@ class App(FastAPI):
                 self.remove_route(path)
             return FileResponse(file, headers={'Cache-Control': 'public, max-age=3600'})
 
-        return encoded_url
+        return urllib.parse.quote(path)
 
     def add_media_files(self, url_path: str, local_directory: Union[str, Path]) -> None:
         """Add directory of media files.
@@ -231,14 +229,12 @@ class App(FastAPI):
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the media file has been downloaded once (default: False)
-        :return: URL path in encoded form which can be used to access the file
+        :return: encoded URL which can be used to access the file
         """
         file = Path(local_file).resolve()
         if not file.is_file():
             raise ValueError(f'File not found: {local_file}')
-
         path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
-        encoded_url = urllib.parse.quote(path)
 
         @self.get(path)
         def read_item(request: Request, nicegui_cunk_size: int = 8192) -> Response:
@@ -246,7 +242,7 @@ class App(FastAPI):
                 self.remove_route(path)
             return get_range_response(file, request, chunk_size=nicegui_cunk_size)
 
-        return encoded_url
+        return urllib.parse.quote(path)
 
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""
