@@ -132,7 +132,7 @@ def create() -> None:
             features('anchor', 'Foundation', [
                 'generic [Vue](https://vuejs.org/) to Python bridge',
                 'dynamic GUI through [Quasar](https://quasar.dev/)',
-                'content is served with [FastAPI](http://fastapi.tiangolo.com/)',
+                'content is served with [FastAPI](https://fastapi.tiangolo.com/)',
                 'Python 3.8+',
             ])
 

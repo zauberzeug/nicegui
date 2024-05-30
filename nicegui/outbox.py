@@ -36,16 +36,19 @@ class Outbox:
 
     def enqueue_update(self, element: Element) -> None:
         """Enqueue an update for the given element."""
+        self.client.check_existence()
         self.updates[element.id] = element
         self._set_enqueue_event()
 
     def enqueue_delete(self, element: Element) -> None:
         """Enqueue a deletion for the given element."""
+        self.client.check_existence()
         self.updates[element.id] = None
         self._set_enqueue_event()
 
     def enqueue_message(self, message_type: MessageType, data: Any, target_id: ClientId) -> None:
         """Enqueue a message for the given client."""
+        self.client.check_existence()
         self.messages.append((target_id, message_type, data))
         self._set_enqueue_event()
 
@@ -69,16 +72,18 @@ class Outbox:
                 self._enqueue_event.clear()
 
                 coros = []
-                data = {
-                    element_id: None if element is None else element._to_dict()  # pylint: disable=protected-access
-                    for element_id, element in self.updates.items()
-                }
-                coros.append(self._emit('update', data, self.client.id))
-                self.updates.clear()
+                if self.updates:
+                    data = {
+                        element_id: None if element is None else element._to_dict()  # pylint: disable=protected-access
+                        for element_id, element in self.updates.items()
+                    }
+                    coros.append(self._emit('update', data, self.client.id))
+                    self.updates.clear()
 
-                for target_id, message_type, data in self.messages:
-                    coros.append(self._emit(message_type, data, target_id))
-                self.messages.clear()
+                if self.messages:
+                    for target_id, message_type, data in self.messages:
+                        coros.append(self._emit(message_type, data, target_id))
+                    self.messages.clear()
 
                 for coro in coros:
                     try:

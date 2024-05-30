@@ -50,6 +50,7 @@ def test_props_parsing():
     assert ui.element._parse_props('href=http://192.168.42.100/') == {'href': 'http://192.168.42.100/'}
     assert ui.element._parse_props('hint="Your \\"given\\" name"') == {'hint': 'Your "given" name'}
     assert ui.element._parse_props('input-style="{ color: #ff0000 }"') == {'input-style': '{ color: #ff0000 }'}
+    assert ui.element._parse_props('accept=.jpeg,.jpg,.png') == {'accept': '.jpeg,.jpg,.png'}
 
     assert ui.element._parse_props('empty=""') == {'empty': ''}
     assert ui.element._parse_props("empty=''") == {'empty': ''}

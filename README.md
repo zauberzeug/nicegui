@@ -1,4 +1,4 @@
-<a href="http://nicegui.io/#about">
+<a href="https://nicegui.io/#about">
   <img src="https://raw.githubusercontent.com/zauberzeug/nicegui/main/screenshot.png"
     width="200" align="right" alt="Try online!" />
 </a>

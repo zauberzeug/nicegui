@@ -8,10 +8,7 @@ export default {
   methods: {
     update_grid() {
       this.$el.textContent = "";
-      this.gridOptions = {
-        ...this.options,
-        onGridReady: this.auto_size_columns ? (params) => params.api.sizeColumnsToFit() : undefined,
-      };
+      this.gridOptions = { ...this.options };
       for (const column of this.html_columns) {
         if (this.gridOptions.columnDefs[column].cellRenderer === undefined) {
           this.gridOptions.columnDefs[column].cellRenderer = (params) => (params.value ? params.value : "");
@@ -57,6 +54,9 @@ export default {
       return runMethod(this.gridOptions.api.getRowNode(row_id), name, args);
     },
     handle_event(type, args) {
+      if ((type === "gridReady" || type === "gridSizeChanged") && this.auto_size_columns) {
+        this.gridOptions.api.sizeColumnsToFit();
+      }
       this.$emit(type, {
         value: args.value,
         oldValue: args.oldValue,
