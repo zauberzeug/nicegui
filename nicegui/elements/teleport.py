@@ -16,5 +16,3 @@ class Teleport(Element, component="teleport.js"):
         """Force update.This method can be used to force the update of the content in the teleported element.
         """
         self.run_method("forceUpdate")
-
-

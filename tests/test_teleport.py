@@ -11,7 +11,7 @@ def test_should_work(screen: Screen):
         with ui.teleport('.src'):
             ui.label('Hello')
 
-    ui.button('create',on_click=create_teleport)
+    ui.button('create', on_click=create_teleport)
 
     screen.open('/')
     screen.click('create')
@@ -19,30 +19,26 @@ def test_should_work(screen: Screen):
 
 
 def test_force_update(screen: Screen):
-    tp:Optional[ui.teleport] = None
+    tp: Optional[ui.teleport] = None
 
     box = ui.row().classes('src')
 
-    def create_teleport() :
+    def create_teleport():
         nonlocal tp
         with ui.teleport('.src') as tp:
             ui.label('Hello')
 
-    ui.button('create',on_click=create_teleport)
-
+    ui.button('create', on_click=create_teleport)
 
     def rebuild_box():
         box.delete()
         ui.row().classes('src')
-        tp.force_update() # type: ignore
+        tp.force_update()  # type: ignore
 
-    ui.button('rebuild box',on_click=rebuild_box)
-
+    ui.button('rebuild box', on_click=rebuild_box)
 
     screen.open('/')
     screen.click('create')
     screen.should_contain('Hello')
     screen.click('rebuild box')
     assert screen.find_by_css('.src > div').text == 'Hello'
-
-
