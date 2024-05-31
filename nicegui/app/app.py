@@ -1,4 +1,5 @@
 import inspect
+import urllib
 from enum import Enum
 from pathlib import Path
 from typing import Any, Awaitable, Callable, List, Optional, Union
@@ -176,7 +177,7 @@ class App(FastAPI):
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the file has been downloaded once (default: False)
-        :return: URL path which can be used to access the file
+        :return: encoded URL which can be used to access the file
         """
         file = Path(local_file).resolve()
         if not file.is_file():
@@ -189,7 +190,7 @@ class App(FastAPI):
                 self.remove_route(path)
             return FileResponse(file, headers={'Cache-Control': 'public, max-age=3600'})
 
-        return path
+        return urllib.parse.quote(path)
 
     def add_media_files(self, url_path: str, local_directory: Union[str, Path]) -> None:
         """Add directory of media files.
@@ -228,7 +229,7 @@ class App(FastAPI):
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the media file has been downloaded once (default: False)
-        :return: URL path which can be used to access the file
+        :return: encoded URL which can be used to access the file
         """
         file = Path(local_file).resolve()
         if not file.is_file():
@@ -241,7 +242,7 @@ class App(FastAPI):
                 self.remove_route(path)
             return get_range_response(file, request, chunk_size=nicegui_chunk_size)
 
-        return path
+        return urllib.parse.quote(path)
 
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""
