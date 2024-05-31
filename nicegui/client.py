@@ -327,10 +327,10 @@ class Client:
     def check_existence(self) -> None:
         """Check if the client still exists and print a warning if it doesn't."""
         if self._deleted and not self._has_warned_about_deleted_client:
+            self._has_warned_about_deleted_client = True
             log.warning('Client has been deleted but is still being used. This is most likely a bug in your application code. '
                         'See https://github.com/zauberzeug/nicegui/issues/3028 for more information.',
                         stack_info=True)
-            self._has_warned_about_deleted_client = True
 
     @contextmanager
     def individual_target(self, socket_id: str) -> Iterator[None]:
