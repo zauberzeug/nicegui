@@ -96,6 +96,7 @@ __all__ = [
     'toggle',
     'tooltip',
     'tree',
+    'teleport',
     'upload',
     'video',
     'download',
@@ -212,6 +213,7 @@ from .elements.tabs import Tab as tab
 from .elements.tabs import TabPanel as tab_panel
 from .elements.tabs import TabPanels as tab_panels
 from .elements.tabs import Tabs as tabs
+from .elements.teleport import Teleport as teleport
 from .elements.textarea import Textarea as textarea
 from .elements.time import Time as time
 from .elements.timeline import Timeline as timeline
