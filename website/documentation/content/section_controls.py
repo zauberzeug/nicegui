@@ -23,6 +23,7 @@ from . import (
     time_documentation,
     toggle_documentation,
     upload_documentation,
+    teleport_documentation,
 )
 
 doc.title('*Controls*')
@@ -50,3 +51,4 @@ doc.intro(color_picker_documentation)
 doc.intro(date_documentation)
 doc.intro(time_documentation)
 doc.intro(upload_documentation)
+doc.intro(teleport_documentation)
