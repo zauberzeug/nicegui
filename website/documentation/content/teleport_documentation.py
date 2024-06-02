@@ -5,21 +5,13 @@ from . import doc
 
 @doc.demo(ui.teleport)
 def main_demo() -> None:
-    from nicegui import ui
+    markdown = ui.markdown('Enter your **name**!')
 
-    ui.input.default_classes('inline-flex').default_props('dense outlined')
+    def inject_input():
+        with ui.teleport(f'#c{markdown.id} strong'):
+            ui.input('name').classes('inline-flex').props('dense outlined')
 
-    md = ui.markdown('This is **input1:**.This is **input2:**.')
-
-    def inject_inputs() -> None:
-        id = f'c{md.id}'
-        with ui.teleport(f'#{id} > p > strong:nth-child(1)'):
-            ui.input(label='input1')
-
-        with ui.teleport(f'#{id} > p > strong:nth-child(2)'):
-            ui.input(label='input2')
-
-    ui.button('inject inputs', on_click=inject_inputs)
+    ui.button('inject input', on_click=inject_input)
 
 
 doc.reference(ui.teleport)

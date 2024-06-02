@@ -19,11 +19,11 @@ from . import (
     select_documentation,
     slider_documentation,
     switch_documentation,
+    teleport_documentation,
     textarea_documentation,
     time_documentation,
     toggle_documentation,
     upload_documentation,
-    teleport_documentation,
 )
 
 doc.title('*Controls*')

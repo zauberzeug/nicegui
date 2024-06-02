@@ -11,6 +11,6 @@ export default {
   methods: {
     forceUpdate() {
       this.key++;
-    }
-  }
+    },
+  },
 };
