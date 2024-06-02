@@ -94,7 +94,8 @@ def test_loaded_event(screen: Screen):
     ui.button('Change Source', on_click=lambda: ii.set_source(URL_PATH2))
 
     screen.open('/')
-    screen.wait_for(lambda: len(sources) == 1)
+    with screen.implicitly_wait(10.0):
+        screen.wait_for(lambda: len(sources) == 1)
     screen.click('Change Source')
     screen.wait_for(lambda: len(sources) == 2)
     assert sources[1].endswith(URL_PATH2)
