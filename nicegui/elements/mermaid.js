@@ -9,6 +9,7 @@ export default {
     last_content: "",
   }),
   mounted() {
+    this.initialize(this.config);
     this.update(this.content);
   },
   methods: {
@@ -30,8 +31,17 @@ export default {
       }
       is_running = false;
     },
+    initialize(config) {
+      try {
+        mermaid.initialize(config);
+      } catch (error) {
+        console.error(error);
+        this.$emit("error", error);
+      }
+    }
   },
   props: {
     content: String,
+    config: String,
   },
 };
