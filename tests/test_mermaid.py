@@ -75,3 +75,29 @@ def test_error(screen: Screen):
     screen.open('/')
     screen.should_contain('Syntax error in text')
     screen.should_contain('Parse error on line 3')
+
+
+def test_click_mermaid_node(screen: Screen):
+
+    ui.add_head_html('''
+            <script>
+                var _mermaidClickHandler = function (e) {
+                        emitEvent("mermaidNodeEvent",e);
+                        };
+            </script>
+            ''')
+
+    ui.on('mermaidNodeEvent',ui.label("Success"))
+
+    ui.mermaid('''
+    graph LR;
+        A --> B;
+        click A href "javascript:_mermaidClickHandler('x')"
+    ''').on('error', lambda e: ui.label(e.args['message']))
+
+    screen.open('/')
+    screen.click('A')
+    screen.should_contain('Success')
+
+
+

@@ -30,6 +30,9 @@ export default {
       }
       is_running = false;
     },
+    initialize() {
+      mermaid.initialize({securityLevel: 'loose' });
+    }
   },
   props: {
     content: String,
