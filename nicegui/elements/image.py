@@ -25,11 +25,9 @@ class Image(SourceElement, component='image.js'):
 
         :param source: the source of the image; can be a URL, local file path, a base64 string or a PIL image
         """
-        _ensure_file_exists(source)
         super().__init__(source=source)
 
     def set_source(self, source: Union[str, Path, 'PIL_Image']) -> None:
-        _ensure_file_exists(source)
         return super().set_source(source)
 
     def _set_props(self, source: Union[str, Path, 'PIL_Image']) -> None:
@@ -55,8 +53,3 @@ def pil_to_base64(pil_image: 'PIL_Image', image_format: str) -> str:
     base64_encoded = base64.b64encode(buffer.getvalue())
     base64_string = base64_encoded.decode('utf-8')
     return f'data:image/{image_format.lower()};base64,{base64_string}'
-
-
-def _ensure_file_exists(source: Union[str, Path, 'PIL_Image']) -> None:
-    if isinstance(source, Path) and not source.exists():
-        raise FileNotFoundError(f"File not found: {source}")
