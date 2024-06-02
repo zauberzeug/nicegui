@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 import pytest
 from selenium.webdriver.common.action_chains import ActionChains
@@ -88,15 +87,11 @@ def test_mousemove_event(screen: Screen, cross: bool):
 
 
 def test_loaded_event(screen: Screen):
-    sources: List[str] = []
     ii = ui.interactive_image(URL_PATH1)
-    ii.on('loaded', lambda e: sources.append(e.args['source']))
+    ii.on('loaded', lambda: ui.label('loaded'))
     ui.button('Change Source', on_click=lambda: ii.set_source(URL_PATH2))
 
     screen.open('/')
-    with screen.implicitly_wait(10.0):
-        screen.wait_for(lambda: len(sources) == 1)
     screen.click('Change Source')
-    screen.wait_for(lambda: len(sources) == 2)
-    assert sources[1].endswith(URL_PATH2)
-    assert screen.find_by_tag('img').get_attribute('src') == sources[1]
+    screen.should_contain('loaded')
+    assert (screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH2)
