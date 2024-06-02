@@ -18,6 +18,20 @@ def test_teleport(screen: Screen):
     assert screen.find_by_css('.card > div').text == 'Hello'
 
 
+def test_teleport_with_element(screen: Screen):
+    card = ui.card().classes('card')
+
+    def create_teleport():
+        with ui.teleport(card):
+            ui.label('Hello')
+
+    ui.button('create', on_click=create_teleport)
+
+    screen.open('/')
+    screen.click('create')
+    assert screen.find_by_css('.card > div').text == 'Hello'
+
+
 def test_force_update(screen: Screen):
     teleport: Optional[ui.teleport] = None
 
