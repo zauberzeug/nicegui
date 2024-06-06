@@ -1,3 +1,5 @@
+import pytest
+
 from nicegui import ui
 from nicegui.testing import Screen
 
@@ -75,3 +77,20 @@ def test_error(screen: Screen):
     screen.open('/')
     screen.should_contain('Syntax error in text')
     screen.should_contain('Parse error on line 3')
+
+
+@pytest.mark.parametrize('security_level', ['loose', 'strict'])
+def test_click_mermaid_node(security_level: str, screen: Screen):
+    ui.mermaid('''
+        flowchart TD;
+            A;
+            click A call document.write("Success")
+    ''', config={'securityLevel': security_level})
+
+    screen.open('/')
+    screen.click('A')
+    screen.wait(0.5)
+    if security_level == 'loose':
+        screen.should_contain('Success')
+    else:
+        screen.should_not_contain('Success')
