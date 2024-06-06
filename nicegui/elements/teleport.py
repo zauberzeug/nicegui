@@ -17,9 +17,10 @@ class Teleport(Element, component='teleport.js'):
             to = f'#c{to.id}'
         self._props['to'] = to
 
-    def force_update(self) -> None:
+    def update(self) -> None:
         """Force the internal content to be retransmitted to the specified location.
 
         This method is usually called after the target container is rebuilt.
         """
-        self.run_method('forceUpdate')
+        super().update()
+        self.run_method('update')

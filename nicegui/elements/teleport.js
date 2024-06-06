@@ -13,7 +13,7 @@ export default {
     };
   },
   methods: {
-    forceUpdate() {
+    update() {
       this.key++;
     },
   },

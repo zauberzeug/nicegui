@@ -32,7 +32,7 @@ def test_teleport_with_element(screen: Screen):
     assert screen.find_by_css('.card > div').text == 'Hello'
 
 
-def test_force_update(screen: Screen):
+def test_update(screen: Screen):
     teleport: Optional[ui.teleport] = None
 
     card = ui.card().classes('card')
@@ -47,7 +47,7 @@ def test_force_update(screen: Screen):
     def rebuild_card():
         card.delete()
         ui.card().classes('card')
-        teleport.force_update()  # type: ignore
+        teleport.update()  # type: ignore
 
     ui.button('rebuild card', on_click=rebuild_card)
 
