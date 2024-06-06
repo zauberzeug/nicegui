@@ -19,7 +19,6 @@ from . import (
     select_documentation,
     slider_documentation,
     switch_documentation,
-    teleport_documentation,
     textarea_documentation,
     time_documentation,
     toggle_documentation,
@@ -51,4 +50,3 @@ doc.intro(color_picker_documentation)
 doc.intro(date_documentation)
 doc.intro(time_documentation)
 doc.intro(upload_documentation)
-doc.intro(teleport_documentation)
