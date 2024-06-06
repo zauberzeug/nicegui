@@ -219,6 +219,10 @@ class Screen:
         """Find all elements with the given HTML tag."""
         return self.selenium.find_elements(By.TAG_NAME, name)
 
+    def find_by_css(self, selector: str) -> WebElement:
+        """Find the element with the given CSS selector."""
+        return self.selenium.find_element(By.CSS_SELECTOR, selector)
+
     def render_js_logs(self) -> str:
         """Render the browser console logs as a string."""
         console = '\n'.join(log['message'] for log in self.selenium.get_log('browser'))
