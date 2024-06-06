@@ -1,3 +1,5 @@
+import pytest
+
 from nicegui import ui
 from nicegui.testing import Screen
 
@@ -77,75 +79,18 @@ def test_error(screen: Screen):
     screen.should_contain('Parse error on line 3')
 
 
-def test_click_mermaid_node_pass(screen: Screen):
-
-    ui.add_head_html('''
-            <script>
-                var _mermaidClickHandler = function (e) {
-                        emitEvent("mermaidNodeEvent",e);
-                        };
-            </script>
-            ''')
-
-    ui.on('mermaidNodeEvent', (lambda: indicator_label.set_text('Success')))
-
-    ui.mermaid('''flowchart TD;
-                  AAAA((XXXX));
-                  click AAAA href \"javascript:_mermaidClickHandler(\'Here I Am\')\"''', config={'securityLevel': 'loose'})
-
-    indicator_label = ui.label('Failure')
+@pytest.mark.parametrize('security_level', ['loose', 'strict'])
+def test_click_mermaid_node(security_level: str, screen: Screen):
+    ui.mermaid('''
+        flowchart TD;
+            A;
+            click A call document.write("Success")
+    ''', config={'securityLevel': security_level})
 
     screen.open('/')
-    screen.click('XXXX')
-    screen.wait(0.1)
-    screen.should_contain('Success')
-
-
-def test_click_mermaid_node_fail_not_clickable(screen: Screen):
-
-    ui.add_head_html('''
-            <script>
-                var _mermaidClickHandler = function (e) {
-                        emitEvent("mermaidNodeEvent",e);
-                        };
-            </script>
-            ''')
-
-    ui.on('mermaidNodeEvent', (lambda: indicator_label.set_text('Success')))
-
-    ui.mermaid('''flowchart TD;
-                  AAAA((XXXX));
-                  BBBB((YYYY));
-                  click AAAA href \"javascript:_mermaidClickHandler(\'Here I Am\')\"''', config={'securityLevel': 'loose'})
-
-    indicator_label = ui.label('Failure')
-
-    screen.open('/')
-    screen.click('YYYY')
-    screen.wait(0.1)
-    screen.should_contain('Failure')
-
-
-def test_click_mermaid_node_fail_not_allowed(screen: Screen):
-
-    ui.add_head_html('''
-            <script>
-                var _mermaidClickHandler = function (e) {
-                        emitEvent("mermaidNodeEvent",e);
-                        };
-            </script>
-            ''')
-
-    ui.on('mermaidNodeEvent', (lambda: indicator_label.set_text('Success')))
-
-    ui.mermaid('''flowchart TD;
-                  AAAA((XXXX));
-                  BBBB((YYYY));
-                  click AAAA href \"javascript:_mermaidClickHandler(\'Here I Am\')\"''', config={'securityLevel': 'strict'})
-
-    indicator_label = ui.label('Failure')
-
-    screen.open('/')
-    screen.click('XXXX')
-    screen.wait(0.1)
-    screen.should_contain('Failure')
+    screen.click('A')
+    screen.wait(0.5)
+    if security_level == 'loose':
+        screen.should_contain('Success')
+    else:
+        screen.should_not_contain('Success')

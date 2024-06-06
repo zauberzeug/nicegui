@@ -9,10 +9,18 @@ export default {
     last_content: "",
   }),
   mounted() {
-    this.initialize(this.config);
+    this.initialize();
     this.update(this.content);
   },
   methods: {
+    initialize() {
+      try {
+        mermaid.initialize(this.config || {});
+      } catch (error) {
+        console.error(error);
+        this.$emit("error", error);
+      }
+    },
     async update(content) {
       if (this.last_content === content) return;
       this.last_content = content;
@@ -31,17 +39,9 @@ export default {
       }
       is_running = false;
     },
-    initialize(config) {
-      try {
-        mermaid.initialize(config);
-      } catch (error) {
-        console.error(error);
-        this.$emit("error", error);
-      }
-    }
   },
   props: {
+    config: Object,
     content: String,
-    config: String,
   },
 };
