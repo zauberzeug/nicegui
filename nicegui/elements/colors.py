@@ -14,7 +14,7 @@ class Colors(Element, component='colors.js'):
                  warning='#f2c037') -> None:
         """Color Theming
 
-        Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/>`_.
+        Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/style/theme-builder>`_.
         """
         super().__init__()
         self._props['primary'] = primary
