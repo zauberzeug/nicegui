@@ -8,6 +8,7 @@
 - aggrid: 30.2.0 ([MIT](https://opensource.org/licenses/MIT))
 - codemirror: 6.0.1 ([MIT](https://opensource.org/licenses/MIT))
 - echarts: 5.4.3 ([Apache-2.0](https://opensource.org/licenses/Apache-2.0))
+- echarts-gl: 2.0.9 ([BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause))
 - leaflet: 1.9.4 ([BSD-2-Clause](https://opensource.org/licenses/BSD-2-Clause))
 - leaflet-draw: 1.0.4 ([MIT](https://opensource.org/licenses/MIT))
 - mermaid: 10.5.1 ([MIT](https://opensource.org/licenses/MIT))
