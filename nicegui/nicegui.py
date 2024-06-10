@@ -3,7 +3,7 @@ import mimetypes
 import urllib.parse
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Any
 
 import socketio
 from fastapi import HTTPException, Request
@@ -163,13 +163,15 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 
 @sio.on('handshake')
-async def _on_handshake(sid: str, data: Dict[str, str]) -> bool:
+async def _on_handshake(sid: str, data: Dict[str, Any]) -> bool:
     client = Client.instances.get(data['client_id'])
     if not client:
         return False
     client.environ = sio.get_environ(sid)
     client.tab_id = data['tab_id']
     await sio.enter_room(sid, client.id)
+    if not client.outbox.synchronize(data['last_message_id']):
+        return False
     client.handle_handshake()
     return True
 

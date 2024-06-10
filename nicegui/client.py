@@ -63,6 +63,7 @@ class Client:
         self._has_warned_about_deleted_client = False
         self.tab_id: Optional[str] = None
 
+        self.page = page
         self.outbox = Outbox(self)
 
         with Element('q-layout', _client=self).props('view="hhh lpr fff"').classes('nicegui-layout') as self.layout:
@@ -75,7 +76,6 @@ class Client:
         self._head_html = ''
         self._body_html = ''
 
-        self.page = page
         self.storage = ObservableDict()
 
         self.connect_handlers: List[Union[Callable[..., Any], Awaitable]] = []
@@ -252,11 +252,7 @@ class Client:
     def handle_disconnect(self) -> None:
         """Wait for the browser to reconnect; invoke disconnect handlers if it doesn't."""
         async def handle_disconnect() -> None:
-            if self.page.reconnect_timeout is not None:
-                delay = self.page.reconnect_timeout
-            else:
-                delay = core.app.config.reconnect_timeout  # pylint: disable=protected-access
-            await asyncio.sleep(delay)
+            await asyncio.sleep(self.page.resolve_reconnect_timeout())
             for t in self.disconnect_handlers:
                 self.safe_invoke(t)
             for t in core.app._disconnect_handlers:  # pylint: disable=protected-access

@@ -289,6 +289,7 @@ function createApp(elements, options) {
       window.clientId = options.query.client_id;
       const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
       window.path_prefix = options.prefix;
+      window.last_message_id = 0;
       window.socket = io(url, {
         path: `${options.prefix}/_nicegui_ws/socket.io`,
         query: options.query,
@@ -302,13 +303,17 @@ function createApp(elements, options) {
             tabId = createRandomUUID();
             sessionStorage.setItem("__nicegui_tab_id", tabId);
           }
-          window.socket.emit("handshake", { client_id: window.clientId, tab_id: tabId }, (ok) => {
-            if (!ok) {
-              console.log("reloading because handshake failed for clientId " + window.clientId);
-              window.location.reload();
+          window.socket.emit(
+            "handshake",
+            { client_id: window.clientId, tab_id: tabId, last_message_id: window.last_message_id },
+            (ok) => {
+              if (!ok) {
+                console.log("reloading because handshake failed for clientId " + window.clientId);
+                window.location.reload();
+              }
+              document.getElementById("popup").ariaHidden = true;
             }
-            document.getElementById("popup").ariaHidden = true;
-          });
+          );
         },
         connect_error: (err) => {
           if (err.message == "timeout") {
@@ -346,11 +351,22 @@ function createApp(elements, options) {
         },
         download: (msg) => download(msg.src, msg.filename, msg.media_type, options.prefix),
         notify: (msg) => Quasar.Notify.create(msg),
+        sync_message_id: () => {},
       };
       const socketMessageQueue = [];
       let isProcessingSocketMessage = false;
       for (const [event, handler] of Object.entries(messageHandlers)) {
         window.socket.on(event, async (...args) => {
+          if (args.length > 0 && args[0].hasOwnProperty("message_id")) {
+            console.log(`ID: ${args[0].message_id}`);
+            if (args[0].message_id > window.last_message_id) {
+              window.last_message_id = args[0].message_id;
+              delete args[0].message_id;
+            } else {
+              return;
+            }
+          }
+
           socketMessageQueue.push(() => handler(...args));
           if (!isProcessingSocketMessage) {
             while (socketMessageQueue.length > 0) {
