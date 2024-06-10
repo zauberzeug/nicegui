@@ -358,7 +358,6 @@ function createApp(elements, options) {
       for (const [event, handler] of Object.entries(messageHandlers)) {
         window.socket.on(event, async (...args) => {
           if (args.length > 0 && args[0].hasOwnProperty("message_id")) {
-            console.log(`ID: ${args[0].message_id}`);
             if (args[0].message_id > window.last_message_id) {
               window.last_message_id = args[0].message_id;
               delete args[0].message_id;
