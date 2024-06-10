@@ -42,7 +42,7 @@ PROPS_PATTERN = re.compile(r'''
             '       # Match the closing quote
         )
         |           # Or
-        ([\w\-.,%:\/]+)  # Capture group 4: Value without quotes
+        ([\w\-.,%:\/=]+)  # Capture group 4: Value without quotes
     )
 )?                  # End of optional non-capturing group for value
 (?:$|\s)            # Match end of string or whitespace
