@@ -8,6 +8,7 @@ from . import (
     image_documentation,
     interactive_image_documentation,
     video_documentation,
+    skeleton_documentation,
 )
 
 doc.title('*Audiovisual* Elements')
@@ -38,7 +39,7 @@ doc.intro(audio_documentation)
 doc.intro(video_documentation)
 doc.intro(icon_documentation)
 doc.intro(avatar_documentation)
-
+doc.intro(skeleton_documentation)
 
 @doc.demo('SVG', '''
     You can add Scalable Vector Graphics using the `ui.html` element.
