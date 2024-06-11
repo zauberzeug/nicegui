@@ -40,7 +40,7 @@ class Outbox:
             core.app.on_startup(self.loop)
 
     @property
-    def message_count(self):
+    def message_count(self) -> int:
         """Get the total number of messages sent."""
         return self._message_count
 
@@ -83,7 +83,7 @@ class Outbox:
         return self._message_count
 
     def synchronize(self, last_msg_id: int) -> bool:
-        """Synchronize the state of a reconnecting client by resending missed messages, if possible."""
+        """Synchronize the state of a connecting client by resending missed messages, if possible."""
         if len(self._history) > 0:
             next_id = last_msg_id + 1
             oldest_id = self._history[0][0]
