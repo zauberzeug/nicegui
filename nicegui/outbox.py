@@ -31,13 +31,18 @@ class Outbox:
         if self.client.shared:
             self._history_duration = 30
         else:
-            self._history_duration = core.sio.eio.ping_interval + core.sio.eio.ping_timeout + \
-                self.client.page.resolve_reconnect_timeout()
+            self._history_duration = max(core.sio.eio.ping_interval + core.sio.eio.ping_timeout +
+                                         self.client.page.resolve_reconnect_timeout(), 30)
 
         if core.app.is_started:
             background_tasks.create(self.loop(), name=f'outbox loop {client.id}')
         else:
             core.app.on_startup(self.loop)
+
+    @property
+    def message_count(self):
+        """Get the total number of messages sent."""
+        return self._message_count
 
     def _set_enqueue_event(self) -> None:
         """Set the enqueue event while accounting for lazy initialization."""
@@ -79,10 +84,6 @@ class Outbox:
 
     def synchronize(self, last_msg_id: int) -> bool:
         """Synchronize the state of a reconnecting client by resending missed messages, if possible."""
-        if last_msg_id == 0:
-            self.enqueue_message('sync_message_id', {}, self.client.id)
-            return True
-
         if len(self._history) > 0:
             next_id = last_msg_id + 1
             oldest_id = self._history[0][0]

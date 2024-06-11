@@ -289,7 +289,7 @@ function createApp(elements, options) {
       window.clientId = options.query.client_id;
       const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
       window.path_prefix = options.prefix;
-      window.last_message_id = 0;
+      window.last_message_id = options.query.starting_message_id;
       window.socket = io(url, {
         path: `${options.prefix}/_nicegui_ws/socket.io`,
         query: options.query,
@@ -351,7 +351,6 @@ function createApp(elements, options) {
         },
         download: (msg) => download(msg.src, msg.filename, msg.media_type, options.prefix),
         notify: (msg) => Quasar.Notify.create(msg),
-        sync_message_id: () => {},
       };
       const socketMessageQueue = [];
       let isProcessingSocketMessage = false;
