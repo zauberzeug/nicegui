@@ -1,3 +1,5 @@
+from typing import Literal, Optional
+
 from typing_extensions import Self
 
 from ..element import Element
@@ -5,7 +7,9 @@ from ..element import Element
 
 class Card(Element):
 
-    def __init__(self) -> None:
+    def __init__(self, *,
+                 align_items: Optional[Literal['start', 'end', 'center', 'baseline', 'stretch']] = None,
+                 ) -> None:
         """Card
 
         This element is based on Quasar's `QCard <https://quasar.dev/vue-components/card>`_ component.
@@ -16,9 +20,13 @@ class Card(Element):
         In contrast to this element, the original QCard has no padding by default and hides outer borders of nested elements.
         If you want the original behavior, use the `tight` method.
         If you want the padding and borders for nested children, move the children into another container.
+
+        :param align_items: alignment of the items in the card (default: `None`)
         """
         super().__init__('q-card')
         self._classes.append('nicegui-card')
+        if align_items:
+            self._classes.append(f'items-{align_items}')
 
     def tight(self) -> Self:
         """Remove padding and gaps between nested elements."""

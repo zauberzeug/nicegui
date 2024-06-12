@@ -1,3 +1,4 @@
+// NOTE: Make sure to reload the browser with cache disabled after making changes to this file.
 export default {
   template: `
   <button @click="handle_click">

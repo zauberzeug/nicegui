@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, Callable, Optional, cast
 
 from typing_extensions import Self
@@ -98,6 +99,8 @@ class SourceElement(Element):
             else:
                 source = core.app.add_static_file(local_file=source)
             self.auto_route = source
+        if isinstance(source, Path) and not source.exists():
+            raise FileNotFoundError(f'File not found: {source}')
         self._props['src'] = source
 
     def _handle_delete(self) -> None:
