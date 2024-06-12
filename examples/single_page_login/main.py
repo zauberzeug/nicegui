@@ -1,6 +1,6 @@
 import html
 import uuid
-from typing import Optional
+from typing import Optional, Union
 
 from nicegui import ui, app
 from nicegui.single_page_target import SinglePageTarget
@@ -71,7 +71,7 @@ def logout():  # logs the user out and redirects to the login page
     ui.navigate.to(INDEX_URL)
 
 
-def check_login(url) -> Optional[SinglePageTarget]:
+def check_login(url) -> Optional[Union[str, SinglePageTarget]]:
     def error_page():
         with ui.column().style('align-items: center; justify-content: center; left: 50%; top: 50%; '
                                'transform: translate(-50%, -50%); position: absolute;'):
@@ -82,10 +82,10 @@ def check_login(url) -> Optional[SinglePageTarget]:
 
     if 'login_token' not in app.storage.tab:  # check if the user is not logged in
         return SinglePageTarget(url, builder=error_page, title='Not logged in')
-    return None  # default behavior
+    return url  # default behavior
 
 
-@main_router.outlet(SECRET_AREA_URL, on_resolve=check_login)
+@main_router.outlet(SECRET_AREA_URL, on_navigate=check_login)
 def secret_area_router():
     yield
 

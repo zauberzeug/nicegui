@@ -1,5 +1,4 @@
-import inspect
-from typing import Callable, Any, Self, Optional, Generator
+from typing import Callable, Any, Self, Optional, Generator, Union
 
 from nicegui.client import Client
 from nicegui.single_page_router import SinglePageRouter
@@ -27,9 +26,7 @@ class Outlet(SinglePageRouterConfig):
                  browser_history: bool = True,
                  parent: Optional['SinglePageRouterConfig'] = None,
                  on_instance_created: Optional[Callable[['SinglePageRouter'], None]] = None,
-                 on_resolve: Optional[Callable[[str], Optional[SinglePageTarget]]] = None,
-                 on_open: Optional[Callable[[SinglePageTarget], SinglePageTarget]] = None,
-                 on_navigate: Optional[Callable[[str], Optional[str]]] = None,
+                 on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = None,
                  **kwargs) -> None:
         """
         :param path: the base path of the single page router.
@@ -40,10 +37,6 @@ class Outlet(SinglePageRouterConfig):
         :param browser_history: Optional flag to enable or disable the browser history management. Default is True.
         :param on_instance_created: Optional callback which is called when a new instance is created. Each browser tab
         or window is a new instance. This can be used to initialize the state of the application.
-        :param on_resolve: Optional callback which is called when a URL path is resolved to a target. Can be used
-            to resolve or redirect a URL path to a target.
-        :param on_open: Optional callback which is called when a target is opened. Can be used to modify the target
-            such as title or the actually called builder function.
         :param on_navigate: Optional callback which is called when a navigation event is triggered. Can be used to
             prevent or modify the navigation. Return the new URL if the navigation should be allowed, modify the URL
             or return None to prevent the navigation.
@@ -51,7 +44,7 @@ class Outlet(SinglePageRouterConfig):
         :param kwargs: Additional arguments
         """
         super().__init__(path, browser_history=browser_history, on_instance_created=on_instance_created,
-                         on_resolve=on_resolve, on_open=on_open, on_navigate=on_navigate,
+                         on_navigate=on_navigate,
                          parent=parent, **kwargs)
         self.outlet_builder: Optional[Callable] = outlet_builder
         if parent is None:
@@ -101,8 +94,7 @@ class Outlet(SinglePageRouterConfig):
 
     def view(self,
              path: str,
-             title: Optional[str] = None,
-             on_open: Optional[Callable[[SinglePageTarget, Any], SinglePageTarget]] = None
+             title: Optional[str] = None
              ) -> 'OutletView':
         """Decorator for the view function.
 
@@ -112,10 +104,8 @@ class Outlet(SinglePageRouterConfig):
         :param path: The path of the view, relative to the base path of the outlet
         :param title: Optional title of the view. If a title is set, it will be displayed in the browser tab
             when the view is active, otherwise the default title of the application is displayed.
-        :param on_open: Optional callback which is called when the target is resolved to this view. It can be used
-            to modify the target before the view is displayed.
         """
-        return OutletView(self, path, title=title, on_open=on_open)
+        return OutletView(self, path, title=title)
 
     def outlet(self, path: str, **kwargs) -> 'Outlet':
         """Defines a nested outlet
@@ -143,20 +133,16 @@ class Outlet(SinglePageRouterConfig):
 class OutletView:
     """Defines a single view / "content page" which is displayed in an outlet"""
 
-    def __init__(self, parent_outlet: SinglePageRouterConfig, path: str, title: Optional[str] = None,
-                 on_open: Optional[Callable[[SinglePageTarget, Any], SinglePageTarget]] = None):
+    def __init__(self, parent_outlet: SinglePageRouterConfig, path: str, title: Optional[str] = None):
         """
         :param parent_outlet: The parent outlet in which this view is displayed
         :param path: The path of the view, relative to the base path of the outlet
         :param title: Optional title of the view. If a title is set, it will be displayed in the browser tab
             when the view is active, otherwise the default title of the application is displayed.
-        :param on_open: Optional callback which is called when the target is resolved to this view and going to be
-            opened. It can be used to modify the target before the view is displayed.
         """
         self.path = path
         self.title = title
         self.parent_outlet = parent_outlet
-        self.on_open = on_open
 
     @property
     def url(self) -> str:
@@ -172,9 +158,6 @@ class OutletView:
         :param target: The resolved target
         :return: The resolved target or a modified target
         """
-        if self.on_open is not None:
-            RouterFrame.run_safe(self.on_open, **kwargs | {'target': target},
-                                 type_check=True)
         return target
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:

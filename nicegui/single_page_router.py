@@ -1,5 +1,5 @@
 from fnmatch import fnmatch
-from typing import Callable, Any, Optional, Dict, TYPE_CHECKING, Self
+from typing import Callable, Any, Optional, Dict, TYPE_CHECKING, Self, Union
 
 from nicegui import ui, core
 from nicegui.context import context
@@ -81,9 +81,7 @@ class SinglePageRouter:
                                         use_browser_history=use_browser_history,
                                         on_navigate=lambda url, history: self.navigate_to(url, history=history),
                                         user_data={'router': self})
-        self._on_navigate: Optional[Callable[[str], Optional[str]]] = None
-        self._on_resolve: Optional[Callable[[str], Optional[SinglePageTarget]]] = None
-        self._on_open: Optional[Callable[[SinglePageTarget, Any], SinglePageTarget]] = None
+        self._on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = None
 
     @property
     def target_url(self) -> str:
@@ -99,10 +97,6 @@ class SinglePageRouter:
         :param target: The target object such as a URL or Callable
         :param user_data: Optional user data which is passed to the resolver functions
         :return: The resolved SinglePageTarget object"""
-        if self._on_resolve is not None:  # try custom handler first if defined
-            resolved_target = self._on_resolve(target)
-            if resolved_target is not None:
-                return resolved_target
         if isinstance(target, SinglePageTarget):
             return target
         target = self.router_config.resolve_target(target)
@@ -110,39 +104,25 @@ class SinglePageRouter:
             target.router = self
         if target is None:
             raise NotImplementedError
-        if target.router_path is not None:
-            original_path = target.original_path
-            if self._on_open is not None:  # try the router instance's custom open handler first
-                target = RouterFrame.run_safe(self._on_open(**user_data | {'target': target}))
-                if target.original_path != original_path:
-                    return self.resolve_target(target, user_data)
-            rp = target.router_path
-            if rp.on_open is not None:  # try the router path's custom open handler
-                target = rp.on_open(target, **user_data)
-                if target.original_path != original_path:
-                    return self.resolve_target(target, user_data)
-            config = self.router_config
-            while config is not None:
-                if config.on_open is not None:
-                    target = config.on_open(target)
-                    if target.original_path != original_path:
-                        return self.resolve_target(target, user_data)
-                config = config.parent_config
         return target
 
-    def handle_navigate(self, target: str) -> Optional[str]:
+    def handle_navigate(self, target: str) -> Optional[Union[SinglePageTarget, str]]:
         """Is called when there was a navigation event in the browser or by the navigate_to method.
 
         By default, the original target is returned. The SinglePageRouter and the router config (the outlet) can
         manipulate the target before it is resolved. If the target is None, the navigation is suppressed.
 
         :param target: The target URL
-        :return: The target URL or None if the navigation is suppressed"""
+        :return: The target URL, a completely resolved target or None if the navigation is suppressed"""
         if self._on_navigate is not None:
             target = self._on_navigate(target)
             if target is None:
                 return None
+            if isinstance(target, SinglePageTarget):
+                return target
         new_target = self.router_config.handle_navigate(target)
+        if isinstance(target, SinglePageTarget):
+            return target
         if new_target is None or new_target != target:
             return new_target
         return target
@@ -166,9 +146,10 @@ class SinglePageRouter:
             if target is None:
                 return
         handler_kwargs = SinglePageRouter.get_user_data() | self.user_data | self.router_frame.user_data | \
-                    {'previous_url_path': self.router_frame.target_url}
+                         {'previous_url_path': self.router_frame.target_url}
         handler_kwargs['url_path'] = target if isinstance(target, str) else target.original_path
-        target = self.resolve_target(target, user_data=handler_kwargs)
+        if not isinstance(target, SinglePageTarget):
+            target = self.resolve_target(target, user_data=handler_kwargs)
         if target is None or not target.valid:  # navigation suppressed
             return
         target_url = target.original_path
@@ -210,25 +191,11 @@ class SinglePageRouter:
         :param new_data: The new user data to set"""
         self.user_data.update(new_data)
 
-    def on_navigate(self, callback: Callable[[str], Optional[str]]) -> Self:
+    def on_navigate(self, callback: Callable[[str], Optional[Union[SinglePageTarget, str]]]) -> Self:
         """Set the on navigate callback which is called when a navigation event is triggered
 
         :param callback: The callback function"""
         self._on_navigate = callback
-        return self
-
-    def on_resolve(self, callback: Callable[[str], Optional[SinglePageTarget]]) -> Self:
-        """Set the on resolve callback which is called when a URL path is resolved to a target
-
-        :param callback: The callback function"""
-        self._on_resolve = callback
-        return self
-
-    def on_open(self, callback: Callable[[SinglePageTarget, Any], SinglePageTarget]) -> Self:
-        """Set the on open callback which is called when a target is opened
-
-        :param callback: The callback function"""
-        self._on_open = callback
         return self
 
     @staticmethod

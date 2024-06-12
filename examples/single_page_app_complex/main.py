@@ -124,8 +124,9 @@ def update_title(target: SinglePageTarget,
     return target
 
 
-@services_router.view('/', on_open=update_title)  # service index page
-def show_index(service: ServiceDefinition):
+@services_router.view('/')  # service index page
+def show_index(target: SinglePageTarget, service: ServiceDefinition):
+    update_title(target, service, None)
     with ui.row() as row:
         ui.label(service.emoji).classes('text-h4 vertical-middle')
         with ui.column():
@@ -142,8 +143,9 @@ def sub_service_router(service: ServiceDefinition, sub_service_name: str):
     yield {'sub_service': sub_service}  # pass sub_service object to all sub elements (views and outlets)
 
 
-@sub_service_router.view('/', on_open=update_title)  # sub service index page
-def sub_service_index(sub_service: SubServiceDefinition):
+@sub_service_router.view('/')  # sub service index page
+def sub_service_index(target: SinglePageTarget, service: ServiceDefinition, sub_service: SubServiceDefinition):
+    update_title(target, service, sub_service)
     ui.label(sub_service.emoji).classes('text-h1')
     ui.html('<br>')
     ui.label(sub_service.description)

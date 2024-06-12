@@ -26,9 +26,7 @@ class SinglePageRouterConfig:
                  parent: Optional['SinglePageRouterConfig'] = None,
                  page_template: Optional[Callable[[], Generator]] = None,
                  on_instance_created: Optional[Callable[['SinglePageRouter'], None]] = None,
-                 on_resolve: Optional[Callable[[str], Optional[SinglePageTarget]]] = None,
-                 on_open: Optional[Callable[[SinglePageTarget], SinglePageTarget]] = None,
-                 on_navigate: Optional[Callable[[str], Optional[str]]] = None,
+                 on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = None,
                  **kwargs) -> None:
         """:param path: the base path of the single page router.
         :param browser_history: Optional flag to enable or disable the browser history management. Default is True.
@@ -36,10 +34,6 @@ class SinglePageRouterConfig:
         :param page_template: Optional page template generator function which defines the layout of the page. It
             needs to yield a value to separate the layout from the content area.
         :param on_instance_created: Optional callback which is called when a new router instance is created. Each
-        :param on_resolve: Optional callback which is called when a URL path is resolved to a target. Can be used
-            to resolve or redirect a URL path to a target.
-        :param on_open: Optional callback which is called when a target is opened. Can be used to modify the target
-            such as title or the actually called builder function.
         :param on_navigate: Optional callback which is called when a navigation event is triggered. Can be used to
             prevent or modify the navigation. Return the new URL if the navigation should be allowed, modify the URL
             or return None to prevent the navigation.
@@ -51,9 +45,7 @@ class SinglePageRouterConfig:
         self.included_paths: Set[str] = set()
         self.excluded_paths: Set[str] = set()
         self.on_instance_created: Optional[Callable] = on_instance_created
-        self.on_resolve: Optional[Callable[[str], Optional[SinglePageTarget]]] = on_resolve
-        self.on_open: Optional[Callable[[SinglePageTarget], SinglePageTarget]] = on_open
-        self.on_navigate: Optional[Callable[[str], Optional[str]]] = on_navigate
+        self.on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = on_navigate
         self.use_browser_history = browser_history
         self.page_template = page_template
         self._setup_configured = False
@@ -123,13 +115,6 @@ class SinglePageRouterConfig:
                 if entry.builder == target:
                     return SinglePageTarget(router_path=entry)
         else:
-            cur_config = self
-            while cur_config is not None:  # try custom on_resolve functions first for manual resolution
-                if cur_config.on_resolve is not None:
-                    resolved = cur_config.on_resolve(target)
-                    if resolved is not None:
-                        return resolved
-                cur_config = cur_config.parent_config
             resolved = None
             path = target.split('#')[0].split('?')[0]
             for cur_router in self.child_routers:
@@ -162,15 +147,17 @@ class SinglePageRouterConfig:
         router.navigate_to(org_target, server_side=server_side)
         return True
 
-    def handle_navigate(self, url: str) -> Optional[str]:
+    def handle_navigate(self, url: str) -> Optional[Union[SinglePageTarget, str]]:
         """Handles a navigation event and returns the new URL if the navigation should be allowed
 
         :param url: The URL to navigate to
         :return: The new URL if the navigation should be allowed, None otherwise"""
         if self.on_navigate is not None:
-            new_url = self.on_navigate(url)
-            if new_url != url:
-                return new_url
+            new_target = self.on_navigate(url)
+            if isinstance(new_target, SinglePageTarget):
+                return new_target
+            if new_target != url:
+                return new_target
         if self.parent_config is not None:
             return self.parent_config.handle_navigate(url)
         return url
