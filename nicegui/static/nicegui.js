@@ -364,17 +364,15 @@ function createApp(elements, options) {
         window.socket.on(event, async (...args) => {
           if (args.length > 0 && args[0].hasOwnProperty("message_id")) {
             const data = args[0];
-            if ("retransmit_id" in data && data.retransmit_id != window.retransmitId) {
+            if (
+              data.message_id <= window.last_message_id ||
+              ("retransmit_id" in data && data.retransmit_id != window.retransmitId)
+            ) {
               return;
-            } else {
-              delete data.retransmit_id;
             }
-            if (data.message_id <= window.last_message_id) {
-              return;
-            } else {
-              window.last_message_id = data.message_id;
-              delete data.message_id;
-            }
+            window.last_message_id = data.message_id;
+            delete data.message_id;
+            delete data.retransmit_id;
           }
 
           socketMessageQueue.push(() => handler(...args));
