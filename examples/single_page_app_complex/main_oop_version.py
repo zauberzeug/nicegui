@@ -12,7 +12,8 @@ class OtherApp(SinglePageRouter):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def other_app_index(self):
+    @staticmethod
+    def other_app_index():
         ui.label('Welcome to the index page of the other application')
 
     @staticmethod
@@ -56,8 +57,9 @@ class MainAppInstance(SinglePageRouter):
         # add a link to the other app
         ui.markdown('Click [here](/other_app) to visit the other app.')
 
-    @staticmethod
-    def about_page():
+    def about_page(self):
+        self.menu_drawer.clear()  # clear drawer
+        self.menu_drawer.hide()  # hide drawer
         ui.label('About NiceCLOUD').classes('text-3xl')
         ui.html('<br>')
         ui.label('NiceCLOUD Inc.')
