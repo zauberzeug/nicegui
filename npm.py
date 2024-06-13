@@ -84,9 +84,10 @@ for key, dependency in dependencies.items():
     if 'license' in npm_data['versions'][npm_version]:
         license_ = npm_data['versions'][npm_version]['license']
     elif package_name == 'echarts-gl':
-            license_ = 'BSD-3-Clause'
+        license_ = 'BSD-3-Clause'
     print(f'{key}: {npm_version} - {npm_tarball} ({license_})')
     DEPENDENCIES.write(f'- {key}: {npm_version} ([{license_}]({KNOWN_LICENSES.get(license_, license_)}))\n')
+
     # Handle the special case of tailwind. Hopefully remove this soon.
     if 'download' in dependency:
         download_path = download_buffered(dependency['download'])
