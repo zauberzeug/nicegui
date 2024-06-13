@@ -28,7 +28,7 @@ class SinglePageRouter:
                  excluded_paths: Optional[list[str]] = None,
                  use_browser_history: bool = True,
                  change_title: bool = True,
-                 parent_router: 'SinglePageRouter' = None,
+                 parent: 'SinglePageRouter' = None,
                  target_url: Optional[str] = None,
                  user_data: Optional[Dict] = None
                  ):
@@ -45,15 +45,15 @@ class SinglePageRouter:
         self.router_config = config
         self.base_path = config.base_path
         if target_url is None:
-            if parent_router is not None and parent_router.target_url is not None:
-                target_url = parent_router.target_url
+            if parent is not None and parent.target_url is not None:
+                target_url = parent.target_url
             else:
                 target_url = self.router_config.base_path
         self.user_data = user_data
         self.child_routers: dict[str, "SinglePageRouter"] = {}
         self.use_browser_history = use_browser_history
         self.change_title = change_title
-        self.parent_router = parent_router
+        self.parent = parent
         # split base path into it's elements
         base_path_elements = self.router_config.base_path.split('/')
         # replace all asterisks with the actual path elements from target url where possible
@@ -72,8 +72,8 @@ class SinglePageRouter:
                             path_elements[j] = base_path_elements[j]
                 included_paths[i] = '/'.join(path_elements)
         self.base_path = '/'.join(base_path_elements)
-        if parent_router is not None:
-            parent_router._register_child_router(included_paths[0], self)
+        if parent is not None:
+            parent._register_child_router(self.base_path, self)
         self.router_frame = RouterFrame(base_path=self.base_path,
                                         target_url=target_url,
                                         included_paths=included_paths,
@@ -82,6 +82,22 @@ class SinglePageRouter:
                                         on_navigate=lambda url, history: self.navigate_to(url, history=history),
                                         user_data={'router': self})
         self._on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = None
+        self.views = {}
+
+    def add_view(self, path: str, builder: Callable, title: Optional[str] = None, **kwargs) -> Self:
+        """Add a view to the router
+
+        :param path: The path of the view
+        :param builder: The builder function of the view
+        :param title: The title of the view
+        :param kwargs: Additional arguments"""
+        path = path.lstrip('/')
+        if path in self.views:
+            raise ValueError(f'View with path {path} already exists')
+        self.views[path] = RouterView(path, builder, title, **kwargs)
+        absolute_path = (self.base_path.rstrip('/') + path).rstrip('/')
+        self.router_frame.add_included_path(absolute_path)
+        return self
 
     @property
     def target_url(self) -> str:
@@ -90,16 +106,21 @@ class SinglePageRouter:
         :return: The target url of the router frame"""
         return self.router_frame.target_url
 
-    def resolve_target(self, target: Any, user_data: Optional[Dict] = None) -> SinglePageTarget:
+    def resolve_target(self, target: Any) -> SinglePageTarget:
         """Resolves a URL or SPA target to a SinglePageUrl which contains details about the builder function to
         be called and the arguments to pass to the builder function.
 
         :param target: The target object such as a URL or Callable
-        :param user_data: Optional user data which is passed to the resolver functions
         :return: The resolved SinglePageTarget object"""
         if isinstance(target, SinglePageTarget):
             return target
         target = self.router_config.resolve_target(target)
+        if isinstance(target, SinglePageTarget) and not target.valid and target.path.startswith(self.base_path):
+            rem_path = target.path[len(self.base_path):]
+            if rem_path in self.views:
+                target.builder = self.views[rem_path].builder
+                target.title = self.views[rem_path].title
+                target.valid = True
         if target.valid and target.router is None:
             target.router = self
         if target is None:
@@ -149,7 +170,7 @@ class SinglePageRouter:
                          {'previous_url_path': self.router_frame.target_url}
         handler_kwargs['url_path'] = target if isinstance(target, str) else target.original_path
         if not isinstance(target, SinglePageTarget):
-            target = self.resolve_target(target, user_data=handler_kwargs)
+            target = self.resolve_target(target)
         if target is None or not target.valid:  # navigation suppressed
             return
         target_url = target.original_path
@@ -171,6 +192,8 @@ class SinglePageRouter:
         if target.on_pre_update is not None:
             RouterFrame.run_safe(target.on_pre_update, **handler_kwargs)
         self.clear()
+        self.user_data['target'] = target
+        # check if object address of real target and user_data target are the same
         self.router_frame.update_content(target.builder, handler_kwargs, target.title, target_fragment, sync)
         if self.change_title and target.builder and len(self.child_routers) == 0:
             # note: If the router is just a container for sub routers, the title is not updated here but
@@ -207,8 +230,13 @@ class SinglePageRouter:
                 result_dict.update(slot.parent.user_data['router'].user_data)
         return result_dict
 
+    @property
+    def target(self) -> Optional[SinglePageTarget]:
+        """The current target of the router frame. Only valid while a view is being built."""
+        return self.user_data.get('target', None)
+
     @staticmethod
-    def get_current_router() -> Optional['SinglePageRouter']:
+    def current_router() -> Optional['SinglePageRouter']:
         """Get the current router frame from the context stack
 
         :return: The current router or None if no router in the context stack"""
@@ -238,6 +266,20 @@ class SinglePageRouter:
         cur_router = self
         for _ in range(PATH_RESOLVING_MAX_RECURSION):
             cur_router.router_frame.target_url = target_url
-            cur_router = cur_router.parent_router
+            cur_router = cur_router.parent
             if cur_router is None:
                 return
+
+
+class RouterView:
+    """Defines a single, router instance specific view / "content page" which is displayed in an outlet"""
+
+    def __init__(self, path: str, builder: Callable, title: Optional[str] = None, **kwargs):
+        self.path = path
+        self.builder = builder
+        self.title = title
+        self.kwargs = kwargs
+
+    def build_page(self, **kwargs):
+        """Build the page content"""
+        self.builder(**kwargs)

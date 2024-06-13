@@ -1,3 +1,4 @@
+import inspect
 import re
 import typing
 from fnmatch import fnmatch
@@ -27,6 +28,7 @@ class SinglePageRouterConfig:
                  page_template: Optional[Callable[[], Generator]] = None,
                  on_instance_created: Optional[Callable[['SinglePageRouter'], None]] = None,
                  on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = None,
+                 router_class: Optional[type] = None,
                  **kwargs) -> None:
         """:param path: the base path of the single page router.
         :param browser_history: Optional flag to enable or disable the browser history management. Default is True.
@@ -38,6 +40,7 @@ class SinglePageRouterConfig:
             prevent or modify the navigation. Return the new URL if the navigation should be allowed, modify the URL
             or return None to prevent the navigation.
         browser tab or window is a new instance. This can be used to initialize the state of the application.
+        :param router_class: Optional custom router class to use. Default is SinglePageRouter.
         :param kwargs: Additional arguments for the @page decorators"""
         super().__init__()
         self.routes: Dict[str, "SinglePageRouterPath"] = {}
@@ -54,6 +57,7 @@ class SinglePageRouterConfig:
             self.parent_config._register_child_config(self)
         self.child_routers: List['SinglePageRouterConfig'] = []
         self.page_kwargs = kwargs
+        self.router_class = SinglePageRouter if router_class is None else router_class
 
     def setup_pages(self, overwrite=False) -> Self:
         """Setups the NiceGUI page endpoints and their base UI structure for the root routers
@@ -207,14 +211,29 @@ class SinglePageRouterConfig:
         :param initial_url: The initial URL to initialize the router's content with
         :param user_data: Optional user data to pass to the content area
         :return: The created router instance"""
-        parent_router = SinglePageRouter.get_current_router()
-        content = SinglePageRouter(config=self,
-                                   included_paths=sorted(list(self.included_paths)),
-                                   excluded_paths=sorted(list(self.excluded_paths)),
-                                   use_browser_history=self.use_browser_history,
-                                   parent_router=parent_router,
-                                   target_url=initial_url,
-                                   user_data=user_data)
+
+        user_data_kwargs = {}
+
+        def prepare_arguments():
+            nonlocal parent_router, user_data_kwargs
+            init_params = inspect.signature(self.router_class.__init__).parameters
+            param_names = set(init_params.keys()) - {'self'}
+            user_data_kwargs = {k: v for k, v in user_data.items() if k in param_names}
+            cur_parent = parent_router
+            while cur_parent is not None:
+                user_data_kwargs.update({k: v for k, v in cur_parent.user_data.items() if k in param_names})
+                cur_parent = cur_parent.parent
+
+        parent_router = SinglePageRouter.current_router()
+        prepare_arguments()
+        content = self.router_class(config=self,
+                                    included_paths=sorted(list(self.included_paths)),
+                                    excluded_paths=sorted(list(self.excluded_paths)),
+                                    use_browser_history=self.use_browser_history,
+                                    parent=parent_router,
+                                    target_url=initial_url,
+                                    user_data=user_data,
+                                    **user_data_kwargs)
         if parent_router is None:  # register root routers to the client
             context.client.single_page_router = content
         initial_url = content.target_url

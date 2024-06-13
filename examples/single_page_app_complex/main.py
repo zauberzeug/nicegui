@@ -1,40 +1,12 @@
 # Advanced demo showing how to use the ui.outlet and outlet.view decorators to create a nested multi-page app with a
 # static header, footer and menu which is shared across all pages and hidden when the user navigates to the root page.
 
-import os
-from typing import Dict
-
-from pydantic import BaseModel, Field
-
 from nicegui import ui
 from nicegui.page_layout import LeftDrawer
+from nicegui.single_page_router import SinglePageRouter
 from nicegui.single_page_target import SinglePageTarget
 
-
-# --- Load service data for fake cloud provider portal
-
-class SubServiceDefinition(BaseModel):
-    title: str = Field(..., description='The title of the sub-service', examples=['Digital Twin'])
-    emoji: str = Field(..., description='An emoji representing the sub-service', examples=['🤖'])
-    description: str = Field(..., description='A short description of the sub-service',
-                             examples=['Manage your digital twin'])
-
-
-class ServiceDefinition(BaseModel):
-    title: str = Field(..., description='The title of the cloud service', examples=['Virtual Machines'])
-    emoji: str = Field(..., description='An emoji representing the cloud service', examples=['💻'])
-    description: str = Field(..., description='A short description of the cloud service',
-                             examples=['Create and manage virtual machines'])
-    sub_services: Dict[str, SubServiceDefinition] = Field(...,
-                                                          description='The sub-services of the cloud service')
-
-
-class ServiceDefinitions(BaseModel):
-    services: Dict[str, ServiceDefinition] = Field(...,
-                                                   description='The cloud services provided by the cloud provider')
-
-
-services = ServiceDefinitions.parse_file(os.path.join(os.path.dirname(__file__), 'services.json')).services
+from examples.single_page_app_complex.cms_config import SubServiceDefinition, ServiceDefinition, services
 
 
 # --- Other app ---
@@ -64,14 +36,14 @@ def main_router(url_path: str):
     menu_visible = '/services/' in url_path  # make instantly visible if the initial path is a service
     menu_drawer = ui.left_drawer(bordered=True, value=menu_visible, fixed=True).classes('bg-primary')
     with ui.footer():
-        ui.label('Copyright 2024 by My Company')
-
+        with ui.element('a').props('href="/about"'):
+            ui.label('Copyright 2024 by NiceCLOUD Inc.').classes('text-h7')
     with ui.element().classes('p-8'):
         yield {'menu_drawer': menu_drawer}  # pass menu drawer to all sub elements (views and outlets)
 
 
 @main_router.view('/')
-def main_app_index(menu_drawer: LeftDrawer):  # main app index page
+def main_index(menu_drawer: LeftDrawer):  # main app index page
     menu_drawer.clear()  # clear drawer
     menu_drawer.hide()  # hide drawer
     ui.label('Welcome to NiceCLOUD!').classes('text-3xl')
@@ -90,6 +62,18 @@ def main_app_index(menu_drawer: LeftDrawer):  # main app index page
     ui.html('<br><br>')
     # add a link to the other app
     ui.markdown('Click [here](/other_app) to visit the other app.')
+
+
+@main_router.view('/about')
+def about_page(menu_drawer: LeftDrawer):
+    menu_drawer.clear()
+    menu_drawer.hide()
+    ui.label('About NiceCLOUD').classes('text-3xl')
+    ui.html('<br>')
+    ui.label('NiceCLOUD Inc.')
+    ui.label('1234 Nice Street')
+    ui.label('Nice City')
+    ui.label('Nice Country')
 
 
 @main_router.outlet('/services/{service_name}')  # service outlet
@@ -114,19 +98,17 @@ def services_router(service_name: str, menu_drawer: LeftDrawer):
     yield {'service': service}  # pass service object to all sub elements (views and outlets)
 
 
-def update_title(target: SinglePageTarget,
-                 service: ServiceDefinition = None,
-                 sub_service: SubServiceDefinition = None) -> SinglePageTarget:
+def update_title(service: ServiceDefinition = None,
+                 sub_service: SubServiceDefinition = None):
     # Is called for every page within the service_router and sub_service_router via the on_load callback
     # and updates the title of each page
-    if target.router is not None:
-        target.title = 'NiceCLOUD - ' + (f'{sub_service.title}' if sub_service else f'{service.title}')
-    return target
+    SinglePageRouter.current_router().target.title = \
+            'NiceCLOUD - ' + (f'{sub_service.title}' if sub_service else f'{service.title}')
 
 
 @services_router.view('/')  # service index page
-def show_index(target: SinglePageTarget, service: ServiceDefinition):
-    update_title(target, service, None)
+def show_index(service: ServiceDefinition):
+    update_title(service, None)
     with ui.row() as row:
         ui.label(service.emoji).classes('text-h4 vertical-middle')
         with ui.column():
@@ -144,11 +126,11 @@ def sub_service_router(service: ServiceDefinition, sub_service_name: str):
 
 
 @sub_service_router.view('/')  # sub service index page
-def sub_service_index(target: SinglePageTarget, service: ServiceDefinition, sub_service: SubServiceDefinition):
-    update_title(target, service, sub_service)
+def sub_service_index(service: ServiceDefinition, sub_service: SubServiceDefinition):
+    update_title(service, sub_service)
     ui.label(sub_service.emoji).classes('text-h1')
     ui.html('<br>')
     ui.label(sub_service.description)
 
 
-ui.run(title='NiceCLOUD Portal')
+ui.run(title='NiceCLOUD Portal', show=False)

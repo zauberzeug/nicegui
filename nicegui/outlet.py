@@ -6,6 +6,8 @@ from nicegui.single_page_router_config import SinglePageRouterConfig
 from nicegui.elements.router_frame import RouterFrame
 from nicegui.single_page_target import SinglePageTarget
 
+PAGE_TEMPLATE_METHOD_NAME = "page_template"
+
 
 class Outlet(SinglePageRouterConfig):
     """An outlet allows the creation of single page applications which do not reload the page when navigating between
@@ -27,6 +29,7 @@ class Outlet(SinglePageRouterConfig):
                  parent: Optional['SinglePageRouterConfig'] = None,
                  on_instance_created: Optional[Callable[['SinglePageRouter'], None]] = None,
                  on_navigate: Optional[Callable[[str], Optional[Union[SinglePageTarget, str]]]] = None,
+                 router_class: Optional[Callable[..., SinglePageRouter]] = None,
                  **kwargs) -> None:
         """
         :param path: the base path of the single page router.
@@ -40,15 +43,25 @@ class Outlet(SinglePageRouterConfig):
         :param on_navigate: Optional callback which is called when a navigation event is triggered. Can be used to
             prevent or modify the navigation. Return the new URL if the navigation should be allowed, modify the URL
             or return None to prevent the navigation.
+        :param router_class: Optional class which is used to create the router instance. The class must be a subclass
+            of SinglePageRouter. If not provided, the default SinglePageRouter is used.
+
+            If the class defines a method with the name 'page_template', this method is used as the outlet builder.
         :param parent: The parent outlet of this outlet.
         :param kwargs: Additional arguments
         """
         super().__init__(path, browser_history=browser_history, on_instance_created=on_instance_created,
                          on_navigate=on_navigate,
+                         router_class=router_class,
                          parent=parent, **kwargs)
         self.outlet_builder: Optional[Callable] = outlet_builder
         if parent is None:
             Client.single_page_routes[path] = self
+        if router_class is not None:
+            # check if class defines outlet builder function
+            if hasattr(router_class, PAGE_TEMPLATE_METHOD_NAME):
+                outlet_builder = getattr(router_class, PAGE_TEMPLATE_METHOD_NAME)
+                self(outlet_builder)
 
     def build_page_template(self, **kwargs):
         """Setups the content area for the single page router"""
@@ -65,12 +78,11 @@ class Outlet(SinglePageRouterConfig):
             if isinstance(result, dict):
                 properties.update(result)
 
-        router_frame = SinglePageRouter.get_current_router()
+        router_frame = SinglePageRouter.current_router()
         add_properties(next(frame))  # insert ui elements before yield
         if router_frame is not None:
             router_frame.update_user_data(properties)
         yield properties
-        router_frame = SinglePageRouter.get_current_router()
         try:
             add_properties(next(frame))  # if provided insert ui elements after yield
             if router_frame is not None:
@@ -123,7 +135,7 @@ class Outlet(SinglePageRouterConfig):
         Only works when called from within the outlet or view builder function.
 
         :return: The current URL of the outlet"""
-        cur_router = SinglePageRouter.get_current_router()
+        cur_router = SinglePageRouter.current_router()
         if cur_router is None:
             raise ValueError('The current URL can only be retrieved from within a nested outlet or view builder '
                              'function.')
@@ -133,16 +145,16 @@ class Outlet(SinglePageRouterConfig):
 class OutletView:
     """Defines a single view / "content page" which is displayed in an outlet"""
 
-    def __init__(self, parent_outlet: SinglePageRouterConfig, path: str, title: Optional[str] = None):
+    def __init__(self, parent: SinglePageRouterConfig, path: str, title: Optional[str] = None):
         """
-        :param parent_outlet: The parent outlet in which this view is displayed
+        :param parent: The parent outlet in which this view is displayed
         :param path: The path of the view, relative to the base path of the outlet
         :param title: Optional title of the view. If a title is set, it will be displayed in the browser tab
             when the view is active, otherwise the default title of the application is displayed.
         """
         self.path = path
         self.title = title
-        self.parent_outlet = parent_outlet
+        self.parent_outlet = parent
 
     @property
     def url(self) -> str:
