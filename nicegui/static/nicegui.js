@@ -303,9 +303,15 @@ function createApp(elements, options) {
             tabId = createRandomUUID();
             sessionStorage.setItem("__nicegui_tab_id", tabId);
           }
+          window.retransmitId = createRandomUUID();
           window.socket.emit(
             "handshake",
-            { client_id: window.clientId, tab_id: tabId, last_message_id: window.last_message_id },
+            {
+              client_id: window.clientId,
+              tab_id: tabId,
+              last_message_id: window.last_message_id,
+              retransmit_id: window.retransmitId,
+            },
             (ok) => {
               if (!ok) {
                 console.log("reloading because handshake failed for clientId " + window.clientId);
@@ -357,11 +363,17 @@ function createApp(elements, options) {
       for (const [event, handler] of Object.entries(messageHandlers)) {
         window.socket.on(event, async (...args) => {
           if (args.length > 0 && args[0].hasOwnProperty("message_id")) {
-            if (args[0].message_id > window.last_message_id) {
-              window.last_message_id = args[0].message_id;
-              delete args[0].message_id;
-            } else {
+            const data = args[0];
+            if ("retransmit_id" in data && data.retransmit_id != window.retransmitId) {
               return;
+            } else {
+              delete data.retransmit_id;
+            }
+            if (data.message_id <= window.last_message_id) {
+              return;
+            } else {
+              window.last_message_id = data.message_id;
+              delete data.message_id;
             }
           }
 

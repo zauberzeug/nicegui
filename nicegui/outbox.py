@@ -82,7 +82,7 @@ class Outbox:
 
         return self._message_count
 
-    def synchronize(self, last_msg_id: int) -> bool:
+    def synchronize(self, last_msg_id: int, retransmit_id: str) -> bool:
         """Synchronize the state of a connecting client by resending missed messages, if possible."""
         if len(self._history) > 0:
             next_id = last_msg_id + 1
@@ -92,10 +92,12 @@ class Outbox:
 
             start = next_id - oldest_id
             for i in range(start, len(self._history)):
-                self.enqueue_message('retransmit', self._history[i][2], '')
-        else:
-            if last_msg_id != self._message_count:
-                return False
+                args = self._history[i][2]
+                args[1]['retransmit_id'] = retransmit_id
+                self.enqueue_message('retransmit', args, '')
+
+        elif last_msg_id != self._message_count:
+            return False
 
         return True
 
