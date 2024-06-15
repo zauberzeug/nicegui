@@ -13,13 +13,16 @@ def main_demo() -> None:
     This demo shows how to implement a date picker with an input element.
     We place an icon in the input element's append slot.
     When the icon is clicked, we open a menu with a date picker.
+    [QMenu](https://quasar.dev/vue-components/menu)'s `auto-close` prop can be useful to automatically close the date
+    picker once the date is selected. The `no-parent-event` prop can also be used to prevent a click within the text
+    input itself to open the date picker.
 
     The date is bound to the input element's value.
     So both the input element and the date picker will stay in sync whenever the date is changed.
 ''')
 def date():
     with ui.input('Date') as date:
-        with ui.menu() as menu:
+        with ui.menu().props('auto-close no-parent-event') as menu:
             ui.date().bind_value(date)
         with date.add_slot('append'):
             ui.icon('edit_calendar').on('click', menu.open).classes('cursor-pointer')
