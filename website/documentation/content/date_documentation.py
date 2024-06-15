@@ -22,7 +22,7 @@ def date():
         with ui.menu() as menu:
             ui.date().bind_value(date)
         with date.add_slot('append'):
-            ui.icon('edit_calendar').on('click', lambda: menu.open()).classes('cursor-pointer')
+            ui.icon('edit_calendar').on('click', menu.open).classes('cursor-pointer')
 
 
 @doc.demo('Date filter', '''
