@@ -56,10 +56,12 @@ def download_buffered(url: str) -> Path:
 DEPENDENCIES = (root_path / 'DEPENDENCIES.md').open('w')
 DEPENDENCIES.write('# Included Web Dependencies\n\n')
 KNOWN_LICENSES = {
+    'UNKNOWN': 'UNKNOWN',
     'MIT': 'https://opensource.org/licenses/MIT',
     'ISC': 'https://opensource.org/licenses/ISC',
     'Apache-2.0': 'https://opensource.org/licenses/Apache-2.0',
     'BSD-2-Clause': 'https://opensource.org/licenses/BSD-2-Clause',
+    'BSD-3-Clause': 'https://opensource.org/licenses/BSD-3-Clause',
 }
 
 # Create a hidden folder to work in.
@@ -78,7 +80,11 @@ for key, dependency in dependencies.items():
     npm_data = json.loads(download_buffered(f'https://registry.npmjs.org/{package_name}').read_text())
     npm_version = dependency.get('version') or dependency.get('version', npm_data['dist-tags']['latest'])
     npm_tarball = npm_data['versions'][npm_version]['dist']['tarball']
-    license_ = npm_data['versions'][npm_version]['license']
+    license_ = 'UNKNOWN'
+    if 'license' in npm_data['versions'][npm_version]:
+        license_ = npm_data['versions'][npm_version]['license']
+    elif package_name == 'echarts-gl':
+        license_ = 'BSD-3-Clause'
     print(f'{key}: {npm_version} - {npm_tarball} ({license_})')
     DEPENDENCIES.write(f'- {key}: {npm_version} ([{license_}]({KNOWN_LICENSES.get(license_, license_)}))\n')
 
