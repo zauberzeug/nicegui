@@ -122,8 +122,11 @@ class Client:
         elements = json.dumps({
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         })
-        socket_io_js_query_params = {**core.app.config.socket_io_js_query_params,
-                                     'client_id': self.id, 'starting_message_id': self.outbox.message_count}
+        socket_io_js_query_params = {
+            **core.app.config.socket_io_js_query_params,
+            'client_id': self.id,
+            'starting_message_id': self.outbox.message_count,
+        }
         vue_html, vue_styles, vue_scripts, imports, js_imports = generate_resources(prefix, self.elements.values())
         return templates.TemplateResponse(
             request=request,

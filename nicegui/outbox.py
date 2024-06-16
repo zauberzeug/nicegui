@@ -31,8 +31,8 @@ class Outbox:
         if self.client.shared:
             self._history_duration = 30
         else:
-            self._history_duration = max(core.sio.eio.ping_interval + core.sio.eio.ping_timeout +
-                                         self.client.page.resolve_reconnect_timeout(), 30)
+            dt = core.sio.eio.ping_interval + core.sio.eio.ping_timeout + self.client.page.resolve_reconnect_timeout()
+            self._history_duration = max(dt, 30)
 
         if core.app.is_started:
             background_tasks.create(self.loop(), name=f'outbox loop {client.id}')
@@ -41,7 +41,7 @@ class Outbox:
 
     @property
     def message_count(self) -> int:
-        """Get the total number of messages sent."""
+        """Total number of messages sent."""
         return self._message_count
 
     def _set_enqueue_event(self) -> None:
@@ -67,25 +67,17 @@ class Outbox:
         self.messages.append((target_id, message_type, data))
         self._set_enqueue_event()
 
-    def _append_history(self, message_type: MessageType, data: Any, target: ClientId) -> int:
+    def _append_history(self, message_type: MessageType, data: Any, target: ClientId) -> None:
         self._message_count += 1
-        current_ts = time.time()
+        timestamp = time.time()
+        while self._history and self._history[0][1] < timestamp - self._history_duration:
+            self._history.popleft()
+        self._history.append((self._message_count, timestamp, (message_type, data, target)))
 
-        while len(self._history) > 0:
-            oldest_ts = self._history[0][1]
-            if current_ts - oldest_ts > self._history_duration:
-                self._history.popleft()
-            else:
-                break
-
-        self._history.append((self._message_count, current_ts, (message_type, data, target)))
-
-        return self._message_count
-
-    def synchronize(self, last_msg_id: int, retransmit_id: str) -> bool:
+    def synchronize(self, last_message_id: int, retransmit_id: str) -> bool:
         """Synchronize the state of a connecting client by resending missed messages, if possible."""
-        if len(self._history) > 0:
-            next_id = last_msg_id + 1
+        if self._history:
+            next_id = last_message_id + 1
             oldest_id = self._history[0][0]
             if oldest_id > next_id:
                 return False
@@ -96,7 +88,7 @@ class Outbox:
                 args[1]['retransmit_id'] = retransmit_id
                 self.enqueue_message('retransmit', args, '')
 
-        elif last_msg_id != self._message_count:
+        elif last_message_id != self._message_count:
             return False
 
         return True
@@ -146,7 +138,8 @@ class Outbox:
 
     async def _emit(self, message_type: MessageType, data: Any, target_id: ClientId) -> None:
         if message_type != 'retransmit':
-            data['message_id'] = self._append_history(message_type, data, target_id)
+            self._append_history(message_type, data, target_id)
+            data['message_id'] = self._message_count
         else:
             message_type, data, target_id = data
 

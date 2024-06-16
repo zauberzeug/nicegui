@@ -304,22 +304,19 @@ function createApp(elements, options) {
             sessionStorage.setItem("__nicegui_tab_id", tabId);
           }
           window.retransmitId = createRandomUUID();
-          window.socket.emit(
-            "handshake",
-            {
-              client_id: window.clientId,
-              tab_id: tabId,
-              last_message_id: window.last_message_id,
-              retransmit_id: window.retransmitId,
-            },
-            (ok) => {
-              if (!ok) {
-                console.log("reloading because handshake failed for clientId " + window.clientId);
-                window.location.reload();
-              }
-              document.getElementById("popup").ariaHidden = true;
+          const args = {
+            client_id: window.clientId,
+            tab_id: tabId,
+            last_message_id: window.last_message_id,
+            retransmit_id: window.retransmitId,
+          };
+          window.socket.emit("handshake", args, (ok) => {
+            if (!ok) {
+              console.log("reloading because handshake failed for clientId " + window.clientId);
+              window.location.reload();
             }
-          );
+            document.getElementById("popup").ariaHidden = true;
+          });
         },
         connect_error: (err) => {
           if (err.message == "timeout") {
