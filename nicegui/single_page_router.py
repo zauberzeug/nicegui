@@ -18,9 +18,7 @@ class SinglePageRouter:
     When ever a new page is opened, the SinglePageRouter exchanges the content of the current page with the content
     of the new page. The SinglePageRouter also manages the browser history and title updates.
 
-    Multiple SinglePageRouters can be nested to create complex SinglePageApps with multiple content areas.
-
-    See @ui.outlet or SinglePageApp for more information."""
+    See ui.outlet for more information."""
 
     def __init__(self,
                  config: 'SinglePageRouterConfig',
@@ -188,13 +186,16 @@ class SinglePageRouter:
         if len(js_code) > 0:
             ui.run_javascript(js_code)
         handler_kwargs = {**target.path_args, **target.query_args, 'target': target} | handler_kwargs
-        target_fragment = target.fragment
+        self.update_content(target, handler_kwargs=handler_kwargs, sync=sync)
+
+    def update_content(self, target: SinglePageTarget, handler_kwargs: dict, sync: bool):
+        """Update the content of the router frame"""
         if target.on_pre_update is not None:
             RouterFrame.run_safe(target.on_pre_update, **handler_kwargs)
         self.clear()
         self.user_data['target'] = target
         # check if object address of real target and user_data target are the same
-        self.router_frame.update_content(target.builder, handler_kwargs, target.title, target_fragment, sync)
+        self.router_frame.update_content(target.builder, handler_kwargs, target.title, target.fragment, sync)
         if self.change_title and target.builder and len(self.child_routers) == 0:
             # note: If the router is just a container for sub routers, the title is not updated here but
             # in the sub router's update_content method

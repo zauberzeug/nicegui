@@ -11,16 +11,15 @@ PAGE_TEMPLATE_METHOD_NAME = "page_template"
 
 class Outlet(SinglePageRouterConfig):
     """An outlet allows the creation of single page applications which do not reload the page when navigating between
-    different views. The outlet is a container for multiple views and can contain nested outlets.
+    different views. The outlet is a container for multiple views and can contain further, nested outlets.
 
     To define a new outlet, use the @ui.outlet decorator on a function which defines the layout of the outlet.
     The layout function must be a generator function and contain a yield statement to separate the layout from the
-    content area. The yield can also be used to pass properties to the content are by return a dictionary with the
-    properties. Each property can be received as function argument in all nested views and outlets.
+    actual content area. The yield can also be used to pass properties to the content are by return a dictionary
+    with the properties. Each property can be received as function argument in all nested views and outlets.
 
-    Once the outlet is defined, multiple views can be added to the outlet using the @outlet.view decorator on
-    a function.
-    """
+    Once the outlet is defined, multiple views can be added to the outlet using the @<outlet_function>.view decorator on
+    a function."""
 
     def __init__(self,
                  path: str,
@@ -54,14 +53,15 @@ class Outlet(SinglePageRouterConfig):
                          on_navigate=on_navigate,
                          router_class=router_class,
                          parent=parent, **kwargs)
-        self.outlet_builder: Optional[Callable] = outlet_builder
+        self.outlet_builder: Optional[Callable] = None
         if parent is None:
             Client.single_page_routes[path] = self
         if router_class is not None:
             # check if class defines outlet builder function
             if hasattr(router_class, PAGE_TEMPLATE_METHOD_NAME):
                 outlet_builder = getattr(router_class, PAGE_TEMPLATE_METHOD_NAME)
-                self(outlet_builder)
+        if outlet_builder is not None:
+            self(outlet_builder)
 
     def build_page_template(self, **kwargs):
         """Setups the content area for the single page router"""

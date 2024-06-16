@@ -73,8 +73,12 @@ class RouterFrame(ui.element, component='router_frame.js'):
         """Add a path to the included paths list"""
         self._props['included_path_masks'] += [path]
 
-    def update_content(self, builder, builder_kwargs, title, target_fragment,
-                       sync=False):
+    def update_content(self,
+                       builder: Callable,
+                       builder_kwargs: dict,
+                       title: Optional[str],
+                       target_fragment: Optional[str],
+                       sync: bool = False):
         """Update the content of the router frame
 
         :param builder: The builder function which builds the content of the page

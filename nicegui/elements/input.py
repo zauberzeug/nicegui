@@ -70,10 +70,6 @@ class Input(ValidationElement, DisableableElement, component='input.js'):
         self._props['_autocomplete'] = autocomplete
         self.update()
 
-    def focus(self):
-        """Focus the element."""
-        self.run_method('focus')
-
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
         if self._send_update_on_value_change:
