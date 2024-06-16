@@ -10,11 +10,11 @@ def main_demo() -> None:
 
 
 @doc.demo('Inject arbitrary content', '''
-    Thanks to the [ui.teleport element](teleport), you can use arbitrary content for the radio options.
+    Thanks to the [`ui.teleport` element](teleport), you can use arbitrary content for the radio options.
 ''')
-def page_visits():
+def arbitrary_content():
     options = ['Star', 'Thump Up', 'Heart']
-    radio = ui.radio({x: '' for x in options}, value='banana').props('inline')
+    radio = ui.radio({x: '' for x in options}, value='Star').props('inline')
     with ui.teleport(f'#c{radio.id} > div:nth-child(1) .q-radio__label'):
         ui.icon('star', size='md')
     with ui.teleport(f'#c{radio.id} > div:nth-child(2) .q-radio__label'):
