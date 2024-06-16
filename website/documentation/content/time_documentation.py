@@ -13,13 +13,14 @@ def main_demo() -> None:
     This demo shows how to implement a time picker with an input element.
     We place an icon in the input element's append slot.
     When the icon is clicked, we open a menu with a time picker.
-    [QMenu](https://quasar.dev/vue-components/menu)'s `no-parent-event` prop can be used to prevent a click within the text
-    input itself to open the menu. As the menu doesn't come with a `Close` button by default, we can add one for convenience.
+    [QMenu](https://quasar.dev/vue-components/menu)'s "no-parent-event" prop can be used
+    to prevent a click within the text input itself to open the menu.
+    As the menu doesn't come with a "Close" button by default, we can add one for convenience.
 
     The time is bound to the input element's value.
     So both the input element and the time picker will stay in sync whenever the time is changed.
 ''')
-def time():
+def time_picker_demo():
     with ui.input('Time') as time:
         with ui.menu().props('no-parent-event') as menu:
             with ui.time().props('format24h').bind_value(time):
