@@ -5,37 +5,28 @@ from . import doc
 
 @doc.demo(ui.skeleton)
 def skeleton():
-    ui.skeleton('QBtn').props("bordered square").classes("bg-slate-300")
+    ui.skeleton().classes('w-full')
 
 
-@doc.demo("Animations",
-           """How to define custom animations for a skeleton.
+@doc.demo('Styling and animation', '''
+    The `square` and `bordered` parameters can be set to `True` to remove the border-radius and add a border to the skeleton.
 
-The `animation` prop can be set to any of the following values:
-
-- pulse
-- wave
-- pulse-x
-- pulse-y
-- fade
-- blink
-- none
-
-The default value is `wave`.
-            
-           """)
+    The `animation` parameter can be set to "pulse", "wave", "pulse-x", "pulse-y", "fade", "blink", or "none"
+    to change the animation effect.
+    The default value is "wave".
+''')
 def custom_animations():
-    ui.skeleton('QToolbar').props("animation='pulse'").classes("bg-slate-300 w-full")
-    
+    ui.skeleton('QToolbar', square=True, bordered=True, animation='pulse-y') \
+        .classes('w-full')
 
-@doc.demo("Youtube Skeleton", """
-          A skeleton for a Youtube video, modified to fit the NiceGUI framework.
-""")
+
+@doc.demo('YouTube Skeleton', '''
+    Here is an example skeleton for a YouTube video.
+''')
 def youtube_skeleton():
-    with ui.card().props("flat").style("width: 100%;"):
-        ui.skeleton("square").style("height: 150px; width: 100%;").classes("bg-slate-300").props("animation='fade'")
-
-        with ui.card_section().style("width: 100%;"):
-            ui.skeleton("text").classes("text-subtitle1 bg-slate-300")
-            ui.skeleton("text").classes("text-subtitle1 w-1/2 bg-slate-300")
-            ui.skeleton("text").classes("text-caption bg-slate-300")
+    with ui.card().tight().classes('w-full'):
+        ui.skeleton(square=True, animation='fade', height='150px', width='100%')
+        with ui.card_section().classes('w-full'):
+            ui.skeleton('text').classes('text-subtitle1')
+            ui.skeleton('text').classes('text-subtitle1 w-1/2')
+            ui.skeleton('text').classes('text-caption')
