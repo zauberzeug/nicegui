@@ -26,4 +26,4 @@ class Range(ValueElement, DisableableElement):
         super().__init__(tag='q-range', value=value, on_value_change=on_change, throttle=0.05)
         self._props[':min'] = min
         self._props[':max'] = max
-        self._props[':step'] = step
+        self._props['step'] = step
