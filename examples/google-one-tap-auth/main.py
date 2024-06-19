@@ -12,7 +12,7 @@ from nicegui import Client, app, core, ui
 # https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#get_your_google_api_client_id
 # and pass it as an environment variable (or write it to an .env file)
 load_dotenv()
-GOOGLE_CLIENT_ID = os.environ['GOOGLE_CLIENT_ID']
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
 
 
 @ui.page('/')
