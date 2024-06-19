@@ -22,13 +22,18 @@ def main_page(request: Request):
     assert core.air.remote_url
     if 'on-air.io' not in request.url.hostname:
         return RedirectResponse(core.air.remote_url)
+
+    if not GOOGLE_CLIENT_ID:
+        ui.label('Please set the GOOGLE_CLIENT_ID environment variable')
+        return
+
     ui.add_head_html('<script src="https://accounts.google.com/gsi/client" async defer></script>')
     ui.html(f'''
         <div id="g_id_onload"
             data-client_id="{GOOGLE_CLIENT_ID}"
             data-login_uri="{core.air.remote_url}auth/google">
         </div>''')
-    ui.button('Click', on_click=lambda: ui.run_javascript('fail()'))
+    ui.label('Sign in with Google One Tap')
 
 
 @app.post('/auth/google')
