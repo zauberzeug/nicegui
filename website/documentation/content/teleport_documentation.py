@@ -3,14 +3,19 @@ from nicegui import ui
 from . import doc
 
 
-@doc.demo(ui.radio)
+@doc.demo(ui.teleport)
 def main_demo() -> None:
-    radio1 = ui.radio([1, 2, 3], value=1).props('inline')
-    radio2 = ui.radio({1: 'A', 2: 'B', 3: 'C'}).props('inline').bind_value(radio1, 'value')
+    markdown = ui.markdown('Enter your **name**!')
+
+    def inject_input():
+        with ui.teleport(f'#c{markdown.id} strong'):
+            ui.input('name').classes('inline-flex').props('dense outlined')
+
+    ui.button('inject input', on_click=inject_input)
 
 
-@doc.demo('Inject arbitrary content', '''
-    Thanks to the [`ui.teleport` element](teleport), you can use arbitrary content for the radio options.
+@doc.demo('Radio element with arbitrary content', '''
+    With the right CSS selector, you can place any content inside a standard radio element.
 ''')
 def arbitrary_content():
     options = ['Star', 'Thump Up', 'Heart']
@@ -24,4 +29,4 @@ def arbitrary_content():
     ui.label().bind_text_from(radio, 'value')
 
 
-doc.reference(ui.radio)
+doc.reference(ui.teleport)

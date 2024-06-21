@@ -75,6 +75,7 @@ __all__ = [
     'scroll_area',
     'select',
     'separator',
+    'skeleton',
     'slider',
     'space',
     'spinner',
@@ -88,6 +89,7 @@ __all__ = [
     'tab_panel',
     'tab_panels',
     'tabs',
+    'teleport',
     'textarea',
     'time',
     'timer',
@@ -199,6 +201,7 @@ from .elements.scene_view import SceneView as scene_view
 from .elements.scroll_area import ScrollArea as scroll_area
 from .elements.select import Select as select
 from .elements.separator import Separator as separator
+from .elements.skeleton import Skeleton as skeleton
 from .elements.slider import Slider as slider
 from .elements.space import Space as space
 from .elements.spinner import Spinner as spinner
@@ -212,6 +215,7 @@ from .elements.tabs import Tab as tab
 from .elements.tabs import TabPanel as tab_panel
 from .elements.tabs import TabPanels as tab_panels
 from .elements.tabs import Tabs as tabs
+from .elements.teleport import Teleport as teleport
 from .elements.textarea import Textarea as textarea
 from .elements.time import Time as time
 from .elements.timeline import Timeline as timeline
