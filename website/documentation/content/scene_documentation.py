@@ -145,4 +145,13 @@ def custom_background() -> None:
         scene.box()
 
 
+@doc.demo('Custom Grid', '''
+    You can set custom grid parameters using the `grid` parameter of `ui.scene`.
+    It accepts a tuple of two integers, the first one for the grid size and the second one for the number of divisions.
+''')
+def custom_grid() -> None:
+    with ui.scene(grid=(3, 2)).classes('w-full h-64') as scene:
+        scene.sphere()
+
+
 doc.reference(ui.scene)

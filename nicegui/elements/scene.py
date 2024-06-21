@@ -1,6 +1,6 @@
 import asyncio
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Literal, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 
 from typing_extensions import Self
 
@@ -72,7 +72,7 @@ class Scene(Element,
     def __init__(self,
                  width: int = 400,
                  height: int = 300,
-                 grid: bool = True,
+                 grid: Union[bool, Tuple[int, int]] = True,
                  camera: Optional[SceneCamera] = None,
                  on_click: Optional[Callable[..., Any]] = None,
                  on_drag_start: Optional[Callable[..., Any]] = None,
@@ -89,7 +89,7 @@ class Scene(Element,
 
         :param width: width of the canvas
         :param height: height of the canvas
-        :param grid: whether to display a grid
+        :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100)
         :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked
         :param on_drag_start: callback to execute when a 3D object is dragged
