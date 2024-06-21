@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Literal, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, TypedDict, Union
 
 from typing_extensions import Self
 
@@ -12,6 +12,26 @@ try:
     optional_features.register('pandas')
 except ImportError:
     pass
+
+
+ColumnsConfigOptions = TypedDict('ColumnsConfigOptions', {
+    'align': str,
+    'sortable': bool,
+    ':sortable': str,
+    ':sort': str,
+    ':rawSort': str,
+    'sortOrder': str,
+    ':format': str,
+    'style': str,
+    ':style': str,
+    'classes': str,
+    ':classes': str,
+    'headerStyle': str,
+    'headerClasses': str
+},
+    total=False)
+
+ColumnsConfig = Dict[str, ColumnsConfigOptions]
 
 
 class Table(FilterElement, component='table.js'):
@@ -93,7 +113,10 @@ class Table(FilterElement, component='table.js'):
                     title: Optional[str] = None,
                     selection: Optional[Literal['single', 'multiple']] = None,
                     pagination: Optional[Union[int, dict]] = None,
-                    on_select: Optional[Callable[..., Any]] = None) -> Self:
+                    on_select: Optional[Callable[..., Any]] = None,
+                    columns_config_defaults: Optional[ColumnsConfigOptions] = None,
+                    columns_config: Optional[ColumnsConfig] = None
+                    ) -> Self:
         """Create a table from a Pandas DataFrame.
 
         Note:
@@ -108,6 +131,8 @@ class Table(FilterElement, component='table.js'):
         :param selection: selection type ("single" or "multiple"; default: `None`)
         :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
         :param on_select: callback which is invoked when the selection changes
+        :param columns_config_defaults: dictionnary of additional props available for Quasar QTable columns to apply to all columns by default (default: `None`)
+        :param columns_config: dictionnary of column names as key and additional props available for Quasar QTable columns as value to override default values (default: `None`)
         :return: table element
         """
         def is_special_dtype(dtype):
@@ -125,8 +150,17 @@ class Table(FilterElement, component='table.js'):
                              'You can convert them to strings using something like '
                              '`df.columns = ["_".join(col) for col in df.columns.values]`.')
 
+        columns = [{'name': col, 'label': col, 'field': col} for col in df.columns]
+        if columns_config_defaults:
+            for column in columns:
+                column.update(columns_config_defaults)
+        if columns_config:
+            for column in columns:
+                if column['name'] in columns_config:
+                    column.update(columns_config[column['name']])
+
         return cls(
-            columns=[{'name': col, 'label': col, 'field': col} for col in df.columns],
+            columns=columns,
             rows=df.to_dict('records'),
             row_key=row_key,
             title=title,

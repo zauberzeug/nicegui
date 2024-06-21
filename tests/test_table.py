@@ -204,3 +204,46 @@ def test_problematic_datatypes(screen: Screen):
     screen.should_contain('5 days')
     screen.should_contain('(1+2j)')
     screen.should_contain('2021-01')
+
+
+def test_create_from_pandas_with_columns_config_defaults(screen: Screen):
+    """Test setting a default column config and overriding with columns_config."""
+    df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
+    columns_config_defaults = {'sortable': True}
+    ui.table.from_pandas(df, columns_config_defaults=columns_config_defaults)
+    screen.open('/')
+    elements = screen.find_all_by_class('sortable')
+    assert len(elements) == 3
+
+
+def test_create_from_pandas_with_columns_config(screen: Screen):
+    """Test 3 possible column configs as representative of the functionality."""
+    df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
+    columns_config = {
+        'name': {'sortable': True, 'headerClasses': 'my-custom-class'},
+        'age': {':format': '(val, _row) => 2*val'}
+    }
+    ui.table.from_pandas(df, columns_config=columns_config)
+    screen.open('/')
+    # :format
+    screen.should_contain('36')
+    # headerClasses
+    assert ['my-custom-class' in element.get_attribute('class')
+            for element in screen.find_all_by_tag('th')].count(True) == 1
+    # sortable
+    assert len(screen.find_all_by_class('sortable')) == 1
+
+
+def test_create_from_pandas_with_columns_config_defaults_and_overrides(screen: Screen):
+    """Test setting a default column config and overriding with columns_config."""
+    df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
+    columns_config_defaults = {'sortable': True}
+    columns_config = {
+        'name': {'sortable': False}
+    }
+    ui.table.from_pandas(df, columns_config=columns_config, columns_config_defaults=columns_config_defaults)
+    screen.open('/')
+    elements = screen.find_all_by_class('sortable')
+    assert len(elements) == 2
+    assert elements[0].text == 'age'
+    assert elements[1].text == '42'

@@ -134,7 +134,7 @@ def table_from_pandas_demo():
     import pandas as pd
 
     df = pd.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
-    ui.table.from_pandas(df).classes('max-h-40')
+    ui.table.from_pandas(df, columns_config_defaults={'sortable': True}).classes('max-h-40')
 
 
 @doc.demo('Adding rows', '''
