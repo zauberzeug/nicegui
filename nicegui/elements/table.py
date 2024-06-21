@@ -114,7 +114,7 @@ class Table(FilterElement, component='table.js'):
                     selection: Optional[Literal['single', 'multiple']] = None,
                     pagination: Optional[Union[int, dict]] = None,
                     on_select: Optional[Callable[..., Any]] = None,
-                    columns_config_defaults: Optional[ColumnsConfigOptions] = None,
+                    columns_defaults: Optional[ColumnsConfigOptions] = None,
                     columns_config: Optional[ColumnsConfig] = None
                     ) -> Self:
         """Create a table from a Pandas DataFrame.
@@ -131,7 +131,7 @@ class Table(FilterElement, component='table.js'):
         :param selection: selection type ("single" or "multiple"; default: `None`)
         :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
         :param on_select: callback which is invoked when the selection changes
-        :param columns_config_defaults: dictionnary of additional props available for Quasar QTable columns to apply to all columns by default (default: `None`)
+        :param columns_defaults: dictionnary of additional props available for Quasar QTable columns to apply to all columns by default (default: `None`)
         :param columns_config: dictionnary of column names as key and additional props available for Quasar QTable columns as value to override default values (default: `None`)
         :return: table element
         """
@@ -151,9 +151,9 @@ class Table(FilterElement, component='table.js'):
                              '`df.columns = ["_".join(col) for col in df.columns.values]`.')
 
         columns = [{'name': col, 'label': col, 'field': col} for col in df.columns]
-        if columns_config_defaults:
+        if columns_defaults:
             for column in columns:
-                column.update(columns_config_defaults)
+                column.update(columns_defaults)
         if columns_config:
             for column in columns:
                 if column['name'] in columns_config:

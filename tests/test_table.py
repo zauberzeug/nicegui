@@ -206,11 +206,11 @@ def test_problematic_datatypes(screen: Screen):
     screen.should_contain('2021-01')
 
 
-def test_create_from_pandas_with_columns_config_defaults(screen: Screen):
+def test_create_from_pandas_with_columns_defaults(screen: Screen):
     """Test setting a default column config and overriding with columns_config."""
     df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
-    columns_config_defaults = {'sortable': True}
-    ui.table.from_pandas(df, columns_config_defaults=columns_config_defaults)
+    columns_defaults = {'sortable': True}
+    ui.table.from_pandas(df, columns_defaults=columns_defaults)
     screen.open('/')
     elements = screen.find_all_by_class('sortable')
     assert len(elements) == 3
@@ -234,14 +234,14 @@ def test_create_from_pandas_with_columns_config(screen: Screen):
     assert len(screen.find_all_by_class('sortable')) == 1
 
 
-def test_create_from_pandas_with_columns_config_defaults_and_overrides(screen: Screen):
+def test_create_from_pandas_with_columns_defaults_and_overrides(screen: Screen):
     """Test setting a default column config and overriding with columns_config."""
     df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
-    columns_config_defaults = {'sortable': True}
+    columns_defaults = {'sortable': True}
     columns_config = {
         'name': {'sortable': False}
     }
-    ui.table.from_pandas(df, columns_config=columns_config, columns_config_defaults=columns_config_defaults)
+    ui.table.from_pandas(df, columns_config=columns_config, columns_defaults=columns_defaults)
     screen.open('/')
     elements = screen.find_all_by_class('sortable')
     assert len(elements) == 2
