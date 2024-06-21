@@ -6,6 +6,7 @@ from .. import optional_features
 from ..element import Element
 from ..events import GenericEventArguments, TableSelectionEventArguments, ValueChangeEventArguments, handle_event
 from .mixins.filter_element import FilterElement
+from .table_cell_slot import TableCellSlot
 
 try:
     import pandas as pd
@@ -225,6 +226,11 @@ class Table(FilterElement, component='table.js'):
         if clear_selection:
             self.selected.clear()
         self.update()
+
+    def cell_slot(self, field:str ):
+        def decorator(func:Callable[...,None]):
+            return TableCellSlot(self,field,func)
+        return decorator
 
     class row(Element):
 
