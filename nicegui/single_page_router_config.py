@@ -114,28 +114,28 @@ class SinglePageRouterConfig:
 
         :param target: The URL path to open or a builder function
         :return: The resolved target. Defines .valid if the target is valid"""
-        if isinstance(target, Callable):
+        if callable(target):
             for target, entry in self.routes.items():
                 if entry.builder == target:
                     return SinglePageTarget(router_path=entry)
-        else:
-            resolved = None
-            path = target.split('#')[0].split('?')[0]
-            for cur_router in self.child_routers:
-                # replace {} placeholders with * to match the fnmatch pattern
-                mask = SinglePageRouterPath.create_path_mask(cur_router.base_path.rstrip('/') + '/*')
-                if fnmatch(path, mask) or path == cur_router.base_path:
-                    resolved = cur_router.resolve_target(target)
-                    if resolved.valid:
-                        target = cur_router.base_path
-                        if '*' in mask:
-                            # isolate the real path elements and update target accordingly
-                            target = '/'.join(path.split('/')[:len(cur_router.base_path.split('/'))])
-                        break
-            result = SinglePageTarget(target).parse_url_path(routes=self.routes)
-            if resolved is not None:
-                result.original_path = resolved.original_path
-            return result
+            raise ValueError('The target builder function is not registered in the router.')
+        resolved = None
+        path = target.split('#')[0].split('?')[0]
+        for cur_router in self.child_routers:
+            # replace {} placeholders with * to match the fnmatch pattern
+            mask = SinglePageRouterPath.create_path_mask(cur_router.base_path.rstrip('/') + '/*')
+            if fnmatch(path, mask) or path == cur_router.base_path:
+                resolved = cur_router.resolve_target(target)
+                if resolved.valid:
+                    target = cur_router.base_path
+                    if '*' in mask:
+                        # isolate the real path elements and update target accordingly
+                        target = '/'.join(path.split('/')[:len(cur_router.base_path.split('/'))])
+                    break
+        result = SinglePageTarget(target).parse_url_path(routes=self.routes)
+        if resolved is not None:
+            result.original_path = resolved.original_path
+        return result
 
     def navigate_to(self, target: Union[Callable, str, SinglePageTarget], server_side=True) -> bool:
         """Navigate to a target
