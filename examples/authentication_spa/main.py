@@ -53,7 +53,7 @@ def main_app_index():
 
 
 def logout():  # logs the user out and redirects to the login page
-    del app.storage.user['login_token']
+    app.storage.user.clear()
     ui.navigate.to(INDEX_URL)
 
 
