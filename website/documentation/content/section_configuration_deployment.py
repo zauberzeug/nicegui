@@ -134,9 +134,33 @@ doc.text('', '''
     There are other handy features in the Docker image like non-root user execution and signal pass-through.
     For more details we recommend to have a look at our [Docker example](https://github.com/zauberzeug/nicegui/tree/main/examples/docker_image).
 
-    You can provide SSL certificates directly using [FastAPI](https://fastapi.tiangolo.com/deployment/https/).
+    To serve your application with [HTTPS](https://fastapi.tiangolo.com/deployment/https/) encryption, you can provide SSL certificates in multiple ways.
+    For instance, you can directly provide your certificates to [Uvicorn](https://www.uvicorn.org/), which NiceGUI is based on, by passing the
+    relevant [options](https://www.uvicorn.org/#command-line-options) to `ui.run()`:
+''')
+
+
+@doc.ui
+def uvicorn_ssl():
+    with python_window('main.py', classes='max-w-lg w-full'):
+        ui.markdown('''
+            ```python
+            from nicegui import ui
+
+            ui.run(
+                port=443, 
+                ssl_certfile="<path_to_certfile>", 
+                ssl_keyfile="<path_to_keyfile>",
+            )
+            ```
+        ''')
+
+
+doc.text('', '''
     In production we also like using reverse proxies like [Traefik](https://doc.traefik.io/traefik/) or [NGINX](https://www.nginx.com/) to handle these details for us.
-    See our development [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example.
+    See our development [docker-compose.yml](https://github.com/zauberzeug/nicegui/blob/main/docker-compose.yml) as an example based on traefik or
+    [this example nginx.conf file](https://github.com/zauberzeug/nicegui/blob/main/examples/nginx_https/nginx.conf) showing how NGINX can be used to handle the SSL certificates and
+    reverse proxy to your NiceGUI app.
 
     You may also have a look at [our demo for using a custom FastAPI app](https://github.com/zauberzeug/nicegui/tree/main/examples/fastapi).
     This will allow you to do very flexible deployments as described in the [FastAPI documentation](https://fastapi.tiangolo.com/deployment/).
