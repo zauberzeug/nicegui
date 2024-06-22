@@ -204,3 +204,20 @@ def test_problematic_datatypes(screen: Screen):
     screen.should_contain('5 days')
     screen.should_contain('(1+2j)')
     screen.should_contain('2021-01')
+
+
+def test_update_from_pandas(screen: Screen):
+    df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
+    table = ui.table.from_pandas(df)
+    df['age'] = df['age'] * 3
+    df.loc[len(df.index)] = ['Tom', 24, 'answer']
+    table.update_from_pandas(df)
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_contain('Tom')
+    screen.should_contain('54')
+    screen.should_contain('63')
+    screen.should_contain('42')
+    screen.should_contain('answer')

@@ -14,6 +14,24 @@ except ImportError:
     pass
 
 
+def _clean_dataframe(df: 'pd.DataFrame') -> 'pd.DataFrame':
+    def is_special_dtype(dtype):
+        return (pd.api.types.is_datetime64_any_dtype(dtype) or
+                pd.api.types.is_timedelta64_dtype(dtype) or
+                pd.api.types.is_complex_dtype(dtype) or
+                isinstance(dtype, pd.PeriodDtype))
+    special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
+    if not special_cols.empty:
+        df = df.copy()
+        df[special_cols] = df[special_cols].astype(str)
+
+    if isinstance(df.columns, pd.MultiIndex):
+        raise ValueError('MultiIndex columns are not supported. '
+                         'You can convert them to strings using something like '
+                         '`df.columns = ["_".join(col) for col in df.columns.values]`.')
+    return df
+
+
 class Table(FilterElement, component='table.js'):
 
     def __init__(self,
@@ -110,20 +128,8 @@ class Table(FilterElement, component='table.js'):
         :param on_select: callback which is invoked when the selection changes
         :return: table element
         """
-        def is_special_dtype(dtype):
-            return (pd.api.types.is_datetime64_any_dtype(dtype) or
-                    pd.api.types.is_timedelta64_dtype(dtype) or
-                    pd.api.types.is_complex_dtype(dtype) or
-                    isinstance(dtype, pd.PeriodDtype))
-        special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
-        if not special_cols.empty:
-            df = df.copy()
-            df[special_cols] = df[special_cols].astype(str)
 
-        if isinstance(df.columns, pd.MultiIndex):
-            raise ValueError('MultiIndex columns are not supported. '
-                             'You can convert them to strings using something like '
-                             '`df.columns = ["_".join(col) for col in df.columns.values]`.')
+        df = _clean_dataframe(df)
 
         return cls(
             columns=[{'name': col, 'label': col, 'field': col} for col in df.columns],
@@ -133,6 +139,17 @@ class Table(FilterElement, component='table.js'):
             selection=selection,
             pagination=pagination,
             on_select=on_select)
+
+    def update_from_pandas(self, df: 'pd.DataFrame') -> None:
+        """Update a table from a Pandas DataFrame.
+
+        :param df: Pandas DataFrame
+        :return: None
+        """
+        df = _clean_dataframe(df)
+        self._props['columns'] = [{'name': col, 'label': col, 'field': col} for col in df.columns]
+        self._props['rows'] = df.to_dict('records')
+        self.update()
 
     @property
     def rows(self) -> List[Dict]:
