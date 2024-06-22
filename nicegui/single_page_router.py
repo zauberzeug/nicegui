@@ -165,7 +165,7 @@ class SinglePageRouter:
             if target is None:
                 return
         handler_kwargs = SinglePageRouter.get_user_data() | self.user_data | self.router_frame.user_data | \
-                         {'previous_url_path': self.router_frame.target_url}
+            {'previous_url_path': self.router_frame.target_url}
         handler_kwargs['url_path'] = target if isinstance(target, str) else target.original_path
         if not isinstance(target, SinglePageTarget):
             target = self.resolve_target(target)

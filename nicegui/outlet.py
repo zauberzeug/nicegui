@@ -131,7 +131,7 @@ class Outlet(SinglePageRouterConfig):
     @property
     def current_url(self) -> str:
         """Returns the current URL of the outlet.
-        
+
         Only works when called from within the outlet or view builder function.
 
         :return: The current URL of the outlet"""

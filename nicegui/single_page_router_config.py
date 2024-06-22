@@ -61,7 +61,7 @@ class SinglePageRouterConfig:
 
     def setup_pages(self, overwrite=False) -> Self:
         """Setups the NiceGUI page endpoints and their base UI structure for the root routers
-        
+
         :param overwrite: Optional flag to force the setup of a given page even if one with a conflicting path is
             already existing. Default is False. Classes such as SinglePageApp use this flag to avoid conflicts with
             other routers and resolve those conflicts by rerouting the pages."""
