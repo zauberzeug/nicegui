@@ -16,7 +16,7 @@ def portal_rerouting(url) -> str:
     # automatically redirect to the secret area if the user is already logged in
     if 'login_token' in app.storage.user:
         return SECRET_AREA_URL
-    return url
+    return '/login'
 
 
 @ui.outlet('/', on_navigate=portal_rerouting)
@@ -28,7 +28,7 @@ def main_layout():
         yield
 
 
-@main_layout.view('/', title='Login Page')
+@main_layout.outlet('/login', title='Login Page')
 def main_app_index():
     def handle_login():
         username = username_input.value
@@ -69,12 +69,7 @@ def check_login(url) -> Optional[Union[str, SinglePageTarget]]:
     return url  # default behavior
 
 
-@main_layout.outlet(SECRET_AREA_URL, on_navigate=check_login)
-def secret_area_layout():
-    yield
-
-
-@secret_area_layout.view('/', title='🔒 Secret Area')
+@main_layout.outlet(SECRET_AREA_URL, title='🔒 Secret Area', on_navigate=check_login)
 def secret_area_index():
     username = app.storage.user['username']
     ui.label(f'Hello {html.escape(username)}. Welcome to the secret area!').classes('text-3xl')
