@@ -1,10 +1,10 @@
 import inspect
 import urllib.parse
-from typing import Dict, Optional, TYPE_CHECKING, Self, Callable, Any
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Self
 
 if TYPE_CHECKING:
-    from nicegui.single_page_router_config import SinglePageRouterPath
     from nicegui.single_page_router import SinglePageRouter
+    from nicegui.single_page_router_config import SinglePageRouterPath
 
 
 class SinglePageTarget:

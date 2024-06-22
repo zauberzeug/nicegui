@@ -1,9 +1,9 @@
-from typing import Callable, Any, Self, Optional, Generator, Union
+from typing import Any, Callable, Generator, Optional, Self, Union
 
 from nicegui.client import Client
+from nicegui.elements.router_frame import RouterFrame
 from nicegui.single_page_router import SinglePageRouter
 from nicegui.single_page_router_config import SinglePageRouterConfig
-from nicegui.elements.router_frame import RouterFrame
 from nicegui.single_page_target import SinglePageTarget
 
 PAGE_TEMPLATE_METHOD_NAME = "page_template"

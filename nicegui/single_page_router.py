@@ -1,7 +1,7 @@
 from fnmatch import fnmatch
-from typing import Callable, Any, Optional, Dict, TYPE_CHECKING, Self, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Self, Union
 
-from nicegui import ui, core
+from nicegui import core, ui
 from nicegui.context import context
 from nicegui.elements.router_frame import RouterFrame
 from nicegui.single_page_target import SinglePageTarget
