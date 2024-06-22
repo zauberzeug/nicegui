@@ -22,14 +22,13 @@ def portal_rerouting(url) -> str:
 @ui.outlet('/', on_navigate=portal_rerouting)
 def main_layout():
     with ui.header():
-        with ui.link('', '/').style('text-decoration: none; color: inherit;'):
-            ui.label('SPA Login Example').classes('text-h3')
+        ui.link('SPA Login Example', '/').style('text-decoration: none; color: inherit;').classes('text-h3')
     ui.query('.nicegui-content').classes('flex-center')
     with ui.column().classes('m-12'):
         yield
 
 
-@main_layout.view('/', title='SPA Login')
+@main_layout.view('/', title='Login Page')
 def main_app_index():
     def handle_login():
         username = username_input.value
@@ -82,4 +81,4 @@ def secret_area_index():
     ui.button('Logout').on_click(logout).classes('w-48 mt-12')
 
 
-ui.run(storage_secret='secret', title='NiceCLOUD')
+ui.run(storage_secret='secret', title='SPA Login')
