@@ -7,21 +7,21 @@ For running the App under a Subpath, have a look at https://github.com/zauberzeu
 
 1. Create the `certs/` directory:
 
-```bash
-mkdir certs
-```
+   ```bash
+   mkdir certs
+   ```
 
 2. Generate and self-sign SSL an certificate for `localhost`
 
-```bash
-openssl req -x509 -out certs/localhost.crt -keyout certs/localhost.key -newkey rsa:2048 -nodes -sha256 -subj '/CN=localhost' -extensions EXT -config <( printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
-```
+   ```bash
+   openssl req -x509 -out certs/localhost.crt -keyout certs/localhost.key -newkey rsa:2048 -nodes -sha256 -subj '/CN=localhost' -extensions EXT -config <( printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
+   ```
 
 3. Run the containerized app
 
-```bash
-docker compose up
-```
+   ```bash
+   docker compose up
+   ```
 
 4. Try to access http://localhost without the "s".
    You will be automatically redirected to the https version.
