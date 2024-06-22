@@ -14,9 +14,8 @@ DUMMY_LOGINS = {"admin": "NicePass"}
 
 def portal_rerouting(url) -> str:
     # automatically redirect to the secret area if the user is already logged in
-    if '/' == INDEX_URL:
-        if 'login_token' in app.storage.tab:
-            return SECRET_AREA_URL
+    if 'login_token' in app.storage.user:
+        return SECRET_AREA_URL
     return url
 
 
