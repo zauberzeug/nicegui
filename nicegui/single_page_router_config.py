@@ -2,11 +2,11 @@ import inspect
 import re
 import typing
 from fnmatch import fnmatch
-from typing import Callable, Dict, Union, Optional, Self, List, Set, Generator, Any
+from typing import Any, Callable, Dict, Generator, List, Optional, Self, Set, Union
 
 from nicegui import ui
-from nicegui.context import context
 from nicegui.client import Client
+from nicegui.context import context
 from nicegui.elements.router_frame import RouterFrame
 from nicegui.single_page_router import SinglePageRouter
 from nicegui.single_page_target import SinglePageTarget
