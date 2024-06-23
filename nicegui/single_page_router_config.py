@@ -4,8 +4,6 @@ import typing
 from fnmatch import fnmatch
 from typing import Any, Callable, Dict, Generator, List, Optional, Self, Set, Union
 
-from nicegui import ui
-from nicegui.client import Client
 from nicegui.context import context
 from nicegui.elements.router_frame import RouterFrame
 from nicegui.single_page_router import SinglePageRouter
@@ -58,36 +56,6 @@ class SinglePageRouterConfig:
         self.child_routers: List['SinglePageRouterConfig'] = []
         self.page_kwargs = kwargs
         self.router_class = SinglePageRouter if router_class is None else router_class
-
-    def setup_page(self, overwrite=False) -> Self:
-        """Setup the NiceGUI page with all it's endpoints and their base UI structure for the root routers
-
-        :param overwrite: Optional flag to force the setup of a given page even if one with a conflicting path is
-            already existing. Default is False. Classes such as SinglePageApp use this flag to avoid conflicts with
-            other routers and resolve those conflicts by rerouting the pages."""
-        for key, route in Client.page_routes.items():
-            if route.startswith(self.base_path.rstrip('/') + '/') and route.rstrip('/') not in self.included_paths:
-                self.excluded_paths.add(route)
-            if overwrite:
-                continue
-            if self.base_path.startswith(route.rstrip('/') + '/'):  # '/sub_router' after '/' - forbidden
-                raise ValueError(f'Another router with path "{route.rstrip("/")}/*" is already registered which '
-                                 f'includes this router\'s base path "{self.base_path}". You can declare the nested '
-                                 f'router first to prioritize it and avoid this issue.')
-
-        @ui.page(self.base_path, **self.page_kwargs)
-        @ui.page(f'{self.base_path}' + '{_:path}', **self.page_kwargs)  # all other pages
-        async def root_page(request_data=None):
-            await ui.context.client.connected()  # to ensure storage.tab and storage.client availability
-            initial_url = None
-            if request_data is not None:
-                initial_url = request_data['url']['path']
-                query = request_data['url'].get('query', None)
-                if query:
-                    initial_url += '?' + query
-            self.build_page(initial_url=initial_url)
-
-        return self
 
     def add_view(self, path: str, builder: Callable, title: Optional[str] = None,
                  on_open: Optional[Callable[[SinglePageTarget], SinglePageTarget]] = None) -> None:
