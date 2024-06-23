@@ -105,7 +105,7 @@ class SinglePageRouter:
         return self.router_frame.target_url
 
     def resolve_url(self, target: str) -> SinglePageTarget:
-        """Resolves a URL target to a SinglePageUrl which contains details about the builder function to
+        """Resolves a URL target to a SinglePageTarget which contains details about the builder function to
         be called and the arguments to pass to the builder function.
 
         :param target: The target object such as a URL or Callable
