@@ -66,8 +66,7 @@ class SinglePageRouterConfig:
             already existing. Default is False. Classes such as SinglePageApp use this flag to avoid conflicts with
             other routers and resolve those conflicts by rerouting the pages."""
         for key, route in Client.page_routes.items():
-            if route.startswith(
-                    self.base_path.rstrip('/') + '/') and route.rstrip('/') not in self.included_paths:
+            if route.startswith(self.base_path.rstrip('/') + '/') and route.rstrip('/') not in self.included_paths:
                 self.excluded_paths.add(route)
             if overwrite:
                 continue
