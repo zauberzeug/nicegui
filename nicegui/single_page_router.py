@@ -150,7 +150,7 @@ class SinglePageRouter:
                     history: bool = True) -> None:
         """Open a new page in the browser by exchanging the content of the router frame
 
-        :param target: The target page or url.
+        :param target: The target page or path.
         :param server_side: Optional flag which defines if the call is originated on the server side and thus
             the browser history should be updated. Default is False.
         :param sync: Optional flag to define if the content should be updated synchronously. Default is False.
