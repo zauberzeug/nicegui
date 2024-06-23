@@ -98,7 +98,7 @@ class Outlet(SinglePageRouterConfig):
 
         self.outlet_builder = func
         if self.parent_config is None:
-            self.setup_pages()
+            self.setup_page()
         else:
             relative_path = self.base_path[len(self.parent_config.base_path):]
             OutletView(self.parent_config, relative_path)(outlet_view)
