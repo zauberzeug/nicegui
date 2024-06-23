@@ -56,7 +56,7 @@ class Outlet(SinglePageRouterConfig):
                          parent=parent, **kwargs)
         self.outlet_builder: Optional[Callable] = None
         if parent is None:
-            Client.single_page_routes[path] = self
+            Client.top_level_outlets[path] = self
         if router_class is not None:
             # check if class defines outlet builder function
             if hasattr(router_class, PAGE_TEMPLATE_METHOD_NAME):
