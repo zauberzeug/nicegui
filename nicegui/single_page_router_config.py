@@ -77,7 +77,7 @@ class SinglePageRouterConfig:
         self.routes[entry.path] = entry.verify()
 
     def resolve_target(self, target: Union[Callable, str]) -> SinglePageTarget:
-        """Tries to resolve a target such as a builder function or a URL path w/ route and query parameters.
+        """Tries to resolve a target such as a builder function or a URL path with route and query parameters.
 
         :param target: The URL path to open or a builder function
         :return: The resolved target. Defines .valid if the target is valid"""
