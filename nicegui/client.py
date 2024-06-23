@@ -13,6 +13,8 @@ from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 from typing_extensions import Self
 
+from nicegui.context import context
+
 from . import background_tasks, binding, core, helpers, json
 from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
@@ -238,7 +240,8 @@ class Client:
         for outlet in self.top_level_outlets.values():
             outlet_target = outlet.resolve_target(path)
             if outlet_target.valid:
-                outlet.navigate_to(path)
+                assert context.client.single_page_router
+                context.client.single_page_router.navigate_to(path)
                 return
         self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
 
