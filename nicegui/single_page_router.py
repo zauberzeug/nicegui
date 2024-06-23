@@ -104,28 +104,27 @@ class SinglePageRouter:
         :return: The target url of the router frame"""
         return self.router_frame.target_url
 
-    def resolve_target(self, target: Any) -> SinglePageTarget:
-        """Resolves a URL or SPA target to a SinglePageUrl which contains details about the builder function to
+    def resolve_url(self, target: str) -> SinglePageTarget:
+        """Resolves a URL target to a SinglePageUrl which contains details about the builder function to
         be called and the arguments to pass to the builder function.
 
         :param target: The target object such as a URL or Callable
         :return: The resolved SinglePageTarget object"""
-        if isinstance(target, SinglePageTarget):
-            return target
-        target = self.router_config.resolve_target(target)
-        if isinstance(target, SinglePageTarget) and not target.valid and target.path.startswith(self.base_path):
-            rem_path = target.path[len(self.base_path):]
+        outlet_target = self.router_config.resolve_target(target)
+        assert outlet_target.path is not None
+        if isinstance(outlet_target, SinglePageTarget) and not outlet_target.valid and outlet_target.path.startswith(self.base_path):
+            rem_path = outlet_target.path[len(self.base_path):]
             if rem_path in self.views:
-                target.builder = self.views[rem_path].builder
-                target.title = self.views[rem_path].title
-                target.valid = True
-        if target.valid and target.router is None:
-            target.router = self
-        if target is None:
+                outlet_target.builder = self.views[rem_path].builder
+                outlet_target.title = self.views[rem_path].title
+                outlet_target.valid = True
+        if outlet_target.valid and outlet_target.router is None:
+            outlet_target.router = self
+        if outlet_target is None:
             raise NotImplementedError
-        return target
+        return outlet_target
 
-    def handle_navigate(self, target: str) -> Optional[Union[SinglePageTarget, str]]:
+    def handle_navigate(self, target: str) -> Union[SinglePageTarget, str, None]:
         """Is called when there was a navigation event in the browser or by the navigate_to method.
 
         By default, the original target is returned. The SinglePageRouter and the router config (the outlet) can
@@ -134,11 +133,12 @@ class SinglePageRouter:
         :param target: The target URL
         :return: The target URL, a completely resolved target or None if the navigation is suppressed"""
         if self._on_navigate is not None:
-            target = self._on_navigate(target)
-            if target is None:
+            custom_target = self._on_navigate(target)
+            if custom_target is None:
                 return None
-            if isinstance(target, SinglePageTarget):
-                return target
+            if isinstance(custom_target, SinglePageTarget):
+                return custom_target
+            target = custom_target
         new_target = self.router_config.handle_navigate(target)
         if isinstance(target, SinglePageTarget):
             return target
@@ -146,7 +146,7 @@ class SinglePageRouter:
             return new_target
         return target
 
-    def navigate_to(self, target: [SinglePageTarget, str], server_side=True, sync=False,
+    def navigate_to(self, target: Union[SinglePageTarget, str, None], server_side=True, sync=False,
                     history: bool = True) -> None:
         """Open a new page in the browser by exchanging the content of the router frame
 
@@ -166,12 +166,16 @@ class SinglePageRouter:
                 return
         handler_kwargs = SinglePageRouter.get_user_data() | self.user_data | self.router_frame.user_data | \
             {'previous_url_path': self.router_frame.target_url}
+        if target is None:
+            # TODO in which cases can the target be None? What should be the behavior?
+            raise ValueError('Target is None')
         handler_kwargs['url_path'] = target if isinstance(target, str) else target.original_path
         if not isinstance(target, SinglePageTarget):
-            target = self.resolve_target(target)
+            target = self.resolve_url(target)
         if target is None or not target.valid:  # navigation suppressed
             return
         target_url = target.original_path
+        assert target_url is not None
         handler_kwargs['target_url'] = target_url
         self._update_target_url(target_url)
         js_code = ''
