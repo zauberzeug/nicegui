@@ -109,13 +109,13 @@ class SinglePageRouterConfig:
 
         :param target: The target to navigate to
         :param server_side: Optional flag which defines if the call is originated on the server side"""
-        org_target = target
+        original_target = target
         if not isinstance(target, SinglePageTarget):
             target = self.resolve_target(target)
         router = context.client.single_page_router
         if not target.valid or router is None:
             return False
-        router.navigate_to(org_target, server_side=server_side)
+        router.navigate_to(original_target, server_side=server_side)
         return True
 
     def handle_navigate(self, url: str) -> Optional[Union[SinglePageTarget, str]]:
