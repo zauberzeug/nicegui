@@ -91,4 +91,92 @@ def reactive_state():
         counter('B')
 
 
+@doc.demo('Global scope', '''
+    When defining a refreshable function in the global scope,
+    every refreshable UI that is created by calling this function will share the same state.
+    In this demo, `hello()` will show the name entered in the input field.
+    When opening the page with a second browser or in incognito mode,
+    both browsers will continue to show the same name, even if it is changed in one of them.
+    See the "local scope" demos below for a way to create independent refreshable UIs instead.
+''')
+def global_scope():
+    from nicegui import app
+
+    @ui.refreshable
+    def hello():
+        ui.label(f'Hello {app.storage.user.get("name")}')
+
+    @ui.page('/global_refreshable')
+    def demo():
+        ui.input('Name', on_change=hello.refresh).bind_value(app.storage.user, 'name')
+        hello()
+
+    ui.link('Open demo', demo)
+
+
+@doc.demo('Local scope (1/3)', '''
+    When defining a refreshable function in a local scope,
+    refreshable UI that is created by calling this function will have independent state.
+    In contrast to the "global scope" demo, the name entered in the input field will only be shown to the same user.
+''')
+def local_scope_1():
+    from nicegui import app
+
+    @ui.page('/local_refreshable_1')
+    def demo():
+        @ui.refreshable
+        def hello():
+            ui.label(f'Hello {app.storage.user.get("name")}')
+
+        ui.input('Name', on_change=hello.refresh).bind_value(app.storage.user, 'name')
+        hello()
+
+    ui.link('Open demo', demo)
+
+
+@doc.demo('Local scope (2/3)', '''
+    In order to define refreshable UIs with local state outside of page functions,
+    you can, e.g., define a class with a refreshable method.
+    This way, you can create multiple instances of the class with independent state,
+    because the `ui.refreshable` decorator acts on the class instance rather than the class itself.
+''')
+def local_scope_2():
+    from nicegui import app
+
+    class Greeting:
+        @ui.refreshable
+        def hello(self):
+            ui.label(f'Hello {app.storage.user.get("name")}')
+
+    @ui.page('/local_refreshable_2')
+    def demo():
+        greeting = Greeting()
+        ui.input('Name', on_change=greeting.hello.refresh) \
+            .bind_value(app.storage.user, 'name')
+        greeting.hello()
+
+    ui.link('Open demo', demo)
+
+
+@doc.demo('Local scope (3/3)', '''
+    As an alternative to the class definition shown above, you can also define the UI function in global scope,
+    but apply the `ui.refreshable` decorator inside the page function.
+    This way the refreshable UI will have independent state.
+''')
+def local_scope_3():
+    from nicegui import app
+
+    def hello():
+        ui.label(f'Hello {app.storage.user.get("name")}')
+
+    @ui.page('/local_refreshable_3')
+    def demo():
+        refreshable_hello = ui.refreshable(hello)
+        ui.input('Name', on_change=refreshable_hello.refresh) \
+            .bind_value(app.storage.user, 'name')
+        refreshable_hello()
+
+    ui.link('Open demo', demo)
+
+
 doc.reference(ui.refreshable)
