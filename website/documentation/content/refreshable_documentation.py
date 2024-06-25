@@ -94,42 +94,43 @@ def reactive_state():
 @doc.demo('Global scope', '''
     When defining a refreshable function in the global scope,
     every refreshable UI that is created by calling this function will share the same state.
-    In this demo, `hello()` will show the name entered in the input field.
-    When opening the page with a second browser or in incognito mode,
-    both browsers will continue to show the same name, even if it is changed in one of them.
+    In this demo, `time()` will show the current date and time.
+    When opening the page in a new tab, _both_ tabs will be updated simultaneously when clicking the "Refresh" button.
+
     See the "local scope" demos below for a way to create independent refreshable UIs instead.
 ''')
 def global_scope():
-    from nicegui import app
+    from datetime import datetime
 
     @ui.refreshable
-    def hello():
-        ui.label(f'Hello {app.storage.user.get("name")}')
+    def time():
+        ui.label(f'Time: {datetime.now()}')
 
     @ui.page('/global_refreshable')
     def demo():
-        ui.input('Name', on_change=hello.refresh).bind_value(app.storage.user, 'name')
-        hello()
+        time()
+        ui.button('Refresh', on_click=time.refresh)
 
     ui.link('Open demo', demo)
 
 
 @doc.demo('Local scope (1/3)', '''
     When defining a refreshable function in a local scope,
-    refreshable UI that is created by calling this function will have independent state.
-    In contrast to the "global scope" demo, the name entered in the input field will only be shown to the same user.
+    refreshable UI that is created by calling this function will refresh independently.
+    In contrast to the "global scope" demo,
+    the time will be updated only in the tab where the "Refresh" button was clicked.
 ''')
 def local_scope_1():
-    from nicegui import app
+    from datetime import datetime
 
     @ui.page('/local_refreshable_1')
     def demo():
         @ui.refreshable
-        def hello():
-            ui.label(f'Hello {app.storage.user.get("name")}')
+        def time():
+            ui.label(f'Time: {datetime.now()}')
 
-        ui.input('Name', on_change=hello.refresh).bind_value(app.storage.user, 'name')
-        hello()
+        time()
+        ui.button('Refresh', on_click=time.refresh)
 
     ui.link('Open demo', demo)
 
@@ -141,19 +142,18 @@ def local_scope_1():
     because the `ui.refreshable` decorator acts on the class instance rather than the class itself.
 ''')
 def local_scope_2():
-    from nicegui import app
+    from datetime import datetime
 
-    class Greeting:
+    class Clock:
         @ui.refreshable
-        def hello(self):
-            ui.label(f'Hello {app.storage.user.get("name")}')
+        def time(self):
+            ui.label(f'Time: {datetime.now()}')
 
     @ui.page('/local_refreshable_2')
     def demo():
-        greeting = Greeting()
-        ui.input('Name', on_change=greeting.hello.refresh) \
-            .bind_value(app.storage.user, 'name')
-        greeting.hello()
+        clock = Clock()
+        clock.time()
+        ui.button('Refresh', on_click=clock.time.refresh)
 
     ui.link('Open demo', demo)
 
@@ -161,20 +161,19 @@ def local_scope_2():
 @doc.demo('Local scope (3/3)', '''
     As an alternative to the class definition shown above, you can also define the UI function in global scope,
     but apply the `ui.refreshable` decorator inside the page function.
-    This way the refreshable UI will have independent state.
+    This way the refreshable UI will refresh independently.
 ''')
 def local_scope_3():
-    from nicegui import app
+    from datetime import datetime
 
-    def hello():
-        ui.label(f'Hello {app.storage.user.get("name")}')
+    def time():
+        ui.label(f'Time: {datetime.now()}')
 
     @ui.page('/local_refreshable_3')
     def demo():
-        refreshable_hello = ui.refreshable(hello)
-        ui.input('Name', on_change=refreshable_hello.refresh) \
-            .bind_value(app.storage.user, 'name')
-        refreshable_hello()
+        refreshable_time = ui.refreshable(time)
+        refreshable_time()
+        ui.button('Refresh', on_click=refreshable_time.refresh)
 
     ui.link('Open demo', demo)
 
