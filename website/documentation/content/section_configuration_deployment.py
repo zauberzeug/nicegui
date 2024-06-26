@@ -148,8 +148,8 @@ def uvicorn_ssl():
             from nicegui import ui
 
             ui.run(
-                port=443, 
-                ssl_certfile="<path_to_certfile>", 
+                port=443,
+                ssl_certfile="<path_to_certfile>",
                 ssl_keyfile="<path_to_keyfile>",
             )
             ```
