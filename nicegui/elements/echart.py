@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from typing_extensions import Self
 
@@ -17,9 +17,9 @@ except ImportError:
     pass
 
 
-class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min.js']):
+class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min.js'], extra_libraries=['lib/echarts-gl/echarts-gl.min.js']):
 
-    def __init__(self, options: Dict, on_point_click: Optional[Callable] = None) -> None:
+    def __init__(self, options: Dict, on_point_click: Optional[Callable] = None, *, enable_3d: bool = False) -> None:
         """Apache EChart
 
         An element to create a chart using `ECharts <https://echarts.apache.org/>`_.
@@ -27,45 +27,55 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
         After data has changed, call the `update` method to refresh the chart.
 
         :param options: dictionary of EChart options
-        :param on_click_point: callback function that is called when a point is clicked
+        :param on_click_point: callback that is invoked when a point is clicked
+        :param enable_3d: enforce importing the echarts-gl library
         """
         super().__init__()
         self._props['options'] = options
         self._classes.append('nicegui-echart')
+        for key in options:
+            if '3D' in key or enable_3d:
+                self.libraries.extend(library for library in self.extra_libraries if library.name == 'echarts-gl')
+                break
 
         if on_point_click:
-            def handle_point_click(e: GenericEventArguments) -> None:
-                handle_event(on_point_click, EChartPointClickEventArguments(
-                    sender=self,
-                    client=self.client,
-                    component_type=e.args['componentType'],
-                    series_type=e.args['seriesType'],
-                    series_index=e.args['seriesIndex'],
-                    series_name=e.args['seriesName'],
-                    name=e.args['name'],
-                    data_index=e.args['dataIndex'],
-                    data=e.args['data'],
-                    data_type=e.args.get('dataType'),
-                    value=e.args['value'],
-                ))
-            self.on('pointClick', handle_point_click, [
-                'componentType',
-                'seriesType',
-                'seriesIndex',
-                'seriesName',
-                'name',
-                'dataIndex',
-                'data',
-                'dataType',
-                'value',
-            ])
+            self.on_point_click(on_point_click)
+
+    def on_point_click(self, callback: Callable[..., Any]) -> Self:
+        """Add a callback to be invoked when a point is clicked."""
+        def handle_point_click(e: GenericEventArguments) -> None:
+            handle_event(callback, EChartPointClickEventArguments(
+                sender=self,
+                client=self.client,
+                component_type=e.args['componentType'],
+                series_type=e.args['seriesType'],
+                series_index=e.args['seriesIndex'],
+                series_name=e.args['seriesName'],
+                name=e.args['name'],
+                data_index=e.args['dataIndex'],
+                data=e.args['data'],
+                data_type=e.args.get('dataType'),
+                value=e.args['value'],
+            ))
+        self.on('pointClick', handle_point_click, [
+            'componentType',
+            'seriesType',
+            'seriesIndex',
+            'seriesName',
+            'name',
+            'dataIndex',
+            'data',
+            'dataType',
+            'value',
+        ])
+        return self
 
     @classmethod
     def from_pyecharts(cls, chart: 'Chart', on_point_click: Optional[Callable] = None) -> Self:
         """Create an echart element from a pyecharts object.
 
         :param chart: pyecharts chart object
-        :param on_click_point: callback function that is called when a point is clicked
+        :param on_click_point: callback which is invoked when a point is clicked
 
         :return: echart element
         """
@@ -104,7 +114,6 @@ class EChart(Element, component='echart.js', libraries=['lib/echarts/echarts.min
         :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
         :param args: arguments to pass to the method (Python objects or JavaScript expressions)
         :param timeout: timeout in seconds (default: 1 second)
-        :param check_interval: interval in seconds to check for a response (default: 0.01 seconds)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
         """

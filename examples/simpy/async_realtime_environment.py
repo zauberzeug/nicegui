@@ -39,7 +39,7 @@ class AsyncRealtimeEnvironment(RealtimeEnvironment):
             )
 
         # Sleep in a loop to fix inaccuracies of windows (see
-        # http://stackoverflow.com/a/15967564 for details) and to ignore
+        # https://stackoverflow.com/a/15967564 for details) and to ignore
         # interrupts.
         while True:
             delta = real_time - monotonic()
@@ -98,11 +98,11 @@ class AsyncRealtimeEnvironment(RealtimeEnvironment):
                 await self.step()
         except StopSimulation as exc:
             return exc.args[0]  # == until.value
-        except EmptySchedule:
+        except EmptySchedule as e:
             if until is not None:
                 assert not until.triggered
                 raise RuntimeError(
                     f'No scheduled events left but "until" event was not '
                     f'triggered: {until}'
-                )
+                ) from e
         return None

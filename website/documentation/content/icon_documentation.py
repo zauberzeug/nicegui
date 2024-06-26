@@ -8,11 +8,11 @@ def main_demo() -> None:
     ui.icon('thumb_up', color='primary').classes('text-5xl')
 
 
-@doc.demo('Material icons and symbols', '''
+@doc.demo('Material icons and symbols', r'''
     You can use different sets of Material icons and symbols.
-    The [Quasar documentation](https://quasar.dev/vue-components/icon#webfont-usage)
+    The [Quasar documentation](https://quasar.dev/vue-components/icon\#webfont-usage)
     gives an overview of all available icon sets and their name prefix:
-    
+
     * None for [filled icons](https://fonts.google.com/icons?icon.set=Material+Icons&icon.style=Filled)
     * "o\_" for [outline icons](https://fonts.google.com/icons?icon.set=Material+Icons&icon.style=Outlined)
     * "r\_" for [round icons](https://fonts.google.com/icons?icon.set=Material+Icons&icon.style=Rounded)
@@ -40,7 +40,7 @@ def eva_icons():
 
 
 @doc.demo('Other icon sets', '''
-    You can use the same approach for adding other icon sets to your app. 
+    You can use the same approach for adding other icon sets to your app.
     As a rule of thumb, you reference the corresponding CSS, and it in turn references font files.
     This demo shows how to include [Themify icons](https://themify.me/themify-icons).
 ''', lazy=False)

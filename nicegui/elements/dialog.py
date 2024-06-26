@@ -13,7 +13,7 @@ class Dialog(ValueElement):
         By default it is dismissible by clicking or pressing ESC.
         To make it persistent, set `.props('persistent')` on the dialog element.
 
-        NOTE: The dialog is an element. 
+        NOTE: The dialog is an element.
         That means it is not removed when closed, but only hidden.
         You should either create it only once and then reuse it, or remove it with `.clear()` after dismissal.
 

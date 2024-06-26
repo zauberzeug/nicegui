@@ -25,9 +25,9 @@ We're always looking for bug fixes, performance improvements, and new features.
 
 The simplest way to setup a fully functioning development environment is to start our Dev Container in VS Code:
 
-1. Ensure you have VS Code, Docker and the Remote-Containers extension installed.
+1. Ensure you have VS Code, Docker and the Dev Containers extension installed.
 2. Open the project root directory in VS Code.
-3. Press `F1`, type `Remote-Containers: Open Folder in Container`, and hit enter (or use the bottom-left corner icon in VS Code to reopen in container).
+3. Press `F1`, type `Dev Containers: Open Folder in Container`, and hit enter (or use the bottom-left corner icon in VS Code to reopen in container).
 4. Wait until image has been build.
 5. Happy coding.
 
@@ -75,11 +75,29 @@ To view the log output, use the command
 
 ### Formatting
 
+We use [pre-commit](https://github.com/pre-commit/pre-commit) to make sure the coding style is enforced.
+You first need to install pre-commit and the corresponding git commit hooks by running the following commands:
+
+```bash
+python3 -m pip install pre-commit
+pre-commit install
+```
+
+After that you can make sure your code satisfies the coding style by running the following command:
+
+```bash
+pre-commit run --all-files
+```
+
+These checks will also run automatically before every commit.
+
+### Formatting
+
 We use [autopep8](https://github.com/hhatto/autopep8) with a 120 character line length to format our code.
 Before submitting a pull request, please run
 
 ```bash
-autopep8 --max-line-length=120 --experimental  --in-place --recursive .
+autopep8 --max-line-length=120 --in-place --recursive .
 ```
 
 on your code to ensure that it meets our formatting guidelines.
@@ -93,7 +111,11 @@ on a second line and leave the other arguments as they are.
 
 ### Imports
 
-We use `isort` to automatically sort imports.
+We use [ruff](https://docs.astral.sh/ruff/) to automatically sort imports:
+
+```bash
+ruff check . --fix
+```
 
 ### Single vs Double Quotes
 
@@ -146,7 +168,7 @@ Please help us grow the number of insightful demos by following these easy steps
 1. Clone the NiceGUI repository and launch `main.py` in the root directory.
 2. Run `python3 -m pip install -e .` in the repository as explained above.
 3. In the newly opened browser window you can navigate to the documentation page where you want to change something.
-4. Open the code in your editor (for example [website/more_documentation/table_documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/more_documentation/table_documentation.py)).
+4. Open the code in your editor (for example [website/documentation/content/table_documentation.py](https://github.com/zauberzeug/nicegui/blob/main/website/documentation/content/table_documentation.py)).
 5. In the `more()` function insert an inner function containing your demo code.
 6. Add the `@text_demo` decorator to explain the demo.
 7. Make sure the result looks as expected in the rendered documentation.

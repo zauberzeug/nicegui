@@ -10,10 +10,10 @@ export default {
         v-on="onUserEvents"
         draggable="false"
       />
-      <svg style="position:absolute;top:0;left:0;pointer-events:none" :viewBox="viewBox">
+      <svg ref="svg" style="position:absolute;top:0;left:0;pointer-events:none" :viewBox="viewBox">
         <g v-if="cross" :style="{ display: showCross ? 'block' : 'none' }">
-          <line :x1="x" y1="0" :x2="x" y2="100%" stroke="black" />
-          <line x1="0" :y1="y" x2="100%" :y2="y" stroke="black" />
+          <line :x1="x" y1="0" :x2="x" y2="100%" :stroke="cross === true ? 'black' : cross" />
+          <line x1="0" :y1="y" x2="100%" :y2="y" :stroke="cross === true ? 'black' : cross" />
         </g>
         <g v-html="content"></g>
       </svg>
@@ -45,6 +45,18 @@ export default {
     };
     this.$refs.img.addEventListener("load", handle_completion);
     this.$refs.img.addEventListener("error", handle_completion);
+    for (const event of [
+      "pointermove",
+      "pointerdown",
+      "pointerup",
+      "pointerover",
+      "pointerout",
+      "pointerenter",
+      "pointerleave",
+      "pointercancel",
+    ]) {
+      this.$refs.svg.addEventListener(event, (e) => this.onPointerEvent(event, e));
+    }
   },
   updated() {
     this.compute_src();
@@ -79,18 +91,28 @@ export default {
       this.$emit("loaded", { width: this.loaded_image_width, height: this.loaded_image_height, source: e.target.src });
     },
     onMouseEvent(type, e) {
-      const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
-      const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
+      const imageWidth = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
+      const imageHeight = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
       this.$emit("mouse", {
         mouse_event_type: type,
-        image_x: (e.offsetX * width) / e.target.clientWidth,
-        image_y: (e.offsetY * height) / e.target.clientHeight,
+        image_x: (e.offsetX * imageWidth) / this.$refs.img.clientWidth,
+        image_y: (e.offsetY * imageHeight) / this.$refs.img.clientHeight,
         button: e.button,
         buttons: e.buttons,
         altKey: e.altKey,
         ctrlKey: e.ctrlKey,
         metaKey: e.metaKey,
         shiftKey: e.shiftKey,
+      });
+    },
+    onPointerEvent(type, e) {
+      const imageWidth = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
+      const imageHeight = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
+      this.$emit(`svg:${type}`, {
+        type: type,
+        element_id: e.target.id,
+        image_x: (e.offsetX * imageWidth) / this.$refs.svg.clientWidth,
+        image_y: (e.offsetY * imageHeight) / this.$refs.svg.clientHeight,
       });
     },
   },

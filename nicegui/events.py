@@ -3,7 +3,7 @@ from __future__ import annotations
 from contextlib import nullcontext
 from dataclasses import dataclass
 from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, Iterator, List, Literal, Optional, Union
 
 from . import background_tasks, core
 from .awaitable_response import AwaitableResponse
@@ -118,6 +118,13 @@ class UploadEventArguments(UiEventArguments):
 
 
 @dataclass(**KWONLY_SLOTS)
+class MultiUploadEventArguments(UiEventArguments):
+    contents: List[BinaryIO]
+    names: List[str]
+    types: List[str]
+
+
+@dataclass(**KWONLY_SLOTS)
 class ValueChangeEventArguments(UiEventArguments):
     value: Any
 
@@ -140,6 +147,12 @@ class KeyboardModifiers:
     ctrl: bool
     meta: bool
     shift: bool
+
+    def __iter__(self) -> Iterator[bool]:
+        return iter([self.alt, self.ctrl, self.meta, self.shift])
+
+    def __len__(self) -> int:
+        return sum(self)
 
 
 @dataclass(**KWONLY_SLOTS)
@@ -166,7 +179,7 @@ class KeyboardKey:
     @property
     def number(self) -> Optional[int]:
         """Integer value of a number key."""
-        return int(self.code.removeprefix('Digit')) if self.code.startswith('Digit') else None
+        return int(self.code[len('Digit'):]) if self.code.startswith('Digit') else None
 
     @property
     def backspace(self) -> bool:

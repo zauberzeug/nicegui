@@ -1,4 +1,5 @@
 import inspect
+import urllib
 from enum import Enum
 from pathlib import Path
 from typing import Any, Awaitable, Callable, List, Optional, Union
@@ -153,7 +154,12 @@ class App(FastAPI):
         """
         if url_path == '/':
             raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
-        self.mount(url_path, StaticFiles(directory=str(local_directory), follow_symlink=follow_symlink))
+
+        handler = StaticFiles(directory=local_directory, follow_symlink=follow_symlink)
+
+        @self.get(url_path + '/{path:path}')
+        async def static_file(request: Request, path: str = '') -> Response:
+            return await handler.get_response(path, request.scope)
 
     def add_static_file(self, *,
                         local_file: Union[str, Path],
@@ -171,7 +177,7 @@ class App(FastAPI):
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the file has been downloaded once (default: False)
-        :return: URL path which can be used to access the file
+        :return: encoded URL which can be used to access the file
         """
         file = Path(local_file).resolve()
         if not file.is_file():
@@ -184,7 +190,7 @@ class App(FastAPI):
                 self.remove_route(path)
             return FileResponse(file, headers={'Cache-Control': 'public, max-age=3600'})
 
-        return path
+        return urllib.parse.quote(path)
 
     def add_media_files(self, url_path: str, local_directory: Union[str, Path]) -> None:
         """Add directory of media files.
@@ -201,11 +207,11 @@ class App(FastAPI):
         :param local_directory: local folder with files to serve as media content
         """
         @self.get(url_path + '/{filename:path}')
-        def read_item(request: Request, filename: str, nicegui_cunk_size: int = 8192) -> Response:
+        def read_item(request: Request, filename: str, nicegui_chunk_size: int = 8192) -> Response:
             filepath = Path(local_directory) / filename
             if not filepath.is_file():
                 raise HTTPException(status_code=404, detail='Not Found')
-            return get_range_response(filepath, request, chunk_size=nicegui_cunk_size)
+            return get_range_response(filepath, request, chunk_size=nicegui_chunk_size)
 
     def add_media_file(self, *,
                        local_file: Union[str, Path],
@@ -223,7 +229,7 @@ class App(FastAPI):
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the media file has been downloaded once (default: False)
-        :return: URL path which can be used to access the file
+        :return: encoded URL which can be used to access the file
         """
         file = Path(local_file).resolve()
         if not file.is_file():
@@ -231,12 +237,12 @@ class App(FastAPI):
         path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
 
         @self.get(path)
-        def read_item(request: Request, nicegui_cunk_size: int = 8192) -> Response:
+        def read_item(request: Request, nicegui_chunk_size: int = 8192) -> Response:
             if single_use:
                 self.remove_route(path)
-            return get_range_response(file, request, chunk_size=nicegui_cunk_size)
+            return get_range_response(file, request, chunk_size=nicegui_chunk_size)
 
-        return path
+        return urllib.parse.quote(path)
 
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""

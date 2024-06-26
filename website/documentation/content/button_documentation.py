@@ -27,13 +27,14 @@ def icons() -> None:
 async def await_button_click() -> None:
     # @ui.page('/')
     # async def index():
-    b = ui.button('Step')
-    await b.clicked()
-    ui.label('One')
-    await b.clicked()
-    ui.label('Two')
-    await b.clicked()
-    ui.label('Three')
+    with ui.column():  # HIDE
+        b = ui.button('Step')
+        await b.clicked()
+        ui.label('One')
+        await b.clicked()
+        ui.label('Two')
+        await b.clicked()
+        ui.label('Three')
 
 
 @doc.demo('Disable button with a context manager', '''
@@ -83,6 +84,35 @@ def toggle_button() -> None:
             super().update()
 
     ToggleButton('Toggle me')
+
+
+@doc.demo('Floating Action Button', '''
+    As described in the [Quasar documentation](https://quasar.dev/vue-components/floating-action-button),
+    a Floating Action Button (FAB) is simply a "page-sticky" with a button inside.
+    With the "fab" prop, the button will be rounded and gets a shadow.
+    Color can be freely chosen, but most often it is an accent color.
+''')
+def fab() -> None:
+    ui.colors(accent='#6AD4DD')
+    # with ui.page_sticky(x_offset=18, y_offset=18):
+    with ui.row().classes('w-full h-full justify-end items-end'):  # HIDE
+        ui.button(icon='home', on_click=lambda: ui.notify('home')) \
+            .props('fab color=accent')
+
+
+@doc.demo('Expandable Floating Action Button', '''
+    The [Quasar FAB (q-fab)](https://quasar.dev/vue-components/floating-action-button),
+    is a button that reveals multiple actions when clicked.
+    While it is not a separate element in NiceGUI, it can be easily created using the generic `ui.element`.
+''')
+def expandable_fab() -> None:
+    with ui.element('q-fab').props('icon=navigation color=green'):
+        ui.element('q-fab-action').props('icon=train color=green-5') \
+            .on('click', lambda: ui.notify('train'))
+        ui.element('q-fab-action').props('icon=sailing color=green-5') \
+            .on('click', lambda: ui.notify('boat'))
+        ui.element('q-fab-action').props('icon=rocket color=green-5') \
+            .on('click', lambda: ui.notify('rocket'))
 
 
 doc.reference(ui.button)

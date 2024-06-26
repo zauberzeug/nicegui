@@ -9,7 +9,7 @@ def main_demo() -> None:
 
 
 @doc.demo('Change Appearance Depending on the Content', '''
-    You can overwrite the `_handle_text_change` method to update other attributes of a label depending on its content. 
+    You can overwrite the `_handle_text_change` method to update other attributes of a label depending on its content.
     This technique also works for bindings as shown in the example below.
 ''')
 def status():

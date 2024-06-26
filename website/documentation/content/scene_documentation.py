@@ -64,12 +64,12 @@ def click_events() -> None:
     You can make objects draggable using the `.draggable` method.
     There is an optional `on_drag_start` and `on_drag_end` argument to `ui.scene` to handle drag events.
     The callbacks receive a `SceneDragEventArguments` object with the following attributes:
-    
+
     - `type`: the type of drag event ("dragstart" or "dragend").
     - `object_id`: the id of the object that was dragged.
     - `object_name`: the name of the object that was dragged.
     - `x`, `y`, `z`: the x, y and z coordinates of the dragged object.
-        
+
     You can also use the `drag_constraints` argument to set comma-separated JavaScript expressions
     for constraining positions of dragged objects.
 ''')
@@ -111,6 +111,38 @@ async def wait_for_init() -> None:
         scene.sphere()
         await scene.initialized()
         scene.move_camera(x=1, y=-1, z=1.5, duration=2)
+
+
+@doc.demo(ui.scene_view)
+def scene_views():
+    with ui.grid(columns=2).classes('w-full'):
+        with ui.scene().classes('h-64 col-span-2') as scene:
+            teapot = 'https://upload.wikimedia.org/wikipedia/commons/9/93/Utah_teapot_(solid).stl'
+            scene.stl(teapot).scale(0.3)
+
+        with ui.scene_view(scene).classes('h-32') as scene_view1:
+            scene_view1.move_camera(x=1, y=-3, z=5)
+
+        with ui.scene_view(scene).classes('h-32') as scene_view2:
+            scene_view2.move_camera(x=0, y=4, z=3)
+
+
+@doc.demo('Camera Parameters', '''
+    You can use the `camera` argument to `ui.scene` to use a custom camera.
+    This allows you to set the field of view of a perspective camera or the size of an orthographic camera.
+''')
+def orthographic_camera() -> None:
+    with ui.scene(camera=ui.scene.orthographic_camera(size=2)) \
+            .classes('w-full h-64') as scene:
+        scene.box()
+
+
+@doc.demo('Custom Background', '''
+    You can set a custom background color using the `background_color` parameter of `ui.scene`.
+''')
+def custom_background() -> None:
+    with ui.scene(background_color='#222').classes('w-full h-64') as scene:
+        scene.box()
 
 
 doc.reference(ui.scene)

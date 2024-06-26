@@ -3,16 +3,16 @@ import time
 from typing import Optional
 
 from .. import json
-from ..element import Element
 from .button import Button as button
 from .markdown import Markdown as markdown
 from .markdown import remove_indentation
+from .mixins.content_element import ContentElement
 from .timer import Timer as timer
 
 
-class Code(Element):
+class Code(ContentElement):
 
-    def __init__(self, content: str, *, language: Optional[str] = 'python') -> None:
+    def __init__(self, content: str = '', *, language: Optional[str] = 'python') -> None:
         """Code
 
         This element displays a code block with syntax highlighting.
@@ -20,13 +20,12 @@ class Code(Element):
         :param content: code to display
         :param language: language of the code (default: "python")
         """
-        super().__init__()
+        super().__init__(content=remove_indentation(content))
         self._classes.append('nicegui-code')
 
-        self.content = remove_indentation(content)
-
         with self:
-            self.markdown = markdown(f'```{language}\n{self.content}\n```').classes('overflow-auto')
+            self.markdown = markdown().classes('overflow-auto') \
+                .bind_content_from(self, 'content', lambda content: f'```{language}\n{content}\n```')
             self.copy_button = button(icon='content_copy', on_click=self.show_checkmark) \
                 .props('round flat size=sm').classes('absolute right-2 top-2 opacity-20 hover:opacity-80') \
                 .on('click', js_handler=f'() => navigator.clipboard.writeText({json.dumps(self.content)})')
@@ -46,3 +45,6 @@ class Code(Element):
 
     def _update_copy_button(self) -> None:
         self.copy_button.set_visibility(time.time() > self._last_scroll + 1.0)
+
+    def _handle_content_change(self, content: str) -> None:
+        pass  # handled by markdown element

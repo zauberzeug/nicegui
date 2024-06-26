@@ -24,4 +24,3 @@ EXPOSE 8080
 ENTRYPOINT ["/ros_entrypoint.sh"]
 
 CMD ros2 launch gui main_launch.py
-

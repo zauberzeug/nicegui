@@ -9,7 +9,7 @@ body:
         Make sure it is really an issue (see [FAQs](/zauberzeug/nicegui/wiki/FAQs)).
         A lot of people will read your message.
         Make it worth their time.
-        
+
         1. What are you trying to do?
           If possible, give a [minimal reproducible code example](https://en.wikipedia.org/wiki/Minimal_reproducible_example).
           Put source code in [fenced code blocks with syntax highlighting](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks#syntax-highlighting).

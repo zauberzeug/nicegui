@@ -13,7 +13,7 @@ export default {
       </template>
     </q-input>
     <datalist v-if="withDatalist" :id="id + '-datalist'">
-      <option v-for="option in autocomplete" :value="option"></option>
+      <option v-for="option in this._autocomplete" :value="option"></option>
     </datalist>
   `,
   props: {

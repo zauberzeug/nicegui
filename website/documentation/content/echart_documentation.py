@@ -100,4 +100,38 @@ def methods_demo() -> None:
     ))
 
 
+@doc.demo('Arbitrary chart events', '''
+    You can register arbitrary event listeners for the chart using the `on` method and a "chart:" prefix.
+    This demo shows how to register a callback for the "selectchanged" event which is triggered when the user selects a point.
+''')
+def events_demo() -> None:
+    ui.echart({
+        'toolbox': {'feature': {'brush': {'type': ['rect']}}},
+        'brush': {},
+        'xAxis': {'type': 'category'},
+        'yAxis': {'type': 'value'},
+        'series': [{'type': 'line', 'data': [1, 2, 3]}],
+    }).on('chart:selectchanged', lambda e: label.set_text(
+        f'Selected point {e.args["fromActionPayload"]["dataIndexInside"]}'
+    ))
+    label = ui.label()
+
+
+@doc.demo('3D Graphing', '''
+    Charts will automatically be 3D enabled if the initial options contain the string "3D".
+    If not, set the `enable_3d` argument to `True`.
+''')
+def echarts_gl_demo() -> None:
+    ui.echart({
+        'xAxis3D': {},
+        'yAxis3D': {},
+        'zAxis3D': {},
+        'grid3D': {},
+        'series': [{
+            'type': 'line3D',
+            'data': [[1, 1, 1], [3, 3, 3]],
+        }],
+    })
+
+
 doc.reference(ui.echart)

@@ -65,8 +65,24 @@ export default {
 
     window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
 
+    if (this.camera_type === "perspective") {
+      this.camera = new THREE.PerspectiveCamera(
+        this.camera_params.fov,
+        this.width / this.height,
+        this.camera_params.near,
+        this.camera_params.far
+      );
+    } else {
+      this.camera = new THREE.OrthographicCamera(
+        (-this.camera_params.size / 2) * (this.width / this.height),
+        (this.camera_params.size / 2) * (this.width / this.height),
+        this.camera_params.size / 2,
+        -this.camera_params.size / 2,
+        this.camera_params.near,
+        this.camera_params.far
+      );
+    }
     this.look_at = new THREE.Vector3(0, 0, 0);
-    this.camera = new THREE.PerspectiveCamera(75, this.width / this.height, 0.1, 1000);
     this.camera.lookAt(this.look_at);
     this.camera.up = new THREE.Vector3(0, 0, 1);
     this.camera.position.set(0, -3, 5);
@@ -91,7 +107,7 @@ export default {
       this.$el.style.border = "1px solid silver";
       return;
     }
-    this.renderer.setClearColor("#eee");
+    this.renderer.setClearColor(this.background_color);
     this.renderer.setSize(this.width, this.height);
 
     this.text_renderer = new CSS2DRenderer({
@@ -108,7 +124,10 @@ export default {
     window.addEventListener("resize", this.resize, false);
 
     if (this.grid) {
-      const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: "#eee" }));
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(100, 100),
+        new THREE.MeshPhongMaterial({ color: this.background_color })
+      );
       ground.translateZ(-0.01);
       ground.object_id = "ground";
       this.scene.add(ground);
@@ -410,7 +429,41 @@ export default {
       this.text_renderer.setSize(clientWidth, clientHeight);
       this.text3d_renderer.setSize(clientWidth, clientHeight);
       this.camera.aspect = clientWidth / clientHeight;
+      if (this.camera_type === "orthographic") {
+        this.camera.left = (-this.camera.aspect * this.camera_params.size) / 2;
+        this.camera.right = (this.camera.aspect * this.camera_params.size) / 2;
+      }
       this.camera.updateProjectionMatrix();
+    },
+    init_objects(data) {
+      for (const [
+        type,
+        id,
+        parent_id,
+        args,
+        name,
+        color,
+        opacity,
+        side,
+        x,
+        y,
+        z,
+        R,
+        sx,
+        sy,
+        sz,
+        visible,
+        draggable,
+      ] of data) {
+        this.create(type, id, parent_id, ...args);
+        this.name(id, name);
+        this.material(id, color, opacity, side);
+        this.move(id, x, y, z);
+        this.rotate(id, R);
+        this.scale(id, sx, sy, sz);
+        this.visible(id, visible);
+        this.draggable(id, draggable);
+      }
     },
   },
 
@@ -418,6 +471,9 @@ export default {
     width: Number,
     height: Number,
     grid: Boolean,
+    camera_type: String,
+    camera_params: Object,
     drag_constraints: String,
+    background_color: String,
   },
 };

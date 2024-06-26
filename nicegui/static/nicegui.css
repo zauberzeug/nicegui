@@ -211,19 +211,26 @@
   width: 100%;
 }
 .nicegui-aggrid,
+.nicegui-codemirror,
 .nicegui-echart,
 .nicegui-leaflet,
+.nicegui-log,
 .nicegui-scroll-area {
   width: 100%;
   height: 16rem;
 }
 .nicegui-log {
-  padding: 0.25rem;
-  border-width: 1px;
-  white-space: pre;
+  padding: 0.5rem;
+  scroll-padding-bottom: 0.5rem;
+  scroll-snap-type: y proximity;
+  overflow-y: scroll;
+  outline: 1px solid rgba(127, 159, 191, 0.15);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  opacity: 1 !important;
-  cursor: text !important;
+  white-space: pre;
+  background-color: rgba(127, 159, 191, 0.05);
+}
+.nicegui-log > :last-child {
+  scroll-snap-align: end;
 }
 h6.q-timeline__title {
   font-size: 1.25rem;
@@ -240,6 +247,11 @@ h6.q-timeline__title {
   padding: 0 0.5rem;
 }
 
+/* CodeMirror */
+.nicegui-codemirror .cm-editor.cm-focused {
+  outline: none;
+}
+
 /* connection popup */
 #popup {
   position: fixed;
@@ -253,7 +265,6 @@ h6.q-timeline__title {
   display: flex;
   flex-direction: column;
   gap: 1em;
-  opacity: 0;
   transition-duration: 500ms;
   pointer-events: none;
   z-index: 1000;
@@ -264,7 +275,13 @@ h6.q-timeline__title {
 .body--light #popup {
   background-color: white;
 }
-#popup[style*="opacity: 1;"] {
+#popup[aria-hidden="true"] {
+  opacity: 0;
+  visibility: hidden;
+}
+#popup[aria-hidden="false"] {
+  opacity: 1;
+  visibility: visible;
   transition-delay: 2000ms;
 }
 #popup > span:first-child {

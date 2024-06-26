@@ -30,6 +30,7 @@ class Number(ValidationElement, DisableableElement):
         e.g. ``{'Too small!': lambda value: value < 3}``.
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
+        To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
 
         :param label: displayed name for the number input
         :param placeholder: text to show if no value is entered
@@ -71,8 +72,11 @@ class Number(ValidationElement, DisableableElement):
 
     @min.setter
     def min(self, value: float) -> None:
+        if self._props.get('min') == value:
+            return
         self._props['min'] = value
         self.sanitize()
+        self.update()
 
     @property
     def max(self) -> float:
@@ -81,8 +85,11 @@ class Number(ValidationElement, DisableableElement):
 
     @max.setter
     def max(self, value: float) -> None:
+        if self._props.get('max') == value:
+            return
         self._props['max'] = value
         self.sanitize()
+        self.update()
 
     @property
     def precision(self) -> Optional[int]:
@@ -126,6 +133,3 @@ class Number(ValidationElement, DisableableElement):
         if value == '':
             return 0
         return self.format % float(value)
-
-    def _value_to_event_value(self, value: Any) -> Any:
-        return float(value) if value else 0

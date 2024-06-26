@@ -37,8 +37,12 @@ class page:
 
         This decorator marks a function to be a page builder.
         Each user accessing the given route will see a new instance of the page.
-        This means it is private to the user and not shared with others 
+        This means it is private to the user and not shared with others
         (as it is done `when placing elements outside of a page decorator <https://nicegui.io/documentation/section_pages_routing#auto-index_page>`_).
+
+        Note:
+        The name of the decorated function is unused and can be anything.
+        The page route is determined by the `path` argument and registered globally.
 
         :param path: route of the new page (path must start with '/')
         :param title: optional page title

@@ -1,5 +1,6 @@
+from collections.abc import Generator, Iterable
 from copy import deepcopy
-from typing import Any, Callable, Dict, List, Literal, Optional, Union
+from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Union
 
 from ..events import GenericEventArguments
 from .choice_element import ChoiceElement
@@ -19,6 +20,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                  multiple: bool = False,
                  clearable: bool = False,
                  validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
+                 key_generator: Optional[Union[Callable[[Any], Any], Iterator[Any]]] = None,
                  ) -> None:
         """Dropdown Selection
 
@@ -37,6 +39,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         e.g. ``{'Too long!': lambda value: len(value) < 3}``.
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
+        To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
 
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
         :param label: the label to display above the selection
@@ -47,6 +50,7 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         :param multiple: whether to allow multiple selections
         :param clearable: whether to add a button to clear the selection
         :param validation: dictionary of validation rules or a callable that returns an optional error message
+        :param key_generator: a callback or iterator to generate a dictionary key for new values
         """
         self.multiple = multiple
         if multiple:
@@ -54,12 +58,17 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                 value = []
             elif not isinstance(value, list):
                 value = [value]
+            else:
+                value = value[:]  # NOTE: avoid modifying the original list which could be the list of options (#3014)
         super().__init__(options=options, value=value, on_change=on_change, validation=validation)
         if label is not None:
             self._props['label'] = label
+        if isinstance(key_generator, Generator):
+            next(key_generator)  # prime the key generator, prepare it to receive the first value
+        self.key_generator = key_generator
         if new_value_mode is not None:
-            if isinstance(options, dict) and new_value_mode == 'add':
-                raise ValueError('new_value_mode "add" is not supported for dict options')
+            if isinstance(options, dict) and new_value_mode == 'add' and key_generator is None:
+                raise ValueError('new_value_mode "add" is not supported for dict options without key_generator')
             self._props['new-value-mode'] = new_value_mode
             with_input = True
         if with_input:
@@ -72,7 +81,6 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
         self._props['clearable'] = clearable
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
-        # pylint: disable=no-else-return
         if self.multiple:
             if e.args is None:
                 return []
@@ -82,13 +90,13 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                     if isinstance(arg, str):
                         self._handle_new_value(arg)
                 return [arg for arg in args if arg in self._values]
-        else:
+        else:  # noqa: PLR5501
             if e.args is None:
                 return None
-            else:
+            else:  # noqa: PLR5501
                 if isinstance(e.args, str):
-                    self._handle_new_value(e.args)
-                    return e.args if e.args in self._values else None
+                    new_value = self._handle_new_value(e.args)
+                    return new_value if new_value in self._values else None
                 else:
                     return self._values[e.args['value']]
 
@@ -110,7 +118,16 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
             except ValueError:
                 return None
 
-    def _handle_new_value(self, value: str) -> None:
+    def _generate_key(self, value: str) -> Any:
+        if isinstance(self.key_generator, Generator):
+            return self.key_generator.send(value)
+        if isinstance(self.key_generator, Iterable):
+            return next(self.key_generator)
+        if callable(self.key_generator):
+            return self.key_generator(value)
+        return value
+
+    def _handle_new_value(self, value: str) -> Any:
         mode = self._props['new-value-mode']
         if isinstance(self.options, list):
             if mode == 'add':
@@ -124,13 +141,21 @@ class Select(ValidationElement, ChoiceElement, DisableableElement, component='se
                 else:
                     self.options.append(value)
             # NOTE: self._labels and self._values are updated via self.options since they share the same references
+            return value
         else:
-            if mode in 'add-unique':
-                if value not in self.options:
-                    self.options[value] = value
+            key = value
+            if mode == 'add':
+                key = self._generate_key(value)
+                self.options[key] = value
+            elif mode == 'add-unique':
+                if value not in self.options.values():
+                    key = self._generate_key(value)
+                    self.options[key] = value
             elif mode == 'toggle':
                 if value in self.options:
                     self.options.pop(value)
                 else:
-                    self.options.update({value: value})
+                    key = self._generate_key(value)
+                    self.options.update({key: value})
             self._update_values_and_labels()
+            return key

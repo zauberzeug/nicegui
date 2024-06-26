@@ -21,7 +21,7 @@ class ReStructuredText(Markdown):
         html = prepare_content(content)
         if self._props.get('innerHTML') != html:
             self._props['innerHTML'] = html
-            self.run_method('update', html)
+            self.update()
 
 
 @lru_cache(maxsize=int(os.environ.get('RST_CONTENT_CACHE_SIZE', '1000')))
@@ -32,4 +32,4 @@ def prepare_content(content: str) -> str:
         writer_name='html4',
         settings_overrides={'syntax_highlight': 'short'},
     )
-    return html["html_body"].replace('<div class="document"', '<div class="codehilite"')
+    return html['html_body'].replace('<div class="document"', '<div class="codehilite"')

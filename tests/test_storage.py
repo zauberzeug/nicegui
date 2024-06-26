@@ -1,9 +1,12 @@
 import asyncio
+import copy
 from pathlib import Path
 
 import httpx
+import pytest
 
-from nicegui import Client, app, background_tasks, ui
+from nicegui import app, background_tasks, context, ui
+from nicegui import storage as storage_module
 from nicegui.testing import Screen
 
 
@@ -47,8 +50,8 @@ def test_browser_storage_supports_asyncio(screen: Screen):
 
 def test_browser_storage_modifications_after_page_load_are_forbidden(screen: Screen):
     @ui.page('/')
-    async def page(client: Client):
-        await client.connected()
+    async def page():
+        await ui.context.client.connected()
         try:
             app.storage.browser['test'] = 'data'
         except TypeError as e:
@@ -61,9 +64,9 @@ def test_browser_storage_modifications_after_page_load_are_forbidden(screen: Scr
 
 def test_user_storage_modifications(screen: Screen):
     @ui.page('/')
-    async def page(client: Client, delayed: bool = False):
+    async def page(delayed: bool = False):
         if delayed:
-            await client.connected()
+            await ui.context.client.connected()
         app.storage.user['count'] = app.storage.user.get('count', 0) + 1
         ui.label().bind_text_from(app.storage.user, 'count')
 
@@ -163,3 +166,115 @@ def test_rapid_storage(screen: Screen):
     screen.click('test')
     screen.wait(0.5)
     assert Path('.nicegui', 'storage-general.json').read_text('utf-8') == '{"one":1,"two":2,"three":3}'
+
+
+def test_tab_storage_is_local(screen: Screen):
+    @ui.page('/')
+    async def page():
+        await context.client.connected()
+        app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
+        ui.label().bind_text_from(app.storage.tab, 'count')
+
+    screen.open('/')
+    screen.should_contain('1')
+    screen.open('/')
+    screen.should_contain('2')
+
+    screen.switch_to(1)
+    screen.open('/')
+    screen.should_contain('1')
+
+    screen.switch_to(0)
+    screen.open('/')
+    screen.should_contain('3')
+
+
+def test_tab_storage_is_auto_removed(screen: Screen):
+    storage_module.PURGE_INTERVAL = 0.1
+    app.storage.max_tab_storage_age = 0.5
+
+    @ui.page('/')
+    async def page():
+        await context.client.connected()
+        app.storage.tab['count'] = app.storage.tab.get('count', 0) + 1
+        ui.label().bind_text_from(app.storage.tab, 'count')
+
+    screen.open('/')
+    screen.should_contain('1')
+    screen.open('/')
+    screen.should_contain('2')
+
+    screen.wait(1)
+    screen.open('/')
+    screen.should_contain('1')
+
+
+def test_clear_tab_storage(screen: Screen):
+    storage_module.PURGE_INTERVAL = 60
+
+    @ui.page('/')
+    async def page():
+        await context.client.connected()
+        app.storage.tab['test'] = '123'
+        ui.button('clear', on_click=app.storage.clear)
+
+    screen.open('/')
+    screen.should_contain('clear')
+
+    tab_storages = app.storage._tabs  # pylint: disable=protected-access
+    assert len(tab_storages) == 1
+    assert next(iter(tab_storages.values())) == {'test': '123'}
+
+    screen.click('clear')
+    screen.wait(0.5)
+    assert not tab_storages
+
+
+def test_client_storage(screen: Screen):
+    def increment():
+        app.storage.client['counter'] = app.storage.client['counter'] + 1
+
+    @ui.page('/')
+    def page():
+        app.storage.client['counter'] = 123
+        ui.button('Increment').on_click(increment)
+        ui.label().bind_text(app.storage.client, 'counter')
+
+    screen.open('/')
+    screen.should_contain('123')
+    screen.click('Increment')
+    screen.wait_for('124')
+
+    screen.switch_to(1)
+    screen.open('/')
+    screen.should_contain('123')
+
+    screen.switch_to(0)
+    screen.should_contain('124')
+
+
+def test_clear_client_storage(screen: Screen):
+    with pytest.raises(RuntimeError):  # no context (auto index)
+        app.storage.client.clear()
+
+    @ui.page('/')
+    def page():
+        app.storage.client['counter'] = 123
+        app.storage.client.clear()
+        assert app.storage.client == {}
+
+    screen.open('/')
+
+
+def test_deepcopy(screen: Screen):
+    # https://github.com/zauberzeug/nicegui/issues/3023
+    @ui.page('/')
+    def page():
+        app.storage.general['a'] = {'b': 0}
+        copy.deepcopy(app.storage.general['a'])
+        ui.label('Loaded')
+
+    screen.open('/')
+    screen.should_contain('Loaded')
+    screen.wait(0.5)
+    assert Path('.nicegui', 'storage-general.json').read_text('utf-8') == '{"a":{"b":0}}'

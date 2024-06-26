@@ -1,7 +1,10 @@
+import asyncio
 import contextvars
 import os
+import time
 import uuid
 from collections.abc import MutableMapping
+from datetime import timedelta
 from pathlib import Path
 from typing import Any, Dict, Iterator, Optional, Union
 
@@ -12,10 +15,14 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from . import background_tasks, context, core, json, observables
+from . import background_tasks, core, json, observables
+from .context import context
 from .logging import log
+from .observables import ObservableDict
 
 request_contextvar: contextvars.ContextVar[Optional[Request]] = contextvars.ContextVar('request_var', default=None)
+
+PURGE_INTERVAL = timedelta(minutes=5).total_seconds()
 
 
 class ReadOnlyDict(MutableMapping):
@@ -94,9 +101,11 @@ class Storage:
 
     def __init__(self) -> None:
         self.path = Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve()
-        self.migrate_to_utf8()
+        self.migrate_to_utf8()  # DEPRECATED: remove this in 2.0 release
+        self.max_tab_storage_age = timedelta(days=30).total_seconds()
         self._general = PersistentDict(self.path / 'storage-general.json', encoding='utf-8')
         self._users: Dict[str, PersistentDict] = {}
+        self._tabs: Dict[str, observables.ObservableDict] = {}
 
     @property
     def browser(self) -> Union[ReadOnlyDict, Dict]:
@@ -120,7 +129,7 @@ class Storage:
         return request.session
 
     @property
-    def user(self) -> Dict:
+    def user(self) -> PersistentDict:
         """Individual user storage that is persisted on the server (where NiceGUI is executed).
 
         The data is stored in a file on the server.
@@ -140,19 +149,61 @@ class Storage:
     @staticmethod
     def _is_in_auto_index_context() -> bool:
         try:
-            return context.get_client().is_auto_index_client
+            return context.client.is_auto_index_client
         except RuntimeError:
             return False  # no client
 
     @property
-    def general(self) -> Dict:
+    def general(self) -> PersistentDict:
         """General storage shared between all users that is persisted on the server (where NiceGUI is executed)."""
         return self._general
+
+    @property
+    def client(self) -> ObservableDict:
+        """A volatile storage that is only kept during the current connection to the client.
+
+        Like `app.storage.tab` data is unique per browser tab but is even more volatile as it is already discarded
+        when the connection to the client is lost through a page reload or a navigation.
+        """
+        if self._is_in_auto_index_context():
+            raise RuntimeError('app.storage.client can only be used with page builder functions '
+                               '(https://nicegui.io/documentation/page)')
+        return context.client.storage
+
+    @property
+    def tab(self) -> observables.ObservableDict:
+        """A volatile storage that is only kept during the current tab session."""
+        if self._is_in_auto_index_context():
+            raise RuntimeError('app.storage.tab can only be used with page builder functions '
+                               '(https://nicegui.io/documentation/page)')
+        client = context.client
+        if not client.has_socket_connection:
+            raise RuntimeError('app.storage.tab can only be used with a client connection; '
+                               'see https://nicegui.io/documentation/page#wait_for_client_connection to await it')
+        assert client.tab_id is not None
+        if client.tab_id not in self._tabs:
+            self._tabs[client.tab_id] = observables.ObservableDict()
+        return self._tabs[client.tab_id]
+
+    async def prune_tab_storage(self) -> None:
+        """Regularly prune tab storage that is older than the configured `max_tab_storage_age`."""
+        while True:
+            for tab_id, tab in list(self._tabs.items()):
+                if time.time() > tab.last_modified + self.max_tab_storage_age:
+                    del self._tabs[tab_id]
+            await asyncio.sleep(PURGE_INTERVAL)
 
     def clear(self) -> None:
         """Clears all storage."""
         self._general.clear()
         self._users.clear()
+        try:
+            client = context.client
+        except RuntimeError:
+            pass  # no client, could be a pytest
+        else:
+            client.storage.clear()
+        self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):
             filepath.unlink()
 

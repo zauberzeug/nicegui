@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 import abc
-from typing import Any, Callable, Collection, Dict, Iterable, List, Optional, SupportsIndex, Union
+import time
+from copy import deepcopy
+from typing import Any, Callable, Collection, Dict, Iterable, List, Optional, Set, SupportsIndex, Union
+
+from typing_extensions import Self
 
 from . import events
 
 
-class ObservableCollection(abc.ABC):
+class ObservableCollection(abc.ABC):  # noqa: B024
 
     def __init__(self, *,
                  factory: Callable,
@@ -16,6 +20,7 @@ class ObservableCollection(abc.ABC):
                  ) -> None:
         super().__init__(factory() if data is None else data)  # type: ignore
         self._parent = _parent
+        self.last_modified = time.time()
         self._change_handlers: List[Callable] = [on_change] if on_change else []
 
     @property
@@ -27,6 +32,7 @@ class ObservableCollection(abc.ABC):
         return change_handlers
 
     def _handle_change(self) -> None:
+        self.last_modified = time.time()
         for handler in self.change_handlers:
             events.handle_event(handler, events.ObservableChangeEventArguments(sender=self))
 
@@ -35,6 +41,9 @@ class ObservableCollection(abc.ABC):
         self._change_handlers.append(handler)
 
     def _observe(self, data: Any) -> Any:
+        if isinstance(data, ObservableCollection):
+            data.on_change(self._handle_change)
+            return data
         if isinstance(data, dict):
             return ObservableDict(data, _parent=self)
         if isinstance(data, list):
@@ -43,11 +52,29 @@ class ObservableCollection(abc.ABC):
             return ObservableSet(data, _parent=self)
         return data
 
+    def __copy__(self) -> Self:
+        if isinstance(self, dict):
+            return ObservableDict(self, _parent=self._parent)
+        if isinstance(self, list):
+            return ObservableList(self, _parent=self._parent)
+        if isinstance(self, set):
+            return ObservableSet(self, _parent=self._parent)
+        raise NotImplementedError(f'ObservableCollection.__copy__ not implemented for {type(self)}')
+
+    def __deepcopy__(self, memo: Dict) -> Self:
+        if isinstance(self, dict):
+            return ObservableDict({key: deepcopy(self[key]) for key in self}, _parent=self._parent)
+        if isinstance(self, list):
+            return ObservableList([deepcopy(item) for item in self], _parent=self._parent)
+        if isinstance(self, set):
+            return ObservableSet({deepcopy(item) for item in self}, _parent=self._parent)
+        raise NotImplementedError(f'ObservableCollection.__deepcopy__ not implemented for {type(self)}')
+
 
 class ObservableDict(ObservableCollection, dict):
 
     def __init__(self,
-                 data: Dict = None,  # type: ignore
+                 data: Optional[Dict] = None,
                  *,
                  on_change: Optional[Callable] = None,
                  _parent: Optional[ObservableCollection] = None,
@@ -88,10 +115,17 @@ class ObservableDict(ObservableCollection, dict):
         self._handle_change()
 
     def __or__(self, other: Any) -> Any:
-        return super().__or__(other)
+        try:
+            return super().__or__(other)  # type: ignore # pylint: disable=no-member
+        except TypeError:
+            return ObservableDict({**self, **other})  # NOTE: remove this when switching to Python 3.9
 
     def __ior__(self, other: Any) -> Any:
-        super().__ior__(self._observe(dict(other)))
+        other_dict = self._observe(dict(other))
+        try:
+            super().__ior__(other_dict)  # type: ignore # pylint: disable=no-member
+        except TypeError:
+            self.update(other_dict)  # NOTE: remove this when switching to Python 3.9
         self._handle_change()
         return self
 
@@ -99,7 +133,7 @@ class ObservableDict(ObservableCollection, dict):
 class ObservableList(ObservableCollection, list):
 
     def __init__(self,
-                 data: List = None,  # type: ignore
+                 data: Optional[List] = None,
                  *,
                  on_change: Optional[Callable] = None,
                  _parent: Optional[ObservableCollection] = None,
@@ -161,7 +195,7 @@ class ObservableList(ObservableCollection, list):
 class ObservableSet(ObservableCollection, set):
 
     def __init__(self,
-                 data: set = None,  # type: ignore
+                 data: Optional[Set] = None,
                  *,
                  on_change: Optional[Callable] = None,
                  _parent: Optional[ObservableCollection] = None,

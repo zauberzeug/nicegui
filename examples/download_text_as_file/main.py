@@ -4,11 +4,11 @@ import uuid
 
 from fastapi.responses import StreamingResponse
 
-from nicegui import Client, app, ui
+from nicegui import app, ui
 
 
 @ui.page('/')
-async def index(client: Client):
+async def index():
     download_path = f'/download/{uuid.uuid4()}.txt'
 
     @app.get(download_path)
@@ -21,7 +21,7 @@ async def index(client: Client):
     ui.button('Download', on_click=lambda: ui.download(download_path))
 
     # cleanup the download route after the client disconnected
-    await client.disconnected()
+    await ui.context.client.disconnected()
     app.routes[:] = [route for route in app.routes if route.path != download_path]
 
 ui.run()
