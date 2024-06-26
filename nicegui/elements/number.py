@@ -133,6 +133,3 @@ class Number(ValidationElement, DisableableElement):
         if value == '':
             return 0
         return self.format % float(value)
-
-    def _value_to_event_value(self, value: Any) -> Any:
-        return float(value) if value else None
